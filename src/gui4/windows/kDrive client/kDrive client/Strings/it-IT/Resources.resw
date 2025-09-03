@@ -195,4 +195,19 @@
   <data name="ActivityList_Header_LastLocation.Text" xml:space="preserve">
     <value />
   </data>
+  <data name="Global_Second" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_Day" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_JustNow" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_Hour" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_Minute" xml:space="preserve">
+    <value />
+  </data>
 </root>

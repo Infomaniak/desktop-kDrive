@@ -14,6 +14,7 @@
         <converters:BooleanToVisibilityInverterConverter x:Key="BooleanToVisibilityInverterConverter"/>
         <converters:ItemTypeToSvgUriConverter x:Key="ItemTypeToSvgUriConverter"/>
         <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter"/>
+        <converters:DateTimeToTimeAgoConverter x:Key="DateTimeToTimeAgoConverter"/>
     </UserControl.Resources>
     <Border Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}" CornerRadius="8" BorderThickness="1" BorderBrush="#E6EAF5">
         <Grid>
@@ -50,22 +51,20 @@
             <!-- Non empty list -->
             <ListView x:Name="ActivityList" ItemsSource="{x:Bind ViewModel.SelectedSync.SyncActivities, Mode=OneWay}" 
               SelectionMode="None" 
-              ContainerContentChanging="ListView_ContainerContentChanging"
               Visibility="{x:Bind ViewModel.SelectedSync.SyncActivities.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
               >
                 <ListView.Header>
                     <Grid Padding="15" Background="{ThemeResource AppBarBackgroundThemeBrush}">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="2*"/>
                             <ColumnDefinition Width="3*"/>
                             <ColumnDefinition Width="1*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock x:Uid="ActivityList_Header_Name" Grid.Column="1" Style="{StaticResource TextBlockStyle}"/>
-                        <TextBlock x:Uid="ActivityList_Header_LastLocation" Style="{StaticResource TextBlockStyle}" Grid.Column="2"/>
-                        <TextBlock x:Uid="ActivityList_Header_Size" Style="{StaticResource TextBlockStyle}" Grid.Column="3"/>
-                        <TextBlock x:Uid="ActivityList_Header_State" Style="{StaticResource TextBlockStyle}" Grid.Column="4"/>
+                        <TextBlock x:Uid="ActivityList_Header_Name" Grid.Column="0" Padding="8,0,0,0" Style="{StaticResource TextBlockStyle}"/>
+                        <TextBlock x:Uid="ActivityList_Header_LastLocation" Padding="16,0,0,0" Style="{StaticResource TextBlockStyle}" Grid.Column="1"/>
+                        <TextBlock x:Uid="ActivityList_Header_Size" Padding="16,0,0,0" Style="{StaticResource TextBlockStyle}" Grid.Column="2"/>
+                        <TextBlock x:Uid="ActivityList_Header_State" Padding="16,0,0,0" Style="{StaticResource TextBlockStyle}" Grid.Column="3"/>
                     </Grid>
                 </ListView.Header>
                 <ListView.ItemContainerStyle>
@@ -78,7 +77,7 @@
                 </ListView.ItemContainerStyle>
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="viewmodels:SyncActivity">
-                        <Grid Padding="16,4,16,4" CornerRadius="8">
+                        <Grid Padding="16,4,16,4" CornerRadius="8" Loading="Grid_Loading">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="2*"/>
                                 <ColumnDefinition Width="3*"/>
@@ -96,7 +95,13 @@
                                 </ImageIcon>
                                 <TextBlock Text="{x:Bind Name}" Grid.Column="0" Padding="10,0,0,0"/>
                             </StackPanel>
-                            <HyperlinkButton Content="{x:Bind ParentFolderPath, Converter={StaticResource StringPathToFileNameConverter}}" Tag="{x:Bind ParentFolderPath}" Grid.Column="1" VerticalAlignment="Center" Click="SyncActivityParent_Click"/>
+                            <StackPanel Orientation="Horizontal" Grid.Column="1" VerticalAlignment="Center">
+                                <HyperlinkButton Content="{x:Bind ParentFolderPath, Converter={StaticResource StringPathToFileNameConverter}}" Tag="{x:Bind ParentFolderPath}" VerticalAlignment="Center" Click="SyncActivityParent_Click" Margin="8,0,0,0" Padding="0,0,0,0"/>
+                                <TextBlock VerticalAlignment="Center">
+                                    <Run Text=" - "/>
+                                    <Run Text="{x:Bind ActivityTime, Converter={StaticResource DateTimeToTimeAgoConverter}, Mode=OneWay}"/>
+                                </TextBlock>
+                            </StackPanel>
                             <TextBlock Text="{x:Bind Size}" Grid.Column="2" VerticalAlignment="Center"/>
                             <ImageIcon Height="16" Margin="0,0,0,8" Grid.Column="3"  VerticalAlignment="Center">
                                 <ImageIcon.Source>

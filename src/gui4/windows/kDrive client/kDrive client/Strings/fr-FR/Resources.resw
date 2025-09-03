@@ -206,4 +206,19 @@
     <value>Dernier emplacement</value>
     <comment>The parent folder of the synchronized item</comment>
   </data>
+  <data name="Global_Second" xml:space="preserve">
+    <value>sec</value>
+  </data>
+  <data name="Global_Day" xml:space="preserve">
+    <value>jour</value>
+  </data>
+  <data name="Global_JustNow" xml:space="preserve">
+    <value>À l'instant</value>
+  </data>
+  <data name="Global_Hour" xml:space="preserve">
+    <value>heure</value>
+  </data>
+  <data name="Global_Minute" xml:space="preserve">
+    <value>min</value>
+  </data>
 </root>

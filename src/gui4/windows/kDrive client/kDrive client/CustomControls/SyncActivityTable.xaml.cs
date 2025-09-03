@@ -15,10 +15,12 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using WinRT;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -29,11 +31,13 @@ namespace KDrive.CustomControls
     {
         internal AppModel _viewModel = ((App)Application.Current).Data;
         internal AppModel ViewModel => _viewModel;
-        private ReadOnlyObservableCollection<SyncActivity> _outGoingActivities = new(new());
-
+        private ObservableCollection<SyncActivity> _outGoingActivities = new();
+        private Int64 _insertionCounter = 0;
         public SyncActivityTable()
         {
             InitializeComponent();
+            ViewModel.SelectedSync?
+                    .SyncActivities.ToObservableChangeSet().OnItemAdded(a => { if (a.Direction == SyncActivityDirection.Incoming) _outGoingActivities.Insert(0, a); }).Subscribe();
         }
 
         public bool? ShowIncomingActivity
@@ -60,36 +64,13 @@ namespace KDrive.CustomControls
         private void RefreshFilteredActivities()
         {
             if (ActivityList == null) return;
-
             if (ShowIncomingActivity == null || ShowIncomingActivity == true)
             {
                 ActivityList.ItemsSource = ViewModel.SelectedSync?.SyncActivities;
             }
             else
             {
-                ViewModel.SelectedSync?
-                    .SyncActivities
-                    .ToObservableChangeSet()
-                    .AutoRefresh()
-                    .Filter(a => a.Direction != SyncActivityDirection.Incoming)
-                    .Bind(out _outGoingActivities) // gives ReadOnlyObservableCollection<SyncActivity>
-                    .Subscribe(); // keep subscription alive
-
                 ActivityList.ItemsSource = _outGoingActivities;
-            }
-        }
-        private void ListView_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
-        {
-            if (args.ItemContainer is ListViewItem item)
-            {
-                int index = sender.IndexFromContainer(item);
-
-                if (item.ContentTemplateRoot is Grid itemGrid)
-                {
-                    itemGrid.Background = (index % 2 == 0)
-                    ? new SolidColorBrush(Colors.White)
-                    : new SolidColorBrush(Colors.WhiteSmoke);
-                }
             }
         }
 
@@ -105,6 +86,21 @@ namespace KDrive.CustomControls
                     btn.IsEnabled = true;
                 }
             }
+            else
+            {
+                Logger.Log(Logger.Level.Warning, $"Unexpected call from {sender.ToString()}");
+            }
+        }
+
+        private void Grid_Loading(FrameworkElement sender, object args)
+        {
+            if (sender is Grid grid)
+            {
+                grid.Background = (_insertionCounter++ % 2 == 0)
+                        ? new SolidColorBrush(Colors.Transparent)
+                        : new SolidColorBrush(Colors.WhiteSmoke);
+            }
+
         }
     }
 }

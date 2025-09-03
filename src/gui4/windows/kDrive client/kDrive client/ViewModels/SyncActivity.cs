@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System;
+using System.Threading;
 
 namespace KDrive.ViewModels
 {
@@ -26,6 +27,7 @@ namespace KDrive.ViewModels
         private string _localPath = "";
         private int remoteId = -1;
         private DateTime _activityTime;
+        private Timer? _activityTimeUpdateTimer;
         private SyncActivityDirection _direction;
         private Int64 _size;
         private SyncActivityItemType _itemType;
@@ -46,7 +48,21 @@ namespace KDrive.ViewModels
             }
         }
         public int RemoteId { get => remoteId; set => SetProperty(ref remoteId, value); }
-        public DateTime ActivityTime { get => _activityTime; set => SetProperty(ref _activityTime, value); }
+        public DateTime ActivityTime
+        {
+            get => _activityTime;
+            set
+            {
+                SetProperty(ref _activityTime, value);
+                _activityTimeUpdateTimer = new Timer(_ => 
+                {
+                    ViewModels.AppModel.UIThreadDispatcher.TryEnqueue(() => 
+                    {
+                        OnPropertyChanged(nameof(ActivityTime));
+                    });
+                }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+            }
+        }
         public SyncActivityDirection Direction { get => _direction; set => SetProperty(ref _direction, value); }
         public Int64 Size { get => _size; set => SetProperty(ref _size, value); }
         public SyncActivityItemType ItemType
