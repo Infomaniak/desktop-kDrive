@@ -1,15 +1,15 @@
 ﻿<Project Sdk="WixToolset.Sdk/6.0.1">
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <DefineConstants>desktop-kDriveDir=C:\Projects\desktop-kDrive;shortVersion=3.7.2;regKeyOkGUID={0960F090-F328-48A3-B746-276B1E3C3722};regKeyErrorGUID={0960F090-F328-48A3-B746-276B1E3C3722};regKeySyncGUID={0960F094-F328-48A3-B746-276B1E3C3722};regKeyWarningGUID={0960F096-F328-48A3-B746-276B1E3C3722}</DefineConstants>
-    <VerboseOutput>true</VerboseOutput>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <SuppressIces>ICE57</SuppressIces>
-  </PropertyGroup>
-  <PropertyGroup>
-    <OutputType>Package</OutputType>
-    <UserSecretsId>3821c68b-8a2a-49a7-8e78-f7810232e10d</UserSecretsId>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="WixToolset.BootstrapperApplications.wixext" Version="6.0.1" />
-  </ItemGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+        <DefineConstants>desktop-kDriveDir=C:\Users\cleme\Projects\desktop-kDrive;shortVersion=3.7.5;regKeyOkGUID={0960F090-F328-48A3-B746-276B1E3C3722};regKeyErrorGUID={0960F090-F328-48A3-B746-276B1E3C3722};regKeySyncGUID={0960F094-F328-48A3-B746-276B1E3C3722};regKeyWarningGUID={0960F096-F328-48A3-B746-276B1E3C3722}</DefineConstants>
+        <VerboseOutput>true</VerboseOutput>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <SuppressIces>ICE57</SuppressIces>
+    </PropertyGroup>
+    <PropertyGroup>
+        <OutputType>Package</OutputType>
+        <UserSecretsId>3821c68b-8a2a-49a7-8e78-f7810232e10d</UserSecretsId>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="WixToolset.BootstrapperApplications.wixext" Version="6.0.1" />
+    </ItemGroup>
 </Project>

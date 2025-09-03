@@ -1,74 +1,74 @@
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
-  <Fragment>
-    <ComponentGroup Id="ShellExtComponents" Directory="SHELLEXTFOLDER">
-      <Component Guid="C3C85E7E-ED48-4924-9FD0-35FCE680AF73">
-        <!-- KD dll -->
-        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/KDContextMenu.dll" />
-        <File Source="$(desktop-kDriveDir)/build-windows/install/bin/KDOverlays.dll" />
-        <RegistryKey Root="HKCR" Key="CLSID" ForceDeleteOnUninstall="no">
-          <RegistryKey Key="CLSID/$(regKeyOkGUID)" ForceDeleteOnUninstall="yes">
-            <RegistryValue Action="write" Type="string" Value="Infomaniak Drive overlay handler" />
-            <RegistryKey Key="InprocServer32">
-              <RegistryValue Action="write" Type="string" Value="[SHELLEXTFOLDER]\KDOverlays.dll" />
-              <RegistryValue Action="write" Name="ThreadingModel" Type="string" Value="Apartment" />
-              <RegistryValue Action="write" Name="Version" Type="string" Value="1.0" />
-            </RegistryKey>
-          </RegistryKey>
-          <RegistryKey Key="$(regKeyWarningGUID)" ForceDeleteOnUninstall="yes">
-            <RegistryValue Action="write" Type="string" Value="Infomaniak Drive overlay handler" />
-            <RegistryKey  Key="InprocServer32">
-              <RegistryValue Action="write" Type="string" Value="[SHELLEXTFOLDER]KDOverlays.dll" />
-              <RegistryValue Action="write" Name="ThreadingModel" Type="string" Value="Apartment" />
-              <RegistryValue Action="write" Name="Version" Type="string" Value="1.0" />
-            </RegistryKey>
-          </RegistryKey>
-          <RegistryKey Key="$(regKeyErrorGUID)" ForceDeleteOnUninstall="yes">
-            <RegistryValue Action="write" Type="string" Value="Infomaniak Drive overlay handler" />
-            <RegistryKey  Key="InprocServer32">
-              <RegistryValue Action="write" Type="string" Value="[SHELLEXTFOLDER]KDOverlays.dll" />
-              <RegistryValue Action="write" Name="ThreadingModel" Type="string" Value="Apartment" />
-              <RegistryValue Action="write" Name="Version" Type="string" Value="1.0" />
-            </RegistryKey>
-          </RegistryKey>
-          <RegistryKey Key="$(regKeySyncGUID)" ForceDeleteOnUninstall="yes">
-            <RegistryValue Action="write" Type="string" Value="Infomaniak Drive overlay handler" />
-            <RegistryKey Key="InprocServer32">
-              <RegistryValue Action="write" Type="string" Value="[SHELLEXTFOLDER]KDOverlays.dll" />
-              <RegistryValue Action="write" Name="ThreadingModel" Type="string" Value="Apartment" />
-              <RegistryValue Action="write" Name="Version" Type="string" Value="1.0" />
-            </RegistryKey>
-          </RegistryKey>
-        </RegistryKey>
-        <RegistryKey Root="HKLM" Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\ShellIconOverlayIdentifiers" ForceDeleteOnUninstall="no">
-          <RegistryKey Key="           kDriveError" ForceDeleteOnUninstall="yes">
-            <!-- MSI installers cannot dynamically change the key name. Therefore, we are unable to ensure our icon appears before competing ones in the registry. As a result, it may become invisible if more than 11 other icons are registered before ours. -->
-            <RegistryValue Action="write" Type="string" Value="$(regKeyErrorGUID)" />
-          </RegistryKey>
-          <RegistryKey Key="           kDriveWarning" ForceDeleteOnUninstall="yes">
-            <RegistryValue Action="write" Type="string" Value="$(regKeyWarningGUID)" />
-          </RegistryKey>
-          <RegistryKey Key="           kDriveOk" ForceDeleteOnUninstall="yes">
-            <RegistryValue Action="write" Type="string" Value="$(regKeyOkGUID)" />
-          </RegistryKey>
-          <RegistryKey Key="           kDriveSync" ForceDeleteOnUninstall="yes">
-            <RegistryValue Action="write" Type="string" Value="$(regKeySyncGUID)" />
-          </RegistryKey>
-        </RegistryKey>
-      </Component>
-      <Component Guid="C1733D32-3681-41E5-831A-854C4BB97DB8" Directory="APPXFOLDER">
-        <!-- A custom action take care of installing the msix (see Package.wxs) -->
-        <File Source="$(desktop-kDriveDir)/extensions/windows/cfapi/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$(shortVersion).0_Test/FileExplorerExtensionPackage_$(shortVersion).0_x64_arm64.msixbundle" />
-        <File Id="UninstallShellExtScript" Source="$(desktop-kDriveDir)\extensions\windows\cfapi\FileExplorerExtension\Uninstall.ps1"/>
-      </Component>
-      <Component Guid="{04EB66D3-3231-499C-AF87-26EBC013ED83}" Directory="APPXDEPENDENCIESx64FOLDER">
-        <File Source="$(desktop-kDriveDir)//extensions/windows/cfapi/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$(shortVersion).0_Test/Dependencies/x64/Microsoft.VCLibs.x64.14.00.Desktop.appx" />
-      </Component>
-      <Component Guid="{F681640C-E6E5-435C-820E-447AFE8BC674}" Directory="APPXDEPENDENCIESx86FOLDER">
-        <File Source="$(desktop-kDriveDir)/extensions/windows/cfapi/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$(shortVersion).0_Test/Dependencies/x86/Microsoft.VCLibs.x86.14.00.Desktop.appx" />
-      </Component>
-      <Component Guid="{780822D6-B47D-47E3-ACEB-E3ED196B74DB}" Directory="APPXDEPENDENCIESARMFOLDER">
-        <File Source="$(desktop-kDriveDir)/extensions/windows/cfapi/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$(shortVersion).0_Test/Dependencies/ARM/Microsoft.VCLibs.ARM.14.00.Desktop.appx" />
-      </Component>
-    </ComponentGroup>
-  </Fragment>
+    <Fragment>
+        <ComponentGroup Id="ShellExtComponents" Directory="SHELLEXTFOLDER">
+            <Component Guid="C3C85E7E-ED48-4924-9FD0-35FCE680AF73">
+                <!-- KD dll -->
+                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/KDContextMenu.dll" />
+                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/KDOverlays.dll" />
+                <RegistryKey Root="HKCR" Key="CLSID" ForceDeleteOnUninstall="no">
+                    <RegistryKey Key="CLSID/$(regKeyOkGUID)" ForceDeleteOnUninstall="yes">
+                        <RegistryValue Action="write" Type="string" Value="Infomaniak Drive overlay handler" />
+                        <RegistryKey Key="InprocServer32">
+                            <RegistryValue Action="write" Type="string" Value="[SHELLEXTFOLDER]\KDOverlays.dll" />
+                            <RegistryValue Action="write" Name="ThreadingModel" Type="string" Value="Apartment" />
+                            <RegistryValue Action="write" Name="Version" Type="string" Value="1.0" />
+                        </RegistryKey>
+                    </RegistryKey>
+                    <RegistryKey Key="$(regKeyWarningGUID)" ForceDeleteOnUninstall="yes">
+                        <RegistryValue Action="write" Type="string" Value="Infomaniak Drive overlay handler" />
+                        <RegistryKey  Key="InprocServer32">
+                            <RegistryValue Action="write" Type="string" Value="[SHELLEXTFOLDER]KDOverlays.dll" />
+                            <RegistryValue Action="write" Name="ThreadingModel" Type="string" Value="Apartment" />
+                            <RegistryValue Action="write" Name="Version" Type="string" Value="1.0" />
+                        </RegistryKey>
+                    </RegistryKey>
+                    <RegistryKey Key="$(regKeyErrorGUID)" ForceDeleteOnUninstall="yes">
+                        <RegistryValue Action="write" Type="string" Value="Infomaniak Drive overlay handler" />
+                        <RegistryKey  Key="InprocServer32">
+                            <RegistryValue Action="write" Type="string" Value="[SHELLEXTFOLDER]KDOverlays.dll" />
+                            <RegistryValue Action="write" Name="ThreadingModel" Type="string" Value="Apartment" />
+                            <RegistryValue Action="write" Name="Version" Type="string" Value="1.0" />
+                        </RegistryKey>
+                    </RegistryKey>
+                    <RegistryKey Key="$(regKeySyncGUID)" ForceDeleteOnUninstall="yes">
+                        <RegistryValue Action="write" Type="string" Value="Infomaniak Drive overlay handler" />
+                        <RegistryKey Key="InprocServer32">
+                            <RegistryValue Action="write" Type="string" Value="[SHELLEXTFOLDER]KDOverlays.dll" />
+                            <RegistryValue Action="write" Name="ThreadingModel" Type="string" Value="Apartment" />
+                            <RegistryValue Action="write" Name="Version" Type="string" Value="1.0" />
+                        </RegistryKey>
+                    </RegistryKey>
+                </RegistryKey>
+                <RegistryKey Root="HKLM" Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\ShellIconOverlayIdentifiers" ForceDeleteOnUninstall="no">
+                    <RegistryKey Key="           kDriveError" ForceDeleteOnUninstall="yes">
+                        <!-- MSI installers cannot dynamically change the key name. Therefore, we are unable to ensure our icon appears before competing ones in the registry. As a result, it may become invisible if more than 11 other icons are registered before ours. -->
+                        <RegistryValue Action="write" Type="string" Value="$(regKeyErrorGUID)" />
+                    </RegistryKey>
+                    <RegistryKey Key="           kDriveWarning" ForceDeleteOnUninstall="yes">
+                        <RegistryValue Action="write" Type="string" Value="$(regKeyWarningGUID)" />
+                    </RegistryKey>
+                    <RegistryKey Key="           kDriveOk" ForceDeleteOnUninstall="yes">
+                        <RegistryValue Action="write" Type="string" Value="$(regKeyOkGUID)" />
+                    </RegistryKey>
+                    <RegistryKey Key="           kDriveSync" ForceDeleteOnUninstall="yes">
+                        <RegistryValue Action="write" Type="string" Value="$(regKeySyncGUID)" />
+                    </RegistryKey>
+                </RegistryKey>
+            </Component>
+            <Component Guid="C1733D32-3681-41E5-831A-854C4BB97DB8" Directory="APPXFOLDER">
+                <!-- A custom action take care of installing the msix (see Package.wxs) -->
+                <File Source="$(desktop-kDriveDir)/extensions/windows/cfapi/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$(shortVersion).0_Test/FileExplorerExtensionPackage_$(shortVersion).0_x64_arm64.msixbundle" />
+                <File Id="UninstallShellExtScript" Source="$(desktop-kDriveDir)\extensions\windows\cfapi\FileExplorerExtension\Uninstall.ps1"/>
+            </Component>
+            <Component Guid="{04EB66D3-3231-499C-AF87-26EBC013ED83}" Directory="APPXDEPENDENCIESx64FOLDER">
+                <File Source="$(desktop-kDriveDir)//extensions/windows/cfapi/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$(shortVersion).0_Test/Dependencies/x64/Microsoft.VCLibs.x64.14.00.Desktop.appx" />
+            </Component>
+            <Component Guid="{F681640C-E6E5-435C-820E-447AFE8BC674}" Directory="APPXDEPENDENCIESx86FOLDER">
+                <File Source="$(desktop-kDriveDir)/extensions/windows/cfapi/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$(shortVersion).0_Test/Dependencies/x86/Microsoft.VCLibs.x86.14.00.Desktop.appx" />
+            </Component>
+            <Component Guid="{780822D6-B47D-47E3-ACEB-E3ED196B74DB}" Directory="APPXDEPENDENCIESARMFOLDER">
+                <File Source="$(desktop-kDriveDir)/extensions/windows/cfapi/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$(shortVersion).0_Test/Dependencies/ARM/Microsoft.VCLibs.ARM.14.00.Desktop.appx" />
+            </Component>
+        </ComponentGroup>
+    </Fragment>
 </Wix>

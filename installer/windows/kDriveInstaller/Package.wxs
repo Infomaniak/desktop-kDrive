@@ -1,45 +1,53 @@
 ﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
-  <!-- /!\ DO NOT CHANGE THE PACKAGE ID /!\ It uniquely identify the app on client devices -->
-  <Package Id="Infomaniak_Network_SA.kDrive" Name="kDrive" Manufacturer="Infomaniak Network SA" Version="$(shortVersion).0" InstallerVersion="301">
-    <MajorUpgrade DowngradeErrorMessage="!(loc.DowngradeError)" />
-    <MediaTemplate EmbedCab="yes" />
-    <Icon Id="kDrive.ico" SourceFile="$(desktop-kDriveDir)/build-windows/install/bin/kdrive-win.ico"/>
-    <Property Id="ARPPRODUCTICON" Value="kDrive.ico" />    
-    <Feature Id="Main">
-      <ComponentGroupRef Id="App" />
-      <ComponentGroupRef Id="DLLComponents" />
-      <ComponentGroupRef Id="thirdPartyExeComponents" />
-      <ComponentGroupRef Id="SyncExcludeComponents" />
-      <ComponentGroupRef Id="QTDLL" />
-      <ComponentGroupRef Id="I18NComponents" />
-      <ComponentGroupRef Id="ImageFormatsComponents" />
-      <ComponentGroupRef Id="IconEnginesComponents" />
-      <ComponentGroupRef Id="NetworkInformationComponents" />
-      <ComponentGroupRef Id="PlatformsComponents" />
-      <ComponentGroupRef Id="TLSComponents" />
-      <ComponentGroupRef Id="TranslationsComponents" />
-      <ComponentGroupRef Id="WebEngineLocalesComponents" />
-      <ComponentGroupRef Id="PositionComponents" />
-      <ComponentGroupRef Id="RessourcesComponents" />
-      <ComponentGroupRef Id="StyleComponents" />
-      <ComponentGroupRef Id="ShellExtComponents" />
-    </Feature>
-    
-    <CustomAction Id="InstallExplorerExtension"
-                  Directory="APPXFOLDER"
-                  ExeCommand="powershell.exe -WindowStyle hidden -ExecutionPolicy Bypass -Command &quot;Add-AppxPackage FileExplorerExtensionPackage_$(shortVersion).0_x64_arm64.msixbundle -ForceApplicationShutdown -ForceUpdateFromAnyVersion&quot;" 
-                  Execute="deferred" 
-                  Impersonate="yes" 
-                  Return="check"/>
-    <CustomAction Id="UninstallExplorerExtension"
-                  Directory="APPXFOLDER"
-                  ExeCommand="powershell.exe -WindowStyle hidden -ExecutionPolicy Bypass -File &quot;[APPXFOLDER]Uninstall.ps1&quot;" 
-                  Execute="deferred"
-                  Impersonate="yes"
-                  Return="check"/> 
-    <InstallExecuteSequence>
-      <Custom Action="InstallExplorerExtension" Before="InstallFinalize" Condition="NOT REMOVE=&quot;ALL&quot;"/>
-      <Custom Action="UninstallExplorerExtension" After="InstallInitialize" Condition="REMOVE=&quot;ALL&quot;"/>
-    </InstallExecuteSequence>
-  </Package>
+    <!-- /!\ DO NOT CHANGE THE PACKAGE ID /!\ It uniquely identify the app on client devices -->
+    <Package Id="Infomaniak_Network_SA.kDrive" Name="kDrive" Manufacturer="Infomaniak Network SA" Version="$(shortVersion).0" InstallerVersion="301">
+        <MajorUpgrade DowngradeErrorMessage="!(loc.DowngradeError)" />
+        <MediaTemplate EmbedCab="yes" />
+        <Icon Id="kDrive.ico" SourceFile="$(desktop-kDriveDir)/build-windows/install/bin/kdrive-win.ico"/>
+        <Property Id="ARPPRODUCTICON" Value="kDrive.ico" />
+        <Feature Id="Main">
+            <ComponentGroupRef Id="App" />
+            <ComponentGroupRef Id="DLLComponents" />
+            <ComponentGroupRef Id="thirdPartyExeComponents" />
+            <ComponentGroupRef Id="SyncExcludeComponents" />
+            <ComponentGroupRef Id="QTDLL" />
+            <ComponentGroupRef Id="I18NComponents" />
+            <ComponentGroupRef Id="ImageFormatsComponents" />
+            <ComponentGroupRef Id="IconEnginesComponents" />
+            <ComponentGroupRef Id="NetworkInformationComponents" />
+            <ComponentGroupRef Id="PlatformsComponents" />
+            <ComponentGroupRef Id="TLSComponents" />
+            <ComponentGroupRef Id="TranslationsComponents" />
+            <ComponentGroupRef Id="WebEngineLocalesComponents" />
+            <ComponentGroupRef Id="PositionComponents" />
+            <ComponentGroupRef Id="RessourcesComponents" />
+            <ComponentGroupRef Id="StyleComponents" />
+            <ComponentGroupRef Id="ShellExtComponents" />
+        </Feature>
+
+        <CustomAction Id="InstallExplorerExtension"
+					  Directory="APPXFOLDER"
+					  ExeCommand="powershell.exe -WindowStyle hidden -ExecutionPolicy Bypass -Command &quot;Add-AppxPackage FileExplorerExtensionPackage_$(shortVersion).0_x64_arm64.msixbundle -ForceApplicationShutdown -ForceUpdateFromAnyVersion&quot;"
+					  Execute="deferred"
+					  Impersonate="yes"
+					  Return="check"/>
+        <CustomAction Id="UninstallExplorerExtension"
+					  Directory="APPXFOLDER"
+					  ExeCommand="powershell.exe -WindowStyle hidden -ExecutionPolicy Bypass -File &quot;[APPXFOLDER]Uninstall.ps1&quot;"
+					  Execute="deferred"
+					  Impersonate="yes"
+					  Return="check"/>
+        <CustomAction Id="RunApp"
+				Execute="immediate"
+				Impersonate="no"
+				Return="asyncNoWait"
+				FileRef="kDrive.exe"
+				ExeCommand=""/>
+        <InstallExecuteSequence>
+            <Custom Action="InstallExplorerExtension" Before="InstallFinalize" Condition="NOT REMOVE=&quot;ALL&quot;"/>
+            <Custom Action="RunApp" After="InstallFinalize" Condition="NOT REMOVE=&quot;ALL&quot;"/>
+            <Custom Action="UninstallExplorerExtension" After="InstallInitialize" Condition="REMOVE=&quot;ALL&quot;"/>
+        </InstallExecuteSequence>
+
+    </Package>
 </Wix>
