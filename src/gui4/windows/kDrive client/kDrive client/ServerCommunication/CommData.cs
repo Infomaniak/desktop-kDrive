@@ -25,7 +25,7 @@ using System.Threading.Tasks;
 
 namespace KDrive.ServerCommunication
 {
-    internal class CommData
+    public class CommData
     {
         // The name of member variables need to be the same as the JSON keys, it should be keeped as is even if it breaks C# naming conventions.
         public int type { get; set; } = -1; // 0=request, 1=reply, 2=signal

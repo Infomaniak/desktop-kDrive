@@ -37,7 +37,7 @@ using WinRT;
 // A final implementation should be done once the new communication layer on the server side is ready.
 namespace KDrive.ServerCommunication
 {
-    internal class CommClient
+    public class CommClient
     {
         readonly TcpClient? client;
         readonly Dictionary<int, Func<int/*Id*/, ImmutableArray<byte>/*parms*/, bool>> signalHandlers = new();

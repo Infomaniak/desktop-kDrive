@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace KDrive.ViewModels
 {
-    internal class SyncActivity : ObservableObject
+    public class SyncActivity : ObservableObject
     {
         private string _name = "";
         private SyncPath _parentFolderPath = "";

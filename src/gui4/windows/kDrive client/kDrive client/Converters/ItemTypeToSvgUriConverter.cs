@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace KDrive.Converters
 {
-    internal class NodeTypeToSvgUriConverter : IValueConverter
+    public class NodeTypeToSvgUriConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {

@@ -11,9 +11,9 @@ using System.Xml.Linq;
 
 namespace KDrive
 {
-    internal static class Utility
+    public static class Utility
     {
-        internal static NodeType DeduceNodeTypeFromFilePath(string filePath)
+        public static NodeType DeduceNodeTypeFromFilePath(string filePath)
         {
             string fileName = System.IO.Path.GetFileName(filePath);
             string extension = System.IO.Path.GetExtension(fileName).ToLower();

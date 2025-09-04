@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace KDrive.ViewModels.Errors
 {
-    internal abstract class NodeError : BaseError
+    public abstract class NodeError : BaseError
     {
         private SyncPath _nodePath = "";
         private NodeId _localNodeId = -1;

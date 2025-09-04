@@ -9,7 +9,7 @@ using KDrive.ViewModels;
 
 namespace KDrive.Converters
 {
-    internal class StringPathToFileNameConverter : IValueConverter
+    public class StringPathToFileNameConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {

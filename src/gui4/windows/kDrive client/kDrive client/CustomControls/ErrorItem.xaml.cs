@@ -30,8 +30,8 @@ namespace KDrive.CustomControls
 {
     public sealed partial class ErrorItem : UserControl
     {
-        internal AppModel _viewModel = ((App)Application.Current).Data;
-        internal AppModel ViewModel => _viewModel;
+        public AppModel _viewModel = ((App)Application.Current).Data;
+        public AppModel ViewModel => _viewModel;
 
         public static readonly DependencyProperty ErrorProperty =
             DependencyProperty.Register(

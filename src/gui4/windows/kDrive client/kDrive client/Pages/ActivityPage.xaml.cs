@@ -20,8 +20,8 @@ namespace KDrive
 {
     public sealed partial class ActivityPage : Page
     {
-        internal AppModel _viewModel = ((App)Application.Current).Data;
-        internal AppModel ViewModel { get { return _viewModel; } }
+        public AppModel _viewModel = ((App)Application.Current).Data;
+        public AppModel ViewModel { get { return _viewModel; } }
         public ActivityPage()
         {
             Logger.Log(Logger.Level.Info, "Navigated to ActivityPage - Initializing ActivityPage components");

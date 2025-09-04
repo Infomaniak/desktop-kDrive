@@ -33,7 +33,7 @@ using System.Threading.Tasks;
 namespace KDrive.ViewModels
 
 {
-    internal class AppModel : ObservableObject
+    public class AppModel : ObservableObject
     {
         /** Indicates if the model has been initialized (i.e. data loaded from the server)
          *  This is only set to true after InitializeAsync() has been called and completed.

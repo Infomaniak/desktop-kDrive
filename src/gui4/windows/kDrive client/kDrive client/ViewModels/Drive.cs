@@ -30,7 +30,7 @@ using System.Threading.Tasks;
 
 namespace KDrive.ViewModels
 {
-    internal class Drive : ObservableObject
+    public class Drive : ObservableObject
     {
         private DbId _dbId = -1;
         private DriveId _id = -1;

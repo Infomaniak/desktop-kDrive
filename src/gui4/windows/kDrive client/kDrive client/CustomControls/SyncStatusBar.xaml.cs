@@ -24,8 +24,8 @@ namespace KDrive.CustomControls;
 
 public sealed partial class SyncStatusBar : UserControl
 {
-    internal AppModel _viewModel = ((App)Application.Current).Data;
-    internal AppModel ViewModel
+    public AppModel _viewModel = ((App)Application.Current).Data;
+    public AppModel ViewModel
     {
         get { return _viewModel; }
     }

@@ -26,7 +26,7 @@ using System.Threading.Tasks;
 
 namespace KDrive
 {
-    internal static class Logger
+    public static class Logger
     {
         public enum Level
         {

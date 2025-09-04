@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml.Data;
 
 namespace KDrive.Converters
 {
-    internal class BooleanToInvertedVisibilityConverter : IValueConverter
+    public class BooleanToInvertedVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {

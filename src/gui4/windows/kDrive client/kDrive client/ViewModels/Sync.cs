@@ -32,7 +32,7 @@ using KDrive.Types;
 
 namespace KDrive.ViewModels
 {
-    internal class Sync : ObservableObject
+    public class Sync : ObservableObject
     {
         // Sync properties
         private DbId _dbId;

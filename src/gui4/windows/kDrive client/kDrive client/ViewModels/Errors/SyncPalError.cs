@@ -7,7 +7,7 @@ using System.Windows.Input;
 
 namespace KDrive.ViewModels.Errors
 {
-    internal class SyncPalError : BaseError
+    public class SyncPalError : BaseError
     {
         public SyncPalError(DbId dbId) : base(dbId)
         {

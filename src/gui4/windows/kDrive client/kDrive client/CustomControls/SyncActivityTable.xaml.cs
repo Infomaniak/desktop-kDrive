@@ -30,8 +30,8 @@ namespace KDrive.CustomControls
 {
     public sealed partial class SyncActivityTable : UserControl
     {
-        internal AppModel _viewModel = ((App)Application.Current).Data;
-        internal AppModel ViewModel => _viewModel;
+        public AppModel _viewModel = ((App)Application.Current).Data;
+        public AppModel ViewModel => _viewModel;
 
         private ObservableCollection<SyncActivity> _outGoingActivities = new();
         private Int64 _insertionCounter = 0;

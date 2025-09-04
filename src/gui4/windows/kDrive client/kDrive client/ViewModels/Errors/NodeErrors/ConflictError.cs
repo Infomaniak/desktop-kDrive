@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDrive.ViewModels.Errors
 {
-    internal class ConflictError : NodeError
+    public class ConflictError : NodeError
     {
         public ConflictError(int dbId) : base(dbId)
         {

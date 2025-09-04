@@ -8,9 +8,9 @@ using Microsoft.UI.Xaml.Data;
 
 namespace KDrive.Converters
 {
-    internal class BooleanToInvertedBooleanConverter : IValueConverter
+    public class BooleanToInvertedBooleanConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, string language)
+       public object Convert(object value, Type targetType, object parameter, string language)
         {
 
             if (value is bool boolValue)
@@ -21,7 +21,7 @@ namespace KDrive.Converters
             throw new ArgumentException("Invalid value type", nameof(value));
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, string language)
+       public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
             if (value is bool boolValue)
             {

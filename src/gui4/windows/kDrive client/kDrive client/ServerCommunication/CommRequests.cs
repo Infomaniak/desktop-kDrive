@@ -30,7 +30,7 @@ using System.Threading.Tasks;
 
 namespace KDrive.ServerCommunication
 {
-    internal class MockServerData
+    public class MockServerData
     {
         public List<User> Users = new List<User>();
         public List<Drive> Drives = new List<Drive>();
@@ -71,7 +71,7 @@ namespace KDrive.ServerCommunication
             Drives[2].Syncs.Add(Syncs[2]);
         }
     }
-    internal class CommRequests
+    public class CommRequests
     {
         private enum RequestNum
         {

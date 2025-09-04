@@ -24,7 +24,7 @@ namespace KDrive.Types
         Grid
     }
 
-    enum SyncStatus
+    public enum SyncStatus
     {
         Unknown,
         Starting,

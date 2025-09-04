@@ -22,8 +22,8 @@ namespace KDrive
 {
     public sealed partial class ErrorPage : Page
     {
-        internal AppModel _viewModel = ((App)Application.Current).Data;
-        internal AppModel ViewModel { get { return _viewModel; } }
+        public AppModel _viewModel = ((App)Application.Current).Data;
+        public AppModel ViewModel { get { return _viewModel; } }
         public ErrorPage()
         {
             Logger.Log(Logger.Level.Info, "Navigated to ErrorPage - Initializing ErrorPage components");

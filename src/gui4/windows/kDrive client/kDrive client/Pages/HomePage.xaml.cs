@@ -36,8 +36,8 @@ namespace KDrive
 {
     public sealed partial class HomePage : Page
     {
-        internal AppModel _viewModel = ((App)Application.Current).Data;
-        internal AppModel ViewModel => _viewModel;
+        public AppModel _viewModel = ((App)Application.Current).Data;
+        public AppModel ViewModel => _viewModel;
         public HomePage()
         {
             Logger.Log(Logger.Level.Info, "Navigated to HomePage - Initializing HomePage components");

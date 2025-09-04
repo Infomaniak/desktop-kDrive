@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KDrive.ViewModels.Errors
 {
-    internal class AppError : BaseError
+    public class AppError : BaseError
     {
         public AppError(int dbId) : base(dbId)
         {

@@ -42,8 +42,8 @@ namespace KDrive
 {
     public sealed partial class MainWindow : Window
     {
-        internal readonly AppModel _viewModel = ((App)Application.Current).Data;
-        internal AppModel ViewModel { get { return _viewModel; } }
+        public readonly AppModel _viewModel = ((App)Application.Current).Data;
+        public AppModel ViewModel { get { return _viewModel; } }
         public MainWindow()
         {
             InitializeComponent();
