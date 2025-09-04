@@ -11,7 +11,7 @@
              mc:Ignorable="d">
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        <converters:BooleanToVisibilityInverterConverter x:Key="BooleanToVisibilityInverterConverter" />
+        <converters:BooleanToInvertedVisibilityConverter  x:Key="BooleanToInvertedVisibilityConverter " />
         <converters:NodeTypeToSvgUriConverter x:Key="NodeTypeToSvgUriConverter" />
         <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
         <converters:DateTimeToTimeAgoConverter x:Key="DateTimeToTimeAgoConverter" />

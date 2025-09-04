@@ -27,7 +27,7 @@
       xmlns:converters="using:KDrive.Converters"
       mc:Ignorable="d">
     <Page.Resources>
-        <converters:BooleanToVisibilityInverterConverter x:Key="BooleanToVisibilityInverterConverter" />
+        <converters:BooleanToInvertedVisibilityConverter  x:Key="BooleanToInvertedVisibilityConverter " />
     </Page.Resources>
     <Grid Margin="24"
           RowSpacing="24"
@@ -127,6 +127,6 @@
         </Grid>
         <controls:KSuiteUpgradeBar Grid.Row="3"
                                    Grid.ColumnSpan="2"
-                                   Visibility="{x:Bind ViewModel.SelectedSync.Drive.IsPaidOffer, Mode=OneWay, Converter={StaticResource BooleanToVisibilityInverterConverter}}" />
+                                   Visibility="{x:Bind ViewModel.SelectedSync.Drive.IsPaidOffer, Mode=OneWay, Converter={StaticResource BooleanToInvertedVisibilityConverter }}" />
     </Grid>
 </Page>

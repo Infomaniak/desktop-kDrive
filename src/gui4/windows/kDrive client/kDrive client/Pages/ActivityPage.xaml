@@ -10,7 +10,7 @@
       xmlns:viewmodels="using:KDrive.ViewModels"
       mc:Ignorable="d">
     <Page.Resources>
-        <converters:BooleanToVisibilityInverterConverter x:Key="BooleanToVisibilityInverterConverter" />
+        <converters:BooleanToInvertedVisibilityConverter  x:Key="BooleanToInvertedVisibilityConverter " />
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:BooleanToInvertedBooleanConverter x:Key="BooleanToInvertedBooleanConverter" />
     </Page.Resources>
@@ -54,7 +54,7 @@
         <!-- Upgrade offer bar -->
         <controls:KSuiteUpgradeBar Grid.Row="3"
                                    Grid.ColumnSpan="2"
-                                   Visibility="{x:Bind ViewModel.SelectedSync.Drive.IsPaidOffer, Mode=OneWay, Converter={StaticResource BooleanToVisibilityInverterConverter}}" />
+                                   Visibility="{x:Bind ViewModel.SelectedSync.Drive.IsPaidOffer, Mode=OneWay, Converter={StaticResource BooleanToInvertedVisibilityConverter }}" />
 
     </Grid>
 </Page>

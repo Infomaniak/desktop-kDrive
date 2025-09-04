@@ -10,7 +10,7 @@
              mc:Ignorable="d">
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        <converters:BooleanToVisibilityInverterConverter x:Key="BooleanToVisibilityInverterConverter" />
+        <converters:BooleanToInvertedVisibilityConverter  x:Key="BooleanToInvertedVisibilityConverter " />
         <converters:NodeTypeToSvgUriConverter x:Key="NodeTypeToSvgUriConverter" />
         <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
         <converters:DateTimeToTimeAgoConverter x:Key="DateTimeToTimeAgoConverter" />
@@ -22,7 +22,7 @@
         <Grid>
             <!-- Empty list-->
             <Grid CornerRadius="8"
-                  Visibility="{x:Bind ViewModel.SelectedSync.SyncActivities.Count, Converter={StaticResource BooleanToVisibilityInverterConverter}, Mode=OneWay}">
+                  Visibility="{x:Bind ViewModel.SelectedSync.SyncActivities.Count, Converter={StaticResource BooleanToInvertedVisibilityConverter }, Mode=OneWay}">
                 <Grid.Background>
                     <LinearGradientBrush StartPoint="0,0"
                                          EndPoint="1,0">
