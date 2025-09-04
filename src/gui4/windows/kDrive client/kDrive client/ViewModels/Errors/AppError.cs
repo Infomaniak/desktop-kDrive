@@ -14,17 +14,17 @@ namespace KDrive.ViewModels.Errors
 
         public override sealed string TitleStr()
         {
-            return "Assistance technique";
+            return GetLocalizedString("AppError_Title");
         }
 
-        public override sealed  string HowToSolveStr()
+        public override sealed string HowToSolveStr()
         {
-            return "Veuillez contacter notre support client.";
+            return GetLocalizedString("AppError_HowToSolve");
         }
 
         public override string CauseStr()
         {
-            return $"Une erreur technique s’est produite (ERR:{ExitCode}:{ExitCause})";
+            return string.Format(GetLocalizedString("AppError_Cause"), ExitCode, ExitCause);
         }
 
         public override Uri IconUri()

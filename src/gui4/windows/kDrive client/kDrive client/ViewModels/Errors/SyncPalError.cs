@@ -10,30 +10,30 @@ namespace KDrive.ViewModels.Errors
     {
         public SyncPalError(DbId dbId) : base(dbId)
         {
-            SolveButton = new ButtonData("Contacter le support", async (sender) =>
+            SolveButton = new ButtonData(GetLocalizedString("Global_ContactSupport")
+                , async (sender) =>
             {
                 await Windows.System.Launcher.LaunchUriAsync(new Uri("https://www.infomaniak.com/fr/support"));
             });
 
-            InfoHyperLink = new ButtonData("En savoir plus", async (sender) =>
+            InfoHyperLink = new ButtonData(GetLocalizedString("Global_MoreInfo"), async (sender) =>
             {
                 await Windows.System.Launcher.LaunchUriAsync(new Uri("https://www.infomaniak.com/fr/support/faq/admin2/kdrive"));
             });
         }
         public override sealed string TitleStr()
         {
-            return "Syncpal Error";
+            return GetLocalizedString("SyncPalError_Title");
         }
 
         public override string HowToSolveStr()
         {
-            // TODO: Implement a more detailed description based on ExitCode and ExitCause
-            return $"Essayer de redemarrer l'application, si l'erreur persiste, veuillez contacter le support";
+            return GetLocalizedString("SyncPalError_HowToSolve");
         }
 
         public override string CauseStr()
         {
-            return $"Une erreur technique s’est produite (ERR:{ExitCode}:{ExitCause})";
+            return string.Format(GetLocalizedString("SyncPalError_Cause"), ExitCode, ExitCause);
         }
 
         public override Uri IconUri()

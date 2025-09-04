@@ -224,4 +224,20 @@
   <data name="ErrorPage_Title.Text" xml:space="preserve">
     <value>Éléments à vérifier</value>
   </data>
+  <data name="ErrorPage_Application_HowTosolve.Text" xml:space="preserve">
+    <value>Veuillez contacter notre support client.</value>
+  </data>
+  <data name="ErrorPage_Application_Title.Text" xml:space="preserve">
+    <value>Assistance technique</value>
+  </data>
+  <data name="ErrorPage_Application_Header.Text" xml:space="preserve">
+    <value>Application</value>
+  </data>
+  <data name="ErrorPage_Synchronisation_Header.Text" xml:space="preserve">
+    <value>Synchronisation (</value>
+    <comment>must end with "(" </comment>
+  </data>
+  <data name="Global_SupportUrl" xml:space="preserve">
+    <value>https://www.infomaniak.com/fr/support/faq/admin2/kdrive</value>
+  </data>
 </root>

@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Windows.Input;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
@@ -36,6 +37,11 @@ namespace KDrive
             {
                 Frame.Navigate(typeof(ActivityPage));
             }
+        }
+        private async void SupportButton_Click(object sender, RoutedEventArgs e)
+        {
+            var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
+            await Windows.System.Launcher.LaunchUriAsync(new System.Uri(resourceLoader.GetString("Global_SupportUrl")));
         }
     }
 }

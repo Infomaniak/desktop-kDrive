@@ -213,4 +213,19 @@
   <data name="ErrorPage_Title.Text" xml:space="preserve">
     <value />
   </data>
+  <data name="ErrorPage_Application_HowTosolve.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="ErrorPage_Application_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="ErrorPage_Application_Header.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="ErrorPage_Synchronisation_Header.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_SupportUrl" xml:space="preserve">
+    <value />
+  </data>
 </root>

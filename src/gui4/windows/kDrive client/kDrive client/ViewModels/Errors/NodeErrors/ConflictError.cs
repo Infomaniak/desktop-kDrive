@@ -10,7 +10,7 @@ namespace KDrive.ViewModels.Errors
     {
         public ConflictError(int dbId) : base(dbId)
         {
-            SolveButton = new ButtonData("Choisir la version à conserver", async (object d) =>
+            SolveButton = new ButtonData(GetLocalizedString("ConflictError_SolveButton"), async (object d) =>
             {
                 //TODO: Implement conflict resolution dialog
                 await Task.Delay(5000);
@@ -18,11 +18,11 @@ namespace KDrive.ViewModels.Errors
         }
         public override sealed string HowToSolveStr()
         {
-            return "Veuillez renommer ou supprimer le fichier en conflit.";
+            return GetLocalizedString("ConflictError_HowToSolve");
         }
         public override string CauseStr()
         {
-            return "Le fichier a été modifié en même temps par un autre utilisateur. Vos modifications ont été enregistrées dans une copie";
+            return GetLocalizedString("ConflictError_Cause");
         }
         
     }
