@@ -10,18 +10,18 @@ using System.Threading.Tasks;
 
 namespace KDrive.Converters
 {
-    internal class ItemTypeToSvgUriConverter : IValueConverter
+    internal class NodeTypeToSvgUriConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            if (value is ItemType itemType)
+            if (value is NodeType nodeType)
             {
-                return itemType switch
+                return nodeType switch
                 {
-                    ItemType.Pdf => new Uri("ms-appx:///Assets/Icons/file-pdf.svg"),
-                    ItemType.Doc => new Uri("ms-appx:///Assets/Icons/file-text.svg"),
-                    ItemType.Grid => new Uri("ms-appx:///Assets/Icons/file-grid.svg"),
-                    ItemType.Directory => new Uri("ms-appx:///Assets/Icons/folder.svg"),
+                    NodeType.Pdf => new Uri("ms-appx:///Assets/Icons/file-pdf.svg"),
+                    NodeType.Doc => new Uri("ms-appx:///Assets/Icons/file-text.svg"),
+                    NodeType.Grid => new Uri("ms-appx:///Assets/Icons/file-grid.svg"),
+                    NodeType.Directory => new Uri("ms-appx:///Assets/Icons/folder.svg"),
                     // TODO: Add specific icons for audio and video files
                     _ => new Uri("ms-appx:///Assets/Icons/file-text.svg")
                 };

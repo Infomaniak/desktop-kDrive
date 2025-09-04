@@ -310,7 +310,7 @@ namespace KDrive.ServerCommunication
 
             List<User> result = new List<User>();
             using (MemoryStream ms = new MemoryStream(resultBytes.ToArray()))
-            using (Utility.BinaryReader reader = new Utility.BinaryReader(ms))
+            using (BinaryReader reader = new BinaryReader(ms))
             {
                 int exitCode = BinaryPrimitives.ReverseEndianness(reader.ReadInt32());
                 if (exitCode != 0)

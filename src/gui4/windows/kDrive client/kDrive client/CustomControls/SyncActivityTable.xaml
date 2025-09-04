@@ -12,7 +12,7 @@
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <converters:BooleanToVisibilityInverterConverter x:Key="BooleanToVisibilityInverterConverter"/>
-        <converters:ItemTypeToSvgUriConverter x:Key="ItemTypeToSvgUriConverter"/>
+        <converters:NodeTypeToSvgUriConverter x:Key="NodeTypeToSvgUriConverter"/>
         <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter"/>
         <converters:DateTimeToTimeAgoConverter x:Key="DateTimeToTimeAgoConverter"/>
     </UserControl.Resources>
@@ -90,7 +90,7 @@
                             <StackPanel Orientation="Horizontal" Grid.Column="0" VerticalAlignment="Center">
                                 <ImageIcon Height="16" Margin="0,0,0,8" Grid.Column="0">
                                     <ImageIcon.Source>
-                                        <SvgImageSource UriSource="{x:Bind ItemType, Converter={StaticResource ItemTypeToSvgUriConverter}}"/>
+                                        <SvgImageSource UriSource="{x:Bind NodeType, Converter={StaticResource NodeTypeToSvgUriConverter}}"/>
                                     </ImageIcon.Source>
                                 </ImageIcon>
                                 <TextBlock Text="{x:Bind Name}" Grid.Column="0" Padding="10,0,0,0"/>

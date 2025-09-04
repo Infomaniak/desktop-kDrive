@@ -12,7 +12,7 @@ global using SyncPath = System.String;
 namespace KDrive.Types
 {
 
-    public enum ItemType
+    public enum NodeType
     {
         Directory,
         File,

@@ -59,7 +59,7 @@ namespace KDrive.ViewModels
         /** The list of application errors.
          *  This is an observable collection, so the UI can bind to it and be notified of changes.
          */
-        private ObservableCollection<Error.AppError> _appErrors = new();
+        private ObservableCollection<Errors.AppError> _appErrors = new();
 
         // Helpers - Agregated collections
         /** The list of active syncs across all users.
@@ -92,8 +92,39 @@ namespace KDrive.ViewModels
             AllSyncs.ToObservableChangeSet()
                        .Subscribe(_ => EnsureValidSelectedSync());
 
-            AppErrors.Add(new Error.AppError(1) { ExitCode = 1, ExitCause = 2 });
-            AppErrors.Add(new Error.AppError(2) { ExitCode = 2, ExitCause = 0 });
+            AppErrors.Add(new Errors.AppError(1) { ExitCode = 1, ExitCause = 2 });
+            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
+            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
+            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
+            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
+            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
+            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
+            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
+            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
+            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
+            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
+            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
+            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
+            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
+            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
+            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
+            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
+            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
+            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
+            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
+            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
+            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
+            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
+            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
+            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
+            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
+            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
+            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
+            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
+            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
+            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
+            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
+
         }
 
         private void EnsureValidSelectedSync()
@@ -121,7 +152,7 @@ namespace KDrive.ViewModels
             set => SetProperty(ref _isInitialized, value);
         }
 
-        public ObservableCollection<Error.AppError> AppErrors
+        public ObservableCollection<Errors.AppError> AppErrors
         {
             get => _appErrors;
             set => SetProperty(ref _appErrors, value);

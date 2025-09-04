@@ -9,7 +9,7 @@
     xmlns:controls="using:KDrive.CustomControls"
     xmlns:converters="using:KDrive.Converters"
     xmlns:viewmodels="using:KDrive.ViewModels"
-    xmlns:viewmodels_error="using:KDrive.ViewModels.Error"
+    xmlns:viewmodels_error="using:KDrive.ViewModels.Errors"
     mc:Ignorable="d">
     <Page.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
@@ -28,7 +28,7 @@
             <!-- AppErrors -->
             <RowDefinition Height="Auto"/>
             <!-- SyncErrors -->
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <!-- Title -->
@@ -102,7 +102,7 @@
         <Border Grid.Row="3" BorderThickness="1" BorderBrush="#E6EAF5" CornerRadius="8" Visibility="{x:Bind ViewModel.SelectedSync.SyncErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}}">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
@@ -127,6 +127,7 @@
                             <Setter Property="Margin" Value="4"/>
                             <Setter Property="Padding" Value="4"/>
                             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            <Setter Property="CornerRadius" Value="8"/>
                         </Style>
                     </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>

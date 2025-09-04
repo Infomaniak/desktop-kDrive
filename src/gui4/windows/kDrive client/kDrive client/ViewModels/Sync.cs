@@ -18,7 +18,7 @@
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using KDrive.ServerCommunication;
-using KDrive.ViewModels.Error;
+using KDrive.ViewModels.Errors;
 using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
@@ -44,7 +44,7 @@ namespace KDrive.ViewModels
         private readonly ObservableCollection<SyncActivity> _syncActivities = new();
         private SyncStatus _syncStatus = SyncStatus.Pause;
 
-        private ObservableCollection<Error.BaseError> _syncErrors = new();
+        private ObservableCollection<Errors.BaseError> _syncErrors = new();
 
         // Sync UI properties
         private bool _showIncomingActivity = true;
@@ -114,14 +114,14 @@ namespace KDrive.ViewModels
                 sb.Append(sampleFileNames[rand.Next(sampleFileNames.Length)]);
             }
             SyncDirection direction = (SyncDirection)rand.Next(2); // Randomly choose direction
-            ItemType itemType = isFile ? ItemType.File : ItemType.Directory;
+            NodeType nodeType = isFile ? NodeType.File : NodeType.Directory;
             long size = isFile ? rand.Next(0, 5000000) : 0; // Random size for files, 0 for directories
             DateTime activityTime = DateTime.Now;
             return new SyncActivity()
             {
                 LocalPath = "C:/Users/Herve/kDrive/" + sb.ToString(),
                 Direction = direction,
-                ItemType = itemType,
+                NodeType = nodeType,
                 Size = size,
                 ActivityTime = activityTime,
                 RemoteId = rand.Next(1, 1000)
@@ -157,8 +157,13 @@ namespace KDrive.ViewModels
                     });
                 }
             });
-            _syncErrors.Add(new NodeError(1) { ExitCause = 1, ExitCode = 2, Time = DateTime.Now });
+            _syncErrors.Add(new ConflictError(1) { ExitCause = 1, ExitCode = 2, Time = DateTime.Now, LocalNodeId=754548, NodePath="Rand.xlsx" });
             _syncErrors.Add(new SyncPalError(2) { ExitCause = 8, ExitCode = 9, Time = DateTime.Now });
+            _syncErrors.Add(new ConflictError(1) { ExitCause = 1, ExitCode = 2, Time = DateTime.Now, LocalNodeId = 754548, NodePath = "Test.docx" });
+            _syncErrors.Add(new ConflictError(1) { ExitCause = 1, ExitCode = 2, Time = DateTime.Now, LocalNodeId = 754548, NodePath = "Rome.png" });
+            _syncErrors.Add(new ConflictError(1) { ExitCause = 1, ExitCode = 2, Time = DateTime.Now, LocalNodeId = 754548, NodePath = "dummy.txt" });
+
+
         }
 
         public DbId DbId
@@ -210,7 +215,7 @@ namespace KDrive.ViewModels
             get => _drive;
         }
 
-        public ObservableCollection<Error.BaseError> SyncErrors
+        public ObservableCollection<Errors.BaseError> SyncErrors
         {
             get => _syncErrors;
             set => SetProperty(ref _syncErrors, value);
