@@ -36,7 +36,7 @@ namespace KDrive
 {
     public sealed partial class HomePage : Page
     {
-        public AppModel _viewModel = ((App)Application.Current).Data;
+        private AppModel _viewModel = ((App)Application.Current).Data;
         public AppModel ViewModel => _viewModel;
         public HomePage()
         {

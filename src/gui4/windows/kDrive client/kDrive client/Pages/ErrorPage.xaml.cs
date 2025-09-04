@@ -22,7 +22,7 @@ namespace KDrive
 {
     public sealed partial class ErrorPage : Page
     {
-        public AppModel _viewModel = ((App)Application.Current).Data;
+        private AppModel _viewModel = ((App)Application.Current).Data;
         public AppModel ViewModel { get { return _viewModel; } }
         public ErrorPage()
         {

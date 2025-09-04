@@ -21,7 +21,7 @@ namespace KDrive.CustomControls
 {
     public sealed partial class SyncErrorBar : UserControl
     {
-        public AppModel _viewModel = ((App)Application.Current).Data;
+        private AppModel _viewModel = ((App)Application.Current).Data;
         public AppModel ViewModel => _viewModel;
 
         public SyncErrorBar()
