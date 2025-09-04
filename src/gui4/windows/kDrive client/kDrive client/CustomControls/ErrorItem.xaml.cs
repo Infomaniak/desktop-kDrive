@@ -33,9 +33,6 @@ namespace KDrive.CustomControls
         internal AppModel _viewModel = ((App)Application.Current).Data;
         internal AppModel ViewModel => _viewModel;
 
-        public DataTemplate? SyncErrorTemplate { get; set; }
-        public DataTemplate? NodeErrorTemplate { get; set; }
-
         public static readonly DependencyProperty ErrorProperty =
             DependencyProperty.Register(
                 nameof(Error),
