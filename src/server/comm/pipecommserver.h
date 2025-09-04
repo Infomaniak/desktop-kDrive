@@ -91,6 +91,8 @@ class PipeCommServer : public AbstractCommServer {
         void stop();
         void waitForExit();
 
+        static void executeFunc(PipeCommServer *server);
+
 #if defined(KD_WINDOWS)
         std::vector<std::shared_ptr<PipeCommChannel>> _channels;
 
