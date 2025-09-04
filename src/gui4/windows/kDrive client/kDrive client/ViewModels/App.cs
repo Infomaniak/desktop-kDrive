@@ -62,13 +62,12 @@ namespace KDrive.ViewModels
          */
         private ObservableCollection<Errors.AppError> _appErrors = new();
 
-        /** Indicates if there are no errors in the application.
-         *  This is true if there are no app errors and the selected sync has no errors.
-         *  It is false if there are any app errors or if the selected sync has any errors.
+        /** Indicates if there is error in application or in the selected sync.
+         *  This is true if there is at least one app errors or one selected sync error.
          *  This is a read-only property that is automatically updated when AppErrors or SelectedSync.SyncErrors change.
          */
-        public bool HasNoErrors => AppErrors.Count == 0 &&
-                           (SelectedSync?.SyncErrors?.Count ?? 0) == 0;
+        public bool HasErrors => AppErrors.Count > 0 ||
+                           (SelectedSync?.SyncErrors?.Count ?? 0) > 0;
 
         // Helpers - Agregated collections
         /** The list of active syncs across all users.
@@ -89,7 +88,7 @@ namespace KDrive.ViewModels
                     SelectedSync.SyncErrors.CollectionChanged -= SyncErrors_CollectionChanged;
                     SelectedSync.SyncErrors.CollectionChanged += SyncErrors_CollectionChanged;
                 }
-                OnPropertyChanged(nameof(HasNoErrors));
+                OnPropertyChanged(nameof(HasErrors));
             }
         }
 
@@ -111,7 +110,7 @@ namespace KDrive.ViewModels
                        .Subscribe(_ => EnsureValidSelectedSync());
 
             // Observe changes to AppErrors and SelectedSync.SyncErrors to update HasNoErrors property
-            AppErrors.CollectionChanged += (_, __) => OnPropertyChanged(nameof(HasNoErrors));
+            AppErrors.CollectionChanged += (_, __) => OnPropertyChanged(nameof(HasErrors));
         }
 
         private void EnsureValidSelectedSync()
@@ -176,7 +175,7 @@ namespace KDrive.ViewModels
 
         private void SyncErrors_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            OnPropertyChanged(nameof(HasNoErrors));
+            OnPropertyChanged(nameof(HasErrors));
         }
     }
 }
