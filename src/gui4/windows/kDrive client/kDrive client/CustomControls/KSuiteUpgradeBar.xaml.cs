@@ -29,11 +29,11 @@ namespace KDrive.CustomControls
             // TODO: Fetch the type of the kSuite the user is using (my or pro)
             if (true /* Selected kSuite is "my"*/)
             {
-                //UpgradeHyperLinkButton.NavigateUri = new Uri(resourceLoader.GetString("Global_UpgradeOfferMy_Url"));
+                UpgradeHyperLinkButton.NavigateUri = new Uri(resourceLoader.GetString("Global_UpgradeOfferMy_Url"));
             }
             else
             {
-               // UpgradeHyperLinkButton.NavigateUri = new Uri(resourceLoader.GetString("Global_UpgradeOfferPro_Url"));
+               UpgradeHyperLinkButton.NavigateUri = new Uri(resourceLoader.GetString("Global_UpgradeOfferPro_Url"));
             }
         }
     }

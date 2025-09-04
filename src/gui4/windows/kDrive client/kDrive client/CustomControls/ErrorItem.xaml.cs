@@ -36,7 +36,7 @@ namespace KDrive.CustomControls
         public static readonly DependencyProperty ErrorProperty =
             DependencyProperty.Register(
                 nameof(Error),
-                typeof(ViewModels.Errors.BaseError),
+                typeof(BaseError),
                 typeof(ErrorItem),
                 new PropertyMetadata(null));
 
@@ -45,9 +45,9 @@ namespace KDrive.CustomControls
             InitializeComponent();
         }
 
-        public ViewModels.Errors.BaseError? Error
+        public BaseError? Error
         {
-            get => (ViewModels.Errors.BaseError?)GetValue(ErrorProperty);
+            get => (BaseError?)GetValue(ErrorProperty);
             set => SetValue(ErrorProperty, value);
         }
 
@@ -59,17 +59,18 @@ namespace KDrive.CustomControls
                 var task = Error?.InfoHyperLink?.Action(sender);
                 if (task != null)
                 {
+                    Logger.Log(Logger.Level.Info, "Executing InfoHyperLink action.");
                     await task;
                 }
                 else
                 {
-                    Logger.Log(Logger.Level.Error, "HyperlinkButton_Click: No action defined for InfoHyperLink.");
+                    Logger.Log(Logger.Level.Error, "No action defined for InfoHyperLink.");
                 }
                 button.IsEnabled = true;
             }
             else
             {
-                Logger.Log(Logger.Level.Error, "HyperlinkButton_Click: sender is not a Button");
+                Logger.Log(Logger.Level.Error, "Sender is not a Button");
             }
         }
 
@@ -81,17 +82,18 @@ namespace KDrive.CustomControls
                 var task = Error?.SolveButton?.Action(sender);
                 if (task != null)
                 {
+                    Logger.Log(Logger.Level.Info, "Executing SolveButton action.");
                     await task;
                 }
                 else
                 {
-                    Logger.Log(Logger.Level.Warning, "SolveButton_Click: No action defined for SolveButton.");
+                    Logger.Log(Logger.Level.Warning, "No action defined for SolveButton.");
                 }
                 button.IsEnabled = true;
             }
             else
             {
-                Logger.Log(Logger.Level.Warning, "SolveButton_Click: sender is not a Button");
+                Logger.Log(Logger.Level.Warning, "Sender is not a Button");
             }
         }
     }

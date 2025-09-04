@@ -250,9 +250,9 @@
     <value>Profitez de votre journée !</value>
   </data>
   <data name="Global_UpgradeOfferMy_Url" xml:space="preserve">
-    <value>https://www.infomaniak.com/fr/ksuite/ksuite-pro/tarifs</value>
+    <value>https://www.infomaniak.com/fr/ksuite/myksuite/tarifs</value>
   </data>
   <data name="Global_UpgradeOfferPro_Url" xml:space="preserve">
-    <value>https://www.infomaniak.com/fr/ksuite/myksuite/tarifs</value>
+    <value>https://www.infomaniak.com/fr/ksuite/ksuite-pro/tarifs</value>
   </data>
 </root>

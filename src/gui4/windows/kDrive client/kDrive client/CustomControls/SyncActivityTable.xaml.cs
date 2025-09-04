@@ -35,6 +35,7 @@ namespace KDrive.CustomControls
 
         private ObservableCollection<SyncActivity> _outGoingActivities = new();
         private Int64 _insertionCounter = 0;
+
         public SyncActivityTable()
         {
             InitializeComponent();
@@ -90,6 +91,10 @@ namespace KDrive.CustomControls
                     Utility.OpenFolderSecurely(activity.ParentFolderPath);
                     await Task.Delay(5000); // As the explorer might take some time to open avoid multiple clicks
                     btn.IsEnabled = true;
+                }
+                else
+                {
+                    Logger.Log(Logger.Level.Warning, $"Directory does not exist: {activity.ParentFolderPath}");
                 }
             }
             else

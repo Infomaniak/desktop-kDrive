@@ -32,6 +32,7 @@ namespace KDrive.CustomControls
         private void CheckFileButton_Click(object sender, RoutedEventArgs e)
         {
             // Go up the visual tree to find the Frame
+            Logger.Log(Logger.Level.Debug, "Navigating to ErrorPage for error resolution.");
             DependencyObject parent = this;
             while (parent != null && parent is not Frame)
             {
@@ -39,6 +40,7 @@ namespace KDrive.CustomControls
             }
             if (parent is Frame frame)
             {
+                Logger.Log(Logger.Level.Info, "Navigating to ErrorPage.");
                 frame.Navigate(typeof(ErrorPage));
             }
             else

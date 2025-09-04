@@ -73,7 +73,7 @@
                            Style="{StaticResource BodyTextBlockStyle}"
                            Grid.Column="1" />
 
-                <HyperlinkButton 
+                <HyperlinkButton x:Name="UpgradeHyperLinkButton"
                                  x:Uid="KSuiteUpgradeBar_link"
                                  Margin="0,0,20,0"
                                  Grid.Column="2"
