@@ -257,6 +257,21 @@ struct COMMON_EXPORT CommonUtility {
         static bool isMac();
         static bool isLinux();
 
+        // CommString conversion functions
+#if defined(KD_WINDOWS)
+        static CommString str2CommString(const std::string &s) { return KDC::CommonUtility::s2ws(s); }
+        static std::string commString2Str(const CommString &s) { return KDC::CommonUtility::ws2s(s); }
+        static std::wstring commString2WStr(const CommString &s) { return s; }
+        static CommString qStr2CommString(const QString &s) { return s.toStdWString(); }
+        static QString commString2QStr(const CommString &s) { return QString::fromStdWString(s); }
+#else
+        static CommString str2CommString(const std::string &s) { return s; }
+        static std::string commString2Str(const CommString &s) { return s; }
+        static std::wstring commString2WStr(const CommString &s) { return KDC::CommonUtility::s2ws(s); }
+        static CommString qStr2CommString(const QString &s) { return s.toStdString(); }
+        static QString commString2QStr(const CommString &s) { return QString::fromStdString(s); }
+#endif
+
     private:
         static std::mutex _generateRandomStringMutex;
 

@@ -126,7 +126,7 @@ void LogUploadJob::runJob() {
     if (bool found = false;
         !ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, _generatedArchivePath.string(), found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
-        _addErrorCallback(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+        _addErrorCallback(Error(ERR_ID, ExitCode::DbError, ExitCause::DbAccessError));
     } else if (!found) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in ParmsDb::updateAppState: " << AppStateKey::LastLogUploadArchivePath << " key not found");
@@ -404,7 +404,7 @@ ExitInfo LogUploadJob::generateUserDescriptionFile(const SyncPath &outputPath) c
     } else {
         file << "Unable to retrieve user ID(s)" << std::endl;
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
-        _addErrorCallback(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+        _addErrorCallback(Error(ERR_ID, ExitCode::DbError, ExitCause::DbAccessError));
     }
 
     file << "Drive ID(s): ";
@@ -416,7 +416,7 @@ ExitInfo LogUploadJob::generateUserDescriptionFile(const SyncPath &outputPath) c
     } else {
         file << "Unable to retrieve drive ID(s)" << std::endl;
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
-        _addErrorCallback(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+        _addErrorCallback(Error(ERR_ID, ExitCode::DbError, ExitCause::DbAccessError));
     }
 
 
@@ -543,7 +543,7 @@ LogUploadState LogUploadJob::getDbUploadState() const {
     AppStateValue appStateValue = LogUploadState::None;
     if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found)) {
         LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
-        _addErrorCallback(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+        _addErrorCallback(Error(ERR_ID, ExitCode::DbError, ExitCause::DbAccessError));
         return LogUploadState::None;
     } else if (!found) {
         LOG_WARN(_logger, AppStateKey::LogUploadState << " not found in the database");
@@ -557,7 +557,7 @@ void LogUploadJob::updateDbUploadState(LogUploadState newState) const {
     bool found = false;
     if (!ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, newState, found)) {
         LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
-        _addErrorCallback(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+        _addErrorCallback(Error(ERR_ID, ExitCode::DbError, ExitCause::DbAccessError));
         return;
     }
     if (!found) {

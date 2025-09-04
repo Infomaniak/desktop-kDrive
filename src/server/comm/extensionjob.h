@@ -71,21 +71,21 @@ class ExtensionJob : public AbstractJob {
         // To FinderSyncExt & FileExplorerExtension
         /**
          * @brief commandRegisterFolder
-         * @param argument is a list of values separated by messageArgSeparator
+         * @param argument is a list of values separated by MESSAGE_ARG_SEPARATOR
          *  - value 1: path
          * @param channel
          */
         void commandRegisterFolder(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel);
         /**
          * @brief commandUnregisterFolder
-         * @param argument is a list of values separated by messageArgSeparator
+         * @param argument is a list of values separated by MESSAGE_ARG_SEPARATOR
          *  - value 1: path
          * @param channel
          */
         void commandUnregisterFolder(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel);
         /**
          * @brief commandForceStatus
-         * @param argument is a list of values separated by messageArgSeparator
+         * @param argument is a list of values separated by MESSAGE_ARG_SEPARATOR
          *  - value 1: isSyncing (bool)
          *  - value 2: progress ({0, 5, 10, ..., 90, 95, 100})
          *  - value 3: isHydrated (bool)
@@ -102,7 +102,7 @@ class ExtensionJob : public AbstractJob {
          */
         void commandGetStrings(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel);
         /** Request for the list of menu items.
-         * argument is a list of files for which the menu should be shown, separated by messageArgSeparator
+         * argument is a list of files for which the menu should be shown, separated by MESSAGE_ARG_SEPARATOR
          * Reply with  GET_MENU_ITEMS:BEGIN
          * followed by several MENU_ITEM:[Action]:[flag]:[Text]
          * If flag contains 'd', the menu should be disabled

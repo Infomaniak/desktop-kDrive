@@ -37,13 +37,13 @@ void AbstractCommChannel::close() {
 
 void AbstractCommChannel::sendMessage(const CommString &message) {
     const CommString truncatedLogMessage = truncateLongLogMessage(message);
-    LOGW_INFO(Log::instance()->getLogger(),
-              L"Sending message: " << CommString2WStr(truncatedLogMessage) << L" to: " << CommonUtility::s2ws(id()));
+    LOGW_INFO(Log::instance()->getLogger(), L"Sending message: " << CommonUtility::commString2WStr(truncatedLogMessage)
+                                                                 << L" to: " << CommonUtility::s2ws(id()));
 
     // Add messages separator if needed
     CommString localMessage = message;
-    if (!localMessage.ends_with(finderExtLineSeparator)) {
-        localMessage += finderExtLineSeparator;
+    if (!localMessage.ends_with(FINDER_EXT_LINE_SEPARATOR)) {
+        localMessage += FINDER_EXT_LINE_SEPARATOR;
     }
 
     if (auto sent = writeData(localMessage.c_str(), localMessage.length()); !sent) {
@@ -56,7 +56,7 @@ CommString AbstractCommChannel::readLine() {
     CommChar data[maxLineLength];
     CommString line;
     forever {
-        if (auto sepPos = _readBuffer.find(finderExtLineSeparator); sepPos != std::string::npos) {
+        if (auto sepPos = _readBuffer.find(FINDER_EXT_LINE_SEPARATOR); sepPos != std::string::npos) {
             line = _readBuffer.substr(0, sepPos);
             _readBuffer.erase(0, sepPos + 1);
             break;
@@ -72,7 +72,7 @@ CommString AbstractCommChannel::readLine() {
 }
 
 bool AbstractCommChannel::canReadLine() const {
-    return _readBuffer.find(finderExtLineSeparator, 0) != std::string::npos;
+    return _readBuffer.find(FINDER_EXT_LINE_SEPARATOR, 0) != std::string::npos;
 }
 
 std::string AbstractCommChannel::id() {

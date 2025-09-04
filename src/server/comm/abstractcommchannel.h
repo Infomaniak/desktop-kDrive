@@ -25,9 +25,9 @@
 #include <functional>
 #include <filesystem>
 
-#define finderExtLineSeparator Str("\n")
-#define finderExtQuerySeparator Str("\\/")
-#define guiArgSeparator Str(";")
+#define FINDER_EXT_LINE_SEPARATOR Str("\n")
+#define FINDER_EXT_QUERY_SEPARATOR Str("\\/")
+#define GUI_ARG_SEPARATOR Str(";")
 
 namespace KDC {
 

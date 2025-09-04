@@ -631,7 +631,7 @@ bool LiteSyncCommClientPrivate::executeCommand(const CommString &commandLine, bo
         return false;
     }
 
-    LOGW_DEBUG(_logger, L"Execute command: " << CommString2WStr(commandLine));
+    LOGW_DEBUG(_logger, L"Execute command: " << CommonUtility::commString2WStr(commandLine));
     _executeCommand(commandLine, broadcast);
 
     return true;
@@ -850,7 +850,7 @@ bool LiteSyncCommClient::vfsHydratePlaceHolder(const SyncPath &filePath) {
         // Get file
         LOGW_DEBUG(_logger, L"Get file with " << Utility::formatSyncPath(filePath));
         CommString command(Str("MAKE_AVAILABLE_LOCALLY_DIRECT"));
-        command.append(messageCdeSeparator);
+        command.append(MESSAGE_CDE_SEPARATOR);
         command.append(Path2Str(filePath));
         _private->executeCommand(command, false);
     }
@@ -1507,13 +1507,13 @@ bool LiteSyncCommClient::sendStatusToFinder(const SyncPath &path, const VfsStatu
     // Update Finder
     LOGW_DEBUG(_logger, L"Send status to the Finder extension: " << Utility::formatSyncPath(path));
     CommString command(Str("STATUS"));
-    command.append(messageCdeSeparator);
-    command.append(Str2CommString(std::to_string(vfsStatus.isSyncing)));
-    command.append(messageArgSeparator);
-    command.append(Str2CommString(std::to_string(vfsStatus.progress)));
-    command.append(messageArgSeparator);
-    command.append(Str2CommString(std::to_string(vfsStatus.isHydrated)));
-    command.append(messageArgSeparator);
+    command.append(MESSAGE_CDE_SEPARATOR);
+    command.append(CommonUtility::str2CommString(std::to_string(vfsStatus.isSyncing)));
+    command.append(MESSAGE_ARG_SEPARATOR);
+    command.append(CommonUtility::str2CommString(std::to_string(vfsStatus.progress)));
+    command.append(MESSAGE_ARG_SEPARATOR);
+    command.append(CommonUtility::str2CommString(std::to_string(vfsStatus.isHydrated)));
+    command.append(MESSAGE_ARG_SEPARATOR);
     command.append(path.native());
     return _private->executeCommand(command, true);
 }

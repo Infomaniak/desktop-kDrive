@@ -126,26 +126,13 @@ using OStringStream = std::ostringstream;
 #define Str2Path(s) std::filesystem::path(CommonUtility::s2ws(s))
 #endif
 
-// CommString macros
+// Types used by the Communication layer
 using CommString = std::filesystem::path::string_type;
 using CommChar = std::filesystem::path::value_type;
-#if defined(KD_WINDOWS)
-#define Str2CommString(s) KDC::CommonUtility::s2ws(s)
-#define CommString2Str(s) KDC::CommonUtility::ws2s(s)
-#define CommString2WStr(s) s
-#define QStr2CommString(s) s.toStdWString()
-#define CommString2QStr(s) QString::fromStdWString(s)
-#else
-#define Str2CommString(s) s
-#define CommString2Str(s) s
-#define CommString2WStr(s) KDC::CommonUtility::s2ws(s)
-#define QStr2CommString(s) s.toStdString()
-#define CommString2QStr(s) QString::fromStdString(s)
-#endif
 
-#define messageCdeSeparator Str(":")
-#define messageArgSeparator Str("\x1e")
-#define responseToFinderArgSeparator Str(":")
+#define MESSAGE_CDE_SEPARATOR Str(":")
+#define MESSAGE_ARG_SEPARATOR Str("\x1e")
+#define RESPONSE_TO_FINDER_ARG_SEPARATOR Str(":")
 
 namespace event_dump_files {
 static constexpr std::string_view serverCrashFileName(
