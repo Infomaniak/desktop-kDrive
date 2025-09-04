@@ -428,7 +428,7 @@ void ExtensionJob::commandGetAllMenuItems(const CommString &argument, std::share
 
     CommString response(msgId);
     response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
-    response.append(str2CommString(Theme::instance()->appName()));
+    response.append(CommonUtility::str2CommString(Theme::instance()->appName()));
 
     // Find the common sync
     Sync sync;
@@ -532,7 +532,7 @@ void ExtensionJob::commandGetThumbnail(const CommString &argument, std::shared_p
     const auto argumentList = CommonUtility::splitCommString(argument, MESSAGE_ARG_SEPARATOR);
 
     if (argumentList.size() != 3) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Invalid argument - arg=" << commString2WStr(argument));
+        LOGW_WARN(Log::instance()->getLogger(), L"Invalid argument - arg=" << CommonUtility::commString2WStr(argument));
         return;
     }
 
@@ -548,7 +548,7 @@ void ExtensionJob::commandGetThumbnail(const CommString &argument, std::shared_p
 
     // File path
     SyncPath filePath(argumentList[2]);
-    if (!QFileInfo(commString2QStr(filePath)).isFile()) {
+    if (!QFileInfo(CommonUtility::commString2QStr(filePath)).isFile()) {
         LOGW_WARN(Log::instance()->getLogger(), L"Not a file - " << Utility::formatSyncPath(filePath));
         return;
     }
@@ -604,7 +604,7 @@ void ExtensionJob::commandGetThumbnail(const CommString &argument, std::shared_p
 
     CommString response(msgId);
     response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
-    response.append(Qstr2CommString(QString(pixmapBuffer.data().toBase64())));
+    response.append(CommonUtility::qStr2CommString(QString(pixmapBuffer.data().toBase64())));
     channel->sendMessage(response);
 }
 #endif
