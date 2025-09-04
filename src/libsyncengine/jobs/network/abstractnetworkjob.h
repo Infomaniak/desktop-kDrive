@@ -41,35 +41,39 @@ class AbstractNetworkJob : public AbstractJob {
         ~AbstractNetworkJob() override;
 
         [[nodiscard]] bool hasHttpError(std::string *errorCode = nullptr) const;
-        bool hasErrorApi(std::string *errorCode = nullptr, std::string *errorDescr = nullptr) const;
+        bool hasErrorApi() const;
         [[nodiscard]] Poco::Net::HTTPResponse::HTTPStatus getStatusCode() const { return _resHttp.getStatus(); }
         void abort() override;
 
         [[nodiscard]] std::string octetStreamRes() const { return _octetStreamRes; }
         Poco::JSON::Object::Ptr jsonRes() { return _jsonRes; }
 
+        [[nodiscard]] const std::string &errorCode() const { return _errorCode; }
+        [[nodiscard]] const std::string &errorDescr() const { return _errorDescr; }
+
     protected:
         void runJob() noexcept override;
         void addRawHeader(const std::string &key, const std::string &value);
 
         virtual bool handleResponse(std::istream &inputStream) = 0;
-        virtual bool handleError(std::istream &inputStream, const Poco::URI &uri) = 0;
+        virtual bool handleError(const std::string &replyBody, const Poco::URI &uri) = 0;
 
         virtual std::string getSpecificUrl() = 0;
         virtual std::string getUrl() = 0;
 
         void unzip(std::istream &inputStream, std::stringstream &ss);
-        void getStringFromStream(std::istream &inputStream, std::string &res);
+
 
         [[nodiscard]] std::string errorText(Poco::Exception const &e) const;
         [[nodiscard]] std::string errorText(std::exception const &e) const;
 
         void disableRetry() { _trials = 0; }
 
-        virtual bool handleJsonResponse(std::istream &is);
+        virtual bool handleJsonResponse(const std::string &replyBody);
         virtual bool handleOctetStreamResponse(std::istream &is);
-        bool extractJson(std::istream &is, Poco::JSON::Object::Ptr &jsonObj);
-        bool extractJsonError(std::istream &is, Poco::JSON::Object::Ptr errorObjPtr = nullptr);
+        bool extractJson(const std::string &replyBody, Poco::JSON::Object::Ptr &jsonObj);
+        bool extractJsonError(const std::string &replyBody, Poco::JSON::Object::Ptr errorObjPtr = nullptr);
+        void getStringFromStream(std::istream &inputStream, std::string &res);
 
         std::string _httpMethod;
         uint64_t _apiVersion{2};
@@ -81,6 +85,8 @@ class AbstractNetworkJob : public AbstractJob {
         std::string _errorDescr;
 
     private:
+        bool handleError(std::istream &inputStream, const Poco::URI &uri);
+
         struct TimeoutHelper {
                 void add(std::chrono::duration<double> duration);
 
