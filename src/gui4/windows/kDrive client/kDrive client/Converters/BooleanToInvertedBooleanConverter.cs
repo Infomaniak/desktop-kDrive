@@ -17,8 +17,8 @@ namespace KDrive.Converters
             {
                 return !boolValue;
             }
-            Logger.Log(Logger.Level.Error, "BooleanToInvertedBooleanConverter: value is not a boolean.");
-            return false;
+            Logger.Log(Logger.Level.Fatal, "BooleanToInvertedBooleanConverter: value is not a boolean.");
+            throw new ArgumentException("Invalid value type", nameof(value));
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
@@ -27,8 +27,8 @@ namespace KDrive.Converters
             {
                 return !boolValue;
             }
-            Logger.Log(Logger.Level.Error, "BooleanToInvertedBooleanConverter: value is not a boolean.");
-            return false;
+            Logger.Log(Logger.Level.Fatal, "BooleanToInvertedBooleanConverter: value is not a boolean.");
+            throw new ArgumentException("Invalid value type", nameof(value));
         }
     }
 }

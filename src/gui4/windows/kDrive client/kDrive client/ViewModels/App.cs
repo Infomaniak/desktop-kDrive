@@ -122,10 +122,12 @@ namespace KDrive.ViewModels
             // If AllSync is empty, set SelectedSync to null
             if (AllSyncs.Count == 0)
             {
+                Logger.Log(Logger.Level.Debug, "There are no syncs available, setting SelectedSync to null.");
                 SelectedSync = null;
             }
             else if (_selectedSync == null || (_selectedSync != null && !AllSyncs.Contains(_selectedSync))) // If SelectedSync is null or not in AllSyncs, pick the first one
             {
+                Logger.Log(Logger.Level.Debug, "SelectedSync is null or not in AllSyncs, selecting the first available sync.");
                 UIThreadDispatcher.TryEnqueue(() => SelectedSync = AllSyncs[0]);
             }
         }
@@ -154,9 +156,11 @@ namespace KDrive.ViewModels
          */
         public async Task InitializeAsync()
         {
+            Logger.Log(Logger.Level.Info, "Initializing AppModel...");
             var userDbIds = await ServerCommunication.CommRequests.GetUserDbIds().ConfigureAwait(false);
             if (userDbIds != null)
             {
+                Logger.Log(Logger.Level.Debug, $"Found {userDbIds.Count} users on the server. Loading user data...");
                 List<Task> reloadTasks = new List<Task>();
                 List<User> users = new List<User>();
                 for (int i = 0; i < userDbIds.Count; i++)
@@ -166,11 +170,17 @@ namespace KDrive.ViewModels
                     users.Add(user);
                 }
                 await Task.WhenAll(reloadTasks).ConfigureAwait(false);
+                Logger.Log(Logger.Level.Info, "All user data loaded successfully.");
                 UIThreadDispatcher.TryEnqueue(() =>
                 {
                     Users.AddRange(users);
                 });
             }
+            else
+            {
+                Logger.Log(Logger.Level.Info, "No users found on the server.");
+            }
+
             UIThreadDispatcher.TryEnqueue(() =>
             {
                 IsInitialized = true;

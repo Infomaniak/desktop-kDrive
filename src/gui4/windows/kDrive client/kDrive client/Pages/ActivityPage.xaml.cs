@@ -24,7 +24,9 @@ namespace KDrive
         internal AppModel ViewModel { get { return _viewModel; } }
         public ActivityPage()
         {
+            Logger.Log(Logger.Level.Info, "Navigated to ActivityPage - Initializing ActivityPage components");
             InitializeComponent();
+            Logger.Log(Logger.Level.Debug, "ActivityPage components initialized");
         }
     }
 }

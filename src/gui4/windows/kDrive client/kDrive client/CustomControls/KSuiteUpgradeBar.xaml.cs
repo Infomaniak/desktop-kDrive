@@ -21,21 +21,20 @@ namespace KDrive.CustomControls
 {
     public sealed partial class KSuiteUpgradeBar : UserControl
     {
-        public Uri KSuiteUpgradeLink
-        {
-            get
-            {
-                var resourceLoader = new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader();
-                string lang = resourceLoader.GetString("InfomaniakWebSiteLanguageCode");
-                string kSuiteTypeName = "myksuite"; // TODO: Fetch the type of the kSuite the user is using (my or pro)
-                string result = "https://www.infomaniak.com/" + lang + "/ksuite/" + kSuiteTypeName;
-                return new Uri(result);
-
-            }
-        }
         public KSuiteUpgradeBar()
         {
             InitializeComponent();
+            var resourceLoader = new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader();
+
+            // TODO: Fetch the type of the kSuite the user is using (my or pro)
+            if (true /* Selected kSuite is "my"*/)
+            {
+                //UpgradeHyperLinkButton.NavigateUri = new Uri(resourceLoader.GetString("Global_UpgradeOfferMy_Url"));
+            }
+            else
+            {
+               // UpgradeHyperLinkButton.NavigateUri = new Uri(resourceLoader.GetString("Global_UpgradeOfferPro_Url"));
+            }
         }
     }
 }

@@ -26,11 +26,13 @@ namespace KDrive.Converters
                     _ => new Uri("ms-appx:///Assets/Icons/file-text.svg")
                 };
             }
+            Logger.Log(Logger.Level.Fatal, "NodeTypeToSvgUriConverter: value is not a NodeType.");
             throw new ArgumentException("Invalid item type", nameof(value));
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
+            Logger.Log(Logger.Level.Fatal, "NodeTypeToSvgUriConverter: ConvertBack is not implemented.");
             throw new NotImplementedException();
         }
     }

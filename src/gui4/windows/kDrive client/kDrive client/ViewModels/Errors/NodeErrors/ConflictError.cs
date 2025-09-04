@@ -12,8 +12,11 @@ namespace KDrive.ViewModels.Errors
         {
             SolveButton = new ButtonData(GetLocalizedString("ConflictError_SolveButton"), async (object d) =>
             {
+                Logger.Log(Logger.Level.Info, "Solve button clicked, opening conflict resolution dialog.");
                 //TODO: Implement conflict resolution dialog
                 await Task.Delay(5000);
+                Logger.Log(Logger.Level.Debug, "Conflict resolution dialog closed.");
+
             });
         }
         public override sealed string HowToSolveStr()

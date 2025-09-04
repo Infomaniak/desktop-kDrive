@@ -27,6 +27,7 @@ namespace KDrive.Converters
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
+            Logger.Log(Logger.Level.Fatal, "BooleanToVisibilityConverter: ConvertBack is not implemented.");
             throw new NotImplementedException();
         }
     }

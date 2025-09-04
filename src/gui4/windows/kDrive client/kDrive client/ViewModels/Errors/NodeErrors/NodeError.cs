@@ -24,7 +24,7 @@ namespace KDrive.ViewModels.Errors
                 SetProperty(ref _nodePath, value);
                 if (_nodeType == NodeType.File)
                 {
-                    SetProperty(ref _nodeType, Utility.deduceNodeTypeFromFilePath(_nodePath));
+                    SetProperty(ref _nodeType, Utility.DeduceNodeTypeFromFilePath(_nodePath));
                 }
             }
         }

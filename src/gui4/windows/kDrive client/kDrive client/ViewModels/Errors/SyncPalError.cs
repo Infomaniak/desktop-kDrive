@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace KDrive.ViewModels.Errors
 {
@@ -13,12 +14,16 @@ namespace KDrive.ViewModels.Errors
             SolveButton = new ButtonData(GetLocalizedString("Global_ContactSupport")
                 , async (sender) =>
             {
-                await Windows.System.Launcher.LaunchUriAsync(new Uri("https://www.infomaniak.com/fr/support"));
+                Logger.Log(Logger.Level.Info, "Support button clicked, opening support URL");
+                var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
+                await Windows.System.Launcher.LaunchUriAsync(new Uri(resourceLoader.GetString("Global_ContactSupport")));
             });
 
             InfoHyperLink = new ButtonData(GetLocalizedString("Global_MoreInfo"), async (sender) =>
             {
-                await Windows.System.Launcher.LaunchUriAsync(new Uri("https://www.infomaniak.com/fr/support/faq/admin2/kdrive"));
+                Logger.Log(Logger.Level.Info, "More info button clicked, opening kDrive FAQ URL");
+                var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
+                await Windows.System.Launcher.LaunchUriAsync(new Uri(resourceLoader.GetString("Global_FAQUrl")));
             });
         }
         public override sealed string TitleStr()

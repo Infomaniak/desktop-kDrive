@@ -238,6 +238,9 @@
     <comment>must end with "(" </comment>
   </data>
   <data name="Global_SupportUrl" xml:space="preserve">
+    <value>https://www.infomaniak.com/fr/support</value>
+  </data>
+  <data name="Global_FAQUrl" xml:space="preserve">
     <value>https://www.infomaniak.com/fr/support/faq/admin2/kdrive</value>
   </data>
   <data name="ErrorPage_NoErrors_Line1.Text" xml:space="preserve">
@@ -245,5 +248,11 @@
   </data>
   <data name="ErrorPage_NoErrors_Line2.Text" xml:space="preserve">
     <value>Profitez de votre journée !</value>
+  </data>
+  <data name="Global_UpgradeOfferMy_Url" xml:space="preserve">
+    <value>https://www.infomaniak.com/fr/ksuite/ksuite-pro/tarifs</value>
+  </data>
+  <data name="Global_UpgradeOfferPro_Url" xml:space="preserve">
+    <value>https://www.infomaniak.com/fr/ksuite/myksuite/tarifs</value>
   </data>
 </root>

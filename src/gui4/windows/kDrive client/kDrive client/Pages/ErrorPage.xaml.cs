@@ -26,23 +26,28 @@ namespace KDrive
         internal AppModel ViewModel { get { return _viewModel; } }
         public ErrorPage()
         {
+            Logger.Log(Logger.Level.Info, "Navigated to ErrorPage - Initializing ErrorPage components");
             InitializeComponent();
             var resourceLoader = new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader();
             NavBar.ItemsSource = new string[] { resourceLoader.GetString("NavActivity/Content"), resourceLoader.GetString("ErrorPage_Title/Text") };
+            Logger.Log(Logger.Level.Debug, "ErrorPage components initialized");
         }
 
         private void NavBar_ItemClicked(BreadcrumbBar sender, BreadcrumbBarItemClickedEventArgs args)
         {
             if (args.Index == 0)
             {
+                Logger.Log(Logger.Level.Debug, "Navigating to ActivityPage from ErrorPage");
                 Frame.Navigate(typeof(ActivityPage));
             }
         }
 
         private async void SupportButton_Click(object sender, RoutedEventArgs e)
         {
+            Logger.Log(Logger.Level.Info, "Support button clicked, opening support URL");
             var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
             await Windows.System.Launcher.LaunchUriAsync(new System.Uri(resourceLoader.GetString("Global_SupportUrl")));
+            Logger.Log(Logger.Level.Debug, "Support URL opened");
         }
     }
 }

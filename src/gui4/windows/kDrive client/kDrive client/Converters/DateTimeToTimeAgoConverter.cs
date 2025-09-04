@@ -31,12 +31,13 @@ namespace KDrive.Converters
                 }
                 return $"{Math.Floor(timeSpan.TotalDays)} {resourceLoader.GetString("Global_Day")}";
             }
-            Logger.Log(Logger.Level.Warning, "Unexpected value type in DateTimeToTimeAgoConverter");
-            return "";
+            Logger.Log(Logger.Level.Fatal, $"Unexpected value type is not a {nameof(DateTime)}.");
+            throw new ArgumentException("Invalid value type", nameof(value));
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
+            Logger.Log(Logger.Level.Fatal, "DateTimeToTimeAgoConverter: ConvertBack is not implemented.");
             throw new NotImplementedException();
         }
     }

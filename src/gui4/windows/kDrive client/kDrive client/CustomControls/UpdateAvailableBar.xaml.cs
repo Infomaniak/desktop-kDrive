@@ -28,7 +28,7 @@ namespace KDrive.CustomControls
 
         private void HyperlinkButton_Click(object sender, RoutedEventArgs e)
         {
-
+            // TODO: Open the update page
         }
     }
 }

@@ -37,13 +37,12 @@ namespace KDrive
     public sealed partial class HomePage : Page
     {
         internal AppModel _viewModel = ((App)Application.Current).Data;
-        internal AppModel ViewModel
-        {
-            get { return _viewModel; }
-        }
+        internal AppModel ViewModel => _viewModel;
         public HomePage()
         {
+            Logger.Log(Logger.Level.Info, "Navigated to HomePage - Initializing HomePage components");
             InitializeComponent();
+            Logger.Log(Logger.Level.Debug, "HomePage components initialized");
         }
 
         private async void TrashButton_Click(object sender, RoutedEventArgs e)
@@ -51,13 +50,13 @@ namespace KDrive
             Uri? trashUrl = ViewModel.SelectedSync?.Drive.GetWebTrashUri();
             if (trashUrl != null)
             {
+                Logger.Log(Logger.Level.Debug, $"TrashButton_Click: Launching trash URL: {trashUrl}");
                 await Windows.System.Launcher.LaunchUriAsync(trashUrl);
             }
             else
             {
-                Logger.Log(Logger.Level.Error, "TrashButton_Click: No drive selected or unable to get trash URL.");
+                Logger.Log(Logger.Level.Error, "No sync selected or unable to get trash URL.");
             }
-
         }
 
         private async void FavoritesButton_Click(object sender, RoutedEventArgs e)
@@ -65,11 +64,12 @@ namespace KDrive
             Uri? favoritesUrl = ViewModel.SelectedSync?.Drive.GetWebFavoritesUri();
             if (favoritesUrl != null)
             {
+                Logger.Log(Logger.Level.Debug, $"Launching favorites URL: {favoritesUrl}");
                 await Windows.System.Launcher.LaunchUriAsync(favoritesUrl);
             }
             else
             {
-                Logger.Log(Logger.Level.Error, "FavoritesButton_Click: No drive selected or unable to get favorites URL.");
+                Logger.Log(Logger.Level.Error, "No sync selected or unable to get favorites URL.");
             }
 
         }
@@ -79,11 +79,12 @@ namespace KDrive
             Uri? sharedUrl = ViewModel.SelectedSync?.Drive.GetWebSharedUri();
             if (sharedUrl != null)
             {
+                Logger.Log(Logger.Level.Debug, $"Launching shared URL: {sharedUrl}");
                 await Windows.System.Launcher.LaunchUriAsync(sharedUrl);
             }
             else
             {
-                Logger.Log(Logger.Level.Error, "SharedButton_Click: No drive selected or unable to get shared URL.");
+                Logger.Log(Logger.Level.Error, "No sync selected or unable to get shared URL.");
             }
         }
     }

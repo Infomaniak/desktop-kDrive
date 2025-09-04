@@ -22,10 +22,7 @@ namespace KDrive.CustomControls
     public sealed partial class SyncErrorBar : UserControl
     {
         internal AppModel _viewModel = ((App)Application.Current).Data;
-        internal AppModel ViewModel
-        {
-            get { return _viewModel; }
-        }
+        internal AppModel ViewModel => _viewModel;
 
         public SyncErrorBar()
         {
@@ -46,7 +43,7 @@ namespace KDrive.CustomControls
             }
             else
             {
-                Logger.Log(Logger.Level.Warning, "Could not find Frame in visual tree to navigate to error resolution page");
+                Logger.Log(Logger.Level.Error, "Could not find Frame in visual tree to navigate to error resolution page");
             }
 
         }

@@ -65,6 +65,7 @@ namespace KDrive.ViewModels
         // Force a reload of all properties from the server
         public async Task Reload()
         {
+            Logger.Log(Logger.Level.Info, $"Reloading user properties for DbId {DbId}...");
             Task[] tasks = new Task[]
             {
                CommRequests.GetUserId(DbId).ContinueWith(t => { if (t.Result != null) Id = t.Result.Value; }),
@@ -78,6 +79,7 @@ namespace KDrive.ViewModels
                      if (t.Result != null)
                      {
                           ObservableCollection<Drive> drives = new ObservableCollection<Drive>();
+                          Logger.Log(Logger.Level.Debug, $"User (DbId: {DbId}) has {t.Result.Count} drives. Reloading drive data...");
                           List<Task> driveTasks = new List<Task>();
                           foreach (var driveDbId in t.Result)
                           {
@@ -91,6 +93,7 @@ namespace KDrive.ViewModels
                 }).Unwrap()
             };
             await Task.WhenAll(tasks).ConfigureAwait(false);
+            Logger.Log(Logger.Level.Info, $"User properties for DbId {DbId} reloaded.");
         }
 
         public DbId DbId

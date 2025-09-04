@@ -32,6 +32,7 @@ namespace KDrive.CustomControls
     {
         internal AppModel _viewModel = ((App)Application.Current).Data;
         internal AppModel ViewModel => _viewModel;
+
         private ObservableCollection<SyncActivity> _outGoingActivities = new();
         private Int64 _insertionCounter = 0;
         public SyncActivityTable()
@@ -59,6 +60,10 @@ namespace KDrive.CustomControls
             if (d is SyncActivityTable control)
             {
                 control.RefreshFilteredActivities();
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Warning, $"DependencyObject is not of type {nameof(SyncActivityTable)}");
             }
         }
 
@@ -89,7 +94,7 @@ namespace KDrive.CustomControls
             }
             else
             {
-                Logger.Log(Logger.Level.Warning, $"Unexpected call from {sender.ToString()}");
+                Logger.Log(Logger.Level.Warning, $"Unexpected call, sender is not a HyperlinkButton or DataContext is not a SyncActivity");
             }
         }
 
@@ -101,7 +106,10 @@ namespace KDrive.CustomControls
                         ? new SolidColorBrush(Colors.Transparent)
                         : new SolidColorBrush(Colors.WhiteSmoke);
             }
-
+            else
+            {
+                Logger.Log(Logger.Level.Warning, $"Unexpected call, sender is not a Grid");
+            }
         }
     }
 }

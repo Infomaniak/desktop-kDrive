@@ -94,6 +94,11 @@ namespace KDrive.ServerCommunication
                     }
                 });
             }
+            else
+            {
+                // TODO: Implement a retry mechanism to connect to the server (waiting for it to be ready)
+                Logger.Log(Logger.Level.Error, "Client is null or not connected, read loop not started.");
+            }
         }
 
         ~CommClient()
@@ -138,6 +143,7 @@ namespace KDrive.ServerCommunication
                 BinaryPrimitives.WriteInt32BigEndian(sizeBytes, jsonBytes.Length); // Currently the server expects big-endian, once communication layer is ready it should be changed to little-endian
 
                 // Write size followed by JSON data
+                // TODO: When writing final version, ensure thread safety and handle exceptions
                 NetworkStream stream = client.GetStream();
                 await stream.WriteAsync(sizeBytes, 0, sizeBytes.Length).ConfigureAwait(false);
                 await stream.WriteAsync(jsonBytes, 0, jsonBytes.Length).ConfigureAwait(false);
@@ -183,7 +189,6 @@ namespace KDrive.ServerCommunication
                 await Task.Delay(10).ConfigureAwait(false);
             }
         }
-
 
         private void OnReadyRead()
         {

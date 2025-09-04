@@ -217,6 +217,7 @@ namespace KDrive.ViewModels
 
         public async Task Reload()
         {
+            Logger.Log(Logger.Level.Info, $"Reloading sync properties for DbId {DbId}...");
             Task[] tasks = new Task[]
             {
                CommRequests.GetSyncId(DbId).ContinueWith(t => { if (t.Result != null) Id = t.Result.Value; }),
@@ -225,6 +226,7 @@ namespace KDrive.ViewModels
                CommRequests.GetSyncSupportVfs(DbId).ContinueWith(t => { if (t.Result != null) SupportVfs = t.Result.Value; }),
             };
             await Task.WhenAll(tasks).ConfigureAwait(false);
+            Logger.Log(Logger.Level.Info, $"Finished reloading sync properties for DbId {DbId}.");
         }
 
         public bool ShowIncomingActivity

@@ -61,11 +61,15 @@ namespace KDrive.CustomControls
                 {
                     await task;
                 }
+                else
+                {
+                    Logger.Log(Logger.Level.Error, "HyperlinkButton_Click: No action defined for InfoHyperLink.");
+                }
                 button.IsEnabled = true;
             }
             else
             {
-                Logger.Log(Logger.Level.Warning, "HyperlinkButton_Click: sender is not a Button");
+                Logger.Log(Logger.Level.Error, "HyperlinkButton_Click: sender is not a Button");
             }
         }
 
@@ -78,6 +82,10 @@ namespace KDrive.CustomControls
                 if (task != null)
                 {
                     await task;
+                }
+                else
+                {
+                    Logger.Log(Logger.Level.Warning, "SolveButton_Click: No action defined for SolveButton.");
                 }
                 button.IsEnabled = true;
             }

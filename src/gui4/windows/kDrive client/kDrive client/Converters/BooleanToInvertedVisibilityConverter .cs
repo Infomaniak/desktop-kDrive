@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml.Data;
 
 namespace KDrive.Converters
 {
-    internal class BooleanToInvertedVisibilityConverter  : IValueConverter
+    internal class BooleanToInvertedVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
@@ -20,8 +20,8 @@ namespace KDrive.Converters
             {
                 return intValue != 0 ? Microsoft.UI.Xaml.Visibility.Collapsed : Microsoft.UI.Xaml.Visibility.Visible;
             }
-            Logger.Log(Logger.Level.Warning, "BooleanToInvertedVisibilityConverter : value is not a boolean.");
-            return Microsoft.UI.Xaml.Visibility.Collapsed;
+            Logger.Log(Logger.Level.Fatal, "BooleanToInvertedVisibilityConverter : value is not a boolean.");
+            throw new ArgumentException("Invalid value type", nameof(value));
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
@@ -30,8 +30,8 @@ namespace KDrive.Converters
             {
                 return visibility != Microsoft.UI.Xaml.Visibility.Visible;
             }
-            Logger.Log(Logger.Level.Warning, "BooleanToInvertedVisibilityConverter : value is not a Visibility.");
-            return false;
+            Logger.Log(Logger.Level.Fatal, "BooleanToInvertedVisibilityConverter : value is not a Visibility.");
+            throw new ArgumentException("Invalid value type", nameof(value));
         }
     }
 }

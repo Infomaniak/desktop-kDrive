@@ -38,6 +38,7 @@ public sealed partial class SyncStatusBar : UserControl
     private async void StartPauseButton_Click(object sender, RoutedEventArgs e)
     {
         StartPauseButton.IsEnabled = false;
+        // TODO: Replace with actual start/pause logic
         if (ViewModel.SelectedSync?.SyncStatus == SyncStatus.Pause)
         {
             ViewModel.SelectedSync.SyncStatus = SyncStatus.Starting;

@@ -13,7 +13,7 @@ namespace KDrive
 {
     internal static class Utility
     {
-        internal static NodeType deduceNodeTypeFromFilePath(string filePath)
+        internal static NodeType DeduceNodeTypeFromFilePath(string filePath)
         {
             string fileName = System.IO.Path.GetFileName(filePath);
             string extension = System.IO.Path.GetExtension(fileName).ToLower();
