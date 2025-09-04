@@ -65,6 +65,9 @@ $installPath = "$contentPath/install"
 $extPath = "$path/extensions/windows/cfapi"
 $vfsDir = "$extPath/x64/Release"
 
+$msiInstallerFolderPath = "$path/installer/windows/kDriveInstaller"
+$msiPackageFolderPath = "$msiInstallerFolderPath/bin/x64/Release/en-US"
+
 # Files to be added to the archive and then packaged
 $archivePath = "$installPath/bin"
 $archiveName = "kDrive.7z"
@@ -153,26 +156,36 @@ function Get-Aumid {
     return $aumid
 }
 
-function Get-App-Name {
+function Get-Package-Name {
     param (
-        [string] $buildPath
+        [string] $buildPath,
+        [switch] $msi
     )
 
     $prodName = "kDrive"
     $version = (Select-String -Path $buildPath\version.h KDRIVE_VERSION_FULL | foreach-object { $data = $_ -split " "; echo $data[3] })
-    $appName = "$prodName-$version.exe"
+	if ($msi) {
+		$appName = "$prodName-$version.msi"
+	} else {
+		$appName = "$prodName-$version.exe"
+	}
 
-   
     return $appName
 }
 
 function Get-Installer-Path {
     param (
         [string] $buildPath,
-        [string] $contentPath
+        [string] $contentPath,
+		[switch] $msi
     )
 
-    $appName = Get-App-Name $buildPath
+	if ($msi) {
+		$appName = Get-Package-Name $buildPath -msi
+	} else {
+		$appName = Get-Package-Name $buildPath
+	}
+    
     $installerPath = "$contentPath/$appName"
 
     return $installerPath
@@ -355,7 +368,7 @@ function Set-Up-NSIS {
 
     # NSIS needs the path to use backslash
     $iconPath = Get-Icon-Path $buildpath
-    $appName = Get-App-Name $buildpath
+    $appName = Get-Package-Name $buildpath
    
     $installerPath = Get-Installer-Path $buildPath $contentPath
     Clean $installerPath
@@ -524,7 +537,7 @@ function Create-Archive {
     & makensis "$buildPath\NSIS.template.nsi"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-    $appName = Get-App-Name $buildPath
+    $appName = Get-Package-Name $buildPath
     Move-Item -Path "$buildPath\$appName" -Destination "$contentPath"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
@@ -545,6 +558,37 @@ function Create-Archive {
     }
 
     Write-Host "Archive created."
+}
+
+function Create-MSI-Package {
+	dotnet build "$msiInstallerFolderPath/kDriveInstaller.sln" /p:Configuration="Release" /p:Platform="x64"
+
+	$appName = Get-Package-Name $buildPath -msi
+	Write-Host "Moving items" -f Cyan
+	Write-Host "from: $msiPackageFolderPath/kDriveInstaller.msi" -f Cyan
+	Write-Host "to: $contentPath" -f Cyan
+
+	Move-Item -Path "$msiPackageFolderPath/kDriveInstaller.msi" -Destination "$contentPath/$appName"
+	if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+	# Sign final installer
+	if (!$thumbprint) {
+		$thumbprint = Get-Thumbprint $upload
+	}
+
+	$installerPath = Get-Installer-Path $buildPath $contentPath -msi
+	Write-Host "installerPath: $installerPath" -f Cyan
+
+	if (Test-Path -Path $installerPath) {
+		Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -tokenPass $tokenPass
+		Write-Host ("$installerPath signed successfully.") -f Green
+	}
+	else {
+		Write-Host ("$installerPath not found. Unable to sign final installer.") -f Red
+		exit 1
+	}
+
+	Write-Host "MSI package created."
 }
 
 #################################################################################################
@@ -749,6 +793,21 @@ if (!$ci -or $upload) {
         exit $LASTEXITCODE
     }
 }
+
+#################################################################################################
+#                                                                                               #
+#                                     MSI PACKAGE CREATION                                      #
+#                                                                                               #
+#################################################################################################
+
+if (!$ci -or $upload) {
+    Create-MSI-Package
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "MSI package creation failed ($LASTEXITCODE) . Aborting." -f Red
+        exit $LASTEXITCODE
+    }
+}
+
 
 #################################################################################################
 #                                                                                               #
