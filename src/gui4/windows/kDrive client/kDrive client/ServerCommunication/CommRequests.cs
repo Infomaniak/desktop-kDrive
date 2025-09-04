@@ -159,98 +159,98 @@ namespace KDrive.ServerCommunication
         }
 
         // User-related requests
-        public static async Task<List<int>> GetUserDbIds()
+        public static async Task<List<DbId>> GetUserDbIds()
         {
             var users = _mockServerData.Users;
             await SimulateNetworkDelay().ConfigureAwait(false);
             return users.Select(u => u.DbId).ToList();
         }
 
-        public static async Task<int?> GetUserId(int dbId)
+        public static async Task<UserId?> GetUserId(DbId dbId)
         {
             var users = _mockServerData.Users;
             await SimulateNetworkDelay().ConfigureAwait(false);
             return users.FirstOrDefault(u => u.DbId == dbId)?.Id;
         }
 
-        public static async Task<string?> GetUserName(int dbId)
+        public static async Task<string?> GetUserName(DbId dbId)
         {
             var users = _mockServerData.Users;
             await SimulateNetworkDelay().ConfigureAwait(false);
             return users.FirstOrDefault(u => u.DbId == dbId)?.Name;
         }
 
-        public static async Task<string?> GetUserEmail(int dbId)
+        public static async Task<string?> GetUserEmail(DbId dbId)
         {
             var users = _mockServerData.Users;
             await SimulateNetworkDelay().ConfigureAwait(false);
             return users.FirstOrDefault(u => u.DbId == dbId)?.Email;
         }
 
-        public static async Task<Image?> GetUserAvatar(int dbId)
+        public static async Task<Image?> GetUserAvatar(DbId dbId)
         {
             var users = await GetUsers().ConfigureAwait(false);
             return users.FirstOrDefault(u => u.DbId == dbId)?.Avatar;
         }
 
-        public static async Task<bool?> GetUserIsConnected(int dbId)
+        public static async Task<bool?> GetUserIsConnected(DbId dbId)
         {
             var users = _mockServerData.Users;
             await SimulateNetworkDelay().ConfigureAwait(false);
             return users.FirstOrDefault(u => u.DbId == dbId)?.IsConnected;
         }
 
-        public static async Task<bool?> GetUserIsStaff(int dbId)
+        public static async Task<bool?> GetUserIsStaff(DbId dbId)
         {
             var users = _mockServerData.Users;
             await SimulateNetworkDelay().ConfigureAwait(false);
             return users.FirstOrDefault(u => u.DbId == dbId)?.IsStaff;
         }
 
-        public static async Task<List<int>> GetUserDrivesDbIds(int dbId)
+        public static async Task<List<DbId>> GetUserDrivesDbIds(DbId dbId)
         {
             var users = _mockServerData.Users;
             await SimulateNetworkDelay().ConfigureAwait(false);
-            return users.FirstOrDefault(u => u.DbId == dbId)?.Drives.Select(d => d!.DbId).ToList() ?? new List<int>();
+            return users.FirstOrDefault(u => u.DbId == dbId)?.Drives.Select(d => d!.DbId).ToList() ?? new List<DbId>();
         }
 
         // Drive-related requests
-        public static async Task<int?> GetDriveId(int dbId)
+        public static async Task<DriveId?> GetDriveId(DbId dbId)
         {
             var drives = _mockServerData.Drives;
             await SimulateNetworkDelay().ConfigureAwait(false);
             return drives.FirstOrDefault(d => d.DbId == dbId)?.Id;
         }
 
-        public static async Task<string?> GetDriveName(int dbId)
+        public static async Task<string?> GetDriveName(DbId dbId)
         {
             var drives = _mockServerData.Drives;
             await SimulateNetworkDelay().ConfigureAwait(false);
             return drives.FirstOrDefault(d => d.DbId == dbId)?.Name;
         }
 
-        public static async Task<Color?> GetDriveColor(int dbId)
+        public static async Task<Color?> GetDriveColor(DbId dbId)
         {
             var drives = _mockServerData.Drives;
             await SimulateNetworkDelay().ConfigureAwait(false);
             return drives.FirstOrDefault(d => d.DbId == dbId)?.Color;
         }
 
-        public static async Task<long?> GetDriveSize(int dbId)
+        public static async Task<long?> GetDriveSize(DbId dbId)
         {
             var drives = _mockServerData.Drives;
             await SimulateNetworkDelay().ConfigureAwait(false);
             return drives.FirstOrDefault(d => d.DbId == dbId)?.Size;
         }
 
-        public static async Task<long?> GetDriveUsedSize(int dbId)
+        public static async Task<long?> GetDriveUsedSize(DbId dbId)
         {
             var drives = _mockServerData.Drives;
             await SimulateNetworkDelay().ConfigureAwait(false);
             return drives.FirstOrDefault(d => d.DbId == dbId)?.UsedSize;
         }
 
-        public static async Task<bool?> GetDriveIsActive(int dbId)
+        public static async Task<bool?> GetDriveIsActive(DbId dbId)
         {
             var drives = _mockServerData.Drives;
             await SimulateNetworkDelay().ConfigureAwait(false);
@@ -258,7 +258,7 @@ namespace KDrive.ServerCommunication
             return drive != null ? drive.IsActive : (bool?)null;
         }
 
-        public static async Task<bool?> GetDriveIsPaidOffer(int dbId)
+        public static async Task<bool?> GetDriveIsPaidOffer(DbId dbId)
         {
             var drives = _mockServerData.Drives;
             await SimulateNetworkDelay().ConfigureAwait(false);
@@ -266,36 +266,36 @@ namespace KDrive.ServerCommunication
             return drive != null ? drive.IsPaidOffer : (bool?)null;
         }
 
-        public static async Task<List<int>> GetDriveSyncsDbIds(int driveDbId)
+        public static async Task<List<DbId>> GetDriveSyncsDbIds(DbId driveDbId)
         {
             var drives = _mockServerData.Drives;
             await SimulateNetworkDelay().ConfigureAwait(false);
-            return drives.FirstOrDefault(d => d.DbId == driveDbId)?.Syncs.Select(s => s!.DbId).ToList() ?? new List<int>();
+            return drives.FirstOrDefault(d => d.DbId == driveDbId)?.Syncs.Select(s => s!.DbId).ToList() ?? new List<DbId>();
         }
 
         // Sync-related requests
-        public static async Task<int?> GetSyncId(int dbId)
+        public static async Task<SyncId?> GetSyncId(DbId dbId)
         {
             var syncs = _mockServerData.Syncs;
             await SimulateNetworkDelay().ConfigureAwait(false);
             return syncs.FirstOrDefault(s => s.DbId == dbId)?.Id;
         }
 
-        public static async Task<string?> GetSyncLocalPath(int dbId)
+        public static async Task<string?> GetSyncLocalPath(DbId dbId)
         {
             var syncs = _mockServerData.Syncs;
             await SimulateNetworkDelay().ConfigureAwait(false);
             return syncs.FirstOrDefault(s => s.DbId == dbId)?.LocalPath;
         }
 
-        public static async Task<string?> GetSyncRemotePath(int dbId)
+        public static async Task<string?> GetSyncRemotePath(DbId dbId)
         {
             var syncs = _mockServerData.Syncs;
             await SimulateNetworkDelay().ConfigureAwait(false);
             return syncs.FirstOrDefault(s => s.DbId == dbId)?.RemotePath;
         }
 
-        public static async Task<bool?> GetSyncSupportVfs(int dbId)
+        public static async Task<bool?> GetSyncSupportVfs(DbId dbId)
         {
             var syncs = _mockServerData.Syncs;
             await SimulateNetworkDelay().ConfigureAwait(false);

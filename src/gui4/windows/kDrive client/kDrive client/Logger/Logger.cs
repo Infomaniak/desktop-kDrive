@@ -28,11 +28,6 @@ namespace KDrive
 {
     internal static class Logger
     {
-        private static readonly string _logFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "temp", "kDrive-logdir", $"{DateTime.Now:yyyyMMdd_HHmm}_KDriveClient.log");
-#pragma warning disable S2930
-        private static readonly StreamWriter _logStream = new(_logFilePath, append: true) { AutoFlush = true };
-#pragma warning restore S2930 
-
         public enum Level
         {
             Debug = 0,
@@ -42,6 +37,11 @@ namespace KDrive
             Fatal = 4,
             None = 5
         }
+
+        private static readonly string _logFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "temp", "kDrive-logdir", $"{DateTime.Now:yyyyMMdd_HHmm}_KDriveClient.log");
+#pragma warning disable S2930
+        private static readonly StreamWriter _logStream = new(_logFilePath, append: true) { AutoFlush = true };
+#pragma warning restore S2930 
 
         static public Level LogLevel { get; set; } = Level.Debug;
         public static void Log(Level level, string message, [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0)

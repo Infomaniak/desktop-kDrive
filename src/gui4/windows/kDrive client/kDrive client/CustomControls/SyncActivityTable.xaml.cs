@@ -1,5 +1,6 @@
 using DynamicData;
 using DynamicData.Binding;
+using KDrive.Types;
 using KDrive.ViewModels;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
@@ -37,7 +38,7 @@ namespace KDrive.CustomControls
         {
             InitializeComponent();
             ViewModel.SelectedSync?
-                    .SyncActivities.ToObservableChangeSet().OnItemAdded(a => { if (a.Direction == SyncActivityDirection.Incoming) _outGoingActivities.Insert(0, a); }).Subscribe();
+                    .SyncActivities.ToObservableChangeSet().OnItemAdded(a => { if (a.Direction == SyncDirection.Incoming) _outGoingActivities.Insert(0, a); }).Subscribe();
         }
 
         public bool? ShowIncomingActivity

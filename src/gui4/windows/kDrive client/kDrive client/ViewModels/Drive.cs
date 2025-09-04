@@ -30,19 +30,10 @@ using System.Threading.Tasks;
 
 namespace KDrive.ViewModels
 {
-
-    enum SyncStatus
-    {
-        Unknown,
-        Starting,
-        Running,
-        Pausing,
-        Pause
-    }
     internal class Drive : ObservableObject
     {
-        private int _dbId = -1;
-        private int _id = -1;
+        private DbId _dbId = -1;
+        private DriveId _id = -1;
         private string _name = "";
         private Color _color = Color.Blue;
         private long _size = 0;
@@ -52,7 +43,7 @@ namespace KDrive.ViewModels
 
         private ObservableCollection<Sync> _syncs = new ObservableCollection<Sync>();
 
-        public Drive(int dbId)
+        public Drive(DbId dbId)
         {
             DbId = dbId;
         }
@@ -86,13 +77,13 @@ namespace KDrive.ViewModels
             };
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
-        public int DbId
+        public DbId DbId
         {
             get => _dbId;
             set => SetProperty(ref _dbId, value);
         }
 
-        public int Id
+        public DriveId Id
         {
             get => _id;
             set => SetProperty(ref _id, value);

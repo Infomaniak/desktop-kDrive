@@ -56,6 +56,9 @@ namespace KDrive.ViewModels
          */
         public static DispatcherQueue UIThreadDispatcher { get; set; } = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
 
+        /** The list of application errors.
+         *  This is an observable collection, so the UI can bind to it and be notified of changes.
+         */
         private ObservableCollection<Error.AppError> _appErrors = new();
 
         // Helpers - Agregated collections
