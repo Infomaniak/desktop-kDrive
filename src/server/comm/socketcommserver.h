@@ -19,6 +19,7 @@
 #pragma once
 
 #include "abstractcommserver.h"
+#include "libcommon/utility/types.h"
 
 #include <Poco/Net/ServerSocket.h>
 
@@ -34,8 +35,8 @@ class SocketCommChannel : public AbstractCommChannel {
     private:
         Poco::Net::ServerSocket _socket;
 
-        uint64_t readData(char *data, uint64_t maxlen) override;
-        virtual uint64_t writeData(const char *data, uint64_t len) override;
+        uint64_t readData(CommChar *data, uint64_t maxlen) override;
+        virtual uint64_t writeData(const CommChar *data, uint64_t len) override;
 };
 
 class SocketCommServer : public AbstractCommServer {

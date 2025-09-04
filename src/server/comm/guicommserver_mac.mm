@@ -173,11 +173,11 @@ GuiCommServerPrivate::GuiCommServerPrivate() {
 GuiCommChannel::GuiCommChannel(GuiCommChannelPrivate *p) :
     XPCCommChannel(p) {}
 
-uint64_t GuiCommChannel::writeData(const char *data, uint64_t len) {
+uint64_t GuiCommChannel::writeData(const KDC::CommChar *data, uint64_t len) {
     if (_privatePtr->_isRemoteDisconnected) return -1;
 
     @try {
-        [(GuiRemoteEnd *) _privatePtr->_remoteEnd sendSignal:[NSData dataWithBytesNoCopy:const_cast<char *>(data)
+        [(GuiRemoteEnd *) _privatePtr->_remoteEnd sendSignal:[NSData dataWithBytesNoCopy:const_cast<KDC::CommChar *>(data)
                                                                                   length:static_cast<NSUInteger>(len)
                                                                             freeWhenDone:NO]];
         return len;

@@ -41,30 +41,24 @@ PipeCommChannel::~PipeCommChannel() {
     destroyedCbk();
 }
 
-uint64_t PipeCommChannel::readData(char *data, uint64_t maxSize) {
+uint64_t PipeCommChannel::readData(CommChar *data, uint64_t maxSize) {
     if (!_connected) return 0;
 
-#if defined(KD_WINDOWS)
-    std::vector<TCHAR> wData(maxSize, 0);
-    auto size = _inBuffer.copy(wData.data(), maxSize - 1);
+    auto size = _inBuffer.copy(data, maxSize);
     _inBuffer.erase(0, size);
-    wcstombs_s(NULL, data, maxSize, wData.data(), maxSize - 1);
     return size;
-#endif
 }
 
-uint64_t PipeCommChannel::writeData(const char *data, uint64_t size) {
+uint64_t PipeCommChannel::writeData(const CommChar *data, uint64_t size) {
     if (!_connected) return 0;
 
 #if defined(KD_WINDOWS)
     if (ParametersCache::isExtendedLogEnabled()) {
         LOG_DEBUG(Log::instance()->getLogger(), "Try to write on inst:" << _instance);
     }
-    std::vector<TCHAR> wData(size + 1, 0);
-    mbstowcs_s(NULL, wData.data(), size + 1, data, size);
     DWORD bytesWritten = 0;
     auto index = toInt(Action::Write);
-    BOOL fSuccess = WriteFile(_pipeInst, wData.data(), size * sizeof(TCHAR), &bytesWritten, &_overlap[index]);
+    BOOL fSuccess = WriteFile(_pipeInst, data, size * sizeof(TCHAR), &bytesWritten, &_overlap[index]);
 
     // The write operation completed successfully
     if (fSuccess && bytesWritten == size * sizeof(TCHAR)) {

@@ -26,29 +26,14 @@ namespace KDC {
 class CommChannelTest : public AbstractCommChannel {
     public:
         ~CommChannelTest() {}
-        uint64_t readData(char *data, uint64_t maxSize) override {
-#if defined(KD_WINDOWS)
-            std::vector<wchar_t> wData(maxSize, 0);
-            auto size = _inBuffer.copy(wData.data(), maxSize - 1);
-            _inBuffer.erase(0, size);
-            wcstombs_s(NULL, data, maxSize, wData.data(), maxSize - 1);
-            return size;
-#else
+        uint64_t readData(CommChar *data, uint64_t maxSize) override {
             auto size = _inBuffer.copy(data, maxSize);
             _inBuffer.erase(0, size);
             return size;
-#endif
         }
-        uint64_t writeData(const char *data, uint64_t maxSize) override {
-#if defined(KD_WINDOWS)
-            std::vector<wchar_t> wData(maxSize + 1, 0);
-            mbstowcs_s(NULL, wData.data(), maxSize + 1, data, maxSize);
-            _inBuffer.append(wData.data(), maxSize);
-            return maxSize;
-#else
+        uint64_t writeData(const CommChar *data, uint64_t maxSize) override {
             _inBuffer.append(data, maxSize);
             return maxSize;
-#endif
         }
         uint64_t bytesAvailable() const override { return _inBuffer.size(); }
         bool canReadLine() const override { return _inBuffer.find('\n') != std::string::npos; }

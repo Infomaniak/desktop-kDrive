@@ -28,7 +28,7 @@ XPCCommChannel::XPCCommChannel(AbstractCommChannelPrivate *p) :
 
 XPCCommChannel::~XPCCommChannel() {}
 
-uint64_t XPCCommChannel::readData(char *data, uint64_t maxSize) {
+uint64_t XPCCommChannel::readData(KDC::CommChar *data, uint64_t maxSize) {
     auto size = _privatePtr->_inBuffer.copy(data, maxSize);
     _privatePtr->_inBuffer.erase(0, size);
     return size;

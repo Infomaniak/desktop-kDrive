@@ -46,16 +46,14 @@ void AbstractCommChannel::sendMessage(const CommString &message) {
         localMessage += finderExtLineSeparator;
     }
 
-    std::string dataStr = CommString2Str(localMessage);
-    auto sent = writeData(dataStr.c_str(), dataStr.length());
-    if (!sent) {
+    if (auto sent = writeData(localMessage.c_str(), localMessage.length()); !sent) {
         LOG_WARN(Log::instance()->getLogger(), "Error in AbstractCommChannel::writeData");
     }
 }
 
 CommString AbstractCommChannel::readLine() {
-    static const uint64_t maxlen = 1024;
-    char data[maxlen];
+    static const uint64_t maxLineLength = 1024;
+    CommChar data[maxLineLength];
     CommString line;
     forever {
         if (auto sepPos = _readBuffer.find(finderExtLineSeparator); sepPos != std::string::npos) {
@@ -63,9 +61,9 @@ CommString AbstractCommChannel::readLine() {
             _readBuffer.erase(0, sepPos + 1);
             break;
         }
-        if (auto readSize = readData(data, maxlen); readSize > 0) {
-            std::string dataStr(data, readSize);
-            _readBuffer.append(Str2CommString(dataStr));
+        if (auto readSize = readData(data, maxLineLength); readSize > 0) {
+            CommString dataStr(data, readSize);
+            _readBuffer.append(dataStr);
         } else {
             break;
         }

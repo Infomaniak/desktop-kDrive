@@ -128,6 +128,7 @@ using OStringStream = std::ostringstream;
 
 // CommString macros
 using CommString = std::filesystem::path::string_type;
+using CommChar = std::filesystem::path::value_type;
 #if defined(KD_WINDOWS)
 #define Str2CommString(s) KDC::CommonUtility::s2ws(s)
 #define CommString2Str(s) KDC::CommonUtility::ws2s(s)

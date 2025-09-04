@@ -25,11 +25,11 @@ SocketCommChannel::SocketCommChannel() :
 
 SocketCommChannel::~SocketCommChannel() {}
 
-uint64_t SocketCommChannel::readData(char *data, uint64_t maxlen) {
+uint64_t SocketCommChannel::readData(CommChar *data, uint64_t maxlen) {
     return 0;
 }
 
-uint64_t SocketCommChannel::writeData(const char *data, uint64_t len) {
+uint64_t SocketCommChannel::writeData(const CommChar *data, uint64_t len) {
     return 0;
 }
 

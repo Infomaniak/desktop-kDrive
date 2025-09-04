@@ -19,6 +19,7 @@
 #pragma once
 
 #include "xpccommserver_mac.h"
+#include "libcommon/utility/types.h"
 
 #include <string>
 
@@ -30,7 +31,7 @@ class ExtCommChannel : public XPCCommChannel {
         ExtCommChannel(ExtCommChannelPrivate *p);
 
     private:
-        uint64_t writeData(const char *data, uint64_t len) override;
+        uint64_t writeData(const KDC::CommChar *data, uint64_t len) override;
 };
 
 class ExtCommServer : public XPCCommServer {

@@ -19,6 +19,7 @@
 #pragma once
 
 #include "abstractcommserver.h"
+#include "libcommon/utility/types.h"
 
 #include <thread>
 
@@ -58,8 +59,8 @@ class PipeCommChannel : public AbstractCommChannel {
         TCHAR _readData[BUFSIZE];
 #endif
 
-        uint64_t readData(char *data, uint64_t maxSize) override;
-        virtual uint64_t writeData(const char *data, uint64_t size) override;
+        uint64_t readData(CommChar *data, uint64_t maxSize) override;
+        virtual uint64_t writeData(const CommChar *data, uint64_t size) override;
 
         friend class PipeCommServer;
 };

@@ -82,7 +82,7 @@ class AbstractCommChannel : public std::enable_shared_from_this<AbstractCommChan
           \param maxSize is is the maximum number of bytes to read.
           \return the number of bytes read or -1 if an error occurred.
         */
-        virtual uint64_t readData(char *data, uint64_t maxSize) = 0;
+        virtual uint64_t readData(CommChar *data, uint64_t maxSize) = 0;
 
         //! Writes to the device.
         /*!
@@ -90,7 +90,7 @@ class AbstractCommChannel : public std::enable_shared_from_this<AbstractCommChan
           \param maxSize is is the maximum number of bytes to write.
           \return the number of bytes written or -1 if an error occurred.
         */
-        virtual uint64_t writeData(const char *data, uint64_t maxSize) = 0;
+        virtual uint64_t writeData(const CommChar *data, uint64_t maxSize) = 0;
 
         CommString truncateLongLogMessage(const CommString &message);
 };

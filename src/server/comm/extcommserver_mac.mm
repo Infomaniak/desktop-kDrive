@@ -161,11 +161,11 @@ ExtCommServerPrivate::ExtCommServerPrivate() {
 ExtCommChannel::ExtCommChannel(ExtCommChannelPrivate *p) :
     XPCCommChannel(p) {}
 
-uint64_t ExtCommChannel::writeData(const char *data, uint64_t len) {
+uint64_t ExtCommChannel::writeData(const KDC::CommChar *data, uint64_t len) {
     if (_privatePtr->_isRemoteDisconnected) return -1;
 
     @try {
-        [(ExtRemoteEnd *) _privatePtr->_remoteEnd sendMessage:[NSData dataWithBytesNoCopy:const_cast<char *>(data)
+        [(ExtRemoteEnd *) _privatePtr->_remoteEnd sendMessage:[NSData dataWithBytesNoCopy:const_cast<KDC::CommChar *>(data)
                                                                                    length:static_cast<NSUInteger>(len)
                                                                              freeWhenDone:NO]];
         return len;
