@@ -18,15 +18,15 @@
 
 #include "guicommserver_mac.h"
 #include "abstractcommserver_mac.h"
-#include "../../poc/kdrive-desktop-poc/xpcGuiProtocol.h"
+#include "../../extensions/MacOSX/kDriveFinderSync/kDriveModel/xpcGuiProtocol.h"
 
 //
 // Interfaces
 //
-@interface GuiLocalEnd : AbstractLocalEnd <XPCGuiRemoteProtocol>
+@interface GuiLocalEnd : AbstractLocalEnd <XPCGuiProtocol>
 @end
 
-@interface GuiRemoteEnd : AbstractRemoteEnd <XPCGuiProtocol>
+@interface GuiRemoteEnd : AbstractRemoteEnd <XPCGuiRemoteProtocol>
 @end
 
 @interface GuiServer : AbstractServer
