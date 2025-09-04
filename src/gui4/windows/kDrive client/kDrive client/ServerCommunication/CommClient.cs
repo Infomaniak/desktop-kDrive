@@ -39,20 +39,20 @@ namespace KDrive.ServerCommunication
 {
     public class CommClient
     {
-        readonly TcpClient? client;
-        readonly Dictionary<int, Func<int/*Id*/, ImmutableArray<byte>/*parms*/, bool>> signalHandlers = new();
-        private long idCounter = 0;
+        private readonly TcpClient? _client;
+        private readonly Dictionary<int, Func<int/*Id*/, ImmutableArray<byte>/*parms*/, bool>> _signalHandlers = new();
+        private long _idCounter = 0;
 
         private readonly ConcurrentDictionary<long, CommData?> pendingRequests = new ConcurrentDictionary<long, CommData?>();
-        private long NextId
+        private long nextId
         {
-            get => ++idCounter;
+            get => ++_idCounter;
         }
 
         public CommClient()
         {
             // Initialize signal handlers
-            signalHandlers[15] = (id, parms) => { return OnSyncProgressInfo(id, parms); };
+            _signalHandlers[15] = (id, parms) => { return onSyncProgressInfo(id, parms); };
 
 
             // Fetch the port from the .comm file
@@ -63,16 +63,16 @@ namespace KDrive.ServerCommunication
             // Prefer a using declaration to ensure the instance is Disposed later.
             try
             {
-                client = new TcpClient("localhost", port);
+                _client = new TcpClient("localhost", port);
                 Logger.Log(Logger.Level.Info, "Connected to server.");
             }
             catch (Exception ex)
             {
                 Logger.Log(Logger.Level.Error, $"Socket connection error: {ex.Message}");
-                client = null;
+                _client = null;
             }
 
-            if (client != null && client.Connected)
+            if (_client != null && _client.Connected)
             {
                 Task.Run(async () =>
                 {
@@ -80,9 +80,9 @@ namespace KDrive.ServerCommunication
                     {
                         try
                         {
-                            while (client.GetStream().DataAvailable)
+                            while (_client.GetStream().DataAvailable)
                             {
-                                OnReadyRead();
+                                onReadyRead();
                             }
                             await Task.Delay(100).ConfigureAwait(false); // Polling interval
                         }
@@ -103,26 +103,26 @@ namespace KDrive.ServerCommunication
 
         ~CommClient()
         {
-            client?.Dispose();
+            _client?.Dispose();
         }
 
         public async Task<CommData> SendRequest(int num, ImmutableArray<byte> parms)
         {
             try
             {
-                if (client == null)
+                if (_client == null)
                 {
                     Logger.Log(Logger.Level.Warning, "Unable to send request: client is null.");
                     return new CommData();
                 }
 
-                if (!client.Connected)
+                if (!_client.Connected)
                 {
                     Logger.Log(Logger.Level.Warning, "Unable to send request: client is not connected.");
                     return new CommData();
                 }
 
-                long requestId = NextId;
+                long requestId = nextId;
                 pendingRequests[requestId] = null;
 
                 // Create the JSON object
@@ -144,12 +144,12 @@ namespace KDrive.ServerCommunication
 
                 // Write size followed by JSON data
                 // TODO: When writing final version, ensure thread safety and handle exceptions
-                NetworkStream stream = client.GetStream();
+                NetworkStream stream = _client.GetStream();
                 await stream.WriteAsync(sizeBytes, 0, sizeBytes.Length).ConfigureAwait(false);
                 await stream.WriteAsync(jsonBytes, 0, jsonBytes.Length).ConfigureAwait(false);
 
                 Logger.Log(Logger.Level.Info, $"Sent request: {jsonString}");
-                CommData reply = await WaitForReplyAsync(requestId).ConfigureAwait(false);
+                CommData reply = await waitForReplyAsync(requestId).ConfigureAwait(false);
                 return reply;
             }
             catch (OperationCanceledException)
@@ -163,7 +163,7 @@ namespace KDrive.ServerCommunication
                 return new CommData();
             }
         }
-        public async Task<CommData> WaitForReplyAsync(long requestId)
+        private async Task<CommData> waitForReplyAsync(long requestId)
         {
             // Ensure the slot exists
             pendingRequests[requestId] = null;
@@ -190,14 +190,14 @@ namespace KDrive.ServerCommunication
             }
         }
 
-        private void OnReadyRead()
+        private void onReadyRead()
         {
-            if (client == null || !client.Connected)
+            if (_client == null || !_client.Connected)
             {
                 Logger.Log(Logger.Level.Warning, "Unable to read: client is not connected.");
                 return;
             }
-            NetworkStream stream = client.GetStream();
+            NetworkStream stream = _client.GetStream();
             Logger.Log(Logger.Level.Debug, "Data is ready to be read from the server.");
 
             // Read the size of the incoming message (4 bytes)
@@ -247,9 +247,9 @@ namespace KDrive.ServerCommunication
                     break;
                 case 2:
                     // Signal
-                    if (signalHandlers.ContainsKey(data.num))
+                    if (_signalHandlers.ContainsKey(data.num))
                     {
-                        bool res = signalHandlers[data.num](data.id, data.ParmsByteArray);
+                        bool res = _signalHandlers[data.num](data.id, data.ParmsByteArray);
                         Logger.Log(Logger.Level.Info, $"Signal handler for id {data.id} executed with result: {res}");
                     }
                     else
@@ -263,7 +263,7 @@ namespace KDrive.ServerCommunication
             }
         }
 
-        private bool OnSyncProgressInfo(int id, ImmutableArray<byte> parms)
+        private bool onSyncProgressInfo(int id, ImmutableArray<byte> parms)
         {
             Logger.Log(Logger.Level.Debug, "Sync progress info signal received.");
             // TODO: Implement actual handling logic here

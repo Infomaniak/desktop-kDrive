@@ -49,6 +49,7 @@ namespace KDrive
         public TrayIcon.TrayIconManager TrayIcoManager { get; private set; }
         public ServerCommunication.CommClient ComClient { get; set; } = new ServerCommunication.CommClient();
         public AppModel Data { get; set; } = new AppModel();
+
         public App()
         {
             InitializeComponent();
