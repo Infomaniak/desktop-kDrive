@@ -16,14 +16,14 @@ namespace KDrive.Converters
             {
                 var timeSpan = DateTime.Now - dateTime;
                 var resourceLoader = new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader();
-                
+
                 if (timeSpan.TotalMinutes < 1)
                 {
-                    return resourceLoader.GetString("Global_JustNow"); 
+                    return resourceLoader.GetString("Global_JustNow");
                 }
                 if (timeSpan.TotalMinutes < 60)
                 {
-                    return  $"{Math.Floor(timeSpan.TotalMinutes)} {resourceLoader.GetString("Global_Minute")}";
+                    return $"{Math.Floor(timeSpan.TotalMinutes)} {resourceLoader.GetString("Global_Minute")}";
                 }
                 if (timeSpan.TotalHours < 24)
                 {

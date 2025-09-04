@@ -16,7 +16,8 @@ namespace KDrive.Converters
             if (value is bool boolValue)
             {
                 return boolValue ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
-            }else if (value is int intValue)
+            }
+            else if (value is int intValue)
             {
                 return intValue != 0 ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
             }

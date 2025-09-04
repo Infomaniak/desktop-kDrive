@@ -34,7 +34,7 @@ using KDrive.ViewModels;
 
 namespace KDrive
 {
-      public sealed partial class HomePage : Page
+    public sealed partial class HomePage : Page
     {
         internal AppModel _viewModel = ((App)Application.Current).Data;
         internal AppModel ViewModel

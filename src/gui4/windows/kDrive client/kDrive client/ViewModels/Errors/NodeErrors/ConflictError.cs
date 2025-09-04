@@ -24,6 +24,6 @@ namespace KDrive.ViewModels.Errors
         {
             return GetLocalizedString("ConflictError_Cause");
         }
-        
+
     }
 }

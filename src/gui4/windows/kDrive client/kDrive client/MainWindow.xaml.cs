@@ -49,7 +49,7 @@ namespace KDrive
             InitializeComponent();
             AppModel.UIThreadDispatcher = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread(); ;
             this.ExtendsContentIntoTitleBar = true;  // enable custom titlebar
-            this.SetTitleBar(AppTitleBar);            
+            this.SetTitleBar(AppTitleBar);
         }
 
         private void navView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
