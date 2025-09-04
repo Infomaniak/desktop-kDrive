@@ -133,7 +133,6 @@ namespace KDrive.ViewModels
             _dbId = dbId;
             _drive = drive;
 
-
             Task.Run(async () =>
             {
                 Random random = new Random();
@@ -157,13 +156,6 @@ namespace KDrive.ViewModels
                     });
                 }
             });
-            _syncErrors.Add(new ConflictError(1) { ExitCause = 1, ExitCode = 2, Time = DateTime.Now, LocalNodeId=754548, NodePath="Rand.xlsx" });
-            _syncErrors.Add(new SyncPalError(2) { ExitCause = 8, ExitCode = 9, Time = DateTime.Now });
-            _syncErrors.Add(new ConflictError(1) { ExitCause = 1, ExitCode = 2, Time = DateTime.Now, LocalNodeId = 754548, NodePath = "Test.docx" });
-            _syncErrors.Add(new ConflictError(1) { ExitCause = 1, ExitCode = 2, Time = DateTime.Now, LocalNodeId = 754548, NodePath = "Rome.png" });
-            _syncErrors.Add(new ConflictError(1) { ExitCause = 1, ExitCode = 2, Time = DateTime.Now, LocalNodeId = 754548, NodePath = "dummy.txt" });
-
-
         }
 
         public DbId DbId

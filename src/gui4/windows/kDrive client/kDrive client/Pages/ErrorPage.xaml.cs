@@ -38,6 +38,7 @@ namespace KDrive
                 Frame.Navigate(typeof(ActivityPage));
             }
         }
+
         private async void SupportButton_Click(object sender, RoutedEventArgs e)
         {
             var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();

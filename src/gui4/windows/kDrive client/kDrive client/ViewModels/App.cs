@@ -17,17 +17,18 @@
  */
 
 using CommunityToolkit.Mvvm.ComponentModel;
+using DynamicData;
+using DynamicData.Binding;
 using KDrive.ServerCommunication;
 using Microsoft.UI.Dispatching;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DynamicData;
-using DynamicData.Binding;
 
 namespace KDrive.ViewModels
 
@@ -61,6 +62,14 @@ namespace KDrive.ViewModels
          */
         private ObservableCollection<Errors.AppError> _appErrors = new();
 
+        /** Indicates if there are no errors in the application.
+         *  This is true if there are no app errors and the selected sync has no errors.
+         *  It is false if there are any app errors or if the selected sync has any errors.
+         *  This is a read-only property that is automatically updated when AppErrors or SelectedSync.SyncErrors change.
+         */
+        public bool HasNoErrors => AppErrors.Count == 0 &&
+                           (SelectedSync?.SyncErrors?.Count ?? 0) == 0;
+
         // Helpers - Agregated collections
         /** The list of active syncs across all users.
         *  This is a read-only observable collection, so the UI can bind to it and be notified of changes.
@@ -72,7 +81,16 @@ namespace KDrive.ViewModels
         public Sync? SelectedSync
         {
             get => _selectedSync;
-            set => SetProperty(ref _selectedSync, value);
+            set
+            {
+                SetProperty(ref _selectedSync, value);
+                if (SelectedSync != null)
+                {
+                    SelectedSync.SyncErrors.CollectionChanged -= SyncErrors_CollectionChanged;
+                    SelectedSync.SyncErrors.CollectionChanged += SyncErrors_CollectionChanged;
+                }
+                OnPropertyChanged(nameof(HasNoErrors));
+            }
         }
 
         public AppModel()
@@ -92,39 +110,8 @@ namespace KDrive.ViewModels
             AllSyncs.ToObservableChangeSet()
                        .Subscribe(_ => EnsureValidSelectedSync());
 
-            AppErrors.Add(new Errors.AppError(1) { ExitCode = 1, ExitCause = 2 });
-            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
-            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
-            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
-            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
-            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
-            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
-            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
-            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
-            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
-            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
-            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
-            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
-            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
-            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
-            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
-            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
-            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
-            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
-            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
-            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
-            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
-            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
-            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
-            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
-            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
-            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
-            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
-            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
-            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
-            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
-            AppErrors.Add(new Errors.AppError(2) { ExitCode = 2, ExitCause = 0 });
-
+            // Observe changes to AppErrors and SelectedSync.SyncErrors to update HasNoErrors property
+            AppErrors.CollectionChanged += (_, __) => OnPropertyChanged(nameof(HasNoErrors));
         }
 
         private void EnsureValidSelectedSync()
@@ -187,5 +174,9 @@ namespace KDrive.ViewModels
             });
         }
 
+        private void SyncErrors_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            OnPropertyChanged(nameof(HasNoErrors));
+        }
     }
 }

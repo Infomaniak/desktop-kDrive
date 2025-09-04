@@ -240,4 +240,10 @@
   <data name="Global_SupportUrl" xml:space="preserve">
     <value>https://www.infomaniak.com/fr/support/faq/admin2/kdrive</value>
   </data>
+  <data name="ErrorPage_NoErrors_Line1.Text" xml:space="preserve">
+    <value>Aucun fichier n’est à vérifier.</value>
+  </data>
+  <data name="ErrorPage_NoErrors_Line2.Text" xml:space="preserve">
+    <value>Profitez de votre journée !</value>
+  </data>
 </root>

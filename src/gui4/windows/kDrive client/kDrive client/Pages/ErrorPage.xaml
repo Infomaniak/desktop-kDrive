@@ -1,142 +1,237 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Page
-    x:Class="KDrive.ErrorPage"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:KDrive"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:controls="using:KDrive.CustomControls"
-    xmlns:converters="using:KDrive.Converters"
-    xmlns:viewmodels="using:KDrive.ViewModels"
-    xmlns:viewmodels_error="using:KDrive.ViewModels.Errors"
-    mc:Ignorable="d">
+<Page x:Class="KDrive.ErrorPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:local="using:KDrive"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:controls="using:KDrive.CustomControls"
+      xmlns:converters="using:KDrive.Converters"
+      xmlns:viewmodels="using:KDrive.ViewModels"
+      xmlns:viewmodels_error="using:KDrive.ViewModels.Errors"
+      mc:Ignorable="d">
     <Page.Resources>
-        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-        <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter"/>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
     </Page.Resources>
 
-    <Grid Margin="24" RowSpacing="16">
+    <Grid Margin="24"
+          RowSpacing="16">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <!-- Title -->
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
             <!-- BreadCrumb bar -->
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
             <!-- AppErrors -->
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
             <!-- SyncErrors -->
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <!-- Title -->
-        <TextBlock x:Uid="ErrorPage_Title" Style="{StaticResource HeaderTextBlockStyle}" Grid.Row="0"/>
+        <TextBlock x:Uid="ErrorPage_Title"
+                   Style="{StaticResource HeaderTextBlockStyle}"
+                   Grid.Row="0" />
 
         <!-- BreadCrumb bar -->
-        <BreadcrumbBar x:Name="NavBar" Grid.Row="1" ItemClicked="NavBar_ItemClicked"/>
+        <BreadcrumbBar x:Name="NavBar"
+                       Grid.Row="1"
+                       ItemClicked="NavBar_ItemClicked" />
 
         <!-- AppErrors -->
-        <Border Grid.Row="2" BorderThickness="1" BorderBrush="#E6EAF5" CornerRadius="8" Visibility="{x:Bind ViewModel.AppErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}}">
+        <Border Grid.Row="2"
+                BorderThickness="1"
+                BorderBrush="#E6EAF5"
+                CornerRadius="8"
+                Visibility="{x:Bind ViewModel.AppErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="auto"/>
-                    <RowDefinition Height="auto"/>
-                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="auto" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
                 <!-- Header -->
-                <Border Background="#EEF1FC" Height="40" Grid.Row="0">
-                    <TextBlock x:Uid="ErrorPage_Application_Header" VerticalAlignment="Center" Padding="16" Style="{StaticResource TextBlockStyle}" Foreground="#666666"/>
+                <Border Background="#EEF1FC"
+                        Height="40"
+                        Grid.Row="0">
+                    <TextBlock x:Uid="ErrorPage_Application_Header"
+                               VerticalAlignment="Center"
+                               Padding="16"
+                               Style="{StaticResource TextBlockStyle}"
+                               Foreground="#666666" />
                 </Border>
 
                 <!-- Content -->
-                <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="16,0,0,0">
-                    <ImageIcon Height="16" VerticalAlignment="Top" Margin="0,16,0,0">
+                <StackPanel Orientation="Horizontal"
+                            Grid.Row="1"
+                            Margin="16,0,0,0">
+                    <ImageIcon Height="16"
+                               VerticalAlignment="Top"
+                               Margin="0,16,0,0">
                         <ImageIcon.Source>
-                            <SvgImageSource UriSource="ms-appx:///Assets/Icons/headphones.svg"/>
+                            <SvgImageSource UriSource="ms-appx:///Assets/Icons/headphones.svg" />
                         </ImageIcon.Source>
                     </ImageIcon>
-                    <StackPanel Orientation="Vertical" Grid.Row="1" Margin="16,14,0,0">
-                        <TextBlock Text="Assistance technique" VerticalAlignment="Center" Style="{StaticResource TextBlockStyle}" Margin="0,0,0,4"/>
-                        <TextBlock x:Uid="ErrorPage_Application_HowTosolve" VerticalAlignment="Center" Style="{StaticResource CaptionSemiBoldTextBlockStyle}" Margin="0,0,0,2" Foreground="#666666"/>
-                        <ListView 
-                            SelectionMode="None" 
-                            ItemsSource="{x:Bind ViewModel.AppErrors, Mode=OneWay}" 
-                            MaxHeight="80">
+                    <StackPanel Orientation="Vertical"
+                                Grid.Row="1"
+                                Margin="16,14,0,0">
+                        <TextBlock Text="Assistance technique"
+                                   VerticalAlignment="Center"
+                                   Style="{StaticResource TextBlockStyle}"
+                                   Margin="0,0,0,4" />
+                        <TextBlock x:Uid="ErrorPage_Application_HowTosolve"
+                                   VerticalAlignment="Center"
+                                   Style="{StaticResource CaptionSemiBoldTextBlockStyle}"
+                                   Margin="0,0,0,2"
+                                   Foreground="#666666" />
+                        <ListView SelectionMode="None"
+                                  ItemsSource="{x:Bind ViewModel.AppErrors, Mode=OneWay}"
+                                  MaxHeight="80">
 
                             <ListView.ItemContainerStyle>
                                 <Style TargetType="ListViewItem">
-                                    <Setter Property="Margin" Value="0"/>
-                                    <Setter Property="Padding" Value="0"/>
-                                    <Setter Property="MinHeight" Value="0"/>
-                                    <Setter Property="Height" Value="Auto"/>
+                                    <Setter Property="Margin"
+                                            Value="0" />
+                                    <Setter Property="Padding"
+                                            Value="0" />
+                                    <Setter Property="MinHeight"
+                                            Value="0" />
+                                    <Setter Property="Height"
+                                            Value="Auto" />
                                 </Style>
                             </ListView.ItemContainerStyle>
 
                             <ListView.ItemTemplate>
                                 <DataTemplate x:DataType="viewmodels_error:AppError">
-                                    <TextBlock 
-                                        Text="{x:Bind Cause, Mode=OneWay}" 
-                                        TextWrapping="WrapWholeWords" 
-                                        Style="{StaticResource CaptionTextBlockStyle}" 
-                                        Foreground="#666666"/>
+                                    <TextBlock Text="{x:Bind Cause, Mode=OneWay}"
+                                               TextWrapping="WrapWholeWords"
+                                               Style="{StaticResource CaptionTextBlockStyle}"
+                                               Foreground="#666666" />
                                 </DataTemplate>
                             </ListView.ItemTemplate>
                         </ListView>
-                        <StackPanel Orientation="Horizontal" Grid.Row="2" Margin="0,16,0,16" Spacing="4">
-                            <Button Content="Contacter le support" VerticalAlignment="Center" Click="SupportButton_Click"/>
-                            <HyperlinkButton Content="En savoir plus" VerticalAlignment="Center" NavigateUri="https://www.infomaniak.com/fr/support/faq/admin2/kdrive"/>
+                        <StackPanel Orientation="Horizontal"
+                                    Grid.Row="2"
+                                    Margin="0,16,0,16"
+                                    Spacing="4">
+                            <Button Content="Contacter le support"
+                                    VerticalAlignment="Center"
+                                    Click="SupportButton_Click" />
+                            <HyperlinkButton Content="En savoir plus"
+                                             VerticalAlignment="Center"
+                                             NavigateUri="https://www.infomaniak.com/fr/support/faq/admin2/kdrive" />
                         </StackPanel>
                     </StackPanel>
                 </StackPanel>
             </Grid>
         </Border>
 
-
         <!-- Sync errors -->
-        <Border Grid.Row="3" BorderThickness="1" BorderBrush="#E6EAF5" CornerRadius="8" Visibility="{x:Bind ViewModel.SelectedSync.SyncErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}}">
+        <Border Grid.Row="3"
+                BorderThickness="1"
+                BorderBrush="#E6EAF5"
+                CornerRadius="8"
+                Visibility="{x:Bind ViewModel.SelectedSync.SyncErrors.Count, Converter={StaticResource BooleanToVisibilityConverter} , Mode=OneWay}">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
                 <!-- Header -->
-                <Border Background="#EEF1FC" Height="40" Grid.Row="0">
-                    <TextBlock VerticalAlignment="Center" Padding="16" Style="{StaticResource TextBlockStyle}" Foreground="#666666">
-                        <Run Text="Synchronisation ("/>
-                        <Run Text="{x:Bind ViewModel.SelectedSync.Drive.Name, Mode=OneWay}"/>
-                        <Run Text=" - "/>
-                        <Run Text="{x:Bind ViewModel.SelectedSync.LocalPath, Converter={StaticResource StringPathToFileNameConverter}, Mode=OneWay}"/>
-                        <Run Text=")"/>
+                <Border Background="#EEF1FC"
+                        Height="40"
+                        Grid.Row="0">
+                    <TextBlock VerticalAlignment="Center"
+                               Padding="16"
+                               Style="{StaticResource TextBlockStyle}"
+                               Foreground="#666666">
+                        <Run Text="Synchronisation (" />
+                        <Run Text="{x:Bind ViewModel.SelectedSync.Drive.Name, Mode=OneWay}" />
+                        <Run Text=" - " />
+                        <Run Text="{x:Bind ViewModel.SelectedSync.LocalPath, Converter={StaticResource StringPathToFileNameConverter}, Mode=OneWay}" />
+                        <Run Text=")" />
                     </TextBlock>
                 </Border>
 
                 <!-- Content -->
-                <ListView ItemsSource="{x:Bind ViewModel.SelectedSync.SyncErrors, Mode=OneWay}" Grid.Row="1" SelectionMode="None">
+                <ListView ItemsSource="{x:Bind ViewModel.SelectedSync.SyncErrors, Mode=OneWay}"
+                          Grid.Row="1"
+                          SelectionMode="None">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
-                            <Setter Property="Margin" Value="4"/>
-                            <Setter Property="Padding" Value="4"/>
-                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                            <Setter Property="CornerRadius" Value="8"/>
+                            <Setter Property="Margin"
+                                    Value="4" />
+                            <Setter Property="Padding"
+                                    Value="4" />
+                            <Setter Property="HorizontalContentAlignment"
+                                    Value="Stretch" />
+                            <Setter Property="CornerRadius"
+                                    Value="8" />
                         </Style>
                     </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="viewmodels_error:BaseError">
-                            <controls:ErrorItem Error="{x:Bind Mode=OneWay}"/>
+                            <controls:ErrorItem Error="{x:Bind Mode=OneWay}" />
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
             </Grid>
         </Border>
+
+        <!-- Empty list-->
+        <Grid CornerRadius="8"
+              Grid.Row="3"
+              Visibility="{x:Bind ViewModel.HasNoErrors, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+            <Border CornerRadius="8">
+                <Border.Background>
+                    <AcrylicBrush TintColor="White"
+                                  TintOpacity="0.4" />
+                </Border.Background>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="1*" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*" />
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="1*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Row="1"
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Center">
+                        <Image Width="200"
+                               Stretch="Uniform"
+                               HorizontalAlignment="Center"
+                               Margin="20">
+                            <Image.Source>
+                                <SvgImageSource UriSource="ms-appx:///Assets/Images/no-errors.svg" />
+                            </Image.Source>
+                        </Image>
+                        <TextBlock x:Uid="ErrorPage_NoErrors_Line1"
+                                   Style="{StaticResource CaptionTextBlockStyle}"
+                                   Opacity="0.6"
+                                   HorizontalAlignment="Center" />
+                        <TextBlock x:Uid="ErrorPage_NoErrors_Line2"
+                                   Style="{StaticResource CaptionTextBlockStyle}"
+                                   Opacity="0.6"
+                                   HorizontalAlignment="Center" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
     </Grid>
 </Page>
