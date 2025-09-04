@@ -52,7 +52,7 @@ namespace KDrive.ViewModels
             set => SetProperty(ref _syncStatus, value);
         }
 
-        //TODO: Remove this test funciton
+        //TODO: Remove this test function
 
         private SyncActivityViewModel genereateTestActivity()
         {
