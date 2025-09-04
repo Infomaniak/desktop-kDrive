@@ -159,15 +159,18 @@ function Get-Aumid {
 function Get-Package-Name {
     param (
         [string] $buildPath,
-        [switch] $msi
+        [switch] $msi,
+		[switch] $exe
     )
 
     $prodName = "kDrive"
     $version = (Select-String -Path $buildPath\version.h KDRIVE_VERSION_FULL | foreach-object { $data = $_ -split " "; echo $data[3] })
 	if ($msi) {
 		$appName = "$prodName-$version.msi"
-	} else {
+	} ElseIf ($exe) {
 		$appName = "$prodName-$version.exe"
+	} else {
+		$appName = "$prodName-$version"
 	}
 
     return $appName
@@ -183,7 +186,7 @@ function Get-Installer-Path {
 	if ($msi) {
 		$appName = Get-Package-Name $buildPath -msi
 	} else {
-		$appName = Get-Package-Name $buildPath
+		$appName = Get-Package-Name $buildPath -exe
 	}
     
     $installerPath = "$contentPath/$appName"
@@ -368,7 +371,7 @@ function Set-Up-NSIS {
 
     # NSIS needs the path to use backslash
     $iconPath = Get-Icon-Path $buildpath
-    $appName = Get-Package-Name $buildpath
+    $appName = Get-Package-Name $buildpath -exe
    
     $installerPath = Get-Installer-Path $buildPath $contentPath
     Clean $installerPath
@@ -537,7 +540,7 @@ function Create-Archive {
     & makensis "$buildPath\NSIS.template.nsi"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-    $appName = Get-Package-Name $buildPath
+    $appName = Get-Package-Name $buildPath -exe
     Move-Item -Path "$buildPath\$appName" -Destination "$contentPath"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
@@ -561,14 +564,15 @@ function Create-Archive {
 }
 
 function Create-MSI-Package {
-	dotnet build "$msiInstallerFolderPath/kDriveInstaller.sln" /p:Configuration="Release" /p:Platform="x64"
-
-	$appName = Get-Package-Name $buildPath -msi
+	$appName = Get-Package-Name $buildPath
+	
+	dotnet build "$msiInstallerFolderPath/kDriveInstaller.sln" /p:Configuration="Release" /p:Platform="x64" /p:OutputName=$appName
+	
 	Write-Host "Moving items" -f Cyan
-	Write-Host "from: $msiPackageFolderPath/kDriveInstaller.msi" -f Cyan
+	Write-Host "from: $msiPackageFolderPath/$appName.msi" -f Cyan
 	Write-Host "to: $contentPath" -f Cyan
 
-	Move-Item -Path "$msiPackageFolderPath/kDriveInstaller.msi" -Destination "$contentPath/$appName"
+	Move-Item -Path "$msiPackageFolderPath/$appName.msi" -Destination "$contentPath"
 	if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 	# Sign final installer
