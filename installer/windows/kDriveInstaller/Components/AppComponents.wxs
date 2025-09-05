@@ -11,6 +11,7 @@
                         Target="[#kDrive.exe]"
                         Directory="ProgramMenuFolder"
                   />
+                <File Id="CleanUpAppData" Source="CleanUpAppData.ps1" />
                 <RegistryValue Root="HKCU" Key="Software\Infomaniak\kDrive" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
             </Component>
             <Component Guid="{C8A1C31B-AFBC-4B2F-ABA0-A8E73E8EA9C0}">

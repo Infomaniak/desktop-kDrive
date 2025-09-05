@@ -58,7 +58,7 @@
             <Component Guid="C1733D32-3681-41E5-831A-854C4BB97DB8" Directory="APPXFOLDER">
                 <!-- A custom action take care of installing the msix (see Package.wxs) -->
                 <File Source="$(desktop-kDriveDir)/extensions/windows/cfapi/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$(shortVersion).0_Test/FileExplorerExtensionPackage_$(shortVersion).0_x64_arm64.msixbundle" />
-                <File Id="UninstallShellExtScript" Source="$(desktop-kDriveDir)\extensions\windows\cfapi\FileExplorerExtension\Uninstall.ps1" />
+                <File Id="UninstallShellExtScript" Source="$(desktop-kDriveDir)\extensions\windows\cfapi\FileExplorerExtension\UninstallExtension.ps1" />
             </Component>
             <Component Guid="{04EB66D3-3231-499C-AF87-26EBC013ED83}" Directory="APPXDEPENDENCIESx64FOLDER">
                 <File Source="$(desktop-kDriveDir)//extensions/windows/cfapi/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$(shortVersion).0_Test/Dependencies/x64/Microsoft.VCLibs.x64.14.00.Desktop.appx" />
