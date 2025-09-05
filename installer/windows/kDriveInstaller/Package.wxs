@@ -25,7 +25,7 @@
             <ComponentGroupRef Id="ShellExtComponents" />
         </Feature>
 
-        <SetProperty Id="WixQuietExecCmdLine" Value="&quot;[System64Folder]\taskkill.exe&quot; /F /IM kDrive.exe" Before="TaskKill" Sequence="execute" />
+        <SetProperty Id="WixQuietExecCmdLine" Value="&quot;[System64Folder]\taskkill.exe&quot; /F /IM kDrive.exe /IM kDrive_client.exe" Before="TaskKill" Sequence="execute" />
         <CustomAction Id="TaskKill"
                       BinaryRef="Wix4UtilCA_$(sys.BUILDARCHSHORT)"
                       DllEntry="WixQuietExec"
@@ -42,7 +42,7 @@
 					  ExeCommand="powershell.exe -WindowStyle hidden -ExecutionPolicy Bypass -File &quot;[INSTALLFOLDER]CleanUpAppData.ps1&quot;"
 					  Execute="deferred"
 					  Impersonate="yes"
-					  Return="check" />
+					  Return="ignore" />
         <CustomAction Id="UninstallExplorerExtension"
 					  Directory="APPXFOLDER"
 					  ExeCommand="powershell.exe -WindowStyle hidden -ExecutionPolicy Bypass -File &quot;[APPXFOLDER]UninstallExtension.ps1&quot;"
@@ -56,10 +56,13 @@
 				FileRef="kDrive.exe"
 				ExeCommand="" />
         <InstallExecuteSequence>
-            <Custom Action="TaskKill" Before="InstallValidate" Condition="REMOVE=&quot;ALL&quot;" />
+            <Custom Action="TaskKill" Before="InstallValidate" />
+            
             <Custom Action="InstallExplorerExtension" Before="InstallFinalize" Condition="NOT REMOVE=&quot;ALL&quot;" />
             <Custom Action="RunApp" After="InstallFinalize" Condition="NOT REMOVE=&quot;ALL&quot;" />
-            <Custom Action="CleanUpAppData" After="InstallInitialize" Condition="REMOVE=&quot;ALL&quot;" />
+
+            <!-- Do not clean data on update -->
+            <Custom Action="CleanUpAppData" After="InstallInitialize" Condition="WIX_UPGRADE_DETECTED AND NOT UPGRADINGPRODUCTCODE AND NOT REMOVE~=&quot;ALL&quot;" />
             <Custom Action="UninstallExplorerExtension" After="CleanUpAppData" Condition="REMOVE=&quot;ALL&quot;" />
         </InstallExecuteSequence>
     </Package>
