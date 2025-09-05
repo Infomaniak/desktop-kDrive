@@ -33,7 +33,7 @@
         </Grid.RowDefinitions>
 
         <!-- Title -->
-        <TextBlock x:Uid="ErrorPage_Title"
+        <TextBlock x:Uid="Page_ErrorPage_Title"
                    Style="{StaticResource HeaderTextBlockStyle}"
                    Grid.Row="0" />
 
@@ -62,7 +62,7 @@
                 <Border Background="#EEF1FC"
                         Height="40"
                         Grid.Row="0">
-                    <TextBlock x:Uid="ErrorPage_Application_Header"
+                    <TextBlock x:Uid="Page_ErrorPage_Application_Header"
                                VerticalAlignment="Center"
                                Padding="16"
                                Style="{StaticResource TextBlockStyle}"
@@ -83,11 +83,11 @@
                     <StackPanel Orientation="Vertical"
                                 Grid.Row="1"
                                 Margin="16,14,0,0">
-                        <TextBlock x:Uid="ErrorPage_Application_Title"
+                        <TextBlock x:Uid="Page_ErrorPage_Application_Title"
                                    VerticalAlignment="Center"
                                    Style="{StaticResource TextBlockStyle}"
                                    Margin="0,0,0,4" />
-                        <TextBlock x:Uid="ErrorPage_Application_HowTosolve"
+                        <TextBlock x:Uid="Page_ErrorPage_Application_HowTosolve"
                                    VerticalAlignment="Center"
                                    Style="{StaticResource CaptionSemiBoldTextBlockStyle}"
                                    Margin="0,0,0,2"
@@ -122,10 +122,10 @@
                                     Grid.Row="2"
                                     Margin="0,16,0,16"
                                     Spacing="4">
-                            <Button x:Uid="ErrorPage_Application_SolveButton"
+                            <Button x:Uid="Page_ErrorPage_Application_SolveButton"
                                     VerticalAlignment="Center"
                                     Click="SupportButton_Click" />
-                            <HyperlinkButton x:Uid="ErrorPage_Application_LearnMoreButton"
+                            <HyperlinkButton x:Uid="Page_ErrorPage_Application_LearnMoreButton"
                                              VerticalAlignment="Center"
                                              Click="LearnMoreButton_Click" />
                         </StackPanel>
@@ -222,11 +222,11 @@
                                 <SvgImageSource UriSource="ms-appx:///Assets/Images/no-errors.svg" />
                             </Image.Source>
                         </Image>
-                        <TextBlock x:Uid="ErrorPage_NoErrors_Line1"
+                        <TextBlock x:Uid="Page_ErrorPage_NoErrors_Line1"
                                    Style="{StaticResource CaptionTextBlockStyle}"
                                    Opacity="0.6"
                                    HorizontalAlignment="Center" />
-                        <TextBlock x:Uid="ErrorPage_NoErrors_Line2"
+                        <TextBlock x:Uid="Page_ErrorPage_NoErrors_Line2"
                                    Style="{StaticResource CaptionTextBlockStyle}"
                                    Opacity="0.6"
                                    HorizontalAlignment="Center" />

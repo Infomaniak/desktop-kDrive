@@ -29,7 +29,7 @@ namespace Infomaniak.kDrive
             Logger.Log(Logger.Level.Info, "Navigated to ErrorPage - Initializing ErrorPage components");
             InitializeComponent();
             var resourceLoader = new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader();
-            NavBar.ItemsSource = new string[] { resourceLoader.GetString("NavActivity/Content"), resourceLoader.GetString("ErrorPage_Title/Text") };
+            NavBar.ItemsSource = new string[] { resourceLoader.GetString("W_MainWindow_NavBar_Activity/Content"), resourceLoader.GetString("Page_ErrorPage_Title/Text") };
             Logger.Log(Logger.Level.Debug, "ErrorPage components initialized");
         }
 

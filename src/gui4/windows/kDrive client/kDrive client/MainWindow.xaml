@@ -79,8 +79,8 @@
                 </StackPanel>
 
                 <!-- Middle: Search Box (centered in its column, which takes remaining space) -->
-                <AutoSuggestBox x:Uid="SearchBox"
-                                x:Name="SearchBox"
+                <AutoSuggestBox x:Uid="W_MainWindow_TitleBar_SearchBox"
+                                x:Name="W_MainWindow_TitleBar_SearchBox"
                                 Grid.Column="1"
                                 QueryIcon="Find"
                                 Width="300"
@@ -135,7 +135,7 @@
             </NavigationView.PaneCustomContent>
 
             <NavigationView.MenuItems>
-                <NavigationViewItem x:Uid="NavHome"
+                <NavigationViewItem x:Uid="W_MainWindow_NavBar_Home"
                                     Tag="HomePage"
                                     MinHeight="30"
                                     IsSelected="True">
@@ -143,7 +143,7 @@
                         <SymbolIcon Symbol="Home" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem x:Uid="NavActivity"
+                <NavigationViewItem x:Uid="W_MainWindow_NavBar_Activity"
                                     Tag="ActivityPage"
                                     MinHeight="30">
                     <NavigationViewItem.Icon>
@@ -154,7 +154,7 @@
                                    Value="4" />
                     </NavigationViewItem.InfoBadge>
                 </NavigationViewItem>
-                <NavigationViewItem x:Uid="NavStorage"
+                <NavigationViewItem x:Uid="W_MainWindow_NavBar_Storage"
                                     Tag="SamplePage3"
                                     MinHeight="30"
                                     IsEnabled="False">
@@ -162,7 +162,7 @@
                         <SymbolIcon Symbol="MapDrive" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem x:Uid="NavFolder"
+                <NavigationViewItem x:Uid="W_MainWindow_NavBar_Folder"
                                     Tag="SamplePage4"
                                     MinHeight="30"
                                     IsEnabled="False">

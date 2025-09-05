@@ -32,13 +32,13 @@
                 </Image>
 
                 <!-- Message -->
-                <TextBlock x:Uid="SyncErrorBar_message"
+                <TextBlock x:Uid="CC_SyncErrorBar_message"
                            VerticalAlignment="Center"
                            Style="{StaticResource BodyTextBlockStyle}"
                            Grid.Column="1" />
 
                 <!-- Check files link -->
-                <HyperlinkButton x:Uid="SyncErrorBar_button"
+                <HyperlinkButton x:Uid="CC_SyncErrorBar_button"
                                  Grid.Column="2"
                                  VerticalAlignment="Center"
                                  HorizontalAlignment="Right"

@@ -68,13 +68,13 @@
                 </Image>
 
                 <!-- kSuite icon / message -->
-                <TextBlock x:Uid="KSuiteUpgradeBar_message"
+                <TextBlock x:Uid="CC_KSuiteUpgradeBar_message"
                            VerticalAlignment="Center"
                            Style="{StaticResource BodyTextBlockStyle}"
                            Grid.Column="1" />
 
                 <HyperlinkButton x:Name="UpgradeHyperLinkButton"
-                                 x:Uid="KSuiteUpgradeBar_link"
+                                 x:Uid="CC_KSuiteUpgradeBar_link"
                                  Margin="0,0,20,0"
                                  Grid.Column="2"
                                  HorizontalAlignment="Right" />

@@ -81,19 +81,19 @@
                             <ColumnDefinition Width="1*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock x:Uid="ActivityList_Header_Name"
+                        <TextBlock x:Uid="CC_ActivityList_Header_Name"
                                    Grid.Column="0"
                                    Padding="8,0,0,0"
                                    Style="{StaticResource TextBlockStyle}" />
-                        <TextBlock x:Uid="ActivityList_Header_LastLocation"
+                        <TextBlock x:Uid="CC_ActivityList_Header_LastLocation"
                                    Padding="16,0,0,0"
                                    Style="{StaticResource TextBlockStyle}"
                                    Grid.Column="1" />
-                        <TextBlock x:Uid="ActivityList_Header_Size"
+                        <TextBlock x:Uid="CC_ActivityList_Header_Size"
                                    Padding="16,0,0,0"
                                    Style="{StaticResource TextBlockStyle}"
                                    Grid.Column="2" />
-                        <TextBlock x:Uid="ActivityList_Header_State"
+                        <TextBlock x:Uid="CC_ActivityList_Header_State"
                                    Padding="16,0,0,0"
                                    Style="{StaticResource TextBlockStyle}"
                                    Grid.Column="3" />

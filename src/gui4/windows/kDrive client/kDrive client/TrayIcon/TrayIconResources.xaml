@@ -24,12 +24,12 @@
     >
     <XamlUICommand
         x:Key="ShowWindowCommand"
-        x:Uid="TrayIconOpenApplicationCommand"
+        x:Uid="CC_TrayIcon_OpenApplicationCommand"
         >
     </XamlUICommand>
     <XamlUICommand
         x:Key="ExitApplicationCommand"
-        x:Uid="TrayIconExitApplicationCommand"
+        x:Uid="CC_TrayIcon_ExitApplicationCommand"
         >
     </XamlUICommand>
     <tb:TaskbarIcon

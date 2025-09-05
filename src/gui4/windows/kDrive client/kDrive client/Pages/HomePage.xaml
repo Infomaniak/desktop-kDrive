@@ -82,7 +82,7 @@
                             <SvgImageSource UriSource="ms-appx:///Assets/Icons/star.svg" />
                         </ImageIcon.Source>
                     </ImageIcon>
-                    <TextBlock x:Uid="HomePage_favorites"
+                    <TextBlock x:Uid="Page_HomePage_favorites"
                                Style="{StaticResource TextBlockStyle}" />
                 </StackPanel>
             </Button>
@@ -101,7 +101,7 @@
                             <SvgImageSource UriSource="ms-appx:///Assets/Icons/share.svg" />
                         </ImageIcon.Source>
                     </ImageIcon>
-                    <TextBlock x:Uid="HomePage_shared"
+                    <TextBlock x:Uid="Page_HomePage_shared"
                                Style="{StaticResource TextBlockStyle}" />
                 </StackPanel>
             </Button>
@@ -120,7 +120,7 @@
                             <SvgImageSource UriSource="ms-appx:///Assets/Icons/trash.svg" />
                         </ImageIcon.Source>
                     </ImageIcon>
-                    <TextBlock x:Uid="HomePage_trash"
+                    <TextBlock x:Uid="Page_HomePage_trash"
                                Style="{StaticResource TextBlockStyle}" />
                 </StackPanel>
             </Button>

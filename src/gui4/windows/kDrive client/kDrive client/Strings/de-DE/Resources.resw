@@ -117,82 +117,58 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="TrayIconExitApplicationCommand.Label" xml:space="preserve">
+  <data name="CC_TrayIcon_ExitApplicationCommand.Label" xml:space="preserve">
     <value />
   </data>
-  <data name="TrayIconOpenApplicationCommand.Label" xml:space="preserve">
+  <data name="CC_TrayIcon_OpenApplicationCommand.Label" xml:space="preserve">
     <value />
   </data>
-  <data name="NavHome.Content" xml:space="preserve">
+  <data name="W_MainWindow_NavBar_Home.Content" xml:space="preserve">
     <value />
   </data>
-  <data name="NavActivity.Content" xml:space="preserve">
+  <data name="W_MainWindow_NavBar_Activity.Content" xml:space="preserve">
     <value />
   </data>
-  <data name="NavStorage.Content" xml:space="preserve">
+  <data name="W_MainWindow_NavBar_Storage.Content" xml:space="preserve">
     <value />
   </data>
-  <data name="NavFolder.Content" xml:space="preserve">
+  <data name="W_MainWindow_NavBar_Folder.Content" xml:space="preserve">
     <value />
   </data>
-  <data name="SearchBox.PlaceholderText" xml:space="preserve">
+  <data name="W_MainWindow_TitleBar_SearchBox.PlaceholderText" xml:space="preserve">
     <value />
   </data>
-  <data name="HomePage_favorites.Text" xml:space="preserve">
+  <data name="CC_SyncStatusBar_PausedStatus.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="HomePage_trash.Text" xml:space="preserve">
+  <data name="CC_SyncStatusBar_SyncingStatus.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="HomePage_shared.Text" xml:space="preserve">
+  <data name="CC_SyncStatusBar_StartingStatus.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="KSuiteUpgradeBar_link.Content" xml:space="preserve">
+  <data name="CC_SyncStatusBar_PausingStatus.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="InfomaniakWebSiteLanguageCode" xml:space="preserve">
+  <data name="CC_SyncStatusBar_SyncedStatus.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="UpdateAvailableBar_message.Text" xml:space="preserve">
+  <data name="CC_SyncErrorBar_message.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="KSuiteUpgradeBar_message.Text" xml:space="preserve">
+  <data name="CC_SyncErrorBar_button.Content" xml:space="preserve">
     <value />
   </data>
-  <data name="UpdateAvailableBar_link.Content" xml:space="preserve">
+  <data name="CC_ActivityList_Header_Name.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="SyncStatusBar_PausedStatus.Text" xml:space="preserve">
+  <data name="CC_ActivityList_Header_State.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="SyncStatusBar_SyncingStatus.Text" xml:space="preserve">
+  <data name="CC_ActivityList_Header_Size.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="SyncStatusBar_StartingStatus.Text" xml:space="preserve">
-    <value />
-  </data>
-  <data name="SyncStatusBar_PausingStatus.Text" xml:space="preserve">
-    <value />
-  </data>
-  <data name="SyncStatusBar_SyncedStatus.Text" xml:space="preserve">
-    <value />
-  </data>
-  <data name="SyncErrorBar_message.Text" xml:space="preserve">
-    <value />
-  </data>
-  <data name="SyncErrorBar_button.Content" xml:space="preserve">
-    <value />
-  </data>
-  <data name="ActivityList_Header_Name.Text" xml:space="preserve">
-    <value />
-  </data>
-  <data name="ActivityList_Header_State.Text" xml:space="preserve">
-    <value />
-  </data>
-  <data name="ActivityList_Header_Size.Text" xml:space="preserve">
-    <value />
-  </data>
-  <data name="ActivityList_Header_LastLocation.Text" xml:space="preserve">
+  <data name="CC_ActivityList_Header_LastLocation.Text" xml:space="preserve">
     <value />
   </data>
   <data name="Global_Second" xml:space="preserve">
@@ -210,19 +186,19 @@
   <data name="Global_Minute" xml:space="preserve">
     <value />
   </data>
-  <data name="ErrorPage_Title.Text" xml:space="preserve">
+  <data name="Page_ErrorPage_Title.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="ErrorPage_Application_HowTosolve.Text" xml:space="preserve">
+  <data name="Page_ErrorPage_Application_HowTosolve.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="ErrorPage_Application_Title.Text" xml:space="preserve">
+  <data name="Page_ErrorPage_Application_Title.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="ErrorPage_Application_Header.Text" xml:space="preserve">
+  <data name="Page_Page_ErrorPage_Application_Header.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="ErrorPage_Synchronisation_Header.Text" xml:space="preserve">
+  <data name="Page_ErrorPage_Synchronisation_Header.Text" xml:space="preserve">
     <value />
   </data>
   <data name="Global_SupportUrl" xml:space="preserve">
@@ -231,22 +207,46 @@
   <data name="Global_FAQUrl" xml:space="preserve">
     <value />
   </data>
-  <data name="ErrorPage_NoErrors_Line1.Text" xml:space="preserve">
+  <data name="Page_ErrorPage_NoErrors_Line1.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="ErrorPage_NoErrors_Line2.Text" xml:space="preserve">
+  <data name="Page_ErrorPage_NoErrors_Line2.Text" xml:space="preserve">
     <value />
   </data>
   <data name="Global_UpgradeOfferMy_Url" xml:space="preserve">
     <value />
   </data>
-  <data name="Global_UpgradeOfferPro_Url" xml:space="preserve">
+  <data name="Global_UpgradeOfferProUrl" xml:space="preserve">
     <value />
   </data>
-  <data name="ErrorPage_Application_LearnMoreButton.Content" xml:space="preserve">
+  <data name="Page_ErrorPage_Application_LearnMoreButton.Content" xml:space="preserve">
     <value />
   </data>
-  <data name="ErrorPage_Application_SolveButton.Content" xml:space="preserve">
+  <data name="Page_ErrorPage_Application_SolveButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="  /!\  Ressource naming convention" xml:space="preserve">
+    <value>-</value>
+  </data>
+  <data name="Page_HomePage_favorites.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_trash.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_shared.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_KSuiteUpgradeBar_link.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_KSuiteUpgradeBar_message.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_UpdateAvailableBar_message.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_UpdateAvailableBar_link.Content" xml:space="preserve">
     <value />
   </data>
 </root>

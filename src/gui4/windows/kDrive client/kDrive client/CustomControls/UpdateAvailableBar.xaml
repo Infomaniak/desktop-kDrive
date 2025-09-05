@@ -34,12 +34,12 @@
                 </Image.Source>
             </Image>
 
-            <TextBlock x:Uid="UpdateAvailableBar_message"
+            <TextBlock x:Uid="CC_UpdateAvailableBar_message"
                        VerticalAlignment="Center"
                        Style="{StaticResource BodyTextBlockStyle}"
                        Grid.Column="1" />
 
-            <HyperlinkButton x:Uid="UpdateAvailableBar_link"
+            <HyperlinkButton x:Uid="CC_UpdateAvailableBar_link"
                              Margin="0,0,20,0"
                              Grid.Column="2"
                              HorizontalAlignment="Right" />

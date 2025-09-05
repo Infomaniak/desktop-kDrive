@@ -33,7 +33,7 @@ namespace Infomaniak.kDrive.CustomControls
             }
             else
             {
-               UpgradeHyperLinkButton.NavigateUri = new Uri(resourceLoader.GetString("Global_UpgradeOfferPro_Url"));
+               UpgradeHyperLinkButton.NavigateUri = new Uri(resourceLoader.GetString("Global_UpgradeOfferProUrl"));
             }
         }
     }
