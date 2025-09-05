@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml;
 using System;
@@ -58,16 +59,16 @@ namespace Infomaniak.kDrive.ServerCommunication
             Users[1].Drives.Add(Drives[2]);
 
             // Create mock syncs
-            Syncs.Add(new Sync(1, Drives[0]) { Id = 1000, LocalPath = "C:\\Users\\John\\kDrive", RemotePath = "", SupportVfs = false });
-            Syncs.Add(new Sync(2, Drives[0]) { Id = 1000, LocalPath = "C:\\Users\\John\\kDrive1", RemotePath = "", SupportVfs = false });
+            Syncs.Add(new Sync(1, Drives[0]) { Id = 1000, LocalPath = "C:\\Users\\John\\kDrive", RemotePath = "", SupportOnlineMode = false });
+            Syncs.Add(new Sync(2, Drives[0]) { Id = 1000, LocalPath = "C:\\Users\\John\\kDrive1", RemotePath = "", SupportOnlineMode = false });
             Drives[0].Syncs.Add(Syncs[0]);
             Drives[0].Syncs.Add(Syncs[1]);
 
 
-            Syncs.Add(new Sync(3, Drives[1]) { Id = 1001, LocalPath = "C:\\Users\\John\\kDrive2", RemotePath = "", SupportVfs = true });
+            Syncs.Add(new Sync(3, Drives[1]) { Id = 1001, LocalPath = "C:\\Users\\John\\kDrive2", RemotePath = "", SupportOnlineMode = true });
             Drives[1].Syncs.Add(Syncs[1]);
 
-            Syncs.Add(new Sync(4, Drives[2]) { Id = 1000, LocalPath = "C:\\Users\\John\\kDrive3", RemotePath = "", SupportVfs = false });
+            Syncs.Add(new Sync(4, Drives[2]) { Id = 1000, LocalPath = "C:\\Users\\John\\kDrive3", RemotePath = "", SupportOnlineMode = false });
             Drives[2].Syncs.Add(Syncs[2]);
         }
     }
@@ -295,11 +296,18 @@ namespace Infomaniak.kDrive.ServerCommunication
             return syncs.FirstOrDefault(s => s.DbId == dbId)?.RemotePath;
         }
 
-        public static async Task<bool?> GetSyncSupportVfs(DbId dbId)
+        public static async Task<bool?> GetSyncSupportOfflineMode(DbId dbId)
         {
             var syncs = _mockServerData.Syncs;
             await SimulateNetworkDelay().ConfigureAwait(false);
-            return syncs.FirstOrDefault(s => s.DbId == dbId)?.SupportVfs;
+            return syncs.FirstOrDefault(s => s.DbId == dbId)?.SupportOnlineMode;
+        }
+
+        public static async Task<SyncType?> GetSyncType(DbId dbId)
+        {
+            var syncs = _mockServerData.Syncs;
+            await SimulateNetworkDelay().ConfigureAwait(false);
+            return syncs.FirstOrDefault(s => s.DbId == dbId)?.SyncType;
         }
 
         public static async Task<List<User>> GetUsers() // USER_INFOLIST
