@@ -636,7 +636,7 @@ bool GuiUtility::checkBlacklistSize(const qsizetype blacklistSize, QWidget *pare
         (void) CustomMessageBox(
                 QMessageBox::Warning,
                 QCoreApplication::translate("utility",
-                                            "You cannot blacklist more than 1000 folders. Please uncheck higher-level folders."),
+                                            "You cannot exclude more than 1000 folders. Please uncheck higher-level folders."),
                 QMessageBox::Ok, parent)
                 .exec();
         return false;
