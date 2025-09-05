@@ -346,7 +346,7 @@ void TestIntegration::testBlacklist() {
         if (_syncPal->isPaused()) break;
         Utility::msleep(100);
     }
-    CPPUNIT_ASSERT_EQUAL(true, _syncPal->isPaused());
+    CPPUNIT_ASSERT(_syncPal->isPaused());
 
     logStep("testBlacklist");
 }
