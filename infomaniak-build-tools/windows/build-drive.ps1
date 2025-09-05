@@ -567,10 +567,6 @@ function Create-MSI-Package {
 	$appName = Get-Package-Name $buildPath
 	
 	dotnet build "$msiInstallerFolderPath/kDriveInstaller.sln" /p:Configuration="Release" /p:Platform="x64" /p:OutputName=$appName
-	
-	Write-Host "Moving items" -f Cyan
-	Write-Host "from: $msiPackageFolderPath/$appName.msi" -f Cyan
-	Write-Host "to: $contentPath" -f Cyan
 
 	Move-Item -Path "$msiPackageFolderPath/$appName.msi" -Destination "$contentPath"
 	if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -581,7 +577,6 @@ function Create-MSI-Package {
 	}
 
 	$installerPath = Get-Installer-Path $buildPath $contentPath -msi
-	Write-Host "installerPath: $installerPath" -f Cyan
 
 	if (Test-Path -Path $installerPath) {
 		Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -tokenPass $tokenPass
