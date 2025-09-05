@@ -30,12 +30,13 @@ namespace Infomaniak.kDrive
     {
         public enum Level
         {
-            Debug = 0,
-            Info = 1,
-            Warning = 2,
-            Error = 3,
-            Fatal = 4,
-            None = 5
+            Extended,
+            Debug,
+            Info,
+            Warning,
+            Error,
+            Fatal,
+            None
         }
 
         private static readonly string _logFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "temp", "kDrive-logdir", $"{DateTime.Now:yyyyMMdd_HHmm}_KDriveClient.log");
@@ -43,7 +44,11 @@ namespace Infomaniak.kDrive
         private static readonly StreamWriter _logStream = new(_logFilePath, append: true) { AutoFlush = true };
 #pragma warning restore S2930 
 
-        static public Level LogLevel { get; set; } = Level.Debug;
+        static public Level LogLevel
+        {
+            get => (App.Current as App)?.Data.Settings.LogLevel ?? Level.Info;
+        }
+
         public static void Log(Level level, string message, [CallerFilePath] string filePath = "?", [CallerLineNumber] int lineNumber = -1, [CallerMemberName] string memberName = "?")
         {
             if (LogLevel > level) return;

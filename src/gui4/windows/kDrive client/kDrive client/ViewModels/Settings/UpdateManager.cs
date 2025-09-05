@@ -6,9 +6,9 @@ using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KDrive.ViewModels
+namespace Infomaniak.kDrive.ViewModels
 {
-    internal class UpdateManager : ObservableObject
+    public class UpdateManager : ObservableObject
     {
         public enum ReleaseChannel
         {

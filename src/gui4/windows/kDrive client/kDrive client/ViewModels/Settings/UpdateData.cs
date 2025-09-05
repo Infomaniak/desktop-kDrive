@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KDrive.ViewModels
+namespace Infomaniak.kDrive.ViewModels
 {
-    internal class UpdateData
+    public class UpdateData
     {
         public string Version { get; set; } = string.Empty;
         public string Url { get; set; } = string.Empty;
