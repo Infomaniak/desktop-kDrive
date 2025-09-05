@@ -255,4 +255,10 @@
   <data name="Global_UpgradeOfferPro_Url" xml:space="preserve">
     <value>https://www.infomaniak.com/fr/ksuite/ksuite-pro/tarifs</value>
   </data>
+  <data name="ErrorPage_Application_LearnMoreButton.Content" xml:space="preserve">
+    <value>En savoir plus</value>
+  </data>
+  <data name="ErrorPage_Application_SolveButton.Content" xml:space="preserve">
+    <value>Contacter le support</value>
+  </data>
 </root>

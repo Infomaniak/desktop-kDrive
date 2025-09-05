@@ -49,5 +49,13 @@ namespace Infomaniak.kDrive
             await Windows.System.Launcher.LaunchUriAsync(new System.Uri(resourceLoader.GetString("Global_SupportUrl")));
             Logger.Log(Logger.Level.Debug, "Support URL opened");
         }
+
+        private async void LearnMoreButton_Click(object sender, RoutedEventArgs e)
+        {
+            Logger.Log(Logger.Level.Info, "Learn more button clicked, opening support URL");
+            var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
+            await Windows.System.Launcher.LaunchUriAsync(new System.Uri(resourceLoader.GetString("Global_FAQUrl")));
+            Logger.Log(Logger.Level.Debug, "Learn more Support URL opened");
+        }
     }
 }

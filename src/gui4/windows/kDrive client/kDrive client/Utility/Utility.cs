@@ -34,7 +34,7 @@ namespace Infomaniak.kDrive
             // Validate input
             if (string.IsNullOrWhiteSpace(folderPath))
             {
-                Logger.Log(Logger.Level.Warning, "Cannot open the FolderPath wich is null or empty.");
+                Logger.Log(Logger.Level.Warning, "Cannot open the FolderPath which is null or empty.");
                 return false;
             }
 

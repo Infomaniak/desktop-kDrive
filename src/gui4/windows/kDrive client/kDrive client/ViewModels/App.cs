@@ -115,6 +115,8 @@ namespace Infomaniak.kDrive.ViewModels
 
             // Observe changes to AppErrors and SelectedSync.SyncErrors to update HasNoErrors property
             AppErrors.CollectionChanged += (_, __) => OnPropertyChanged(nameof(HasErrors));
+
+            AppErrors.Add(new Errors.AppError(0) { ExitCause = 4 , ExitCode = 1234}); // TODO: Remove this line, only for testing
         }
 
         private void EnsureValidSelectedSync()
