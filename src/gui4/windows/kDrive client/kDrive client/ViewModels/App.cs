@@ -82,10 +82,14 @@ namespace KDrive.ViewModels
             get => _selectedSync;
             set
             {
-                SetProperty(ref _selectedSync, value);
                 if (SelectedSync != null)
                 {
                     SelectedSync.SyncErrors.CollectionChanged -= SyncErrors_CollectionChanged;
+                }
+                SetProperty(ref _selectedSync, value);
+
+                if (SelectedSync != null)
+                {
                     SelectedSync.SyncErrors.CollectionChanged += SyncErrors_CollectionChanged;
                 }
                 OnPropertyChanged(nameof(HasErrors));
