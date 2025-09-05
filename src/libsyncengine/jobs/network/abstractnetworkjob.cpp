@@ -461,6 +461,7 @@ bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
             std::string replyBody;
             getStringFromStream(stream[0].get(), replyBody);
             LOG_WARN(_logger, "Reply " << jobId() << ": " << replyBody);
+            (void) extractJsonError(replyBody);
             res = false;
             break;
         }
