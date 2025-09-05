@@ -35,7 +35,7 @@ using WinRT;
 
 // This first implementation is a basic one, it just connects to the server and reads incoming messages.
 // A final implementation should be done once the new communication layer on the server side is ready.
-namespace KDriveClient.ServerCommunication
+namespace KDrive.ServerCommunication
 {
     internal class CommClient
     {

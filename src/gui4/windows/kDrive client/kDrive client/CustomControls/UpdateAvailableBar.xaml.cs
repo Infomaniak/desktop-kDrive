@@ -10,19 +10,25 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Windows.Automation.Peers;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-using KDrive.ViewModels;
 
-namespace KDrive
+// To learn more about WinUI, the WinUI project structure,
+// and more about our project templates, see: http://aka.ms/winui-project-info.
+
+namespace KDrive.CustomControls
 {
-    public sealed partial class ActivityPage : Page
+    public sealed partial class UpdateAvailableBar : UserControl
     {
-        internal AppModel _viewModel = ((App)Application.Current).Data;
-        internal AppModel ViewModel { get { return _viewModel; } }
-        public ActivityPage()
+        public UpdateAvailableBar()
         {
             InitializeComponent();
+        }
+
+        private void HyperlinkButton_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }
