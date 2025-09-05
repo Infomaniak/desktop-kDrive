@@ -18,12 +18,12 @@ namespace KDrive.Converters
             {
                 return nodeType switch
                 {
-                    NodeType.Pdf => new Uri("ms-appx:///Assets/Icons/file-pdf.svg"),
-                    NodeType.Doc => new Uri("ms-appx:///Assets/Icons/file-text.svg"),
-                    NodeType.Grid => new Uri("ms-appx:///Assets/Icons/file-grid.svg"),
-                    NodeType.Directory => new Uri("ms-appx:///Assets/Icons/folder.svg"),
+                    NodeType.Pdf => AssetLoader.GetAssetUri(AssetLoader.AssetType.Icon, "file-pdf"),
+                    NodeType.Doc => AssetLoader.GetAssetUri(AssetLoader.AssetType.Icon, "file-text"),
+                    NodeType.Grid => AssetLoader.GetAssetUri(AssetLoader.AssetType.Icon, "file-grid"),
+                    NodeType.Directory => AssetLoader.GetAssetUri(AssetLoader.AssetType.Icon, "folder"),
                     // TODO: Add specific icons for audio and video files
-                    _ => new Uri("ms-appx:///Assets/Icons/file-text.svg")
+                    _ => AssetLoader.GetAssetUri(AssetLoader.AssetType.Icon, "file-text")
                 };
             }
             Logger.Log(Logger.Level.Fatal, "NodeTypeToSvgUriConverter: value is not a NodeType.");

@@ -29,7 +29,7 @@ namespace KDrive.ViewModels.Errors
 
         public override Uri IconUri()
         {
-            return new Uri("ms-appx:///Assets/Icons/headphones.svg");
+            return AssetLoader.GetAssetUri(AssetLoader.AssetType.Icon, "headphones");
         }
     }
 }
