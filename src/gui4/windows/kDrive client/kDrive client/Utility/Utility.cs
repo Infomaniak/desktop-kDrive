@@ -1,4 +1,4 @@
-﻿using KDrive.Types;
+﻿using Infomaniak.kDrive.Types;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace KDrive
+namespace Infomaniak.kDrive
 {
     public static class Utility
     {

@@ -1,9 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using KDrive.Types;
+using Infomaniak.kDrive.Types;
 using System;
 using System.Threading;
 
-namespace KDrive.ViewModels
+namespace Infomaniak.kDrive.ViewModels
 {
     public class SyncActivity : ObservableObject
     {

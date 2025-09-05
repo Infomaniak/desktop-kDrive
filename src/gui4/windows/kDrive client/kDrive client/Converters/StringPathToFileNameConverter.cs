@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Data;
-using KDrive.ViewModels;
+using Infomaniak.kDrive.ViewModels;
 
-namespace KDrive.Converters
+namespace Infomaniak.kDrive.Converters
 {
     public class StringPathToFileNameConverter : IValueConverter
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KDrive.ViewModels.Errors
+namespace Infomaniak.kDrive.ViewModels.Errors
 {
     public class AppError : BaseError
     {

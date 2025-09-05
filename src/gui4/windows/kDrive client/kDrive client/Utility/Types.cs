@@ -9,7 +9,7 @@ global using ExitCause = System.Int16;
 global using SyncPath = System.String;
 
 
-namespace KDrive.Types
+namespace Infomaniak.kDrive.Types
 {
 
     public enum NodeType

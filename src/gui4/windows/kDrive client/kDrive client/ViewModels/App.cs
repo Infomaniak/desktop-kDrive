@@ -19,7 +19,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using DynamicData;
 using DynamicData.Binding;
-using KDrive.ServerCommunication;
+using Infomaniak.kDrive.ServerCommunication;
 using Microsoft.UI.Dispatching;
 using System;
 using System.Collections.Concurrent;
@@ -30,7 +30,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KDrive.ViewModels
+namespace Infomaniak.kDrive.ViewModels
 
 {
     public class AppModel : ObservableObject

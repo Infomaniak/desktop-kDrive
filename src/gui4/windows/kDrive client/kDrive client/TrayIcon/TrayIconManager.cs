@@ -27,7 +27,7 @@ using System.IO;
 using Windows.System;
 using Microsoft.UI.Windowing;
 
-namespace KDrive.TrayIcon
+namespace Infomaniak.kDrive.TrayIcon
 {
     public class TrayIconManager
     {

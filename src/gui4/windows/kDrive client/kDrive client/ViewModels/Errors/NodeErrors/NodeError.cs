@@ -1,4 +1,4 @@
-﻿using KDrive.Types;
+﻿using Infomaniak.kDrive.Types;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KDrive.ViewModels.Errors
+namespace Infomaniak.kDrive.ViewModels.Errors
 {
     public abstract class NodeError : BaseError
     {

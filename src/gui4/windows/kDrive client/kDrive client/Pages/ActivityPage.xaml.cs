@@ -1,4 +1,4 @@
-using KDrive.ViewModels;
+using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -16,7 +16,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
 
-namespace KDrive
+namespace Infomaniak.kDrive
 {
     public sealed partial class ActivityPage : Page
     {

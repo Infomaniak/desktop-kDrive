@@ -6,13 +6,12 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Data;
 
-namespace KDrive.Converters
+namespace Infomaniak.kDrive.Converters
 {
     public class BooleanToInvertedBooleanConverter : IValueConverter
     {
        public object Convert(object value, Type targetType, object parameter, string language)
         {
-
             if (value is bool boolValue)
             {
                 return !boolValue;

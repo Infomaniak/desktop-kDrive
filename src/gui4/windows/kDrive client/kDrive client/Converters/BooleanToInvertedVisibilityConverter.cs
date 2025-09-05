@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Data;
 
-namespace KDrive.Converters
+namespace Infomaniak.kDrive.Converters
 {
     public class BooleanToInvertedVisibilityConverter : IValueConverter
     {

@@ -1,7 +1,7 @@
 using DynamicData;
 using DynamicData.Binding;
-using KDrive.ViewModels;
-using KDrive.ViewModels.Errors;
+using Infomaniak.kDrive.ViewModels;
+using Infomaniak.kDrive.ViewModels.Errors;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -26,7 +26,7 @@ using WinRT;
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
-namespace KDrive.CustomControls
+namespace Infomaniak.kDrive.CustomControls
 {
     public sealed partial class ErrorItem : UserControl
     {

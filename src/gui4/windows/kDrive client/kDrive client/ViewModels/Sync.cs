@@ -17,8 +17,8 @@
  */
 
 using CommunityToolkit.Mvvm.ComponentModel;
-using KDrive.ServerCommunication;
-using KDrive.ViewModels.Errors;
+using Infomaniak.kDrive.ServerCommunication;
+using Infomaniak.kDrive.ViewModels.Errors;
 using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
@@ -28,9 +28,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
-using KDrive.Types;
+using Infomaniak.kDrive.Types;
 
-namespace KDrive.ViewModels
+namespace Infomaniak.kDrive.ViewModels
 {
     public class Sync : ObservableObject
     {

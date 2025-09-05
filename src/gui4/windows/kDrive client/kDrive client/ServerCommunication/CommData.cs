@@ -23,7 +23,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KDrive.ServerCommunication
+namespace Infomaniak.kDrive.ServerCommunication
 {
     public class CommData
     {

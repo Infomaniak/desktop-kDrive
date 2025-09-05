@@ -1,5 +1,5 @@
-﻿using KDrive.ViewModels;
-using KDrive.Types;
+﻿using Infomaniak.kDrive.ViewModels;
+using Infomaniak.kDrive.Types;
 using Microsoft.UI.Xaml.Data;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KDrive.Converters
+namespace Infomaniak.kDrive.Converters
 {
     public class NodeTypeToSvgUriConverter : IValueConverter
     {

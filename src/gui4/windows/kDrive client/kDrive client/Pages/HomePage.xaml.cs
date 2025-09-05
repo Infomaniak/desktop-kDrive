@@ -30,9 +30,9 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-using KDrive.ViewModels;
+using Infomaniak.kDrive.ViewModels;
 
-namespace KDrive
+namespace Infomaniak.kDrive
 {
     public sealed partial class HomePage : Page
     {

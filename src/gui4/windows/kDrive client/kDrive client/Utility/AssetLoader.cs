@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KDrive
+namespace Infomaniak.kDrive
 {
     internal static class AssetLoader
     {
