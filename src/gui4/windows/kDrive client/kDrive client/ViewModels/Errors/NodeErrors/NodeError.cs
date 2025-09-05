@@ -14,7 +14,7 @@ namespace Infomaniak.kDrive.ViewModels.Errors
         private NodeId _localNodeId = -1;
         private NodeId _remoteNodeId = -1;
         private NodeType _nodeType = NodeType.File;
-        protected NodeError(int dbId) : base(dbId) { }
+        protected NodeError(DbId dbId) : base(dbId) { }
 
         public SyncPath NodePath
         {

@@ -8,7 +8,7 @@ namespace Infomaniak.kDrive.ViewModels.Errors
 {
     public class ConflictError : NodeError
     {
-        public ConflictError(int dbId) : base(dbId)
+        public ConflictError(DbId dbId) : base(dbId)
         {
             SolveButton = new ButtonData(GetLocalizedString("ConflictError_SolveButton"), async (object d) =>
             {

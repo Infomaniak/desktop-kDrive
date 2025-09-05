@@ -8,7 +8,7 @@ namespace Infomaniak.kDrive.ViewModels.Errors
 {
     public class AppError : BaseError
     {
-        public AppError(int dbId) : base(dbId)
+        public AppError(DbId dbId) : base(dbId)
         {
         }
 
