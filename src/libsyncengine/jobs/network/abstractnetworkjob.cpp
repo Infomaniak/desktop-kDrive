@@ -236,15 +236,9 @@ bool AbstractNetworkJob::hasHttpError(std::string *errorCode /*= nullptr*/) cons
     return false;
 }
 
-bool AbstractNetworkJob::hasErrorApi(std::string *errorCode, std::string *errorDescr) const {
+bool AbstractNetworkJob::hasErrorApi() const {
     if (hasHttpError()) return true;
     if (_errorCode.empty()) return false;
-    if (errorCode) {
-        *errorCode = _errorCode;
-        if (errorDescr) {
-            *errorDescr = _errorDescr;
-        }
-    }
     return true;
 }
 

@@ -41,12 +41,15 @@ class AbstractNetworkJob : public AbstractJob {
         ~AbstractNetworkJob() override;
 
         [[nodiscard]] bool hasHttpError(std::string *errorCode = nullptr) const;
-        bool hasErrorApi(std::string *errorCode = nullptr, std::string *errorDescr = nullptr) const;
+        bool hasErrorApi() const;
         [[nodiscard]] Poco::Net::HTTPResponse::HTTPStatus getStatusCode() const { return _resHttp.getStatus(); }
         void abort() override;
 
         [[nodiscard]] std::string octetStreamRes() const { return _octetStreamRes; }
         Poco::JSON::Object::Ptr jsonRes() { return _jsonRes; }
+
+        [[nodiscard]] const std::string &errorCode() const { return _errorCode; }
+        [[nodiscard]] const std::string &errorDescr() const { return _errorDescr; }
 
     protected:
         void runJob() noexcept override;
@@ -73,6 +76,7 @@ class AbstractNetworkJob : public AbstractJob {
         void getStringFromStream(std::istream &inputStream, std::string &res);
 
         std::string _httpMethod;
+        uint64_t _apiVersion{2};
         std::string _data;
         Poco::Net::HTTPResponse _resHttp;
         int _customTimeout = 0;
