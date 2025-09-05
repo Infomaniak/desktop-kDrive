@@ -54,7 +54,8 @@ namespace KDrive.ViewModels
             set
             {
                 SetProperty(ref _activityTime, value);
-                _activityTimeUpdateTimer = new Timer(_ => 
+                _activityTimeUpdateTimer?.Dispose();
+                _activityTimeUpdateTimer = new Timer(_ =>
                 {
                     ViewModels.AppModel.UIThreadDispatcher.TryEnqueue(() => 
                     {
