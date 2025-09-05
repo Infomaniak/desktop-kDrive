@@ -23,9 +23,9 @@
 namespace KDC {
 
 InitFileListWithCursorJob::InitFileListWithCursorJob(const int driveDbId, const NodeId &dirId) :
-    AbstractListingJob(ApiType::NotifyDrive, driveDbId),
+    AbstractListingJob(ApiType::Drive, driveDbId),
     _dirId(dirId) {
-    _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
+    _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
 std::string InitFileListWithCursorJob::getSpecificUrl() {
