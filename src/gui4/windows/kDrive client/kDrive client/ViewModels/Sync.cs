@@ -156,8 +156,6 @@ namespace KDrive.ViewModels
                     });
                 }
             });
-            _syncErrors.Add(new NodeError(1) { ExitCause = 1, ExitCode = 2, Time = DateTime.Now });
-            _syncErrors.Add(new SyncPalError(2) { ExitCause = 8, ExitCode = 9, Time = DateTime.Now });
         }
 
         public DbId DbId
