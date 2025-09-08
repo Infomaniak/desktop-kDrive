@@ -198,9 +198,6 @@
   <data name="Page_ErrorPage_Application_Title.Text" xml:space="preserve">
     <value>Assistance technique</value>
   </data>
-  <data name="Page_Page_ErrorPage_Application_Header.Text" xml:space="preserve">
-    <value>Application</value>
-  </data>
   <data name="Page_ErrorPage_Synchronisation_Header.Text" xml:space="preserve">
     <value>Synchronisation (</value>
     <comment>must end with "(" </comment>

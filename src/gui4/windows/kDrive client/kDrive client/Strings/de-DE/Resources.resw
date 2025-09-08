@@ -195,9 +195,6 @@
   <data name="Page_ErrorPage_Application_Title.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="Page_Page_ErrorPage_Application_Header.Text" xml:space="preserve">
-    <value />
-  </data>
   <data name="Page_ErrorPage_Synchronisation_Header.Text" xml:space="preserve">
     <value />
   </data>
@@ -242,6 +239,9 @@
   </data>
   <data name="CC_KSuiteUpgradeBar_message.Text" xml:space="preserve">
     <value />
+  </data>
+  <data name="Page_ErrorPage_Application_Header.Text" xml:space="preserve">
+    <value>c</value>
   </data>
   <data name="CC_UpdateAvailableBar_message.Text" xml:space="preserve">
     <value />

@@ -19,6 +19,7 @@
 using H.NotifyIcon;
 using Infomaniak.kDrive.ServerCommunication;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Security.Authentication.OAuth;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -31,6 +32,7 @@ using Microsoft.UI.Xaml.Shapes;
 using Microsoft.VisualBasic.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -59,8 +61,31 @@ namespace Infomaniak.kDrive
 
         protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
+            string[] arguments = Environment.GetCommandLineArgs();
+            if (arguments.Length > 1)
+            {
+                var oauthArg = arguments.FirstOrDefault(arg => arg.StartsWith("kdrive://auth-desktop"), "");
+                if (oauthArg != "")
+                {
+                    if (OAuth2Manager.CompleteAuthRequest(new Uri(oauthArg)))
+                    {
+                        // Terminate the Process
+                        Logger.Log(Logger.Level.Info, "OAuth process completed, response routed successfully. Terminating the process.");
+                    }
+                    else
+                    {
+                        Logger.Log(Logger.Level.Warning, "OAuth process failed.");
+                    }
+                    Process current = Process.GetCurrentProcess();
+                    current.Kill();
+                }
+            }
+
+            Logger.Log(Logger.Level.Info, $"App launched with kind: {args.UWPLaunchActivatedEventArgs.Kind}, arguments: {args.Arguments}");
+
             Window = new MainWindow();
             TrayIcoManager.Initialize(Window);
+            await ComClient.Initialize();
             await Data.InitializeAsync().ConfigureAwait(false);
         }
     }

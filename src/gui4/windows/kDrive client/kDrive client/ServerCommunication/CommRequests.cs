@@ -215,6 +215,13 @@ namespace Infomaniak.kDrive.ServerCommunication
             return users.FirstOrDefault(u => u.DbId == dbId)?.Drives.Select(d => d!.DbId).ToList() ?? new List<DbId>();
         }
 
+        public static async Task<DbId> AddOrRelogUser(string token)
+        {
+            var users = _mockServerData.Users;
+            await SimulateNetworkDelay().ConfigureAwait(false);
+            return users.FirstOrDefault().DbId; // Always return the first user for simplicity (tests)
+        }
+
         // Drive-related requests
         public static async Task<DriveId?> GetDriveId(DbId dbId)
         {

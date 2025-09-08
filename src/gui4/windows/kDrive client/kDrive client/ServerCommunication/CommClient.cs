@@ -39,17 +39,21 @@ namespace Infomaniak.kDrive.ServerCommunication
 {
     public class CommClient
     {
-        private readonly TcpClient? _client;
-        private readonly Dictionary<int, Func<int/*Id*/, ImmutableArray<byte>/*parms*/, bool>> _signalHandlers = new();
+        private TcpClient? _client;
+        private Dictionary<int, Func<int/*Id*/, ImmutableArray<byte>/*parms*/, bool>> _signalHandlers = new();
         private long _idCounter = 0;
 
-        private readonly ConcurrentDictionary<long, CommData?> pendingRequests = new ConcurrentDictionary<long, CommData?>();
+        private ConcurrentDictionary<long, CommData?> pendingRequests = new ConcurrentDictionary<long, CommData?>();
         private long nextId
         {
             get => ++_idCounter;
         }
 
         public CommClient()
+        {       
+        }
+
+        public async Task Initialize()
         {
             // Initialize signal handlers
             _signalHandlers[15] = (id, parms) => { return onSyncProgressInfo(id, parms); };
@@ -57,7 +61,7 @@ namespace Infomaniak.kDrive.ServerCommunication
 
             // Fetch the port from the .comm file
             string homePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + Path.DirectorySeparatorChar + ".comm";
-            int port = Int32.Parse(File.ReadAllText(homePath).Trim());
+            int port = Int32.Parse((await File.ReadAllTextAsync(homePath)).Trim());
 
             Logger.Log(Logger.Level.Info, $"Connecting to port {port}");
             // Prefer a using declaration to ensure the instance is Disposed later.
@@ -74,7 +78,7 @@ namespace Infomaniak.kDrive.ServerCommunication
 
             if (_client != null && _client.Connected)
             {
-                Task.Run(async () =>
+                _ = Task.Run(async () =>
                 {
                     while (true)
                     {
