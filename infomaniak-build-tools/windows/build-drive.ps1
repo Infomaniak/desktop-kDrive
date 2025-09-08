@@ -224,7 +224,7 @@ function Build-Extension {
     msbuild "$extPath\kDriveExt.sln" /p:Configuration=$configuration /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true /p:PackageCertificateThumbprint="$thumbprint"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-    $bundlePath = "$extPath/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$version.0_Test/FileExplorerExtensionPackage_$version.0_x64_arm64.msixbundle"
+    $bundlePath = "$extPath/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$version/FileExplorerExtensionPackage_$version.0_x64_arm64.msixbundle"
     Sign-File -FilePath $bundlePath -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass
 
     $srcVfsPath = "$path/src/libcommonserver/vfs/win/."
