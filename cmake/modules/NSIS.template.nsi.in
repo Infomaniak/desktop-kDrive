@@ -50,7 +50,7 @@
 !define VER_BUILD "@KDRIVE_VERSION_BUILD@"
 !define VERSION "@KDRIVE_VERSION@"
 
-!define VFS_APPX_DIRECTORY "@{extpath}\FileExplorerExtensionPackage\AppPackages\FileExplorerExtensionPackage_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}"
+!define VFS_APPX_DIRECTORY "@{extpath}\FileExplorerExtensionPackage\AppPackages\FileExplorerExtensionPackage_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.0_Test"
 !define VFS_APPX_BUNDLE "FileExplorerExtensionPackage_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.0_x64_arm64.msixbundle"
 !define VFS_PACKAGE_NAME "Infomaniak.kDrive.Extension"
 !define EXTENSION_NAME "FileExplorerExtension.exe"
