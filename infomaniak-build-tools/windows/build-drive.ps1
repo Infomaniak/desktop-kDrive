@@ -233,6 +233,10 @@ function Build-Extension {
 
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+    Copy-Item -Path "$extPath/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$version.0_Test" -Destination "$path/vfs/appx_directory" -Recurse
+
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
     Write-Host "Extension built."
 }
 
