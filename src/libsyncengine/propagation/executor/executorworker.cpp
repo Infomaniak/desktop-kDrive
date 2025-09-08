@@ -297,7 +297,8 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
     if (isLiteSyncActivated() && !syncOp->omit()) {
         bool isDehydratedPlaceholder = false;
         if (ExitInfo exitInfo = checkLiteSyncInfoForCreate(syncOp, absoluteLocalFilePath, isDehydratedPlaceholder); !exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in checkLiteSyncInfoForCreate" << " " << exitInfo);
+            LOG_SYNCPAL_WARN(_logger, "Error in checkLiteSyncInfoForCreate"
+                                              << " " << exitInfo);
             return exitInfo;
         }
 
@@ -380,8 +381,8 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<Abstra
                     if (const ExitInfo exitInfoCheckAlreadyExcluded =
                                 checkAlreadyExcluded(absoluteLocalFilePath, createDirJob->parentDirId());
                         !exitInfoCheckAlreadyExcluded) {
-                        LOG_SYNCPAL_WARN(_logger,
-                                         "Error in ExecutorWorker::checkAlreadyExcluded" << " " << exitInfoCheckAlreadyExcluded);
+                        LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::checkAlreadyExcluded"
+                                                          << " " << exitInfoCheckAlreadyExcluded);
                         return exitInfoCheckAlreadyExcluded;
                     }
 
@@ -1183,8 +1184,7 @@ ExitInfo ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool
             LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve node ID");
             return ExitCode::DataError;
         }
-        job = std::make_shared<LocalDeleteJob>(_syncPal->syncInfo(), relativeLocalFilePath, isDehydratedPlaceholder,
-                                               remoteNodeId);
+        job = std::make_shared<LocalDeleteJob>(_syncPal->syncInfo(), relativeLocalFilePath, isLiteSyncActivated(), remoteNodeId);
     } else {
         try {
             job = std::make_shared<DeleteJob>(_syncPal->driveDbId(), syncOp->correspondingNode()->id().value_or(""),
@@ -1438,22 +1438,6 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, Syn
     return ExitCode::Ok;
 }
 
-namespace {
-bool isFileDehydrated(const bool isLiteSyncActivated, const SyncPath &localPath, log4cplus::Logger logger) {
-    if (!isLiteSyncActivated) return false;
-
-    bool isDehydrated = false;
-    if (auto errorOnHydrationCheck = IoError::Success;
-        !IoHelper::checkIfFileIsDehydrated(localPath, isDehydrated, errorOnHydrationCheck) ||
-        errorOnHydrationCheck != IoError::Success) {
-        LOGW_WARN(logger,
-                  L"Error in IoHelper::checkIfFileIsDehydrated: " << Utility::formatIoError(localPath, errorOnHydrationCheck));
-    }
-
-    return isDehydrated;
-}
-} // namespace
-
 ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &relativeLocalPath, bool &ignored) {
     ExitInfo exitInfo = ExitCode::Ok;
     ignored = false;
@@ -1480,8 +1464,7 @@ ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath 
             // Delete the item from local replica
             const NodeId remoteNodeId = syncOp->correspondingNode()->id().value_or("");
             if (!remoteNodeId.empty()) {
-                const bool isDehydrated = isFileDehydrated(isLiteSyncActivated(), relativeLocalPath, _logger);
-                LocalDeleteJob deleteJob(_syncPal->syncInfo(), relativeLocalPath, isDehydrated, remoteNodeId);
+                LocalDeleteJob deleteJob(_syncPal->syncInfo(), relativeLocalPath, isLiteSyncActivated(), remoteNodeId);
                 deleteJob.setBypassCheck(true);
                 deleteJob.runSynchronously();
             }
