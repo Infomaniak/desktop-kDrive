@@ -183,6 +183,7 @@ function Get-Installer-Path {
 function Build-Extension {
     param (
         [string] $path,
+        [string] $contentPath,
         [string] $extPath,
         [string] $buildType,
         [string] $thumbprint
@@ -233,7 +234,8 @@ function Build-Extension {
 
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-    Copy-Item -Path "$extPath/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$version.0_Test" -Destination "$path/vfs_appx_directory" -Recurse
+    # Create a copy for NSIS.template.nsi.in where paths are shorter (long paths can cause the NSIS `File` function to fail).
+    Copy-Item -Path "$extPath/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$version.0_Test" -Destination "$contentPath/vfs_appx_directory" -Recurse
 
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
@@ -372,7 +374,7 @@ function Set-Up-NSIS {
 
     $scriptContent = Get-Content "$buildPath/NSIS.template.nsi" -Raw
     $scriptContent = $scriptContent -replace "@{icon}", $iconPath
-    $scriptContent = $scriptContent -replace "@{vfs_appx_directory}", "$path\vfs_appx_directory"
+    $scriptContent = $scriptContent -replace "@{vfs_appx_directory}", "$contentPath\vfs_appx_directory"
     $scriptContent = $scriptContent -replace "@{installerIcon}", "!define MUI_ICON $iconPath"
     $scriptContent = $scriptContent -replace "@{company}", $compName
     $scriptContent = $scriptContent -replace "@{productname}", $prodName
@@ -689,7 +691,7 @@ if ($LASTEXITCODE -ne 0) {
 
 if (!(Test-Path "$vfsDir\vfs.dll") -or $ext) {
     $thumbprint = Get-Thumbprint -Upload $upload -Ci $ci
-    Build-Extension -Path $path -ExtPath $extPath -BuildType $buildType -Thumbprint $thumbprint
+    Build-Extension -Path $path -ContentPath $contentPath -ExtPath $extPath -BuildType $buildType -Thumbprint $thumbprint
 
     if ($LASTEXITCODE -ne 0) {
         Write-Host "Failed to build the extension. Aborting." -f Red
