@@ -162,7 +162,6 @@ add_library(${libsyncengine_NAME} STATIC ${syncengine_SRCS})
 set(PC_HEADER_FILES
     # std c++
     "$<$<COMPILE_LANGUAGE:CXX>:<cstdint$<ANGLE-R>>"
-    "$<$<COMPILE_LANGUAGE:CXX>:<fstream$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<list$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<map$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<memory$<ANGLE-R>>"

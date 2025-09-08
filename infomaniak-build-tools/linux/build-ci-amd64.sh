@@ -76,13 +76,27 @@ fi
 echo "Build type: $build_type"
 echo "Unit tests build flag: $unit_tests"
 
-
-export QT_BASE_DIR="$HOME/Qt/6.2.3"
-export QTDIR="$QT_BASE_DIR/gcc_64"
 export BASEPATH="$PWD"
 export CONTENTDIR="$BASEPATH/build-linux"
 export BUILD_DIR="$CONTENTDIR/build"
 export APPDIR="$CONTENTDIR/app"
+conan_build_folder="$BUILD_DIR/conan"
+conan_dependencies_folder="$BUILD_DIR/conan/dependencies"
+
+export PATH="$HOME/.local/bin:$PATH" # the conan executable is located in ~/.local/bin on the ci runner
+bash "$BASEPATH/infomaniak-build-tools/conan/build_dependencies.sh" "$build_type" --output-dir="$conan_build_folder"
+conan_toolchain_file="$(find "$conan_build_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
+
+if [ ! -f "$conan_toolchain_file" ]; then
+  echo "Conan toolchain file not found: $conan_toolchain_file"
+  exit 1
+fi
+
+
+source "$BASEPATH/infomaniak-build-tools/conan/common-utils.sh"
+QTDIR="$(find_qt_conan_path "$conan_build_folder")"
+export QTDIR
+
 
 extract_debug () {
     objcopy --only-keep-debug "$1/$2" "$CONTENTDIR/$2-amd64.dbg"
@@ -94,30 +108,17 @@ mkdir -p "$APPDIR"
 mkdir -p "$BUILD_DIR"
 
 export QMAKE="$QTDIR/bin/qmake"
-export PATH="$QTDIR/bin:$QTDIR/libexec:/home/runner/.local/bin:$PATH"
+export PATH="$QTDIR/bin:$QTDIR/libexec:$PATH"
 export LD_LIBRARY_PATH="$QTDIR/lib:$LD_LIBRARY_PATH"
 export PKG_CONFIG_PATH="$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 # Set defaults
 export SUFFIX=""
 
-conan_build_folder="$BUILD_DIR/conan"
-conan_dependencies_folder="$BUILD_DIR/conan/dependencies"
-
-bash "$BASEPATH/infomaniak-build-tools/conan/build_dependencies.sh" "$build_type" --output-dir="$conan_build_folder"
-
-conan_toolchain_file="$(find "$conan_build_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
-conan_generator_folder="$(dirname "$conan_toolchain_file")"
-
-if [ ! -f "$conan_toolchain_file" ]; then
-  echo "Conan toolchain file not found: $conan_toolchain_file"
-  exit 1
-fi
-
 # Build client
 cd "$BUILD_DIR"
 
-source "$conan_generator_folder/conanbuild.sh"
+source "$(dirname "$conan_toolchain_file")/conanrun.sh"
 
 export KDRIVE_DEBUG=0
 

@@ -133,6 +133,8 @@ if ($CI) {
     # Call vcvarsall.bat to set up the environment for MSVC
     & "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
     Log "CI mode enabled."
+    $env:SSL_CERT_FILE = (& python -m certifi).Trim() # Since the CI User is the system user (NT AUTHORITY\SYSTEM), we need to set the SSL_CERT_FILE environment variable to the certifi bundle.
+    Log "SSL_CERT_FILE set to $($env:SSL_CERT_FILE)"
 }
 
 # Locate Conan executable
@@ -194,14 +196,9 @@ if (-not ($remotes -match "^$LocalRemoteName.*\[.*Enabled: True.*\]")) {
 # Ensure output directory exists
 New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null # mkdir
 
-Log "Creating xxHash Conan package..."
-& $ConanExe create "$RecipesFolder/xxhash/all/" --build=missing -s build_type=Release --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter
-if ($LASTEXITCODE -ne 0) {
-    Err "Failed to create xxHash Conan package."
-}
-
 Log "Installing Conan dependencies..."
-& $ConanExe install . --output-folder="$OutputDir" --build=missing -s build_type=$BuildType --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter -c tools.env.virtualenv:powershell=powershell
+$qt_login_type = if ($CI) { "envvars" } else { "ini" }
+& $ConanExe install . --output-folder="$OutputDir" --build=missing -s:b=build_type="$BuildType" -s:h=build_type="Release" --profile:all="$ConanProfile" -r $LocalRemoteName -r conancenter -c tools.cmake.cmaketoolchain:generator=Ninja -c tools.env.virtualenv:powershell=powershell -o "qt/*:qt_login_type=$qt_login_type"
 if ($LASTEXITCODE -ne 0) {
     Err "Failed to install Conan dependencies."
 }

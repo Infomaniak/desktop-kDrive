@@ -4,10 +4,7 @@
 - [Installation Requirements](#installation-requirements)
 	- [SIP](#sip)
 	- [Xcode](#xcode)
-	- [Qt 6.2.3](#qt-623)
-	- [Sentry](#sentry)
 	- [cppunit](#cppunit)
-	- [Poco](#poco)
 	- [libzip](#libzip)
 	- [Sparkle](#sparkle)
 	- [Packages](#packages)
@@ -56,40 +53,6 @@ Once installed, run the following command :
 sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 ```
 
-## QT 6.2.3
-
-From the [Qt Installer](https://www.qt.io/download-qt-installer-oss?hsCtaTracking=99d9dd4f-5681-48d2-b096-470725510d34%7C074ddad0-fdef-4e53-8aa8-5e8a876d6ab4), 
-tick the **Archive** box and then press the `Refresh` button to see earlier `Qt` versions.  
-In `QT 6.2.3`, select:
-- macOS
-- Sources
-- QT 5 Compatibility Module
-
-In `Qt 6.2.3 Additional Libraries`, select:
-- Qt WebEngine
-- Qt Positioning
-- Qt WebChannel
-- Qt WebView
-
-Add `CMake` in `PATH` by appending the following lines to your `.zshrc`:
-
-```bash
-export PATH=$PATH:~/Qt/Tools/CMake/CMake.app/Contents/bin
-export ALTOOL_USERNAME=<email address>
-export QTDIR=~/Qt/6.2.3/macos
-```
-
-## Sentry
-
-Download [Sentry Sources](https://github.com/getsentry/sentry-native/releases) (you can download the released zip and extract it to `~/Projects`):
-
-```bash
-cd ~/Projects/sentry-native
-cmake -B build -DSENTRY_BACKEND=crashpad -DSENTRY_INTEGRATION_QT=YES -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15" -DCMAKE_PREFIX_PATH=$QTDIR/lib/cmake
-cmake --build build --parallel
-sudo cmake --install build
-```
-
 ## CPPUnit
 
 Download and build `CPPUnit`:
@@ -112,26 +75,6 @@ sudo make install
 ```
 
 If the server does not reply to the `git clone` command, you can download the source from https://www.freedesktop.org/wiki/Software/cppunit/.
-
-## Poco
-
-> :warning: **`Poco` requires OpenSSL to be installed.**
->
-> You **must follow** the [Conan](#conan) section first to install `OpenSSL`.
-
-Download and build `Poco`:
-
-```bash
-cd ~/Projects
-source "$(find ./desktop-kdrive/ -name "conanrun.sh")" || exit 1 # This will prepend the path to the conan-managed dependencies to the 'DYLD_LIBRARY_PATH' environment variable
-git clone https://github.com/pocoproject/poco.git
-cd poco
-git checkout tags/poco-1.13.3-release
-mkdir build
-cd build
-cmake .. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15" -DENABLE_DATA_ODBC=OFF 
-sudo cmake --build . --target install
-```
 
 ## libzip
 
@@ -249,7 +192,6 @@ The project requires additional CMake variables for a correct build. To inject t
    set(KDRIVE_THEME_DIR "$ENV{HOME}/Projects/desktop-kDrive/infomaniak")
    set(BUILD_UNIT_TESTS "ON")      # Set to "OFF" to skip tests
    set(SOCKETAPI_TEAM_IDENTIFIER_PREFIX "864VDCS2QY")
-   set(CMAKE_PREFIX_PATH "$ENV{HOME}/Qt/6.2.3/macos")
    set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/Projects/CLion-build-debug/build/Debug/install")
    ```
 
@@ -288,7 +230,7 @@ The project requires additional CMake variables for a correct build. To inject t
 ./infomaniak-build-tools/conan/build_dependencies.sh [Debug|Release] [--output-dir=<output_dir>] [--make-release] [--help] 
 ```
 
-> **Note:** Currently only **xxHash**, **log4cplus**, **OpenSSL** and **libzip** are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
+> **Note:** Currently only **xxHash**, **log4cplus**, **OpenSSL**, **libzip**, **Sentry** and **Poco**are managed via this Conan-based workflow. Additional dependencies will be added in future updates.
 
 ---
 # Build in Debug
@@ -297,7 +239,9 @@ The project requires additional CMake variables for a correct build. To inject t
 
 Dependencies are deployed using utilitary tool `macdeployqt` provided with the Qt binaries:
 
-`/Users/<user_name>/Qt/6.2.3/macos/bin/macdeployqt /Users/<user_name>/Projects/CLion-build-debug/install/kDrive.app -libpath=$DYLD_LIBRARY_PATH -no-strip -executable=/Users/<user_name>/Projects/CLion-build-debug/install/kDrive.app/Contents/MacOS/kDrive`.
+```bash
+$(source $HOME/Projects/desktop-kDrive/infomaniak-build-tools/conan/common-utils.sh && find_qt_conan_path $HOME/Projects/CLion-build-debug qt)/bin/macdeployqt $HOME/Projects/CLion-build-debug/install/kDrive.app -libpath=$DYLD_LIBRARY_PATH -no-strip -executable=$HOME/Projects/CLion-build-debug/install/kDrive.app/Contents/MacOS/kDrive
+```
 
 This command is run each time we build. However, since it takes some time to find all dependencies, it is possible to disable it by setting the variable DEPLOY_LIBS_MANUALLY.
 
@@ -322,7 +266,6 @@ CMake options:
 -DKDRIVE_THEME_DIR=/Users/<user_name>/Projects/desktop-kDrive/infomaniak
 -DCMAKE_INSTALL_PREFIX=/Users/<user_name>/Projects/CLion-build-debug/install
 -DBUILD_UNIT_TESTS:BOOL=ON
--DCMAKE_PREFIX_PATH:STRING=/Users/<user_name>/Qt/6.2.3/macos
 -DSOCKETAPI_TEAM_IDENTIFIER_PREFIX:STRING=864VDCS2QY
 -DCMAKE_TOOLCHAIN_FILE=/Users/<user_name>/Projects/CLion-build-debug/conan_toolchain.cmake
 ```
@@ -378,8 +321,6 @@ In the project build settings, paste the following lines in the `Initial Configu
 -GUnix Makefiles
 -DCMAKE_BUILD_TYPE:STRING=Debug
 -DCMAKE_PROJECT_INCLUDE_BEFORE:PATH=%{IDE:ResourcePath}/package-manager/auto-setup.cmake
--DQT_QMAKE_EXECUTABLE:STRING=%{Qt:qmakeExecutable}
--DCMAKE_PREFIX_PATH:STRING=%{Qt:QT_INSTALL_PREFIX}
 -DCMAKE_C_COMPILER:STRING=%{Compiler:Executable:C}
 -DCMAKE_CXX_COMPILER:STRING=%{Compiler:Executable:Cxx}
 -DAPPLICATION_CLIENT_EXECUTABLE=kdrive

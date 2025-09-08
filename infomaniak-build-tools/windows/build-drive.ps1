@@ -260,6 +260,14 @@ function CMake-Build-And-Install {
         Write-Error "Conan toolchain file not found. Abort."
         exit 1
     }
+
+    $conanGeneratorsFolder = Split-Path -Parent $conanToolchainFile
+    $env:QTDIR = (& "$path\infomaniak-build-tools\conan\find_conan_dep.ps1" -Package "qt" -BuildDir "$conanGeneratorsFolder") -replace '\\bin$', ''
+    if (-not $env:QTDIR -or -not (Test-Path $env:QTDIR)) {
+        Write-Error "Qt not found in Conan dependencies. Abort."
+        exit 1
+    }
+
     Write-Host "Conan toolchain file used: $conanToolchainFile"
 
     Write-Host "2) Configuring and building with CMake ..."
@@ -278,11 +286,12 @@ function CMake-Build-And-Install {
 
     $buildVersion = Get-Date -Format "yyyyMMdd"
 
+
     $flags = @(
         "'-DCMAKE_TOOLCHAIN_FILE=$conanToolchainFile'",
         "'-DCMAKE_EXPORT_COMPILE_COMMANDS=1'",
-        "'-DCMAKE_MAKE_PROGRAM=C:\Qt\Tools\Ninja\ninja.exe'",
-        "'-DQT_QMAKE_EXECUTABLE:STRING=C:\Qt\Tools\CMake_64\bin\cmake.exe'",
+        "'-DCMAKE_MAKE_PROGRAM=ninja.exe'",
+        "'-DQT_QMAKE_EXECUTABLE:STRING=cmake.exe'",
         "'-DCMAKE_C_COMPILER:STRING=$compiler'",
         "'-DCMAKE_CXX_COMPILER:STRING=$compiler'",
         "'-DAPPLICATION_VIRTUALFILE_SUFFIX:STRING=kdrive'",
@@ -290,8 +299,6 @@ function CMake-Build-And-Install {
         "'-DVFS_DIRECTORY:PATH=$vfsDir'",
         "'-DKDRIVE_THEME_DIR:STRING=$path/infomaniak'",
         "'-DPLUGINDIR:STRING=C:/Program Files (x86)/kDrive/lib/kDrive/plugins'",
-        "'-DZLIB_INCLUDE_DIR:PATH=C:/Program Files (x86)/zlib-1.2.11/include'",
-        "'-DZLIB_LIBRARY_RELEASE:FILEPATH=C:/Program Files (x86)/zlib-1.2.11/lib/zlib.lib'",
         "'-DAPPLICATION_NAME:STRING=kDrive'",
         "'-DKDRIVE_VERSION_BUILD=$buildVersion'"
     )
@@ -309,13 +316,15 @@ function CMake-Build-And-Install {
     $args += ("'-B$buildPath'")
     $args += ("'-H$path'")
 
-    $cmake = ('cmake {0}' -f ($args -Join ' '))
+    & "$conanGeneratorsFolder/conanbuild.ps1" # Ensure the cmake used is the one from conan.
+
+    $cmake = ('cmake.exe {0}' -f ($args -Join ' '))
 
     Write-Host $cmake
     Invoke-Expression $cmake
 
     $buildArgs += @('--build', $buildPath, '--target all install')
-    $buildCall = ('cmake {0}' -f ($buildArgs -Join ' '))
+    $buildCall = ('cmake.exe {0}' -f ($buildArgs -Join ' '))
 
     Write-Host "Building and installing executables with CMake ..."
 
@@ -323,6 +332,8 @@ function CMake-Build-And-Install {
     Invoke-Expression $buildCall
 
     Write-Host "CMake build done."
+    & "$conanGeneratorsFolder/deactivate_conanbuild.ps1" # Ensure the cmake used is the one from conan.
+    & "$conanGeneratorsFolder/conanrun.ps1" # Ensure the cmake used is the one from conan.
 }
 
 function Get-Icon-Path {
@@ -415,14 +426,6 @@ function Prepare-Archive {
     $dependencies = @(
         "${env:ProgramFiles(x86)}/zlib-1.2.11/bin/zlib1",
         "${env:ProgramFiles(x86)}/libzip/bin/zip",
-        "${env:ProgramFiles(x86)}/Poco/bin/PocoCrypto",
-        "${env:ProgramFiles(x86)}/Poco/bin/PocoFoundation",
-        "${env:ProgramFiles(x86)}/Poco/bin/PocoJSON",
-        "${env:ProgramFiles(x86)}/Poco/bin/PocoNet",
-        "${env:ProgramFiles(x86)}/Poco/bin/PocoNetSSL",
-        "${env:ProgramFiles(x86)}/Poco/bin/PocoUtil",
-        "${env:ProgramFiles(x86)}/Poco/bin/PocoXML",
-        "${env:ProgramFiles(x86)}/Sentry-Native/bin/sentry",
         "$vfsDir/Vfs",
         "$buildPath/bin/kDrivecommonserver_vfs_win"
     )
@@ -436,21 +439,23 @@ function Prepare-Archive {
         }
     }
     $find_dep_script = "$path/infomaniak-build-tools/conan/find_conan_dep.ps1"
-    $packages = @(
+    $packages = @( # Qt dependencies are handled by windeployqt
         @{ Name = "xxhash";    Dlls = @("xxhash") },
         @{ Name = "log4cplus"; Dlls = @("log4cplus") },
-        @{ Name = "openssl";   Dlls = @("libcrypto-3-x64", "libssl-3-x64") }
+        @{ Name = "openssl";   Dlls = @("libcrypto-3-x64", "libssl-3-x64") },
+        @{ Name = "sentry";    Dlls = @("sentry") },
+        @{ Name = "poco";      DLLs = @("PocoCrypto", "PocoFoundation", "PocoJSON", "PocoNet", "PocoNetSSL", "PocoUtil", "PocoXML") }
     )
 
     foreach ($pkg in $packages) {
         $args = @{ Package = $pkg.Name; BuildDir = $buildPath }
         $binFolder = & $find_dep_script @args
         foreach ($dll in $pkg.Dlls) {
-            if (($buildType -eq "Debug") -and (Test-Path -Path $file"d.dll")) {
-                Copy-Item -Path "$binFolder/${dll}d.dll" -Destination "$archivePath"
-            } else {
-                Copy-Item -Path "$binFolder/$dll.dll" -Destination "$archivePath"
+            if (-not (Test-Path "$binFolder/$dll.dll")) {
+                Write-Host "Missing DLL: $dll.dll" -ForegroundColor Red
+                exit 1
             }
+            Copy-Item -Path "$binFolder/$dll.dll" -Destination "$archivePath"
         }
     }
 
@@ -468,8 +473,10 @@ function Prepare-Archive {
         Copy-Item -Path "$iconPath" -Destination $archivePath
     }
 
+    $crashpad_folder = & $find_dep_script -BuildDir $buildPath -Package sentry
+
     $binaries = @(
-        "${env:ProgramFiles(x86)}/Sentry-Native/bin/crashpad_handler.exe",
+        "$crashpad_folder/crashpad_handler.exe",
         "kDrive.exe",
         "kDrive_client.exe"
     )

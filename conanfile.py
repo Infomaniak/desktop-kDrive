@@ -1,9 +1,9 @@
+import platform
 import textwrap
 
 from conan import ConanFile
 from conan.tools.cmake import CMakeToolchain, cmake_layout
 from conan.tools.cmake.toolchain.blocks import VSRuntimeBlock
-from conan.tools.env import VirtualRunEnv
 
 
 class KDriveDesktop(ConanFile):
@@ -34,10 +34,16 @@ class KDriveDesktop(ConanFile):
         if self.settings.os == "Macos":
             tc.variables["CMAKE_OSX_ARCHITECTURES"] = "x86_64;arm64"
             tc.variables["CMAKE_MACOSX_DEPLOYMENT_TARGET"] = "10.15"
+
         tc.generate()
 
     def layout(self):
         cmake_layout(self)
+
+    def build_requirements(self):
+        if self.settings.os == "Windows":
+            self.tool_requires("cmake/[>=3.16.Z]")
+            self.tool_requires("ninja/[>=1.11.1]")
 
     def requirements(self):
         """
@@ -47,6 +53,12 @@ class KDriveDesktop(ConanFile):
         - `log4cplus/2.1.2`: A C++ logging library.
         :return: None
         """
+        self.requires("zlib/[>=1.2.11 <2]", transitive_headers=True, options={"shared": True})
+        # From local recipe, using the qt online installer.
+        if self.settings.os == "Linux" and str(self.settings.arch).startswith("arm"): # linux arm64
+            self.requires("qt/6.7.3")
+        else:
+            self.requires("qt/6.2.3")
         self.requires("xxhash/0.8.2") # From local recipe
         # log4cplus
         log4cplus_options = { "shared": True, "unicode": True }
@@ -54,14 +66,17 @@ class KDriveDesktop(ConanFile):
             log4cplus_options["thread_pool"] = False
         self.requires("log4cplus/2.1.2", options=log4cplus_options) # From https://conan.io/center/recipes/log4cplus
 
-        # openssl depends on zlib, which is already inside the conanfile.py of openssl-universal
-        # but since we build openssl-universal two times (for x86_64 and arm64) in single arch and then merge them, we need to add zlib in 'armv8|x86_64' arch mode.
-        self.requires("zlib/[>=1.2.11 <2]", options={ "shared": True }) # From https://conan.io/center/recipes/zlib
+        # openssl depends on zlib, which is already inside the conanfile.py of openssl
+        # but since we build openssl two times (for x86_64 and arm64) in single arch and then merge them, we need to add zlib in 'armv8|x86_64' arch mode.
         if self.settings.os == "Macos":
-            # On macOS, we need to use the universal version of OpenSSL
-            self.requires("openssl-universal/3.2.4")
+            self.requires("openssl-macos/3.2.4", options={ "shared": True }) # on macOS => Using the local recipe, using the openssl universal build script.
         else:
-            self.requires("openssl/3.2.4", options={ "shared": True }) # From https://conan.io/center/recipes/openssl
+            self.requires("openssl/3.2.4", options={ "shared": True }) # Otherwise, using the conan center recipe.
+
+        self.requires("sentry/0.7.10")
+        self.requires("poco/1.13.3", options={
+            "shared": True
+        })
 
 class OverrideVSRuntimeBlock(VSRuntimeBlock):
     def __init__(self, conanfile, toolchain, name):
