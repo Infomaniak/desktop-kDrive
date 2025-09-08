@@ -233,7 +233,7 @@ function Build-Extension {
 
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-    Copy-Item -Path "$extPath/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$version.0_Test" -Destination "$path/vfs/appx_directory" -Recurse
+    Copy-Item -Path "$extPath/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$version.0_Test" -Destination "$path/vfs_appx_directory" -Recurse
 
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
@@ -372,7 +372,7 @@ function Set-Up-NSIS {
 
     $scriptContent = Get-Content "$buildPath/NSIS.template.nsi" -Raw
     $scriptContent = $scriptContent -replace "@{icon}", $iconPath
-    $scriptContent = $scriptContent -replace "@{extpath}", $extPath
+    $scriptContent = $scriptContent -replace "@{vfs_appx_directory}", "$path\vfs_appx_directory"
     $scriptContent = $scriptContent -replace "@{installerIcon}", "!define MUI_ICON $iconPath"
     $scriptContent = $scriptContent -replace "@{company}", $compName
     $scriptContent = $scriptContent -replace "@{productname}", $prodName
