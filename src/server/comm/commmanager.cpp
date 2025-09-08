@@ -247,7 +247,7 @@ void CommManager::onLostExtConnection(std::shared_ptr<AbstractCommChannel> chann
 #endif
 
 void CommManager::onNewGuiConnection() {
-    std::shared_ptr<AbstractCommChannel> channel = _guiCommServer->connections().back();
+    std::shared_ptr<AbstractCommChannel> channel = _guiCommServer->nextPendingConnection();
     if (!channel) return;
 
     LOG_INFO(Log::instance()->getLogger(), "New gui connection - channel=" << channel->id());
@@ -274,7 +274,7 @@ void CommManager::onGuiQueryReceived(std::shared_ptr<AbstractCommChannel> channe
             QDataStream paramsStream(&params, QIODevice::WriteOnly);
             paramsStream << syncDbId;
 
-            emit OldCommServer::instance().get()->requestReceived(id, num, params);
+            emit OldCommServer::instance().get() -> requestReceived(id, num, params);
         }
     }
 }

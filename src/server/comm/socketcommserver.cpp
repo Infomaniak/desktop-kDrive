@@ -20,21 +20,33 @@
 
 namespace KDC {
 
-SocketCommChannel::SocketCommChannel() :
+SocketCommChannel::SocketCommChannel(Poco::Net::StreamSocket socket) :
     AbstractCommChannel() {}
 
-SocketCommChannel::~SocketCommChannel() {}
+SocketCommChannel::~SocketCommChannel() {
+    void destroyedCbk();
+}
 
 uint64_t SocketCommChannel::readData(CommChar *data, uint64_t maxlen) {
-    return 0;
+    try {
+        return _socket.receiveBytes(data, static_cast<int>(maxlen));
+    } catch (Poco::IOException &ex) {
+        LOG_ERROR(Log::instance()->getLogger(), "Socket receiveBytes error: " << ex.displayText());
+        return 0;
+    }
 }
 
 uint64_t SocketCommChannel::writeData(const CommChar *data, uint64_t len) {
-    return 0;
+    try {
+        return _socket.sendBytes(data, static_cast<int>(len));
+    } catch (Poco::IOException &ex) {
+        LOG_ERROR(Log::instance()->getLogger(), "Socket sendBytes error: " << ex.displayText());
+        return 0;
+    }
 }
 
 uint64_t SocketCommChannel::bytesAvailable() const {
-    return 0;
+    return _socket.available();
 }
 
 SocketCommServer::SocketCommServer(const std::string &name) :
@@ -42,18 +54,60 @@ SocketCommServer::SocketCommServer(const std::string &name) :
 
 SocketCommServer::~SocketCommServer() {}
 
-void SocketCommServer::close() {}
+void SocketCommServer::close() {
+    if (_stopAsked) {
+        LOG_DEBUG(Log::instance()->getLogger(), name() << " is already stoping");
+        return;
+    } else if (_isListening) {
+        LOG_DEBUG(Log::instance()->getLogger(), name() << " is stopping");
+        _stopAsked = true;
+        if (_thread && _thread->joinable()) {
+            _thread->join();
+            LOG_DEBUG(Log::instance()->getLogger(), name() << " stopped");
+        }
+        _isListening = false;
+    } else if (!_isListening) {
+        LOG_DEBUG(Log::instance()->getLogger(), name() << " is not listening");
+        return;
+    }
+}
 
 bool SocketCommServer::listen(const KDC::SyncPath &) {
-    return true;
+    if (_isListening) {
+        LOG_DEBUG(Log::instance()->getLogger(), name() << " is already listening");
+        return false;
+    }
+
+    LOG_DEBUG(Log::instance()->getLogger(), name() << " start");
+    _isListening = true;
+    _thread = (std::make_unique<std::thread>(executeFunc, this));
 }
 
 std::shared_ptr<AbstractCommChannel> SocketCommServer::nextPendingConnection() {
-    return nullptr;
+    if (_channels.empty()) return nullptr;
+    auto channel = _channels.back();
+    _channels.pop_back();
+    return channel;
 }
 
 std::list<std::shared_ptr<AbstractCommChannel>> SocketCommServer::connections() {
-    return std::list<std::shared_ptr<AbstractCommChannel>>();
+    return _channels;
+}
+
+void SocketCommServer::executeFunc(SocketCommServer *server) {
+    server->execute();
+    log4cplus::threadCleanup();
+}
+
+void SocketCommServer::execute() {
+    while (!_stopAsked) {
+        _serverSocket.listen(1);
+        Poco::Net::StreamSocket socket = _serverSocket.acceptConnection();
+        auto channel = std::make_shared<SocketCommChannel>(std::move(socket));
+        _channels.push_back(channel);
+        newConnectionCbk();
+    }
+    _stopAsked = false;
 }
 
 } // namespace KDC

@@ -26,7 +26,7 @@ namespace KDC {
 
 class GuiCommChannel : public SocketCommChannel {
     public:
-        GuiCommChannel();
+        GuiCommChannel(Poco::Net::StreamSocket socket);
 };
 
 class GuiCommServer : public SocketCommServer {

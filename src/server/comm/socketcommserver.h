@@ -21,19 +21,20 @@
 #include "abstractcommserver.h"
 #include "libcommon/utility/types.h"
 
+#include <Poco/Net/Socket.h>
 #include <Poco/Net/ServerSocket.h>
 
 namespace KDC {
 
 class SocketCommChannel : public AbstractCommChannel {
     public:
-        SocketCommChannel();
+        SocketCommChannel(Poco::Net::StreamSocket socket);
         ~SocketCommChannel();
 
         uint64_t bytesAvailable() const override;
 
     private:
-        Poco::Net::ServerSocket _socket;
+        Poco::Net::StreamSocket _socket;
 
         uint64_t readData(CommChar *data, uint64_t maxlen) override;
         virtual uint64_t writeData(const CommChar *data, uint64_t len) override;
@@ -49,13 +50,15 @@ class SocketCommServer : public AbstractCommServer {
         std::shared_ptr<KDC::AbstractCommChannel> nextPendingConnection() override;
         std::list<std::shared_ptr<KDC::AbstractCommChannel>> connections() override;
 
-        static bool removeServer(const KDC::SyncPath &path) {
-#if defined(KD_LINUX)
-            std::error_code ec;
-            std::filesystem::remove(path, ec);
-#endif
-            return true;
-        }
+    private:
+        Poco::Net::ServerSocket _serverSocket;
+        std::list<std::shared_ptr<AbstractCommChannel>> _channels;
+        bool _isListening = false;
+        bool _stopAsked = false;
+        std::unique_ptr<std::thread> _thread;
+
+        void execute();
+        static void executeFunc(SocketCommServer *server);
 };
 
 } // namespace KDC

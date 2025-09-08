@@ -20,8 +20,8 @@
 
 namespace KDC {
 
-GuiCommChannel::GuiCommChannel() :
-    SocketCommChannel() {}
+GuiCommChannel::GuiCommChannel(Poco::Net::StreamSocket socket) :
+    SocketCommChannel(socket) {}
 
 GuiCommServer::GuiCommServer(const std::string &name) :
     SocketCommServer(name) {}
