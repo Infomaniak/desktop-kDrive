@@ -162,7 +162,7 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
     buf->size = sb.st_size;
     buf->nodeType = S_ISDIR(sb.st_mode) ? NodeType::Directory : NodeType::File;
 
-    setTargetNodeType(path, S_ISLNK(sb.st_mode), buf->nodeType);
+    if (S_ISLNK(sb.st_mode)) setTargetNodeType(path, buf->nodeType);
 
     return true;
 }
