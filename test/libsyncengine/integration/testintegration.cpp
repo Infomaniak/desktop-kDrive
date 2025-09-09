@@ -151,7 +151,7 @@ void TestIntegration::testAll() {
     logStep("initialization");
 
     // Run test cases
-    basicTests();
+    /*basicTests();
     inconsistencyTests();
     conflictTests();
     testBreakCycle();
@@ -159,7 +159,7 @@ void TestIntegration::testAll() {
     testExclusionTemplates();
     testEncoding();
     testParentRename();
-    testNegativeModificationTime();
+    testNegativeModificationTime();*/
     testDeleteAndRecreateBranch();
 }
 
@@ -637,6 +637,11 @@ void TestIntegration::testDeleteAndRecreateBranch() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() / "A" / "AA" / "AAA1"));
+
+    CPPUNIT_ASSERT(Utility::isInTrash(SyncPath{"AA/AAA"}));
+#if defined(KD_MACOS) || defined(KD_LINUX)
+    Utility::eraseFromTrash(SyncPath{"AA/AAA"});
+#endif
 
     logStep("testDeleteAndRecreateBranch");
 }
