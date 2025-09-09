@@ -28,6 +28,9 @@ class ExtCommChannel : public PipeCommChannel {
         virtual void sendMessage(const CommString &message) final;
         virtual bool canReadMessage() const final;
         virtual CommString readMessage() final;
+
+    protected:
+        CommString _readBuffer;
 };
 
 class ExtCommServer : public PipeCommServer {

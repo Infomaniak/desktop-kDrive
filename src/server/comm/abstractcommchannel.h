@@ -72,8 +72,6 @@ class AbstractCommChannel : public std::enable_shared_from_this<AbstractCommChan
         std::function<void(std::shared_ptr<AbstractCommChannel>)> _onDestroyedCbk;
 
     protected:
-        CommString _readBuffer;
-
         //! Reads from the device.
         /*!
           \param data is a char array pointer.
