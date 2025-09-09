@@ -414,8 +414,14 @@ void TestIntegration::testExclusionTemplates() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(fileRemoteId));
-    CPPUNIT_ASSERT(
-            !std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() / filename)); // The local file has been deleted.
+    CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() /
+                                            filename)); // The local file has been moved to trash.
+
+    CPPUNIT_ASSERT(!std::filesystem::exists(filename));
+    CPPUNIT_ASSERT(Utility::isInTrash(filename));
+#if defined(KD_MACOS) || defined(KD_LINUX)
+    Utility::eraseFromTrash(filename);
+#endif
 
     // Remove the exclusion template.
     (void) templateList.pop_back();
