@@ -92,7 +92,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
                                 bool showInNavigationPane, AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo);
         static ExitCode addSync(int driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
                                 const QString &serverFolderNodeId, bool liteSync, bool showInNavigationPane, SyncInfo &syncInfo);
-        static ExitCode getNodeInfo(int userDbId, int driveId, const QString &nodeId, NodeInfo &nodeInfo, bool withPath = false);
+        static ExitInfo getNodeInfo(int userDbId, int driveId, const QString &nodeId, NodeInfo &nodeInfo, bool withPath = false);
         static ExitInfo getSubFolders(int userDbId, int driveId, const QString &nodeId, QList<NodeInfo> &list,
                                       bool withPath = false);
         static ExitInfo getSubFolders(int driveDbId, const QString &nodeId, QList<NodeInfo> &list, bool withPath = false);
@@ -101,7 +101,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitInfo getFolderSize(int userDbId, int driveId, const NodeId &nodeId,
                                       std::function<void(const QString &, qint64)> callback);
         static ExitCode getNodeIdByPath(int userDbId, int driveId, const SyncPath &path, QString &nodeId);
-        static ExitCode getPathByNodeId(int userDbId, int driveId, const QString &nodeId, QString &path);
+        static ExitInfo getPathByNodeId(int userDbId, int driveId, const QString &nodeId, QString &path);
 
         // C/S requests (others)
         static ExitCode deleteUser(int userDbId); // !!! Use COMM_LONG_TIMEOUT !!!

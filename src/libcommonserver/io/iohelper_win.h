@@ -16,8 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QString> // setFileHidden uses a QString
-
 #define UMDF_USING_NTSTATUS
 #include <windows.h>
 

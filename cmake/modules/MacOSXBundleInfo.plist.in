@@ -50,8 +50,6 @@
             <string>@APPLICATION_REV_DOMAIN@.VIRTUALFILE</string>
             <key>UTTypeTagSpecification</key>
             <dict>
-                <key>public.filename-extension</key>
-                <string>@APPLICATION_VIRTUALFILE_SUFFIX@</string>
                 <key>public.mime-type</key>
                 <string>application/octet-stream</string>
             </dict>

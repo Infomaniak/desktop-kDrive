@@ -21,7 +21,7 @@
 #include "db/parmsdb.h"
 #include "jobs/syncjobmanager.h"
 #include "jobs/network/abstractnetworkjob.h"
-#include "jobs/network/getappversionjob.h"
+#include "jobs/network/infomaniak_API/getappversionjob.h"
 #include "libcommon/utility/utility.h"
 #include "log/log.h"
 #include "utility/utility.h"
@@ -93,11 +93,9 @@ void UpdateChecker::versionInfoReceived(UniqueId jobId) {
         return;
     }
 
-    std::string errorCode;
-    std::string errorDescr;
-    if (getAppVersionJobPtr->hasErrorApi(&errorCode, &errorDescr)) {
+    if (getAppVersionJobPtr->hasErrorApi()) {
         std::stringstream ss;
-        ss << errorCode.c_str() << " - " << errorDescr;
+        ss << getAppVersionJobPtr->errorCode() << " - " << getAppVersionJobPtr->errorDescr();
         sentry::Handler::captureMessage(sentry::Level::Warning, "AbstractUpdater::checkUpdateAvailable", ss.str());
         LOG_ERROR(Log::instance()->getLogger(), ss.str());
     } else if (getAppVersionJobPtr->exitInfo().code() != ExitCode::Ok) {

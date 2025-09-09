@@ -49,6 +49,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
         SnapshotRevision _lastLocalSnapshotSyncedRevision = 0;
         SnapshotRevision _lastRemoteSnapshotSyncedRevision = 0;
 
+
         // Detect changes based on the database records: delete, move and edit operations
         ExitCode inferChangesFromDb(NodeIdSet &localIdsSet, NodeIdSet &remoteIdsSet);
         ExitCode inferChangesFromDb(const NodeType nodeType, NodeIdSet &localIdsSet, NodeIdSet &remoteIdsSet,
@@ -92,6 +93,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
 
         void deleteChildOpRecursively(const std::shared_ptr<const Snapshot> remoteSnapshot, const NodeId &remoteNodeId,
                                       NodeSet &tmpTooBigList);
+        void deleteLocalDescendantCreateOps(const NodeId &localNodeId);
 
         void updateUnsyncedList();
         ExitCode updateSyncNode(SyncNodeType syncNodeType);
@@ -100,17 +102,24 @@ class ComputeFSOperationWorker : public ISyncWorker {
         void notifyIgnoredItem(const NodeId &nodeId, const SyncPath &relativePath, NodeType nodeType);
         ExitInfo blacklistItem(const SyncPath &relativeLocalPath);
 
+        // The remote propagation of the creation of local items that reuse identifiers of deleted items is postponed to the next
+        // synchronization. So is the propagation of the creation of the descendants of those local items.
+        void postponeCreateOperationsOnReusedIds();
+
         SyncDbReadOnlyCache &_syncDbReadOnlyCache;
         Sync _sync;
 
         NodeIdSet _remoteUnsyncedList;
         NodeIdSet _remoteTmpUnsyncedList;
         NodeIdSet _localTmpUnsyncedList;
+        NodeIdSet _localReusedIds;
 
         std::unordered_set<SyncPath, PathHashFunction> _dirPathToDeleteSet;
         std::unordered_map<NodeId, SyncPath> _fileSizeMismatchMap; // File size mismatch checks are only enabled when env var:
                                                                    // KDRIVE_ENABLE_FILE_SIZE_MISMATCH_DETECTION is set
         SyncNameSet _ignoredDirectoryNames;
+
+        uint16_t _timeDifferenceThresholdForEdit{0};
 
         bool addFolderToDelete(const SyncPath &path);
         bool checkIfPathIsInDeletedFolder(const SyncPath &path, bool &isInDeletedFolder);

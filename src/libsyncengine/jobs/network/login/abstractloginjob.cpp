@@ -65,14 +65,14 @@ bool AbstractLoginJob::handleResponse(std::istream &inputStream) {
     return true;
 }
 
-bool AbstractLoginJob::handleError(std::istream &inputStream, const Poco::URI &uri) {
+bool AbstractLoginJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
     Poco::JSON::Parser jsonParser;
     Poco::JSON::Object::Ptr jsonError;
     try {
-        jsonError = jsonParser.parse(inputStream).extract<Poco::JSON::Object::Ptr>();
+        jsonError = jsonParser.parse(replyBody).extract<Poco::JSON::Object::Ptr>();
     } catch (Poco::Exception &exc) {
         LOG_WARN(_logger, "Reply " << jobId() << " received doesn't contain a valid JSON error: " << exc.displayText());
-        Utility::logGenericServerError(_logger, "Login error", inputStream, _resHttp);
+        Utility::logGenericServerError(_logger, "Login error", replyBody, _resHttp);
 
         _exitInfo = {ExitCode::BackError, ExitCause::ApiErr};
         return false;
@@ -81,7 +81,7 @@ bool AbstractLoginJob::handleError(std::istream &inputStream, const Poco::URI &u
     if (isExtendedLog()) {
         std::ostringstream os;
         jsonError->stringify(os);
-        LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << Utility::s2ws(os.str()));
+        LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << CommonUtility::s2ws(os.str()));
     }
 
     Poco::JSON::Object::Ptr errorObj = jsonError->getObject(errorKey);

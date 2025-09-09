@@ -30,8 +30,7 @@
 
 namespace KDC {
 VfsMac::VfsMac(const VfsSetupParams &vfsSetupParams, QObject *parent) :
-    Vfs(vfsSetupParams, parent),
-    _localSyncPath{Path2QStr(_vfsSetupParams.localPath)} {
+    Vfs(vfsSetupParams, parent) {
     // Initialize LiteSync ext connector
     LOG_INFO(logger(), "Initialize LiteSyncExtConnector");
 
@@ -90,32 +89,37 @@ ExitInfo VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &c
 
     bool isPlaceholder = false;
     bool isSyncing = false;
-    QString folderPath = QString::fromStdString(_vfsSetupParams.localPath.native());
-    if (!_connector->vfsStart(_vfsSetupParams.syncDbId, folderPath, isPlaceholder, isSyncing)) {
+    if (!_connector->vfsStart(_vfsSetupParams.syncDbId, _vfsSetupParams.localPath, isPlaceholder, isSyncing)) {
         LOG_WARN(logger(), "Error in vfsStart!");
         resetLiteSyncConnector();
         return {ExitCode::SystemError, ExitCause::UnableToCreateVfs};
     }
 
-    QStringList filesToFix;
-    if (isPlaceholder && isSyncing &&
-        _connector->checkFilesAttributes(folderPath, _localSyncPath,
+    if (std::list<SyncPath> filesToFix;
+        isPlaceholder && isSyncing &&
+        _connector->checkFilesAttributes(_vfsSetupParams.localPath, _vfsSetupParams.localPath,
                                          filesToFix)) { // Verify that all files/folders are in the correct state
         // Get the directories to fix
-        QSet<QString> dirsToFix;
-        for (const auto &file: filesToFix) {
-            const QFileInfo fileInfo(file);
-            if (fileInfo.isDir()) {
-                dirsToFix.insert(file);
+        std::unordered_set<SyncPath> dirsToFix;
+        for (const auto &filePath: filesToFix) {
+            bool isDirectory = false;
+            auto ioError = IoError::Success;
+            if (const bool isDirSuccess = IoHelper::checkIfIsDirectory(filePath, isDirectory, ioError); !isDirSuccess) {
+                LOGW_WARN(logger(), L"Error in IoHelper::checkIfIsDirectory: " << Utility::formatIoError(filePath, ioError));
                 continue;
             }
-            dirsToFix.insert(fileInfo.dir().absolutePath());
+
+            if (isDirectory) {
+                (void) dirsToFix.emplace(filePath);
+                continue;
+            }
+            (void) dirsToFix.emplace(filePath.parent_path());
         }
 
         // Fix parent directories status
         bool ok = true;
         for (const auto &dir: dirsToFix) {
-            if (!_connector->vfsProcessDirStatus(dir, _localSyncPath)) {
+            if (!_connector->vfsProcessDirStatus(dir, _vfsSetupParams.localPath)) {
                 LOGW_WARN(logger(), L"Error in vfsProcessDirStatus for " << Utility::formatErrno(dir, errno));
                 ok = false;
             }
@@ -142,77 +146,71 @@ void VfsMac::stopImpl(bool unregister) {
     }
 }
 
-void VfsMac::dehydrate(const SyncPath &absoluteFilepathStd) {
-    QString absoluteFilepath = SyncName2QStr(absoluteFilepathStd.native());
-    LOGW_DEBUG(logger(), L"dehydrate - " << Utility::formatPath(absoluteFilepath));
+void VfsMac::dehydrate(const SyncPath &absoluteFilepath) {
+    LOGW_DEBUG(logger(), L"dehydrate - " << Utility::formatSyncPath(absoluteFilepath));
 
-    const QString relativePath =
-            QStringView(absoluteFilepath).mid(static_cast<qsizetype>(_vfsSetupParams.localPath.string().size())).toUtf8();
+    const auto relativePath = CommonUtility::relativePath(_vfsSetupParams.localPath, absoluteFilepath);
 
     // Check file status
     if (!_syncFileStatus) {
-        LOGW_DEBUG(logger(), L"Unable to check status for file" << Utility::formatSyncPath(absoluteFilepathStd));
+        LOGW_DEBUG(logger(), L"Unable to check status for file" << Utility::formatSyncPath(absoluteFilepath));
         return;
     }
-    SyncFileStatus status;
-    _syncFileStatus(_vfsSetupParams.syncDbId, QStr2Path(relativePath), status);
+    SyncFileStatus status = SyncFileStatus::Unknown;
+    _syncFileStatus(_vfsSetupParams.syncDbId, relativePath, status);
     if (status == SyncFileStatus::Unknown) {
         // The file is not synchronized, do nothing
-        LOGW_DEBUG(logger(), L"Cannot dehydrate an unsynced file with " << Utility::formatSyncPath(absoluteFilepathStd));
+        LOGW_DEBUG(logger(), L"Cannot dehydrate an unsynced file with " << Utility::formatSyncPath(absoluteFilepath));
         return;
     }
 
     // Dehydrate file
-    if (!_connector->vfsDehydratePlaceHolder(QDir::toNativeSeparators(absoluteFilepath), _localSyncPath)) {
+    if (!_connector->vfsDehydratePlaceHolder(absoluteFilepath.native(), _vfsSetupParams.localPath)) {
         LOG_WARN(logger(), "Error in vfsDehydratePlaceHolder!");
     }
 
-    _setSyncFileSyncing(_vfsSetupParams.syncDbId, QStr2Path(relativePath), false);
+    _setSyncFileSyncing(_vfsSetupParams.syncDbId, relativePath, false);
 }
 
-void VfsMac::hydrate(const SyncPath &pathStd) {
-    QString path = SyncName2QStr(pathStd.native());
-    LOGW_DEBUG(logger(), L"hydrate - " << Utility::formatPath(path));
+void VfsMac::hydrate(const SyncPath &absoluteFilepath) {
+    LOGW_DEBUG(logger(), L"hydrate - " << Utility::formatSyncPath(absoluteFilepath));
 
-    if (!_connector->vfsHydratePlaceHolder(QDir::toNativeSeparators(path))) {
+    if (!_connector->vfsHydratePlaceHolder(absoluteFilepath.native())) {
         LOG_WARN(logger(), "Error in vfsHydratePlaceHolder!");
     }
 
-    QString relativePath = QStringView(path).mid(static_cast<qsizetype>(_vfsSetupParams.localPath.string().size())).toUtf8();
-    _setSyncFileSyncing(_vfsSetupParams.syncDbId, QStr2Path(relativePath), false);
+    const auto relativePath = CommonUtility::relativePath(_vfsSetupParams.localPath, absoluteFilepath);
+    _setSyncFileSyncing(_vfsSetupParams.syncDbId, relativePath, false);
 }
 
-ExitInfo VfsMac::forceStatus(const SyncPath &pathStd, const VfsStatus &vfsStatus) {
-    const QString path = SyncName2QStr(pathStd.native());
-    if (ExitInfo exitInfo = checkIfPathIsValid(pathStd, true); !exitInfo) {
+ExitInfo VfsMac::forceStatus(const SyncPath &path, const VfsStatus &vfsStatus) {
+    if (ExitInfo exitInfo = checkIfPathIsValid(path, true); !exitInfo) {
         LOGW_WARN(logger(), L"Error in VfsMac::forceStatus: " << exitInfo);
         return exitInfo;
     }
 
-    if (!_connector->vfsSetStatus(path, _localSyncPath, vfsStatus)) {
+    if (!_connector->vfsSetStatus(path, _vfsSetupParams.localPath, vfsStatus)) {
         LOG_WARN(logger(), "Error in vfsSetStatus!");
-        return handleVfsError(pathStd);
+        return handleVfsError(path);
     }
 
     return ExitCode::Ok;
 }
 
 bool VfsMac::cleanUpStatuses() {
-    return _connector->vfsCleanUpStatuses(_localSyncPath);
+    return _connector->vfsCleanUpStatuses(_vfsSetupParams.localPath);
 }
 
-void VfsMac::clearFileAttributes(const SyncPath &pathStd) {
-    QString path = SyncName2QStr(pathStd.native());
+void VfsMac::clearFileAttributes(const SyncPath &path) {
     _connector->vfsClearFileAttributes(path);
 }
 
-ExitInfo VfsMac::updateMetadata(const SyncPath &absoluteFilePathStd, time_t creationTime, time_t modtime, int64_t size,
+ExitInfo VfsMac::updateMetadata(const SyncPath &absoluteFilePath, time_t creationTime, time_t modtime, int64_t size,
                                 const NodeId &fileIdStr) {
     Q_UNUSED(fileIdStr);
-    const QString absoluteFilePath = SyncName2QStr(absoluteFilePathStd.native());
 
     if (extendedLog()) {
-        LOGW_DEBUG(logger(), L"updateMetadata - " << Utility::formatPath(absoluteFilePath));
+        LOGW_DEBUG(logger(), L"updateMetadata - " << Utility::formatSyncPath(absoluteFilePath));
     }
 
     if (!_connector) {
@@ -229,7 +227,7 @@ ExitInfo VfsMac::updateMetadata(const SyncPath &absoluteFilePathStd, time_t crea
 
     if (!_connector->vfsUpdateMetadata(absoluteFilePath, &fileStat)) {
         LOG_WARN(logger(), "Error in vfsUpdateMetadata!");
-        return handleVfsError(QStr2Path(absoluteFilePath));
+        return handleVfsError(absoluteFilePath);
     }
 
     return ExitCode::Ok;
@@ -265,28 +263,28 @@ ExitInfo VfsMac::createPlaceholder(const SyncPath &relativeLocalPath, const Sync
         fileStat.st_mode = S_IFREG;
     }
 
-    if (!_connector->vfsCreatePlaceHolder(QString::fromStdString(relativeLocalPath.native()), _localSyncPath, &fileStat)) {
+    if (!_connector->vfsCreatePlaceHolder(relativeLocalPath.native(), _vfsSetupParams.localPath, &fileStat)) {
         LOG_WARN(logger(), "Error in vfsCreatePlaceHolder!");
-        return defaultVfsError(); // handleVfsError is not suitable here, the file dosen't exist but we don't want to return
+        return defaultVfsError(); // handleVfsError is not suitable here, the file doesn't exist, but we don't want to return
                                   // NotFound as it make no sense in the context of a create
     }
 
     return ExitCode::Ok;
 }
 
-ExitInfo VfsMac::dehydratePlaceholder(const SyncPath &path) {
+ExitInfo VfsMac::dehydratePlaceholder(const SyncPath &relativePath) {
     if (extendedLog()) {
-        LOGW_DEBUG(logger(), L"dehydratePlaceholder - file " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(logger(), L"dehydratePlaceholder - file " << Utility::formatSyncPath(relativePath));
     }
 
-    SyncPath fullPath(_vfsSetupParams.localPath / path);
+    const auto fullPath(_vfsSetupParams.localPath / relativePath);
     if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
         return exitInfo;
     }
 
     // Check if the file is a placeholder
     VfsStatus vfsStatus;
-    if (!_connector->vfsGetStatus(QString::fromStdString(fullPath.native()), vfsStatus)) {
+    if (!_connector->vfsGetStatus(fullPath.native(), vfsStatus)) {
         LOG_WARN(logger(), "Error in vfsGetStatus!");
         return handleVfsError(fullPath);
     }
@@ -305,53 +303,50 @@ ExitInfo VfsMac::dehydratePlaceholder(const SyncPath &path) {
     return ExitCode::Ok;
 }
 
-ExitInfo VfsMac::convertToPlaceholder(const SyncPath &pathStd, const SyncFileItem &item) {
-    const QString path = SyncName2QStr(pathStd.native());
+ExitInfo VfsMac::convertToPlaceholder(const SyncPath &absolutePath, const SyncFileItem &item) {
     if (extendedLog()) {
-        LOGW_DEBUG(logger(), L"convertToPlaceholder - " << Utility::formatPath(path));
+        LOGW_DEBUG(logger(), L"convertToPlaceholder - " << Utility::formatSyncPath(absolutePath));
     }
 
-    if (path.isEmpty()) {
+    if (absolutePath.empty()) {
         LOG_WARN(logger(), "Invalid parameters");
         return {ExitCode::SystemError, ExitCause::InvalidArgument};
     }
-
-    SyncPath fullPath(QStr2Path(path));
-    if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
+    if (const auto exitInfo = checkIfPathIsValid(absolutePath, true); !exitInfo) {
         return exitInfo;
     }
 
     // Check if the file is already a placeholder
     VfsStatus vfsStatus;
-    if (!_connector->vfsGetStatus(path, vfsStatus)) {
+    if (!_connector->vfsGetStatus(absolutePath, vfsStatus)) {
         LOG_WARN(logger(), "Error in vfsGetStatus!");
-        return handleVfsError(fullPath);
+        return handleVfsError(absolutePath);
     }
 
     if (!vfsStatus.isPlaceholder) {
         // Convert to placeholder
-        if (!_connector->vfsConvertToPlaceHolder(QDir::toNativeSeparators(path), !item.dehydrated())) {
+        if (!_connector->vfsConvertToPlaceHolder(absolutePath.native(), !item.dehydrated())) {
             LOG_WARN(logger(), "Error in vfsConvertToPlaceHolder!");
-            return handleVfsError(fullPath);
+            return handleVfsError(absolutePath);
         }
 
         // If item is a directory, also convert items inside it
         ItemType itemType;
-        if (!IoHelper::getItemType(fullPath, itemType)) {
+        if (!IoHelper::getItemType(absolutePath, itemType)) {
             LOGW_WARN(KDC::Log::instance()->getLogger(),
-                      L"Error in IoHelper::getItemType : " << Utility::formatSyncPath(fullPath).c_str());
+                      L"Error in IoHelper::getItemType : " << Utility::formatSyncPath(absolutePath).c_str());
             return ExitCode::SystemError;
         }
 
         if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_DEBUG(KDC::Log::instance()->getLogger(),
-                       L"Item does not exist anymore : " << Utility::formatSyncPath(fullPath).c_str());
+                       L"Item does not exist anymore : " << Utility::formatSyncPath(absolutePath).c_str());
             return {ExitCode::SystemError, ExitCause::NotFound};
         }
 
         if (itemType.ioError == IoError::AccessDenied) {
             LOGW_DEBUG(KDC::Log::instance()->getLogger(),
-                       L"Item misses search permission : " << Utility::formatSyncPath(fullPath).c_str());
+                       L"Item misses search permission : " << Utility::formatSyncPath(absolutePath).c_str());
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
 
@@ -361,13 +356,13 @@ ExitInfo VfsMac::convertToPlaceholder(const SyncPath &pathStd, const SyncFileIte
             isDirectory = itemType.nodeType == NodeType::Directory;
             if (!isDirectory && itemType.ioError != IoError::Success) {
                 LOGW_WARN(logger(), L"Failed to check if the path is a directory: "
-                                            << Utility::formatIoError(fullPath, itemType.ioError).c_str());
+                                            << Utility::formatIoError(absolutePath, itemType.ioError).c_str());
                 return ExitCode::SystemError;
             }
         }
 
         if (isDirectory) {
-            convertDirContentToPlaceholder(path, !item.dehydrated());
+            convertDirContentToPlaceholder(Path2QStr(absolutePath), !item.dehydrated());
         }
     }
 
@@ -426,14 +421,14 @@ void VfsMac::convertDirContentToPlaceholder(const QString &dirPath, bool isHydra
 
             // Check if the file is already a placeholder
             VfsStatus vfsStatus;
-            if (!_connector->vfsGetStatus(Path2QStr(absolutePath), vfsStatus)) {
+            if (!_connector->vfsGetStatus(absolutePath, vfsStatus)) {
                 LOG_WARN(logger(), "Error in vfsGetStatus!");
                 continue;
             }
 
             if (!vfsStatus.isPlaceholder) {
                 // Convert to placeholder
-                if (!_connector->vfsConvertToPlaceHolder(Path2QStr(absolutePath), isHydratedIn)) {
+                if (!_connector->vfsConvertToPlaceHolder(absolutePath, isHydratedIn)) {
                     LOG_WARN(logger(), "Error in vfsConvertToPlaceHolder!");
                 }
             }
@@ -453,20 +448,17 @@ void VfsMac::resetLiteSyncConnector() {
     }
 }
 
-ExitInfo VfsMac::updateFetchStatus(const SyncPath &tmpPathStd, const SyncPath &pathStd, int64_t received, bool &canceled,
+ExitInfo VfsMac::updateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
                                    bool &finished) {
-    QString tmpPath = SyncName2QStr(tmpPathStd.native());
-    QString path = SyncName2QStr(pathStd.native());
     if (extendedLog()) {
-        LOGW_INFO(logger(), L"updateFetchStatus file " << Utility::formatPath(path) << L" - " << received);
+        LOGW_INFO(logger(), L"updateFetchStatus file " << Utility::formatSyncPath(path) << L" - " << received);
     }
-    if (tmpPath.isEmpty()) {
+    if (tmpPath.empty()) {
         LOG_WARN(logger(), "Invalid parameters");
         return {ExitCode::SystemError, ExitCause::InvalidArgument};
     }
 
-    std::filesystem::path fullPath(QStr2Path(path));
-    if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
+    if (ExitInfo exitInfo = checkIfPathIsValid(path, true); !exitInfo) {
         if (exitInfo == ExitInfo(ExitCode::SystemError, ExitCause::NotFound)) {
             return ExitCode::Ok;
         }
@@ -474,52 +466,49 @@ ExitInfo VfsMac::updateFetchStatus(const SyncPath &tmpPathStd, const SyncPath &p
     }
 
     finished = false;
-    SyncPath tmpFullPath(QStr2Path(tmpPath));
-    if (!_connector->vfsUpdateFetchStatus(Path2QStr(tmpFullPath), Path2QStr(fullPath), _localSyncPath,
-                                          static_cast<uint64_t>(received), canceled, finished)) {
+    if (!_connector->vfsUpdateFetchStatus(tmpPath, path, _vfsSetupParams.localPath, static_cast<uint64_t>(received), canceled,
+                                          finished)) {
         LOG_WARN(logger(), "Error in vfsUpdateFetchStatus!");
-        return handleVfsError(fullPath);
+        return handleVfsError(path);
     }
 
     return ExitCode::Ok;
 }
 
 ExitInfo VfsMac::updateFetchStatus(const SyncPath &absolutePath, const std::string &status) {
-    if (!_connector->vfsUpdateFetchStatus(Path2QStr(absolutePath), QString::fromStdString(status))) {
+    if (!_connector->vfsUpdateFetchStatus(absolutePath, status)) {
         LOG_WARN(logger(), "Error in vfsUpdateFetchStatus!");
         return handleVfsError(absolutePath);
     }
     return ExitCode::Ok;
 }
 
-void VfsMac::cancelHydrate(const SyncPath &filePathStd) {
-    const QString filePath = SyncName2QStr(filePathStd.native());
-    _connector->vfsCancelHydrate(filePath);
+void VfsMac::cancelHydrate(const SyncPath &absoluteFilepath) {
+    _connector->vfsCancelHydrate(absoluteFilepath);
 }
 
-ExitInfo VfsMac::isDehydratedPlaceholder(const SyncPath &initFilePathStd, bool &isDehydrated) {
-    const SyncPath filePath(_vfsSetupParams.localPath / initFilePathStd);
+ExitInfo VfsMac::isDehydratedPlaceholder(const SyncPath &relativeFilePath, bool &isDehydrated) {
+    const SyncPath absoluteFilePath(_vfsSetupParams.localPath / relativeFilePath);
 
     VfsStatus vfsStatus;
-    if (!_connector->vfsGetStatus(Path2QStr(filePath), vfsStatus)) {
+    if (!_connector->vfsGetStatus(absoluteFilePath, vfsStatus)) {
         LOG_WARN(logger(), "Error in vfsGetStatus!");
-        return handleVfsError(filePath);
+        return handleVfsError(absoluteFilePath);
     }
     isDehydrated = !vfsStatus.isHydrated;
 
     return ExitCode::Ok;
 }
 
-ExitInfo VfsMac::setPinState(const SyncPath &fileRelativePathStd, PinState state) {
-    SyncPath fullPath(_vfsSetupParams.localPath / fileRelativePathStd);
+ExitInfo VfsMac::setPinState(const SyncPath &relativePath, PinState state) {
+    SyncPath fullPath(_vfsSetupParams.localPath / relativePath);
 
     if (ExitInfo exitInfo = checkIfPathIsValid(fullPath, true); !exitInfo) {
         return exitInfo;
     }
 
-    const QString strPath = Path2QStr(fullPath);
     if (!_connector->vfsSetPinState(
-                strPath, _localSyncPath,
+                fullPath, _vfsSetupParams.localPath,
                 (state == PinState::AlwaysLocal ? litesync_attrs::pinStatePinned : litesync_attrs::pinStateUnpinned))) {
         LOG_WARN(logger(), "Error in vfsSetPinState!");
         return handleVfsError(fullPath);
@@ -528,11 +517,11 @@ ExitInfo VfsMac::setPinState(const SyncPath &fileRelativePathStd, PinState state
     return ExitCode::Ok;
 }
 
-PinState VfsMac::pinState(const SyncPath &relativePathStd) {
+PinState VfsMac::pinState(const SyncPath &relativePath) {
     // Read pin state from file attributes
-    SyncPath fullPath(_vfsSetupParams.localPath / relativePathStd);
+    const auto fullPath(_vfsSetupParams.localPath / relativePath);
     std::string pinState;
-    if (!_connector->vfsGetPinState(Path2QStr(fullPath), pinState)) {
+    if (!_connector->vfsGetPinState(fullPath, pinState)) {
         return PinState::Unknown;
     }
 
@@ -545,21 +534,20 @@ PinState VfsMac::pinState(const SyncPath &relativePathStd) {
     return PinState::Unknown;
 }
 
-ExitInfo VfsMac::status(const SyncPath &filePathStd, VfsStatus &vfsStatus) {
-    if (!_connector->vfsGetStatus(Path2QStr(filePathStd), vfsStatus)) {
+ExitInfo VfsMac::status(const SyncPath &filePath, VfsStatus &vfsStatus) {
+    if (!_connector->vfsGetStatus(filePath, vfsStatus)) {
         LOG_WARN(logger(), "Error in vfsGetStatus!");
-        return handleVfsError(filePathStd);
+        return handleVfsError(filePath);
     }
 
     return ExitCode::Ok;
 }
 
-void VfsMac::exclude(const SyncPath &pathStd) {
-    const QString path = SyncName2QStr(pathStd.native());
-    LOGW_DEBUG(logger(), L"exclude - " << Utility::formatSyncPath(pathStd));
+void VfsMac::exclude(const SyncPath &path) {
+    LOGW_DEBUG(logger(), L"exclude - " << Utility::formatSyncPath(path));
 
     VfsStatus vfsStatus;
-    if (!_connector->vfsGetStatus(QDir::toNativeSeparators(path), vfsStatus)) {
+    if (!_connector->vfsGetStatus(path.native(), vfsStatus)) {
         LOG_WARN(logger(), "Error in vfsGetStatus!");
         return;
     }
@@ -568,7 +556,7 @@ void VfsMac::exclude(const SyncPath &pathStd) {
         vfsStatus.isSyncing = false;
         vfsStatus.isHydrated = true;
         vfsStatus.progress = 0;
-        if (!_connector->vfsSetStatus(QDir::toNativeSeparators(path), _localSyncPath, vfsStatus)) {
+        if (!_connector->vfsSetStatus(path.native(), _vfsSetupParams.localPath, vfsStatus)) {
             LOG_WARN(logger(), "Error in vfsSetStatus!");
             return;
         }
@@ -576,23 +564,22 @@ void VfsMac::exclude(const SyncPath &pathStd) {
 
     if (vfsStatus.isPlaceholder) {
         std::string pinState;
-        if (!_connector->vfsGetPinState(QDir::toNativeSeparators(path), pinState)) {
+        if (!_connector->vfsGetPinState(path.native(), pinState)) {
             LOG_WARN(logger(), "Error in vfsGetPinState!");
             return;
         }
 
         if (pinState != litesync_attrs::pinStateExcluded) {
-            if (!_connector->vfsSetPinState(QDir::toNativeSeparators(path), _localSyncPath, litesync_attrs::pinStateExcluded)) {
+            if (!_connector->vfsSetPinState(path.native(), _vfsSetupParams.localPath, litesync_attrs::pinStateExcluded)) {
                 LOG_WARN(logger(), "Error in vfsSetPinState!");
             }
         }
     }
 }
 
-bool VfsMac::isExcluded(const SyncPath &filePathStd) {
-    const QString filePath = SyncName2QStr(filePathStd.native());
+bool VfsMac::isExcluded(const SyncPath &filePath) {
     VfsStatus vfsStatus;
-    if (!_connector->vfsGetStatus(QDir::toNativeSeparators(filePath), vfsStatus)) {
+    if (!_connector->vfsGetStatus(filePath.native(), vfsStatus)) {
         LOG_WARN(logger(), "Error in vfsGetStatus!");
         return false;
     }
@@ -604,11 +591,10 @@ bool VfsMac::isExcluded(const SyncPath &filePathStd) {
     return false;
 }
 
-ExitInfo VfsMac::setThumbnail(const SyncPath &absoluteFilePathStd, const QPixmap &pixmap) {
-    const QString absoluteFilePath = SyncName2QStr(absoluteFilePathStd.native());
+ExitInfo VfsMac::setThumbnail(const SyncPath &absoluteFilePath, const QPixmap &pixmap) {
     if (!_connector->vfsSetThumbnail(absoluteFilePath, pixmap)) {
         LOG_WARN(logger(), "Error in vfsSetThumbnail!");
-        return handleVfsError(absoluteFilePathStd);
+        return handleVfsError(absoluteFilePath);
     }
 
     return ExitCode::Ok;
@@ -617,7 +603,7 @@ ExitInfo VfsMac::setThumbnail(const SyncPath &absoluteFilePathStd, const QPixmap
 ExitInfo VfsMac::setAppExcludeList() {
     QString appExcludeList;
     _exclusionAppList(appExcludeList);
-    if (!_connector->vfsSetAppExcludeList(appExcludeList)) {
+    if (!_connector->vfsSetAppExcludeList(QStr2Str(appExcludeList))) {
         LOG_WARN(logger(), "Error in vfsSetAppExcludeList!");
         return ExitCode::LogicError;
     }
@@ -626,7 +612,12 @@ ExitInfo VfsMac::setAppExcludeList() {
 }
 
 ExitInfo VfsMac::getFetchingAppList(QHash<QString, QString> &appTable) {
-    if (!_connector->vfsGetFetchingAppList(appTable)) {
+    std::unordered_map<std::string, std::string, StringHashFunction, std::equal_to<>> tmpTable;
+    for (auto it = appTable.begin(); it != appTable.end(); it++) {
+        tmpTable.try_emplace(QStr2Str(it.key()), QStr2Str(it.value()));
+    }
+
+    if (!_connector->vfsGetFetchingAppList(tmpTable)) {
         LOG_WARN(logger(), "Error in vfsGetFetchingAppList!");
         return ExitCode::LogicError;
     }
@@ -634,38 +625,36 @@ ExitInfo VfsMac::getFetchingAppList(QHash<QString, QString> &appTable) {
     return ExitCode::Ok;
 }
 
-bool VfsMac::fileStatusChanged(const SyncPath &pathStd, SyncFileStatus status) {
-    LOGW_DEBUG(logger(), L"fileStatusChanged - " << Utility::formatSyncPath(pathStd) << L" - status = " << status);
-    const QString path = SyncName2QStr(pathStd.native());
-    SyncPath fullPath(pathStd);
-    if (std::error_code ec; !std::filesystem::exists(fullPath, ec)) {
+bool VfsMac::fileStatusChanged(const SyncPath &absoluteFilepath, SyncFileStatus status) {
+    LOGW_DEBUG(logger(), L"fileStatusChanged - " << Utility::formatSyncPath(absoluteFilepath) << L" - status = " << status);
+    if (std::error_code ec; !std::filesystem::exists(absoluteFilepath, ec)) {
         if (ec.value() != 0) {
-            LOGW_WARN(logger(), L"Failed to check if path exists : " << Utility::formatStdError(fullPath, ec));
+            LOGW_WARN(logger(), L"Failed to check if path exists : " << Utility::formatStdError(absoluteFilepath, ec));
             return false;
         }
         // New file
         return true;
     }
-    SyncPath fileRelativePath = CommonUtility::relativePath(_vfsSetupParams.localPath, fullPath);
+    SyncPath relativeFilePath = CommonUtility::relativePath(_vfsSetupParams.localPath, absoluteFilepath);
 
     if (status == SyncFileStatus::Ignored) {
-        exclude(fullPath);
+        exclude(absoluteFilepath);
     } else if (status == SyncFileStatus::Success) {
         // Do nothing
     } else if (status == SyncFileStatus::Syncing) {
         ItemType itemType;
-        if (!IoHelper::getItemType(fullPath, itemType)) {
-            LOGW_WARN(logger(), L"Error in IoHelper::getItemType : " << Utility::formatSyncPath(fullPath));
+        if (!IoHelper::getItemType(absoluteFilepath, itemType)) {
+            LOGW_WARN(logger(), L"Error in IoHelper::getItemType : " << Utility::formatSyncPath(absoluteFilepath));
             return false;
         }
 
         if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
-            LOGW_DEBUG(logger(), L"Item does not exist anymore : " << Utility::formatSyncPath(fullPath));
+            LOGW_DEBUG(logger(), L"Item does not exist anymore : " << Utility::formatSyncPath(absoluteFilepath));
             return true;
         }
 
         if (itemType.ioError == IoError::AccessDenied) {
-            LOGW_DEBUG(logger(), L"Item misses search permission : " << Utility::formatSyncPath(fullPath));
+            LOGW_DEBUG(logger(), L"Item misses search permission : " << Utility::formatSyncPath(absoluteFilepath));
             return true;
         }
 
@@ -676,36 +665,36 @@ bool VfsMac::fileStatusChanged(const SyncPath &pathStd, SyncFileStatus status) {
         } else {
             isDirectory = itemType.nodeType == NodeType::Directory;
             if (!isDirectory && itemType.ioError != IoError::Success) {
-                LOGW_WARN(logger(),
-                          L"Failed to check if the path is a directory: " << Utility::formatIoError(fullPath, itemType.ioError));
+                LOGW_WARN(logger(), L"Failed to check if the path is a directory: "
+                                            << Utility::formatIoError(absoluteFilepath, itemType.ioError));
                 return false;
             }
         }
 
         if (!isLink && !isDirectory) {
-            auto localPinState = pinState(fileRelativePath);
+            auto localPinState = pinState(relativeFilePath);
             bool isDehydrated = false;
-            if (ExitInfo exitInfo = isDehydratedPlaceholder(fileRelativePath, isDehydrated); !exitInfo) {
-                LOGW_WARN(logger(),
-                          L"Error in isDehydratedPlaceholder : " << Utility::formatSyncPath(fullPath) << L" " << exitInfo);
+            if (ExitInfo exitInfo = isDehydratedPlaceholder(relativeFilePath, isDehydrated); !exitInfo) {
+                LOGW_WARN(logger(), L"Error in isDehydratedPlaceholder : " << Utility::formatSyncPath(absoluteFilepath) << L" "
+                                                                           << exitInfo);
                 return false;
             }
             if (localPinState == PinState::OnlineOnly && !isDehydrated) {
                 // Add file path to dehydration queue
                 _workerInfo[workerDehydration]._mutex.lock();
-                _workerInfo[workerDehydration]._queue.push_front(fullPath);
+                _workerInfo[workerDehydration]._queue.push_front(absoluteFilepath);
                 _workerInfo[workerDehydration]._mutex.unlock();
                 _workerInfo[workerDehydration]._queueWC.wakeOne();
             } else if (localPinState == PinState::AlwaysLocal && isDehydrated) {
                 bool syncing;
-                _syncFileSyncing(_vfsSetupParams.syncDbId, fileRelativePath, syncing);
+                _syncFileSyncing(_vfsSetupParams.syncDbId, relativeFilePath, syncing);
                 if (!syncing) {
                     // Set hydrating indicator (avoid double hydration)
-                    _setSyncFileSyncing(_vfsSetupParams.syncDbId, fileRelativePath, true);
+                    _setSyncFileSyncing(_vfsSetupParams.syncDbId, relativeFilePath, true);
 
                     // Add file path to hydration queue
                     _workerInfo[workerHydration]._mutex.lock();
-                    _workerInfo[workerHydration]._queue.push_front(fullPath);
+                    _workerInfo[workerHydration]._queue.push_front(absoluteFilepath);
                     _workerInfo[workerHydration]._mutex.unlock();
                     _workerInfo[workerHydration]._queueWC.wakeOne();
                 }

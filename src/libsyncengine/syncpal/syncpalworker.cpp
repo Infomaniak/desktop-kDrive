@@ -49,13 +49,12 @@ bool hasSuccessfullyFinished(const std::shared_ptr<ISyncWorker> w1, const std::s
 bool shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr) {
     const auto networkIssue =
             (w1 && w1->exitCode() == ExitCode::NetworkError) || (w2 && w2->exitCode() == ExitCode::NetworkError);
-    const auto serviceUnavailable =
-            (w1 && w1->exitCode() == ExitCode::BackError && w1->exitCause() == ExitCause::ServiceUnavailable) ||
-            (w2 && w2->exitCode() == ExitCode::BackError && w2->exitCause() == ExitCause::ServiceUnavailable);
+    const auto http500error = (w1 && w1->exitCode() == ExitCode::BackError && w1->exitCause() == ExitCause::Http5xx) ||
+                              (w2 && w2->exitCode() == ExitCode::BackError && w2->exitCause() == ExitCause::Http5xx);
     const auto syncDirNotAccessible =
             (w1 && w1->exitCode() == ExitCode::SystemError && w1->exitCause() == ExitCause::SyncDirAccessError) ||
             (w2 && w2->exitCode() == ExitCode::SystemError && w2->exitCause() == ExitCause::SyncDirAccessError);
-    return networkIssue || serviceUnavailable || syncDirNotAccessible;
+    return networkIssue || http500error || syncDirNotAccessible;
 }
 
 bool shouldBeStoppedAndRestarted(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr) {
@@ -393,6 +392,12 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             if (!_syncPal->restart()) {
                 _syncPal->resetSnapshotInvalidationCounters();
                 _syncPal->setSyncHasFullyCompletedInParms(true);
+            }
+            if (_syncPal->updateTreesNeedToBeCleared()) {
+                LOG_SYNCPAL_DEBUG(_logger, "Clearing update trees");
+                _syncPal->_localUpdateTree->clear();
+                _syncPal->_remoteUpdateTree->clear();
+                _syncPal->setUpdateTreesNeedToBeCleared(false);
             }
             sentry::pTraces::basic::Sync(syncDbId()).stop();
             break;

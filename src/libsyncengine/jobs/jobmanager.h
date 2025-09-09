@@ -77,7 +77,7 @@ class JobManager {
 
         JobManagerData _data;
 
-        friend class TestJobManager;
+        friend class TestSyncJobManager;
 };
 
 } // namespace KDC

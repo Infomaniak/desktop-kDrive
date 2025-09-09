@@ -117,12 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="LanguageSelectionRestartNeeded.Title" xml:space="preserve">
-    <value />
-  </data>
-  <data name="LanguageSelectionRestartNeeded.Message" xml:space="preserve">
-    <value />
-  </data>
   <data name="TrayIconExitApplicationCommand.Label" xml:space="preserve">
     <value />
   </data>
@@ -139,6 +133,48 @@
     <value />
   </data>
   <data name="NavFolder.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="SearchBox.PlaceholderText" xml:space="preserve">
+    <value />
+  </data>
+  <data name="HomePage_favorites.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="HomePage_trash.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="HomePage_shared.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="KSuiteUpgradeBar_link.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="InfomaniakWebSiteLanguageCode" xml:space="preserve">
+    <value />
+  </data>
+  <data name="UpdateAvailableBar_message.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="KSuiteUpgradeBar_message.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="UpdateAvailableBar_link.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="SyncStatusBar_PausedStatus.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="SyncStatusBar_SyncingStatus.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="SyncStatusBar_StartingStatus.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="SyncStatusBar_PausingStatus.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="SyncStatusBar_SyncedStatus.Text" xml:space="preserve">
     <value />
   </data>
 </root>

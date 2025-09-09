@@ -88,7 +88,7 @@ ExitInfo VfsWin::startImpl(bool &, bool &, bool &) {
         return {ExitCode::SystemError, ExitCause::UnableToCreateVfs};
     }
 
-    _vfsSetupParams.namespaceCLSID = Utility::ws2s(std::wstring(clsid));
+    _vfsSetupParams.namespaceCLSID = CommonUtility::ws2s(std::wstring(clsid));
 
     return ExitCode::Ok;
 }
@@ -235,7 +235,7 @@ ExitInfo VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const Sync
     findData.ftLastAccessTime = findData.ftLastWriteTime;
     findData.dwFileAttributes = (item.type() == NodeType::Directory ? FILE_ATTRIBUTE_DIRECTORY : 0);
 
-    if (vfsCreatePlaceHolder(Utility::s2ws(item.remoteNodeId().value()).c_str(),
+    if (vfsCreatePlaceHolder(CommonUtility::s2ws(item.remoteNodeId().value()).c_str(),
                              relativeLocalPath.lexically_normal().native().c_str(),
                              _vfsSetupParams.localPath.lexically_normal().native().c_str(), &findData) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsCreatePlaceHolder: " << Utility::formatSyncPath(fullPath));
@@ -309,7 +309,7 @@ ExitInfo VfsWin::convertToPlaceholder(const SyncPath &pathStd, const SyncFileIte
         return {ExitCode::LogicError, ExitCause::InvalidArgument};
     }
 
-    if (!isPlaceholder && (vfsConvertToPlaceHolder(Utility::s2ws(item.localNodeId().value()).c_str(),
+    if (!isPlaceholder && (vfsConvertToPlaceHolder(CommonUtility::s2ws(item.localNodeId().value()).c_str(),
                                                    fullPath.lexically_normal().native().c_str()) != S_OK)) {
         LOGW_WARN(logger(), L"Error in vfsConvertToPlaceHolder: " << Utility::formatSyncPath(fullPath));
         return handleVfsError(fullPath);
@@ -464,7 +464,7 @@ ExitInfo VfsWin::forceStatus(const SyncPath &absolutePathStd, const VfsStatus &v
         NodeId localNodeId = std::to_string(filestat.inode);
 
         // Convert to placeholder
-        if (vfsConvertToPlaceHolder(Utility::s2ws(localNodeId).c_str(), absolutePathStd.native().c_str()) != S_OK) {
+        if (vfsConvertToPlaceHolder(CommonUtility::s2ws(localNodeId).c_str(), absolutePathStd.native().c_str()) != S_OK) {
             LOGW_WARN(logger(), L"Error in vfsConvertToPlaceHolder: " << Utility::formatSyncPath(absolutePathStd));
             return handleVfsError(absolutePathStd);
         }

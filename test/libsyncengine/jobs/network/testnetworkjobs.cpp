@@ -17,30 +17,32 @@
  */
 
 #include "testnetworkjobs.h"
-#include "jobs/network/API_v2/copytodirectoryjob.h"
-#include "jobs/network/API_v2/deletejob.h"
-#include "jobs/network/API_v2/downloadjob.h"
-#include "jobs/network/API_v2/duplicatejob.h"
+#include "jobs/network/kDrive_API/copytodirectoryjob.h"
+#include "jobs/network/kDrive_API/deletejob.h"
+#include "jobs/network/kDrive_API/downloadjob.h"
+#include "jobs/network/kDrive_API/duplicatejob.h"
 #include "jobs/network/getavatarjob.h"
-#include "jobs/network/API_v2/getdriveslistjob.h"
-#include "jobs/network/API_v2/getfileinfojob.h"
-#include "jobs/network/API_v2/getfilelistjob.h"
-#include "jobs/network/API_v2/initfilelistwithcursorjob.h"
-#include "jobs/network/API_v2/getinfouserjob.h"
-#include "jobs/network/API_v2/getinfodrivejob.h"
-#include "jobs/network/API_v2/getthumbnailjob.h"
-#include "jobs/network/API_v2/movejob.h"
-#include "jobs/network/API_v2/renamejob.h"
-#include "jobs/network/API_v2/getsizejob.h"
+#include "jobs/network/kDrive_API/getdriveslistjob.h"
+#include "jobs/network/kDrive_API/getfileinfojob.h"
+#include "jobs/network/kDrive_API/getfilelistjob.h"
+#include "jobs/network/kDrive_API/initfilelistwithcursorjob.h"
+#include "jobs/network/infomaniak_API/getinfouserjob.h"
+#include "jobs/network/kDrive_API/getinfodrivejob.h"
+#include "jobs/network/kDrive_API/getthumbnailjob.h"
+#include "jobs/network/kDrive_API/movejob.h"
+#include "jobs/network/kDrive_API/renamejob.h"
+#include "jobs/network/kDrive_API/getsizejob.h"
 #include "jobs/syncjobmanager.h"
 #include "network/proxy.h"
 #include "utility/jsonparserutility.h"
 #include "requests/parameterscache.h"
-#include "jobs/network/getappversionjob.h"
+#include "jobs/network/infomaniak_API/getappversionjob.h"
 #include "jobs/network/directdownloadjob.h"
-#include "jobs/network/API_v2/listing/csvfullfilelistwithcursorjob.h"
-#include "jobs/network/API_v2/upload/uploadjob.h"
-#include "jobs/network/API_v2/upload/upload_session/driveuploadsession.h"
+#include "jobs/network/kDrive_API/createdirjob.h"
+#include "jobs/network/kDrive_API/searchjob.h"
+#include "jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.h"
+#include "jobs/network/kDrive_API/upload/uploadjob.h"
+#include "jobs/network/kDrive_API/upload/upload_session/driveuploadsession.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/filestat.h"
@@ -743,6 +745,13 @@ void TestNetworkJobs::testDownloadHasEnoughSpace() {
     CPPUNIT_ASSERT(!DownloadJob::hasEnoughPlace(smallPartitionPath, smallPartitionPath, 9000000, Log::instance()->getLogger()));
 }
 
+void TestNetworkJobs::testSearch() {
+    SearchJob job(_driveDbId, "test");
+    CPPUNIT_ASSERT(job.runSynchronously());
+    CPPUNIT_ASSERT(!job.searchResults().empty());
+    CPPUNIT_ASSERT(!job.cursor().empty());
+}
+
 void TestNetworkJobs::testDownloadAborted() {
     const LocalTemporaryDirectory temporaryDirectory("testDownloadAborted");
     const SyncPath localDestFilePath = temporaryDirectory.path() / "test_download";
@@ -842,16 +851,39 @@ void TestNetworkJobs::testGetFileInfo() {
 }
 
 void TestNetworkJobs::testGetFileList() {
-    GetFileListJob job(_driveDbId, pictureDirRemoteId);
-    const ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    {
+        GetFileListJob job(_driveDbId, pictureDirRemoteId);
+        const ExitCode exitCode = job.runSynchronously();
+        CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
-    int counter = 0;
-    Poco::JSON::Array::Ptr dataArray = job.jsonRes()->getArray(dataKey);
-    for (Poco::JSON::Array::ConstIterator it = dataArray->begin(); it != dataArray->end(); ++it) {
-        counter++;
+        int counter = 0;
+        Poco::JSON::Array::Ptr dataArray = job.jsonRes()->getArray(dataKey);
+        for (Poco::JSON::Array::ConstIterator it = dataArray->begin(); it != dataArray->end(); ++it) {
+            counter++;
+        }
+        CPPUNIT_ASSERT(counter == 5);
     }
-    CPPUNIT_ASSERT(counter == 5);
+    {
+        const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteDirId, "testGetFileList");
+        for (uint16_t i = 0; i < 11; i++) {
+            CreateDirJob job(nullptr, _driveDbId, tmpRemoteDir.id(), Str2SyncName(std::to_string(i)));
+            (void) job.runSynchronously();
+        }
+
+        for (uint16_t page = 1; page <= 2; page++) {
+            GetFileListJob job(_driveDbId, tmpRemoteDir.id(), page, true, 10);
+            (void) job.runSynchronously();
+            Poco::JSON::Object::Ptr resObj = job.jsonRes();
+            CPPUNIT_ASSERT(resObj);
+            Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
+            CPPUNIT_ASSERT(dataArray);
+            if (page == 1) {
+                CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(10), dataArray->size());
+            } else {
+                CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), dataArray->size());
+            }
+        }
+    }
 }
 
 void TestNetworkJobs::testGetFileListWithCursor() {
@@ -878,55 +910,69 @@ void TestNetworkJobs::testGetFileListWithCursor() {
 }
 
 void TestNetworkJobs::testFullFileListWithCursorCsv() {
-    CsvFullFileListWithCursorJob job(_driveDbId, "1", {}, false);
-    const ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    {
+        CsvFullFileListWithCursorJob job(_driveDbId, "1", {}, false);
+        const ExitCode exitCode = job.runSynchronously();
+        CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
-    int counter = 0;
-    std::string cursor = job.getCursor();
-    SnapshotItem item;
-    bool error = false;
-    bool ignore = false;
-    bool eof = false;
-    while (job.getItem(item, error, ignore, eof)) {
-        if (ignore) {
-            continue;
+        int counter = 0;
+        std::string cursor = job.getCursor();
+        SnapshotItem item;
+        bool error = false;
+        bool ignore = false;
+        bool eof = false;
+        while (job.getItem(item, error, ignore, eof)) {
+            if (ignore) {
+                continue;
+            }
+
+            if (item.parentId() == pictureDirRemoteId) {
+                counter++;
+            }
         }
 
-        if (item.parentId() == pictureDirRemoteId) {
-            counter++;
-        }
+        CPPUNIT_ASSERT(!cursor.empty());
+        CPPUNIT_ASSERT(counter == 5);
+        CPPUNIT_ASSERT(eof);
     }
-
-    CPPUNIT_ASSERT(!cursor.empty());
-    CPPUNIT_ASSERT(counter == 5);
-    CPPUNIT_ASSERT(eof);
 }
 
 void TestNetworkJobs::testFullFileListWithCursorCsvZip() {
-    CsvFullFileListWithCursorJob job(_driveDbId, "1", {}, true);
-    const ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    {
+        CsvFullFileListWithCursorJob job(_driveDbId, "1", {}, true);
+        const ExitCode exitCode = job.runSynchronously();
+        CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+        int counter = 0;
+        std::string cursor = job.getCursor();
+        SnapshotItem item;
+        bool error = false;
+        bool ignore = false;
+        bool eof = false;
+        while (job.getItem(item, error, ignore, eof)) {
+            if (ignore) {
+                continue;
+            }
 
-    int counter = 0;
-    std::string cursor = job.getCursor();
-    SnapshotItem item;
-    bool error = false;
-    bool ignore = false;
-    bool eof = false;
-    while (job.getItem(item, error, ignore, eof)) {
-        if (ignore) {
-            continue;
+            if (item.parentId() == pictureDirRemoteId) {
+                counter++;
+            }
         }
 
-        if (item.parentId() == pictureDirRemoteId) {
-            counter++;
-        }
+        CPPUNIT_ASSERT(!cursor.empty());
+        CPPUNIT_ASSERT(counter == 5);
+        CPPUNIT_ASSERT(eof);
     }
 
-    CPPUNIT_ASSERT(!cursor.empty());
-    CPPUNIT_ASSERT(counter == 5);
-    CPPUNIT_ASSERT(eof);
+    // Send a request that violates validation rules and make sure the reply is correctly decompressed.
+    {
+        CsvFullFileListWithCursorJob job(_driveDbId, "invalid",
+                                         /*blacklist*/ {}, true);
+        const ExitCode exitCode = job.runSynchronously();
+        CPPUNIT_ASSERT(exitCode != ExitCode::Ok);
+        CPPUNIT_ASSERT(job.hasErrorApi());
+        CPPUNIT_ASSERT(!job.errorCode().empty());
+        CPPUNIT_ASSERT(!job.errorDescr().empty());
+    }
 }
 
 void TestNetworkJobs::testFullFileListWithCursorCsvBlacklist() {

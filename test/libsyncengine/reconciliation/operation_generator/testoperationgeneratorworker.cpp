@@ -224,28 +224,29 @@ void TestOperationGeneratorWorker::testMoveEditOps() {
 void TestOperationGeneratorWorker::testEditChangeShouldBePropagated() {
     const auto nodeAAl = _situationGenerator.getNode(ReplicaSide::Local, "aa");
 
-    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAAl));
+    bool propagateEdit = true;
+    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAAl, propagateEdit) && propagateEdit);
 
     // Edit of modification time are always propagated
     nodeAAl->setModificationTime(testhelpers::defaultTime + 1);
-    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAAl));
+    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAAl, propagateEdit) && propagateEdit);
     nodeAAl->setModificationTime(testhelpers::defaultTime);
 
     // Edit of size are always propagated
     nodeAAl->setSize(testhelpers::defaultFileSize + 1);
-    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAAl));
+    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAAl, propagateEdit) && propagateEdit);
     nodeAAl->setSize(testhelpers::defaultFileSize);
 
     // Local Edit of createdAt are not propagated if the other attributes are the same
     nodeAAl->setCreatedAt(testhelpers::defaultTime + 1);
-    CPPUNIT_ASSERT(!_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAAl));
+    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAAl, propagateEdit) && !propagateEdit);
 
     nodeAAl->setSize(testhelpers::defaultFileSize + 1);
-    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAAl));
+    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAAl, propagateEdit) && propagateEdit);
     nodeAAl->setModificationTime(testhelpers::defaultTime + 1);
-    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAAl));
+    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAAl, propagateEdit) && propagateEdit);
     nodeAAl->setSize(testhelpers::defaultFileSize);
-    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAAl));
+    CPPUNIT_ASSERT(_syncPal->_operationsGeneratorWorker->editChangeShouldBePropagated(nodeAAl, propagateEdit) && propagateEdit);
 }
 
 } // namespace KDC

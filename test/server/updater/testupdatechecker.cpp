@@ -19,7 +19,7 @@
 #include "testupdatechecker.h"
 
 #include "jobs/syncjobmanager.h"
-#include "jobs/network/getappversionjob.h"
+#include "jobs/network/infomaniak_API/getappversionjob.h"
 #include "libcommon/utility/utility.h"
 #include "requests/parameterscache.h"
 #include "mockupdatechecker.h"

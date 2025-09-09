@@ -187,7 +187,7 @@ void SocketApi::executeCommand(const QString &commandLine, const SocketListener 
         staticMetaObject.method(indexOfMethod).invoke(this, Q_ARG(QString, argument));
     } else {
         LOGW_WARN(KDC::Log::instance()->getLogger(), L"The command is not supported by this version of the client - cmd="
-                                                             << KDC::Utility::s2ws(command.toStdString()) << L" arg="
+                                                             << KDC::CommonUtility::s2ws(command.toStdString()) << L" arg="
                                                              << argument.toStdWString());
     }
 }
@@ -625,7 +625,8 @@ void SocketApi::command_MAKE_AVAILABLE_LOCALLY_DIRECT(const QString &filesArg) {
         }
         // Update the status of empty folders.
         if (fileData.isDirectory) {
-            auto tmpStatus = vfsStatus;
+            VfsStatus tmpStatus;
+            tmpStatus = vfsStatus;
             tmpStatus.isSyncing = false;
             tmpStatus.isHydrated = true;
             if (!forceStatus(fileData, tmpStatus)) {
@@ -1317,8 +1318,7 @@ QString SocketApi::buildRegisterPathMessage(const QString &path) {
 void SocketApi::processFileList(const QStringList &inFileList, std::list<SyncPath> &outFileList) {
     // Process all files
     for (const QString &path: qAsConst(inFileList)) {
-        const FileData fileData = FileData::get(path);
-        if (fileData.virtualFileMode != VirtualFileMode::Mac) {
+        if (const auto fileData = FileData::get(path); fileData.virtualFileMode != VirtualFileMode::Mac) {
             (void) outFileList.emplace_back(QStr2Path(path));
             continue;
         }
@@ -1328,16 +1328,17 @@ void SocketApi::processFileList(const QStringList &inFileList, std::list<SyncPat
             continue;
         }
 
-        const QFileInfoList infoList = QDir(path).entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
+        IoError ioError(IoError::Unknown);
+        IoHelper::DirectoryIterator dirIt(QStr2Path(path), false, ioError);
+        bool endOfDir = false;
+        DirectoryEntry entry;
         QStringList fileList;
-        for (const auto &tmpInfo: infoList) {
-            const QString tmpPath(tmpInfo.filePath());
-            const FileData tmpFileData = FileData::get(tmpPath);
-
+        while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
+            const auto fileData = FileData::get(entry.path());
             auto status = SyncFileStatus::Unknown;
-            if (VfsStatus vfsStatus; !syncFileStatus(tmpFileData, status, vfsStatus)) {
+            if (VfsStatus vfsStatus; !syncFileStatus(fileData, status, vfsStatus)) {
                 LOGW_WARN(KDC::Log::instance()->getLogger(),
-                          L"Error in SocketApi::syncFileStatus - " << Utility::formatPath(tmpPath));
+                          L"Error in SocketApi::syncFileStatus - " << Utility::formatSyncPath(entry.path()));
                 continue;
             }
 
@@ -1345,10 +1346,10 @@ void SocketApi::processFileList(const QStringList &inFileList, std::list<SyncPat
                 continue;
             }
 
-            fileList.append(tmpPath);
+            fileList.append(fileData.absoluteLocalPath);
         }
 
-        if (fileList.size() > 0) {
+        if (!fileList.empty()) {
             processFileList(fileList, outFileList);
         } else {
             // Empty folders need to appear in `outFileList` so that their status can be updated.
@@ -1447,8 +1448,8 @@ FileData FileData::get(const KDC::SyncPath &path) {
             } else {
                 LOGW_WARN(KDC::Log::instance()->getLogger(), L"Failed to check if the path is a directory - "
                                                                      << Utility::formatPath(data.absoluteLocalPath) << L" err="
-                                                                     << KDC::Utility::s2ws(ec.message()) << L" (" << ec.value()
-                                                                     << L")");
+                                                                     << KDC::CommonUtility::s2ws(ec.message()) << L" ("
+                                                                     << ec.value() << L")");
             }
             return FileData();
         }

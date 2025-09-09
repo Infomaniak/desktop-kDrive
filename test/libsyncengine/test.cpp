@@ -40,12 +40,14 @@
 #include "integration/testintegration.h"
 #include "propagation/executor/testexecutorworker.h"
 #include "jobs/network/testnetworkjobs.h"
-#include "jobs/network/API_v2/testloguploadjob.h"
+#include "jobs/network/kDrive_API/testloguploadjob.h"
 #include "jobs/network/testsnapshotitemhandler.h"
 #include "jobs/local/testlocaljobs.h"
-#include "jobs/testjobmanager.h"
+#include "jobs/testsyncjobmanager.h"
 #include "propagation/executor/testfilerescuer.h"
 #include "requests/testexclusiontemplatecache.h"
+#include "requests/testsyncnodecache.h"
+
 #include "update_detection/update_detector/benchupdatetreeworker.h"
 
 #if defined(KD_MACOS)
@@ -61,9 +63,10 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestNetworkJobs);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLogUploadJob);
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncDb);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncNodeCache);
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLocalJobs);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestJobManager);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncJobManager);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSnapshot);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestFsOperation);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestFsOperationSet);

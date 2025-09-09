@@ -137,6 +137,6 @@ class JobManagerData {
                 _pendingJobs; // jobs waiting to be able to start.
         mutable std::mutex _mutex;
 
-        friend class TestJobManager;
+        friend class TestSyncJobManager;
 };
 } // namespace KDC

@@ -40,6 +40,12 @@ runs:
             cp -r ${{ github.workspace }}/build-macos/client/cache/* ${{ github.workspace }}/build-macos/client/bin/
         shell: bash
 
+      - name: Download uncached common files
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-build-common-files-uncached
+          path: ${{ github.workspace }}/build-macos/client/bin/
+
       - name: Download test executable
         uses: actions/download-artifact@v4
         with:

@@ -23,18 +23,18 @@
 #include "serverrequests.h"
 #include "config.h"
 #include "keychainmanager/keychainmanager.h"
-#include "jobs/network/API_v2/getrootfilelistjob.h"
-#include "jobs/network/API_v2/getfilelistjob.h"
-#include "jobs/network/API_v2/getfileinfojob.h"
-#include "jobs/network/API_v2/postfilelinkjob.h"
-#include "jobs/network/API_v2/getfilelinkjob.h"
-#include "jobs/network/API_v2/getinfouserjob.h"
-#include "jobs/network/API_v2/getinfodrivejob.h"
-#include "jobs/network/API_v2/getthumbnailjob.h"
+#include "jobs/network/kDrive_API/getrootfilelistjob.h"
+#include "jobs/network/kDrive_API/getfilelistjob.h"
+#include "jobs/network/kDrive_API/getfileinfojob.h"
+#include "jobs/network/kDrive_API/postfilelinkjob.h"
+#include "jobs/network/kDrive_API/getfilelinkjob.h"
+#include "jobs/network/infomaniak_API/getinfouserjob.h"
+#include "jobs/network/kDrive_API/getinfodrivejob.h"
+#include "jobs/network/kDrive_API/getthumbnailjob.h"
 #include "jobs/network/getavatarjob.h"
-#include "jobs/network/API_v2/getdriveslistjob.h"
-#include "jobs/network/API_v2/createdirjob.h"
-#include "jobs/network/API_v2/getsizejob.h"
+#include "jobs/network/kDrive_API/getdriveslistjob.h"
+#include "jobs/network/kDrive_API/createdirjob.h"
+#include "jobs/network/kDrive_API/getsizejob.h"
 #include "utility/jsonparserutility.h"
 #include "libparms/db/parmsdb.h"
 #include "libparms/db/user.h"
@@ -396,7 +396,7 @@ ExitCode ServerRequests::requestToken(QString code, QString codeVerifier, UserIn
     return exitCode;
 }
 
-ExitCode ServerRequests::getNodeInfo(int userDbId, int driveId, const QString &nodeId, NodeInfo &nodeInfo,
+ExitInfo ServerRequests::getNodeInfo(int userDbId, int driveId, const QString &nodeId, NodeInfo &nodeInfo,
                                      bool withPath /*= false*/) {
     std::shared_ptr<GetFileInfoJob> job;
     try {
@@ -409,19 +409,22 @@ ExitCode ServerRequests::getNodeInfo(int userDbId, int driveId, const QString &n
     }
 
     job->setWithPath(withPath);
-    ExitCode exitCode = job->runSynchronously();
-    if (exitCode != ExitCode::Ok) {
+
+    if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetFileInfoJob::runSynchronously for userDbId="
                                                        << userDbId << " driveId=" << driveId << " nodeId=" << nodeId.toStdString()
-                                                       << " code=" << exitCode);
-        return exitCode;
+                                                       << " exitInfo=" << exitInfo << " status=" << job->getStatusCode());
+        return ExitCode::BackError;
     }
 
     Poco::JSON::Object::Ptr resObj = job->jsonRes();
     if (!resObj) {
         LOG_WARN(Log::instance()->getLogger(), "GetFileInfoJob failed for userDbId=" << userDbId << " driveId=" << driveId
                                                                                      << " nodeId=" << nodeId.toStdString());
-        return ExitCode::BackError;
+        ExitCause exitCause{ExitCause::Unknown};
+        if (job->getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) exitCause = ExitCause::NotFound;
+
+        return {ExitCode::BackError, exitCause};
     }
 
     Poco::JSON::Object::Ptr dataObj = resObj->getObject(dataKey);
@@ -544,96 +547,102 @@ ExitCode ServerRequests::getUserAvailableDrives(int userDbId, QHash<int, DriveAv
 
 ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, const QString &nodeId, QList<NodeInfo> &list,
                                        const bool withPath /*= false*/) {
-    std::shared_ptr<GetRootFileListJob> job = nullptr;
-    if (nodeId.isEmpty()) {
-        try {
-            job = std::make_shared<GetRootFileListJob>(userDbId, driveId, 1, true);
-        } catch (const std::exception &e) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in GetRootFileListJob::GetRootFileListJob for userDbId="
-                                                           << userDbId << " driveId=" << driveId << " error=" << e.what());
-            return AbstractTokenNetworkJob::exception2ExitCode(e);
-        }
-    } else {
-        try {
-            job = std::make_shared<GetFileListJob>(userDbId, driveId, nodeId.toStdString(), 1, true);
-        } catch (const std::exception &e) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::GetFileListJob for userDbId="
-                                                           << userDbId << " driveId=" << driveId
-                                                           << " nodeId=" << nodeId.toStdString() << " error=" << e.what());
-            return AbstractTokenNetworkJob::exception2ExitCode(e);
-        }
-    }
-
-    job->setWithPath(withPath);
-    if (const auto exitInfo = job->runSynchronously(); exitInfo.code() != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::runSynchronously for userDbId="
-                                                       << userDbId << " driveId=" << driveId << " nodeId=" << nodeId.toStdString()
-                                                       << " error=" << exitInfo);
-        return exitInfo;
-    }
-
-    Poco::JSON::Object::Ptr resObj = job->jsonRes();
-    if (!resObj) {
-        LOG_WARN(Log::instance()->getLogger(), "GetFileListJob failed for userDbId=" << userDbId << " driveId=" << driveId
-                                                                                     << " nodeId=" << nodeId.toStdString());
-        return ExitCode::BackError;
-    }
-
-    Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
-    if (!dataArray) {
-        LOG_WARN(Log::instance()->getLogger(), "GetFileListJob failed for userDbId=" << userDbId << " driveId=" << driveId
-                                                                                     << " nodeId=" << nodeId.toStdString());
-        return ExitCode::BackError;
-    }
-
     list.clear();
-    for (Poco::JSON::Array::ConstIterator it = dataArray->begin(); it != dataArray->end(); ++it) {
-        Poco::JSON::Object::Ptr dirObj = it->extract<Poco::JSON::Object::Ptr>();
-        SyncTime modTime;
-        if (!JsonParserUtility::extractValue(dirObj, lastModifiedAtKey, modTime)) {
+    uint64_t page = 1;
+    uint64_t totalPages = 0;
+    do {
+        std::shared_ptr<GetRootFileListJob> job = nullptr;
+        if (nodeId.isEmpty()) {
+            try {
+                job = std::make_shared<GetRootFileListJob>(userDbId, driveId, page, true);
+            } catch (const std::exception &e) {
+                LOG_WARN(Log::instance()->getLogger(), "Error in GetRootFileListJob::GetRootFileListJob for userDbId="
+                                                               << userDbId << " driveId=" << driveId << " error=" << e.what());
+                return AbstractTokenNetworkJob::exception2ExitCode(e);
+            }
+        } else {
+            try {
+                job = std::make_shared<GetFileListJob>(userDbId, driveId, nodeId.toStdString(), page, true);
+            } catch (const std::exception &e) {
+                LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::GetFileListJob for userDbId="
+                                                               << userDbId << " driveId=" << driveId
+                                                               << " nodeId=" << nodeId.toStdString() << " error=" << e.what());
+                return AbstractTokenNetworkJob::exception2ExitCode(e);
+            }
+        }
+
+        job->setWithPath(withPath);
+        if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::runSynchronously for userDbId="
+                                                           << userDbId << " driveId=" << driveId
+                                                           << " nodeId=" << nodeId.toStdString() << " error=" << exitInfo);
+            return exitInfo;
+        }
+
+        Poco::JSON::Object::Ptr resObj = job->jsonRes();
+        if (!resObj) {
+            LOG_WARN(Log::instance()->getLogger(), "GetFileListJob failed: no valid JSON message retrieved.");
             return ExitCode::BackError;
         }
 
-        NodeId nodeId2;
-        if (!JsonParserUtility::extractValue(dirObj, idKey, nodeId2)) {
+        Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
+        if (!dataArray) {
+            LOG_WARN(Log::instance()->getLogger(), "GetFileListJob failed: missing `data` array in retrieved JSON message.");
             return ExitCode::BackError;
         }
 
-        SyncName tmp;
-        if (!JsonParserUtility::extractValue(dirObj, nameKey, tmp)) {
-            return ExitCode::BackError;
-        }
-
-        SyncName name;
-        if (!Utility::normalizedSyncName(tmp, name)) {
-            LOGW_DEBUG(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(tmp));
-            // Ignore the folder
-            continue;
-        }
-
-        std::string parentId;
-        if (!JsonParserUtility::extractValue(dirObj, parentIdKey, parentId)) {
-            return ExitCode::BackError;
-        }
-
-        SyncName path;
-        if (withPath) {
-            if (!JsonParserUtility::extractValue(dirObj, pathKey, tmp)) {
+        for (Poco::JSON::Array::ConstIterator it = dataArray->begin(); it != dataArray->end(); ++it) {
+            Poco::JSON::Object::Ptr dirObj = it->extract<Poco::JSON::Object::Ptr>();
+            SyncTime modTime;
+            if (!JsonParserUtility::extractValue(dirObj, lastModifiedAtKey, modTime)) {
                 return ExitCode::BackError;
             }
-            if (!Utility::normalizedSyncName(tmp, path)) {
+
+            NodeId nodeId2;
+            if (!JsonParserUtility::extractValue(dirObj, idKey, nodeId2)) {
+                return ExitCode::BackError;
+            }
+
+            SyncName tmp;
+            if (!JsonParserUtility::extractValue(dirObj, nameKey, tmp)) {
+                return ExitCode::BackError;
+            }
+
+            SyncName name;
+            if (!Utility::normalizedSyncName(tmp, name)) {
                 LOGW_DEBUG(Log::instance()->getLogger(),
                            L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(tmp));
                 // Ignore the folder
                 continue;
             }
+
+            std::string parentId;
+            if (!JsonParserUtility::extractValue(dirObj, parentIdKey, parentId)) {
+                return ExitCode::BackError;
+            }
+
+            SyncName path;
+            if (withPath) {
+                if (!JsonParserUtility::extractValue(dirObj, pathKey, tmp)) {
+                    return ExitCode::BackError;
+                }
+                if (!Utility::normalizedSyncName(tmp, path)) {
+                    LOGW_DEBUG(Log::instance()->getLogger(),
+                               L"Error in Utility::normalizedSyncName: " << Utility::formatSyncName(tmp));
+                    // Ignore the folder
+                    continue;
+                }
+            }
+
+            NodeInfo nodeInfo(QString::fromStdString(nodeId2), SyncName2QStr(name),
+                              -1, // Size is not set here as it can be very long to evaluate
+                              parentId.c_str(), modTime, SyncName2QStr(path));
+            list << nodeInfo;
         }
 
-        NodeInfo nodeInfo(QString::fromStdString(nodeId2), SyncName2QStr(name),
-                          -1, // Size is not set here as it can be very long to evaluate
-                          parentId.c_str(), modTime, SyncName2QStr(path));
-        list << nodeInfo;
-    }
+        page++;
+        totalPages = job->totalPages();
+    } while (page <= totalPages);
 
     return ExitCode::Ok;
 }
@@ -705,12 +714,12 @@ ExitCode ServerRequests::getNodeIdByPath(int userDbId, int driveId, const SyncPa
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getPathByNodeId(int userDbId, int driveId, const QString &nodeId, QString &path) {
+ExitInfo ServerRequests::getPathByNodeId(int userDbId, int driveId, const QString &nodeId, QString &path) {
     NodeInfo nodeInfo;
-    ExitCode exitCode = getNodeInfo(userDbId, driveId, nodeId, nodeInfo, true);
-    if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in Requests::getNodeInfo: code=" << exitCode);
-        return exitCode;
+
+    if (auto exitInfo = getNodeInfo(userDbId, driveId, nodeId, nodeInfo, true); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in Requests::getNodeInfo: " << exitInfo);
+        return exitInfo;
     }
 
     path = nodeInfo.path();
@@ -1517,8 +1526,7 @@ ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, 
     sync.setPaused(false);
 
     // Check vfs support
-    const QString fsName(CommonUtility::fileSystemName(Path2QStr(sync.localPath())));
-    const auto supportVfs = (fsName == "NTFS" || fsName == "apfs");
+    const bool supportVfs = CommonUtility::isNTFS(sync.localPath()) || CommonUtility::isAPFS(sync.localPath());
     sync.setSupportVfs(supportVfs);
 
 #if defined(KD_MACOS)

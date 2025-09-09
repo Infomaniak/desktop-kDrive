@@ -21,6 +21,7 @@
 #include "socketapi.h"
 #include "keychainmanager/keychainmanager.h"
 #include "requests/serverrequests.h"
+#include "requests/syncnodecache.h"
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
@@ -52,8 +53,9 @@
 #include <windows.h>
 #endif
 
-#include "jobs/network/API_v2/upload/loguploadjob.h"
-#include "jobs/network/API_v2/upload/upload_session/uploadsessioncanceljob.h"
+#include "jobs/network/kDrive_API/searchjob.h"
+#include "jobs/network/kDrive_API/upload/loguploadjob.h"
+#include "jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.h"
 #include "requests/offlinefilessizeestimator.h"
 #include "updater/updatemanager.h"
 
@@ -125,7 +127,9 @@ AppServer::AppServer(int &argc, char **argv) :
 }
 
 AppServer::~AppServer() {
-    LOG_DEBUG(_logger, "~AppServer");
+    if (Log::isSet()) {
+        LOG_DEBUG(_logger, "~AppServer");
+    }
 }
 
 void AppServer::init() {
@@ -135,20 +139,20 @@ void AppServer::init() {
     setWindowIcon(_theme->applicationIcon());
     setApplicationVersion(QString::fromStdString(_theme->version()));
 
-    // Setup logging with default parameters
-    if (!initLogging()) {
-        throw std::runtime_error("Unable to init logging.");
-    }
-
     parseOptions(_arguments);
     if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked) {
-        LOG_INFO(_logger, "Command line options processed");
+        std::cout << "Command line options processed" << std::endl;
         return;
     }
 
     if (isRunning()) {
-        LOG_INFO(_logger, "AppServer already running");
+        std::cout << "AppServer already running" << std::endl;
         return;
+    }
+
+    // Setup logging with default parameters
+    if (!initLogging()) {
+        throw std::runtime_error("Unable to init logging.");
     }
 
     // Cleanup at quit
@@ -297,11 +301,11 @@ void AppServer::init() {
 #if defined(KD_LINUX)
     // On Linux, override the auto startup file on every app launch to make sure it points to the correct executable.
     if (ParametersCache::instance()->parameters().autoStart()) {
-        Utility::setLaunchOnStartup(_theme->appName(), _theme->appName(), true);
+        (void) Utility::setLaunchOnStartup(_theme->appName(), _theme->appName(), true);
     }
 #else
     if (ParametersCache::instance()->parameters().autoStart() && !Utility::hasLaunchOnStartup(_theme->appName())) {
-        Utility::setLaunchOnStartup(_theme->appName(), _theme->appClientName(), true);
+        (void) Utility::setLaunchOnStartup(_theme->appName(), _theme->appClientName(), true);
     }
 #endif
 #endif
@@ -650,6 +654,11 @@ void AppServer::crash() const {
 void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &params) {
     QByteArray results = QByteArray();
     QDataStream resultStream(&results, QIODevice::WriteOnly);
+
+    if (CommonUtility::envVarValue("KDRIVE_COMM_USE_LITTLE_ENDIAN") ==
+        "1") { // .NET comm classes use little endian. For dev purpose this var allow to switch endianness.
+        resultStream.setByteOrder(QDataStream::LittleEndian);
+    }
 
     switch (num) {
         case RequestNum::LOGIN_REQUESTTOKEN: {
@@ -1045,6 +1054,39 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             OfflineFilesSizeEstimator estimator(syncPals);
             resultStream << estimator.runSynchronously().code(); // Run synchronously for now.
             resultStream << static_cast<quint64>(estimator.offlineFilesTotalSize());
+            break;
+        }
+        case RequestNum::DRIVE_SEARCH: {
+            int driveDbId = 0;
+            QString searchString;
+            ArgsWriter(params).write(driveDbId, searchString);
+
+            // Find drive ID
+            Drive drive;
+            bool found = false;
+            if (!ParmsDb::instance()->selectDrive(driveDbId, drive, found)) {
+                LOG_WARN(_logger, "Error in ParmsDb::selectSync");
+                resultStream << ExitCode::DbError;
+                break;
+            }
+            if (!found) {
+                LOG_WARN(_logger, "Drive not found for ID: " << driveDbId);
+                resultStream << ExitCode::DataError;
+                break;
+            }
+
+            // Send search request (synchronously for now)
+            SearchJob searchJob(driveDbId, searchString.toStdString());
+            (void) searchJob.runSynchronously();
+            QList<SearchInfo> list;
+            for (const auto &searchInfo: searchJob.searchResults()) {
+                list << searchInfo;
+            }
+
+            resultStream << ExitCode::Ok;
+            resultStream << list;
+            resultStream << searchJob.hasMore();
+            resultStream << QString::fromStdString(searchJob.cursor());
             break;
         }
         case RequestNum::SYNC_INFOLIST: {
@@ -1468,14 +1510,18 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
 
             QString path;
-            ExitCode exitCode = ServerRequests::getPathByNodeId(_syncPalMap[syncDbId]->userDbId(),
+            ExitInfo exitInfo = ServerRequests::getPathByNodeId(_syncPalMap[syncDbId]->userDbId(),
                                                                 _syncPalMap[syncDbId]->driveId(), nodeId, path);
-            if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in AppServer::getPathByNodeId: code=" << exitCode);
-                addError(Error(errId(), exitCode, ExitCause::Unknown));
+            if (!exitInfo) {
+                if (exitInfo.cause() == ExitCause::NotFound) {
+                    (void) SyncNodeCache::instance()->deleteSyncNode(syncDbId, QStr2Str(nodeId));
+                } else {
+                    LOG_WARN(_logger, "Error in AppServer::getPathByNodeId: " << exitInfo);
+                    addError(Error(errId(), exitInfo.code(), exitInfo.cause()));
+                }
             }
 
-            resultStream << toInt(exitCode);
+            resultStream << toInt(exitInfo.code());
             resultStream << path;
             break;
         }
@@ -2433,13 +2479,14 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
-            {&MigrationParams::migrateSelectiveSyncs, "migrateSelectiveSyncs"}};
+        {&MigrationParams::migrateSelectiveSyncs, "migrateSelectiveSyncs"}
+    };
 
     for (const auto &migrate: migrateArr) {
         ExitCode functionExitCode = (mp.*migrate.first)();
@@ -2936,7 +2983,8 @@ void AppServer::logUsefulInformation() const {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
     }
     for (const auto &user: userList) {
-        LOGW_INFO(Log::instance()->getLogger(), L"User ID: " << user.userId() << L", email: " << Utility::s2ws(user.email()));
+        LOGW_INFO(Log::instance()->getLogger(),
+                  L"User ID: " << user.userId() << L", email: " << CommonUtility::s2ws(user.email()));
     }
 
     // Log drive IDs
@@ -3659,14 +3707,14 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
     tmpSync.setNavigationPaneClsid(_vfsMap[sync.dbId()]->namespaceCLSID());
 
     if (tmpSync.virtualFileMode() == KDC::VirtualFileMode::Win) {
-        Utility::setFolderPinState(Utility::s2ws(tmpSync.navigationPaneClsid()),
+        Utility::setFolderPinState(CommonUtility::s2ws(tmpSync.navigationPaneClsid()),
                                    _navigationPaneHelper->showInExplorerNavigationPane());
     } else {
         if (tmpSync.navigationPaneClsid().empty()) {
             tmpSync.setNavigationPaneClsid(QUuid::createUuid().toString().toStdString());
             _vfsMap[sync.dbId()]->setNamespaceCLSID(tmpSync.navigationPaneClsid());
         }
-        Utility::addLegacySyncRootKeys(Utility::s2ws(sync.navigationPaneClsid()), sync.localPath(),
+        Utility::addLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()), sync.localPath(),
                                        _navigationPaneHelper->showInExplorerNavigationPane());
     }
 
@@ -3758,7 +3806,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
 #if defined(KD_WINDOWS)
         if (newMode == VirtualFileMode::Win) {
             // Remove legacy sync root keys
-            Utility::removeLegacySyncRootKeys(Utility::s2ws(sync.navigationPaneClsid()));
+            Utility::removeLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()));
             sync.setNavigationPaneClsid(std::string());
         } else if (sync.virtualFileMode() == VirtualFileMode::Win) {
             // Add legacy sync root keys
@@ -3766,7 +3814,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
             if (sync.navigationPaneClsid().empty()) {
                 sync.setNavigationPaneClsid(QUuid::createUuid().toString().toStdString());
             }
-            Utility::addLegacySyncRootKeys(Utility::s2ws(sync.navigationPaneClsid()), sync.localPath(), show);
+            Utility::addLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()), sync.localPath(), show);
         }
 #endif
 
@@ -3916,7 +3964,7 @@ void AppServer::addError(const Error &error) {
         std::unordered_set<int64_t> toBeRemovedErrorIds;
         for (const Error &parentError: errorList) {
             for (const Error &childError: errorList) {
-                if (Utility::isDescendantOrEqual(childError.path(), parentError.path()) &&
+                if (CommonUtility::isDescendantOrEqual(childError.path(), parentError.path()) &&
                     childError.dbId() != parentError.dbId()) {
                     toBeRemovedErrorIds.insert(childError.dbId());
                 }
@@ -4214,10 +4262,10 @@ void AppServer::onUpdateSyncsProgress() {
                     undecidedSetUpdated = true;
 
                     QString path;
-                    if (const auto exitCode = ServerRequests::getPathByNodeId(syncPal->userDbId(), syncPal->driveId(),
+                    if (const auto exitInfo = ServerRequests::getPathByNodeId(syncPal->userDbId(), syncPal->driveId(),
                                                                               QString::fromStdString(nodeId), path);
-                        exitCode != ExitCode::Ok) {
-                        LOG_WARN(_logger, "Error in Requests::getPathByNodeId: code=" << exitCode);
+                        exitInfo.code() != ExitCode::Ok) {
+                        LOG_WARN(_logger, "Error in Requests::getPathByNodeId: " << exitInfo);
                         continue;
                     }
 

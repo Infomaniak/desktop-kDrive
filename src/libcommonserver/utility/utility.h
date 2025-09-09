@@ -63,16 +63,6 @@ struct COMMONSERVER_EXPORT Utility {
         static bool findNodeValue(const Poco::XML::Document &doc, const std::string &nodeName, std::string *outValue);
         static bool isCreationDateValid(int64_t creationDate);
 
-        static std::wstring s2ws(const std::string &str);
-        static std::string ws2s(const std::wstring &wstr);
-        static std::string ltrim(const std::string &s);
-        static std::string rtrim(const std::string &s);
-        static std::string trim(const std::string &s);
-#if defined(KD_WINDOWS)
-        static SyncName ltrim(const SyncName &s);
-        static SyncName rtrim(const SyncName &s);
-        static SyncName trim(const SyncName &s);
-#endif
         static void msleep(int msec);
         static std::wstring v2ws(const dbtype &v);
 
@@ -90,25 +80,10 @@ struct COMMONSERVER_EXPORT Utility {
 
         static std::string formatRequest(const Poco::URI &uri, const std::string &code, const std::string &description);
 
-        static std::string formatGenericServerError(std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
+        static std::string formatGenericServerError(const std::string &replyBody, const Poco::Net::HTTPResponse &httpResponse);
         static void logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle,
-                                          std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
+                                          const std::string &replyBody, const Poco::Net::HTTPResponse &httpResponse);
 
-#if defined(KD_WINDOWS)
-        static bool isNtfs(const SyncPath &targetPath);
-#endif
-        static std::string fileSystemName(const SyncPath &targetPath);
-        static bool startsWith(const std::string &str, const std::string &prefix);
-        static bool startsWithInsensitive(const std::string &str, const std::string &prefix);
-        static bool endsWith(const std::string &str, const std::string &suffix);
-        static bool endsWithInsensitive(const std::string &str, const std::string &suffix);
-        static bool contains(const std::string &str, const std::string &substr);
-#if defined(KD_WINDOWS)
-        static bool startsWithInsensitive(const SyncName &str, const SyncName &prefix);
-        static bool startsWith(const SyncName &str, const SyncName &prefix);
-        static bool endsWith(const SyncName &str, const SyncName &suffix);
-        static bool endsWithInsensitive(const SyncName &str, const SyncName &suffix);
-#endif
         /**
          * Check if two paths coincide up to case and encoding of file names.
          * @param a SyncPath value to be compared.
@@ -117,8 +92,6 @@ struct COMMONSERVER_EXPORT Utility {
          * @return true if no normalization issue occurs when comparing.
          */
         static bool checkIfEqualUpToCaseAndEncoding(const SyncPath &a, const SyncPath &b, bool &isEqual);
-        static bool isDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path);
-        static bool isStrictDescendant(const SyncPath &potentialDescendant, const SyncPath &path);
         /**
          * Normalize the SyncName parameters before comparing them.
          * @param a SyncName value to be compared.
@@ -135,6 +108,7 @@ struct COMMONSERVER_EXPORT Utility {
          * @return true if no normalization issue.
          */
         static bool checkIfSameNormalization(const SyncPath &a, const SyncPath &b, bool &areSame);
+
 
         static bool moveItemToTrash(const SyncPath &itemPath);
 #if defined(KD_MACOS)
@@ -158,19 +132,13 @@ struct COMMONSERVER_EXPORT Utility {
         static std::string xxHashToStr(XXH64_hash_t hash);
 
 #if defined(KD_MACOS)
-        static SyncName getExcludedAppFilePath(bool test = false);
+        static SyncPath getExcludedAppFilePath(bool test = false);
 #endif
-        static SyncName getExcludedTemplateFilePath(bool test = false);
+        static SyncPath getExcludedTemplateFilePath(bool test = false);
         static SyncPath binRelativePath();
         static SyncPath resourcesRelativePath();
         static SyncName logFileName();
         static SyncName logFileNameWithTime();
-        static std::string toUpper(const std::string &str);
-        static std::string toLower(const std::string &str);
-#ifndef _WIN32
-        static std::wstring toUpper(const std::wstring &str);
-        static std::wstring toLower(const std::wstring &str);
-#endif
 
         /* TODO : Replace with std::source_location when we will bump gcc version to 10 or higher
          *  static std::string errId(std::source_location location = std::source_location::current());
@@ -227,6 +195,7 @@ struct COMMONSERVER_EXPORT Utility {
         // Possibly refactor to share code with UnixTimevalToFileTime in c_time.c
         static void unixTimeToFiletime(time_t t, FILETIME *filetime);
 #endif
+        static bool isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode);
 
     private:
         static log4cplus::Logger _logger;

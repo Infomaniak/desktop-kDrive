@@ -17,7 +17,7 @@
  */
 
 #include "localdeletejob.h"
-#include "../network/API_v2/getfileinfojob.h"
+#include "jobs/network/kDrive_API/getfileinfojob.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
@@ -33,7 +33,7 @@
 namespace KDC {
 
 LocalDeleteJob::Path::Path(const SyncPath &path) :
-    _path(path) {};
+    _path(path){};
 
 bool LocalDeleteJob::Path::endsWith(SyncPath &&ending) const {
     if (!_path.empty() && ending.empty()) return false;

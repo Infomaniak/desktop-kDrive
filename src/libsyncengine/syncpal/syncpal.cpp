@@ -42,14 +42,14 @@
 #include "propagation/operation_sorter/operationsorterworker.h"
 #include "propagation/executor/executorworker.h"
 #include "requests/syncnodecache.h"
-#include "jobs/network/API_v2/downloadjob.h"
+#include "jobs/network/kDrive_API/downloadjob.h"
 #include "jobs/local/localdeletejob.h"
 #include "jobs/jobmanager.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "tmpblacklistmanager.h"
-#include "jobs/network/API_v2/upload/upload_session/uploadsessioncanceljob.h"
+#include "jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.h"
 
 #define SYNCPAL_NEW_ERROR_MSG "Failed to create SyncPal instance!"
 
@@ -517,7 +517,7 @@ bool SyncPal::createOrOpenDb(const SyncPath &syncDbPath, const std::string &vers
     try {
         _syncDb = std::shared_ptr<SyncDb>(new SyncDb(syncDbPath.string(), version, targetNodeId));
     } catch (std::exception const &e) {
-        const auto exceptionMsg = Utility::s2ws(std::string(e.what()));
+        const auto exceptionMsg = CommonUtility::s2ws(std::string(e.what()));
         LOGW_SYNCPAL_WARN(
                 _logger, L"Error in SyncDb::SyncDb: " << Utility::formatSyncPath(syncDbPath) << L", Exception: " << exceptionMsg);
         return false;
@@ -681,7 +681,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
         return ExitCode::DbError;
     }
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for localNodeId=" << Utility::s2ws(*localNodeId));
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for localNodeId=" << CommonUtility::s2ws(*localNodeId));
         return ExitCode::DataError;
     }
 
@@ -691,7 +691,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
         return ExitCode::DbError;
     }
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for localNodeId=" << Utility::s2ws(*localNodeId));
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for localNodeId=" << CommonUtility::s2ws(*localNodeId));
         return ExitCode::DataError;
     }
 
@@ -1395,7 +1395,7 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std:
     }
 
     LOGW_SYNCPAL_DEBUG(_logger, L"Item " << Utility::formatSyncPath(relativeLocalPath) << L" (NodeId: "
-                                         << Utility::s2ws(localNodeId)
+                                         << CommonUtility::s2ws(localNodeId)
                                          << L" is blacklisted temporarily because of a denied access.");
 
     NodeId remoteNodeId = liveSnapshot(ReplicaSide::Remote).itemId(relativeLocalPath);
