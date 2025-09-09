@@ -44,6 +44,7 @@ constexpr const char *APP_STATE_KEY_DEFAULT_LastLogUploadArchivePath = APP_STATE
 constexpr char APP_STATE_KEY_DEFAULT_LogUploadState[] = "0"; // KDC::LogUploadState::None
 constexpr char APP_STATE_KEY_DEFAULT_LogUploadPercent[] = "0";
 constexpr const char *APP_STATE_KEY_DEFAULT_LogUploadToken = APP_STATE_DEFAULT_IS_EMPTY;
+constexpr char APP_STATE_KEY_DEFAULT_NoUpdate[] = "0";
 
 namespace KDC {
 
@@ -105,6 +106,11 @@ bool ParmsDb::insertDefaultAppState() {
 
     if (!insertAppState(AppStateKey::AppUid, CommonUtility::generateRandomStringAlphaNum(25), true)) {
         LOG_WARN(_logger, "Error when inserting default value for LogUploadToken");
+        return false;
+    }
+
+    if (!insertAppState(AppStateKey::NoUpdate, APP_STATE_KEY_DEFAULT_NoUpdate)) {
+        LOG_WARN(_logger, "Error inserting default value for NoUpdate");
         return false;
     }
 

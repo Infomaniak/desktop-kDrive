@@ -242,7 +242,7 @@ function Build-Extension {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     $bundlePath = "$extPath/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$version.0_Test/FileExplorerExtensionPackage_$version.0_x64_arm64.msixbundle"
-    Sign-File -FilePath $bundlePath -Upload $upload -Thumbprint $thumbprint -tokenPass $tokenPass
+    Sign-File -FilePath $bundlePath -Upload $upload -Thumbprint $thumbprint -tokenPass $tokenPass -description "FileExplorerExtensionPackage"
 
     $srcVfsPath = "$path/src/libcommonserver/vfs/win/."
     Copy-Item -Path "$extPath/Vfs/../Common/debug.h" -Destination $srcVfsPath
@@ -405,10 +405,11 @@ function Sign-File{
         [string] $filePath,
         [bool] $upload = $false,
         [string] $thumbprint,
-        [String] $tokenPass = ""
+        [string] $tokenPass = "",
+		[string] $description = ""
     )
     Write-Host "Signing the file $filePath with thumbprint $thumbprint" -f Yellow
-    & "$path\infomaniak-build-tools\windows\ksigntool.exe" sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256 /fd sha256 /td sha256 /v /debug /sm $filePath /password:$tokenPass
+    & "$path\infomaniak-build-tools\windows\ksigntool.exe" sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256 /fd sha256 /td sha256 /v /debug /sm /d $description $filePath /password:$tokenPass
     $res = $LASTEXITCODE
     Write-Host "Signing exit code: $res" -ForegroundColor Yellow
     if ($res -ne 0) {
@@ -508,7 +509,7 @@ function Prepare-Archive {
         if (!$thumbprint) {
             $thumbprint = Get-Thumbprint $upload
         }
-        Sign-File -FilePath $archivePath/$filename -Upload $upload -Thumbprint $thumbprint -tokenPass $tokenPass
+        Sign-File -FilePath $archivePath/$filename -Upload $upload -Thumbprint $thumbprint -tokenPass $tokenPass -description $filename
     }
 
     Write-Host "Archive prepared."
@@ -552,7 +553,7 @@ function Create-Archive {
     $installerPath = Get-Installer-Path $buildPath $contentPath
 
     if (Test-Path -Path $installerPath) {
-        Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -tokenPass $tokenPass
+        Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -tokenPass $tokenPass -description $appName
         Write-Host ("$installerPath signed successfully.") -f Green
     }
     else {
@@ -579,7 +580,7 @@ function Create-MSI-Package {
 	$installerPath = Get-Installer-Path $buildPath $contentPath -msi
 
 	if (Test-Path -Path $installerPath) {
-		Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -tokenPass $tokenPass
+		Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -tokenPass $tokenPass -description $appName
 		Write-Host ("$installerPath signed successfully.") -f Green
 	}
 	else {

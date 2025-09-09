@@ -58,20 +58,32 @@ VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) :
     _versionLabel->setObjectName("blocLabel");
     mainLayout->addWidget(_versionLabel);
 
-    const auto prefBloc = new PreferencesBlocWidget();
-    mainLayout->addWidget(prefBloc);
+    _preferencesBlocWidget = new PreferencesBlocWidget();
+    mainLayout->addWidget(_preferencesBlocWidget);
 
-    initVersionInfoBloc(prefBloc);
-    prefBloc->addSeparator();
-    initBetaBloc(prefBloc);
+    initVersionInfoBloc(_preferencesBlocWidget);
 
-    refresh();
+    auto updateState = UpdateState::Unknown;
+    const ExitCode exitCode = GuiRequests::updateState(updateState);
+    if (exitCode != ExitCode::Ok) {
+        qCWarning(lcVersionWidget) << "Error in Requests::updateState";
+    }
+
+    _noUpdate = updateState == UpdateState::NoUpdate;
+    if (!_noUpdate) {
+        _preferencesBlocWidget->addSeparator();
+        initBetaBloc(_preferencesBlocWidget);
+    }
+
+    refresh(updateState);
 
     connect(_updateStatusLabel, &QLabel::linkActivated, this, &VersionWidget::onLinkActivated);
     connect(_versionNumberLabel, &QLabel::linkActivated, this, &VersionWidget::onLinkActivated);
     connect(_showReleaseNotesLabel, &QLabel::linkActivated, this, &VersionWidget::onLinkActivated);
-    connect(_updateButton, &QPushButton::clicked, this, &VersionWidget::onUpdateButtonClicked);
-    connect(_joinBetaButton, &QPushButton::clicked, this, &VersionWidget::onJoinBetaButtonClicked);
+    if (!_noUpdate) {
+        connect(_updateButton, &QPushButton::clicked, this, &VersionWidget::onUpdateButtonClicked);
+        connect(_joinBetaButton, &QPushButton::clicked, this, &VersionWidget::onJoinBetaButtonClicked);
+    }
 }
 
 void VersionWidget::refresh(const bool isStaff) {
@@ -160,18 +172,27 @@ void VersionWidget::refresh(UpdateState state /*= UpdateState::Unknown*/) const 
     _versionLabel->setText(tr("Version"));
     _updateButton->setText(tr("UPDATE"));
 
-    // Refresh update state
-    if (state == UpdateState::Unknown) {
-        GuiRequests::updateState(state);
+    UpdateState newState = _noUpdate ? UpdateState::NoUpdate : state;
+    if (newState == UpdateState::Unknown) {
+        // Refresh update state
+        const ExitCode exitCode = GuiRequests::updateState(newState);
+        if (exitCode != ExitCode::Ok) {
+            qCWarning(lcVersionWidget) << "Error in GuiRequests::updateState";
+        }
     }
+
     VersionInfo versionInfo;
-    GuiRequests::versionInfo(versionInfo);
+    const ExitCode exitCode = GuiRequests::versionInfo(versionInfo);
+    if (exitCode != ExitCode::Ok) {
+        qCWarning(lcVersionWidget) << "Error in GuiRequests::versionInfo";
+    }
+
     const QString versionStr = versionInfo.beautifulVersion().c_str();
 
     QString statusString;
     bool showReleaseNote = false;
     bool showUpdateButton = false;
-    switch (state) {
+    switch (newState) {
         case UpdateState::UpToDate: {
             statusString = tr("%1 is up to date!").arg(APPLICATION_NAME);
             break;
@@ -210,6 +231,10 @@ void VersionWidget::refresh(UpdateState state /*= UpdateState::Unknown*/) const 
             statusString = tr("Could not download update.");
             break;
         }
+        case UpdateState::NoUpdate: {
+            statusString = tr("Update disabled.");
+            break;
+        }
         case UpdateState::Unknown:
             break;
         case UpdateState::EnumEnd: {
@@ -222,7 +247,7 @@ void VersionWidget::refresh(UpdateState state /*= UpdateState::Unknown*/) const 
     _updateButton->setVisible(showUpdateButton);
 
     // Beta version info
-    if (_betaVersionLabel) {
+    if (_betaVersionLabel && _betaVersionDescription && _joinBetaButton) {
         _betaVersionLabel->setText(tr("Beta program"));
         _betaVersionDescription->setText(tr("Get early access to new versions of the application"));
 
@@ -288,7 +313,7 @@ void VersionWidget::initBetaBloc(PreferencesBlocWidget *prefBloc) {
     return; // Beta program is not available on Linux for now
 #endif
 
-    auto *betaLayout = prefBloc->addLayout(QBoxLayout::Direction::LeftToRight);
+    auto betaLayout = prefBloc->addLayout(QBoxLayout::Direction::LeftToRight);
 
     auto *verticalLayout = new QVBoxLayout(this);
     verticalLayout->setSpacing(1);

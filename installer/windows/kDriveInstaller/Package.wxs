@@ -50,11 +50,11 @@
 					  Impersonate="yes"
 					  Return="check" />
         <CustomAction Id="RunApp"
-				Execute="immediate"
-				Impersonate="no"
-				Return="asyncNoWait"
-				FileRef="kDrive.exe"
-				ExeCommand="" />
+				    Execute="immediate"
+				    Impersonate="no"
+				    Return="asyncNoWait"
+				    FileRef="kDrive.exe"
+				    ExeCommand="--noUpdate" />
         <InstallExecuteSequence>
             <Custom Action="TaskKill" Before="InstallValidate" />
             
@@ -62,8 +62,8 @@
             <Custom Action="RunApp" After="InstallFinalize" Condition="NOT REMOVE=&quot;ALL&quot;" />
 
             <!-- Do not clean data on update -->
-            <Custom Action="CleanUpAppData" After="InstallInitialize" Condition="WIX_UPGRADE_DETECTED AND NOT UPGRADINGPRODUCTCODE AND NOT REMOVE~=&quot;ALL&quot;" />
-            <Custom Action="UninstallExplorerExtension" After="CleanUpAppData" Condition="REMOVE=&quot;ALL&quot;" />
+            <Custom Action="CleanUpAppData" After="InstallInitialize" Condition="Installed AND NOT REINSTALL AND NOT UPGRADINGPRODUCTCODE AND REMOVE=&quot;ALL&quot;" />
+            <Custom Action="UninstallExplorerExtension" After="CleanUpAppData" Condition="Installed AND NOT REINSTALL AND NOT UPGRADINGPRODUCTCODE AND REMOVE=&quot;ALL&quot;" />
         </InstallExecuteSequence>
     </Package>
 </Wix>

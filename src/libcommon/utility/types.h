@@ -670,6 +670,7 @@ enum class AppStateKey {
     LogUploadPercent,
     LogUploadToken,
     AppUid,
+    NoUpdate,
     Unknown, // Only for initialization purpose
     EnumEnd
 };
@@ -699,6 +700,7 @@ enum class UpdateState {
     CheckError,
     DownloadError,
     UpdateError,
+    NoUpdate,
     Unknown,
     EnumEnd
 };
