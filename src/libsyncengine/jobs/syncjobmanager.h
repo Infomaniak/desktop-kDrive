@@ -22,18 +22,30 @@
 #include "jobmanager.h"
 
 namespace KDC {
-class JobManager;
 
-class SyncJobManager {
+class SyncJobManager : public JobManager {
     public:
-        static std::shared_ptr<JobManager> instance() noexcept;
+        SyncJobManager();
+        SyncJobManager(SyncJobManager const &) = delete;
+        void operator=(SyncJobManager const &) = delete;
+
+    protected:
+        bool canRunJob(const std::shared_ptr<AbstractJob> job) const override;
+
+
+        friend class TestSyncJobManagerSingleton;
+};
+
+class SyncJobManagerSingleton {
+    public:
+        static std::shared_ptr<SyncJobManager> instance() noexcept;
         static void clear();
 
 
-        friend class TestSyncJobManager;
+        friend class TestSyncJobManagerSingleton;
 
     private:
-        static std::shared_ptr<JobManager> _instance;
+        static std::shared_ptr<SyncJobManager> _instance;
 };
 
 } // namespace KDC

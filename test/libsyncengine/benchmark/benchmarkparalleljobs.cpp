@@ -82,8 +82,8 @@ void BenchmarkParallelJobs::setUp() {
 void BenchmarkParallelJobs::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
-    SyncJobManager::instance()->stop();
-    SyncJobManager::clear();
+    SyncJobManagerSingleton::instance()->stop();
+    SyncJobManagerSingleton::clear();
     TestBase::stop();
 }
 
@@ -244,7 +244,7 @@ std::list<std::shared_ptr<SyncJob>> BenchmarkParallelJobs::generateDownloadJobs(
 
 void BenchmarkParallelJobs::runJobs(const uint16_t nbThread, DataExtractor &dataExtractor,
                                     const std::list<std::shared_ptr<SyncJob>> &jobs) const {
-    SyncJobManager::instance()->setPoolCapacity(nbThread);
+    SyncJobManagerSingleton::instance()->setPoolCapacity(nbThread);
     std::queue<UniqueId> jobIds;
 
     const std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
@@ -253,7 +253,7 @@ void BenchmarkParallelJobs::runJobs(const uint16_t nbThread, DataExtractor &data
         if (nbThread == 1) {
             (void) job->runSynchronously();
         } else {
-            SyncJobManager::instance()->queueAsyncJob(job);
+            SyncJobManagerSingleton::instance()->queueAsyncJob(job);
             jobIds.push(job->jobId());
         }
     }
@@ -261,7 +261,7 @@ void BenchmarkParallelJobs::runJobs(const uint16_t nbThread, DataExtractor &data
     // Wait for all uploads to finish
     while (!jobIds.empty()) {
         Utility::msleep(10); // Wait 10ms
-        while (!jobIds.empty() && SyncJobManager::instance()->isJobFinished(jobIds.front())) {
+        while (!jobIds.empty() && SyncJobManagerSingleton::instance()->isJobFinished(jobIds.front())) {
             jobIds.pop();
         }
     }

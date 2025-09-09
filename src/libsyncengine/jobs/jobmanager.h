@@ -56,6 +56,11 @@ class JobManager {
         void setPoolCapacity(int nbThread);
         void decreasePoolCapacity();
 
+    protected:
+        int availableThreadsInPool() const;
+        virtual bool canRunJob(const std::shared_ptr<AbstractJob> job) const;
+        JobManagerData _data;
+
     private:
         void startMainThreadIfNeeded();
 
@@ -65,9 +70,6 @@ class JobManager {
         void addToPendingJobs(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority);
         void managePendingJobs();
 
-        int availableThreadsInPool() const;
-        bool canRunjob(const std::shared_ptr<AbstractJob> job) const;
-
         bool _stop{false};
         int _maxNbThread{0};
         Poco::ThreadPool _threadPool;
@@ -75,9 +77,7 @@ class JobManager {
         log4cplus::Logger _logger;
         std::unique_ptr<std::thread> _mainThread;
 
-        JobManagerData _data;
-
-        friend class TestSyncJobManager;
+        friend class TestSyncJobManagerSingleton;
 };
 
 } // namespace KDC

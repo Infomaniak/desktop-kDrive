@@ -291,7 +291,7 @@ void AppServer::init() {
     }
 
     // Init JobManager
-    if (!SyncJobManager::instance()) {
+    if (!SyncJobManagerSingleton::instance()) {
         LOG_WARN(_logger, "Error in JobManager::instance");
         throw std::runtime_error("Unable to initialize job manager.");
     }
@@ -410,7 +410,7 @@ void AppServer::cleanup() {
     LOG_DEBUG(_logger, "AppServer::cleanup");
 
     // Stop JobManager
-    SyncJobManager::instance()->stop();
+    SyncJobManagerSingleton::instance()->stop();
     LOG_DEBUG(_logger, "JobManager stopped");
 
     // Stop SyncPals
@@ -430,7 +430,7 @@ void AppServer::cleanup() {
     LOG_DEBUG(_logger, "Vfs(s) stopped");
 
     // Clear JobManager
-    SyncJobManager::clear();
+    SyncJobManagerSingleton::clear();
     LOG_DEBUG(_logger, "JobManager::clear() done");
 
     // Clear maps
@@ -2243,7 +2243,7 @@ void AppServer::uploadLog(const bool includeArchivedLogs) {
         }
     };
     logUploadJob->setAdditionalCallback(jobResultCallback);
-    SyncJobManager::instance()->queueAsyncJob(logUploadJob, Poco::Thread::PRIO_HIGH);
+    SyncJobManagerSingleton::instance()->queueAsyncJob(logUploadJob, Poco::Thread::PRIO_HIGH);
 }
 
 ExitInfo AppServer::checkIfSyncIsValid(const Sync &sync) {
@@ -3958,7 +3958,7 @@ void AppServer::addError(const Error &error) {
         ParametersCache::instance()->decreaseUploadSessionParallelThreads();
 
         // Decrease JobManager pool capacity
-        SyncJobManager::instance()->decreasePoolCapacity();
+        SyncJobManagerSingleton::instance()->decreasePoolCapacity();
     } else if (error.exitCode() == ExitCode::SystemError && error.exitCause() == ExitCause::FileAccessError) {
         // Remove child errors
         std::unordered_set<int64_t> toBeRemovedErrorIds;

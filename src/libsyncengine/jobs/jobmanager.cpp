@@ -111,7 +111,7 @@ void JobManager::run() noexcept {
         // Always keep 1 thread available for jobs with highest priority
         while (availableThreads > 1 && !_stop && _data.hasQueuedJob()) {
             const auto [job, priority] = _data.pop();
-            if (canRunjob(job)) {
+            if (canRunJob(job)) {
                 startJob(job, priority);
             } else {
                 addToPendingJobs(job, priority);
@@ -120,7 +120,7 @@ void JobManager::run() noexcept {
             availableThreads = availableThreadsInPool();
         }
 
-        // Start job with highest priority
+        // Start job with the highest priority
         if (_data.hasHighestPriorityJob()) {
             const auto [job, priority] = _data.pop();
             startJob(job, priority);
@@ -172,17 +172,8 @@ int JobManager::availableThreadsInPool() const {
     }
 }
 
-bool JobManager::canRunjob(const std::shared_ptr<AbstractJob> job) const {
-    if (job->isConstrainedByOtherJobs()) {
-        for (const auto &runningJobId: _data.runningJobs()) {
-            if (job->isExclusiveOf(getJob(runningJobId))) {
-                return false;
-            }
-        }
-    }
-
-    const bool lowCapacity = availableThreadsInPool() < 0.5 * _threadPool.capacity();
-    return !lowCapacity || job->canRunWithLowThreadPoolCapacity();
+bool JobManager::canRunJob(const std::shared_ptr<AbstractJob>) const {
+    return true;
 }
 
 void JobManager::managePendingJobs() {
@@ -191,7 +182,7 @@ void JobManager::managePendingJobs() {
         const auto &job = jobInfo.first;
         const auto priority = jobInfo.second;
 
-        if (canRunjob(job)) {
+        if (canRunJob(job)) {
             if (job->isAborted()) {
                 // The job is aborted, remove it completely from job manager
                 _data.erase(job->jobId());

@@ -35,9 +35,9 @@ using namespace CppUnit;
 
 namespace KDC {
 
-class TestSyncJobManager : public CppUnit::TestFixture, public TestBase {
+class TestSyncJobManagerSingleton : public CppUnit::TestFixture, public TestBase {
     public:
-        CPPUNIT_TEST_SUITE(TestSyncJobManager);
+        CPPUNIT_TEST_SUITE(TestSyncJobManagerSingleton);
         CPPUNIT_TEST(testWithoutCallback);
         CPPUNIT_TEST(testWithCallback);
         CPPUNIT_TEST(testWithCallbackMediumFiles);

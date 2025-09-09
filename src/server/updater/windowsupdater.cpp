@@ -64,12 +64,12 @@ void WindowsUpdater::downloadUpdate() noexcept {
     auto job = std::make_shared<DirectDownloadJob>(filepath, versionInfo(_currentChannel).downloadUrl);
     const std::function<void(UniqueId)> callback = std::bind_front(&WindowsUpdater::downloadFinished, this);
     job->setAdditionalCallback(callback);
-    SyncJobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
+    SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
     setState(UpdateState::Downloading);
 }
 
 void WindowsUpdater::downloadFinished(const UniqueId jobId) {
-    auto job = SyncJobManager::instance()->getJob(jobId);
+    auto job = SyncJobManagerSingleton::instance()->getJob(jobId);
     const auto downloadJob = std::dynamic_pointer_cast<DirectDownloadJob>(job);
     if (!downloadJob) {
         const auto error = "Could not cast job pointer.";

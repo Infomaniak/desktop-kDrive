@@ -55,9 +55,6 @@ class AbstractJob : public Poco::Runnable {
 
         virtual void abort();
         bool isAborted() const;
-        virtual bool isExclusiveOf(std::shared_ptr<AbstractJob>) const { return false; }
-        virtual bool isConstrainedByOtherJobs() const noexcept { return false; }
-        virtual bool canRunWithLowThreadPoolCapacity() const noexcept { return true; }
 
     protected:
         virtual bool canRun() { return true; }

@@ -334,7 +334,7 @@ bool AbstractUploadSession::sendChunks() {
                 const std::scoped_lock lock(_mutex);
                 _threadCounter++;
                 chunkJob->setAdditionalCallback(callback);
-                SyncJobManager::instance()->queueAsyncJob(chunkJob, Poco::Thread::PRIO_NORMAL);
+                SyncJobManagerSingleton::instance()->queueAsyncJob(chunkJob, Poco::Thread::PRIO_NORMAL);
                 const auto &[_, inserted] = _ongoingChunkJobs.try_emplace(chunkJob->jobId(), chunkJob);
                 if (!inserted) {
                     LOG_ERROR(_logger, "Session " << _sessionToken << ", job " << chunkJob->jobId()
