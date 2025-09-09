@@ -175,4 +175,9 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
 
     return true;
 }
+
+bool IoHelper::setDehydratedPlaceholderStatus(const KDC::SyncPath &path, KDC::IoError &ioError) noexcept {
+    return setXAttrValue(path, "com.infomaniak.drive.desktopclient.litesync.status", "O", ioError);
+}
+
 } // namespace KDC

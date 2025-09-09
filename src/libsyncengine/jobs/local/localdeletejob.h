@@ -46,6 +46,7 @@ class LocalDeleteJob : public AbstractJob {
 
     protected:
         SyncPath _absolutePath;
+        bool _liteSyncIsEnabled = false;
 
         virtual bool canRun() override;
         virtual bool findRemoteItem(SyncPath &remoteItemPath) const;
@@ -60,7 +61,6 @@ class LocalDeleteJob : public AbstractJob {
 
         SyncPalInfo _syncInfo;
         SyncPath _relativePath;
-        bool _liteIsSyncEnabled = false;
         NodeId _remoteNodeId;
         bool _forceToTrash = false;
 

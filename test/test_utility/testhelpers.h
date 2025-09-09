@@ -96,4 +96,12 @@ SyncPath generateBigFile(const SyncPath &dirPath, uint16_t size);
 
 void setModificationDate(const SyncPath &path, const std::chrono::time_point<std::chrono::system_clock> &timePoint);
 
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+/**
+ * @brief Create a file with an online status. (Dehydrated files a recognized by the application thanks to this special
+ * synchronization status).
+ * @param filPath Path indicating the file to create.
+ */
+void createFileWithDehydratedStatus(const SyncPath &filePath);
+#endif
 } // namespace KDC::testhelpers

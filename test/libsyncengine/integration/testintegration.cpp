@@ -430,6 +430,7 @@ void TestIntegration::testExclusionTemplates() {
     IoHelper::getFileStat(_syncPal->localPath() / tmpRemoteDir.name() / testName, &filestat, found);
     fileLocalId = std::to_string(filestat.inode);
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
+
     logStep("testExclusionTemplates");
 }
 

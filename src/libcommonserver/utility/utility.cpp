@@ -669,7 +669,7 @@ bool Utility::isInTrash(const SyncPath &path) {
 }
 
 void Utility::eraseFromTrash(const KDC::SyncPath &path) {
-    (void) std::filesystem::remove(getTrashPath() / path);
+    (void) std::filesystem::remove_all(getTrashPath() / path);
 }
 #endif
 

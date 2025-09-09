@@ -36,16 +36,23 @@ class LocalDeleteJobMockingTrash : public LocalDeleteJob {
         explicit LocalDeleteJobMockingTrash(const SyncPath &absolutePath) :
             LocalDeleteJob(absolutePath){};
         void setMoveToTrashFailed(bool failed) { _moveToTrashFailed = failed; };
+        void setLiteSyncEnabled(bool enabled) { _liteSyncIsEnabled = enabled; };
+        void setMockMoveToTrash(const bool mocked) { _moveToTrashIsMocked = mocked; }
 
     protected:
         bool moveToTrash() final {
-            std::filesystem::remove_all(_absolutePath);
-            handleTrashMoveOutcome(_moveToTrashFailed, _absolutePath);
-            return !_moveToTrashFailed;
+            if (_moveToTrashIsMocked) {
+                std::filesystem::remove_all(_absolutePath);
+                handleTrashMoveOutcome(_moveToTrashFailed, _absolutePath);
+                return !_moveToTrashFailed;
+            }
+
+            return LocalDeleteJob::moveToTrash();
         };
 
     private:
         bool _moveToTrashFailed = false;
+        bool _moveToTrashIsMocked = true;
 };
 
 void KDC::TestLocalJobs::setUp() {
@@ -89,10 +96,19 @@ void KDC::TestLocalJobs::testLocalJobs() {
     CPPUNIT_ASSERT(std::filesystem::exists(copyDirPath / "tmp_dir" / "tmp_picture.jpg"));
 
     // Delete
+    testhelpers::createFileWithDehydratedStatus(copyDirPath / "tmp_dir" / "dehydrated_placeholder.jpg");
     LocalDeleteJobMockingTrash deleteJob(copyDirPath);
+    deleteJob.setLiteSyncEnabled(true);
+    deleteJob.setMockMoveToTrash(false);
     deleteJob.runSynchronously();
 
     CPPUNIT_ASSERT(!std::filesystem::exists(copyDirPath));
+    CPPUNIT_ASSERT(Utility::isInTrash(copyDirPath.filename()));
+    CPPUNIT_ASSERT(Utility::isInTrash(SyncPath(copyDirPath.filename()) / "tmp_dir" / "tmp_picture.jpg"));
+    CPPUNIT_ASSERT(!Utility::isInTrash(SyncPath(copyDirPath.filename()) / "tmp_dir" / "dehydrated_placeholder.jpg"));
+#if defined(KD_MACOS) || defined(KD_LINUX)
+    Utility::eraseFromTrash(copyDirPath.filename());
+#endif
 }
 
 void KDC::TestLocalJobs::testDeleteFilesWithDuplicateNames() {

@@ -19,6 +19,7 @@
 #include "testhelpers.h"
 
 #include "libcommon/utility/utility.h"
+#include "libcommonserver/io/iohelper.h"
 
 #include <fstream>
 #include <Poco/JSON/Object.h>
@@ -94,4 +95,13 @@ std::string loadEnvVariable(const std::string &key, const bool mandatory) {
     return val;
 }
 
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+void createFileWithDehydratedStatus(const SyncPath &filePath) {
+    generateOrEditTestFile(filePath);
+
+    auto ioError = IoError::Unknown;
+    const bool success = IoHelper::setDehydratedPlaceholderStatus(filePath, ioError);
+    assert(success && ioError == IoError::Success && "Unexpected failure of IoHelper::setXAttrValue.");
+}
+#endif
 } // namespace KDC::testhelpers

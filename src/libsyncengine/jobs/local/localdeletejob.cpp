@@ -60,9 +60,9 @@ bool LocalDeleteJob::matchRelativePaths(const SyncPath &targetPath, const SyncPa
 LocalDeleteJob::LocalDeleteJob(const SyncPalInfo &syncPalInfo, const SyncPath &relativePath, bool liteIsSyncEnabled,
                                const NodeId &remoteId, bool forceToTrash /* = false */) :
     _absolutePath(syncPalInfo.localPath / relativePath),
+    _liteSyncIsEnabled(liteIsSyncEnabled),
     _syncInfo(syncPalInfo),
     _relativePath(relativePath),
-    _liteIsSyncEnabled(liteIsSyncEnabled),
     _remoteNodeId(remoteId),
     _forceToTrash(forceToTrash) {}
 
@@ -231,9 +231,7 @@ void LocalDeleteJob::hardDeleteDehydratedPlaceholders() {
 }
 
 bool LocalDeleteJob::moveToTrash() {
-    _exitInfo = ExitCode::Ok;
-
-    if (!_liteIsSyncEnabled) {
+    if (!_liteSyncIsEnabled) {
         const bool moveToTrashSuccess = Utility::moveItemToTrash(_absolutePath);
         handleTrashMoveOutcome(moveToTrashSuccess, _absolutePath);
 
@@ -265,6 +263,8 @@ bool LocalDeleteJob::moveToTrash() {
 }
 
 void LocalDeleteJob::runJob() {
+    _exitInfo = ExitCode::Ok; //
+
     if (!canRun()) return;
 
     if (const bool tryMoveToTrash = (ParametersCache::instance()->parameters().moveToTrash()) || _forceToTrash)
