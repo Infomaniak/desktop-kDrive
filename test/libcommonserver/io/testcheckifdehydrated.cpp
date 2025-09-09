@@ -53,7 +53,7 @@ void TestIo::testCheckIfFileIsDehydrated() {
         }
 
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(_testObj->setDehydratedPlaceholderStatus(path, ioError));
+        CPPUNIT_ASSERT(IoHelper::setDehydratedPlaceholderStatus(path, ioError));
         bool isDehydrated = false;
         CPPUNIT_ASSERT(IoHelper::checkIfFileIsDehydrated(path, isDehydrated, ioError));
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
@@ -69,7 +69,7 @@ void TestIo::testCheckIfFileIsDehydrated() {
         }
 
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "com.infomaniak.drive.desktopclient.litesync.status", "F", ioError));
+        CPPUNIT_ASSERT(IoHelper::setXAttrValue(path, "com.infomaniak.drive.desktopclient.litesync.status", "F", ioError));
         bool isDehydrated = true;
         CPPUNIT_ASSERT(IoHelper::checkIfFileIsDehydrated(path, isDehydrated, ioError));
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
@@ -85,7 +85,7 @@ void TestIo::testCheckIfFileIsDehydrated() {
         { std::ofstream ofs(path); }
 
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(_testObj->setDehydratedPlaceholderStatus(path, ioError));
+        CPPUNIT_ASSERT(IoHelper::setDehydratedPlaceholderStatus(path, ioError));
         bool isDehydrated = false;
         CPPUNIT_ASSERT(IoHelper::checkIfFileIsDehydrated(path, isDehydrated, ioError));
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);

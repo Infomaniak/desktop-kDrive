@@ -35,8 +35,8 @@ class LocalDeleteJobMockingTrash : public LocalDeleteJob {
     public:
         explicit LocalDeleteJobMockingTrash(const SyncPath &absolutePath) :
             LocalDeleteJob(absolutePath){};
-        void setMoveToTrashFailed(bool failed) { _moveToTrashFailed = failed; };
-        void setLiteSyncEnabled(bool enabled) { _liteSyncIsEnabled = enabled; };
+        void setMoveToTrashFailed(const bool failed) { _moveToTrashFailed = failed; };
+        void setLiteSyncEnabled(const bool enabled) { _liteSyncIsEnabled = enabled; };
         void setMockMoveToTrash(const bool mocked) { _moveToTrashIsMocked = mocked; }
 
     protected:
@@ -96,7 +96,9 @@ void KDC::TestLocalJobs::testLocalJobs() {
     CPPUNIT_ASSERT(std::filesystem::exists(copyDirPath / "tmp_dir" / "tmp_picture.jpg"));
 
     // Delete
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
     testhelpers::createFileWithDehydratedStatus(copyDirPath / "tmp_dir" / "dehydrated_placeholder.jpg");
+#endif
     LocalDeleteJobMockingTrash deleteJob(copyDirPath);
     deleteJob.setLiteSyncEnabled(true);
     deleteJob.setMockMoveToTrash(false);
@@ -104,8 +106,8 @@ void KDC::TestLocalJobs::testLocalJobs() {
 
     CPPUNIT_ASSERT(!std::filesystem::exists(copyDirPath));
     CPPUNIT_ASSERT(Utility::isInTrash(copyDirPath.filename()));
-    CPPUNIT_ASSERT(Utility::isInTrash(SyncPath(copyDirPath.filename()) / "tmp_dir" / "tmp_picture.jpg"));
-    CPPUNIT_ASSERT(!Utility::isInTrash(SyncPath(copyDirPath.filename()) / "tmp_dir" / "dehydrated_placeholder.jpg"));
+    CPPUNIT_ASSERT(Utility::isInTrash(SyncPath{copyDirPath.filename()} / "tmp_dir" / "tmp_picture.jpg"));
+    CPPUNIT_ASSERT(!Utility::isInTrash(SyncPath{copyDirPath.filename()} / "tmp_dir" / "dehydrated_placeholder.jpg"));
 #if defined(KD_MACOS) || defined(KD_LINUX)
     Utility::eraseFromTrash(copyDirPath.filename());
 #endif

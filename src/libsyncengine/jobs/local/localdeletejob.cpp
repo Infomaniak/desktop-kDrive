@@ -169,7 +169,7 @@ void LocalDeleteJob::hardDelete(const SyncPath &path) {
     LOGW_DEBUG(_logger, L"Try to hard delete item with " << Utility::formatSyncPath(path));
 
     std::error_code ec;
-    std::filesystem::remove_all(path, ec);
+    (void) std::filesystem::remove_all(path, ec);
     if (ec) {
         LOGW_WARN(_logger, L"Failed to delete item with path " << Utility::formatStdError(path, ec));
         if (IoHelper::stdError2ioError(ec) == IoError::AccessDenied) {

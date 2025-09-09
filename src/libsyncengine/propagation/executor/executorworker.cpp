@@ -2026,7 +2026,7 @@ ExitInfo ExecutorWorker::deleteFromDb(std::shared_ptr<Node> node) {
 }
 
 ExitInfo ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job) {
-    job->runSynchronously();
+    (void) job->runSynchronously();
 
     std::string errorCode;
     auto tokenJob(std::dynamic_pointer_cast<AbstractTokenNetworkJob>(job));

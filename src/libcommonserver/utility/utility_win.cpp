@@ -688,7 +688,7 @@ void Utility::unixTimeToFiletime(time_t t, FILETIME *filetime) {
 
 namespace {
 HRESULT bindToCsidl(const int csidl, REFIID riid, void **ppv) {
-    HRESULT hr = S_OK;
+    auto hr = S_OK;
     PIDLIST_ABSOLUTE pidl = nullptr;
     hr = SHGetSpecialFolderLocation(nullptr, csidl, &pidl);
     if (SUCCEEDED(hr)) {
@@ -707,10 +707,10 @@ HRESULT bindToCsidl(const int csidl, REFIID riid, void **ppv) {
     return hr;
 }
 
-bool isInFolder(const SyncPath relativePath, IShellFolder2 *folder) {
+bool isInFolder(const SyncPath &relativePath, const IShellFolder2 *folder) {
     IEnumIDList *peidl = nullptr;
 
-    if (const auto enumHr = folder->EnumObjects(NULL, SHCONTF_FOLDERS | SHCONTF_NONFOLDERS, &peidl); SUCCEEDED(enumHr)) {
+    if (const auto enumHr = folder->EnumObjects(nullptr, SHCONTF_FOLDERS | SHCONTF_NONFOLDERS, &peidl); SUCCEEDED(enumHr)) {
         PITEMID_CHILD pidlItem = nullptr;
         while (peidl->Next(1, &pidlItem, nullptr) == S_OK) {
             CComPtr<IShellItem> pItem;
