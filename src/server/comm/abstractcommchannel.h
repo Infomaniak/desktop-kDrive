@@ -36,40 +36,22 @@ class AbstractCommChannel : public std::enable_shared_from_this<AbstractCommChan
         AbstractCommChannel() = default;
         virtual ~AbstractCommChannel();
 
-        bool open();
         virtual void close() = 0;
         virtual void sendMessage(const CommString &message) = 0;
         virtual bool canReadMessage() const = 0;
         virtual CommString readMessage() = 0;
+        virtual uint64_t bytesAvailable() const = 0;
 
-        //! Gets a device ID.
+        //! Gets an unique identifier for the object.
         /*!
-          \return the device ID.
+          \return the object ptr casted to string.
         */
         std::string id();
 
-        //! Gets from the device if anything is available for reading.
-        /*!
-          \return the number of bytes that are available for reading.
-        */
-        virtual uint64_t bytesAvailable() const = 0;
-
-        // Callbacks
         void setLostConnectionCbk(const std::function<void(std::shared_ptr<AbstractCommChannel>)> &cbk) {
             _onLostConnectionCbk = cbk;
         }
-        void lostConnectionCbk() {
-            if (_onLostConnectionCbk) _onLostConnectionCbk(shared_from_this());
-        }
         void setReadyReadCbk(const std::function<void(std::shared_ptr<AbstractCommChannel>)> &cbk) { _onReadyReadCbk = cbk; }
-        void readyReadCbk() {
-            if (_onReadyReadCbk) _onReadyReadCbk(shared_from_this());
-        }
-
-    private:
-        std::function<void(std::shared_ptr<AbstractCommChannel>)> _onLostConnectionCbk;
-        std::function<void(std::shared_ptr<AbstractCommChannel>)> _onReadyReadCbk;
-        std::function<void(std::shared_ptr<AbstractCommChannel>)> _onDestroyedCbk;
 
     protected:
         //! Reads from the device.
@@ -89,6 +71,22 @@ class AbstractCommChannel : public std::enable_shared_from_this<AbstractCommChan
         virtual uint64_t writeData(const CommChar *data, uint64_t maxSize) = 0;
 
         CommString truncateLongLogMessage(const CommString &message);
+
+        // Callbacks
+        void lostConnectionCbk() {
+            auto thisPtr = weak_from_this().lock(); // Ensure the callback is not called on an object being destroyed
+            if (_onLostConnectionCbk && thisPtr) _onLostConnectionCbk(thisPtr);
+        }
+        void readyReadCbk() {
+            auto thisPtr = weak_from_this().lock(); // Ensure the callback is not called on an object being destroyed
+            if (_onReadyReadCbk && thisPtr) _onReadyReadCbk(thisPtr);
+        }
+
+    private:
+        std::function<void(std::shared_ptr<AbstractCommChannel>)> _onLostConnectionCbk;
+        std::function<void(std::shared_ptr<AbstractCommChannel>)> _onReadyReadCbk;
+        std::function<void(std::shared_ptr<AbstractCommChannel>)> _onDestroyedCbk;
+
         friend class TestSocketComm;
 };
 

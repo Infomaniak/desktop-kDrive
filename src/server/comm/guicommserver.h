@@ -26,15 +26,19 @@ namespace KDC {
 
 class GuiCommChannel : public SocketCommChannel {
     public:
-        GuiCommChannel();
-        virtual void sendMessage(const CommString &message) final;
-        virtual bool canReadMessage() const final;
-        virtual CommString readMessage() final;
+        GuiCommChannel(Poco::Net::StreamSocket &socket) :
+            SocketCommChannel(socket) {}
+
+        void sendMessage(const CommString &message) final;
+        bool canReadMessage() const final;
+        CommString readMessage() final;
 };
 
 class GuiCommServer : public SocketCommServer {
     public:
         GuiCommServer(const std::string &name);
-        std::shared_ptr<SocketCommChannel> makeCommChannel() const override { return std::make_shared<GuiCommChannel>(); }
+        std::shared_ptr<SocketCommChannel> makeCommChannel(Poco::Net::StreamSocket &socket) const override {
+            return std::make_shared<GuiCommChannel>(socket);
+        }
 };
 } // namespace KDC

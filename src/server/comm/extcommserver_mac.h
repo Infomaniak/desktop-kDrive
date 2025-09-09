@@ -29,6 +29,9 @@ class ExtCommChannelPrivate;
 class ExtCommChannel : public XPCCommChannel {
     public:
         ExtCommChannel(ExtCommChannelPrivate *p);
+        void sendMessage(const CommString &message) final { /* TODO: Implement */ }
+        bool canReadMessage() const final { return 0; /* TODO: Implement */ }
+        CommString readMessage() final { return Str(""); /*TODO: Implement */ }
 
     private:
         uint64_t writeData(const KDC::CommChar *data, uint64_t len) override;

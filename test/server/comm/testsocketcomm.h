@@ -25,6 +25,9 @@ namespace KDC {
 
 class SocketCommChannelTest : public SocketCommChannel {
     public:
+        SocketCommChannelTest(Poco::Net::StreamSocket &socket) :
+            SocketCommChannel(socket) {}
+
         ~SocketCommChannelTest() {}
         bool canReadMessage() const override { return true; }
         CommString readMessage() override;
@@ -35,7 +38,9 @@ class SocketCommServerTest : public SocketCommServer {
     public:
         SocketCommServerTest(const std::string &name) :
             SocketCommServer(name) {}
-        std::shared_ptr<SocketCommChannel> makeCommChannel() const override { return std::make_unique<SocketCommChannelTest>(); }
+        std::shared_ptr<SocketCommChannel> makeCommChannel(Poco::Net::StreamSocket &socket) const override {
+            return std::make_shared<SocketCommChannelTest>(socket);
+        }
 };
 
 class TestSocketComm : public CppUnit::TestFixture, public TestBase {

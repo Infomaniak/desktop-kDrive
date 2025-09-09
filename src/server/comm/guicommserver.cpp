@@ -20,9 +20,6 @@
 
 namespace KDC {
 
-GuiCommChannel::GuiCommChannel() :
-    SocketCommChannel() {}
-
 void GuiCommChannel::sendMessage(const CommString &message) {
     const CommString truncatedLogMessage = truncateLongLogMessage(message);
     LOGW_INFO(Log::instance()->getLogger(), L"Sending message: " << CommonUtility::commString2WStr(truncatedLogMessage)

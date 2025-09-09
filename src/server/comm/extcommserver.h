@@ -25,9 +25,9 @@ namespace KDC {
 class ExtCommChannel : public PipeCommChannel {
     public:
         ExtCommChannel();
-        virtual void sendMessage(const CommString &message) final;
-        virtual bool canReadMessage() const final;
-        virtual CommString readMessage() final;
+        void sendMessage(const CommString &message) final;
+        bool canReadMessage() const final;
+        CommString readMessage() final;
 
     protected:
         CommString _readBuffer;

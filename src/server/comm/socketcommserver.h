@@ -28,18 +28,21 @@ namespace KDC {
 
 class SocketCommChannel : public AbstractCommChannel {
     public:
-        SocketCommChannel();
+        SocketCommChannel(Poco::Net::StreamSocket& socket);
         ~SocketCommChannel();
 
         uint64_t bytesAvailable() const override;
-        void setSocket(Poco::Net::StreamSocket socket) { _socket = std::move(socket); };
         void close() override;
     protected:
         uint64_t readData(CommChar *data, uint64_t maxlen) final;
         virtual uint64_t writeData(const CommChar *data, uint64_t len) final;
 
     private:
+        bool _isClosing = false;
+        std::thread _callbackThread;
         Poco::Net::StreamSocket _socket;
+
+        void callbackHandler();
 };
 
 class SocketCommServer : public AbstractCommServer {
@@ -48,12 +51,12 @@ class SocketCommServer : public AbstractCommServer {
         ~SocketCommServer();
         int getPort() const { return static_cast<int>(_serverSocket.address().port()); }
         void close() override;
-        bool listen(const KDC::SyncPath &) override;
-        std::shared_ptr<KDC::AbstractCommChannel> nextPendingConnection() override;
-        std::list<std::shared_ptr<KDC::AbstractCommChannel>> connections() override;
+        bool listen(const SyncPath &) override;
+        std::shared_ptr<AbstractCommChannel> nextPendingConnection() override;
+        std::list<std::shared_ptr<AbstractCommChannel>> connections() override;
 
     protected:
-        virtual std::shared_ptr<SocketCommChannel> makeCommChannel() const = 0;
+        virtual std::shared_ptr<SocketCommChannel> makeCommChannel(Poco::Net::StreamSocket& socket) const = 0;
 
     private:
         Poco::Net::ServerSocket _serverSocket;
@@ -62,11 +65,7 @@ class SocketCommServer : public AbstractCommServer {
         bool _isListening = false;
         bool _stopAsked = false;
         std::unique_ptr<std::thread> _serverSocketThread;
-        std::unique_ptr<std::thread> _readyReadCbkThread;
         void execute();
-        static void executeFunc(SocketCommServer *server);
-        void readyReadCbkHandler();
-        static void readyReadCbkHandlerFunc(SocketCommServer *server);
 };
 
 } // namespace KDC

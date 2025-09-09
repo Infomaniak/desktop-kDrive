@@ -50,8 +50,7 @@ void TestSocketComm::testServerListen() {
     // Create a client socket and connect to the server
     Poco::Net::StreamSocket clientSocket;
     clientSocket.connect(Poco::Net::SocketAddress("localhost", _socketCommServerTest->getPort()));
-    SocketCommChannelTest clientSideChannel;
-    clientSideChannel.setSocket(std::move(clientSocket));
+    std::shared_ptr<SocketCommChannelTest> clientSideChannel = std::make_shared<SocketCommChannelTest>(clientSocket);
 
     // Wait for the server to accept the connection
     while (_socketCommServerTest->connections().size() == 0) {
@@ -63,7 +62,7 @@ void TestSocketComm::testServerListen() {
     CPPUNIT_ASSERT(serverSidechannel != nullptr);
 
     // Send a message from the client to the server
-    clientSideChannel.sendMessage(Str("Hello world"));
+    clientSideChannel->sendMessage(Str("Hello world"));
 
     // Wait for the server to receive the message
     while (serverSidechannel->bytesAvailable() == 0) {
@@ -94,8 +93,7 @@ void TestSocketComm::testServerCallbacks() {
     // Create a client socket and connect to the server
     Poco::Net::StreamSocket clientSocket;
     clientSocket.connect(Poco::Net::SocketAddress("localhost", _socketCommServerTest->getPort()));
-    SocketCommChannelTest clientSideChannel;
-    clientSideChannel.setSocket(std::move(clientSocket));
+    std::shared_ptr<SocketCommChannelTest> clientSideChannel = std::make_shared<SocketCommChannelTest>(clientSocket);
 
     // Wait for the server to accept the connection
     while (_socketCommServerTest->connections().size() == 0) {
@@ -109,8 +107,13 @@ void TestSocketComm::testServerCallbacks() {
     CPPUNIT_ASSERT(serverSidechannel != nullptr);
 
     // Close the client side channel to trigger lost connection callback
-    clientSideChannel.close();
-    auto _ = serverSidechannel->readMessage(); // Force read to detect closed connection
+    clientSideChannel->close();
+
+    // Wait for the lost connection callback to be called
+    int remainWait = 400; // wait max 4 seconds
+    while (!lostConnectionCalled && remainWait-- > 0) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
 
     CPPUNIT_ASSERT_MESSAGE("Lost connection callback not called", lostConnectionCalled);
     CPPUNIT_ASSERT_MESSAGE("Lost connection callback channel mismatch", lostChannel == serverSidechannel);
@@ -125,8 +128,7 @@ void TestSocketComm::testChannelReadyReadCallback() {
     // Create a client socket and connect to the server
     Poco::Net::StreamSocket clientSocket;
     clientSocket.connect(Poco::Net::SocketAddress("localhost", _socketCommServerTest->getPort()));
-    SocketCommChannelTest clientSideChannel;
-    clientSideChannel.setSocket(std::move(clientSocket));
+    std::shared_ptr<SocketCommChannelTest> clientSideChannel = std::make_shared<SocketCommChannelTest>(clientSocket);
 
     // Wait for the server to accept the connection
     int remainWait = 100; // wait max 1 second
@@ -147,7 +149,7 @@ void TestSocketComm::testChannelReadyReadCallback() {
     });
 
     // Send a message from the client to the server
-    clientSideChannel.sendMessage(Str("Hello world"));
+    clientSideChannel->sendMessage(Str("Hello world"));
 
     // Wait for the server to receive the message and trigger the ready read callback
     remainWait = 100; // wait max 1 second
@@ -167,8 +169,7 @@ void TestSocketComm::testChannelReadAndWriteData() {
     // Create a client socket and connect to the server
     Poco::Net::StreamSocket clientSocket;
     clientSocket.connect(Poco::Net::SocketAddress("localhost", _socketCommServerTest->getPort()));
-    SocketCommChannelTest clientSideChannel;
-    clientSideChannel.setSocket(std::move(clientSocket));
+    std::shared_ptr<SocketCommChannelTest> clientSideChannel = std::make_shared<SocketCommChannelTest>(clientSocket);
 
     // Wait for the server to accept the connection
     while (_socketCommServerTest->connections().size() == 0) {
@@ -185,7 +186,7 @@ void TestSocketComm::testChannelReadAndWriteData() {
                                           Str("每个人都有他的作战策略")};
     for (const auto &msg: messages) {
         // Send a message from the client to the server
-        clientSideChannel.sendMessage(msg);
+        clientSideChannel->sendMessage(msg);
         // Wait for the server to receive the message
         int remainWait = 100; // wait max 1 second
         while (serverSidechannel->bytesAvailable() == 0 && remainWait-- > 0) {
@@ -204,7 +205,7 @@ void TestSocketComm::testChannelReadAndWriteData() {
         longMessage += Str2SyncName(std::to_string(rand() % 10));
     }
 
-    clientSideChannel.sendMessage(longMessage);
+    clientSideChannel->sendMessage(longMessage);
 
     // Wait for the server to receive the message
     int remainWait = 100; // wait max 1 second
