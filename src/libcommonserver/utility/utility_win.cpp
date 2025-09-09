@@ -707,7 +707,7 @@ HRESULT bindToCsidl(const int csidl, REFIID riid, void **ppv) {
     return hr;
 }
 
-bool isInFolder(const SyncPath &relativePath, const IShellFolder2 *folder) {
+bool isInFolder(const SyncPath &relativePath, IShellFolder2 *folder) {
     IEnumIDList *peidl = nullptr;
 
     if (const auto enumHr = folder->EnumObjects(nullptr, SHCONTF_FOLDERS | SHCONTF_NONFOLDERS, &peidl); SUCCEEDED(enumHr)) {
