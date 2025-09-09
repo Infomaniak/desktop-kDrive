@@ -102,6 +102,8 @@ set(testserver_SRCS
     requests/testserverrequests.h requests/testserverrequests.cpp
     appserver/testappserver.h appserver/testappserver.cpp
     comm/testabstractcommchannel.h comm/testabstractcommchannel.cpp
+    comm/testsocketcommserver.h comm/testsocketcommserver.cpp
+
 )
 
 if(APPLE)

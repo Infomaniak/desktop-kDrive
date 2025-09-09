@@ -28,16 +28,18 @@ namespace KDC {
 
 class SocketCommChannel : public AbstractCommChannel {
     public:
-        SocketCommChannel(Poco::Net::StreamSocket socket);
+        SocketCommChannel();
         ~SocketCommChannel();
 
         uint64_t bytesAvailable() const override;
+        void setSocket(Poco::Net::StreamSocket socket) { _socket = std::move(socket); };
+        void close() override;
+    protected:
+        uint64_t readData(CommChar *data, uint64_t maxlen) final;
+        virtual uint64_t writeData(const CommChar *data, uint64_t len) final;
 
     private:
         Poco::Net::StreamSocket _socket;
-
-        uint64_t readData(CommChar *data, uint64_t maxlen) override;
-        virtual uint64_t writeData(const CommChar *data, uint64_t len) override;
 };
 
 class SocketCommServer : public AbstractCommServer {
@@ -50,15 +52,21 @@ class SocketCommServer : public AbstractCommServer {
         std::shared_ptr<KDC::AbstractCommChannel> nextPendingConnection() override;
         std::list<std::shared_ptr<KDC::AbstractCommChannel>> connections() override;
 
+    protected:
+        virtual std::shared_ptr<SocketCommChannel> makeCommChannel() const = 0;
+
     private:
         Poco::Net::ServerSocket _serverSocket;
+        std::mutex _channelsMutex;
         std::list<std::shared_ptr<AbstractCommChannel>> _channels;
         bool _isListening = false;
         bool _stopAsked = false;
-        std::unique_ptr<std::thread> _thread;
-
+        std::unique_ptr<std::thread> _serverSocketThread;
+        std::unique_ptr<std::thread> _readyReadCbkThread;
         void execute();
         static void executeFunc(SocketCommServer *server);
+        void readyReadCbkHandler();
+        static void readyReadCbkHandlerFunc(SocketCommServer *server);
 };
 
 } // namespace KDC

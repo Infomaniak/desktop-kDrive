@@ -37,9 +37,7 @@ namespace KDC {
 PipeCommChannel::PipeCommChannel() :
     AbstractCommChannel() {}
 
-PipeCommChannel::~PipeCommChannel() {
-    destroyedCbk();
-}
+PipeCommChannel::~PipeCommChannel() {}
 
 uint64_t PipeCommChannel::readData(CommChar *data, uint64_t maxSize) {
     if (!_connected) return 0;
@@ -89,6 +87,10 @@ uint64_t PipeCommChannel::writeData(const CommChar *data, uint64_t size) {
 
 uint64_t PipeCommChannel::bytesAvailable() const {
     return _inBuffer.size();
+}
+
+void PipeCommChannel::close() {
+    _readBuffer.clear();
 }
 
 PipeCommServer::PipeCommServer(const std::string &name) :
@@ -144,7 +146,7 @@ void PipeCommServer::execute() {
 
     for (DWORD inst = 0; inst < PIPE_INSTANCES; inst++) {
         // Creates an instance of a named pipe
-        auto channel = std::make_shared<PipeCommChannel>();
+        auto channel = makeCommChannel();
         _channels.push_back(channel);
         newConnectionCbk();
 

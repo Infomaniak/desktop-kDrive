@@ -20,39 +20,59 @@
 
 namespace KDC {
 
-SocketCommChannel::SocketCommChannel(Poco::Net::StreamSocket socket) :
+SocketCommChannel::SocketCommChannel() :
     AbstractCommChannel() {}
 
-SocketCommChannel::~SocketCommChannel() {
-    void destroyedCbk();
-}
+SocketCommChannel::~SocketCommChannel() {}
 
 uint64_t SocketCommChannel::readData(CommChar *data, uint64_t maxlen) {
     try {
-        return _socket.receiveBytes(data, static_cast<int>(maxlen));
+        auto bytesReceived = _socket.receiveBytes(data, static_cast<int>(maxlen) * sizeof(CommChar));
+        if (bytesReceived == 0) {
+            LOG_DEBUG(Log::instance()->getLogger(), "Socket connection closed by peer");
+            lostConnectionCbk();
+            close();
+            return 0;
+        }
+        return bytesReceived;
     } catch (Poco::IOException &ex) {
         LOG_ERROR(Log::instance()->getLogger(), "Socket receiveBytes error: " << ex.displayText());
+        lostConnectionCbk();
+        close();
         return 0;
     }
 }
 
 uint64_t SocketCommChannel::writeData(const CommChar *data, uint64_t len) {
     try {
-        return _socket.sendBytes(data, static_cast<int>(len));
+        return _socket.sendBytes(data, static_cast<int>(len) * sizeof(CommChar));
     } catch (Poco::IOException &ex) {
         LOG_ERROR(Log::instance()->getLogger(), "Socket sendBytes error: " << ex.displayText());
+        lostConnectionCbk();
+        close();
         return 0;
     }
 }
 
 uint64_t SocketCommChannel::bytesAvailable() const {
-    return _socket.available();
+    try {
+        return _socket.available();
+    } catch (Poco::IOException &ex) {
+        LOG_ERROR(Log::instance()->getLogger(), "Socket available error: " << ex.displayText());
+        return 0;
+    }
+}
+
+void SocketCommChannel::close() {
+    _socket.close();
 }
 
 SocketCommServer::SocketCommServer(const std::string &name) :
     AbstractCommServer(name) {}
 
-SocketCommServer::~SocketCommServer() {}
+SocketCommServer::~SocketCommServer() {
+    close();
+}
 
 void SocketCommServer::close() {
     if (_stopAsked) {
@@ -61,11 +81,17 @@ void SocketCommServer::close() {
     } else if (_isListening) {
         LOG_DEBUG(Log::instance()->getLogger(), name() << " is stopping");
         _stopAsked = true;
-        if (_thread && _thread->joinable()) {
-            _thread->join();
-            LOG_DEBUG(Log::instance()->getLogger(), name() << " stopped");
+        Poco::Net::StreamSocket socket;
+        socket.connect(Poco::Net::SocketAddress("localhost", 12345)); // Connect to unblock accept
+        if (_serverSocketThread && _serverSocketThread->joinable()) {
+            _serverSocketThread->join();
         }
+        if (_readyReadCbkThread && _readyReadCbkThread->joinable()) {
+            _readyReadCbkThread->join();
+        }
+        LOG_DEBUG(Log::instance()->getLogger(), name() << " stopped");
         _isListening = false;
+        _stopAsked = false;
     } else if (!_isListening) {
         LOG_DEBUG(Log::instance()->getLogger(), name() << " is not listening");
         return;
@@ -80,17 +106,18 @@ bool SocketCommServer::listen(const KDC::SyncPath &) {
 
     LOG_DEBUG(Log::instance()->getLogger(), name() << " start");
     _isListening = true;
-    _thread = (std::make_unique<std::thread>(executeFunc, this));
+    _serverSocketThread = (std::make_unique<std::thread>(executeFunc, this));
+    _readyReadCbkThread = (std::make_unique<std::thread>(readyReadCbkHandlerFunc, this));
+    return true;
 }
 
 std::shared_ptr<AbstractCommChannel> SocketCommServer::nextPendingConnection() {
-    if (_channels.empty()) return nullptr;
-    auto channel = _channels.back();
-    _channels.pop_back();
-    return channel;
+    std::scoped_lock(_channelsMutex);
+    return _channels.back();
 }
 
 std::list<std::shared_ptr<AbstractCommChannel>> SocketCommServer::connections() {
+    std::scoped_lock(_channelsMutex);
     return _channels;
 }
 
@@ -99,15 +126,41 @@ void SocketCommServer::executeFunc(SocketCommServer *server) {
     log4cplus::threadCleanup();
 }
 
-void SocketCommServer::execute() {
+void SocketCommServer::readyReadCbkHandler() {
     while (!_stopAsked) {
-        _serverSocket.listen(1);
+        std::scoped_lock(_channelsMutex);
+        for (auto channel: _channels) {
+            if (channel->bytesAvailable() > 0) {
+                channel->readyReadCbk();
+            }
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+}
+
+void SocketCommServer::readyReadCbkHandlerFunc(SocketCommServer *server) {
+    server->readyReadCbkHandler();
+    log4cplus::threadCleanup();
+}
+
+void SocketCommServer::execute() {
+    _serverSocket.bind(Poco::Net::SocketAddress("localhost", 12345), true);
+    while (!_stopAsked) {
+        _serverSocket.listen(10);
         Poco::Net::StreamSocket socket = _serverSocket.acceptConnection();
-        auto channel = std::make_shared<SocketCommChannel>(std::move(socket));
-        _channels.push_back(channel);
+        if (_stopAsked) break;
+        auto channel = makeCommChannel();
+        auto socketChannel = std::dynamic_pointer_cast<SocketCommChannel>(channel);
+        std::scoped_lock(_channelsMutex);
+        socketChannel->setSocket(std::move(socket));
+        socketChannel->setLostConnectionCbk([this](std::shared_ptr<AbstractCommChannel> ch) {
+            lostConnectionCbk(ch);
+            std::scoped_lock(_channelsMutex);
+            _channels.remove(ch);
+        });
+        _channels.push_back(socketChannel);
         newConnectionCbk();
     }
-    _stopAsked = false;
 }
 
 } // namespace KDC

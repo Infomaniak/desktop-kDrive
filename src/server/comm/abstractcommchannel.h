@@ -37,10 +37,10 @@ class AbstractCommChannel : public std::enable_shared_from_this<AbstractCommChan
         virtual ~AbstractCommChannel();
 
         bool open();
-        void close();
-        virtual void sendMessage(const CommString &message) final;
-        virtual bool canReadLine() const;
-        virtual CommString readLine() final;
+        virtual void close() = 0;
+        virtual void sendMessage(const CommString &message) = 0;
+        virtual bool canReadMessage() const = 0;
+        virtual CommString readMessage() = 0;
 
         //! Gets a device ID.
         /*!
@@ -65,16 +65,14 @@ class AbstractCommChannel : public std::enable_shared_from_this<AbstractCommChan
         void readyReadCbk() {
             if (_onReadyReadCbk) _onReadyReadCbk(shared_from_this());
         }
-        void setDestroyedCbk(const std::function<void(std::shared_ptr<AbstractCommChannel>)> &cbk) { _onDestroyedCbk = cbk; }
-        void destroyedCbk() {
-            if (_onDestroyedCbk) _onDestroyedCbk(shared_from_this());
-        }
 
     private:
-        CommString _readBuffer;
         std::function<void(std::shared_ptr<AbstractCommChannel>)> _onLostConnectionCbk;
         std::function<void(std::shared_ptr<AbstractCommChannel>)> _onReadyReadCbk;
         std::function<void(std::shared_ptr<AbstractCommChannel>)> _onDestroyedCbk;
+
+    protected:
+        CommString _readBuffer;
 
         //! Reads from the device.
         /*!

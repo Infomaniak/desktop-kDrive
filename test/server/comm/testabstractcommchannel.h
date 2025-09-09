@@ -36,7 +36,7 @@ class CommChannelTest : public AbstractCommChannel {
             return maxSize;
         }
         uint64_t bytesAvailable() const override { return _inBuffer.size(); }
-        bool canReadLine() const override { return _inBuffer.find('\n') != std::string::npos; }
+        bool canReadMessage() const override { return _inBuffer.find('\n') != std::string::npos; }
 
     private:
         CommString _inBuffer; // Write & read to/from the same buffer
@@ -55,7 +55,7 @@ class TestAbstractCommChannel : public CppUnit::TestFixture, public TestBase {
 
     private:
         log4cplus::Logger _logger;
-        std::unique_ptr<CommChannelTest> _commChannelTest;
+        //std::unique_ptr<CommChannelTest> _commChannelTest;
 };
 
 } // namespace KDC

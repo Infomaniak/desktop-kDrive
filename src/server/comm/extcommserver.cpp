@@ -23,6 +23,45 @@ namespace KDC {
 ExtCommChannel::ExtCommChannel() :
     PipeCommChannel() {}
 
+void ExtCommChannel::sendMessage(const CommString &message) {
+    const CommString truncatedLogMessage = truncateLongLogMessage(message);
+    LOGW_INFO(Log::instance()->getLogger(), L"Sending message: " << CommonUtility::commString2WStr(truncatedLogMessage)
+                                                                 << L" to: " << CommonUtility::s2ws(id()));
+
+    // Add messages separator if needed
+    CommString localMessage = message;
+    if (!localMessage.ends_with(FINDER_EXT_LINE_SEPARATOR)) {
+        localMessage += FINDER_EXT_LINE_SEPARATOR;
+    }
+
+    if (auto sent = writeData(localMessage.c_str(), localMessage.length()); !sent) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in AbstractCommChannel::writeData");
+    }
+}
+
+CommString ExtCommChannel::readMessage() {
+    static const uint64_t maxLineLength = 1024;
+    CommChar data[maxLineLength];
+    CommString line;
+    forever {
+        if (auto sepPos = _readBuffer.find(FINDER_EXT_LINE_SEPARATOR); sepPos != std::string::npos) {
+            line = _readBuffer.substr(0, sepPos);
+            _readBuffer.erase(0, sepPos + 1);
+            break;
+        }
+        if (auto readSize = readData(data, maxLineLength); readSize > 0) {
+            CommString dataStr(data, readSize);
+            _readBuffer.append(dataStr);
+        } else {
+            break;
+        }
+    }
+    return line;
+}
+
+bool ExtCommChannel::canReadMessage() const {
+    return _readBuffer.find(FINDER_EXT_LINE_SEPARATOR, 0) != std::string::npos;
+}
 ExtCommServer::ExtCommServer(const std::string &name) :
     PipeCommServer(name) {}
 

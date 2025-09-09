@@ -221,16 +221,16 @@ void CommManager::onNewExtConnection() {
 void CommManager::onExtQueryReceived(std::shared_ptr<AbstractCommChannel> channel) {
     LOG_IF_FAIL(Log::instance()->getLogger(), channel)
 
-    while (channel->canReadLine() || channel->bytesAvailable() > 0) {
+    while (channel->canReadMessage() || channel->bytesAvailable() > 0) {
         CommString line;
         while (!line.ends_with(FINDER_EXT_QUERY_SEPARATOR)) {
-            if (!channel->canReadLine() && channel->bytesAvailable() == 0) {
+            if (!channel->canReadMessage() && channel->bytesAvailable() == 0) {
                 LOGW_WARN(Log::instance()->getLogger(), L"Failed to parse Extension message - msg="
                                                                 << CommonUtility::commString2WStr(line) << L" channel="
                                                                 << CommonUtility::s2ws(channel->id()));
                 return;
             }
-            line.append(channel->readLine());
+            line.append(channel->readMessage());
         }
         // Remove the separator
         line.erase(line.find(FINDER_EXT_QUERY_SEPARATOR));
@@ -258,8 +258,8 @@ void CommManager::onGuiQueryReceived(std::shared_ptr<AbstractCommChannel> channe
     LOG_INFO(Log::instance()->getLogger(), "onQueryReceived");
     LOG_IF_FAIL(Log::instance()->getLogger(), channel)
 
-    while (channel->canReadLine()) {
-        CommString query = channel->readLine();
+    while (channel->canReadMessage()) {
+        CommString query = channel->readMessage();
         LOGW_INFO(Log::instance()->getLogger(), L"Query received: " << CommonUtility::commString2WStr(query));
 
         const auto queryArgs = CommonUtility::splitCommString(query, GUI_ARG_SEPARATOR);

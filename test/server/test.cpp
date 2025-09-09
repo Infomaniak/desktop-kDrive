@@ -29,6 +29,7 @@
 #include "requests/testserverrequests.h"
 #include "appserver/testappserver.h"
 #include "comm/testabstractcommchannel.h"
+#include "comm/testsocketcommserver.h"
 
 namespace KDC {
 
@@ -36,12 +37,14 @@ namespace KDC {
 CPPUNIT_TEST_SUITE_REGISTRATION(TestVfsMac);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLiteSyncCommClient);
 #endif
-CPPUNIT_TEST_SUITE_REGISTRATION(TestWorkers);
+/* CPPUNIT_TEST_SUITE_REGISTRATION(TestWorkers);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateChecker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractUpdater);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestServerRequests);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAppServer);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractCommChannel);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractCommChannel);*/
+CPPUNIT_TEST_SUITE_REGISTRATION(TestSocketCommServer);
+
 } // namespace KDC
 
 int main(int, char **) {

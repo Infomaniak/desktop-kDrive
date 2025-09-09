@@ -25,10 +25,14 @@ namespace KDC {
 class ExtCommChannel : public PipeCommChannel {
     public:
         ExtCommChannel();
+        virtual void sendMessage(const CommString &message) final;
+        virtual bool canReadMessage() const final;
+        virtual CommString readMessage() final;
 };
 
 class ExtCommServer : public PipeCommServer {
     public:
         ExtCommServer(const std::string &name);
+        std::shared_ptr<PipeCommChannel> makeCommChannel() const override { return std::make_shared<ExtCommChannel>(); }
 };
 } // namespace KDC

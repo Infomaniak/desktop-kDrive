@@ -45,6 +45,11 @@ class PipeCommChannel : public AbstractCommChannel {
         ~PipeCommChannel();
 
         uint64_t bytesAvailable() const override;
+        void close() override;
+
+    protected:
+        uint64_t readData(CommChar *data, uint64_t maxSize) final;
+        virtual uint64_t writeData(const CommChar *data, uint64_t size) final;
 
     private:
         CommString _inBuffer;
@@ -59,8 +64,6 @@ class PipeCommChannel : public AbstractCommChannel {
         TCHAR _readData[BUFSIZE];
 #endif
 
-        uint64_t readData(CommChar *data, uint64_t maxSize) override;
-        virtual uint64_t writeData(const CommChar *data, uint64_t size) override;
 
         friend class PipeCommServer;
 };
@@ -80,6 +83,9 @@ class PipeCommServer : public AbstractCommServer {
 #if defined(KD_WINDOWS)
         static void disconnectAndReconnect(std::shared_ptr<PipeCommChannel> channel);
 #endif
+
+    protected:
+        virtual std::shared_ptr<PipeCommChannel> makeCommChannel() const = 0;
 
     private:
         SyncPath _pipePath;
