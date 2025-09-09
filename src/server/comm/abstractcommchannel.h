@@ -89,6 +89,7 @@ class AbstractCommChannel : public std::enable_shared_from_this<AbstractCommChan
         virtual uint64_t writeData(const CommChar *data, uint64_t maxSize) = 0;
 
         CommString truncateLongLogMessage(const CommString &message);
+        friend class TestSocketComm;
 };
 
 } // namespace KDC

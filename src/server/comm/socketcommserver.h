@@ -46,7 +46,7 @@ class SocketCommServer : public AbstractCommServer {
     public:
         SocketCommServer(const std::string &name);
         ~SocketCommServer();
-
+        int getPort() const { return static_cast<int>(_serverSocket.address().port()); }
         void close() override;
         bool listen(const KDC::SyncPath &) override;
         std::shared_ptr<KDC::AbstractCommChannel> nextPendingConnection() override;

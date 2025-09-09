@@ -38,19 +38,21 @@ class SocketCommServerTest : public SocketCommServer {
         std::shared_ptr<SocketCommChannel> makeCommChannel() const override { return std::make_unique<SocketCommChannelTest>(); }
 };
 
-class TestSocketCommServer : public CppUnit::TestFixture, public TestBase {
-        CPPUNIT_TEST_SUITE(TestSocketCommServer);
-        CPPUNIT_TEST(testListen);
-        CPPUNIT_TEST(testServerCbk);
-        CPPUNIT_TEST(testReadyReadCbkHandler);
+class TestSocketComm : public CppUnit::TestFixture, public TestBase {
+        CPPUNIT_TEST_SUITE(TestSocketComm);
+        CPPUNIT_TEST(testServerListen);
+        CPPUNIT_TEST(testServerCallbacks);
+        CPPUNIT_TEST(testChannelReadyReadCallback);
+        CPPUNIT_TEST(testChannelReadAndWriteData);
         CPPUNIT_TEST_SUITE_END();
 
     public:
         void setUp() final;
         void tearDown() override;
 
-        void testListen();
-        void testServerCbk();
-        void testReadyReadCbkHandler();
+        void testServerListen();
+        void testServerCallbacks();
+        void testChannelReadyReadCallback();
+        void testChannelReadAndWriteData();
 };
 } // namespace KDC

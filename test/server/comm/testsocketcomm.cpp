@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2025 Infomaniak Network SA
  *
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testsocketcommserver.h"
+#include "testsocketcomm.h"
 #include "log/log.h"
 
 namespace KDC {
@@ -32,24 +32,24 @@ void SocketCommChannelTest::sendMessage(const CommString &message) {
     writeData(message.c_str(), message.size());
 }
 
-// TestSocketCommServer implementation
-void TestSocketCommServer::setUp() {
+// TestSocketComm implementation
+void TestSocketComm::setUp() {
     TestBase::start();
 }
 
-void TestSocketCommServer::tearDown() {
+void TestSocketComm::tearDown() {
     TestBase::stop();
 }
 
-void TestSocketCommServer::testListen() {
+void TestSocketComm::testServerListen() {
     // Start the server
     std::unique_ptr<SocketCommServerTest> _socketCommServerTest =
-            std::make_unique<SocketCommServerTest>("TestSocketCommServer::testListen");
+            std::make_unique<SocketCommServerTest>("TestSocketComm::testServerListen");
     _socketCommServerTest->listen(SyncPath());
 
     // Create a client socket and connect to the server
     Poco::Net::StreamSocket clientSocket;
-    clientSocket.connect(Poco::Net::SocketAddress("localhost", 12345));
+    clientSocket.connect(Poco::Net::SocketAddress("localhost", _socketCommServerTest->getPort()));
     SocketCommChannelTest clientSideChannel;
     clientSideChannel.setSocket(std::move(clientSocket));
 
@@ -73,16 +73,12 @@ void TestSocketCommServer::testListen() {
     // Read the message on the server side
     auto message = serverSidechannel->readMessage();
     CPPUNIT_ASSERT(message.starts_with(CommString(Str("Hello world"))));
-
-    clientSideChannel.close();
-    serverSidechannel->close();
-    _socketCommServerTest->close();
 }
 
-void TestSocketCommServer::testServerCbk() {
+void TestSocketComm::testServerCallbacks() {
     // Start the server
     std::unique_ptr<SocketCommServerTest> _socketCommServerTest =
-            std::make_unique<SocketCommServerTest>("TestSocketCommServer::testServerCbk");
+            std::make_unique<SocketCommServerTest>("TestSocketComm::testServerCallbacks");
     _socketCommServerTest->listen(SyncPath());
 
     bool newConnectionCalled = false;
@@ -97,7 +93,7 @@ void TestSocketCommServer::testServerCbk() {
 
     // Create a client socket and connect to the server
     Poco::Net::StreamSocket clientSocket;
-    clientSocket.connect(Poco::Net::SocketAddress("localhost", 12345));
+    clientSocket.connect(Poco::Net::SocketAddress("localhost", _socketCommServerTest->getPort()));
     SocketCommChannelTest clientSideChannel;
     clientSideChannel.setSocket(std::move(clientSocket));
 
@@ -120,15 +116,15 @@ void TestSocketCommServer::testServerCbk() {
     CPPUNIT_ASSERT_MESSAGE("Lost connection callback channel mismatch", lostChannel == serverSidechannel);
 }
 
-void TestSocketCommServer::testReadyReadCbkHandler() {
+void TestSocketComm::testChannelReadyReadCallback() {
     // Start the server
     std::unique_ptr<SocketCommServerTest> _socketCommServerTest =
-            std::make_unique<SocketCommServerTest>("TestSocketCommServer::testReadyReadCbkHandler");
+            std::make_unique<SocketCommServerTest>("TestSocketComm::testChannelReadyReadCallback");
     _socketCommServerTest->listen(SyncPath());
 
     // Create a client socket and connect to the server
     Poco::Net::StreamSocket clientSocket;
-    clientSocket.connect(Poco::Net::SocketAddress("localhost", 12345));
+    clientSocket.connect(Poco::Net::SocketAddress("localhost", _socketCommServerTest->getPort()));
     SocketCommChannelTest clientSideChannel;
     clientSideChannel.setSocket(std::move(clientSocket));
 
@@ -160,5 +156,72 @@ void TestSocketCommServer::testReadyReadCbkHandler() {
     }
     CPPUNIT_ASSERT_MESSAGE("Ready read callback not called", readyReadCalled);
     CPPUNIT_ASSERT_MESSAGE("Ready read callback channel mismatch", readyReadChannel == serverSidechannel);
+}
+
+void TestSocketComm::testChannelReadAndWriteData() {
+    // Start the server
+    std::unique_ptr<SocketCommServerTest> _socketCommServerTest =
+            std::make_unique<SocketCommServerTest>("TestSocketComm::testChannelReadAndWriteData");
+    _socketCommServerTest->listen(SyncPath());
+
+    // Create a client socket and connect to the server
+    Poco::Net::StreamSocket clientSocket;
+    clientSocket.connect(Poco::Net::SocketAddress("localhost", _socketCommServerTest->getPort()));
+    SocketCommChannelTest clientSideChannel;
+    clientSideChannel.setSocket(std::move(clientSocket));
+
+    // Wait for the server to accept the connection
+    while (_socketCommServerTest->connections().size() == 0) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
+    // Get the server side channel
+    auto serverSidechannel = _socketCommServerTest->nextPendingConnection();
+    CPPUNIT_ASSERT(serverSidechannel != nullptr);
+
+    // Test messages with various characters
+    std::array<CommString, 3> messages = {Str("Hello word"),
+                                          Str("éè$²@à*-+/\\;,:!!<>😅🍃😎🫥😶‍🌫️😰🤑🦞"),
+                                          Str("每个人都有他的作战策略")};
+    for (const auto &msg: messages) {
+        // Send a message from the client to the server
+        clientSideChannel.sendMessage(msg);
+        // Wait for the server to receive the message
+        int remainWait = 100; // wait max 1 second
+        while (serverSidechannel->bytesAvailable() == 0 && remainWait-- > 0) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+        CPPUNIT_ASSERT_MESSAGE("Server did not receive the message in time", serverSidechannel->bytesAvailable() > 0);
+        // Read the message on the server side
+        auto message = serverSidechannel->readMessage();
+        CPPUNIT_ASSERT(message.starts_with(msg)); // The mock readMessage always return a 1024 CommChar string.
+    }
+
+    // Test reading a long message in several calls to readData
+    CommString longMessage;
+    longMessage.reserve(200);
+    for (int i = 0; i < 200; ++i) {
+        longMessage += Str2SyncName(std::to_string(rand() % 10));
+    }
+
+    clientSideChannel.sendMessage(longMessage);
+
+    // Wait for the server to receive the message
+    int remainWait = 100; // wait max 1 second
+    while (serverSidechannel->bytesAvailable() == 0 && remainWait-- > 0) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+    CPPUNIT_ASSERT_MESSAGE("Server did not receive the long message in time", serverSidechannel->bytesAvailable() > 0);
+
+    // Read the message on the server side
+    CommChar data[101];
+    serverSidechannel->readData(data, 99);
+    auto message = CommString(data);
+    CPPUNIT_ASSERT(message.starts_with(longMessage.substr(0, 99)));
+
+    serverSidechannel->readData(data, 101);
+    message = CommString(data);
+    CPPUNIT_ASSERT(message.starts_with(longMessage.substr(99, 101)));
+    CPPUNIT_ASSERT_EQUAL(uint64_t(0), serverSidechannel->bytesAvailable());
 }
 } // namespace KDC
