@@ -29,6 +29,9 @@ class GuiCommChannelPrivate;
 class GuiCommChannel : public XPCCommChannel {
     public:
         GuiCommChannel(GuiCommChannelPrivate *p);
+        void sendMessage(const KDC::CommString &message) final { /* TODO: Implement */ }
+        bool canReadMessage() const final { return false; /* TODO: Implement */ }
+        KDC::CommString readMessage() final { return Str(""); /*TODO: Implement */ }
 
     private:
         uint64_t writeData(const KDC::CommChar *data, uint64_t len) override;

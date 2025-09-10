@@ -30,7 +30,7 @@ class ExtCommChannel : public XPCCommChannel {
     public:
         ExtCommChannel(ExtCommChannelPrivate *p);
         void sendMessage(const KDC::CommString &message) final { /* TODO: Implement */ }
-        bool canReadMessage() const final { return 0; /* TODO: Implement */ }
+        bool canReadMessage() const final { return false; /* TODO: Implement */ }
         KDC::CommString readMessage() final { return Str(""); /*TODO: Implement */ }
 
     private:
