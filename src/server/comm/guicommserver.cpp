@@ -69,7 +69,7 @@ CommString GuiCommChannel::readMessage() {
 
 bool GuiCommChannel::containsValidJson(const CommString &message, int &endIndex) const {
     endIndex = -1;
-    if (message.empty() || message[0] != '{' && message[0] != '[') {
+    if (message.empty() || (message[0] != '{' && message[0] != '[')) {
         return false;
     }
 
@@ -102,8 +102,5 @@ void GuiCommChannel::fetchDataToBuffer() {
         break;
     }
 }
-
-GuiCommServer::GuiCommServer(const std::string &name) :
-    SocketCommServer(name) {}
 
 } // namespace KDC

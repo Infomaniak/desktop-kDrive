@@ -19,31 +19,32 @@
 #pragma once
 
 #if defined(KD_MACOS)
-#include "extcommserver_mac.h"
-#include "guicommserver_mac.h"
-#elif defined(KD_WINDOWS)
-#include "extcommserver.h"
-#include "guicommserver.h"
+#include "xpccommserver_mac.h"
 #else
-#include "guicommserver.h"
-#endif
-
 #include "socketcommserver.h"
+#endif
 
 #include <string>
 
 namespace KDC {
-
+#if defined(KD_MACOS)
+class GuiCommChannel : public XPCCommChannel {
+    public:
+        using XPCCommChannel::XPCCommChannel;
+#else
 class GuiCommChannel : public SocketCommChannel {
     public:
         using SocketCommChannel::SocketCommChannel;
-
+#endif
         // Gui channel expect JSON messages only
         bool sendMessage(const CommString &message) final;
         bool canReadMessage() final;
         CommString readMessage() final;
 
     private:
+#if defined(KD_MACOS)
+        uint64_t writeData(const KDC::CommChar *data, uint64_t len) override;
+#endif
         bool containsValidJson(const CommString &message, int &endIndex) const;
         void fetchDataToBuffer();
 
@@ -52,11 +53,17 @@ class GuiCommChannel : public SocketCommChannel {
         int _inBufferJsonEndIndex = -1;
 };
 
-class GuiCommServer : public SocketCommServer {
+#if defined(KD_MACOS)
+class GuiCommServer : public XPCCommServer {
     public:
         GuiCommServer(const std::string &name);
+#else
+class GuiCommServer : public SocketCommServer {
+    public:
+        using SocketCommServer::SocketCommServer;
         std::shared_ptr<SocketCommChannel> makeCommChannel(Poco::Net::StreamSocket &socket) const override {
             return std::make_shared<GuiCommChannel>(socket);
         }
+#endif
 };
 } // namespace KDC

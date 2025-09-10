@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "guicommserver_mac.h"
+#include "guicommserver.h"
 #include "abstractcommserver_mac.h"
 #include "../../extensions/MacOSX/kDriveFinderSync/kDriveModel/xpcGuiProtocol.h"
 
@@ -109,11 +109,11 @@ class GuiCommServerPrivate : public AbstractCommServerPrivate {
 
 - (BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)newConnection {
     GuiCommChannelPrivate *channelPrivate = new GuiCommChannelPrivate(newConnection);
-    GuiCommServer *server = (GuiCommServer *) self.wrapper->publicPtr;
+    KDC::GuiCommServer *server = (KDC::GuiCommServer *) self.wrapper->_publicPtr;
 
-    auto channel = std::make_shared<GuiCommChannel>(channelPrivate);
-    channel->setLostConnectionCbk(std::bind(&GuiCommServer::lostConnectionCbk, server, std::placeholders::_1));
-    self.wrapper->pendingChannels.push_back(channel);
+    auto channel = std::make_shared<KDC::GuiCommChannel>(channelPrivate);
+    channel->setLostConnectionCbk(std::bind(&KDC::GuiCommServer::lostConnectionCbk, server, std::placeholders::_1));
+    self.wrapper->_pendingChannels.push_back(channel);
 
     // Set exported interface
     NSLog(@"[KD] Set exported interface for connection with gui");
@@ -170,8 +170,21 @@ GuiCommServerPrivate::GuiCommServerPrivate() {
 }
 
 // GuiCommChannel implementation
-GuiCommChannel::GuiCommChannel(GuiCommChannelPrivate *p) :
-    XPCCommChannel(p) {}
+uint64_t KDC::GuiCommChannel::writeData(const KDC::CommChar *data, uint64_t len) {
+    if (_privatePtr->_isRemoteDisconnected) return -1;
+
+    @try {
+        // TODO: POC => replace with real C/S functions depending on data content
+        [(GuiRemoteEnd *) _privatePtr->_remoteEnd sendSignal:[NSData dataWithBytesNoCopy:const_cast<KDC::CommChar *>(data)
+                                                                                  length:static_cast<NSUInteger>(len)
+                                                                            freeWhenDone:NO]];
+        return len;
+    } @catch (NSException *e) {
+        _privatePtr->disconnectRemote();
+        lostConnectionCbk();
+        return -1;
+    }
+}
 
 uint64_t GuiCommChannel::writeData(const KDC::CommChar *data, uint64_t len) {
     if (_privatePtr->isRemoteDisconnected) return -1;
@@ -189,5 +202,5 @@ uint64_t GuiCommChannel::writeData(const KDC::CommChar *data, uint64_t len) {
 }
 
 // GuiCommServer implementation
-GuiCommServer::GuiCommServer(const std::string &name) :
+KDC::GuiCommServer::GuiCommServer(const std::string &name) :
     XPCCommServer(name, new GuiCommServerPrivate) {}

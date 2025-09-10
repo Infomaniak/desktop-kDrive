@@ -32,13 +32,12 @@
 
 #if defined(KD_MACOS)
 #include "extcommserver_mac.h"
-#include "guicommserver_mac.h"
 #elif defined(KD_WINDOWS)
 #include "extcommserver.h"
-#include "guicommserver.h"
-#else
-#include "guicommserver.h"
 #endif
+
+#include "guicommserver.h"
+
 
 #include <QByteArray>
 #include <QDataStream>

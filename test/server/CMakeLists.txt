@@ -26,6 +26,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/oldcommserver.h ${server_srcs_path}/comm/oldcommserver.cpp
     ${server_srcs_path}/comm/abstractcommchannel.h ${server_srcs_path}/comm/abstractcommchannel.cpp
     ${server_srcs_path}/comm/socketcommserver.h ${server_srcs_path}/comm/socketcommserver.cpp
+    ${server_srcs_path}/comm/guicommserver.h ${server_srcs_path}/comm/guicommserver.cpp
     ${server_srcs_path}/comm/commmanager.h ${server_srcs_path}/comm/commmanager.cpp
     ${server_srcs_path}/migration/migrationparams.h ${server_srcs_path}/migration/migrationparams.cpp
     ${server_srcs_path}/requests/serverrequests.h ${server_srcs_path}/requests/serverrequests.cpp
@@ -41,7 +42,7 @@ if(APPLE)
     list(APPEND server_SRCS ${server_srcs_path}/comm/abstractcommserver_mac.h ${server_srcs_path}/comm/abstractcommserver_mac.mm)
     list(APPEND server_SRCS ${server_srcs_path}/comm/xpccommserver_mac.h ${server_srcs_path}/comm/xpccommserver_mac.mm)
     list(APPEND server_SRCS ${server_srcs_path}/comm/extcommserver_mac.h ${server_srcs_path}/comm/extcommserver_mac.mm)
-    list(APPEND server_SRCS ${server_srcs_path}/comm/guicommserver_mac.h ${server_srcs_path}/comm/guicommserver_mac.mm)
+    list(APPEND server_SRCS ${server_srcs_path}/comm/guicommserver_mac.mm)
     list(APPEND server_SRCS ${server_srcs_path}/comm/litesynccommclient_mac.h ${server_srcs_path}/comm/litesynccommclient_mac.mm)
     set_property(SOURCE ${server_srcs_path}/comm/abstractcommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
     set_property(SOURCE ${server_srcs_path}/comm/xpccommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
@@ -63,11 +64,9 @@ elseif(WIN32)
     list(APPEND server_SRCS ${server_srcs_path}/comm/extensionjob.h ${server_srcs_path}/comm/extensionjob.cpp)
     list(APPEND server_SRCS ${server_srcs_path}/comm/pipecommserver.h ${server_srcs_path}/comm/pipecommserver.cpp)
     list(APPEND server_SRCS ${server_srcs_path}/comm/extcommserver.h ${server_srcs_path}/comm/extcommserver.cpp)
-    list(APPEND server_SRCS ${server_srcs_path}/comm/guicommserver.h ${server_srcs_path}/comm/guicommserver.cpp)
     list(APPEND server_SRCS ${server_srcs_path}/updater/windowsupdater.h ${server_srcs_path}/updater/windowsupdater.cpp ${server_srcs_path}/../common/utility_win.cpp)
 else()
     list(APPEND server_SRCS ${server_srcs_path}/comm/socketcommserver.h ${server_srcs_path}/comm/socketcommserver.cpp)
-    list(APPEND server_SRCS ${server_srcs_path}/comm/guicommserver.h ${server_srcs_path}/comm/guicommserver.cpp)
     list(APPEND server_SRCS ${server_srcs_path}/updater/linuxupdater.h ${server_srcs_path}/updater/linuxupdater.cpp ${server_srcs_path}/../common/utility_linux.cpp)
 endif()
 
@@ -103,7 +102,6 @@ set(testserver_SRCS
     appserver/testappserver.h appserver/testappserver.cpp
     comm/testsocketcomm.h comm/testsocketcomm.cpp
     comm/testguicommchannel.h comm/testguicommchannel.cpp
-
 )
 
 if(APPLE)
