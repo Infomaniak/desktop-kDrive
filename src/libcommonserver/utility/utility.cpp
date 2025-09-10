@@ -656,8 +656,9 @@ bool Utility::isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode
     }
 }
 
+#if defined(KD_MACOS) || defined(KD_LINUX)
 void Utility::eraseFromTrash(const KDC::SyncPath &path) {
     (void) std::filesystem::remove_all(getTrashPath() / path);
 }
-
+#endif
 } // namespace KDC
