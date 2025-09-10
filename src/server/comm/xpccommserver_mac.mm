@@ -34,6 +34,21 @@ uint64_t XPCCommChannel::readData(KDC::CommChar *data, uint64_t maxSize) {
     return size;
 }
 
+uint64_t XPCCommChannel::writeData(const KDC::CommChar *data, uint64_t len) {
+    if (_privatePtr->_isRemoteDisconnected) return -1;
+
+    @try {
+        [(GuiRemoteEnd *) _privatePtr->_remoteEnd sendSignal:[NSData dataWithBytesNoCopy:const_cast<KDC::CommChar *>(data)
+                                                                                  length:static_cast<NSUInteger>(len)
+                                                                            freeWhenDone:NO]];
+        return len;
+    } @catch (NSException *e) {
+        _privatePtr->disconnectRemote();
+        lostConnectionCbk();
+        return -1;
+    }
+}
+
 uint64_t XPCCommChannel::bytesAvailable() const {
     return _privatePtr->inBuffer.size();
 }

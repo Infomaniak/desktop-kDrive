@@ -28,8 +28,9 @@ CommString SocketCommChannelTest::readMessage() {
     return data;
 }
 
-void SocketCommChannelTest::sendMessage(const CommString &message) {
+bool SocketCommChannelTest::sendMessage(const CommString &message) {
     (void) writeData(message.c_str(), message.size());
+    return true;
 }
 
 // TestSocketComm implementation

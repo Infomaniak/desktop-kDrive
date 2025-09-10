@@ -29,9 +29,9 @@ class SocketCommChannelTest : public SocketCommChannel {
             SocketCommChannel(socket) {}
 
         ~SocketCommChannelTest() {}
-        bool canReadMessage() const override { return true; }
+        bool canReadMessage() override { return true; }
         CommString readMessage() override;
-        void sendMessage(const CommString &message) override;
+        bool sendMessage(const CommString &message) override;
 };
 
 class SocketCommServerTest : public SocketCommServer {

@@ -18,6 +18,16 @@
 
 #pragma once
 
+#if defined(KD_MACOS)
+#include "extcommserver_mac.h"
+#include "guicommserver_mac.h"
+#elif defined(KD_WINDOWS)
+#include "extcommserver.h"
+#include "guicommserver.h"
+#else
+#include "guicommserver.h"
+#endif
+
 #include "socketcommserver.h"
 
 #include <string>
@@ -28,9 +38,18 @@ class GuiCommChannel : public SocketCommChannel {
     public:
         using SocketCommChannel::SocketCommChannel;
 
-        void sendMessage(const CommString &message) final;
-        bool canReadMessage() const final;
+        // Gui channel expect JSON messages only
+        bool sendMessage(const CommString &message) final;
+        bool canReadMessage() final;
         CommString readMessage() final;
+
+    private:
+        bool containsValidJson(const CommString &message, int &endIndex) const;
+        void fetchDataToBuffer();
+
+        CommString _inBuffer;
+        bool _validJsonInBuffer = false;
+        int _inBufferJsonEndIndex = -1;
 };
 
 class GuiCommServer : public SocketCommServer {

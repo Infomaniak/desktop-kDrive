@@ -29,8 +29,8 @@ class ExtCommChannelPrivate;
 class ExtCommChannel : public XPCCommChannel {
     public:
         ExtCommChannel(ExtCommChannelPrivate *p);
-        void sendMessage(const KDC::CommString &message) final { /* TODO: Implement */ }
-        bool canReadMessage() const final { return false; /* TODO: Implement */ }
+        bool sendMessage(const KDC::CommString &message) final { return true; /* TODO: Implement */ }
+        bool canReadMessage() final { return false; /* TODO: Implement */ }
         KDC::CommString readMessage() final { return Str(""); /*TODO: Implement */ }
 
     private:

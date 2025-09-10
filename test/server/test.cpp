@@ -28,6 +28,8 @@
 #include "updater/testupdatechecker.h"
 #include "requests/testserverrequests.h"
 #include "appserver/testappserver.h"
+
+#include "comm/testguicommchannel.h"
 #include "comm/testsocketcomm.h"
 
 namespace KDC {
@@ -42,6 +44,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractUpdater);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestServerRequests);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAppServer);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSocketComm);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestGuiCommChannel);
 
 } // namespace KDC
 

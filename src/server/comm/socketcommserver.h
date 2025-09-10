@@ -28,14 +28,18 @@ namespace KDC {
 
 class SocketCommChannel : public AbstractCommChannel {
     public:
-        explicit SocketCommChannel(Poco::Net::StreamSocket& socket);
+        explicit SocketCommChannel(const Poco::Net::StreamSocket &socket);
         ~SocketCommChannel();
 
         uint64_t bytesAvailable() const override;
         void close() override;
+
     protected:
-        uint64_t readData(CommChar *data, uint64_t maxlen) final;
-        uint64_t writeData(const CommChar *data, uint64_t len) final;
+        // Return number of CommChar (/!\ not always equal the number of bytes) read or 0 on error or closed connection
+        uint64_t readData(CommChar *data, uint64_t maxlen) override;
+
+        // Return number of CommChar (/!\ not always equal the number of bytes) written
+        uint64_t writeData(const CommChar *data, uint64_t len) override;
 
     private:
         bool _isClosing = false;
@@ -56,7 +60,7 @@ class SocketCommServer : public AbstractCommServer {
         std::list<std::shared_ptr<AbstractCommChannel>> connections() override;
 
     protected:
-        virtual std::shared_ptr<SocketCommChannel> makeCommChannel(Poco::Net::StreamSocket& socket) const = 0;
+        virtual std::shared_ptr<SocketCommChannel> makeCommChannel(Poco::Net::StreamSocket &socket) const = 0;
 
     private:
         Poco::Net::ServerSocket _serverSocket;

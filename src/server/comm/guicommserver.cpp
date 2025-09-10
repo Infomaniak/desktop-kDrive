@@ -17,24 +17,90 @@
  */
 
 #include "guicommserver.h"
-
+#include <Poco/JSON/Parser.h>
 namespace KDC {
 
-void GuiCommChannel::sendMessage(const CommString &message) {
+bool GuiCommChannel::sendMessage(const CommString &message) {
     const CommString truncatedLogMessage = truncateLongLogMessage(message);
     LOGW_INFO(Log::instance()->getLogger(), L"Sending message: " << CommonUtility::commString2WStr(truncatedLogMessage)
                                                                  << L" to: " << CommonUtility::s2ws(id()));
-    // TODO: Format message for GUI (e.g. add line separator)
+
+    // Check that the message is a valid JSON
+    Poco::JSON::Parser parser;
+    try {
+        parser.parse(SyncName2Str(message));
+    } catch (const Poco::Exception &e) {
+        LOGW_ERROR(Log::instance()->getLogger(), L"Failed to send message to GUI, invalid JSON: "
+                                                         << CommonUtility::commString2WStr(message) << L", error: "
+                                                         << CommonUtility::s2ws(e.displayText()));
+        return false;
+    }
+    (void) writeData(message.c_str(), message.size());
+    return true;
+}
+
+bool GuiCommChannel::canReadMessage() {
+    fetchDataToBuffer();
+    _validJsonInBuffer = containsValidJson(_inBuffer, _inBufferJsonEndIndex);
+    return _validJsonInBuffer;
 }
 
 CommString GuiCommChannel::readMessage() {
-    // TODO: Read message formatted for GUI (e.g. until line separator)
-    return Str("");
+    if (!_validJsonInBuffer) {
+        fetchDataToBuffer();
+        _validJsonInBuffer = containsValidJson(_inBuffer, _inBufferJsonEndIndex);
+    }
+    if (!_validJsonInBuffer) {
+        return Str("");
+    }
+
+    CommString message = _inBuffer.substr(0, _inBufferJsonEndIndex + 1);
+    _inBuffer.erase(0, _inBufferJsonEndIndex + 1);
+    const CommString truncatedLogMessage = truncateLongLogMessage(message);
+    LOGW_INFO(Log::instance()->getLogger(), L"Reading message: " << CommonUtility::commString2WStr(truncatedLogMessage)
+                                                                 << L" from: " << CommonUtility::s2ws(id()));
+
+    if (canReadMessage()) {
+        LOG_INFO(Log::instance()->getLogger(), "More messages available in buffer, trigger another read");
+        readyReadCbk();
+    }
+    return message;
 }
 
-bool GuiCommChannel::canReadMessage() const {
-    // TODO: Implement message availability check for GUI
+bool GuiCommChannel::containsValidJson(const CommString &message, int &endIndex) const {
+    endIndex = -1;
+    if (message.empty() || message[0] != '{' && message[0] != '[') {
+        return false;
+    }
+
+    // Simple check for matching braces/brackets
+    CommChar openChar = message[0];
+    CommChar closeChar = (openChar == '{') ? '}' : ']';
+    int balance = 0;
+    for (size_t i = 0; i < message.size(); ++i) {
+        if (message[i] == openChar) {
+            balance++;
+        } else if (message[i] == closeChar) {
+            balance--;
+            if (balance == 0) {
+                endIndex = static_cast<int>(i);
+                return true;
+            }
+        }
+    }
+
     return false;
+}
+
+void GuiCommChannel::fetchDataToBuffer() {
+    while (bytesAvailable() > 0) {
+        CommChar data[1024];
+        uint64_t charRead = readData(data, 1024);
+        if (charRead > 0) {
+            _inBuffer.append(data, charRead);
+        }
+        break;
+    }
 }
 
 GuiCommServer::GuiCommServer(const std::string &name) :

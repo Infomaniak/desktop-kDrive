@@ -34,6 +34,7 @@ class XPCCommChannel : public KDC::AbstractCommChannel {
         std::unique_ptr<AbstractCommChannelPrivate> _privatePtr;
 
         uint64_t readData(KDC::CommChar *data, uint64_t maxSize) override;
+        uint64_t writeData(const KDC::CommChar *data, uint64_t len) override;
         void close() override {}
 };
 

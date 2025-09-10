@@ -20,7 +20,7 @@
 
 namespace KDC {
 
-SocketCommChannel::SocketCommChannel(Poco::Net::StreamSocket &socket) :
+SocketCommChannel::SocketCommChannel(const Poco::Net::StreamSocket &socket) :
     AbstractCommChannel(),
     _socket(socket) {
     _callbackThread = std::thread(&SocketCommChannel::callbackHandler, this);
@@ -40,14 +40,14 @@ SocketCommChannel::~SocketCommChannel() {
 
 uint64_t SocketCommChannel::readData(CommChar *data, uint64_t maxlen) {
     try {
-        auto bytesReceived = _socket.receiveBytes(data, static_cast<int>(maxlen) * sizeof(CommChar));
-        if (bytesReceived == 0) {
+        auto lenReceived = _socket.receiveBytes(data, static_cast<int>(maxlen) * sizeof(CommChar)) / sizeof(CommChar);
+        if (lenReceived == 0) {
             LOG_DEBUG(Log::instance()->getLogger(), "Socket connection closed by peer");
             lostConnectionCbk();
             close();
             return 0;
         }
-        return bytesReceived;
+        return lenReceived;
     } catch (Poco::IOException &ex) {
         LOG_ERROR(Log::instance()->getLogger(), "Socket receiveBytes error: " << ex.displayText());
         lostConnectionCbk();
@@ -58,7 +58,7 @@ uint64_t SocketCommChannel::readData(CommChar *data, uint64_t maxlen) {
 
 uint64_t SocketCommChannel::writeData(const CommChar *data, uint64_t len) {
     try {
-        return _socket.sendBytes(data, static_cast<int>(len) * sizeof(CommChar));
+        return _socket.sendBytes(data, static_cast<int>(len) * sizeof(CommChar)) / sizeof(CommChar);
     } catch (Poco::IOException &ex) {
         LOG_ERROR(Log::instance()->getLogger(), "Socket sendBytes error: " << ex.displayText());
         return 0;

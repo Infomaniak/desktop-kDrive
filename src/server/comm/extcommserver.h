@@ -26,8 +26,8 @@ static const auto finderExtQuerySeparator = Str("\\/");
 class ExtCommChannel : public PipeCommChannel {
     public:
         ExtCommChannel();
-        void sendMessage(const CommString &message) final;
-        bool canReadMessage() const final;
+        bool sendMessage(const CommString &message) final;
+        bool canReadMessage() final;
         CommString readMessage() final;
 
     private:

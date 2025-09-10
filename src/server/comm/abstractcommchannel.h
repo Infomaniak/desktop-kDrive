@@ -39,8 +39,8 @@ class AbstractCommChannel : public std::enable_shared_from_this<AbstractCommChan
         virtual ~AbstractCommChannel() = default;
 
         virtual void close() = 0;
-        virtual void sendMessage(const CommString &message) = 0;
-        virtual bool canReadMessage() const = 0;
+        virtual bool sendMessage(const CommString &message) = 0;
+        virtual bool canReadMessage() = 0;
         virtual CommString readMessage() = 0;
         virtual uint64_t bytesAvailable() const = 0;
 

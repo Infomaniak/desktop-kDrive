@@ -23,7 +23,7 @@ namespace KDC {
 ExtCommChannel::ExtCommChannel() :
     PipeCommChannel() {}
 
-void ExtCommChannel::sendMessage(const CommString &message) {
+bool ExtCommChannel::sendMessage(const CommString &message) {
     const CommString truncatedLogMessage = truncateLongLogMessage(message);
     LOGW_INFO(Log::instance()->getLogger(), L"Sending message: " << CommonUtility::commString2WStr(truncatedLogMessage)
                                                                  << L" to: " << CommonUtility::s2ws(id()));
@@ -36,7 +36,9 @@ void ExtCommChannel::sendMessage(const CommString &message) {
 
     if (auto sent = writeData(localMessage.c_str(), localMessage.length()); !sent) {
         LOG_WARN(Log::instance()->getLogger(), "Error in AbstractCommChannel::writeData");
+        return false;
     }
+    return true;
 }
 
 CommString ExtCommChannel::readMessage() {

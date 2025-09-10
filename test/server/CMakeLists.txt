@@ -102,6 +102,7 @@ set(testserver_SRCS
     requests/testserverrequests.h requests/testserverrequests.cpp
     appserver/testappserver.h appserver/testappserver.cpp
     comm/testsocketcomm.h comm/testsocketcomm.cpp
+    comm/testguicommchannel.h comm/testguicommchannel.cpp
 
 )
 
