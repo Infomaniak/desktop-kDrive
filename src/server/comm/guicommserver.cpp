@@ -41,21 +41,21 @@ bool GuiCommChannel::sendMessage(const CommString &message) {
 
 bool GuiCommChannel::canReadMessage() {
     fetchDataToBuffer();
-    _validJsonInBuffer = containsValidJson(_inBuffer, _inBufferJsonEndIndex);
+    _validJsonInBuffer = containsValidJson(_readBuffer, _inBufferJsonEndIndex);
     return _validJsonInBuffer;
 }
 
 CommString GuiCommChannel::readMessage() {
     if (!_validJsonInBuffer) {
         fetchDataToBuffer();
-        _validJsonInBuffer = containsValidJson(_inBuffer, _inBufferJsonEndIndex);
+        _validJsonInBuffer = containsValidJson(_readBuffer, _inBufferJsonEndIndex);
     }
     if (!_validJsonInBuffer) {
         return Str("");
     }
 
-    CommString message = _inBuffer.substr(0, _inBufferJsonEndIndex + 1);
-    _inBuffer.erase(0, _inBufferJsonEndIndex + 1);
+    CommString message = _readBuffer.substr(0, _inBufferJsonEndIndex + 1);
+    _readBuffer.erase(0, _inBufferJsonEndIndex + 1);
     const CommString truncatedLogMessage = truncateLongLogMessage(message);
     LOGW_INFO(Log::instance()->getLogger(), L"Reading message: " << CommonUtility::commString2WStr(truncatedLogMessage)
                                                                  << L" from: " << CommonUtility::s2ws(id()));
@@ -95,11 +95,11 @@ bool GuiCommChannel::containsValidJson(const CommString &message, int &endIndex)
 void GuiCommChannel::fetchDataToBuffer() {
     while (bytesAvailable() > 0) {
         CommChar data[1024];
-        uint64_t charRead = readData(data, 1024);
-        if (charRead > 0) {
-            _inBuffer.append(data, charRead);
+        if (uint64_t charRead = readData(data, 1024); charRead > 0) {
+            _readBuffer.append(data, charRead);
+        } else {
+            break;
         }
-        break;
     }
 }
 

@@ -58,7 +58,15 @@ CommString ExtCommChannel::readMessage() {
     return line;
 }
 
-bool ExtCommChannel::canReadMessage() const {
-    return _readBuffer.find(finderExtLineSeparator, 0) != std::string::npos;
+bool ExtCommChannel::canReadMessage() {
+    while (bytesAvailable() > 0) {
+        CommChar data[1024];
+        if (uint64_t charRead = readData(data, 1024); charRead > 0) {
+            _readBuffer.append(data, charRead);
+        } else {
+            break;
+        }
+    }
+    return _readBuffer.find(finderExtLineSeparator) != std::string::npos;
 }
 } // namespace KDC

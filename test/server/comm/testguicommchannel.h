@@ -21,7 +21,6 @@
 #include <log4cplus/logger.h>
 
 namespace KDC {
-
 class GuiCommChannelTest : public GuiCommChannel {
     public:
         GuiCommChannelTest() :
@@ -42,7 +41,6 @@ class GuiCommChannelTest : public GuiCommChannel {
         mutable std::mutex _bufferMutex;
         CommString _buffer;
 };
-
 
 class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestGuiCommChannel);

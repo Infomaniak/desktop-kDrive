@@ -48,9 +48,9 @@ class GuiCommChannel : public SocketCommChannel {
         bool containsValidJson(const CommString &message, int &endIndex) const;
         void fetchDataToBuffer();
 
-        CommString _inBuffer;
-        bool _validJsonInBuffer = false;
-        int _inBufferJsonEndIndex = -1;
+        CommString _readBuffer;
+        bool _validJsonInBuffer = false; // True if read buffer contains at least one valid JSON
+        int _inBufferJsonEndIndex = -1; // Index of the end of the valid JSON in the buffer
 };
 
 #if defined(KD_MACOS)
