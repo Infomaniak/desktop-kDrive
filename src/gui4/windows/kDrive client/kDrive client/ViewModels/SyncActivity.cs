@@ -28,7 +28,7 @@ namespace KDrive.ViewModels
                 SetProperty(ref _parentFolderPath, System.IO.Path.GetDirectoryName(value) ?? "");
                 if (_nodeType == NodeType.File)
                 {
-                    SetProperty(ref _nodeType, deduceSyncActivityNodeType());
+                    SetProperty(ref _nodeType, Utility.deduceNodeTypeFromFilePath(LocalPath));
                 }
             }
         }
@@ -59,7 +59,7 @@ namespace KDrive.ViewModels
             {
                 if (value == NodeType.File)
                 {
-                    SetProperty(ref _nodeType, deduceSyncActivityNodeType());
+                    SetProperty(ref _nodeType, Utility.deduceNodeTypeFromFilePath(LocalPath));
                 }
                 else
                 {
@@ -68,21 +68,5 @@ namespace KDrive.ViewModels
             }
         }
         public SyncPath ParentFolderPath { get => _parentFolderPath; }
-
-        private NodeType deduceSyncActivityNodeType()
-        {
-            string extension = System.IO.Path.GetExtension(Name).ToLower();
-            return extension switch
-            {
-                ".doc" or ".docx" or ".odt" => NodeType.Doc,
-                ".pdf" => NodeType.Pdf,
-                ".png" or ".jpg" or ".jpeg" or ".gif" or ".bmp" or ".tiff" or ".svg" => NodeType.Image,
-                ".mp4" or ".avi" or ".mov" or ".wmv" or ".flv" => NodeType.Video,
-                ".mp3" or ".wav" or ".aac" or ".flac" => NodeType.Audio,
-                ".xls" or ".xlsx" or ".ods" => NodeType.Grid,
-                _ => NodeType.File,
-            };
-
-        }
     }
 }

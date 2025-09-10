@@ -58,7 +58,7 @@ namespace KDrive.ViewModels
 
         //TODO: Remove this test function
 
-        private SyncActivityViewModel generateTestActivity()
+        private SyncActivity GenerateTestActivity()
         {
             Random rand = new Random();
             string[] sampleFileExtension = new string[]
@@ -144,7 +144,7 @@ namespace KDrive.ViewModels
                     {
                         continue;
                     }
-                    var newActivity = generateTestActivity();
+                    var newActivity = GenerateTestActivity();
 
                     AppModel.UIThreadDispatcher.TryEnqueue(() =>
                     {
