@@ -115,6 +115,11 @@ struct COMMONSERVER_EXPORT Utility {
         static SyncPath getTrashPath();
         static void eraseFromTrash(const SyncPath &path);
 #endif
+        /**
+         * Check whether a path indicates an item located in the trash.
+         * @param relativePath SyncPath relative to the trash directory path.
+         * @return true if `relativePath` indicated an existing item of the trash, false otherwise.
+         */
         static bool isInTrash(const SyncPath &path);
 #if defined(KD_MACOS)
         static bool preventSleeping(bool enable);

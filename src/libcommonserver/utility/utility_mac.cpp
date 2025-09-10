@@ -151,4 +151,16 @@ SyncPath Utility::getTrashPath() {
     return SyncPath(homePathEnv) / ".Trash";
 }
 
+
+bool Utility::isInTrash(const SyncPath &path) {
+    if (std::error_code ec; !std::filesystem::exists(getTrashPath() / path, ec) || ec) {
+        if (ec) {
+            LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::exists - " << Utility::formatStdError(ec));
+        }
+        return false;
+    }
+
+    return true;
+}
+
 } // namespace KDC

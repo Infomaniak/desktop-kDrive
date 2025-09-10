@@ -22,6 +22,7 @@
 #include "libcommon/utility/utility.h"
 
 #include <filesystem>
+#include <regex>
 #include <string>
 #include <pwd.h>
 #include <sys/stat.h>
@@ -58,6 +59,53 @@ SyncPath Utility::getTrashPath() {
     return trashPath;
 }
 
+SyncPath removeNumericSuffix(const SyncPath &relativePath) {
+    if (relativePath.empty()) return {};
+
+    static const std::wregex numericSuffixRegex(L".*(\\.[0-9]+)$");
+
+    std::list<SyncName> segments = CommonUtility::splitSyncPath(relativePath);
+    auto &root = segments.front();
+
+    std::wsmatch words;
+    std::wstring rootWstr = SyncName2WStr(root);
+    std::regex_match(rootWstr, words, numericSuffixRegex);
+
+    assert(words.size() > 1 && "Unexpected mismatch.");
+    root = root.substr(0, rootWstr.size() - std::wstring(words[1]).size());
+
+    std::wstringstream ss;
+    size_t i = 0;
+    for (const auto &segment: segments) {
+        if (i > 0) ss << "/";
+        ss << SyncName2WStr(segment);
+        ++i;
+    }
+
+    return SyncPath{ss.str()};
+}
+
+bool Utility::isInTrash(const SyncPath &relativePath) {
+    const auto trashPath = getTrashPath();
+    std::error_code ec;
+
+    auto dirIt = std::filesystem::recursive_directory_iterator(trashPath,
+                                                               std::filesystem::directory_options::skip_permission_denied, ec);
+    if (ec) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::isInTrash: " << Utility::formatStdError(ec));
+        return false;
+    }
+
+    // Filter out the numerical suffix of the root dirirectory name, e.g: `dirname.15` is replaced with `dirname`.
+    for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
+        const auto dirItemRelativePath = std::filesystem::relative(dirIt->path(), trashPath);
+        const auto directorEntryPath = removeNumericSuffix(dirItemRelativePath);
+        if (relativePath == directorEntryPath) return true;
+    }
+
+    return false;
+}
+
 bool Utility::moveItemToTrash(const SyncPath &itemPath) {
     std::string desktopType;
     if (!Utility::getLinuxDesktopType(desktopType)) {
@@ -74,7 +122,7 @@ bool Utility::moveItemToTrash(const SyncPath &itemPath) {
         return true;
     }
 
-    const SyncPath trashPath = Utility::getTrashPath();
+    const SyncPath trashPath = getTrashPath();
 
     // Check if the trash/files & trash/info path exists and create it if needed
     if (std::error_code ec; !std::filesystem::exists(trashPath, ec)) {
