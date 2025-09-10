@@ -100,8 +100,9 @@ void createFileWithDehydratedStatus(const SyncPath &filePath) {
     generateOrEditTestFile(filePath);
 
     auto ioError = IoError::Unknown;
-    const bool success = IoHelper::setDehydratedPlaceholderStatus(filePath, ioError);
-    assert(success && ioError == IoError::Success && "Unexpected failure of IoHelper::setXAttrValue.");
+    IoHelper::setDehydratedPlaceholderStatus(filePath, ioError);
+    assert(IoHelper::setDehydratedPlaceholderStatus(filePath, ioError) && ioError == IoError::Success &&
+           "Unexpected failure of IoHelper::setXAttrValue.");
 }
 #endif
 } // namespace KDC::testhelpers

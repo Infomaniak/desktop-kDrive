@@ -78,7 +78,7 @@ SyncPath removeNumericSuffix(const SyncPath &relativePath) {
     std::uint64_t i = 0;
     for (const auto &segment: segments) {
         if (i > 0) ss << "/";
-        ss << SyncName2WStr{segment};
+        ss << SyncName2WStr(segment);
         ++i;
     }
 
