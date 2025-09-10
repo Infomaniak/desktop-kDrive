@@ -29,7 +29,6 @@ class XPCCommChannel : public KDC::AbstractCommChannel {
         ~XPCCommChannel();
 
         uint64_t bytesAvailable() const override;
-
     protected:
         std::unique_ptr<AbstractCommChannelPrivate> _privatePtr;
 
