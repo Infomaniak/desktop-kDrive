@@ -24,12 +24,12 @@ namespace KDC {
 // Mock implementation of readMessage and sendMessage for testing purpose
 CommString SocketCommChannelTest::readMessage() {
     CommChar data[1024];
-    readData(data, 1024);
+    (void) readData(data, 1024);
     return data;
 }
 
 void SocketCommChannelTest::sendMessage(const CommString &message) {
-    writeData(message.c_str(), message.size());
+    (void) writeData(message.c_str(), message.size());
 }
 
 // TestSocketComm implementation
@@ -43,17 +43,16 @@ void TestSocketComm::tearDown() {
 
 void TestSocketComm::testServerListen() {
     // Start the server
-    std::unique_ptr<SocketCommServerTest> _socketCommServerTest =
-            std::make_unique<SocketCommServerTest>("TestSocketComm::testServerListen");
+    auto _socketCommServerTest = std::make_unique<SocketCommServerTest>("TestSocketComm::testServerListen");
     _socketCommServerTest->listen(SyncPath());
 
     // Create a client socket and connect to the server
     Poco::Net::StreamSocket clientSocket;
     clientSocket.connect(Poco::Net::SocketAddress("localhost", _socketCommServerTest->getPort()));
-    std::shared_ptr<SocketCommChannelTest> clientSideChannel = std::make_shared<SocketCommChannelTest>(clientSocket);
+    auto clientSideChannel = std::make_shared<SocketCommChannelTest>(clientSocket);
 
     // Wait for the server to accept the connection
-    while (_socketCommServerTest->connections().size() == 0) {
+    while (_socketCommServerTest->connections().empty()) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
@@ -76,8 +75,7 @@ void TestSocketComm::testServerListen() {
 
 void TestSocketComm::testServerCallbacks() {
     // Start the server
-    std::unique_ptr<SocketCommServerTest> _socketCommServerTest =
-            std::make_unique<SocketCommServerTest>("TestSocketComm::testServerCallbacks");
+    auto _socketCommServerTest = std::make_unique<SocketCommServerTest>("TestSocketComm::testServerCallbacks");
     _socketCommServerTest->listen(SyncPath());
 
     bool newConnectionCalled = false;
@@ -93,10 +91,10 @@ void TestSocketComm::testServerCallbacks() {
     // Create a client socket and connect to the server
     Poco::Net::StreamSocket clientSocket;
     clientSocket.connect(Poco::Net::SocketAddress("localhost", _socketCommServerTest->getPort()));
-    std::shared_ptr<SocketCommChannelTest> clientSideChannel = std::make_shared<SocketCommChannelTest>(clientSocket);
+    auto clientSideChannel = std::make_shared<SocketCommChannelTest>(clientSocket);
 
     // Wait for the server to accept the connection
-    while (_socketCommServerTest->connections().size() == 0) {
+    while (_socketCommServerTest->connections().empty()) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
@@ -121,21 +119,20 @@ void TestSocketComm::testServerCallbacks() {
 
 void TestSocketComm::testChannelReadyReadCallback() {
     // Start the server
-    std::unique_ptr<SocketCommServerTest> _socketCommServerTest =
-            std::make_unique<SocketCommServerTest>("TestSocketComm::testChannelReadyReadCallback");
+    auto _socketCommServerTest = std::make_unique<SocketCommServerTest>("TestSocketComm::testChannelReadyReadCallback");
     _socketCommServerTest->listen(SyncPath());
 
     // Create a client socket and connect to the server
     Poco::Net::StreamSocket clientSocket;
     clientSocket.connect(Poco::Net::SocketAddress("localhost", _socketCommServerTest->getPort()));
-    std::shared_ptr<SocketCommChannelTest> clientSideChannel = std::make_shared<SocketCommChannelTest>(clientSocket);
+    auto clientSideChannel = std::make_shared<SocketCommChannelTest>(clientSocket);
 
     // Wait for the server to accept the connection
     int remainWait = 100; // wait max 1 second
-    while (_socketCommServerTest->connections().size() == 0 && remainWait-- > 0) {
+    while (_socketCommServerTest->connections().empty() && remainWait-- > 0) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    CPPUNIT_ASSERT_MESSAGE("Server did not accept the connection in time", _socketCommServerTest->connections().size() > 0);
+    CPPUNIT_ASSERT_MESSAGE("Server did not accept the connection in time", _socketCommServerTest->connections().empty());
 
     // Get the server side channel
     auto serverSidechannel = _socketCommServerTest->nextPendingConnection();
@@ -162,17 +159,16 @@ void TestSocketComm::testChannelReadyReadCallback() {
 
 void TestSocketComm::testChannelReadAndWriteData() {
     // Start the server
-    std::unique_ptr<SocketCommServerTest> _socketCommServerTest =
-            std::make_unique<SocketCommServerTest>("TestSocketComm::testChannelReadAndWriteData");
-    _socketCommServerTest->listen(SyncPath());
+    auto _socketCommServerTest = std::make_unique<SocketCommServerTest>("TestSocketComm::testChannelReadAndWriteData");
+    CPPUNIT_ASSERT_MESSAGE("Server failed to start listening", _socketCommServerTest->listen(SyncPath()));
 
     // Create a client socket and connect to the server
     Poco::Net::StreamSocket clientSocket;
     clientSocket.connect(Poco::Net::SocketAddress("localhost", _socketCommServerTest->getPort()));
-    std::shared_ptr<SocketCommChannelTest> clientSideChannel = std::make_shared<SocketCommChannelTest>(clientSocket);
+    auto clientSideChannel = std::make_shared<SocketCommChannelTest>(clientSocket);
 
     // Wait for the server to accept the connection
-    while (_socketCommServerTest->connections().size() == 0) {
+    while (_socketCommServerTest->connections().empty()) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 

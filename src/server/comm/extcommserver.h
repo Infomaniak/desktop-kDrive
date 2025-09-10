@@ -29,7 +29,7 @@ class ExtCommChannel : public PipeCommChannel {
         bool canReadMessage() const final;
         CommString readMessage() final;
 
-    protected:
+    private:
         CommString _readBuffer;
 };
 

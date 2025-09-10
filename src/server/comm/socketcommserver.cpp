@@ -22,7 +22,7 @@ namespace KDC {
 
 SocketCommChannel::SocketCommChannel(Poco::Net::StreamSocket &socket) :
     AbstractCommChannel(),
-    _socket(std::move(socket)) {
+    _socket(socket) {
     _callbackThread = std::thread(&SocketCommChannel::callbackHandler, this);
 }
 
@@ -36,7 +36,6 @@ SocketCommChannel::~SocketCommChannel() {
     if (_callbackThread.joinable()) {
         _callbackThread.join();
     }
-    _socket.close();
 }
 
 uint64_t SocketCommChannel::readData(CommChar *data, uint64_t maxlen) {
@@ -69,17 +68,19 @@ uint64_t SocketCommChannel::writeData(const CommChar *data, uint64_t len) {
 void SocketCommChannel::callbackHandler() {
     while (!_isClosing) {
         try {
-            if (_socket.poll(Poco::Timespan(1, 0),
-                             Poco::Net::Socket::SELECT_READ | Poco::Net::Socket::SELECT_ERROR)) {
-                if (_socket.available() > 0) {
-                    readyReadCbk();
-                    while (_socket.available() > 0 && !_isClosing) {
-                        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                    }
-                } else {
-                    LOG_DEBUG(Log::instance()->getLogger(), "Socket connection closed by peer");
-                    lostConnectionCbk();
-                }
+            if (!_socket.poll(Poco::Timespan(1, 0), Poco::Net::Socket::SELECT_READ | Poco::Net::Socket::SELECT_ERROR)) {
+                continue;
+            }
+
+            if (_socket.available() == 0) {
+                LOG_DEBUG(Log::instance()->getLogger(), "Socket connection closed by peer");
+                lostConnectionCbk();
+                break;
+            }
+
+            readyReadCbk();
+            while (_socket.available() > 0 && !_isClosing) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
         } catch (Poco::IOException &ex) {
             LOG_ERROR(Log::instance()->getLogger(), "Socket poll error: " << ex.displayText());
@@ -106,7 +107,12 @@ SocketCommServer::SocketCommServer(const std::string &name) :
     AbstractCommServer(name) {}
 
 SocketCommServer::~SocketCommServer() {
-    close();
+    try {
+        close();
+    } catch (std::exception &ex) {
+        // Avoid exceptions in destructor
+        LOG_ERROR(Log::instance()->getLogger(), "Exception in SocketCommServer destructor: " << ex.what());
+    }
 }
 
 void SocketCommServer::close() {
@@ -127,7 +133,7 @@ void SocketCommServer::close() {
         LOG_DEBUG(Log::instance()->getLogger(), name() << " stopped");
         _isListening = false;
         _stopAsked = false;
-    } else if (!_isListening) {
+    } else {
         LOG_DEBUG(Log::instance()->getLogger(), name() << " is not listening");
         return;
     }
@@ -150,12 +156,12 @@ bool SocketCommServer::listen(const KDC::SyncPath &) {
 }
 
 std::shared_ptr<AbstractCommChannel> SocketCommServer::nextPendingConnection() {
-    std::scoped_lock lock(_channelsMutex);
+    const std::scoped_lock lock(_channelsMutex);
     return _channels.back();
 }
 
 std::list<std::shared_ptr<AbstractCommChannel>> SocketCommServer::connections() {
-    std::scoped_lock lock(_channelsMutex);
+    const std::scoped_lock lock(_channelsMutex);
     return _channels;
 }
 
@@ -167,7 +173,7 @@ void SocketCommServer::execute() {
         Poco::Net::StreamSocket socket = _serverSocket.acceptConnection();
         if (_stopAsked) break;
         auto channel = makeCommChannel(socket);
-        std::scoped_lock lock(_channelsMutex);
+        const std::scoped_lock lock(_channelsMutex);
         channel->setLostConnectionCbk([this](std::shared_ptr<AbstractCommChannel> ch) { lostConnectionCbk(ch); });
         _channels.push_back(channel);
         newConnectionCbk();

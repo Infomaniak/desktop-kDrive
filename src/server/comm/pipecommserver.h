@@ -41,15 +41,15 @@ class PipeCommChannel : public AbstractCommChannel {
             EnumEnd
         };
 
-        PipeCommChannel();
-        ~PipeCommChannel();
+        PipeCommChannel() = default;
+        ~PipeCommChannel() = default;
 
         uint64_t bytesAvailable() const override;
-        void close() override;
+        void close() override {};
 
     protected:
         uint64_t readData(CommChar *data, uint64_t maxSize) final;
-        virtual uint64_t writeData(const CommChar *data, uint64_t size) final;
+        uint64_t writeData(const CommChar *data, uint64_t size) final;
 
     private:
         CommString _inBuffer;

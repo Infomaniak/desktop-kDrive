@@ -34,11 +34,6 @@
 
 namespace KDC {
 
-PipeCommChannel::PipeCommChannel() :
-    AbstractCommChannel() {}
-
-PipeCommChannel::~PipeCommChannel() {}
-
 uint64_t PipeCommChannel::readData(CommChar *data, uint64_t maxSize) {
     if (!_connected) return 0;
 
@@ -88,8 +83,6 @@ uint64_t PipeCommChannel::writeData(const CommChar *data, uint64_t size) {
 uint64_t PipeCommChannel::bytesAvailable() const {
     return _inBuffer.size();
 }
-
-void PipeCommChannel::close() {}
 
 PipeCommServer::PipeCommServer(const std::string &name) :
     AbstractCommServer(name) {}

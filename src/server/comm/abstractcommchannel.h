@@ -34,7 +34,7 @@ namespace KDC {
 class AbstractCommChannel : public std::enable_shared_from_this<AbstractCommChannel> {
     public:
         AbstractCommChannel() = default;
-        virtual ~AbstractCommChannel();
+        virtual ~AbstractCommChannel() = default;
 
         virtual void close() = 0;
         virtual void sendMessage(const CommString &message) = 0;
@@ -55,11 +55,11 @@ class AbstractCommChannel : public std::enable_shared_from_this<AbstractCommChan
         void setReadyReadCbk(const std::function<void(std::shared_ptr<AbstractCommChannel>)> &cbk) { _onReadyReadCbk = cbk; }
 
         void lostConnectionCbk() {
-            auto thisPtr = weak_from_this().lock(); // Ensure the callback is not called on an object being destroyed
+            const auto thisPtr = weak_from_this().lock(); // Ensure the callback is not called on an object being destroyed
             if (_onLostConnectionCbk && thisPtr) _onLostConnectionCbk(thisPtr);
         }
         void readyReadCbk() {
-            auto thisPtr = weak_from_this().lock(); // Ensure the callback is not called on an object being destroyed
+            const auto thisPtr = weak_from_this().lock(); // Ensure the callback is not called on an object being destroyed
             if (_onReadyReadCbk && thisPtr) _onReadyReadCbk(thisPtr);
         }
 

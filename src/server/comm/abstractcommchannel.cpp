@@ -23,8 +23,6 @@
 
 namespace KDC {
 
-AbstractCommChannel::~AbstractCommChannel() {}
-
 std::string AbstractCommChannel::id() {
     return std::to_string(reinterpret_cast<uintptr_t>(this));
 }

@@ -26,8 +26,7 @@ namespace KDC {
 
 class GuiCommChannel : public SocketCommChannel {
     public:
-        GuiCommChannel(Poco::Net::StreamSocket &socket) :
-            SocketCommChannel(socket) {}
+        using SocketCommChannel::SocketCommChannel;
 
         void sendMessage(const CommString &message) final;
         bool canReadMessage() const final;
