@@ -18,25 +18,50 @@
 
 #pragma once
 
+#if defined(KD_MACOS)
+#include "xpccommserver_mac.h"
+#else
 #include "pipecommserver.h"
+#endif
 
 namespace KDC {
 static const auto finderExtLineSeparator = Str("\n");
 static const auto finderExtQuerySeparator = Str("\\/");
+
+#if defined(KD_MACOS)
+class ExtCommChannel : public XPCCommChannel {
+#else
 class ExtCommChannel : public PipeCommChannel {
+#endif
+
     public:
-        ExtCommChannel();
+#if defined(KD_MACOS)
+        using XPCCommChannel::XPCCommChannel;
+#else
+        using PipeCommChannel::PipeCommChannel;
+#endif
         bool sendMessage(const CommString &message) final;
         bool canReadMessage() final;
         CommString readMessage() final;
 
     private:
+#if defined(KD_MACOS)
+        uint64_t writeData(const KDC::CommChar *data, uint64_t len) override;
+#endif
         CommString _readBuffer;
 };
 
+#if defined(KD_MACOS)
+class ExtCommServer : public XPCCommServer {
+#else
 class ExtCommServer : public PipeCommServer {
+#endif
     public:
+#if defined(KD_MACOS)
         ExtCommServer(const std::string &name);
+#else
+        using PipeCommServer::PipeCommServer;
         std::shared_ptr<PipeCommChannel> makeCommChannel() const override { return std::make_shared<ExtCommChannel>(); }
+#endif
 };
 } // namespace KDC

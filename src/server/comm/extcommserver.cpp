@@ -20,9 +20,6 @@
 
 namespace KDC {
 
-ExtCommChannel::ExtCommChannel() :
-    PipeCommChannel() {}
-
 bool ExtCommChannel::sendMessage(const CommString &message) {
     const CommString truncatedLogMessage = truncateLongLogMessage(message);
     LOGW_INFO(Log::instance()->getLogger(), L"Sending message: " << CommonUtility::commString2WStr(truncatedLogMessage)
@@ -64,7 +61,4 @@ CommString ExtCommChannel::readMessage() {
 bool ExtCommChannel::canReadMessage() const {
     return _readBuffer.find(finderExtLineSeparator, 0) != std::string::npos;
 }
-ExtCommServer::ExtCommServer(const std::string &name) :
-    PipeCommServer(name) {}
-
 } // namespace KDC

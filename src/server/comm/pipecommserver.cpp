@@ -84,10 +84,8 @@ uint64_t PipeCommChannel::bytesAvailable() const {
     return _inBuffer.size();
 }
 
-PipeCommServer::PipeCommServer(const std::string &name) :
-    AbstractCommServer(name) {}
 
-PipeCommServer::~PipeCommServer() {}
+PipeCommServer::~PipeCommServer() = default;
 
 void PipeCommServer::close() {
     if (_isRunning) {

@@ -30,9 +30,7 @@
 // TODO: To remove later
 #include "oldcommserver.h"
 
-#if defined(KD_MACOS)
-#include "extcommserver_mac.h"
-#elif defined(KD_WINDOWS)
+#ifndef KD_LINUX
 #include "extcommserver.h"
 #endif
 

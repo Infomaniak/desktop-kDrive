@@ -28,7 +28,6 @@
 #include "updater/testupdatechecker.h"
 #include "requests/testserverrequests.h"
 #include "appserver/testappserver.h"
-
 #include "comm/testguicommchannel.h"
 #include "comm/testsocketcomm.h"
 

@@ -70,7 +70,7 @@ class PipeCommChannel : public AbstractCommChannel {
 
 class PipeCommServer : public AbstractCommServer {
     public:
-        PipeCommServer(const std::string &name);
+        using AbstractCommServer::AbstractCommServer;
         ~PipeCommServer();
 
         void close() override;
