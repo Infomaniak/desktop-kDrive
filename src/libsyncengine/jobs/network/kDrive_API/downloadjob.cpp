@@ -89,7 +89,8 @@ DownloadJob::~DownloadJob() {
         // TODO: usefull ?
         bool exists = false;
         if (auto ioError = IoError::Unknown; IoHelper::checkIfPathExists(_localpath, exists, ioError) && exists) {
-            if (const ExitInfo exitInfo = _vfs->forceStatus(_localpath, VfsStatus()); !exitInfo) {
+            if (const ExitInfo exitInfo = _vfs->forceStatus(_localpath, VfsStatus());
+                !exitInfo && exitInfo.cause() != ExitCause::NotFound) {
                 LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
             }
 
