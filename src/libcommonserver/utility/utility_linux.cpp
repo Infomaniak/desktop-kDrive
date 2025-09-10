@@ -69,16 +69,16 @@ SyncPath removeNumericSuffix(const SyncPath &relativePath) {
 
     std::wsmatch words;
     std::wstring rootWstr = SyncName2WStr(root);
-    std::regex_match(rootWstr, words, numericSuffixRegex);
+    (void) std::regex_match(rootWstr, words, numericSuffixRegex);
 
     assert(words.size() > 1 && "Unexpected mismatch.");
     root = root.substr(0, rootWstr.size() - std::wstring(words[1]).size());
 
     std::wstringstream ss;
-    size_t i = 0;
+    std::uint64_t i = 0;
     for (const auto &segment: segments) {
         if (i > 0) ss << "/";
-        ss << SyncName2WStr(segment);
+        ss << SyncName2WStr{segment};
         ++i;
     }
 

@@ -707,7 +707,18 @@ HRESULT bindToCsidl(const int csidl, REFIID riid, void **ppv) {
     return hr;
 }
 
-bool isInFolder(const SyncPath &relativePath, IShellFolder2 *folder) {
+bool isFolder(IShellItem *item) {
+    if (!item) return false;
+
+    SFGAOF attributes = SFGAO_FOLDER;
+    if (const HRESULT hr = item->GetAttributes(SFGAO_FOLDER, &attributes); SUCCEEDED(hr)) {
+        return (attributes & SFGAO_FOLDER) != 0;
+    }
+
+    return false;
+}
+
+bool isInFolder(const std::list<SyncName> &relativePath, IShellFolder2 *folder) {
     IEnumIDList *peidl = nullptr;
 
     if (const auto enumHr = folder->EnumObjects(nullptr, SHCONTF_FOLDERS | SHCONTF_NONFOLDERS, &peidl); SUCCEEDED(enumHr)) {
@@ -723,7 +734,8 @@ bool isInFolder(const SyncPath &relativePath, IShellFolder2 *folder) {
             ZeroMemory(&strRet, sizeof(strRet));
             strRet.uType = STRRET_WSTR;
 
-            if (const auto displayNameHr = folder->GetDisplayNameOf(pidlItem, SHGDN_FORADDRESSBAR | SHGDN_INFOLDER, &strRet);
+            if (const auto displayNameHr =
+                        folder->GetDisplayNameOf(pidlItem, SHGDN_FORADDRESSBAR | SHGDN_INFOLDER | SHGDN_FOREDITING, &strRet);
                 FAILED(displayNameHr)) {
                 CoTaskMemFree(pidlItem);
                 continue;
@@ -736,11 +748,21 @@ bool isInFolder(const SyncPath &relativePath, IShellFolder2 *folder) {
                 continue;
             }
 
-            if (SyncPath(lptstr) == relativePath) {
+            const bool match = SyncPath(lptstr) == SyncPath(relativePath.front()).stem();
+            if (relativePath.size() == 1 && match) {
                 return true;
                 CoTaskMemFree(pidlItem);
                 CoTaskMemFree(lptstr);
                 break;
+            }
+
+            if (match && isFolder(pItem)) {
+                auto childRelativedPath = relativePath;
+                childRelativedPath.pop_front();
+                IShellFolder2 *psChildFolder = nullptr;
+                SHBindToObject(folder, pidlItem, nullptr, IID_IShellFolder2, (void **) &psChildFolder);
+
+                return isInFolder(childRelativedPath, psChildFolder);
             }
         }
     }
@@ -748,6 +770,10 @@ bool isInFolder(const SyncPath &relativePath, IShellFolder2 *folder) {
     if (peidl) (void) peidl->Release();
 
     return false;
+}
+
+bool isInFolder(const SyncPath &relativePath, IShellFolder2 *folder) {
+    return isInFolder(CommonUtility::splitSyncPath(relativePath), folder);
 }
 
 } // namespace
