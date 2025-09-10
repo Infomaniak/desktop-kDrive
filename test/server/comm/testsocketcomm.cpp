@@ -52,7 +52,8 @@ void TestSocketComm::testServerListen() {
     auto clientSideChannel = std::make_shared<SocketCommChannelTest>(clientSocket);
 
     // Wait for the server to accept the connection
-    while (_socketCommServerTest->connections().empty()) {
+    int remainWait = 100; // wait max 1 second
+    while (_socketCommServerTest->connections().empty() && remainWait-- > 0) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
@@ -64,9 +65,11 @@ void TestSocketComm::testServerListen() {
     clientSideChannel->sendMessage(Str("Hello world"));
 
     // Wait for the server to receive the message
-    while (serverSidechannel->bytesAvailable() == 0) {
+    remainWait = 100; // wait max 1 second
+    while (serverSidechannel->bytesAvailable() == 0 && remainWait-- > 0) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
+    CPPUNIT_ASSERT_MESSAGE("Server did not receive the message in time", serverSidechannel->bytesAvailable() > 0);
 
     // Read the message on the server side
     auto message = serverSidechannel->readMessage();
@@ -94,7 +97,8 @@ void TestSocketComm::testServerCallbacks() {
     auto clientSideChannel = std::make_shared<SocketCommChannelTest>(clientSocket);
 
     // Wait for the server to accept the connection
-    while (_socketCommServerTest->connections().empty()) {
+    int remainWait = 100; // wait max 1 second
+    while (_socketCommServerTest->connections().empty() && remainWait-- > 0) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
@@ -108,7 +112,7 @@ void TestSocketComm::testServerCallbacks() {
     clientSideChannel->close();
 
     // Wait for the lost connection callback to be called
-    int remainWait = 400; // wait max 4 seconds
+    remainWait = 400; // wait max 4 seconds
     while (!lostConnectionCalled && remainWait-- > 0) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
@@ -132,7 +136,7 @@ void TestSocketComm::testChannelReadyReadCallback() {
     while (_socketCommServerTest->connections().empty() && remainWait-- > 0) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    CPPUNIT_ASSERT_MESSAGE("Server did not accept the connection in time", _socketCommServerTest->connections().empty());
+    CPPUNIT_ASSERT_MESSAGE("Server did not accept the connection in time", !_socketCommServerTest->connections().empty());
 
     // Get the server side channel
     auto serverSidechannel = _socketCommServerTest->nextPendingConnection();
@@ -168,7 +172,8 @@ void TestSocketComm::testChannelReadAndWriteData() {
     auto clientSideChannel = std::make_shared<SocketCommChannelTest>(clientSocket);
 
     // Wait for the server to accept the connection
-    while (_socketCommServerTest->connections().empty()) {
+    int remainWait = 100; // wait max 1 second
+    while (_socketCommServerTest->connections().empty() && remainWait-- > 0) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
@@ -204,7 +209,7 @@ void TestSocketComm::testChannelReadAndWriteData() {
     clientSideChannel->sendMessage(longMessage);
 
     // Wait for the server to receive the message
-    int remainWait = 100; // wait max 1 second
+    remainWait = 100; // wait max 1 second
     while (serverSidechannel->bytesAvailable() == 0 && remainWait-- > 0) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
