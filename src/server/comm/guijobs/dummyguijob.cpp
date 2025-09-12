@@ -18,6 +18,10 @@
 
 #include "dummyguijob.h"
 
+constexpr char MSG_REQUEST_ID[] = "id";
+constexpr char MSG_REQUEST_NUM[] = "num";
+constexpr char MSG_REQUEST_PARAMS[] = "params";
+
 namespace KDC {
 
 DummyGuiJob::DummyGuiJob(std::shared_ptr<CommManager> commManager, const CommString &inputParmsStr,
@@ -30,6 +34,12 @@ bool DummyGuiJob::deserializeInputParms() {
     }
 
     // Deserialization code
+    const int id;
+    if (!JsonParserUtility::extractValue(_inputParmsJSON, MSG_REQUEST_ID, id)) {
+        LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
+                         "GetFileListJob failed for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << parentId);
+        return {ExitCode::BackError, ExitCause::ApiErr};
+    }
 
     return true;
 }
