@@ -53,7 +53,7 @@ class SocketCommServer : public AbstractCommServer {
     public:
         SocketCommServer(const std::string &name);
         ~SocketCommServer();
-        int getPort() const { return static_cast<int>(_serverSocket.address().port()); }
+        Poco::UInt16 getPort() const { return _serverSocket.address().port(); }
         void close() final;
         bool listen(const SyncPath &) override;
         std::shared_ptr<AbstractCommChannel> nextPendingConnection() override;

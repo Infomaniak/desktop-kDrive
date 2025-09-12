@@ -40,7 +40,17 @@ SocketCommChannel::~SocketCommChannel() {
 
 uint64_t SocketCommChannel::readData(CommChar *data, uint64_t maxlen) {
     try {
-        auto lenReceived = _socket.receiveBytes(data, static_cast<int>(maxlen) * sizeof(CommChar)) / sizeof(CommChar);
+        /* This file is included by some files that also include "windef.h", which defines a macro "max()".
+         * This causes std::numeric_limits<int>::max() to be expanded as
+         * std::numeric_limits<SnapshotRevision>::(((a) > (b)) ? (a) : (b)), which obviously doesn't compile.
+         * The following pragma allows temporarily disabling this macro.
+         */
+#pragma push_macro("max")
+#undef max
+        auto lenReceived = _socket.receiveBytes(
+                data, (std::min)(static_cast<int>(maxlen * sizeof(CommChar)), std::numeric_limits<int>::max()));
+#pragma pop_macro("max")
+
         if (lenReceived == 0) {
             LOG_DEBUG(Log::instance()->getLogger(), "Socket connection closed by peer");
             lostConnectionCbk();
