@@ -216,13 +216,13 @@ ExitInfo VfsOff::forceStatus(const SyncPath &pathStd, const VfsStatus &vfsStatus
     LOGW_DEBUG(logger(), L"Send status to the Finder extension for file/directory " << Path2WStr(fullPath));
     if (_vfsSetupParams.executeCommand) {
         CommString command(Str("STATUS"));
-        command.append(MESSAGE_CDE_SEPARATOR);
+        command.append(messageCdeSeparator);
         command.append(CommonUtility::str2CommString(std::to_string(vfsStatus.isSyncing)));
-        command.append(MESSAGE_ARG_SEPARATOR);
+        command.append(messageArgSeparator);
         command.append(CommonUtility::str2CommString(std::to_string(vfsStatus.progress)));
-        command.append(MESSAGE_ARG_SEPARATOR);
+        command.append(messageArgSeparator);
         command.append(CommonUtility::str2CommString(std::to_string(vfsStatus.isHydrated)));
-        command.append(MESSAGE_ARG_SEPARATOR);
+        command.append(messageArgSeparator);
         command.append(pathStd.native());
         _vfsSetupParams.executeCommand(command, true);
     }

@@ -130,9 +130,9 @@ using OStringStream = std::ostringstream;
 using CommString = std::filesystem::path::string_type;
 using CommChar = std::filesystem::path::value_type;
 
-#define MESSAGE_CDE_SEPARATOR Str(":")
-#define MESSAGE_ARG_SEPARATOR Str("\x1e")
-#define RESPONSE_TO_FINDER_ARG_SEPARATOR Str(":")
+static const auto messageCdeSeparator = Str(":");
+static const auto messageArgSeparator = Str("\x1e");
+static const auto responseToFinderArgSeparator = Str(":");
 
 namespace event_dump_files {
 static constexpr std::string_view serverCrashFileName(

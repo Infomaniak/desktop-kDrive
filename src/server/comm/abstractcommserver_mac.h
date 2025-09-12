@@ -59,7 +59,7 @@ class AbstractCommServerPrivate;
 
 class AbstractCommChannelPrivate {
     public:
-        KDC::AbstractCommChannel *_publicPtr;
+        KDC::AbstractCommChannel *publicPtr = nullptr;
 
         AbstractCommChannelPrivate(NSXPCConnection *remoteConnection);
         ~AbstractCommChannelPrivate();
@@ -67,19 +67,19 @@ class AbstractCommChannelPrivate {
         // release remoteEnd
         void disconnectRemote();
 
-        AbstractRemoteEnd *_remoteEnd;
-        AbstractLocalEnd *_localEnd;
-        KDC::CommString _inBuffer;
-        bool _isRemoteDisconnected = false;
+        AbstractRemoteEnd *remoteEnd = nullptr;
+        AbstractLocalEnd *localEnd = nullptr;
+        KDC::CommString inBuffer;
+        bool isRemoteDisconnected = false;
 };
 
 class AbstractCommServerPrivate {
     public:
-        KDC::AbstractCommServer *_publicPtr;
+        KDC::AbstractCommServer *publicPtr = nullptr;
 
         AbstractCommServerPrivate();
         ~AbstractCommServerPrivate();
 
-        std::list<std::shared_ptr<KDC::AbstractCommChannel>> _pendingChannels;
-        AbstractServer *_server;
+        std::list<std::shared_ptr<KDC::AbstractCommChannel>> pendingChannels;
+        AbstractServer *server = nullptr;
 };

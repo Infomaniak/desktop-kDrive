@@ -58,7 +58,7 @@ bool syncForPath(const std::filesystem::path &path, Sync &sync) {
 }
 
 bool ExtensionJob::_dehydrationCanceled = false;
-unsigned ExtensionJob::_nbOngoingDehydration = 0;
+unsigned ExtensionJob::_nbOfOngoingDehydration = 0;
 std::mutex ExtensionJob::_dehydrationMutex;
 
 ExtensionJob::ExtensionJob(std::shared_ptr<CommManager> commManager, const CommString &commandLineStr,
@@ -113,12 +113,12 @@ void ExtensionJob::runJob() {
 void ExtensionJob::commandGetMenuItems(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
     {
         CommString response(Str("GET_MENU_ITEMS"));
-        response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+        response.append(responseToFinderArgSeparator);
         response.append(Str("BEGIN"));
         channel->sendMessage(response);
     }
 
-    const auto files = CommonUtility::splitCommString(argument, MESSAGE_ARG_SEPARATOR);
+    const auto files = CommonUtility::splitCommString(argument, messageArgSeparator);
 
     // Find the common sync
     Sync sync;
@@ -138,8 +138,8 @@ void ExtensionJob::commandGetMenuItems(const CommString &argument, std::shared_p
     }
 
     // Find SyncPal and Vfs associated to sync
-    std::unordered_map<int, std::shared_ptr<SyncPal>>::const_iterator syncPalMapIt = _commManager->_syncPalMap.end();
-    std::unordered_map<int, std::shared_ptr<Vfs>>::const_iterator vfsMapIt = _commManager->_vfsMap.end();
+    SyncPalMap::const_iterator syncPalMapIt = _commManager->_syncPalMap.end();
+    VfsMap::const_iterator vfsMapIt = _commManager->_vfsMap.end();
     if (sync.dbId()) {
         syncPalMapIt = retrieveSyncPalMapIt(sync.dbId());
         if (syncPalMapIt == _commManager->_syncPalMap.end()) return;
@@ -154,7 +154,7 @@ void ExtensionJob::commandGetMenuItems(const CommString &argument, std::shared_p
 
     {
         const std::lock_guard lock(_dehydrationMutex);
-        if (_nbOngoingDehydration > 0) {
+        if (_nbOfOngoingDehydration > 0) {
             canCancelDehydration = true;
         }
     }
@@ -213,7 +213,7 @@ void ExtensionJob::commandGetMenuItems(const CommString &argument, std::shared_p
 
     {
         CommString response(Str("GET_MENU_ITEMS"));
-        response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+        response.append(responseToFinderArgSeparator);
         response.append(Str("END"));
         channel->sendMessage(response);
     }
@@ -255,7 +255,7 @@ void ExtensionJob::commandOpenPrivateLink(const CommString &argument, std::share
 }
 
 void ExtensionJob::commandMakeAvailableLocallyDirect(const CommString &argument, std::shared_ptr<AbstractCommChannel>) {
-    const auto fileList = CommonUtility::splitCommString(argument, MESSAGE_ARG_SEPARATOR);
+    const auto fileList = CommonUtility::splitCommString(argument, messageArgSeparator);
 
     SyncPath parentFolder;
 #if defined(KD_MACOS)
@@ -328,7 +328,7 @@ void ExtensionJob::commandRegisterFolder(const CommString &argument, std::shared
     if (!channel) return;
 
     CommString response(Str("REGISTER_PATH"));
-    response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+    response.append(responseToFinderArgSeparator);
     response.append(argument); // path
     channel->sendMessage(response);
 }
@@ -337,7 +337,7 @@ void ExtensionJob::commandUnregisterFolder(const CommString &argument, std::shar
     if (!channel) return;
 
     CommString response(Str("UNREGISTER_PATH"));
-    response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+    response.append(responseToFinderArgSeparator);
     response.append(argument); // path
     channel->sendMessage(response);
 }
@@ -345,7 +345,7 @@ void ExtensionJob::commandUnregisterFolder(const CommString &argument, std::shar
 void ExtensionJob::commandForceStatus(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
     if (!channel) return;
 
-    auto argumentList = CommonUtility::splitCommString(argument, MESSAGE_ARG_SEPARATOR);
+    auto argumentList = CommonUtility::splitCommString(argument, messageArgSeparator);
 
     if (argumentList.size() != 4) {
         LOGW_WARN(Log::instance()->getLogger(), L"Invalid argument - arg=" << CommonUtility::commString2WStr(argument));
@@ -366,9 +366,9 @@ void ExtensionJob::commandForceStatus(const CommString &argument, std::shared_pt
     }
 
     CommString response(Str("STATUS"));
-    response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+    response.append(responseToFinderArgSeparator);
     response.append(status);
-    response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+    response.append(responseToFinderArgSeparator);
     response.append(argumentList[3]); // path
     channel->sendMessage(response);
 }
@@ -379,7 +379,7 @@ void ExtensionJob::commandGetStrings(const CommString &argument, std::shared_ptr
 
     {
         CommString response(Str("GET_STRINGS"));
-        response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+        response.append(responseToFinderArgSeparator);
         response.append(Str("BEGIN"));
         channel->sendMessage(response);
     }
@@ -388,9 +388,9 @@ void ExtensionJob::commandGetStrings(const CommString &argument, std::shared_ptr
         if (argument.empty() || argument == key) {
             {
                 CommString response(Str("STRING"));
-                response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+                response.append(responseToFinderArgSeparator);
                 response.append(key);
-                response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+                response.append(responseToFinderArgSeparator);
                 response.append(value);
                 channel->sendMessage(response);
             }
@@ -399,7 +399,7 @@ void ExtensionJob::commandGetStrings(const CommString &argument, std::shared_ptr
 
     {
         CommString response(Str("GET_STRINGS"));
-        response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+        response.append(responseToFinderArgSeparator);
         response.append(Str("END"));
         channel->sendMessage(response);
     }
@@ -421,13 +421,13 @@ void ExtensionJob::commandRetrieveFileStatus(const CommString &argument, std::sh
 
 #if defined(KD_WINDOWS)
 void ExtensionJob::commandGetAllMenuItems(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
-    auto argumentList = CommonUtility::splitCommString(argument, MESSAGE_ARG_SEPARATOR);
+    auto argumentList = CommonUtility::splitCommString(argument, messageArgSeparator);
 
     CommString msgId = argumentList[0];
     argumentList.erase(argumentList.begin());
 
     CommString response(msgId);
-    response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+    response.append(responseToFinderArgSeparator);
     response.append(CommonUtility::str2CommString(Theme::instance()->appName()));
 
     // Find the common sync
@@ -465,7 +465,7 @@ void ExtensionJob::commandGetAllMenuItems(const CommString &argument, std::share
         }
     }
 
-    response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+    response.append(responseToFinderArgSeparator);
     response.append(sync.dbId() ? Vfs::modeToString(vfsMapIt->second->mode()) : Str(""));
 
     // Some options only show for single files
@@ -483,11 +483,11 @@ void ExtensionJob::commandGetAllMenuItems(const CommString &argument, std::share
 
         if (sync.dbId()) {
             addSharingContextMenuOptions(fileData, response);
-            response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+            response.append(responseToFinderArgSeparator);
             response.append(Str("OPEN_PRIVATE_LINK"));
-            response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+            response.append(responseToFinderArgSeparator);
             response.append(isOnTheServer ? Str("") : Str("d"));
-            response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+            response.append(responseToFinderArgSeparator);
             response.append(openInBrowserText());
         }
     }
@@ -510,18 +510,18 @@ void ExtensionJob::commandGetAllMenuItems(const CommString &argument, std::share
     }
 
     if (canCancelDehydration) {
-        response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+        response.append(responseToFinderArgSeparator);
         response.append(Str("CANCEL_DEHYDRATION_DIRECT"));
-        response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
-        response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+        response.append(responseToFinderArgSeparator);
+        response.append(responseToFinderArgSeparator);
         response.append(cancelDehydrationText());
     }
 
     if (canCancelHydration) {
-        response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+        response.append(responseToFinderArgSeparator);
         response.append(Str("CANCEL_HYDRATION_DIRECT"));
-        response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
-        response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+        response.append(responseToFinderArgSeparator);
+        response.append(responseToFinderArgSeparator);
         response.append(cancelHydrationText());
     }
 
@@ -529,7 +529,7 @@ void ExtensionJob::commandGetAllMenuItems(const CommString &argument, std::share
 }
 
 void ExtensionJob::commandGetThumbnail(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
-    const auto argumentList = CommonUtility::splitCommString(argument, MESSAGE_ARG_SEPARATOR);
+    const auto argumentList = CommonUtility::splitCommString(argument, messageArgSeparator);
 
     if (argumentList.size() != 3) {
         LOGW_WARN(Log::instance()->getLogger(), L"Invalid argument - arg=" << CommonUtility::commString2WStr(argument));
@@ -603,7 +603,7 @@ void ExtensionJob::commandGetThumbnail(const CommString &argument, std::shared_p
     pixmap.save(&pixmapBuffer, "BMP");
 
     CommString response(msgId);
-    response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+    response.append(responseToFinderArgSeparator);
     response.append(CommonUtility::qStr2CommString(QString(pixmapBuffer.data().toBase64())));
     channel->sendMessage(response);
 }
@@ -615,11 +615,11 @@ void ExtensionJob::commandRetrieveFolderStatus(const CommString &argument, std::
 }
 
 void ExtensionJob::commandMakeOnlineOnlyDirect(const CommString &argument, std::shared_ptr<AbstractCommChannel>) {
-    const auto fileList = CommonUtility::splitCommString(argument, MESSAGE_CDE_SEPARATOR);
+    const auto fileList = CommonUtility::splitCommString(argument, messageCdeSeparator);
 
     {
         const std::lock_guard lock(_dehydrationMutex);
-        _nbOngoingDehydration++;
+        _nbOfOngoingDehydration++;
     }
 
     std::vector<SyncPath> fileListExpanded;
@@ -658,8 +658,8 @@ void ExtensionJob::commandMakeOnlineOnlyDirect(const CommString &argument, std::
 
     {
         const std::lock_guard lock(_dehydrationMutex);
-        _nbOngoingDehydration--;
-        if (_nbOngoingDehydration == 0) {
+        _nbOfOngoingDehydration--;
+        if (_nbOfOngoingDehydration == 0) {
             _dehydrationCanceled = false;
         }
     }
@@ -674,7 +674,7 @@ void ExtensionJob::commandCancelDehydrationDirect(const CommString &, std::share
 void ExtensionJob::commandCancelHydrationDirect(const CommString &argument, std::shared_ptr<AbstractCommChannel>) {
     LOG_INFO(Log::instance()->getLogger(), "Ongoing files hydrations canceled");
 
-    const auto fileList = CommonUtility::splitCommString(argument, MESSAGE_ARG_SEPARATOR);
+    const auto fileList = CommonUtility::splitCommString(argument, messageArgSeparator);
     if (fileList.size() == 0) {
         return;
     }
@@ -750,7 +750,7 @@ void ExtensionJob::commandSetThumbnail(const CommString &argument, std::shared_p
 #endif
 
 void ExtensionJob::executeCommand(const CommString &commandLineStr, std::shared_ptr<AbstractCommChannel> channel) {
-    const auto commands = CommonUtility::splitCommString(commandLineStr, MESSAGE_CDE_SEPARATOR);
+    const auto commands = CommonUtility::splitCommString(commandLineStr, messageCdeSeparator);
     std::string command = CommonUtility::commString2Str(commands[0]);
 
     CommString argument(commandLineStr);
@@ -767,8 +767,7 @@ void ExtensionJob::executeCommand(const CommString &commandLineStr, std::shared_
 }
 
 void ExtensionJob::manageActionsOnSingleFile(std::shared_ptr<AbstractCommChannel> channel, const std::vector<CommString> &files,
-                                             std::unordered_map<int, std::shared_ptr<SyncPal>>::const_iterator syncPalMapIt,
-                                             std::unordered_map<int, std::shared_ptr<Vfs>>::const_iterator vfsMapIt,
+                                             SyncPalMap::const_iterator syncPalMapIt, VfsMap::const_iterator vfsMapIt,
                                              const Sync &sync) {
     bool exists = false;
     IoError ioError = IoError::Success;
@@ -795,7 +794,7 @@ void ExtensionJob::manageActionsOnSingleFile(std::shared_ptr<AbstractCommChannel
 
     if (sync.dbId()) {
         CommString response(Str("VFS_MODE"));
-        response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+        response.append(responseToFinderArgSeparator);
         response.append(Vfs::modeToString(sync.virtualFileMode()));
         channel->sendMessage(response);
     }
@@ -827,7 +826,7 @@ void ExtensionJob::fetchPrivateLinkUrlHelper(const SyncPath &localFile,
     }
 
     // Find the syncpal associated to sync
-    std::unordered_map<int, std::shared_ptr<SyncPal>>::const_iterator syncPalMapIt = _commManager->_syncPalMap.end();
+    SyncPalMap::const_iterator syncPalMapIt = _commManager->_syncPalMap.end();
     if (sync.dbId()) {
         syncPalMapIt = retrieveSyncPalMapIt(sync.dbId());
     }
@@ -884,7 +883,7 @@ bool ExtensionJob::syncFileStatus(const FileData &fileData, SyncFileStatus &stat
     return true;
 }
 
-std::unordered_map<int, std::shared_ptr<SyncPal>>::const_iterator ExtensionJob::retrieveSyncPalMapIt(const int syncDbId) const {
+SyncPalMap::const_iterator ExtensionJob::retrieveSyncPalMapIt(const int syncDbId) const {
     const auto result = _commManager->_syncPalMap.find(syncDbId);
 
     if (result == _commManager->_syncPalMap.end()) {
@@ -895,7 +894,7 @@ std::unordered_map<int, std::shared_ptr<SyncPal>>::const_iterator ExtensionJob::
     return result;
 }
 
-std::unordered_map<int, std::shared_ptr<Vfs>>::const_iterator ExtensionJob::retrieveVfsMapIt(const int syncDbId) const {
+VfsMap::const_iterator ExtensionJob::retrieveVfsMapIt(const int syncDbId) const {
     const auto result = _commManager->_vfsMap.find(syncDbId);
     if (result == _commManager->_vfsMap.cend()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in VfsMap - syncDbId=" << syncDbId);
@@ -1078,31 +1077,31 @@ void ExtensionJob::addSharingContextMenuOptions(const FileData &fileData, CommSt
     // If sharing is globally disabled, do not show any sharing entries.
     // If there is no permission to share for this file, add a disabled entry saying so
     if (isOnTheServer && !canShare) {
-        response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+        response.append(responseToFinderArgSeparator);
         response.append(Str("DISABLED"));
-        response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+        response.append(responseToFinderArgSeparator);
         response.append(Str("d"));
-        response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+        response.append(responseToFinderArgSeparator);
         response.append(resharingText(fileData.isDirectory));
     } else {
         // Do we have public links?
         bool publicLinksEnabled = theme->linkSharing();
 
         if (publicLinksEnabled) {
-            response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+            response.append(responseToFinderArgSeparator);
             response.append(Str("COPY_PUBLIC_LINK"));
-            response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+            response.append(responseToFinderArgSeparator);
             response.append(isOnTheServer ? Str("") : Str("d"));
-            response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+            response.append(responseToFinderArgSeparator);
             response.append(copyPublicShareLinkText());
         }
     }
 
-    response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+    response.append(responseToFinderArgSeparator);
     response.append(Str("COPY_PRIVATE_LINK"));
-    response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+    response.append(responseToFinderArgSeparator);
     response.append(isOnTheServer ? Str("") : Str("d"));
-    response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+    response.append(responseToFinderArgSeparator);
     response.append(copyPrivateShareLinkText());
 }
 
@@ -1110,11 +1109,11 @@ void ExtensionJob::addSharingContextMenuOptions(const FileData &fileData, CommSt
 void ExtensionJob::buildAndSendMenuItemMessage(std::shared_ptr<AbstractCommChannel> channel, const CommString &type, bool enabled,
                                                const CommString &text) {
     CommString response(Str("MENU_ITEM"));
-    response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+    response.append(responseToFinderArgSeparator);
     response.append(type);
-    response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+    response.append(responseToFinderArgSeparator);
     response.append(enabled ? Str("") : Str("d"));
-    response.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+    response.append(responseToFinderArgSeparator);
     response.append(text);
     channel->sendMessage(response);
 }
@@ -1204,11 +1203,11 @@ CommString ExtensionJob::buildMessage(const std::string &verb, const SyncPath &p
     CommString msg(CommonUtility::str2CommString(verb));
 
     if (!status.empty()) {
-        msg.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+        msg.append(responseToFinderArgSeparator);
         msg.append(CommonUtility::str2CommString(status));
     }
     if (!path.empty()) {
-        msg.append(RESPONSE_TO_FINDER_ARG_SEPARATOR);
+        msg.append(responseToFinderArgSeparator);
         msg.append(path.native());
     }
     return msg;

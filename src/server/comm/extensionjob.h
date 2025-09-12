@@ -61,7 +61,7 @@ class ExtensionJob : public AbstractJob {
         std::list<std::shared_ptr<AbstractCommChannel>> _channels;
 
         static bool _dehydrationCanceled;
-        static unsigned _nbOngoingDehydration;
+        static unsigned _nbOfOngoingDehydration;
         static std::mutex _dehydrationMutex;
 
         // Commands map
@@ -71,21 +71,21 @@ class ExtensionJob : public AbstractJob {
         // To FinderSyncExt & FileExplorerExtension
         /**
          * @brief commandRegisterFolder
-         * @param argument is a list of values separated by MESSAGE_ARG_SEPARATOR
+         * @param argument is a list of values separated by messageArgSeparator
          *  - value 1: path
          * @param channel
          */
         void commandRegisterFolder(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel);
         /**
          * @brief commandUnregisterFolder
-         * @param argument is a list of values separated by MESSAGE_ARG_SEPARATOR
+         * @param argument is a list of values separated by messageArgSeparator
          *  - value 1: path
          * @param channel
          */
         void commandUnregisterFolder(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel);
         /**
          * @brief commandForceStatus
-         * @param argument is a list of values separated by MESSAGE_ARG_SEPARATOR
+         * @param argument is a list of values separated by messageArgSeparator
          *  - value 1: isSyncing (bool)
          *  - value 2: progress ({0, 5, 10, ..., 90, 95, 100})
          *  - value 3: isHydrated (bool)
@@ -102,7 +102,7 @@ class ExtensionJob : public AbstractJob {
          */
         void commandGetStrings(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel);
         /** Request for the list of menu items.
-         * argument is a list of files for which the menu should be shown, separated by MESSAGE_ARG_SEPARATOR
+         * argument is a list of files for which the menu should be shown, separated by messageArgSeparator
          * Reply with  GET_MENU_ITEMS:BEGIN
          * followed by several MENU_ITEM:[Action]:[flag]:[Text]
          * If flag contains 'd', the menu should be disabled
@@ -144,8 +144,8 @@ class ExtensionJob : public AbstractJob {
         void executeCommand(const CommString &commandLineStr, std::shared_ptr<AbstractCommChannel> channel);
 
         void manageActionsOnSingleFile(std::shared_ptr<AbstractCommChannel> channel, const std::vector<CommString> &files,
-                                       std::unordered_map<int, std::shared_ptr<SyncPal>>::const_iterator syncPalMapIt,
-                                       std::unordered_map<int, std::shared_ptr<Vfs>>::const_iterator vfsMapIt, const Sync &sync);
+                                       SyncPalMap::const_iterator syncPalMapIt, VfsMap::const_iterator vfsMapIt,
+                                       const Sync &sync);
 
         void fetchPrivateLinkUrlHelper(const SyncPath &localFile, const std::function<void(const std::string &url)> &targetFun);
 
@@ -178,8 +178,8 @@ class ExtensionJob : public AbstractJob {
 
         // Retrieve map iterators.
         // Returns the end() iterator on failure but also add an error and log a message in this case.
-        std::unordered_map<int, std::shared_ptr<Vfs>>::const_iterator retrieveVfsMapIt(const int syncDbId) const;
-        std::unordered_map<int, std::shared_ptr<SyncPal>>::const_iterator retrieveSyncPalMapIt(const int syncDbId) const;
+        VfsMap::const_iterator retrieveVfsMapIt(const int syncDbId) const;
+        SyncPalMap::const_iterator retrieveSyncPalMapIt(const int syncDbId) const;
 
         static void copyUrlToClipboard(const std::string &link);
         static void openPrivateLink(const std::string &link);

@@ -79,8 +79,8 @@
 
 namespace KDC {
 
-std::unordered_map<int, std::shared_ptr<SyncPal>> AppServer::_syncPalMap;
-std::unordered_map<int, std::shared_ptr<KDC::Vfs>> AppServer::_vfsMap;
+SyncPalMap AppServer::_syncPalMap;
+VfsMap AppServer::_vfsMap;
 std::vector<AppServer::Notification> AppServer::_notifications;
 
 std::unique_ptr<UpdateManager> AppServer::_updateManager;

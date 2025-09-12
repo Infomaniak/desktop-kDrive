@@ -106,7 +106,7 @@ class LiteSyncCommClientPrivate {
         bool updateFetchStatus(const SyncPath &filePath, const std::string &status);
         bool setThumbnail(const SyncPath &filePath, const QPixmap &pixmap);
         bool setAppExcludeList(const std::string &appList);
-        bool getFetchingAppList(std::unordered_map<std::string, std::string, StringHashFunction, std::equal_to<>> &appTable);
+        bool getFetchingAppList(AppTable &appTable);
 
     private:
         log4cplus::Logger _logger;
@@ -302,7 +302,7 @@ class LiteSyncCommClientPrivate {
     };
 
     _connection.invalidationHandler = ^{
-      // Connection can not be formed or has terminated and may not be re-established
+      // Connection cannot be established or has terminated and may not be re-established
       NSLog(@"[KD] Connection with LiteSync extension invalidated");
       __strong __typeof__(weakSelf) strongSelf = weakSelf;
       if (strongSelf) {
@@ -712,8 +712,7 @@ bool LiteSyncCommClientPrivate::setAppExcludeList(const std::string &appList) {
     return true;
 }
 
-bool LiteSyncCommClientPrivate::getFetchingAppList(
-        std::unordered_map<std::string, std::string, StringHashFunction, std::equal_to<>> &appTable) {
+bool LiteSyncCommClientPrivate::getFetchingAppList(AppTable &appTable) {
     if (!_connector) {
         LOG_WARN(_logger, "Connector not initialized!");
         return false;
@@ -850,7 +849,7 @@ bool LiteSyncCommClient::vfsHydratePlaceHolder(const SyncPath &filePath) {
         // Get file
         LOGW_DEBUG(_logger, L"Get file with " << Utility::formatSyncPath(filePath));
         CommString command(Str("MAKE_AVAILABLE_LOCALLY_DIRECT"));
-        command.append(MESSAGE_CDE_SEPARATOR);
+        command.append(messageCdeSeparator);
         command.append(Path2Str(filePath));
         _private->executeCommand(command, false);
     }
@@ -1507,13 +1506,13 @@ bool LiteSyncCommClient::sendStatusToFinder(const SyncPath &path, const VfsStatu
     // Update Finder
     LOGW_DEBUG(_logger, L"Send status to the Finder extension: " << Utility::formatSyncPath(path));
     CommString command(Str("STATUS"));
-    command.append(MESSAGE_CDE_SEPARATOR);
+    command.append(messageCdeSeparator);
     command.append(CommonUtility::str2CommString(std::to_string(vfsStatus.isSyncing)));
-    command.append(MESSAGE_ARG_SEPARATOR);
+    command.append(messageArgSeparator);
     command.append(CommonUtility::str2CommString(std::to_string(vfsStatus.progress)));
-    command.append(MESSAGE_ARG_SEPARATOR);
+    command.append(messageArgSeparator);
     command.append(CommonUtility::str2CommString(std::to_string(vfsStatus.isHydrated)));
-    command.append(MESSAGE_ARG_SEPARATOR);
+    command.append(messageArgSeparator);
     command.append(path.native());
     return _private->executeCommand(command, true);
 }

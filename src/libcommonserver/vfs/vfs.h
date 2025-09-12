@@ -39,6 +39,10 @@ static constexpr short workerDehydration = 1;
 
 namespace KDC {
 
+class Vfs;
+
+using VfsMap = std::unordered_map<int, std::shared_ptr<Vfs>>;
+
 struct VfsSetupParams {
         VfsSetupParams() = default;
         explicit VfsSetupParams(const log4cplus::Logger &logger) :
