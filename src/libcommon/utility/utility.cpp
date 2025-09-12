@@ -578,6 +578,12 @@ std::string CommonUtility::appStateKeyToString(const AppStateKey &appStateValue)
             return "LogUploadState";
         case AppStateKey::LogUploadPercent:
             return "LogUploadPercent";
+        case AppStateKey::LogUploadToken:
+            return "LogUploadToken";
+        case AppStateKey::AppUid:
+            return "AppUid";
+        case AppStateKey::NoUpdate:
+            return "NoUpdate";
         case AppStateKey::Unknown:
             return "Unknown";
         default:
