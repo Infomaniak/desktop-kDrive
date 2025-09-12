@@ -1,0 +1,32 @@
+{
+  "dependencies": [
+    "cppunit",
+    "log4cplus",
+    "poco",
+    "qtwebengine",
+    "qtwebview",
+    "qtpositioning",
+    "qtwebchannel",
+    "sentry-native",
+    "zlib",
+    "libzip"
+  ],
+  "overrides": [
+    {
+      "name": "qtwebengine",
+      "version": "6.2.3"
+    },
+    {
+      "name": "qtwebview",
+      "version": "6.2.3"
+    },
+    {
+      "name": "qtpositioning",
+      "version": "6.2.3"
+    },
+    {
+      "name": "qtwebchannel",
+      "version": "6.2.3"
+    }
+  ]
+}

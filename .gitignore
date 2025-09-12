@@ -189,7 +189,9 @@ cmake-build-debug*
 /src/libcommonserver/vfs/vfspluginmetadata.json
 
 # Conan / CMake generated file
-/CMakeUserPresets.json
+#/CMakeUserPresets.json
 # Python virtual environment folder, used by the installation of conan.
 .venv/
 /infomaniak-build-tools/windows/ksigntool/.vs/ksigntool
+/build/vcpkg_installed
+/src/gui4/windows/kDrive client/PackagingProject
