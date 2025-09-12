@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Page
-    x:Class="KDriveClient.ActivityPage"
+    x:Class="KDrive.ActivityPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:KDriveClient"
+    xmlns:local="using:KDrive"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
@@ -11,6 +11,8 @@
     <Grid>
         <StackPanel>
             <TextBox Text="{x:Bind ViewModel.SelectedDrive.Name, Mode=OneWay, FallbackValue='NoDrive'}" Foreground="Black"/>
+            <TextBlock Text="{x:Bind ViewModel.SelectedDrive.IsPaidOffer, Mode=OneWay, FallbackValue='-100'}" Foreground="Black"/>
+
             <ToggleButton IsChecked="{x:Bind ViewModel.SelectedDrive.IsActive, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Content="IsActive"/>
         </StackPanel>
 

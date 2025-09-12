@@ -117,10 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="LanguageSelectionRestartNeeded.Message" xml:space="preserve">
-    <value>Langue modifiée. Veuillez redémarrer l’application pour appliquer les nouveaux paramètres linguistiques.</value>
-    <comment>Message of the infobar asking for a restart after a language change</comment>
-  </data>
   <data name="TrayIconExitApplicationCommand.Label" xml:space="preserve">
     <value>Quitter kDrive</value>
     <comment>Name of the quit button in the TrayIcon menu</comment>
@@ -143,5 +139,52 @@
   </data>
   <data name="SearchBox.PlaceholderText" xml:space="preserve">
     <value>Rechercher dans {{ TODO }}</value>
+  </data>
+  <data name="HomePage_favorites.Text" xml:space="preserve">
+    <value>Favoris</value>
+    <comment>Redirect to the favorite folder (in browser)</comment>
+  </data>
+  <data name="HomePage_trash.Text" xml:space="preserve">
+    <value>Corbeille</value>
+    <comment>Redirect to the trash folder (in browser)</comment>
+  </data>
+  <data name="HomePage_shared.Text" xml:space="preserve">
+    <value>Partages</value>
+    <comment>Redirect to the favorite folder (in browser)</comment>
+  </data>
+  <data name="KSuiteUpgradeBar_link.Content" xml:space="preserve">
+    <value>Faire évoluer</value>
+    <comment>Text of the button to be redirected to the shop</comment>
+  </data>
+  <data name="InfomaniakWebSiteLanguageCode" xml:space="preserve">
+    <value>fr</value>
+    <comment>Language code (as used in the infomaniak's urls)</comment>
+  </data>
+  <data name="UpdateAvailableBar_message.Text" xml:space="preserve">
+    <value>Une mise à jour de kDrive est disponible</value>
+    <comment>Message displayed in the info bar indicating an available update</comment>
+  </data>
+  <data name="KSuiteUpgradeBar_message.Text" xml:space="preserve">
+    <value>Débloquez plus de fonctionnalités et stockage</value>
+    <comment>A message prompting the user to upgrade his offer</comment>
+  </data>
+  <data name="UpdateAvailableBar_link.Content" xml:space="preserve">
+    <value>Mettre à jour</value>
+    <comment>Message of the button to start the update</comment>
+  </data>
+  <data name="SyncStatusBar_PausedStatus.Text" xml:space="preserve">
+    <value>Synchronisation en pause</value>
+  </data>
+  <data name="SyncStatusBar_SyncingStatus.Text" xml:space="preserve">
+    <value>Synchronisation en cours...</value>
+  </data>
+  <data name="SyncStatusBar_StartingStatus.Text" xml:space="preserve">
+    <value>Démarrage de la synchronisation...</value>
+  </data>
+  <data name="SyncStatusBar_PausingStatus.Text" xml:space="preserve">
+    <value>Mise en pause de la synchronisation...</value>
+  </data>
+  <data name="SyncStatusBar_SyncedStatus.Text" xml:space="preserve">
+    <value>Tous les fichiers sont synchronisés</value>
   </data>
 </root>

@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using KDriveClient.ViewModels;
+using KDrive.ViewModels;
 using Microsoft.UI.Xaml;
 using System;
 using System.Buffers.Binary;
@@ -28,7 +28,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KDriveClient.ServerCommunication
+namespace KDrive.ServerCommunication
 {
     internal class MockServerData
     {
@@ -49,15 +49,15 @@ namespace KDriveClient.ServerCommunication
             Users.Add(new User(3) { Id = 12, Name = "Bob", Email = "Bob.doe@infomaniak.com", IsConnected = false, IsStaff = false });
 
             // Create mock drives
-            Drives.Add(new Drive(1) { Id = 100, Name = "Pro", Color = Color.Red, Size = 1000000000, UsedSize = 250000000 });
-            Drives.Add(new Drive(2) { Id = 101, Name = "Photo", Color = Color.Blue, Size = 2000000000, UsedSize = 150000000 });
+            Drives.Add(new Drive(1) { Id = 140946, Name = "Test", Color = Color.Red, Size = 1000000000, UsedSize = 250000000, IsActive = true, IsPaidOffer = false });
+            Drives.Add(new Drive(2) { Id = 101, Name = "Photo", Color = Color.Blue, Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
             Users[0].Drives.Add(Drives[0]);
             Users[0].Drives.Add(Drives[1]);
 
-            Drives.Add(new Drive(3) { Id = 102, Name = "Pro1", Color = Color.Red, Size = 1000000000, UsedSize = 250000000 });
+            Drives.Add(new Drive(3) { Id = 102, Name = "Pro1", Color = Color.Red, Size = 1000000000, UsedSize = 250000000, IsActive = true, IsPaidOffer = true });
             Users[1].Drives.Add(Drives[2]);
 
-            Drives.Add(new Drive(4) { Id = 103, Name = "Photo1", Color = Color.Blue, Size = 2000000000, UsedSize = 150000000 });
+            Drives.Add(new Drive(4) { Id = 103, Name = "Photo1", Color = Color.Blue, Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
             Users[2].Drives.Add(Drives[3]);
 
             // Create mock syncs
@@ -258,6 +258,14 @@ namespace KDriveClient.ServerCommunication
             await SimulateNetworkDelay().ConfigureAwait(false);
             var drive = drives.FirstOrDefault(d => d.DbId == dbId);
             return drive != null ? drive.IsActive : (bool?)null;
+        }
+
+        public static async Task<bool?> GetDriveIsPaidOffer(int dbId)
+        {
+            var drives = _mockServerData.Drives;
+            await SimulateNetworkDelay().ConfigureAwait(false);
+            var drive = drives.FirstOrDefault(d => d.DbId == dbId);
+            return drive != null ? drive.IsPaidOffer : (bool?)null;
         }
 
         public static async Task<List<User>> GetUsers() // USER_INFOLIST

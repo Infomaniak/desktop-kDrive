@@ -12,9 +12,9 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-using KDriveClient.ViewModels;
+using KDrive.ViewModels;
 
-namespace KDriveClient
+namespace KDrive
 {
     public sealed partial class ActivityPage : Page
     {

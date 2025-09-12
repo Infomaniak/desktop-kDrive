@@ -911,55 +911,69 @@ void TestNetworkJobs::testGetFileListWithCursor() {
 }
 
 void TestNetworkJobs::testFullFileListWithCursorCsv() {
-    CsvFullFileListWithCursorJob job(_driveDbId, "1", {}, false);
-    const ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    {
+        CsvFullFileListWithCursorJob job(_driveDbId, "1", {}, false);
+        const ExitCode exitCode = job.runSynchronously();
+        CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
-    int counter = 0;
-    std::string cursor = job.getCursor();
-    SnapshotItem item;
-    bool error = false;
-    bool ignore = false;
-    bool eof = false;
-    while (job.getItem(item, error, ignore, eof)) {
-        if (ignore) {
-            continue;
+        int counter = 0;
+        std::string cursor = job.getCursor();
+        SnapshotItem item;
+        bool error = false;
+        bool ignore = false;
+        bool eof = false;
+        while (job.getItem(item, error, ignore, eof)) {
+            if (ignore) {
+                continue;
+            }
+
+            if (item.parentId() == pictureDirRemoteId) {
+                counter++;
+            }
         }
 
-        if (item.parentId() == pictureDirRemoteId) {
-            counter++;
-        }
+        CPPUNIT_ASSERT(!cursor.empty());
+        CPPUNIT_ASSERT(counter == 5);
+        CPPUNIT_ASSERT(eof);
     }
-
-    CPPUNIT_ASSERT(!cursor.empty());
-    CPPUNIT_ASSERT(counter == 5);
-    CPPUNIT_ASSERT(eof);
 }
 
 void TestNetworkJobs::testFullFileListWithCursorCsvZip() {
-    CsvFullFileListWithCursorJob job(_driveDbId, "1", {}, true);
-    const ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    {
+        CsvFullFileListWithCursorJob job(_driveDbId, "1", {}, true);
+        const ExitCode exitCode = job.runSynchronously();
+        CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+        int counter = 0;
+        std::string cursor = job.getCursor();
+        SnapshotItem item;
+        bool error = false;
+        bool ignore = false;
+        bool eof = false;
+        while (job.getItem(item, error, ignore, eof)) {
+            if (ignore) {
+                continue;
+            }
 
-    int counter = 0;
-    std::string cursor = job.getCursor();
-    SnapshotItem item;
-    bool error = false;
-    bool ignore = false;
-    bool eof = false;
-    while (job.getItem(item, error, ignore, eof)) {
-        if (ignore) {
-            continue;
+            if (item.parentId() == pictureDirRemoteId) {
+                counter++;
+            }
         }
 
-        if (item.parentId() == pictureDirRemoteId) {
-            counter++;
-        }
+        CPPUNIT_ASSERT(!cursor.empty());
+        CPPUNIT_ASSERT(counter == 5);
+        CPPUNIT_ASSERT(eof);
     }
 
-    CPPUNIT_ASSERT(!cursor.empty());
-    CPPUNIT_ASSERT(counter == 5);
-    CPPUNIT_ASSERT(eof);
+    // Send a request that violates validation rules and make sure the reply is correctly decompressed.
+    {
+        CsvFullFileListWithCursorJob job(_driveDbId, "invalid",
+                                         /*blacklist*/ {}, true);
+        const ExitCode exitCode = job.runSynchronously();
+        CPPUNIT_ASSERT(exitCode != ExitCode::Ok);
+        CPPUNIT_ASSERT(job.hasErrorApi());
+        CPPUNIT_ASSERT(!job.errorCode().empty());
+        CPPUNIT_ASSERT(!job.errorDescr().empty());
+    }
 }
 
 void TestNetworkJobs::testFullFileListWithCursorCsvBlacklist() {

@@ -17,7 +17,7 @@
  */
 
 using CommunityToolkit.Mvvm.ComponentModel;
-using KDriveClient.ServerCommunication;
+using KDrive.ServerCommunication;
 using Microsoft.UI.Dispatching;
 using System;
 using System.Collections.Concurrent;
@@ -29,7 +29,7 @@ using System.Threading.Tasks;
 using DynamicData;
 using DynamicData.Binding;
 
-namespace KDriveClient.ViewModels
+namespace KDrive.ViewModels
 
 {
     internal class AppModel : ObservableObject
@@ -132,8 +132,6 @@ namespace KDriveClient.ViewModels
                 {
                     Users.AddRange(users);
                 });
-                await Task.Delay(5000).ConfigureAwait(false); // Fake delay to simulate loading time
-
             }
             UIThreadDispatcher.TryEnqueue(() =>
             {
