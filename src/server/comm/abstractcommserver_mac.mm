@@ -170,7 +170,6 @@ AbstractCommChannelPrivate::~AbstractCommChannelPrivate() {
 }
 
 void AbstractCommChannelPrivate::disconnectRemote() {
-    if (isRemoteDisconnected) return;
     isRemoteDisconnected = true;
 }
 
