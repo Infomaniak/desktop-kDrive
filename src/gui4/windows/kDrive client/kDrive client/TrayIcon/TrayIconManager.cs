@@ -101,6 +101,7 @@ namespace KDrive.TrayIcon
                 presenter.Minimize();
                 presenter.Restore();
             }
+
             _window?.Show();
             _window?.Activate();
             SetIcon_ok();

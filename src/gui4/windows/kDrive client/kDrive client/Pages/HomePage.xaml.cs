@@ -48,7 +48,7 @@ namespace KDrive
 
         private async void TrashButton_Click(object sender, RoutedEventArgs e)
         {
-            Uri? trashUrl = ViewModel.SelectedDrive?.GetWebTrashUri();
+            Uri? trashUrl = ViewModel.SelectedSync?.Drive.GetWebTrashUri();
             if (trashUrl != null)
             {
                 await Windows.System.Launcher.LaunchUriAsync(trashUrl);
@@ -62,7 +62,7 @@ namespace KDrive
 
         private async void FavoritesButton_Click(object sender, RoutedEventArgs e)
         {
-            Uri? favoritesUrl = ViewModel.SelectedDrive?.GetWebFavoritesUri();
+            Uri? favoritesUrl = ViewModel.SelectedSync?.Drive.GetWebFavoritesUri();
             if (favoritesUrl != null)
             {
                 await Windows.System.Launcher.LaunchUriAsync(favoritesUrl);
@@ -76,7 +76,7 @@ namespace KDrive
 
         private async void SharedButton_Click(object sender, RoutedEventArgs e)
         {
-            Uri? sharedUrl = ViewModel.SelectedDrive?.GetWebSharedUri();
+            Uri? sharedUrl = ViewModel.SelectedSync?.Drive.GetWebSharedUri();
             if (sharedUrl != null)
             {
                 await Windows.System.Launcher.LaunchUriAsync(sharedUrl);

@@ -15,6 +15,9 @@ namespace KDrive.Converters
             if (value is bool boolValue)
             {
                 return boolValue ? Microsoft.UI.Xaml.Visibility.Collapsed : Microsoft.UI.Xaml.Visibility.Visible;
+            }else if (value is int intValue)
+            {
+                return intValue != 0 ? Microsoft.UI.Xaml.Visibility.Collapsed : Microsoft.UI.Xaml.Visibility.Visible;
             }
             Logger.Log(Logger.Level.Warning, "BooleanToVisibilityInverterConverter: value is not a boolean.");
             return Microsoft.UI.Xaml.Visibility.Collapsed;

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="KDrive.CustomControls.SyncErrorBar"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:KDrive.CustomControls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Height="56" HorizontalAlignment="Stretch">
+        <Border CornerRadius="8" BorderThickness="1" Padding="1" Background="#FFF5D3" BorderBrush="#FFE7A5">
+
+            <Grid VerticalAlignment="Center" Padding="24,0,24,0" ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <!-- Warning Icon -->
+                <Image Height="16" Grid.Column="0">
+                    <Image.Source>
+                        <SvgImageSource UriSource="ms-appx:///Assets/Icons/file-warning.svg"/>
+                    </Image.Source>
+                </Image>
+
+                <!-- Message -->
+                <TextBlock x:Uid="SyncErrorBar_message"
+                   VerticalAlignment="Center"
+                   Style="{StaticResource BodyTextBlockStyle}"
+                   Grid.Column="1"/>
+
+                <!-- Check files link -->
+                <HyperlinkButton x:Uid="SyncErrorBar_button"
+                    Grid.Column="2"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Right"
+                    Background="Transparent"
+                    Click="CheckFileButton_Click" />
+
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

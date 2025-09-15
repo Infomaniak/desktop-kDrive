@@ -37,17 +37,17 @@ public sealed partial class SyncStatusBar : UserControl
     private async void StartPauseButton_Click(object sender, RoutedEventArgs e)
     {
         StartPauseButton.IsEnabled = false;
-        if (ViewModel.SelectedDrive?.SyncStatus == SyncStatus.Pause)
+        if (ViewModel.SelectedSync?.SyncStatus == SyncStatus.Pause)
         {
-            ViewModel.SelectedDrive.SyncStatus = SyncStatus.Starting;
-            await Task.Delay(5000); // Simulate some delay for pausing
-            ViewModel.SelectedDrive.SyncStatus = SyncStatus.Running;
+            ViewModel.SelectedSync.SyncStatus = SyncStatus.Starting;
+            await Task.Delay(1000); // Simulate some delay for pausing
+            ViewModel.SelectedSync.SyncStatus = SyncStatus.Running;
         }
-        else if (ViewModel.SelectedDrive?.SyncStatus == SyncStatus.Running)
+        else if (ViewModel.SelectedSync?.SyncStatus == SyncStatus.Running)
         {
-            ViewModel.SelectedDrive.SyncStatus = SyncStatus.Pausing;
-            await Task.Delay(5000); // Simulate some delay for pausing
-            ViewModel.SelectedDrive.SyncStatus = SyncStatus.Pause;
+            ViewModel.SelectedSync.SyncStatus = SyncStatus.Pausing;
+            await Task.Delay(1000); // Simulate some delay for pausing
+            ViewModel.SelectedSync.SyncStatus = SyncStatus.Pause;
         }
         StartPauseButton.IsEnabled = true;
     }

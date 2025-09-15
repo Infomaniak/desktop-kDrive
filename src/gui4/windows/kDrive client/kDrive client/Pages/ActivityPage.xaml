@@ -6,15 +6,46 @@
     xmlns:local="using:KDrive"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:KDrive.CustomControls"
+    xmlns:converters="using:KDrive.Converters"
+    xmlns:viewmodels="using:KDrive.ViewModels"
     mc:Ignorable="d">
+    <Page.Resources>
+        <converters:BooleanToVisibilityInverterConverter x:Key="BooleanToVisibilityInverterConverter"/>
+        <converters:BooleanToInvertedBooleanConverter x:Key="BooleanToInvertedBooleanConverter"/>
+    </Page.Resources>
 
-    <Grid>
-        <StackPanel>
-            <TextBox Text="{x:Bind ViewModel.SelectedDrive.Name, Mode=OneWay, FallbackValue='NoDrive'}" Foreground="Black"/>
-            <TextBlock Text="{x:Bind ViewModel.SelectedDrive.IsPaidOffer, Mode=OneWay, FallbackValue='-100'}" Foreground="Black"/>
+    <Grid Margin="24" RowSpacing="24" ColumnSpacing="24">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <!-- Sync status bar -->
+            <RowDefinition Height="Auto"/>
+            <!-- Error bar -->
+            <RowDefinition Height="Auto"/>
+            <!-- Main content -->
+            <RowDefinition Height="*"/>
+            <!-- Upgrade offer bar -->
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <!-- Sync Status Bar -->
+        <controls:SyncStatusBar Grid.Row="0"/>
+        <CheckBox x:Name="ShowIncomingActivityCheckBox"  Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Content="Mon activité uniquement" IsChecked="{x:Bind ViewModel.SelectedSync.ShowIncomingActivity, Mode=TwoWay, Converter={StaticResource BooleanToInvertedBooleanConverter}}"/>
 
-            <ToggleButton IsChecked="{x:Bind ViewModel.SelectedDrive.IsActive, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Content="IsActive"/>
-        </StackPanel>
+        <!-- Error bar -->
+        <controls:SyncErrorBar Grid.Row="1" Grid.ColumnSpan="2"/>
+
+        <!-- Left main pane -->
+        <controls:SyncActivityTable Grid.Row="2" Grid.ColumnSpan="2" ShowIncomingActivity="{x:Bind ViewModel.SelectedSync.ShowIncomingActivity, Mode=OneWay}" />
+
+        <!-- Upgrade offer bar -->
+        <controls:KSuiteUpgradeBar
+        Grid.Row="3"
+        Grid.ColumnSpan="2"
+        Visibility="{x:Bind ViewModel.SelectedSync.Drive.IsPaidOffer, Mode=OneWay, Converter={StaticResource BooleanToVisibilityInverterConverter}}"
+        />
 
     </Grid>
 </Page>

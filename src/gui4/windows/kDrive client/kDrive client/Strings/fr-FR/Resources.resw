@@ -187,4 +187,38 @@
   <data name="SyncStatusBar_SyncedStatus.Text" xml:space="preserve">
     <value>Tous les fichiers sont synchronisés</value>
   </data>
+  <data name="SyncErrorBar_message.Text" xml:space="preserve">
+    <value>Impossible de synchroniser certains fichiers</value>
+  </data>
+  <data name="SyncErrorBar_button.Content" xml:space="preserve">
+    <value>Vérifier les fichiers</value>
+  </data>
+  <data name="ActivityList_Header_Name.Text" xml:space="preserve">
+    <value>Nom</value>
+  </data>
+  <data name="ActivityList_Header_State.Text" xml:space="preserve">
+    <value>État</value>
+  </data>
+  <data name="ActivityList_Header_Size.Text" xml:space="preserve">
+    <value>Taille</value>
+  </data>
+  <data name="ActivityList_Header_LastLocation.Text" xml:space="preserve">
+    <value>Dernier emplacement</value>
+    <comment>The parent folder of the synchronized item</comment>
+  </data>
+  <data name="Global_Second" xml:space="preserve">
+    <value>sec</value>
+  </data>
+  <data name="Global_Day" xml:space="preserve">
+    <value>jour</value>
+  </data>
+  <data name="Global_JustNow" xml:space="preserve">
+    <value>À l'instant</value>
+  </data>
+  <data name="Global_Hour" xml:space="preserve">
+    <value>heure</value>
+  </data>
+  <data name="Global_Minute" xml:space="preserve">
+    <value>min</value>
+  </data>
 </root>
