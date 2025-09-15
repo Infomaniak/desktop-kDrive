@@ -122,7 +122,7 @@
     };
 
     _loginItemAgentConnection.invalidationHandler = ^{
-      // Connection can not be formed or has terminated and may not be re-established
+      // Connection cannot be established or has terminated and may not be re-established
       NSLog(@"[KD] Connection with login item agent invalidated");
       __typeof__(self) strongSelf = weakSelf;
       strongSelf->_loginItemAgentConnection = nil;
@@ -166,16 +166,15 @@ AbstractCommChannelPrivate::~AbstractCommChannelPrivate() {
     disconnectRemote();
 
     // The DO vended localEnd might still be referenced by the connection
-    _localEnd.wrapper = nil;
+    localEnd.wrapper = nil;
 }
 
 void AbstractCommChannelPrivate::disconnectRemote() {
-    if (_isRemoteDisconnected) return;
-    _isRemoteDisconnected = true;
+    isRemoteDisconnected = true;
 }
 
 AbstractCommServerPrivate::AbstractCommServerPrivate() {}
 
 AbstractCommServerPrivate::~AbstractCommServerPrivate() {
-    _server.wrapper = nil;
+    server.wrapper = nil;
 }

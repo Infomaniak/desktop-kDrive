@@ -77,6 +77,10 @@ class GetSizeJob;
 #define LOG_SYNCPAL_FATAL(logger, logEvent) LOG_FATAL(logger, LOG_SYNCDBID << " " << logEvent)
 #define LOGW_SYNCPAL_FATAL(logger, logEvent) LOGW_FATAL(logger, CommonUtility::s2ws(LOG_SYNCDBID) << L" " << logEvent)
 
+class SyncPal;
+
+using SyncPalMap = std::unordered_map<int, std::shared_ptr<SyncPal>>;
+
 struct SyncPalInfo {
         SyncPalInfo() = default;
         SyncPalInfo(const int driveDbId_, const SyncPath &localPath_, const SyncPath targetPath_ = {}) :

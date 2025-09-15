@@ -27,7 +27,7 @@ using System.IO;
 using Windows.System;
 using Microsoft.UI.Windowing;
 
-namespace KDriveClient.TrayIcon
+namespace Infomaniak.kDrive.TrayIcon
 {
     public class TrayIconManager
     {
@@ -37,6 +37,7 @@ namespace KDriveClient.TrayIcon
 
         public void Initialize(Window window)
         {
+            Logger.Log(Logger.Level.Info, "Initializing TrayIconManager");
             _window = window;
 
             // Find resources from the app's main window or application resources
@@ -45,11 +46,19 @@ namespace KDriveClient.TrayIcon
                 showCommand.ExecuteRequested -= ShowWindowCommand_ExecuteRequested; // Avoid double subscription
                 showCommand.ExecuteRequested += ShowWindowCommand_ExecuteRequested;
             }
+            else
+            {
+                Logger.Log(Logger.Level.Error, "ShowWindowCommand not found in application resources.");
+            }
 
             if (Application.Current.Resources["ExitApplicationCommand"] is XamlUICommand exitCommand)
             {
                 exitCommand.ExecuteRequested -= ExitApplicationCommand_ExecuteRequested;
                 exitCommand.ExecuteRequested += ExitApplicationCommand_ExecuteRequested;
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Error, "ExitApplicationCommand not found in application resources.");
             }
 
             if (Application.Current.Resources["TrayIcon"] is TaskbarIcon trayIcon)
@@ -59,6 +68,11 @@ namespace KDriveClient.TrayIcon
 
                 // Set initial icon
                 SetIcon_ok();
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Error, "TrayIcon resource not found in application resources, unable to initialize tray icon.");
+                _window.Show();
             }
 
             _window.Closed += (sender, args) =>
@@ -72,23 +86,29 @@ namespace KDriveClient.TrayIcon
         }
         public void SetIcon_ok()
         {
+            Logger.Log(Logger.Level.Debug, "Setting tray icon to 'ok' state.");
             SetIcon("state-ok.ico");
         }
         public void SetIcon_sync()
         {
+            Logger.Log(Logger.Level.Debug, "Setting tray icon to 'sync' state.");
             SetIcon("state-sync.ico");
         }
         public void SetIcon_error()
         {
+            Logger.Log(Logger.Level.Debug, "Setting tray icon to 'error' state.");
             SetIcon("state-error.ico");
         }
         public void SetIcon_neutral()
         {
+            Logger.Log(Logger.Level.Debug, "Setting tray icon to 'neutral' state.");
             SetIcon("state-neutral.ico");
         }
+
         private void ShowWindowCommand_ExecuteRequested(object? sender, ExecuteRequestedEventArgs args)
         {
             // Bring to front
+            Logger.Log(Logger.Level.Info, "ShowWindowCommand executed - showing and activating main window");
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(_window);
             var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
             var appWindow = AppWindow.GetFromWindowId(windowId);
@@ -96,10 +116,12 @@ namespace KDriveClient.TrayIcon
             {
                 presenter.IsMaximizable = false;
                 presenter.IsMinimizable = true;
-                presenter.IsResizable = false;
+                presenter.IsResizable = true;
+                appWindow.Resize(new Windows.Graphics.SizeInt32(1350, 795));
                 presenter.Minimize();
                 presenter.Restore();
             }
+
             _window?.Show();
             _window?.Activate();
             SetIcon_ok();
@@ -107,6 +129,7 @@ namespace KDriveClient.TrayIcon
         }
         private void ExitApplicationCommand_ExecuteRequested(object? sender, ExecuteRequestedEventArgs args)
         {
+            Logger.Log(Logger.Level.Info, "ExitApplicationCommand executed - exiting application"); 
             _handleClosedEvents = false;
             _trayIcon?.Dispose();
 
@@ -125,7 +148,7 @@ namespace KDriveClient.TrayIcon
 
             try
             {
-                var imagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "status-icons", fileName);
+                var imagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "StatusIcons", fileName);
                 using var bitmap = new Bitmap(imagePath);
                 var iconHandle = bitmap.GetHicon();
                 var icon = Icon.FromHandle(iconHandle);

@@ -35,7 +35,7 @@ class DirectDownloadJob final : public AbstractNetworkJob {
 
     private:
         bool handleResponse(std::istream &inputStream) override;
-        bool handleError(std::istream &is, const Poco::URI &uri) override;
+        bool handleError(const std::string &replyBody, const Poco::URI &uri) override;
 
         const SyncPath _destinationFile;
         const std::string _url;

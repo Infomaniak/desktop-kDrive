@@ -101,7 +101,6 @@ set(testserver_SRCS
     workers/testworkers.h workers/testworkers.cpp
     requests/testserverrequests.h requests/testserverrequests.cpp
     appserver/testappserver.h appserver/testappserver.cpp
-    comm/testabstractcommchannel.h comm/testabstractcommchannel.cpp
     comm/testsocketcomm.h comm/testsocketcomm.cpp
 
 )

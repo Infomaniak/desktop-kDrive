@@ -41,7 +41,7 @@ class AbstractLoginJob : public AbstractNetworkJob {
         virtual std::string getContentType(bool &canceled) override;
 
         virtual bool handleResponse(std::istream &inputStream) override;
-        virtual bool handleError(std::istream &inputStream, const Poco::URI &uri) override;
+        virtual bool handleError(const std::string &replyBody, const Poco::URI &uri) override;
 
         std::string _errorCode;
         std::string _errorDescr;

@@ -32,7 +32,7 @@ class GetSizeJob : public AbstractTokenNetworkJob {
 
     protected:
         virtual bool handleResponse(std::istream &is) override;
-        virtual bool handleError(std::istream &is, const Poco::URI &uri) override;
+        virtual bool handleError(const std::string &replyBody, const Poco::URI &uri) override;
 
     private:
         virtual std::string getSpecificUrl() override;

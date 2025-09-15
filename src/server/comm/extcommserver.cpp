@@ -30,8 +30,8 @@ void ExtCommChannel::sendMessage(const CommString &message) {
 
     // Add messages separator if needed
     CommString localMessage = message;
-    if (!localMessage.ends_with(FINDER_EXT_LINE_SEPARATOR)) {
-        localMessage += FINDER_EXT_LINE_SEPARATOR;
+    if (!localMessage.ends_with(finderExtLineSeparator)) {
+        localMessage += finderExtLineSeparator;
     }
 
     if (auto sent = writeData(localMessage.c_str(), localMessage.length()); !sent) {
@@ -40,11 +40,11 @@ void ExtCommChannel::sendMessage(const CommString &message) {
 }
 
 CommString ExtCommChannel::readMessage() {
-    static const uint64_t maxLineLength = 1024;
+    static const uint64_t maxLineLength = 1024; // Allows you to read most lines at once
     CommChar data[maxLineLength];
     CommString line;
     forever {
-        if (auto sepPos = _readBuffer.find(FINDER_EXT_LINE_SEPARATOR); sepPos != std::string::npos) {
+        if (auto sepPos = _readBuffer.find(finderExtLineSeparator); sepPos != std::string::npos) {
             line = _readBuffer.substr(0, sepPos);
             _readBuffer.erase(0, sepPos + 1);
             break;
@@ -60,7 +60,7 @@ CommString ExtCommChannel::readMessage() {
 }
 
 bool ExtCommChannel::canReadMessage() const {
-    return _readBuffer.find(FINDER_EXT_LINE_SEPARATOR, 0) != std::string::npos;
+    return _readBuffer.find(finderExtLineSeparator, 0) != std::string::npos;
 }
 ExtCommServer::ExtCommServer(const std::string &name) :
     PipeCommServer(name) {}

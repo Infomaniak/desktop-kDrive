@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="Infomaniak.kDrive.CustomControls.UpdateAvailableBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:Infomaniak.kDrive.CustomControls"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+
+    <Border CornerRadius="8"
+            Height="52"
+            BorderThickness="1">
+        <Border.Background>
+            <SolidColorBrush Color="#5C89F7"
+                             Opacity="0.08" />
+        </Border.Background>
+        <Border.BorderBrush>
+            <SolidColorBrush Color="#5C89F7"
+                             Opacity="0.24" />
+        </Border.BorderBrush>
+
+        <Grid VerticalAlignment="Center"
+              Padding="24,0,0,0"
+              ColumnSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Image Height="24"
+                   Grid.Column="0">
+                <Image.Source>
+                    <SvgImageSource UriSource="ms-appx:///Assets/Icons/forward.svg" />
+                </Image.Source>
+            </Image>
+
+            <TextBlock x:Uid="CC_UpdateAvailableBar_message"
+                       VerticalAlignment="Center"
+                       Style="{StaticResource BodyTextBlockStyle}"
+                       Grid.Column="1" />
+
+            <HyperlinkButton x:Uid="CC_UpdateAvailableBar_link"
+                             Margin="0,0,20,0"
+                             Grid.Column="2"
+                             HorizontalAlignment="Right" />
+            <!-- TODO: link to the update mechanism -->
+
+        </Grid>
+    </Border>
+</UserControl>

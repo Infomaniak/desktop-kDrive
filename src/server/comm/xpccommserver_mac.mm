@@ -22,26 +22,27 @@
 // XPCCommChannel implementation
 XPCCommChannel::XPCCommChannel(AbstractCommChannelPrivate *p) :
     _privatePtr(p) {
-    _privatePtr->_publicPtr = this;
+    _privatePtr->publicPtr = this;
+    open();
 }
 
 XPCCommChannel::~XPCCommChannel() {}
 
 uint64_t XPCCommChannel::readData(KDC::CommChar *data, uint64_t maxSize) {
-    auto size = _privatePtr->_inBuffer.copy(data, maxSize);
-    _privatePtr->_inBuffer.erase(0, size);
+    auto size = _privatePtr->inBuffer.copy(data, maxSize);
+    _privatePtr->inBuffer.erase(0, size);
     return size;
 }
 
 uint64_t XPCCommChannel::bytesAvailable() const {
-    return _privatePtr->_inBuffer.size();
+    return _privatePtr->inBuffer.size();
 }
 
 // XPCCommServer implementation
 XPCCommServer::XPCCommServer(const std::string &name, AbstractCommServerPrivate *commServerPrivate) :
     KDC::AbstractCommServer(name),
     _privatePtr(commServerPrivate) {
-    _privatePtr->_publicPtr = this;
+    _privatePtr->publicPtr = this;
 }
 
 XPCCommServer::~XPCCommServer() {}
@@ -49,16 +50,16 @@ XPCCommServer::~XPCCommServer() {}
 void XPCCommServer::close() {}
 
 bool XPCCommServer::listen(const KDC::SyncPath &) {
-    [_privatePtr->_server start];
+    [_privatePtr->server start];
     return true;
 }
 
 std::shared_ptr<KDC::AbstractCommChannel> XPCCommServer::nextPendingConnection() {
-    return _privatePtr->_pendingChannels.back();
+    return _privatePtr->pendingChannels.back();
 }
 
 std::list<std::shared_ptr<KDC::AbstractCommChannel>> XPCCommServer::connections() {
-    std::list<std::shared_ptr<KDC::AbstractCommChannel>> res(_privatePtr->_pendingChannels.begin(),
-                                                             _privatePtr->_pendingChannels.end());
+    std::list<std::shared_ptr<KDC::AbstractCommChannel>> res(_privatePtr->pendingChannels.begin(),
+                                                             _privatePtr->pendingChannels.end());
     return res;
 }

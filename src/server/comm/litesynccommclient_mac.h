@@ -22,6 +22,8 @@
 
 namespace KDC {
 
+using AppTable = std::unordered_map<std::string, std::string, StringHashFunction, std::equal_to<>>;
+
 class LiteSyncCommClientPrivate;
 
 class LiteSyncCommClient {
@@ -56,7 +58,7 @@ class LiteSyncCommClient {
             return vfsGetStatus(absoluteFilePath, vfsStatus, _logger);
         }
         bool vfsSetAppExcludeList(const std::string &appList);
-        bool vfsGetFetchingAppList(std::unordered_map<std::string, std::string, StringHashFunction, std::equal_to<>> &appTable);
+        bool vfsGetFetchingAppList(AppTable &appTable);
         bool vfsUpdateMetadata(const SyncPath &absoluteFilePath, const struct stat *_Nonnull fileStat);
         bool vfsIsExcluded(const SyncPath &path);
         bool vfsProcessDirStatus(const SyncPath &path, const SyncPath &localSyncPath);

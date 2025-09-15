@@ -41,13 +41,13 @@ void AbstractListingJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
     canceled = false;
 }
 
-bool AbstractListingJob::handleError(std::istream &is, const Poco::URI &uri) {
+bool AbstractListingJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
     if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN) {
         // Access to the directory is forbidden or it doesn't exist
         _exitInfo = {ExitCode::InvalidSync, ExitCause::SyncDirAccessError};
         return true;
     } else {
-        return AbstractTokenNetworkJob::handleError(is, uri);
+        return AbstractTokenNetworkJob::handleError(replyBody, uri);
     }
 }
 

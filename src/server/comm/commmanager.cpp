@@ -52,8 +52,7 @@
 
 namespace KDC {
 
-CommManager::CommManager(const std::unordered_map<int, std::shared_ptr<SyncPal>> &syncPalMap,
-                         const std::unordered_map<int, std::shared_ptr<Vfs>> &vfsMap) :
+CommManager::CommManager(const SyncPalMap &syncPalMap, const VfsMap &vfsMap) :
     _syncPalMap(syncPalMap),
     _vfsMap(vfsMap),
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
@@ -139,14 +138,14 @@ void CommManager::stop() {
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
 void CommManager::registerSync(const SyncPath &localPath) {
     CommString command(Str("REGISTER_PATH"));
-    command.append(MESSAGE_CDE_SEPARATOR);
+    command.append(messageCdeSeparator);
     command.append(localPath.native());
     broadcastExtCommand(command);
 }
 
 void CommManager::unregisterSync(const SyncPath &localPath) {
     CommString command(Str("UNREGISTER_PATH"));
-    command.append(MESSAGE_CDE_SEPARATOR);
+    command.append(messageCdeSeparator);
     command.append(localPath.native());
     broadcastExtCommand(command);
 }
@@ -162,9 +161,9 @@ void CommManager::executeCommandDirect(const CommString &commandLineStr, bool br
 void CommManager::executeExtCommand(const CommString &commandLineStr) {
     LOGW_DEBUG(Log::instance()->getLogger(), L"Execute command - cmd=" << CommonUtility::commString2WStr(commandLineStr));
 
-    std::shared_ptr<ExtensionJob> job =
+    auto job =
             std::make_shared<ExtensionJob>(shared_from_this(), commandLineStr, std::list<std::shared_ptr<AbstractCommChannel>>());
-    if (ExitInfo exitInfo = job->runSynchronously(); exitInfo.code() != ExitCode::Ok) {
+    if (ExitInfo exitInfo = job->runSynchronously(); !exitInfo) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in ExtensionJob::runSynchronously - cmd=" << CommonUtility::commString2WStr(commandLineStr));
     }
@@ -174,9 +173,9 @@ void CommManager::executeExtCommand(const CommString &commandLineStr, std::share
     LOGW_DEBUG(Log::instance()->getLogger(), L"Execute command - cmd=" << CommonUtility::commString2WStr(commandLineStr));
 
     if (channel) {
-        std::shared_ptr<ExtensionJob> job = std::make_shared<ExtensionJob>(
-                shared_from_this(), commandLineStr, std::list<std::shared_ptr<AbstractCommChannel>>({channel}));
-        if (ExitInfo exitInfo = job->runSynchronously(); exitInfo.code() != ExitCode::Ok) {
+        auto job = std::make_shared<ExtensionJob>(shared_from_this(), commandLineStr,
+                                                  std::list<std::shared_ptr<AbstractCommChannel>>({channel}));
+        if (ExitInfo exitInfo = job->runSynchronously(); !exitInfo) {
             LOGW_WARN(Log::instance()->getLogger(),
                       L"Error in ExtensionJob::runSynchronously - cmd=" << CommonUtility::commString2WStr(commandLineStr));
         }
@@ -184,12 +183,11 @@ void CommManager::executeExtCommand(const CommString &commandLineStr, std::share
 }
 
 void CommManager::broadcastExtCommand(const CommString &commandLineStr) {
-    LOGW_DEBUG(Log::instance()->getLogger(), L"Execute command - cmd=" << CommonUtility::commString2WStr(commandLineStr));
+    LOGW_DEBUG(Log::instance()->getLogger(), L"Broadcast command - cmd=" << CommonUtility::commString2WStr(commandLineStr));
 
     if (!_extCommServer->connections().empty()) {
-        std::shared_ptr<ExtensionJob> job =
-                std::make_shared<ExtensionJob>(shared_from_this(), commandLineStr, _extCommServer->connections());
-        if (ExitInfo exitInfo = job->runSynchronously(); exitInfo.code() != ExitCode::Ok) {
+        auto job = std::make_shared<ExtensionJob>(shared_from_this(), commandLineStr, _extCommServer->connections());
+        if (ExitInfo exitInfo = job->runSynchronously(); !exitInfo) {
             LOGW_WARN(Log::instance()->getLogger(),
                       L"Error in ExtensionJob::runSynchronously - cmd=" << CommonUtility::commString2WStr(commandLineStr));
         }
@@ -223,7 +221,7 @@ void CommManager::onExtQueryReceived(std::shared_ptr<AbstractCommChannel> channe
 
     while (channel->canReadMessage() || channel->bytesAvailable() > 0) {
         CommString line;
-        while (!line.ends_with(FINDER_EXT_QUERY_SEPARATOR)) {
+        while (!line.ends_with(finderExtQuerySeparator)) {
             if (!channel->canReadMessage() && channel->bytesAvailable() == 0) {
                 LOGW_WARN(Log::instance()->getLogger(), L"Failed to parse Extension message - msg="
                                                                 << CommonUtility::commString2WStr(line) << L" channel="
@@ -233,7 +231,7 @@ void CommManager::onExtQueryReceived(std::shared_ptr<AbstractCommChannel> channe
             line.append(channel->readMessage());
         }
         // Remove the separator
-        line.erase(line.find(FINDER_EXT_QUERY_SEPARATOR));
+        line.erase(line.find(finderExtQuerySeparator));
         LOGW_INFO(Log::instance()->getLogger(), L"Received Extension message - msg=" << CommonUtility::commString2WStr(line)
                                                                                      << L" channel="
                                                                                      << CommonUtility::s2ws(channel->id()));
@@ -262,7 +260,7 @@ void CommManager::onGuiQueryReceived(std::shared_ptr<AbstractCommChannel> channe
         CommString query = channel->readMessage();
         LOGW_INFO(Log::instance()->getLogger(), L"Query received: " << CommonUtility::commString2WStr(query));
 
-        const auto queryArgs = CommonUtility::splitCommString(query, GUI_ARG_SEPARATOR);
+        const auto queryArgs = CommonUtility::splitCommString(query, guiArgSeparator);
         // Query ID
         const int id = std::stoi(queryArgs[0]);
         // Query type
@@ -290,7 +288,7 @@ SyncPath CommManager::createPipe() {
     name.append("-");
     name.append(Utility::userName());
 
-    SyncPath pipePath = SyncPath(R"(\\.\pipe\)") / Str2SyncName(name);
+    const SyncPath pipePath = SyncPath(R"(\\.\pipe\)") / Str2SyncName(name);
 
     // Delete/create pipe file
     SocketCommServer::removeServer(pipePath);

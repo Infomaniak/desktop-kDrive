@@ -18,7 +18,7 @@
 
 using CommunityToolkit.Mvvm.Collections;
 using CommunityToolkit.Mvvm.ComponentModel;
-using KDriveClient.ServerCommunication;
+using Infomaniak.kDrive.ServerCommunication;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -28,25 +28,28 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace KDriveClient.ViewModels
+namespace Infomaniak.kDrive.ViewModels
 {
-    internal class Drive : ObservableObject
+    public class Drive : ObservableObject
     {
-        private int _dbId = -1;
-        private int _id = -1;
+        private DbId _dbId = -1;
+        private DriveId _id = -1;
         private string _name = "";
         private Color _color = Color.Blue;
         private long _size = 0;
         private long _usedSize = 0;
-        private bool _isActive = true; // Indicates if the user choosed to sync this drive
+        private bool _isActive = false; // Indicates if the user configured this drive on the current device.
+        private bool _isPaidOffer = false; // Indicates if the drive is a paid offer (i.e. myKsuite+/pro +, ...)
+
         private ObservableCollection<Sync> _syncs = new ObservableCollection<Sync>();
 
-        public Drive(int dbId)
+        public Drive(DbId dbId)
         {
             DbId = dbId;
         }
         public async Task Reload()
         {
+            Logger.Log(Logger.Level.Info, $"Reloading Drive properties for DbId {DbId}...");
             Task[] tasks = new Task[]
             {
                CommRequests.GetDriveId(DbId).ContinueWith(t => { if (t.Result != null) Id = t.Result.Value; }),
@@ -55,17 +58,35 @@ namespace KDriveClient.ViewModels
                CommRequests.GetDriveSize(DbId).ContinueWith(t => { if (t.Result != null) Size = t.Result.Value; }),
                CommRequests.GetDriveUsedSize(DbId).ContinueWith(t => { if (t.Result != null) UsedSize = t.Result.Value; }),
                CommRequests.GetDriveIsActive(DbId).ContinueWith(t => { if (t.Result != null) IsActive = t.Result.Value; }),
-               // TODO: Load syncs
+               CommRequests.GetDriveIsPaidOffer(DbId).ContinueWith(t => { if (t.Result != null) IsPaidOffer = t.Result.Value; }),
+               CommRequests.GetDriveSyncsDbIds(DbId).ContinueWith(async t =>
+                {
+                     if (t.Result != null)
+                     {
+                          ObservableCollection<Sync> syncs = new ObservableCollection<Sync>();
+                          Logger.Log(Logger.Level.Debug, $"Drive (DbId: {DbId}) has {t.Result.Count} sync(s). Reloading sync data...");
+                          List<Task> syncTasks = new List<Task>();
+                          foreach (var syncDbId in t.Result)
+                          {
+                            Sync? sync = new Sync(syncDbId, this);
+                            syncTasks.Add(sync.Reload());
+                            syncs.Add(sync);
+                          }
+                          await Task.WhenAll(syncTasks).ConfigureAwait(false);
+                          Syncs = syncs;
+                     }
+                }).Unwrap()
             };
             await Task.WhenAll(tasks).ConfigureAwait(false);
+            Logger.Log(Logger.Level.Info, $"Drive properties reloaded for DbId {DbId}.");
         }
-        public int DbId
+        public DbId DbId
         {
             get => _dbId;
             set => SetProperty(ref _dbId, value);
         }
 
-        public int Id
+        public DriveId Id
         {
             get => _id;
             set => SetProperty(ref _id, value);
@@ -103,10 +124,31 @@ namespace KDriveClient.ViewModels
             }
         }
 
+        public bool IsPaidOffer
+        {
+            get => _isPaidOffer;
+            set => SetProperty(ref _isPaidOffer, value);
+        }
+
         public ObservableCollection<Sync> Syncs
         {
             get { return _syncs; }
             set => SetProperty(ref _syncs, value);
+        }
+
+        public Uri GetWebTrashUri()
+        {
+            return new Uri($"https://ksuite.infomaniak.com/kdrive/app/drive/{Id}/trash");
+        }
+
+        public Uri GetWebFavoritesUri()
+        {
+            return new Uri($"https://ksuite.infomaniak.com/kdrive/app/drive/{Id}/favorites");
+        }
+
+        public Uri GetWebSharedUri()
+        {
+            return new Uri($"https://ksuite.infomaniak.com/kdrive/app/drive/{Id}/shared-with-me");
         }
     }
 }

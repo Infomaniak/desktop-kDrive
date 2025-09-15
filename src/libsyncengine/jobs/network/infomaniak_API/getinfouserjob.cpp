@@ -34,8 +34,8 @@ GetInfoUserJob::GetInfoUserJob(const int userDbId) :
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
-bool GetInfoUserJob::handleJsonResponse(std::istream &is) {
-    if (!AbstractTokenNetworkJob::handleJsonResponse(is)) return false;
+bool GetInfoUserJob::handleJsonResponse(const std::string &replyBody) {
+    if (!AbstractTokenNetworkJob::handleJsonResponse(replyBody)) return false;
 
     Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
     if (!dataObj || dataObj->size() == 0) return false;

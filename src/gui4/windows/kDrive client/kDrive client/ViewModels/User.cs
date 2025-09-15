@@ -17,7 +17,7 @@
  */
 
 using CommunityToolkit.Mvvm.ComponentModel;
-using KDriveClient.ServerCommunication;
+using Infomaniak.kDrive.ServerCommunication;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Buffers.Binary;
@@ -30,12 +30,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KDriveClient.ViewModels
+namespace Infomaniak.kDrive.ViewModels
 {
-    internal class User : ObservableObject
+    public class User : ObservableObject
     {
-        private int _dbId = -1;
-        private int _id = -1;
+        private DbId _dbId = -1;
+        private UserId _id = -1;
         private string _name = "";
         private string _email = "";
         private Image? _avatar;
@@ -43,13 +43,13 @@ namespace KDriveClient.ViewModels
         private bool _isStaff = false;
         private ObservableCollection<Drive> _drives = new ObservableCollection<Drive>();
 
-        public User(int dbId)
+        public User(DbId dbId)
         {
             DbId = dbId;
         }
 
         // Parses a User from a stream, should be removed/replaced when the new communication protocol is done
-        public static User ReadFrom(Utility.BinaryReader reader)
+        public static User ReadFrom(BinaryReader reader)
         {
             int dbId = reader.ReadInt32();
             var user = new User(dbId);
@@ -65,6 +65,7 @@ namespace KDriveClient.ViewModels
         // Force a reload of all properties from the server
         public async Task Reload()
         {
+            Logger.Log(Logger.Level.Info, $"Reloading user properties for DbId {DbId}...");
             Task[] tasks = new Task[]
             {
                CommRequests.GetUserId(DbId).ContinueWith(t => { if (t.Result != null) Id = t.Result.Value; }),
@@ -78,6 +79,7 @@ namespace KDriveClient.ViewModels
                      if (t.Result != null)
                      {
                           ObservableCollection<Drive> drives = new ObservableCollection<Drive>();
+                          Logger.Log(Logger.Level.Debug, $"User (DbId: {DbId}) has {t.Result.Count} drives. Reloading drive data...");
                           List<Task> driveTasks = new List<Task>();
                           foreach (var driveDbId in t.Result)
                           {
@@ -91,15 +93,16 @@ namespace KDriveClient.ViewModels
                 }).Unwrap()
             };
             await Task.WhenAll(tasks).ConfigureAwait(false);
+            Logger.Log(Logger.Level.Info, $"User properties for DbId {DbId} reloaded.");
         }
 
-        public int DbId
+        public DbId DbId
         {
             get => _dbId;
             set => SetProperty(ref _dbId, value);
         }
 
-        public int Id
+        public UserId Id
         {
             get => _id;
             set => SetProperty(ref _id, value);

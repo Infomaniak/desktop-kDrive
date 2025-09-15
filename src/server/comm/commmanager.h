@@ -32,8 +32,7 @@ class ExtensionJob;
 
 class CommManager : public std::enable_shared_from_this<CommManager> {
     public:
-        explicit CommManager(const std::unordered_map<int, std::shared_ptr<SyncPal>> &syncPalMap,
-                             const std::unordered_map<int, std::shared_ptr<Vfs>> &vfsMap);
+        explicit CommManager(const SyncPalMap &syncPalMap, const VfsMap &vfsMap);
         ~CommManager();
 
         void start();
@@ -49,18 +48,21 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
             _getPublicLinkUrl = getPublicLinkUrl;
         }
 
-        // Register a new sync path on all the Finder extensions
+        // Register a new sync path on all the Finder/File Explorer channels
+        // macOS: Multiple copies of the Finder extension can be running at the same time
+        // cf. https://developer.apple.com/library/archive/documentation/General/Conceptual/ExtensibilityPG/Finder.html
+        // Windows: KDOverlays & KDContextMenu each use a channel
         void registerSync(const SyncPath &localPath);
-        // Unregister a sync path on all the Finder extensions
+        // Unregister a sync path on all the Finder/File Explorer channels
         void unregisterSync(const SyncPath &localPath);
-        // TODO: to remove when the LiteSync server will be implemented
+        // TODO: to remove when the LiteSync client will be implemented
         void executeCommandDirect(const CommString &commandLineStr, bool broadcast);
 #endif
 
     private:
         // AppServer maps
-        const std::unordered_map<int, std::shared_ptr<SyncPal>> &_syncPalMap;
-        const std::unordered_map<int, std::shared_ptr<Vfs>> &_vfsMap;
+        const SyncPalMap &_syncPalMap;
+        const VfsMap &_vfsMap;
 
         // AppServer callbacks
         void (*_addError)(const Error &error);

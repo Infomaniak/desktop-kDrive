@@ -21,7 +21,8 @@
 #include "pipecommserver.h"
 
 namespace KDC {
-
+static const auto finderExtLineSeparator = Str("\n");
+static const auto finderExtQuerySeparator = Str("\\/");
 class ExtCommChannel : public PipeCommChannel {
     public:
         ExtCommChannel();
