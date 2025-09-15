@@ -447,21 +447,6 @@ void TestUtility::generatePaths(const std::vector<std::string> &itemsNames, cons
             generatePaths(itemsNames, separators, false, result, start + separator + itemsNames.at(pos), pos + 1);
         }
     }
-};
-
-void TestUtility::testTruncateLongLogMessage() {
-    // No truncation
-    {
-        const QString message = "short";
-        CPPUNIT_ASSERT_EQUAL(std::string("short"), CommonUtility::truncateLongLogMessage(message).toStdString());
-    }
-
-    // Truncation of one character
-    {
-        const auto message = std::string(2049, 'a');
-        const QString truncatedMessage = CommonUtility::truncateLongLogMessage(QString::fromStdString(message));
-        CPPUNIT_ASSERT(QString::fromStdString(message.substr(0, 2048) + std::string(" (truncated)")) == truncatedMessage);
-    }
 }
 
 void TestUtility::testLogIfFail() {

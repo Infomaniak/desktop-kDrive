@@ -15,6 +15,8 @@ set(CMAKE_AUTORCC TRUE)
 add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)
 
+add_subdirectory(vfs)
+
 if(UNIX AND NOT APPLE)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIE")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIE")
@@ -39,11 +41,12 @@ else()
 endif()
 
 set(server_SRCS
-    commserver.h commserver.cpp
-    navigationpanehelper.h navigationpanehelper.cpp
-    socketapi.h socketapi.cpp
-    socketlistener.h socketlistener.cpp
     appserver.h appserver.cpp
+    navigationpanehelper.h navigationpanehelper.cpp
+    comm/oldcommserver.h comm/oldcommserver.cpp
+    comm/abstractcommchannel.h comm/abstractcommchannel.cpp
+    comm/abstractcommserver.h
+    comm/commmanager.h comm/commmanager.cpp
     migration/migrationparams.h migration/migrationparams.cpp
     requests/serverrequests.h requests/serverrequests.cpp
     requests/offlinefilessizeestimator.h requests/offlinefilessizeestimator.cpp
@@ -57,11 +60,20 @@ set(updater_SRCS
 )
 
 if(APPLE)
-    list(APPEND server_SRCS socketapisocket_mac.mm)
-    set_property(SOURCE socketapisocket_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+    list(APPEND server_SRCS ../common/utility_mac.cpp)
+    list(APPEND server_SRCS comm/extensionjob.h comm/extensionjob.cpp)
+    list(APPEND server_SRCS comm/abstractcommserver_mac.h comm/abstractcommserver_mac.mm)
+    list(APPEND server_SRCS comm/xpccommserver_mac.h comm/xpccommserver_mac.mm)
+    list(APPEND server_SRCS comm/extcommserver_mac.h comm/extcommserver_mac.mm)
+    list(APPEND server_SRCS comm/guicommserver_mac.h comm/guicommserver_mac.mm)
+    set_property(SOURCE ../common/utility_mac.cpp APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+    set_property(SOURCE comm/abstractcommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+    set_property(SOURCE comm/xpccommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+    set_property(SOURCE comm/extcommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+    set_property(SOURCE comm/guicommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 
-    list(APPEND server_SRCS ../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m)
-    set_property(SOURCE ../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+    list(APPEND server_SRCS ../../extensions/MacOSX/kDriveFinderSync/kDriveModel/NSXPCConnection+LoginItem.m)
+    set_property(SOURCE ../../extensions/MacOSX/kDriveFinderSync/kDriveModel/NSXPCConnection+LoginItem.m APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 
     if(SPARKLE_FOUND)
         # Define this, we need to check in updater.cpp
@@ -76,8 +88,17 @@ if(APPLE)
                 DESTINATION "${KDRIVE_OSX_BUNDLE}/Contents/Frameworks" USE_SOURCE_PERMISSIONS)
     endif()
 elseif(WIN32)
+    list(APPEND server_SRCS ../common/utility_win.cpp)
+    list(APPEND server_SRCS comm/extensionjob.h comm/extensionjob.cpp)
+    list(APPEND server_SRCS comm/socketcommserver.h comm/socketcommserver.cpp)
+    list(APPEND server_SRCS comm/pipecommserver.h comm/pipecommserver.cpp)
+    list(APPEND server_SRCS comm/extcommserver.h comm/extcommserver.cpp)
+    list(APPEND server_SRCS comm/guicommserver.h comm/guicommserver.cpp)
     list(APPEND updater_SRCS updater/windowsupdater.h updater/windowsupdater.cpp)
 else()
+    list(APPEND server_SRCS ../common/utility_linux.cpp)
+    list(APPEND server_SRCS comm/socketcommserver.h comm/socketcommserver.cpp)
+    list(APPEND server_SRCS comm/guicommserver.h comm/guicommserver.cpp)
     list(APPEND updater_SRCS updater/linuxupdater.h updater/linuxupdater.cpp)
 endif()
 
@@ -225,7 +246,9 @@ endif()
 
 if(APPLE)
     find_library(SERVICE_MANAGEMENT_LIBRARY NAMES ServiceManagement)
+    find_library(SYSTEM_EXTENSION_LIBRARY NAMES SystemExtensions)
     target_link_libraries(${APPLICATION_EXECUTABLE} ${SERVICE_MANAGEMENT_LIBRARY})
+    target_link_libraries(${APPLICATION_EXECUTABLE} ${SYSTEM_EXTENSION_LIBRARY})
 endif()
 
 if(ZLIB_FOUND)

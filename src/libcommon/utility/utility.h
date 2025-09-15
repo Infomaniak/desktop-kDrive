@@ -109,6 +109,9 @@ struct COMMON_EXPORT CommonUtility {
         static SyncPath getAppDir();
         static SyncPath getAppSupportDir();
         static SyncPath getAppWorkingDir();
+#ifdef __APPLE__
+        static SyncPath getExtensionPath();
+#endif
 
         static QString getFileIconPathFromFileName(const QString &fileName, NodeType type);
 
@@ -151,7 +154,6 @@ struct COMMON_EXPORT CommonUtility {
         // Converts a std::wstring to std::string assuming that it contains only mono byte chars
         static std::string toUnsafeStr(const SyncName &name);
 #endif
-        static bool isLikeFileNotFoundError(const std::error_code &ec) noexcept;
 
         static QString truncateLongLogMessage(const QString &message);
 
@@ -207,7 +209,10 @@ struct COMMON_EXPORT CommonUtility {
          * Example: the return value associated to Str("A / B / c.txt") is the vector
          * ["A", "B", "c.txt"]
          */
+        template<typename T>
+        static std::vector<T> splitString(T name, const T &separator);
         static std::vector<SyncName> splitSyncName(SyncName name, const SyncName &delimiter);
+        static std::vector<CommString> splitCommString(CommString str, const CommString &separator);
 
         /**
          * Split the input path string into a vector of file and directory names.
@@ -251,6 +256,21 @@ struct COMMON_EXPORT CommonUtility {
         static bool isWindows();
         static bool isMac();
         static bool isLinux();
+
+        // CommString conversion functions
+#if defined(KD_WINDOWS)
+        static CommString str2CommString(const std::string &s) { return KDC::CommonUtility::s2ws(s); }
+        static std::string commString2Str(const CommString &s) { return KDC::CommonUtility::ws2s(s); }
+        static std::wstring commString2WStr(const CommString &s) { return s; }
+        static CommString qStr2CommString(const QString &s) { return s.toStdWString(); }
+        static QString commString2QStr(const CommString &s) { return QString::fromStdWString(s); }
+#else
+        static CommString str2CommString(const std::string &s) { return s; }
+        static std::string commString2Str(const CommString &s) { return s; }
+        static std::wstring commString2WStr(const CommString &s) { return KDC::CommonUtility::s2ws(s); }
+        static CommString qStr2CommString(const QString &s) { return s.toStdString(); }
+        static QString commString2QStr(const CommString &s) { return QString::fromStdString(s); }
+#endif
 
     private:
         static std::mutex _generateRandomStringMutex;

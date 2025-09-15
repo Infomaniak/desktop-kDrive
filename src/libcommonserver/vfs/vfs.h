@@ -39,6 +39,10 @@ static constexpr short workerDehydration = 1;
 
 namespace KDC {
 
+class Vfs;
+
+using VfsMap = std::unordered_map<int, std::shared_ptr<Vfs>>;
+
 struct VfsSetupParams {
         VfsSetupParams() = default;
         explicit VfsSetupParams(const log4cplus::Logger &logger) :
@@ -87,7 +91,7 @@ class Vfs : public QObject {
 
     public:
         std::array<WorkerInfo, nbWorkers> _workerInfo;
-        static QString modeToString(VirtualFileMode virtualFileMode);
+        static CommString modeToString(VirtualFileMode virtualFileMode);
         static VirtualFileMode modeFromString(const QString &str);
 
         explicit Vfs(const VfsSetupParams &vfsSetupParams, QObject *parent = nullptr);
@@ -125,7 +129,7 @@ class Vfs : public QObject {
          * Some plugins might provide alternate shell integration, making the normal
          * context menu actions redundant.
          */
-        virtual bool socketApiPinStateActionsShown() const = 0;
+        virtual bool showPinStateActions() const = 0;
 
         /** Update placeholder metadata.
          *
@@ -399,7 +403,7 @@ class VfsOff : public Vfs {
 
         VirtualFileMode mode() const override { return VirtualFileMode::Off; }
 
-        bool socketApiPinStateActionsShown() const override { return false; }
+        bool showPinStateActions() const override { return false; }
 
         ExitInfo updateMetadata(const SyncPath &, time_t, time_t, int64_t, const NodeId &) override { return ExitCode::Ok; }
         ExitInfo createPlaceholder(const SyncPath &, const SyncFileItem &) override { return ExitCode::Ok; }

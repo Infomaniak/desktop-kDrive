@@ -160,10 +160,10 @@
     </Midl>
     <Manifest />
     <PostBuildEvent>
-      <Command>copy /Y "$(ProjectDir)..\Common\debug.h" "C:\Projects\desktop-kDrive\src\libcommonserver\vfs\win\."
-copy /Y "$(ProjectDir)$(TargetName).h" "C:\Projects\desktop-kDrive\src\libcommonserver\vfs\win\."
-copy /Y "$(TargetDir)$(TargetName).dll" "C:\Projects\desktop-kDrive-build_deb\bin\."
-copy /Y "$(TargetDir)$(TargetName).pdb" "C:\Projects\desktop-kDrive-build_deb\."</Command>
+      <Command>copy /Y "$(ProjectDir)..\Common\debug.h" "$(SolutionDir)..\..\..\src\server\vfs\win\."
+copy /Y "$(ProjectDir)$(TargetName).h" "$(SolutionDir)..\..\..\src\server\vfs\win\."
+copy /Y "$(TargetDir)$(TargetName).dll" "$(KDC_BUILD_PROJECT_DIR)\bin\."
+copy /Y "$(TargetDir)$(TargetName).pdb" "$(KDC_BUILD_PROJECT_DIR)\."</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

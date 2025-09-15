@@ -113,7 +113,7 @@ void TestWorkers::setUp() {
     vfsSetupParams.targetPath = _sync.targetPath();
     vfsSetupParams.logger = _logger;
     vfsSetupParams.sentryHandler = sentry::Handler::instance();
-    vfsSetupParams.executeCommand = [](const char *) {};
+    vfsSetupParams.executeCommand = [](const CommString &, bool) {};
 
 #if defined(KD_MACOS)
     _vfsPtr = std::shared_ptr<VfsMac>(new VfsMac(vfsSetupParams));
@@ -134,12 +134,12 @@ void TestWorkers::setUp() {
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createProgressInfo();
 
-    // Setup SocketApi
+    // Setup CommManager
     std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> syncPalMap;
     syncPalMap[_sync.dbId()] = _syncPal;
     std::unordered_map<int, std::shared_ptr<KDC::Vfs>> vfsMap;
     vfsMap[_sync.dbId()] = _vfsPtr;
-    _socketApi = std::make_unique<SocketApi>(syncPalMap, vfsMap);
+    _commManager = std::make_unique<CommManager>(syncPalMap, vfsMap);
 
 #if defined(KD_WINDOWS)
     // Initializes the COM library
