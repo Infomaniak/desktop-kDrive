@@ -68,7 +68,7 @@ class VersionWidget final : public QWidget {
         void saveDistributionChannel(VersionChannel channel) const;
 
         bool _isStaff{false};
-        bool _noUpdate{false};
+        bool _updatesAreEnabled{true};
 
         QLabel *_versionLabel{nullptr};
 

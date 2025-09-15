@@ -42,6 +42,9 @@ Param(
 
     # tokenPass: The password to use for unlocking the USB-key signing certificate (only used if upload is set)
     [String] $tokenPass,
+	
+	# Msi: Build MSI installer
+    [switch] $msi,
 
     # Coverage: Flag to enable or disable the code coverage computation
     [switch] $coverage,
@@ -242,7 +245,7 @@ function Build-Extension {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     $bundlePath = "$extPath/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$version.0_Test/FileExplorerExtensionPackage_$version.0_x64_arm64.msixbundle"
-    Sign-File -FilePath $bundlePath -Upload $upload -Thumbprint $thumbprint -tokenPass $tokenPass -description "FileExplorerExtensionPackage"
+    Sign-File -FilePath $bundlePath -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description "FileExplorerExtensionPackage"
 
     $srcVfsPath = "$path/src/libcommonserver/vfs/win/."
     Copy-Item -Path "$extPath/Vfs/../Common/debug.h" -Destination $srcVfsPath
@@ -509,7 +512,7 @@ function Prepare-Archive {
         if (!$thumbprint) {
             $thumbprint = Get-Thumbprint $upload
         }
-        Sign-File -FilePath $archivePath/$filename -Upload $upload -Thumbprint $thumbprint -tokenPass $tokenPass -description $filename
+        Sign-File -FilePath $archivePath/$filename -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description $filename
     }
 
     Write-Host "Archive prepared."
@@ -553,7 +556,7 @@ function Create-Archive {
     $installerPath = Get-Installer-Path $buildPath $contentPath
 
     if (Test-Path -Path $installerPath) {
-        Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -tokenPass $tokenPass -description $appName
+        Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description $appName
         Write-Host ("$installerPath signed successfully.") -f Green
     }
     else {
@@ -580,7 +583,7 @@ function Create-MSI-Package {
 	$installerPath = Get-Installer-Path $buildPath $contentPath -msi
 
 	if (Test-Path -Path $installerPath) {
-		Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -tokenPass $tokenPass -description $appName
+		Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description $appName
 		Write-Host ("$installerPath signed successfully.") -f Green
 	}
 	else {
@@ -800,7 +803,7 @@ if (!$ci -or $upload) {
 #                                                                                               #
 #################################################################################################
 
-if (!$ci -or $upload) {
+if ($msi) {
     Create-MSI-Package
     if ($LASTEXITCODE -ne 0) {
         Write-Host "MSI package creation failed ($LASTEXITCODE) . Aborting." -f Red

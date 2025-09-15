@@ -361,16 +361,17 @@ void AppServer::init() {
     updateSentryUser();
 
     // Read Updater activation flag
-    AppStateValue appStateValue = 0;
-    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::NoUpdate, appStateValue, found) || !found) {
+    AppStateValue noUpdateAppStateValue = 0;
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::NoUpdate, noUpdateAppStateValue, found) || !found) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAppState");
         throw std::runtime_error("Unable to read NoUpdate value in app_state table.");
     }
-    bool noUpdate = static_cast<bool>(std::get<int>(appStateValue));
+    const bool noUpdate = static_cast<bool>(std::get<int>(noUpdateAppStateValue));
     if (_noUpdate && !noUpdate) {
         // Update Updater activation flag
-        appStateValue = 1;
-        if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::NoUpdate, appStateValue, found) || !found) {
+        noUpdateAppStateValue = 1;
+        if (bool found = false;
+            !ParmsDb::instance()->updateAppState(AppStateKey::NoUpdate, noUpdateAppStateValue, found) || !found) {
             LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
             throw std::runtime_error("Unable to update NoUpdate value in app_state table.");
         }

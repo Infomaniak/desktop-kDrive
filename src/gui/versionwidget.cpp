@@ -69,8 +69,8 @@ VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) :
         qCWarning(lcVersionWidget) << "Error in Requests::updateState";
     }
 
-    _noUpdate = updateState == UpdateState::NoUpdate;
-    if (!_noUpdate) {
+    _updatesAreEnabled = updateState != UpdateState::NoUpdate;
+    if (_updatesAreEnabled) {
         _preferencesBlocWidget->addSeparator();
         initBetaBloc(_preferencesBlocWidget);
     }
@@ -80,7 +80,7 @@ VersionWidget::VersionWidget(QWidget *parent /*= nullptr*/) :
     connect(_updateStatusLabel, &QLabel::linkActivated, this, &VersionWidget::onLinkActivated);
     connect(_versionNumberLabel, &QLabel::linkActivated, this, &VersionWidget::onLinkActivated);
     connect(_showReleaseNotesLabel, &QLabel::linkActivated, this, &VersionWidget::onLinkActivated);
-    if (!_noUpdate) {
+    if (_updatesAreEnabled) {
         connect(_updateButton, &QPushButton::clicked, this, &VersionWidget::onUpdateButtonClicked);
         connect(_joinBetaButton, &QPushButton::clicked, this, &VersionWidget::onJoinBetaButtonClicked);
     }
@@ -172,7 +172,7 @@ void VersionWidget::refresh(UpdateState state /*= UpdateState::Unknown*/) const 
     _versionLabel->setText(tr("Version"));
     _updateButton->setText(tr("UPDATE"));
 
-    UpdateState newState = _noUpdate ? UpdateState::NoUpdate : state;
+    UpdateState newState = _updatesAreEnabled ? state : UpdateState::NoUpdate;
     if (newState == UpdateState::Unknown) {
         // Refresh update state
         const ExitCode exitCode = GuiRequests::updateState(newState);
