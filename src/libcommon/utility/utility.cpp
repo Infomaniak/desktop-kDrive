@@ -78,8 +78,8 @@
 #define MAX_PATH_LENGTH_LINUX 4096
 
 #if defined(KD_MACOS)
-constexpr char liteSyncExtBundleIdStr[] = "com.infomaniak.drive.desktopclient.LiteSyncExt";
-constexpr char loginItemAgentIdStr[] = "864VDCS2QY.com.infomaniak.drive.desktopclient.LoginItemAgent";
+constexpr std::string_view liteSyncExtBundleIdStr = "com.infomaniak.drive.desktopclient.LiteSyncExt";
+constexpr std::string_view loginItemAgentIdStr = "com.infomaniak.drive.desktopclient.LoginItemAgent";
 #endif
 
 namespace KDC {
@@ -1043,11 +1043,11 @@ bool CommonUtility::fileNameIsValid(const SyncName &name) {
 
 #if defined(KD_MACOS)
 const std::string CommonUtility::loginItemAgentId() {
-    return loginItemAgentIdStr;
+    return TEAM_IDENTIFIER_PREFIX + std::string(loginItemAgentIdStr);
 }
 
 const std::string CommonUtility::liteSyncExtBundleId() {
-    return liteSyncExtBundleIdStr;
+    return std::string(liteSyncExtBundleIdStr);
 }
 #endif
 
@@ -1136,19 +1136,12 @@ void CommonUtility::clearSignalFile(const AppType appType, const SignalCategory 
     }
 }
 
-#if defined(KD_MACOS) || defined(KD_LINUX)
-bool CommonUtility::isLikeFileNotFoundError(const std::error_code &ec) noexcept {
-    return ec.value() == static_cast<int>(std::errc::no_such_file_or_directory);
-}
-#endif
-
 #ifdef KD_MACOS
 bool CommonUtility::isLiteSyncExtEnabled() {
     QProcess *process = new QProcess();
-    process->start(
-            "bash",
-            QStringList() << "-c"
-                          << QString("systemextensionsctl list | grep %1 | grep enabled | wc -l").arg(liteSyncExtBundleIdStr));
+    process->start("bash", QStringList() << "-c"
+                                         << QString("systemextensionsctl list | grep %1 | grep enabled | wc -l")
+                                                    .arg(liteSyncExtBundleIdStr.data()));
     process->waitForStarted();
     process->waitForFinished();
     QByteArray result = process->readAll();
@@ -1169,14 +1162,14 @@ bool CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr) {
                                   " and client = \"%2\""
                                   " and client_type = 0")
                                   .arg(serviceStr)
-                                  .arg(liteSyncExtBundleIdStr));
+                                  .arg(liteSyncExtBundleIdStr.data()));
         } else {
             query.prepare(QString("SELECT auth_value FROM access"
                                   " WHERE service = \"%1\""
                                   " and client = \"%2\""
                                   " and client_type = 0")
                                   .arg(serviceStr)
-                                  .arg(liteSyncExtBundleIdStr));
+                                  .arg(liteSyncExtBundleIdStr.data()));
         }
 
         query.exec();
@@ -1291,10 +1284,11 @@ std::list<SyncName> CommonUtility::splitSyncPath(const SyncPath &path) {
     return itemNames;
 }
 
-std::vector<SyncName> CommonUtility::splitSyncName(SyncName name, const SyncName &separator) {
-    std::vector<SyncName> tokens;
+template<typename T>
+std::vector<T> CommonUtility::splitString(T name, const T &separator) {
+    std::vector<T> tokens;
     size_t pos = 0;
-    SyncName token;
+    T token;
 
     while ((pos = name.find(separator)) != std::string::npos) {
         token = name.substr(0, pos);
@@ -1304,6 +1298,14 @@ std::vector<SyncName> CommonUtility::splitSyncName(SyncName name, const SyncName
     tokens.push_back(name);
 
     return tokens;
+}
+
+std::vector<SyncName> CommonUtility::splitSyncName(SyncName name, const SyncName &separator) {
+    return CommonUtility::splitString<SyncName>(name, separator);
+}
+
+std::vector<CommString> CommonUtility::splitCommString(CommString str, const CommString &separator) {
+    return CommonUtility::splitString<CommString>(str, separator);
 }
 
 std::vector<SyncName> CommonUtility::splitPath(const SyncName &pathName) {

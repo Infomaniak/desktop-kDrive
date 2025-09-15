@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net9.0-windows10.0.19041</TargetFramework>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-    <RootNamespace>KDriveClient</RootNamespace>
+    <RootNamespace>Infomaniak.kDrive</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Platforms>x86;x64;ARM64</Platforms>
     <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
@@ -12,6 +12,9 @@
     <EnableMsixTooling>true</EnableMsixTooling>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Pages\KSuiteUpgradeBar.xaml" />
+  </ItemGroup>
 
   <ItemGroup>
     <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -35,10 +38,12 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="CommunityToolkit.WinUI.Lottie" Version="8.2.250604" />
     <PackageReference Include="DynamicData" Version="9.4.1" />
     <PackageReference Include="H.NotifyIcon.WinUI" Version="2.3.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.8" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.8" />
+    <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.0.5.1" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4948" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250606001" />
   </ItemGroup>
@@ -59,10 +64,18 @@
     <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
     <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
     <DefaultLanguage>en-US</DefaultLanguage>
+    <PackageCertificateThumbprint>B1D273E77CAF9DBDA865896F3C51A3EB31C6C5AD</PackageCertificateThumbprint>
+    <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
   </PropertyGroup>
   <ItemGroup>
+    <Page Update="CustomControls\ErrorItem.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="HomePage.xaml">
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Pages\ErrorPage.xaml">
+      <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
   <ItemGroup>
@@ -71,6 +84,31 @@
     </PRIResource>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Assets\icons\" />
+    <Folder Include="AnimatedElements\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="CustomControls\SyncErrorBar.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="CustomControls\SyncActivityTable.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Pages\KSuiteUpgradeBar.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="CustomControls\SyncStatusBar.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Update="Strings\fr-FR\SyncErrors.resw">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+    </PRIResource>
   </ItemGroup>
 </Project>

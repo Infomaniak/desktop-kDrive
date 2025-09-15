@@ -19,10 +19,10 @@
 #pragma once
 
 #include "qtsingleapplication.h"
-#include "commserver.h"
 #include "navigationpanehelper.h"
-#include "socketapi.h"
 #include "config.h"
+#include "comm/oldcommserver.h"
+#include "comm/commmanager.h"
 #include "syncpal/syncpal.h"
 #include "libparms/db/user.h"
 #include "libcommon/info/userinfo.h"
@@ -97,12 +97,12 @@ class AppServer : public SharedTools::QtSingleApplication {
     private:
         QStringList _arguments;
         log4cplus::Logger _logger;
-        static std::unordered_map<int, std::shared_ptr<SyncPal>> _syncPalMap;
-        static std::unordered_map<int, std::shared_ptr<Vfs>> _vfsMap;
+        static SyncPalMap _syncPalMap;
+        static VfsMap _vfsMap;
         static std::vector<Notification> _notifications;
 
         std::unique_ptr<NavigationPaneHelper> _navigationPaneHelper;
-        QScopedPointer<SocketApi> _socketApi;
+        std::shared_ptr<CommManager> _commManager;
         bool _appRestartRequired{false};
         Theme *_theme{nullptr};
         bool _helpAsked{false};
@@ -236,6 +236,11 @@ class AppServer : public SharedTools::QtSingleApplication {
         bool areMacVfsAuthsOk() const;
 #endif
 
+        // Ask the Finder/File explorer Extension to register the folder
+        void registerSync(std::shared_ptr<SyncPal> syncPal);
+        // Ask the Finder/File explorer Extension to unregister the folder
+        void unregisterSync(std::shared_ptr<SyncPal> syncPal);
+
         // For testing purpose
         void crash() const;
 
@@ -254,8 +259,5 @@ class AppServer : public SharedTools::QtSingleApplication {
         void onRestartClientReceived();
         void onMessageReceivedFromAnotherProcess(const QString &message, QObject *);
         void onSendNotifAsked(const QString &title, const QString &message);
-
-    signals:
-        void socketApiExecuteCommandDirect(const QString &commandLine);
 };
 } // namespace KDC

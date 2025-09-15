@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using KDriveClient.ViewModels;
-using KDriveClient.ServerCommunication;
+using Infomaniak.kDrive.ViewModels;
+using Infomaniak.kDrive.ServerCommunication;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -38,48 +38,21 @@ using Windows.Foundation.Collections;
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
-namespace KDriveClient
+namespace Infomaniak.kDrive
 {
     public sealed partial class MainWindow : Window
     {
-        internal readonly AppModel _viewModel = ((App)Application.Current).Data;
-        internal AppModel ViewModel { get { return _viewModel; } }
+        public readonly AppModel _viewModel = ((App)Application.Current).Data;
+        public AppModel ViewModel { get { return _viewModel; } }
         public MainWindow()
         {
             InitializeComponent();
             AppModel.UIThreadDispatcher = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread(); ;
             this.ExtendsContentIntoTitleBar = true;  // enable custom titlebar
             this.SetTitleBar(AppTitleBar);
-
-
-            // For testing Purpose only: Simulate live changes in the data model to check if UI updates correctly
-            _ = Task.Run(async () => // Task.Run will run this code in a background thread != UI thread
-           {
-               Random rand = new Random();
-               int counter = 50;
-               while (counter < 70)
-               {
-                   User user;
-                   // Choose a random user
-                   if (ViewModel.Users.Count > 0)
-                   {
-                       user = ViewModel.Users[rand.Next(0, ViewModel.Users.Count)];
-                       // Add a new drive to this user
-                       Drive drive = new Drive(counter++);
-                       drive.Name = "Drive " + counter;
-                       DispatcherQueue.TryEnqueue(() =>
-                       {
-                           // Those action must be done on the UI thread because they modify observable collections bound to the UI
-                           user.Drives.Add(drive);
-                           user.Drives[0].Name = "Changed name " + rand.Next(0, 100);
-                       });
-
-                   }
-               }
-           });
         }
 
-        private void nvSample_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+        private void navView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
             var selectedItem = args.SelectedItem as NavigationViewItem;
             if (selectedItem != null)
@@ -87,13 +60,27 @@ namespace KDriveClient
                 // Navigate to the selected page
                 switch (selectedItem.Tag)
                 {
-                    case "home":
+                    case "HomePage":
                         contentFrame.Navigate(typeof(HomePage));
                         break;
-                    case "activity":
+                    case "ActivityPage":
                         contentFrame.Navigate(typeof(ActivityPage));
                         break;
+                    default:
+                        Logger.Log(Logger.Level.Warning, $"Unknown navigation tag: {selectedItem.Tag}... Going to HomePage");
+                        contentFrame.Navigate(typeof(HomePage));
+                        break;
                 }
+            }
+        }
+
+        private void navView_BackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
+        {
+            if (contentFrame.CanGoBack)
+            {
+                contentFrame.GoBack();
+                navView.SelectedItem = navView.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item => item.Tag.ToString() == ((Frame)contentFrame).Content.GetType().Name);
+
             }
         }
     }

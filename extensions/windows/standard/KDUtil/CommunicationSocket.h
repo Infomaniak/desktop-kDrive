@@ -41,6 +41,5 @@ class __declspec(dllexport) CommunicationSocket {
 
     private:
         HANDLE _pipe;
-        std::vector<char> _buffer;
-        bool _connected;
+        std::vector<wchar_t> _buffer;
 };

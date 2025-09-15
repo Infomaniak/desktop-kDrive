@@ -2026,21 +2026,19 @@ ExitInfo ExecutorWorker::deleteFromDb(std::shared_ptr<Node> node) {
 }
 
 ExitInfo ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job) {
-    job->runSynchronously();
+    (void) job->runSynchronously();
 
-    std::string errorCode;
-    auto tokenJob(std::dynamic_pointer_cast<AbstractTokenNetworkJob>(job));
-    if (tokenJob && tokenJob->hasErrorApi(&errorCode)) {
-        const auto code = getNetworkErrorCode(errorCode);
+    if (auto tokenJob(std::dynamic_pointer_cast<AbstractTokenNetworkJob>(job)); tokenJob && tokenJob->hasErrorApi()) {
+        const auto code = getNetworkErrorCode(tokenJob->errorCode());
         if (code == NetworkErrorCode::DestinationAlreadyExists) {
             // Folder is already there, ignore this error
         } else if (code == NetworkErrorCode::ForbiddenError) {
             // The item should be blacklisted
             _syncPal->blacklistTemporarily(syncOp->affectedNode()->id().value_or(""), syncOp->affectedNode()->getPath(),
                                            ReplicaSide::Local);
-            Error error(_syncPal->syncDbId(), syncOp->affectedNode()->id().value_or(""), "", syncOp->affectedNode()->type(),
-                        syncOp->affectedNode()->getPath(), ConflictType::None, InconsistencyType::None, CancelType::None, "",
-                        ExitCode::BackError, ExitCause::HttpErrForbidden);
+            const Error error(_syncPal->syncDbId(), syncOp->affectedNode()->id().value_or(""), "", syncOp->affectedNode()->type(),
+                              syncOp->affectedNode()->getPath(), ConflictType::None, InconsistencyType::None, CancelType::None,
+                              "", ExitCode::BackError, ExitCause::HttpErrForbidden);
             _syncPal->addError(error);
 
             // Clear update tree

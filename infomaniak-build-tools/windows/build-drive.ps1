@@ -1,4 +1,4 @@
-﻿<#
+<#
  Infomaniak kDrive - Desktop App
  Copyright (C) 2023-2025 Infomaniak Network SA
 
@@ -447,7 +447,7 @@ function Prepare-Archive {
         "${env:ProgramFiles(x86)}/Poco/bin/PocoXML",
         "${env:ProgramFiles(x86)}/Sentry-Native/bin/sentry",
         "$vfsDir/Vfs",
-        "$buildPath/bin/kDrivecommonserver_vfs_win"
+        "$buildPath/bin/kDrive_vfs_win"
     )
 
     Write-Host "Copying dependencies to the folder $archivePath"

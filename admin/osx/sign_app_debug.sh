@@ -51,6 +51,5 @@ codesign --verify -v --strict $src_app
 # spctl -a -t exec -vv $src_app
 
 # Validate that the key used for signing the binary matches the expected TeamIdentifier
-# needed to pass the SocketApi through the sandbox
 codesign -dv $src_app 2>&1 | grep "TeamIdentifier=$team_identifier"
 exit $?

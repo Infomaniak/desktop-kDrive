@@ -78,9 +78,9 @@ runs:
           cp /usr/local/lib/libzip.5.dylib ./dependencies/
           cp /usr/local/lib/libzstd.1.dylib ./dependencies/
           cp ${{ github.workspace }}/build-macos/client/bin/crashpad_handler ./dependencies/
-          # kDrivecommonserver_vfs_mac lib is not cached and therefore is uploaded as a separate artifact
+          # kDrive_vfs_mac lib is not cached and therefore is uploaded as a separate artifact
           find "${{ github.workspace }}/build-macos/client/bin" -name "*.dylib" \
-            -not -name "kDrivecommonserver_vfs_mac.dylib" \
+            -not -name "kDrive_vfs_mac.dylib" \
             -exec cp {} ./dependencies/ \;
         shell: bash
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }} # Only copy dependencies for debug builds, release builds will have them in the app bundle
@@ -111,7 +111,7 @@ runs:
         run: |
           mkdir uncached_dependencies
           cp ${{ github.workspace }}/build-macos/client/bin/*.lst ./uncached_dependencies/
-          cp ${{ github.workspace }}/build-macos/client/bin/kDrivecommonserver_vfs_mac.dylib ./uncached_dependencies/
+          cp ${{ github.workspace }}/build-macos/client/bin/kDrive_vfs_mac.dylib ./uncached_dependencies/
         shell: bash
         if: ${{ steps.build.outcome == 'success' }}
 
