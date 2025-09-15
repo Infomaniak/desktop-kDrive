@@ -18,7 +18,9 @@
 
 #include "pipecommserver.h"
 #include "requests/parameterscache.h"
+#include "libcommon/theme/theme.h"
 #include "libcommonserver/log/log.h"
+#include "libcommonserver/utility/utility.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -26,6 +28,8 @@
 #include <stdio.h>
 #include <tchar.h>
 #include <strsafe.h>
+#include "qfileinfo.h"
+#include <QDir>
 
 #define PIPE_INSTANCES 10
 #define PIPE_TIMEOUT 5000
@@ -85,6 +89,11 @@ uint64_t PipeCommChannel::bytesAvailable() const {
 }
 
 
+PipeCommServer::PipeCommServer(const std::string &name) :
+    AbstractCommServer(name) {
+    _pipePath = createPipe();
+}
+
 PipeCommServer::~PipeCommServer() = default;
 
 void PipeCommServer::close() {
@@ -94,15 +103,19 @@ void PipeCommServer::close() {
     waitForExit();
 }
 
-bool PipeCommServer::listen(const SyncPath &pipePath) {
+bool PipeCommServer::listen() {
     if (_isRunning) {
         LOG_DEBUG(Log::instance()->getLogger(), name() << " is already running");
         return false;
     }
 
+    if (_pipePath.empty()) {
+        LOG_ERROR(Log::instance()->getLogger(), name() << " pipe path is not set");
+        return false;
+    }
+
     LOG_DEBUG(Log::instance()->getLogger(), name() << " start");
 
-    _pipePath = pipePath;
     _stopAsked = false;
     _isRunning = true;
     _thread = (std::make_unique<std::thread>(executeFunc, this));
@@ -390,4 +403,27 @@ void PipeCommServer::waitForExit() {
     }
 }
 
+SyncPath PipeCommServer::createPipe() {
+    // Get pipe file path
+    std::string name(Theme::instance()->appName());
+    name.append("-");
+    name.append(Utility::userName());
+
+    const SyncPath pipePath = SyncPath(R"(\\.\pipe\)") / Str2SyncName(name);
+
+    // Delete/create pipe file
+    std::errc ec;
+    std::filesystem::remove(pipePath);
+    if (const QFileInfo info(Path2QStr(pipePath)); !info.dir().exists()) {
+        if (info.dir().mkpath(".")) {
+            QFile::setPermissions(Path2QStr(pipePath),
+                                  QFile::Permissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner));
+            LOGW_DEBUG(Log::instance()->getLogger(), L"Pipe created: " << Utility::formatSyncPath(pipePath));
+        } else {
+            LOGW_WARN(Log::instance()->getLogger(), L"Failed to create pipe: " << Utility::formatSyncPath(pipePath));
+        }
+    }
+
+    return pipePath;
+}
 } // namespace KDC

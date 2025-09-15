@@ -149,7 +149,7 @@ void SocketCommServer::close() {
     }
 }
 
-bool SocketCommServer::listen(const KDC::SyncPath &) {
+bool SocketCommServer::listen() {
     if (_isListening) {
         LOG_DEBUG(Log::instance()->getLogger(), name() << " is already listening");
         return false;

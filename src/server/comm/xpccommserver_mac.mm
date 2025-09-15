@@ -48,7 +48,7 @@ XPCCommServer::~XPCCommServer() {}
 
 void XPCCommServer::close() {}
 
-bool XPCCommServer::listen(const KDC::SyncPath &) {
+bool XPCCommServer::listen() {
     [_privatePtr->server start];
     return true;
 }

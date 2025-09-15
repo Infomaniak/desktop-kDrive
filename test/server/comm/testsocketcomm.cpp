@@ -45,7 +45,7 @@ void TestSocketComm::tearDown() {
 void TestSocketComm::testServerListen() {
     // Start the server
     auto _socketCommServerTest = std::make_unique<SocketCommServerTest>("TestSocketComm::testServerListen");
-    _socketCommServerTest->listen(SyncPath());
+    _socketCommServerTest->listen();
 
     // Create a client socket and connect to the server
     Poco::Net::StreamSocket clientSocket;
@@ -80,7 +80,7 @@ void TestSocketComm::testServerListen() {
 void TestSocketComm::testServerCallbacks() {
     // Start the server
     auto _socketCommServerTest = std::make_unique<SocketCommServerTest>("TestSocketComm::testServerCallbacks");
-    _socketCommServerTest->listen(SyncPath());
+    _socketCommServerTest->listen();
 
     bool newConnectionCalled = false;
     bool lostConnectionCalled = false;
@@ -125,7 +125,7 @@ void TestSocketComm::testServerCallbacks() {
 void TestSocketComm::testChannelReadyReadCallback() {
     // Start the server
     auto _socketCommServerTest = std::make_unique<SocketCommServerTest>("TestSocketComm::testChannelReadyReadCallback");
-    _socketCommServerTest->listen(SyncPath());
+    _socketCommServerTest->listen();
 
     // Create a client socket and connect to the server
     Poco::Net::StreamSocket clientSocket;
@@ -165,7 +165,7 @@ void TestSocketComm::testChannelReadyReadCallback() {
 void TestSocketComm::testChannelReadAndWriteData() {
     // Start the server
     auto _socketCommServerTest = std::make_unique<SocketCommServerTest>("TestSocketComm::testChannelReadAndWriteData");
-    CPPUNIT_ASSERT_MESSAGE("Server failed to start listening", _socketCommServerTest->listen(SyncPath()));
+    CPPUNIT_ASSERT_MESSAGE("Server failed to start listening", _socketCommServerTest->listen());
 
     // Create a client socket and connect to the server
     Poco::Net::StreamSocket clientSocket;

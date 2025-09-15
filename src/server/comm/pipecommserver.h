@@ -70,15 +70,14 @@ class PipeCommChannel : public AbstractCommChannel {
 
 class PipeCommServer : public AbstractCommServer {
     public:
-        using AbstractCommServer::AbstractCommServer;
+        PipeCommServer(const std::string &name);
         ~PipeCommServer();
 
         void close() override;
-        bool listen(const SyncPath &pipePath) override;
+        bool listen() override;
+        void setPipePath(const SyncPath &pipePath) { _pipePath = pipePath; }
         std::shared_ptr<AbstractCommChannel> nextPendingConnection() override;
         std::list<std::shared_ptr<AbstractCommChannel>> connections() override;
-
-        static bool removeServer(const SyncPath &path) { return true; }
 
 #if defined(KD_WINDOWS)
         static void disconnectAndReconnect(std::shared_ptr<PipeCommChannel> channel);
@@ -99,7 +98,7 @@ class PipeCommServer : public AbstractCommServer {
         void waitForExit();
 
         static void executeFunc(PipeCommServer *server);
-
+        SyncPath createPipe();
 #if defined(KD_WINDOWS)
         std::vector<std::shared_ptr<PipeCommChannel>> _channels;
 

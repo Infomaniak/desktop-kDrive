@@ -25,7 +25,6 @@
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
-#include "libcommonserver/utility/utility.h"
 
 // TODO: To remove later
 #include "oldcommserver.h"
@@ -99,7 +98,7 @@ CommManager::~CommManager() {
 void CommManager::start() {
     // Start Gui CommServer
     LOGW_INFO(Log::instance()->getLogger(), L"Starting " << CommonUtility::s2ws(_guiCommServer->name()));
-    if (!_guiCommServer->listen({})) {
+    if (!_guiCommServer->listen()) {
         LOGW_WARN(Log::instance()->getLogger(), L"Can't start " << CommonUtility::s2ws(_guiCommServer->name()));
         _addError(Error(ERR_ID, ExitCode::SystemError, ExitCause::Unknown));
     } else {
@@ -108,15 +107,8 @@ void CommManager::start() {
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
     // Start Ext CommServer
-#if defined(KD_WINDOWS)
-    SyncPath pipePath = createPipe();
-    LOGW_INFO(Log::instance()->getLogger(),
-              L"Starting " << CommonUtility::s2ws(_extCommServer->name()) << L": " << Utility::formatSyncPath(pipePath));
-    if (!_extCommServer->listen(pipePath)) {
-#else
     LOGW_INFO(Log::instance()->getLogger(), L"Starting " << CommonUtility::s2ws(_extCommServer->name()));
-    if (!_extCommServer->listen({})) {
-#endif
+    if (!_extCommServer->listen()) {
         LOGW_WARN(Log::instance()->getLogger(), L"Can't start " << CommonUtility::s2ws(_extCommServer->name()));
         _addError(Error(ERR_ID, ExitCode::SystemError, ExitCause::Unknown));
     } else {
@@ -277,30 +269,4 @@ void CommManager::onGuiQueryReceived(std::shared_ptr<AbstractCommChannel> channe
 void CommManager::onLostGuiConnection(std::shared_ptr<AbstractCommChannel> channel) {
     LOG_INFO(Log::instance()->getLogger(), "Lost gui connection - sender=" << channel->id());
 }
-
-#if defined(KD_WINDOWS)
-SyncPath CommManager::createPipe() {
-    // Get pipe file path
-    std::string name(Theme::instance()->appName());
-    name.append("-");
-    name.append(Utility::userName());
-
-    const SyncPath pipePath = SyncPath(R"(\\.\pipe\)") / Str2SyncName(name);
-
-    // Delete/create pipe file
-    SocketCommServer::removeServer(pipePath);
-    if (const QFileInfo info(Path2QStr(pipePath)); !info.dir().exists()) {
-        if (info.dir().mkpath(".")) {
-            QFile::setPermissions(Path2QStr(pipePath),
-                                  QFile::Permissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner));
-            LOGW_DEBUG(Log::instance()->getLogger(), L"Pipe created: " << Utility::formatSyncPath(pipePath));
-        } else {
-            LOGW_WARN(Log::instance()->getLogger(), L"Failed to create pipe: " << Utility::formatSyncPath(pipePath));
-        }
-    }
-
-    return pipePath;
-}
-#endif
-
 } // namespace KDC
