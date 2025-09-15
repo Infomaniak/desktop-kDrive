@@ -6,21 +6,22 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Data;
 
-namespace KDrive.Converters
+namespace Infomaniak.kDrive.Converters
 {
-    internal class BooleanToVisibilityInverterConverter : IValueConverter
+    public class BooleanToInvertedVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
             if (value is bool boolValue)
             {
                 return boolValue ? Microsoft.UI.Xaml.Visibility.Collapsed : Microsoft.UI.Xaml.Visibility.Visible;
-            }else if (value is int intValue)
+            }
+            else if (value is int intValue)
             {
                 return intValue != 0 ? Microsoft.UI.Xaml.Visibility.Collapsed : Microsoft.UI.Xaml.Visibility.Visible;
             }
-            Logger.Log(Logger.Level.Warning, "BooleanToVisibilityInverterConverter: value is not a boolean.");
-            return Microsoft.UI.Xaml.Visibility.Collapsed;
+            Logger.Log(Logger.Level.Fatal, "BooleanToInvertedVisibilityConverter : value is not a boolean.");
+            throw new ArgumentException("Invalid value type", nameof(value));
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
@@ -29,8 +30,8 @@ namespace KDrive.Converters
             {
                 return visibility != Microsoft.UI.Xaml.Visibility.Visible;
             }
-            Logger.Log(Logger.Level.Warning, "BooleanToVisibilityInverterConverter: value is not a Visibility.");
-            return false;
+            Logger.Log(Logger.Level.Fatal, "BooleanToInvertedVisibilityConverter : value is not a Visibility.");
+            throw new ArgumentException("Invalid value type", nameof(value));
         }
     }
 }

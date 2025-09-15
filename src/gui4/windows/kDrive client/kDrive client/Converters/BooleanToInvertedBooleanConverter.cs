@@ -6,29 +6,28 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Data;
 
-namespace KDrive.Converters
+namespace Infomaniak.kDrive.Converters
 {
-    internal class BooleanToInvertedBooleanConverter : IValueConverter
+    public class BooleanToInvertedBooleanConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, string language)
+       public object Convert(object value, Type targetType, object parameter, string language)
         {
-
             if (value is bool boolValue)
             {
                 return !boolValue;
             }
-            Logger.Log(Logger.Level.Error, "BooleanToInvertedBooleanConverter: value is not a boolean.");
-            return false;
+            Logger.Log(Logger.Level.Fatal, "BooleanToInvertedBooleanConverter: value is not a boolean.");
+            throw new ArgumentException("Invalid value type", nameof(value));
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, string language)
+       public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
             if (value is bool boolValue)
             {
                 return !boolValue;
             }
-            Logger.Log(Logger.Level.Error, "BooleanToInvertedBooleanConverter: value is not a boolean.");
-            return false;
+            Logger.Log(Logger.Level.Fatal, "BooleanToInvertedBooleanConverter: value is not a boolean.");
+            throw new ArgumentException("Invalid value type", nameof(value));
         }
     }
 }

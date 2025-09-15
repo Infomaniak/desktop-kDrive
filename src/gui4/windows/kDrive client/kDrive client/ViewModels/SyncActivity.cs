@@ -1,11 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using KDrive.Types;
+using Infomaniak.kDrive.Types;
 using System;
 using System.Threading;
 
-namespace KDrive.ViewModels
+namespace Infomaniak.kDrive.ViewModels
 {
-    internal class SyncActivity : ObservableObject
+    public class SyncActivity : ObservableObject
     {
         private string _name = "";
         private SyncPath _parentFolderPath = "";

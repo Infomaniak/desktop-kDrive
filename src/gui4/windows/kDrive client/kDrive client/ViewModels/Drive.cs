@@ -18,7 +18,7 @@
 
 using CommunityToolkit.Mvvm.Collections;
 using CommunityToolkit.Mvvm.ComponentModel;
-using KDrive.ServerCommunication;
+using Infomaniak.kDrive.ServerCommunication;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -28,9 +28,9 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace KDrive.ViewModels
+namespace Infomaniak.kDrive.ViewModels
 {
-    internal class Drive : ObservableObject
+    public class Drive : ObservableObject
     {
         private DbId _dbId = -1;
         private DriveId _id = -1;
@@ -49,6 +49,7 @@ namespace KDrive.ViewModels
         }
         public async Task Reload()
         {
+            Logger.Log(Logger.Level.Info, $"Reloading Drive properties for DbId {DbId}...");
             Task[] tasks = new Task[]
             {
                CommRequests.GetDriveId(DbId).ContinueWith(t => { if (t.Result != null) Id = t.Result.Value; }),
@@ -63,6 +64,7 @@ namespace KDrive.ViewModels
                      if (t.Result != null)
                      {
                           ObservableCollection<Sync> syncs = new ObservableCollection<Sync>();
+                          Logger.Log(Logger.Level.Debug, $"Drive (DbId: {DbId}) has {t.Result.Count} sync(s). Reloading sync data...");
                           List<Task> syncTasks = new List<Task>();
                           foreach (var syncDbId in t.Result)
                           {
@@ -76,6 +78,7 @@ namespace KDrive.ViewModels
                 }).Unwrap()
             };
             await Task.WhenAll(tasks).ConfigureAwait(false);
+            Logger.Log(Logger.Level.Info, $"Drive properties reloaded for DbId {DbId}.");
         }
         public DbId DbId
         {

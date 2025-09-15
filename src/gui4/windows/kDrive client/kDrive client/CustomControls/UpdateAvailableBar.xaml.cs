@@ -17,7 +17,7 @@ using Windows.Foundation.Collections;
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
-namespace KDrive.CustomControls
+namespace Infomaniak.kDrive.CustomControls
 {
     public sealed partial class UpdateAvailableBar : UserControl
     {
@@ -28,7 +28,7 @@ namespace KDrive.CustomControls
 
         private void HyperlinkButton_Click(object sender, RoutedEventArgs e)
         {
-
+            // TODO: Open the update page
         }
     }
 }

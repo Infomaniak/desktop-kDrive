@@ -1,7 +1,7 @@
 using DynamicData;
 using DynamicData.Binding;
-using KDrive.Types;
-using KDrive.ViewModels;
+using Infomaniak.kDrive.Types;
+using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -26,14 +26,16 @@ using WinRT;
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
-namespace KDrive.CustomControls
+namespace Infomaniak.kDrive.CustomControls
 {
     public sealed partial class SyncActivityTable : UserControl
     {
-        internal AppModel _viewModel = ((App)Application.Current).Data;
-        internal AppModel ViewModel => _viewModel;
+        private AppModel _viewModel = ((App)Application.Current).Data;
+        public AppModel ViewModel => _viewModel;
+
         private ObservableCollection<SyncActivity> _outGoingActivities = new();
         private Int64 _insertionCounter = 0;
+
         public SyncActivityTable()
         {
             InitializeComponent();
@@ -59,6 +61,10 @@ namespace KDrive.CustomControls
             if (d is SyncActivityTable control)
             {
                 control.RefreshFilteredActivities();
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Warning, $"DependencyObject is not of type {nameof(SyncActivityTable)}");
             }
         }
 
@@ -86,10 +92,14 @@ namespace KDrive.CustomControls
                     await Task.Delay(5000); // As the explorer might take some time to open avoid multiple clicks
                     btn.IsEnabled = true;
                 }
+                else
+                {
+                    Logger.Log(Logger.Level.Warning, $"Directory does not exist: {activity.ParentFolderPath}");
+                }
             }
             else
             {
-                Logger.Log(Logger.Level.Warning, $"Unexpected call from {sender.ToString()}");
+                Logger.Log(Logger.Level.Warning, $"Unexpected call, sender is not a HyperlinkButton or DataContext is not a SyncActivity");
             }
         }
 
@@ -101,7 +111,10 @@ namespace KDrive.CustomControls
                         ? new SolidColorBrush(Colors.Transparent)
                         : new SolidColorBrush(Colors.WhiteSmoke);
             }
-
+            else
+            {
+                Logger.Log(Logger.Level.Warning, $"Unexpected call, sender is not a Grid");
+            }
         }
     }
 }

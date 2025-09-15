@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
-using KDrive.ViewModels;
-using KDrive.Types;
+using Infomaniak.kDrive.Types;
+using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -14,18 +14,19 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
+using Windows.Data.Xml.Dom;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
-namespace KDrive.CustomControls;
+namespace Infomaniak.kDrive.CustomControls;
 
 public sealed partial class SyncStatusBar : UserControl
 {
-    internal AppModel _viewModel = ((App)Application.Current).Data;
-    internal AppModel ViewModel
+    private AppModel _viewModel = ((App)Application.Current).Data;
+    public AppModel ViewModel
     {
         get { return _viewModel; }
     }
@@ -38,14 +39,17 @@ public sealed partial class SyncStatusBar : UserControl
     private async void StartPauseButton_Click(object sender, RoutedEventArgs e)
     {
         StartPauseButton.IsEnabled = false;
+        // TODO: Replace with actual start/pause logic
         if (ViewModel.SelectedSync?.SyncStatus == SyncStatus.Pause)
         {
+            Logger.Log(Logger.Level.Info, "Starting sync...");
             ViewModel.SelectedSync.SyncStatus = SyncStatus.Starting;
             await Task.Delay(1000); // Simulate some delay for pausing
             ViewModel.SelectedSync.SyncStatus = SyncStatus.Running;
         }
         else if (ViewModel.SelectedSync?.SyncStatus == SyncStatus.Running)
         {
+            Logger.Log(Logger.Level.Info, "Pausing sync...");
             ViewModel.SelectedSync.SyncStatus = SyncStatus.Pausing;
             await Task.Delay(1000); // Simulate some delay for pausing
             ViewModel.SelectedSync.SyncStatus = SyncStatus.Pause;
@@ -95,19 +99,14 @@ public class TextStatusTemplateSelector : DataTemplateSelector
         if (item == null) return null;
         if (item is SyncStatus syncStatus)
         {
-            switch (syncStatus)
+            return syncStatus switch
             {
-                case SyncStatus.Running:
-                    return SyncingStatusTemplate;
-                case SyncStatus.Starting:
-                    return StartingStatusTemplate;
-                case SyncStatus.Pausing:
-                    return PausingStatusTemplate;
-                case SyncStatus.Pause:
-                    return PausedStatusTemplate;
-                default:
-                    return UnknownStatusTemplate;
-            }
+                SyncStatus.Running => SyncingStatusTemplate,
+                SyncStatus.Starting => StartingStatusTemplate,
+                SyncStatus.Pausing => PausingStatusTemplate,
+                SyncStatus.Pause => PausedStatusTemplate,
+                _ => UnknownStatusTemplate
+            };
         }
         return UnknownStatusTemplate;
     }

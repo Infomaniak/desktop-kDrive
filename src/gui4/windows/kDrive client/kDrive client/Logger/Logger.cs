@@ -24,9 +24,9 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KDrive
+namespace Infomaniak.kDrive
 {
-    internal static class Logger
+    public static class Logger
     {
         public enum Level
         {
@@ -44,10 +44,10 @@ namespace KDrive
 #pragma warning restore S2930 
 
         static public Level LogLevel { get; set; } = Level.Debug;
-        public static void Log(Level level, string message, [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0)
+        public static void Log(Level level, string message, [CallerFilePath] string filePath = "?", [CallerLineNumber] int lineNumber = -1, [CallerMemberName] string memberName = "?")
         {
             if (LogLevel > level) return;
-            string logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [{level}] ({Path.GetFileName(filePath)}:{lineNumber}) {message}";
+            string logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [{level}] ({Path.GetFileName(filePath)}:{lineNumber}) {memberName}: {message}";
             _logStream.WriteLine(logEntry);
         }
     }

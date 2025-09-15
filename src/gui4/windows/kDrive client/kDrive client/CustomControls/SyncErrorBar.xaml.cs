@@ -1,4 +1,4 @@
-using KDrive.ViewModels;
+using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -17,15 +17,12 @@ using Windows.Foundation.Collections;
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
-namespace KDrive.CustomControls
+namespace Infomaniak.kDrive.CustomControls
 {
     public sealed partial class SyncErrorBar : UserControl
     {
-        internal AppModel _viewModel = ((App)Application.Current).Data;
-        internal AppModel ViewModel
-        {
-            get { return _viewModel; }
-        }
+        private AppModel _viewModel = ((App)Application.Current).Data;
+        public AppModel ViewModel => _viewModel;
 
         public SyncErrorBar()
         {
@@ -35,6 +32,7 @@ namespace KDrive.CustomControls
         private void CheckFileButton_Click(object sender, RoutedEventArgs e)
         {
             // Go up the visual tree to find the Frame
+            Logger.Log(Logger.Level.Debug, "Navigating to ErrorPage for error resolution.");
             DependencyObject parent = this;
             while (parent != null && parent is not Frame)
             {
@@ -42,11 +40,12 @@ namespace KDrive.CustomControls
             }
             if (parent is Frame frame)
             {
+                Logger.Log(Logger.Level.Info, "Navigating to ErrorPage.");
                 frame.Navigate(typeof(ErrorPage));
             }
             else
             {
-                Logger.Log(Logger.Level.Warning, "Could not find Frame in visual tree to navigate to error resolution page");
+                Logger.Log(Logger.Level.Error, "Could not find Frame in visual tree to navigate to error resolution page");
             }
 
         }

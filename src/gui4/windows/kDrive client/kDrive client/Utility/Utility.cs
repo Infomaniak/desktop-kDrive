@@ -1,4 +1,4 @@
-﻿using KDrive.Types;
+﻿using Infomaniak.kDrive.Types;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,11 +9,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace KDrive
+namespace Infomaniak.kDrive
 {
-    internal static class Utility
+    public static class Utility
     {
-        internal static NodeType deduceNodeTypeFromFilePath(string filePath)
+        public static NodeType DeduceNodeTypeFromFilePath(string filePath)
         {
             string fileName = System.IO.Path.GetFileName(filePath);
             string extension = System.IO.Path.GetExtension(fileName).ToLower();
@@ -34,7 +34,7 @@ namespace KDrive
             // Validate input
             if (string.IsNullOrWhiteSpace(folderPath))
             {
-                Logger.Log(Logger.Level.Warning, "Cannot open the FolderPath wich is null or empty.");
+                Logger.Log(Logger.Level.Warning, "Cannot open the FolderPath which is null or empty.");
                 return false;
             }
 

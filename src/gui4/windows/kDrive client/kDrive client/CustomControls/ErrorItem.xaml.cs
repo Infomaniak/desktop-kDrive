@@ -1,7 +1,7 @@
 using DynamicData;
 using DynamicData.Binding;
-using KDrive.ViewModels;
-using KDrive.ViewModels.Errors;
+using Infomaniak.kDrive.ViewModels;
+using Infomaniak.kDrive.ViewModels.Errors;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -26,17 +26,17 @@ using WinRT;
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
-namespace KDrive.CustomControls
+namespace Infomaniak.kDrive.CustomControls
 {
     public sealed partial class ErrorItem : UserControl
     {
-        internal AppModel _viewModel = ((App)Application.Current).Data;
-        internal AppModel ViewModel => _viewModel;
+        private AppModel _viewModel = ((App)Application.Current).Data;
+        public AppModel ViewModel => _viewModel;
 
         public static readonly DependencyProperty ErrorProperty =
             DependencyProperty.Register(
                 nameof(Error),
-                typeof(ViewModels.Errors.BaseError),
+                typeof(BaseError),
                 typeof(ErrorItem),
                 new PropertyMetadata(null));
 
@@ -45,9 +45,9 @@ namespace KDrive.CustomControls
             InitializeComponent();
         }
 
-        public ViewModels.Errors.BaseError? Error
+        public BaseError? Error
         {
-            get => (ViewModels.Errors.BaseError?)GetValue(ErrorProperty);
+            get => (BaseError?)GetValue(ErrorProperty);
             set => SetValue(ErrorProperty, value);
         }
 
@@ -59,13 +59,18 @@ namespace KDrive.CustomControls
                 var task = Error?.InfoHyperLink?.Action(sender);
                 if (task != null)
                 {
+                    Logger.Log(Logger.Level.Info, "Executing InfoHyperLink action.");
                     await task;
+                }
+                else
+                {
+                    Logger.Log(Logger.Level.Error, "No action defined for InfoHyperLink.");
                 }
                 button.IsEnabled = true;
             }
             else
             {
-                Logger.Log(Logger.Level.Warning, "HyperlinkButton_Click: sender is not a Button");
+                Logger.Log(Logger.Level.Error, "Sender is not a Button");
             }
         }
 
@@ -77,13 +82,18 @@ namespace KDrive.CustomControls
                 var task = Error?.SolveButton?.Action(sender);
                 if (task != null)
                 {
+                    Logger.Log(Logger.Level.Info, "Executing SolveButton action.");
                     await task;
+                }
+                else
+                {
+                    Logger.Log(Logger.Level.Warning, "No action defined for SolveButton.");
                 }
                 button.IsEnabled = true;
             }
             else
             {
-                Logger.Log(Logger.Level.Warning, "SolveButton_Click: sender is not a Button");
+                Logger.Log(Logger.Level.Warning, "Sender is not a Button");
             }
         }
     }

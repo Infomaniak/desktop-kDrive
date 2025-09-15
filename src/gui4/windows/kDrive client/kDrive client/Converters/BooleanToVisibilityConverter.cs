@@ -6,9 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Data;
 
-namespace KDrive.Converters
+namespace Infomaniak.kDrive.Converters
 {
-    internal class BooleanToVisibilityConverter : IValueConverter
+    public class BooleanToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
@@ -16,7 +16,8 @@ namespace KDrive.Converters
             if (value is bool boolValue)
             {
                 return boolValue ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
-            }else if (value is int intValue)
+            }
+            else if (value is int intValue)
             {
                 return intValue != 0 ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
             }
@@ -26,6 +27,7 @@ namespace KDrive.Converters
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
+            Logger.Log(Logger.Level.Fatal, "BooleanToVisibilityConverter: ConvertBack is not implemented.");
             throw new NotImplementedException();
         }
     }

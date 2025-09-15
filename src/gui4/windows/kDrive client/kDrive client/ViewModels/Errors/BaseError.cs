@@ -18,7 +18,7 @@
 
 using CommunityToolkit.Mvvm.Collections;
 using CommunityToolkit.Mvvm.ComponentModel;
-using KDrive.ServerCommunication;
+using Infomaniak.kDrive.ServerCommunication;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -28,7 +28,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace KDrive.ViewModels.Errors
+namespace Infomaniak.kDrive.ViewModels.Errors
 {
     public abstract class BaseError : ObservableObject
     {

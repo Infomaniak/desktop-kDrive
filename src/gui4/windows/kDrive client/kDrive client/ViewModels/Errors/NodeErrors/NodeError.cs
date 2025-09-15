@@ -1,4 +1,4 @@
-﻿using KDrive.Types;
+﻿using Infomaniak.kDrive.Types;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,15 +6,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KDrive.ViewModels.Errors
+namespace Infomaniak.kDrive.ViewModels.Errors
 {
-    internal abstract class NodeError : BaseError
+    public abstract class NodeError : BaseError
     {
         private SyncPath _nodePath = "";
         private NodeId _localNodeId = -1;
         private NodeId _remoteNodeId = -1;
         private NodeType _nodeType = NodeType.File;
-        protected NodeError(int dbId) : base(dbId) { }
+        protected NodeError(DbId dbId) : base(dbId) { }
 
         public SyncPath NodePath
         {
@@ -24,7 +24,7 @@ namespace KDrive.ViewModels.Errors
                 SetProperty(ref _nodePath, value);
                 if (_nodeType == NodeType.File)
                 {
-                    SetProperty(ref _nodeType, Utility.deduceNodeTypeFromFilePath(_nodePath));
+                    SetProperty(ref _nodeType, Utility.DeduceNodeTypeFromFilePath(_nodePath));
                 }
             }
         }

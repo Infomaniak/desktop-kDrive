@@ -24,9 +24,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KDrive
+namespace Infomaniak.kDrive
 {
-    internal class BinaryReader : System.IO.BinaryReader
+    public class BinaryReader : System.IO.BinaryReader
     {
         public BinaryReader(System.IO.Stream input) : base(input)
         {

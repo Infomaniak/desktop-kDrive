@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KDrive.ViewModels.Errors
+namespace Infomaniak.kDrive.ViewModels.Errors
 {
-    internal class AppError : BaseError
+    public class AppError : BaseError
     {
-        public AppError(int dbId) : base(dbId)
+        public AppError(DbId dbId) : base(dbId)
         {
         }
 
@@ -29,7 +29,7 @@ namespace KDrive.ViewModels.Errors
 
         public override Uri IconUri()
         {
-            return new Uri("ms-appx:///Assets/Icons/headphones.svg");
+            return AssetLoader.GetAssetUri(AssetLoader.AssetType.Icon, "headphones");
         }
     }
 }

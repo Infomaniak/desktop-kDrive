@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using KDrive.ViewModels;
+using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml;
 using System;
 using System.Buffers.Binary;
@@ -28,9 +28,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KDrive.ServerCommunication
+namespace Infomaniak.kDrive.ServerCommunication
 {
-    internal class MockServerData
+    public class MockServerData
     {
         public List<User> Users = new List<User>();
         public List<Drive> Drives = new List<Drive>();
@@ -71,7 +71,7 @@ namespace KDrive.ServerCommunication
             Drives[2].Syncs.Add(Syncs[2]);
         }
     }
-    internal class CommRequests
+    public class CommRequests
     {
         private enum RequestNum
         {
