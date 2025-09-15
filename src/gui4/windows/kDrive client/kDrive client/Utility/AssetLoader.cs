@@ -30,7 +30,7 @@ namespace Infomaniak.kDrive
 
         public static string GetAssetPath(AssetType type, string assetName)
         {
-                string assetTypePath = getAssetTypePath(type);
+            string assetTypePath = getAssetTypePath(type);
             return Path.Combine(AssetBasePath, assetTypePath, assetName);
         }
 
