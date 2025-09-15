@@ -68,7 +68,7 @@ CommString GuiCommChannel::readMessage() {
 }
 
 bool GuiCommChannel::containsValidJson(const CommString &message, size_t &endIndex) const {
-    endIndex = -1;
+    endIndex = 0;
     if (message.empty() || (message[0] != '{' && message[0] != '[')) {
         return false;
     }
@@ -83,7 +83,7 @@ bool GuiCommChannel::containsValidJson(const CommString &message, size_t &endInd
         } else if (message[i] == closeChar) {
             balance--;
             if (balance == 0) {
-                endIndex = static_cast<int>(i);
+                endIndex = i;
                 return true;
             }
         }
@@ -102,5 +102,4 @@ void GuiCommChannel::fetchDataToBuffer() {
         }
     }
 }
-
 } // namespace KDC

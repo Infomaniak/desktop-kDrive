@@ -97,11 +97,11 @@ class ExtCommServerPrivate : public AbstractCommServerPrivate {
 
 - (BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)newConnection {
     auto *channelPrivate = new ExtCommChannelPrivate(newConnection);
-    auto *server = (KDC::ExtCommServer *) self.wrapper->_publicPtr;
+    auto *server = (KDC::ExtCommServer *) self.wrapper->publicPtr;
 
     auto channel = std::make_shared<KDC::ExtCommChannel>(channelPrivate);
     channel->setLostConnectionCbk(std::bind(&KDC::ExtCommServer::lostConnectionCbk, server, std::placeholders::_1));
-    self.wrapper->_pendingChannels.push_back(channel);
+    self.wrapper->pendingChannels.push_back(channel);
 
     // Set exported interface
     NSLog(@"[KD] Set exported interface for connection with ext");
@@ -159,7 +159,7 @@ ExtCommServerPrivate::ExtCommServerPrivate() {
 
 // ExtCommChannel implementation
 uint64_t KDC::ExtCommChannel::writeData(const KDC::CommChar *data, uint64_t len) {
-    if (_privatePtr->_isRemoteDisconnected) return -1;
+    if (_privatePtr->isRemoteDisconnected) return -1;
 
     @try {
         [(ExtRemoteEnd *) _privatePtr->remoteEnd sendMessage:[NSData dataWithBytesNoCopy:const_cast<KDC::CommChar *>(data)

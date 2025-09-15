@@ -102,7 +102,7 @@ void SocketCommChannel::callbackHandler() {
 
 uint64_t SocketCommChannel::bytesAvailable() const {
     try {
-        return _socket.available();
+        return (std::max)(0, _socket.available());
     } catch (Poco::IOException &ex) {
         LOG_ERROR(Log::instance()->getLogger(), "Socket available error: " << ex.displayText());
         return 0;

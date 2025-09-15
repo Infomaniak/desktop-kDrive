@@ -26,7 +26,6 @@ set(server_SRCS
     ${server_srcs_path}/comm/oldcommserver.h ${server_srcs_path}/comm/oldcommserver.cpp
     ${server_srcs_path}/comm/abstractcommchannel.h ${server_srcs_path}/comm/abstractcommchannel.cpp
     ${server_srcs_path}/comm/socketcommserver.h ${server_srcs_path}/comm/socketcommserver.cpp
-    ${server_srcs_path}/comm/extcommserver.h ${server_srcs_path}/comm/extcommserver.cpp
     ${server_srcs_path}/comm/guicommserver.h ${server_srcs_path}/comm/guicommserver.cpp
     ${server_srcs_path}/comm/commmanager.h ${server_srcs_path}/comm/commmanager.cpp
     ${server_srcs_path}/migration/migrationparams.h ${server_srcs_path}/migration/migrationparams.cpp
@@ -36,6 +35,10 @@ set(server_SRCS
     ${server_srcs_path}/requests/offlinefilessizeestimator.h ${server_srcs_path}/requests/offlinefilessizeestimator.cpp
     ${server_srcs_path}/app_resources.rc
 )
+
+if(APPLE OR WIN32)
+    list(APPEND server_SRCS ${server_srcs_path}/comm/extcommserver.h ${server_srcs_path}/comm/extcommserver.cpp)
+endif()
 
 if(APPLE)
     list(APPEND server_SRCS ${server_srcs_path}/../common/utility_mac.cpp)

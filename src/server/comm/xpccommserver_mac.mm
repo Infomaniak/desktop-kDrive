@@ -23,7 +23,6 @@
 XPCCommChannel::XPCCommChannel(AbstractCommChannelPrivate *p) :
     _privatePtr(p) {
     _privatePtr->publicPtr = this;
-    open();
 }
 
 XPCCommChannel::~XPCCommChannel() {}
