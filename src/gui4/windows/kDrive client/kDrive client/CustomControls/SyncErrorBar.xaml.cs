@@ -42,7 +42,7 @@ namespace KDrive.CustomControls
             }
             if (parent is Frame frame)
             {
-                frame.Navigate(typeof(HomePage));
+                frame.Navigate(typeof(ErrorPage));
             }
             else
             {

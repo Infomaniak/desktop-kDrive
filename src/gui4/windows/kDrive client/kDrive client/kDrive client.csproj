@@ -66,8 +66,14 @@
     <DefaultLanguage>en-US</DefaultLanguage>
   </PropertyGroup>
   <ItemGroup>
+    <Page Update="CustomControls\ErrorItem.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="HomePage.xaml">
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Pages\ErrorPage.xaml">
+      <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
   <ItemGroup>
@@ -97,5 +103,10 @@
     <Page Update="CustomControls\SyncStatusBar.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Update="Strings\fr-FR\SyncErrors.resw">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+    </PRIResource>
   </ItemGroup>
 </Project>

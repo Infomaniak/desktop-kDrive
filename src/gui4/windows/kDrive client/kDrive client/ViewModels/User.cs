@@ -34,8 +34,8 @@ namespace KDrive.ViewModels
 {
     internal class User : ObservableObject
     {
-        private int _dbId = -1;
-        private int _id = -1;
+        private DbId _dbId = -1;
+        private UserId _id = -1;
         private string _name = "";
         private string _email = "";
         private Image? _avatar;
@@ -43,13 +43,13 @@ namespace KDrive.ViewModels
         private bool _isStaff = false;
         private ObservableCollection<Drive> _drives = new ObservableCollection<Drive>();
 
-        public User(int dbId)
+        public User(DbId dbId)
         {
             DbId = dbId;
         }
 
         // Parses a User from a stream, should be removed/replaced when the new communication protocol is done
-        public static User ReadFrom(Utility.BinaryReader reader)
+        public static User ReadFrom(BinaryReader reader)
         {
             int dbId = reader.ReadInt32();
             var user = new User(dbId);
@@ -93,13 +93,13 @@ namespace KDrive.ViewModels
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
-        public int DbId
+        public DbId DbId
         {
             get => _dbId;
             set => SetProperty(ref _dbId, value);
         }
 
-        public int Id
+        public UserId Id
         {
             get => _id;
             set => SetProperty(ref _id, value);

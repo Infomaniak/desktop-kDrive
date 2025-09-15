@@ -52,7 +52,7 @@ namespace KDrive
             this.SetTitleBar(AppTitleBar);            
         }
 
-        private void nvSample_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+        private void navView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
             var selectedItem = args.SelectedItem as NavigationViewItem;
             if (selectedItem != null)
@@ -74,11 +74,13 @@ namespace KDrive
             }
         }
 
-        private void nvSample_BackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
+        private void navView_BackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
         {
             if (contentFrame.CanGoBack)
             {
                 contentFrame.GoBack();
+                navView.SelectedItem = navView.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item => item.Tag.ToString() == ((Frame)contentFrame).Content.GetType().Name);
+
             }
         }
     }

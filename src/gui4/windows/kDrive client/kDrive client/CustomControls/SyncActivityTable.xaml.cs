@@ -1,5 +1,6 @@
 using DynamicData;
 using DynamicData.Binding;
+using KDrive.Types;
 using KDrive.ViewModels;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
@@ -31,13 +32,13 @@ namespace KDrive.CustomControls
     {
         internal AppModel _viewModel = ((App)Application.Current).Data;
         internal AppModel ViewModel => _viewModel;
-        private ObservableCollection<SyncActivityViewModel> _outGoingActivities = new();
+        private ObservableCollection<SyncActivity> _outGoingActivities = new();
         private Int64 _insertionCounter = 0;
         public SyncActivityTable()
         {
             InitializeComponent();
             ViewModel.SelectedSync?
-                    .SyncActivities.ToObservableChangeSet().OnItemAdded(a => { if (a.Direction == SyncActivityDirection.Incoming) _outGoingActivities.Insert(0, a); }).Subscribe();
+                    .SyncActivities.ToObservableChangeSet().OnItemAdded(a => { if (a.Direction == SyncDirection.Incoming) _outGoingActivities.Insert(0, a); }).Subscribe();
         }
 
         public bool? ShowIncomingActivity
@@ -76,12 +77,12 @@ namespace KDrive.CustomControls
 
         private async void SyncActivityParent_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is HyperlinkButton btn && btn.DataContext is SyncActivityViewModel activity)
+            if (sender is HyperlinkButton btn && btn.DataContext is SyncActivity activity)
             {
                 if (Directory.Exists(activity.ParentFolderPath))
                 {
                     btn.IsEnabled = false;
-                    Process.Start("explorer.exe", activity.ParentFolderPath);
+                    Utility.OpenFolderSecurely(activity.ParentFolderPath);
                     await Task.Delay(5000); // As the explorer might take some time to open avoid multiple clicks
                     btn.IsEnabled = true;
                 }

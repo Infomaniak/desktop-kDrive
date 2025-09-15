@@ -36,7 +36,19 @@
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="FontSize" Value="18" />
     </Style>
-    
-
-
+    <Style x:Key="HeaderTextBlockStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Segoe UI" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontSize" Value="20" />
+    </Style>
+    <Style x:Key="CaptionSemiBoldTextBlockStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Segoe UI" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontSize" Value="12" />
+    </Style>
+    <Style x:Key="CaptionTextBlockStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Segoe UI" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="FontSize" Value="12" />
+    </Style>
 </ResourceDictionary>

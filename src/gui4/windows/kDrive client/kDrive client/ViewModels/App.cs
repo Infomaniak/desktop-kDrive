@@ -17,17 +17,18 @@
  */
 
 using CommunityToolkit.Mvvm.ComponentModel;
+using DynamicData;
+using DynamicData.Binding;
 using KDrive.ServerCommunication;
 using Microsoft.UI.Dispatching;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DynamicData;
-using DynamicData.Binding;
 
 namespace KDrive.ViewModels
 
@@ -50,22 +51,49 @@ namespace KDrive.ViewModels
          */
         private ObservableCollection<User> _users = new();
 
-        /** The list of active syncs across all users.
-         *  This is a read-only observable collection, so the UI can bind to it and be notified of changes.
-         *  It is automatically updated when a sync's IsActive property changes or when syncs are added/removed from users.
-         */
-        public ReadOnlyObservableCollection<Sync> AllSyncs { get; set; }
-
         /** The dispatcher queue for the UI thread.
          *  This is used to marshal calls to the UI thread when updating observable item.
          *  It must be set in the mainWindow constructor.
          */
         public static DispatcherQueue UIThreadDispatcher { get; set; } = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
 
+        /** The list of application errors.
+         *  This is an observable collection, so the UI can bind to it and be notified of changes.
+         */
+        private ObservableCollection<Errors.AppError> _appErrors = new();
+
+        /** Indicates if there is error in application or in the selected sync.
+         *  This is true if there is at least one app errors or one selected sync error.
+         *  This is a read-only property that is automatically updated when AppErrors or SelectedSync.SyncErrors change.
+         */
+        public bool HasErrors => AppErrors.Count > 0 ||
+                           (SelectedSync?.SyncErrors?.Count ?? 0) > 0;
+
+        // Helpers - Agregated collections
+        /** The list of active syncs across all users.
+        *  This is a read-only observable collection, so the UI can bind to it and be notified of changes.
+        *  It is automatically updated when a sync's IsActive property changes or when syncs are added/removed from users.
+        */
+        public ReadOnlyObservableCollection<Sync> AllSyncs { get; set; }
+
+
         public Sync? SelectedSync
         {
             get => _selectedSync;
-            set => SetProperty(ref _selectedSync, value);
+            set
+            {
+                if (SelectedSync != null)
+                {
+                    SelectedSync.SyncErrors.CollectionChanged -= SyncErrors_CollectionChanged;
+                }
+                SetProperty(ref _selectedSync, value);
+
+                if (SelectedSync != null)
+                {
+                    SelectedSync.SyncErrors.CollectionChanged += SyncErrors_CollectionChanged;
+                }
+                OnPropertyChanged(nameof(HasErrors));
+            }
         }
 
         public AppModel()
@@ -85,6 +113,8 @@ namespace KDrive.ViewModels
             AllSyncs.ToObservableChangeSet()
                        .Subscribe(_ => EnsureValidSelectedSync());
 
+            // Observe changes to AppErrors and SelectedSync.SyncErrors to update HasNoErrors property
+            AppErrors.CollectionChanged += (_, __) => OnPropertyChanged(nameof(HasErrors));
         }
 
         private void EnsureValidSelectedSync()
@@ -110,6 +140,12 @@ namespace KDrive.ViewModels
         {
             get => _isInitialized;
             set => SetProperty(ref _isInitialized, value);
+        }
+
+        public ObservableCollection<Errors.AppError> AppErrors
+        {
+            get => _appErrors;
+            set => SetProperty(ref _appErrors, value);
         }
 
         /** Initialize the model by loading data from the server.
@@ -141,5 +177,9 @@ namespace KDrive.ViewModels
             });
         }
 
+        private void SyncErrors_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            OnPropertyChanged(nameof(HasErrors));
+        }
     }
 }

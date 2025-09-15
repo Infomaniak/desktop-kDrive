@@ -66,7 +66,7 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <Button Click="FavoritesButton_Click" CornerRadius="8" Padding="0" Grid.Row="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="0,0,0,8" Background="{ThemeResource LayerFillColorDefaultBrush }">
+            <Button Click="FavoritesButton_Click" CornerRadius="8" Padding="0" Grid.Row="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="0,0,0,8" Background="{ThemeResource LayerFillColorDefaultBrush}">
                 <StackPanel Orientation="Vertical">
                     <ImageIcon Height="16" Margin="0,0,0,8">
                         <ImageIcon.Source>
@@ -76,7 +76,7 @@
                     <TextBlock x:Uid="HomePage_favorites" Style="{StaticResource TextBlockStyle}" />
                 </StackPanel>
             </Button>
-            <Button Click="SharedButton_Click" CornerRadius="8" Padding="0" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="0,8,0,8" Background="{ThemeResource LayerFillColorDefaultBrush }">
+            <Button Click="SharedButton_Click" CornerRadius="8" Padding="0" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="0,8,0,8" Background="{ThemeResource LayerFillColorDefaultBrush}">
                 <StackPanel Orientation="Vertical">
                     <ImageIcon Height="16" Margin="0,0,0,8">
                         <ImageIcon.Source>
@@ -86,7 +86,7 @@
                     <TextBlock x:Uid="HomePage_shared" Style="{StaticResource TextBlockStyle}" />
                 </StackPanel>
             </Button>
-            <Button Click="TrashButton_Click" CornerRadius="8" Padding="0" Grid.Row="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="0,8,0,0" Background="{ThemeResource LayerFillColorDefaultBrush }">
+            <Button Click="TrashButton_Click" CornerRadius="8" Padding="0" Grid.Row="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="0,8,0,0" Background="{ThemeResource LayerFillColorDefaultBrush}">
                 <StackPanel Orientation="Vertical">
                     <ImageIcon Height="16" Margin="0,0,0,8">
                         <ImageIcon.Source>

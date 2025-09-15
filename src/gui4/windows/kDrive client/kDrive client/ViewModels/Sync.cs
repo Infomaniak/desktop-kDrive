@@ -18,6 +18,7 @@
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using KDrive.ServerCommunication;
+using KDrive.ViewModels.Errors;
 using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
@@ -27,20 +28,23 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
+using KDrive.Types;
 
 namespace KDrive.ViewModels
 {
     internal class Sync : ObservableObject
     {
         // Sync properties
-        private int _dbId = -1;
-        private Drive _drive;
-        private int _id = -1;
-        private string _localPath = "";
-        private string _remotePath = "";
+        private DbId _dbId;
+        private readonly Drive _drive;
+        private SyncId _id = -1;
+        private SyncPath _localPath = "";
+        private SyncPath _remotePath = "";
         private bool _supportVfs = false;
-        private ObservableCollection<SyncActivityViewModel> _syncActivities = new();
+        private readonly ObservableCollection<SyncActivity> _syncActivities = new();
         private SyncStatus _syncStatus = SyncStatus.Pause;
+
+        private ObservableCollection<Errors.BaseError> _syncErrors = new();
 
         // Sync UI properties
         private bool _showIncomingActivity = true;
@@ -54,7 +58,7 @@ namespace KDrive.ViewModels
 
         //TODO: Remove this test function
 
-        private SyncActivityViewModel generateTestActivity()
+        private SyncActivity GenerateTestActivity()
         {
             Random rand = new Random();
             string[] sampleFileExtension = new string[]
@@ -109,26 +113,25 @@ namespace KDrive.ViewModels
             {
                 sb.Append(sampleFileNames[rand.Next(sampleFileNames.Length)]);
             }
-            SyncActivityDirection direction = (SyncActivityDirection)rand.Next(2); // Randomly choose direction
-            SyncActivityItemType itemType = isFile ? SyncActivityItemType.File : SyncActivityItemType.Directory;
+            SyncDirection direction = (SyncDirection)rand.Next(2); // Randomly choose direction
+            NodeType nodeType = isFile ? NodeType.File : NodeType.Directory;
             long size = isFile ? rand.Next(0, 5000000) : 0; // Random size for files, 0 for directories
             DateTime activityTime = DateTime.Now;
-            return new SyncActivityViewModel()
+            return new SyncActivity()
             {
                 LocalPath = "C:/Users/Herve/kDrive/" + sb.ToString(),
                 Direction = direction,
-                ItemType = itemType,
+                NodeType = nodeType,
                 Size = size,
                 ActivityTime = activityTime,
                 RemoteId = rand.Next(1, 1000)
             };
         }
 
-        public Sync(int dbId, Drive drive)
+        public Sync(DbId dbId, Drive drive)
         {
             _dbId = dbId;
             _drive = drive;
-
 
             Task.Run(async () =>
             {
@@ -141,7 +144,7 @@ namespace KDrive.ViewModels
                     {
                         continue;
                     }
-                    var newActivity = generateTestActivity();
+                    var newActivity = GenerateTestActivity();
 
                     AppModel.UIThreadDispatcher.TryEnqueue(() =>
                     {
@@ -155,26 +158,26 @@ namespace KDrive.ViewModels
             });
         }
 
-        public int DbId
+        public DbId DbId
         {
             get => _dbId;
             set => SetProperty(ref _dbId, value);
         }
 
-        public int Id
+        public SyncId Id
         {
             get => _id;
             set => SetProperty(ref _id, value);
         }
 
-        public string LocalPath
+        public SyncPath LocalPath
         {
             get => _localPath;
             set => SetProperty(ref _localPath, value);
 
         }
 
-        public string RemotePath
+        public SyncPath RemotePath
         {
             get => _remotePath;
             set
@@ -194,7 +197,7 @@ namespace KDrive.ViewModels
             set => SetProperty(ref _supportVfs, value);
         }
 
-        public ObservableCollection<SyncActivityViewModel> SyncActivities
+        public ObservableCollection<SyncActivity> SyncActivities
         {
             get => _syncActivities;
         }
@@ -202,6 +205,12 @@ namespace KDrive.ViewModels
         public Drive Drive
         {
             get => _drive;
+        }
+
+        public ObservableCollection<Errors.BaseError> SyncErrors
+        {
+            get => _syncErrors;
+            set => SetProperty(ref _syncErrors, value);
         }
 
         public async Task Reload()
