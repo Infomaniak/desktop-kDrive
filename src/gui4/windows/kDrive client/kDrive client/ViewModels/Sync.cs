@@ -40,9 +40,10 @@ namespace Infomaniak.kDrive.ViewModels
         private SyncId _id = -1;
         private SyncPath _localPath = "";
         private SyncPath _remotePath = "";
-        private bool _supportVfs = false;
+        private bool _supportOnlineMode = false;
         private readonly ObservableCollection<SyncActivity> _syncActivities = new();
         private SyncStatus _syncStatus = SyncStatus.Pause;
+        private SyncType _syncType = SyncType.Unknown;
 
         private ObservableCollection<Errors.BaseError> _syncErrors = new();
 
@@ -191,10 +192,16 @@ namespace Infomaniak.kDrive.ViewModels
             }
         }
 
-        public bool SupportVfs
+        public bool SupportOnlineMode
         {
-            get => _supportVfs;
-            set => SetProperty(ref _supportVfs, value);
+            get => _supportOnlineMode;
+            set => SetProperty(ref _supportOnlineMode, value);
+        }
+
+        public SyncType SyncType
+        {
+            get => _syncType;
+            set => SetProperty(ref _syncType, value);
         }
 
         public ObservableCollection<SyncActivity> SyncActivities
@@ -221,7 +228,8 @@ namespace Infomaniak.kDrive.ViewModels
                CommRequests.GetSyncId(DbId).ContinueWith(t => { if (t.Result != null) Id = t.Result.Value; }),
                CommRequests.GetSyncLocalPath(DbId).ContinueWith(t => { if (t.Result != null) LocalPath = t.Result; }),
                CommRequests.GetSyncRemotePath(DbId).ContinueWith(t => { if (t.Result != null) RemotePath = t.Result; }),
-               CommRequests.GetSyncSupportVfs(DbId).ContinueWith(t => { if (t.Result != null) SupportVfs = t.Result.Value; }),
+               CommRequests.GetSyncSupportOfflineMode(DbId).ContinueWith(t => { if (t.Result != null) SupportOnlineMode = t.Result.Value; }),
+               CommRequests.GetSyncType(DbId).ContinueWith(t => { if (t.Result != null) SyncType = t.Result.Value; })
             };
             await Task.WhenAll(tasks).ConfigureAwait(false);
             Logger.Log(Logger.Level.Info, $"Finished reloading sync properties for DbId {DbId}.");

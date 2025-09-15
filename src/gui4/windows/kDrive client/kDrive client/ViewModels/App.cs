@@ -19,15 +19,13 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using DynamicData;
 using DynamicData.Binding;
-using Infomaniak.kDrive.ServerCommunication;
+using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Dispatching;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.ViewModels
@@ -76,6 +74,8 @@ namespace Infomaniak.kDrive.ViewModels
         */
         public ReadOnlyObservableCollection<Sync> AllSyncs { get; set; }
 
+        // Application settings
+        public Settings Settings { get; } = new Settings();
 
         public Sync? SelectedSync
         {

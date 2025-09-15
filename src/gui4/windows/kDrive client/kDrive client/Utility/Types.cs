@@ -40,5 +40,22 @@ namespace Infomaniak.kDrive.Types
         Incoming,
         EnumEnd
     };
+
+    public enum SyncType
+    {
+        Unknown,
+        Offline,
+        Online // (Ex liteSync)
+    };
+
+    public enum Language
+    {
+        SystemDefault = 0,
+        FR,
+        IT,
+        DE,
+        ES,
+        EN
+    };
 }
 
