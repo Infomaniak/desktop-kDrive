@@ -28,7 +28,7 @@ namespace Infomaniak.kDrive.ViewModels
                 SetProperty(ref _parentFolderPath, System.IO.Path.GetDirectoryName(value) ?? "");
                 if (_nodeType == NodeType.File)
                 {
-                    SetProperty(ref _nodeType, Utility.deduceNodeTypeFromFilePath(LocalPath));
+                    SetProperty(ref _nodeType, Utility.DeduceNodeTypeFromFilePath(LocalPath));
                 }
             }
         }
@@ -59,7 +59,7 @@ namespace Infomaniak.kDrive.ViewModels
             {
                 if (value == NodeType.File)
                 {
-                    SetProperty(ref _nodeType, Utility.deduceNodeTypeFromFilePath(LocalPath));
+                    SetProperty(ref _nodeType, Utility.DeduceNodeTypeFromFilePath(LocalPath));
                 }
                 else
                 {

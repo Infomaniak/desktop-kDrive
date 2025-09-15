@@ -64,6 +64,8 @@
     <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
     <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
     <DefaultLanguage>en-US</DefaultLanguage>
+    <PackageCertificateThumbprint>B1D273E77CAF9DBDA865896F3C51A3EB31C6C5AD</PackageCertificateThumbprint>
+    <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
   </PropertyGroup>
   <ItemGroup>
     <Page Update="CustomControls\ErrorItem.xaml">
