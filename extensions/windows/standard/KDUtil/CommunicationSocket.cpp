@@ -101,6 +101,8 @@ bool CommunicationSocket::SendMsg(const wchar_t *message) const {
 }
 
 bool CommunicationSocket::ReadLine(wstring *response) {
+    static const uint64_t maxLineLength = 1024; // Allows you to read most lines at once
+
     if (!response) {
         return false;
     }
@@ -120,7 +122,7 @@ bool CommunicationSocket::ReadLine(wstring *response) {
             return true;
         }
 
-        std::array<wchar_t, 1024> resp;
+        std::array<wchar_t, maxLineLength> resp;
         DWORD numBytesRead = 0;
         DWORD totalBytesAvailable = 0;
 

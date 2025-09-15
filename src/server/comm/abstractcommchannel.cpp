@@ -52,7 +52,7 @@ void AbstractCommChannel::sendMessage(const CommString &message) {
 }
 
 CommString AbstractCommChannel::readLine() {
-    static const uint64_t maxLineLength = 1024;
+    static const uint64_t maxLineLength = 1024; // Allows you to read most lines at once
     CommChar data[maxLineLength];
     CommString line;
     forever {
