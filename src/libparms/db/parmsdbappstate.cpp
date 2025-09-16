@@ -44,6 +44,7 @@ constexpr const char *APP_STATE_KEY_DEFAULT_LastLogUploadArchivePath = APP_STATE
 constexpr char APP_STATE_KEY_DEFAULT_LogUploadState[] = "0"; // KDC::LogUploadState::None
 constexpr char APP_STATE_KEY_DEFAULT_LogUploadPercent[] = "0";
 constexpr const char *APP_STATE_KEY_DEFAULT_LogUploadToken = APP_STATE_DEFAULT_IS_EMPTY;
+constexpr char APP_STATE_KEY_DEFAULT_NoUpdate[] = "0";
 
 namespace KDC {
 
@@ -69,42 +70,47 @@ bool ParmsDb::prepareAppState() {
 
 bool ParmsDb::insertDefaultAppState() {
     if (!insertAppState(AppStateKey::LastServerSelfRestartDate, APP_STATE_KEY_DEFAULT_LastServerSelfRestartDate)) {
-        LOG_WARN(_logger, "Error inserting default value for LastServerSelfRestartDate");
+        LOG_WARN(_logger, "Error while inserting default value for LastServerSelfRestartDate");
         return false;
     }
 
     if (!insertAppState(AppStateKey::LastClientSelfRestartDate, APP_STATE_KEY_DEFAULT_LastClientSelfRestartDate)) {
-        LOG_WARN(_logger, "Error inserting default value for LastClientSelfRestartDate");
+        LOG_WARN(_logger, "Error while inserting default value for LastClientSelfRestartDate");
         return false;
     }
 
     if (!insertAppState(AppStateKey::LastSuccessfulLogUploadDate, APP_STATE_KEY_DEFAULT_LastLogUploadDate)) {
-        LOG_WARN(_logger, "Error inserting default value for LastSuccessfulLogUploadDate");
+        LOG_WARN(_logger, "Error while inserting default value for LastSuccessfulLogUploadDate");
         return false;
     }
 
     if (!insertAppState(AppStateKey::LastLogUploadArchivePath, APP_STATE_KEY_DEFAULT_LastLogUploadArchivePath)) {
-        LOG_WARN(_logger, "Error inserting default value for LastLogUploadArchivePath");
+        LOG_WARN(_logger, "Error while inserting default value for LastLogUploadArchivePath");
         return false;
     }
 
     if (!insertAppState(AppStateKey::LogUploadState, APP_STATE_KEY_DEFAULT_LogUploadState)) {
-        LOG_WARN(_logger, "Error inserting default value for LogUploadState");
+        LOG_WARN(_logger, "Error while inserting default value for LogUploadState");
         return false;
     }
 
     if (!insertAppState(AppStateKey::LogUploadPercent, APP_STATE_KEY_DEFAULT_LogUploadPercent)) {
-        LOG_WARN(_logger, "Error inserting default value for LogUploadPercent");
+        LOG_WARN(_logger, "Error while inserting default value for LogUploadPercent");
         return false;
     }
 
     if (!insertAppState(AppStateKey::LogUploadToken, APP_STATE_KEY_DEFAULT_LogUploadToken)) {
-        LOG_WARN(_logger, "Error when inserting default value for LogUploadToken");
+        LOG_WARN(_logger, "Error while inserting default value for LogUploadToken");
         return false;
     }
 
     if (!insertAppState(AppStateKey::AppUid, CommonUtility::generateRandomStringAlphaNum(25), true)) {
-        LOG_WARN(_logger, "Error when inserting default value for LogUploadToken");
+        LOG_WARN(_logger, "Error while inserting default value for LogUploadToken");
+        return false;
+    }
+
+    if (!insertAppState(AppStateKey::NoUpdate, APP_STATE_KEY_DEFAULT_NoUpdate)) {
+        LOG_WARN(_logger, "Error while inserting default value for NoUpdate");
         return false;
     }
 

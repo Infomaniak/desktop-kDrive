@@ -115,6 +115,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         bool _vfsActivationDone{false};
         bool _vfsConnectionDone{false};
         bool _crashRecovered{false};
+        bool _noUpdate{false};
         bool _appStartPTraceStopped{false};
         bool _clientManuallyRestarted{false};
         QElapsedTimer _startedAt;

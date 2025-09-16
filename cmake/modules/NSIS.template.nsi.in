@@ -48,7 +48,7 @@
 !define VER_BUILD "@KDRIVE_VERSION_BUILD@"
 !define VERSION "@KDRIVE_VERSION@"
 
-!define VFS_APPX_DIRECTORY "@{extpath}/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.0_Test"
+!define VFS_APPX_DIRECTORY "@{extpath}\FileExplorerExtensionPackage\AppPackages\FileExplorerExtensionPackage_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.0_Test"
 !define VFS_APPX_BUNDLE "FileExplorerExtensionPackage_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.0_x64_arm64.msixbundle"
 !define VFS_PACKAGE_NAME "Infomaniak.kDrive.Extension"
 !define EXTENSION_NAME "FileExplorerExtension.exe"
@@ -485,7 +485,7 @@ SectionEnd
       install_lite_sync_extension:
       CreateDirectory "$INSTDIR\shellext\AppX"
       SetOutPath "$INSTDIR\shellext\AppX"
-      File /nonfatal /a /r "${VFS_APPX_DIRECTORY}/"
+      File /a /r "${VFS_APPX_DIRECTORY}\"
       !insertmacro CheckAndConfirmEndProcesse1 "${EXTENSION_NAME}"
       ${PowerShellExecLog} "Add-AppxPackage -Path '$INSTDIR\shellext\AppX\${VFS_APPX_BUNDLE}' -ForceApplicationShutdown -ForceUpdateFromAnyVersion"
       end_install_lite_sync_extension:
