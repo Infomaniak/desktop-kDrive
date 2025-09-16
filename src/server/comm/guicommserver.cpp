@@ -40,7 +40,6 @@ bool GuiCommChannel::sendMessage(const CommString &message) {
 }
 
 bool GuiCommChannel::canReadMessage() {
-    if (_validJsonInBuffer) return true;
     fetchDataToBuffer();
     _validJsonInBuffer = containsValidJson(_readBuffer, _inBufferJsonEndIndex);
     return _validJsonInBuffer;

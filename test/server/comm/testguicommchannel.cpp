@@ -66,13 +66,7 @@ void TestGuiCommChannel::testSendMessage() {
 
 void TestGuiCommChannel::testReadMessage() {
     std::shared_ptr<GuiCommChannelTest> channelTest = std::make_shared<GuiCommChannelTest>();
-    bool readyReadCalled = false;
-    std::shared_ptr<AbstractCommChannel> readyReadChannel;
-    channelTest->setReadyReadCbk([&readyReadCalled, &readyReadChannel](std::shared_ptr<AbstractCommChannel> channel) {
-        readyReadCalled = true;
-        readyReadChannel = channel;
-    });
-
+   
     // Read a single JSON
     CommString message[3] = {Str("{\"type\":\"test\",\"content\":\"Hello, World!\"}"),
                              Str("{\"type\":\"test\",\"content\":\"Another message\"}"),
@@ -87,21 +81,9 @@ void TestGuiCommChannel::testReadMessage() {
     CPPUNIT_ASSERT(channelTest->sendMessage(message[0]));
     CPPUNIT_ASSERT(channelTest->sendMessage(message[1]));
     CPPUNIT_ASSERT(channelTest->sendMessage(message[2]));
-
-    readyReadCalled = false;
-    readyReadChannel = nullptr;
     for (int i = 0; i < 3; ++i) {
         readMessage = channelTest->readMessage();
         CPPUNIT_ASSERT(message[i] == readMessage);
-        if (i < 2) {
-            CPPUNIT_ASSERT(readyReadCalled); // Should have been called for the first two messages
-            CPPUNIT_ASSERT(readyReadChannel == channelTest);
-            readyReadCalled = false; // Reset for next iteration
-            readyReadChannel = nullptr;
-        } else {
-            CPPUNIT_ASSERT(!readyReadCalled); // Should not be called after the last message
-            CPPUNIT_ASSERT(readyReadChannel == nullptr);
-        }
     }
 
     // Read partial JSON

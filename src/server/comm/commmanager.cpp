@@ -43,6 +43,7 @@
 #include <QFileInfo>
 #include <QIODevice>
 #include <QStandardPaths>
+#include <Poco/JSON/Parser.h>
 
 #include <log4cplus/loggingmacros.h>
 
@@ -242,14 +243,38 @@ void CommManager::onGuiQueryReceived(std::shared_ptr<AbstractCommChannel> channe
         CommString query = channel->readMessage();
         LOGW_INFO(Log::instance()->getLogger(), L"Query received: " << CommonUtility::commString2WStr(query));
 
-        const auto queryArgs = CommonUtility::splitCommString(query, Str("TODO: Replace this behaviour with json handling"));
-        // Query ID
-        const int id = std::stoi(queryArgs[0]);
-        // Query type
-        const RequestNum num = static_cast<RequestNum>(std::stoi(queryArgs[1]));
+        Poco::JSON::Parser parser;
+        auto result = parser.parse(CommonUtility::commString2Str(query));
+        Poco::JSON::Object::Ptr pObject = result.extract<Poco::JSON::Object::Ptr>();
+        if (!pObject->has("id")) {
+            LOG_WARN(Log::instance()->getLogger(), "Query has no id");
+            continue;
+        }
+        if (!pObject->has("num")) {
+            LOG_WARN(Log::instance()->getLogger(), "Query has no num");
+            continue;
+        }
 
-        if (num == RequestNum::SYNC_START || num == RequestNum::SYNC_STOP) {
-            const int syncDbId = std::stoi(queryArgs[2]);
+        // Query ID
+        const int id = pObject->getValue<int>("id");
+        // Query type
+        const RequestNum num = static_cast<RequestNum>(pObject->getValue<int>("num"));
+
+
+        // Create gui job
+        if (num == RequestNum::SYNC_START ||
+            num == RequestNum::SYNC_STOP) { // TODO: Replace with Gui jobs and commManager once ready.
+            if (!pObject->has("args")) {
+                LOG_WARN(Log::instance()->getLogger(), "Query expects args");
+                continue;
+            }
+            if (!pObject->isObject("args")) {
+                LOG_WARN(Log::instance()->getLogger(), "Query args is not an object");
+                continue;
+            }
+
+            auto args = pObject->getObject("args");
+            const int syncDbId = args->getValue<int>("syncDbId");
             QByteArray params;
             QDataStream paramsStream(&params, QIODevice::WriteOnly);
             paramsStream << syncDbId;
