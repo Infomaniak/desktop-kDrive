@@ -247,6 +247,9 @@ if(BUILD_KDRIVE_OSX_BUNDLE)
     # Default Lite Sync app exclude list
     install(FILES litesync-exclude.lst DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Resources/)
 
+    # Assets
+    install(FILES ${KDRIVE_THEME_DIR}/Assets.car DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Resources/)
+
     # Crashpad_handler
     find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)
     message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
