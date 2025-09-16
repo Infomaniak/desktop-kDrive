@@ -62,18 +62,18 @@ class GuiCommServerPrivate : public AbstractCommServerPrivate {
     NSLog(@"[KD] Send ack signal %@", query);
 
     @try {
-        if (self.wrapper && self.wrapper->_remoteEnd.connection) {
-            [[self.wrapper->_remoteEnd.connection remoteObjectProxy] sendSignal:[query dataUsingEncoding:NSUTF8StringEncoding]];
+        if (self.wrapper && self.wrapper->remoteEnd.connection) {
+            [[self.wrapper->remoteEnd.connection remoteObjectProxy] sendSignal:[query dataUsingEncoding:NSUTF8StringEncoding]];
         }
     } @catch (NSException *e) {
         // Do nothing and wait for invalidationHandler
         NSLog(@"[KD] Error sending ack signal: %@", e.name);
     }
 
-    if (self.wrapper && self.wrapper->_publicPtr) {
-        self.wrapper->_inBuffer += std::string([answer UTF8String]);
-        self.wrapper->_inBuffer += "\n";
-        self.wrapper->_publicPtr->readyReadCbk();
+    if (self.wrapper && self.wrapper->publicPtr) {
+        self.wrapper->inBuffer += std::string([answer UTF8String]);
+        self.wrapper->inBuffer += "\n";
+        self.wrapper->publicPtr->readyReadCbk();
     }
 }
 
@@ -109,16 +109,16 @@ class GuiCommServerPrivate : public AbstractCommServerPrivate {
 
 - (BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)newConnection {
     GuiCommChannelPrivate *channelPrivate = new GuiCommChannelPrivate(newConnection);
-    GuiCommServer *server = (GuiCommServer *) self.wrapper->_publicPtr;
+    GuiCommServer *server = (GuiCommServer *) self.wrapper->publicPtr;
 
     auto channel = std::make_shared<GuiCommChannel>(channelPrivate);
     channel->setLostConnectionCbk(std::bind(&GuiCommServer::lostConnectionCbk, server, std::placeholders::_1));
-    self.wrapper->_pendingChannels.push_back(channel);
+    self.wrapper->pendingChannels.push_back(channel);
 
     // Set exported interface
     NSLog(@"[KD] Set exported interface for connection with gui");
     newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCGuiRemoteProtocol)];
-    newConnection.exportedObject = channelPrivate->_localEnd;
+    newConnection.exportedObject = channelPrivate->localEnd;
 
     // Set remote object interface
     NSLog(@"[KD] Set remote object interface for connection with gui");
@@ -129,14 +129,14 @@ class GuiCommServerPrivate : public AbstractCommServerPrivate {
     newConnection.interruptionHandler = ^{
       // The extension has exited or crashed
       NSLog(@"[KD] Connection with gui interrupted");
-      channelPrivate->_remoteEnd.connection = nil;
+      channelPrivate->remoteEnd.connection = nil;
       channel->lostConnectionCbk();
     };
 
     newConnection.invalidationHandler = ^{
-      // Connection can not be formed or has terminated and may not be re-established
+      // Connection cannot be established or has terminated and may not be re-established
       NSLog(@"[KD] Connection with gui invalidated");
-      channelPrivate->_remoteEnd.connection = nil;
+      channelPrivate->remoteEnd.connection = nil;
       channel->lostConnectionCbk();
     };
 
@@ -160,13 +160,13 @@ class GuiCommServerPrivate : public AbstractCommServerPrivate {
 // GuiCommChannelPrivate implementation
 GuiCommChannelPrivate::GuiCommChannelPrivate(NSXPCConnection *remoteConnection) :
     AbstractCommChannelPrivate(remoteConnection) {
-    _remoteEnd = [[GuiRemoteEnd alloc] init:remoteConnection];
-    _localEnd = [[GuiLocalEnd alloc] initWithWrapper:this];
+    remoteEnd = [[GuiRemoteEnd alloc] init:remoteConnection];
+    localEnd = [[GuiLocalEnd alloc] initWithWrapper:this];
 }
 
 // GuiCommServerPrivate implementation
 GuiCommServerPrivate::GuiCommServerPrivate() {
-    _server = [[GuiServer alloc] initWithWrapper:this];
+    server = [[GuiServer alloc] initWithWrapper:this];
 }
 
 // GuiCommChannel implementation
@@ -174,12 +174,12 @@ GuiCommChannel::GuiCommChannel(GuiCommChannelPrivate *p) :
     XPCCommChannel(p) {}
 
 uint64_t GuiCommChannel::writeData(const KDC::CommChar *data, uint64_t len) {
-    if (_privatePtr->_isRemoteDisconnected) return -1;
+    if (_privatePtr->isRemoteDisconnected) return -1;
 
     @try {
-        [(GuiRemoteEnd *) _privatePtr->_remoteEnd sendSignal:[NSData dataWithBytesNoCopy:const_cast<KDC::CommChar *>(data)
-                                                                                  length:static_cast<NSUInteger>(len)
-                                                                            freeWhenDone:NO]];
+        [(GuiRemoteEnd *) _privatePtr->remoteEnd sendSignal:[NSData dataWithBytesNoCopy:const_cast<KDC::CommChar *>(data)
+                                                                                 length:static_cast<NSUInteger>(len)
+                                                                           freeWhenDone:NO]];
         return len;
     } @catch (NSException *e) {
         _privatePtr->disconnectRemote();

@@ -27,19 +27,19 @@ class CommChannelTest : public AbstractCommChannel {
     public:
         ~CommChannelTest() {}
         uint64_t readData(CommChar *data, uint64_t maxSize) override {
-            auto size = _inBuffer.copy(data, maxSize);
-            _inBuffer.erase(0, size);
+            auto size = inBuffer.copy(data, maxSize);
+            inBuffer.erase(0, size);
             return size;
         }
         uint64_t writeData(const CommChar *data, uint64_t maxSize) override {
-            _inBuffer.append(data, maxSize);
+            inBuffer.append(data, maxSize);
             return maxSize;
         }
-        uint64_t bytesAvailable() const override { return _inBuffer.size(); }
-        bool canReadLine() const override { return _inBuffer.find('\n') != std::string::npos; }
+        uint64_t bytesAvailable() const override { return inBuffer.size(); }
+        bool canReadLine() const override { return inBuffer.find('\n') != std::string::npos; }
 
     private:
-        CommString _inBuffer; // Write & read to/from the same buffer
+        CommString inBuffer; // Write & read to/from the same buffer
 };
 
 class TestAbstractCommChannel : public CppUnit::TestFixture, public TestBase {

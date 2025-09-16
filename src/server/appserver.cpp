@@ -79,8 +79,8 @@
 
 namespace KDC {
 
-std::unordered_map<int, std::shared_ptr<SyncPal>> AppServer::_syncPalMap;
-std::unordered_map<int, std::shared_ptr<KDC::Vfs>> AppServer::_vfsMap;
+SyncPalMap AppServer::_syncPalMap;
+VfsMap AppServer::_vfsMap;
 std::vector<AppServer::Notification> AppServer::_notifications;
 
 std::unique_ptr<UpdateManager> AppServer::_updateManager;
@@ -362,17 +362,38 @@ void AppServer::init() {
     // Set sentry user
     updateSentryUser();
 
-    // Update checks
-    _updateManager = std::make_unique<UpdateManager>();
-    connect(_updateManager.get(), &UpdateManager::requestRestart, this, &AppServer::onScheduleAppRestart);
+    // Read Updater activation flag
+    AppStateValue noUpdateAppStateValue = 0;
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::NoUpdate, noUpdateAppStateValue, found) || !found) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAppState");
+        throw std::runtime_error("Unable to read NoUpdate value in app_state table.");
+    }
+    const bool noUpdate = static_cast<bool>(std::get<int>(noUpdateAppStateValue));
+    if (_noUpdate && !noUpdate) {
+        // Update Updater activation flag
+        noUpdateAppStateValue = 1;
+        if (bool found = false;
+            !ParmsDb::instance()->updateAppState(AppStateKey::NoUpdate, noUpdateAppStateValue, found) || !found) {
+            LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+            throw std::runtime_error("Unable to update NoUpdate value in app_state table.");
+        }
+    } else {
+        _noUpdate |= noUpdate;
+    }
+
+    if (!_noUpdate) {
+        // Update checks
+        _updateManager = std::make_unique<UpdateManager>();
+        connect(_updateManager.get(), &UpdateManager::requestRestart, this, &AppServer::onScheduleAppRestart);
 #if defined(KD_MACOS)
-    const std::function<void()> quitCallback = std::bind_front(&AppServer::sendQuit, this);
-    _updateManager.get()->setQuitCallback(quitCallback);
+        const std::function<void()> quitCallback = std::bind_front(&AppServer::sendQuit, this);
+        _updateManager.get()->setQuitCallback(quitCallback);
 #endif
 
-    connect(_updateManager.get(), &UpdateManager::updateStateChanged, this, &AppServer::onUpdateStateChanged);
-    connect(_updateManager.get(), &UpdateManager::updateAnnouncement, this, &AppServer::onSendNotifAsked);
-    connect(_updateManager.get(), &UpdateManager::showUpdateDialog, this, &AppServer::onShowWindowsUpdateDialog);
+        connect(_updateManager.get(), &UpdateManager::updateStateChanged, this, &AppServer::onUpdateStateChanged);
+        connect(_updateManager.get(), &UpdateManager::updateAnnouncement, this, &AppServer::onSendNotifAsked);
+        connect(_updateManager.get(), &UpdateManager::showUpdateDialog, this, &AppServer::onShowWindowsUpdateDialog);
+    }
 
     // Check last crash to avoid crash loop
     bool shouldQuit = false;
@@ -2142,27 +2163,46 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::UPDATER_CHANGE_CHANNEL: {
-            auto channel = VersionChannel::Unknown;
-            QDataStream paramsStream(params);
-            paramsStream >> channel;
-            _updateManager.get()->setDistributionChannel(channel);
+            if (_noUpdate) {
+                assert(false);
+            } else {
+                auto channel = VersionChannel::Unknown;
+                QDataStream paramsStream(params);
+                paramsStream >> channel;
+                _updateManager.get()->setDistributionChannel(channel);
+            }
             break;
         }
         case RequestNum::UPDATER_VERSION_INFO: {
-            auto channel = VersionChannel::Unknown;
-            QDataStream paramsStream(params);
-            paramsStream >> channel;
-            VersionInfo versionInfo = _updateManager.get()->versionInfo(channel);
-            resultStream << versionInfo;
+            if (_noUpdate) {
+                VersionInfo versionInfo;
+                versionInfo.tag = CommonUtility::versionTag();
+                versionInfo.buildVersion = CommonUtility::versionBuild();
+                resultStream << versionInfo;
+            } else {
+                auto channel = VersionChannel::Unknown;
+                QDataStream paramsStream(params);
+                paramsStream >> channel;
+                VersionInfo versionInfo = _updateManager.get()->versionInfo(channel);
+                resultStream << versionInfo;
+            }
             break;
         }
         case RequestNum::UPDATER_STATE: {
-            UpdateState state = _updateManager.get()->state();
-            resultStream << state;
+            if (_noUpdate) {
+                resultStream << UpdateState::NoUpdate;
+            } else {
+                UpdateState state = _updateManager.get()->state();
+                resultStream << state;
+            }
             break;
         }
         case RequestNum::UPDATER_START_INSTALLER: {
-            _updateManager.get()->startInstaller();
+            if (_noUpdate) {
+                assert(false);
+            } else {
+                _updateManager.get()->startInstaller();
+            }
             break;
         }
         case RequestNum::UPDATER_SKIP_VERSION: {
@@ -2302,10 +2342,14 @@ void AppServer::onScheduleAppRestart() {
 }
 
 void AppServer::onShowWindowsUpdateDialog() {
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << _updateManager.get()->versionInfo();
-    OldCommServer::instance()->sendSignal(SignalNum::UPDATER_SHOW_DIALOG, params);
+    if (_updateManager) {
+        QByteArray params;
+        QDataStream paramsStream(&params, QIODevice::WriteOnly);
+        paramsStream << _updateManager.get()->versionInfo();
+        OldCommServer::instance()->sendSignal(SignalNum::UPDATER_SHOW_DIALOG, params);
+    } else {
+        assert(false);
+    }
 }
 
 void AppServer::onUpdateStateChanged(const UpdateState state) {
@@ -3223,6 +3267,9 @@ void AppServer::parseOptions(const QStringList &options) {
         } else if (option == QLatin1String("--crashRecovered")) {
             _crashRecovered = true;
             break;
+        } else if (option == QLatin1String("--noUpdate")) {
+            _noUpdate = true;
+            break;
         } else {
             showHint("Unrecognized option '" + option.toStdString() + "'");
         }
@@ -4004,7 +4051,7 @@ void AppServer::addError(const Error &error) {
         }
         if (!toBeRemovedErrorIds.empty()) sendErrorsCleared(error.syncDbId());
     } else if (error.exitCode() == ExitCode::UpdateRequired) {
-        _updateManager.get()->updater()->unskipVersion();
+        AbstractUpdater::unskipVersion();
     }
 
     if (!ServerRequests::isAutoResolvedError(error) && !errorAlreadyExists) {

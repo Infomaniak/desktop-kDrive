@@ -710,6 +710,8 @@ std::string toString(const AppStateKey e) {
             return "LogUploadToken";
         case AppStateKey::AppUid:
             return "AppUid";
+        case AppStateKey::NoUpdate:
+            return "NoUpdate";
         case AppStateKey::Unknown:
             return "Unknown";
         default:
@@ -758,6 +760,8 @@ std::string toString(const UpdateState e) {
             return "DownloadError";
         case UpdateState::UpdateError:
             return "UpdateError";
+        case UpdateState::NoUpdate:
+            return "NoUpdate";
         case UpdateState::Unknown:
             return "Unknown";
         default:

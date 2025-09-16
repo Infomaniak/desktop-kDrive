@@ -73,6 +73,8 @@ struct COMMON_EXPORT CommonUtility {
         static QString platformArch();
         static const std::string &userAgentString();
         static const std::string &currentVersion();
+        static const std::string &versionTag();
+        static uint64_t versionBuild();
 
         static QByteArray toQByteArray(qint32 source);
         static int toInt(QByteArray source);

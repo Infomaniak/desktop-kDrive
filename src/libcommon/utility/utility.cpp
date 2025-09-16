@@ -186,6 +186,20 @@ const std::string &CommonUtility::currentVersion() {
     return str;
 }
 
+const std::string &CommonUtility::versionTag() {
+    static std::string str;
+    if (str.empty()) {
+        std::stringstream ss;
+        ss << KDRIVE_VERSION_MAJOR << "." << KDRIVE_VERSION_MINOR << "." << KDRIVE_VERSION_PATCH;
+        str = ss.str();
+    }
+    return str;
+}
+
+uint64_t CommonUtility::versionBuild() {
+    return KDRIVE_VERSION_BUILD;
+}
+
 static std::unordered_map<std::string, std::string> rootFsTypeMap;
 std::string getRootFsType(const SyncPath &targetPath) {
     auto it = rootFsTypeMap.find(targetPath.root_name().string());
@@ -564,6 +578,12 @@ std::string CommonUtility::appStateKeyToString(const AppStateKey &appStateValue)
             return "LogUploadState";
         case AppStateKey::LogUploadPercent:
             return "LogUploadPercent";
+        case AppStateKey::LogUploadToken:
+            return "LogUploadToken";
+        case AppStateKey::AppUid:
+            return "AppUid";
+        case AppStateKey::NoUpdate:
+            return "NoUpdate";
         case AppStateKey::Unknown:
             return "Unknown";
         default:

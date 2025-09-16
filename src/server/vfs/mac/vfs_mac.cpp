@@ -614,7 +614,7 @@ ExitInfo VfsMac::setAppExcludeList() {
 }
 
 ExitInfo VfsMac::getFetchingAppList(QHash<QString, QString> &appTable) {
-    std::unordered_map<std::string, std::string, StringHashFunction, std::equal_to<>> tmpTable;
+    AppTable tmpTable;
     for (auto it = appTable.begin(); it != appTable.end(); it++) {
         tmpTable.try_emplace(QStr2Str(it.key()), QStr2Str(it.value()));
     }

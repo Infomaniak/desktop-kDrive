@@ -60,9 +60,9 @@ class ExtCommServerPrivate : public AbstractCommServerPrivate {
     NSString *answer = [[NSString alloc] initWithData:msg encoding:NSUTF8StringEncoding];
     NSLog(@"[KD] Message received %@", answer);
 
-    if (self.wrapper && self.wrapper->_publicPtr) {
-        self.wrapper->_inBuffer += std::string([answer UTF8String]);
-        self.wrapper->_publicPtr->readyReadCbk();
+    if (self.wrapper && self.wrapper->publicPtr) {
+        self.wrapper->inBuffer += std::string([answer UTF8String]);
+        self.wrapper->publicPtr->readyReadCbk();
     }
 }
 
@@ -96,17 +96,17 @@ class ExtCommServerPrivate : public AbstractCommServerPrivate {
 }
 
 - (BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)newConnection {
-    ExtCommChannelPrivate *channelPrivate = new ExtCommChannelPrivate(newConnection);
-    ExtCommServer *server = (ExtCommServer *) self.wrapper->_publicPtr;
+    auto *channelPrivate = new ExtCommChannelPrivate(newConnection);
+    auto *server = (ExtCommServer *) self.wrapper->publicPtr;
 
     auto channel = std::make_shared<ExtCommChannel>(channelPrivate);
     channel->setLostConnectionCbk(std::bind(&ExtCommServer::lostConnectionCbk, server, std::placeholders::_1));
-    self.wrapper->_pendingChannels.push_back(channel);
+    self.wrapper->pendingChannels.push_back(channel);
 
     // Set exported interface
     NSLog(@"[KD] Set exported interface for connection with ext");
     newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCExtensionRemoteProtocol)];
-    newConnection.exportedObject = channelPrivate->_localEnd;
+    newConnection.exportedObject = channelPrivate->localEnd;
 
     // Set remote object interface
     NSLog(@"[KD] Set remote object interface for connection with ext");
@@ -117,14 +117,14 @@ class ExtCommServerPrivate : public AbstractCommServerPrivate {
     newConnection.interruptionHandler = ^{
       // The extension has exited or crashed
       NSLog(@"[KD] Connection with ext interrupted");
-      channelPrivate->_remoteEnd.connection = nil;
+      channelPrivate->remoteEnd.connection = nil;
       channel->lostConnectionCbk();
     };
 
     newConnection.invalidationHandler = ^{
-      // Connection can not be formed or has terminated and may not be re-established
+      // Connection cannot be established or has terminated and may not be re-established
       NSLog(@"[KD] Connection with ext invalidated");
-      channelPrivate->_remoteEnd.connection = nil;
+      channelPrivate->remoteEnd.connection = nil;
       channel->lostConnectionCbk();
     };
 
@@ -148,13 +148,13 @@ class ExtCommServerPrivate : public AbstractCommServerPrivate {
 // ExtCommChannelPrivate implementation
 ExtCommChannelPrivate::ExtCommChannelPrivate(NSXPCConnection *remoteConnection) :
     AbstractCommChannelPrivate(remoteConnection) {
-    _remoteEnd = [[ExtRemoteEnd alloc] init:remoteConnection];
-    _localEnd = [[ExtLocalEnd alloc] initWithWrapper:this];
+    remoteEnd = [[ExtRemoteEnd alloc] init:remoteConnection];
+    localEnd = [[ExtLocalEnd alloc] initWithWrapper:this];
 }
 
 // ExtCommServerPrivate implementation
 ExtCommServerPrivate::ExtCommServerPrivate() {
-    _server = [[ExtServer alloc] initWithWrapper:this];
+    server = [[ExtServer alloc] initWithWrapper:this];
 }
 
 // ExtCommChannel implementation
@@ -162,12 +162,12 @@ ExtCommChannel::ExtCommChannel(ExtCommChannelPrivate *p) :
     XPCCommChannel(p) {}
 
 uint64_t ExtCommChannel::writeData(const KDC::CommChar *data, uint64_t len) {
-    if (_privatePtr->_isRemoteDisconnected) return -1;
+    if (_privatePtr->isRemoteDisconnected) return -1;
 
     @try {
-        [(ExtRemoteEnd *) _privatePtr->_remoteEnd sendMessage:[NSData dataWithBytesNoCopy:const_cast<KDC::CommChar *>(data)
-                                                                                   length:static_cast<NSUInteger>(len)
-                                                                             freeWhenDone:NO]];
+        [(ExtRemoteEnd *) _privatePtr->remoteEnd sendMessage:[NSData dataWithBytesNoCopy:const_cast<KDC::CommChar *>(data)
+                                                                                  length:static_cast<NSUInteger>(len)
+                                                                            freeWhenDone:NO]];
         return len;
     } @catch (NSException *e) {
         _privatePtr->disconnectRemote();

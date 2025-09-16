@@ -63,7 +63,7 @@ void UpdateManager::startInstaller() const {
     LOG_DEBUG(Log::instance()->getLogger(), "startInstaller called!");
 
     // Cleanup skipped version
-    _updater->unskipVersion();
+    AbstractUpdater::unskipVersion();
 
     _updater->startInstaller();
 }
@@ -103,7 +103,8 @@ void UpdateManager::slotUpdateStateChanged(const UpdateState newState) {
         case UpdateState::Unknown:
         case UpdateState::DownloadError:
         case UpdateState::CheckError:
-        case UpdateState::UpdateError: {
+        case UpdateState::UpdateError:
+        case UpdateState::NoUpdate: {
             // An error occurred
             break;
         }

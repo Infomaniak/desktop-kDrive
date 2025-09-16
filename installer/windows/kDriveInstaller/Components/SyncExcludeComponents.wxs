@@ -1,0 +1,9 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    <Fragment>
+        <ComponentGroup Id="SyncExcludeComponents" Directory="INSTALLFOLDER">
+            <Component>
+                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/sync-exclude.lst" />
+            </Component>
+        </ComponentGroup>
+    </Fragment>
+</Wix>

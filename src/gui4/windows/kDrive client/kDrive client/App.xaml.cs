@@ -17,8 +17,9 @@
  */
 
 using H.NotifyIcon;
-using KDriveClient.ServerCommunication;
-using KDriveClient.ViewModels;
+using Infomaniak.kDrive.ServerCommunication;
+using Infomaniak.kDrive.ViewModels;
+using Microsoft.Security.Authentication.OAuth;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -31,6 +32,7 @@ using Microsoft.UI.Xaml.Shapes;
 using Microsoft.VisualBasic.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -41,14 +43,15 @@ using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
-namespace KDriveClient
+namespace Infomaniak.kDrive
 {
     public partial class App : Application
     {
         public Window? Window { get; set; }
         public TrayIcon.TrayIconManager TrayIcoManager { get; private set; }
-        internal ServerCommunication.CommClient ComClient { get; set; } = new ServerCommunication.CommClient();
-        internal AppModel Data { get; set; } = new AppModel();
+        public ServerCommunication.CommClient ComClient { get; set; } = new ServerCommunication.CommClient();
+        public AppModel Data { get; set; } = new AppModel();
+
         public App()
         {
             InitializeComponent();
@@ -58,8 +61,31 @@ namespace KDriveClient
 
         protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
+            string[] arguments = Environment.GetCommandLineArgs();
+            if (arguments.Length > 1)
+            {
+                var oauthArg = arguments.FirstOrDefault(arg => arg.StartsWith("kdrive://auth-desktop"), "");
+                if (oauthArg != "")
+                {
+                    if (OAuth2Manager.CompleteAuthRequest(new Uri(oauthArg)))
+                    {
+                        // Terminate the Process
+                        Logger.Log(Logger.Level.Info, "OAuth process completed, response routed successfully. Terminating the process.");
+                    }
+                    else
+                    {
+                        Logger.Log(Logger.Level.Warning, "OAuth process failed.");
+                    }
+                    Process current = Process.GetCurrentProcess();
+                    current.Kill();
+                }
+            }
+
+            Logger.Log(Logger.Level.Info, $"App launched with kind: {args.UWPLaunchActivatedEventArgs.Kind}, arguments: {args.Arguments}");
+
             Window = new MainWindow();
             TrayIcoManager.Initialize(Window);
+            await ComClient.Initialize();
             await Data.InitializeAsync().ConfigureAwait(false);
         }
     }

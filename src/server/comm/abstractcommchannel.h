@@ -25,11 +25,15 @@
 #include <functional>
 #include <filesystem>
 
-#define FINDER_EXT_LINE_SEPARATOR Str("\n")
-#define FINDER_EXT_QUERY_SEPARATOR Str("\\/")
-#define GUI_ARG_SEPARATOR Str(";")
+static const auto finderExtLineSeparator = Str("\n");
+static const auto finderExtQuerySeparator = Str("\\/");
+static const auto guiArgSeparator = Str(";");
 
 namespace KDC {
+
+class AbstractCommChannel;
+
+using CommChannelCallback = std::function<void(std::shared_ptr<AbstractCommChannel>)>;
 
 class AbstractCommChannel : public std::enable_shared_from_this<AbstractCommChannel> {
     public:
@@ -55,26 +59,24 @@ class AbstractCommChannel : public std::enable_shared_from_this<AbstractCommChan
         virtual uint64_t bytesAvailable() const = 0;
 
         // Callbacks
-        void setLostConnectionCbk(const std::function<void(std::shared_ptr<AbstractCommChannel>)> &cbk) {
-            _onLostConnectionCbk = cbk;
-        }
+        void setLostConnectionCbk(const CommChannelCallback &cbk) { _onLostConnectionCbk = cbk; }
         void lostConnectionCbk() {
             if (_onLostConnectionCbk) _onLostConnectionCbk(shared_from_this());
         }
-        void setReadyReadCbk(const std::function<void(std::shared_ptr<AbstractCommChannel>)> &cbk) { _onReadyReadCbk = cbk; }
+        void setReadyReadCbk(const CommChannelCallback &cbk) { _onReadyReadCbk = cbk; }
         void readyReadCbk() {
             if (_onReadyReadCbk) _onReadyReadCbk(shared_from_this());
         }
-        void setDestroyedCbk(const std::function<void(std::shared_ptr<AbstractCommChannel>)> &cbk) { _onDestroyedCbk = cbk; }
+        void setDestroyedCbk(const CommChannelCallback &cbk) { _onDestroyedCbk = cbk; }
         void destroyedCbk() {
             if (_onDestroyedCbk) _onDestroyedCbk(shared_from_this());
         }
 
     private:
         CommString _readBuffer;
-        std::function<void(std::shared_ptr<AbstractCommChannel>)> _onLostConnectionCbk;
-        std::function<void(std::shared_ptr<AbstractCommChannel>)> _onReadyReadCbk;
-        std::function<void(std::shared_ptr<AbstractCommChannel>)> _onDestroyedCbk;
+        CommChannelCallback _onLostConnectionCbk;
+        CommChannelCallback _onReadyReadCbk;
+        CommChannelCallback _onDestroyedCbk;
 
         //! Reads from the device.
         /*!

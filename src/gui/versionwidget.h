@@ -68,6 +68,7 @@ class VersionWidget final : public QWidget {
         void saveDistributionChannel(VersionChannel channel) const;
 
         bool _isStaff{false};
+        bool _updatesAreEnabled{true};
 
         QLabel *_versionLabel{nullptr};
 
@@ -77,6 +78,7 @@ class VersionWidget final : public QWidget {
         QLabel *_versionNumberLabel{nullptr};
         QPushButton *_updateButton{nullptr};
 
+        PreferencesBlocWidget *_preferencesBlocWidget{nullptr};
         QLabel *_betaVersionLabel{nullptr};
         QLabel *_betaVersionDescription{nullptr};
         QPushButton *_joinBetaButton{nullptr};

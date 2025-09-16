@@ -1266,8 +1266,10 @@ ExitCode GuiRequests::versionInfo(VersionInfo &versionInfo, const VersionChannel
         return ExitCode::SystemError;
     }
 
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> versionInfo;
+    if (!results.isEmpty()) {
+        QDataStream resultStream(&results, QIODevice::ReadOnly);
+        resultStream >> versionInfo;
+    }
     return ExitCode::Ok;
 }
 

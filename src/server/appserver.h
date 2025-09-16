@@ -97,8 +97,8 @@ class AppServer : public SharedTools::QtSingleApplication {
     private:
         QStringList _arguments;
         log4cplus::Logger _logger;
-        static std::unordered_map<int, std::shared_ptr<SyncPal>> _syncPalMap;
-        static std::unordered_map<int, std::shared_ptr<Vfs>> _vfsMap;
+        static SyncPalMap _syncPalMap;
+        static VfsMap _vfsMap;
         static std::vector<Notification> _notifications;
 
         std::unique_ptr<NavigationPaneHelper> _navigationPaneHelper;
@@ -115,6 +115,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         bool _vfsActivationDone{false};
         bool _vfsConnectionDone{false};
         bool _crashRecovered{false};
+        bool _noUpdate{false};
         bool _appStartPTraceStopped{false};
         bool _clientManuallyRestarted{false};
         QElapsedTimer _startedAt;

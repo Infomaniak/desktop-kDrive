@@ -24,30 +24,56 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KDriveClient
+namespace Infomaniak.kDrive
 {
-    internal static class Logger
+    public static class Logger
     {
-        private static readonly string _logFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "temp", "kDrive-logdir", $"{DateTime.Now:yyyyMMdd_HHmm}_KDriveClient.log");
-#pragma warning disable S2930
-        private static readonly StreamWriter _logStream = new(_logFilePath, append: true) { AutoFlush = true };
-#pragma warning restore S2930 
-
         public enum Level
         {
-            Debug = 0,
-            Info = 1,
-            Warning = 2,
-            Error = 3,
-            Fatal = 4,
-            None = 5
+            Extended,
+            Debug,
+            Info,
+            Warning,
+            Error,
+            Fatal,
+            None
         }
 
-        static public Level LogLevel { get; set; } = Level.Debug;
-        public static void Log(Level level, string message, [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = 0)
+        private static string _logFilePath;
+        private static StreamWriter? _logStream;
+
+        static Logger()
         {
-            if (LogLevel > level) return;
-            string logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [{level}] ({Path.GetFileName(filePath)}:{lineNumber}) {message}";
+            string logDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "temp", "kDrive-logdir");
+            _logFilePath = Path.Combine(logDir, $"{DateTime.Now:yyyyMMdd_HHmm}_KDriveClient.log");
+            int counter = 1;
+            while (File.Exists(_logFilePath) && counter < 10)
+            {
+                _logFilePath = Path.Combine(logDir, $"{DateTime.Now:yyyyMMdd_HHmm}_KDriveClient_{++counter}.log");
+            }
+
+            if (counter < 10)
+            {
+#pragma warning disable S2930
+                _logStream = new StreamWriter(_logFilePath, append: true) { AutoFlush = true };
+#pragma warning restore S2930
+            }
+            else
+            {
+                _logFilePath = "";
+                _logStream = null;
+            }
+        }
+
+        static public Level LogLevel
+        {
+            get => (App.Current as App)?.Data.Settings.LogLevel ?? Level.Info;
+        }
+
+        public static void Log(Level level, string message, [CallerFilePath] string filePath = "?", [CallerLineNumber] int lineNumber = -1, [CallerMemberName] string memberName = "?")
+        {
+            if (LogLevel > level || _logStream is null) return;
+            string logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [{level}] ({Path.GetFileName(filePath)}:{lineNumber}) {memberName}: {message}";
             _logStream.WriteLine(logEntry);
         }
     }

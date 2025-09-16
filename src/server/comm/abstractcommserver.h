@@ -53,9 +53,7 @@ class AbstractCommServer {
             if (_onNewConnectionCbk) _onNewConnectionCbk();
         }
 
-        void setLostConnectionCbk(const std::function<void(std::shared_ptr<AbstractCommChannel>)> &cbk) {
-            _onLostConnectionCbk = cbk;
-        }
+        void setLostConnectionCbk(const CommChannelCallback &cbk) { _onLostConnectionCbk = cbk; }
         void lostConnectionCbk(std::shared_ptr<AbstractCommChannel> channel) {
             if (_onLostConnectionCbk) _onLostConnectionCbk(channel);
         }
@@ -63,7 +61,7 @@ class AbstractCommServer {
     private:
         std::string _name;
         std::function<void()> _onNewConnectionCbk;
-        std::function<void(std::shared_ptr<AbstractCommChannel>)> _onLostConnectionCbk;
+        CommChannelCallback _onLostConnectionCbk;
 };
 
 } // namespace KDC
