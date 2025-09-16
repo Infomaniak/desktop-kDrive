@@ -25,8 +25,6 @@
 #include <functional>
 #include <filesystem>
 
-static const auto guiArgSeparator = Str(";");
-
 namespace KDC {
 
 class AbstractCommChannel;

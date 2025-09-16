@@ -40,7 +40,6 @@ class AbstractCommServer {
         virtual void close() = 0;
         /**
          * @brief start server
-         * @param pipePath is the path of the pipe for a server accepting pipe connections
          */
         virtual bool listen() = 0;
         virtual std::shared_ptr<AbstractCommChannel> nextPendingConnection() = 0;

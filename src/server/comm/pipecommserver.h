@@ -75,7 +75,6 @@ class PipeCommServer : public AbstractCommServer {
 
         void close() override;
         bool listen() override;
-        void setPipePath(const SyncPath &pipePath) { _pipePath = pipePath; }
         std::shared_ptr<AbstractCommChannel> nextPendingConnection() override;
         std::list<std::shared_ptr<AbstractCommChannel>> connections() override;
 

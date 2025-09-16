@@ -41,12 +41,13 @@ bool ExtCommChannel::sendMessage(const CommString &message) {
 CommString ExtCommChannel::readMessage() {
     static const uint64_t maxLineLength = 1024; // Allows you to read most lines at once
     CommChar data[maxLineLength];
-    CommString line;
+    CommString query;
     forever {
-        if (auto sepPos = _readBuffer.find(finderExtLineSeparator); sepPos != std::string::npos) {
-            line = _readBuffer.substr(0, sepPos);
+        if (auto sepPos = _readBuffer.find(finderExtQuerySeparator); sepPos != std::string::npos) {
+            query = _readBuffer.substr(0, sepPos);
             _readBuffer.erase(0, sepPos + 1);
-            break;
+            query.erase(sepPos);
+            return query;
         }
         if (auto readSize = readData(data, maxLineLength); readSize > 0) {
             CommString dataStr(data, readSize);
@@ -55,7 +56,7 @@ CommString ExtCommChannel::readMessage() {
             break;
         }
     }
-    return line;
+    return CommString{};
 }
 
 bool ExtCommChannel::canReadMessage() {
@@ -67,6 +68,6 @@ bool ExtCommChannel::canReadMessage() {
             break;
         }
     }
-    return _readBuffer.find(finderExtLineSeparator) != std::string::npos;
+    return _readBuffer.find(finderExtQuerySeparator) != std::string::npos;
 }
 } // namespace KDC

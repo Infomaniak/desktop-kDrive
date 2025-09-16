@@ -42,7 +42,7 @@ uint64_t SocketCommChannel::readData(CommChar *data, uint64_t maxlen) {
     try {
         /* This file is included by some files that also include "windef.h", which defines a macro "max()".
          * This causes std::numeric_limits<int>::max() to be expanded as
-         * std::numeric_limits<SnapshotRevision>::(((a) > (b)) ? (a) : (b)), which obviously doesn't compile.
+         * std::numeric_limits<int>::(((a) > (b)) ? (a) : (b)), which obviously doesn't compile.
          * The following pragma allows temporarily disabling this macro.
          */
 #pragma push_macro("max")
@@ -55,13 +55,16 @@ uint64_t SocketCommChannel::readData(CommChar *data, uint64_t maxlen) {
             LOG_DEBUG(Log::instance()->getLogger(), "Socket connection closed by peer");
             lostConnectionCbk();
             close();
+            _pendingRead = false;
             return 0;
         }
+        _pendingRead = false;
         return lenReceived;
     } catch (Poco::IOException &ex) {
         LOG_ERROR(Log::instance()->getLogger(), "Socket receiveBytes error: " << ex.displayText());
         lostConnectionCbk();
         close();
+        _pendingRead = false;
         return 0;
     }
 }
@@ -87,9 +90,9 @@ void SocketCommChannel::callbackHandler() {
                 lostConnectionCbk();
                 break;
             }
-
+            _pendingRead = true;
             readyReadCbk();
-            while (_socket.available() > 0 && !_isClosing) {
+            while (!_isClosing && _pendingRead) { // Wait until readData is called before polling again
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
         } catch (Poco::IOException &ex) {
@@ -157,6 +160,8 @@ bool SocketCommServer::listen() {
 
     LOG_DEBUG(Log::instance()->getLogger(), name() << " start");
     _serverSocketThread = std::make_unique<std::thread>(&SocketCommServer::execute, this);
+
+    // Wait until the server socket is listening (or timeout after 20s)
     int remainTries = 500;
     while (!_isListening && remainTries > 0) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -178,7 +183,7 @@ std::list<std::shared_ptr<AbstractCommChannel>> SocketCommServer::connections() 
 void SocketCommServer::execute() {
     _serverSocket.bind(Poco::Net::SocketAddress("localhost", "0"), true, true);
     while (!_stopAsked) {
-        _serverSocket.listen(1);
+        _serverSocket.listen();
         _isListening = true;
         Poco::Net::StreamSocket socket = _serverSocket.acceptConnection();
         if (_stopAsked) break;

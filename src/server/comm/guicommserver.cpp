@@ -40,17 +40,14 @@ bool GuiCommChannel::sendMessage(const CommString &message) {
 }
 
 bool GuiCommChannel::canReadMessage() {
+    if (_validJsonInBuffer) return true;
     fetchDataToBuffer();
     _validJsonInBuffer = containsValidJson(_readBuffer, _inBufferJsonEndIndex);
     return _validJsonInBuffer;
 }
 
 CommString GuiCommChannel::readMessage() {
-    if (!_validJsonInBuffer) {
-        fetchDataToBuffer();
-        _validJsonInBuffer = containsValidJson(_readBuffer, _inBufferJsonEndIndex);
-    }
-    if (!_validJsonInBuffer) {
+    if (!canReadMessage()) {
         return Str("");
     }
 
@@ -59,11 +56,6 @@ CommString GuiCommChannel::readMessage() {
     const CommString truncatedLogMessage = truncateLongLogMessage(message);
     LOGW_INFO(Log::instance()->getLogger(), L"Reading message: " << CommonUtility::commString2WStr(truncatedLogMessage)
                                                                  << L" from: " << CommonUtility::s2ws(id()));
-
-    if (canReadMessage()) {
-        LOG_INFO(Log::instance()->getLogger(), "More messages available in buffer, trigger another read");
-        readyReadCbk();
-    }
     return message;
 }
 
@@ -76,12 +68,12 @@ bool GuiCommChannel::containsValidJson(const CommString &message, size_t &endInd
     // Simple check for matching braces/brackets
     CommChar openChar = message[0];
     CommChar closeChar = (openChar == '{') ? '}' : ']';
-    int balance = 0;
-    for (size_t i = 0; i < message.size(); ++i) {
+    int balance = 1;
+    for (size_t i = 1; i < message.size(); ++i) {
         if (message[i] == openChar) {
-            balance++;
+            ++balance;
         } else if (message[i] == closeChar) {
-            balance--;
+            --balance;
             if (balance == 0) {
                 endIndex = i;
                 return true;

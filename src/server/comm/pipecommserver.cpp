@@ -28,7 +28,7 @@
 #include <stdio.h>
 #include <tchar.h>
 #include <strsafe.h>
-#include "qfileinfo.h"
+#include <QFileInfo>
 #include <QDir>
 
 #define PIPE_INSTANCES 10
@@ -88,7 +88,6 @@ uint64_t PipeCommChannel::bytesAvailable() const {
     return _inBuffer.size();
 }
 
-
 PipeCommServer::PipeCommServer(const std::string &name) :
     AbstractCommServer(name) {
     _pipePath = createPipe();
@@ -114,7 +113,7 @@ bool PipeCommServer::listen() {
         return false;
     }
 
-    LOG_DEBUG(Log::instance()->getLogger(), name() << " start");
+    LOGW_INFO(Log::instance()->getLogger(), L"Starting " << CommonUtility::s2ws(name()) << L": " << Utility::formatSyncPath(_pipePath));
 
     _stopAsked = false;
     _isRunning = true;
@@ -423,7 +422,6 @@ SyncPath PipeCommServer::createPipe() {
             LOGW_WARN(Log::instance()->getLogger(), L"Failed to create pipe: " << Utility::formatSyncPath(pipePath));
         }
     }
-
     return pipePath;
 }
 } // namespace KDC

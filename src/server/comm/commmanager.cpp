@@ -209,22 +209,15 @@ void CommManager::onExtQueryReceived(std::shared_ptr<AbstractCommChannel> channe
     LOG_IF_FAIL(Log::instance()->getLogger(), channel)
 
     while (channel->canReadMessage() || channel->bytesAvailable() > 0) {
-        CommString line;
-        while (!line.ends_with(finderExtQuerySeparator)) {
-            if (!channel->canReadMessage() && channel->bytesAvailable() == 0) {
-                LOGW_WARN(Log::instance()->getLogger(), L"Failed to parse Extension message - msg="
-                                                                << CommonUtility::commString2WStr(line) << L" channel="
-                                                                << CommonUtility::s2ws(channel->id()));
-                return;
-            }
-            line.append(channel->readMessage());
+        CommString query = channel->readMessage();
+        if (query.empty()) {
+            LOG_WARN(Log::instance()->getLogger(), "Failed to read message or empty message");
+            break;
         }
-        // Remove the separator
-        line.erase(line.find(finderExtQuerySeparator));
-        LOGW_INFO(Log::instance()->getLogger(), L"Received Extension message - msg=" << CommonUtility::commString2WStr(line)
+        LOGW_INFO(Log::instance()->getLogger(), L"Received Extension message - msg=" << CommonUtility::commString2WStr(query)
                                                                                      << L" channel="
                                                                                      << CommonUtility::s2ws(channel->id()));
-        executeExtCommand(line, channel);
+        executeExtCommand(query, channel);
     }
 }
 
@@ -249,7 +242,7 @@ void CommManager::onGuiQueryReceived(std::shared_ptr<AbstractCommChannel> channe
         CommString query = channel->readMessage();
         LOGW_INFO(Log::instance()->getLogger(), L"Query received: " << CommonUtility::commString2WStr(query));
 
-        const auto queryArgs = CommonUtility::splitCommString(query, guiArgSeparator);
+        const auto queryArgs = CommonUtility::splitCommString(query, Str("TODO: Replace this behaviour with json handling"));
         // Query ID
         const int id = std::stoi(queryArgs[0]);
         // Query type

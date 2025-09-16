@@ -43,6 +43,7 @@ class SocketCommChannel : public AbstractCommChannel {
 
     private:
         bool _isClosing = false;
+        bool _pendingRead = false;
         std::thread _callbackThread;
         Poco::Net::StreamSocket _socket;
 
