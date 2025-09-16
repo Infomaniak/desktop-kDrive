@@ -32,13 +32,11 @@ namespace Infomaniak.kDrive.TrayIcon
     public class TrayIconManager
     {
         private TaskbarIcon? _trayIcon;
-        private Window? _window;
         private bool _handleClosedEvents = true;
 
-        public void Initialize(Window window)
+        public void Initialize()
         {
             Logger.Log(Logger.Level.Info, "Initializing TrayIconManager");
-            _window = window;
 
             // Find resources from the app's main window or application resources
             if (Application.Current.Resources["ShowWindowCommand"] is XamlUICommand showCommand)
@@ -72,17 +70,25 @@ namespace Infomaniak.kDrive.TrayIcon
             else
             {
                 Logger.Log(Logger.Level.Error, "TrayIcon resource not found in application resources, unable to initialize tray icon.");
-                _window.Show();
+                (Application.Current as App)?.CurrentWindow?.Show();
             }
 
-            _window.Closed += (sender, args) =>
+            ConfigureWindowEventHandler();
+        }
+
+        public void ConfigureWindowEventHandler()
+        {
+            if (Application.Current is App app && app.CurrentWindow != null)
             {
-                if (_handleClosedEvents)
+                app.CurrentWindow.Closed += (sender, args) =>
                 {
-                    args.Handled = true;
-                    _window.Hide();
-                }
-            };
+                    if (_handleClosedEvents)
+                    {
+                        args.Handled = true;
+                        app.CurrentWindow.Hide();
+                    }
+                };
+            }
         }
         public void SetIcon_ok()
         {
@@ -109,10 +115,10 @@ namespace Infomaniak.kDrive.TrayIcon
         {
             // Bring to front
             Logger.Log(Logger.Level.Info, "ShowWindowCommand executed - showing and activating main window");
-            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(_window);
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle((Application.Current as App)?.CurrentWindow);
             var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
             var appWindow = AppWindow.GetFromWindowId(windowId);
-            if (appWindow.Presenter is OverlappedPresenter presenter)
+            if (appWindow != null && appWindow.Presenter is OverlappedPresenter presenter)
             {
                 presenter.IsMaximizable = false;
                 presenter.IsMinimizable = true;
@@ -122,21 +128,21 @@ namespace Infomaniak.kDrive.TrayIcon
                 presenter.Restore();
             }
 
-            _window?.Show();
-            _window?.Activate();
+            (Application.Current as App)?.CurrentWindow?.Show();
+            (Application.Current as App)?.CurrentWindow?.Activate();
             SetIcon_ok();
 
         }
         private void ExitApplicationCommand_ExecuteRequested(object? sender, ExecuteRequestedEventArgs args)
         {
-            Logger.Log(Logger.Level.Info, "ExitApplicationCommand executed - exiting application"); 
+            Logger.Log(Logger.Level.Info, "ExitApplicationCommand executed - exiting application");
             _handleClosedEvents = false;
             _trayIcon?.Dispose();
 
-            _window?.Close();
+            (Application.Current as App)?.CurrentWindow?.Close();
 
             // If window was never created, exit directly
-            if (_window == null)
+            if ((Application.Current as App)?.CurrentWindow == null)
             {
                 Environment.Exit(0);
             }
@@ -144,7 +150,8 @@ namespace Infomaniak.kDrive.TrayIcon
 
         private void SetIcon(string fileName)
         {
-            if (_trayIcon == null) return;
+            if (_trayIcon == null)
+                return;
 
             try
             {

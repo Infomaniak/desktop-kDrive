@@ -18,7 +18,7 @@ namespace Infomaniak.kDrive
 
         public static async Task<string> GetToken()
         {
-            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(((App)Application.Current).Window);
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(((App)Application.Current).CurrentWindow);
             var parentWindowId = Win32Interop.GetWindowIdFromWindow(hWnd);
 
             AuthRequestParams authRequestParams = AuthRequestParams.CreateForAuthorizationCodeRequest(_clientId, _redirectUri);

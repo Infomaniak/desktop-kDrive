@@ -47,7 +47,16 @@ namespace Infomaniak.kDrive
 {
     public partial class App : Application
     {
-        public Window? Window { get; set; }
+        private Window? _currentWindow;
+        public Window? CurrentWindow
+        {
+            get => _currentWindow;
+            private set
+            {
+                _currentWindow = value;
+                TrayIcoManager.ConfigureWindowEventHandler();
+            }
+        }
         public TrayIcon.TrayIconManager TrayIcoManager { get; private set; }
         public ServerCommunication.CommClient ComClient { get; set; } = new ServerCommunication.CommClient();
         public AppModel Data { get; set; } = new AppModel();
@@ -82,11 +91,25 @@ namespace Infomaniak.kDrive
             }
 
             Logger.Log(Logger.Level.Info, $"App launched with kind: {args.UWPLaunchActivatedEventArgs.Kind}, arguments: {args.Arguments}");
-
-            Window = new MainWindow();
-            TrayIcoManager.Initialize(Window);
+            AppModel.UIThreadDispatcher = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread(); // Save the UI thread dispatcher for later use in view models
+            CurrentWindow = new MainWindow();
+            TrayIcoManager.Initialize();
             await ComClient.Initialize();
             await Data.InitializeAsync().ConfigureAwait(false);
+        }
+   
+        public void StartOnBoarding()
+        {
+            CurrentWindow?.Close();
+            CurrentWindow = new OnBoardingWindow();
+            ((OnBoardingWindow)CurrentWindow).Closed += (s, e) =>
+            {
+                Logger.Log(Logger.Level.Info, "OnBoardingWindow closed, restarting MainWindow.");
+                CurrentWindow = new MainWindow();
+                CurrentWindow.Activate();
+            };
+
+            CurrentWindow.Activate();
         }
     }
 }

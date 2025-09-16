@@ -40,50 +40,15 @@ using Windows.Foundation.Collections;
 
 namespace Infomaniak.kDrive
 {
-    public sealed partial class MainWindow : Window
+    public sealed partial class OnBoardingWindow : Window
     {
         public readonly AppModel _viewModel = ((App)Application.Current).Data;
         public AppModel ViewModel { get { return _viewModel; } }
-        public MainWindow()
+        public OnBoardingWindow()
         {
             InitializeComponent();
             this.ExtendsContentIntoTitleBar = true;  // enable custom titlebar
-            this.SetTitleBar(AppTitleBar);
-        }
-
-        private void navView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
-        {
-            var selectedItem = args.SelectedItem as NavigationViewItem;
-            if (selectedItem != null)
-            {
-                // Navigate to the selected page
-                switch (selectedItem.Tag)
-                {
-                    case "HomePage":
-                        contentFrame.Navigate(typeof(HomePage));
-                        break;
-                    case "ActivityPage":
-                        contentFrame.Navigate(typeof(ActivityPage));
-                        break;
-                    case "Settings":
-                        ((App)Application.Current).StartOnBoarding();
-                        break;
-                    default:
-                        Logger.Log(Logger.Level.Warning, $"Unknown navigation tag: {selectedItem.Tag}... Going to HomePage");
-                        contentFrame.Navigate(typeof(HomePage));
-                        break;
-                }
-            }
-        }
-
-        private void navView_BackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
-        {
-            if (contentFrame.CanGoBack)
-            {
-                contentFrame.GoBack();
-                navView.SelectedItem = navView.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item => item.Tag.ToString() == ((Frame)contentFrame).Content.GetType().Name);
-
-            }
+            //this.SetTitleBar(AppTitleBar);
         }
     }
 }
