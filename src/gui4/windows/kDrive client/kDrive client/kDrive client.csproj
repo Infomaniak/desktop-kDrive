@@ -13,6 +13,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="CustomControls\AppTitleBarLogo.xaml" />
     <None Remove="Pages\KSuiteUpgradeBar.xaml" />
   </ItemGroup>
 
@@ -74,6 +75,9 @@
     <Page Update="HomePage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Update="Pages\ActivityPage - Copy.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Pages\ErrorPage.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -85,6 +89,11 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="AnimatedElements\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="CustomControls\AppTitleBarLogo.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="CustomControls\SyncErrorBar.xaml">

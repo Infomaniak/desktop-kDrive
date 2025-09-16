@@ -25,6 +25,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModel="using:Infomaniak.kDrive.ViewModels"
         xmlns:converters="using:Infomaniak.kDrive.Converters"
+        xmlns:customControls="using:Infomaniak.kDrive.CustomControls"
         mc:Ignorable="d"
         Title="kDrive">
 
@@ -58,25 +59,7 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Left: Logo + App Name -->
-                <StackPanel Grid.Column="0"
-                            Orientation="Horizontal"
-                            VerticalAlignment="Center"
-                            Spacing="8">
-                    <Image Source="/Assets/kdrive.png"
-                           Height="28"
-                           Width="28" />
-                    <TextBlock x:Name="AppTitle"
-                               Text="kDrive"
-                               FontSize="14"
-                               FontWeight="SemiBold"
-                               VerticalAlignment="Center" />
-                    <TextBlock x:Name="AppTitle_preview"
-                               Text="preview"
-                               FontSize="10"
-                               FontWeight="Light"
-                               VerticalAlignment="Center"
-                               Foreground="OrangeRed" />
-                </StackPanel>
+                <customControls:AppTitleBarLogo Grid.Column="0"/>
 
                 <!-- Middle: Search Box (centered in its column, which takes remaining space) -->
                 <AutoSuggestBox x:Uid="W_MainWindow_TitleBar_SearchBox"
