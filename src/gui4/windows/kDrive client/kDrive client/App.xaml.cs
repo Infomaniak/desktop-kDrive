@@ -101,8 +101,8 @@ namespace Infomaniak.kDrive
         public void StartOnBoarding()
         {
             CurrentWindow?.Close();
-            CurrentWindow = new OnBoardingWindow();
-            ((OnBoardingWindow)CurrentWindow).Closed += (s, e) =>
+            CurrentWindow = new OnBoarding.OnBoardingWindow();
+            ((OnBoarding.OnBoardingWindow)CurrentWindow).Closed += (s, e) =>
             {
                 Logger.Log(Logger.Level.Info, "OnBoardingWindow closed, restarting MainWindow.");
                 CurrentWindow = new MainWindow();

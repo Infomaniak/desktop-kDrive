@@ -34,21 +34,32 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using System.Reactive.Linq;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
-namespace Infomaniak.kDrive
+namespace Infomaniak.kDrive.OnBoarding
 {
     public sealed partial class OnBoardingWindow : Window
     {
-        public readonly AppModel _viewModel = ((App)Application.Current).Data;
+        private readonly AppModel _viewModel = ((App)Application.Current).Data;
+        private OnBoardingViewModel _onBoardingViewModel = new OnBoardingViewModel();
+
         public AppModel ViewModel { get { return _viewModel; } }
         public OnBoardingWindow()
         {
             InitializeComponent();
             this.ExtendsContentIntoTitleBar = true;  // enable custom titlebar
-            //this.SetTitleBar(AppTitleBar);
+            this.SetTitleBar(AppTitleBar);
+            ContentFrame.Navigate(typeof(OnBoarding.WelcomePage));
         }
     }
+
+    public class OnBoardingViewModel : ObservableObject
+    {
+
+    }
+
 }

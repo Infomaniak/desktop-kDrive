@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page x:Class="Infomaniak.kDrive.OnBoarding.WelcomePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:local="using:Infomaniak.kDrive"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+      xmlns:converters="using:Infomaniak.kDrive.Converters"
+      xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
+      mc:Ignorable="d">
+    <Page.Resources>
+        <converters:BooleanToInvertedVisibilityConverter  x:Key="BooleanToInvertedVisibilityConverter" />
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <converters:BooleanToInvertedBooleanConverter x:Key="BooleanToInvertedBooleanConverter" />
+    </Page.Resources>
+
+    <Grid>
+        <StackPanel Orientation="Vertical"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+
+            <!-- Titre -->
+            <TextBlock Text="Bienvenue dans kDrive !"
+                       FontSize="24"
+                       FontWeight="Bold"
+                       Foreground="{ThemeResource TextFillColorPrimary}" />
+
+            <!-- Sous-titre -->
+            <TextBlock Text="Le cloud privé, rapide et sécurisé, hébergé en Suisse."
+                       FontSize="14"
+                       TextWrapping="WrapWholeWords"
+                       Foreground="{ThemeResource TextFillColorSecondary}"
+                       Margin="0,4,0,16" />
+
+            <!-- Texte secondaire -->
+            <TextBlock Text="Connectez-vous et gardez vos documents synchronisés sur tous vos appareils."
+                       FontSize="14"
+                       TextWrapping="WrapWholeWords"
+                       Foreground="{ThemeResource TextFillColorSecondary}"
+                       Margin="0,4,0,16" />
+
+            <!-- Boutons -->
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Left"
+                        Spacing="16">
+
+                <Button Content="Se connecter"
+                        Padding="12,6"
+                        Background="#3B82F6"
+                        Foreground="White"
+                        BorderBrush="#3B82F6"
+                        CornerRadius="6" />
+
+                <Button Content="Créer un compte"
+                        Padding="12,6"
+                        Background="Transparent"
+                        Foreground="#3B82F6"
+                        BorderBrush="Transparent" />
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+
+</Page>
