@@ -34,12 +34,9 @@ class SidebarHeaderView: NSView {
         imageView.imageScaling = .scaleProportionallyUpOrDown
         addSubview(imageView)
 
-        let textField = NSTextField(string: "kDrive")
+        let textField = NSTextField(labelWithString: "kDrive")
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.font = .preferredFont(forTextStyle: .title3)
-        textField.isEditable = false
-        textField.isBordered = false
-        textField.isSelectable = false
         textField.backgroundColor = .clear
         addSubview(textField)
 
