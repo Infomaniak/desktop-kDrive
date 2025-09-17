@@ -274,4 +274,29 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
     <value>Mettre à jour</value>
     <comment>Message of the button to start the update</comment>
   </data>
+  <data name="Global_SignupUrl" xml:space="preserve">
+    <value>https://www.infomaniak.com/fr/ksuite</value>
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Title.Text" xml:space="preserve">
+    <value>Connectez-vous dans le navigateur</value>
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Processing_Title.Text" xml:space="preserve">
+    <value>Encore un instant...</value>
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_RestartOAuthButton.Content" xml:space="preserve">
+    <value>Relancer la connexion</value>
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Success_Title.Text" xml:space="preserve">
+    <value>Connexion réussie !</value>
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Subtitle.Text" xml:space="preserve">
+    <value>Une fois connecté, vous pourrez passer à l’étape suivante.</value>
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Processing_Subtitle.Text" xml:space="preserve">
+    <value>Nous récupérons vos informations...</value>
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Success_Subtitle.Text" xml:space="preserve">
+    <value />
+    <comment>Empty</comment>
+  </data>
 </root>

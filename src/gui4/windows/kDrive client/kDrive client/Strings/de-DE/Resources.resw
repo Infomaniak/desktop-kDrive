@@ -249,4 +249,28 @@
   <data name="CC_UpdateAvailableBar_link.Content" xml:space="preserve">
     <value />
   </data>
+  <data name="Global_SignupUrl" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Processing_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_RestartOAuthButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Success_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Processing_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Success_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
 </root>

@@ -9,13 +9,7 @@
       xmlns:converters="using:Infomaniak.kDrive.Converters"
       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
       mc:Ignorable="d">
-    <Page.Resources>
-        <converters:BooleanToInvertedVisibilityConverter  x:Key="BooleanToInvertedVisibilityConverter" />
-        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        <converters:BooleanToInvertedBooleanConverter x:Key="BooleanToInvertedBooleanConverter" />
-    </Page.Resources>
-
-    <Grid>
+     <Grid>
         <StackPanel Orientation="Vertical"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center">
@@ -31,32 +25,32 @@
                        FontSize="14"
                        TextWrapping="WrapWholeWords"
                        Foreground="{ThemeResource TextFillColorSecondary}"
-                       Margin="0,4,0,16" />
+                       Margin="0,4,0,8" />
 
             <!-- Texte secondaire -->
             <TextBlock Text="Connectez-vous et gardez vos documents synchronisés sur tous vos appareils."
                        FontSize="14"
                        TextWrapping="WrapWholeWords"
                        Foreground="{ThemeResource TextFillColorSecondary}"
-                       Margin="0,4,0,16" />
+                       Margin="0,4,0,32" />
 
             <!-- Boutons -->
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Left"
                         Spacing="16">
 
-                <Button Content="Se connecter"
-                        Padding="12,6"
-                        Background="#3B82F6"
-                        Foreground="White"
-                        BorderBrush="#3B82F6"
-                        CornerRadius="6" />
+                <Button Style="{StaticResource Infomaniak.Style.Button.WithBackground}"
+                        Click="SigninButton_Click">
+                    <Grid>
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock> Se connecter</TextBlock>
+                        </StackPanel>
+                    </Grid>
+                </Button>
 
                 <Button Content="Créer un compte"
-                        Padding="12,6"
-                        Background="Transparent"
-                        Foreground="#3B82F6"
-                        BorderBrush="Transparent" />
+                        Style="{StaticResource Infomaniak.Style.Button.WithoutBackground}"
+                        Click="SignupButton_Click" />
             </StackPanel>
         </StackPanel>
     </Grid>
