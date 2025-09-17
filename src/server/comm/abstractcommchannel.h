@@ -84,7 +84,6 @@ protected:
     private:
         CommChannelCallback _onLostConnectionCbk;
         CommChannelCallback _onReadyReadCbk;
-        CommChannelCallback _onDestroyedCbk;
 
         friend class TestSocketComm;
 };
