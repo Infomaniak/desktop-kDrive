@@ -18,7 +18,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
 
-namespace Infomaniak.kDrive
+namespace Infomaniak.kDrive.Pages
 {
     public sealed partial class ErrorPage : Page
     {

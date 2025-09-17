@@ -60,17 +60,17 @@ namespace Infomaniak.kDrive
                 switch (selectedItem.Tag)
                 {
                     case "HomePage":
-                        contentFrame.Navigate(typeof(HomePage));
+                        contentFrame.Navigate(typeof(Pages.HomePage));
                         break;
                     case "ActivityPage":
-                        contentFrame.Navigate(typeof(ActivityPage));
+                        contentFrame.Navigate(typeof(Pages.ActivityPage));
                         break;
                     case "Settings":
                         ((App)Application.Current).StartOnBoarding();
                         break;
                     default:
                         Logger.Log(Logger.Level.Warning, $"Unknown navigation tag: {selectedItem.Tag}... Going to HomePage");
-                        contentFrame.Navigate(typeof(HomePage));
+                        contentFrame.Navigate(typeof(Pages.HomePage));
                         break;
                 }
             }

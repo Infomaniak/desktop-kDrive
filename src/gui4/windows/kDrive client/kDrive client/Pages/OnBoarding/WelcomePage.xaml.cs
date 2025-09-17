@@ -1,5 +1,6 @@
 using Infomaniak.kDrive.Pages.Onboarding;
 using Infomaniak.kDrive.ViewModels;
+using Infomaniak.kDrive.OnBoarding;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -18,12 +19,12 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
 
-namespace Infomaniak.kDrive.OnBoarding
+namespace Infomaniak.kDrive.Pages.Onboarding
 {
     public sealed partial class WelcomePage : Page
     {
         private AppModel _viewModel = ((App)Application.Current).Data;
-        private OnboardingViewModel _onBoardingViewModel;
+        private OnboardingViewModel? _onBoardingViewModel;
         public AppModel ViewModel { get { return _viewModel; } }
         public WelcomePage()
         {

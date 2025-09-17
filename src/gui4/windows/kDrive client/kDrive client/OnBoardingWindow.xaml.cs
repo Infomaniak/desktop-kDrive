@@ -59,7 +59,7 @@ namespace Infomaniak.kDrive.OnBoarding
             {
                 // TODO: Go directly to Drive selection
             }
-            ContentFrame.Navigate(typeof(OnBoarding.WelcomePage), _onBoardingViewModel);
+            ContentFrame.Navigate(typeof(Pages.Onboarding.WelcomePage), _onBoardingViewModel);
         }
     }
 
