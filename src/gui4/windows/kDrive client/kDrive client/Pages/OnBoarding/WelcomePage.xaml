@@ -15,23 +15,18 @@
                     VerticalAlignment="Center">
 
             <!-- Titre -->
-            <TextBlock Text="Bienvenue dans kDrive !"
+            <TextBlock x:Name="Title" 
+                x:Uid="Page_Onboarding_WelcomePage_Title"
                        FontSize="24"
                        FontWeight="Bold"
                        Foreground="{ThemeResource TextFillColorPrimary}" />
 
             <!-- Sous-titre -->
-            <TextBlock Text="Le cloud privé, rapide et sécurisé, hébergé en Suisse."
+            <TextBlock x:Uid="Page_Onboarding_WelcomePage_Subtitle"
                        FontSize="14"
                        TextWrapping="WrapWholeWords"
                        Foreground="{ThemeResource TextFillColorSecondary}"
-                       Margin="0,4,0,8" />
-
-            <!-- Texte secondaire -->
-            <TextBlock Text="Connectez-vous et gardez vos documents synchronisés sur tous vos appareils."
-                       FontSize="14"
-                       TextWrapping="WrapWholeWords"
-                       Foreground="{ThemeResource TextFillColorSecondary}"
+                       MaxWidth="311"
                        Margin="0,4,0,32" />
 
             <!-- Boutons -->
@@ -40,19 +35,19 @@
                         Spacing="16">
 
                 <Button Style="{StaticResource Infomaniak.Style.Button.WithBackground}"
-                        Click="SigninButton_Click">
+                        Click="SigninButton_Click"
+                        x:Uid="Page_Onboarding_WelcomePage_SigninButton">
                     <Grid>
                         <StackPanel Orientation="Vertical">
-                            <TextBlock> Se connecter</TextBlock>
+                            <TextBlock />
                         </StackPanel>
                     </Grid>
                 </Button>
 
-                <Button Content="Créer un compte"
+                <Button x:Uid="Page_Onboarding_WelcomePage_SignupButton"
                         Style="{StaticResource Infomaniak.Style.Button.WithoutBackground}"
                         Click="SignupButton_Click" />
             </StackPanel>
         </StackPanel>
     </Grid>
-
 </Page>

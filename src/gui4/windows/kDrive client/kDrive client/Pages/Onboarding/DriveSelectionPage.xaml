@@ -31,7 +31,7 @@
 
         <!-- Title -->
         <TextBlock Grid.Row="0"
-                   Text="Content de vous retrouver !"
+                   x:Uid="Page_Onboarding_DriveSelectionPage_Title"
                    FontSize="28"
                    FontWeight="Bold"
                    Foreground="{ThemeResource TextFillColorPrimary}" />
@@ -45,14 +45,14 @@
             <PersonPicture ProfilePicture="https://learn.microsoft.com/windows/uwp/contacts-and-calendar/images/shoulder-tap-static-payload.png"
                            Height="24"
                            Width="24" />
-            <TextBlock Text="Florent Lazarre"
+            <TextBlock Text="{x:Bind ObViewModel.SelectedUser.Name}"
                        VerticalAlignment="Center"
                        FontSize="14" />
         </StackPanel>
 
         <!-- Subtitle -->
         <TextBlock Grid.Row="2"
-                   Text="Choisissez les kDrive à synchroniser sur cet ordinateur :"
+                   x:Uid="Page_Onboarding_DriveSelectionPage_Subtitle"
                    Margin="0,16,0,8"
                    FontSize="14"
                    Foreground="{ThemeResource TextFillColorSecondary}" />
@@ -67,7 +67,7 @@
                 <DataTemplate x:DataType="viewmodels:Drive">
                     <Grid>
                         <ToolTipService.ToolTip>
-                            <ToolTip Content="Ce drive est déja configuré, rendez vous dans vos paramètres pour le modifier."
+                            <ToolTip x:Uid="Page_Onboarding_DriveSelectionPage_DriveTooltip"
                                      VerticalOffset="-80"
                                      IsEnabled="{x:Bind Syncs.Count, Converter={StaticResource IntegerToBooleanConverter}}" />
                         </ToolTipService.ToolTip>
@@ -110,7 +110,7 @@
         <StackPanel Grid.Row="4"
                     Margin="0,24,0,0"
                     Orientation="Horizontal">
-            <Button Content="Terminer la configuration"
+            <Button x:Uid="Page_Onboarding_DriveSelectionPage_FinishButton"
                     HorizontalAlignment="Left"
                     Margin="0,0,16,0"
                     Style="{StaticResource Infomaniak.Style.Button.WithBackground}"
@@ -119,7 +119,7 @@
                     />
 
             <Button x:Name="AdvancedButton"
-                    Content="Paramètres avancés"
+                    x:Uid="Page_Onboarding_DriveSelectionPage_AdvancedButton"
                     HorizontalAlignment="Left"
                     Margin="0,0,16,0"
                     Style="{StaticResource Infomaniak.Style.Button.WithoutBackground}"
@@ -129,13 +129,12 @@
 
         <!-- Advanced settings dialog -->
         <ContentDialog x:Name="AdvancedSettingsDialog"
-                       PrimaryButtonText="Confirmer"
+                       x:Uid="Page_Onboarding_DriveSelectionPage_AdvancedDialog"
                        IsPrimaryButtonEnabled="False"
-                       CloseButtonText="Annuler"
                        CloseButtonClick="AdvancedSettingsDialog_CloseButtonClick"
                        Opened="AdvancedSettingsDialog_Opened">
             <ContentDialog.Title>
-                <TextBlock Text="Paramètres avancés" />
+                <TextBlock x:Uid="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Title" />
             </ContentDialog.Title>
             <Grid>
                 <Grid.RowDefinitions>
@@ -144,14 +143,14 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <TextBlock Grid.Row="0"
-                           TextWrapping="WrapWholeWords"
-                           Text="Personnalisez l’emplacement de vos dossiers kDrive" />
+                           x:Uid="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Description"
+                           TextWrapping="WrapWholeWords" />
                 <InfoBar Grid.Row="1"
+                         x:Uid="Page_Onboarding_DriveSelectionPage_AdvancedDialog_InfoBar"
                          IsOpen="True"
                          IsClosable="False"
                          Severity="Informational"
-                         Margin="0,8,0,16"
-                         Message="Sélectionnez un dossier vide pour chaque kDrive." />
+                         Margin="0,8,0,16" />
                 <ListView Grid.Row="2"
                           SelectionMode="None"
                           IsItemClickEnabled="False"
@@ -185,7 +184,7 @@
                                                    TextWrapping="Wrap" />
                                     </StackPanel>
                                     <Button Grid.Column="2"
-                                            Content="Personaliser"
+                                            x:Uid="Page_Onboarding_DriveSelectionPage_AdvancedDialog_CustomizeButton"
                                             Style="{StaticResource Infomaniak.Style.Button.WithoutBackground}"
                                             Click="ChangeSyncPathButton_Click" />
                                 </Grid>
@@ -194,12 +193,11 @@
                     </ListView.ItemTemplate>
                 </ListView>
                 <TeachingTip x:Name="FolderSelectionError"
-                             Title="Ce dossier ne peut pas être sélectionné"
+                             x:Uid="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip"
                              IsLightDismissEnabled="True"
                              PlacementMargin="20"
                              PreferredPlacement="Auto"
-                             Background="DarkRed"
-                             Subtitle="Veuillez choisir un dossier vide qui ne se trouve pas a la racine d'un lecteur." />
+                             Background="DarkRed" />
             </Grid>
         </ContentDialog>
     </Grid>

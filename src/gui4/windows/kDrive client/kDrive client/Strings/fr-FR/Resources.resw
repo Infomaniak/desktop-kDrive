@@ -299,4 +299,52 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
     <value />
     <comment>Empty</comment>
   </data>
+  <data name="Page_Onboarding_WelcomePage_Title.Text" xml:space="preserve">
+    <value>Bienvenue dans kDrive</value>
+  </data>
+  <data name="Page_Onboarding_WelcomePage_Subtitle.Text" xml:space="preserve">
+    <value>Connectez-vous pour commencer à utiliser kDrive, le cloud éthique et sécurisé, hébergé en Suisse.</value>
+  </data>
+  <data name="Page_Onboarding_WelcomePage_SigninButton.Content" xml:space="preserve">
+    <value>Connexion</value>
+  </data>
+  <data name="Page_Onboarding_WelcomePage_SignupButton.Content" xml:space="preserve">
+    <value>Créer un compte</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_Title.Text" xml:space="preserve">
+    <value>Content de vous retrouver !</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_Subtitle.Text" xml:space="preserve">
+    <value>Choisissez les kDrive à synchroniser sur cet ordinateur :</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_FinishButton.Content" xml:space="preserve">
+    <value>Terminer la configuration</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedButton.Content" xml:space="preserve">
+    <value>Paramètres avancés</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Confirmer</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.CloseButtonText" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Title.Text" xml:space="preserve">
+    <value>Paramètres avancés</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Description.Text" xml:space="preserve">
+    <value>Personnalisez l’emplacement de vos dossiers kDrive</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_InfoBar.Message" xml:space="preserve">
+    <value>Sélectionnez un dossier vide pour chaque kDrive.</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_CustomizeButton.Content" xml:space="preserve">
+    <value>Personnaliser</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Title" xml:space="preserve">
+    <value>Ce dossier ne peut pas être sélectionné</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Subtitle" xml:space="preserve">
+    <value>Veuillez choisir un dossier vide qui ne se trouve pas a la racine d'un lecteur.</value>
+  </data>
 </root>

@@ -273,4 +273,52 @@
   <data name="Page_Onboarding_OAuthLoadingPage_Success_Subtitle.Text" xml:space="preserve">
     <value />
   </data>
+  <data name="Page_Onboarding_WelcomePage_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_WelcomePage_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_WelcomePage_SigninButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_WelcomePage_SignupButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_FinishButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.PrimaryButtonText" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.CloseButtonText" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Description.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_InfoBar.Message" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_CustomizeButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Title" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Subtitle" xml:space="preserve">
+    <value />
+  </data>
 </root>
