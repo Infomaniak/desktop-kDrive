@@ -72,7 +72,7 @@
         </Image>
         <Border Grid.Row="1"
                 Grid.Column="0">
-            <Border.Background>
+            <!--<Border.Background>
                 <RadialGradientBrush MappingMode="RelativeToBoundingBox"
                                      Center="-0.3,1.3"
                                      RadiusX="5"
@@ -87,7 +87,7 @@
                     <GradientStop Color="Transparent"
                                   Offset="0.2" />
                 </RadialGradientBrush>
-            </Border.Background>
+            </Border.Background>-->
 
             <Frame x:Name="ContentFrame" />
         </Border>

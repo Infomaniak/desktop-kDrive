@@ -1,5 +1,6 @@
 using Infomaniak.kDrive.OnBoarding;
 using Infomaniak.kDrive.ViewModels;
+using Infomaniak.kDrive.Types;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -17,7 +18,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
     {
         private static TimeSpan _oauthTimeOut = TimeSpan.FromMinutes(5);
         private readonly AppModel _viewModel = ((App)Application.Current).Data;
-        private OnboardingViewModel? _onboardingViewModel;
+        private ViewModels.Onboarding? _onboardingViewModel;
 
         private Task? _onBoardingTask;
         private CancellationTokenSource _onAuthCts = new(_oauthTimeOut);
@@ -38,7 +39,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
         {
             base.OnNavigatedTo(e);
 
-            if (e.Parameter is OnboardingViewModel obvm)
+            if (e.Parameter is ViewModels.Onboarding obvm)
             {
                 _onboardingViewModel = obvm;
                 _onboardingViewModel.PropertyChanged += OnOnboardingViewModelPropertyChanged;
@@ -61,23 +62,23 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
         private void OnOnboardingViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(OnboardingViewModel.CurrentOAuth2State) &&
+            if (e.PropertyName == nameof(ViewModels.Onboarding.CurrentOAuth2State) &&
                 _onboardingViewModel is not null)
             {
                 HandleOAuth2StateChanged(_onboardingViewModel.CurrentOAuth2State);
             }
         }
 
-        private async void HandleOAuth2StateChanged(OnboardingViewModel.OAuth2State state)
+        private async void HandleOAuth2StateChanged(OAuth2State state)
         {
             var ressourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
             switch (state)
             {
-                case OnboardingViewModel.OAuth2State.None:
+                case OAuth2State.None:
                     // Should not happen
                     break;
 
-                case OnboardingViewModel.OAuth2State.WaitingForUserAction:
+                case OAuth2State.WaitingForUserAction:
                     LoadingProgressBar.ShowError = false;
                     LoadingProgressBar.IsIndeterminate = true;
                     LoadingProgressBar.Foreground = new SolidColorBrush(Colors.Blue);
@@ -86,7 +87,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     RestartOAuthButton.Visibility = Visibility.Visible;
                     break;
 
-                case OnboardingViewModel.OAuth2State.ProcessingResponse:
+                case OAuth2State.ProcessingResponse:
                     LoadingProgressBar.ShowError = false;
                     LoadingProgressBar.IsIndeterminate = true;
                     LoadingProgressBar.Foreground = new SolidColorBrush(Colors.Blue);
@@ -95,7 +96,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     RestartOAuthButton.Visibility = Visibility.Collapsed;
                     break;
 
-                case OnboardingViewModel.OAuth2State.Success:
+                case OAuth2State.Success:
                     LoadingProgressBar.ShowError = false;
                     LoadingProgressBar.Value = 100;
                     LoadingProgressBar.IsIndeterminate = false;
@@ -107,17 +108,11 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     await Task.Delay(1000);
                     AppModel.UIThreadDispatcher.TryEnqueue(() =>
                     {
-                        if (Frame == null)
-                        {
-                            Logger.Log(Logger.Level.Error, "Unable to find parent Frame for navigation");
-                            throw new ApplicationException("Unable to find parent Frame for navigation");
-                        }
-
-                        // frame.Navigate(typeof(DriveSelectionPage)); TODO after implementing Drive selection
+                        Frame.Navigate(typeof(DriveSelectionPage), _onboardingViewModel);
                     });
                     break;
 
-                case OnboardingViewModel.OAuth2State.Error:
+                case OAuth2State.Error:
                     LoadingProgressBar.ShowError = true;
                     LoadingProgressBar.IsIndeterminate = false;
                     TitleTextBlock.Text = "Erreur de connexion";

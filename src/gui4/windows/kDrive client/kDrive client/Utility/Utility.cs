@@ -1,6 +1,7 @@
 ﻿using Infomaniak.kDrive.Types;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -72,6 +73,164 @@ namespace Infomaniak.kDrive
 
             Process.Start(startInfo);
             return true;
+        }
+
+        public static string DefaultSyncPath(string DriveName)
+        {
+            string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            string defaultPath = Path.Combine(userProfile, $"kDrive {DriveName}");
+
+            if (!Utility.CheckSyncPathValidity(defaultPath, out string errorMessage))
+            {
+                Logger.Log(Logger.Level.Warning, $"Default sync path '{defaultPath}' is not valid: {errorMessage}. Falling back to numbered paths.");
+                int number = 1;
+                do
+                {
+                    defaultPath = Path.Combine(userProfile, number > 0 ? $" ({number})" : "");
+                    number++;
+                } while (!Utility.CheckSyncPathValidity(defaultPath, out errorMessage) && number < 500);
+
+                if (number >= 500)
+                {
+                    Logger.Log(Logger.Level.Error, "Unable to find a valid default sync path after 500 attempts.");
+                    throw new Exception("Unable to find a valid default sync path after 500 attempts.");
+                }
+                Logger.Log(Logger.Level.Info, $"Using fallback sync path: {defaultPath}");
+            }
+            return defaultPath;
+        }
+
+        public static bool CheckSyncPathValidity(string path, out string errorMessage)
+        {
+            errorMessage = string.Empty;
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                errorMessage = "The path cannot be empty.";
+                return false;
+            }
+            // Check for invalid characters
+            char[] invalidChars = Path.GetInvalidPathChars();
+            if (path.IndexOfAny(invalidChars) >= 0)
+            {
+                errorMessage = "The path contains invalid characters.";
+                return false;
+            }
+            // Check for reserved names (Windows specific)
+            string[] reservedNames = new string[]
+            {
+                "CON", "PRN", "AUX", "NUL",
+                "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+                "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
+            };
+            string directoryName = Path.GetFileName(path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+            if (reservedNames.Contains(directoryName, StringComparer.OrdinalIgnoreCase))
+            {
+                errorMessage = $"The path contains a reserved name: {directoryName}.";
+                return false;
+            }
+
+            // Check if the path is a folder (not a file)
+            DirectoryInfo dirInfo = new DirectoryInfo(path);
+            if (!dirInfo.Exists)
+            {
+                return true;
+            }
+
+            if (dirInfo.Exists && (dirInfo.Attributes & FileAttributes.Directory) == 0)
+            {
+                errorMessage = "The specified path is not a directory.";
+                return false;
+            }
+
+            // Check if the directory is writable
+            try
+            {
+                string testFilePath = Path.Combine(path, Path.GetRandomFileName());
+                using (FileStream fs = File.Create(testFilePath, 1, FileOptions.DeleteOnClose))
+                {
+                    // Successfully created a file, so the directory is writable
+                }
+            }
+            catch (UnauthorizedAccessException)
+            {
+                errorMessage = "The application does not have permission to write to this directory.";
+                return false;
+            }
+            catch (DirectoryNotFoundException)
+            {
+                // The directory does not exist, which is normal for a new sync folder
+            }
+            catch (IOException ioEx)
+            {
+                errorMessage = $"An I/O error occurred while accessing the directory: {ioEx.Message}";
+                return false;
+            }
+            catch (SecurityException)
+            {
+                errorMessage = "The application does not have the required security permissions for this directory.";
+                return false;
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"An unexpected error occurred: {ex.Message}";
+                return false;
+            }
+
+            // Check if the directory is not a system or hidden folder
+            if (dirInfo.Exists && (dirInfo.Attributes.HasFlag(FileAttributes.System) || dirInfo.Attributes.HasFlag(FileAttributes.Hidden)))
+            {
+                errorMessage = "The specified directory is a system or hidden folder.";
+                return false;
+            }
+
+            // Check if the directory is a reparse point (e.g., symbolic link or mount point)
+            if (dirInfo.Exists && (dirInfo.Attributes & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint)
+            {
+                errorMessage = "The specified directory is a reparse point (e.g., symbolic link or mount point), which is not allowed.";
+                return false;
+            }
+
+            // Check if the directory is empty
+            if (dirInfo.Exists && dirInfo.EnumerateFileSystemInfos().Any())
+            {
+                errorMessage = "The specified directory is not empty.";
+                return false;
+            }
+
+            // Additional checks can be added here as needed
+            return true;
+        }
+
+        public static bool SupportOnlineSync(string path)
+        {
+            // Check if the path is on an NTFS volume
+            var root = Path.GetPathRoot(path);
+            if (root == null)
+                return false;
+
+            if (path == root)
+                return false;
+
+            DriveInfo driveInfo = new DriveInfo(root);
+            try
+            {
+                return driveInfo.DriveFormat.Equals("NTFS", StringComparison.OrdinalIgnoreCase);
+            }
+            catch (IOException)
+            {
+                Logger.Log(Logger.Level.Warning, $"IO Exception when accessing drive info for path: {path}");
+                return false;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                Logger.Log(Logger.Level.Warning, $"Unauthorized Access when accessing drive info for path: {path}");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(Logger.Level.Warning, $"Unexpected error when accessing drive info for path: {path}. Error: {ex.Message}");
+                return false;
+            }
         }
     }
 }

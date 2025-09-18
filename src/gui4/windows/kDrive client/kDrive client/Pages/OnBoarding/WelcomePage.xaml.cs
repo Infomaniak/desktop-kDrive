@@ -24,7 +24,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
     public sealed partial class WelcomePage : Page
     {
         private AppModel _viewModel = ((App)Application.Current).Data;
-        private OnboardingViewModel? _onBoardingViewModel;
+        private ViewModels.Onboarding? _onBoardingViewModel;
         public AppModel ViewModel { get { return _viewModel; } }
         public WelcomePage()
         {
@@ -35,7 +35,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            if (e.Parameter is OnboardingViewModel obvm)
+            if (e.Parameter is ViewModels.Onboarding obvm)
             {
                 _onBoardingViewModel = obvm;
             }
@@ -56,25 +56,13 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                 btn.IsEnabled = true;
             }
         }
-        private async void SigninButton_Click(object sender, RoutedEventArgs e)
+        private void SigninButton_Click(object sender, RoutedEventArgs e)
         {
             Logger.Log(Logger.Level.Info, "Sign in button clicked, starting authentication process");
             if (sender is Button btn)
             {
                 btn.IsEnabled = false;
-                // Find current frame
-                var parent = this.Parent;
-                while (parent != null && !(parent is Frame))
-                {
-                    parent = (parent as FrameworkElement)?.Parent;
-                }
-                Frame? frame = parent as Frame;
-                if (frame == null)
-                {
-                    Logger.Log(Logger.Level.Error, "Unable to find parent Frame for navigation");
-                    throw new ApplicationException("Unable to find parent Frame for navigation");
-                }
-                frame.Navigate(typeof(OAuthLoadingPage), _onBoardingViewModel);
+                Frame.Navigate(typeof(OAuthLoadingPage), _onBoardingViewModel);
                 btn.IsEnabled = true;
             }
         }

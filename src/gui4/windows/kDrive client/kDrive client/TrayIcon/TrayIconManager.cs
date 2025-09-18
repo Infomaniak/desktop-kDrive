@@ -26,6 +26,7 @@ using System.Drawing;
 using System.IO;
 using Windows.System;
 using Microsoft.UI.Windowing;
+using Infomaniak.kDrive.OnBoarding;
 
 namespace Infomaniak.kDrive.TrayIcon
 {
@@ -120,10 +121,21 @@ namespace Infomaniak.kDrive.TrayIcon
             var appWindow = AppWindow.GetFromWindowId(windowId);
             if (appWindow != null && appWindow.Presenter is OverlappedPresenter presenter)
             {
-                presenter.IsMaximizable = false;
-                presenter.IsMinimizable = true;
-                presenter.IsResizable = true;
-                appWindow.Resize(new Windows.Graphics.SizeInt32(1350, 795));
+                if ((Application.Current as App)?.CurrentWindow is OnBoardingWindow)
+                {
+                    presenter.IsMaximizable = false;
+                    presenter.IsMinimizable = true;
+                    presenter.IsResizable = false;
+                    appWindow.Resize(new Windows.Graphics.SizeInt32(850, 530));
+                }
+                else
+                {
+                    presenter.IsMaximizable = false;
+                    presenter.IsMinimizable = true;
+                    presenter.IsResizable = true;
+                    appWindow.Resize(new Windows.Graphics.SizeInt32(1350, 795));
+                }
+
                 presenter.Minimize();
                 presenter.Restore();
             }
@@ -133,6 +145,7 @@ namespace Infomaniak.kDrive.TrayIcon
             SetIcon_ok();
 
         }
+
         private void ExitApplicationCommand_ExecuteRequested(object? sender, ExecuteRequestedEventArgs args)
         {
             Logger.Log(Logger.Level.Info, "ExitApplicationCommand executed - exiting application");

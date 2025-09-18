@@ -46,7 +46,7 @@ namespace Infomaniak.kDrive.OnBoarding
     public sealed partial class OnBoardingWindow : Window
     {
         private readonly AppModel _viewModel = ((App)Application.Current).Data;
-        private OnboardingViewModel _onBoardingViewModel = new OnboardingViewModel();
+        private ViewModels.Onboarding _onBoardingViewModel = new();
 
         public AppModel ViewModel { get { return _viewModel; } }
         public OnBoardingWindow()
@@ -60,54 +60,6 @@ namespace Infomaniak.kDrive.OnBoarding
                 // TODO: Go directly to Drive selection
             }
             ContentFrame.Navigate(typeof(Pages.Onboarding.WelcomePage), _onBoardingViewModel);
-        }
-    }
-
-    public class OnboardingViewModel : ObservableObject
-    {
-        public enum OAuth2State
-        {
-            None,
-            WaitingForUserAction,
-            ProcessingResponse,
-            Success,
-            Error
-        }
-        private OAuth2State _currentOAuth2State = OAuth2State.None;
-        public OAuth2State CurrentOAuth2State
-        {
-            get => _currentOAuth2State;
-            set
-            {
-                SetProperty(ref _currentOAuth2State, value);
-            }
-        }
-
-        public async Task ConnectUser(CancellationToken cancelationToken)
-        {
-            CurrentOAuth2State = OAuth2State.WaitingForUserAction;
-            try
-            {
-                string newUserToken = await OAuthHelper.GetToken(cancelationToken);
-                if (newUserToken != "")
-                {
-                    Logger.Log(Logger.Level.Debug, "Successfully obtained user token.");
-                    CurrentOAuth2State = OAuth2State.ProcessingResponse;
-                    // TODO: Add user to the app
-                    await Task.Delay(3000, cancelationToken); // Simulate processing time
-                    CurrentOAuth2State = OAuth2State.Success;
-                }
-                else
-                {
-                    CurrentOAuth2State = OAuth2State.Error;
-                    Logger.Log(Logger.Level.Warning, "Authentication process failed");
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                CurrentOAuth2State = OAuth2State.Error;
-                Logger.Log(Logger.Level.Warning, "Authentication process canceled by user.");
-            }
         }
     }
 }
