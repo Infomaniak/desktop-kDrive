@@ -121,21 +121,6 @@ namespace Infomaniak.kDrive.TrayIcon
             var appWindow = AppWindow.GetFromWindowId(windowId);
             if (appWindow != null && appWindow.Presenter is OverlappedPresenter presenter)
             {
-                if ((Application.Current as App)?.CurrentWindow is OnBoardingWindow)
-                {
-                    presenter.IsMaximizable = false;
-                    presenter.IsMinimizable = true;
-                    presenter.IsResizable = false;
-                    appWindow.Resize(new Windows.Graphics.SizeInt32(850, 530));
-                }
-                else
-                {
-                    presenter.IsMaximizable = false;
-                    presenter.IsMinimizable = true;
-                    presenter.IsResizable = true;
-                    appWindow.Resize(new Windows.Graphics.SizeInt32(1350, 795));
-                }
-
                 presenter.Minimize();
                 presenter.Restore();
             }

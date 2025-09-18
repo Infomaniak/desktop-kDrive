@@ -49,6 +49,7 @@ namespace Infomaniak.kDrive
             InitializeComponent();
             this.ExtendsContentIntoTitleBar = true;  // enable custom titlebar
             this.SetTitleBar(AppTitleBar);
+            Utility.SetWindowProperties(this, 1350,795, false);
         }
 
         private void navView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)

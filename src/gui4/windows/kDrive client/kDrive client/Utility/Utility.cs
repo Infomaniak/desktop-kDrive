@@ -1,4 +1,8 @@
-﻿using Infomaniak.kDrive.Types;
+﻿using Infomaniak.kDrive.OnBoarding;
+using Infomaniak.kDrive.Types;
+using Microsoft.UI;
+using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -230,6 +234,20 @@ namespace Infomaniak.kDrive
             {
                 Logger.Log(Logger.Level.Warning, $"Unexpected error when accessing drive info for path: {path}. Error: {ex.Message}");
                 return false;
+            }
+        }
+
+        public static void SetWindowProperties(Window window, int width, int height, bool resizable)
+        {
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
+            var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+            var appWindow = AppWindow.GetFromWindowId(windowId);
+            if (appWindow != null && appWindow.Presenter is OverlappedPresenter presenter)
+            {
+                presenter.IsMaximizable = false;
+                presenter.IsMinimizable = true;
+                presenter.IsResizable = false;
+                appWindow.Resize(new Windows.Graphics.SizeInt32(width, height));
             }
         }
     }

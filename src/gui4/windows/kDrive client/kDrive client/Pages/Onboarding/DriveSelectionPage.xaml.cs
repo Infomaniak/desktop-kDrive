@@ -253,8 +253,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
                 await _onBoardingViewModel.FinishOnboarding();
                 btn.Content = "Finish";
-                //Frame.Navigate(typeof(FinishPage));
-
+                Frame.Navigate(typeof(FinishPage));
             }
 
             Logger.Log(Logger.Level.Info, "Finishing onboarding with " + _onBoardingViewModel.NewSyncs.Count + " new sync(s).");

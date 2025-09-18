@@ -156,7 +156,6 @@
                           SelectionMode="None"
                           IsItemClickEnabled="False"
                           ItemsSource="{x:Bind ObViewModel.NewSyncs}"
-                          IsEnabled="False"
                           >
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="viewmodels:Sync">

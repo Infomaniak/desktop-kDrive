@@ -54,12 +54,19 @@ namespace Infomaniak.kDrive.OnBoarding
             InitializeComponent();
             this.ExtendsContentIntoTitleBar = true;  // enable custom titlebar
             this.SetTitleBar(AppTitleBar);
+            Utility.SetWindowProperties(this, 850, 530, false);
+
 
             if (ViewModel.Users.Any())
             {
                 // TODO: Go directly to Drive selection
             }
             ContentFrame.Navigate(typeof(Pages.Onboarding.WelcomePage), _onBoardingViewModel);
+        }
+
+        private void Grid_Loaded(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }
