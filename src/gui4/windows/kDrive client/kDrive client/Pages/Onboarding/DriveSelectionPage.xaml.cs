@@ -227,6 +227,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                 btn.IsEnabled = false; // Prevent double-clicking
                 AdvancedButton.IsEnabled = false;
                 DriveList.Visibility = Visibility.Collapsed;
+                Subtitle.Visibility = Visibility.Collapsed;
                 // loading spinner
                 btn.Content = new StackPanel
                 {

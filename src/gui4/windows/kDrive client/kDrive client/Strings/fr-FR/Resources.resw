@@ -347,4 +347,13 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
   <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Subtitle" xml:space="preserve">
     <value>Veuillez choisir un dossier vide qui ne se trouve pas a la racine d'un lecteur.</value>
   </data>
+  <data name="Page_Onboarding_FinishPage_Title.Text" xml:space="preserve">
+    <value>Tout est prêt !</value>
+  </data>
+  <data name="Page_Onboarding_FinishPage_Subtitle.Text" xml:space="preserve">
+    <value>Vos fichiers sont prêts à être synchronisés en toute sécurité sur votre ordinateur.</value>
+  </data>
+  <data name="Page_Onboarding_FinishPage_OpenButton.Content" xml:space="preserve">
+    <value>Ouvrir kDrive</value>
+  </data>
 </root>

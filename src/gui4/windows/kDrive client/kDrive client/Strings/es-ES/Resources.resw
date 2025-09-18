@@ -321,4 +321,13 @@
   <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Subtitle" xml:space="preserve">
     <value />
   </data>
+  <data name="Page_Onboarding_FinishPage_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_FinishPage_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_FinishPage_OpenButton.Content" xml:space="preserve">
+    <value />
+  </data>
 </root>
