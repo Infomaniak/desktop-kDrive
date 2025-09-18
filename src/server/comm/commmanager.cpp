@@ -25,20 +25,16 @@
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
-#include "libcommonserver/utility/utility.h"
 
 // TODO: To remove later
 #include "oldcommserver.h"
 
-#if defined(KD_MACOS)
-#include "extcommserver_mac.h"
-#include "guicommserver_mac.h"
-#elif defined(KD_WINDOWS)
+#ifndef KD_LINUX
 #include "extcommserver.h"
-#include "guicommserver.h"
-#else
-#include "guicommserver.h"
 #endif
+
+#include "guicommserver.h"
+
 
 #include <QByteArray>
 #include <QDataStream>
@@ -47,6 +43,7 @@
 #include <QFileInfo>
 #include <QIODevice>
 #include <QStandardPaths>
+#include <Poco/JSON/Parser.h>
 
 #include <log4cplus/loggingmacros.h>
 
@@ -102,7 +99,7 @@ CommManager::~CommManager() {
 void CommManager::start() {
     // Start Gui CommServer
     LOGW_INFO(Log::instance()->getLogger(), L"Starting " << CommonUtility::s2ws(_guiCommServer->name()));
-    if (!_guiCommServer->listen({})) {
+    if (!_guiCommServer->listen()) {
         LOGW_WARN(Log::instance()->getLogger(), L"Can't start " << CommonUtility::s2ws(_guiCommServer->name()));
         _addError(Error(ERR_ID, ExitCode::SystemError, ExitCause::Unknown));
     } else {
@@ -111,15 +108,8 @@ void CommManager::start() {
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
     // Start Ext CommServer
-#if defined(KD_WINDOWS)
-    SyncPath pipePath = createPipe();
-    LOGW_INFO(Log::instance()->getLogger(),
-              L"Starting " << CommonUtility::s2ws(_extCommServer->name()) << L": " << Utility::formatSyncPath(pipePath));
-    if (!_extCommServer->listen(pipePath)) {
-#else
     LOGW_INFO(Log::instance()->getLogger(), L"Starting " << CommonUtility::s2ws(_extCommServer->name()));
-    if (!_extCommServer->listen({})) {
-#endif
+    if (!_extCommServer->listen()) {
         LOGW_WARN(Log::instance()->getLogger(), L"Can't start " << CommonUtility::s2ws(_extCommServer->name()));
         _addError(Error(ERR_ID, ExitCode::SystemError, ExitCause::Unknown));
     } else {
@@ -219,23 +209,16 @@ void CommManager::onNewExtConnection() {
 void CommManager::onExtQueryReceived(std::shared_ptr<AbstractCommChannel> channel) {
     LOG_IF_FAIL(Log::instance()->getLogger(), channel)
 
-    while (channel->canReadLine() || channel->bytesAvailable() > 0) {
-        CommString line;
-        while (!line.ends_with(finderExtQuerySeparator)) {
-            if (!channel->canReadLine() && channel->bytesAvailable() == 0) {
-                LOGW_WARN(Log::instance()->getLogger(), L"Failed to parse Extension message - msg="
-                                                                << CommonUtility::commString2WStr(line) << L" channel="
-                                                                << CommonUtility::s2ws(channel->id()));
-                return;
-            }
-            line.append(channel->readLine());
+    while (channel->canReadMessage() || channel->bytesAvailable() > 0) {
+        CommString query = channel->readMessage();
+        if (query.empty()) {
+            LOG_WARN(Log::instance()->getLogger(), "Failed to read message or empty message");
+            break;
         }
-        // Remove the separator
-        line.erase(line.find(finderExtQuerySeparator));
-        LOGW_INFO(Log::instance()->getLogger(), L"Received Extension message - msg=" << CommonUtility::commString2WStr(line)
+        LOGW_INFO(Log::instance()->getLogger(), L"Received Extension message - msg=" << CommonUtility::commString2WStr(query)
                                                                                      << L" channel="
                                                                                      << CommonUtility::s2ws(channel->id()));
-        executeExtCommand(line, channel);
+        executeExtCommand(query, channel);
     }
 }
 
@@ -245,7 +228,7 @@ void CommManager::onLostExtConnection(std::shared_ptr<AbstractCommChannel> chann
 #endif
 
 void CommManager::onNewGuiConnection() {
-    std::shared_ptr<AbstractCommChannel> channel = _guiCommServer->connections().back();
+    std::shared_ptr<AbstractCommChannel> channel = _guiCommServer->nextPendingConnection();
     if (!channel) return;
 
     LOG_INFO(Log::instance()->getLogger(), "New gui connection - channel=" << channel->id());
@@ -256,23 +239,47 @@ void CommManager::onGuiQueryReceived(std::shared_ptr<AbstractCommChannel> channe
     LOG_INFO(Log::instance()->getLogger(), "onQueryReceived");
     LOG_IF_FAIL(Log::instance()->getLogger(), channel)
 
-    while (channel->canReadLine()) {
-        CommString query = channel->readLine();
+    while (channel->canReadMessage()) {
+        CommString query = channel->readMessage();
         LOGW_INFO(Log::instance()->getLogger(), L"Query received: " << CommonUtility::commString2WStr(query));
 
-        const auto queryArgs = CommonUtility::splitCommString(query, guiArgSeparator);
-        // Query ID
-        const int id = std::stoi(queryArgs[0]);
-        // Query type
-        const RequestNum num = static_cast<RequestNum>(std::stoi(queryArgs[1]));
+        Poco::JSON::Parser parser;
+        auto result = parser.parse(CommonUtility::commString2Str(query));
+        Poco::JSON::Object::Ptr pObject = result.extract<Poco::JSON::Object::Ptr>();
+        if (!pObject->has("id")) {
+            LOG_WARN(Log::instance()->getLogger(), "Query has no id");
+            continue;
+        }
+        if (!pObject->has("num")) {
+            LOG_WARN(Log::instance()->getLogger(), "Query has no num");
+            continue;
+        }
 
-        if (num == RequestNum::SYNC_START || num == RequestNum::SYNC_STOP) {
-            const int syncDbId = std::stoi(queryArgs[2]);
+        // Query ID
+        const int id = pObject->getValue<int>("id");
+        // Query type
+        const RequestNum num = static_cast<RequestNum>(pObject->getValue<int>("num"));
+
+
+        // Create gui job
+        if (num == RequestNum::SYNC_START ||
+            num == RequestNum::SYNC_STOP) { // TODO: Replace with Gui jobs and commManager once ready.
+            if (!pObject->has("args")) {
+                LOG_WARN(Log::instance()->getLogger(), "Query expects args");
+                continue;
+            }
+            if (!pObject->isObject("args")) {
+                LOG_WARN(Log::instance()->getLogger(), "Query args is not an object");
+                continue;
+            }
+
+            auto args = pObject->getObject("args");
+            const int syncDbId = args->getValue<int>("syncDbId");
             QByteArray params;
             QDataStream paramsStream(&params, QIODevice::WriteOnly);
             paramsStream << syncDbId;
 
-            emit OldCommServer::instance().get()->requestReceived(id, num, params);
+            emit OldCommServer::instance().get() -> requestReceived(id, num, params);
         }
     }
 }
@@ -280,30 +287,4 @@ void CommManager::onGuiQueryReceived(std::shared_ptr<AbstractCommChannel> channe
 void CommManager::onLostGuiConnection(std::shared_ptr<AbstractCommChannel> channel) {
     LOG_INFO(Log::instance()->getLogger(), "Lost gui connection - sender=" << channel->id());
 }
-
-#if defined(KD_WINDOWS)
-SyncPath CommManager::createPipe() {
-    // Get pipe file path
-    std::string name(Theme::instance()->appName());
-    name.append("-");
-    name.append(Utility::userName());
-
-    const SyncPath pipePath = SyncPath(R"(\\.\pipe\)") / Str2SyncName(name);
-
-    // Delete/create pipe file
-    SocketCommServer::removeServer(pipePath);
-    if (const QFileInfo info(Path2QStr(pipePath)); !info.dir().exists()) {
-        if (info.dir().mkpath(".")) {
-            QFile::setPermissions(Path2QStr(pipePath),
-                                  QFile::Permissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner));
-            LOGW_DEBUG(Log::instance()->getLogger(), L"Pipe created: " << Utility::formatSyncPath(pipePath));
-        } else {
-            LOGW_WARN(Log::instance()->getLogger(), L"Failed to create pipe: " << Utility::formatSyncPath(pipePath));
-        }
-    }
-
-    return pipePath;
-}
-#endif
-
 } // namespace KDC

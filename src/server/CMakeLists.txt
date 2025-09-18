@@ -47,6 +47,7 @@ set(server_SRCS
     comm/abstractcommchannel.h comm/abstractcommchannel.cpp
     comm/abstractcommserver.h
     comm/commmanager.h comm/commmanager.cpp
+    comm/guicommserver.h comm/guicommserver.cpp
     migration/migrationparams.h migration/migrationparams.cpp
     requests/serverrequests.h requests/serverrequests.cpp
     requests/offlinefilessizeestimator.h requests/offlinefilessizeestimator.cpp
@@ -63,9 +64,10 @@ if(APPLE)
     list(APPEND server_SRCS ../common/utility_mac.cpp)
     list(APPEND server_SRCS comm/extensionjob.h comm/extensionjob.cpp)
     list(APPEND server_SRCS comm/abstractcommserver_mac.h comm/abstractcommserver_mac.mm)
+    list(APPEND server_SRCS comm/extcommserver.h comm/extcommserver.cpp)
     list(APPEND server_SRCS comm/xpccommserver_mac.h comm/xpccommserver_mac.mm)
-    list(APPEND server_SRCS comm/extcommserver_mac.h comm/extcommserver_mac.mm)
-    list(APPEND server_SRCS comm/guicommserver_mac.h comm/guicommserver_mac.mm)
+    list(APPEND server_SRCS comm/extcommserver_mac.mm)
+    list(APPEND server_SRCS comm/guicommserver_mac.mm)
     set_property(SOURCE ../common/utility_mac.cpp APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
     set_property(SOURCE comm/abstractcommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
     set_property(SOURCE comm/xpccommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")

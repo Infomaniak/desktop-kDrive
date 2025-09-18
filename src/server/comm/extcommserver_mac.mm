@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "extcommserver_mac.h"
+#include "extcommserver.h"
 #include "abstractcommserver_mac.h"
 #include "../../extensions/MacOSX/kDriveFinderSync/Extension/xpcExtensionProtocol.h"
 
@@ -97,10 +97,10 @@ class ExtCommServerPrivate : public AbstractCommServerPrivate {
 
 - (BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)newConnection {
     auto *channelPrivate = new ExtCommChannelPrivate(newConnection);
-    auto *server = (ExtCommServer *) self.wrapper->publicPtr;
+    auto *server = (KDC::ExtCommServer *) self.wrapper->publicPtr;
 
-    auto channel = std::make_shared<ExtCommChannel>(channelPrivate);
-    channel->setLostConnectionCbk(std::bind(&ExtCommServer::lostConnectionCbk, server, std::placeholders::_1));
+    auto channel = std::make_shared<KDC::ExtCommChannel>(channelPrivate);
+    channel->setLostConnectionCbk(std::bind(&KDC::ExtCommServer::lostConnectionCbk, server, std::placeholders::_1));
     self.wrapper->pendingChannels.push_back(channel);
 
     // Set exported interface
@@ -158,10 +158,7 @@ ExtCommServerPrivate::ExtCommServerPrivate() {
 }
 
 // ExtCommChannel implementation
-ExtCommChannel::ExtCommChannel(ExtCommChannelPrivate *p) :
-    XPCCommChannel(p) {}
-
-uint64_t ExtCommChannel::writeData(const KDC::CommChar *data, uint64_t len) {
+uint64_t KDC::ExtCommChannel::writeData(const KDC::CommChar *data, uint64_t len) {
     if (_privatePtr->isRemoteDisconnected) return -1;
 
     @try {
@@ -177,5 +174,5 @@ uint64_t ExtCommChannel::writeData(const KDC::CommChar *data, uint64_t len) {
 }
 
 // ExtCommServer implementation
-ExtCommServer::ExtCommServer(const std::string &name) :
+KDC::ExtCommServer::ExtCommServer(const std::string &name) :
     XPCCommServer(name, new ExtCommServerPrivate) {}
