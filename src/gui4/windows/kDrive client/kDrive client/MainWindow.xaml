@@ -46,7 +46,7 @@
         <Border x:Name="AppTitleBar"
                 Grid.Row="0"
                 VerticalAlignment="Top">
-            <Grid Height="40"
+            <Grid Height="{StaticResource Infomaniak.Style.Spacing.XXXL}"
                   VerticalAlignment="Top"
                   Margin="16,4">
                 <Grid.ColumnDefinitions>
@@ -59,18 +59,19 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Left: Logo + App Name -->
-                <customControls:AppTitleBarLogo Grid.Column="0"/>
+                <customControls:AppTitleBarLogo Grid.Column="0" />
 
                 <!-- Middle: Search Box (centered in its column, which takes remaining space) -->
                 <AutoSuggestBox x:Uid="W_MainWindow_TitleBar_SearchBox"
                                 x:Name="W_MainWindow_TitleBar_SearchBox"
-                                Grid.Column="1"
+                                Grid.Column="0"
+                                Grid.ColumnSpan="3"
                                 QueryIcon="Find"
-                                Width="300"
+                                Width="319"
                                 Height="32"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
-                                CornerRadius="3"
+                                CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
                                 BorderThickness="1" />
             </Grid>
         </Border>
@@ -81,7 +82,8 @@
                         PaneDisplayMode="Left"
                         SelectionChanged="navView_SelectionChanged"
                         IsBackEnabled="{x:Bind contentFrame.CanGoBack, Mode=OneWay}"
-                        BackRequested="navView_BackRequested">
+                        BackRequested="navView_BackRequested"
+                        OpenPaneLength="280">
             <NavigationView.Resources>
                 <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
             </NavigationView.Resources>
@@ -89,26 +91,24 @@
             <NavigationView.PaneCustomContent>
                 <StackPanel>
                     <ComboBox x:Name="DriveComboBox"
-                              Margin="10"
-                              Width="200"
+                              Margin="{StaticResource Infomaniak.Style.Thickness.Left.XS}"
+                              Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}"
                               Background="Transparent"
                               BorderBrush="Transparent"
                               ItemsSource="{x:Bind ViewModel.AllSyncs}"
                               SelectedItem="{x:Bind ViewModel.SelectedSync, Mode=TwoWay}"
-                              IsEnabled="{x:Bind ViewModel.IsInitialized, Mode=OneWay}">
+                              IsEnabled="{x:Bind ViewModel.IsInitialized, Mode=OneWay}"
+                              >
+
                         <ComboBox.ItemTemplate>
                             <DataTemplate x:DataType="viewModel:Sync">
-                                <StackPanel Orientation="Horizontal">
-                                    <PersonPicture Grid.Column="2"
-                                                   ProfilePicture="https://learn.microsoft.com/windows/uwp/contacts-and-calendar/images/shoulder-tap-static-payload.png"
-                                                   Height="24"
-                                                   Width="24"
-                                                   VerticalAlignment="Center"
-                                                   HorizontalAlignment="Right" />
+                                <StackPanel Orientation="Horizontal"
+                                            Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                                    <customControls:DriveIcon IconColor="{x:Bind Drive.Color}"
+                                                              Style="{StaticResource Infomaniak.Style.Icon.Size.S}" />
                                     <TextBlock Text="{x:Bind Drive.Name}"
-                                               Style="{StaticResource BodyTextBlockStyle}"
-                                               Margin="10,0" />
-                                    <TextBlock Text="{Binding LocalPath, Converter={StaticResource StringPathToFileNameConverter}}" />
+                                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                                               VerticalAlignment="Center" />
                                 </StackPanel>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>

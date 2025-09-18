@@ -24,14 +24,13 @@
             <!-- Title -->
             <TextBlock x:Uid="Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Title"
                        x:Name="TitleTextBlock"
-                       FontSize="24"
-                       FontWeight="Bold"
+                       Style="{StaticResource Infomaniak.Style.TextBlock.Title}"
                        Foreground="{ThemeResource TextFillColorPrimary}" />
 
             <!-- Subtitle -->
             <TextBlock x:Uid="Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Subtitle"
                        x:Name="SubtitleTextBlock"
-                       FontSize="14"
+                       Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                        TextWrapping="WrapWholeWords"
                        Foreground="{ThemeResource TextFillColorSecondary}" />
 

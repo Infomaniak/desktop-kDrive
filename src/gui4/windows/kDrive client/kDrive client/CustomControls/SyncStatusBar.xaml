@@ -36,27 +36,27 @@
         <!-- Data templates for different status messages -->
         <DataTemplate x:Key="PausedStatusTemplate">
             <TextBlock x:Uid="CC_SyncStatusBar_PausedStatus"
-                       Style="{StaticResource BodyStrongTextBlockStyle}" />
+                       Style="{StaticResource Infomaniak.Style.TextBlock.BodyStrong}" />
         </DataTemplate>
 
         <DataTemplate x:Key="SyncingStatusTemplate">
             <TextBlock x:Uid="CC_SyncStatusBar_SyncingStatus"
-                       Style="{StaticResource BodyStrongTextBlockStyle}" />
+                       Style="{StaticResource Infomaniak.Style.TextBlock.BodyStrong}" />
         </DataTemplate>
 
         <DataTemplate x:Key="StartingStatusTemplate">
             <TextBlock x:Uid="CC_SyncStatusBar_StartingStatus"
-                       Style="{StaticResource BodyStrongTextBlockStyle}" />
+                       Style="{StaticResource Infomaniak.Style.TextBlock.BodyStrong}" />
         </DataTemplate>
 
         <DataTemplate x:Key="PausingStatusTemplate">
             <TextBlock x:Uid="CC_SyncStatusBar_PausingStatus"
-                       Style="{StaticResource BodyStrongTextBlockStyle}" />
+                       Style="{StaticResource Infomaniak.Style.TextBlock.BodyStrong}" />
         </DataTemplate>
 
         <DataTemplate x:Key="SyncedStatusTemplate">
             <TextBlock x:Uid="CC_SyncStatusBar_SyncedStatus"
-                       Style="{StaticResource BodyStrongTextBlockStyle}" />
+                       Style="{StaticResource Infomaniak.Style.TextBlock.BodyStrong}" />
         </DataTemplate>
 
         <DataTemplate x:Key="UnknownStatusTemplate">

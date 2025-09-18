@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using DynamicData;
 using H.NotifyIcon;
 using Infomaniak.kDrive.ServerCommunication;
 using Infomaniak.kDrive.ViewModels;
@@ -94,22 +95,52 @@ namespace Infomaniak.kDrive
             AppModel.UIThreadDispatcher = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread(); // Save the UI thread dispatcher for later use in view models
             CurrentWindow = new MainWindow();
             TrayIcoManager.Initialize();
+            // call start onboarding when it become empty
             await ComClient.Initialize();
             await Data.InitializeAsync().ConfigureAwait(false);
-        }
-   
-        public void StartOnBoarding()
-        {
-            CurrentWindow?.Close();
-            CurrentWindow = new OnBoarding.OnBoardingWindow();
-            ((OnBoarding.OnBoardingWindow)CurrentWindow).Closed += (s, e) =>
-            {
-                Logger.Log(Logger.Level.Info, "OnBoardingWindow closed, restarting MainWindow.");
-                CurrentWindow = new MainWindow();
-                CurrentWindow.Activate();
-            };
 
-            CurrentWindow.Activate();
+            AppModel.UIThreadDispatcher.TryEnqueue(() =>
+            {
+                StartOnboardingIfNeeded();
+                Data.AllSyncs.AsObservableChangeSet()
+                .Subscribe(_ =>
+                {
+                    StartOnboardingIfNeeded();
+                });
+            });
+        }
+
+        public void StartOnboarding()
+        {
+            AppModel.UIThreadDispatcher.TryEnqueue(() =>
+            {
+                CurrentWindow?.Close();
+                CurrentWindow = new OnBoarding.OnBoardingWindow();
+                ((OnBoarding.OnBoardingWindow)CurrentWindow).Closed += (s, e) =>
+                {
+                    if (Data.AllSyncs.Any())
+                    {
+                        Logger.Log(Logger.Level.Info, "OnBoardingWindow closed, restarting MainWindow.");
+                        CurrentWindow = new MainWindow();
+                        CurrentWindow.Activate();
+                    }
+                    else
+                    {
+                        Logger.Log(Logger.Level.Info, "OnBoardingWindow closed, no syncs available, exiting application.");
+                        Environment.Exit(0);
+                    }
+                };
+                CurrentWindow.Activate();
+            });
+        }
+
+        public void StartOnboardingIfNeeded()
+        {
+            if (!Data.AllSyncs.Any() && !(CurrentWindow is OnBoarding.OnBoardingWindow))
+            {
+                Logger.Log(Logger.Level.Info, "No syncs available after initialization, starting onboarding process.");
+                StartOnboarding();
+            }
         }
     }
 }

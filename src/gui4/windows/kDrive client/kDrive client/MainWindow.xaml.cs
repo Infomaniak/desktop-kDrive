@@ -49,7 +49,7 @@ namespace Infomaniak.kDrive
             InitializeComponent();
             this.ExtendsContentIntoTitleBar = true;  // enable custom titlebar
             this.SetTitleBar(AppTitleBar);
-            Utility.SetWindowProperties(this, 1350,795, false);
+            Utility.SetWindowProperties(this, 900, 530, false);
         }
 
         private void navView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
@@ -67,7 +67,7 @@ namespace Infomaniak.kDrive
                         contentFrame.Navigate(typeof(Pages.ActivityPage));
                         break;
                     case "Settings":
-                        ((App)Application.Current).StartOnBoarding();
+                        ((App)Application.Current).StartOnboarding();
                         break;
                     default:
                         Logger.Log(Logger.Level.Warning, $"Unknown navigation tag: {selectedItem.Tag}... Going to HomePage");

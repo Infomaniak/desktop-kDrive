@@ -70,7 +70,7 @@
                 <!-- kSuite icon / message -->
                 <TextBlock x:Uid="CC_KSuiteUpgradeBar_message"
                            VerticalAlignment="Center"
-                           Style="{StaticResource BodyTextBlockStyle}"
+                           Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                            Grid.Column="1" />
 
                 <HyperlinkButton x:Name="UpgradeHyperLinkButton"

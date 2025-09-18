@@ -44,7 +44,7 @@
                        Grid.Row="0"
                        Text="{x:Bind Error.Title, Mode=OneWay}"
                        VerticalAlignment="Center"
-                       Style="{StaticResource TextBlockStyle}"
+                       Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                        Margin="0,0,0,4" />
 
             <TextBlock Grid.Column="1"
@@ -52,7 +52,7 @@
                        Grid.Row="1"
                        Text="{x:Bind Error.HowToSolve, Mode=OneWay}"
                        VerticalAlignment="Center"
-                       Style="{StaticResource CaptionSemiBoldTextBlockStyle}"
+                       Style="{StaticResource Infomaniak.Style.TextBlock.CaptionStrong}"
                        Margin="0,0,0,2"
                        Foreground="#666666" />
 
@@ -62,7 +62,7 @@
                        Text="{x:Bind Error.Cause, Mode=OneWay}"
                        TextWrapping="WrapWholeWords"
                        Margin="0,0,0,16"
-                       Style="{StaticResource CaptionTextBlockStyle}"
+                       Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                        Foreground="#666666" />
             <StackPanel Orientation="Horizontal"
                         Grid.Column="1"

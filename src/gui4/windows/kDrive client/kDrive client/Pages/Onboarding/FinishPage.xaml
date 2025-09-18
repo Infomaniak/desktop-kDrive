@@ -8,29 +8,27 @@
       xmlns:converters="using:Infomaniak.kDrive.Converters"
       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
       mc:Ignorable="d">
-    <Grid>
-        <StackPanel Orientation="Vertical"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
-
+    <StackPanel HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Spacing="{StaticResource Infomaniak.Style.Spacing.XXL}">
+        <StackPanel HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
             <!-- Titre -->
             <TextBlock x:Uid="Page_Onboarding_FinishPage_Title"
-                       FontSize="24"
-                       FontWeight="Bold"
+                       Style="{StaticResource Infomaniak.Style.TextBlock.Title}"
                        Foreground="{ThemeResource TextFillColorPrimary}" />
 
             <!-- Sous-titre -->
             <TextBlock x:Uid="Page_Onboarding_FinishPage_Subtitle"
-                       FontSize="14"
+                       Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                       MaxWidth="350"
                        TextWrapping="WrapWholeWords"
-                       Foreground="{ThemeResource TextFillColorSecondary}"
-                       Margin="0,4,0,8" />
-
-            <!-- Boutons -->
-            <Button x:Uid="Page_Onboarding_FinishPage_OpenButton"
-                    Style="{StaticResource Infomaniak.Style.Button.WithBackground}"
-                    Margin="0,16,0,0"
-                    Click="FinishButton_Click" />
+                       Foreground="{ThemeResource TextFillColorSecondary}" />
         </StackPanel>
-    </Grid>
+        <!-- Boutons -->
+        <Button x:Uid="Page_Onboarding_FinishPage_OpenButton"
+                Style="{StaticResource Infomaniak.Style.Button.WithBackground}"
+                Click="FinishButton_Click" />
+    </StackPanel>
 </Page>

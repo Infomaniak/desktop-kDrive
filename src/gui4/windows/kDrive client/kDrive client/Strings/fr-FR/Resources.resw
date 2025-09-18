@@ -356,4 +356,28 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
   <data name="Page_Onboarding_FinishPage_OpenButton.Content" xml:space="preserve">
     <value>Ouvrir kDrive</value>
   </data>
+  <data name="Page_Onboarding_DriveSelectionPage_DriveAlreadyConfigured.Content" xml:space="preserve">
+    <value>Ce drive est déja configuré, rendez vous dans vos paramètres pour le modifier.</value>
+  </data>
+  <data name="Page_Onboarding_FinishingPage_Title.Text" xml:space="preserve">
+    <value>Synchronisation en cours</value>
+  </data>
+  <data name="Page_Onboarding_FinishingPage_Subtitle.Text" xml:space="preserve">
+    <value>Vos fichiers kDrive sont en cours de synchronisation. Nous vous invitons à patienter quelques instants.</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_NoDrive_Subtitle.Text" xml:space="preserve">
+    <value>Vous n’avez pas encore de kDrive.</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_NoDrive_Text.Text" xml:space="preserve">
+    <value>Commencez gratuitement avec my kSuite, ou choisissez une offre adaptée à vos besoins.</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_StartFreeButton.Content" xml:space="preserve">
+    <value>Commencer gratuitement</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_OffersButton.Content" xml:space="preserve">
+    <value>Voir les offres</value>
+  </data>
+  <data name="Global_kDriveOffersUrl" xml:space="preserve">
+    <value>https://www.infomaniak.com/fr/ksuite/kdrive</value>
+  </data>
 </root>

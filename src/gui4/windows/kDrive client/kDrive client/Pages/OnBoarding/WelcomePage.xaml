@@ -9,40 +9,39 @@
       xmlns:converters="using:Infomaniak.kDrive.Converters"
       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
       mc:Ignorable="d">
-     <Grid>
-        <StackPanel Orientation="Vertical"
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0.65*" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="1"
+                    Orientation="Vertical"
                     HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
+                    VerticalAlignment="Center"
+                    Spacing="{StaticResource Infomaniak.Style.Spacing.XL}">
+            <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                <!-- Titre -->
+                <TextBlock x:Name="Title"
+                           x:Uid="Page_Onboarding_WelcomePage_Title"
+                           Style="{StaticResource Infomaniak.Style.TextBlock.Title}"
+                           Foreground="{ThemeResource TextFillColorPrimary}" />
 
-            <!-- Titre -->
-            <TextBlock x:Name="Title" 
-                x:Uid="Page_Onboarding_WelcomePage_Title"
-                       FontSize="24"
-                       FontWeight="Bold"
-                       Foreground="{ThemeResource TextFillColorPrimary}" />
-
-            <!-- Sous-titre -->
-            <TextBlock x:Uid="Page_Onboarding_WelcomePage_Subtitle"
-                       FontSize="14"
-                       TextWrapping="WrapWholeWords"
-                       Foreground="{ThemeResource TextFillColorSecondary}"
-                       MaxWidth="311"
-                       Margin="0,4,0,32" />
-
+                <!-- Sous-titre -->
+                <TextBlock x:Uid="Page_Onboarding_WelcomePage_Subtitle"
+                           Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                           TextWrapping="WrapWholeWords"
+                           Foreground="{ThemeResource TextFillColorSecondary}"
+                           MaxWidth="311" />
+            </StackPanel>
             <!-- Boutons -->
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Left"
-                        Spacing="16">
+                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
 
                 <Button Style="{StaticResource Infomaniak.Style.Button.WithBackground}"
                         Click="SigninButton_Click"
-                        x:Uid="Page_Onboarding_WelcomePage_SigninButton">
-                    <Grid>
-                        <StackPanel Orientation="Vertical">
-                            <TextBlock />
-                        </StackPanel>
-                    </Grid>
-                </Button>
+                        x:Uid="Page_Onboarding_WelcomePage_SigninButton" />
 
                 <Button x:Uid="Page_Onboarding_WelcomePage_SignupButton"
                         Style="{StaticResource Infomaniak.Style.Button.WithoutBackground}"

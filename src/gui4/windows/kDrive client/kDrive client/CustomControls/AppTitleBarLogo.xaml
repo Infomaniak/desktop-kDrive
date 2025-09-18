@@ -17,13 +17,11 @@
                Width="28" />
         <TextBlock x:Name="AppTitle"
                    Text="kDrive"
-                   FontSize="14"
-                   FontWeight="SemiBold"
+                   Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                    VerticalAlignment="Center" />
         <TextBlock x:Name="AppTitle_preview"
-                   Text="preview"
-                   FontSize="10"
-                   FontWeight="Light"
+                   Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
+                   Text="Preview"
                    VerticalAlignment="Center"
                    Foreground="OrangeRed" />
     </StackPanel>

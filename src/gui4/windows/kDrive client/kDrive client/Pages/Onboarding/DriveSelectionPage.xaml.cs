@@ -210,54 +210,23 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             AdvancedSettingsDialog.IsPrimaryButtonEnabled = syncsWithChangedPaths.Count > 0;
         }
 
-        private async void Finish_Click(object sender, RoutedEventArgs e)
+        private void Finish_Click(object sender, RoutedEventArgs e)
         {
-            if (_onBoardingViewModel == null)
-            {
-                Logger.Log(Logger.Level.Error, "OnBoardingViewModel is null in Finish_Click");
-                return;
-            }
-            if (_onBoardingViewModel.NewSyncs.Count == 0)
-            {
-                Logger.Log(Logger.Level.Warning, "No drives selected to sync. User must select at least one drive.");
-                return;
-            }
-            if (sender is Button btn)
-            {
-                btn.IsEnabled = false; // Prevent double-clicking
-                AdvancedButton.IsEnabled = false;
-                DriveList.Visibility = Visibility.Collapsed;
-                Subtitle.Visibility = Visibility.Collapsed;
-                // loading spinner
-                btn.Content = new StackPanel
-                {
-                    Orientation = Orientation.Horizontal,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    Children =
-                    {
-                        new TextBlock
-                        {
-                            Text = "Finishing...",
-                            Margin = new Thickness(0,0,8,0),
-                            VerticalAlignment = VerticalAlignment.Center
-                        },
-                        new ProgressRing
-                        {
-                            IsActive = true,
-                            Width = 16,
-                            Height = 16,
-                            VerticalAlignment = VerticalAlignment.Center,
-                            HorizontalAlignment = HorizontalAlignment.Center
-                        }
-                    }
-                };
+            Frame.Navigate(typeof(FinishingPage), _onBoardingViewModel);
+        }
 
-                await _onBoardingViewModel.FinishOnboarding();
-                btn.Content = "Finish";
-                Frame.Navigate(typeof(FinishPage));
-            }
+        private async void StartFree_Click(object sender, RoutedEventArgs e)
+        {
+            // TODO: Validate the URI
+            var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
+            await Windows.System.Launcher.LaunchUriAsync(new Uri(resourceLoader.GetString("Global_kDriveOffersUrl")));
+        }
 
-            Logger.Log(Logger.Level.Info, "Finishing onboarding with " + _onBoardingViewModel.NewSyncs.Count + " new sync(s).");
+        private async void OffersButton_Click(object sender, RoutedEventArgs e)
+        {
+            // TODO: Validate the URI
+            var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
+            await Windows.System.Launcher.LaunchUriAsync(new Uri(resourceLoader.GetString("Global_kDriveOffersUrl")));
         }
     }
 }

@@ -8,6 +8,7 @@
       xmlns:controls="using:Infomaniak.kDrive.CustomControls"
       xmlns:converters="using:Infomaniak.kDrive.Converters"
       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
+      xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
       mc:Ignorable="d">
 
     <Page.Resources>
@@ -17,116 +18,152 @@
         <converters:IntegerToBooleanConverter  x:Key="IntegerToBooleanConverter" />
     </Page.Resources>
 
-    <Grid Padding="32"
-          RowSpacing="8"
-          HorizontalAlignment="Center"
-          VerticalAlignment="Center">
+    <Grid HorizontalAlignment="Center"
+          VerticalAlignment="Center"
+          Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.XXL}"
+          RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="auto" />
-            <RowDefinition Height="auto" />
-            <RowDefinition Height="auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="auto" />
         </Grid.RowDefinitions>
+        <Grid Grid.Row="0"
+              RowSpacing="{StaticResource Infomaniak.Style.Spacing.L}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0"
+                        Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                <!-- Title -->
+                <TextBlock x:Uid="Page_Onboarding_DriveSelectionPage_Title"
+                           Style="{StaticResource Infomaniak.Style.TextBlock.Title}"
+                           Foreground="{ThemeResource TextFillColorPrimary}" />
 
-        <!-- Title -->
-        <TextBlock Grid.Row="0"
-                   x:Uid="Page_Onboarding_DriveSelectionPage_Title"
-                   FontSize="28"
-                   FontWeight="Bold"
-                   Foreground="{ThemeResource TextFillColorPrimary}" />
+                <!-- User info -->
+                <StackPanel Orientation="Horizontal"
+                            Spacing="12"
+                            VerticalAlignment="Center">
+                    <PersonPicture ProfilePicture="https://learn.microsoft.com/windows/uwp/contacts-and-calendar/images/shoulder-tap-static-payload.png"
+                                   Height="24"
+                                   Width="24" />
+                    <TextBlock Text="{x:Bind ObViewModel.SelectedUser.Name}"
+                               VerticalAlignment="Center"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
+                </StackPanel>
+            </StackPanel>
+            <!-- No drive available -->
+            <Grid Grid.Row="1"
+                  RowSpacing="{StaticResource Infomaniak.Style.Spacing.M}"
+                  Visibility="{x:Bind _onBoardingViewModel.SelectedUser.Drives.Count, Converter={StaticResource BooleanToInvertedVisibilityConverter}, Mode=OneWay}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="auto" />
+                </Grid.RowDefinitions>
 
-        <!-- User info -->
-        <StackPanel Grid.Row="1"
-                    Orientation="Horizontal"
-                    Spacing="12"
-                    VerticalAlignment="Center"
-                    Margin="0,8,0,0">
-            <PersonPicture ProfilePicture="https://learn.microsoft.com/windows/uwp/contacts-and-calendar/images/shoulder-tap-static-payload.png"
-                           Height="24"
-                           Width="24" />
-            <TextBlock Text="{x:Bind ObViewModel.SelectedUser.Name}"
-                       VerticalAlignment="Center"
-                       FontSize="14" />
-        </StackPanel>
+                <!-- Subtitle -->
+                <TextBlock Grid.Row="0"
+                           x:Uid="Page_Onboarding_DriveSelectionPage_NoDrive_Subtitle"
+                           Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}" />
 
-        <!-- Subtitle -->
-        <TextBlock x:Name="Subtitle" 
-            Grid.Row="2"
-                   x:Uid="Page_Onboarding_DriveSelectionPage_Subtitle"
-                   Margin="0,16,0,8"
-                   FontSize="14"
-                   Foreground="{ThemeResource TextFillColorSecondary}" />
+                <!-- No drive text -->
+                <TextBlock Grid.Row="1"
+                           x:Uid="Page_Onboarding_DriveSelectionPage_NoDrive_Text"
+                           Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                           TextWrapping="WrapWholeWords" />
+            </Grid>
 
-        <!-- List of drives -->
-        <ListView x:Name="DriveList"
-            Grid.Row="3"
-                  SelectionMode="None"
-                  IsItemClickEnabled="False"
-                  ItemsSource="{x:Bind ObViewModel.SelectedUser.Drives}">
-            <ListView.ItemTemplate>
-                <DataTemplate x:DataType="viewmodels:Drive">
-                    <Grid>
-                        <ToolTipService.ToolTip>
-                            <ToolTip x:Uid="Page_Onboarding_DriveSelectionPage_DriveTooltip"
-                                     VerticalOffset="-80"
-                                     IsEnabled="{x:Bind Syncs.Count, Converter={StaticResource IntegerToBooleanConverter}}" />
-                        </ToolTipService.ToolTip>
-                        <Border x:Name="DeactivatedTheme"
-                                Background="{ThemeResource SystemControlBackgroundBaseLowBrush}"
-                                Opacity="0.5"
-                                Visibility="{x:Bind Syncs.Count, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                CornerRadius="8"
-                                Margin="4">
-                        </Border>
+            <!-- Drive available -->
+            <Grid Grid.Row="1"
+                  RowSpacing="{StaticResource Infomaniak.Style.Spacing.M}"
+                  Visibility="{x:Bind _onBoardingViewModel.SelectedUser.Drives.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
 
-                        <Border BorderBrush="{ThemeResource ButtonDisabledBorderThemeBrush}"
-                                BorderThickness="1"
-                                Padding="8"
-                                Margin="4"
-                                CornerRadius="8">
+                <!-- Subtitle -->
+                <TextBlock Grid.Row="0"
+                           x:Uid="Page_Onboarding_DriveSelectionPage_Subtitle"
+                           Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}" />
 
-                            <CheckBox Checked="DriveSelectedCheckBox_Checked"
-                                      Unchecked="DriveSelectedCheckBox_Unchecked"
-                                      IsChecked="False"
-                                      IsEnabled="{x:Bind Syncs.Count, Converter={StaticResource BooleanToInvertedBooleanConverter}}"
-                                      HorizontalAlignment="Stretch">
-                                <StackPanel Orientation="Horizontal">
-                                    <Image Height="14"
-                                           Margin="0,0,8,0"
-                                           Source="/Assets/Icons/folder.svg" />
-                                    <TextBlock Text="{x:Bind Name}"
-                                               VerticalAlignment="Center"
-                                               FontSize="14"
-                                               Foreground="{ThemeResource TextFillColorPrimary}" />
-                                </StackPanel>
-                            </CheckBox>
-                        </Border>
+                <!-- List of drives -->
+                <ListView x:Name="DriveList"
+                          Grid.Row="1"
+                          SelectionMode="None"
+                          IsItemClickEnabled="False"
+                          ItemsSource="{x:Bind ObViewModel.SelectedUser.Drives}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="viewmodels:Drive">
+                            <Grid Margin="{StaticResource Infomaniak.Style.Thickness.Top.XS}">
+                                <ToolTipService.ToolTip>
+                                    <ToolTip x:Uid="Page_Onboarding_DriveSelectionPage_DriveAlreadyConfigured"
+                                             VerticalOffset="-80"
+                                             IsEnabled="{x:Bind Syncs.Count, Converter={StaticResource IntegerToBooleanConverter}}" />
+                                </ToolTipService.ToolTip>
+                                <Border x:Name="DeactivatedTheme"
+                                        Background="{ThemeResource SystemControlBackgroundBaseLowBrush}"
+                                        Opacity="0.5"
+                                        Visibility="{x:Bind Syncs.Count, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                        Style="{StaticResource Infomaniak.Style.Border.WithContent}">
+                                </Border>
 
-                    </Grid>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+                                <Border Style="{StaticResource Infomaniak.Style.Border.WithContent}">
+                                    <CheckBox Checked="DriveSelectedCheckBox_Checked"
+                                              Unchecked="DriveSelectedCheckBox_Unchecked"
+                                              HorizontalAlignment="Stretch"
+                                              IsChecked="{x:Bind Syncs.Count, Converter={StaticResource IntegerToBooleanConverter}}"
+                                              IsEnabled="{x:Bind Syncs.Count, Converter={StaticResource BooleanToInvertedBooleanConverter}}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <controls:DriveIcon IconColor="{x:Bind Color}"
+                                                                Height="14"
+                                                                Margin="0,0,8,0" />
+                                            <TextBlock Text="{x:Bind Name}"
+                                                       Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
+                                        </StackPanel>
+                                    </CheckBox>
+                                </Border>
+
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+        </Grid>
 
         <!-- Continue button -->
-        <StackPanel Grid.Row="4"
-                    Margin="0,24,0,0"
-                    Orientation="Horizontal">
+        <StackPanel Grid.Row="1"
+                    Orientation="Horizontal"
+                    Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                    Visibility="{x:Bind _onBoardingViewModel.SelectedUser.Drives.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
             <Button x:Uid="Page_Onboarding_DriveSelectionPage_FinishButton"
                     HorizontalAlignment="Left"
-                    Margin="0,0,16,0"
                     Style="{StaticResource Infomaniak.Style.Button.WithBackground}"
-                    IsEnabled="{x:Bind ObViewModel.NewSyncs.Count, Converter={StaticResource IntegerToBooleanConverter}, Mode=OneWay}" 
-                    Click="Finish_Click"
-                    />
+                    IsEnabled="{x:Bind ObViewModel.NewSyncs.Count, Converter={StaticResource IntegerToBooleanConverter}, Mode=OneWay}"
+                    Click="Finish_Click" />
 
             <Button x:Name="AdvancedButton"
                     x:Uid="Page_Onboarding_DriveSelectionPage_AdvancedButton"
                     HorizontalAlignment="Left"
-                    Margin="0,0,16,0"
                     Style="{StaticResource Infomaniak.Style.Button.WithoutBackground}"
                     Visibility="{x:Bind ObViewModel.NewSyncs.Count, Converter={StaticResource BooleanToVisibilityConverter} , Mode=OneWay}"
                     Click="AdvancedSettingsButton_Click" />
+        </StackPanel>
+
+        <!-- Offers Buttons -->
+        <StackPanel Grid.Row="1"
+                    Orientation="Horizontal"
+                    Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                    Visibility="{x:Bind _onBoardingViewModel.SelectedUser.Drives.Count, Converter={StaticResource BooleanToInvertedVisibilityConverter}, Mode=OneWay}">
+            <Button x:Uid="Page_Onboarding_DriveSelectionPage_StartFreeButton"
+                    HorizontalAlignment="Left"
+                    Style="{StaticResource Infomaniak.Style.Button.WithBackground}"
+                    Click="StartFree_Click" />
+
+            <Button 
+                    x:Uid="Page_Onboarding_DriveSelectionPage_OffersButton"
+                    HorizontalAlignment="Left"
+                    Style="{StaticResource Infomaniak.Style.Button.WithoutBackground}"
+                    Click="OffersButton_Click" />
         </StackPanel>
 
         <!-- Advanced settings dialog -->
@@ -136,9 +173,10 @@
                        CloseButtonClick="AdvancedSettingsDialog_CloseButtonClick"
                        Opened="AdvancedSettingsDialog_Opened">
             <ContentDialog.Title>
-                <TextBlock x:Uid="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Title" />
+                <TextBlock x:Uid="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Title"
+                           Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
             </ContentDialog.Title>
-            <Grid>
+            <Grid RowSpacing="{StaticResource Infomaniak.Style.Spacing.S}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto" />
                     <RowDefinition Height="auto" />
@@ -146,46 +184,55 @@
                 </Grid.RowDefinitions>
                 <TextBlock Grid.Row="0"
                            x:Uid="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Description"
-                           TextWrapping="WrapWholeWords" />
+                           TextWrapping="WrapWholeWords"
+                           Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                 <InfoBar Grid.Row="1"
                          x:Uid="Page_Onboarding_DriveSelectionPage_AdvancedDialog_InfoBar"
                          IsOpen="True"
                          IsClosable="False"
-                         Severity="Informational"
-                         Margin="0,8,0,16" />
+                         Severity="Informational" />
                 <ListView Grid.Row="2"
                           SelectionMode="None"
                           IsItemClickEnabled="False"
-                          ItemsSource="{x:Bind ObViewModel.NewSyncs}"
-                          >
+                          ItemsSource="{x:Bind ObViewModel.NewSyncs}">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="viewmodels:Sync">
-                            <Border Margin="0,4,0,4"
-                                    Padding="8">
-                                <Grid>
+                            <Border Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}">
+                                <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="auto" />
+                                        <RowDefinition Height="auto" />
+                                    </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="auto" />
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="auto" />
                                     </Grid.ColumnDefinitions>
-                                    <Image Grid.Column="0"
-                                           Height="20"
-                                           Margin="8"
-                                           VerticalAlignment="Stretch"
-                                           Source="/Assets/Icons/folder.svg" />
 
-                                    <StackPanel Orientation="Vertical"
-                                                Grid.Column="1">
-                                        <TextBlock Text="{x:Bind Drive.Name}"
-                                                   HorizontalAlignment="Left"
-                                                   Style="{StaticResource TextBlockStyle}" />
-                                        <TextBlock Text="{x:Bind LocalPath, Mode=OneWay}"
-                                                   Padding="0,0,20,0"
-                                                   HorizontalAlignment="Left"
-                                                   Style="{StaticResource TextBlockStyle}"
-                                                   TextWrapping="Wrap" />
-                                    </StackPanel>
-                                    <Button Grid.Column="2"
+                                    <controls:DriveIcon Grid.Column="0"
+                                                        Grid.Row="0"
+                                                        Height="16"
+                                                        VerticalAlignment="Center"
+                                                        IconColor="{x:Bind Drive.Color}" />
+
+                                    <TextBlock Grid.Column="1"
+                                               Grid.Row="0"
+                                               Text="{x:Bind Drive.Name}"
+                                               HorizontalAlignment="Left"
+                                               VerticalAlignment="Center"
+                                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
+
+                                    <TextBlock Grid.Column="1"
+                                               Grid.Row="1"
+                                               Text="{x:Bind LocalPath, Mode=OneWay}"
+                                               HorizontalAlignment="Left"
+                                               VerticalAlignment="Top"
+                                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                                               Foreground="{ThemeResource TextBoxDisabledForegroundThemeBrush}"
+                                               TextWrapping="Wrap" />
+
+                                    <Button Grid.RowSpan="2"
+                                            Grid.Column="2"
                                             x:Uid="Page_Onboarding_DriveSelectionPage_AdvancedDialog_CustomizeButton"
                                             Style="{StaticResource Infomaniak.Style.Button.WithoutBackground}"
                                             Click="ChangeSyncPathButton_Click" />
@@ -198,8 +245,8 @@
                              x:Uid="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip"
                              IsLightDismissEnabled="True"
                              PlacementMargin="20"
-                             PreferredPlacement="Auto"
-                             Background="DarkRed" />
+                             PreferredPlacement="Auto">
+                </TeachingTip>
             </Grid>
         </ContentDialog>
     </Grid>

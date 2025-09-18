@@ -83,7 +83,7 @@
                         </ImageIcon.Source>
                     </ImageIcon>
                     <TextBlock x:Uid="Page_HomePage_favorites"
-                               Style="{StaticResource TextBlockStyle}" />
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                 </StackPanel>
             </Button>
             <Button Click="SharedButton_Click"
@@ -102,7 +102,7 @@
                         </ImageIcon.Source>
                     </ImageIcon>
                     <TextBlock x:Uid="Page_HomePage_shared"
-                               Style="{StaticResource TextBlockStyle}" />
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                 </StackPanel>
             </Button>
             <Button Click="TrashButton_Click"
@@ -121,7 +121,7 @@
                         </ImageIcon.Source>
                     </ImageIcon>
                     <TextBlock x:Uid="Page_HomePage_trash"
-                               Style="{StaticResource TextBlockStyle}" />
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                 </StackPanel>
             </Button>
         </Grid>
