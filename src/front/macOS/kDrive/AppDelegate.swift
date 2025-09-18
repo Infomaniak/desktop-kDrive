@@ -19,25 +19,19 @@
 import Cocoa
 
 class AppDelegate: NSObject, NSApplicationDelegate {
-    private var window: NSWindow!
-    private var contentViewController: NSViewController!
+    private var mainWindow: MainWindowController?
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 850, height: 530),
-            styleMask: [.titled, .closable, .resizable, .miniaturizable, .fullSizeContentView],
-            backing: .buffered,
-            defer: false
-        )
-
-        window.toolbarStyle = .unified
-        window.setFrameAutosaveName("kDriveMainWindow")
-        contentViewController = SplitViewController()
-        window.contentView = contentViewController.view
-        window.makeKeyAndOrderFront(nil)
+        openMainWindow()
     }
 
     func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
         return true
+    }
+
+    @MainActor
+    private func openMainWindow() {
+        mainWindow = MainWindowController()
+        mainWindow?.showWindow(nil)
     }
 }
