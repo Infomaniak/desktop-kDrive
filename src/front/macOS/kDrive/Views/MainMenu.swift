@@ -45,6 +45,9 @@ final class MainMenu: NSMenu {
         let applicationItem = addItem(withTitle: "Application", action: nil, keyEquivalent: "")
         setSubmenu(createApplicationMenu(), for: applicationItem)
 
+        let fileItem = addItem(withTitle: "File", action: nil, keyEquivalent: "")
+        setSubmenu(createFileMenu(), for: fileItem)
+
         let viewItem = addItem(withTitle: "View", action: nil, keyEquivalent: "")
         setSubmenu(createViewMenu(), for: viewItem)
 
@@ -94,6 +97,14 @@ final class MainMenu: NSMenu {
         menu.addItem(NSMenuItem.separator())
 
         menu.addItem(withTitle: "Quit \(applicationName)", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+
+        return menu
+    }
+
+    private func createFileMenu() -> NSMenu {
+        let menu = NSMenu(title: "File")
+
+        menu.addItem(withTitle: "Close Window", action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
 
         return menu
     }
