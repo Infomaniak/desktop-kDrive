@@ -19,6 +19,8 @@
 import Cocoa
 
 final class PreferencesWindowController: NSWindowController {
+    private var preferencesViewController: PreferencesSplitViewController!
+
     convenience init() {
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 700, height: 400),
@@ -30,5 +32,8 @@ final class PreferencesWindowController: NSWindowController {
         window.setFrameAutosaveName("kDrivePreferencesWindow")
 
         self.init(window: window)
+
+        preferencesViewController = PreferencesSplitViewController()
+        window.contentView = preferencesViewController.view
     }
 }

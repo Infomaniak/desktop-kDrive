@@ -22,7 +22,7 @@ public extension NSToolbarItem.Identifier {
     static let trackingSplitView = NSToolbarItem.Identifier("TrackingSplitView")
 }
 
-public class FullHeightSplitViewController: NSSplitViewController {
+public class IKSplitViewController: NSSplitViewController {
     public var toolbar = NSToolbar()
 
     override public func viewWillAppear() {
@@ -40,7 +40,7 @@ public class FullHeightSplitViewController: NSSplitViewController {
 
 // MARK: - Helpers
 
-public extension FullHeightSplitViewController {
+public extension IKSplitViewController {
     func switchContentViewController(destination viewController: NSViewController) {
         removeSplitViewItem(splitViewItems[1])
         addSplitViewItem(NSSplitViewItem(viewController: viewController))
@@ -49,7 +49,7 @@ public extension FullHeightSplitViewController {
 
 // MARK: - NSToolbarDelegate
 
-extension FullHeightSplitViewController: NSToolbarDelegate {
+extension IKSplitViewController: NSToolbarDelegate {
     public func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
         return [.trackingSplitView]
     }

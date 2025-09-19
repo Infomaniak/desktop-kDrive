@@ -21,6 +21,7 @@ import Cocoa
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var mainWindow: MainWindowController?
+    private var preferencesWindow: PreferencesWindowController?
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         setupMainMenu()
@@ -31,9 +32,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return true
     }
 
-    private func openMainWindow() {
+    public func openMainWindow() {
         mainWindow = MainWindowController()
         mainWindow?.showWindow(nil)
+    }
+
+    @objc public func openPreferencesWindow() {
+        preferencesWindow = PreferencesWindowController()
+        preferencesWindow?.showWindow(nil)
     }
 
     private func setupMainMenu() {

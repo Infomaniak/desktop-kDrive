@@ -58,7 +58,7 @@
 		F9A9A0562E61A887005FA196 /* Exceptions for "kDriveCoreUI" folder in "kDrive" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Controllers/FullHeightSplitViewController.swift,
+				Controllers/IKSplitViewController.swift,
 				Controllers/TitledViewController.swift,
 				Utils/ColoredMenuItem.swift,
 				Views/BadgeButton.swift,

@@ -22,7 +22,7 @@ extension NSToolbarItem.Identifier {
     static let searchTextField = NSToolbarItem.Identifier("SearchTextField")
 }
 
-final class MainSplitViewController: FullHeightSplitViewController {
+final class MainSplitViewController: IKSplitViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupSplitView()
@@ -32,7 +32,7 @@ final class MainSplitViewController: FullHeightSplitViewController {
         splitView.autosaveName = "SplitViewAutoSave"
         splitView.isVertical = true
 
-        let sidebarViewController = SidebarViewController()
+        let sidebarViewController = MainSidebarViewController()
         sidebarViewController.delegate = self
         let sidebarItem = NSSplitViewItem(sidebarWithViewController: sidebarViewController)
         sidebarItem.minimumThickness = 150
@@ -48,7 +48,7 @@ final class MainSplitViewController: FullHeightSplitViewController {
 // MARK: - SidebarViewControllerDelegate
 
 extension MainSplitViewController: SidebarViewControllerDelegate {
-    func sidebarViewController(_ controller: SidebarViewController, didSelectItem item: SidebarItem) {
+    func sidebarViewController(_ controller: MainSidebarViewController, didSelectItem item: SidebarItem) {
         var contentViewController: NSViewController
         switch item {
         case .home:

@@ -19,7 +19,11 @@
 import Cocoa
 
 final class MainMenu: NSMenu {
-    public private(set) var servicesMenu: NSMenu?
+    private(set) var servicesMenu: NSMenu?
+
+    private var applicationName: String {
+        return Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String ?? "kDrive"
+    }
 
     convenience init() {
         self.init(title: "MainMenu")
@@ -35,14 +39,14 @@ final class MainMenu: NSMenu {
         let menu = NSMenu(title: "Application")
 
         menu.addItem(
-            withTitle: "About kDrive",
+            withTitle: "About \(applicationName)",
             action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)),
             keyEquivalent: ""
         )
 
         menu.addItem(NSMenuItem.separator())
 
-        menu.addItem(withTitle: "Preferences...", action: nil, keyEquivalent: ",")
+        menu.addItem(withTitle: "Preferences...", action: #selector(AppDelegate.openPreferencesWindow), keyEquivalent: ",")
 
         menu.addItem(NSMenuItem.separator())
 
@@ -61,15 +65,11 @@ final class MainMenu: NSMenu {
         )
         hideOthersItem.keyEquivalentModifierMask = [.command, .option]
 
-        menu.addItem(
-            withTitle: "Show All",
-            action: #selector(NSApplication.unhideAllApplications(_:)),
-            keyEquivalent: ""
-        )
+        menu.addItem(withTitle: "Show All", action: #selector(NSApplication.unhideAllApplications(_:)), keyEquivalent: "")
 
         menu.addItem(NSMenuItem.separator())
 
-        menu.addItem(withTitle: "Quit kDrive", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        menu.addItem(withTitle: "Quit \(applicationName)", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
 
         return menu
     }

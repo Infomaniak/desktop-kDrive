@@ -18,10 +18,11 @@
 
 import Cocoa
 
-class PreferencesSplitViewController: IKSplitViewController {
+class PreferencesSidebarViewController: NSViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do view setup here.
     }
+    
 }
