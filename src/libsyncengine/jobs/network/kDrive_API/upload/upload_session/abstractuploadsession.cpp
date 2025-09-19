@@ -429,10 +429,13 @@ bool AbstractUploadSession::closeSession() {
         return false;
     }
 
-    if (const auto exitInfo = finishJob->runSynchronously(); exitInfo.code() != ExitCode::Ok || finishJob->hasHttpError()) {
+    if (const auto exitInfo = finishJob->runSynchronously(); !exitInfo || finishJob->hasHttpError()) {
         _exitInfo = exitInfo;
-        LOGW_WARN(_logger, L"Error in UploadSessionFinishJob::runSynchronously: " << exitInfo << L" file="
-                                                                                  << Path2WStr(_filePath.filename()));
+        LOGW_WARN(_logger, L"Error in UploadSessionFinishJob::runSynchronously: "
+                                   << exitInfo << L" " << Utility::formatSyncPath(_filePath) << L" .Cancelling upload session.");
+        // Cancelling the session is a backend requirement. Otherwise, subsequent upload attempts will fail.
+        (void) cancelSession();
+
         return false;
     }
 
