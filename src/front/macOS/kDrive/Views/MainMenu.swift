@@ -33,7 +33,7 @@ final class MainMenu: NSMenu {
     }
 
     @MainActor
-    public func setAsMainMenu() {
+    func setAsMainMenu() {
         NSApp.mainMenu = self
 
         NSApp.servicesMenu = servicesMenu
@@ -44,6 +44,9 @@ final class MainMenu: NSMenu {
     private func setupMenuItems() {
         let applicationItem = addItem(withTitle: "Application", action: nil, keyEquivalent: "")
         setSubmenu(createApplicationMenu(), for: applicationItem)
+
+        let viewItem = addItem(withTitle: "View", action: nil, keyEquivalent: "")
+        setSubmenu(createViewMenu(), for: viewItem)
 
         let windowItem = addItem(withTitle: "Window", action: nil, keyEquivalent: "")
         let windowMenu = createWindowMenu()
@@ -91,6 +94,34 @@ final class MainMenu: NSMenu {
         menu.addItem(NSMenuItem.separator())
 
         menu.addItem(withTitle: "Quit \(applicationName)", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+
+        return menu
+    }
+
+    private func createViewMenu() -> NSMenu {
+        let menu = NSMenu(title: "View")
+
+        let showToolbarItem = menu.addItem(
+            withTitle: "Show Toolbar",
+            action: #selector(NSWindow.toggleToolbarShown(_:)),
+            keyEquivalent: "t"
+        )
+        showToolbarItem.keyEquivalentModifierMask = [.command, .option]
+
+        menu.addItem(
+            withTitle: "Customize Toolbar...",
+            action: #selector(NSWindow.runToolbarCustomizationPalette(_:)),
+            keyEquivalent: ""
+        )
+
+        menu.addItem(NSMenuItem.separator())
+
+        let fullScreenItem = menu.addItem(
+            withTitle: "Enter Full Screen",
+            action: #selector(NSWindow.toggleFullScreen(_:)),
+            keyEquivalent: "f"
+        )
+        fullScreenItem.keyEquivalentModifierMask = [.command, .control]
 
         return menu
     }
