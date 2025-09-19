@@ -145,14 +145,32 @@ void TestUtility::testMoveItemToTrash(void) {
     std::filesystem::create_directory(dirPath);
     CPPUNIT_ASSERT(Utility::moveItemToTrash(dirPath));
     CPPUNIT_ASSERT(!std::filesystem::exists(dirPath));
+
+    // A regular file within a subdirectory that misses owner exec permission:
+    // - No issue on Windows
+    const SyncPath subdir = tempDir.path() / "permission_less_subdirectory";
+    std::filesystem::create_directory(subdir);
+    path = subdir / "file.txt";
+    { std::ofstream ofs(path); }
+    std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::remove);
+    CPPUNIT_ASSERT(Utility::moveItemToTrash(path));
+    CPPUNIT_ASSERT(!std::filesystem::exists(path));
+
+    // A regular directory that misses owner exec permission:
+    // - No issue on Windows
+    CPPUNIT_ASSERT(Utility::moveItemToTrash(subdir));
+
+    // Restore permission to allow subdir removal
+    std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
+
+    CPPUNIT_ASSERT(!std::filesystem::exists(subdir));
 }
 
 void TestUtility::testGetLinuxDesktopType() {
     std::string currentDesktop;
-
 #if defined(KD_LINUX)
     CPPUNIT_ASSERT(Utility::getLinuxDesktopType(currentDesktop));
-    CPPUNIT_ASSERT(!currentDesktop.empty());
+    CPPUNIT_ASSERT(!currentDesktop.emty());
     return;
 #endif
     CPPUNIT_ASSERT(!Utility::getLinuxDesktopType(currentDesktop));
