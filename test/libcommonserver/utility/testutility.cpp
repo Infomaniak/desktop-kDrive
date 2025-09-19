@@ -153,17 +153,20 @@ void TestUtility::testMoveItemToTrash(void) {
     path = subdir / "file.txt";
     { std::ofstream ofs(path); }
     std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::remove);
+#if defined(KD_WINDOWS)
     CPPUNIT_ASSERT(Utility::moveItemToTrash(path));
     CPPUNIT_ASSERT(!std::filesystem::exists(path));
-
+#elif defined(KD_MACOS) || defined(KD_LINUX)
+    CPPUNIT_ASSERT(!Utility::moveItemToTrash(path));
+    std::error_code ec;
+    CPPUNIT_ASSERT(!std::filesystem::exists(path, ec));
+    CPPUNIT_ASSERT_EQUAL(13, ec.value()); // EACCES 13 Permission denied
+#endif
     // A regular directory that misses owner exec permission:
-    // - No issue on Windows
+    // - No issue on Windows and MacOS
     CPPUNIT_ASSERT(Utility::moveItemToTrash(subdir));
-
-    // Restore permission to allow subdir removal
-    std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
-
-    CPPUNIT_ASSERT(!std::filesystem::exists(subdir));
+    CPPUNIT_ASSERT(!std::filesystem::exists(subdir, ec));
+    CPPUNIT_ASSERT(!ec);
 }
 
 void TestUtility::testGetLinuxDesktopType() {
