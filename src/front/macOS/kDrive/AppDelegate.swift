@@ -35,61 +35,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         mainWindow = MainWindowController()
         mainWindow?.showWindow(nil)
     }
-}
 
-// MARK: - Main Menu
-
-extension AppDelegate {
     private func setupMainMenu() {
-        let mainMenu = NSMenu(title: "MainMenu")
-
-        let applicationItem = mainMenu.addItem(withTitle: "Application", action: nil, keyEquivalent: "")
-        mainMenu.setSubmenu(createApplicationMenu(), for: applicationItem)
+        let mainMenu = MainMenu()
 
         NSApp.mainMenu = mainMenu
-    }
-
-    private func createApplicationMenu() -> NSMenu {
-        let menu = NSMenu(title: "Application")
-
-        menu.addItem(
-            withTitle: "About kDrive",
-            action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)),
-            keyEquivalent: ""
-        )
-
-        menu.addItem(NSMenuItem.separator())
-
-        menu.addItem(withTitle: "Preferences...", action: nil, keyEquivalent: ",")
-
-        menu.addItem(NSMenuItem.separator())
-
-        let servicesItem = menu.addItem(withTitle: "Services", action: nil, keyEquivalent: "")
-        let servicesMenu = NSMenu(title: "Services")
-        menu.setSubmenu(servicesMenu, for: servicesItem)
-        NSApp.servicesMenu = servicesMenu
-
-        menu.addItem(NSMenuItem.separator())
-
-        menu.addItem(withTitle: "Hide", action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
-
-        let hideOthersItem = menu.addItem(
-            withTitle: "Hide Others",
-            action: #selector(NSApplication.hideOtherApplications(_:)),
-            keyEquivalent: "h"
-        )
-        hideOthersItem.keyEquivalentModifierMask = [.command, .option]
-
-        menu.addItem(
-            withTitle: "Show All",
-            action: #selector(NSApplication.unhideAllApplications(_:)),
-            keyEquivalent: ""
-        )
-
-        menu.addItem(NSMenuItem.separator())
-
-        menu.addItem(withTitle: "Quit kDrive", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
-
-        return menu
+        NSApp.servicesMenu = mainMenu.servicesMenu
     }
 }
