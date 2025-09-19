@@ -20,6 +20,7 @@ import Cocoa
 
 final class MainMenu: NSMenu {
     private(set) var servicesMenu: NSMenu?
+    private(set) var windowMenu: NSMenu?
 
     private var applicationName: String {
         return Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String ?? "kDrive"
@@ -30,9 +31,21 @@ final class MainMenu: NSMenu {
         setupMenuItems()
     }
 
+    @MainActor
+    public func setAsMainMenu() {
+        NSApp.mainMenu = self
+        NSApp.servicesMenu = servicesMenu
+        NSApp.windowsMenu = windowMenu
+    }
+
     private func setupMenuItems() {
         let applicationItem = addItem(withTitle: "Application", action: nil, keyEquivalent: "")
         setSubmenu(createApplicationMenu(), for: applicationItem)
+
+        let windowItem = addItem(withTitle: "Window", action: nil, keyEquivalent: "")
+        let windowSubmenu = createWindowMenu()
+        setSubmenu(windowSubmenu, for: windowItem)
+        windowMenu = windowSubmenu
     }
 
     private func createApplicationMenu() -> NSMenu {
@@ -70,6 +83,20 @@ final class MainMenu: NSMenu {
         menu.addItem(NSMenuItem.separator())
 
         menu.addItem(withTitle: "Quit \(applicationName)", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+
+        return menu
+    }
+
+    private func createWindowMenu() -> NSMenu {
+        let menu = NSMenu(title: "Window")
+
+        menu.addItem(withTitle: "Minimize", action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m")
+
+        menu.addItem(withTitle: "Zoom", action: #selector(NSWindow.performZoom(_:)), keyEquivalent: "")
+
+        menu.addItem(NSMenuItem.separator())
+
+        menu.addItem(withTitle: "Bring All to Front", action: #selector(NSApplication.arrangeInFront(_:)), keyEquivalent: "")
 
         return menu
     }

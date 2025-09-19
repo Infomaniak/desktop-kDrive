@@ -44,8 +44,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func setupMainMenu() {
         let mainMenu = MainMenu()
-
-        NSApp.mainMenu = mainMenu
-        NSApp.servicesMenu = mainMenu.servicesMenu
+        mainMenu.setAsMainMenu()
     }
 }

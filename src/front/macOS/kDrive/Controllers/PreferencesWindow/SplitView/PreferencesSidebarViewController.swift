@@ -28,6 +28,8 @@ class PreferencesSidebarViewController: NSViewController {
     private var scrollView: NSScrollView!
     private var outlineView: NSOutlineView!
 
+    private let items: [SidebarItem] = [.general, .accounts, .accounts]
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupView()
@@ -41,8 +43,8 @@ class PreferencesSidebarViewController: NSViewController {
     private func setupView() {
         outlineView = NSOutlineView()
         outlineView.translatesAutoresizingMaskIntoConstraints = false
-//        outlineView.dataSource = self
-//        outlineView.delegate = self
+        outlineView.dataSource = self
+        outlineView.delegate = self
         outlineView.focusRingType = .none
         outlineView.rowSizeStyle = .medium
         outlineView.headerView = nil
@@ -69,3 +71,23 @@ class PreferencesSidebarViewController: NSViewController {
         ])
     }
 }
+
+// MARK: - NSOutlineViewDataSource
+
+extension PreferencesSidebarViewController: NSOutlineViewDataSource {
+    func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?) -> Any {
+        return items[index]
+    }
+
+    func outlineView(_ outlineView: NSOutlineView, isItemExpandable item: Any) -> Bool {
+        return false
+    }
+
+    func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
+        return items.count
+    }
+}
+
+// MARK: - NSOutlineViewDelegate
+
+extension PreferencesSidebarViewController: NSOutlineViewDelegate {}
