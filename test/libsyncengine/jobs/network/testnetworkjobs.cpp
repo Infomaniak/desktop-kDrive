@@ -1157,25 +1157,49 @@ void TestNetworkJobs::testUpload() {
 void TestNetworkJobs::testDriveUploadSessionWithSizeMismatchError() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionWithSizeMismatchError");
 
-    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDriveUploadSessionWithSizeMismatchError");
-    const LocalTemporaryDirectory localTmpDir("testDriveUploadSessionASynchronous");
-    const SyncPath localFilePath = testhelpers::generateBigFile(localTmpDir.path(), 97);
+    const std::string context = "testDriveUploadSessionWithSizeMismatchError";
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, context);
+    const LocalTemporaryDirectory localTmpDir(context);
+    const SyncPath localFilePath = testhelpers::generateBigFile(localTmpDir.path(), 20);
 
-    DriveUploadSession driveUploadSessionJobCreate(nullptr, _driveDbId, nullptr, localFilePath, localFilePath.filename().native(),
-                                                   remoteTmpDir.id(), testhelpers::defaultTime, testhelpers::defaultTime, false,
-                                                   3);
+    DriveUploadSession job(nullptr, _driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
+                           testhelpers::defaultTime, testhelpers::defaultTime, false, 2);
 
     {
-        std::ofstream os{localFilePath};
-        os << "Change the size of the file to be uploaded.";
+        std::ofstream os(localFilePath, std::ios_base::app);
+        os << "Increase the size of the file to be uploaded.";
     }
 
-    auto exitInfo = driveUploadSessionJobCreate.runSynchronously();
-    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitInfo.code());
-    CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime, driveUploadSessionJobCreate.modificationTime());
-    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(97 * 1000000), driveUploadSessionJobCreate.size());
-    CPPUNIT_ASSERT(!driveUploadSessionJobCreate.nodeId().empty());
+    const auto exitInfo = job.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::SystemError, exitInfo.code());
+    CPPUNIT_ASSERT_EQUAL(ExitCause::FileAccessError, exitInfo.cause());
+    CPPUNIT_ASSERT(job.isCancelled());
+    CPPUNIT_ASSERT(job.isAborted());
 }
+
+void TestNetworkJobs::testDriveUploadSessionWithNullChunkSizeError() {
+    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionWithNullChunkSizeError");
+
+    const std::string context = "testDriveUploadSessionWithNullChunkSizeError";
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, context);
+    const LocalTemporaryDirectory localTmpDir(context);
+    const SyncPath localFilePath = testhelpers::generateBigFile(localTmpDir.path(), 20);
+
+    DriveUploadSession job(nullptr, _driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
+                           testhelpers::defaultTime, testhelpers::defaultTime, false, 2);
+
+    {
+        std::ofstream os(localFilePath);
+        os << "Overwrite the file content.";
+    }
+
+    const auto exitInfo = job.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::SystemError, exitInfo.code());
+    CPPUNIT_ASSERT_EQUAL(ExitCause::FileAccessError, exitInfo.cause());
+    CPPUNIT_ASSERT(job.isCancelled());
+    CPPUNIT_ASSERT(job.isAborted());
+}
+
 
 void TestNetworkJobs::testUploadAborted() {
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUploadAborted");

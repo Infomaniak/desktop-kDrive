@@ -52,6 +52,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testDriveUploadSessionSynchronous);
         CPPUNIT_TEST(testDriveUploadSessionAsynchronous);
         CPPUNIT_TEST(testDriveUploadSessionWithSizeMismatchError);
+        CPPUNIT_TEST(testDriveUploadSessionWithNullChunkSizeError);
         CPPUNIT_TEST(testDefuncted);
         CPPUNIT_TEST(testDriveUploadSessionSynchronousAborted);
         CPPUNIT_TEST(testDriveUploadSessionAsynchronousAborted);
@@ -91,6 +92,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         void testDriveUploadSessionSynchronous();
         void testDriveUploadSessionAsynchronous();
         void testDriveUploadSessionWithSizeMismatchError();
+        void testDriveUploadSessionWithNullChunkSizeError();
         void testDefuncted();
         void testDriveUploadSessionSynchronousAborted();
         void testDriveUploadSessionAsynchronousAborted();
