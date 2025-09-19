@@ -21,6 +21,7 @@ import Cocoa
 final class MainMenu: NSMenu {
     private(set) var servicesMenu: NSMenu?
     private(set) var windowMenu: NSMenu?
+    private(set) var helpMenu: NSMenu?
 
     private var applicationName: String {
         return Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String ?? "kDrive"
@@ -34,8 +35,10 @@ final class MainMenu: NSMenu {
     @MainActor
     public func setAsMainMenu() {
         NSApp.mainMenu = self
+
         NSApp.servicesMenu = servicesMenu
         NSApp.windowsMenu = windowMenu
+        NSApp.helpMenu = helpMenu
     }
 
     private func setupMenuItems() {
@@ -43,9 +46,14 @@ final class MainMenu: NSMenu {
         setSubmenu(createApplicationMenu(), for: applicationItem)
 
         let windowItem = addItem(withTitle: "Window", action: nil, keyEquivalent: "")
-        let windowSubmenu = createWindowMenu()
-        setSubmenu(windowSubmenu, for: windowItem)
-        windowMenu = windowSubmenu
+        let windowMenu = createWindowMenu()
+        setSubmenu(windowMenu, for: windowItem)
+        self.windowMenu = windowMenu
+
+        let helpItem = addItem(withTitle: "Help", action: nil, keyEquivalent: "")
+        let helpMenu = createHelpMenu()
+        setSubmenu(helpMenu, for: helpItem)
+        self.helpMenu = helpMenu
     }
 
     private func createApplicationMenu() -> NSMenu {
@@ -98,6 +106,11 @@ final class MainMenu: NSMenu {
 
         menu.addItem(withTitle: "Bring All to Front", action: #selector(NSApplication.arrangeInFront(_:)), keyEquivalent: "")
 
+        return menu
+    }
+
+    private func createHelpMenu() -> NSMenu {
+        let menu = NSMenu(title: "Help")
         return menu
     }
 }
