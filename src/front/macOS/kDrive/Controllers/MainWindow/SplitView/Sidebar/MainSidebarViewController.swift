@@ -19,6 +19,26 @@
 import Cocoa
 import kDriveCore
 
+extension SidebarItem {
+    static let home = SidebarItem(
+        icon: NSImage(resource: .house),
+        title: KDriveLocalizable.tabTitleHome
+    )
+    static let activity = SidebarItem(
+        icon: NSImage(resource: .circularArrowsClockwise),
+        title: KDriveLocalizable.tabTitleActivity
+    )
+    static let storage = SidebarItem(
+        icon: NSImage(resource: .hardDiskDrive),
+        title: KDriveLocalizable.tabTitleStorage
+    )
+    static let kDriveFolder = SidebarItem(
+        icon: NSImage(resource: .kdriveFoldersStacked),
+        title: KDriveLocalizable.sidebarItemKDriveTitle,
+        type: .menu
+    )
+}
+
 protocol SidebarViewControllerDelegate: AnyObject {
     func sidebarViewController(_ controller: MainSidebarViewController, didSelectItem item: SidebarItem)
 }
@@ -160,7 +180,7 @@ extension MainSidebarViewController: ClickableOutlineViewDelegate {
             cell?.identifier = Self.navigationCellIdentifier
         }
 
-        cell?.imageView?.image = NSImage(resource: item.icon)
+        cell?.imageView?.image = item.icon
         cell?.textField?.stringValue = item.title
 
         return cell

@@ -18,11 +18,54 @@
 
 import Cocoa
 
+extension SidebarItem {
+    static let general = SidebarItem(icon: NSImage(resource: .settings), title: KDriveLocalizable.sidebarItemGeneral)
+    static let accounts = SidebarItem(icon: NSImage(resource: .persons), title: KDriveLocalizable.sidebarItemAccounts)
+    static let advanced = SidebarItem(icon: NSImage(resource: .hammerWrench), title: KDriveLocalizable.sidebarItemAdvanced)
+}
+
 class PreferencesSidebarViewController: NSViewController {
+    private var scrollView: NSScrollView!
+    private var outlineView: NSOutlineView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do view setup here.
+        setupView()
     }
-    
+
+    override func viewWillAppear() {
+        super.viewWillAppear()
+        outlineView.selectRowIndexes(IndexSet(integer: 0), byExtendingSelection: false)
+    }
+
+    private func setupView() {
+        outlineView = NSOutlineView()
+        outlineView.translatesAutoresizingMaskIntoConstraints = false
+//        outlineView.dataSource = self
+//        outlineView.delegate = self
+        outlineView.focusRingType = .none
+        outlineView.rowSizeStyle = .medium
+        outlineView.headerView = nil
+        outlineView.style = .sourceList
+
+        let singleColumn = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("SidebarColumn"))
+        singleColumn.isEditable = false
+        outlineView.addTableColumn(singleColumn)
+        outlineView.outlineTableColumn = singleColumn
+
+        scrollView = NSScrollView()
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.hasVerticalScroller = true
+        scrollView.autohidesScrollers = true
+        scrollView.drawsBackground = false
+        scrollView.documentView = outlineView
+        view.addSubview(scrollView)
+
+        NSLayoutConstraint.activate([
+            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+        ])
+    }
 }

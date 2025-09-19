@@ -61,6 +61,7 @@
 				Controllers/IKSplitViewController.swift,
 				Controllers/TitledViewController.swift,
 				Utils/ColoredMenuItem.swift,
+				Utils/SidebarItem.swift,
 				Views/BadgeButton.swift,
 				Views/ClickableOutlineView.swift,
 				Views/ColoredPopUpButton.swift,
@@ -75,6 +76,7 @@
 			membershipExceptions = (
 				Controllers/TitledViewController.swift,
 				Utils/ColoredMenuItem.swift,
+				Utils/SidebarItem.swift,
 				Views/BadgeButton.swift,
 				Views/ClickableOutlineView.swift,
 				Views/ColoredPopUpButton.swift,

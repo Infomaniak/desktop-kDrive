@@ -16,24 +16,26 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Foundation
 import Cocoa
 
-class PreferencesSplitViewController: IKSplitViewController {
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupSplitView()
+public struct SidebarItem: Sendable, Equatable, Hashable {
+    public enum ItemType: Sendable, Equatable {
+        case navigation
+        case menu
     }
 
-    private func setupSplitView() {
-        splitView.autosaveName = "PreferencesSplitViewAutoSave"
-        splitView.isVertical = true
+    public let icon: NSImage
+    public let title: String
+    public let type: ItemType
 
-        let sidebarViewController = PreferencesSidebarViewController()
-        let sidebarItem = NSSplitViewItem(sidebarWithViewController: sidebarViewController)
-        addSplitViewItem(sidebarItem)
+    public var canBeSelected: Bool {
+        return type == .navigation
+    }
 
-        let generalViewController = NSViewController()
-        let contentItem = NSSplitViewItem(viewController: generalViewController)
-        addSplitViewItem(contentItem)
+    public init(icon: NSImage, title: String, type: ItemType = .navigation) {
+        self.icon = icon
+        self.title = title
+        self.type = type
     }
 }

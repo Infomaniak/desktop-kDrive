@@ -29,7 +29,7 @@ final class MainSplitViewController: IKSplitViewController {
     }
 
     private func setupSplitView() {
-        splitView.autosaveName = "SplitViewAutoSave"
+        splitView.autosaveName = "MainSplitViewAutoSave"
         splitView.isVertical = true
 
         let sidebarViewController = MainSidebarViewController()

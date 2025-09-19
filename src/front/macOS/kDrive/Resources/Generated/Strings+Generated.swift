@@ -14,8 +14,12 @@ internal enum KDriveLocalizable {
   internal static let buttonOpenInBrowser = KDriveLocalizable.tr("Localizable", "buttonOpenInBrowser", fallback: "Open in browser")
   /// loco:68b04d5a63085b7ab90cea63
   internal static let buttonOpenInFinder = KDriveLocalizable.tr("Localizable", "buttonOpenInFinder", fallback: "Open in Finder")
-  /// loco:68a7228730d0f594cc03e4b3
-  internal static let menuItemSearch = KDriveLocalizable.tr("Localizable", "menuItemSearch", fallback: "Search")
+  /// loco:68cd386502633dee14000352
+  internal static let sidebarItemAccounts = KDriveLocalizable.tr("Localizable", "sidebarItemAccounts", fallback: "Accounts")
+  /// loco:68cd389fcc36238762040074
+  internal static let sidebarItemAdvanced = KDriveLocalizable.tr("Localizable", "sidebarItemAdvanced", fallback: "Advanced")
+  /// loco:68cd3843fbf0b4c60d0c9c82
+  internal static let sidebarItemGeneral = KDriveLocalizable.tr("Localizable", "sidebarItemGeneral", fallback: "General")
   /// loco:68a70c92c32749426b06db02
   internal static let sidebarItemKDriveTitle = KDriveLocalizable.tr("Localizable", "sidebarItemKDriveTitle", fallback: "kDrive folder")
   /// loco:68a70be4b749277aa1081dc2
