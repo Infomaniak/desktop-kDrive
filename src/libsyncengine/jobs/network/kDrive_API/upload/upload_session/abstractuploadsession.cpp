@@ -302,6 +302,14 @@ bool AbstractUploadSession::sendChunks() {
             break;
         }
 
+        std::error_code ec; // Using noexcept signature of file_size.
+        if (const auto actualFileSize = std::filesystem::file_size(_filePath, ec); actualFileSize != _filesize) {
+            LOG_ERROR(_logger, "File size has changed while uploading.");
+            sentry::Handler::captureMessage(sentry::Level::Warning, "Upload chunk error", "File size has changed");
+            readError = true;
+            break;
+        }
+
         const std::streamsize actualChunkSize = file.gcount();
         if (actualChunkSize <= 0) {
             LOG_ERROR(_logger, "Chunk size is 0");
@@ -432,7 +440,7 @@ bool AbstractUploadSession::closeSession() {
     if (const auto exitInfo = finishJob->runSynchronously(); !exitInfo || finishJob->hasHttpError()) {
         _exitInfo = exitInfo;
         LOGW_WARN(_logger, L"Error in UploadSessionFinishJob::runSynchronously: "
-                                   << exitInfo << L" " << Utility::formatSyncPath(_filePath) << L" .Cancelling upload session.");
+                                   << exitInfo << L" " << Utility::formatSyncPath(_filePath) << L". Cancelling upload session.");
         // Cancelling the session is a backend requirement. Otherwise, subsequent upload attempts will fail.
         (void) cancelSession();
 
