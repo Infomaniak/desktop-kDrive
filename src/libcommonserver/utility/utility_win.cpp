@@ -171,6 +171,7 @@ bool Utility::moveItemToTrash(const SyncPath &itemPath) {
     } else if (aborted) {
         LOGW_WARN(Log::instance()->getLogger(), L"Move to trash aborted for item with " << Utility::formatSyncPath(itemPath));
         result = false;
+    } else {
     }
 
     fileOrFolderItem->Release();
