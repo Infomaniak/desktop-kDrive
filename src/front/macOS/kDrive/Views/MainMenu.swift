@@ -48,6 +48,9 @@ final class MainMenu: NSMenu {
         let fileItem = addItem(withTitle: "File", action: nil, keyEquivalent: "")
         setSubmenu(createFileMenu(), for: fileItem)
 
+        let editItem = addItem(withTitle: "File", action: nil, keyEquivalent: "")
+        setSubmenu(createEditMenu(), for: editItem)
+
         let viewItem = addItem(withTitle: "View", action: nil, keyEquivalent: "")
         setSubmenu(createViewMenu(), for: viewItem)
 
@@ -105,6 +108,30 @@ final class MainMenu: NSMenu {
         let menu = NSMenu(title: "File")
 
         menu.addItem(withTitle: "Close Window", action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
+
+        return menu
+    }
+
+    private func createEditMenu() -> NSMenu {
+        let menu = NSMenu(title: "Edit")
+
+        menu.addItem(withTitle: "Cut", action: #selector(NSText.cut(_:)), keyEquivalent: "x")
+
+        menu.addItem(withTitle: "Copy", action: #selector(NSText.copy(_:)), keyEquivalent: "c")
+
+        menu.addItem(withTitle: "Paste", action: #selector(NSText.paste(_:)), keyEquivalent: "v")
+
+        let pasteAndMatchItem = menu.addItem(
+            withTitle: "Paste and Match Style",
+            action: #selector(NSTextView.pasteAsPlainText(_:)),
+            keyEquivalent: "V"
+        )
+        pasteAndMatchItem.keyEquivalentModifierMask = [.command, .option]
+
+        let backspaceKey = "\u{8}"
+        menu.addItem(withTitle: "Delete", action: #selector(NSText.delete(_:)), keyEquivalent: backspaceKey)
+
+        menu.addItem(withTitle: "Select All", action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
 
         return menu
     }
