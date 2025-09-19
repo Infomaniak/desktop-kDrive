@@ -19,19 +19,13 @@
 import Cocoa
 
 extension NSToolbarItem.Identifier {
-    static let trackingSplitView = NSToolbarItem.Identifier("TrackingSplitView")
     static let searchTextField = NSToolbarItem.Identifier("SearchTextField")
 }
 
-final class SplitViewController: NSSplitViewController {
+final class MainSplitViewController: FullHeightSplitViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupSplitView()
-    }
-
-    override func viewWillAppear() {
-        super.viewWillAppear()
-        setupToolbar()
     }
 
     private func setupSplitView() {
@@ -49,19 +43,11 @@ final class SplitViewController: NSSplitViewController {
         let homeDetailItem = NSSplitViewItem(viewController: homeViewController)
         addSplitViewItem(homeDetailItem)
     }
-
-    private func setupToolbar() {
-        let toolbar = NSToolbar()
-        toolbar.delegate = self
-        toolbar.allowsUserCustomization = false
-        toolbar.displayMode = .iconOnly
-        view.window?.toolbar = toolbar
-    }
 }
 
 // MARK: - SidebarViewControllerDelegate
 
-extension SplitViewController: SidebarViewControllerDelegate {
+extension MainSplitViewController: SidebarViewControllerDelegate {
     func sidebarViewController(_ controller: SidebarViewController, didSelectItem item: SidebarItem) {
         var contentViewController: NSViewController
         switch item {
@@ -75,26 +61,37 @@ extension SplitViewController: SidebarViewControllerDelegate {
             fatalError("Destination not handled")
         }
 
-        removeSplitViewItem(splitViewItems[1])
-        addSplitViewItem(NSSplitViewItem(viewController: contentViewController))
+        switchContentViewController(destination: contentViewController)
     }
 }
 
 // MARK: - NSToolbarDelegate
 
-extension SplitViewController: NSToolbarDelegate {
-    func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        return [.trackingSplitView, .searchTextField]
+extension MainSplitViewController {
+    override func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
+        var initialItems = super.toolbarAllowedItemIdentifiers(toolbar)
+        initialItems.append(.searchTextField)
+
+        return initialItems
     }
 
-    func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        return [.trackingSplitView, .searchTextField]
+    override func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
+        var initialItems = super.toolbarDefaultItemIdentifiers(toolbar)
+        initialItems.append(.searchTextField)
+
+        return initialItems
     }
 
-    func toolbar(_ toolbar: NSToolbar, itemForItemIdentifier itemIdentifier: NSToolbarItem.Identifier, willBeInsertedIntoToolbar flag: Bool) -> NSToolbarItem? {
+    override func toolbar(
+        _ toolbar: NSToolbar,
+        itemForItemIdentifier itemIdentifier: NSToolbarItem.Identifier,
+        willBeInsertedIntoToolbar flag: Bool
+    ) -> NSToolbarItem? {
+        if let initialItem = super.toolbar(toolbar, itemForItemIdentifier: itemIdentifier, willBeInsertedIntoToolbar: flag) {
+            return initialItem
+        }
+
         switch itemIdentifier {
-        case .trackingSplitView:
-            return NSTrackingSeparatorToolbarItem(identifier: .trackingSplitView, splitView: splitView, dividerIndex: 0)
         case .searchTextField:
             return NSSearchToolbarItem(itemIdentifier: .searchTextField)
         default:

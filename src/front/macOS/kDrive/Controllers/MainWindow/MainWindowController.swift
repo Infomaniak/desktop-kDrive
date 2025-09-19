@@ -19,7 +19,7 @@
 import Cocoa
 
 final class MainWindowController: NSWindowController {
-    private var mainViewController: SplitViewController!
+    private var mainViewController: MainSplitViewController!
 
     convenience init() {
         let window = NSWindow(
@@ -33,7 +33,7 @@ final class MainWindowController: NSWindowController {
 
         self.init(window: window)
 
-        mainViewController = SplitViewController()
+        mainViewController = MainSplitViewController()
         window.contentView = mainViewController.view
     }
 }
