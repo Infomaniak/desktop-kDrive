@@ -61,12 +61,12 @@ SyncPath removeNumericSuffix(const SyncPath &relativePath) {
     auto &root = segments.front();
 
     std::smatch words;
-    std::string rootStr = SyncName2Str(root);
+    const std::string rootStr = SyncName2Str(root);
     (void) std::regex_match(rootStr, words, numericSuffixRegex);
 
     if (words.size() <= 1) return relativePath; // No numeric suffix.
 
-    root = root.substr(0, rootStr.size() - std::string(words[1]).size()); // Remove suffix from directory name.
+    root = root.substr(0, rootStr.size() - std::string{words[1]}.size()); // Removes suffix from root directory name.
 
     // Adapt the relative path.
     std::stringstream ss;

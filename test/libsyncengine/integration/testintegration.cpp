@@ -151,7 +151,7 @@ void TestIntegration::testAll() {
     logStep("initialization");
 
     // Run test cases
-    /*basicTests();
+    basicTests();
     inconsistencyTests();
     conflictTests();
     testBreakCycle();
@@ -159,7 +159,7 @@ void TestIntegration::testAll() {
     testExclusionTemplates();
     testEncoding();
     testParentRename();
-    testNegativeModificationTime();*/
+    testNegativeModificationTime();
     testDeleteAndRecreateBranch();
 }
 

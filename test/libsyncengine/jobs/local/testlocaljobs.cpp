@@ -96,11 +96,11 @@ void KDC::TestLocalJobs::testLocalJobs() {
     CPPUNIT_ASSERT(std::filesystem::exists(copyDirPath / "tmp_dir" / "tmp_picture.jpg"));
 
     // Delete
+    LocalDeleteJobMockingTrash deleteJob(copyDirPath);
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
     testhelpers::createFileWithDehydratedStatus(copyDirPath / "tmp_dir" / "dehydrated_placeholder.jpg");
-#endif
-    LocalDeleteJobMockingTrash deleteJob(copyDirPath);
     deleteJob.setLiteSyncEnabled(true);
+#endif
     deleteJob.setMockMoveToTrash(false);
     deleteJob.runSynchronously();
 

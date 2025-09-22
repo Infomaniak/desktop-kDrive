@@ -760,7 +760,7 @@ bool isInFolder(const std::list<SyncName> &relativePath, IShellFolder2 *folder) 
                 auto childRelativedPath = relativePath;
                 childRelativedPath.pop_front();
                 IShellFolder2 *psChildFolder = nullptr;
-                SHBindToObject(folder, pidlItem, nullptr, IID_IShellFolder2, (void **) &psChildFolder);
+                (void) SHBindToObject(folder, pidlItem, nullptr, IID_IShellFolder2, static_cast<void **>(&psChildFolder));
 
                 return isInFolder(childRelativedPath, psChildFolder);
             }
