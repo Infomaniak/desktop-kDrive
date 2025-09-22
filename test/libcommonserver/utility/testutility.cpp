@@ -153,12 +153,13 @@ void TestUtility::testMoveItemToTrash(void) {
     path = subdir / "file.txt";
     { std::ofstream ofs(path); }
     std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::remove);
+
+    std::error_code ec;
 #if defined(KD_WINDOWS)
     CPPUNIT_ASSERT(Utility::moveItemToTrash(path));
     CPPUNIT_ASSERT(!std::filesystem::exists(path));
 #elif defined(KD_MACOS) || defined(KD_LINUX)
     CPPUNIT_ASSERT(!Utility::moveItemToTrash(path));
-    std::error_code ec;
     CPPUNIT_ASSERT(!std::filesystem::exists(path, ec));
     CPPUNIT_ASSERT_EQUAL(13, ec.value()); // EACCES 13 Permission denied
 #endif
@@ -173,7 +174,7 @@ void TestUtility::testGetLinuxDesktopType() {
     std::string currentDesktop;
 #if defined(KD_LINUX)
     CPPUNIT_ASSERT(Utility::getLinuxDesktopType(currentDesktop));
-    CPPUNIT_ASSERT(!currentDesktop.emty());
+    CPPUNIT_ASSERT(!currentDesktop.empty());
     return;
 #endif
     CPPUNIT_ASSERT(!Utility::getLinuxDesktopType(currentDesktop));
