@@ -18,16 +18,6 @@
 
 import Cocoa
 
-public class ColoredMenuItem: NSMenuItem {
-    public init(title: String, image: NSImage, color: NSColor) {
-        self.color = color
-        super.init(title: title, action: nil, keyEquivalent: "")
-        self.image = image
-    }
-
-    public required init(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    public var color: NSColor
+public protocol NavigableSidebarViewControllerDelegate: AnyObject {
+    func sidebarViewController(_ controller: NSViewController, didSelectItem item: SidebarItem)
 }

@@ -18,7 +18,7 @@
 
 import Cocoa
 
-public class TitledViewController: NSViewController {
+open class TitledViewController: NSViewController {
     public let toolbarTitle: String
 
     public init(toolbarTitle: String) {
@@ -26,11 +26,12 @@ public class TitledViewController: NSViewController {
         super.init(nibName: nil, bundle: nil)
     }
 
+    @available(*, unavailable)
     public required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
-    public override func viewDidAppear() {
+    override public func viewDidAppear() {
         super.viewDidAppear()
         view.window?.title = toolbarTitle
     }

@@ -58,10 +58,7 @@
 		F9A9A0562E61A887005FA196 /* Exceptions for "kDriveCoreUI" folder in "kDrive" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Controllers/IKSplitViewController.swift,
-				Controllers/TitledViewController.swift,
 				Utils/ColoredMenuItem.swift,
-				Utils/SidebarItem.swift,
 				Views/BadgeButton.swift,
 				Views/ClickableOutlineView.swift,
 				Views/ColoredPopUpButton.swift,
@@ -74,9 +71,7 @@
 		F9A9A0572E61A887005FA196 /* Exceptions for "kDriveCoreUI" folder in "kDriveCoreUI" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Controllers/TitledViewController.swift,
 				Utils/ColoredMenuItem.swift,
-				Utils/SidebarItem.swift,
 				Views/BadgeButton.swift,
 				Views/ClickableOutlineView.swift,
 				Views/ColoredPopUpButton.swift,

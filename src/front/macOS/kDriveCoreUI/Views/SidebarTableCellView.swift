@@ -17,9 +17,10 @@
  */
 
 import Cocoa
+import kDriveCoreUI
 
-final class SidebarTableCellView: NSTableCellView {
-    var badge: Int? {
+public final class SidebarTableCellView: NSTableCellView {
+    public var badge: Int? {
         didSet {
             updateBadge()
         }
@@ -27,18 +28,28 @@ final class SidebarTableCellView: NSTableCellView {
 
     private var badgeView: NSButton!
 
-    convenience init() {
+    public convenience init() {
         self.init(frame: .zero)
     }
 
-    override init(frame frameRect: NSRect) {
+    override public init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
         setupCell()
     }
 
     @available(*, unavailable)
-    required init?(coder: NSCoder) {
+    public required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    override public func layout() {
+        super.layout()
+        layoutBadge()
+    }
+
+    public func setupForItem(_ sidebarItem: SidebarItem) {
+        imageView?.image = sidebarItem.icon
+        textField?.stringValue = sidebarItem.title
     }
 
     private func setupCell() {
@@ -56,11 +67,6 @@ final class SidebarTableCellView: NSTableCellView {
         badgeView.isHidden = true
         badgeView.autoresizingMask = [.minXMargin, .minYMargin, .maxYMargin]
         addSubview(badgeView)
-    }
-
-    override func layout() {
-        super.layout()
-        layoutBadge()
     }
 
     private func updateBadge() {

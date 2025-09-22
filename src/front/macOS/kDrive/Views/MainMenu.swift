@@ -33,12 +33,12 @@ final class MainMenu: NSMenu {
     }
 
     @MainActor
-    func setAsMainMenu() {
-        NSApp.mainMenu = self
+    func setAsAppMainMenu() {
+        NSApplication.shared.mainMenu = self
 
-        NSApp.servicesMenu = servicesMenu
-        NSApp.windowsMenu = windowMenu
-        NSApp.helpMenu = helpMenu
+        NSApplication.shared.servicesMenu = servicesMenu
+        NSApplication.shared.windowsMenu = windowMenu
+        NSApplication.shared.helpMenu = helpMenu
     }
 
     private func setupMenuItems() {

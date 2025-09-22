@@ -24,7 +24,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var preferencesWindow: PreferencesWindowController?
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        setupMainMenu()
         openMainWindow()
     }
 
@@ -40,10 +39,5 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc public func openPreferencesWindow() {
         preferencesWindow = PreferencesWindowController()
         preferencesWindow?.showWindow(nil)
-    }
-
-    private func setupMainMenu() {
-        let mainMenu = MainMenu()
-        mainMenu.setAsMainMenu()
     }
 }

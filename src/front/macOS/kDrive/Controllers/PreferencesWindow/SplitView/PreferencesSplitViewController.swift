@@ -17,8 +17,9 @@
  */
 
 import Cocoa
+import kDriveCoreUI
 
-class PreferencesSplitViewController: IKSplitViewController {
+final class PreferencesSplitViewController: IKSplitViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupSplitView()

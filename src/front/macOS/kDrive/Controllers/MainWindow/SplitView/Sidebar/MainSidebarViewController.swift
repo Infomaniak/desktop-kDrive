@@ -18,6 +18,7 @@
 
 import Cocoa
 import kDriveCore
+import kDriveCoreUI
 
 extension SidebarItem {
     static let home = SidebarItem(
@@ -39,14 +40,10 @@ extension SidebarItem {
     )
 }
 
-protocol SidebarViewControllerDelegate: AnyObject {
-    func sidebarViewController(_ controller: MainSidebarViewController, didSelectItem item: SidebarItem)
-}
-
 final class MainSidebarViewController: NSViewController {
     static let navigationCellIdentifier = NSUserInterfaceItemIdentifier("NavigationSidebarCell")
 
-    weak var delegate: SidebarViewControllerDelegate?
+    weak var delegate: NavigableSidebarViewControllerDelegate?
 
     private var scrollView: NSScrollView!
     private var outlineView: ClickableOutlineView!
@@ -180,9 +177,7 @@ extension MainSidebarViewController: ClickableOutlineViewDelegate {
             cell?.identifier = Self.navigationCellIdentifier
         }
 
-        cell?.imageView?.image = item.icon
-        cell?.textField?.stringValue = item.title
-
+        cell?.setupForItem(item)
         return cell
     }
 

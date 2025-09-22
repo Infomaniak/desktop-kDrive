@@ -17,6 +17,7 @@
  */
 
 import Cocoa
+import kDriveCoreUI
 
 extension SidebarItem {
     static let general = SidebarItem(icon: NSImage(resource: .settings), title: KDriveLocalizable.sidebarItemGeneral)
@@ -25,10 +26,12 @@ extension SidebarItem {
 }
 
 class PreferencesSidebarViewController: NSViewController {
+    static let navigationCellIdentifier = NSUserInterfaceItemIdentifier("NavigationSidebarCell")
+
     private var scrollView: NSScrollView!
     private var outlineView: NSOutlineView!
 
-    private let items: [SidebarItem] = [.general, .accounts, .accounts]
+    private let items: [SidebarItem] = [.general, .accounts, .advanced]
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -90,4 +93,22 @@ extension PreferencesSidebarViewController: NSOutlineViewDataSource {
 
 // MARK: - NSOutlineViewDelegate
 
-extension PreferencesSidebarViewController: NSOutlineViewDelegate {}
+extension PreferencesSidebarViewController: NSOutlineViewDelegate {
+    func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
+        guard let item = item as? SidebarItem else { return nil }
+
+        var cell = outlineView.makeView(withIdentifier: Self.navigationCellIdentifier, owner: self) as? SidebarTableCellView
+        if cell == nil {
+            cell = SidebarTableCellView()
+            cell?.identifier = Self.navigationCellIdentifier
+        }
+
+        cell?.setupForItem(item)
+        return cell
+    }
+
+    func outlineViewSelectionDidChange(_ notification: Notification) {
+        guard let item = outlineView.item(atRow: outlineView.selectedRow) as? SidebarItem else { return }
+        // TODO: Call delegate
+    }
+}

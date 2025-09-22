@@ -22,7 +22,7 @@ public extension NSToolbarItem.Identifier {
     static let trackingSplitView = NSToolbarItem.Identifier("TrackingSplitView")
 }
 
-public class IKSplitViewController: NSSplitViewController {
+open class IKSplitViewController: NSSplitViewController {
     public var toolbar = NSToolbar()
 
     override public func viewWillAppear() {
@@ -50,15 +50,15 @@ public extension IKSplitViewController {
 // MARK: - NSToolbarDelegate
 
 extension IKSplitViewController: NSToolbarDelegate {
-    public func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
+    open func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
         return [.trackingSplitView]
     }
 
-    public func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
+    open func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
         return [.trackingSplitView]
     }
 
-    public func toolbar(
+    open func toolbar(
         _ toolbar: NSToolbar,
         itemForItemIdentifier itemIdentifier: NSToolbarItem.Identifier,
         willBeInsertedIntoToolbar flag: Bool

@@ -17,6 +17,7 @@
  */
 
 import Cocoa
+import kDriveCoreUI
 
 extension NSToolbarItem.Identifier {
     static let searchTextField = NSToolbarItem.Identifier("SearchTextField")
@@ -47,8 +48,8 @@ final class MainSplitViewController: IKSplitViewController {
 
 // MARK: - SidebarViewControllerDelegate
 
-extension MainSplitViewController: SidebarViewControllerDelegate {
-    func sidebarViewController(_ controller: MainSidebarViewController, didSelectItem item: SidebarItem) {
+extension MainSplitViewController: NavigableSidebarViewControllerDelegate {
+    func sidebarViewController(_ controller: NSViewController, didSelectItem item: SidebarItem) {
         var contentViewController: NSViewController
         switch item {
         case .home:
