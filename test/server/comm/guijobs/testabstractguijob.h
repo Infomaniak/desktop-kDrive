@@ -17,20 +17,29 @@
  */
 
 #include "testincludes.h"
-#include "utility/jsonparserutility.h"
+#include "server/comm/guicommserver.h"
 #include "server/comm/guijobs/abstractguijob.h"
 
 #include <log4cplus/logger.h>
 
 namespace KDC {
 
-class CommChannelTest2 : public AbstractCommChannel {
+class GuiCommChannelTest2 : public GuiCommChannel {
     public:
-        ~CommChannelTest2() {}
+        GuiCommChannelTest2() :
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+            GuiCommChannel(Poco::Net::StreamSocket()) {
+        }
+#else
+            GuiCommChannel(nullptr) {
+        }
+#endif
+
+        ~GuiCommChannelTest2() = default;
+
         uint64_t readData(CommChar *, uint64_t) override { return 0; }
         uint64_t writeData(const CommChar *, uint64_t) override { return 0; }
         uint64_t bytesAvailable() const override { return 0; }
-        bool canReadLine() const override { return false; }
 };
 
 class GuiJobTest : public AbstractGuiJob {
@@ -89,7 +98,7 @@ class TestAbstractGuiJob : public CppUnit::TestFixture, public TestBase {
 
     private:
         log4cplus::Logger _logger;
-        std::shared_ptr<CommChannelTest2> _channel;
+        std::shared_ptr<GuiCommChannelTest2> _channel;
 };
 
 } // namespace KDC

@@ -92,7 +92,7 @@ void TestAbstractGuiJob::setUp() {
     std::filesystem::remove(parmsDbPath);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
-    _channel = std::make_shared<CommChannelTest2>();
+    _channel = std::make_shared<GuiCommChannelTest2>();
 }
 
 void TestAbstractGuiJob::tearDown() {
