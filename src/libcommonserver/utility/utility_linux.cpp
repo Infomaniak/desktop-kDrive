@@ -45,40 +45,35 @@ SyncPath Utility::getTrashPath() {
         return {};
     }
 
-    std::string trashPath;
-    const char *xdgDataHomeEnv = std::getenv("XDG_DATA_HOME");
-
-    if (xdgDataHomeEnv) {
-        auto xdgDataHome = std::string(xdgDataHomeEnv);
-        trashPath = xdgDataHome + "/Trash/files/";
-    } else {
-        auto homePath = std::string(homePathEnv);
-        trashPath = homePath + "/.local/share/Trash/files/";
+    if (const char *xdgDataHomeEnv = std::getenv("XDG_DATA_HOME"); xdgDataHomeEnv) {
+        return std::string(xdgDataHomeEnv) + "/Trash/files/";
     }
 
-    return trashPath;
+    return std::string(homePathEnv) + "/.local/share/Trash/files/";
 }
 
 SyncPath removeNumericSuffix(const SyncPath &relativePath) {
     if (relativePath.empty()) return {};
 
-    static const std::wregex numericSuffixRegex(L".*(\\.[0-9]+)$");
+    static const std::regex numericSuffixRegex(".*(\\.[0-9]+)$");
 
     std::list<SyncName> segments = CommonUtility::splitSyncPath(relativePath);
     auto &root = segments.front();
 
-    std::wsmatch words;
-    std::wstring rootWstr = SyncName2WStr(root);
-    (void) std::regex_match(rootWstr, words, numericSuffixRegex);
+    std::smatch words;
+    std::string rootStr = SyncName2Str(root);
+    (void) std::regex_match(rootStr, words, numericSuffixRegex);
 
-    assert(words.size() > 1 && "Unexpected mismatch.");
-    root = root.substr(0, rootWstr.size() - std::wstring(words[1]).size());
+    if (words.size() <= 1) return relativePath; // No numeric suffix.
 
-    std::wstringstream ss;
+    root = root.substr(0, rootStr.size() - std::string(words[1]).size()); // Remove suffix from directory name.
+
+    // Adapt the relative path.
+    std::stringstream ss;
     std::uint64_t i = 0;
     for (const auto &segment: segments) {
         if (i > 0) ss << "/";
-        ss << SyncName2WStr(segment);
+        ss << SyncName2Str(segment);
         ++i;
     }
 
@@ -96,7 +91,7 @@ bool Utility::isInTrash(const SyncPath &relativePath) {
         return false;
     }
 
-    // Filter out the numerical suffix of the root dirirectory name, e.g: `dirname.15` is replaced with `dirname`.
+    // Filter out the numerical suffix of the root directory name, e.g: `dirname.15` is replaced with `dirname`.
     for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
         const auto dirItemRelativePath = std::filesystem::relative(dirIt->path(), trashPath);
         const auto directorEntryPath = removeNumericSuffix(dirItemRelativePath);
