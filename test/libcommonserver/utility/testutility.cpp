@@ -149,7 +149,7 @@ void TestUtility::testMoveItemToTrash(void) {
     // A regular file within a subdirectory that misses owner exec permission:
     // - No issue on Windows
     const SyncPath subdir = tempDir.path() / "permission_less_subdirectory";
-    std::filesystem::create_directory(subdir);
+    (void) std::filesystem::create_directory(subdir);
     path = subdir / "file.txt";
     { std::ofstream ofs(path); }
     std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::remove);

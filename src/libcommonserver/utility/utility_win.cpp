@@ -172,6 +172,7 @@ bool Utility::moveItemToTrash(const SyncPath &itemPath) {
         LOGW_WARN(Log::instance()->getLogger(), L"Move to trash aborted for item with " << Utility::formatSyncPath(itemPath));
         result = false;
     } else {
+        // MISRA Coding Guideline
     }
 
     fileOrFolderItem->Release();
