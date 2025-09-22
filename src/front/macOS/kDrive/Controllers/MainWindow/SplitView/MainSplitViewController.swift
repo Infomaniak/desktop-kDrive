@@ -46,7 +46,7 @@ final class MainSplitViewController: IKSplitViewController {
     }
 }
 
-// MARK: - SidebarViewControllerDelegate
+// MARK: - NavigableSidebarViewControllerDelegate
 
 extension MainSplitViewController: NavigableSidebarViewControllerDelegate {
     func sidebarViewController(_ controller: NSViewController, didSelectItem item: SidebarItem) {

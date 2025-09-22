@@ -30,11 +30,20 @@ final class PreferencesSplitViewController: IKSplitViewController {
         splitView.isVertical = true
 
         let sidebarViewController = PreferencesSidebarViewController()
+        sidebarViewController.delegate = self
         let sidebarItem = NSSplitViewItem(sidebarWithViewController: sidebarViewController)
         addSplitViewItem(sidebarItem)
 
         let generalViewController = NSViewController()
         let contentItem = NSSplitViewItem(viewController: generalViewController)
         addSplitViewItem(contentItem)
+    }
+}
+
+// MARK: - NavigableSidebarViewControllerDelegate
+
+extension PreferencesSplitViewController: NavigableSidebarViewControllerDelegate {
+    func sidebarViewController(_ controller: NSViewController, didSelectItem item: kDriveCoreUI.SidebarItem) {
+        
     }
 }

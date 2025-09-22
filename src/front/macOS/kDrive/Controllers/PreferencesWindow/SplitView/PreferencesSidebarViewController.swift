@@ -28,6 +28,8 @@ extension SidebarItem {
 class PreferencesSidebarViewController: NSViewController {
     static let navigationCellIdentifier = NSUserInterfaceItemIdentifier("NavigationSidebarCell")
 
+    weak var delegate: NavigableSidebarViewControllerDelegate?
+
     private var scrollView: NSScrollView!
     private var outlineView: NSOutlineView!
 
@@ -109,6 +111,6 @@ extension PreferencesSidebarViewController: NSOutlineViewDelegate {
 
     func outlineViewSelectionDidChange(_ notification: Notification) {
         guard let item = outlineView.item(atRow: outlineView.selectedRow) as? SidebarItem else { return }
-        // TODO: Call delegate
+        delegate?.sidebarViewController(self, didSelectItem: item)
     }
 }
