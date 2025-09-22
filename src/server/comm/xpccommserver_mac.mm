@@ -22,8 +22,11 @@
 // XPCCommChannel implementation
 XPCCommChannel::XPCCommChannel(AbstractCommChannelPrivate *p) :
     _privatePtr(p) {
+    if(p == nullptr) {
+        LOG_FATAL(KDC::Log::instance()->getLogger(), "XPCCommChannel created with null private pointer");
+        return;
+    }
     _privatePtr->publicPtr = this;
-    open();
 }
 
 XPCCommChannel::~XPCCommChannel() {}
@@ -49,7 +52,7 @@ XPCCommServer::~XPCCommServer() {}
 
 void XPCCommServer::close() {}
 
-bool XPCCommServer::listen(const KDC::SyncPath &) {
+bool XPCCommServer::listen() {
     [_privatePtr->server start];
     return true;
 }

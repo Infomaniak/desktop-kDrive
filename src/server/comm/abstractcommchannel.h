@@ -25,10 +25,6 @@
 #include <functional>
 #include <filesystem>
 
-static const auto finderExtLineSeparator = Str("\n");
-static const auto finderExtQuerySeparator = Str("\\/");
-static const auto guiArgSeparator = Str(";");
-
 namespace KDC {
 
 class AbstractCommChannel;
@@ -38,45 +34,33 @@ using CommChannelCallback = std::function<void(std::shared_ptr<AbstractCommChann
 class AbstractCommChannel : public std::enable_shared_from_this<AbstractCommChannel> {
     public:
         AbstractCommChannel() = default;
-        virtual ~AbstractCommChannel();
+        virtual ~AbstractCommChannel() = default;
 
-        bool open();
-        void close();
-        virtual void sendMessage(const CommString &message) final;
-        virtual bool canReadLine() const;
-        virtual CommString readLine() final;
+        virtual void close() = 0;
+        virtual bool sendMessage(const CommString &message) = 0;
+        virtual bool canReadMessage() = 0;
+        virtual CommString readMessage() = 0;
+        virtual uint64_t bytesAvailable() const = 0;
 
-        //! Gets a device ID.
+        //! Gets an unique identifier for the object.
         /*!
-          \return the device ID.
+          \return the object ptr casted to string.
         */
         std::string id();
-
-        //! Gets from the device if anything is available for reading.
-        /*!
-          \return the number of bytes that are available for reading.
-        */
-        virtual uint64_t bytesAvailable() const = 0;
 
         // Callbacks
         void setLostConnectionCbk(const CommChannelCallback &cbk) { _onLostConnectionCbk = cbk; }
         void lostConnectionCbk() {
-            if (_onLostConnectionCbk) _onLostConnectionCbk(shared_from_this());
+            const auto thisPtr = weak_from_this().lock(); // Ensure the callback is not called on an object being destroyed
+            if (_onLostConnectionCbk && thisPtr) _onLostConnectionCbk(thisPtr);
         }
         void setReadyReadCbk(const CommChannelCallback &cbk) { _onReadyReadCbk = cbk; }
         void readyReadCbk() {
+            const auto thisPtr = weak_from_this().lock(); // Ensure the callback is not called on an object being destroyed
             if (_onReadyReadCbk) _onReadyReadCbk(shared_from_this());
         }
-        void setDestroyedCbk(const CommChannelCallback &cbk) { _onDestroyedCbk = cbk; }
-        void destroyedCbk() {
-            if (_onDestroyedCbk) _onDestroyedCbk(shared_from_this());
-        }
 
-    private:
-        CommString _readBuffer;
-        CommChannelCallback _onLostConnectionCbk;
-        CommChannelCallback _onReadyReadCbk;
-        CommChannelCallback _onDestroyedCbk;
+protected:
 
         //! Reads from the device.
         /*!
@@ -95,6 +79,13 @@ class AbstractCommChannel : public std::enable_shared_from_this<AbstractCommChan
         virtual uint64_t writeData(const CommChar *data, uint64_t maxSize) = 0;
 
         CommString truncateLongLogMessage(const CommString &message);
+
+
+    private:
+        CommChannelCallback _onLostConnectionCbk;
+        CommChannelCallback _onReadyReadCbk;
+
+        friend class TestSocketComm;
 };
 
 } // namespace KDC

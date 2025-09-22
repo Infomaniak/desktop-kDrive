@@ -17,13 +17,80 @@
  */
 
 #include "guicommserver.h"
-
+#include <Poco/JSON/Parser.h>
 namespace KDC {
 
-GuiCommChannel::GuiCommChannel() :
-    SocketCommChannel() {}
+bool GuiCommChannel::sendMessage(const CommString &message) {
+    const CommString truncatedLogMessage = truncateLongLogMessage(message);
+    LOGW_INFO(Log::instance()->getLogger(), L"Sending message: " << CommonUtility::commString2WStr(truncatedLogMessage)
+                                                                 << L" to: " << CommonUtility::s2ws(id()));
 
-GuiCommServer::GuiCommServer(const std::string &name) :
-    SocketCommServer(name) {}
+    // Check that the message is a valid JSON
+    Poco::JSON::Parser parser;
+    try {
+        parser.parse(SyncName2Str(message));
+    } catch (const Poco::Exception &e) {
+        LOGW_ERROR(Log::instance()->getLogger(), L"Failed to send message to GUI, invalid JSON: "
+                                                         << CommonUtility::commString2WStr(message) << L", error: "
+                                                         << CommonUtility::s2ws(e.displayText()));
+        return false;
+    }
+    (void) writeData(message.c_str(), message.size());
+    return true;
+}
 
+bool GuiCommChannel::canReadMessage() {
+    fetchDataToBuffer();
+    _validJsonInBuffer = containsValidJson(_readBuffer, _inBufferJsonEndIndex);
+    return _validJsonInBuffer;
+}
+
+CommString GuiCommChannel::readMessage() {
+    if (!canReadMessage()) {
+        return Str("");
+    }
+
+    CommString message = _readBuffer.substr(0, _inBufferJsonEndIndex + 1);
+    _readBuffer.erase(0, _inBufferJsonEndIndex + 1);
+    const CommString truncatedLogMessage = truncateLongLogMessage(message);
+    LOGW_INFO(Log::instance()->getLogger(), L"Reading message: " << CommonUtility::commString2WStr(truncatedLogMessage)
+                                                                 << L" from: " << CommonUtility::s2ws(id()));
+    return message;
+}
+
+bool GuiCommChannel::containsValidJson(const CommString &message, size_t &endIndex) const {
+    endIndex = 0;
+    if (message.empty() || (message[0] != '{' && message[0] != '[')) {
+        return false;
+    }
+
+    // Simple check for matching braces/brackets
+    CommChar openChar = message[0];
+    CommChar closeChar = (openChar == '{') ? '}' : ']';
+    int balance = 1;
+    for (size_t i = 1; i < message.size(); ++i) {
+        if (message[i] == openChar) {
+            ++balance;
+        } else if (message[i] == closeChar) {
+            --balance;
+            if (balance == 0) {
+                endIndex = i;
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+void GuiCommChannel::fetchDataToBuffer() {
+    while (bytesAvailable() > 0) {
+        CommChar data[1024];
+        if (uint64_t charRead = readData(data, 1024); charRead > 0) {
+            _readBuffer.append(data, charRead);
+        } else {
+            break;
+        }
+    }
+}
 } // namespace KDC

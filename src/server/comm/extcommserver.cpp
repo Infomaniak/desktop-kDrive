@@ -20,10 +20,54 @@
 
 namespace KDC {
 
-ExtCommChannel::ExtCommChannel() :
-    PipeCommChannel() {}
+bool ExtCommChannel::sendMessage(const CommString &message) {
+    const CommString truncatedLogMessage = truncateLongLogMessage(message);
+    LOGW_INFO(Log::instance()->getLogger(), L"Sending message: " << CommonUtility::commString2WStr(truncatedLogMessage)
+                                                                 << L" to: " << CommonUtility::s2ws(id()));
 
-ExtCommServer::ExtCommServer(const std::string &name) :
-    PipeCommServer(name) {}
+    // Add messages separator if needed
+    CommString localMessage = message;
+    if (!localMessage.ends_with(finderExtLineSeparator)) {
+        localMessage += finderExtLineSeparator;
+    }
 
+    if (auto sent = writeData(localMessage.c_str(), localMessage.length()); !sent) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in AbstractCommChannel::writeData");
+        return false;
+    }
+    return true;
+}
+
+CommString ExtCommChannel::readMessage() {
+    static const uint64_t maxLineLength = 1024; // Allows you to read most lines at once
+    CommChar data[maxLineLength];
+    CommString query;
+    forever {
+        if (auto sepPos = _readBuffer.find(finderExtQuerySeparator); sepPos != std::string::npos) {
+            query = _readBuffer.substr(0, sepPos);
+            _readBuffer.erase(0, sepPos + 1);
+            query.erase(sepPos);
+            return query;
+        }
+        if (auto readSize = readData(data, maxLineLength); readSize > 0) {
+            CommString dataStr(data, readSize);
+            _readBuffer.append(dataStr);
+        } else {
+            break;
+        }
+    }
+    return CommString{};
+}
+
+bool ExtCommChannel::canReadMessage() {
+    while (bytesAvailable() > 0) {
+        CommChar data[1024];
+        if (uint64_t charRead = readData(data, 1024); charRead > 0) {
+            _readBuffer.append(data, charRead);
+        } else {
+            break;
+        }
+    }
+    return _readBuffer.find(finderExtQuerySeparator) != std::string::npos;
+}
 } // namespace KDC

@@ -40,13 +40,10 @@ class AbstractCommServer {
         virtual void close() = 0;
         /**
          * @brief start server
-         * @param pipePath is the path of the pipe for a server accepting pipe connections
          */
-        virtual bool listen(const SyncPath &pipePath) = 0;
+        virtual bool listen() = 0;
         virtual std::shared_ptr<AbstractCommChannel> nextPendingConnection() = 0;
         virtual std::list<std::shared_ptr<AbstractCommChannel>> connections() = 0;
-
-        static bool removeServer(const SyncPath &) { return true; }
 
         void setNewConnectionCbk(const std::function<void()> &cbk) { _onNewConnectionCbk = cbk; }
         void newConnectionCbk() {

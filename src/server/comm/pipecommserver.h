@@ -41,10 +41,15 @@ class PipeCommChannel : public AbstractCommChannel {
             EnumEnd
         };
 
-        PipeCommChannel();
-        ~PipeCommChannel();
+        PipeCommChannel() = default;
+        ~PipeCommChannel() = default;
 
         uint64_t bytesAvailable() const override;
+        void close() override {};
+
+    protected:
+        uint64_t readData(CommChar *data, uint64_t maxSize) final;
+        uint64_t writeData(const CommChar *data, uint64_t size) final;
 
     private:
         CommString _inBuffer;
@@ -59,8 +64,6 @@ class PipeCommChannel : public AbstractCommChannel {
         TCHAR _readData[BUFSIZE];
 #endif
 
-        uint64_t readData(CommChar *data, uint64_t maxSize) override;
-        virtual uint64_t writeData(const CommChar *data, uint64_t size) override;
 
         friend class PipeCommServer;
 };
@@ -71,15 +74,16 @@ class PipeCommServer : public AbstractCommServer {
         ~PipeCommServer();
 
         void close() override;
-        bool listen(const SyncPath &pipePath) override;
+        bool listen() override;
         std::shared_ptr<AbstractCommChannel> nextPendingConnection() override;
         std::list<std::shared_ptr<AbstractCommChannel>> connections() override;
-
-        static bool removeServer(const SyncPath &path) { return true; }
 
 #if defined(KD_WINDOWS)
         static void disconnectAndReconnect(std::shared_ptr<PipeCommChannel> channel);
 #endif
+
+    protected:
+        virtual std::shared_ptr<PipeCommChannel> makeCommChannel() const = 0;
 
     private:
         SyncPath _pipePath;
@@ -93,7 +97,7 @@ class PipeCommServer : public AbstractCommServer {
         void waitForExit();
 
         static void executeFunc(PipeCommServer *server);
-
+        SyncPath createPipe();
 #if defined(KD_WINDOWS)
         std::vector<std::shared_ptr<PipeCommChannel>> _channels;
 

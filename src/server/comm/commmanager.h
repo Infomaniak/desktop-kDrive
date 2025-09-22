@@ -94,10 +94,6 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
         void onGuiQueryReceived(std::shared_ptr<AbstractCommChannel> channel);
         void onLostGuiConnection(std::shared_ptr<AbstractCommChannel> channel);
 
-#if defined(KD_WINDOWS)
-        SyncPath createPipe();
-#endif
-
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         friend class ExtensionJob;
 #endif
