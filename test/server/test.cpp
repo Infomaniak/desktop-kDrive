@@ -29,6 +29,7 @@
 #include "requests/testserverrequests.h"
 #include "appserver/testappserver.h"
 #include "comm/testabstractcommchannel.h"
+#include "comm/guijobs/testabstractguijob.h"
 
 namespace KDC {
 
@@ -42,6 +43,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractUpdater);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestServerRequests);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAppServer);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractCommChannel);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractGuiJob);
 } // namespace KDC
 
 int main(int, char **) {

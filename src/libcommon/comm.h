@@ -45,7 +45,8 @@ enum class MsgType {
 };
 
 enum class RequestNum {
-    LOGIN_REQUESTTOKEN = 1,
+    Unknown = 0,
+    LOGIN_REQUESTTOKEN,
     USER_DBIDLIST,
     USER_INFOLIST,
     USER_DELETE,
@@ -126,6 +127,7 @@ enum class RequestNum {
     UPDATER_STATE,
     UPDATER_START_INSTALLER,
     UPDATER_SKIP_VERSION,
+    EnumEnd
 };
 
 inline std::string toString(RequestNum e) {

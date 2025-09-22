@@ -48,7 +48,6 @@ set(server_SRCS
     comm/abstractcommserver.h
     comm/commmanager.h comm/commmanager.cpp
     comm/guijobs/abstractguijob.h comm/guijobs/abstractguijob.cpp
-    comm/guijobs/dummyguijob.h comm/guijobs/dummyguijob.cpp
     migration/migrationparams.h migration/migrationparams.cpp
     requests/serverrequests.h requests/serverrequests.cpp
     requests/offlinefilessizeestimator.h requests/offlinefilessizeestimator.cpp

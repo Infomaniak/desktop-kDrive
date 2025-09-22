@@ -774,7 +774,7 @@ ExitCode SyncPal::cancelAllDlDirectJobs(bool quit) {
     return ExitCode::Ok;
 }
 
-void SyncPal::setSyncHasFullyCompletedInParms(bool syncHasFullyCompleted) {
+void SyncPal::setSyncHasFullyCompletedInParams(bool syncHasFullyCompleted) {
     setSyncHasFullyCompleted(syncHasFullyCompleted);
 
     bool found = false;
