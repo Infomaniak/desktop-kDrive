@@ -80,6 +80,28 @@ SyncPath removeNumericSuffix(const SyncPath &relativePath) {
     return SyncPath{ss.str()};
 }
 
+void Utility::eraseFromTrash(const KDC::SyncPath &relativePath) {
+    const auto trashPath = getTrashPath();
+    std::error_code ec;
+
+    auto dirIt = std::filesystem::recursive_directory_iterator(trashPath,
+                                                               std::filesystem::directory_options::skip_permission_denied, ec);
+    if (ec) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::eraseFromTrash: " << Utility::formatStdError(ec));
+        return;
+    }
+
+    std::vector<SyncPath> itemsToErase;
+    for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
+        const auto dirItemRelativePath = std::filesystem::relative(dirIt->path(), trashPath);
+        // Filter out the numerical suffix of the root directory name, e.g: `dirname.15` is replaced with `dirname`.
+        const auto suffixFreedirectorEntryPath = removeNumericSuffix(dirItemRelativePath);
+        if (relativePath == suffixFreedirectorEntryPath) itemsToErase.push_back(dirIt->path());
+    }
+
+    for (const auto &pathToErase: itemsToErase) (void) std::filesystem::remove_all(pathToErase);
+}
+
 bool Utility::isInTrash(const SyncPath &relativePath) {
     const auto trashPath = getTrashPath();
     std::error_code ec;
@@ -91,11 +113,11 @@ bool Utility::isInTrash(const SyncPath &relativePath) {
         return false;
     }
 
-    // Filter out the numerical suffix of the root directory name, e.g: `dirname.15` is replaced with `dirname`.
     for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
         const auto dirItemRelativePath = std::filesystem::relative(dirIt->path(), trashPath);
-        const auto directorEntryPath = removeNumericSuffix(dirItemRelativePath);
-        if (relativePath == directorEntryPath) return true;
+        // Filter out the numerical suffix of the root directory name, e.g: `dirname.15` is replaced with `dirname`.
+        const auto suffixFreedirectorEntryPath = removeNumericSuffix(dirItemRelativePath);
+        if (relativePath == suffixFreedirectorEntryPath) return true;
     }
 
     return false;
