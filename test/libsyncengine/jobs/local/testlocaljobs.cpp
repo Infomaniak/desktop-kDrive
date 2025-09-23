@@ -105,6 +105,10 @@ void KDC::TestLocalJobs::testLocalJobs() {
     deleteJob.runSynchronously();
 
     CPPUNIT_ASSERT(!std::filesystem::exists(copyDirPath));
+
+    LOGW_INFO(Log::instance()->getLogger(),
+              L"copyDirPath in TestLocalJobs::testLocalJobs: " << Utility::formatSyncPath(copyDirPath));
+
     CPPUNIT_ASSERT(Utility::isInTrash(copyDirPath.filename()));
     CPPUNIT_ASSERT(Utility::isInTrash(SyncPath{copyDirPath.filename()} / _localTempDirName / "tmp_picture.jpg"));
     CPPUNIT_ASSERT(!Utility::isInTrash(SyncPath{copyDirPath.filename()} / _localTempDirName / "dehydrated_placeholder.jpg"));
