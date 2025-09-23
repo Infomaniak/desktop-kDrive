@@ -19,4 +19,8 @@
 import Cocoa
 import kDriveCoreUI
 
-class StorageViewController: TitledViewController {}
+class StorageViewController: TitledViewController {
+    convenience init() {
+        self.init(toolbarTitle: SidebarItem.storage.title)
+    }
+}

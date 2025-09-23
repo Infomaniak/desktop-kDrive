@@ -53,11 +53,11 @@ extension MainSplitViewController: NavigableSidebarViewControllerDelegate {
         var contentViewController: NSViewController
         switch item {
         case .home:
-            contentViewController = HomeViewController(toolbarTitle: item.title)
+            contentViewController = HomeViewController()
         case .activity:
-            contentViewController = ActivityViewController(toolbarTitle: item.title)
+            contentViewController = ActivityViewController()
         case .storage:
-            contentViewController = StorageViewController(toolbarTitle: item.title)
+            contentViewController = StorageViewController()
         default:
             fatalError("Destination not handled")
         }
