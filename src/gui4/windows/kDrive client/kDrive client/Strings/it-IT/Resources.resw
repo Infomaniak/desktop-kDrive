@@ -225,13 +225,13 @@
   <data name="  /!\  Ressource naming convention" xml:space="preserve">
     <value>-</value>
   </data>
-  <data name="Page_HomePage_favorites.Text" xml:space="preserve">
+  <data name="CC_QuickAccess_favorites.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="Page_HomePage_trash.Text" xml:space="preserve">
+  <data name="CC_QuickAccess_trash.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="Page_HomePage_shared.Text" xml:space="preserve">
+  <data name="CC_QuickAccess_shared.Text" xml:space="preserve">
     <value />
   </data>
   <data name="CC_KSuiteUpgradeBar_link.Content" xml:space="preserve">

@@ -32,7 +32,7 @@
     <Window.SystemBackdrop>
         <!--<DesktopAcrylicBackdrop/> -->
         <!-- <MicaBackdrop Kind="BaseAlt"/> -->
-        <MicaBackdrop Kind="Base" />
+        <MicaBackdrop Kind="BaseAlt" />
     </Window.SystemBackdrop>
     <Grid>
         <Grid.RowDefinitions>

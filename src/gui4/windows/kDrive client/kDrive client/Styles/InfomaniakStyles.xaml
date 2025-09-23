@@ -75,6 +75,10 @@
     <Thickness x:Key="Infomaniak.Style.Thickness.Top.M">0,16,0,0</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Top.L">0,24,0,0</Thickness>
 
+    <Thickness x:Key="Infomaniak.Style.Thickness.Bottom.S">0,0,0,12</Thickness>
+    <Thickness x:Key="Infomaniak.Style.Thickness.Bottom.M">0,0,0,16</Thickness>
+    <Thickness x:Key="Infomaniak.Style.Thickness.Bottom.L">0,0,0,24</Thickness>
+
     <Thickness x:Key="Infomaniak.Style.Thickness.Left.XS">8,0,0,0</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Left.S">12,0,0,0</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Left.M">16,0,0,0</Thickness>

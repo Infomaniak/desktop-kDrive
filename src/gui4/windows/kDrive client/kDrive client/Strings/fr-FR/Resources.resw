@@ -243,15 +243,15 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
 
 </comment>
   </data>
-  <data name="Page_HomePage_favorites.Text" xml:space="preserve">
+  <data name="CC_QuickAccess_favorites.Text" xml:space="preserve">
     <value>Favoris</value>
     <comment>Redirect to the favorite folder (in browser)</comment>
   </data>
-  <data name="Page_HomePage_trash.Text" xml:space="preserve">
+  <data name="CC_QuickAccess_trash.Text" xml:space="preserve">
     <value>Corbeille</value>
     <comment>Redirect to the trash folder (in browser)</comment>
   </data>
-  <data name="Page_HomePage_shared.Text" xml:space="preserve">
+  <data name="CC_QuickAccess_shared.Text" xml:space="preserve">
     <value>Partages</value>
     <comment>Redirect to the favorite folder (in browser)</comment>
   </data>
