@@ -44,6 +44,18 @@ final class PreferencesSplitViewController: IKSplitViewController {
 
 extension PreferencesSplitViewController: NavigableSidebarViewControllerDelegate {
     func sidebarViewController(_ controller: NSViewController, didSelectItem item: kDriveCoreUI.SidebarItem) {
-        
+        var contentViewController: NSViewController
+        switch item {
+        case .general:
+            contentViewController = GeneralPreferencesViewController()
+        case .accounts:
+            contentViewController = AccountsPreferencesViewController()
+        case .advanced:
+            contentViewController = AdvancedPreferencesViewController()
+        default:
+            fatalError("Destination not handled")
+        }
+
+        switchContentViewController(destination: contentViewController)
     }
 }
