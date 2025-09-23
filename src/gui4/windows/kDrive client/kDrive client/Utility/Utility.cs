@@ -90,7 +90,7 @@ namespace Infomaniak.kDrive
                 int number = 1;
                 do
                 {
-                    defaultPath = Path.Combine(userProfile, number > 0 ? $" ({number})" : "");
+                    defaultPath = Path.Combine(userProfile, number > 0 ? $"kDrive ({number})" : "kDrive");
                     number++;
                 } while (!Utility.CheckSyncPathValidity(defaultPath, out errorMessage) && number < 500);
 
@@ -246,7 +246,7 @@ namespace Infomaniak.kDrive
             {
                 presenter.IsMaximizable = false;
                 presenter.IsMinimizable = true;
-                presenter.IsResizable = false;
+                presenter.IsResizable = resizable;
                 appWindow.Resize(new Windows.Graphics.SizeInt32(width, height));
             }
         }

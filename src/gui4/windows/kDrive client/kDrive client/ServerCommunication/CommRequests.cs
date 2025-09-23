@@ -57,9 +57,9 @@ namespace Infomaniak.kDrive.ServerCommunication
             Drives.Add(new Drive(8) { Id = 101, Name = "Test kDrive 4", Color = Color.FromArgb(255, 156, 38, 176), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
             Drives.Add(new Drive(9) { Id = 101, Name = "Test kDrive 5", Color = Color.FromArgb(255, 0, 150, 136), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
             Users[0].Drives.Add(Drives[0]);
-            Users[0].Drives.Add(Drives[1]);
-            Users[0].Drives.Add(Drives[2]);
-            Users[0].Drives.Add(Drives[3]);
+            //Users[0].Drives.Add(Drives[1]);
+            //Users[0].Drives.Add(Drives[2]);
+            //Users[0].Drives.Add(Drives[3]);
             Users[0].Drives.Add(Drives[4]);
             Users[0].Drives.Add(Drives[5]);
 
