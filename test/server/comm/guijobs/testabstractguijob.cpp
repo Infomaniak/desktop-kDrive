@@ -50,7 +50,7 @@ static const auto outParamsDummyIntValue = "intDummyValue";
 
 namespace KDC {
 
-const auto inputParamsStr{
+const auto inputParamsStr{Str(
         R"({ "id": 999,)"
         R"( "num": 10,)"
         R"( "params": {)"
@@ -62,11 +62,13 @@ const auto inputParamsStr{
         R"( "enumValue": 2,)"
         R"( "strValues": [ "YWFh", "YmJi", "Y2Nj" ],)"
         R"( "intValues": [ 10, 11, 12, 13, 14],)"
-        R"( "dummyValues": [ { "strDummyValue": "YWFhYQ==", "intDummyValue": 1111 }, { "strDummyValue": "YmJiYg==", "intDummyValue": 2222 } ] } })"};
+        R"( "dummyValues": [ { "strDummyValue": "YWFhYQ==", "intDummyValue": 1111 }, { "strDummyValue": "YmJiYg==", "intDummyValue": 2222 } ] } })")};
 
-const auto outputParamsStr{
+const auto outputParamsStr{Str(
         R"({ "cause": 0,)"
         R"( "code": 0,)"
+        R"( "id": 999,)"
+        R"( "num": 10,)"
         R"( "params": {)"
         R"( "blobValue": "enl4d3Z1c3RycXBvbm1sa2ppaGdmZWRjYmE5ODc2NTQzMjEw",)"
         R"( "boolValue": true,)"
@@ -79,7 +81,8 @@ const auto outputParamsStr{
         R"( "strValues": [ "enp6eg==", "eXl5eQ==" ],)"
         R"( "wstrValue": "YXNkZmdo",)"
         R"( "wstrValue2": "5q+P5Liq5Lq66YO95pyJ5LuW55qE5L2c5oiY562W55Wl",)"
-        R"( "wstrValues": [ "eHh4eA==", "d3d3dw==" ] } })"};
+        R"( "wstrValues": [ "eHh4eA==", "d3d3dw==" ] },)"
+        R"( "type": 1 })")};
 
 void TestAbstractGuiJob::setUp() {
     TestBase::start();
@@ -106,12 +109,12 @@ void TestAbstractGuiJob::testAll() {
     std::copy(blobStr.rbegin(), blobStr.rend(), std::back_inserter(blob));
 
     std::string base64Str;
-    AbstractGuiJob::convertToBase64Str(blob, base64Str);
+    CommonUtility::convertToBase64Str(blob, base64Str);
     CPPUNIT_ASSERT(base64Str == "enl4d3Z1c3RycXBvbm1sa2ppaGdmZWRjYmE5ODc2NTQzMjEw");
 
     // convertFromBase64Str
     CommBLOB blob2;
-    AbstractGuiJob::convertFromBase64Str(base64Str, blob2);
+    CommonUtility::convertFromBase64Str(base64Str, blob2);
     CPPUNIT_ASSERT(blob2 == blob);
 
     // deserializeInputParms
@@ -178,8 +181,8 @@ bool GuiJobTest::deserializeInputParms() {
         std::function<Dummy(const Poco::Dynamic::Var &)> convertFct = [](const Poco::Dynamic::Var &value) {
             auto structValue = value.extract<Poco::DynamicStruct>();
             Dummy dummy;
-            readParamValue(structValue, outParamsDummyStrValue, dummy.strValue);
-            readParamValue(structValue, outParamsDummyIntValue, dummy.intValue);
+            CommonUtility::readValueFromStruct(structValue, inParamsDummyStrValue, dummy.strValue);
+            CommonUtility::readValueFromStruct(structValue, inParamsDummyIntValue, dummy.intValue);
             return dummy;
         };
         readParamValues(inParamsDummyValues, _dummyValues, convertFct);
@@ -219,8 +222,8 @@ bool GuiJobTest::serializeOutputParms() {
     std::vector<Dummy> dummyValues{{"dddd", 888}, {"eeee", 7777}};
     std::function<Poco::Dynamic::Var(const Dummy &)> convertFct = [](const Dummy &value) {
         Poco::DynamicStruct structValue;
-        writeParamValue(structValue, inParamsDummyStrValue, value.strValue);
-        writeParamValue(structValue, inParamsDummyIntValue, value.intValue);
+        CommonUtility::writeValueToStruct(structValue, outParamsDummyStrValue, value.strValue);
+        CommonUtility::writeValueToStruct(structValue, outParamsDummyIntValue, value.intValue);
         return structValue;
     };
     writeParamValues(outParamsDummyValues, dummyValues, convertFct);

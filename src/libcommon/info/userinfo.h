@@ -23,6 +23,8 @@
 #include <QString>
 #include <QList>
 
+#include <Poco/Dynamic/Struct.h>
+
 namespace KDC {
 
 class UserInfo {
@@ -46,6 +48,8 @@ class UserInfo {
         inline void setCredentialsAsked(bool newCredentialsAsked) { _credentialsAsked = newCredentialsAsked; }
         [[nodiscard]] bool isStaff() const { return _isStaff; }
         void setIsStaff(const bool is_staff) { _isStaff = is_staff; }
+
+        void toStruct(Poco::DynamicStruct &str) const;
 
         friend QDataStream &operator>>(QDataStream &in, UserInfo &userInfo);
         friend QDataStream &operator<<(QDataStream &out, const UserInfo &userInfo);

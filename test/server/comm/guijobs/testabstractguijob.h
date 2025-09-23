@@ -57,12 +57,10 @@ class GuiJobTest : public AbstractGuiJob {
             EnumEnd
         };
 
-        GuiJobTest(std::shared_ptr<CommManager> commManager, const CommString &inputParmsStr,
+        GuiJobTest(std::shared_ptr<CommManager> commManager, const CommString &inputParamsStr,
                    const std::shared_ptr<AbstractCommChannel> &channel) :
-            AbstractGuiJob(commManager, inputParmsStr, channel) {
-            _type = GuiJobType::Query;
-        }
-        ~GuiJobTest() {}
+            AbstractGuiJob(commManager, inputParamsStr, channel) {}
+        ~GuiJobTest() = default;
 
     private:
         std::string _strValue;

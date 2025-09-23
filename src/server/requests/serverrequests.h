@@ -84,6 +84,8 @@ struct SYNCENGINE_EXPORT ServerRequests {
 
         // C/S requests (access to network)
         // !!! Use COMM_AVERAGE_TIMEOUT !!!
+        static ExitCode requestToken(std::string code, std::string codeVerifier, UserInfo &userInfo, bool &userCreated,
+                                     std::string &error, std::string &errorDescr);
         static ExitCode requestToken(QString code, QString codeVerifier, UserInfo &userInfo, bool &userCreated,
                                      std::string &error, std::string &errorDescr);
         static ExitCode getUserAvailableDrives(int userDbId, QHash<int, DriveAvailableInfo> &list);

@@ -17,6 +17,16 @@
  */
 
 #include "userinfo.h"
+#include "libcommon/utility/types.h"
+#include "libcommon/utility/utility.h"
+
+static const auto outParamsUserInfoDbId = "dbId";
+static const auto outParamsUserInfoUserId = "userId";
+static const auto outParamsUserInfoName = "name";
+static const auto outParamsUserInfoEmail = "email";
+static const auto outParamsUserInfoAvatar = "avatar";
+static const auto outParamsUserInfoConnected = "connected";
+static const auto outParamsUserInfoIsStaff = "isStaff";
 
 namespace KDC {
 
@@ -30,6 +40,20 @@ UserInfo::UserInfo(const int dbId, const int userId, const QString &name, const 
     _connected(connected) {}
 
 UserInfo::UserInfo() {}
+
+void UserInfo::toStruct(Poco::DynamicStruct &str) const {
+    CommonUtility::writeValueToStruct(str, outParamsUserInfoDbId, _dbId);
+    CommonUtility::writeValueToStruct(str, outParamsUserInfoUserId, _userId);
+    CommonUtility::writeValueToStruct(str, outParamsUserInfoName, CommonUtility::qStr2CommString(_name));
+    CommonUtility::writeValueToStruct(str, outParamsUserInfoEmail, CommonUtility::qStr2CommString(_email));
+
+    QByteArray avatarQBA = QByteArray::fromRawData((const char *) _avatar.bits(), _avatar.sizeInBytes());
+    CommBLOB avatarBLOB(avatarQBA.begin(), avatarQBA.end());
+    CommonUtility::writeValueToStruct(str, outParamsUserInfoAvatar, avatarBLOB);
+
+    CommonUtility::writeValueToStruct(str, outParamsUserInfoConnected, _connected);
+    CommonUtility::writeValueToStruct(str, outParamsUserInfoIsStaff, _isStaff);
+}
 
 QDataStream &operator>>(QDataStream &in, UserInfo &userInfo) {
     in >> userInfo._dbId >> userInfo._userId >> userInfo._name >> userInfo._email >> userInfo._avatar >> userInfo._connected >>

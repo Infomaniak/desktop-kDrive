@@ -22,26 +22,40 @@
 
 #include <Poco/JSON/Parser.h>
 #include <Poco/Exception.h>
-#include <Poco/Base64Decoder.h>
-#include <Poco/Base64Encoder.h>
 
 static const auto inRequestId = "id";
 static const auto inRequestNum = "num";
 static const auto inRequestParams = "params";
 
+static const auto outRequestType = "type";
+static const auto outRequestId = "id";
+static const auto outRequestNum = "num";
 static const auto outRequestCode = "code";
 static const auto outRequestCause = "cause";
 static const auto outRequestParams = "params";
 
 namespace KDC {
 
-AbstractGuiJob::AbstractGuiJob(std::shared_ptr<CommManager> commManager, const std::string &inputParamsStr,
+int AbstractGuiJob::_signalId = 0;
+
+AbstractGuiJob::AbstractGuiJob(std::shared_ptr<CommManager> commManager, const CommString &inputParamsStr,
                                const std::shared_ptr<AbstractCommChannel> &channel) :
     _commManager(commManager),
     _inputParamsStr(inputParamsStr),
-    _channel(channel) {}
+    _channel(channel),
+    _type(GuiJobType::Query) {}
+
+AbstractGuiJob::AbstractGuiJob(std::shared_ptr<CommManager> commManager, const std::shared_ptr<AbstractCommChannel> &channel) :
+    _commManager(commManager),
+    _channel(channel),
+    _type(GuiJobType::Signal) {}
 
 void AbstractGuiJob::runJob() {
+    if (_type == GuiJobType::None) {
+        LOG_WARN(_logger, "The job type must be set");
+        _exitInfo = ExitCode::LogicError;
+    }
+
     _exitInfo = ExitCode::Ok;
     if (_type == GuiJobType::Query) {
         if (!deserializeInputParms()) {
@@ -51,30 +65,24 @@ void AbstractGuiJob::runJob() {
         if (_exitInfo && !process()) {
             LOG_WARN(Log::instance()->getLogger(), "Error in AbstractGuiJob::process for job=" << jobId());
         }
+    }
 
-        if (!serializeOutputParms()) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in AbstractGuiJob::serializeOutputParms for job=" << jobId());
-        }
+    if (!serializeOutputParms()) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in AbstractGuiJob::serializeOutputParms for job=" << jobId());
+    }
 
-        _channel->sendMessage(CommonUtility::str2CommString(_outputParamsStr));
-    } else if (_type == GuiJobType::Signal) {
-        _channel->sendMessage(_inputParamsStr);
-        _exitInfo = ExitCode::Ok;
-    } else {
-        LOG_WARN(_logger, "The job type must be set");
-        _exitInfo = ExitCode::LogicError;
-    };
+    _channel->sendMessage(_outputParamsStr);
 }
 
 bool AbstractGuiJob::deserializeInputParms() {
     try {
         Poco::JSON::Parser parser;
-        Poco::Dynamic::Var inputParamsVar = parser.parse(_inputParamsStr);
+        Poco::Dynamic::Var inputParamsVar = parser.parse(CommonUtility::commString2Str(_inputParamsStr));
 
         Poco::DynamicStruct paramsStruct = *inputParamsVar.extract<Poco::JSON::Object::Ptr>();
 
-        AbstractGuiJob::readParamValue(paramsStruct, inRequestId, _requestId);
-        AbstractGuiJob::readParamValue(paramsStruct, inRequestNum, _requestNum);
+        CommonUtility::readValueFromStruct(paramsStruct, inRequestId, _requestId);
+        CommonUtility::readValueFromStruct(paramsStruct, inRequestNum, _requestNum);
 
         _inParams = paramsStruct[inRequestParams].extract<Poco::DynamicStruct>();
     } catch (std::exception &e) {
@@ -87,62 +95,34 @@ bool AbstractGuiJob::deserializeInputParms() {
 }
 
 bool AbstractGuiJob::serializeOutputParms() {
+    assert(_type != GuiJobType::None);
+
     Poco::DynamicStruct paramsStruct;
-    AbstractGuiJob::writeParamValue(paramsStruct, outRequestCode, _exitInfo.code());
-    AbstractGuiJob::writeParamValue(paramsStruct, outRequestCause, _exitInfo.cause());
+    CommonUtility::writeValueToStruct(paramsStruct, outRequestType, _type);
+    if (_type == GuiJobType::Query) {
+        CommonUtility::writeValueToStruct(paramsStruct, outRequestId, _requestId);
+        CommonUtility::writeValueToStruct(paramsStruct, outRequestNum, _requestNum);
+        CommonUtility::writeValueToStruct(paramsStruct, outRequestCode, _exitInfo.code());
+        CommonUtility::writeValueToStruct(paramsStruct, outRequestCause, _exitInfo.cause());
+    } else if (_type == GuiJobType::Signal) {
+        CommonUtility::writeValueToStruct(paramsStruct, outRequestId, _signalId++);
+        CommonUtility::writeValueToStruct(paramsStruct, outRequestNum, _signalNum);
+    }
     paramsStruct.insert(outRequestParams, _outParams);
 
     try {
-        _outputParamsStr = Poco::Dynamic::structToString(paramsStruct);
-        return true;
+        _outputParamsStr = CommonUtility::str2CommString(Poco::Dynamic::structToString(paramsStruct));
     } catch (Poco::Exception &e) {
         LOG_WARN(_logger, "Output parameters serialization error for job=" << jobId() << " error=" << e.what());
         _exitInfo = ExitCode::LogicError;
         return false;
     }
+
+    return true;
 }
 
 bool AbstractGuiJob::process() {
     return true;
-}
-
-void AbstractGuiJob::convertFromBase64Str(const std::string &base64Str, std::string &value) {
-    std::istringstream istr(base64Str);
-    Poco::Base64Decoder b64in(istr);
-    b64in >> value;
-}
-
-void AbstractGuiJob::convertFromBase64Str(const std::string &base64Str, std::wstring &value) {
-    std::string strValue;
-    AbstractGuiJob::convertFromBase64Str(base64Str, strValue);
-    value = CommonUtility::s2ws(strValue);
-}
-
-void AbstractGuiJob::convertFromBase64Str(const std::string &base64Str, CommBLOB &value) {
-    std::istringstream istr(base64Str);
-    Poco::Base64Decoder b64in(istr);
-    std::copy(std::istream_iterator<unsigned char>(b64in), std::istream_iterator<unsigned char>(), std::back_inserter(value));
-}
-
-void AbstractGuiJob::convertToBase64Str(const std::string &str, std::string &base64Str) {
-    std::ostringstream ostr;
-    Poco::Base64Encoder b64out(ostr);
-    b64out << str;
-    b64out.close();
-    base64Str = ostr.str();
-}
-
-void AbstractGuiJob::convertToBase64Str(const std::wstring &wstr, std::string &base64Str) {
-    std::string str = CommonUtility::ws2s(wstr);
-    AbstractGuiJob::convertToBase64Str(str, base64Str);
-}
-
-void AbstractGuiJob::convertToBase64Str(const CommBLOB &blob, std::string &base64Str) {
-    std::ostringstream ostr;
-    Poco::Base64Encoder b64out(ostr);
-    std::copy(blob.begin(), blob.end(), std::ostream_iterator<unsigned char>(b64out));
-    b64out.close();
-    base64Str = ostr.str();
 }
 
 } // namespace KDC
