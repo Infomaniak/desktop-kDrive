@@ -15,7 +15,7 @@
         <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
         <converters:DateTimeToTimeAgoConverter x:Key="DateTimeToTimeAgoConverter" />
     </UserControl.Resources>
-    <Border Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
+    <Border Background="{ThemeResource LayerFillColorDefaultBrush }"
             CornerRadius="8"
             BorderThickness="1"
             BorderBrush="#E6EAF5">

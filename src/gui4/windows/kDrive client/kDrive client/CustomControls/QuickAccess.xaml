@@ -8,20 +8,37 @@
              xmlns:controls="using:Infomaniak.kDrive.CustomControls"
              mc:Ignorable="d">
 
-    <Border Background="{ThemeResource LayerFillColorDefault}"
+    <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
             CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"
             Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.M}">
         <Grid>
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.L}">
-                <Border BorderBrush="{StaticResource Infomaniak.Style.Color.Brand.Default}"
-                        BorderThickness="2"
-                        CornerRadius="100"
-                        HorizontalAlignment="Center">
-                    <PersonPicture ProfilePicture="https://learn.microsoft.com/windows/uwp/contacts-and-calendar/images/shoulder-tap-static-payload.png"
-                                   Height="41"
-                                   Width="41">
-                    </PersonPicture>
-                </Border>
+                <Canvas HorizontalAlignment="Center"
+                        Width="46"
+                        Height="46">
+
+                    <Border BorderBrush="{StaticResource Infomaniak.Style.Color.Brand.Default}"
+                            BorderThickness="2"
+                            CornerRadius="100"
+                            Canvas.ZIndex="0"
+                            Canvas.Left="0"
+                            Canvas.Top="0">
+                        <PersonPicture ProfilePicture="https://learn.microsoft.com/windows/uwp/contacts-and-calendar/images/shoulder-tap-static-payload.png"
+                                       Height="41"
+                                       Width="41">
+                        </PersonPicture>
+                    </Border>
+                    <Border Canvas.ZIndex="2"
+                            Canvas.Left="30"
+                            Canvas.Top="30"
+                            Height="20"
+                            Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
+                            CornerRadius="100"
+                            Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XXS}">
+                        <controls:DriveIcon IconColor="{x:Bind ViewModel.SelectedSync.Drive.Color, Mode=OneWay}" />
+                    </Border>
+
+                </Canvas>
                 <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
                     <Button HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Stretch"
