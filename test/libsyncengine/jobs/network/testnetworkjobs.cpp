@@ -1154,6 +1154,53 @@ void TestNetworkJobs::testUpload() {
     CPPUNIT_ASSERT_LESS(modificationTimeIn.count(), modificationTimeOut);
 }
 
+void TestNetworkJobs::testDriveUploadSessionWithSizeMismatchError() {
+    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionWithSizeMismatchError");
+
+    const std::string context = "testDriveUploadSessionWithSizeMismatchError";
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, context);
+    const LocalTemporaryDirectory localTmpDir(context);
+    const SyncPath localFilePath = testhelpers::generateBigFile(localTmpDir.path(), 20);
+
+    DriveUploadSession job(nullptr, _driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
+                           testhelpers::defaultTime, testhelpers::defaultTime, false, 2);
+
+    {
+        std::ofstream os(localFilePath, std::ios_base::app);
+        os << "Increase the size of the file to be uploaded.";
+    }
+
+    const auto exitInfo = job.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::SystemError, exitInfo.code());
+    CPPUNIT_ASSERT_EQUAL(ExitCause::FileAccessError, exitInfo.cause());
+    CPPUNIT_ASSERT(job.isCancelled());
+    CPPUNIT_ASSERT(job.isAborted());
+}
+
+void TestNetworkJobs::testDriveUploadSessionWithNullChunkSizeError() {
+    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionWithNullChunkSizeError");
+
+    const std::string context = "testDriveUploadSessionWithNullChunkSizeError";
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, context);
+    const LocalTemporaryDirectory localTmpDir(context);
+    const SyncPath localFilePath = testhelpers::generateBigFile(localTmpDir.path(), 20);
+
+    DriveUploadSession job(nullptr, _driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
+                           testhelpers::defaultTime, testhelpers::defaultTime, false, 2);
+
+    {
+        std::ofstream os(localFilePath);
+        os << "Overwrite the file content.";
+    }
+
+    const auto exitInfo = job.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::SystemError, exitInfo.code());
+    CPPUNIT_ASSERT_EQUAL(ExitCause::FileAccessError, exitInfo.cause());
+    CPPUNIT_ASSERT(job.isCancelled());
+    CPPUNIT_ASSERT(job.isAborted());
+}
+
+
 void TestNetworkJobs::testUploadAborted() {
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUploadAborted");
     const LocalTemporaryDirectory temporaryDirectory("testUploadAborted");
