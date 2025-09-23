@@ -89,21 +89,21 @@ void AddDriveLoginWidget::onAuthorizationCodeReceived(const QString code, const 
     if (exitCode != ExitCode::Ok) {
         qCWarning(lcAddDriveLoginWidget()) << "Error in Requests::requestToken: code=" << exitCode;
 
-        CustomMessageBox msgBox(QMessageBox::Warning, tr("Token request failed: %1 - %2").arg(error, errorDescr), QMessageBox::Ok,
-                                this);
+        CustomMessageBox msgBox(QMessageBox::Warning, tr("Token request failed: %1 - %2").arg(error, errorDescr),
+                                QMessageBox::Ok);
         msgBox.exec();
 
         emit terminated(false);
+    } else {
+        emit terminated();
     }
-
-    emit terminated();
 }
 
 void AddDriveLoginWidget::onErrorReceived(const QString error, const QString errorDescr) {
     qCWarning(lcAddDriveLoginWidget) << "Login failed : " << error.toStdString().c_str() << " - "
                                      << errorDescr.toStdString().c_str();
 
-    CustomMessageBox msgBox(QMessageBox::Warning, tr("Login failed: %1 - %2").arg(error, errorDescr), QMessageBox::Ok, this);
+    CustomMessageBox msgBox(QMessageBox::Warning, tr("Login failed: %1 - %2").arg(error, errorDescr), QMessageBox::Ok);
     msgBox.exec();
 
     emit terminated(false);
@@ -143,9 +143,10 @@ const QString AddDriveLoginWidget::generateCodeChallenge(const QString &codeVeri
 
 void AddDriveLoginWidget::refreshPage() {
     delete _webView;
-    _webView = new WebView();
+    _webView = new WebView(this);
     layout()->addWidget(_webView);
     connect(_webView, &WebView::authorizationCodeUrlCatched, this, &AddDriveLoginWidget::onAuthorizationCodeReceived);
+    connect(_webView, &WebView::errorCatched, this, &AddDriveLoginWidget::onErrorReceived);
 }
 
 } // namespace KDC
