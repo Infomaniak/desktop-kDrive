@@ -32,19 +32,22 @@
             <!-- Upgrade offer bar -->
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
+
+        <!-- Error bar -->
+        <controls:SyncErrorBar Grid.Row="0"
+                               Grid.ColumnSpan="2"
+                               Visibility="{x:Bind ViewModel.HasErrors, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+        
         <!-- Sync Status Bar -->
-        <controls:SyncStatusBar Grid.Row="0" />
+        <controls:SyncStatusBar Grid.Row="1" />
         <CheckBox x:Name="ShowIncomingActivityCheckBox"
-                  Grid.Row="0"
+                  Grid.Row="1"
                   Grid.Column="1"
                   VerticalAlignment="Center"
                   Content="Mon activité uniquement"
                   IsChecked="{x:Bind ViewModel.SelectedSync.ShowIncomingActivity, Mode=TwoWay, Converter={StaticResource BooleanToInvertedBooleanConverter}}" />
 
-        <!-- Error bar -->
-        <controls:SyncErrorBar Grid.Row="1"
-                               Grid.ColumnSpan="2"
-                               Visibility="{x:Bind ViewModel.HasErrors, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+        
 
         <!-- Left main pane -->
         <controls:SyncActivityTable Grid.Row="2"
