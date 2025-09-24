@@ -62,7 +62,7 @@ const auto inputParamsStr{Str(
         R"( "strValue2": "5q+P5Liq5Lq66YO95pyJ5LuW55qE5L2c5oiY562W55Wl",)"
         R"( "intValue": 1234,)"
         R"( "boolValue": 0,)"
-        R"( "blobValue": "enl4d3Z1c3RycXBvbm1sa2ppaGdmZWRjYmE5ODc2NTQzMjEw",)"
+        R"( "blobValue": "MDEyMzQ1Njc4OWFiY2RlZmdoaWprbG1ub3BxcnRzdXZ3eHl6",)"
         R"( "enumValue": 2,)"
         R"( "strValues": [ "YWFh", "YmJi", "Y2Nj" ],)"
         R"( "intValues": [ 10, 11, 12, 13, 14],)"
@@ -75,7 +75,7 @@ const auto outputParamsStr{Str(
         R"( "id": 999,)"
         R"( "num": 10,)"
         R"( "params": {)"
-        R"( "blobValue": "enl4d3Z1c3RycXBvbm1sa2ppaGdmZWRjYmE5ODc2NTQzMjEw",)"
+        R"( "blobValue": "MDEyMzQ1Njc4OWFiY2RlZmdoaWprbG1ub3BxcnRzdXZ3eHl6",)"
         R"( "boolValue": true,)"
         R"( "dummyValue": { "intDummyValue": 888, "strDummyValue": "ZGRkZA==" },)"
         R"( "dummyValues": [ { "intDummyValue": 888, "strDummyValue": "ZGRkZA==" }, { "intDummyValue": 7777, "strDummyValue": "ZWVlZQ==" } ],)"
@@ -112,11 +112,11 @@ void TestAbstractGuiJob::testAll() {
     // convertToBase64Str
     std::string blobStr("0123456789abcdefghijklmnopqrtsuvwxyz");
     CommBLOB blob;
-    std::copy(blobStr.rbegin(), blobStr.rend(), std::back_inserter(blob));
+    std::copy(blobStr.begin(), blobStr.end(), std::back_inserter(blob));
 
     std::string base64Str;
     CommonUtility::convertToBase64Str(blob, base64Str);
-    CPPUNIT_ASSERT(base64Str == "enl4d3Z1c3RycXBvbm1sa2ppaGdmZWRjYmE5ODc2NTQzMjEw");
+    CPPUNIT_ASSERT(base64Str == "MDEyMzQ1Njc4OWFiY2RlZmdoaWprbG1ub3BxcnRzdXZ3eHl6");
 
     // convertFromBase64Str
     CommBLOB blob2;
@@ -215,7 +215,7 @@ bool GuiJobTest::serializeOutputParms() {
 
     std::string blobStr("0123456789abcdefghijklmnopqrtsuvwxyz");
     CommBLOB blob;
-    std::copy(blobStr.rbegin(), blobStr.rend(), std::back_inserter(blob));
+    std::copy(blobStr.begin(), blobStr.end(), std::back_inserter(blob));
     writeParamValue(outParamsBLOBValue, blob);
 
     writeParamValue(outParamsEnumValue, GuiJobTest::DummyEnum::Dummy3);

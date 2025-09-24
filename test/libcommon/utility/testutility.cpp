@@ -26,10 +26,12 @@
 #include "test_utility/localtemporarydirectory.h"
 #include "utility/utility_base.h"
 
-
 #include <QLocale>
+
 #include <iostream>
 #include <regex>
+
+#include <Poco/DynamicStruct.h>
 
 namespace KDC {
 
@@ -828,6 +830,117 @@ void TestUtility::testRtrim() {
 
 void TestUtility::testTrim() {
     CPPUNIT_ASSERT(CommonUtility::trim("    ab    cd    ") == "ab    cd");
+}
+
+void TestUtility::testReadValueFromStruct() {
+    // Insert data
+    Poco::DynamicStruct str;
+    str.insert("intValue", 666);
+    str.insert("floatValue", 123.456f);
+
+    std::string base64Strvalue;
+    CommonUtility::convertToBase64Str("yxcv", base64Strvalue);
+    str.insert("strValue", base64Strvalue);
+
+    std::string base64WStrvalue;
+    CommonUtility::convertToBase64Str(L"asdf", base64WStrvalue);
+    str.insert("wstrValue", base64WStrvalue);
+
+    std::string blobStr("0123456789abcdefghijklmnopqrtsuvwxyz");
+    CommBLOB blob;
+    std::copy(blobStr.begin(), blobStr.end(), std::back_inserter(blob));
+    str.insert("blobValue", blob);
+
+    Poco::DynamicStruct dynStr;
+    dynStr.insert("intValue", 12345);
+
+    std::string base64Strvalue2;
+    CommonUtility::convertToBase64Str("qwertz", base64Strvalue2);
+    dynStr.insert("strValue", base64Strvalue2);
+
+    str.insert("structValue", dynStr);
+
+    // Read data
+    int intValue;
+    CommonUtility::readValueFromStruct(str, "intValue", intValue);
+    CPPUNIT_ASSERT(intValue == 666);
+
+    float floatValue;
+    CommonUtility::readValueFromStruct(str, "floatValue", floatValue);
+    CPPUNIT_ASSERT(floatValue == 123.456f);
+
+    std::string strValue;
+    CommonUtility::readValueFromStruct(str, "strValue", strValue);
+    CPPUNIT_ASSERT(strValue == "yxcv");
+
+    std::wstring wstrValue;
+    CommonUtility::readValueFromStruct(str, "wstrValue", wstrValue);
+    CPPUNIT_ASSERT(wstrValue == L"asdf");
+
+    struct Dummy {
+            int intValue;
+            std::string strValue;
+    };
+
+    std::function<Dummy(const Poco::Dynamic::Var &)> dynamicVar2Dummy = [](const Poco::Dynamic::Var &value) {
+        assert(value.isStruct());
+        auto structValue = value.extract<Poco::DynamicStruct>();
+        Dummy dummy;
+        CommonUtility::readValueFromStruct(structValue, "intValue", dummy.intValue);
+        CommonUtility::readValueFromStruct(structValue, "strValue", dummy.strValue);
+        return dummy;
+    };
+
+    Dummy dummy;
+    CommonUtility::readValueFromStruct(str, "structValue", dummy, dynamicVar2Dummy);
+    CPPUNIT_ASSERT(dummy.intValue == 12345);
+    CPPUNIT_ASSERT(dummy.strValue == "qwertz");
+}
+
+void TestUtility::testConvertFromBase64Str() {
+    std::string value;
+    CommonUtility::convertFromBase64Str("YWJjZMOpw6DDqA==", value);
+    CPPUNIT_ASSERT(value == "abcdéàè");
+
+    CommonUtility::convertFromBase64Str("5q+P5Liq5Lq66YO95pyJ5LuW55qE5L2c5oiY562W55Wl", value);
+    CPPUNIT_ASSERT(value == "每个人都有他的作战策略");
+
+    std::wstring wvalue;
+    CommonUtility::convertFromBase64Str("YWJjZMOpw6DDqA==", wvalue);
+    CPPUNIT_ASSERT(wvalue == L"abcdéàè");
+
+    CommonUtility::convertFromBase64Str("5q+P5Liq5Lq66YO95pyJ5LuW55qE5L2c5oiY562W55Wl", wvalue);
+    CPPUNIT_ASSERT(wvalue == L"每个人都有他的作战策略");
+
+    std::string blobStr("0123456789abcdefghijklmnopqrtsuvwxyz");
+    CommBLOB blob;
+    std::copy(blobStr.begin(), blobStr.end(), std::back_inserter(blob));
+
+    CommBLOB blob2;
+    CommonUtility::convertFromBase64Str("MDEyMzQ1Njc4OWFiY2RlZmdoaWprbG1ub3BxcnRzdXZ3eHl6", blob2);
+    CPPUNIT_ASSERT(blob == blob2);
+}
+
+void TestUtility::testConvertToBase64Str() {
+    std::string value;
+    CommonUtility::convertToBase64Str("abcdéàè", value);
+    CPPUNIT_ASSERT(value == "YWJjZMOpw6DDqA==");
+
+    CommonUtility::convertToBase64Str("每个人都有他的作战策略", value);
+    CPPUNIT_ASSERT(value == "5q+P5Liq5Lq66YO95pyJ5LuW55qE5L2c5oiY562W55Wl");
+
+    CommonUtility::convertToBase64Str(L"abcdéàè", value);
+    CPPUNIT_ASSERT(value == "YWJjZMOpw6DDqA==");
+
+    CommonUtility::convertToBase64Str(L"每个人都有他的作战策略", value);
+    CPPUNIT_ASSERT(value == "5q+P5Liq5Lq66YO95pyJ5LuW55qE5L2c5oiY562W55Wl");
+
+    std::string blobStr("0123456789abcdefghijklmnopqrtsuvwxyz");
+    CommBLOB blob;
+    std::copy(blobStr.begin(), blobStr.end(), std::back_inserter(blob));
+
+    CommonUtility::convertToBase64Str(blob, value);
+    CPPUNIT_ASSERT(value == "MDEyMzQ1Njc4OWFiY2RlZmdoaWprbG1ub3BxcnRzdXZ3eHl6");
 }
 
 } // namespace KDC
