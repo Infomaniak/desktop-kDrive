@@ -21,6 +21,10 @@ import Cocoa
 open class TitledViewController: NSViewController {
     public let toolbarTitle: String
 
+    open override var acceptsFirstResponder: Bool {
+        return true
+    }
+
     public init(toolbarTitle: String) {
         self.toolbarTitle = toolbarTitle
         super.init(nibName: nil, bundle: nil)
@@ -31,7 +35,7 @@ open class TitledViewController: NSViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    override public func viewDidAppear() {
+    override open func viewDidAppear() {
         super.viewDidAppear()
         view.window?.title = toolbarTitle
     }

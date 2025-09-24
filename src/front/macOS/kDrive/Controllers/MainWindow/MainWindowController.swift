@@ -21,19 +21,27 @@ import Cocoa
 final class MainWindowController: NSWindowController {
     private var mainViewController: MainSplitViewController!
 
-    convenience init() {
+    init() {
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 900, height: 600),
             styleMask: [.titled, .closable, .resizable, .miniaturizable, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
-        window.toolbarStyle = .unified
-        window.setFrameAutosaveName("kDriveMainWindow")
 
-        self.init(window: window)
+        window.title = "kDrive"
+        window.toolbarStyle = .unified
+        window.center()
+
+        super.init(window: window)
+
+        window.setFrameAutosaveName("kDriveMainWindow")
 
         mainViewController = MainSplitViewController()
         window.contentView = mainViewController.view
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 }

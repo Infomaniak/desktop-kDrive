@@ -33,11 +33,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     public func openMainWindow() {
         mainWindow = MainWindowController()
+
         mainWindow?.showWindow(nil)
+        mainWindow?.window?.makeKeyAndOrderFront(nil)
+
+        if #available(macOS 14.0, *) {
+            NSApp.activate()
+        } else {
+            NSApp.activate(ignoringOtherApps: true)
+        }
     }
 
-    @objc public func openPreferencesWindow() {
+    @objc public func openPreferencesWindow(_ sender: Any?) {
         preferencesWindow = PreferencesWindowController()
-        preferencesWindow?.showWindow(nil)
+
+        preferencesWindow?.showWindow(sender)
+        preferencesWindow?.window?.makeKeyAndOrderFront(sender)
     }
 }

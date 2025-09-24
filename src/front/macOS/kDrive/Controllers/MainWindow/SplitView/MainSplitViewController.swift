@@ -29,6 +29,11 @@ final class MainSplitViewController: IKSplitViewController {
         setupSplitView()
     }
 
+    override func viewWillAppear() {
+        super.viewWillAppear()
+        splitView.setPosition(200, ofDividerAt: 0)
+    }
+
     private func setupSplitView() {
         splitView.autosaveName = "MainSplitViewAutoSave"
         splitView.isVertical = true
@@ -37,7 +42,7 @@ final class MainSplitViewController: IKSplitViewController {
         sidebarViewController.delegate = self
         let sidebarItem = NSSplitViewItem(sidebarWithViewController: sidebarViewController)
         sidebarItem.minimumThickness = 150
-        sidebarItem.maximumThickness = 300
+        sidebarItem.maximumThickness = 250
         addSplitViewItem(sidebarItem)
 
         let homeViewController = HomeViewController(toolbarTitle: SidebarItem.home.title)
@@ -59,7 +64,7 @@ extension MainSplitViewController: NavigableSidebarViewControllerDelegate {
         case .storage:
             contentViewController = StorageViewController()
         default:
-            fatalError("Destination not handled")
+            fatalError("Destination \(item) not handled")
         }
 
         switchContentViewController(destination: contentViewController)

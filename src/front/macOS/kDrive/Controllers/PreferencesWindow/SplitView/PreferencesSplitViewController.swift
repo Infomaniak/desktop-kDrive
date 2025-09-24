@@ -20,6 +20,8 @@ import Cocoa
 import kDriveCoreUI
 
 final class PreferencesSplitViewController: IKSplitViewController {
+    static let sidebarWidth: CGFloat = 200
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupSplitView()
@@ -32,6 +34,8 @@ final class PreferencesSplitViewController: IKSplitViewController {
         let sidebarViewController = PreferencesSidebarViewController()
         sidebarViewController.delegate = self
         let sidebarItem = NSSplitViewItem(sidebarWithViewController: sidebarViewController)
+        sidebarItem.minimumThickness = Self.sidebarWidth
+        sidebarItem.maximumThickness = Self.sidebarWidth
         addSplitViewItem(sidebarItem)
 
         let generalViewController = NSViewController()
@@ -53,7 +57,7 @@ extension PreferencesSplitViewController: NavigableSidebarViewControllerDelegate
         case .advanced:
             contentViewController = AdvancedPreferencesViewController()
         default:
-            fatalError("Destination not handled")
+            fatalError("Destination \(item) not handled")
         }
 
         switchContentViewController(destination: contentViewController)

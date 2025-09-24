@@ -21,19 +21,28 @@ import Cocoa
 final class PreferencesWindowController: NSWindowController {
     private var preferencesViewController: PreferencesSplitViewController!
 
-    convenience init() {
+    init() {
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 700, height: 400),
             styleMask: [.titled, .closable, .resizable, .miniaturizable, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
-        window.toolbarStyle = .unified
-        window.setFrameAutosaveName("kDrivePreferencesWindow")
 
-        self.init(window: window)
+        window.title = "!Preferences"
+        window.isReleasedWhenClosed = true
+        window.toolbarStyle = .unified
+        window.center()
+
+        super.init(window: window)
+
+        window.setFrameAutosaveName("kDrivePreferencesWindow")
 
         preferencesViewController = PreferencesSplitViewController()
         window.contentView = preferencesViewController.view
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 }
