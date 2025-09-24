@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2025 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see<http://www.gnu.org/licenses/> .
+ -->
+
+<Page x:Class="Infomaniak.kDrive.Pages.StoragePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:local="using:Infomaniak.kDrive"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+      xmlns:converters="using:Infomaniak.kDrive.Converters"
+      mc:Ignorable="d">
+    <Page.Resources>
+        <converters:BooleanToInvertedVisibilityConverter  x:Key="BooleanToInvertedVisibilityConverter" />
+    </Page.Resources>
+    <Grid Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.L}"
+          RowSpacing="{StaticResource Infomaniak.Style.Spacing.L}">
+        <Grid.RowDefinitions>
+            <!-- Title -->
+            <RowDefinition Height="Auto" />
+            <!-- Main -->
+            <RowDefinition Height="*" />
+            <!-- Manage storage -->
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Title -->
+        <TextBlock Grid.Row="0"
+                   Text="Stockage"
+                   Style="{StaticResource Infomaniak.Style.TextBlock.Title}" />
+
+        <!-- Main -->
+        <Grid  Grid.Row="1"
+               Background="{ThemeResource LayerFillColorDefaultBrush}"
+               CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"
+               RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+               Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.M}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0"
+                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                <TextBlock Text="Surface Pro de Florent Lazarre - 250 Go"
+                           Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
+                <controls:MultiValueProgressBar Value1="10"
+                                                Value2="20"
+                                                Value3="70"
+                                                Color1="{StaticResource Infomaniak.Style.Color.Brand.DefaultBrush}"
+                                                Color2="#BA68C8"
+                                                Color3="#E0E0E0" />
+                <Grid>
+                    <TextBlock Text="63 Go utilisé(s)"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
+                               Foreground="{ThemeResource TextFillColorDisabled}" />
+                    <TextBlock Text="187 Go libres"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
+                               HorizontalAlignment="Right"
+                               Foreground="{ThemeResource TextFillColorDisabled}" />
+                </Grid>
+            </StackPanel>
+            <StackPanel Grid.Row="1">
+                <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.S}"
+                      ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="auto" />
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0"
+                            CornerRadius="100"
+                            Height="8"
+                            Width="8"
+                            Background="{StaticResource Infomaniak.Style.Color.Brand.DefaultBrush}" />
+                    <TextBlock Grid.Column="1"
+                               Text="Fichiers kDrive accessibles hors ligne"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
+                    <TextBlock Grid.Column="2"
+                               Text="13 Go"
+                               HorizontalAlignment="Right"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
+                               Foreground="{ThemeResource AccentTextFillColorDisabled}" />
+                </Grid>
+                <Rectangle Height="1"
+                           Fill="LightGray"
+                           HorizontalAlignment="Stretch" />
+                <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.S}"
+                      ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="auto" />
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0"
+                            CornerRadius="100"
+                            Height="8"
+                            Width="8"
+                            Background="#BA68C8" />
+                    <TextBlock Grid.Column="1"
+                               Text="Autres fichiers de l’ordinateur"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
+                    <TextBlock Grid.Column="2"
+                               Text="13 Go"
+                               HorizontalAlignment="Right"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
+                               Foreground="{ThemeResource AccentTextFillColorDisabled}" />
+                </Grid>
+                <Rectangle Height="1"
+                           Fill="LightGray"
+                           HorizontalAlignment="Stretch" />
+                <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.S}"
+                      ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="auto" />
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0"
+                            CornerRadius="100"
+                            Height="8"
+                            Width="8"
+                            Background="#E0E0E0" />
+                    <TextBlock Grid.Column="1"
+                               Text="Espace libre"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
+                    <TextBlock Grid.Column="2"
+                               Text="13 Go"
+                               HorizontalAlignment="Right"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
+                               Foreground="{ThemeResource AccentTextFillColorDisabled}" />
+                </Grid>
+            </StackPanel>
+        </Grid>
+        <Border Grid.Row="2"
+                Height="96"
+                Background="LightGray"
+                CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}">
+
+        </Border>
+    </Grid>
+</Page>

@@ -138,9 +138,8 @@
                     </NavigationViewItem.InfoBadge>
                 </NavigationViewItem>
                 <NavigationViewItem x:Uid="W_MainWindow_NavBar_Storage"
-                                    Tag="SamplePage3"
-                                    MinHeight="30"
-                                    IsEnabled="False">
+                                    Tag="StoragePage"
+                                    MinHeight="30">
                     <NavigationViewItem.Icon>
                         <SymbolIcon Symbol="MapDrive" />
                     </NavigationViewItem.Icon>
