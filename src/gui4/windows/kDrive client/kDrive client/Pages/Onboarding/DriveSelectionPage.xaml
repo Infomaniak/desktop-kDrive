@@ -108,8 +108,8 @@
                                 </Border>
 
                                 <Border Style="{StaticResource Infomaniak.Style.Border.WithContent}">
-                                    <CheckBox Checked="DriveSelectedCheckBox_Checked"
-                                              Unchecked="DriveSelectedCheckBox_Unchecked"
+                                    <CheckBox Checked="DriveListCheckBox_Checked"
+                                              Unchecked="DriveListCheckBox_Unchecked"
                                               HorizontalAlignment="Stretch"
                                               IsChecked="{x:Bind Syncs.Count, Converter={StaticResource IntegerToBooleanConverter}}"
                                               IsEnabled="{x:Bind Syncs.Count, Converter={StaticResource BooleanToInvertedBooleanConverter}}">

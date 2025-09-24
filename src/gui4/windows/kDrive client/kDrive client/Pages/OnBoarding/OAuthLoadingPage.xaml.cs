@@ -77,6 +77,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             {
                 case OAuth2State.None:
                     // Should not happen
+                    Logger.Log(Logger.Level.Warning, "OAuth2State is None - this should not happen");
                     break;
 
                 case OAuth2State.WaitingForUserAction:
@@ -143,7 +144,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             finally
             {
                 _onAuthCts.Dispose();
-                _onAuthCts = new CancellationTokenSource(_oauthTimeOut); // OAuth attempts should timeout after 20 seconds
+                _onAuthCts = new CancellationTokenSource(_oauthTimeOut);
                 _onBoardingTask = _onboardingViewModel?.ConnectUser(_onAuthCts.Token);
                 ScheduleRestartButtonEnableAsync();
             }

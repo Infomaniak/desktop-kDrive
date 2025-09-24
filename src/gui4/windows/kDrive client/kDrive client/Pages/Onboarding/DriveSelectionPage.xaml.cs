@@ -50,7 +50,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             }
         }
 
-        private void DriveSelectedCheckBox_Checked(object sender, RoutedEventArgs e)
+        private void DriveListCheckBox_Checked(object sender, RoutedEventArgs e)
         {
             if (sender is CheckBox cb && cb.DataContext is Drive drive && _onBoardingViewModel != null)
             {
@@ -65,7 +65,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             }
         }
 
-        private void DriveSelectedCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        private void DriveListCheckBox_Unchecked(object sender, RoutedEventArgs e)
         {
             if (sender is CheckBox cb && cb.DataContext is Drive drive && _onBoardingViewModel != null)
             {
@@ -119,18 +119,10 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             // Create a folder picker
             FolderPicker openPicker = new Windows.Storage.Pickers.FolderPicker();
             var window = ((App)Application.Current)?.CurrentWindow;
-
-            // Retrieve the window handle (HWND) of the current WinUI 3 window.
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
-
-            // Initialize the folder picker with the window handle (HWND).
             WinRT.Interop.InitializeWithWindow.Initialize(openPicker, hWnd);
-
-            // Set options for your folder picker
             openPicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
             openPicker.FileTypeFilter.Add("*");
-
-            // Open the picker for the user to pick a folder
             Windows.Storage.StorageFolder folder = await openPicker.PickSingleFolderAsync();
             if (folder != null)
             {
@@ -161,12 +153,10 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
                 if (senderButton?.DataContext is Sync sync && _onBoardingViewModel != null)
                 {
-                    // Update the sync's local path
                     sync.LocalPath = folder.Path;
-                    // Update the sync type based on the new path
                     sync.SyncType = Utility.SupportOnlineSync(folder.Path) ? SyncType.Online : SyncType.Offline;
                     Logger.Log(Logger.Level.Info, $"Sync path for drive '{sync.Drive.Name}' updated to '{sync.LocalPath}' with sync type '{sync.SyncType}'");
-                    RefreshAdvancedSettingsDialogIsPrimaryButtonEnabled();
+                    RefreshAdvancedSettingsConfirmButtonIsEnabled();
                 }
                 else
                 {
@@ -178,7 +168,6 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                 Logger.Log(Logger.Level.Info, "Operation cancelled - No folder was picked");
             }
 
-            //re-enable the button
             if (senderButton != null)
                 senderButton.IsEnabled = true;
         }
@@ -198,14 +187,14 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             }
         }
 
-        private void RefreshAdvancedSettingsDialogIsPrimaryButtonEnabled()
+        private void RefreshAdvancedSettingsConfirmButtonIsEnabled()
         {
             if (_onBoardingViewModel == null)
             {
                 Logger.Log(Logger.Level.Error, "OnBoardingViewModel is null");
                 return;
             }
-            // Ensure all selected drives have valid, non-empty paths
+            // Ensure at least one sync path has changed to enable the confirm button
             var syncsWithChangedPaths = _onBoardingViewModel.NewSyncs.Where(s => _previousSyncPaths.ContainsKey(s) && _previousSyncPaths[s] != s.LocalPath).ToList();
             AdvancedSettingsDialog.IsPrimaryButtonEnabled = syncsWithChangedPaths.Count > 0;
         }
@@ -217,14 +206,12 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
         private async void StartFree_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Validate the URI
             var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
             await Windows.System.Launcher.LaunchUriAsync(new Uri(resourceLoader.GetString("Global_kDriveOffersUrl")));
         }
 
         private async void OffersButton_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Validate the URI
             var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
             await Windows.System.Launcher.LaunchUriAsync(new Uri(resourceLoader.GetString("Global_kDriveOffersUrl")));
         }

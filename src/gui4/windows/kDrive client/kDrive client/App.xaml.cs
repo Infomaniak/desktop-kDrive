@@ -95,7 +95,6 @@ namespace Infomaniak.kDrive
             AppModel.UIThreadDispatcher = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread(); // Save the UI thread dispatcher for later use in view models
             CurrentWindow = new MainWindow();
             TrayIcoManager.Initialize();
-            // call start onboarding when it become empty
             await ComClient.Initialize();
             await Data.InitializeAsync().ConfigureAwait(false);
 
