@@ -20,13 +20,13 @@
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
 
-static const auto outParamsUserInfoDbId = "dbId";
-static const auto outParamsUserInfoUserId = "userId";
-static const auto outParamsUserInfoName = "name";
-static const auto outParamsUserInfoEmail = "email";
-static const auto outParamsUserInfoAvatar = "avatar";
-static const auto outParamsUserInfoConnected = "connected";
-static const auto outParamsUserInfoIsStaff = "isStaff";
+static const auto userInfoDbId = "dbId";
+static const auto userInfoUserId = "userId";
+static const auto userInfoName = "name";
+static const auto userInfoEmail = "email";
+static const auto userInfoAvatar = "avatar";
+static const auto userInfoConnected = "connected";
+static const auto userInfoIsStaff = "isStaff";
 
 namespace KDC {
 
@@ -41,18 +41,34 @@ UserInfo::UserInfo(const int dbId, const int userId, const QString &name, const 
 
 UserInfo::UserInfo() {}
 
-void UserInfo::toStruct(Poco::DynamicStruct &str) const {
-    CommonUtility::writeValueToStruct(str, outParamsUserInfoDbId, _dbId);
-    CommonUtility::writeValueToStruct(str, outParamsUserInfoUserId, _userId);
-    CommonUtility::writeValueToStruct(str, outParamsUserInfoName, CommonUtility::qStr2CommString(_name));
-    CommonUtility::writeValueToStruct(str, outParamsUserInfoEmail, CommonUtility::qStr2CommString(_email));
+void UserInfo::toDynamicStruct(Poco::DynamicStruct &str) const {
+    CommonUtility::writeValueToStruct(str, userInfoDbId, _dbId);
+    CommonUtility::writeValueToStruct(str, userInfoUserId, _userId);
+    CommonUtility::writeValueToStruct(str, userInfoName, CommonUtility::qStr2CommString(_name));
+    CommonUtility::writeValueToStruct(str, userInfoEmail, CommonUtility::qStr2CommString(_email));
 
     QByteArray avatarQBA = QByteArray::fromRawData((const char *) _avatar.bits(), _avatar.sizeInBytes());
     CommBLOB avatarBLOB(avatarQBA.begin(), avatarQBA.end());
-    CommonUtility::writeValueToStruct(str, outParamsUserInfoAvatar, avatarBLOB);
+    CommonUtility::writeValueToStruct(str, userInfoAvatar, avatarBLOB);
 
-    CommonUtility::writeValueToStruct(str, outParamsUserInfoConnected, _connected);
-    CommonUtility::writeValueToStruct(str, outParamsUserInfoIsStaff, _isStaff);
+    CommonUtility::writeValueToStruct(str, userInfoConnected, _connected);
+    CommonUtility::writeValueToStruct(str, userInfoIsStaff, _isStaff);
+}
+
+void UserInfo::fromDynamicStruct(const Poco::DynamicStruct &str) {
+    CommonUtility::readValueFromStruct(str, userInfoDbId, _dbId);
+    CommonUtility::readValueFromStruct(str, userInfoUserId, _userId);
+
+    CommString name;
+    CommonUtility::readValueFromStruct(str, userInfoName, name);
+    _name = CommonUtility::commString2QStr(name);
+
+    CommString email;
+    CommonUtility::readValueFromStruct(str, userInfoEmail, email);
+    _email = CommonUtility::commString2QStr(email);
+
+    CommonUtility::readValueFromStruct(str, userInfoConnected, _connected);
+    CommonUtility::readValueFromStruct(str, userInfoIsStaff, _isStaff);
 }
 
 QDataStream &operator>>(QDataStream &in, UserInfo &userInfo) {

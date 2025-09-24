@@ -23,9 +23,11 @@
 #include "libcommon/info/userinfo.h"
 #include "libcommon/utility/utility.h"
 
+// Input parameters keys
 static const auto inParamsCode = "code";
 static const auto inParamsCodeVerifier = "codeVerifier";
 
+// Output parameters keys
 static const auto outParamsUserDbId = "userDbId";
 static const auto outParamsError = "error";
 static const auto outParamsErrorDescr = "errorDescr";
@@ -34,7 +36,7 @@ namespace KDC {
 
 bool LoginRequestTokenJob::deserializeInputParms() {
     if (!AbstractGuiJob::deserializeInputParms()) {
-        _exitInfo = ExitCode::LogicError;
+        LOG_WARN(_logger, "Error in AbstractGuiJob::deserializeInputParms");
         return false;
     }
 
@@ -43,6 +45,7 @@ bool LoginRequestTokenJob::deserializeInputParms() {
         readParamValue(inParamsCode, _code);
         readParamValue(inParamsCodeVerifier, _codeVerifier);
     } catch (std::exception &) {
+        LOG_WARN(_logger, "Exception in AbstractGuiJob::readParamValue");
         _exitInfo = ExitCode::LogicError;
         return false;
     }
@@ -60,7 +63,7 @@ bool LoginRequestTokenJob::serializeOutputParms() {
     }
 
     if (!AbstractGuiJob::serializeOutputParms()) {
-        _exitInfo = ExitCode::LogicError;
+        LOG_WARN(_logger, "Error in AbstractGuiJob::serializeOutputParms");
         return false;
     }
 
@@ -74,7 +77,7 @@ bool LoginRequestTokenJob::process() {
             ServerRequests::requestToken(CommonUtility::commString2Str(_code), CommonUtility::commString2Str(_codeVerifier),
                                          userInfo, userCreated, _error, _errorDescr);
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in Requests::requestToken: code=" << exitCode);
+        LOG_WARN(_logger, "Error in ServerRequests::requestToken: code=" << exitCode);
         _exitInfo = exitCode;
         return false;
     }

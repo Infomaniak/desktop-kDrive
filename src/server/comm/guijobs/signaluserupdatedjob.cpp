@@ -20,18 +20,19 @@
 #include "libcommon/info/userinfo.h"
 #include "libcommon/utility/utility.h"
 
+// Output parameters keys
 static const auto outParamsUserInfo = "userInfo";
 
 namespace KDC {
 
 bool SignalUserUpdatedJob::serializeOutputParms() {
     // Output parameters serialization
-    std::function<Poco::Dynamic::Var(const UserInfo &)> convertFct = [](const UserInfo &value) {
+    std::function<Poco::Dynamic::Var(const UserInfo &)> userInfo2DynamicVar = [](const UserInfo &value) {
         Poco::DynamicStruct structValue;
-        value.toStruct(structValue);
+        value.toDynamicStruct(structValue);
         return structValue;
     };
-    writeParamValues(outParamsUserInfo, std::vector({_userInfo}), convertFct);
+    writeParamValue(outParamsUserInfo, _userInfo, userInfo2DynamicVar);
 
     if (!AbstractGuiJob::serializeOutputParms()) {
         _exitInfo = ExitCode::LogicError;

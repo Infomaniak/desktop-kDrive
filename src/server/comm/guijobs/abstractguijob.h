@@ -30,7 +30,7 @@ namespace KDC {
 class AbstractGuiJob : public AbstractJob {
     public:
         enum class GuiJobType {
-            None,
+            Unknown,
             Query,
             Signal
         };
@@ -48,13 +48,13 @@ class AbstractGuiJob : public AbstractJob {
         CommString _outputParamsStr; // JSON format
         std::shared_ptr<AbstractCommChannel> _channel;
 
-        GuiJobType _type = GuiJobType::None;
+        GuiJobType _type = GuiJobType::Unknown;
 
         int _requestId = 0;
-        RequestNum _requestNum;
+        RequestNum _requestNum = RequestNum::Unknown;
 
         static int _signalId;
-        SignalNum _signalNum;
+        SignalNum _signalNum = SignalNum::Unknown;
 
         Poco::DynamicStruct _inParams;
         Poco::DynamicStruct _outParams;
@@ -66,14 +66,30 @@ class AbstractGuiJob : public AbstractJob {
         // Process the input object to generate an output object
         virtual bool process();
 
+        //! Read an input parameter from _inParams.
+        /*!
+          \param parms is a Poco::DynamicStruct.
+          \param key is the key of the JSON pair.
+          \param value is the value of the JSON pair.
+          \exception
+                throws a Poco::RangeException if the value does not fit into the result variable.
+                throws a Poco::NotImplementedException if conversion is not available for the given type.
+                throws an Poco::InvalidAccessException if the key is not found.
+                throws a std::runtime_error if T is an enum and the value is not in [T::Unknown + 1, T::EnumEnd]
+        */
         template<typename T>
         void readParamValue(const std::string &key, T &value) {
             CommonUtility::readValueFromStruct(_inParams, key, value);
         }
 
+        template<typename T>
+        void readParamValue(const std::string &key, T &value, std::function<T(const Poco::Dynamic::Var &)> dynamicVar2T) {
+            CommonUtility::readValueFromStruct(_inParams, key, value, dynamicVar2T);
+        }
+
         template<template<typename, typename> class C, typename T, typename A = std::allocator<T>>
-        void readParamValues(const std::string &key, C<T, A> &values, std::function<T(const Poco::Dynamic::Var &)> convertFct) {
-            CommonUtility::readValuesFromStruct(_inParams, key, values, convertFct);
+        void readParamValues(const std::string &key, C<T, A> &values, std::function<T(const Poco::Dynamic::Var &)> dynamicVar2T) {
+            CommonUtility::readValuesFromStruct(_inParams, key, values, dynamicVar2T);
         }
 
         template<template<typename, typename> class C, typename T, typename A = std::allocator<T>>
@@ -81,6 +97,12 @@ class AbstractGuiJob : public AbstractJob {
             CommonUtility::readValuesFromStruct(_inParams, key, values);
         }
 
+        //! Write an output parameter to _outParams
+        /*!
+          \param parms is a Poco::DynamicStruct.
+          \param key is the key of the JSON pair.
+          \param value is the value of the JSON pair.
+        */
         template<typename T>
         void writeParamValue(const std::string &key, const T &value) {
             CommonUtility::writeValueToStruct(_outParams, key, value);
@@ -96,10 +118,15 @@ class AbstractGuiJob : public AbstractJob {
             CommonUtility::writeValueToStruct(_outParams, key, std::wstring(value));
         }
 
+        template<typename T>
+        void writeParamValue(const std::string &key, const T &value, std::function<Poco::Dynamic::Var(const T &)> t2DynamicVar) {
+            CommonUtility::writeValueToStruct(_outParams, key, value, t2DynamicVar);
+        }
+
         template<template<typename, typename> class C, typename T, typename A = std::allocator<T>>
         void writeParamValues(const std::string &key, const C<T, A> &values,
-                              std::function<Poco::Dynamic::Var(const T &)> convertFct) {
-            CommonUtility::writeValuesToStruct(_outParams, key, values, convertFct);
+                              std::function<Poco::Dynamic::Var(const T &)> t2DynamicVar) {
+            CommonUtility::writeValuesToStruct(_outParams, key, values, t2DynamicVar);
         }
 
         template<template<typename, typename> class C, typename T, typename A = std::allocator<T>>

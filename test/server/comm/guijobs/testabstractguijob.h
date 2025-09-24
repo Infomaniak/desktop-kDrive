@@ -74,6 +74,7 @@ class GuiJobTest : public AbstractGuiJob {
         std::vector<std::string> _strValues;
         std::vector<std::wstring> _wstrValues;
         std::vector<int> _intValues;
+        Dummy _dummyValue;
         std::vector<Dummy> _dummyValues;
 
         bool deserializeInputParms() override;

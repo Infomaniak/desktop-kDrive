@@ -21,18 +21,21 @@
 #include "version.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 
+// Intput parameters keys
 static const auto inParamsStrValue = "strValue";
 static const auto inParamsStrValue2 = "strValue2";
 static const auto inParamsIntValue = "intValue";
 static const auto inParamsBoolValue = "boolValue";
 static const auto inParamsBLOBValue = "blobValue";
 static const auto inParamsEnumValue = "enumValue";
+static const auto inParamsDummyValue = "dummyValue";
 static const auto inParamsStrValues = "strValues";
 static const auto inParamsIntValues = "intValues";
 static const auto inParamsDummyValues = "dummyValues";
 static const auto inParamsDummyStrValue = "strDummyValue";
 static const auto inParamsDummyIntValue = "intDummyValue";
 
+// Output parameters keys
 static const auto outParamsStrValue = "strValue";
 static const auto outParamsStrValue2 = "strValue2";
 static const auto outParamsWStrValue = "wstrValue";
@@ -44,6 +47,7 @@ static const auto outParamsEnumValue = "enumValue";
 static const auto outParamsStrValues = "strValues";
 static const auto outParamsWStrValues = "wstrValues";
 static const auto outParamsIntValues = "intValues";
+static const auto outParamsDummyValue = "dummyValue";
 static const auto outParamsDummyValues = "dummyValues";
 static const auto outParamsDummyStrValue = "strDummyValue";
 static const auto outParamsDummyIntValue = "intDummyValue";
@@ -62,6 +66,7 @@ const auto inputParamsStr{Str(
         R"( "enumValue": 2,)"
         R"( "strValues": [ "YWFh", "YmJi", "Y2Nj" ],)"
         R"( "intValues": [ 10, 11, 12, 13, 14],)"
+        R"( "dummyValue": { "strDummyValue": "YWFhYQ==", "intDummyValue": 1111 },)"
         R"( "dummyValues": [ { "strDummyValue": "YWFhYQ==", "intDummyValue": 1111 }, { "strDummyValue": "YmJiYg==", "intDummyValue": 2222 } ] } })")};
 
 const auto outputParamsStr{Str(
@@ -72,6 +77,7 @@ const auto outputParamsStr{Str(
         R"( "params": {)"
         R"( "blobValue": "enl4d3Z1c3RycXBvbm1sa2ppaGdmZWRjYmE5ODc2NTQzMjEw",)"
         R"( "boolValue": true,)"
+        R"( "dummyValue": { "intDummyValue": 888, "strDummyValue": "ZGRkZA==" },)"
         R"( "dummyValues": [ { "intDummyValue": 888, "strDummyValue": "ZGRkZA==" }, { "intDummyValue": 7777, "strDummyValue": "ZWVlZQ==" } ],)"
         R"( "enumValue": 3,)"
         R"( "intValue": 999,)"
@@ -145,11 +151,13 @@ void TestAbstractGuiJob::testAll() {
     CPPUNIT_ASSERT(job->_intValues[2] == 12);
     CPPUNIT_ASSERT(job->_intValues[3] == 13);
     CPPUNIT_ASSERT(job->_intValues[4] == 14);
+    CPPUNIT_ASSERT(job->_dummyValue.intValue == 1111);
+    CPPUNIT_ASSERT(job->_dummyValue.strValue == "aaaa");
     CPPUNIT_ASSERT(job->_dummyValues.size() == 2);
-    CPPUNIT_ASSERT(job->_dummyValues[0].strValue == "aaaa");
     CPPUNIT_ASSERT(job->_dummyValues[0].intValue == 1111);
-    CPPUNIT_ASSERT(job->_dummyValues[1].strValue == "bbbb");
+    CPPUNIT_ASSERT(job->_dummyValues[0].strValue == "aaaa");
     CPPUNIT_ASSERT(job->_dummyValues[1].intValue == 2222);
+    CPPUNIT_ASSERT(job->_dummyValues[1].strValue == "bbbb");
 
     // serializeOutputParms
     CPPUNIT_ASSERT(job->serializeOutputParms());
@@ -178,15 +186,17 @@ bool GuiJobTest::deserializeInputParms() {
         readParamValues(inParamsStrValues, _wstrValues);
         readParamValues(inParamsIntValues, _intValues);
 
-        std::function<Dummy(const Poco::Dynamic::Var &)> convertFct = [](const Poco::Dynamic::Var &value) {
+        std::function<Dummy(const Poco::Dynamic::Var &)> dynamicVar2Dummy = [](const Poco::Dynamic::Var &value) {
+            assert(value.isStruct());
             auto structValue = value.extract<Poco::DynamicStruct>();
             Dummy dummy;
             CommonUtility::readValueFromStruct(structValue, inParamsDummyStrValue, dummy.strValue);
             CommonUtility::readValueFromStruct(structValue, inParamsDummyIntValue, dummy.intValue);
             return dummy;
         };
-        readParamValues(inParamsDummyValues, _dummyValues, convertFct);
-    } catch (std::exception &) {
+        readParamValue(inParamsDummyValue, _dummyValue, dynamicVar2Dummy);
+        readParamValues(inParamsDummyValues, _dummyValues, dynamicVar2Dummy);
+    } catch (std::exception &e) {
         _exitInfo = ExitCode::LogicError;
         return false;
     }
@@ -219,14 +229,16 @@ bool GuiJobTest::serializeOutputParms() {
     std::vector<int> intValues{20, 21, 22};
     writeParamValues(outParamsIntValues, intValues);
 
-    std::vector<Dummy> dummyValues{{"dddd", 888}, {"eeee", 7777}};
-    std::function<Poco::Dynamic::Var(const Dummy &)> convertFct = [](const Dummy &value) {
+    std::function<Poco::Dynamic::Var(const Dummy &)> dummy2DynamicVar = [](const Dummy &value) {
         Poco::DynamicStruct structValue;
         CommonUtility::writeValueToStruct(structValue, outParamsDummyStrValue, value.strValue);
         CommonUtility::writeValueToStruct(structValue, outParamsDummyIntValue, value.intValue);
         return structValue;
     };
-    writeParamValues(outParamsDummyValues, dummyValues, convertFct);
+    Dummy dummy{"dddd", 888};
+    writeParamValue(outParamsDummyValue, dummy, dummy2DynamicVar);
+    std::vector<Dummy> dummyValues{{"dddd", 888}, {"eeee", 7777}};
+    writeParamValues(outParamsDummyValues, dummyValues, dummy2DynamicVar);
 
     if (!AbstractGuiJob::serializeOutputParms()) {
         _exitInfo = ExitCode::LogicError;

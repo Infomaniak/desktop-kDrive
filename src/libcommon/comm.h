@@ -290,8 +290,9 @@ inline std::string toString(RequestNum e) {
 }
 
 enum class SignalNum {
+    Unknown = 0,
     // User
-    USER_ADDED = 0,
+    USER_ADDED,
     USER_UPDATED,
     USER_STATUSCHANGED,
     USER_REMOVED,
@@ -327,7 +328,8 @@ enum class SignalNum {
     UTILITY_SHOW_SETTINGS,
     UTILITY_SHOW_SYNTHESIS,
     UTILITY_LOG_UPLOAD_STATUS_UPDATED,
-    UTILITY_QUIT
+    UTILITY_QUIT,
+    EnumEnd
 };
 
 inline std::string toString(SignalNum e) {

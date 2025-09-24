@@ -1422,7 +1422,7 @@ void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::wstr
 void CommonUtility::convertFromBase64Str(const std::string &base64Str, CommBLOB &value) {
     std::istringstream istr(base64Str);
     Poco::Base64Decoder b64in(istr);
-    std::copy(std::istream_iterator<unsigned char>(b64in), std::istream_iterator<unsigned char>(), std::back_inserter(value));
+    std::copy(std::istream_iterator<char>(b64in), std::istream_iterator<char>(), std::back_inserter(value));
 }
 
 void CommonUtility::convertToBase64Str(const std::string &str, std::string &base64Str) {
@@ -1441,7 +1441,7 @@ void CommonUtility::convertToBase64Str(const std::wstring &wstr, std::string &ba
 void CommonUtility::convertToBase64Str(const CommBLOB &blob, std::string &base64Str) {
     std::ostringstream ostr;
     Poco::Base64Encoder b64out(ostr);
-    std::copy(blob.begin(), blob.end(), std::ostream_iterator<unsigned char>(b64out));
+    std::copy(blob.begin(), blob.end(), std::ostream_iterator<char>(b64out));
     b64out.close();
     base64Str = ostr.str();
 }

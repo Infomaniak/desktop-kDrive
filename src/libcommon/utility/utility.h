@@ -288,24 +288,32 @@ struct COMMON_EXPORT CommonUtility {
                 throws a std::runtime_error if T is an enum and the value is not in [T::Unknown + 1, T::EnumEnd]
         */
         template<typename T>
-        static void readValueFromStruct(const Poco::DynamicStruct &parms, const std::string &key, T &value) {
+        static void readValueFromStruct(const Poco::DynamicStruct &str, const std::string &key, T &value) {
             if constexpr (std::is_same_v<T, bool>) {
-                value = parms[key].convert<bool>();
+                value = str[key].convert<bool>();
             } else if constexpr (std::is_same_v<T, std::string> || std::is_same_v<T, std::wstring> ||
                                  std::is_same_v<T, CommBLOB>) {
-                const auto base64Str = parms[key].convert<std::string>();
+                const auto base64Str = str[key].convert<std::string>();
                 convertFromBase64Str(base64Str, value);
             } else if constexpr (std::is_enum_v<T>) {
                 int intValue;
-                intValue = parms[key].convert<int>();
-                if (intValue >= 1 && intValue < static_cast<int>(T::EnumEnd)) {
+                intValue = str[key].convert<int>();
+                if (intValue >= 0 && intValue < static_cast<int>(T::EnumEnd)) {
                     value = static_cast<T>(intValue);
                 } else {
                     throw std::runtime_error("Invalid enumeration value");
                 }
             } else {
-                value = parms[key].convert<T>();
+                value = str[key].convert<T>();
             }
+        }
+
+        template<typename T>
+        static void readValueFromStruct(const Poco::DynamicStruct &str, const std::string &key, T &value,
+                                        std::function<T(const Poco::Dynamic::Var &)> dynamicVar2T) {
+            assert(str[key].isStruct());
+            auto varValue = str[key].extract<Poco::DynamicStruct>();
+            value = dynamicVar2T(varValue);
         }
 
         //! Read an input std container parameter from a Poco::DynamicStruct.
@@ -321,14 +329,15 @@ struct COMMON_EXPORT CommonUtility {
         */
         template<template<typename, typename> class C, typename T, typename A = std::allocator<T>>
         static void readValuesFromStruct(const Poco::DynamicStruct &str, const std::string &key, C<T, A> &values,
-                                         std::function<T(const Poco::Dynamic::Var &)> convertFct) {
-            auto arrValues = str[key].extract<Poco::Dynamic::Array>();
-            std::transform(arrValues.begin(), arrValues.end(), std::back_inserter(values), convertFct);
+                                         std::function<T(const Poco::Dynamic::Var &)> dynamicVar2T) {
+            assert(str[key].isArray());
+            auto varValues = str[key].extract<Poco::Dynamic::Array>();
+            std::transform(varValues.begin(), varValues.end(), std::back_inserter(values), dynamicVar2T);
         }
 
         template<template<typename, typename> class C, typename T, typename A = std::allocator<T>>
         static void readValuesFromStruct(const Poco::DynamicStruct &str, const std::string &key, C<T, A> &values) {
-            std::function<T(const Poco::Dynamic::Var &)> convertFct = [](const Poco::Dynamic::Var &value) {
+            std::function<T(const Poco::Dynamic::Var &)> dynamicVar2T = [](const Poco::Dynamic::Var &value) {
                 if constexpr (std::is_same_v<T, std::string> || std::is_same_v<T, std::wstring> || std::is_same_v<T, CommBLOB>) {
                     const auto base64Str = value.convert<std::string>();
                     T str;
@@ -338,7 +347,7 @@ struct COMMON_EXPORT CommonUtility {
                     return value.convert<T>();
                 }
             };
-            readValuesFromStruct(str, key, values, convertFct);
+            readValuesFromStruct(str, key, values, dynamicVar2T);
         }
 
         //! Write an output built-in/std::string/std::wstring/CommBLOB parameter to a Poco::DynamicStruct..
@@ -360,6 +369,13 @@ struct COMMON_EXPORT CommonUtility {
             }
         }
 
+        template<typename T>
+        static void writeValueToStruct(Poco::DynamicStruct &str, const std::string &key, const T &value,
+                                       std::function<Poco::Dynamic::Var(const T &)> t2DynamicVar) {
+            auto varValue = t2DynamicVar(value);
+            str.insert(key, varValue);
+        }
+
         template<size_t n>
         static void writeValueToStruct(Poco::DynamicStruct &str, const std::string &key, const char (&value)[n]) {
             writeValueToStruct(str, key, std::string(value));
@@ -378,15 +394,15 @@ struct COMMON_EXPORT CommonUtility {
         */
         template<template<typename, typename> class C, typename T, typename A = std::allocator<T>>
         static void writeValuesToStruct(Poco::DynamicStruct &str, const std::string &key, const C<T, A> &values,
-                                        std::function<Poco::Dynamic::Var(const T &)> convertFct) {
+                                        std::function<Poco::Dynamic::Var(const T &)> t2DynamicVar) {
             Poco::Dynamic::Array arrValues;
-            std::transform(values.begin(), values.end(), std::back_inserter(arrValues), convertFct);
+            std::transform(values.begin(), values.end(), std::back_inserter(arrValues), t2DynamicVar);
             str.insert(key, arrValues);
         }
 
         template<template<typename, typename> class C, typename T, typename A = std::allocator<T>>
         static void writeValuesToStruct(Poco::DynamicStruct &str, const std::string &key, const C<T, A> &values) {
-            std::function<Poco::Dynamic::Var(const T &)> convertFct = [](const T &value) {
+            std::function<Poco::Dynamic::Var(const T &)> t2DynamicVar = [](const T &value) {
                 if constexpr (std::is_same_v<T, std::string> || std::is_same_v<T, std::wstring> || std::is_same_v<T, CommBLOB>) {
                     std::string base64Str;
                     convertToBase64Str(value, base64Str);
@@ -395,7 +411,7 @@ struct COMMON_EXPORT CommonUtility {
                     return Poco::Dynamic::Var(value);
                 }
             };
-            CommonUtility::writeValuesToStruct(str, key, values, convertFct);
+            CommonUtility::writeValuesToStruct(str, key, values, t2DynamicVar);
         }
 
         // Base64 conversion

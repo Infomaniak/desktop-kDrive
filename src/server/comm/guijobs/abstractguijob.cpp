@@ -23,10 +23,12 @@
 #include <Poco/JSON/Parser.h>
 #include <Poco/Exception.h>
 
+// Input parameters keys
 static const auto inRequestId = "id";
 static const auto inRequestNum = "num";
 static const auto inRequestParams = "params";
 
+// Output parameters keys
 static const auto outRequestType = "type";
 static const auto outRequestId = "id";
 static const auto outRequestNum = "num";
@@ -51,7 +53,7 @@ AbstractGuiJob::AbstractGuiJob(std::shared_ptr<CommManager> commManager, const s
     _type(GuiJobType::Signal) {}
 
 void AbstractGuiJob::runJob() {
-    if (_type == GuiJobType::None) {
+    if (_type == GuiJobType::Unknown) {
         LOG_WARN(_logger, "The job type must be set");
         _exitInfo = ExitCode::LogicError;
     }
@@ -84,6 +86,7 @@ bool AbstractGuiJob::deserializeInputParms() {
         CommonUtility::readValueFromStruct(paramsStruct, inRequestId, _requestId);
         CommonUtility::readValueFromStruct(paramsStruct, inRequestNum, _requestNum);
 
+        assert(paramsStruct[inRequestParams].isStruct());
         _inParams = paramsStruct[inRequestParams].extract<Poco::DynamicStruct>();
     } catch (std::exception &e) {
         LOG_WARN(_logger, "Input parameters deserialization error for job=" << jobId() << " error=" << e.what());
@@ -95,7 +98,7 @@ bool AbstractGuiJob::deserializeInputParms() {
 }
 
 bool AbstractGuiJob::serializeOutputParms() {
-    assert(_type != GuiJobType::None);
+    assert(_type != GuiJobType::Unknown);
 
     Poco::DynamicStruct paramsStruct;
     CommonUtility::writeValueToStruct(paramsStruct, outRequestType, _type);
