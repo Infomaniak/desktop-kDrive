@@ -47,6 +47,8 @@
     <Color x:Key="Infomaniak.Style.Color.Brand.Light">#4CB7FF</Color>
     <!-- Product Colors -->
     <Color x:Key="Infomaniak.Style.Color.Product.Default">#5C89F7</Color>
+    <SolidColorBrush x:Key="Infomaniak.Style.Color.Product.DefaultBrush"
+                     Color="{StaticResource Infomaniak.Style.Color.Product.Default}" />
     <Color x:Key="Infomaniak.Style.Color.Product.Dark">#345AC1</Color>
     <Color x:Key="Infomaniak.Style.Color.Product.Light">#84A9F9</Color>
 

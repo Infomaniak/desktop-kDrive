@@ -28,19 +28,20 @@ namespace Infomaniak.kDrive.CustomControls
             DependencyProperty.Register("Color1", typeof(Brush), typeof(MultiValueProgressBar), new PropertyMetadata(null));
 
         private static readonly DependencyProperty Value1Property =
-            DependencyProperty.Register("Value1", typeof(double), typeof(MultiValueProgressBar), new PropertyMetadata(0.0));
+            DependencyProperty.Register("Value1", typeof(double?), typeof(MultiValueProgressBar), new PropertyMetadata(0.0));
+
 
         private static readonly DependencyProperty Color2Property =
             DependencyProperty.Register("Color2", typeof(Brush), typeof(MultiValueProgressBar), new PropertyMetadata(null));
 
         private static readonly DependencyProperty Value2Property =
-            DependencyProperty.Register("Value2", typeof(double), typeof(MultiValueProgressBar), new PropertyMetadata(0.0));
+            DependencyProperty.Register("Value2", typeof(double?), typeof(MultiValueProgressBar), new PropertyMetadata(0.0));
 
         private static readonly DependencyProperty Color3Property =
             DependencyProperty.Register("Color3", typeof(Brush), typeof(MultiValueProgressBar), new PropertyMetadata(null));
 
         private static readonly DependencyProperty Value3Property =
-            DependencyProperty.Register("Value3", typeof(double), typeof(MultiValueProgressBar), new PropertyMetadata(0.0));
+            DependencyProperty.Register("Value3", typeof(double?), typeof(MultiValueProgressBar), new PropertyMetadata(0.0));
 
         public Brush Color1
         {
@@ -48,9 +49,9 @@ namespace Infomaniak.kDrive.CustomControls
             set { SetValue(Color1Property, value); }
         }
 
-        public double Value1
+        public double? Value1
         {
-            get { return (double)GetValue(Value1Property); }
+            get { return (double?)GetValue(Value1Property); }
             set { SetValue(Value1Property, value); }
         }
 
@@ -60,9 +61,9 @@ namespace Infomaniak.kDrive.CustomControls
             set { SetValue(Color2Property, value); }
         }
 
-        public double Value2
+        public double? Value2
         {
-            get { return (double)GetValue(Value2Property); }
+            get { return (double?)GetValue(Value2Property); }
             set { SetValue(Value2Property, value); }
         }
 
@@ -72,9 +73,9 @@ namespace Infomaniak.kDrive.CustomControls
             set { SetValue(Color3Property, value); }
         }
 
-        public double Value3
+        public double? Value3
         {
-            get { return (double)GetValue(Value3Property); }
+            get { return (double?)GetValue(Value3Property); }
             set { SetValue(Value3Property, value); }
         }
 

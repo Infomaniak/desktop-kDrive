@@ -44,12 +44,10 @@ namespace Infomaniak.kDrive.ViewModels
         private readonly ObservableCollection<SyncActivity> _syncActivities = new();
         private SyncStatus _syncStatus = SyncStatus.Pause;
         private SyncType _syncType = SyncType.Unknown;
-
         private ObservableCollection<Errors.BaseError> _syncErrors = new();
 
         // Sync UI properties
         private bool _showIncomingActivity = true;
-
 
         public SyncStatus SyncStatus
         {
@@ -58,7 +56,6 @@ namespace Infomaniak.kDrive.ViewModels
         }
 
         //TODO: Remove this test function
-
         private SyncActivity GenerateTestActivity()
         {
             Random rand = new Random();
@@ -239,6 +236,6 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _showIncomingActivity;
             set => SetProperty(ref _showIncomingActivity, value);
-        }
+        }       
     }
 }

@@ -71,13 +71,13 @@ namespace Infomaniak.kDrive.ServerCommunication
             Syncs.Add(new Sync(1, Drives[0]) { Id = 1000, LocalPath = "C:\\Users\\John\\kDrive", RemotePath = "", SupportOnlineMode = false });
             Drives[0].Syncs.Add(Syncs[0]);
 
-            Syncs.Add(new Sync(2, Drives[1]) { Id = 1000, LocalPath = "C:\\Users\\John\\kDrive1", RemotePath = "", SupportOnlineMode = false });
+            Syncs.Add(new Sync(2, Drives[1]) { Id = 1000, LocalPath = "D:\\Users\\John\\kDrive1", RemotePath = "", SupportOnlineMode = false });
             Drives[1].Syncs.Add(Syncs[1]);
 
-            Syncs.Add(new Sync(2, Drives[2]) { Id = 1000, LocalPath = "C:\\Users\\John\\kDrive1", RemotePath = "", SupportOnlineMode = false });
+            Syncs.Add(new Sync(2, Drives[2]) { Id = 1000, LocalPath = "E:\\Users\\John\\kDrive1", RemotePath = "", SupportOnlineMode = false });
             Drives[2].Syncs.Add(Syncs[1]);
 
-            Syncs.Add(new Sync(2, Drives[3]) { Id = 1000, LocalPath = "C:\\Users\\John\\kDrive1", RemotePath = "", SupportOnlineMode = false });
+            Syncs.Add(new Sync(2, Drives[3]) { Id = 1000, LocalPath = "F:\\Users\\John\\kDrive1", RemotePath = "", SupportOnlineMode = false });
             Drives[3].Syncs.Add(Syncs[1]);
         }
     }

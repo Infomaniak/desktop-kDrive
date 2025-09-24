@@ -27,7 +27,10 @@
       xmlns:converters="using:Infomaniak.kDrive.Converters"
       mc:Ignorable="d">
     <Page.Resources>
+        <converters:BooleanToVisibilityConverter  x:Key="BooleanToVisibilityConverter" />
         <converters:BooleanToInvertedVisibilityConverter  x:Key="BooleanToInvertedVisibilityConverter" />
+        <converters:DoubleByteToSizeStringConverter x:Key="DoubleByteToSizeStringConverter" />
+        <converters:IsNullToVisibilityConverter x:Key="IsNullToVisibilityConverter" />
     </Page.Resources>
     <Grid Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.L}"
           RowSpacing="{StaticResource Infomaniak.Style.Spacing.L}">
@@ -35,7 +38,7 @@
             <!-- Title -->
             <RowDefinition Height="Auto" />
             <!-- Main -->
-            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
             <!-- Manage storage -->
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -46,33 +49,63 @@
                    Style="{StaticResource Infomaniak.Style.TextBlock.Title}" />
 
         <!-- Main -->
+        <InfoBar Grid.Row="1"
+                 IsOpen="True"
+                 IsClosable="False"
+                 Title="Disque indisponnible"
+                 Message="{x:Bind PageViewModel.DiskRoot, Mode=OneWay}"
+                 Visibility="{x:Bind PageViewModel.IsDiskConnected, Mode=OneWay, Converter={StaticResource BooleanToInvertedVisibilityConverter}}">
+            <InfoBar.ActionButton>
+                <Button Content="Réessayer"
+                        Click="RetryButton_click"
+                        HorizontalAlignment="Right"/>
+            </InfoBar.ActionButton>
+        </InfoBar>
         <Grid  Grid.Row="1"
                Background="{ThemeResource LayerFillColorDefaultBrush}"
                CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"
                RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
-               Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.M}">
+               Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.M}"
+               Visibility="{x:Bind PageViewModel.IsDiskConnected, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <StackPanel Grid.Row="0"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                <TextBlock Text="Surface Pro de Florent Lazarre - 250 Go"
-                           Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
-                <controls:MultiValueProgressBar Value1="10"
-                                                Value2="20"
-                                                Value3="70"
-                                                Color1="{StaticResource Infomaniak.Style.Color.Brand.DefaultBrush}"
+                <StackPanel Orientation="Horizontal"
+                            Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                    <ToolTipService.ToolTip>
+                        <ToolTip>
+                            <TextBlock Text="{x:Bind PageViewModel.DiskRoot, Mode=OneWay}" />
+                        </ToolTip>
+                    </ToolTipService.ToolTip>
+                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}">
+                        <Run Text="Ce PC -" />
+                        <Run Text="{x:Bind PageViewModel.DiskSize, Mode=OneWay, Converter={StaticResource DoubleByteToSizeStringConverter}}" />
+                    </TextBlock>
+                    <ProgressRing Height="8"
+                                  Width="8"
+                                  Visibility="{x:Bind PageViewModel.Loading, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                </StackPanel>
+                <controls:MultiValueProgressBar Value1="{x:Bind PageViewModel.HydratedFileSize, Mode=OneWay}"
+                                                Value2="{x:Bind PageViewModel.OtherFileSize, Mode=OneWay}"
+                                                Value3="{x:Bind PageViewModel.DiskFreeSize, Mode=OneWay}"
+                                                Color1="{StaticResource Infomaniak.Style.Color.Product.DefaultBrush}"
                                                 Color2="#BA68C8"
                                                 Color3="#E0E0E0" />
                 <Grid>
-                    <TextBlock Text="63 Go utilisé(s)"
-                               Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
-                               Foreground="{ThemeResource TextFillColorDisabled}" />
-                    <TextBlock Text="187 Go libres"
-                               Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
+                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
+                               Foreground="{ThemeResource TextFillColorDisabled}">
+                        <Run Text="{x:Bind PageViewModel.DiskUsedSize, Mode=OneWay, Converter={StaticResource DoubleByteToSizeStringConverter}}" />
+                        <Run Text=" utilisé(s)" />
+                    </TextBlock>
+                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                                HorizontalAlignment="Right"
-                               Foreground="{ThemeResource TextFillColorDisabled}" />
+                               Foreground="{ThemeResource TextFillColorDisabled}">
+                        <Run Text="{x:Bind PageViewModel.DiskFreeSize, Mode=OneWay, Converter={StaticResource DoubleByteToSizeStringConverter}}" />
+                        <Run Text=" libres" />
+                    </TextBlock>
                 </Grid>
             </StackPanel>
             <StackPanel Grid.Row="1">
@@ -87,12 +120,16 @@
                             CornerRadius="100"
                             Height="8"
                             Width="8"
-                            Background="{StaticResource Infomaniak.Style.Color.Brand.DefaultBrush}" />
+                            Background="{StaticResource Infomaniak.Style.Color.Product.DefaultBrush}" />
                     <TextBlock Grid.Column="1"
                                Text="Fichiers kDrive accessibles hors ligne"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
+                    <ProgressRing Height="8"
+                                  Width="8"
+                                  Foreground="{StaticResource Infomaniak.Style.Color.Product.DefaultBrush}"
+                                  Visibility="{x:Bind PageViewModel.HydratedFileSize, Mode=OneWay, Converter={StaticResource IsNullToVisibilityConverter}}" />
                     <TextBlock Grid.Column="2"
-                               Text="13 Go"
+                               Text="{x:Bind PageViewModel.HydratedFileSize, Mode=OneWay, Converter={StaticResource DoubleByteToSizeStringConverter}}"
                                HorizontalAlignment="Right"
                                Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
                                Foreground="{ThemeResource AccentTextFillColorDisabled}" />
@@ -112,11 +149,16 @@
                             Height="8"
                             Width="8"
                             Background="#BA68C8" />
+                    <ProgressRing Height="8"
+                                  Width="8"
+                                  Foreground="#BA68C8"
+                                  Visibility="{x:Bind PageViewModel.OtherFileSize, Mode=OneWay, Converter={StaticResource IsNullToVisibilityConverter}}" />
+
                     <TextBlock Grid.Column="1"
                                Text="Autres fichiers de l’ordinateur"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                     <TextBlock Grid.Column="2"
-                               Text="13 Go"
+                               Text="{x:Bind PageViewModel.OtherFileSize, Mode=OneWay, Converter={StaticResource DoubleByteToSizeStringConverter}}"
                                HorizontalAlignment="Right"
                                Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
                                Foreground="{ThemeResource AccentTextFillColorDisabled}" />
@@ -136,11 +178,15 @@
                             Height="8"
                             Width="8"
                             Background="#E0E0E0" />
+                    <ProgressRing Height="8"
+                                  Width="8"
+                                  Foreground="#E0E0E0"
+                                  Visibility="{x:Bind PageViewModel.DiskFreeSize, Mode=OneWay, Converter={StaticResource IsNullToVisibilityConverter}}" />
                     <TextBlock Grid.Column="1"
                                Text="Espace libre"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                     <TextBlock Grid.Column="2"
-                               Text="13 Go"
+                               Text="{x:Bind PageViewModel.DiskFreeSize, Mode=OneWay, Converter={StaticResource DoubleByteToSizeStringConverter}}"
                                HorizontalAlignment="Right"
                                Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
                                Foreground="{ThemeResource AccentTextFillColorDisabled}" />
@@ -150,7 +196,8 @@
         <Border Grid.Row="2"
                 Height="96"
                 Background="LightGray"
-                CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}">
+                CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"
+                Visibility="Collapsed">
 
         </Border>
     </Grid>

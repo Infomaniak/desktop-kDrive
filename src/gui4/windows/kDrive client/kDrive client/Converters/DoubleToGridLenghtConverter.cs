@@ -12,9 +12,13 @@ namespace Infomaniak.kDrive.Converters
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            if(value is double doubleValue)
+            if (value is double doubleValue)
             {
                 return new Microsoft.UI.Xaml.GridLength(doubleValue, Microsoft.UI.Xaml.GridUnitType.Star);
+            }
+            else if (value is null)
+            {
+                return new Microsoft.UI.Xaml.GridLength(0, Microsoft.UI.Xaml.GridUnitType.Star);
             }
             Logger.Log(Logger.Level.Fatal, "DoubleToGridLengthConverter: value is not a double.");
             throw new ArgumentException("Invalid value type", nameof(value));
