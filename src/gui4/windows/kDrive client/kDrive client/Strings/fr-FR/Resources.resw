@@ -380,4 +380,42 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
   <data name="Global_kDriveOffersUrl" xml:space="preserve">
     <value>https://www.infomaniak.com/fr/ksuite/kdrive</value>
   </data>
+  <data name="Page_StoragePage_Title.Text" xml:space="preserve">
+    <value>Stockage</value>
+  </data>
+  <data name="Page_StoragePage_ThisComputer.Text" xml:space="preserve">
+    <value>Ce PC</value>
+  </data>
+  <data name="Page_StoragePage_Used.Text" xml:space="preserve">
+    <value>utilisé(s)</value>
+    <comment>Use mix singular/plural form.</comment>
+  </data>
+  <data name="Page_StoragePage_Free.Text" xml:space="preserve">
+    <value>libre(s)</value>
+    <comment>Use mix singular/plural form.</comment>
+  </data>
+  <data name="Page_StoragePage_OfflineFiles.Text" xml:space="preserve">
+    <value>Fichiers kDrive accessibles hors ligne</value>
+  </data>
+  <data name="Page_StoragePage_OtherFiles.Text" xml:space="preserve">
+    <value>Autres fichiers de l’ordinateur</value>
+  </data>
+  <data name="Page_StoragePage_FreeSpace.Text" xml:space="preserve">
+    <value>Espace libre</value>
+  </data>
+  <data name="Global_Bytes" xml:space="preserve">
+    <value>octets</value>
+  </data>
+  <data name="Global_TeraBytes" xml:space="preserve">
+    <value>To</value>
+  </data>
+  <data name="Global_MegaBytes" xml:space="preserve">
+    <value>Mo</value>
+  </data>
+  <data name="Global_GigaBytes" xml:space="preserve">
+    <value>Go</value>
+  </data>
+  <data name="Global_KiloBytes" xml:space="preserve">
+    <value>Ko</value>
+  </data>
 </root>

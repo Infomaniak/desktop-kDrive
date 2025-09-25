@@ -44,7 +44,8 @@
         </Grid.RowDefinitions>
 
         <!-- Title -->
-        <TextBlock Grid.Row="0"
+        <TextBlock x:Uid="Page_StoragePage_Title"
+                   Grid.Row="0"
                    Text="Stockage"
                    Style="{StaticResource Infomaniak.Style.TextBlock.Title}" />
 
@@ -58,7 +59,7 @@
             <InfoBar.ActionButton>
                 <Button Content="Réessayer"
                         Click="RetryButton_click"
-                        HorizontalAlignment="Right"/>
+                        HorizontalAlignment="Right" />
             </InfoBar.ActionButton>
         </InfoBar>
         <Grid  Grid.Row="1"
@@ -81,7 +82,8 @@
                         </ToolTip>
                     </ToolTipService.ToolTip>
                     <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}">
-                        <Run Text="Ce PC -" />
+                        <Run x:Uid="Page_StoragePage_ThisComputer" />
+                        <Run Text=" -" />
                         <Run Text="{x:Bind PageViewModel.DiskSize, Mode=OneWay, Converter={StaticResource DoubleByteToSizeStringConverter}}" />
                     </TextBlock>
                     <ProgressRing Height="8"
@@ -98,13 +100,13 @@
                     <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                                Foreground="{ThemeResource TextFillColorDisabled}">
                         <Run Text="{x:Bind PageViewModel.DiskUsedSize, Mode=OneWay, Converter={StaticResource DoubleByteToSizeStringConverter}}" />
-                        <Run Text=" utilisé(s)" />
+                        <Run x:Uid="Page_StoragePage_Used" />
                     </TextBlock>
                     <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                                HorizontalAlignment="Right"
                                Foreground="{ThemeResource TextFillColorDisabled}">
                         <Run Text="{x:Bind PageViewModel.DiskFreeSize, Mode=OneWay, Converter={StaticResource DoubleByteToSizeStringConverter}}" />
-                        <Run Text=" libres" />
+                        <Run x:Uid="Page_StoragePage_Free" />
                     </TextBlock>
                 </Grid>
             </StackPanel>
@@ -121,8 +123,8 @@
                             Height="8"
                             Width="8"
                             Background="{StaticResource Infomaniak.Style.Color.Product.DefaultBrush}" />
-                    <TextBlock Grid.Column="1"
-                               Text="Fichiers kDrive accessibles hors ligne"
+                    <TextBlock x:Uid="Page_StoragePage_OfflineFiles"
+                               Grid.Column="1"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                     <ProgressRing Height="8"
                                   Width="8"
@@ -154,8 +156,8 @@
                                   Foreground="#BA68C8"
                                   Visibility="{x:Bind PageViewModel.OtherFileSize, Mode=OneWay, Converter={StaticResource IsNullToVisibilityConverter}}" />
 
-                    <TextBlock Grid.Column="1"
-                               Text="Autres fichiers de l’ordinateur"
+                    <TextBlock x:Uid="Page_StoragePage_OtherFiles"
+                               Grid.Column="1"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                     <TextBlock Grid.Column="2"
                                Text="{x:Bind PageViewModel.OtherFileSize, Mode=OneWay, Converter={StaticResource DoubleByteToSizeStringConverter}}"
@@ -182,8 +184,8 @@
                                   Width="8"
                                   Foreground="#E0E0E0"
                                   Visibility="{x:Bind PageViewModel.DiskFreeSize, Mode=OneWay, Converter={StaticResource IsNullToVisibilityConverter}}" />
-                    <TextBlock Grid.Column="1"
-                               Text="Espace libre"
+                    <TextBlock x:Uid="Page_StoragePage_FreeSpace"
+                               Grid.Column="1"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                     <TextBlock Grid.Column="2"
                                Text="{x:Bind PageViewModel.DiskFreeSize, Mode=OneWay, Converter={StaticResource DoubleByteToSizeStringConverter}}"
