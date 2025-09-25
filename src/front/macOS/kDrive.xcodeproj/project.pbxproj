@@ -63,6 +63,7 @@
 				Views/ClickableOutlineView.swift,
 				Views/ColoredPopUpButton.swift,
 				Views/ColoredPopUpButtonCell.swift,
+				Views/FlippedView.swift,
 				Views/SidebarHeaderView.swift,
 				Views/SidebarTableCellView.swift,
 			);

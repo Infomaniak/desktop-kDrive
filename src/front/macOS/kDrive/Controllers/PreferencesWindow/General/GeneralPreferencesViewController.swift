@@ -23,4 +23,62 @@ class GeneralPreferencesViewController: TitledViewController {
     convenience init() {
         self.init(toolbarTitle: SidebarItem.general.title)
     }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupUI()
+    }
+
+    private func setupUI() {
+        let scrollView = NSScrollView()
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.hasVerticalScroller = true
+        scrollView.autohidesScrollers = true
+        scrollView.drawsBackground = false
+        view.addSubview(scrollView)
+
+        let stackView = NSStackView()
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.orientation = .vertical
+
+        let flippedView = FlippedView(contentView: stackView)
+        flippedView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.documentView = flippedView
+
+        setupBox(in: stackView)
+
+        NSLayoutConstraint.activate([
+            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+
+            flippedView.topAnchor.constraint(equalTo: scrollView.contentView.topAnchor),
+            flippedView.leadingAnchor.constraint(equalTo: scrollView.contentView.leadingAnchor),
+            flippedView.trailingAnchor.constraint(equalTo: scrollView.contentView.trailingAnchor)
+        ])
+    }
+
+    private func setupBox(in sourceStackView: NSStackView) {
+        let box = NSBox()
+        box.translatesAutoresizingMaskIntoConstraints = false
+//        box.titlePosition = .noTitle
+        box.boxType = .primary
+
+        let gridView = NSGridView(numberOfColumns: 2, rows: 6)
+        gridView.translatesAutoresizingMaskIntoConstraints = false
+//        box.contentView = gridView
+
+        gridView.addRow(with: [
+            NSTextField(labelWithString: "Coucou"),
+            NSTextField(labelWithString: "Tout le monde")
+        ])
+
+        sourceStackView.addView(gridView, in: .bottom)
+    }
+}
+
+@available(macOS 14, *)
+#Preview {
+    GeneralPreferencesViewController()
 }
