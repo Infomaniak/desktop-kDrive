@@ -43,9 +43,9 @@ class AddDriveLoginWidget : public QWidget {
 
     private:
         QString _codeVerifier;
-        int _userDbId;
+        int _userDbId{0};
 
-        WebView *_webView;
+        WebView *_webView{nullptr};
 
         void refreshPage();
 

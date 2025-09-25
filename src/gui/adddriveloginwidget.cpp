@@ -50,20 +50,13 @@ const int stateStringLength = 8;
 
 Q_LOGGING_CATEGORY(lcAddDriveLoginWidget, "gui.adddriveloginwidget", QtInfoMsg)
 
+
 AddDriveLoginWidget::AddDriveLoginWidget(QWidget *parent) :
-    QWidget(parent),
-    _codeVerifier(QString()),
-    _userDbId(0),
-    _webView(nullptr) {
-    QVBoxLayout *mainLayout = new QVBoxLayout();
+    QWidget(parent) {
+    auto *mainLayout = new QVBoxLayout();
     mainLayout->setContentsMargins(0, 0, 0, 0);
     setLayout(mainLayout);
-
-    _webView = new WebView(this);
-    mainLayout->addWidget(_webView);
-
-    connect(_webView, &WebView::authorizationCodeUrlCatched, this, &AddDriveLoginWidget::onAuthorizationCodeReceived);
-    connect(_webView, &WebView::errorCatched, this, &AddDriveLoginWidget::onErrorReceived);
+    refreshPage();
 }
 
 void AddDriveLoginWidget::init(const QString &serverUrl) {
