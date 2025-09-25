@@ -35,9 +35,9 @@ namespace Infomaniak.kDrive.Pages
         public StoragePageViewModel PageViewModel => _pageViewModel;
         public StoragePage()
         {
-            Logger.Log(Logger.Level.Info, "Navigated to HomePage - Initializing HomePage components");
+            Logger.Log(Logger.Level.Info, "Navigated to StoragePage - Initializing StoragePage components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "HomePage components initialized");
+            Logger.Log(Logger.Level.Debug, "StoragePage components initialized");
         }
 
         protected async override void OnNavigatedTo(NavigationEventArgs e)

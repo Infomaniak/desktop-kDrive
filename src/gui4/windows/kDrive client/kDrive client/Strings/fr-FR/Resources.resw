@@ -418,4 +418,7 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
   <data name="Global_KiloBytes" xml:space="preserve">
     <value>Ko</value>
   </data>
+  <data name="Page_StoragePage_DiskUnavailable.Text" xml:space="preserve">
+    <value>Disque indisponible</value>
+  </data>
 </root>

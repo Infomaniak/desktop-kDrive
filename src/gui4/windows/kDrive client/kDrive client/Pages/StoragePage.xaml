@@ -50,10 +50,10 @@
                    Style="{StaticResource Infomaniak.Style.TextBlock.Title}" />
 
         <!-- Main -->
-        <InfoBar Grid.Row="1"
+        <InfoBar x:Uid="Page_StoragePage_DiskUnavailable"
+                 Grid.Row="1"
                  IsOpen="True"
                  IsClosable="False"
-                 Title="Disque indisponnible"
                  Message="{x:Bind PageViewModel.DiskRoot, Mode=OneWay}"
                  Visibility="{x:Bind PageViewModel.IsDiskConnected, Mode=OneWay, Converter={StaticResource BooleanToInvertedVisibilityConverter}}">
             <InfoBar.ActionButton>
