@@ -17,7 +17,7 @@
  * along with this program.  If not, see<http://www.gnu.org/licenses/> .
  -->
 
-<Page x:Class="Infomaniak.kDrive.HomePage"
+<Page x:Class="Infomaniak.kDrive.Pages.HomePage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:local="using:Infomaniak.kDrive"
@@ -83,7 +83,7 @@
                         </ImageIcon.Source>
                     </ImageIcon>
                     <TextBlock x:Uid="Page_HomePage_favorites"
-                               Style="{StaticResource TextBlockStyle}" />
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                 </StackPanel>
             </Button>
             <Button Click="SharedButton_Click"
@@ -102,7 +102,7 @@
                         </ImageIcon.Source>
                     </ImageIcon>
                     <TextBlock x:Uid="Page_HomePage_shared"
-                               Style="{StaticResource TextBlockStyle}" />
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                 </StackPanel>
             </Button>
             <Button Click="TrashButton_Click"
@@ -121,7 +121,7 @@
                         </ImageIcon.Source>
                     </ImageIcon>
                     <TextBlock x:Uid="Page_HomePage_trash"
-                               Style="{StaticResource TextBlockStyle}" />
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                 </StackPanel>
             </Button>
         </Grid>

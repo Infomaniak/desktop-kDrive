@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2025 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see<http://www.gnu.org/licenses/> .
+ -->
+
+<Window x:Class="Infomaniak.kDrive.OnBoarding.OnBoardingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:Infomaniak.kDrive"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewModel="using:Infomaniak.kDrive.ViewModels"
+        xmlns:converters="using:Infomaniak.kDrive.Converters"
+        xmlns:customControls="using:Infomaniak.kDrive.CustomControls"
+        mc:Ignorable="d"
+        Title="kDrive">
+
+    <Window.SystemBackdrop>
+        <MicaBackdrop Kind="BaseAlt" />
+    </Window.SystemBackdrop>
+    <Grid>
+        <Grid.RowDefinitions>
+            <!-- App title bar -->
+            <RowDefinition Height="auto" />
+            <!-- App title bar -->
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1.63*" />
+            <ColumnDefinition Width="1*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Set the backgrounds -->
+        <Border x:Name="AppTitleBar"
+                Grid.Row="0"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                Background="{ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}">
+        </Border>
+        <Border  Grid.Row="1"
+                 Grid.Column="0"
+                 Background="{ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}">
+        </Border>
+        <Border Grid.Row="1"
+                Grid.Column="1"
+                Background="{ThemeResource LayerFillColorDefaultBrush}">
+        </Border>
+        <customControls:AppTitleBarLogo Grid.Column="0"
+                                        Margin="8,8,0,0" />
+
+        <Image Grid.Row="1"
+               Grid.Column="2"
+               Stretch="Uniform"
+               MaxHeight="120">
+            <Image.Source>
+                <SvgImageSource UriSource="ms-appx:///Assets/Images/folder.svg" />
+            </Image.Source>
+        </Image>
+        <Border Grid.Row="1"
+                Grid.Column="0">
+            <Frame x:Name="ContentFrame" />
+        </Border>
+    </Grid>
+</Window>

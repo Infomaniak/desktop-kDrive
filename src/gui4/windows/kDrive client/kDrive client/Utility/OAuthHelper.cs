@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive
@@ -16,28 +17,46 @@ namespace Infomaniak.kDrive
         private static readonly Uri _authorizationEndpoint = new Uri("https://login.infomaniak.com/authorize");
         private static readonly Uri _tokenEndpoint = new Uri("https://login.infomaniak.com/token");
 
-        public static async Task<string> GetToken()
+        public static async Task<string> GetToken(CancellationToken cancellationToken)
         {
-            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(((App)Application.Current).Window);
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(((App)Application.Current).CurrentWindow);
             var parentWindowId = Win32Interop.GetWindowIdFromWindow(hWnd);
 
-            AuthRequestParams authRequestParams = AuthRequestParams.CreateForAuthorizationCodeRequest(_clientId, _redirectUri);
+            var authRequestParams = AuthRequestParams.CreateForAuthorizationCodeRequest(_clientId, _redirectUri);
             authRequestParams.CodeChallengeMethod = CodeChallengeMethodKind.S256;
 
-            AuthRequestResult authRequestResult = await OAuth2Manager.RequestAuthWithParamsAsync(parentWindowId, _authorizationEndpoint, authRequestParams);
+            try
+            {
+                var authRequestResult = await OAuth2Manager
+                    .RequestAuthWithParamsAsync(parentWindowId, _authorizationEndpoint, authRequestParams)
+                    .AsTask(cancellationToken);
 
-            if (authRequestResult.Response is AuthResponse authResponse)
-            {
-                Logger.Log(Logger.Level.Info, "OAuth authorization successful.");
-                return await DoTokenExchange(authResponse);
+                if (authRequestResult.Response is AuthResponse authResponse)
+                {
+                    Logger.Log(Logger.Level.Info, "OAuth authorization successful.");
+                    return await DoTokenExchange(authResponse);
+                }
+
+                if (authRequestResult.Failure is AuthFailure authFailure)
+                {
+                    Logger.Log(Logger.Level.Error,
+                        $"OAuth authorization failed: {authFailure.Error}, {authFailure.ErrorDescription}");
+                }
             }
-            else
+            catch (OperationCanceledException)
             {
-                AuthFailure authFailure = authRequestResult.Failure;
-                Logger.Log(Logger.Level.Error, $"OAuth authorization failed: {authFailure.Error}, {authFailure.ErrorDescription}");
-                return "";
+                Logger.Log(Logger.Level.Warning, "OAuth authorization canceled by user.");
+                throw;
             }
+            catch (Exception ex)
+            {
+                Logger.Log(Logger.Level.Error, $"Unexpected OAuth error: {ex}");
+                throw;
+            }
+
+            return "";
         }
+
 
         private static async Task<string> DoTokenExchange(AuthResponse authResponse)
         {

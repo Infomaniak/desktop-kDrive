@@ -50,26 +50,35 @@ namespace Infomaniak.kDrive.ServerCommunication
             Users.Add(new User(3) { Id = 12, Name = "Bob", Email = "Bob.doe@infomaniak.com", IsConnected = false, IsStaff = false });
 
             // Create mock drives
-            Drives.Add(new Drive(1) { Id = 140946, Name = "Infomaniak", Color = Color.Red, Size = 1000000000, UsedSize = 250000000, IsActive = true, IsPaidOffer = false });
-            Drives.Add(new Drive(2) { Id = 101, Name = "Test_kDrive", Color = Color.Blue, Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
+            Drives.Add(new Drive(1) { Id = 140946, Name = "Infomaniak", Color = Color.FromArgb(255, 0, 150, 136), Size = 1000000000, UsedSize = 250000000, IsActive = true, IsPaidOffer = false });
+            Drives.Add(new Drive(2) { Id = 101, Name = "Test_kDrive", Color = Color.FromArgb(255, 156, 38, 176), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
+            Drives.Add(new Drive(3) { Id = 101, Name = "Test kDrive2", Color = Color.FromArgb(255, 255, 168, 44), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
+            Drives.Add(new Drive(4) { Id = 101, Name = "Test kDrive 3", Color = Color.FromArgb(255, 255, 168, 44), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
+            Drives.Add(new Drive(8) { Id = 101, Name = "Test kDrive 4", Color = Color.FromArgb(255, 156, 38, 176), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
+            Drives.Add(new Drive(9) { Id = 101, Name = "Test kDrive 5", Color = Color.FromArgb(255, 0, 150, 136), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
             Users[0].Drives.Add(Drives[0]);
-            Users[0].Drives.Add(Drives[1]);
+            //Users[0].Drives.Add(Drives[1]);
+            //Users[0].Drives.Add(Drives[2]);
+            //Users[0].Drives.Add(Drives[3]);
+            Users[0].Drives.Add(Drives[4]);
+            Users[0].Drives.Add(Drives[5]);
 
-            Drives.Add(new Drive(3) { Id = 102, Name = "Etik_corp", Color = Color.Red, Size = 1000000000, UsedSize = 250000000, IsActive = true, IsPaidOffer = true });
-            Users[1].Drives.Add(Drives[2]);
+
+            Drives.Add(new Drive(5) { Id = 102, Name = "Etik_corp", Color = Color.Red, Size = 1000000000, UsedSize = 250000000, IsActive = true, IsPaidOffer = true });
+            Users[1].Drives.Add(Drives[4]);
 
             // Create mock syncs
             Syncs.Add(new Sync(1, Drives[0]) { Id = 1000, LocalPath = "C:\\Users\\John\\kDrive", RemotePath = "", SupportOnlineMode = false });
-            Syncs.Add(new Sync(2, Drives[0]) { Id = 1000, LocalPath = "C:\\Users\\John\\kDrive1", RemotePath = "", SupportOnlineMode = false });
             Drives[0].Syncs.Add(Syncs[0]);
-            Drives[0].Syncs.Add(Syncs[1]);
 
-
-            Syncs.Add(new Sync(3, Drives[1]) { Id = 1001, LocalPath = "C:\\Users\\John\\kDrive2", RemotePath = "", SupportOnlineMode = true });
+            Syncs.Add(new Sync(2, Drives[1]) { Id = 1000, LocalPath = "C:\\Users\\John\\kDrive1", RemotePath = "", SupportOnlineMode = false });
             Drives[1].Syncs.Add(Syncs[1]);
 
-            Syncs.Add(new Sync(4, Drives[2]) { Id = 1000, LocalPath = "C:\\Users\\John\\kDrive3", RemotePath = "", SupportOnlineMode = false });
-            Drives[2].Syncs.Add(Syncs[2]);
+            Syncs.Add(new Sync(2, Drives[2]) { Id = 1000, LocalPath = "C:\\Users\\John\\kDrive1", RemotePath = "", SupportOnlineMode = false });
+            Drives[2].Syncs.Add(Syncs[1]);
+
+            Syncs.Add(new Sync(2, Drives[3]) { Id = 1000, LocalPath = "C:\\Users\\John\\kDrive1", RemotePath = "", SupportOnlineMode = false });
+            Drives[3].Syncs.Add(Syncs[1]);
         }
     }
     public class CommRequests
@@ -219,7 +228,7 @@ namespace Infomaniak.kDrive.ServerCommunication
         {
             var users = _mockServerData.Users;
             await SimulateNetworkDelay().ConfigureAwait(false);
-            return users.FirstOrDefault().DbId; // Always return the first user for simplicity (tests)
+            return users.FirstOrDefault()?.DbId ?? -1;
         }
 
         // Drive-related requests

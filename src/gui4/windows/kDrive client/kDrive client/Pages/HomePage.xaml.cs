@@ -32,7 +32,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Infomaniak.kDrive.ViewModels;
 
-namespace Infomaniak.kDrive
+namespace Infomaniak.kDrive.Pages
 {
     public sealed partial class HomePage : Page
     {

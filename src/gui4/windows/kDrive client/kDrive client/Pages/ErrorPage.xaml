@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Page x:Class="Infomaniak.kDrive.ErrorPage"
+<Page x:Class="Infomaniak.kDrive.Pages.ErrorPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:local="using:Infomaniak.kDrive"
@@ -65,7 +65,7 @@
                     <TextBlock x:Uid="Page_ErrorPage_Application_Header"
                                VerticalAlignment="Center"
                                Padding="16"
-                               Style="{StaticResource TextBlockStyle}"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                                Foreground="#666666" />
                 </Border>
 
@@ -85,7 +85,7 @@
                                 Margin="16,14,0,0">
                         <TextBlock x:Uid="Page_ErrorPage_Application_Title"
                                    VerticalAlignment="Center"
-                                   Style="{StaticResource TextBlockStyle}"
+                                   Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                                    Margin="0,0,0,4" />
                         <TextBlock x:Uid="Page_ErrorPage_Application_HowTosolve"
                                    VerticalAlignment="Center"
@@ -155,7 +155,7 @@
                         Grid.Row="0">
                     <TextBlock VerticalAlignment="Center"
                                Padding="16"
-                               Style="{StaticResource TextBlockStyle}"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                                Foreground="#666666">
                         <Run Text="Synchronisation (" />
                         <Run Text="{x:Bind ViewModel.SelectedSync.Drive.Name, Mode=OneWay}" />

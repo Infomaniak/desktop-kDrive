@@ -41,7 +41,7 @@ namespace Infomaniak.kDrive.CustomControls
             if (parent is Frame frame)
             {
                 Logger.Log(Logger.Level.Info, "Navigating to ErrorPage.");
-                frame.Navigate(typeof(ErrorPage));
+                frame.Navigate(typeof(Pages.ErrorPage));
             }
             else
             {
