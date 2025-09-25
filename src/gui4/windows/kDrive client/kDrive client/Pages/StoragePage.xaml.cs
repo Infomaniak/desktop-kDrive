@@ -167,8 +167,6 @@ namespace Infomaniak.kDrive.Pages
             if (AppViewModel.SelectedSync == null)
                 return;
             var sync = AppViewModel.SelectedSync;
-            if (sync == null)
-                return;
             if (Loading)
             {
                 await _cancellationTokenSource.CancelAsync();
