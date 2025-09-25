@@ -62,7 +62,7 @@ namespace Infomaniak.kDrive.Pages
                     await PageViewModel.UpdateDiskSizeAsync().ConfigureAwait(false);
                     if (!PageViewModel.IsDiskConnected)
                     {
-                        await Task.Delay(2000); // Add a small delay to let the user now we've done something but the disk still unavailable.
+                        await Task.Delay(2000); // Add a small delay to let the user know we've done something but the disk still unavailable.
                     }
                 }
                 catch (OperationCanceledException)
