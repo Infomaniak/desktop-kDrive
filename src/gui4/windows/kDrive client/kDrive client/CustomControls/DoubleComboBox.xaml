@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="Infomaniak.kDrive.CustomControls.DoubleComboBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:Infomaniak.kDrive.CustomControls"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:customControls="using:Infomaniak.kDrive.CustomControls"
+             xmlns:viewModel="using:Infomaniak.kDrive.ViewModels"
+             xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
+             xmlns:converters="using:Infomaniak.kDrive.Converters"
+             mc:Ignorable="d">
+    <UserControl.Resources>
+        <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
+    </UserControl.Resources>
+
+    <Grid HorizontalAlignment="Stretch"
+          VerticalAlignment="Top"
+          Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.S}">
+        <!-- Permanently visible button -->
+        <StackPanel>
+            <Button x:Name="DriveButton"
+                    Margin="{StaticResource Infomaniak.Style.Thickness.Left.XS}"
+                    Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}"
+                    Click="DriveButton_Click"
+                    SizeChanged="DriveButton_SizeChanged"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch">
+
+                <Grid>
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Left"
+                                Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                        <customControls:DriveIcon IconColor="{x:Bind ViewModel.SelectedSync.Drive.Color, Mode=OneWay}" />
+                        <TextBlock Text="{x:Bind ViewModel.SelectedSync.Drive.Name, Mode=OneWay}"
+                                   Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                                   VerticalAlignment="Center" />
+
+                    </StackPanel>
+                    <AnimatedIcon Height="12"
+                                  HorizontalAlignment="Right"
+                                  Margin="{StaticResource Infomaniak.Style.Thickness.Left.S}">
+                        <AnimatedIcon.Source>
+                            <animatedvisuals:AnimatedChevronDownSmallVisualSource />
+                        </AnimatedIcon.Source>
+                    </AnimatedIcon>
+                </Grid>
+            </Button>
+            <StackPanel Margin="{StaticResource Infomaniak.Style.Thickness.Left.XS}"
+                        Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}"
+                        Orientation="Horizontal"
+                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                <ImageIcon Height="14">
+                    <ImageIcon.Source>
+                        <SvgImageSource UriSource="ms-appx:///Assets/Icons/folder.svg" />
+                    </ImageIcon.Source>
+                </ImageIcon>
+                <TextBlock Text="{x:Bind ViewModel.SelectedSync.LocalPath, Mode=OneWay , Converter={StaticResource StringPathToFileNameConverter}}"
+                           Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
+                           Foreground="{ThemeResource TextFillColorDisabledBrush}" />
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Drive Selection -->
+        <Popup x:Name="DriveSelectionPopup"
+               IsLightDismissEnabled="True"
+               SizeChanged="DriveButton_SizeChanged">
+            <Border x:Name="DriveSelectionBorder"
+                    CornerRadius="{StaticResource OverlayCornerRadius}"
+                    Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XXS}"
+                    BorderThickness="1"
+                    BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+                    Background="{ThemeResource AcrylicBackgroundFillColorBaseBrush}">
+                <ListView x:Name="DriveListView"
+                          ItemsSource="{x:Bind ViewModel.AllDrives}"
+                          SelectionMode="Single"
+                          SelectedItem="{x:Bind ViewModel.SelectedSync.Drive, Mode=OneWay}"
+                          IsItemClickEnabled="True"
+                          ItemClick="DriveListView_ItemClick">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="viewModel:Drive">
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                                <customControls:DriveIcon IconColor="{x:Bind Color}" />
+                                <TextBlock Text="{x:Bind Name, Converter={StaticResource StringPathToFileNameConverter}}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+
+            </Border>
+        </Popup>
+
+        <!-- Sync Selection -->
+        <Popup x:Name="SyncSelectionPopup"
+               IsLightDismissEnabled="True"
+               Closed="SyncSelectionPopup_Closed">
+            <Border CornerRadius="{StaticResource OverlayCornerRadius}"
+                    BorderThickness="1"
+                    BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+                    Background="{ThemeResource AcrylicBackgroundFillColorBaseBrush}">
+                <ListView x:Name="SyncListView"
+                          ItemsSource="{x:Bind ViewModel.AllDrives}"
+                          SelectionMode="Single"
+                          IsItemClickEnabled="True"
+                          ItemClick="SyncListView_ItemClick">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="viewModel:Sync">
+                            <TextBlock Text="{x:Bind LocalPath, Converter={StaticResource StringPathToFileNameConverter}}" />
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Border>
+        </Popup>
+    </Grid>
+
+</UserControl>

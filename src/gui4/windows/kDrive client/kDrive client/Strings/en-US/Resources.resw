@@ -390,7 +390,7 @@
   <data name="Global_KiloBytes" xml:space="preserve">
     <value />
   </data>
-  <data name="Page_StoragePage_DiskUnavailable.Text" xml:space="preserve">
+  <data name="Page_StoragePage_DiskUnavailable.Message" xml:space="preserve">
     <value />
   </data>
 </root>

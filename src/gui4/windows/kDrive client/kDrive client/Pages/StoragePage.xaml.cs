@@ -204,7 +204,7 @@ namespace Infomaniak.kDrive.Pages
                 }
                 OtherFileSize = DiskUsedSize - HydratedFileSize;
             }
-            catch (System.IO.DriveNotFoundException ex)
+            catch (System.IO.IOException ex)
             {
                 Logger.Log(Logger.Level.Info, $"Error accessing drive info for root {DiskRoot}: {ex.Message}");
                 IsDiskConnected = false;
