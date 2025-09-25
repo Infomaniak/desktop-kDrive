@@ -214,6 +214,8 @@ namespace Infomaniak.kDrive.Pages
 
         private async Task<double?> GetHydratedFileSizeAsync(CancellationToken cancellationToken)
         {
+            // TODO: Replace this mock implementation with actual hydrated file size calculation logic.
+            // This is a temporary stub that returns a random value for testing purposes.
             await Task.Delay(5000, cancellationToken);
             return new Random().NextInt64((long?)DiskUsedSize ?? 0);
         }
