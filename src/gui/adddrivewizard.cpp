@@ -249,7 +249,6 @@ void AddDriveWizard::onStepTerminated(bool next) {
         if (next) {
             _userDbId = _addDriveLoginWidget->userDbId();
         } else {
-            _addDriveLoginWidget->init();
             _userDbId = 0;
         }
         startNextStep(!next);

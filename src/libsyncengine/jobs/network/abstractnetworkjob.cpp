@@ -376,21 +376,27 @@ bool AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
     return true;
 }
 
-bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
-    std::vector<std::reference_wrapper<std::istream>> stream;
+bool AbstractNetworkJob::retrieveResponse(StreamVector &stream) {
     try {
         const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
         if (_session) {
-            stream.push_back(_session->receiveResponse(_resHttp));
+            (void) stream.emplace_back(_session->receiveResponse(_resHttp));
             if (ioOrLogicalErrorOccurred(stream[0].get())) {
                 return processSocketError("invalid receive stream", jobId());
             }
         }
-    } catch (Poco::Exception &e) {
+    } catch (const Poco::Exception &e) {
         return processSocketError("receiveResponse exception", jobId(), e);
-    } catch (std::exception &e) {
+    } catch (const std::exception &e) {
         return processSocketError("receiveResponse exception", jobId(), e);
     }
+
+    return true;
+}
+
+bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
+    StreamVector stream;
+    if (!retrieveResponse(stream)) return false;
 
     if (isAborted()) {
         LOG_DEBUG(_logger, "Request " << jobId() << " aborted");
