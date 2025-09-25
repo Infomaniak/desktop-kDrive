@@ -36,6 +36,24 @@ class OperationSorterWorker : public OperationProcessor {
         [[nodiscard]] bool hasOrderChanged() const { return _hasOrderChanged; }
 
     private:
+        struct CreatePair {
+                SyncOpPtr op{nullptr};
+                int32_t opNodeDepth{};
+                SyncOpPtr ancestorOp{nullptr};
+        };
+        class CreatePairDepthCmp {
+            public:
+                bool operator()(const CreatePair &a, const CreatePair &b) const {
+                    if (a.opNodeDepth == b.opNodeDepth) {
+                        // If depths are equal, put op to move with lowest ID first
+                        return a.op->id() > b.op->id();
+                    }
+                    return a.opNodeDepth < b.opNodeDepth;
+                }
+        };
+
+        using CreatePairQueue = std::priority_queue<CreatePair, std::vector<CreatePair>, CreatePairDepthCmp>;
+
         void sortOperations();
 
         /**
@@ -98,14 +116,13 @@ class OperationSorterWorker : public OperationProcessor {
          * @param opIdToIndexMap A map giving the correspondence between an operation ID and its position in the sorted operation
          * list.
          * @param op The child operation to be compared.
-         * @param ancestorOpWithHighestDistance The ancestor operation, positioned further the op in the sorted list, with the
          * highest distance.
-         * @param relativeDepth The distance between the child node and the ancestor node in a tree. For example, in the path
-         * A/AA/AAA/AAAA, the distance between A and AA is 1, the distance between A and AAAA is 3.
-         * @return
+         * @param depth The depth of op's affected node.
+         * @return The operation on an ancestor of op's node with the highest index in the operation list, if it exists. Returns
+         * nullptr otherwise.
          */
-        bool hasParentWithHigherIndex(const std::unordered_map<UniqueId, int32_t> &opIdToIndexMap, const SyncOpPtr &op,
-                                      SyncOpPtr &ancestorOpWithHighestDistance, int32_t &relativeDepth) const;
+        SyncOpPtr getAncestorOpWithHighestIndex(const std::unordered_map<UniqueId, int32_t> &opIdToIndexMap, const SyncOpPtr &op,
+                                                int32_t &relativeDepth) const;
 
         bool getIdFromDb(ReplicaSide side, const SyncPath &path, NodeId &id) const;
 

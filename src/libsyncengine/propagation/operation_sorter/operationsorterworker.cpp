@@ -238,25 +238,12 @@ void OperationSorterWorker::fixMoveBeforeMoveOccupied() {
     LOG_SYNCPAL_DEBUG(_logger, "End fixMoveBeforeMoveOccupied");
 }
 
-class SyncOpDepthCmp {
-    public:
-        bool operator()(const std::tuple<SyncOpPtr, SyncOpPtr, int32_t> &a,
-                        const std::tuple<SyncOpPtr, SyncOpPtr, int32_t> &b) const {
-            if (std::get<2>(a) == std::get<2>(b)) {
-                // If depths are equal, put op to move with lowest ID first
-                return std::get<0>(a)->id() > std::get<0>(b)->id();
-            }
-            return std::get<2>(a) < std::get<2>(b);
-        }
-};
 
 void OperationSorterWorker::fixCreateBeforeCreate() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixCreateBeforeCreate");
-    // The method described in the thesis is way too slow. Therefor, a std::priority_queue is used to efficiently sort the
+    // The method described in the thesis slow. Therefore, we use a std::priority_queue to efficiently sort the
     // operations before moving them in the sorted list.
-    std::priority_queue<std::tuple<SyncOpPtr, SyncOpPtr, int32_t>, std::vector<std::tuple<SyncOpPtr, SyncOpPtr, int32_t>>,
-                        SyncOpDepthCmp>
-            opsToMove;
+    CreatePairQueue opsToMove;
 
     std::unordered_map<UniqueId, int32_t> opIdToIndexMap;
     _syncPal->_syncOps->getOpIdToIndexMap(opIdToIndexMap, OperationType::Create);
@@ -264,63 +251,54 @@ void OperationSorterWorker::fixCreateBeforeCreate() {
     for (const auto &opId: _syncPal->_syncOps->opSortedList()) {
         SyncOpPtr createOp = _syncPal->_syncOps->getOp(opId);
         LOG_IF_FAIL(createOp)
-        if (createOp->type() != OperationType::Create) {
-            continue;
-        }
+        if (createOp->type() != OperationType::Create) continue;
 
-        SyncOpPtr ancestorOpWithHighestDistance = nullptr;
-        if (int32_t relativeDepth = 0;
-            hasParentWithHigherIndex(opIdToIndexMap, createOp, ancestorOpWithHighestDistance, relativeDepth)) {
-            opsToMove.emplace(createOp, ancestorOpWithHighestDistance, relativeDepth);
+        if (int32_t depth = 0;
+            SyncOpPtr ancestorOpWithHighestIndex = getAncestorOpWithHighestIndex(opIdToIndexMap, createOp, depth)) {
+            opsToMove.emplace(CreatePair{createOp, depth, ancestorOpWithHighestIndex});
         }
     }
 
     while (!opsToMove.empty()) {
-        const auto [op, ancestorOp, depth] = opsToMove.top();
-        LOGW_SYNCPAL_DEBUG(_logger, L"op: " << Utility::formatSyncName(op->affectedNode()->name()) << L", ancestorOp: "
-                                            << Utility::formatSyncName(ancestorOp->affectedNode()->name()) << L", depth; "
-                                            << depth);
-        moveFirstAfterSecond(op, ancestorOp);
+        const auto &createPair = opsToMove.top();
+        LOGW_SYNCPAL_DEBUG(_logger, L"op: " << Utility::formatSyncName(createPair.op->affectedNode()->name()) << L", ancestorOp: "
+                                            << Utility::formatSyncName(createPair.ancestorOp->affectedNode()->name())
+                                            << L", depth; " << createPair.opNodeDepth);
+        moveFirstAfterSecond(createPair.op, createPair.ancestorOp);
         opsToMove.pop();
     }
     LOG_SYNCPAL_DEBUG(_logger, "End fixCreateBeforeCreate");
 }
 
-bool OperationSorterWorker::hasParentWithHigherIndex(const std::unordered_map<UniqueId, int32_t> &opIdToIndexMap,
-                                                     const SyncOpPtr &op, SyncOpPtr &ancestorOpWithHighestDistance,
-                                                     int32_t &relativeDepth) const {
-    ancestorOpWithHighestDistance = nullptr;
-    relativeDepth = 0;
+SyncOpPtr OperationSorterWorker::getAncestorOpWithHighestIndex(const std::unordered_map<UniqueId, int32_t> &opIdToIndexMap,
+                                                               const SyncOpPtr &op, int32_t &depth) const {
+    SyncOpPtr ancestorOpWithHighestIndex = nullptr;
+    int32_t highestIndex = opIdToIndexMap.at(op->id());
+    depth = 0;
+
     const auto node = op->affectedNode();
-    auto parentNode = node->parentNode();
+    std::shared_ptr<const Node> ancestorNode = node->parentNode();
 
-    bool again = true;
-    while (again) {
-        again = false;
-        if (!parentNode || parentNode == _syncPal->updateTree(parentNode->side())->rootNode()) {
-            break;
-        }
-
-        for (const auto parentOpIdList = _syncPal->_syncOps->getOpIdsFromNodeId(*parentNode->id());
+    while (ancestorNode && ancestorNode != _syncPal->updateTree(ancestorNode->side())->rootNode()) {
+        for (const auto parentOpIdList = _syncPal->_syncOps->getOpIdsFromNodeId(*ancestorNode->id());
              const auto &parentOpId: parentOpIdList) {
             const auto parentOp = _syncPal->_syncOps->getOp(parentOpId);
             if (parentOp->type() != OperationType::Create) {
                 continue;
             }
 
-            // Check that index of parentOp is lower than index of op
-            if (opIdToIndexMap.at(parentOpId) > opIdToIndexMap.at(op->id())) {
-                // parentOp has higher index than op. Save it in `ancestorOpWithHighestDistance` and check its parent.
-                ancestorOpWithHighestDistance = parentOp;
-                parentNode = parentNode->parentNode();
-                ++relativeDepth;
-                again = true;
-                break;
+            // Check whether the index of `parentOp` is greater than index of `op`.
+            if (opIdToIndexMap.at(parentOpId) > highestIndex) {
+                highestIndex = opIdToIndexMap.at(parentOpId);
+                // parentOp has higher index than op. Save it in `ancestorOpWithHighestIndex` and check its parent.
+                ancestorOpWithHighestIndex = parentOp;
             }
         }
+        ancestorNode = ancestorNode->parentNode();
+        ++depth;
     }
 
-    return ancestorOpWithHighestDistance != nullptr;
+    return ancestorOpWithHighestIndex;
 }
 
 void OperationSorterWorker::fixEditBeforeMove() {
@@ -339,8 +317,8 @@ void OperationSorterWorker::fixEditBeforeMove() {
         }
 
         // Ensure that all EDIT operations under the node affected by the MOVE operation are executed after the MOVE operation
-        // Otherwise, this may cause issues with path changes between the edit job generation and its execution (due to the MOVE)
-        // in the executor step.
+        // Otherwise, this may cause issues with path changes between the edit job generation and its execution (due to the
+        // MOVE) in the executor step.
         for (auto &op: opList) {
             if (op->type() == OperationType::Edit) {
                 moveFirstAfterSecond(op, *moveOpIt);

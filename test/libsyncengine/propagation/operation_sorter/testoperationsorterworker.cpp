@@ -306,20 +306,20 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         (void) _syncPal->syncOps()->pushOp(opDB);
         (void) _syncPal->syncOps()->pushOp(opD);
 
-        // Test hasParentWithHigherIndex
+        // Test hasAncestorWithHigherIndex
         std::unordered_map<UniqueId, int32_t> opIdToIndexMap;
         _syncPal->syncOps()->getOpIdToIndexMap(opIdToIndexMap, OperationType::Create);
         SyncOpPtr ancestorOpWithHighestDistance;
         int32_t relativeDepth = 0;
-        CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasParentWithHigherIndex(
+        CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasAncestorWithHigherIndex(
                                            opIdToIndexMap, opDAA, ancestorOpWithHighestDistance, relativeDepth));
         CPPUNIT_ASSERT_EQUAL(opD->id(), ancestorOpWithHighestDistance->id());
         CPPUNIT_ASSERT_EQUAL(2, relativeDepth);
-        CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasParentWithHigherIndex(
+        CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasAncestorWithHigherIndex(
                                            opIdToIndexMap, opDA, ancestorOpWithHighestDistance, relativeDepth));
         CPPUNIT_ASSERT_EQUAL(opD->id(), ancestorOpWithHighestDistance->id());
         CPPUNIT_ASSERT_EQUAL(1, relativeDepth);
-        CPPUNIT_ASSERT_EQUAL(false, _syncPal->_operationsSorterWorker->hasParentWithHigherIndex(
+        CPPUNIT_ASSERT_EQUAL(false, _syncPal->_operationsSorterWorker->hasAncestorWithHigherIndex(
                                             opIdToIndexMap, opD, ancestorOpWithHighestDistance, relativeDepth));
         CPPUNIT_ASSERT(!ancestorOpWithHighestDistance);
         CPPUNIT_ASSERT_EQUAL(0, relativeDepth);
