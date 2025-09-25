@@ -64,9 +64,5 @@ namespace Infomaniak.kDrive.OnBoarding
             ContentFrame.Navigate(typeof(Pages.Onboarding.WelcomePage), _onBoardingViewModel);
         }
 
-        private void Grid_Loaded(object sender, RoutedEventArgs e)
-        {
-
-        }
     }
 }

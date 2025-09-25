@@ -107,7 +107,6 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     SubtitleTextBlock.Text = ressourceLoader.GetString("Page_Onboarding_OAuthLoadingPage_Success_Subtitle/Text");
                     RestartOAuthButton.Visibility = Visibility.Collapsed;
 
-                    await Task.Delay(1000);
                     AppModel.UIThreadDispatcher.TryEnqueue(() =>
                     {
                         Frame.Navigate(typeof(DriveSelectionPage), _onboardingViewModel);
@@ -115,6 +114,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     break;
 
                 case OAuth2State.Error:
+                    // TODO: Change this behavior once UX/UI is defined
                     LoadingProgressBar.ShowError = true;
                     LoadingProgressBar.IsIndeterminate = false;
                     TitleTextBlock.Text = "Erreur de connexion";

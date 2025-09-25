@@ -21,40 +21,41 @@ using Windows.UI;
 
 namespace Infomaniak.kDrive.Pages.Onboarding
 {
-    public sealed partial class FinishingPage : Page
+    public sealed partial class FinishPage : Page
     {
         private AppModel _viewModel = ((App)Application.Current).Data;
         private ViewModels.Onboarding? _onBoardingViewModel;
         public AppModel ViewModel { get { return _viewModel; } }
-
-        public FinishingPage()
+        public FinishPage()
         {
-            Logger.Log(Logger.Level.Info, "Navigated to FinishingPage - Initializing FinishPage components");
+            Logger.Log(Logger.Level.Info, "Navigated to FinishPage - Initializing FinishPage components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "FinishingPage components initialized");
+            Logger.Log(Logger.Level.Debug, "FinishPage components initialized");
         }
 
-        protected async override void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             if (e.Parameter is ViewModels.Onboarding obvm)
             {
                 _onBoardingViewModel = obvm;
+            }
+        }
 
-                if (_onBoardingViewModel.NewSyncs.Count == 0)
-                {
-                    Logger.Log(Logger.Level.Warning, "No drives selected to sync. User must select at least one drive.");
-                    Frame.GoBack();
-                    return;
-                }
-                await _onBoardingViewModel.FinishOnboarding();
-                Frame.Navigate(typeof(FinishPage), _onBoardingViewModel);
-            }
-            else
+        private void SigninButton_Click(object sender, RoutedEventArgs e)
+        {
+            Logger.Log(Logger.Level.Info, "Sign in button clicked, starting authentication process");
+            if (sender is Button btn)
             {
-                var errorMessage = "OnBoardingViewModel parameter missing when navigating to FinishingPage";
-                Logger.Log(Logger.Level.Fatal, errorMessage);
-                throw new Exception(errorMessage);
+                btn.IsEnabled = false;
+                Frame.Navigate(typeof(OAuthLoadingPage), _onBoardingViewModel);
+                btn.IsEnabled = true;
             }
+        }
+
+        private void FinishButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Close this window
+            (Application.Current as App)?.CurrentWindow?.Close();
         }
     }
 }

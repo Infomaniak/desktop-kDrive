@@ -41,32 +41,6 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             }
         }
 
-        private async void SignupButton_Click(object sender, RoutedEventArgs e)
-        {
-            Logger.Log(Logger.Level.Info, "Create account button clicked, opening sign up URL");
-            if (sender is Button btn)
-            {
-                btn.IsEnabled = false;
-
-                var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
-                await Windows.System.Launcher.LaunchUriAsync(new System.Uri(resourceLoader.GetString("Global_SignUpUrl")));
-                Logger.Log(Logger.Level.Debug, "Create account URL opened");
-
-                await Task.Delay(2000);
-                btn.IsEnabled = true;
-            }
-        }
-        private void SigninButton_Click(object sender, RoutedEventArgs e)
-        {
-            Logger.Log(Logger.Level.Info, "Sign in button clicked, starting authentication process");
-            if (sender is Button btn)
-            {
-                btn.IsEnabled = false;
-                Frame.Navigate(typeof(OAuthLoadingPage), _onBoardingViewModel);
-                btn.IsEnabled = true;
-            }
-        }
-
         private void FinishButton_Click(object sender, RoutedEventArgs e)
         {
             // Close this window
