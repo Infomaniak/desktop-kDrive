@@ -61,6 +61,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testRtrim);
         CPPUNIT_TEST(testTrim);
         CPPUNIT_TEST(testReadValueFromStruct);
+        CPPUNIT_TEST(testWriteValueToStruct);
         CPPUNIT_TEST(testConvertFromBase64Str);
         CPPUNIT_TEST(testConvertToBase64Str);
         CPPUNIT_TEST_SUITE_END();
@@ -105,6 +106,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testRtrim();
         void testTrim();
         void testReadValueFromStruct();
+        void testWriteValueToStruct();
         void testConvertFromBase64Str();
         void testConvertToBase64Str();
 

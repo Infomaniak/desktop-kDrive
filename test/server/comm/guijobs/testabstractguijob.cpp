@@ -196,7 +196,7 @@ bool GuiJobTest::deserializeInputParms() {
         };
         readParamValue(inParamsDummyValue, _dummyValue, dynamicVar2Dummy);
         readParamValues(inParamsDummyValues, _dummyValues, dynamicVar2Dummy);
-    } catch (std::exception &e) {
+    } catch (std::exception &) {
         _exitInfo = ExitCode::LogicError;
         return false;
     }

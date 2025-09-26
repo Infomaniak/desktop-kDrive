@@ -836,65 +836,207 @@ void TestUtility::testReadValueFromStruct() {
     // Insert data
     Poco::DynamicStruct str;
     str.insert("intValue", 666);
+
     str.insert("floatValue", 123.456f);
 
-    std::string base64Strvalue;
-    CommonUtility::convertToBase64Str("yxcv", base64Strvalue);
-    str.insert("strValue", base64Strvalue);
+    std::string base64StrValue;
+    CommonUtility::convertToBase64Str("yxcv", base64StrValue);
+    str.insert("strValue", base64StrValue);
 
-    std::string base64WStrvalue;
-    CommonUtility::convertToBase64Str(L"asdf", base64WStrvalue);
-    str.insert("wstrValue", base64WStrvalue);
+    std::string base64WStrValue;
+    CommonUtility::convertToBase64Str(L"asdf", base64WStrValue);
+    str.insert("wstrValue", base64WStrValue);
+
+    std::string blobStr("0123456789abcdefghijklmnopqrtsuvwxyz");
+    std::string base64BlobStr;
+    CommonUtility::convertToBase64Str(blobStr, base64BlobStr);
+    CommBLOB blobValue;
+    std::copy(base64BlobStr.begin(), base64BlobStr.end(), std::back_inserter(blobValue));
+    str.insert("blobValue", blobValue);
+
+    str.insert("boolValue", true);
+
+    Poco::DynamicStruct structValue;
+    structValue.insert("intValue", 12345);
+    CommonUtility::convertToBase64Str("qwertz", base64StrValue);
+    structValue.insert("strValue", base64StrValue);
+    str.insert("structValue", structValue);
+
+    Poco::Dynamic::Array intValues{999, 888, 777};
+    str.insert("intValues", intValues);
+
+    Poco::Dynamic::Array strValues;
+    CommonUtility::convertToBase64Str("éééé", base64StrValue);
+    strValues.push_back(base64StrValue);
+    CommonUtility::convertToBase64Str("àààà", base64StrValue);
+    strValues.push_back(base64StrValue);
+    str.insert("strValues", strValues);
+
+    Poco::Dynamic::Array structValues;
+    structValues.push_back(structValue);
+    structValue["intValue"] = 67890;
+    CommonUtility::convertToBase64Str("ztrewq", base64StrValue);
+    structValue["strValue"] = base64StrValue;
+    structValues.push_back(structValue);
+    str.insert("structValues", structValues);
+
+    // Read data
+    try {
+        int intValue = 0;
+        CommonUtility::readValueFromStruct(str, "intValue", intValue);
+        CPPUNIT_ASSERT(intValue == 666);
+
+        float floatValue = 0.0f;
+        CommonUtility::readValueFromStruct(str, "floatValue", floatValue);
+        CPPUNIT_ASSERT(floatValue == 123.456f);
+
+        std::string strValue;
+        CommonUtility::readValueFromStruct(str, "strValue", strValue);
+        CPPUNIT_ASSERT(strValue == "yxcv");
+
+        std::wstring wstrValue;
+        CommonUtility::readValueFromStruct(str, "wstrValue", wstrValue);
+        CPPUNIT_ASSERT(wstrValue == L"asdf");
+
+        CommBLOB blobValue2;
+        CommonUtility::readValueFromStruct(str, "blobValue", blobValue2);
+        CPPUNIT_ASSERT(blobValue2 == blobValue);
+
+        bool boolValue = false;
+        CommonUtility::readValueFromStruct(str, "boolValue", boolValue);
+        CPPUNIT_ASSERT(boolValue == true);
+
+        struct Dummy {
+                int intValue;
+                std::string strValue;
+        };
+
+        std::function<Dummy(const Poco::Dynamic::Var &)> dynamicVar2Dummy = [](const Poco::Dynamic::Var &value) {
+            assert(value.isStruct());
+            auto structValue = value.extract<Poco::DynamicStruct>();
+            Dummy dummy;
+            CommonUtility::readValueFromStruct(structValue, "intValue", dummy.intValue);
+            CommonUtility::readValueFromStruct(structValue, "strValue", dummy.strValue);
+            return dummy;
+        };
+
+        Dummy dummyValue;
+        CommonUtility::readValueFromStruct(str, "structValue", dummyValue, dynamicVar2Dummy);
+        CPPUNIT_ASSERT(dummyValue.intValue == 12345);
+        CPPUNIT_ASSERT(dummyValue.strValue == "qwertz");
+
+        std::vector<int> intValues2;
+        CommonUtility::readValuesFromStruct(str, "intValues", intValues2);
+        CPPUNIT_ASSERT(intValues2.size() == 3);
+        CPPUNIT_ASSERT(intValues2[0] == 999);
+        CPPUNIT_ASSERT(intValues2[1] == 888);
+        CPPUNIT_ASSERT(intValues2[2] == 777);
+
+        std::vector<std::string> strValues2;
+        CommonUtility::readValuesFromStruct(str, "strValues", strValues2);
+        CPPUNIT_ASSERT(strValues2.size() == 2);
+        CPPUNIT_ASSERT(strValues2[0] == "éééé");
+        CPPUNIT_ASSERT(strValues2[1] == "àààà");
+
+        std::vector<Dummy> dummyValues;
+        CommonUtility::readValuesFromStruct(str, "structValues", dummyValues, dynamicVar2Dummy);
+        CPPUNIT_ASSERT(dummyValues.size() == 2);
+        CPPUNIT_ASSERT(dummyValues[0].intValue == 12345);
+        CPPUNIT_ASSERT(dummyValues[0].strValue == "qwertz");
+        CPPUNIT_ASSERT(dummyValues[1].intValue == 67890);
+        CPPUNIT_ASSERT(dummyValues[1].strValue == "ztrewq");
+    } catch (std::exception &e) {
+        CPPUNIT_ASSERT(false);
+    }
+}
+
+void TestUtility::testWriteValueToStruct() {
+    // Insert data
+    Poco::DynamicStruct str;
+    CommonUtility::writeValueToStruct(str, "intValue", 555);
+    CommonUtility::writeValueToStruct(str, "floatValue", 111.222f);
+    CommonUtility::writeValueToStruct(str, "strValue", "mnbvc");
+    CommonUtility::writeValueToStruct(str, "wstrValue", L"lkjhgf");
 
     std::string blobStr("0123456789abcdefghijklmnopqrtsuvwxyz");
     CommBLOB blob;
     std::copy(blobStr.begin(), blobStr.end(), std::back_inserter(blob));
-    str.insert("blobValue", blob);
+    CommonUtility::writeValueToStruct(str, "blobValue", blob);
 
-    Poco::DynamicStruct dynStr;
-    dynStr.insert("intValue", 12345);
+    CommonUtility::writeValueToStruct(str, "boolValue", true);
 
-    std::string base64Strvalue2;
-    CommonUtility::convertToBase64Str("qwertz", base64Strvalue2);
-    dynStr.insert("strValue", base64Strvalue2);
-
-    str.insert("structValue", dynStr);
-
-    // Read data
-    int intValue;
-    CommonUtility::readValueFromStruct(str, "intValue", intValue);
-    CPPUNIT_ASSERT(intValue == 666);
-
-    float floatValue;
-    CommonUtility::readValueFromStruct(str, "floatValue", floatValue);
-    CPPUNIT_ASSERT(floatValue == 123.456f);
-
-    std::string strValue;
-    CommonUtility::readValueFromStruct(str, "strValue", strValue);
-    CPPUNIT_ASSERT(strValue == "yxcv");
-
-    std::wstring wstrValue;
-    CommonUtility::readValueFromStruct(str, "wstrValue", wstrValue);
-    CPPUNIT_ASSERT(wstrValue == L"asdf");
 
     struct Dummy {
             int intValue;
             std::string strValue;
     };
 
-    std::function<Dummy(const Poco::Dynamic::Var &)> dynamicVar2Dummy = [](const Poco::Dynamic::Var &value) {
-        assert(value.isStruct());
-        auto structValue = value.extract<Poco::DynamicStruct>();
-        Dummy dummy;
-        CommonUtility::readValueFromStruct(structValue, "intValue", dummy.intValue);
-        CommonUtility::readValueFromStruct(structValue, "strValue", dummy.strValue);
-        return dummy;
+    std::function<Poco::Dynamic::Var(const Dummy &)> dummy2DynamicVar = [](const Dummy &value) {
+        Poco::DynamicStruct structValue;
+        CommonUtility::writeValueToStruct(structValue, "intValue", value.intValue);
+        CommonUtility::writeValueToStruct(structValue, "strValue", value.strValue);
+        return structValue;
     };
 
-    Dummy dummy;
-    CommonUtility::readValueFromStruct(str, "structValue", dummy, dynamicVar2Dummy);
-    CPPUNIT_ASSERT(dummy.intValue == 12345);
-    CPPUNIT_ASSERT(dummy.strValue == "qwertz");
+    Dummy dummyValue = {4444, "poiuz"};
+    CommonUtility::writeValueToStruct(str, "dummyValue", dummyValue, dummy2DynamicVar);
+
+    std::vector<int> intValues{987, 654};
+    CommonUtility::writeValuesToStruct(str, "intValues", intValues);
+
+    std::vector<std::string> strValues{"èéàèéà", "öööö"};
+    CommonUtility::writeValuesToStruct(str, "strValues", strValues);
+
+    std::vector<Dummy> dummyValues{{4444, "poiuz"}, {3333, "lkjhg"}};
+    CommonUtility::writeValuesToStruct(str, "dummyValues", dummyValues, dummy2DynamicVar);
+
+    // Read data
+    CPPUNIT_ASSERT(str["intValue"] == 555);
+    CPPUNIT_ASSERT(str["floatValue"] == 111.222f);
+
+    std::string base64StrValue;
+    CommonUtility::convertToBase64Str("mnbvc", base64StrValue);
+    CPPUNIT_ASSERT(str["strValue"] == base64StrValue);
+
+    CommonUtility::convertToBase64Str(L"lkjhgf", base64StrValue);
+    CPPUNIT_ASSERT(str["wstrValue"] == base64StrValue);
+
+    std::string base64BlobValue;
+    CommonUtility::convertToBase64Str(blobStr, base64BlobValue);
+    CPPUNIT_ASSERT(str["blobValue"] == base64BlobValue);
+
+    CPPUNIT_ASSERT(str["boolValue"] == true);
+
+    CPPUNIT_ASSERT(str["dummyValue"].isStruct());
+    CPPUNIT_ASSERT(str["dummyValue"].size() == 2);
+    CPPUNIT_ASSERT(str["dummyValue"]["intValue"] == 4444);
+    CommonUtility::convertToBase64Str("poiuz", base64StrValue);
+    CPPUNIT_ASSERT(str["dummyValue"]["strValue"] == base64StrValue);
+
+    CPPUNIT_ASSERT(str["intValues"].isArray());
+    CPPUNIT_ASSERT(str["intValues"].size() == 2);
+    Poco::Dynamic::Array intArr = str["intValues"].extract<Poco::Dynamic::Array>();
+    CPPUNIT_ASSERT(intArr[0] == 987);
+    CPPUNIT_ASSERT(intArr[1] == 654);
+
+    CPPUNIT_ASSERT(str["strValues"].isArray());
+    CPPUNIT_ASSERT(str["strValues"].size() == 2);
+    Poco::Dynamic::Array strArr = str["strValues"].extract<Poco::Dynamic::Array>();
+    CommonUtility::convertToBase64Str("èéàèéà", base64StrValue);
+    CPPUNIT_ASSERT(strArr[0] == base64StrValue);
+    CommonUtility::convertToBase64Str("öööö", base64StrValue);
+    CPPUNIT_ASSERT(strArr[1] == base64StrValue);
+
+    CPPUNIT_ASSERT(str["dummyValues"].isArray());
+    CPPUNIT_ASSERT(str["dummyValues"].size() == 2);
+    Poco::DynamicStruct dummyStruct = str["dummyValues"][0].extract<Poco::DynamicStruct>();
+    CPPUNIT_ASSERT(dummyStruct["intValue"] == 4444);
+    CommonUtility::convertToBase64Str("poiuz", base64StrValue);
+    CPPUNIT_ASSERT(dummyStruct["strValue"] == base64StrValue);
+    dummyStruct = str["dummyValues"][1].extract<Poco::DynamicStruct>();
+    CPPUNIT_ASSERT(dummyStruct["intValue"] == 3333);
+    CommonUtility::convertToBase64Str("lkjhg", base64StrValue);
+    CPPUNIT_ASSERT(dummyStruct["strValue"] == base64StrValue);
 }
 
 void TestUtility::testConvertFromBase64Str() {
