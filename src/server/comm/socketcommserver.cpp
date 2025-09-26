@@ -80,7 +80,7 @@ uint64_t SocketCommChannel::writeData(const CommChar *data, uint64_t len) {
             return 0;
         }
         int commCharSize = sizeof(CommChar);
-        auto written = _socket.sendBytes(data, static_cast<int>(len) * commCharSize);
+        const auto written = _socket.sendBytes(data, static_cast<int>(len) * commCharSize);
         if (written < 0) {
             LOG_ERROR(Log::instance()->getLogger(), "Socket connection error on sendBytes");
             lostConnectionCbk();
