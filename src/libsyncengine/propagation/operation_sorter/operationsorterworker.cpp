@@ -253,14 +253,12 @@ void OperationSorterWorker::fixCreateBeforeCreate() {
         LOG_IF_FAIL(createOp)
         if (createOp->type() != OperationType::Create) continue;
 
-        if (int32_t depth = 0;
-            SyncOpPtr ancestorOpWithHighestIndex = getAncestorOpWithHighestIndex(opIdToIndexMap, createOp, depth)) {
-            opsToMove.emplace(CreatePair{createOp, depth, ancestorOpWithHighestIndex});
-        }
+        if (int32_t depth = 0; auto ancestorOpWithHighestIndex = getAncestorOpWithHighestIndex(opIdToIndexMap, createOp, depth))
+            opsToMove.emplace(createOp, depth, ancestorOpWithHighestIndex);
     }
 
     while (!opsToMove.empty()) {
-        const auto &createPair = opsToMove.top();
+        const auto createPair = opsToMove.top();
         LOGW_SYNCPAL_DEBUG(_logger, L"op: " << Utility::formatSyncName(createPair.op->affectedNode()->name()) << L", ancestorOp: "
                                             << Utility::formatSyncName(createPair.ancestorOp->affectedNode()->name())
                                             << L", depth; " << createPair.opNodeDepth);
@@ -274,10 +272,10 @@ SyncOpPtr OperationSorterWorker::getAncestorOpWithHighestIndex(const std::unorde
                                                                const SyncOpPtr &op, int32_t &depth) const {
     SyncOpPtr ancestorOpWithHighestIndex = nullptr;
     int32_t highestIndex = opIdToIndexMap.at(op->id());
-    depth = 0;
 
     const auto node = op->affectedNode();
     std::shared_ptr<const Node> ancestorNode = node->parentNode();
+    depth = ancestorNode ? 1 : 0;
 
     while (ancestorNode && ancestorNode != _syncPal->updateTree(ancestorNode->side())->rootNode()) {
         for (const auto parentOpIdList = _syncPal->_syncOps->getOpIdsFromNodeId(*ancestorNode->id());
@@ -287,10 +285,9 @@ SyncOpPtr OperationSorterWorker::getAncestorOpWithHighestIndex(const std::unorde
                 continue;
             }
 
-            // Check whether the index of `parentOp` is greater than index of `op`.
+            // Check whether the index of `parentOp` is greater than the index of `op`.
             if (opIdToIndexMap.at(parentOpId) > highestIndex) {
                 highestIndex = opIdToIndexMap.at(parentOpId);
-                // parentOp has higher index than op. Save it in `ancestorOpWithHighestIndex` and check its parent.
                 ancestorOpWithHighestIndex = parentOp;
             }
         }

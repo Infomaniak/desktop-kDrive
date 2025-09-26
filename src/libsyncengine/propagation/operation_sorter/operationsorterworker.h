@@ -37,6 +37,10 @@ class OperationSorterWorker : public OperationProcessor {
 
     private:
         struct CreatePair {
+                CreatePair(SyncOpPtr op_, const int32_t opNodeDepth_, SyncOpPtr ancestorOp_) :
+                    op(op_),
+                    opNodeDepth(opNodeDepth_),
+                    ancestorOp(ancestorOp_) {}
                 SyncOpPtr op{nullptr};
                 int32_t opNodeDepth{};
                 SyncOpPtr ancestorOp{nullptr};
@@ -45,8 +49,8 @@ class OperationSorterWorker : public OperationProcessor {
             public:
                 bool operator()(const CreatePair &a, const CreatePair &b) const {
                     if (a.opNodeDepth == b.opNodeDepth) {
-                        // If depths are equal, put op to move with lowest ID first
-                        return a.op->id() > b.op->id();
+                        // If depths are equal, put op to move with greatest ID first to preserve initial ordering.
+                        return a.op->id() < b.op->id();
                     }
                     return a.opNodeDepth < b.opNodeDepth;
                 }
