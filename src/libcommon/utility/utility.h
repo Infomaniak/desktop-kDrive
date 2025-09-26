@@ -304,6 +304,9 @@ struct COMMON_EXPORT CommonUtility {
         static SyncNameSet computePathNormalizations(const std::vector<SyncName> &pathSegments);
 
         static SyncPath getGenericAppSupportDir();
+
+
+        friend class TestUtility;
 };
 
 struct COMMON_EXPORT StdLoggingThread : public std::thread {

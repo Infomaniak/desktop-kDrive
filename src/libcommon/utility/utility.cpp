@@ -946,6 +946,8 @@ void CommonUtility::extractIntFromStrVersion(const std::string &version, std::ve
 
     if (!words.empty()) {
         assert(words.size() == 3 && "Wrong version format.");
+        if (words.size() != 3) return;
+
         versionDigits = words[1].str() + "." + words[2].str(); // Example: "3.6.9.20250220"
     }
 
@@ -955,8 +957,11 @@ void CommonUtility::extractIntFromStrVersion(const std::string &version, std::ve
     do {
         pos = versionDigits.find('.', prevPos);
         if (pos == std::string::npos) break;
-
-        tabVersion.push_back(std::stoi(versionDigits.substr(prevPos, pos - prevPos)));
+        try {
+            tabVersion.push_back(std::stoi(versionDigits.substr(prevPos, pos - prevPos)));
+        } catch (const std::invalid_argument &) { // The conversion string-to-int fails.
+            return;
+        }
         prevPos = pos + 1;
     } while (true);
 
