@@ -59,11 +59,11 @@ void TestUtility::extractIntFromStrVersion() {
     }
 
     {
-        const std::string versionString = "3.7.61.10";
+        const std::string versionString = "3.7.61.10.12";
         std::vector<int> versionNumberComponents;
 
         CommonUtility::extractIntFromStrVersion(versionString, versionNumberComponents);
-        CPPUNIT_ASSERT(bool(std::vector<int>{3, 7, 61, 10} == versionNumberComponents));
+        CPPUNIT_ASSERT(bool(std::vector<int>{3, 7, 61, 10, 12} == versionNumberComponents));
     }
 
     {
