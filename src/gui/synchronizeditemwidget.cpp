@@ -330,7 +330,7 @@ void SynchronizedItemWidget::onMenuButtonClicked() {
             menu->addAction(favoritesAction);
 
             auto *copyLinkAction = new QWidgetAction(this);
-            auto *copyLinkMenuItemWidget = new MenuItemWidget(tr("Copy sharing link"));
+            auto *copyLinkMenuItemWidget = new MenuItemWidget(tr("Copy share link"));
             copyLinkMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/link.svg");
             copyLinkAction->setDefaultWidget(copyLinkMenuItemWidget);
             connect(copyLinkAction, &QWidgetAction::triggered, this, &SynchronizedItemWidget::onCopyLinkActionTriggered);
