@@ -47,7 +47,7 @@ uint64_t SocketCommChannel::readData(CommChar *data, uint64_t maxlen) {
          */
 #pragma push_macro("max")
 #undef max
-        maxlen = (std::min<uint64_t>) (maxlen * sizeof(CommChar), static_cast<uint64_t>(std::numeric_limits<int>::max()));
+        const maxlen = (std::min<uint64_t>) (maxlen * sizeof(CommChar), static_cast<uint64_t>(std::numeric_limits<int>::max()));
        const int lenReceived = _socket.receiveBytes(data, static_cast<int>(maxlen));
 #pragma pop_macro("max")
 
