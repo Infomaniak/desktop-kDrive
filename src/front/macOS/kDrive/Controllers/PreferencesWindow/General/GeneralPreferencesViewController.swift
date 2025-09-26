@@ -64,14 +64,49 @@ class GeneralPreferencesViewController: TitledViewController {
         box.titlePosition = .noTitle
         sourceStackView.addView(box, in: .bottom)
 
-        let gridView = NSGridView(numberOfColumns: 2, rows: 6)
-        gridView.translatesAutoresizingMaskIntoConstraints = false
-        box.contentView = gridView
+        let automaticUpdateLabel = NSTextField(labelWithString: "Mises à jour automatiques")
+        let automaticUpdateSwitch = NSSwitch()
 
-        gridView.addRow(with: [
-            NSTextField(labelWithString: "Coucou"),
-            NSTextField(labelWithString: "Tout le monde")
+        let divider3 = NSBox()
+        divider3.boxType = .separator
+
+        let languageLabel = NSTextField(labelWithString: "Langue")
+        let languagePopUpButton = NSPopUpButton()
+
+        let divider1 = NSBox()
+        divider1.boxType = .separator
+
+        let startAtLoginLabel = NSTextField(labelWithString: "Ouvrir kDrive au démarrage de l’ordinateur")
+        let startAtLoginSwitch = NSSwitch()
+
+        let aboutLabel = NSTextField(labelWithString: "À propos de kDrive")
+        let aboutButton = NSButton()
+        aboutButton.bezelStyle = .helpButton
+        aboutButton.controlSize = .small
+
+        let divider2 = NSBox()
+        divider2.boxType = .separator
+
+        let gridView = NSGridView(views: [
+            [automaticUpdateLabel, automaticUpdateSwitch],
+            [divider3],
+            [languageLabel, languagePopUpButton],
+            [divider1],
+            [startAtLoginLabel, startAtLoginSwitch],
+            [divider2],
+            [aboutLabel, aboutButton]
         ])
+        gridView.translatesAutoresizingMaskIntoConstraints = false
+
+        gridView.rowSpacing = 8
+        gridView.columnSpacing = 8
+
+        gridView.yPlacement = .center
+
+        gridView.column(at: 0).xPlacement = .leading
+        gridView.column(at: 1).xPlacement = .trailing
+
+        box.contentView = gridView
 
         NSLayoutConstraint.activate([
             gridView.topAnchor.constraint(equalTo: box.topAnchor, constant: 16),

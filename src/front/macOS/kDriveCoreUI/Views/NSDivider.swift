@@ -1,3 +1,4 @@
+//
 /*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2025 Infomaniak Network SA
@@ -18,18 +19,12 @@
 
 import Cocoa
 
-public final class ColoredPopUpButton: NSPopUpButton {
-    public init() {
-        super.init(frame: .zero, pullsDown: false)
-        cell = ColoredPopUpButtonCell()
-    }
+class NSDivider: NSBox {
 
-    @available(*, unavailable)
-    public required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+    override func draw(_ dirtyRect: NSRect) {
+        super.draw(dirtyRect)
 
-    public func addItem(withTitle title: String, image: NSImage, color: NSColor) {
-        menu?.addItem(ColoredMenuItem(title: title, image: image, color: color))
+        // Drawing code here.
     }
+    
 }

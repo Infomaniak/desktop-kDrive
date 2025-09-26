@@ -18,18 +18,18 @@
 
 import Cocoa
 
-final class ColoredPopUpButtonCell: NSPopUpButtonCell {
-    static let customSpacing: CGFloat = 4.0
+public final class ColoredPopUpButtonCell: NSPopUpButtonCell {
+    public static let customSpacing: CGFloat = 4.0
 
-    override func drawTitle(_ title: NSAttributedString, withFrame frame: NSRect, in controlView: NSView) -> NSRect {
+    override public func drawTitle(_ title: NSAttributedString, withFrame frame: NSRect, in controlView: NSView) -> NSRect {
         let updatedFrame = frame.offsetBy(dx: Self.customSpacing, dy: 0)
         return super.drawTitle(title, withFrame: updatedFrame, in: controlView)
     }
 
-    override func drawImage(_ image: NSImage, withFrame frame: NSRect, in controlView: NSView) {
+    override public func drawImage(_ image: NSImage, withFrame frame: NSRect, in controlView: NSView) {
         guard let selectedItem = menuItem as? ColoredMenuItem,
-            let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil),
-            let cgContext = NSGraphicsContext.current?.cgContext
+              let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil),
+              let cgContext = NSGraphicsContext.current?.cgContext
         else {
             super.drawImage(image, withFrame: frame, in: controlView)
             return

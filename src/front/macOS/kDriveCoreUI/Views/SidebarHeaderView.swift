@@ -18,14 +18,14 @@
 
 import Cocoa
 
-final class SidebarHeaderView: NSView {
-    init() {
+public final class SidebarHeaderView: NSView {
+    public init() {
         super.init(frame: .zero)
         setupView()
     }
 
     @available(*, unavailable)
-    required init?(coder: NSCoder) {
+    public required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
