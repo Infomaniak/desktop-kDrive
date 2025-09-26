@@ -12,11 +12,86 @@
              mc:Ignorable="d">
     <UserControl.Resources>
         <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <converters:IsGreaterConverter x:Key="IsGreaterConverter" />
+        <DataTemplate x:Key="SingleSyncDrive"
+                      x:DataType="viewModel:Drive">
+            <StackPanel Orientation="Horizontal"
+                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                <customControls:DriveIcon IconColor="{x:Bind Color}" />
+                <TextBlock Text="{x:Bind Name, Converter={StaticResource StringPathToFileNameConverter}}" />
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="MultiSyncDrive"
+                      x:DataType="viewModel:Drive">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0"
+                            Orientation="Horizontal"
+                            Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                    <customControls:DriveIcon IconColor="{x:Bind Color}" />
+                    <TextBlock Text="{x:Bind Name, Converter={StaticResource StringPathToFileNameConverter}}" />
+                </StackPanel>
+                <ImageIcon Grid.Column="1"
+                           Height="12"
+                           HorizontalAlignment="Right"
+                           Margin="{StaticResource Infomaniak.Style.Thickness.Left.S}">
+                    <ImageIcon.Source>
+                        <SvgImageSource UriSource="ms-appx:///Assets/Icons/chevron-right.svg" />
+                    </ImageIcon.Source>
+                </ImageIcon>
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="SyncLabel"
+                      x:DataType="viewModel:Sync">
+            <Border>
+                <ToolTipService.ToolTip>
+                    <ToolTip Content="{x:Bind LocalPath}"
+                             Placement="Right" />
+                </ToolTipService.ToolTip>
+                <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ToolTipService.ToolTip>
+                        <ToolTip Content="{x:Bind LocalPath}"
+                                 Placement="Right" />
+                    </ToolTipService.ToolTip>
+                    <StackPanel Grid.Column="0"
+                                Orientation="Horizontal"
+                                Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                        <ImageIcon Height="12">
+                            <ImageIcon.Source>
+                                <SvgImageSource UriSource="ms-appx:///Assets/Icons/folder.svg" />
+                            </ImageIcon.Source>
+                        </ImageIcon>
+                        <TextBlock Text="{x:Bind LocalPath, Converter={StaticResource StringPathToFileNameConverter}}" />
+                    </StackPanel>
+                    <ImageIcon Grid.Column="1"
+                               Height="14"
+                               Width="14"
+                               Visibility="{x:Bind SyncErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+                        <ImageIcon.Source>
+                            <SvgImageSource UriSource="ms-appx:///Assets/Icons/triangle-alert.svg" />
+                        </ImageIcon.Source>
+                    </ImageIcon>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <local:DriveTemplateSelector x:Key="DriveTemplateSelector"
+                                     SingleSyncDrive="{StaticResource SingleSyncDrive}"
+                                     MultiSyncDrive="{StaticResource MultiSyncDrive}" />
     </UserControl.Resources>
 
     <Grid HorizontalAlignment="Stretch"
-          VerticalAlignment="Top"
-          Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.S}">
+          VerticalAlignment="Top">
         <!-- Permanently visible button -->
         <StackPanel>
             <Button x:Name="DriveButton"
@@ -46,70 +121,79 @@
                     </AnimatedIcon>
                 </Grid>
             </Button>
-            <StackPanel Margin="{StaticResource Infomaniak.Style.Thickness.Left.XS}"
-                        Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}"
-                        Orientation="Horizontal"
-                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                <ImageIcon Height="14">
-                    <ImageIcon.Source>
-                        <SvgImageSource UriSource="ms-appx:///Assets/Icons/folder.svg" />
-                    </ImageIcon.Source>
-                </ImageIcon>
-                <TextBlock Text="{x:Bind ViewModel.SelectedSync.LocalPath, Mode=OneWay , Converter={StaticResource StringPathToFileNameConverter}}"
-                           Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
-                           Foreground="{ThemeResource TextFillColorDisabledBrush}" />
-            </StackPanel>
+            <ContentControl Margin="{StaticResource Infomaniak.Style.Thickness.Left.XS}"
+                            Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}"
+                            ContentTemplate="{StaticResource SyncLabel}"
+                            Content="{x:Bind ViewModel.SelectedSync, Mode=OneWay}"
+                            Foreground="{ThemeResource TextFillColorDisabledBrush}"
+                            Visibility="{x:Bind ViewModel.SelectedSync.Drive.Syncs.Count, Converter={StaticResource IsGreaterConverter}, ConverterParameter=1, Mode=OneWay}" />
         </StackPanel>
 
         <!-- Drive Selection -->
         <Popup x:Name="DriveSelectionPopup"
-               IsLightDismissEnabled="True"
-               SizeChanged="DriveButton_SizeChanged">
+               IsLightDismissEnabled="False"
+               SizeChanged="DriveButton_SizeChanged"
+               Opened="Popup_Opened"
+               Closed="DriveSelectionPopup_Closed">
             <Border x:Name="DriveSelectionBorder"
-                    CornerRadius="{StaticResource OverlayCornerRadius}"
+                    CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
                     Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XXS}"
                     BorderThickness="1"
                     BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
-                    Background="{ThemeResource AcrylicBackgroundFillColorBaseBrush}">
+                    Background="{ThemeResource AcrylicBackgroundFillColorBaseBrush}"
+                    Opacity="0">
+                <Border.RenderTransform>
+                    <ScaleTransform ScaleY="0.1" />
+                </Border.RenderTransform>
                 <ListView x:Name="DriveListView"
                           ItemsSource="{x:Bind ViewModel.AllDrives}"
                           SelectionMode="Single"
                           SelectedItem="{x:Bind ViewModel.SelectedSync.Drive, Mode=OneWay}"
                           IsItemClickEnabled="True"
-                          ItemClick="DriveListView_ItemClick">
-                    <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="viewModel:Drive">
-                            <StackPanel Orientation="Horizontal"
-                                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                                <customControls:DriveIcon IconColor="{x:Bind Color}" />
-                                <TextBlock Text="{x:Bind Name, Converter={StaticResource StringPathToFileNameConverter}}" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-
+                          ItemClick="DriveListView_ItemClick"
+                          PointerEntered="DriveListView_PointerEntered"
+                          PointerExited="DriveListView_PointerExited"
+                          ItemTemplateSelector="{StaticResource DriveTemplateSelector}" />
             </Border>
         </Popup>
 
         <!-- Sync Selection -->
         <Popup x:Name="SyncSelectionPopup"
                IsLightDismissEnabled="True"
+               Opened="Popup_Opened"
                Closed="SyncSelectionPopup_Closed">
-            <Border CornerRadius="{StaticResource OverlayCornerRadius}"
+            <Border CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
                     BorderThickness="1"
                     BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
-                    Background="{ThemeResource AcrylicBackgroundFillColorBaseBrush}">
-                <ListView x:Name="SyncListView"
-                          ItemsSource="{x:Bind ViewModel.AllDrives}"
-                          SelectionMode="Single"
-                          IsItemClickEnabled="True"
-                          ItemClick="SyncListView_ItemClick">
-                    <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="viewModel:Sync">
-                            <TextBlock Text="{x:Bind LocalPath, Converter={StaticResource StringPathToFileNameConverter}}" />
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
+                    Background="{ThemeResource AcrylicBackgroundFillColorBaseBrush}"
+                    Opacity="0">
+                <Border.RenderTransform>
+                    <ScaleTransform ScaleY="0.1" />
+                </Border.RenderTransform>
+                <Grid>
+                    <!-- Syncs.Count < 6 -->
+                    <ListView x:Name="SyncListView"
+                              ItemsSource="{x:Bind ViewModel.AllDrives}"
+                              SelectionMode="Single"
+                              IsItemClickEnabled="True"
+                              ItemClick="SyncListView_ItemClick"
+                              ItemTemplate="{StaticResource SyncLabel}"
+                              Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XXS}">
+
+                    </ListView>
+
+                    <!-- Syncs.Count >= 6 -->
+                    <AutoSuggestBox x:Name="SyncAutoSuggestBox"
+                                    PlaceholderText="Rechercher dans vos synchronisations"
+                                    TextChanged="SyncAutoSuggestBox_TextChanged"
+                                    QuerySubmitted="SyncAutoSuggestBox_QuerySubmitted"
+                                    AutomationProperties.Name="Basic AutoSuggestBox"
+                                    TextMemberPath="LocatPath"
+                                    ItemsSource="{x:Bind SyncAutoSuggestSuitable, Mode=OneWay}"
+                                    UpdateTextOnSelect="False"
+                                    MinWidth="200"
+                                    ItemTemplate="{StaticResource SyncLabel}" />
+                </Grid>
             </Border>
         </Popup>
     </Grid>

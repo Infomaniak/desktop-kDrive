@@ -131,6 +131,12 @@ namespace Infomaniak.kDrive.ViewModels
             _dbId = dbId;
             _drive = drive;
 
+            //For testing purpose only
+            List<DbId> errorsSync = new List<DbId> { 3, 7 };
+            if (errorsSync.Contains(dbId))
+            {
+                SyncErrors.Add(new AppError(0) { });
+            }
             Task.Run(async () =>
             {
                 Random random = new Random();
@@ -236,6 +242,6 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _showIncomingActivity;
             set => SetProperty(ref _showIncomingActivity, value);
-        }       
+        }
     }
 }

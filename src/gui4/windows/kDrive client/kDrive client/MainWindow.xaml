@@ -89,7 +89,7 @@
             </NavigationView.Resources>
 
             <NavigationView.PaneCustomContent>
-                    <customControls:DoubleComboBox HorizontalAlignment="Stretch" />
+                    <customControls:DoubleComboBox HorizontalAlignment="Stretch" Margin="0,9,4,20"/>
             </NavigationView.PaneCustomContent>
 
             <NavigationView.MenuItems>
