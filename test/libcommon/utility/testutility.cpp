@@ -52,44 +52,44 @@ void TestUtility::testGetAppSupportDir() {
 void TestUtility::extractIntFromStrVersion() {
     {
         const std::string versionString = "3.7.6";
-        std::vector<int> versionNumberComponents;
+        std::vector<uint32_t> versionNumberComponents;
 
         CommonUtility::extractIntFromStrVersion(versionString, versionNumberComponents);
-        CPPUNIT_ASSERT(bool(std::vector<int>{3, 7, 6} == versionNumberComponents));
+        CPPUNIT_ASSERT(bool(std::vector<uint32_t>{3, 7, 6} == versionNumberComponents));
     }
 
     {
         const std::string versionString = "3.7.61.10.12";
-        std::vector<int> versionNumberComponents;
+        std::vector<uint32_t> versionNumberComponents;
 
         CommonUtility::extractIntFromStrVersion(versionString, versionNumberComponents);
-        CPPUNIT_ASSERT(bool(std::vector<int>{3, 7, 61, 10, 12} == versionNumberComponents));
+        CPPUNIT_ASSERT((std::vector<uint32_t>{3, 7, 61, 10, 12} == versionNumberComponents));
     }
 
     {
         const std::string versionString = "155.75.0 (build 20250221)";
-        std::vector<int> versionNumberComponents;
+        std::vector<uint32_t> versionNumberComponents;
 
         CommonUtility::extractIntFromStrVersion(versionString, versionNumberComponents);
-        CPPUNIT_ASSERT(bool(std::vector<int>{155, 75, 0, 20250221} == versionNumberComponents));
+        CPPUNIT_ASSERT((std::vector<uint32_t>{155, 75, 0, 20250221} == versionNumberComponents));
     }
 
     // Invalid version string
     {
         const std::string versionString = ".0";
-        std::vector<int> versionNumberComponents;
+        std::vector<uint32_t> versionNumberComponents;
 
         CommonUtility::extractIntFromStrVersion(versionString, versionNumberComponents);
-        CPPUNIT_ASSERT(bool(std::vector<int>{} == versionNumberComponents));
+        CPPUNIT_ASSERT(versionNumberComponents.empty());
     }
 
     // Invalid version string
     {
         const std::string versionString = "1.x.0";
-        std::vector<int> versionNumberComponents;
+        std::vector<uint32_t> versionNumberComponents;
 
         CommonUtility::extractIntFromStrVersion(versionString, versionNumberComponents);
-        CPPUNIT_ASSERT(bool(std::vector<int>{1} == versionNumberComponents));
+        CPPUNIT_ASSERT((std::vector<uint32_t>{1} == versionNumberComponents));
     }
 }
 

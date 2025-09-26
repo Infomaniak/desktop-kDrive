@@ -280,7 +280,7 @@ struct COMMON_EXPORT CommonUtility {
         static std::string generateRandomString(const char *charArray, std::uniform_int_distribution<int> &distrib,
                                                 const int length = 10);
 
-        static void extractIntFromStrVersion(const std::string &version, std::vector<int> &tabVersion);
+        static void extractIntFromStrVersion(const std::string &version, std::vector<uint32_t> &tabVersion);
 
         //! Computes recursively and returns all possible NFC and NFD normalizations of `pathSegments` segments
         //! interpreted as a file system path.
