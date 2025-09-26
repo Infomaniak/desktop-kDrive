@@ -18,23 +18,6 @@
 
 import Cocoa
 
-public final class FlippedView: NSView {
+public final class FlippedClipView: NSClipView {
     override public var isFlipped: Bool { return true }
-
-    public init(contentView: NSView) {
-        super.init(frame: .zero)
-
-        addSubview(contentView)
-        NSLayoutConstraint.activate([
-            contentView.topAnchor.constraint(equalTo: topAnchor),
-            contentView.bottomAnchor.constraint(equalTo: bottomAnchor),
-            contentView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            contentView.trailingAnchor.constraint(equalTo: trailingAnchor)
-        ])
-    }
-
-    @available(*, unavailable)
-    public required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
 }

@@ -35,46 +35,50 @@ class GeneralPreferencesViewController: TitledViewController {
         scrollView.hasVerticalScroller = true
         scrollView.autohidesScrollers = true
         scrollView.drawsBackground = false
+        scrollView.contentView = FlippedClipView()
         view.addSubview(scrollView)
 
         let stackView = NSStackView()
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.orientation = .vertical
-
-        let flippedView = FlippedView(contentView: stackView)
-        flippedView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.documentView = flippedView
+        stackView.edgeInsets = NSEdgeInsets(top: 0, left: 16, bottom: 16, right: 16)
+        scrollView.documentView = stackView
 
         setupBox(in: stackView)
 
         NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            scrollView.topAnchor.constraint(equalTo: view.topAnchor),
             scrollView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
 
-            flippedView.topAnchor.constraint(equalTo: scrollView.contentView.topAnchor),
-            flippedView.leadingAnchor.constraint(equalTo: scrollView.contentView.leadingAnchor),
-            flippedView.trailingAnchor.constraint(equalTo: scrollView.contentView.trailingAnchor)
+            stackView.topAnchor.constraint(equalTo: scrollView.contentView.topAnchor),
+            stackView.leadingAnchor.constraint(equalTo: scrollView.contentView.leadingAnchor),
+            stackView.trailingAnchor.constraint(equalTo: scrollView.contentView.trailingAnchor)
         ])
     }
 
     private func setupBox(in sourceStackView: NSStackView) {
         let box = NSBox()
         box.translatesAutoresizingMaskIntoConstraints = false
-//        box.titlePosition = .noTitle
-        box.boxType = .primary
+        box.titlePosition = .noTitle
+        sourceStackView.addView(box, in: .bottom)
 
         let gridView = NSGridView(numberOfColumns: 2, rows: 6)
         gridView.translatesAutoresizingMaskIntoConstraints = false
-//        box.contentView = gridView
+        box.contentView = gridView
 
         gridView.addRow(with: [
             NSTextField(labelWithString: "Coucou"),
             NSTextField(labelWithString: "Tout le monde")
         ])
 
-        sourceStackView.addView(gridView, in: .bottom)
+        NSLayoutConstraint.activate([
+            gridView.topAnchor.constraint(equalTo: box.topAnchor, constant: 16),
+            gridView.leadingAnchor.constraint(equalTo: box.leadingAnchor, constant: 16),
+            gridView.trailingAnchor.constraint(equalTo: box.trailingAnchor, constant: -16),
+            gridView.bottomAnchor.constraint(equalTo: box.bottomAnchor, constant: -16)
+        ])
     }
 }
 
