@@ -337,6 +337,8 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
 #endif
 
 bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
+    itemType = ItemType{};
+
     // Check whether the item indicated by `path` is a symbolic link.
     std::error_code ec;
     const bool isSymlink = _isSymlink(path, ec);
