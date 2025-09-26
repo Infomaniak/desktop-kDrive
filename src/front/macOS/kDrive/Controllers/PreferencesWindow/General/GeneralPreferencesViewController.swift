@@ -67,14 +67,8 @@ class GeneralPreferencesViewController: TitledViewController {
         let automaticUpdateLabel = NSTextField(labelWithString: "Mises à jour automatiques")
         let automaticUpdateSwitch = NSSwitch()
 
-        let divider3 = NSBox()
-        divider3.boxType = .separator
-
         let languageLabel = NSTextField(labelWithString: "Langue")
         let languagePopUpButton = NSPopUpButton()
-
-        let divider1 = NSBox()
-        divider1.boxType = .separator
 
         let startAtLoginLabel = NSTextField(labelWithString: "Ouvrir kDrive au démarrage de l’ordinateur")
         let startAtLoginSwitch = NSSwitch()
@@ -84,16 +78,13 @@ class GeneralPreferencesViewController: TitledViewController {
         aboutButton.bezelStyle = .helpButton
         aboutButton.controlSize = .small
 
-        let divider2 = NSBox()
-        divider2.boxType = .separator
-
         let gridView = NSGridView(views: [
             [automaticUpdateLabel, automaticUpdateSwitch],
-            [divider3],
+            [NSSeparator()],
             [languageLabel, languagePopUpButton],
-            [divider1],
+            [NSSeparator()],
             [startAtLoginLabel, startAtLoginSwitch],
-            [divider2],
+            [NSSeparator()],
             [aboutLabel, aboutButton]
         ])
         gridView.translatesAutoresizingMaskIntoConstraints = false

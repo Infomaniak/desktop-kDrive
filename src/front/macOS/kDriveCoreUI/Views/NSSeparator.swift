@@ -1,4 +1,3 @@
-//
 /*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2025 Infomaniak Network SA
@@ -19,12 +18,13 @@
 
 import Cocoa
 
-class NSDivider: NSBox {
-
-    override func draw(_ dirtyRect: NSRect) {
-        super.draw(dirtyRect)
-
-        // Drawing code here.
+public final class NSSeparator: NSBox {
+    public init() {
+        super.init(frame: .zero)
+        boxType = .separator
     }
-    
+
+    public required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 }
