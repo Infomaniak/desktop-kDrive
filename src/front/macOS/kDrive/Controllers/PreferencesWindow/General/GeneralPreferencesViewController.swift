@@ -19,51 +19,17 @@
 import Cocoa
 import kDriveCoreUI
 
-class GeneralPreferencesViewController: TitledViewController {
+class GeneralPreferencesViewController: PreferencePaneController {
     convenience init() {
         self.init(toolbarTitle: SidebarItem.general.title)
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupUI()
+        setupSection()
     }
 
-    private func setupUI() {
-        let scrollView = NSScrollView()
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.hasVerticalScroller = true
-        scrollView.autohidesScrollers = true
-        scrollView.drawsBackground = false
-        scrollView.contentView = FlippedClipView()
-        view.addSubview(scrollView)
-
-        let stackView = NSStackView()
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        stackView.orientation = .vertical
-        stackView.edgeInsets = NSEdgeInsets(top: 0, left: 16, bottom: 16, right: 16)
-        scrollView.documentView = stackView
-
-        setupBox(in: stackView)
-
-        NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: view.topAnchor),
-            scrollView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-
-            stackView.topAnchor.constraint(equalTo: scrollView.contentView.topAnchor),
-            stackView.leadingAnchor.constraint(equalTo: scrollView.contentView.leadingAnchor),
-            stackView.trailingAnchor.constraint(equalTo: scrollView.contentView.trailingAnchor)
-        ])
-    }
-
-    private func setupBox(in sourceStackView: NSStackView) {
-        let box = NSBox()
-        box.translatesAutoresizingMaskIntoConstraints = false
-        box.titlePosition = .noTitle
-        sourceStackView.addView(box, in: .bottom)
-
+    private func setupSection() {
         let automaticUpdateLabel = NSTextField(labelWithString: "Mises à jour automatiques")
         let automaticUpdateSwitch = NSSwitch()
 
@@ -78,32 +44,11 @@ class GeneralPreferencesViewController: TitledViewController {
         aboutButton.bezelStyle = .helpButton
         aboutButton.controlSize = .small
 
-        let gridView = NSGridView(views: [
+        insertNewGroupedSection(with: [
             [automaticUpdateLabel, automaticUpdateSwitch],
-            [NSSeparator()],
             [languageLabel, languagePopUpButton],
-            [NSSeparator()],
             [startAtLoginLabel, startAtLoginSwitch],
-            [NSSeparator()],
             [aboutLabel, aboutButton]
-        ])
-        gridView.translatesAutoresizingMaskIntoConstraints = false
-
-        gridView.rowSpacing = 8
-        gridView.columnSpacing = 8
-
-        gridView.yPlacement = .center
-
-        gridView.column(at: 0).xPlacement = .leading
-        gridView.column(at: 1).xPlacement = .trailing
-
-        box.contentView = gridView
-
-        NSLayoutConstraint.activate([
-            gridView.topAnchor.constraint(equalTo: box.topAnchor, constant: 16),
-            gridView.leadingAnchor.constraint(equalTo: box.leadingAnchor, constant: 16),
-            gridView.trailingAnchor.constraint(equalTo: box.trailingAnchor, constant: -16),
-            gridView.bottomAnchor.constraint(equalTo: box.bottomAnchor, constant: -16)
         ])
     }
 }

@@ -19,13 +19,41 @@
 import Cocoa
 import kDriveCoreUI
 
-open class NSPreferencePaneController: TitledViewController {
+open class PreferencePaneController: TitledViewController {
     var scrollView: NSScrollView!
     var stackView: NSStackView!
 
     open override func viewDidLoad() {
         super.viewDidLoad()
         setupStackViewWithinScrollView()
+    }
+
+    public func insertNewGroupedSection(title: String? = nil, with rows: [[NSView]]) {
+        let box = createContainerBox(title: title)
+
+        let grid = buildGridWithDividers(rows: rows)
+        let gridView = NSGridView(views: grid)
+        gridView.translatesAutoresizingMaskIntoConstraints = false
+        mergeCellsWithDivider(of: gridView)
+
+        gridView.rowSpacing = 8
+        gridView.columnSpacing = 8
+
+        gridView.yPlacement = .center
+
+        gridView.column(at: 0).xPlacement = .leading
+        gridView.column(at: 1).xPlacement = .trailing
+
+        box.contentView = gridView
+
+        NSLayoutConstraint.activate([
+            gridView.topAnchor.constraint(equalTo: box.topAnchor, constant: 16),
+            gridView.leadingAnchor.constraint(equalTo: box.leadingAnchor, constant: 16),
+            gridView.trailingAnchor.constraint(equalTo: box.trailingAnchor, constant: -16),
+            gridView.bottomAnchor.constraint(equalTo: box.bottomAnchor, constant: -16)
+        ])
+
+        stackView.addView(box, in: .bottom)
     }
 
     private func setupStackViewWithinScrollView() {
@@ -55,43 +83,12 @@ open class NSPreferencePaneController: TitledViewController {
         ])
     }
 
-    public func insertNewGroupedSection(with rows: [[NSView]], title: String) {
-        let box = createContainerBox(title: title)
-
-        let grid = buildGridWithDividers(rows: rows)
-
-        let gridView = NSGridView(views: rows)
-        gridView.translatesAutoresizingMaskIntoConstraints = false
-        mergeCellsWithDivider(of: gridView)
-
-        gridView.rowSpacing = 8
-        gridView.columnSpacing = 8
-
-        gridView.yPlacement = .center
-
-        gridView.column(at: 0).xPlacement = .leading
-        gridView.column(at: 1).xPlacement = .trailing
-
-        box.contentView = gridView
-
-        NSLayoutConstraint.activate([
-            gridView.topAnchor.constraint(equalTo: box.topAnchor, constant: 16),
-            gridView.leadingAnchor.constraint(equalTo: box.leadingAnchor, constant: 16),
-            gridView.trailingAnchor.constraint(equalTo: box.trailingAnchor, constant: -16),
-            gridView.bottomAnchor.constraint(equalTo: box.bottomAnchor, constant: -16)
-        ])
-
-        stackView.addView(box, in: .bottom)
-    }
-
     private func mergeCellsWithDivider(of grid: NSGridView) {
         let numberOfRows = grid.numberOfRows
-        let numberOfColumns = grid.numberOfColumns
-
         for rowIndex in 0..<numberOfRows {
             let row = grid.row(at: rowIndex)
-            if row.numberOfCells == 1, let cell = row.cell(at: 0).contentView as? NSSeparator {
-                row.mergeCells(in: NSRange(location: 0, length: numberOfColumns))
+            if row.cell(at: 0).contentView is NSSeparator {
+                row.mergeCells(in: NSRange(location: 0, length: row.numberOfCells))
             }
         }
     }
