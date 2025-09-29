@@ -47,19 +47,20 @@ uint64_t SocketCommChannel::readData(CommChar *data, uint64_t maxlen) {
          */
 #pragma push_macro("max")
 #undef max
-        auto lenReceived = _socket.receiveBytes(
-                data, (std::min)(static_cast<int>(maxlen * sizeof(CommChar)), std::numeric_limits<int>::max()));
+        maxlen = (std::min<uint64_t>) (maxlen * sizeof(CommChar), static_cast<uint64_t>(std::numeric_limits<int>::max()));
+        const int lenReceived = _socket.receiveBytes(data, static_cast<int>(maxlen));
 #pragma pop_macro("max")
 
-        if (lenReceived == 0) {
-            LOG_DEBUG(Log::instance()->getLogger(), "Socket connection closed by peer");
+        if (lenReceived <= 0) {
+            LOG_DEBUG(Log::instance()->getLogger(),
+                      (lenReceived == 0 ? "Socket connection closed by peer" : "Socket connection error"));
             lostConnectionCbk();
             close();
             _pendingRead = false;
             return 0;
         }
         _pendingRead = false;
-        return lenReceived;
+        return static_cast<unsigned int>(lenReceived);
     } catch (Poco::IOException &ex) {
         LOG_ERROR(Log::instance()->getLogger(), "Socket receiveBytes error: " << ex.displayText());
         lostConnectionCbk();
@@ -71,7 +72,22 @@ uint64_t SocketCommChannel::readData(CommChar *data, uint64_t maxlen) {
 
 uint64_t SocketCommChannel::writeData(const CommChar *data, uint64_t len) {
     try {
-        return _socket.sendBytes(data, static_cast<int>(len) * sizeof(CommChar)) / sizeof(CommChar);
+#pragma push_macro("max")
+#undef max
+        if (len > std::numeric_limits<int>::max() / sizeof(CommChar)) {
+#pragma pop_macro("max")
+            LOG_ERROR(Log::instance()->getLogger(), "Socket writeData error: data length too large");
+            return 0;
+        }
+        const int commCharSize = sizeof(CommChar);
+        const auto written = _socket.sendBytes(data, static_cast<int>(len) * commCharSize);
+        if (written < 0) {
+            LOG_ERROR(Log::instance()->getLogger(), "Socket connection error on sendBytes");
+            lostConnectionCbk();
+            close();
+            return 0;
+        }
+        return static_cast<uint64_t>(written / commCharSize);
     } catch (Poco::IOException &ex) {
         LOG_ERROR(Log::instance()->getLogger(), "Socket sendBytes error: " << ex.displayText());
         return 0;
