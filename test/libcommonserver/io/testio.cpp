@@ -85,7 +85,7 @@ void TestIo::testTempDirectoryPath() {
         const std::string previousPath = CommonUtility::envVarValue("KDRIVE_TMP_PATH");
 
         LocalTemporaryDirectory temporaryDirectory;
-        setenv("KDRIVE_TMP_PATH", (temporaryDirectory.path() / "testTempDirectoryPath").c_str(), 1);
+        (void) CommonUtility::setenv("KDRIVE_TMP_PATH", (temporaryDirectory.path() / "testTempDirectoryPath").c_str(), 1);
 
         SyncPath tmpPath;
         IoError ioError = IoError::Unknown;
