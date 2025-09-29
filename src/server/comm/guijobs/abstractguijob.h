@@ -18,9 +18,11 @@
 
 #pragma once
 
+#include "libsyncengine/jobs/abstractjob.h"
 #include "../abstractcommchannel.h"
 #include "../commmanager.h"
-#include "libsyncengine/jobs/abstractjob.h"
+#include "libcommon/comm.h"
+#include "libcommon/utility/utility.h"
 
 #include <Poco/JSON/Parser.h>
 #include <Poco/Dynamic/Struct.h>
@@ -139,5 +141,9 @@ class AbstractGuiJob : public AbstractJob {
 
         friend class TestAbstractGuiJob;
 };
+
+using AbstractGuiJobSharedConst = std::function<std::shared_ptr<AbstractGuiJob>(
+        std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+        const std::shared_ptr<AbstractCommChannel> channel)>;
 
 } // namespace KDC

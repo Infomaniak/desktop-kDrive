@@ -18,7 +18,6 @@
 
 #include "abstractguijob.h"
 #include "utility/jsonparserutility.h"
-#include "libcommon/comm.h"
 
 #include <Poco/JSON/Parser.h>
 #include <Poco/Exception.h>

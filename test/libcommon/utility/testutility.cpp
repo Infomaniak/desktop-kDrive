@@ -850,9 +850,7 @@ void TestUtility::testReadValueFromStruct() {
     std::string blobStr("0123456789abcdefghijklmnopqrtsuvwxyz");
     std::string base64BlobStr;
     CommonUtility::convertToBase64Str(blobStr, base64BlobStr);
-    CommBLOB blobValue;
-    std::copy(base64BlobStr.begin(), base64BlobStr.end(), std::back_inserter(blobValue));
-    str.insert("blobValue", blobValue);
+    str.insert("blobValue", base64BlobStr);
 
     str.insert("boolValue", true);
 
@@ -898,6 +896,8 @@ void TestUtility::testReadValueFromStruct() {
         CommonUtility::readValueFromStruct(str, "wstrValue", wstrValue);
         CPPUNIT_ASSERT(wstrValue == L"asdf");
 
+        CommBLOB blobValue;
+        std::copy(blobStr.begin(), blobStr.end(), std::back_inserter(blobValue));
         CommBLOB blobValue2;
         CommonUtility::readValueFromStruct(str, "blobValue", blobValue2);
         CPPUNIT_ASSERT(blobValue2 == blobValue);

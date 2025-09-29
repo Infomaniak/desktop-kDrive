@@ -49,6 +49,7 @@ set(server_SRCS
     comm/commmanager.h comm/commmanager.cpp
     comm/guicommserver.h comm/guicommserver.cpp
     comm/guijobs/abstractguijob.h comm/guijobs/abstractguijob.cpp
+    comm/guijobs/guijobfactory.h comm/guijobs/guijobfactory.cpp
     comm/guijobs/loginrequesttokenjob.h comm/guijobs/loginrequesttokenjob.cpp
     comm/guijobs/signaluseraddedjob.h comm/guijobs/signaluseraddedjob.cpp
     comm/guijobs/signaluserupdatedjob.h comm/guijobs/signaluserupdatedjob.cpp

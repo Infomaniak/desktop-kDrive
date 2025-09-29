@@ -28,6 +28,8 @@
 
 namespace KDC {
 
+class GuiJobFactory;
+
 class CommManager : public std::enable_shared_from_this<CommManager> {
     public:
         explicit CommManager(const SyncPalMap &syncPalMap, const VfsMap &vfsMap);
@@ -101,6 +103,8 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
         std::shared_ptr<AbstractCommServer> _extCommServer;
 #endif
         std::shared_ptr<AbstractCommServer> _guiCommServer;
+
+        std::unique_ptr<GuiJobFactory> _guiJobFactory;
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         // Execute a command received from an extension, which does not require an answer

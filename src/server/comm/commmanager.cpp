@@ -18,6 +18,7 @@
 
 #include "commmanager.h"
 #include "extensionjob.h"
+#include "guijobs/guijobfactory.h"
 #include "config.h"
 #include "libcommon/utility/logiffail.h"
 #include "libcommon/utility/utility.h"
@@ -56,7 +57,8 @@ CommManager::CommManager(const SyncPalMap &syncPalMap, const VfsMap &vfsMap) :
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
     _extCommServer(std::make_shared<ExtCommServer>("Extension Comm Server")),
 #endif
-    _guiCommServer(std::make_shared<GuiCommServer>("GUI Comm Server")) {
+    _guiCommServer(std::make_shared<GuiCommServer>("GUI Comm Server")),
+    _guiJobFactory(std::make_unique<GuiJobFactory>()) {
 #if defined(KD_MACOS)
     // Tell the Finder to use the Extension (checking it from System Preferences -> Extensions)
     std::string cmd("pluginkit -v -e use -i ");
@@ -241,14 +243,10 @@ void CommManager::executeGuiQuery(const CommString &commandLineStr, std::shared_
     }
 
     // Create and execute GUI job
-    std::shared_ptr<AbstractGuiJob> job = nullptr;
-    switch (requestNum) {
-        case RequestNum::LOGIN_REQUESTTOKEN:
-            job = std::make_shared<LoginRequestTokenJob>(shared_from_this(), requestId, inParams, channel);
-            break;
-        default:
-            LOG_DEBUG(Log::instance()->getLogger(), "Query not implemented!");
-            return;
+    std::shared_ptr<AbstractGuiJob> job = _guiJobFactory->make(requestNum, shared_from_this(), requestId, inParams, channel);
+    if (!job) {
+        LOG_WARN(Log::instance()->getLogger(), "Job not implemented: num=" << requestNum);
+        return;
     }
 
     job->runJob();

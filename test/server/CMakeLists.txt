@@ -29,6 +29,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guicommserver.h ${server_srcs_path}/comm/guicommserver.cpp
     ${server_srcs_path}/comm/commmanager.h ${server_srcs_path}/comm/commmanager.cpp
     ${server_srcs_path}/comm/guijobs/abstractguijob.h ${server_srcs_path}/comm/guijobs/abstractguijob.cpp
+    ${server_srcs_path}/comm/guijobs/guijobfactory.h ${server_srcs_path}/comm/guijobs/guijobfactory.cpp
     ${server_srcs_path}/comm/guijobs/loginrequesttokenjob.h ${server_srcs_path}/comm/guijobs/loginrequesttokenjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluseraddedjob.h ${server_srcs_path}/comm/guijobs/signaluseraddedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.h ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.cpp

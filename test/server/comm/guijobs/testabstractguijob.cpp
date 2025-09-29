@@ -173,7 +173,6 @@ void TestAbstractGuiJob::testAll() {
 
     // serializeGenericOutputParms
     CPPUNIT_ASSERT(job->serializeGenericOutputParms());
-    CommString s = job->_outputParamsStr;
     CPPUNIT_ASSERT(job->_outputParamsStr == outputParamsStr);
 }
 

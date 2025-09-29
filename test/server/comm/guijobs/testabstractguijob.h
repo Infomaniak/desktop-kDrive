@@ -61,7 +61,7 @@ class GuiJobTest : public AbstractGuiJob {
         GuiJobTest(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
                    const std::shared_ptr<AbstractCommChannel> channel) :
             AbstractGuiJob(commManager, requestId, inParams, channel) {
-            _requestNum == RequestNum::Unknown;
+            _requestNum = RequestNum::Unknown;
         }
 
     private:
