@@ -171,8 +171,14 @@ void TestUtility::testMoveItemToTrash(void) {
     CPPUNIT_ASSERT(!std::filesystem::exists(path, ec));
     CPPUNIT_ASSERT_EQUAL(13, ec.value()); // EACCES 13 Permission denied
 #endif
+
     // A regular directory that misses owner exec permission:
+
+#if defined(KD_WINDOWS)
     CPPUNIT_ASSERT(!Utility::moveItemToTrash(subdir));
+#else
+    CPPUNIT_ASSERT(Utility::moveItemToTrash(subdir));
+#endif
     CPPUNIT_ASSERT(!std::filesystem::exists(subdir, ec));
     CPPUNIT_ASSERT(!ec);
 }
