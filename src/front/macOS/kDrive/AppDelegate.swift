@@ -20,8 +20,8 @@ import Cocoa
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    private var mainWindow: MainWindowController?
-    private var preferencesWindow: PreferencesWindowController?
+    private lazy var mainWindow = MainWindowController()
+    private lazy var preferencesWindow = PreferencesWindowController()
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         openMainWindow()
@@ -32,10 +32,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     public func openMainWindow() {
-        mainWindow = MainWindowController()
-
-        mainWindow?.showWindow(nil)
-        mainWindow?.window?.makeKeyAndOrderFront(nil)
+        mainWindow.showWindow(nil)
+        mainWindow.window?.makeKeyAndOrderFront(nil)
 
         if #available(macOS 14.0, *) {
             NSApp.activate()
@@ -45,9 +43,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc public func openPreferencesWindow(_ sender: Any?) {
-        preferencesWindow = PreferencesWindowController()
-
-        preferencesWindow?.showWindow(sender)
-        preferencesWindow?.window?.makeKeyAndOrderFront(sender)
+        preferencesWindow.showWindow(sender)
+        preferencesWindow.window?.makeKeyAndOrderFront(sender)
     }
 }
