@@ -22,6 +22,7 @@
 #include "signaluserupdatedjob.h"
 #include "libcommon/info/userinfo.h"
 #include "libcommon/utility/utility.h"
+#include "libcommon/comm.h"
 
 // Input parameters keys
 static const auto inParamsCode = "code";
@@ -34,13 +35,14 @@ static const auto outParamsErrorDescr = "errorDescr";
 
 namespace KDC {
 
-bool LoginRequestTokenJob::deserializeInputParms() {
-    if (!AbstractGuiJob::deserializeInputParms()) {
-        LOG_WARN(_logger, "Error in AbstractGuiJob::deserializeInputParms");
-        return false;
-    }
+LoginRequestTokenJob::LoginRequestTokenJob(std::shared_ptr<CommManager> commManager, int requestId,
+                                           const Poco::DynamicStruct &inParams,
+                                           const std::shared_ptr<AbstractCommChannel> channel) :
+    AbstractGuiJob(commManager, requestId, inParams, channel) {
+    _requestNum = RequestNum::LOGIN_REQUESTTOKEN;
+}
 
-    // Input parameters deserialization
+bool LoginRequestTokenJob::deserializeInputParms() {
     try {
         readParamValue(inParamsCode, _code);
         readParamValue(inParamsCodeVerifier, _codeVerifier);
@@ -62,11 +64,6 @@ bool LoginRequestTokenJob::serializeOutputParms() {
         writeParamValue(outParamsErrorDescr, CommonUtility::str2CommString(_errorDescr));
     }
 
-    if (!AbstractGuiJob::serializeOutputParms()) {
-        LOG_WARN(_logger, "Error in AbstractGuiJob::serializeOutputParms");
-        return false;
-    }
-
     return true;
 }
 
@@ -85,11 +82,11 @@ bool LoginRequestTokenJob::process() {
     _commManager->updateSentryUserCbk();
     if (userCreated) {
         std::unique_ptr<SignalUserAddedJob> signalUserAddedJob =
-                std::make_unique<SignalUserAddedJob>(nullptr, userInfo, _channel);
+                std::make_unique<SignalUserAddedJob>(_commManager, _channel, userInfo);
         signalUserAddedJob->runJob();
     } else {
         std::unique_ptr<SignalUserUpdatedJob> signalUserUpdatedJob =
-                std::make_unique<SignalUserUpdatedJob>(nullptr, userInfo, _channel);
+                std::make_unique<SignalUserUpdatedJob>(_commManager, _channel, userInfo);
         signalUserUpdatedJob->runJob();
     }
     return true;

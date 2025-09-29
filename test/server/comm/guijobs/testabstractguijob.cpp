@@ -56,7 +56,7 @@ namespace KDC {
 
 const auto inputParamsStr{Str(
         R"({ "id": 999,)"
-        R"( "num": 10,)"
+        R"( "num": 0,)"
         R"( "params": {)"
         R"( "strValue": "aGVsbG8=",)"
         R"( "strValue2": "5q+P5Liq5Lq66YO95pyJ5LuW55qE5L2c5oiY562W55Wl",)"
@@ -73,7 +73,7 @@ const auto outputParamsStr{Str(
         R"({ "cause": 0,)"
         R"( "code": 0,)"
         R"( "id": 999,)"
-        R"( "num": 10,)"
+        R"( "num": 0,)"
         R"( "params": {)"
         R"( "blobValue": "MDEyMzQ1Njc4OWFiY2RlZmdoaWprbG1ub3BxcnRzdXZ3eHl6",)"
         R"( "boolValue": true,)"
@@ -123,8 +123,16 @@ void TestAbstractGuiJob::testAll() {
     CommonUtility::convertFromBase64Str(base64Str, blob2);
     CPPUNIT_ASSERT(blob2 == blob);
 
+    // deserializeGenericInputParms
+    int requestId;
+    RequestNum requestNum;
+    Poco::DynamicStruct inParams;
+    CPPUNIT_ASSERT(AbstractGuiJob::deserializeGenericInputParms(inputParamsStr, requestId, requestNum, inParams));
+    CPPUNIT_ASSERT(requestId == 999);
+    CPPUNIT_ASSERT(requestNum == RequestNum::Unknown);
+
     // deserializeInputParms
-    std::unique_ptr<GuiJobTest> job = std::make_unique<GuiJobTest>(nullptr, inputParamsStr, _channel);
+    std::unique_ptr<GuiJobTest> job = std::make_unique<GuiJobTest>(nullptr, requestId, inParams, _channel);
     job->_exitInfo = ExitCode::Ok;
     CPPUNIT_ASSERT(job->deserializeInputParms());
     CPPUNIT_ASSERT(job->exitInfo());
@@ -163,16 +171,13 @@ void TestAbstractGuiJob::testAll() {
     CPPUNIT_ASSERT(job->serializeOutputParms());
     CPPUNIT_ASSERT(job->exitInfo());
 
+    // serializeGenericOutputParms
+    CPPUNIT_ASSERT(job->serializeGenericOutputParms());
+    CommString s = job->_outputParamsStr;
     CPPUNIT_ASSERT(job->_outputParamsStr == outputParamsStr);
 }
 
 bool GuiJobTest::deserializeInputParms() {
-    if (!AbstractGuiJob::deserializeInputParms()) {
-        _exitInfo = ExitCode::LogicError;
-        return false;
-    }
-
-    // Input parameters deserialization
     try {
         readParamValue(inParamsStrValue, _strValue);
         readParamValue(inParamsStrValue, _wstrValue);
@@ -205,7 +210,6 @@ bool GuiJobTest::deserializeInputParms() {
 }
 
 bool GuiJobTest::serializeOutputParms() {
-    // Output parameters serialization
     writeParamValue(outParamsStrValue, "qwertz");
     writeParamValue(outParamsStrValue2, "每个人都有他的作战策略");
     writeParamValue(outParamsWStrValue, L"asdfgh");
@@ -240,20 +244,10 @@ bool GuiJobTest::serializeOutputParms() {
     std::vector<Dummy> dummyValues{{"dddd", 888}, {"eeee", 7777}};
     writeParamValues(outParamsDummyValues, dummyValues, dummy2DynamicVar);
 
-    if (!AbstractGuiJob::serializeOutputParms()) {
-        _exitInfo = ExitCode::LogicError;
-        return false;
-    }
-
     return true;
 }
 
 bool GuiJobTest::process() {
-    if (!AbstractGuiJob::process()) {
-        _exitInfo = ExitCode::LogicError;
-        return false;
-    }
-
     return true;
 }
 

@@ -22,10 +22,8 @@ namespace KDC {
 
 class LoginRequestTokenJob : public AbstractGuiJob {
     public:
-        LoginRequestTokenJob(std::shared_ptr<CommManager> commManager, const CommString &inputParmsStr,
-                             const std::shared_ptr<AbstractCommChannel> &channel) :
-            AbstractGuiJob(commManager, inputParmsStr, channel) {}
-        ~LoginRequestTokenJob() = default;
+        LoginRequestTokenJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                             const std::shared_ptr<AbstractCommChannel> channel);
 
     private:
         // Input parameters

@@ -38,19 +38,22 @@ static const auto outRequestParams = "params";
 
 namespace KDC {
 
-int AbstractGuiJob::_signalId = 0;
+int AbstractGuiJob::_lastSignalId = 0;
 
-AbstractGuiJob::AbstractGuiJob(std::shared_ptr<CommManager> commManager, const CommString &inputParamsStr,
-                               const std::shared_ptr<AbstractCommChannel> &channel) :
+AbstractGuiJob::AbstractGuiJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                               const std::shared_ptr<AbstractCommChannel> channel) :
     _commManager(commManager),
-    _inputParamsStr(inputParamsStr),
+    _requestId(requestId),
+    _inParams(inParams),
     _channel(channel),
     _type(GuiJobType::Query) {}
 
-AbstractGuiJob::AbstractGuiJob(std::shared_ptr<CommManager> commManager, const std::shared_ptr<AbstractCommChannel> &channel) :
+AbstractGuiJob::AbstractGuiJob(std::shared_ptr<CommManager> commManager, const std::shared_ptr<AbstractCommChannel> channel) :
     _commManager(commManager),
     _channel(channel),
-    _type(GuiJobType::Signal) {}
+    _type(GuiJobType::Signal) {
+    _signalId = _lastSignalId++;
+}
 
 void AbstractGuiJob::runJob() {
     if (_type == GuiJobType::Unknown) {
@@ -61,70 +64,70 @@ void AbstractGuiJob::runJob() {
     _exitInfo = ExitCode::Ok;
     if (_type == GuiJobType::Query) {
         if (!deserializeInputParms()) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in AbstractGuiJob::deserializeInputParms for job=" << jobId());
+            LOG_WARN(Log::instance()->getLogger(), "Error in deserializeInputParms for job=" << jobId());
         }
 
         if (_exitInfo && !process()) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in AbstractGuiJob::process for job=" << jobId());
+            LOG_WARN(Log::instance()->getLogger(), "Error in process for job=" << jobId());
         }
     }
 
     if (!serializeOutputParms()) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in AbstractGuiJob::serializeOutputParms for job=" << jobId());
+        LOG_WARN(Log::instance()->getLogger(), "Error in serializeOutputParms for job=" << jobId());
+    }
+
+    if (_type == GuiJobType::Signal && !_exitInfo) return;
+
+    if (!serializeGenericOutputParms()) {
+        LOG_WARN(_logger, "Error in serializeGenericOutputParms");
+        return;
     }
 
     _channel->sendMessage(_outputParamsStr);
 }
 
-bool AbstractGuiJob::deserializeInputParms() {
+bool AbstractGuiJob::deserializeGenericInputParms(const CommString &inputParamsStr, int &requestId, RequestNum &requestNum,
+                                                  Poco::DynamicStruct &inParams) {
     try {
         Poco::JSON::Parser parser;
-        Poco::Dynamic::Var inputParamsVar = parser.parse(CommonUtility::commString2Str(_inputParamsStr));
+        Poco::Dynamic::Var inputParamsVar = parser.parse(CommonUtility::commString2Str(inputParamsStr));
 
         Poco::DynamicStruct paramsStruct = *inputParamsVar.extract<Poco::JSON::Object::Ptr>();
 
-        CommonUtility::readValueFromStruct(paramsStruct, inRequestId, _requestId);
-        CommonUtility::readValueFromStruct(paramsStruct, inRequestNum, _requestNum);
+        CommonUtility::readValueFromStruct(paramsStruct, inRequestId, requestId);
+        CommonUtility::readValueFromStruct(paramsStruct, inRequestNum, requestNum);
 
         assert(paramsStruct[inRequestParams].isStruct());
-        _inParams = paramsStruct[inRequestParams].extract<Poco::DynamicStruct>();
-    } catch (std::exception &e) {
-        LOG_WARN(_logger, "Input parameters deserialization error for job=" << jobId() << " error=" << e.what());
-        _exitInfo = ExitCode::LogicError;
+        inParams = paramsStruct[inRequestParams].extract<Poco::DynamicStruct>();
+    } catch (std::exception &) {
         return false;
     }
 
     return true;
 }
 
-bool AbstractGuiJob::serializeOutputParms() {
-    assert(_type != GuiJobType::Unknown);
-
+bool AbstractGuiJob::serializeGenericOutputParms() {
     Poco::DynamicStruct paramsStruct;
-    CommonUtility::writeValueToStruct(paramsStruct, outRequestType, _type);
     if (_type == GuiJobType::Query) {
+        CommonUtility::writeValueToStruct(paramsStruct, outRequestType, GuiJobType::Query);
         CommonUtility::writeValueToStruct(paramsStruct, outRequestId, _requestId);
         CommonUtility::writeValueToStruct(paramsStruct, outRequestNum, _requestNum);
         CommonUtility::writeValueToStruct(paramsStruct, outRequestCode, _exitInfo.code());
         CommonUtility::writeValueToStruct(paramsStruct, outRequestCause, _exitInfo.cause());
-    } else if (_type == GuiJobType::Signal) {
-        CommonUtility::writeValueToStruct(paramsStruct, outRequestId, _signalId++);
+    } else {
+        CommonUtility::writeValueToStruct(paramsStruct, outRequestType, GuiJobType::Signal);
+        CommonUtility::writeValueToStruct(paramsStruct, outRequestId, _signalId);
         CommonUtility::writeValueToStruct(paramsStruct, outRequestNum, _signalNum);
     }
+
     paramsStruct.insert(outRequestParams, _outParams);
 
     try {
         _outputParamsStr = CommonUtility::str2CommString(Poco::Dynamic::structToString(paramsStruct));
-    } catch (Poco::Exception &e) {
-        LOG_WARN(_logger, "Output parameters serialization error for job=" << jobId() << " error=" << e.what());
-        _exitInfo = ExitCode::LogicError;
+    } catch (Poco::Exception &) {
         return false;
     }
 
-    return true;
-}
-
-bool AbstractGuiJob::process() {
     return true;
 }
 

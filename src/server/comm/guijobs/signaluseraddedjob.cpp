@@ -19,11 +19,19 @@
 #include "signaluseraddedjob.h"
 #include "libcommon/info/userinfo.h"
 #include "libcommon/utility/utility.h"
+#include "libcommon/comm.h"
 
 // Output parameters keys
 static const auto outParamsUserInfo = "userInfo";
 
 namespace KDC {
+
+SignalUserAddedJob::SignalUserAddedJob(std::shared_ptr<CommManager> commManager,
+                                       const std::shared_ptr<AbstractCommChannel> channel, const UserInfo &userInfo) :
+    AbstractGuiJob(commManager, channel),
+    _userInfo(userInfo) {
+    _signalNum = SignalNum::USER_ADDED;
+}
 
 bool SignalUserAddedJob::serializeOutputParms() {
     // Output parameters serialization
@@ -33,11 +41,6 @@ bool SignalUserAddedJob::serializeOutputParms() {
         return structValue;
     };
     writeParamValue(outParamsUserInfo, _userInfo, userInfo2DynamicVar);
-
-    if (!AbstractGuiJob::serializeOutputParms()) {
-        _exitInfo = ExitCode::LogicError;
-        return false;
-    }
 
     return true;
 }

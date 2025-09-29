@@ -17,20 +17,14 @@
  */
 
 #include "server/comm/guijobs/abstractguijob.h"
-#include "libcommon/comm.h"
 #include "libcommon/info/userinfo.h"
 
 namespace KDC {
 
 class SignalUserAddedJob : public AbstractGuiJob {
     public:
-        SignalUserAddedJob(std::shared_ptr<CommManager> commManager, const UserInfo &userInfo,
-                           const std::shared_ptr<AbstractCommChannel> &channel) :
-            AbstractGuiJob(commManager, channel),
-            _userInfo(userInfo) {
-            _signalNum = SignalNum::USER_ADDED;
-        }
-        ~SignalUserAddedJob() = default;
+        SignalUserAddedJob(std::shared_ptr<CommManager> commManager, const std::shared_ptr<AbstractCommChannel> channel,
+                           const UserInfo &userInfo);
 
     private:
         // Output parameters

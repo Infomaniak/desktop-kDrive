@@ -17,6 +17,7 @@
  */
 
 #include "testincludes.h"
+#include "libcommon/comm.h"
 #include "server/comm/guicommserver.h"
 #include "server/comm/guijobs/abstractguijob.h"
 
@@ -57,10 +58,11 @@ class GuiJobTest : public AbstractGuiJob {
             EnumEnd
         };
 
-        GuiJobTest(std::shared_ptr<CommManager> commManager, const CommString &inputParamsStr,
-                   const std::shared_ptr<AbstractCommChannel> &channel) :
-            AbstractGuiJob(commManager, inputParamsStr, channel) {}
-        ~GuiJobTest() = default;
+        GuiJobTest(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                   const std::shared_ptr<AbstractCommChannel> channel) :
+            AbstractGuiJob(commManager, requestId, inParams, channel) {
+            _requestNum == RequestNum::Unknown;
+        }
 
     private:
         std::string _strValue;

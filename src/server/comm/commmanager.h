@@ -115,6 +115,8 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
         void onExtQueryReceived(std::shared_ptr<AbstractCommChannel> channel);
         void onLostExtConnection(std::shared_ptr<AbstractCommChannel> channel);
 #endif
+        // Execute a query received from the GUI and responds on the provided channel
+        void executeGuiQuery(const CommString &commandLineStr, std::shared_ptr<AbstractCommChannel> channel);
 
         // GUI callbacks
         void onNewGuiConnection();

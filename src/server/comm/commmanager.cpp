@@ -22,6 +22,7 @@
 #include "libcommon/utility/logiffail.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/theme/theme.h"
+#include "libcommon/comm.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
@@ -34,7 +35,8 @@
 #endif
 
 #include "guicommserver.h"
-
+#include "guijobs/abstractguijob.h"
+#include "guijobs/loginrequesttokenjob.h"
 
 #include <QByteArray>
 #include <QDataStream>
@@ -48,7 +50,6 @@
 #include <log4cplus/loggingmacros.h>
 
 namespace KDC {
-
 CommManager::CommManager(const SyncPalMap &syncPalMap, const VfsMap &vfsMap) :
     _syncPalMap(syncPalMap),
     _vfsMap(vfsMap),
@@ -225,7 +226,33 @@ void CommManager::onExtQueryReceived(std::shared_ptr<AbstractCommChannel> channe
 void CommManager::onLostExtConnection(std::shared_ptr<AbstractCommChannel> channel) {
     LOG_INFO(Log::instance()->getLogger(), "Lost ext connection - channel=" << channel->id());
 }
+
 #endif
+
+void CommManager::executeGuiQuery(const CommString &commandLineStr, std::shared_ptr<AbstractCommChannel> channel) {
+    // Deserialize generic parameters
+    int requestId;
+    RequestNum requestNum;
+    Poco::DynamicStruct inParams;
+    if (!AbstractGuiJob::deserializeGenericInputParms(commandLineStr, requestId, requestNum, inParams)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in AbstractGuiJob::deserializeGenericInputParms - query="
+                                                        << CommonUtility::commString2WStr(commandLineStr));
+        return;
+    }
+
+    // Create and execute GUI job
+    std::shared_ptr<AbstractGuiJob> job = nullptr;
+    switch (requestNum) {
+        case RequestNum::LOGIN_REQUESTTOKEN:
+            job = std::make_shared<LoginRequestTokenJob>(shared_from_this(), requestId, inParams, channel);
+            break;
+        default:
+            LOG_DEBUG(Log::instance()->getLogger(), "Query not implemented!");
+            return;
+    }
+
+    job->runJob();
+}
 
 void CommManager::onNewGuiConnection() {
     std::shared_ptr<AbstractCommChannel> channel = _guiCommServer->nextPendingConnection();
@@ -241,46 +268,14 @@ void CommManager::onGuiQueryReceived(std::shared_ptr<AbstractCommChannel> channe
 
     while (channel->canReadMessage()) {
         CommString query = channel->readMessage();
-        LOGW_INFO(Log::instance()->getLogger(), L"Query received: " << CommonUtility::commString2WStr(query));
-
-        Poco::JSON::Parser parser;
-        auto result = parser.parse(CommonUtility::commString2Str(query));
-        Poco::JSON::Object::Ptr pObject = result.extract<Poco::JSON::Object::Ptr>();
-        if (!pObject->has("id")) {
-            LOG_WARN(Log::instance()->getLogger(), "Query has no id");
-            continue;
+        if (query.empty()) {
+            LOG_WARN(Log::instance()->getLogger(), "Failed to read message or empty message");
+            break;
         }
-        if (!pObject->has("num")) {
-            LOG_WARN(Log::instance()->getLogger(), "Query has no num");
-            continue;
-        }
-
-        // Query ID
-        const int id = pObject->getValue<int>("id");
-        // Query type
-        const RequestNum num = static_cast<RequestNum>(pObject->getValue<int>("num"));
-
-
-        // Create gui job
-        if (num == RequestNum::SYNC_START ||
-            num == RequestNum::SYNC_STOP) { // TODO: Replace with Gui jobs and commManager once ready.
-            if (!pObject->has("args")) {
-                LOG_WARN(Log::instance()->getLogger(), "Query expects args");
-                continue;
-            }
-            if (!pObject->isObject("args")) {
-                LOG_WARN(Log::instance()->getLogger(), "Query args is not an object");
-                continue;
-            }
-
-            auto args = pObject->getObject("args");
-            const int syncDbId = args->getValue<int>("syncDbId");
-            QByteArray params;
-            QDataStream paramsStream(&params, QIODevice::WriteOnly);
-            paramsStream << syncDbId;
-
-            emit OldCommServer::instance().get() -> requestReceived(id, num, params);
-        }
+        LOGW_INFO(Log::instance()->getLogger(), L"Received GUI message - msg=" << CommonUtility::commString2WStr(query)
+                                                                               << L" channel="
+                                                                               << CommonUtility::s2ws(channel->id()));
+        executeGuiQuery(query, channel);
     }
 }
 
