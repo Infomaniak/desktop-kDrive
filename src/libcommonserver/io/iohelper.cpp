@@ -614,7 +614,7 @@ bool IoHelper::tempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noex
     std::error_code ec;
     if (const auto value = CommonUtility::envVarValue("KDRIVE_TMP_PATH"); !value.empty()) {
         directoryPath = SyncPath(value);
-        std::filesystem::create_directories(directoryPath, ec);
+        (void) std::filesystem::create_directories(directoryPath, ec);
     } else {
         directoryPath = _tempDirectoryPath(ec); // The std::filesystem implementation returns an empty path on error.
     }
