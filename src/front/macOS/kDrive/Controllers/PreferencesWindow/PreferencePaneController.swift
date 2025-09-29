@@ -31,26 +31,25 @@ open class PreferencePaneController: TitledViewController {
     public func insertNewGroupedSection(title: String? = nil, with rows: [[NSView]]) {
         let box = createContainerBox(title: title)
 
-        let grid = buildGridWithDividers(rows: rows)
-        let gridView = NSGridView(views: grid)
+        let rowsWithDividers = insertDividersIntoArray(rows)
+
+        let gridView = NSGridView(views: rowsWithDividers)
+        box.contentView = gridView
+
         gridView.translatesAutoresizingMaskIntoConstraints = false
-        mergeCellsWithDivider(of: gridView)
-
-        gridView.rowSpacing = 8
-        gridView.columnSpacing = 8
-
         gridView.yPlacement = .center
-
+        gridView.columnSpacing = 16
+        gridView.rowSpacing = 0
         gridView.column(at: 0).xPlacement = .leading
         gridView.column(at: 1).xPlacement = .trailing
 
-        box.contentView = gridView
+        configureCells(of: gridView)
 
         NSLayoutConstraint.activate([
-            gridView.topAnchor.constraint(equalTo: box.topAnchor, constant: 16),
-            gridView.leadingAnchor.constraint(equalTo: box.leadingAnchor, constant: 16),
-            gridView.trailingAnchor.constraint(equalTo: box.trailingAnchor, constant: -16),
-            gridView.bottomAnchor.constraint(equalTo: box.bottomAnchor, constant: -16)
+            gridView.topAnchor.constraint(equalTo: box.topAnchor),
+            gridView.leadingAnchor.constraint(equalTo: box.leadingAnchor, constant: 10),
+            gridView.trailingAnchor.constraint(equalTo: box.trailingAnchor, constant: -10),
+            gridView.bottomAnchor.constraint(equalTo: box.bottomAnchor)
         ])
 
         stackView.addView(box, in: .bottom)
@@ -68,7 +67,8 @@ open class PreferencePaneController: TitledViewController {
         stackView = NSStackView()
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.orientation = .vertical
-        stackView.edgeInsets = NSEdgeInsets(top: 0, left: 16, bottom: 16, right: 16)
+        stackView.edgeInsets = NSEdgeInsets(top: 0, left: 20, bottom: 20, right: 20)
+        stackView.spacing = 10
         scrollView.documentView = stackView
 
         NSLayoutConstraint.activate([
@@ -83,17 +83,20 @@ open class PreferencePaneController: TitledViewController {
         ])
     }
 
-    private func mergeCellsWithDivider(of grid: NSGridView) {
+    private func configureCells(of grid: NSGridView) {
         let numberOfRows = grid.numberOfRows
         for rowIndex in 0..<numberOfRows {
             let row = grid.row(at: rowIndex)
+
             if row.cell(at: 0).contentView is NSSeparator {
                 row.mergeCells(in: NSRange(location: 0, length: row.numberOfCells))
+            } else {
+                row.height = 42
             }
         }
     }
 
-    private func buildGridWithDividers(rows: [[NSView]]) -> [[NSView]] {
+    private func insertDividersIntoArray(_ rows: [[NSView]]) -> [[NSView]] {
         var grid = [[NSView]]()
         for row in rows {
             grid.append(row)
