@@ -83,7 +83,7 @@ DownloadJob::~DownloadJob() {
 
     if (!_vfs) return;
 
-    // There is no downloaded file under cancellation hypothesis when the intent is to create a new local file.
+    // If the download job intent is to create a new local file, then there is no downloaded file after cancellation.
     if (_responseHandlingCanceled && _isCreate) return;
 
     if (_responseHandlingCanceled) {
