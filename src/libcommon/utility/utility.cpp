@@ -1078,13 +1078,13 @@ std::string CommonUtility::envVarValue(const std::string &name, bool &isSet) {
     return std::string();
 }
 
-int CommonUtility::setenv(const char *name, const char *value, int overwrite) {
+int CommonUtility::setenv(const char *const name, const char *const value, const int overwrite) {
 #if defined(KD_WINDOWS)
     // https://stackoverflow.com/a/23616164/4675396
     int errcode = 0;
     if (!overwrite) {
         size_t envsize = 0;
-        errcode = getenv_s(&envsize, NULL, 0, name);
+        errcode = getenv_s(&envsize, nullptr, 0, name);
         if (errcode || envsize) return errcode;
     }
     return _putenv_s(name, value);
