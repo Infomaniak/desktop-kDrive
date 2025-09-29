@@ -1078,6 +1078,21 @@ std::string CommonUtility::envVarValue(const std::string &name, bool &isSet) {
     return std::string();
 }
 
+int CommonUtility::setenv(const char *name, const char *value, int overwrite) {
+#if defined(KD_WINDOWS)
+    // https://stackoverflow.com/a/23616164/4675396
+    int errcode = 0;
+    if (!overwrite) {
+        size_t envsize = 0;
+        errcode = getenv_s(&envsize, NULL, 0, name);
+        if (errcode || envsize) return errcode;
+    }
+    return _putenv_s(name, value);
+#else
+    return setenv(name, value, overwrite);
+#endif
+}
+
 void CommonUtility::handleSignals(void (*sigHandler)(int)) {
     // Kills
     signal(SIGTERM, sigHandler); // Termination request, sent to the program

@@ -95,7 +95,7 @@ void TestIo::testTempDirectoryPath() {
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         // Restores previous value.
-        setenv("KDRIVE_TMP_PATH", previousPath.c_str(), 1);
+        CommonUtility::setenv("KDRIVE_TMP_PATH", previousPath.c_str(), 1);
     }
 }
 
