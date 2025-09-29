@@ -1089,7 +1089,7 @@ int CommonUtility::setenv(const char *name, const char *value, int overwrite) {
     }
     return _putenv_s(name, value);
 #else
-    return setenv(name, value, overwrite);
+    return ::setenv(name, value, overwrite);
 #endif
 }
 
