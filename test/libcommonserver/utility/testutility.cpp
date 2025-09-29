@@ -21,6 +21,7 @@
 #include "test_utility/testhelpers.h"
 #include "config.h"
 #include "libcommon/utility/utility.h" // CommonUtility::isSubDir
+#include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
 
 #include <Poco/URI.h>
@@ -155,7 +156,7 @@ void TestUtility::testMoveItemToTrash(void) {
 #if defined(KD_WINDOWS)
     const testhelpers::RightsSet rightSet(false, false, false);
     auto rightsError = IoError::Unknown;
-    CPPUNIT_ASSERT(IoHelper::setRights(subdir, rightSet.read, rightSet.write, rightSet.execute, ioError));
+    CPPUNIT_ASSERT(IoHelper::setRights(subdir, rightSet.read, rightSet.write, rightSet.execute, rightsError));
 #else
     std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::remove);
 #endif
@@ -163,15 +164,15 @@ void TestUtility::testMoveItemToTrash(void) {
     std::error_code ec;
 #if defined(KD_WINDOWS)
     CPPUNIT_ASSERT(Utility::moveItemToTrash(path));
-    CPPUNIT_ASSERT(!std::filesystem::exists(path));
+    CPPUNIT_ASSERT(!std::filesystem::exists(path, ec));
+    CPPUNIT_ASSERT_EQUAL(0, ec.value());
 #elif defined(KD_MACOS) || defined(KD_LINUX)
     CPPUNIT_ASSERT(!Utility::moveItemToTrash(path));
     CPPUNIT_ASSERT(!std::filesystem::exists(path, ec));
     CPPUNIT_ASSERT_EQUAL(13, ec.value()); // EACCES 13 Permission denied
 #endif
     // A regular directory that misses owner exec permission:
-    // - No issue on Windows and MacOS
-    CPPUNIT_ASSERT(Utility::moveItemToTrash(subdir));
+    CPPUNIT_ASSERT(!Utility::moveItemToTrash(subdir));
     CPPUNIT_ASSERT(!std::filesystem::exists(subdir, ec));
     CPPUNIT_ASSERT(!ec);
 }
