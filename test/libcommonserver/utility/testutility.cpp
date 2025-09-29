@@ -137,7 +137,7 @@ void TestUtility::testMoveItemToTrash(void) {
     CPPUNIT_ASSERT(Utility::moveItemToTrash(path));
     CPPUNIT_ASSERT(!std::filesystem::exists(path));
 
-    // Test with a non existing file
+    // Test with a non-existing file
     CPPUNIT_ASSERT(!Utility::moveItemToTrash(tempDir.path() / "test2.txt"));
 
     // Test with a directory
@@ -152,7 +152,13 @@ void TestUtility::testMoveItemToTrash(void) {
     (void) std::filesystem::create_directory(subdir);
     path = subdir / "file.txt";
     { std::ofstream ofs(path); }
+#if defined(KD_WINDOWS)
+    const testhelpers::RightsSet rightSet(false, false, false);
+    auto rightsError = IoError::Unknown;
+    CPPUNIT_ASSERT(IoHelper::setRights(subdir, rightSet.read, rightSet.write, rightSet.execute, ioError));
+#else
     std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::remove);
+#endif
 
     std::error_code ec;
 #if defined(KD_WINDOWS)
