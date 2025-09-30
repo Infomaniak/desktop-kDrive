@@ -90,7 +90,7 @@ namespace Infomaniak.kDrive.ViewModels
                           }
                           await Task.WhenAll(driveTasks).ConfigureAwait(false);
                      }
-                }, TaskScheduler.FromCurrentSynchronizationContext())
+                }, TaskScheduler.FromCurrentSynchronizationContext()).Unwrap()
             };
             await Task.WhenAll(tasks).ConfigureAwait(false);
             Logger.Log(Logger.Level.Info, $"User properties for DbId {DbId} reloaded.");
