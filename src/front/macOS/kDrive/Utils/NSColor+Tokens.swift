@@ -18,15 +18,6 @@
 
 import Cocoa
 
-class PreloadingView: NSView {
-    init() {
-        super.init(frame: .zero)
-
-        wantsLayer = true
-        layer?.backgroundColor = NSColor.surfaceSecondary.cgColor
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+extension NSColor {
+    static let surfaceSecondary = NSColor(resource: .skyBackground)
 }

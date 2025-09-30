@@ -12,6 +12,7 @@
 		37A1C4602E546CB700596DBB /* kDriveCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C45A2E546CB600596DBB /* kDriveCore.framework */; };
 		37A1C4612E546CB700596DBB /* kDriveCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C45A2E546CB600596DBB /* kDriveCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		37A1C4712E54708F00596DBB /* InfomaniakDI in Frameworks */ = {isa = PBXBuildFile; productRef = 37A1C4702E54708F00596DBB /* InfomaniakDI */; };
+		F967FC8C2E8BC9FE00EDD4D7 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = F967FC8B2E8BC9FE00EDD4D7 /* Lottie */; };
 		F9ACC5382E5DF50F0081E80B /* swiftgen.yml in Resources */ = {isa = PBXBuildFile; fileRef = F9ACC5372E5DF50B0081E80B /* swiftgen.yml */; };
 /* End PBXBuildFile section */
 
@@ -110,6 +111,7 @@
 			files = (
 				37A1C4602E546CB700596DBB /* kDriveCore.framework in Frameworks */,
 				37A1C4452E546A9600596DBB /* kDriveCoreUI.framework in Frameworks */,
+				F967FC8C2E8BC9FE00EDD4D7 /* Lottie in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -193,6 +195,7 @@
 			);
 			name = kDrive;
 			packageProductDependencies = (
+				F967FC8B2E8BC9FE00EDD4D7 /* Lottie */,
 			);
 			productName = kDrive;
 			productReference = 37A1C4262E546A5200596DBB /* kDrive.app */;
@@ -283,6 +286,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				37A1C46F2E54708F00596DBB /* XCRemoteSwiftPackageReference "swift-dependency-injection" */,
+				F967FC8A2E8BC9FE00EDD4D7 /* XCRemoteSwiftPackageReference "lottie-spm" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 37A1C4272E546A5200596DBB /* Products */;
@@ -783,6 +787,14 @@
 				minimumVersion = 2.0.4;
 			};
 		};
+		F967FC8A2E8BC9FE00EDD4D7 /* XCRemoteSwiftPackageReference "lottie-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/airbnb/lottie-spm.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.5.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -790,6 +802,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 37A1C46F2E54708F00596DBB /* XCRemoteSwiftPackageReference "swift-dependency-injection" */;
 			productName = InfomaniakDI;
+		};
+		F967FC8B2E8BC9FE00EDD4D7 /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F967FC8A2E8BC9FE00EDD4D7 /* XCRemoteSwiftPackageReference "lottie-spm" */;
+			productName = Lottie;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

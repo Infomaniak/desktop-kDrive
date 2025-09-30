@@ -38,8 +38,7 @@ final class MainWindowController: NSWindowController {
 
         window.setFrameAutosaveName("kDriveMainWindow")
 
-        viewController = MainSplitViewController()
-        window.contentView = viewController?.view
+        window.contentView = PreloadingView()
     }
 
     required init?(coder: NSCoder) {
