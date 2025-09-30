@@ -49,9 +49,6 @@ class SyncJob : public AbstractJob {
         bool progressChanged();
         [[nodiscard]] bool isProgressTracked() const { return _progress > -1; }
 
-    protected:
-        void run() override;
-
     private:
         int64_t _expectedFinishProgress =
                 expectedFinishProgressNotSetValue; // Expected progress value when the job is finished. -2 means it is not set.

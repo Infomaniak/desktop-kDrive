@@ -47,6 +47,13 @@ AbstractJob::~AbstractJob() {
     log4cplus::threadCleanup();
 }
 
+void AbstractJob::run() {
+    _isRunning = true;
+    runJob();
+    callback(jobId());
+    // Don't put code after this line as object has been destroyed
+}
+
 ExitInfo AbstractJob::runSynchronously() {
     run();
     return _exitInfo;

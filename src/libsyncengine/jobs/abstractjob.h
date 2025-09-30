@@ -57,6 +57,7 @@ class AbstractJob : public Poco::Runnable {
         bool isAborted() const;
 
     protected:
+        void run() override;
         virtual bool canRun() { return true; }
 
         log4cplus::Logger _logger;

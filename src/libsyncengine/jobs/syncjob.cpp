@@ -51,12 +51,4 @@ bool SyncJob::progressChanged() {
     }
     return false;
 }
-
-void SyncJob::run() {
-    _isRunning = true;
-    runJob();
-    callback(jobId());
-    // Don't put code after this line as object has been destroyed
-}
-
 } // namespace KDC
