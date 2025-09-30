@@ -58,8 +58,8 @@ final class PreloadingViewController: NSViewController {
 extension PreloadingViewController {
     private func configureWindowAppearance() {
         guard let window = view.window else { return }
-        print(window)
         window.titlebarAppearsTransparent = true
+        window.isMovableByWindowBackground = true
     }
 
     private func setupView() {

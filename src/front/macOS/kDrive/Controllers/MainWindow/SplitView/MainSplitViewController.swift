@@ -41,7 +41,7 @@ final class MainSplitViewController: IKSplitViewController {
 
         window.titlebarAppearsTransparent = false
         window.toolbarStyle = .unified
-        window.styleMask.insert(.fullSizeContentView)
+        window.isMovableByWindowBackground = false
     }
 
     private func setupSplitView() {

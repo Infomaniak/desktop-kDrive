@@ -39,10 +39,8 @@ final class MainWindowController: NSWindowController {
         )
         super.init(window: window)
 
-        window.setFrameAutosaveName("kDriveMainWindow")
         window.center()
-
-        switchToWindowState(.preloading)
+        window.setFrameAutosaveName("kDriveMainWindow")
     }
 
     @available(*, unavailable)
@@ -50,18 +48,7 @@ final class MainWindowController: NSWindowController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func switchToWindowState(_ state: MainWindowState) {
-        switch state {
-        case .preloading:
-            setViewController(PreloadingViewController())
-        case .login:
-            print("ToDo")
-        case .splitView:
-            setViewController(MainSplitViewController())
-        }
-    }
-
-    private func setViewController(_ viewController: NSViewController) {
+    func setViewController(_ viewController: NSViewController) {
         self.viewController = viewController
         window?.contentView = viewController.view
     }
