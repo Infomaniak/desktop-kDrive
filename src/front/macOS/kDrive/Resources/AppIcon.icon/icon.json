@@ -1,0 +1,111 @@
+{
+  "fill" : {
+    "automatic-gradient" : "srgb:0.36070,0.53727,0.96861,1.00000"
+  },
+  "groups" : [
+    {
+      "hidden" : false,
+      "layers" : [
+        {
+          "fill-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : {
+                "solid" : "srgb:0.36078,0.53725,0.96863,1.00000"
+              }
+            },
+            {
+              "appearance" : "tinted",
+              "value" : "automatic"
+            }
+          ],
+          "image-name-specializations" : [
+            {
+              "value" : "4 – Layer.svg"
+            },
+            {
+              "idiom" : "square",
+              "value" : "4 – Layer.svg"
+            }
+          ],
+          "name" : "4 – Layer"
+        },
+        {
+          "fill-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : {
+                "solid" : "srgb:0.16863,0.29020,0.61961,1.00000"
+              }
+            }
+          ],
+          "hidden" : false,
+          "image-name-specializations" : [
+            {
+              "value" : "3 – Layer.svg"
+            },
+            {
+              "idiom" : "square",
+              "value" : "3 – Layer.svg"
+            }
+          ],
+          "name" : "3 – Layer"
+        },
+        {
+          "fill-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : {
+                "solid" : "srgb:0.36070,0.53727,0.96861,0.60000"
+              }
+            }
+          ],
+          "hidden" : false,
+          "image-name-specializations" : [
+            {
+              "value" : "2 – Layer.svg"
+            },
+            {
+              "idiom" : "square",
+              "value" : "2 – Layer.svg"
+            }
+          ],
+          "name" : "2 – Layer"
+        },
+        {
+          "fill-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : {
+                "solid" : "srgb:0.36070,0.53727,0.96861,0.30000"
+              }
+            }
+          ],
+          "hidden" : false,
+          "image-name-specializations" : [
+            {
+              "value" : "1 – Layer.svg"
+            },
+            {
+              "idiom" : "square",
+              "value" : "1 – Layer.svg"
+            }
+          ],
+          "name" : "1 – Layer"
+        }
+      ],
+      "name" : "full-dark",
+      "shadow" : {
+        "kind" : "layer-color",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.4
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "squares" : "shared"
+  }
+}

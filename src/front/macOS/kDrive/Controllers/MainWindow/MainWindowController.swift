@@ -19,7 +19,7 @@
 import Cocoa
 
 final class MainWindowController: NSWindowController {
-    private var mainViewController: MainSplitViewController!
+    private var viewController: NSViewController?
 
     private static let contentRect = NSRect(x: 0, y: 0, width: 900, height: 600)
 
@@ -38,8 +38,8 @@ final class MainWindowController: NSWindowController {
 
         window.setFrameAutosaveName("kDriveMainWindow")
 
-        mainViewController = MainSplitViewController()
-        window.contentView = mainViewController.view
+        viewController = MainSplitViewController()
+        window.contentView = viewController?.view
     }
 
     required init?(coder: NSCoder) {
