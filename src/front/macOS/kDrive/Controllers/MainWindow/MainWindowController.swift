@@ -18,8 +18,15 @@
 
 import Cocoa
 
+enum MainWindowState: Sendable {
+    case preloading
+    case login
+    case splitView
+}
+
 final class MainWindowController: NSWindowController {
     private var viewController: NSViewController?
+    private var windowState = MainWindowState.preloading
 
     private static let contentRect = NSRect(x: 0, y: 0, width: 900, height: 600)
 
@@ -28,20 +35,34 @@ final class MainWindowController: NSWindowController {
             contentRect: Self.contentRect,
             styleMask: [.titled, .closable, .resizable, .miniaturizable, .fullSizeContentView],
             backing: .buffered,
-            defer: false
+            defer: true
         )
-
-        window.toolbarStyle = .unified
-        window.center()
-
         super.init(window: window)
 
         window.setFrameAutosaveName("kDriveMainWindow")
+        window.center()
 
-        window.contentView = PreloadingView()
+        switchToWindowState(.preloading)
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    private func switchToWindowState(_ state: MainWindowState) {
+        switch state {
+        case .preloading:
+            setViewController(PreloadingViewController())
+        case .login:
+            print("ToDo")
+        case .splitView:
+            setViewController(MainSplitViewController())
+        }
+    }
+
+    private func setViewController(_ viewController: NSViewController) {
+        self.viewController = MainSplitViewController()
+        window?.contentView = viewController.view
     }
 }

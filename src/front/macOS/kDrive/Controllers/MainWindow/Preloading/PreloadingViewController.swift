@@ -19,18 +19,38 @@
 import Cocoa
 import Lottie
 
-class PreloadingView: NSView {
-    private var animationView: LottieAnimationView!
+final class PreloadingViewController: NSViewController {
+    private var animationView = LottieAnimationView()
 
-    init() {
-        super.init(frame: .zero)
+    override func viewDidLoad() {
+        super.viewDidLoad()
 
-        wantsLayer = true
-        layer?.backgroundColor = NSColor.surfaceSecondary.cgColor
+        setupView()
+        loadAndPlayAnimation()
+    }
 
-        animationView = LottieAnimationView()
+    override func viewDidAppear() {
+        super.viewDidAppear()
+
+        configureWindowAppearance()
+    }
+}
+
+// MARK: - Set up UI
+
+extension PreloadingViewController {
+    private func configureWindowAppearance() {
+        guard let window = view.window else { return }
+        print(window)
+        window.titlebarAppearsTransparent = true
+    }
+
+    private func setupView() {
+        view.wantsLayer = true
+        view.layer?.backgroundColor = NSColor.surfaceSecondary.cgColor
+
         animationView.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(animationView)
+        view.addSubview(animationView)
 
         let progressIndicator = NSProgressIndicator()
         progressIndicator.translatesAutoresizingMaskIntoConstraints = false
@@ -38,29 +58,23 @@ class PreloadingView: NSView {
         progressIndicator.isIndeterminate = true
         progressIndicator.controlSize = .small
         progressIndicator.startAnimation(nil)
-        addSubview(progressIndicator)
-
-        loadAndPlayAnimation()
+        view.addSubview(progressIndicator)
 
         NSLayoutConstraint.activate([
             animationView.widthAnchor.constraint(lessThanOrEqualToConstant: 150),
             animationView.heightAnchor.constraint(lessThanOrEqualToConstant: 150),
 
-            animationView.centerXAnchor.constraint(equalTo: centerXAnchor),
-            animationView.centerYAnchor.constraint(equalTo: centerYAnchor),
+            animationView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            animationView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
 
-            animationView.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: 16),
-            trailingAnchor.constraint(greaterThanOrEqualTo: animationView.trailingAnchor, constant: 16),
-            animationView.topAnchor.constraint(greaterThanOrEqualTo: topAnchor, constant: 16),
+            animationView.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 16),
+            view.trailingAnchor.constraint(greaterThanOrEqualTo: animationView.trailingAnchor, constant: 16),
+            animationView.topAnchor.constraint(greaterThanOrEqualTo: view.topAnchor, constant: 16),
 
             progressIndicator.topAnchor.constraint(equalTo: animationView.bottomAnchor, constant: 48),
-            progressIndicator.centerXAnchor.constraint(equalTo: centerXAnchor),
-            bottomAnchor.constraint(greaterThanOrEqualTo: progressIndicator.bottomAnchor, constant: 16)
+            progressIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            view.bottomAnchor.constraint(greaterThanOrEqualTo: progressIndicator.bottomAnchor, constant: 16)
         ])
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
     }
 
     private func loadAndPlayAnimation() {
