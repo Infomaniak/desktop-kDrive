@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="Infomaniak.kDrive.CustomControls.LottiePlayer"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:Infomaniak.kDrive.CustomControls"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converters="using:Infomaniak.kDrive.Converters"
+             xmlns:lottie="using:CommunityToolkit.WinUI.Lottie"
+             mc:Ignorable="d">
+
+    <Grid Opacity="0">
+        <Grid.OpacityTransition>
+            <ScalarTransition Duration="0:0:0.1" />
+        </Grid.OpacityTransition>
+
+        <AnimatedVisualPlayer x:Name="AnimatedVisualPlayer"
+                              Loaded="AnimatedVisualPlayer_Loaded">
+            <lottie:LottieVisualSource UriSource="{x:Bind UriSource, Mode=OneWay}" />
+        </AnimatedVisualPlayer>
+    </Grid>
+</UserControl>
