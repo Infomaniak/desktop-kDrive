@@ -82,10 +82,11 @@ void TestIo::testTempDirectoryPath() {
 
     {
         // Saves the current value of "KDRIVE_TMP_PATH".
-        const std::string previousPath = CommonUtility::envVarValue("KDRIVE_TMP_PATH");
+        const std::string previousPathString = CommonUtility::envVarValue("KDRIVE_TMP_PATH");
 
         LocalTemporaryDirectory temporaryDirectory;
-        (void) CommonUtility::setenv("KDRIVE_TMP_PATH", (temporaryDirectory.path() / "testTempDirectoryPath").c_str(), 1);
+        const auto pathStringToSet = Path2Str(SyncPath(temporaryDirectory.path() / "testTempDirectoryPath"));
+        (void) CommonUtility::setenv("KDRIVE_TMP_PATH", pathStringToSet.c_str(), 1);
 
         SyncPath tmpPath;
         IoError ioError = IoError::Unknown;
@@ -95,7 +96,7 @@ void TestIo::testTempDirectoryPath() {
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
         // Restores previous value.
-        (void) CommonUtility::setenv("KDRIVE_TMP_PATH", previousPath.c_str(), 1);
+        (void) CommonUtility::setenv("KDRIVE_TMP_PATH", previousPathString.c_str(), 1);
     }
 }
 
