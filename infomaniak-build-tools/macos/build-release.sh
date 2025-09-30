@@ -75,7 +75,7 @@ fi
 CMAKE_PARAMS=(-DKDRIVE_VERSION_BUILD="$KDRIVE_VERSION_BUILD")
 
 if [ -n "$TEAM_IDENTIFIER" ] && [ -n "$SIGN_IDENTITY" ]; then
-	CMAKE_PARAMS+=(-DSOCKETAPI_TEAM_IDENTIFIER_PREFIX="$TEAM_IDENTIFIER.")
+	CMAKE_PARAMS+=(-DTEAM_IDENTIFIER_PREFIX="$TEAM_IDENTIFIER.")
 fi
 
 bash infomaniak-build-tools/conan/build_dependencies.sh Release --output-dir="$conan_folder" --make-release

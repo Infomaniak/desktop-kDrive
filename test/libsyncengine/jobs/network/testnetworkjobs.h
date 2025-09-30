@@ -51,12 +51,15 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testDriveUploadSessionConstructorException);
         CPPUNIT_TEST(testDriveUploadSessionSynchronous);
         CPPUNIT_TEST(testDriveUploadSessionAsynchronous);
+        CPPUNIT_TEST(testDriveUploadSessionWithSizeMismatchError);
+        CPPUNIT_TEST(testDriveUploadSessionWithNullChunkSizeError);
         CPPUNIT_TEST(testDefuncted);
         CPPUNIT_TEST(testDriveUploadSessionSynchronousAborted);
         CPPUNIT_TEST(testDriveUploadSessionAsynchronousAborted);
         CPPUNIT_TEST(testGetAppVersionInfo);
         CPPUNIT_TEST(testDirectDownload);
         CPPUNIT_TEST(testDownloadHasEnoughSpace);
+        CPPUNIT_TEST(testSearch);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -88,12 +91,15 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         void testDriveUploadSessionConstructorException();
         void testDriveUploadSessionSynchronous();
         void testDriveUploadSessionAsynchronous();
+        void testDriveUploadSessionWithSizeMismatchError();
+        void testDriveUploadSessionWithNullChunkSizeError();
         void testDefuncted();
         void testDriveUploadSessionSynchronousAborted();
         void testDriveUploadSessionAsynchronousAborted();
         void testGetAppVersionInfo();
         void testDirectDownload();
         void testDownloadHasEnoughSpace();
+        void testSearch();
 
     private:
         bool createTestFiles();

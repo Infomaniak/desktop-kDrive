@@ -1,4 +1,4 @@
-﻿<#
+<#
  Infomaniak kDrive - Desktop App
  Copyright (C) 2023-2025 Infomaniak Network SA
 
@@ -39,6 +39,9 @@ Param(
 
     # tokenPass: The password to use for unlocking the USB-key signing certificate (only used if upload is set)
     [String] $tokenPass,
+	
+	# Msi: Build MSI installer
+    [switch] $msi,
 
     # Coverage: Flag to enable or disable the code coverage computation
     [switch] $coverage,
@@ -64,6 +67,9 @@ $installPath = "$contentPath/install"
 
 $extPath = "$path/extensions/windows/cfapi"
 $vfsDir = "$extPath/x64/Release"
+
+$msiInstallerFolderPath = "$path/installer/windows/kDriveInstaller"
+$msiPackageFolderPath = "$msiInstallerFolderPath/bin/x64/Release/en-US"
 
 # Files to be added to the archive and then packaged
 $archivePath = "$installPath/bin"
@@ -155,26 +161,39 @@ function Get-Aumid {
     return $aumid
 }
 
-function Get-App-Name {
+function Get-Package-Name {
     param (
-        [string] $buildPath
+        [string] $buildPath,
+        [switch] $msi,
+		[switch] $exe
     )
 
     $prodName = "kDrive"
     $version = (Select-String -Path $buildPath\version.h KDRIVE_VERSION_FULL | foreach-object { $data = $_ -split " "; echo $data[3] })
-    $appName = "$prodName-$version.exe"
+	if ($msi) {
+		$appName = "$prodName-$version.msi"
+	} ElseIf ($exe) {
+		$appName = "$prodName-$version.exe"
+	} else {
+		$appName = "$prodName-$version"
+	}
 
-   
     return $appName
 }
 
 function Get-Installer-Path {
     param (
         [string] $buildPath,
-        [string] $contentPath
+        [string] $contentPath,
+		[switch] $msi
     )
 
-    $appName = Get-App-Name $buildPath
+	if ($msi) {
+		$appName = Get-Package-Name $buildPath -msi
+	} else {
+		$appName = Get-Package-Name $buildPath -exe
+	}
+    
     $installerPath = "$contentPath/$appName"
 
     return $installerPath
@@ -221,12 +240,15 @@ function Build-Extension {
     (Get-Content $appxManifestPath -Raw) -replace ' Version="[^"]*" />', " Version=`"$version.0`" />" |
         Set-Content -Encoding UTF8 -Force $appxManifestPath
     Write-Host "Extension version: $version"
-
-    msbuild "$extPath\kDriveExt.sln" /p:Configuration=$configuration /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true /p:PackageCertificateThumbprint="$thumbprint"
+	
+	  $aumid = Get-Aumid $upload
+	  Write-Host "Building extension with AUMID: $aumid"
+	
+    msbuild "$extPath\kDriveExt.sln" /p:Configuration=$configuration /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true /p:PackageCertificateThumbprint="$thumbprint" /p:KDC_AUMID="$aumid"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     $bundlePath = "$extPath/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$version.0_Test/FileExplorerExtensionPackage_$version.0_x64_arm64.msixbundle"
-    Sign-File -FilePath $bundlePath -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass
+    Sign-File -FilePath $bundlePath -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description "FileExplorerExtensionPackage"
 
     $srcVfsPath = "$path/src/libcommonserver/vfs/win/."
     Copy-Item -Path "$extPath/Vfs/../Common/debug.h" -Destination $srcVfsPath
@@ -237,7 +259,7 @@ function Build-Extension {
     # Create a copy for NSIS.template.nsi.in where paths are shorter (long paths can cause the NSIS `File` function to fail).
     Copy-Item -Path "$extPath/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$version.0_Test" -Destination "$contentPath/vfs_appx_directory" -Recurse
 
-if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     Write-Host "Extension built."
 }
@@ -362,7 +384,7 @@ function Set-Up-NSIS {
 
     # NSIS needs the path to use backslash
     $iconPath = Get-Icon-Path $buildpath
-    $appName = Get-App-Name $buildpath
+    $appName = Get-Package-Name $buildpath -exe
    
     $installerPath = Get-Installer-Path $buildPath $contentPath
     Clean $installerPath
@@ -396,10 +418,11 @@ function Sign-File {
         [string] $filePath,
         [bool] $upload = $false,
         [string] $thumbprint,
-        [String] $tokenPass = ""
+        [string] $tokenPass = "",
+		[string] $description = ""
     )
     Write-Host "Signing the file $filePath with thumbprint $thumbprint" -f Yellow
-    & "$path\infomaniak-build-tools\windows\ksigntool.exe" sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256 /fd sha256 /td sha256 /v /debug /sm $filePath /password:$tokenPass
+    & "$path\infomaniak-build-tools\windows\ksigntool.exe" sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256 /fd sha256 /td sha256 /v /debug /sm /d $description $filePath /password:$tokenPass
     $res = $LASTEXITCODE
     Write-Host "Signing exit code: $res" -ForegroundColor Yellow
     if ($res -ne 0) {
@@ -435,7 +458,7 @@ function Prepare-Archive {
         "${env:ProgramFiles(x86)}/Poco/bin/PocoXML",
         "${env:ProgramFiles(x86)}/Sentry-Native/bin/sentry",
         "$vfsDir/Vfs",
-        "$buildPath/bin/kDrivecommonserver_vfs_win"
+        "$buildPath/bin/kDrive_vfs_win"
     )
 
     Write-Host "Copying dependencies to the folder $archivePath"
@@ -496,9 +519,10 @@ function Prepare-Archive {
         }
 
         $filename = Split-Path -Leaf $file
+
         $thumbprint = Get-Thumbprint -Upload $upload -Ci $ci
-        
-        Sign-File -FilePath $archivePath/$filename -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass
+        Sign-File -FilePath $archivePath/$filename -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description $filename
+
     }
 
     Write-Host "Archive prepared."
@@ -531,7 +555,7 @@ function Create-Archive {
     & makensis "$buildPath\NSIS.template.nsi"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-    $appName = Get-App-Name $buildPath
+    $appName = Get-Package-Name $buildPath -exe
     Move-Item -Path "$buildPath\$appName" -Destination "$contentPath"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
@@ -540,7 +564,7 @@ function Create-Archive {
     $installerPath = Get-Installer-Path $buildPath $contentPath
 
     if (Test-Path -Path $installerPath) {
-        Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -tokenPass $tokenPass
+        Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description $appName
         Write-Host ("$installerPath signed successfully.") -f Green
     }
     else {
@@ -549,6 +573,33 @@ function Create-Archive {
     }
 
     Write-Host "Archive created."
+}
+
+function Create-MSI-Package {
+	$appName = Get-Package-Name $buildPath
+	
+	dotnet build "$msiInstallerFolderPath/kDriveInstaller.sln" /p:Configuration="Release" /p:Platform="x64" /p:OutputName=$appName
+
+	Move-Item -Path "$msiPackageFolderPath/$appName.msi" -Destination "$contentPath"
+	if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+	# Sign final installer
+	if (!$thumbprint) {
+		$thumbprint = Get-Thumbprint $upload
+	}
+
+	$installerPath = Get-Installer-Path $buildPath $contentPath -msi
+
+	if (Test-Path -Path $installerPath) {
+		Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description $appName
+		Write-Host ("$installerPath signed successfully.") -f Green
+	}
+	else {
+		Write-Host ("$installerPath not found. Unable to sign final installer.") -f Red
+		exit 1
+	}
+
+	Write-Host "MSI package created."
 }
 
 #################################################################################################
@@ -744,7 +795,7 @@ if ($LASTEXITCODE -ne 0)
 #                                                                                               #
 #################################################################################################
 
-if ($upload) {
+if (!$ci -or $upload) {
     Create-Archive -Path $path -BuildPath $buildPath -ContentPath $contentPath -InstallPath $installPath -Archivename $archiveName -ArchivePath $archivePath -Upload $upload -Ci $ci
     if ($LASTEXITCODE -ne 0) {
         Write-Host "Archive creation failed ($LASTEXITCODE) . Aborting." -f Red
@@ -754,11 +805,26 @@ if ($upload) {
 
 #################################################################################################
 #                                                                                               #
+#                                     MSI PACKAGE CREATION                                      #
+#                                                                                               #
+#################################################################################################
+
+if ($msi) {
+    Create-MSI-Package
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "MSI package creation failed ($LASTEXITCODE) . Aborting." -f Red
+        exit $LASTEXITCODE
+    }
+}
+
+
+#################################################################################################
+#                                                                                               #
 #                                              CLEAN-UP                                         #
 #                                                                                               #
 #################################################################################################
 
-Copy-Item -Path "$buildPath\bin\kDrive*.pdb" -Destination $contentPath
+Copy-Item -Path "$buildPath\kDrive*.pdb" -Destination $contentPath
 Remove-Item $archiveDataPath
 
 #################################################################################################
@@ -767,7 +833,7 @@ Remove-Item $archiveDataPath
 #                                                                                               #
 #################################################################################################
 
-if ($upload) {
+if (!$ci -or $upload) {
     Write-Host "Packaging done."
     Write-Host "Run the upload script to generate the update file and upload the new version."
 }

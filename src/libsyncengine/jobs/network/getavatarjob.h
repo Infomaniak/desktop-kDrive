@@ -34,7 +34,7 @@ class GetAvatarJob : public AbstractNetworkJob {
         std::string getContentType(bool &canceled) override;
         void setQueryParameters(Poco::URI &, bool &) override {}
         ExitInfo setData() override { return ExitCode::Ok; }
-        bool handleError(std::istream &is, const Poco::URI &uri) override;
+        bool handleError(const std::string &replyBody, const Poco::URI &uri) override;
         bool handleResponse(std::istream &is) override;
 
         std::string _avatarUrl;

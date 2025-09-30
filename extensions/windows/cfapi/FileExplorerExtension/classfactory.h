@@ -27,8 +27,6 @@ class ClassFactory : public winrt::implements<ClassFactory<T>, IClassFactory> {
     public:
         // IClassFactory
         IFACEMETHODIMP CreateInstance(_In_opt_ IUnknown* unkOuter, REFIID riid, _COM_Outptr_ void** object) {
-            // TRACE_DEBUG(L"CreateInstance of %ls", Utilities::utf8ToUtf16(typeid(T).name()).c_str());
-
             try {
                 auto provider = winrt::make<T>();
                 winrt::com_ptr<IUnknown> unkn{provider.as<IUnknown>()};

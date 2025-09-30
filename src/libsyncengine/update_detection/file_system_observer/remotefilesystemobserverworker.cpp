@@ -116,7 +116,7 @@ ExitInfo RemoteFileSystemObserverWorker::generateInitialSnapshot() {
 
         switch (exitInfo.code()) {
             case ExitCode::NetworkError:
-                _syncPal->addError(Error(errId(), exitInfo));
+                _syncPal->addError(Error(ERR_ID, exitInfo));
                 break;
             case ExitCode::LogicError:
             case ExitCode::InvalidSync:
@@ -197,8 +197,8 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents() {
             break;
         }
 
-        if (std::string errorCode; job->hasErrorApi(&errorCode)) {
-            if (getNetworkErrorCode(errorCode) == NetworkErrorCode::ForbiddenError) {
+        if (job->hasErrorApi()) {
+            if (getNetworkErrorCode(job->errorCode()) == NetworkErrorCode::ForbiddenError) {
                 LOG_SYNCPAL_WARN(_logger, "Access forbidden");
                 exitInfo = ExitCode::Ok;
                 break;
@@ -439,7 +439,7 @@ ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
                                                                << std::to_string(_driveDbId) << " and cursor: " << _cursor);
 
             if (notifyJob->exitInfo() == ExitInfo(ExitCode::NetworkError, ExitCause::NetworkTimeout)) {
-                _syncPal->addError(Error(errId(), notifyJob->exitInfo()));
+                _syncPal->addError(Error(ERR_ID, notifyJob->exitInfo()));
             }
 
             return notifyJob->exitInfo();
@@ -625,7 +625,7 @@ ExitInfo RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
                 switch (exitInfo.code()) {
                     case ExitCode::NetworkError:
                         if (exitCause() == ExitCause::NetworkTimeout) {
-                            _syncPal->addError(Error(errId(), exitInfo));
+                            _syncPal->addError(Error(ERR_ID, exitInfo));
                         }
                         break;
                     case ExitCode::LogicError:

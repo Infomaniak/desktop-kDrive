@@ -117,28 +117,241 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="LanguageSelectionRestartNeeded.Title" xml:space="preserve">
+  <data name="CC_TrayIcon_ExitApplicationCommand.Label" xml:space="preserve">
     <value />
   </data>
-  <data name="LanguageSelectionRestartNeeded.Message" xml:space="preserve">
+  <data name="CC_TrayIcon_OpenApplicationCommand.Label" xml:space="preserve">
     <value />
   </data>
-  <data name="TrayIconExitApplicationCommand.Label" xml:space="preserve">
+  <data name="W_MainWindow_NavBar_Home.Content" xml:space="preserve">
     <value />
   </data>
-  <data name="TrayIconOpenApplicationCommand.Label" xml:space="preserve">
+  <data name="W_MainWindow_NavBar_Activity.Content" xml:space="preserve">
     <value />
   </data>
-  <data name="NavHome.Content" xml:space="preserve">
+  <data name="W_MainWindow_NavBar_Storage.Content" xml:space="preserve">
     <value />
   </data>
-  <data name="NavActivity.Content" xml:space="preserve">
+  <data name="W_MainWindow_NavBar_Folder.Content" xml:space="preserve">
     <value />
   </data>
-  <data name="NavStorage.Content" xml:space="preserve">
+  <data name="W_MainWindow_TitleBar_SearchBox.PlaceholderText" xml:space="preserve">
     <value />
   </data>
-  <data name="NavFolder.Content" xml:space="preserve">
+  <data name="CC_SyncStatusBar_PausedStatus.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncStatusBar_SyncingStatus.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncStatusBar_StartingStatus.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncStatusBar_PausingStatus.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncStatusBar_SyncedStatus.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncErrorBar_message.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncErrorBar_button.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_ActivityList_Header_Name.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_ActivityList_Header_State.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_ActivityList_Header_Size.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_ActivityList_Header_LastLocation.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_Second" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_Day" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_JustNow" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_Hour" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_Minute" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_ErrorPage_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_ErrorPage_Application_HowTosolve.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_ErrorPage_Application_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_ErrorPage_Synchronisation_Header.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_SupportUrl" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_FAQUrl" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_ErrorPage_NoErrors_Line1.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_ErrorPage_NoErrors_Line2.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_UpgradeOfferMy_Url" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_UpgradeOfferProUrl" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_ErrorPage_Application_LearnMoreButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_ErrorPage_Application_SolveButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="  /!\  Ressource naming convention" xml:space="preserve">
+    <value>-</value>
+  </data>
+  <data name="Page_HomePage_favorites.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_trash.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_shared.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_KSuiteUpgradeBar_link.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_KSuiteUpgradeBar_message.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_ErrorPage_Application_Header.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_UpdateAvailableBar_message.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_UpdateAvailableBar_link.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_SignupUrl" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Processing_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_RestartOAuthButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Success_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Processing_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Success_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_WelcomePage_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_WelcomePage_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_WelcomePage_SigninButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_WelcomePage_SignupButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_FinishButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.PrimaryButtonText" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.CloseButtonText" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Description.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_InfoBar.Message" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_CustomizeButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Title" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Subtitle" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_FinishPage_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_FinishPage_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_FinishPage_OpenButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_DriveAlreadyConfigured.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_FinishingPage_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_FinishingPage_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_NoDrive_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_NoDrive_Text.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_StartFreeButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_OffersButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_kDriveOffersUrl" xml:space="preserve">
     <value />
   </data>
 </root>

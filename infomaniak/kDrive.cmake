@@ -28,7 +28,6 @@ if( APPLE )
 else()
     set( APPLICATION_ICON_NAME  "kdrive-win" )
 endif()
-set( APPLICATION_VIRTUALFILE_SUFFIX "kdrive" CACHE STRING "Virtual file suffix (not including the .)")
 set( APPLICATION_DOWNLOAD_URL "https://kdrive.infomaniak.com/app/drive/sync" CACHE STRING "App download URL" )
 set( APPLICATION_TRASH_URL "https://kdrive.infomaniak.com/app/drive/%s/trash" CACHE STRING "App trash URL" )
 set( APPLICATION_THUMBNAIL_URL "index.php/apps/files/api/v1/thumbnail/%1/%1/%2" CACHE STRING "App thumbnail URL" )
@@ -46,7 +45,7 @@ set( MAC_INSTALLER_BACKGROUND_FILE "${CMAKE_SOURCE_DIR}/admin/osx/installer-asse
 set( MAC_INSTALLER_INTRODUCTION_FILE "${CMAKE_SOURCE_DIR}/admin/osx/installer-assets/Introduction.rtfd")
 set( MAC_INSTALLER_DELETE_SCRIPT "${CMAKE_SOURCE_DIR}/admin/osx/installer-assets/deleteExistingApp.sh")
 
-set( SOCKETAPI_TEAM_IDENTIFIER_PREFIX "864VDCS2QY." )
+set( TEAM_IDENTIFIER_PREFIX "864VDCS2QY." )
 set( WIN_SETUP_BITMAP_PATH "${CMAKE_SOURCE_DIR}/admin/win/nsi" )
 
 set( APPLICATION_LICENSE    "${KDRIVE_THEME_DIR}/license.txt" )

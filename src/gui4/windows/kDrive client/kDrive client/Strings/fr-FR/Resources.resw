@@ -117,32 +117,267 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="LanguageSelectionRestartNeeded.Title" xml:space="preserve">
-    <value>Redémarrage requis</value>
-    <comment>Title of the infobar asking for a restart after a language change</comment>
-  </data>
-  <data name="LanguageSelectionRestartNeeded.Message" xml:space="preserve">
-    <value>Langue modifiée. Veuillez redémarrer l’application pour appliquer les nouveaux paramètres linguistiques.</value>
-    <comment>Message of the infobar asking for a restart after a language change</comment>
-  </data>
-  <data name="TrayIconExitApplicationCommand.Label" xml:space="preserve">
+  <data name="CC_TrayIcon_ExitApplicationCommand.Label" xml:space="preserve">
     <value>Quitter kDrive</value>
     <comment>Name of the quit button in the TrayIcon menu</comment>
   </data>
-  <data name="TrayIconOpenApplicationCommand.Label" xml:space="preserve">
+  <data name="CC_TrayIcon_OpenApplicationCommand.Label" xml:space="preserve">
     <value>Ouvrir kDrive</value>
     <comment>Name of the open button in the TrayIcon menu</comment>
   </data>
-  <data name="NavHome.Content" xml:space="preserve">
+  <data name="W_MainWindow_NavBar_Home.Content" xml:space="preserve">
     <value>Accueil</value>
   </data>
-  <data name="NavActivity.Content" xml:space="preserve">
+  <data name="W_MainWindow_NavBar_Activity.Content" xml:space="preserve">
     <value>Activité</value>
   </data>
-  <data name="NavStorage.Content" xml:space="preserve">
+  <data name="W_MainWindow_NavBar_Storage.Content" xml:space="preserve">
     <value>Stockage</value>
   </data>
-  <data name="NavFolder.Content" xml:space="preserve">
+  <data name="W_MainWindow_NavBar_Folder.Content" xml:space="preserve">
     <value>Dossier kDrive</value>
+  </data>
+  <data name="W_MainWindow_TitleBar_SearchBox.PlaceholderText" xml:space="preserve">
+    <value>Rechercher dans {{ TODO }}</value>
+  </data>
+  <data name="CC_SyncStatusBar_PausedStatus.Text" xml:space="preserve">
+    <value>Synchronisation en pause</value>
+  </data>
+  <data name="CC_SyncStatusBar_SyncingStatus.Text" xml:space="preserve">
+    <value>Synchronisation en cours...</value>
+  </data>
+  <data name="CC_SyncStatusBar_StartingStatus.Text" xml:space="preserve">
+    <value>Démarrage de la synchronisation...</value>
+  </data>
+  <data name="CC_SyncStatusBar_PausingStatus.Text" xml:space="preserve">
+    <value>Mise en pause de la synchronisation...</value>
+  </data>
+  <data name="CC_SyncStatusBar_SyncedStatus.Text" xml:space="preserve">
+    <value>Tous les fichiers sont synchronisés</value>
+  </data>
+  <data name="CC_SyncErrorBar_message.Text" xml:space="preserve">
+    <value>Impossible de synchroniser certains fichiers</value>
+  </data>
+  <data name="CC_SyncErrorBar_button.Content" xml:space="preserve">
+    <value>Vérifier les fichiers</value>
+  </data>
+  <data name="CC_ActivityList_Header_Name.Text" xml:space="preserve">
+    <value>Nom</value>
+  </data>
+  <data name="CC_ActivityList_Header_State.Text" xml:space="preserve">
+    <value>État</value>
+  </data>
+  <data name="CC_ActivityList_Header_Size.Text" xml:space="preserve">
+    <value>Taille</value>
+  </data>
+  <data name="CC_ActivityList_Header_LastLocation.Text" xml:space="preserve">
+    <value>Dernier emplacement</value>
+    <comment>The parent folder of the synchronized item</comment>
+  </data>
+  <data name="Global_Second" xml:space="preserve">
+    <value>sec</value>
+  </data>
+  <data name="Global_Day" xml:space="preserve">
+    <value>jour</value>
+  </data>
+  <data name="Global_JustNow" xml:space="preserve">
+    <value>À l'instant</value>
+  </data>
+  <data name="Global_Hour" xml:space="preserve">
+    <value>heure</value>
+  </data>
+  <data name="Global_Minute" xml:space="preserve">
+    <value>min</value>
+  </data>
+  <data name="Page_ErrorPage_Title.Text" xml:space="preserve">
+    <value>Éléments à vérifier</value>
+  </data>
+  <data name="Page_ErrorPage_Application_HowTosolve.Text" xml:space="preserve">
+    <value>Veuillez contacter notre support client.</value>
+  </data>
+  <data name="Page_ErrorPage_Application_Title.Text" xml:space="preserve">
+    <value>Assistance technique</value>
+  </data>
+  <data name="Page_ErrorPage_Synchronisation_Header.Text" xml:space="preserve">
+    <value>Synchronisation (</value>
+    <comment>must end with "(" </comment>
+  </data>
+  <data name="Global_SupportUrl" xml:space="preserve">
+    <value>https://www.infomaniak.com/fr/support</value>
+  </data>
+  <data name="Global_FAQUrl" xml:space="preserve">
+    <value>https://www.infomaniak.com/fr/support/faq/admin2/kdrive</value>
+  </data>
+  <data name="Page_ErrorPage_NoErrors_Line1.Text" xml:space="preserve">
+    <value>Aucun fichier n’est à vérifier.</value>
+  </data>
+  <data name="Page_ErrorPage_NoErrors_Line2.Text" xml:space="preserve">
+    <value>Profitez de votre journée !</value>
+  </data>
+  <data name="Global_UpgradeOfferMy_Url" xml:space="preserve">
+    <value>https://www.infomaniak.com/fr/ksuite/myksuite/tarifs</value>
+  </data>
+  <data name="Global_UpgradeOfferProUrl" xml:space="preserve">
+    <value>https://www.infomaniak.com/fr/ksuite/ksuite-pro/tarifs</value>
+  </data>
+  <data name="Page_ErrorPage_Application_LearnMoreButton.Content" xml:space="preserve">
+    <value>En savoir plus</value>
+  </data>
+  <data name="Page_ErrorPage_Application_SolveButton.Content" xml:space="preserve">
+    <value>Contacter le support</value>
+  </data>
+  <data name="  /!\  Ressource naming convention" xml:space="preserve">
+    <value>-</value>
+    <comment>Resource names must follow this convention:
+
+```
+{0}_{1}_{...}_{...}.{3}
+```
+
+* {0} → `CC` (CustomControls) or `Page` or `W` (Windows)
+* {1} → Name of the file where the resource is located (e.g. `HomePage`, `SyncStatusBar`)
+* {...}_{...} → Path to the component within the page
+* {3} → UI field name
+
+For translations not tied to a UI element, use: Global_{Unique human readable identifier}
+
+</comment>
+  </data>
+  <data name="Page_HomePage_favorites.Text" xml:space="preserve">
+    <value>Favoris</value>
+    <comment>Redirect to the favorite folder (in browser)</comment>
+  </data>
+  <data name="Page_HomePage_trash.Text" xml:space="preserve">
+    <value>Corbeille</value>
+    <comment>Redirect to the trash folder (in browser)</comment>
+  </data>
+  <data name="Page_HomePage_shared.Text" xml:space="preserve">
+    <value>Partages</value>
+    <comment>Redirect to the favorite folder (in browser)</comment>
+  </data>
+  <data name="CC_KSuiteUpgradeBar_link.Content" xml:space="preserve">
+    <value>Faire évoluer</value>
+    <comment>Text of the button to be redirected to the shop</comment>
+  </data>
+  <data name="CC_KSuiteUpgradeBar_message.Text" xml:space="preserve">
+    <value>Débloquez plus de fonctionnalités et stockage</value>
+    <comment>A message prompting the user to upgrade his offer</comment>
+  </data>
+  <data name="Page_ErrorPage_Application_Header.Text" xml:space="preserve">
+    <value>Application</value>
+  </data>
+  <data name="CC_UpdateAvailableBar_message.Text" xml:space="preserve">
+    <value>Une mise à jour de kDrive est disponible</value>
+    <comment>Message displayed in the info bar indicating an available update</comment>
+  </data>
+  <data name="CC_UpdateAvailableBar_link.Content" xml:space="preserve">
+    <value>Mettre à jour</value>
+    <comment>Message of the button to start the update</comment>
+  </data>
+  <data name="Global_SignupUrl" xml:space="preserve">
+    <value>https://www.infomaniak.com/fr/ksuite</value>
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Title.Text" xml:space="preserve">
+    <value>Connectez-vous dans le navigateur</value>
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Processing_Title.Text" xml:space="preserve">
+    <value>Encore un instant...</value>
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_RestartOAuthButton.Content" xml:space="preserve">
+    <value>Relancer la connexion</value>
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Success_Title.Text" xml:space="preserve">
+    <value>Connexion réussie !</value>
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Subtitle.Text" xml:space="preserve">
+    <value>Une fois connecté, vous pourrez passer à l’étape suivante.</value>
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Processing_Subtitle.Text" xml:space="preserve">
+    <value>Nous récupérons vos informations...</value>
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Success_Subtitle.Text" xml:space="preserve">
+    <value />
+    <comment>Empty</comment>
+  </data>
+  <data name="Page_Onboarding_WelcomePage_Title.Text" xml:space="preserve">
+    <value>Bienvenue dans kDrive</value>
+  </data>
+  <data name="Page_Onboarding_WelcomePage_Subtitle.Text" xml:space="preserve">
+    <value>Connectez-vous pour commencer à utiliser kDrive, le cloud éthique et sécurisé, hébergé en Suisse.</value>
+  </data>
+  <data name="Page_Onboarding_WelcomePage_SigninButton.Content" xml:space="preserve">
+    <value>Connexion</value>
+  </data>
+  <data name="Page_Onboarding_WelcomePage_SignupButton.Content" xml:space="preserve">
+    <value>Créer un compte</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_Title.Text" xml:space="preserve">
+    <value>Content de vous retrouver !</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_Subtitle.Text" xml:space="preserve">
+    <value>Choisissez les kDrive à synchroniser sur cet ordinateur :</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_FinishButton.Content" xml:space="preserve">
+    <value>Terminer la configuration</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedButton.Content" xml:space="preserve">
+    <value>Paramètres avancés</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Confirmer</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.CloseButtonText" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Title.Text" xml:space="preserve">
+    <value>Paramètres avancés</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Description.Text" xml:space="preserve">
+    <value>Personnalisez l’emplacement de vos dossiers kDrive</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_InfoBar.Message" xml:space="preserve">
+    <value>Sélectionnez un dossier vide pour chaque kDrive.</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_CustomizeButton.Content" xml:space="preserve">
+    <value>Personnaliser</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Title" xml:space="preserve">
+    <value>Ce dossier ne peut pas être sélectionné</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Subtitle" xml:space="preserve">
+    <value>Veuillez choisir un dossier vide qui ne se trouve pas a la racine d'un lecteur.</value>
+  </data>
+  <data name="Page_Onboarding_FinishPage_Title.Text" xml:space="preserve">
+    <value>Tout est prêt !</value>
+  </data>
+  <data name="Page_Onboarding_FinishPage_Subtitle.Text" xml:space="preserve">
+    <value>Vos fichiers sont prêts à être synchronisés en toute sécurité sur votre ordinateur.</value>
+  </data>
+  <data name="Page_Onboarding_FinishPage_OpenButton.Content" xml:space="preserve">
+    <value>Ouvrir kDrive</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_DriveAlreadyConfigured.Content" xml:space="preserve">
+    <value>Ce drive est déja configuré, rendez vous dans vos paramètres pour le modifier.</value>
+  </data>
+  <data name="Page_Onboarding_FinishingPage_Title.Text" xml:space="preserve">
+    <value>Synchronisation en cours</value>
+  </data>
+  <data name="Page_Onboarding_FinishingPage_Subtitle.Text" xml:space="preserve">
+    <value>Vos fichiers kDrive sont en cours de synchronisation. Nous vous invitons à patienter quelques instants.</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_NoDrive_Subtitle.Text" xml:space="preserve">
+    <value>Vous n’avez pas encore de kDrive.</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_NoDrive_Text.Text" xml:space="preserve">
+    <value>Commencez gratuitement avec my kSuite, ou choisissez une offre adaptée à vos besoins.</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_StartFreeButton.Content" xml:space="preserve">
+    <value>Commencer gratuitement</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_OffersButton.Content" xml:space="preserve">
+    <value>Voir les offres</value>
+  </data>
+  <data name="Global_kDriveOffersUrl" xml:space="preserve">
+    <value>https://www.infomaniak.com/fr/ksuite/kdrive</value>
   </data>
 </root>

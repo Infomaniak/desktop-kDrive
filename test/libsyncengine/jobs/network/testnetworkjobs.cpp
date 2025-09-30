@@ -38,6 +38,8 @@
 #include "requests/parameterscache.h"
 #include "jobs/network/infomaniak_API/getappversionjob.h"
 #include "jobs/network/directdownloadjob.h"
+#include "jobs/network/kDrive_API/createdirjob.h"
+#include "jobs/network/kDrive_API/searchjob.h"
 #include "jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.h"
 #include "jobs/network/kDrive_API/upload/uploadjob.h"
 #include "jobs/network/kDrive_API/upload/upload_session/driveuploadsession.h"
@@ -744,6 +746,13 @@ void TestNetworkJobs::testDownloadHasEnoughSpace() {
     CPPUNIT_ASSERT(!DownloadJob::hasEnoughPlace(smallPartitionPath, smallPartitionPath, 9000000, Log::instance()->getLogger()));
 }
 
+void TestNetworkJobs::testSearch() {
+    SearchJob job(_driveDbId, "test");
+    CPPUNIT_ASSERT(job.runSynchronously());
+    CPPUNIT_ASSERT(!job.searchResults().empty());
+    CPPUNIT_ASSERT(!job.cursor().empty());
+}
+
 void TestNetworkJobs::testDownloadAborted() {
     const LocalTemporaryDirectory temporaryDirectory("testDownloadAborted");
     const SyncPath localDestFilePath = temporaryDirectory.path() / "test_download";
@@ -843,16 +852,39 @@ void TestNetworkJobs::testGetFileInfo() {
 }
 
 void TestNetworkJobs::testGetFileList() {
-    GetFileListJob job(_driveDbId, pictureDirRemoteId);
-    const ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    {
+        GetFileListJob job(_driveDbId, pictureDirRemoteId);
+        const ExitCode exitCode = job.runSynchronously();
+        CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
-    int counter = 0;
-    Poco::JSON::Array::Ptr dataArray = job.jsonRes()->getArray(dataKey);
-    for (Poco::JSON::Array::ConstIterator it = dataArray->begin(); it != dataArray->end(); ++it) {
-        counter++;
+        int counter = 0;
+        Poco::JSON::Array::Ptr dataArray = job.jsonRes()->getArray(dataKey);
+        for (Poco::JSON::Array::ConstIterator it = dataArray->begin(); it != dataArray->end(); ++it) {
+            counter++;
+        }
+        CPPUNIT_ASSERT(counter == 5);
     }
-    CPPUNIT_ASSERT(counter == 5);
+    {
+        const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteDirId, "testGetFileList");
+        for (uint16_t i = 0; i < 11; i++) {
+            CreateDirJob job(nullptr, _driveDbId, tmpRemoteDir.id(), Str2SyncName(std::to_string(i)));
+            (void) job.runSynchronously();
+        }
+
+        for (uint16_t page = 1; page <= 2; page++) {
+            GetFileListJob job(_driveDbId, tmpRemoteDir.id(), page, true, 10);
+            (void) job.runSynchronously();
+            Poco::JSON::Object::Ptr resObj = job.jsonRes();
+            CPPUNIT_ASSERT(resObj);
+            Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
+            CPPUNIT_ASSERT(dataArray);
+            if (page == 1) {
+                CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(10), dataArray->size());
+            } else {
+                CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), dataArray->size());
+            }
+        }
+    }
 }
 
 void TestNetworkJobs::testGetFileListWithCursor() {
@@ -879,55 +911,69 @@ void TestNetworkJobs::testGetFileListWithCursor() {
 }
 
 void TestNetworkJobs::testFullFileListWithCursorCsv() {
-    CsvFullFileListWithCursorJob job(_driveDbId, "1", {}, false);
-    const ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    {
+        CsvFullFileListWithCursorJob job(_driveDbId, "1", {}, false);
+        const ExitCode exitCode = job.runSynchronously();
+        CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
 
-    int counter = 0;
-    std::string cursor = job.getCursor();
-    SnapshotItem item;
-    bool error = false;
-    bool ignore = false;
-    bool eof = false;
-    while (job.getItem(item, error, ignore, eof)) {
-        if (ignore) {
-            continue;
+        int counter = 0;
+        std::string cursor = job.getCursor();
+        SnapshotItem item;
+        bool error = false;
+        bool ignore = false;
+        bool eof = false;
+        while (job.getItem(item, error, ignore, eof)) {
+            if (ignore) {
+                continue;
+            }
+
+            if (item.parentId() == pictureDirRemoteId) {
+                counter++;
+            }
         }
 
-        if (item.parentId() == pictureDirRemoteId) {
-            counter++;
-        }
+        CPPUNIT_ASSERT(!cursor.empty());
+        CPPUNIT_ASSERT(counter == 5);
+        CPPUNIT_ASSERT(eof);
     }
-
-    CPPUNIT_ASSERT(!cursor.empty());
-    CPPUNIT_ASSERT(counter == 5);
-    CPPUNIT_ASSERT(eof);
 }
 
 void TestNetworkJobs::testFullFileListWithCursorCsvZip() {
-    CsvFullFileListWithCursorJob job(_driveDbId, "1", {}, true);
-    const ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+    {
+        CsvFullFileListWithCursorJob job(_driveDbId, "1", {}, true);
+        const ExitCode exitCode = job.runSynchronously();
+        CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
+        int counter = 0;
+        std::string cursor = job.getCursor();
+        SnapshotItem item;
+        bool error = false;
+        bool ignore = false;
+        bool eof = false;
+        while (job.getItem(item, error, ignore, eof)) {
+            if (ignore) {
+                continue;
+            }
 
-    int counter = 0;
-    std::string cursor = job.getCursor();
-    SnapshotItem item;
-    bool error = false;
-    bool ignore = false;
-    bool eof = false;
-    while (job.getItem(item, error, ignore, eof)) {
-        if (ignore) {
-            continue;
+            if (item.parentId() == pictureDirRemoteId) {
+                counter++;
+            }
         }
 
-        if (item.parentId() == pictureDirRemoteId) {
-            counter++;
-        }
+        CPPUNIT_ASSERT(!cursor.empty());
+        CPPUNIT_ASSERT(counter == 5);
+        CPPUNIT_ASSERT(eof);
     }
 
-    CPPUNIT_ASSERT(!cursor.empty());
-    CPPUNIT_ASSERT(counter == 5);
-    CPPUNIT_ASSERT(eof);
+    // Send a request that violates validation rules and make sure the reply is correctly decompressed.
+    {
+        CsvFullFileListWithCursorJob job(_driveDbId, "invalid",
+                                         /*blacklist*/ {}, true);
+        const ExitCode exitCode = job.runSynchronously();
+        CPPUNIT_ASSERT(exitCode != ExitCode::Ok);
+        CPPUNIT_ASSERT(job.hasErrorApi());
+        CPPUNIT_ASSERT(!job.errorCode().empty());
+        CPPUNIT_ASSERT(!job.errorDescr().empty());
+    }
 }
 
 void TestNetworkJobs::testFullFileListWithCursorCsvBlacklist() {
@@ -1107,6 +1153,53 @@ void TestNetworkJobs::testUpload() {
     testUpload(creationTimeIn.count(), modificationTimeIn.count(), creationTimeOut, modificationTimeOut);
     CPPUNIT_ASSERT_LESS(modificationTimeIn.count(), modificationTimeOut);
 }
+
+void TestNetworkJobs::testDriveUploadSessionWithSizeMismatchError() {
+    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionWithSizeMismatchError");
+
+    const std::string context = "testDriveUploadSessionWithSizeMismatchError";
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, context);
+    const LocalTemporaryDirectory localTmpDir(context);
+    const SyncPath localFilePath = testhelpers::generateBigFile(localTmpDir.path(), 20);
+
+    DriveUploadSession job(nullptr, _driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
+                           testhelpers::defaultTime, testhelpers::defaultTime, false, 2);
+
+    {
+        std::ofstream os(localFilePath, std::ios_base::app);
+        os << "Increase the size of the file to be uploaded.";
+    }
+
+    const auto exitInfo = job.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::SystemError, exitInfo.code());
+    CPPUNIT_ASSERT_EQUAL(ExitCause::FileAccessError, exitInfo.cause());
+    CPPUNIT_ASSERT(job.isCancelled());
+    CPPUNIT_ASSERT(job.isAborted());
+}
+
+void TestNetworkJobs::testDriveUploadSessionWithNullChunkSizeError() {
+    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionWithNullChunkSizeError");
+
+    const std::string context = "testDriveUploadSessionWithNullChunkSizeError";
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, context);
+    const LocalTemporaryDirectory localTmpDir(context);
+    const SyncPath localFilePath = testhelpers::generateBigFile(localTmpDir.path(), 20);
+
+    DriveUploadSession job(nullptr, _driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
+                           testhelpers::defaultTime, testhelpers::defaultTime, false, 2);
+
+    {
+        std::ofstream os(localFilePath);
+        os << "Overwrite the file content.";
+    }
+
+    const auto exitInfo = job.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::SystemError, exitInfo.code());
+    CPPUNIT_ASSERT_EQUAL(ExitCause::FileAccessError, exitInfo.cause());
+    CPPUNIT_ASSERT(job.isCancelled());
+    CPPUNIT_ASSERT(job.isAborted());
+}
+
 
 void TestNetworkJobs::testUploadAborted() {
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUploadAborted");

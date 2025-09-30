@@ -70,6 +70,7 @@ class AbstractUploadSession : public AbstractJob {
         uint64_t getFileSize() const { return _filesize; }
         SyncName getFileName() const { return _filename; }
         std::string getSessionToken() const { return _sessionToken; }
+        bool isCancelled() const noexcept { return _sessionCancelled; }
 
     private:
         bool canRun() override;
@@ -104,6 +105,8 @@ class AbstractUploadSession : public AbstractJob {
         uint64_t _threadCounter = 0; // Number of running
 
         std::recursive_mutex _mutex;
+
+        friend class TestNetworkJobs;
 };
 
 } // namespace KDC

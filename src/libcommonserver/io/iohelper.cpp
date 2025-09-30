@@ -337,6 +337,8 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
 #endif
 
 bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
+    itemType = ItemType{};
+
     // Check whether the item indicated by `path` is a symbolic link.
     std::error_code ec;
     const bool isSymlink = _isSymlink(path, ec);
@@ -765,8 +767,8 @@ bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &io
     }
 #endif
 
-    exists = ioError != IoError::NoSuchFileOrDirectory;
-    return isExpectedError(ioError) || ioError == IoError::Success;
+    exists = (ioError != IoError::NoSuchFileOrDirectory) && (ioError != IoError::FileNameTooLong);
+    return ioError == IoError::Success || (ioError == IoError::FileNameTooLong) || isExpectedError(ioError);
 }
 
 bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &existsWithSameId,

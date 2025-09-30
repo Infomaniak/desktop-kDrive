@@ -242,13 +242,13 @@ std::string Utility::formatRequest(const Poco::URI &uri, const std::string &code
     return ss.str();
 }
 
-std::string Utility::formatGenericServerError(std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse) {
+std::string Utility::formatGenericServerError(const std::string &replyBody, const Poco::Net::HTTPResponse &httpResponse) {
     std::stringstream errorStream;
     errorStream << "Error in reply";
 
     // Try to parse as string
-    if (const std::string str(std::istreambuf_iterator<char>(inputStream), {}); !str.empty()) {
-        errorStream << ", error: " << str.c_str();
+    if (!replyBody.empty()) {
+        errorStream << ", error: " << replyBody;
     }
 
     errorStream << ", content type: " << httpResponse.getContentType().c_str();
@@ -262,9 +262,9 @@ std::string Utility::formatGenericServerError(std::istream &inputStream, const P
     return errorStream.str(); // str() return a copy of the underlying string
 }
 
-void Utility::logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle, std::istream &inputStream,
+void Utility::logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle, const std::string &replyBody,
                                     const Poco::Net::HTTPResponse &httpResponse) {
-    std::string errorMsg = formatGenericServerError(inputStream, httpResponse);
+    std::string errorMsg = formatGenericServerError(replyBody, httpResponse);
     sentry::Handler::captureMessage(sentry::Level::Warning, errorTitle, errorMsg);
     LOG_WARN(logger, errorTitle << ": " << errorMsg);
 }
