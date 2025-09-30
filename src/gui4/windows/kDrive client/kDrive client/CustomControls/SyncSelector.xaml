@@ -179,7 +179,8 @@
                 <!-- Flyout -->
                 <Button.Flyout>
                     <Flyout x:Name="DriveFlyout"
-                            Placement="Bottom">
+                            Placement="Bottom"
+                            Opened="DriveFlyout_Opened">
                         <Flyout.FlyoutPresenterStyle>
                             <Style TargetType="FlyoutPresenter">
                                 <Setter Property="MinWidth"

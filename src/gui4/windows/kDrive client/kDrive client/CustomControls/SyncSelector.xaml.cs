@@ -23,6 +23,7 @@ namespace Infomaniak.kDrive.CustomControls
         public AppModel ViewModel => _viewModel;
 
         private FlyoutBase? _lastOpenedSyncMenu = null;
+        private int _hoveredItemIndex = -1;
 
         public SyncSelector()
         {
@@ -46,9 +47,9 @@ namespace Infomaniak.kDrive.CustomControls
             else
             {
                 var container = DriveListView.ContainerFromItem(drive) as ListViewItem;
-                if (_lastOpenedSyncMenu is null)
+                if (container == null)
                 {
-                    Logger.Log(Logger.Level.Error, "_lastOpenedSyncMenu is null in DriveListView_ItemClick for multi-sync drive.");
+                    Logger.Log(Logger.Level.Error, "container is null in DriveListView_ItemClick for multi-sync drive.");
                     return;
                 }
                 if (container is null)
@@ -56,6 +57,7 @@ namespace Infomaniak.kDrive.CustomControls
                     Logger.Log(Logger.Level.Error, "container is null in DriveListView_ItemClick for multi-sync drive.");
                     return;
                 }
+                _hoveredItemIndex = DriveListView.IndexFromContainer(container);
 
                 // This is a small trick to keep the flyout open.
                 // When the user hovers over the drive element, the flyout opens. 
@@ -64,8 +66,24 @@ namespace Infomaniak.kDrive.CustomControls
                 // because the closing animation triggered by the lost focus will still complete and close it.
                 // To work around this, we first call ShowAt() on another element to interrupt/cancel the closing,
                 // then immediately call ShowAt() again on the intended container.
-                _lastOpenedSyncMenu.ShowAt(container.ContentTemplateRoot as Grid);
-                _lastOpenedSyncMenu.ShowAt(container);
+                var fe = container?.ContentTemplateRoot as FrameworkElement;
+                if (fe != null)
+                {
+                    var menu = Flyout.GetAttachedFlyout(fe);
+                    if (_lastOpenedSyncMenu == menu)
+                    {
+                        menu.ShowAt(container.ContentTemplateRoot as Grid);
+                        menu.ShowAt(container);
+                    }
+                    else
+                    {
+                        if (_lastOpenedSyncMenu is not null)
+                            _lastOpenedSyncMenu.Hide();
+                        _lastOpenedSyncMenu = menu;
+                        menu.ShowAt(container);
+                    }
+
+                }
             }
         }
 
@@ -124,11 +142,21 @@ namespace Infomaniak.kDrive.CustomControls
             }
         }
 
-        private void DriveItem_PointerEntered(object sender, PointerRoutedEventArgs e)
+        private async void DriveItem_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
             // open the sender flyout when hovering the control
             var listViewItem = sender as ListViewItem;
             var fe = listViewItem?.ContentTemplateRoot as FrameworkElement;
+            int itemIndex = DriveListView.IndexFromContainer(listViewItem);
+            _hoveredItemIndex = itemIndex;
+            if (_lastOpenedSyncMenu != null)
+            {
+                // Wait to see if the pointer entered another item within 200ms
+                await Task.Delay(200);
+                if (_hoveredItemIndex != itemIndex)
+                    return;
+            }
+
             if (fe == null)
             {
                 if (_lastOpenedSyncMenu != null)
@@ -148,9 +176,18 @@ namespace Infomaniak.kDrive.CustomControls
             _lastOpenedSyncMenu = menu;
         }
 
+        private void DriveItem_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            var listViewItem = sender as ListViewItem;
+            int itemIndex = DriveListView.IndexFromContainer(listViewItem);
+            if (itemIndex == _hoveredItemIndex)
+                _hoveredItemIndex = -1;
+        }
+
         private void DriveListView_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
         {
             args.ItemContainer.PointerEntered += DriveItem_PointerEntered;
+            args.ItemContainer.PointerExited += DriveItem_PointerExited;
         }
 
         private void SyncFlyout_Opened(object sender, object e)
@@ -235,6 +272,12 @@ namespace Infomaniak.kDrive.CustomControls
             var templateSelector = DriveListView.ItemTemplateSelector;
             DriveListView.ItemTemplateSelector = null;
             DriveListView.ItemTemplateSelector = templateSelector;
+        }
+
+        private void DriveFlyout_Opened(object sender, object e)
+        {
+            _lastOpenedSyncMenu = null;
+            _hoveredItemIndex = -1;
         }
     }
     public class DriveTemplateSelector : DataTemplateSelector

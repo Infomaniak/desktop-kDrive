@@ -200,7 +200,7 @@ namespace Infomaniak.kDrive.ServerCommunication
 
         private static async Task SimulateNetworkDelay()
         {
-            await Task.Delay(2000); // Simulate network delay
+            await Task.Delay(100); // Simulate network delay
         }
 
         // User-related requests
