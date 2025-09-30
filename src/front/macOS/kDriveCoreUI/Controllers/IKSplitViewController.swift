@@ -25,7 +25,7 @@ public extension NSToolbarItem.Identifier {
 open class IKSplitViewController: NSSplitViewController {
     public var toolbar = NSToolbar()
 
-    override open func viewWillAppear() {
+    override open func viewDidAppear() {
         super.viewWillAppear()
         setupToolbar()
     }
@@ -34,6 +34,7 @@ open class IKSplitViewController: NSSplitViewController {
         toolbar.delegate = self
         toolbar.allowsUserCustomization = false
         toolbar.displayMode = .iconOnly
+
         view.window?.toolbar = toolbar
     }
 }

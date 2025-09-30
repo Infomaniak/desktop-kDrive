@@ -18,4 +18,9 @@
 
 import Foundation
 
-final class MockServerBridge: ServerBridgeable {}
+final class MockServerBridge: ServerBridgeable {
+    func getConnectedUser() async -> Bool {
+        try? await Task.sleep(nanoseconds: 2 * 1_000_000)
+        return false
+    }
+}

@@ -29,9 +29,19 @@ final class MainSplitViewController: IKSplitViewController {
         setupSplitView()
     }
 
-    override func viewWillAppear() {
-        super.viewWillAppear()
+    override func viewDidAppear() {
+        super.viewDidAppear()
+
+        configureWindowAppearance()
         splitView.setPosition(200, ofDividerAt: 0)
+    }
+
+    private func configureWindowAppearance() {
+        guard let window = view.window else { return }
+
+        window.titlebarAppearsTransparent = false
+        window.toolbarStyle = .unified
+        window.styleMask.insert(.fullSizeContentView)
     }
 
     private func setupSplitView() {

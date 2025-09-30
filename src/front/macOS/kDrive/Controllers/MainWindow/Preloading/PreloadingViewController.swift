@@ -17,6 +17,8 @@
  */
 
 import Cocoa
+import InfomaniakDI
+import kDriveCore
 import Lottie
 
 final class PreloadingViewController: NSViewController {
@@ -33,6 +35,21 @@ final class PreloadingViewController: NSViewController {
         super.viewDidAppear()
 
         configureWindowAppearance()
+        preloadApp()
+    }
+
+    private func preloadApp() {
+        Task {
+            @InjectService var serverBridge: ServerBridgeable
+            let hasUser = await serverBridge.getConnectedUser()
+
+            guard let window = view.window?.windowController as? MainWindowController else { return }
+            if hasUser {
+                window.switchToWindowState(.splitView)
+            } else {
+                window.switchToWindowState(.login)
+            }
+        }
     }
 }
 

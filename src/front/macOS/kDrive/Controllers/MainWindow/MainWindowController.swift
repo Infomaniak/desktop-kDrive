@@ -50,7 +50,7 @@ final class MainWindowController: NSWindowController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    private func switchToWindowState(_ state: MainWindowState) {
+    func switchToWindowState(_ state: MainWindowState) {
         switch state {
         case .preloading:
             setViewController(PreloadingViewController())
@@ -62,7 +62,7 @@ final class MainWindowController: NSWindowController {
     }
 
     private func setViewController(_ viewController: NSViewController) {
-        self.viewController = MainSplitViewController()
+        self.viewController = viewController
         window?.contentView = viewController.view
     }
 }
