@@ -24,7 +24,7 @@
 #include "jobs/local/localcopyjob.h"
 #include "jobs/local/localdeletejob.h"
 #include "jobs/local/localmovejob.h"
-#include "jobs/jobmanager.h"
+#include "jobs/syncjobmanager.h"
 #include "jobs/local/localcreatedirjob.h"
 #include "jobs/network/kDrive_API/upload/uploadjob.h"
 #include "requests/syncnodecache.h"
@@ -136,8 +136,8 @@ void TestIntegration::tearDown() {
 
     ParmsDb::instance()->close();
     ParmsDb::reset();
-    JobManager::instance()->stop();
-    JobManager::instance()->clear();
+    SyncJobManagerSingleton::instance()->stop();
+    SyncJobManagerSingleton::clear();
     TestBase::stop();
 }
 

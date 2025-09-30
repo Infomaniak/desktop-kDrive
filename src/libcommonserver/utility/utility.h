@@ -49,7 +49,7 @@ class URI;
 /* TODO : Replace with std::source_location when we will bump gcc version to 10 or higher
  *  static std::string errId(std::source_location location = std::source_location::current());
  */
-#define errId() Utility::_errId(__FILENAME__, __LINE__)
+#define ERR_ID Utility::_errId(__FILENAME__, __LINE__)
 
 namespace KDC {
 struct COMMONSERVER_EXPORT Utility {
@@ -80,9 +80,9 @@ struct COMMONSERVER_EXPORT Utility {
 
         static std::string formatRequest(const Poco::URI &uri, const std::string &code, const std::string &description);
 
-        static std::string formatGenericServerError(std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
+        static std::string formatGenericServerError(const std::string &replyBody, const Poco::Net::HTTPResponse &httpResponse);
         static void logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle,
-                                          std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
+                                          const std::string &replyBody, const Poco::Net::HTTPResponse &httpResponse);
 
         /**
          * Check if two paths coincide up to case and encoding of file names.
@@ -183,7 +183,7 @@ struct COMMONSERVER_EXPORT Utility {
         static bool hasLaunchOnStartup(const std::string &appName);
         static bool setLaunchOnStartup(const std::string &appName, const std::string &guiName, bool enable);
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         using kdVariant = std::variant<int, std::wstring>;
 
         static void setFolderPinState(const std::wstring &clsid, bool show);

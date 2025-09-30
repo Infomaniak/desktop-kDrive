@@ -43,7 +43,7 @@
 #include "jobs/network/kDrive_API/testloguploadjob.h"
 #include "jobs/network/testsnapshotitemhandler.h"
 #include "jobs/local/testlocaljobs.h"
-#include "jobs/testjobmanager.h"
+#include "jobs/testsyncjobmanager.h"
 #include "propagation/executor/testfilerescuer.h"
 #include "requests/testexclusiontemplatecache.h"
 #include "requests/testsyncnodecache.h"
@@ -57,8 +57,36 @@
 #endif
 
 namespace KDC {
-
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLocalJobs);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncJobManagerSingleton);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestSnapshot);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestFsOperation);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestFsOperationSet);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestLocalFileSystemObserverWorker);
+#if defined(KD_MACOS)
+CPPUNIT_TEST_SUITE_REGISTRATION(TestFolderWatcher_mac);
+#elif defined(KD_LINUX)
+CPPUNIT_TEST_SUITE_REGISTRATION(TestFolderWatcherLinux);
+#endif
+CPPUNIT_TEST_SUITE_REGISTRATION(TestSnapshotItemHandler);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestRemoteFileSystemObserverWorker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestComputeFSOperationWorker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestNode);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateTree);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateTreeWorker);
+// CPPUNIT_TEST_SUITE_REGISTRATION(BenchUpdateTreeWorker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestPlatformInconsistencyCheckerWorker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestConflictFinderWorker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestConflictResolverWorker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationGeneratorWorker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationSorterWorker);
+
+// CPPUNIT_TEST_SUITE_REGISTRATION(TestOldSyncDb); // Needs a pre 3.3.4 DB
+CPPUNIT_TEST_SUITE_REGISTRATION(TestExecutorWorker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestFileRescuer);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncPal);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncPalWorker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestIntegration);
 
 } // namespace KDC
 

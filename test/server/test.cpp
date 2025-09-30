@@ -20,7 +20,7 @@
 
 
 #if defined(KD_MACOS)
-#include "vfs/mac/testlitesyncextconnector.h"
+#include "vfs/mac/testlitesynccommclient.h"
 #include "vfs/mac/testvfsmac.h"
 #endif
 #include "workers/testworkers.h"
@@ -28,18 +28,23 @@
 #include "updater/testupdatechecker.h"
 #include "requests/testserverrequests.h"
 #include "appserver/testappserver.h"
+#include "comm/testguicommchannel.h"
+#include "comm/testsocketcomm.h"
 
 namespace KDC {
 
 #if defined(KD_MACOS)
 CPPUNIT_TEST_SUITE_REGISTRATION(TestVfsMac);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestLiteSyncExtConnector);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestLiteSyncCommClient);
 #endif
 CPPUNIT_TEST_SUITE_REGISTRATION(TestWorkers);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateChecker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractUpdater);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestServerRequests);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAppServer);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestSocketComm);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestGuiCommChannel);
+
 } // namespace KDC
 
 int main(int, char **) {

@@ -234,7 +234,6 @@ The project requires additional CMake variables for a correct build. To inject t
    set(APPLICATION_CLIENT_EXECUTABLE "kdrive_client")
    set(KDRIVE_THEME_DIR "$ENV{HOME}/Projects/desktop-kDrive/infomaniak")
    set(BUILD_UNIT_TESTS "ON")      # Set to "OFF" to skip tests
-   set(SOCKETAPI_TEAM_IDENTIFIER_PREFIX "864VDCS2QY")
    set(CMAKE_PREFIX_PATH "$ENV{HOME}/Qt/6.7.2/gcc_arm64")
    set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/Projects/CLion-build-debug/bin")
    ```
@@ -308,7 +307,6 @@ CMake options:
 -DCMAKE_INSTALL_PREFIX=/home/<user>/Projects/CLion-build-debug/bin
 -DBUILD_UNIT_TESTS:BOOL=ON
 -DCMAKE_PREFIX_PATH:STRING=/home/<user>/Qt/6.7.2/gcc_arm64
--DSOCKETAPI_TEAM_IDENTIFIER_PREFIX:STRING=864VDCS2QY
 -DQT_DEBUG_FIND_PACKAGE=ON
 -DCMAKE_TOOLCHAIN_FILE=/home/<user>/Projects/CLion-build-debug/conan_toolchain.cmake
 ```

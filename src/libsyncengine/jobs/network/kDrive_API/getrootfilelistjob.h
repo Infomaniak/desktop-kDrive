@@ -24,19 +24,26 @@ namespace KDC {
 
 class GetRootFileListJob : public AbstractTokenNetworkJob {
     public:
-        GetRootFileListJob(int userDbId, int driveId, uint64_t page = 1, bool dirOnly = false);
-        explicit GetRootFileListJob(int driveDbId, uint64_t page = 1, bool dirOnly = false);
+        GetRootFileListJob(int userDbId, int driveId, uint64_t page = 1, bool dirOnly = false, uint64_t nbItemsPerPage = 1000);
+        explicit GetRootFileListJob(int driveDbId, uint64_t page = 1, bool dirOnly = false, uint64_t nbItemsPerPage = 1000);
 
         void setWithPath(const bool val) { _withPath = val; }
+
+        [[nodiscard]] uint64_t totalPages() const { return _totalPages; }
 
     private:
         std::string getSpecificUrl() override;
         void setQueryParameters(Poco::URI &uri, bool &canceled) override;
         ExitInfo setData() override { return ExitCode::Ok; }
 
-        uint64_t _page;
-        bool _dirOnly;
-        bool _withPath = false;
+        bool handleResponse(std::istream &is) override;
+
+        uint64_t _page{0};
+        bool _dirOnly{false};
+        uint64_t _nbItemsPerPage{0};
+        bool _withPath{false};
+
+        uint64_t _totalPages{0};
 };
 
 } // namespace KDC

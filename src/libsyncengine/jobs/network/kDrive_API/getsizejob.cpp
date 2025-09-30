@@ -53,12 +53,12 @@ bool GetSizeJob::handleResponse(std::istream &is) {
     return true;
 }
 
-bool GetSizeJob::handleError(std::istream &is, const Poco::URI &uri) {
+bool GetSizeJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
     if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN) {
         // Access to the directory is forbidden
         return true;
     } else {
-        return AbstractTokenNetworkJob::handleError(is, uri);
+        return AbstractTokenNetworkJob::handleError(replyBody, uri);
     }
 }
 

@@ -115,6 +115,20 @@ GetItemChecker::Result GetItemChecker::checkAccessIsDenied(const SyncPath &path)
 
 
 void TestIo::testGetItemTypeSimpleCases() {
+    {
+        // Check that calling getItemType clears the ItemType argument.
+        ItemType itemType;
+        itemType.nodeType = NodeType::Directory;
+        itemType.linkType = LinkType::Hardlink;
+        itemType.ioError = IoError::Unknown;
+
+        CPPUNIT_ASSERT(IoHelper::getItemType(_localTestDirPath / "test_pictures/picture-1.jpg", itemType));
+
+        CPPUNIT_ASSERT_EQUAL(itemType.ioError, IoError::Success);
+        CPPUNIT_ASSERT_EQUAL(itemType.nodeType, NodeType::File);
+        CPPUNIT_ASSERT_EQUAL(itemType.linkType, LinkType::None);
+    }
+
     GetItemChecker checker;
 
     // A regular file

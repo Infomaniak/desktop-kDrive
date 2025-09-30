@@ -47,6 +47,17 @@ SyncPath CommonUtility::getGenericAppSupportDir() {
     return [[appSupportDirUrl path] UTF8String];
 }
 
+SyncPath CommonUtility::getExtensionPath() {
+    CFURLRef url = (CFURLRef) CFBundleCopyBundleURL(CFBundleGetMainBundle());
+    CFStringRef urlStr = CFURLCopyFileSystemPath(url, kCFURLPOSIXPathStyle);
+    CFRelease(url);
+    std::string extPath = std::string([(__bridge NSString *) urlStr UTF8String]);
+    CFRelease(urlStr);
+
+    extPath.append("/Contents/PlugIns/Extension.appex/");
+    return extPath;
+}
+
 bool CommonUtility::hasDarkSystray() {
     NSString *appearanceName = NSApp.effectiveAppearance.name;
     if ([appearanceName rangeOfString:@"Dark"].location != NSNotFound) {

@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "abstractjob.h"
+#include "syncjob.h"
 #include "jobmanagerdata.h"
 #include "libcommon/utility/utility.h"
 
@@ -34,8 +34,7 @@ namespace KDC {
 
 class JobManager {
     public:
-        static std::shared_ptr<JobManager> instance() noexcept;
-
+        JobManager();
         JobManager(JobManager const &) = delete;
         void operator=(JobManager const &) = delete;
 
@@ -57,32 +56,28 @@ class JobManager {
         void setPoolCapacity(int nbThread);
         void decreasePoolCapacity();
 
+    protected:
+        int availableThreadsInPool() const;
+        virtual bool canRunJob(const std::shared_ptr<AbstractJob> job) const;
+        JobManagerData _data;
+
     private:
-        JobManager();
         void startMainThreadIfNeeded();
 
         void run() noexcept;
         void startJob(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority);
         void eraseJob(UniqueId jobId);
         void addToPendingJobs(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority);
-        void adjustMaxNbThread();
         void managePendingJobs();
 
-        int availableThreadsInPool() const;
-        bool canRunjob(const std::shared_ptr<AbstractJob> job) const;
-        bool isBigFileDownloadJob(const std::shared_ptr<AbstractJob> job) const;
-        bool isBigFileUploadJob(const std::shared_ptr<AbstractJob> job) const;
-
-        static std::shared_ptr<JobManager> _instance;
         bool _stop{false};
         int _maxNbThread{0};
+        Poco::ThreadPool _threadPool;
 
         log4cplus::Logger _logger;
         std::unique_ptr<std::thread> _mainThread;
 
-        JobManagerData _data;
-
-        friend class TestJobManager;
+        friend class TestSyncJobManagerSingleton;
 };
 
 } // namespace KDC

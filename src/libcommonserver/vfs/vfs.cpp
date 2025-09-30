@@ -21,6 +21,7 @@
 #include "plugin.h"
 #include "version.h"
 #include "utility/types.h"
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h" // Path2WStr
 #include "libcommonserver/io/iohelper.h"
 
@@ -67,23 +68,23 @@ Vfs::~Vfs() {
     }
 }
 
-QString Vfs::modeToString(KDC::VirtualFileMode virtualFileMode) {
+CommString Vfs::modeToString(KDC::VirtualFileMode virtualFileMode) {
     // Note: Strings are used for config and must be stable
     switch (virtualFileMode) {
         case KDC::VirtualFileMode::Off:
-            return QStringLiteral("off");
+            return Str("off");
         case KDC::VirtualFileMode::Suffix:
-            return QStringLiteral("suffix");
+            return Str("suffix");
         case KDC::VirtualFileMode::Win:
-            return QStringLiteral("wincfapi");
+            return Str("wincfapi");
         case KDC::VirtualFileMode::Mac:
-            return QStringLiteral("mac");
+            return Str("mac");
         case KDC::VirtualFileMode::EnumEnd: {
             assert(false && "Invalid enum value in switch statement.");
         }
     }
 
-    return QStringLiteral("off");
+    return Str("off");
 }
 
 KDC::VirtualFileMode Vfs::modeFromString(const QString &str) {
@@ -213,10 +214,18 @@ ExitInfo VfsOff::forceStatus(const SyncPath &pathStd, const VfsStatus &vfsStatus
     }
     // Update Finder
     LOGW_DEBUG(logger(), L"Send status to the Finder extension for file/directory " << Path2WStr(fullPath));
-    QString status = vfsStatus.isSyncing ? "SYNC" : "OK";
-    QString path = SyncName2QStr(pathStd.native());
-    if (_vfsSetupParams.executeCommand)
-        _vfsSetupParams.executeCommand(QString("STATUS:%1:%2").arg(status, path).toStdString().c_str());
+    if (_vfsSetupParams.executeCommand) {
+        CommString command(Str("STATUS"));
+        command.append(messageCdeSeparator);
+        command.append(CommonUtility::str2CommString(std::to_string(vfsStatus.isSyncing)));
+        command.append(messageArgSeparator);
+        command.append(CommonUtility::str2CommString(std::to_string(vfsStatus.progress)));
+        command.append(messageArgSeparator);
+        command.append(CommonUtility::str2CommString(std::to_string(vfsStatus.isHydrated)));
+        command.append(messageArgSeparator);
+        command.append(pathStd.native());
+        _vfsSetupParams.executeCommand(command, true);
+    }
 
     return ExitCode::Ok;
 }
@@ -226,7 +235,6 @@ ExitInfo VfsOff::startImpl(bool &, bool &, bool &) {
 }
 
 static QString modeToPluginName(const VirtualFileMode virtualFileMode) {
-    if (virtualFileMode == VirtualFileMode::Suffix) return "suffix";
     if (virtualFileMode == VirtualFileMode::Win) return "win";
     if (virtualFileMode == VirtualFileMode::Mac) return "mac";
     return {};

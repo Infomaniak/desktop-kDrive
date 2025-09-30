@@ -22,8 +22,10 @@ set(syncengine_SRCS
     login/login.h login/login.cpp
     # Jobs
     jobs/jobmanager.h jobs/jobmanager.cpp
-    jobs/jobmanagerdata.h jobs/jobmanagerdata.cpp
+    jobs/syncjobmanager.h jobs/syncjobmanager.cpp
+    jobs/jobmanagerdata.h jobs/jobmanagerdata.cpp 
     jobs/abstractjob.h jobs/abstractjob.cpp
+    jobs/syncjob.h jobs/syncjob.cpp
     jobs/abstractpropagatorjob.h
     ## Network jobs
     jobs/network/networkjobsparams.h jobs/network/networkjobsparams.cpp
@@ -72,6 +74,7 @@ set(syncengine_SRCS
     jobs/network/kDrive_API/postfilelinkjob.h jobs/network/kDrive_API/postfilelinkjob.cpp
     jobs/network/kDrive_API/getfilelinkjob.h jobs/network/kDrive_API/getfilelinkjob.cpp
     jobs/network/kDrive_API/getsizejob.h jobs/network/kDrive_API/getsizejob.cpp
+    jobs/network/kDrive_API/searchjob.h jobs/network/kDrive_API/searchjob.cpp
     ## Local jobs
     jobs/local/localmovejob.h jobs/local/localmovejob.cpp
     jobs/local/localcopyjob.h jobs/local/localcopyjob.cpp

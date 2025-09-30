@@ -24,7 +24,7 @@ add_definitions(-D_UNICODE)
 set(libcommon_SRCS
     comm.h
     utility/types.h utility/types.cpp
-    utility/utility.h utility/utility.cpp
+    utility/utility_base.h utility/utility.h utility/utility.cpp
     utility/filename.h utility/commonmacros.h utility/coveragemacros.h
     utility/logiffail.h utility/qlogiffail.h
     utility/jsonparserutility.h
@@ -44,6 +44,7 @@ set(libcommon_SRCS
     info/exclusiontemplateinfo.h info/exclusiontemplateinfo.cpp
     info/exclusionappinfo.h info/exclusionappinfo.cpp
     info/proxyconfiginfo.h info/proxyconfiginfo.cpp
+    info/searchinfo.h
     log/sentry/handler.h log/sentry/handler.cpp
     log/sentry/abstractptrace.h 
     log/sentry/abstractcounterscopedptrace.h
