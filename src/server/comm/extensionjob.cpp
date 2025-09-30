@@ -1246,7 +1246,7 @@ FileData FileData::get(const SyncPath &path) {
     Sync sync;
     if (!syncForPath(tmpPath, sync)) {
         LOGW_WARN(Log::instance()->getLogger(), L"Sync not found - " << Utility::formatSyncPath(tmpPath));
-        return FileData();
+        return {};
     }
 
     FileData data;
@@ -1260,12 +1260,12 @@ FileData FileData::get(const SyncPath &path) {
     if (!IoHelper::getItemType(tmpPath, itemType)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in Utility::getItemType: " << Utility::formatIoError(tmpPath, itemType.ioError));
-        return FileData();
+        return {};
     }
 
     if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"Item does not exist anymore - " << Utility::formatSyncPath(tmpPath));
-        return FileData();
+        return {};
     }
 
     data.isLink = itemType.linkType != LinkType::None;
@@ -1275,17 +1275,17 @@ FileData FileData::get(const SyncPath &path) {
         std::error_code ec;
         data.isDirectory = std::filesystem::is_directory(tmpPath, ec);
         if (!data.isDirectory && ec.value() != 0) {
-            const bool exists = !utility_base::isLikeFileNotFoundError(ec);
-            if (!exists) {
-                // Item doesn't exist anymore
-                LOGW_DEBUG(Log::instance()->getLogger(), L"Item doesn't exist - " << Utility::formatSyncPath(data.localPath));
+            if (const bool exists =
+                        !utility_base::isLikeFileNotFoundError(ec) || utility_base::isLikeTooManySymbolicLinkLevelsError(ec);
+                !exists) {
+                // Item does not exist anymore.
+                LOGW_DEBUG(Log::instance()->getLogger(), L"Item does not exist - " << Utility::formatSyncPath(data.localPath));
             } else {
                 LOGW_WARN(Log::instance()->getLogger(), L"Failed to check if the path is a directory - "
-                                                                << Utility::formatSyncPath(data.localPath) << L" err="
-                                                                << CommonUtility::s2ws(ec.message()) << L" (" << ec.value()
-                                                                << L")");
+                                                                << Utility::formatSyncPath(data.localPath) << L", "
+                                                                << Utility::formatStdError(ec));
             }
-            return FileData();
+            return {};
         }
     }
 

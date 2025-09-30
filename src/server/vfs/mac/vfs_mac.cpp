@@ -21,6 +21,8 @@
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
 
+#include "utility/utility_base.h"
+
 #include <QDir>
 #include <QFile>
 
@@ -630,7 +632,7 @@ ExitInfo VfsMac::getFetchingAppList(QHash<QString, QString> &appTable) {
 bool VfsMac::fileStatusChanged(const SyncPath &absoluteFilepath, SyncFileStatus status) {
     LOGW_DEBUG(logger(), L"fileStatusChanged - " << Utility::formatSyncPath(absoluteFilepath) << L" - status = " << status);
     if (std::error_code ec; !std::filesystem::exists(absoluteFilepath, ec)) {
-        if (ec.value() != 0) {
+        if (ec && !sutility_base::isLikeTooManySymbolicLinkLevelsError(ec)) {
             LOGW_WARN(logger(), L"Failed to check if path exists : " << Utility::formatStdError(absoluteFilepath, ec));
             return false;
         }
