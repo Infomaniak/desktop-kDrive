@@ -28,13 +28,10 @@ Param(
     # Clean: The files to clean on execution
     [string] $clean,
 
-    # Thumbprint: Specifies which certificate will be used to sign the app
-    [string] $thumbprint,
-
     # Ext: Rebuild the extension (automatically done if vfs.h is missing)
     [switch] $ext,
 
-    # Ci: Build with CI testing (currently only checks the building stage)
+    # Ci: Build configured for CI
     [switch] $ci,
 
     # Upload: Flag to trigger the use of the USB-key signing certificate
@@ -48,6 +45,9 @@ Param(
 
     # Coverage: Flag to enable or disable the code coverage computation
     [switch] $coverage,
+
+    # Coverage: Flag to enable or disable the build of unit tests
+    [switch] $unitTests,
 
     # Help: Displays the help message and exits
     [switch] $help
@@ -126,13 +126,14 @@ function Clean {
 function Get-Thumbprint {
     param (
         [bool] $upload,
-        [bool] $ci # On CI build, the certificate are located in local computer store
+        [bool] $ci # On CI build machines, the certificate are located in local computer store
     )
     if ($ci) {
         $certStore = "Cert:\LocalMachine\My"
     } else {
         $certStore = "Cert:\CurrentUser\My"
     }
+    
     $thumbprint = 
     If ($upload) {
          Get-ChildItem $certStore | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -match "EV" } | Select -ExpandProperty Thumbprint
@@ -141,6 +142,7 @@ function Get-Thumbprint {
         Get-ChildItem $certStore | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -notmatch "EV" } | Select -ExpandProperty Thumbprint
     }
     Write-Host "Using thumbprint: $thumbprint"
+
     return $thumbprint
 }
 
@@ -200,9 +202,10 @@ function Get-Installer-Path {
 function Build-Extension {
     param (
         [string] $path,
+        [string] $contentPath,
         [string] $extPath,
         [string] $buildType,
-        [string] $thumbprint = ""
+        [string] $thumbprint
     )
 
     Write-Host "Building extension ($buildType) ..."
@@ -238,8 +241,8 @@ function Build-Extension {
         Set-Content -Encoding UTF8 -Force $appxManifestPath
     Write-Host "Extension version: $version"
 	
-	$aumid = Get-Aumid $upload
-	Write-Host "Building extension with AUMID: $aumid"
+	  $aumid = Get-Aumid $upload
+	  Write-Host "Building extension with AUMID: $aumid"
 	
     msbuild "$extPath\kDriveExt.sln" /p:Configuration=$configuration /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true /p:PackageCertificateThumbprint="$thumbprint" /p:KDC_AUMID="$aumid"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -253,6 +256,11 @@ function Build-Extension {
 
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+    # Create a copy for NSIS.template.nsi.in where paths are shorter (long paths can cause the NSIS `File` function to fail).
+    Copy-Item -Path "$extPath/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$version.0_Test" -Destination "$contentPath/vfs_appx_directory" -Recurse
+
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
     Write-Host "Extension built."
 }
 
@@ -260,7 +268,8 @@ function CMake-Build-And-Install {
     param (
         [string] $path,
         [string] $installPath,
-        [string] $vfsDir
+        [string] $vfsDir,
+        [bool] $ci
     )
     Write-Host "1) Installing Conan dependencies…"
     $conanFolder = Join-Path $buildPath "conan"
@@ -269,12 +278,14 @@ function CMake-Build-And-Install {
         New-Item -Path $conanFolder -ItemType Directory
     }
     Write-Host "Conan folder: $conanFolder"
+
     if ($ci) {
-        & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" Release -OutputDir $conanFolder -Ci
+      & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" Release -OutputDir $conanFolder -Ci -MakeRelease
     } else {
-        & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" Release -OutputDir $conanFolder -MakeRelease
+      & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" Release -OutputDir $conanFolder -MakeRelease
     }
 
+    
     $conanToolchainFile = Get-ChildItem -Path $conanFolder -Filter "conan_toolchain.cmake" -Recurse -File |
             Select-Object -ExpandProperty FullName -First 1
 
@@ -297,7 +308,6 @@ function CMake-Build-And-Install {
         $args += ("'-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'")
     }
 
-
     $buildVersion = Get-Date -Format "yyyyMMdd"
 
     $flags = @(
@@ -318,7 +328,7 @@ function CMake-Build-And-Install {
         "'-DKDRIVE_VERSION_BUILD=$buildVersion'"
     )
 
-    if ($ci) {
+    if ($unitTests) {
         $flags += ("'-DBUILD_UNIT_TESTS:BOOL=TRUE'")
     }
 
@@ -386,7 +396,7 @@ function Set-Up-NSIS {
 
     $scriptContent = Get-Content "$buildPath/NSIS.template.nsi" -Raw
     $scriptContent = $scriptContent -replace "@{icon}", $iconPath
-    $scriptContent = $scriptContent -replace "@{extpath}", $extPath
+    $scriptContent = $scriptContent -replace "@{vfs_appx_directory}", "$contentPath\vfs_appx_directory"
     $scriptContent = $scriptContent -replace "@{installerIcon}", "!define MUI_ICON $iconPath"
     $scriptContent = $scriptContent -replace "@{company}", $compName
     $scriptContent = $scriptContent -replace "@{productname}", $prodName
@@ -403,7 +413,7 @@ function Set-Up-NSIS {
     Write-Host "NSIS is set up."
 }
 
-function Sign-File{
+function Sign-File {
     param (
         [string] $filePath,
         [bool] $upload = $false,
@@ -430,7 +440,8 @@ function Prepare-Archive {
         [string] $buildPath,
         [string] $vfsDir,
         [string] $archivePath,
-        [bool] $upload
+        [bool] $upload,
+        [bool] $ci
     )
 
     Write-Host "Preparing the archive ..."
@@ -481,8 +492,8 @@ function Prepare-Archive {
 
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-    if ($ci -and !$upload) {
-        Write-Host "Archive prepared for CI build."
+    if (!$upload) {
+        Write-Host "Archive prepared. Skipping binaries required for upload only."
         exit 0
     }
 
@@ -509,10 +520,9 @@ function Prepare-Archive {
 
         $filename = Split-Path -Leaf $file
 
-        if (!$thumbprint) {
-            $thumbprint = Get-Thumbprint $upload
-        }
+        $thumbprint = Get-Thumbprint -Upload $upload -Ci $ci
         Sign-File -FilePath $archivePath/$filename -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description $filename
+
     }
 
     Write-Host "Archive prepared."
@@ -526,7 +536,8 @@ function Create-Archive {
         [string] $installPath,
         [string] $archiveName,
         [string] $archivePath,
-        [bool] $upload
+        [bool] $upload,
+        [bool] $ci
     )
 
     Write-Host "Creating the archive ..."
@@ -549,10 +560,7 @@ function Create-Archive {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     # Sign final installer
-    if (!$thumbprint) {
-        $thumbprint = Get-Thumbprint $upload
-    }
-
+    $thumbprint = Get-Thumbprint -Upload $upload -Ci $ci
     $installerPath = Get-Installer-Path $buildPath $contentPath
 
     if (Test-Path -Path $installerPath) {
@@ -639,15 +647,16 @@ Inside, you will find the build folder, install folder, and kDrive installer.
 Parameters :
     `t-buildType`t: The configuration requested for the app, either Debug or Release (will default to Release)
     `t-path`t`t: The path to the root of the kdrive project folder (will default to the current directory)
-    `t-thumprint`t: Set a specific certificate thumbprint to sign the executables
     `t-clean`t`t: Optional parameter for files cleaning. The following are available :
     `t`tbuild`t`t: Remove all the built files, located in '$path/build-$buildType/build', then exit the script
     `t`text`t`t`t: Remove the extension files, located in '$vfsDir', then exit the script
     `t`tall`t`t`t: Remove all the files, located in '$path/build-$buildType', then exit the script
     `t`tremake`t`t: Remove all the files, then rebuild the project
     `t-ext`t`t`t: Rebuild and redeploy the windows extension
+    `t-ci`t`t`t: Use the CI build configuration
     `t-upload`t`t: Upload flag to switch between the virtual and physical certificates. Also rebuilds the project
-    `t-coverage`t`t: Coverage flag to enable or disable code coverage computation
+    `t-coverage`t`t: Enable coverage computation
+    `t-unitTests`t`t: Enable unit tests build
     ") -f Cyan
 
     Write-Host ("It is mandatory that all dependencies are already built and installed before building.
@@ -694,10 +703,6 @@ switch -regex ($clean.ToLower()) {
     default {}
 }
 
-if (!$thumbprint) {
-    $thumbprint = Get-Thumbprint $upload
-}
-
 Write-Host
 Write-Host "Build of type $buildType."
 Write-Host
@@ -736,8 +741,8 @@ if ($LASTEXITCODE -ne 0) {
 #################################################################################################
 
 if (!(Test-Path "$vfsDir\vfs.dll") -or $ext) {
-    $thumbprint = Get-Thumbprint $upload -ci $ci
-    Build-Extension $path $extPath $buildType $thumbprint
+    $thumbprint = Get-Thumbprint -Upload $upload -Ci $ci
+    Build-Extension -Path $path -ContentPath $contentPath -ExtPath $extPath -BuildType $buildType -Thumbprint $thumbprint
 
     if ($LASTEXITCODE -ne 0) {
         Write-Host "Failed to build the extension. Aborting." -f Red
@@ -751,7 +756,7 @@ if (!(Test-Path "$vfsDir\vfs.dll") -or $ext) {
 #                                                                                               #
 #################################################################################################
 
-CMake-Build-And-Install $path $installPath $vfsDir
+CMake-Build-And-Install -Path $path -InstallPath $installPath -VfsDir $vfsDir -Ci $ci
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "CMake build failed. Aborting." -f Red
@@ -764,7 +769,7 @@ if ($LASTEXITCODE -ne 0) {
 #                                                                                               #
 #################################################################################################
 
-Set-Up-NSIS $buildPath $contentPath $extPath $vfsDir $archiveName $archivePath $archiveDataPath $upload
+Set-Up-NSIS -BuildPath $buildPath -ContentPath $contentPath -ExtPath $extPath -VfsDir $vfsDir -ArchiveName $archiveName -ArchivePath $archivePath -ArchiveDataPath $archiveDataPath -Upload $upload
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "NSIS setup failed. Aborting." -f Red
@@ -777,7 +782,8 @@ if ($LASTEXITCODE -ne 0) {
 #                                                                                               #
 #################################################################################################
 
-Prepare-Archive $buildType $buildPath $vfsDir $archivePath $upload
+Prepare-Archive -BuildType $buildType -BuildPath $buildPath -VfsDir $vfsDir -ArchivePath $archivePath -Upload $upload -Ci $ci
+if ($LASTEXITCODE -ne 0)
 {
     Write-Host "Archive preparation failed. Aborting." -f Red
     exit $LASTEXITCODE
@@ -790,7 +796,7 @@ Prepare-Archive $buildType $buildPath $vfsDir $archivePath $upload
 #################################################################################################
 
 if (!$ci -or $upload) {
-    Create-Archive $path $buildPath $contentPath $installPath $archiveName $archivePath $upload
+    Create-Archive -Path $path -BuildPath $buildPath -ContentPath $contentPath -InstallPath $installPath -Archivename $archiveName -ArchivePath $archivePath -Upload $upload -Ci $ci
     if ($LASTEXITCODE -ne 0) {
         Write-Host "Archive creation failed ($LASTEXITCODE) . Aborting." -f Red
         exit $LASTEXITCODE
@@ -827,7 +833,7 @@ Remove-Item $archiveDataPath
 #                                                                                               #
 #################################################################################################
 
-if ($upload) {
+if (!$ci -or $upload) {
     Write-Host "Packaging done."
     Write-Host "Run the upload script to generate the update file and upload the new version."
 }

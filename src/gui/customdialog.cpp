@@ -151,16 +151,7 @@ bool CustomDialog::eventFilter(QObject *o, QEvent *e) {
     return QDialog::eventFilter(o, e);
 }
 
-void CustomDialog::paintEvent(QPaintEvent *event) {
-    Q_UNUSED(event)
-
-    // Update shadow color
-    QGraphicsDropShadowEffect *effect = qobject_cast<QGraphicsDropShadowEffect *>(graphicsEffect());
-    if (effect) {
-        effect->setColor(KDC::GuiUtility::getShadowColor(true));
-    }
-
-    // Draw round rectangle
+void CustomDialog::drawRoundRectangle() {
     QPainterPath painterPath;
     painterPath.addRoundedRect(rect().marginsRemoved(QMargins(hMargin, vMargin, hMargin, vMargin)), cornerRadius, cornerRadius);
 
@@ -169,6 +160,19 @@ void CustomDialog::paintEvent(QPaintEvent *event) {
     painter.setPen(Qt::NoPen);
     painter.setBrush(_backgroundForcedColor == QColor() ? backgroundColor() : _backgroundForcedColor);
     painter.drawPath(painterPath);
+}
+
+void CustomDialog::drawDropShadow() {
+    if (auto *effect = qobject_cast<QGraphicsDropShadowEffect *>(graphicsEffect()); effect) {
+        effect->setColor(KDC::GuiUtility::getShadowColor(true));
+    }
+}
+
+void CustomDialog::paintEvent(QPaintEvent *event) {
+    Q_UNUSED(event)
+
+    drawDropShadow(); // Can cause refresh issues on Windows.
+    drawRoundRectangle();
 }
 
 void CustomDialog::mouseMoveEvent(QMouseEvent *event) {

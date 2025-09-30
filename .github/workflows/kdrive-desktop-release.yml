@@ -7,10 +7,6 @@ on:
         type: environment
         description: Select the deployment environment
         default: Internal beta
-      skip_tests:
-        type: boolean
-        description: Skip unit tests
-        default: false
 
 concurrency:
   group: kDrive-desktop-release-${{ github.head_ref }}
@@ -167,80 +163,9 @@ jobs:
           release_build: true    
           release_build_altool_username: ${{ secrets.ALTOOL_USERNAME }}
 
-# Tests Windows
-  test-Windows:
-    if: ${{ !github.event.inputs.skip_tests }}
-    needs: build-Windows
-    strategy:
-      fail-fast: false
-      matrix:
-        test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms"]
-    runs-on: [ self-hosted, Windows ]
-    env:
-      KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
-      KDRIVE_SENTRY_ENVIRONMENT: "windows_ci_runner"
-    steps:
-      - name: Checkout the PR
-        uses: actions/checkout@v4.1.1
-        with:
-          ref: ${{ github.head_ref }}
-
-      - name: Run test
-        uses: ./.github/actions/test_windows
-        with:
-           test_name: ${{ matrix.test_name }}
-           test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
-# Tests Linux
-  test-Linux:
-    if: ${{ !github.event.inputs.skip_tests }}
-    needs: [build-Linux-amd, build-Linux-arm]
-    strategy:
-      fail-fast: false
-      matrix:
-        test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms"]
-    runs-on: [ self-hosted, Linux, X64 ]
-    env:
-      KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
-      KDRIVE_SENTRY_ENVIRONMENT: "linux_ci_runner"
-    steps:
-      - name: Checkout the PR
-        uses: actions/checkout@v4.1.1
-        with:
-          ref: ${{ github.head_ref }}
-
-      - name: Run test
-        uses: ./.github/actions/test_linux
-        with:
-          test_name: ${{ matrix.test_name }}
-          test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
-
-# Tests macOS
-  test-macOS:
-    if: ${{ !github.event.inputs.skip_tests }}
-    needs: build-MacOS
-    strategy:
-      fail-fast: false
-      matrix:
-        test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms"]
-    runs-on: [ self-hosted, macOS ]
-    env:
-      KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
-      KDRIVE_SENTRY_ENVIRONMENT: "macos_ci_runner"
-    steps:
-       - name: Checkout the PR
-         uses: actions/checkout@v4.1.1
-         with:
-          ref: ${{ github.head_ref }}
-
-       - name: Run test
-         uses: ./.github/actions/test_macos
-         with:  
-            test_name: ${{ matrix.test_name }}
-            test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
-
 # Upload the installer and sentry artifacts
   upload-to-kDrive-and-sentry:
-    needs: [test-Linux, test-Windows, test-macOS]
+    needs: [build-Linux-amd, build-Linux-arm, build-Windows, build-MacOS]
     runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be runing on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
     env:
         KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
