@@ -24,13 +24,14 @@ enum WindowRoute {
     case splitView
 }
 
-@MainActor
 final class MainWindowRouter: WindowRouter {
-    private var mainWindowController: MainWindowController? = {
+    @MainActor
+    private lazy var mainWindowController: MainWindowController? = {
         let mainWindow = NSApplication.shared.windows.first { $0.windowController is MainWindowController }
         return mainWindow?.windowController as? MainWindowController
     }()
 
+    @MainActor
     func navigate(to route: WindowRoute) {
         guard let mainWindowController else { return }
 

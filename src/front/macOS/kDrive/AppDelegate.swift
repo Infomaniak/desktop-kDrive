@@ -25,7 +25,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private lazy var preferencesWindow = PreferencesWindowController()
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        TargetAssembly.setupDI()
+        DriveTargetAssembly.setupDI()
         openMainWindow()
     }
 

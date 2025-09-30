@@ -17,6 +17,7 @@
  */
 
 import Cocoa
+import InfomaniakDI
 
 enum MainWindowState: Sendable {
     case preloading
@@ -41,6 +42,9 @@ final class MainWindowController: NSWindowController {
 
         window.center()
         window.setFrameAutosaveName("kDriveMainWindow")
+
+        @InjectService var windowRouter: WindowRouter
+        windowRouter.navigate(to: .preloading)
     }
 
     @available(*, unavailable)

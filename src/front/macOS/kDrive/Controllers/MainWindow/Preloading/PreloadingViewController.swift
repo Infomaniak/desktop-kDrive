@@ -43,11 +43,11 @@ final class PreloadingViewController: NSViewController {
             @InjectService var serverBridge: ServerBridgeable
             let hasUser = await serverBridge.getConnectedUser()
 
-            guard let window = view.window?.windowController as? MainWindowController else { return }
+            @InjectService var windowRouter: WindowRouter
             if hasUser {
-                window.switchToWindowState(.splitView)
+                windowRouter.navigate(to: .splitView)
             } else {
-                window.switchToWindowState(.login)
+                windowRouter.navigate(to: .onboarding)
             }
         }
     }
