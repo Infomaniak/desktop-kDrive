@@ -1,11 +1,6 @@
-using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 using System;
-using System.Drawing;
-using System.Linq;
-using Windows.Storage;
 
 namespace Infomaniak.kDrive.CustomControls
 {
@@ -35,9 +30,5 @@ namespace Infomaniak.kDrive.CustomControls
         {
             ((FrameworkElement)((AnimatedVisualPlayer)sender).Parent).Opacity = 1;
         }
-
-
-
-
     }
 }
