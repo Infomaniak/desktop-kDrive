@@ -228,13 +228,13 @@ namespace Infomaniak.kDrive.ViewModels
             Logger.Log(Logger.Level.Info, $"Reloading sync properties for DbId {DbId}...");
             Task[] tasks = new Task[]
             {
-               CommRequests.GetSyncId(DbId).ContinueWith(t => { if (t.Result != null) Id = t.Result.Value; }),
-               CommRequests.GetSyncLocalPath(DbId).ContinueWith(t => { if (t.Result != null) LocalPath = t.Result; }),
-               CommRequests.GetSyncRemotePath(DbId).ContinueWith(t => { if (t.Result != null) RemotePath = t.Result; }),
-               CommRequests.GetSyncSupportOfflineMode(DbId).ContinueWith(t => { if (t.Result != null) SupportOnlineMode = t.Result.Value; }),
-               CommRequests.GetSyncType(DbId).ContinueWith(t => { if (t.Result != null) SyncType = t.Result.Value; })
+               CommRequests.GetSyncId(DbId).ContinueWith(t => { if (t.Result != null) Id = t.Result.Value; }, TaskScheduler.FromCurrentSynchronizationContext()),
+               CommRequests.GetSyncLocalPath(DbId).ContinueWith(t => { if (t.Result != null) LocalPath = t.Result; }, TaskScheduler.FromCurrentSynchronizationContext()),
+               CommRequests.GetSyncRemotePath(DbId).ContinueWith(t => { if (t.Result != null) RemotePath = t.Result; }, TaskScheduler.FromCurrentSynchronizationContext()),
+               CommRequests.GetSyncSupportOfflineMode(DbId).ContinueWith(t => { if (t.Result != null) SupportOnlineMode = t.Result.Value; }, TaskScheduler.FromCurrentSynchronizationContext()),
+               CommRequests.GetSyncType(DbId).ContinueWith(t => { if (t.Result != null) SyncType = t.Result.Value; }, TaskScheduler.FromCurrentSynchronizationContext())
             };
-            await Task.WhenAll(tasks).ConfigureAwait(false);
+            await Task.WhenAll(tasks);
             Logger.Log(Logger.Level.Info, $"Finished reloading sync properties for DbId {DbId}.");
         }
 

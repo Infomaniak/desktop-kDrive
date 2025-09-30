@@ -40,25 +40,26 @@ namespace Infomaniak.kDrive.ViewModels
         private long _usedSize = 0;
         private bool _isActive = false; // Indicates if the user configured this drive on the current device.
         private bool _isPaidOffer = false; // Indicates if the drive is a paid offer (i.e. myKsuite+/pro +, ...)
-
         private ObservableCollection<Sync> _syncs = new ObservableCollection<Sync>();
+        private bool _hasError = false; // Indicate if any of the syncs has an error
 
         public Drive(DbId dbId)
         {
             DbId = dbId;
         }
+
         public async Task Reload()
         {
             Logger.Log(Logger.Level.Info, $"Reloading Drive properties for DbId {DbId}...");
             Task[] tasks = new Task[]
             {
-               CommRequests.GetDriveId(DbId).ContinueWith(t => { if (t.Result != null) Id = t.Result.Value; }),
-               CommRequests.GetDriveName(DbId).ContinueWith(t => { if (t.Result != null) Name = t.Result; }),
-               CommRequests.GetDriveColor(DbId).ContinueWith(t => { if (t.Result != null) Color = t.Result.Value; }),
-               CommRequests.GetDriveSize(DbId).ContinueWith(t => { if (t.Result != null) Size = t.Result.Value; }),
-               CommRequests.GetDriveUsedSize(DbId).ContinueWith(t => { if (t.Result != null) UsedSize = t.Result.Value; }),
-               CommRequests.GetDriveIsActive(DbId).ContinueWith(t => { if (t.Result != null) IsActive = t.Result.Value; }),
-               CommRequests.GetDriveIsPaidOffer(DbId).ContinueWith(t => { if (t.Result != null) IsPaidOffer = t.Result.Value; }),
+               CommRequests.GetDriveId(DbId).ContinueWith(t => { if (t.Result != null) Id = t.Result.Value; }, TaskScheduler.FromCurrentSynchronizationContext()),
+               CommRequests.GetDriveName(DbId).ContinueWith(t => { if (t.Result != null) Name = t.Result; }, TaskScheduler.FromCurrentSynchronizationContext()),
+               CommRequests.GetDriveColor(DbId).ContinueWith(t => { if (t.Result != null) Color = t.Result.Value; }, TaskScheduler.FromCurrentSynchronizationContext()),
+               CommRequests.GetDriveSize(DbId).ContinueWith(t => { if (t.Result != null) Size = t.Result.Value; }, TaskScheduler.FromCurrentSynchronizationContext()),
+               CommRequests.GetDriveUsedSize(DbId).ContinueWith(t => { if (t.Result != null) UsedSize = t.Result.Value; }, TaskScheduler.FromCurrentSynchronizationContext()),
+               CommRequests.GetDriveIsActive(DbId).ContinueWith(t => { if (t.Result != null) IsActive = t.Result.Value; }, TaskScheduler.FromCurrentSynchronizationContext()),
+               CommRequests.GetDriveIsPaidOffer(DbId).ContinueWith(t => { if (t.Result != null) IsPaidOffer = t.Result.Value; }, TaskScheduler.FromCurrentSynchronizationContext()),
                CommRequests.GetDriveSyncsDbIds(DbId).ContinueWith(async t =>
                 {
                      if (t.Result != null)
@@ -69,13 +70,13 @@ namespace Infomaniak.kDrive.ViewModels
                           foreach (var syncDbId in t.Result)
                           {
                             Sync? sync = new Sync(syncDbId, this);
+                            Syncs.Add(sync);
                             syncTasks.Add(sync.Reload());
-                            syncs.Add(sync);
                           }
-                          await Task.WhenAll(syncTasks).ConfigureAwait(false);
-                          Syncs = syncs;
+                          await Task.WhenAll(syncTasks);
+                        InitWatchers();
                      }
-                }).Unwrap()
+                }, TaskScheduler.FromCurrentSynchronizationContext())
             };
             await Task.WhenAll(tasks).ConfigureAwait(false);
             Logger.Log(Logger.Level.Info, $"Drive properties reloaded for DbId {DbId}.");
@@ -149,6 +150,55 @@ namespace Infomaniak.kDrive.ViewModels
         public Uri GetWebSharedUri()
         {
             return new Uri($"https://ksuite.infomaniak.com/kdrive/app/drive/{Id}/shared-with-me");
+        }
+
+        public bool HasError
+        {
+            get => _hasError;
+            set => SetProperty(ref _hasError, value);
+        }
+
+        private void Sync_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Sync.SyncErrors))
+            {
+                HasError = Syncs.Any(s => s.SyncErrors.Count > 0);
+            }
+        }
+
+        private void RefreshHasError()
+        {
+            foreach (var sync in Syncs)
+            {
+                if (sync.SyncErrors.Any())
+                {
+                    HasError = true;
+                    return;
+                }
+            }
+            HasError = false;
+        }
+
+        private void InitWatchers()
+        {
+            _syncs.CollectionChanged += (s, e) =>
+            {
+                if (e.NewItems != null)
+                {
+                    foreach (Sync sync in e.NewItems)
+                    {
+                        sync.PropertyChanged += Sync_PropertyChanged;
+                    }
+                }
+                if (e.OldItems != null)
+                {
+                    foreach (Sync sync in e.OldItems)
+                    {
+                        sync.PropertyChanged -= Sync_PropertyChanged;
+                    }
+                }
+                RefreshHasError();
+            };
         }
     }
 }

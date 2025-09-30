@@ -68,29 +68,29 @@ namespace Infomaniak.kDrive.ViewModels
             Logger.Log(Logger.Level.Info, $"Reloading user properties for DbId {DbId}...");
             Task[] tasks = new Task[]
             {
-               CommRequests.GetUserId(DbId).ContinueWith(t => { if (t.Result != null) Id = t.Result.Value; }),
-               CommRequests.GetUserName(DbId).ContinueWith(t => { if (t.Result != null) Name = t.Result; }),
-               CommRequests.GetUserEmail(DbId).ContinueWith(t => { if (t.Result != null) Email = t.Result; }),
-               CommRequests.GetUserAvatar(DbId).ContinueWith(t => { if (t.Result != null) Avatar = t.Result; }),
-               CommRequests.GetUserIsConnected(DbId).ContinueWith(t => { if (t.Result != null) IsConnected = t.Result.Value; }),
-               CommRequests.GetUserIsStaff(DbId).ContinueWith(t => { if (t.Result != null) IsStaff = t.Result.Value; }),
+               CommRequests.GetUserId(DbId).ContinueWith(t => {
+                   if (t.Result != null) Id = t.Result.Value;
+               }, TaskScheduler.FromCurrentSynchronizationContext()),
+               CommRequests.GetUserName(DbId).ContinueWith(t => { if (t.Result != null) Name = t.Result; }, TaskScheduler.FromCurrentSynchronizationContext()),
+               CommRequests.GetUserEmail(DbId).ContinueWith(t => { if (t.Result != null) Email = t.Result; }, TaskScheduler.FromCurrentSynchronizationContext()),
+               CommRequests.GetUserAvatar(DbId).ContinueWith(t => { if (t.Result != null) Avatar = t.Result; }, TaskScheduler.FromCurrentSynchronizationContext()),
+               CommRequests.GetUserIsConnected(DbId).ContinueWith(t => { if (t.Result != null) IsConnected = t.Result.Value; }, TaskScheduler.FromCurrentSynchronizationContext()),
+               CommRequests.GetUserIsStaff(DbId).ContinueWith(t => { if (t.Result != null) IsStaff = t.Result.Value; }, TaskScheduler.FromCurrentSynchronizationContext()),
                CommRequests.GetUserDrivesDbIds(DbId).ContinueWith(async t =>
                 {
                      if (t.Result != null)
                      {
-                          ObservableCollection<Drive> drives = new ObservableCollection<Drive>();
                           Logger.Log(Logger.Level.Debug, $"User (DbId: {DbId}) has {t.Result.Count} drives. Reloading drive data...");
                           List<Task> driveTasks = new List<Task>();
                           foreach (var driveDbId in t.Result)
                           {
-                            Drive? drive = new Drive(driveDbId);
+                            Drive drive = new Drive(driveDbId);
+                            Drives.Add(drive);
                             driveTasks.Add(drive.Reload());
-                            drives.Add(drive);
                           }
                           await Task.WhenAll(driveTasks).ConfigureAwait(false);
-                          Drives = drives;
                      }
-                }).Unwrap()
+                }, TaskScheduler.FromCurrentSynchronizationContext())
             };
             await Task.WhenAll(tasks).ConfigureAwait(false);
             Logger.Log(Logger.Level.Info, $"User properties for DbId {DbId} reloaded.");

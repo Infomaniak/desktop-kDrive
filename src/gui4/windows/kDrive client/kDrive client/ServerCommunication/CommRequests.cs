@@ -58,12 +58,12 @@ namespace Infomaniak.kDrive.ServerCommunication
             Drives.Add(new Drive(6) { Id = 105, Name = "FrenchCloud", Color = Color.FromArgb(255, 123, 179, 12), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
             Drives.Add(new Drive(7) { Id = 106, Name = "EuropaCloud", Color = Color.FromArgb(255, 160, 12, 213), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
             Drives.Add(new Drive(8) { Id = 107, Name = "WinUI cloud", Color = Color.FromArgb(255, 12, 168, 179), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
+            Users[0].Drives.Add(Drives[4]);
 
             Users[0].Drives.Add(Drives[0]);
             Users[0].Drives.Add(Drives[1]);
             Users[0].Drives.Add(Drives[2]);
             Users[0].Drives.Add(Drives[3]);
-            Users[0].Drives.Add(Drives[4]);
             Users[0].Drives.Add(Drives[5]);
             Users[0].Drives.Add(Drives[6]);
             Users[0].Drives.Add(Drives[7]);
@@ -200,35 +200,35 @@ namespace Infomaniak.kDrive.ServerCommunication
 
         private static async Task SimulateNetworkDelay()
         {
-            await Task.Delay(50); // Simulate network delay
+            await Task.Delay(2000); // Simulate network delay
         }
 
         // User-related requests
         public static async Task<List<DbId>> GetUserDbIds()
         {
             var users = _mockServerData.Users;
-            await SimulateNetworkDelay().ConfigureAwait(false);
+            await SimulateNetworkDelay();
             return users.Select(u => u.DbId).ToList();
         }
 
         public static async Task<UserId?> GetUserId(DbId dbId)
         {
             var users = _mockServerData.Users;
-            await SimulateNetworkDelay().ConfigureAwait(false);
+            await SimulateNetworkDelay();
             return users.FirstOrDefault(u => u.DbId == dbId)?.Id;
         }
 
         public static async Task<string?> GetUserName(DbId dbId)
         {
             var users = _mockServerData.Users;
-            await SimulateNetworkDelay().ConfigureAwait(false);
+            await SimulateNetworkDelay();
             return users.FirstOrDefault(u => u.DbId == dbId)?.Name;
         }
 
         public static async Task<string?> GetUserEmail(DbId dbId)
         {
             var users = _mockServerData.Users;
-            await SimulateNetworkDelay().ConfigureAwait(false);
+            await SimulateNetworkDelay();
             return users.FirstOrDefault(u => u.DbId == dbId)?.Email;
         }
 
@@ -236,34 +236,35 @@ namespace Infomaniak.kDrive.ServerCommunication
         {
             //var users = await GetUsers().ConfigureAwait(false);
             var users = _mockServerData.Users;
+            await SimulateNetworkDelay();
             return users.FirstOrDefault(u => u.DbId == dbId)?.Avatar;
         }
 
         public static async Task<bool?> GetUserIsConnected(DbId dbId)
         {
             var users = _mockServerData.Users;
-            await SimulateNetworkDelay().ConfigureAwait(false);
+            await SimulateNetworkDelay();
             return users.FirstOrDefault(u => u.DbId == dbId)?.IsConnected;
         }
 
         public static async Task<bool?> GetUserIsStaff(DbId dbId)
         {
             var users = _mockServerData.Users;
-            await SimulateNetworkDelay().ConfigureAwait(false);
+            await SimulateNetworkDelay();
             return users.FirstOrDefault(u => u.DbId == dbId)?.IsStaff;
         }
 
         public static async Task<List<DbId>> GetUserDrivesDbIds(DbId dbId)
         {
             var users = _mockServerData.Users;
-            await SimulateNetworkDelay().ConfigureAwait(false);
+            await SimulateNetworkDelay();
             return users.FirstOrDefault(u => u.DbId == dbId)?.Drives.Select(d => d!.DbId).ToList() ?? new List<DbId>();
         }
 
         public static async Task<DbId> AddOrRelogUser(string token)
         {
             var users = _mockServerData.Users;
-            await SimulateNetworkDelay().ConfigureAwait(false);
+            await SimulateNetworkDelay();
             return users.FirstOrDefault()?.DbId ?? -1;
         }
 
@@ -271,42 +272,42 @@ namespace Infomaniak.kDrive.ServerCommunication
         public static async Task<DriveId?> GetDriveId(DbId dbId)
         {
             var drives = _mockServerData.Drives;
-            await SimulateNetworkDelay().ConfigureAwait(false);
+            await SimulateNetworkDelay();
             return drives.FirstOrDefault(d => d.DbId == dbId)?.Id;
         }
 
         public static async Task<string?> GetDriveName(DbId dbId)
         {
             var drives = _mockServerData.Drives;
-            await SimulateNetworkDelay().ConfigureAwait(false);
+            await SimulateNetworkDelay();
             return drives.FirstOrDefault(d => d.DbId == dbId)?.Name;
         }
 
         public static async Task<Color?> GetDriveColor(DbId dbId)
         {
             var drives = _mockServerData.Drives;
-            await SimulateNetworkDelay().ConfigureAwait(false);
+            await SimulateNetworkDelay();
             return drives.FirstOrDefault(d => d.DbId == dbId)?.Color;
         }
 
         public static async Task<long?> GetDriveSize(DbId dbId)
         {
             var drives = _mockServerData.Drives;
-            await SimulateNetworkDelay().ConfigureAwait(false);
+            await SimulateNetworkDelay();
             return drives.FirstOrDefault(d => d.DbId == dbId)?.Size;
         }
 
         public static async Task<long?> GetDriveUsedSize(DbId dbId)
         {
             var drives = _mockServerData.Drives;
-            await SimulateNetworkDelay().ConfigureAwait(false);
+            await SimulateNetworkDelay();
             return drives.FirstOrDefault(d => d.DbId == dbId)?.UsedSize;
         }
 
         public static async Task<bool?> GetDriveIsActive(DbId dbId)
         {
             var drives = _mockServerData.Drives;
-            await SimulateNetworkDelay().ConfigureAwait(false);
+            await SimulateNetworkDelay();
             var drive = drives.FirstOrDefault(d => d.DbId == dbId);
             return drive != null ? drive.IsActive : (bool?)null;
         }
@@ -314,7 +315,7 @@ namespace Infomaniak.kDrive.ServerCommunication
         public static async Task<bool?> GetDriveIsPaidOffer(DbId dbId)
         {
             var drives = _mockServerData.Drives;
-            await SimulateNetworkDelay().ConfigureAwait(false);
+            await SimulateNetworkDelay();
             var drive = drives.FirstOrDefault(d => d.DbId == dbId);
             return drive != null ? drive.IsPaidOffer : (bool?)null;
         }
@@ -322,7 +323,7 @@ namespace Infomaniak.kDrive.ServerCommunication
         public static async Task<List<DbId>> GetDriveSyncsDbIds(DbId driveDbId)
         {
             var drives = _mockServerData.Drives;
-            await SimulateNetworkDelay().ConfigureAwait(false);
+            await SimulateNetworkDelay();
             return drives.FirstOrDefault(d => d.DbId == driveDbId)?.Syncs.Select(s => s!.DbId).ToList() ?? new List<DbId>();
         }
 
@@ -330,35 +331,35 @@ namespace Infomaniak.kDrive.ServerCommunication
         public static async Task<SyncId?> GetSyncId(DbId dbId)
         {
             var syncs = _mockServerData.Syncs;
-            await SimulateNetworkDelay().ConfigureAwait(false);
+            await SimulateNetworkDelay();
             return syncs.FirstOrDefault(s => s.DbId == dbId)?.Id;
         }
 
         public static async Task<string?> GetSyncLocalPath(DbId dbId)
         {
             var syncs = _mockServerData.Syncs;
-            await SimulateNetworkDelay().ConfigureAwait(false);
+            await SimulateNetworkDelay();
             return syncs.FirstOrDefault(s => s.DbId == dbId)?.LocalPath;
         }
 
         public static async Task<string?> GetSyncRemotePath(DbId dbId)
         {
             var syncs = _mockServerData.Syncs;
-            await SimulateNetworkDelay().ConfigureAwait(false);
+            await SimulateNetworkDelay();
             return syncs.FirstOrDefault(s => s.DbId == dbId)?.RemotePath;
         }
 
         public static async Task<bool?> GetSyncSupportOfflineMode(DbId dbId)
         {
             var syncs = _mockServerData.Syncs;
-            await SimulateNetworkDelay().ConfigureAwait(false);
+            await SimulateNetworkDelay();
             return syncs.FirstOrDefault(s => s.DbId == dbId)?.SupportOnlineMode;
         }
 
         public static async Task<SyncType?> GetSyncType(DbId dbId)
         {
             var syncs = _mockServerData.Syncs;
-            await SimulateNetworkDelay().ConfigureAwait(false);
+            await SimulateNetworkDelay();
             return syncs.FirstOrDefault(s => s.DbId == dbId)?.SyncType;
         }
 
