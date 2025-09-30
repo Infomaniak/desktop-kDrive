@@ -35,6 +35,7 @@ namespace KDC {
 class JobManager {
     public:
         JobManager();
+        virtual ~JobManager() = default;
         JobManager(JobManager const &) = delete;
         void operator=(JobManager const &) = delete;
 
