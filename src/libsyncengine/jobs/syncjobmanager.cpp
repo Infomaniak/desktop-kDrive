@@ -18,6 +18,8 @@
 
 #include "syncjobmanager.h"
 #include "jobmanager.h"
+
+#include <memory>
 #include "jobs/network/kDrive_API/downloadjob.h"
 #include "jobs/network/kDrive_API/upload/upload_session/driveuploadsession.h"
 
@@ -47,7 +49,7 @@ bool isBigFileUploadJob(const std::shared_ptr<AbstractJob> job) {
 
 bool SyncJobManager::canRunJob(std::shared_ptr<AbstractJob> job) const {
     if (isBigFileUploadJob(job)) {
-        for (const auto &runningJobId: _data.runningJobs()) {
+        for (const auto &runningJobId: data().runningJobs()) {
             if (const auto &uploadSession = std::dynamic_pointer_cast<DriveUploadSession>(getJob(runningJobId)); uploadSession) {
                 // An upload session is already running.
                 return false;
@@ -69,7 +71,7 @@ std::shared_ptr<SyncJobManager> SyncJobManagerSingleton::_instance = nullptr;
 std::shared_ptr<SyncJobManager> SyncJobManagerSingleton::instance() noexcept {
     if (_instance == nullptr) {
         try {
-            _instance = std::shared_ptr<SyncJobManager>(new SyncJobManager());
+            _instance = std::make_shared<SyncJobManager>();
         } catch (...) {
             return nullptr;
         }

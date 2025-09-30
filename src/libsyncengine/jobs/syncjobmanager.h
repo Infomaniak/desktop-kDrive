@@ -25,6 +25,7 @@ namespace KDC {
 
 class SyncJobManager : public JobManager {
     public:
+        ~SyncJobManager() override = default;
         SyncJobManager();
         SyncJobManager(SyncJobManager const &) = delete;
         void operator=(SyncJobManager const &) = delete;
