@@ -26,7 +26,7 @@
 
 namespace KDC {
 
-class AbstractJob;
+class SyncJob;
 
 class BenchmarkParallelJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(BenchmarkParallelJobs);
@@ -40,17 +40,15 @@ class BenchmarkParallelJobs : public CppUnit::TestFixture, public TestBase {
         void benchmarkParallelJobs();
 
     private:
-        std::list<std::shared_ptr<AbstractJob>> generateUploadJobs(const NodeId &remoteTmpDirId,
-                                                                   const SyncPath &localTestFolderPath) const;
-        std::list<std::shared_ptr<AbstractJob>> generateUploadSessionJobs(const NodeId &remoteTmpDirId,
-                                                                          const SyncPath &localTestFolderPath,
-                                                                          const uint16_t nbParallelChunkJobs) const;
-        std::list<std::shared_ptr<AbstractJob>> generateDownloadJobs(const NodeId &remoteDirId,
-                                                                     const SyncPath &localTestFolderPath,
-                                                                     const uint64_t expectedSize,
-                                                                     const uint16_t nbMaxJob = 0) const;
+        std::list<std::shared_ptr<SyncJob>> generateUploadJobs(const NodeId &remoteTmpDirId,
+                                                               const SyncPath &localTestFolderPath) const;
+        std::list<std::shared_ptr<SyncJob>> generateUploadSessionJobs(const NodeId &remoteTmpDirId,
+                                                                      const SyncPath &localTestFolderPath,
+                                                                      const uint16_t nbParallelChunkJobs) const;
+        std::list<std::shared_ptr<SyncJob>> generateDownloadJobs(const NodeId &remoteDirId, const SyncPath &localTestFolderPath,
+                                                                 const uint64_t expectedSize, const uint16_t nbMaxJob = 0) const;
         void runJobs(const uint16_t nbThread, DataExtractor &dataExtractor,
-                     const std::list<std::shared_ptr<AbstractJob>> &jobs) const;
+                     const std::list<std::shared_ptr<SyncJob>> &jobs) const;
 
         bool retrieveRemoteFileIds(const NodeId &folderId, std::list<NodeId> &remoteFileIds) const;
 

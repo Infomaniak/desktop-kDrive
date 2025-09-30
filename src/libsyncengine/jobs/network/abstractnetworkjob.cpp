@@ -20,6 +20,7 @@
 
 #include "network/proxy.h"
 #include "jobs/network/networkjobsparams.h"
+#include "jobs/syncjob.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "utility/jsonparserutility.h"
@@ -249,7 +250,7 @@ void AbstractNetworkJob::addRawHeader(const std::string &key, const std::string 
 void AbstractNetworkJob::abort() {
     LOG_DEBUG(_logger, "Aborting session for job " << jobId());
 
-    AbstractJob::abort();
+    SyncJob::abort();
 
     abortSession();
 }

@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "jobs/abstractjob.h"
+#include "jobs/syncjob.h"
 #include "utility/types.h"
 #include "uploadsessionchunkjob.h"
 #include "uploadsessionfinishjob.h"
@@ -32,7 +32,7 @@ namespace KDC {
 
 class UploadSessionChunkJob;
 
-class AbstractUploadSession : public AbstractJob {
+class AbstractUploadSession : public SyncJob {
     public:
         enum UploadSessionState {
             StateInitChunk = 0,

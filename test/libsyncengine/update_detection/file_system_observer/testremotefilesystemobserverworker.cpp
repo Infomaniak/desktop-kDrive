@@ -22,7 +22,7 @@
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
-#include "libsyncengine/jobs/jobmanager.h"
+#include "libsyncengine/jobs/syncjobmanager.h"
 #include "libsyncengine/jobs/network/kDrive_API/deletejob.h"
 #include "libsyncengine/jobs/network/kDrive_API/movejob.h"
 #include "libsyncengine/jobs/network/kDrive_API/renamejob.h"
@@ -111,8 +111,8 @@ void TestRemoteFileSystemObserverWorker::tearDown() {
 
     ParmsDb::instance()->close();
     ParmsDb::reset();
-    JobManager::instance()->stop();
-    JobManager::instance()->clear();
+    SyncJobManagerSingleton::instance()->stop();
+    SyncJobManagerSingleton::clear();
     if (_syncPal && _syncPal->syncDb()) {
         _syncPal->syncDb()->close();
     }

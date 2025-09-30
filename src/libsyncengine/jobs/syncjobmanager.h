@@ -1,3 +1,4 @@
+
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2025 Infomaniak Network SA
@@ -18,31 +19,33 @@
 
 #pragma once
 
-#include "jobs/syncjob.h"
+#include "jobmanager.h"
 
 namespace KDC {
 
-class LocalCreateDirJob : public SyncJob {
+class SyncJobManager : public JobManager {
     public:
-        LocalCreateDirJob(const SyncPath &destFilepath);
-
-        SyncPath destFilePath() const { return _destFilePath; }
-
-        const NodeId &nodeId() const { return _nodeId; }
-        SyncTime modtime() const { return _modtime; }
-        SyncTime creationTime() const { return _creationTime; }
+        SyncJobManager();
+        SyncJobManager(SyncJobManager const &) = delete;
+        void operator=(SyncJobManager const &) = delete;
 
     protected:
-        virtual bool canRun() override;
+        bool canRunJob(const std::shared_ptr<AbstractJob> job) const override;
+
+
+        friend class TestSyncJobManagerSingleton;
+};
+
+class SyncJobManagerSingleton {
+    public:
+        static std::shared_ptr<SyncJobManager> instance() noexcept;
+        static void clear();
+
+
+        friend class TestSyncJobManagerSingleton;
 
     private:
-        virtual void runJob() override;
-
-        SyncPath _destFilePath;
-
-        NodeId _nodeId;
-        SyncTime _modtime = 0;
-        SyncTime _creationTime = 0;
+        static std::shared_ptr<SyncJobManager> _instance;
 };
 
 } // namespace KDC
