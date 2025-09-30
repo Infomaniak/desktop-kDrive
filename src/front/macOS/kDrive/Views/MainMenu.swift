@@ -48,7 +48,7 @@ final class MainMenu: NSMenu {
         let fileItem = addItem(withTitle: "File", action: nil, keyEquivalent: "")
         setSubmenu(createFileMenu(), for: fileItem)
 
-        let editItem = addItem(withTitle: "File", action: nil, keyEquivalent: "")
+        let editItem = addItem(withTitle: "Edit", action: nil, keyEquivalent: "")
         setSubmenu(createEditMenu(), for: editItem)
 
         let viewItem = addItem(withTitle: "View", action: nil, keyEquivalent: "")
