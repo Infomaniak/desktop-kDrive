@@ -20,29 +20,60 @@ import Cocoa
 import Lottie
 
 class PreloadingView: NSView {
+    private var animationView: LottieAnimationView!
+
     init() {
         super.init(frame: .zero)
 
         wantsLayer = true
         layer?.backgroundColor = NSColor.surfaceSecondary.cgColor
 
-        let animationView = LottieAnimationView()
+        animationView = LottieAnimationView()
         animationView.translatesAutoresizingMaskIntoConstraints = false
-
         addSubview(animationView)
+
+        let progressIndicator = NSProgressIndicator()
+        progressIndicator.translatesAutoresizingMaskIntoConstraints = false
+        progressIndicator.style = .spinning
+        progressIndicator.isIndeterminate = true
+        progressIndicator.controlSize = .small
+        progressIndicator.startAnimation(nil)
+        addSubview(progressIndicator)
+
+        loadAndPlayAnimation()
+
         NSLayoutConstraint.activate([
+            animationView.widthAnchor.constraint(lessThanOrEqualToConstant: 150),
+            animationView.heightAnchor.constraint(lessThanOrEqualToConstant: 150),
+
             animationView.centerXAnchor.constraint(equalTo: centerXAnchor),
             animationView.centerYAnchor.constraint(equalTo: centerYAnchor),
+
             animationView.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: 16),
             trailingAnchor.constraint(greaterThanOrEqualTo: animationView.trailingAnchor, constant: 16),
             animationView.topAnchor.constraint(greaterThanOrEqualTo: topAnchor, constant: 16),
-            topAnchor.topAnchor.constraint(greaterThanOrEqualTo: animationView.bottomAnchor, constant: 16)
-            animationView.widthAnchor.constraint(lessThanOrEqualToConstant: 150),
-            animationView.heightAnchor.constraint(lessThanOrEqualToConstant: 150),
+
+            progressIndicator.topAnchor.constraint(equalTo: animationView.bottomAnchor, constant: 48),
+            progressIndicator.centerXAnchor.constraint(equalTo: centerXAnchor),
+            bottomAnchor.constraint(greaterThanOrEqualTo: progressIndicator.bottomAnchor, constant: 16)
         ])
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    private func loadAndPlayAnimation() {
+        Task {
+            guard let dotLottieFileURL = Bundle.main.url(forResource: "kdrive-loader-light", withExtension: "lottie") else {
+                return
+            }
+
+            let dotLottieFile = try await DotLottieFile.loadedFrom(url: dotLottieFileURL)
+            animationView.animation = dotLottieFile.animations.first?.animation
+
+            animationView.loopMode = .loop
+            animationView.play()
+        }
     }
 }
