@@ -76,7 +76,7 @@ namespace Infomaniak.kDrive.ViewModels
                           await Task.WhenAll(syncTasks);
                         InitWatchers();
                      }
-                }, TaskScheduler.FromCurrentSynchronizationContext())
+                }, TaskScheduler.FromCurrentSynchronizationContext()).Unwrap()
             };
             await Task.WhenAll(tasks).ConfigureAwait(false);
             Logger.Log(Logger.Level.Info, $"Drive properties reloaded for DbId {DbId}.");
