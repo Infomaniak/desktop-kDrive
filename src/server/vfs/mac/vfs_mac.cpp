@@ -632,7 +632,7 @@ ExitInfo VfsMac::getFetchingAppList(QHash<QString, QString> &appTable) {
 bool VfsMac::fileStatusChanged(const SyncPath &absoluteFilepath, SyncFileStatus status) {
     LOGW_DEBUG(logger(), L"fileStatusChanged - " << Utility::formatSyncPath(absoluteFilepath) << L" - status = " << status);
     if (std::error_code ec; !std::filesystem::exists(absoluteFilepath, ec)) {
-        if (ec && !sutility_base::isLikeTooManySymbolicLinkLevelsError(ec)) {
+        if (ec && !utility_base::isLikeTooManySymbolicLinkLevelsError(ec)) {
             LOGW_WARN(logger(), L"Failed to check if path exists : " << Utility::formatStdError(absoluteFilepath, ec));
             return false;
         }
