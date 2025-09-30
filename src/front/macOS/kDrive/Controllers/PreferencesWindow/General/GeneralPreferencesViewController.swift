@@ -19,7 +19,7 @@
 import Cocoa
 import kDriveCoreUI
 
-class GeneralPreferencesViewController: PreferencePaneController {
+class GeneralPreferencesViewController: InsetGroupedPreferencesPaneController {
     convenience init() {
         self.init(toolbarTitle: SidebarItem.general.title)
     }

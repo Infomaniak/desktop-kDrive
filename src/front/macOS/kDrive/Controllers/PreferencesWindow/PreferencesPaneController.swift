@@ -19,7 +19,7 @@
 import Cocoa
 import kDriveCoreUI
 
-open class PreferencePaneController: TitledViewController {
+open class PreferencesPaneController: TitledViewController {
     var scrollView: NSScrollView!
     var stackView: NSStackView!
 
