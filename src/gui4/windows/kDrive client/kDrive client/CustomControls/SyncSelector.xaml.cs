@@ -215,6 +215,8 @@ namespace Infomaniak.kDrive.CustomControls
                     Logger.Log(Logger.Level.Error, "suggestBox is null in SyncFlyout_Opened.");
                     return;
                 }
+                suggestBox.Text = "";
+                suggestBox.ItemsSource = drive.Syncs;
                 suggestBox.IsSuggestionListOpen = true;
                 suggestBox.Tag = drive;
                 suggestBox.Visibility = Visibility.Visible;
