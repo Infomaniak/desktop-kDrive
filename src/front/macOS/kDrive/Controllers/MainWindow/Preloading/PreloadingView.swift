@@ -17,6 +17,7 @@
  */
 
 import Cocoa
+import Lottie
 
 class PreloadingView: NSView {
     init() {
@@ -24,6 +25,21 @@ class PreloadingView: NSView {
 
         wantsLayer = true
         layer?.backgroundColor = NSColor.surfaceSecondary.cgColor
+
+        let animationView = LottieAnimationView()
+        animationView.translatesAutoresizingMaskIntoConstraints = false
+
+        addSubview(animationView)
+        NSLayoutConstraint.activate([
+            animationView.centerXAnchor.constraint(equalTo: centerXAnchor),
+            animationView.centerYAnchor.constraint(equalTo: centerYAnchor),
+            animationView.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: 16),
+            trailingAnchor.constraint(greaterThanOrEqualTo: animationView.trailingAnchor, constant: 16),
+            animationView.topAnchor.constraint(greaterThanOrEqualTo: topAnchor, constant: 16),
+            topAnchor.topAnchor.constraint(greaterThanOrEqualTo: animationView.bottomAnchor, constant: 16)
+            animationView.widthAnchor.constraint(lessThanOrEqualToConstant: 150),
+            animationView.heightAnchor.constraint(lessThanOrEqualToConstant: 150),
+        ])
     }
 
     required init?(coder: NSCoder) {
