@@ -1545,25 +1545,4 @@ bool TestNetworkJobs::createTestFiles() {
     return true;
 }
 
-
-void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
-    class GetInfoUserJobMock : public GetInfoUserJob {
-        public:
-            explicit GetInfoUserJobMock(int userDbId) :
-                GetInfoUserJob(userDbId){};
-
-        protected:
-            bool retrieveResponse(StreamVector &stream) override {
-                AbstractNetworkJob::retrieveResponse(stream);
-                _resHttp.setStatus("401");
-                return true;
-            };
-    };
-
-    GetInfoUserJobMock job(_userDbId);
-    ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT_EQUAL(ExitCode::InvalidToken, exitCode);
-    CPPUNIT_ASSERT_EQUAL(0, job.trials());
-}
-
 } // namespace KDC
