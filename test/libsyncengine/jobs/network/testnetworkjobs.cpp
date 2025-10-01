@@ -1547,14 +1547,14 @@ bool TestNetworkJobs::createTestFiles() {
 
 
 void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
-    class GetInfoUserJobMock : public GetInfoUserJob {
+    class GetInfoUserJobMock final : public GetInfoUserJob {
         public:
             explicit GetInfoUserJobMock(int userDbId) :
                 GetInfoUserJob(userDbId){};
 
         protected:
-            bool retrieveResponse(StreamVector &stream) override {
-                AbstractNetworkJob::retrieveResponse(stream);
+            bool receiveResponseFromSession(StreamVector &stream) override {
+                AbstractNetworkJob::receiveResponseFromSession(stream);
                 _resHttp.setStatus("401");
                 return true;
             };

@@ -376,7 +376,7 @@ bool AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
     return true;
 }
 
-bool AbstractNetworkJob::retrieveResponse(StreamVector &stream) {
+bool AbstractNetworkJob::receiveResponseFromSession(StreamVector &stream) {
     try {
         const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
         if (_session) {
@@ -396,7 +396,7 @@ bool AbstractNetworkJob::retrieveResponse(StreamVector &stream) {
 
 bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
     StreamVector stream;
-    if (!retrieveResponse(stream)) return false;
+    if (!receiveResponseFromSession(stream)) return false;
 
     if (isAborted()) {
         LOG_DEBUG(_logger, "Request " << jobId() << " aborted");

@@ -58,7 +58,7 @@ class AbstractNetworkJob : public SyncJob {
         void addRawHeader(const std::string &key, const std::string &value);
 
         using StreamVector = std::vector<std::reference_wrapper<std::istream>>;
-        virtual bool retrieveResponse(StreamVector &stream);
+        virtual bool receiveResponseFromSession(StreamVector &stream);
         virtual bool handleResponse(std::istream &inputStream) = 0;
         virtual bool handleError(const std::string &replyBody, const Poco::URI &uri) = 0;
 
