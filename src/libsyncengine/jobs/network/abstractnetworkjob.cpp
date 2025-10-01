@@ -135,20 +135,13 @@ void AbstractNetworkJob::runJob() noexcept {
             _exitInfo = ExitCode::NetworkError;
             break;
         }
-
-        bool canceled = false;
         if (ExitInfo exitInfo = setData(); !exitInfo) { // Must be called before setQueryParameters
             LOG_WARN(_logger, "Job " << jobId() << " is cancelled " << exitInfo);
             _exitInfo = exitInfo;
             break;
         }
 
-        setQueryParameters(uri, canceled);
-        if (canceled) {
-            LOG_WARN(_logger, "Job " << jobId() << " is cancelled");
-            _exitInfo = ExitCode::DataError;
-            break;
-        }
+        setQueryParameters(uri);
 
         // Send request
         auto sendChrono = std::chrono::steady_clock::now();
@@ -323,20 +316,11 @@ bool AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
 
     LOG_DEBUG(_logger, "Sending " << _httpMethod << " request " << jobId() << " : " << uri.toString());
 
-    // Get Content Type
-    bool canceled = false;
-    std::string contentType = getContentType(canceled);
-    if (canceled) {
-        LOG_WARN(_logger, "Unable to get content type!");
-        _exitInfo = ExitCode::DataError;
-        return false;
-    }
-
     Poco::Net::HTTPRequest req(_httpMethod, path, Poco::Net::HTTPMessage::HTTP_1_1);
 
     // Set headers
     req.set("User-Agent", _userAgent);
-    req.setContentType(contentType);
+    req.setContentType(getContentType());
     for (const auto &header: _rawHeaders) {
         req.add(header.first, header.second);
     }

@@ -37,10 +37,9 @@ std::string LongPollJob::getSpecificUrl() {
     return str;
 }
 
-void LongPollJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
+void LongPollJob::setQueryParameters(Poco::URI &uri) {
     uri.addQueryParameter("cursor", _cursor);
     uri.addQueryParameter("timeout", std::to_string(apiTimout) + "s");
-    canceled = false;
 }
 
 } // namespace KDC

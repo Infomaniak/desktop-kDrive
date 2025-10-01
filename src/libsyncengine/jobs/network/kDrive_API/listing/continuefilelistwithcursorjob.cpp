@@ -31,11 +31,10 @@ std::string ContinueFileListWithCursorJob::getSpecificUrl() {
     return str;
 }
 
-void ContinueFileListWithCursorJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
+void ContinueFileListWithCursorJob::setQueryParameters(Poco::URI &uri) {
     uri.addQueryParameter("cursor", _cursor);
     uri.addQueryParameter("with", "files.capabilities");
     uri.addQueryParameter("limit", nbItemPerPage);
-    canceled = false;
 }
 
 } // namespace KDC

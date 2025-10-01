@@ -40,7 +40,7 @@ class CsvFullFileListWithCursorJob final : public AbstractListingJob {
 
     private:
         std::string getSpecificUrl() override;
-        void setQueryParameters(Poco::URI &uri, bool &canceled) override;
+        void setQueryParameters(Poco::URI &uri) override;
 
         bool handleResponse(std::istream &is) override;
 

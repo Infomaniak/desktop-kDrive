@@ -28,7 +28,7 @@ class InitFileListWithCursorJob : public AbstractListingJob {
 
     private:
         std::string getSpecificUrl() override;
-        void setQueryParameters(Poco::URI &uri, bool &canceled) override;
+        void setQueryParameters(Poco::URI &uri) override;
 
         NodeId _dirId;
 };

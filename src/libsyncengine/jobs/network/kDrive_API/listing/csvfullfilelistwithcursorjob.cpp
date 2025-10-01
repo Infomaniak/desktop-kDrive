@@ -56,12 +56,11 @@ std::string CsvFullFileListWithCursorJob::getSpecificUrl() {
     return str;
 }
 
-void CsvFullFileListWithCursorJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
+void CsvFullFileListWithCursorJob::setQueryParameters(Poco::URI &uri) {
     uri.addQueryParameter("directory_id", _dirId);
     uri.addQueryParameter("recursive", "true");
     uri.addQueryParameter("format", "safe_csv");
     uri.addQueryParameter("with", "files.is_link");
-    canceled = false;
 }
 
 bool CsvFullFileListWithCursorJob::handleResponse(std::istream &is) {

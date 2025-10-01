@@ -34,12 +34,11 @@ std::string InitFileListWithCursorJob::getSpecificUrl() {
     return str;
 }
 
-void InitFileListWithCursorJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
+void InitFileListWithCursorJob::setQueryParameters(Poco::URI &uri) {
     uri.addQueryParameter("directory_id", _dirId);
     uri.addQueryParameter("recursive", "true");
     uri.addQueryParameter("with", "files.capabilities");
     uri.addQueryParameter("limit", nbItemPerPage);
-    canceled = false;
 }
 
 } // namespace KDC

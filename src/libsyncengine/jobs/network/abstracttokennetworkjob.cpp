@@ -494,8 +494,7 @@ std::string AbstractTokenNetworkJob::loadToken() {
     return token;
 }
 
-std::string AbstractTokenNetworkJob::getContentType(bool &canceled) {
-    canceled = false;
+std::string AbstractTokenNetworkJob::getContentType() {
     return mimeTypeJson;
 }
 
