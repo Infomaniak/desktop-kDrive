@@ -12,6 +12,14 @@
     <string>@APPLICATION_EXECUTABLE@</string>
     <key>CFBundleIconFile</key>
     <string>@APPLICATION_ICON_NAME@.icns</string>
+    <key>CFBundleIcons</key>
+    <dict>
+        <key>CFBundlePrimaryIcon</key>
+        <dict>
+            <key>CFBundleSymbolName</key>
+            <string>kdrive.fill</string>
+        </dict>
+    </dict>
     <key>CFBundleName</key>
     <string>@APPLICATION_NAME@</string>
     <key>CFBundleIdentifier</key>
@@ -89,7 +97,7 @@
     </array>
 
     <key>LoginItemAgentMachName</key>
-    <string>@SOCKETAPI_TEAM_IDENTIFIER_PREFIX@@APPLICATION_REV_DOMAIN@.LoginItemAgent</string>
+    <string>@TEAM_IDENTIFIER_PREFIX@@APPLICATION_REV_DOMAIN@.LoginItemAgent</string>
 
     <key>LiteSyncExtMachName</key>
     <string>@APPLICATION_REV_DOMAIN@.LiteSyncExt</string>

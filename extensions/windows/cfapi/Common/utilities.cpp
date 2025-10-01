@@ -193,16 +193,15 @@ bool Utilities::writeMessage(const std::wstring &verb, const std::wstring &path,
     }
 
     // Make UTF8 message
-    std::string msg;
+    std::wstring msg;
     if (msgId == 0) {
-        msg = utf16ToUtf8(std::wstring(verb + MSG_CDE_SEPARATOR + path + MSG_END).c_str());
+        msg = std::wstring(verb + MSG_CDE_SEPARATOR + path + MSG_END);
     } else {
-        msg = utf16ToUtf8(
-                std::wstring(verb + MSG_CDE_SEPARATOR + std::to_wstring(msgId) + MSG_ARG_SEPARATOR + path + MSG_END).c_str());
+        msg = std::wstring(verb + MSG_CDE_SEPARATOR + std::to_wstring(msgId) + MSG_ARG_SEPARATOR + path + MSG_END);
     }
 
     DWORD numBytesWritten = 0;
-    if (!WriteFile(s_pipe, msg.c_str(), DWORD(msg.size()), &numBytesWritten, NULL)) {
+    if (!WriteFile(s_pipe, msg.c_str(), DWORD(msg.size() * sizeof(wchar_t)), &numBytesWritten, NULL)) {
         TRACE_ERROR(L"Error writing on sync engine pipe: %ls", getLastErrorMessage().c_str());
 
         if (GetLastError() == ERROR_PIPE_NOT_CONNECTED) {
@@ -228,7 +227,7 @@ bool Utilities::writeMessage(const std::wstring &verb, const std::wstring &path,
 }
 
 bool Utilities::readMessage(std::wstring *response) {
-    static std::vector<char> buffer;
+    static std::vector<wchar_t> buffer;
 
     if (!response) {
         TRACE_ERROR(L"Invalid parameter!");
@@ -247,14 +246,14 @@ bool Utilities::readMessage(std::wstring *response) {
     response->clear();
     while (true) {
         int lbPos = 0;
-        auto it = std::find(buffer.begin() + lbPos, buffer.end(), '\n');
+        auto it = std::find(buffer.begin() + lbPos, buffer.end(), L'\n');
         if (it != buffer.end()) {
-            *response = utf8ToUtf16(buffer.data(), DWORD(it - buffer.begin()));
+            *response = std::wstring(buffer.data(), DWORD(it - buffer.begin()));
             buffer.erase(buffer.begin(), it + 1);
             return true;
         }
 
-        std::array<char, 1024> resp_utf8;
+        std::array<wchar_t, 1024> resp;
         DWORD numBytesRead = 0;
         DWORD totalBytesAvailable = 0;
 
@@ -284,7 +283,7 @@ bool Utilities::readMessage(std::wstring *response) {
             break;
         }
 
-        if (!ReadFile(s_pipe, resp_utf8.data(), DWORD(resp_utf8.size()), &numBytesRead, NULL)) {
+        if (!ReadFile(s_pipe, resp.data(), DWORD(resp.size() * sizeof(wchar_t)), &numBytesRead, NULL)) {
             TRACE_ERROR(L"Error reading on sync engine pipe: %ls", getLastErrorMessage().c_str());
             return false;
         }
@@ -293,7 +292,7 @@ bool Utilities::readMessage(std::wstring *response) {
             return false;
         }
 
-        buffer.insert(buffer.end(), resp_utf8.begin(), resp_utf8.begin() + numBytesRead);
+        buffer.insert(buffer.end(), resp.begin(), resp.begin() + numBytesRead / sizeof(wchar_t));
     }
 
     return true;

@@ -37,7 +37,6 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testGenerateRandomStringAlphaNum);
         CPPUNIT_TEST(testLanguageCode);
         CPPUNIT_TEST(testIsSupportedLanguage);
-        CPPUNIT_TEST(testTruncateLongLogMessage);
         CPPUNIT_TEST(testLogIfFail);
         CPPUNIT_TEST(testRelativePath);
         CPPUNIT_TEST(testSplitSyncName);
@@ -78,7 +77,6 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testGenerateRandomStringAlphaNum();
         void testLanguageCode();
         void testIsSupportedLanguage();
-        void testTruncateLongLogMessage();
         void testLogIfFail();
         void testRelativePath();
         void testSplitSyncName();

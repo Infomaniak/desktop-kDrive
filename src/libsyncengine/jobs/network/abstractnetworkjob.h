@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "libsyncengine/jobs/abstractjob.h"
+#include "libsyncengine/jobs/syncjob.h"
 
 #include <string>
 #include <unordered_map>
@@ -31,9 +31,9 @@
 
 namespace KDC {
 
-class AbstractJob;
+class SyncJob;
 
-class AbstractNetworkJob : public AbstractJob {
+class AbstractNetworkJob : public SyncJob {
     public:
         /// @throw std::runtime_error
         AbstractNetworkJob();
@@ -76,7 +76,7 @@ class AbstractNetworkJob : public AbstractJob {
         void getStringFromStream(std::istream &inputStream, std::string &res);
 
         std::string _httpMethod;
-        uint64_t _apiVersion{2};
+        uint8_t _apiVersion{2};
         std::string _data;
         Poco::Net::HTTPResponse _resHttp;
         int _customTimeout = 0;

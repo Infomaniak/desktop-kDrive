@@ -45,7 +45,7 @@ set( MAC_INSTALLER_BACKGROUND_FILE "${CMAKE_SOURCE_DIR}/admin/osx/installer-asse
 set( MAC_INSTALLER_INTRODUCTION_FILE "${CMAKE_SOURCE_DIR}/admin/osx/installer-assets/Introduction.rtfd")
 set( MAC_INSTALLER_DELETE_SCRIPT "${CMAKE_SOURCE_DIR}/admin/osx/installer-assets/deleteExistingApp.sh")
 
-set( SOCKETAPI_TEAM_IDENTIFIER_PREFIX "864VDCS2QY." )
+set( TEAM_IDENTIFIER_PREFIX "864VDCS2QY." )
 set( WIN_SETUP_BITMAP_PATH "${CMAKE_SOURCE_DIR}/admin/win/nsi" )
 
 set( APPLICATION_LICENSE    "${KDRIVE_THEME_DIR}/license.txt" )

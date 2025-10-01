@@ -47,38 +47,16 @@ AbstractJob::~AbstractJob() {
     log4cplus::threadCleanup();
 }
 
+void AbstractJob::run() {
+    _isRunning = true;
+    runJob();
+    callback(jobId());
+    // Don't put code after this line as object has been destroyed
+}
+
 ExitInfo AbstractJob::runSynchronously() {
     run();
     return _exitInfo;
-}
-
-void AbstractJob::setProgress(int64_t newProgress) {
-    _progress = newProgress;
-    if (_progressPercentCallback) {
-        if (_expectedFinishProgress == expectedFinishProgressNotSetValue) {
-            LOG_DEBUG(_logger,
-                      "Could not calculate progress percentage as _expectedFinishProgress is not set by the derived class (but "
-                      "_progressPercentCallback is set by the caller).");
-            _expectedFinishProgress = expectedFinishProgressNotSetValueWarningLogged;
-            _progressPercentCallback(_jobId, 100);
-        } else if (_expectedFinishProgress == expectedFinishProgressNotSetValueWarningLogged) {
-            _progressPercentCallback(_jobId, 100);
-        } else {
-            _progressPercentCallback(_jobId, static_cast<int>((_progress * 100) / _expectedFinishProgress));
-        }
-    }
-}
-
-void AbstractJob::addProgress(int64_t progressToAdd) {
-    setProgress(_progress + progressToAdd);
-}
-
-bool AbstractJob::progressChanged() {
-    if (_progress > _lastProgress) {
-        _lastProgress = _progress;
-        return true;
-    }
-    return false;
 }
 
 void AbstractJob::abort() {
@@ -90,13 +68,6 @@ void AbstractJob::abort() {
 
 bool AbstractJob::isAborted() const {
     return _abort;
-}
-
-void AbstractJob::run() {
-    _isRunning = true;
-    runJob();
-    callback(_jobId);
-    // Don't put code after this line as object has been destroyed
 }
 
 void AbstractJob::callback(UniqueId id) {

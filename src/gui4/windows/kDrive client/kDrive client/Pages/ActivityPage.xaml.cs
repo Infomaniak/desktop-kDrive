@@ -1,3 +1,5 @@
+using Infomaniak.kDrive.ViewModels;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -12,17 +14,19 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-using KDriveClient.ViewModels;
+using Windows.UI;
 
-namespace KDriveClient
+namespace Infomaniak.kDrive.Pages
 {
     public sealed partial class ActivityPage : Page
     {
-        internal AppModel _viewModel = ((App)Application.Current).Data;
-        internal AppModel ViewModel { get { return _viewModel; } }
+        private AppModel _viewModel = ((App)Application.Current).Data;
+        public AppModel ViewModel { get { return _viewModel; } }
         public ActivityPage()
         {
+            Logger.Log(Logger.Level.Info, "Navigated to ActivityPage - Initializing ActivityPage components");
             InitializeComponent();
+            Logger.Log(Logger.Level.Debug, "ActivityPage components initialized");
         }
     }
 }

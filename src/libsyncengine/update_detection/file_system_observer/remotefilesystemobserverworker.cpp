@@ -17,7 +17,7 @@
  */
 
 #include "remotefilesystemobserverworker.h"
-#include "jobs/jobmanager.h"
+#include "jobs/syncjobmanager.h"
 #include "jobs/network/kDrive_API/listing/continuefilelistwithcursorjob.h"
 #include "jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.h"
 #include "jobs/network/kDrive_API/listing/longpolljob.h"
@@ -116,7 +116,7 @@ ExitInfo RemoteFileSystemObserverWorker::generateInitialSnapshot() {
 
         switch (exitInfo.code()) {
             case ExitCode::NetworkError:
-                _syncPal->addError(Error(errId(), exitInfo));
+                _syncPal->addError(Error(ERR_ID, exitInfo));
                 break;
             case ExitCode::LogicError:
             case ExitCode::InvalidSync:
@@ -275,8 +275,8 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
-    JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_LOW);
-    while (!JobManager::instance()->isJobFinished(job->jobId())) {
+    SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_LOW);
+    while (!SyncJobManagerSingleton::instance()->isJobFinished(job->jobId())) {
         if (stopAsked()) {
             return ExitCode::Ok;
         }
@@ -412,8 +412,8 @@ ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
             return AbstractTokenNetworkJob::exception2ExitCode(e);
         }
 
-        JobManager::instance()->queueAsyncJob(notifyJob, Poco::Thread::PRIO_LOW);
-        while (!JobManager::instance()->isJobFinished(notifyJob->jobId())) {
+        SyncJobManagerSingleton::instance()->queueAsyncJob(notifyJob, Poco::Thread::PRIO_LOW);
+        while (!SyncJobManagerSingleton::instance()->isJobFinished(notifyJob->jobId())) {
             if (stopAsked()) {
                 LOG_DEBUG(_logger, "Request " << notifyJob->jobId() << ": aborting LongPoll job");
                 notifyJob->abort();
@@ -439,7 +439,7 @@ ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
                                                                << std::to_string(_driveDbId) << " and cursor: " << _cursor);
 
             if (notifyJob->exitInfo() == ExitInfo(ExitCode::NetworkError, ExitCause::NetworkTimeout)) {
-                _syncPal->addError(Error(errId(), notifyJob->exitInfo()));
+                _syncPal->addError(Error(ERR_ID, notifyJob->exitInfo()));
             }
 
             return notifyJob->exitInfo();
@@ -625,7 +625,7 @@ ExitInfo RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
                 switch (exitInfo.code()) {
                     case ExitCode::NetworkError:
                         if (exitCause() == ExitCause::NetworkTimeout) {
-                            _syncPal->addError(Error(errId(), exitInfo));
+                            _syncPal->addError(Error(ERR_ID, exitInfo));
                         }
                         break;
                     case ExitCode::LogicError:

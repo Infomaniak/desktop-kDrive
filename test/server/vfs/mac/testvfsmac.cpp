@@ -42,7 +42,7 @@ void TestVfsMac::testStatus() {
             ofs.close();
         }
         // Convert file to placeholder
-        const auto extConnector = LiteSyncExtConnector::instance(Log::instance()->getLogger(), ExecuteCommand());
+        const auto extConnector = LiteSyncCommClient::instance(Log::instance()->getLogger(), ExecuteCommand());
         (void) extConnector->vfsConvertToPlaceHolder(path, true);
 
         VfsStatus vfsStatus;
@@ -59,7 +59,7 @@ void TestVfsMac::testStatus() {
         // Create temp directory
         const LocalTemporaryDirectory temporaryDirectory;
         // Create placeholder
-        const auto extConnector = LiteSyncExtConnector::instance(Log::instance()->getLogger(), ExecuteCommand());
+        const auto extConnector = LiteSyncCommClient::instance(Log::instance()->getLogger(), ExecuteCommand());
         struct stat fileInfo;
         fileInfo.st_size = 10;
         fileInfo.st_mtimespec = {testhelpers::defaultTime, 0};
@@ -83,7 +83,7 @@ void TestVfsMac::testStatus() {
         // Create temp directory
         const LocalTemporaryDirectory temporaryDirectory;
         // Create placeholder
-        const auto extConnector = LiteSyncExtConnector::instance(Log::instance()->getLogger(), ExecuteCommand());
+        const auto extConnector = LiteSyncCommClient::instance(Log::instance()->getLogger(), ExecuteCommand());
         struct stat fileInfo;
         fileInfo.st_size = 10;
         fileInfo.st_mtimespec = {testhelpers::defaultTime, 0};
@@ -152,7 +152,7 @@ void TestVfsMac::testDehydrate() {
         ofs.close();
     }
     // Convert file to placeholder
-    const auto extConnector = LiteSyncExtConnector::instance(Log::instance()->getLogger(), ExecuteCommand());
+    const auto extConnector = LiteSyncCommClient::instance(Log::instance()->getLogger(), ExecuteCommand());
     (void) extConnector->vfsConvertToPlaceHolder(path, true);
 
     auto vfs = std::make_shared<MockVfs<VfsMac>>(VfsSetupParams(Log::instance()->getLogger()));

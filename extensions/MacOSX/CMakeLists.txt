@@ -6,14 +6,14 @@ add_custom_target(mac_loginitemagent ALL
     xcodebuild -project ${CMAKE_SOURCE_DIR}/extensions/MacOSX/kDriveFinderSync/kDriveFinderSync.xcodeproj
         -target LoginItemAgent -configuration ${CMAKE_BUILD_TYPE} "SYMROOT=${CMAKE_CURRENT_BINARY_DIR}"
         "KD_APPLICATION_DOMAIN=${APPLICATION_REV_DOMAIN}"
-        "KD_TEAM_IDENTIFIER_PREFIX=${SOCKETAPI_TEAM_IDENTIFIER_PREFIX}"
+        "KD_TEAM_IDENTIFIER_PREFIX=${TEAM_IDENTIFIER_PREFIX}"
         "KD_APPLICATION_VERSION=${KDRIVE_VERSION}"
     COMMENT building FinderSync Extension
     VERBATIM)
 set_property(TARGET mac_loginitemagent APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 add_dependencies(mac_loginitemagent ${APPLICATION_EXECUTABLE})
 
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${SOCKETAPI_TEAM_IDENTIFIER_PREFIX}${APPLICATION_REV_DOMAIN}.LoginItemAgent.app
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${TEAM_IDENTIFIER_PREFIX}${APPLICATION_REV_DOMAIN}.LoginItemAgent.app
     DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Library/LoginItems
     USE_SOURCE_PERMISSIONS)
 
@@ -24,7 +24,7 @@ add_custom_target(mac_findersyncext ALL
         "KD_APPLICATION_NAME=${APPLICATION_NAME}"
         "KD_APPLICATION_DOMAIN=${APPLICATION_REV_DOMAIN}"
         "KD_APPLICATION_ICON_PATH=${APPLICATION_ICON_PATH}"
-        "KD_TEAM_IDENTIFIER_PREFIX=${SOCKETAPI_TEAM_IDENTIFIER_PREFIX}"
+        "KD_TEAM_IDENTIFIER_PREFIX=${TEAM_IDENTIFIER_PREFIX}"
         "KD_APPLICATION_VERSION=${KDRIVE_VERSION}"
     COMMENT building FinderSync Extension
     VERBATIM)
@@ -44,7 +44,7 @@ add_custom_target(mac_litesyncext ALL
     xcodebuild -project ${CMAKE_SOURCE_DIR}/extensions/MacOSX/kDriveLiteSync/kDriveLiteSync.xcodeproj
         -target Extension -configuration ${CMAKE_BUILD_TYPE} "SYMROOT=${CMAKE_CURRENT_BINARY_DIR}"
         "KD_APPLICATION_NAME=${APPLICATION_NAME}"
-        "KD_TEAM_IDENTIFIER_PREFIX=${SOCKETAPI_TEAM_IDENTIFIER_PREFIX}"
+        "KD_TEAM_IDENTIFIER_PREFIX=${TEAM_IDENTIFIER_PREFIX}"
         "KD_APPLICATION_VERSION=${KDRIVE_VERSION}"
     COMMENT building LiteSync Extension
     VERBATIM)

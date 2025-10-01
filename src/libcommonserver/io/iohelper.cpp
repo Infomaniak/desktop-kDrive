@@ -337,6 +337,8 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
 #endif
 
 bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
+    itemType = ItemType{};
+
     // Check whether the item indicated by `path` is a symbolic link.
     std::error_code ec;
     const bool isSymlink = _isSymlink(path, ec);
@@ -608,9 +610,17 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
 
 bool IoHelper::tempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
     // Warning: never log anything in this method. If the logger is not set, the app will crash.
+    ioError = IoError::Success;
     std::error_code ec;
-    directoryPath = _tempDirectoryPath(ec); // The std::filesystem implementation returns an empty path on error.
+    if (const auto value = CommonUtility::envVarValue("KDRIVE_TMP_PATH"); !value.empty()) {
+        directoryPath = SyncPath(value);
+        (void) std::filesystem::create_directories(directoryPath, ec);
+    } else {
+        directoryPath = _tempDirectoryPath(ec); // The std::filesystem implementation returns an empty path on error.
+    }
+
     ioError = stdError2ioError(ec);
+
     return ioError == IoError::Success;
 }
 
@@ -765,8 +775,8 @@ bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &io
     }
 #endif
 
-    exists = ioError != IoError::NoSuchFileOrDirectory;
-    return isExpectedError(ioError) || ioError == IoError::Success;
+    exists = (ioError != IoError::NoSuchFileOrDirectory) && (ioError != IoError::FileNameTooLong);
+    return ioError == IoError::Success || (ioError == IoError::FileNameTooLong) || isExpectedError(ioError);
 }
 
 bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &existsWithSameId,
