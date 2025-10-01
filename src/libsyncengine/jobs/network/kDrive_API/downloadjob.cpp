@@ -91,9 +91,7 @@ DownloadJob::~DownloadJob() {
             LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
         }
 
-        // TODO: usefull ?
-        if (const ExitInfo exitInfo = _vfs->forceStatus(_localpath, VfsStatus());
-            !exitInfo && exitInfo.cause() != ExitCause::NotFound) {
+        if (const ExitInfo exitInfo = _vfs->forceStatus(_localpath, VfsStatus()); !exitInfo) {
             LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
         }
 
