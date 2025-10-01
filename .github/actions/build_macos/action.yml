@@ -116,7 +116,7 @@ runs:
                 cp ${{ github.workspace }}/build-macos/client/bin/*.lst ./uncached_dependencies/
           fi
 
-          cp ${{ github.workspace }}/build-macos/client/bin/kDrivecommonserver_vfs_mac.dylib ./uncached_dependencies/
+          cp ${{ github.workspace }}/build-macos/client/bin/kDrive_vfs_mac.dylib ./uncached_dependencies/
           
         shell: bash
         if: ${{ steps.build.outcome == 'success' }}
