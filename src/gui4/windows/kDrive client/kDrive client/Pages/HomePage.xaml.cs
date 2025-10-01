@@ -48,7 +48,25 @@ namespace Infomaniak.kDrive.Pages
             Logger.Log(Logger.Level.Debug, "HomePage components initialized");
         }
 
+        private void SyncUpToDateHyperlinkButton_Click(object sender, RoutedEventArgs e)
+        {
+            ((App)Application.Current).CurrentWindow?.AppWindow.Hide();
+        }
 
+        private void SyncInProgressHyperlinkButton_Click(object sender, RoutedEventArgs e)
+        {
+            Frame.Navigate(typeof(ActivityPage));
+        }
+
+        private void SyncInPauseHyperlinkButton_Click(object sender, RoutedEventArgs e)
+        {
+            if(ViewModel.SelectedSync == null)
+            {
+                Logger.Log(Logger.Level.Warning, "No sync is selected, cannot resume sync.");
+                return;
+            }
+            ViewModel.SelectedSync.SyncStatus = SyncStatus.Running; // Todo: Replace with actual resume logic
+        }
     }
     public class SyncStatusTemplateSelector : DataTemplateSelector
     {

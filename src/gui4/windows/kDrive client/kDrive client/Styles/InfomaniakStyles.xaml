@@ -96,6 +96,7 @@
     <!-- Corner Radius -->
     <CornerRadius x:Key="Infomaniak.Style.CornerRadius.S">4</CornerRadius>
     <CornerRadius x:Key="Infomaniak.Style.CornerRadius.M">8</CornerRadius>
+    <CornerRadius x:Key="Infomaniak.Style.CornerRadius.Circle">1000</CornerRadius>
 
     <!-- Elements styles -->
     <!-- TextBlock -->

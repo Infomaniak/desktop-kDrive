@@ -97,21 +97,8 @@
             </StackPanel>
         </DataTemplate>
 
-        <DataTemplate x:Key="SyncLoadingTemplate"
-                      x:DataType="viewmodel:Sync">
-            <Grid Height="{StaticResource Infomaniak.Style.Spacing.L}"
-                  Margin="{StaticResource Infomaniak.Style.Thickness.Left.S}"
-                  VerticalAlignment="Center"
-                  CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}">
-                <ProgressBar IsIndeterminate="True"
-                             Width="300" />
-                <Border>
-                    <Border.Background>
-                        <AcrylicBrush TintColor="{ThemeResource SolidBackgroundFillColorBaseAlt}"
-                                      TintOpacity="0.6" />
-                    </Border.Background>
-                </Border>
-            </Grid>
+        <DataTemplate x:Key="SyncLoadingTemplate">
+
         </DataTemplate>
 
         <local:SyncStatusTemplateSelector x:Key="SyncStatusMessageTemplateSelector"
@@ -124,193 +111,189 @@
         <!-- SyncStatus main template-->
         <DataTemplate x:Key="SyncUpToDateMainTemplate">
             <Grid HorizontalAlignment="Center"
-                  VerticalAlignment="Center">
+                  VerticalAlignment="Center"
+                  RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
                 <controls:LottiePlayer Grid.Row="0"
-                                       Height="178"
-                                       UriSource="ms-appx:///Assets/Animations/kDrive-LoaderStroke.json" />
-                <!-- Title -->
-                <TextBlock Grid.Row="1"
-                           Text="Pas d’activité en cours"
-                           FontSize="16"
-                           FontWeight="SemiBold"
-                           HorizontalAlignment="Center"
-                           Margin="0,14,0,6" />
+                                       UriSource="ms-appx:///Assets/Animations/kDrive-LoaderStroke.json"
+                                       MaxWidth="230" />
 
-                <!-- Description -->
-                <TextBlock Grid.Row="2"
-                           Text="Vos fichiers sont accessibles et synchronisés."
-                           FontSize="13"
-                           HorizontalAlignment="Center"
-                           TextWrapping="Wrap"
-                           Margin="32,0,32,6" />
+                <StackPanel Grid.Row="1"
+                            Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                    <!-- Title -->
+                    <TextBlock Text="Pas d’activité en cours"
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               HorizontalAlignment="Center"
+                               Margin="0,14,0,6" />
 
-                <!-- Link -->
-                <HyperlinkButton Grid.Row="3"
-                                 Content="Fermer kDrive"
-                                 HorizontalAlignment="Center" />
+                    <!-- Description -->
+                    <TextBlock Text="Vos fichiers sont accessibles et synchronisés."
+                               FontSize="13"
+                               HorizontalAlignment="Center"
+                               TextWrapping="Wrap"
+                               Margin="32,0,32,6" />
 
+                    <!-- Link -->
+                    <HyperlinkButton Content="Fermer kDrive"
+                                     HorizontalAlignment="Center"
+                                     Click="SyncUpToDateHyperlinkButton_Click" />
+                </StackPanel>
             </Grid>
         </DataTemplate>
 
         <DataTemplate x:Key="SyncInProgressMainTemplate">
             <Grid HorizontalAlignment="Center"
-                  VerticalAlignment="Center">
+                  VerticalAlignment="Center"
+                  RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
                 <controls:LottiePlayer Grid.Row="0"
-                                       Height="178"
-                                       UriSource="ms-appx:///Assets/Animations/kDrive-Sync-LIGHT.json" />
-                <!-- Title -->
-                <TextBlock Grid.Row="1"
-                           Text="Synchronisation en cours"
-                           FontSize="16"
-                           FontWeight="SemiBold"
-                           HorizontalAlignment="Center"
-                           Margin="0,14,0,6" />
+                                       UriSource="ms-appx:///Assets/Animations/kDrive-Sync-LIGHT.json"
+                                       MaxWidth="230" />
 
-                <!-- Description -->
-                <TextBlock Grid.Row="2"
-                           Text="Vos fichiers récents sont en train d'être mis à jour."
-                           FontSize="13"
-                           HorizontalAlignment="Center"
-                           TextWrapping="Wrap"
-                           Margin="32,0,32,6" />
+                <StackPanel Grid.Row="1"
+                            Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                    <!-- Title -->
+                    <TextBlock Text="Synchronisation en cours"
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               HorizontalAlignment="Center"
+                               Margin="0,14,0,6" />
 
-                <!-- Link -->
-                <TextBlock Grid.Row="3"
-                           Text="Voir les activités"
-                           FontSize="13"
-                           HorizontalAlignment="Center"
-                           Margin="0,8,0,0" />
+                    <!-- Description -->
+                    <TextBlock Text="Vos fichiers récents sont en train d'être mis à jour."
+                               FontSize="13"
+                               HorizontalAlignment="Center"
+                               TextWrapping="Wrap"
+                               Margin="32,0,32,6" />
 
+                    <!-- Link -->
+                    <HyperlinkButton Content="Voir les activités"
+                                     HorizontalAlignment="Center"
+                                     Click="SyncInProgressHyperlinkButton_Click" />
+                </StackPanel>
             </Grid>
         </DataTemplate>
 
         <DataTemplate x:Key="SyncInPauseMainTemplate">
             <Grid HorizontalAlignment="Center"
-                  VerticalAlignment="Center">
+                  VerticalAlignment="Center"
+                  RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
                 <controls:LottiePlayer Grid.Row="0"
-                                       Height="178"
-                                       UriSource="ms-appx:///Assets/Animations/kDrive-Pause-LIGHT.json" />
-                <!-- Title -->
-                <TextBlock Grid.Row="1"
-                           Text="Synchronisation en cours"
-                           FontSize="16"
-                           FontWeight="SemiBold"
-                           HorizontalAlignment="Center"
-                           Margin="0,14,0,6" />
+                                       UriSource="ms-appx:///Assets/Animations/kDrive-Pause-LIGHT.json"
+                                       MaxWidth="230" />
 
-                <!-- Description -->
-                <TextBlock Grid.Row="2"
-                           Text="Vos fichiers récents sont en train d'être mis à jour."
-                           FontSize="13"
-                           HorizontalAlignment="Center"
-                           TextWrapping="Wrap"
-                           Margin="32,0,32,6" />
+                <StackPanel Grid.Row="1"
+                            Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                    <!-- Title -->
+                    <TextBlock Text="Synchronisation en pause"
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               HorizontalAlignment="Center"
+                               Margin="0,14,0,6" />
 
-                <!-- Link -->
-                <TextBlock Grid.Row="3"
-                           Text="Voir les activités"
-                           FontSize="13"
-                           HorizontalAlignment="Center"
-                           Margin="0,8,0,0" />
+                    <!-- Description -->
+                    <TextBlock Text="La synchronisation est temporairement arrêtée."
+                               FontSize="13"
+                               HorizontalAlignment="Center"
+                               TextWrapping="Wrap"
+                               Margin="32,0,32,6" />
 
+                    <!-- Link -->
+                    <HyperlinkButton Content="Réactiver la synchronisation"
+                                     HorizontalAlignment="Center"
+                                     Click="SyncInPauseHyperlinkButton_Click" />
+                </StackPanel>
             </Grid>
         </DataTemplate>
 
         <DataTemplate x:Key="SyncOfflineMainTemplate">
             <Grid HorizontalAlignment="Center"
-                  VerticalAlignment="Center">
+                  VerticalAlignment="Center"
+                  RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
                 <controls:LottiePlayer Grid.Row="0"
-                                       Height="178"
-                                       UriSource="ms-appx:///Assets/Animations/kDrive-Offline-LIGHT" />
-                <!-- Title -->
-                <TextBlock Grid.Row="1"
-                           Text="Synchronisation en cours"
-                           FontSize="16"
-                           FontWeight="SemiBold"
-                           HorizontalAlignment="Center"
-                           Margin="0,14,0,6" />
+                                       UriSource="ms-appx:///Assets/Animations/kDrive-Offline-LIGHT.json"
+                                       MaxWidth="230" />
 
-                <!-- Description -->
-                <TextBlock Grid.Row="2"
-                           Text="Vos fichiers récents sont en train d'être mis à jour."
-                           FontSize="13"
-                           HorizontalAlignment="Center"
-                           TextWrapping="Wrap"
-                           Margin="32,0,32,6" />
+                <StackPanel Grid.Row="1"
+                            Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                    <!-- Title -->
+                    <TextBlock Grid.Row="1"
+                               Text="Hors ligne"
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               HorizontalAlignment="Center"
+                               Margin="0,14,0,6" />
 
-                <!-- Link -->
-                <TextBlock Grid.Row="3"
-                           Text="Voir les activités"
-                           FontSize="13"
-                           HorizontalAlignment="Center"
-                           Margin="0,8,0,0" />
-
+                    <!-- Description -->
+                    <TextBlock x:Name="subtitle"
+                               Grid.Row="2"
+                               TextWrapping="WrapWholeWords"
+                               TextAlignment="Center"
+                               FontSize="13"
+                               HorizontalAlignment="Center"
+                               MaxWidth="300">
+                        <Run Text="Vos fichiers locaux restent accessibles." />
+                        <LineBreak />
+                        <Run Text="La synchronisation reprendra automatiquement dès que vous serez reconnecté." />
+                    </TextBlock>
+                </StackPanel>
             </Grid>
         </DataTemplate>
 
         <DataTemplate x:Key="SyncLoadingMainTemplate">
             <Grid HorizontalAlignment="Center"
-                  VerticalAlignment="Center">
+                  VerticalAlignment="Center"
+                  RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <controls:LottiePlayer Grid.Row="0"
-                                       Height="178"
-                                       UriSource="ms-appx:///Assets/Animations/kDrive-Pause-LIGHT.json" />
-                <!-- Title -->
-                <TextBlock Grid.Row="1"
-                           Text="Synchronisation en cours"
-                           FontSize="16"
-                           FontWeight="SemiBold"
-                           HorizontalAlignment="Center"
-                           Margin="0,14,0,6" />
+                <controls:ContentLoader Grid.Row="0"
+                                        IsLoading="True"
+                                        LoaderCornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"
+                                        Height="130"
+                                        Width="180" />
 
-                <!-- Description -->
-                <TextBlock Grid.Row="2"
-                           Text="Vos fichiers récents sont en train d'être mis à jour."
-                           FontSize="13"
-                           HorizontalAlignment="Center"
-                           TextWrapping="Wrap"
-                           Margin="32,0,32,6" />
+                <StackPanel Grid.Row="1"
+                            Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                    <!-- Title -->
+                    <controls:ContentLoader IsLoading="True"
+                                            LoaderCornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
+                                            Height="{StaticResource Infomaniak.Style.Spacing.L}"
+                                            Width="150" />
 
-                <!-- Link -->
-                <TextBlock Grid.Row="3"
-                           Text="Voir les activités"
-                           FontSize="13"
-                           HorizontalAlignment="Center"
-                           Margin="0,8,0,0" />
+                    <!-- Description -->
+                    <controls:ContentLoader IsLoading="True"
+                                            LoaderCornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
+                                            Height="{StaticResource Infomaniak.Style.Spacing.L}"
+                                            Width="300" />
+
+                    <!-- Link -->
+                    <controls:ContentLoader IsLoading="True"
+                                            LoaderCornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
+                                            Height="{StaticResource Infomaniak.Style.Spacing.L}"
+                                            Width="100" />
+                </StackPanel>
 
             </Grid>
         </DataTemplate>
