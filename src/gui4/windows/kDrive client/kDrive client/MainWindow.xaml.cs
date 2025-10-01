@@ -16,8 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using Infomaniak.kDrive.ViewModels;
 using Infomaniak.kDrive.ServerCommunication;
+using Infomaniak.kDrive.Types;
+using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -49,7 +50,7 @@ namespace Infomaniak.kDrive
             InitializeComponent();
             this.ExtendsContentIntoTitleBar = true;  // enable custom titlebar
             this.SetTitleBar(AppTitleBar);
-            Utility.SetWindowProperties(this, 900, 530, true);
+            Utility.SetWindowProperties(this, 1800, 1060, true);
             AppModel.UIThreadDispatcher = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread(); // Save the UI thread dispatcher for later use in view models
         }
         private void navView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)

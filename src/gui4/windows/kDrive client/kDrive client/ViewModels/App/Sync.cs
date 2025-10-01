@@ -29,6 +29,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Infomaniak.kDrive.Types;
+using DynamicData.Binding;
 
 namespace Infomaniak.kDrive.ViewModels
 {
@@ -51,7 +52,14 @@ namespace Infomaniak.kDrive.ViewModels
 
         public SyncStatus SyncStatus
         {
-            get => _syncStatus;
+            get
+            {
+                if (_syncStatus == SyncStatus.Pause && !((App.Current as App)?.Data.NetworkAvailable ?? true))
+                {
+                    return SyncStatus.Offline;
+                }
+                return _syncStatus;
+            }
             set => SetProperty(ref _syncStatus, value);
         }
 
@@ -143,21 +151,52 @@ namespace Infomaniak.kDrive.ViewModels
 
                 while (true)
                 {
-                    await Task.Delay(random.Next(1, 5000)); // Wait between 0 to 5 seconds
-                    if (SyncStatus != SyncStatus.Running)
+                    if (SyncStatus != SyncStatus.Running && SyncStatus != SyncStatus.Idle)
                     {
+                        await Task.Delay(500).ConfigureAwait(false);
                         continue;
                     }
-                    var newActivity = GenerateTestActivity();
 
-                    AppModel.UIThreadDispatcher.TryEnqueue(() =>
+                    if (SyncStatus == SyncStatus.Running)
                     {
-                        _syncActivities.Insert(0, newActivity);
-                        if (_syncActivities.Count > 100)
+                        if (random.Next(10) == 1)
                         {
-                            _syncActivities.RemoveAt(_syncActivities.Count - 1);
+                            AppModel.UIThreadDispatcher.TryEnqueue(() => { SyncStatus = SyncStatus.Idle; });
+                            continue;
                         }
-                    });
+                        else
+                        {
+                            var newActivity = GenerateTestActivity();
+
+                            AppModel.UIThreadDispatcher.TryEnqueue(() =>
+                            {
+                                _syncActivities.Insert(0, newActivity);
+                                if (_syncActivities.Count > 100)
+                                {
+                                    _syncActivities.RemoveAt(_syncActivities.Count - 1);
+                                }
+                            });
+                            await Task.Delay(random.Next(1000)).ConfigureAwait(false);
+
+                        }
+                    }
+                    else if (SyncStatus == SyncStatus.Idle)
+                    {
+                        if (random.Next(10) == 1)
+                        {
+                            AppModel.UIThreadDispatcher.TryEnqueue(() => { SyncStatus = SyncStatus.Running; });
+                        }
+                        await Task.Delay(random.Next(2000)).ConfigureAwait(false);
+                    }
+
+
+                }
+            });
+            (App.Current as App)?.Data.WhenAnyPropertyChanged("NetworkAvailable").Subscribe(appModel =>
+            {
+                if (SyncStatus == SyncStatus.Pause || SyncStatus == SyncStatus.Offline)
+                {
+                    SyncStatus = ((App.Current as App)?.Data.NetworkAvailable ?? true) ? SyncStatus.Pause : SyncStatus.Offline;
                 }
             });
         }

@@ -22,12 +22,14 @@ using DynamicData.Binding;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using Microsoft.VisualBasic.Devices;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.ViewModels
@@ -81,6 +83,14 @@ namespace Infomaniak.kDrive.ViewModels
         // Application settings
         public Settings Settings { get; } = new Settings();
 
+        // Helpers
+        private Network _network = new();
+        private Task? _networkWatcher;
+        private CancellationTokenSource _networkWatcherCancellationSource = new();
+        private bool _networkAvailable;
+
+
+
         public Sync? SelectedSync
         {
             get => _selectedSync;
@@ -129,8 +139,36 @@ namespace Infomaniak.kDrive.ViewModels
             AppErrors.CollectionChanged += (_, __) => OnPropertyChanged(nameof(HasErrors));
 
             AppErrors.Add(new Errors.AppError(0) { ExitCause = 4, ExitCode = 1234 }); // TODO: Remove this line, only for testing
-
+            _networkAvailable = _network.IsAvailable;
+            _networkWatcher = WatchNetwork(_networkWatcherCancellationSource.Token);
         }
+
+        ~AppModel()
+        {
+            _networkWatcherCancellationSource.Cancel();
+            _networkWatcher?.Wait();
+        }
+
+        private async Task WatchNetwork(CancellationToken cancellationToken)
+        {
+            bool result = false;
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    result = _network.Ping("www.infomaniak.com", 1000);
+                }
+                catch
+                {
+                    result = false;
+                }
+                if (_networkAvailable != result)
+                    UIThreadDispatcher.TryEnqueue(() => { NetworkAvailable = result; });
+                await Task.Delay(1000).ConfigureAwait(false);
+            }
+        }
+
+
 
         private void EnsureValidSelectedSync()
         {
@@ -163,6 +201,12 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _appErrors;
             set => SetProperty(ref _appErrors, value);
+        }
+
+        public bool NetworkAvailable
+        {
+            get => _networkAvailable;
+            set => SetProperty(ref _networkAvailable, value);
         }
 
         /** Initialize the model by loading data from the server.

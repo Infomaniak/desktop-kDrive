@@ -29,8 +29,10 @@ namespace Infomaniak.kDrive.Types
         Unknown,
         Starting,
         Running,
+        Idle,
         Pausing,
-        Pause
+        Pause,
+        Offline
     }
 
     public enum SyncDirection

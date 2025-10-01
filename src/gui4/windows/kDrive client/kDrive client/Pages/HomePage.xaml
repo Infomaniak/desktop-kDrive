@@ -20,14 +20,307 @@
 <Page x:Class="Infomaniak.kDrive.Pages.HomePage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:local="using:Infomaniak.kDrive"
+      xmlns:local="using:Infomaniak.kDrive.Pages"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:controls="using:Infomaniak.kDrive.CustomControls"
       xmlns:converters="using:Infomaniak.kDrive.Converters"
+      xmlns:viewmodel="using:Infomaniak.kDrive.ViewModels"
       mc:Ignorable="d">
     <Page.Resources>
+        <!-- Converters -->
         <converters:BooleanToInvertedVisibilityConverter  x:Key="BooleanToInvertedVisibilityConverter" />
+
+        <!-- SyncStatus Text templates -->
+        <DataTemplate x:Key="SyncUpToDateTemplate">
+            <StackPanel Orientation="Horizontal"
+                        Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}">
+                    <Run Text=", vos fichiers sont à jour" />
+                </TextBlock>
+
+                <ImageIcon Height="16"
+                           Width="16">
+                    <ImageIcon.Source>
+                        <SvgImageSource UriSource="ms-appx:///Assets/Icons/circle-check-plain.svg" />
+                    </ImageIcon.Source>
+                </ImageIcon>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="SyncInProgressTemplate">
+            <StackPanel Orientation="Horizontal"
+                        Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}">
+                    <Run Text=", vos fichiers se synchronisent" />
+                </TextBlock>
+
+                <ImageIcon Height="16"
+                           Width="16">
+                    <ImageIcon.Source>
+                        <SvgImageSource UriSource="ms-appx:///Assets/Icons/arrows-loop.svg" />
+                    </ImageIcon.Source>
+                </ImageIcon>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="SyncInPauseTemplate">
+            <StackPanel Orientation="Horizontal"
+                        Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}">
+            <Run Text=", la synchronisation est en pause" />
+                </TextBlock>
+
+                <ImageIcon Height="16"
+                           Width="16">
+                    <ImageIcon.Source>
+                        <SvgImageSource UriSource="ms-appx:///Assets/Icons/pause-orange.svg" />
+                    </ImageIcon.Source>
+                </ImageIcon>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="SyncOfflineTemplate"
+                      x:DataType="viewmodel:Sync">
+            <StackPanel Orientation="Horizontal"
+                        Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}">
+                    <Run Text=", la synchronisation est en pause" />
+                </TextBlock>
+
+                <ImageIcon Height="16"
+                           Width="16">
+                    <ImageIcon.Source>
+                        <SvgImageSource UriSource="ms-appx:///Assets/Icons/cloud-offline.svg" />
+                    </ImageIcon.Source>
+                </ImageIcon>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="SyncLoadingTemplate"
+                      x:DataType="viewmodel:Sync">
+            <Grid Height="{StaticResource Infomaniak.Style.Spacing.L}"
+                  Margin="{StaticResource Infomaniak.Style.Thickness.Left.S}"
+                  VerticalAlignment="Center"
+                  CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}">
+                <ProgressBar IsIndeterminate="True"
+                             Width="300" />
+                <Border>
+                    <Border.Background>
+                        <AcrylicBrush TintColor="{ThemeResource SolidBackgroundFillColorBaseAlt}"
+                                      TintOpacity="0.6" />
+                    </Border.Background>
+                </Border>
+            </Grid>
+        </DataTemplate>
+
+        <local:SyncStatusTemplateSelector x:Key="SyncStatusMessageTemplateSelector"
+                                          SyncUpToDateTemplate="{StaticResource SyncUpToDateTemplate}"
+                                          SyncInProgressTemplate="{StaticResource SyncInProgressTemplate}"
+                                          SyncInPauseTemplate="{StaticResource SyncInPauseTemplate}"
+                                          SyncOfflineTemplate="{StaticResource SyncOfflineTemplate}"
+                                          SyncLoadingTemplate="{StaticResource SyncLoadingTemplate}" />
+
+        <!-- SyncStatus main template-->
+        <DataTemplate x:Key="SyncUpToDateMainTemplate">
+            <Grid HorizontalAlignment="Center"
+                  VerticalAlignment="Center">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <controls:LottiePlayer Grid.Row="0"
+                                       Height="178"
+                                       UriSource="ms-appx:///Assets/Animations/kDrive-LoaderStroke.json" />
+                <!-- Title -->
+                <TextBlock Grid.Row="1"
+                           Text="Pas d’activité en cours"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           HorizontalAlignment="Center"
+                           Margin="0,14,0,6" />
+
+                <!-- Description -->
+                <TextBlock Grid.Row="2"
+                           Text="Vos fichiers sont accessibles et synchronisés."
+                           FontSize="13"
+                           HorizontalAlignment="Center"
+                           TextWrapping="Wrap"
+                           Margin="32,0,32,6" />
+
+                <!-- Link -->
+                <HyperlinkButton Grid.Row="3"
+                                 Content="Fermer kDrive"
+                                 HorizontalAlignment="Center" />
+
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="SyncInProgressMainTemplate">
+            <Grid HorizontalAlignment="Center"
+                  VerticalAlignment="Center">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <controls:LottiePlayer Grid.Row="0"
+                                       Height="178"
+                                       UriSource="ms-appx:///Assets/Animations/kDrive-Sync-LIGHT.json" />
+                <!-- Title -->
+                <TextBlock Grid.Row="1"
+                           Text="Synchronisation en cours"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           HorizontalAlignment="Center"
+                           Margin="0,14,0,6" />
+
+                <!-- Description -->
+                <TextBlock Grid.Row="2"
+                           Text="Vos fichiers récents sont en train d'être mis à jour."
+                           FontSize="13"
+                           HorizontalAlignment="Center"
+                           TextWrapping="Wrap"
+                           Margin="32,0,32,6" />
+
+                <!-- Link -->
+                <TextBlock Grid.Row="3"
+                           Text="Voir les activités"
+                           FontSize="13"
+                           HorizontalAlignment="Center"
+                           Margin="0,8,0,0" />
+
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="SyncInPauseMainTemplate">
+            <Grid HorizontalAlignment="Center"
+                  VerticalAlignment="Center">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <controls:LottiePlayer Grid.Row="0"
+                                       Height="178"
+                                       UriSource="ms-appx:///Assets/Animations/kDrive-Pause-LIGHT.json" />
+                <!-- Title -->
+                <TextBlock Grid.Row="1"
+                           Text="Synchronisation en cours"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           HorizontalAlignment="Center"
+                           Margin="0,14,0,6" />
+
+                <!-- Description -->
+                <TextBlock Grid.Row="2"
+                           Text="Vos fichiers récents sont en train d'être mis à jour."
+                           FontSize="13"
+                           HorizontalAlignment="Center"
+                           TextWrapping="Wrap"
+                           Margin="32,0,32,6" />
+
+                <!-- Link -->
+                <TextBlock Grid.Row="3"
+                           Text="Voir les activités"
+                           FontSize="13"
+                           HorizontalAlignment="Center"
+                           Margin="0,8,0,0" />
+
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="SyncOfflineMainTemplate">
+            <Grid HorizontalAlignment="Center"
+                  VerticalAlignment="Center">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <controls:LottiePlayer Grid.Row="0"
+                                       Height="178"
+                                       UriSource="ms-appx:///Assets/Animations/kDrive-Offline-LIGHT" />
+                <!-- Title -->
+                <TextBlock Grid.Row="1"
+                           Text="Synchronisation en cours"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           HorizontalAlignment="Center"
+                           Margin="0,14,0,6" />
+
+                <!-- Description -->
+                <TextBlock Grid.Row="2"
+                           Text="Vos fichiers récents sont en train d'être mis à jour."
+                           FontSize="13"
+                           HorizontalAlignment="Center"
+                           TextWrapping="Wrap"
+                           Margin="32,0,32,6" />
+
+                <!-- Link -->
+                <TextBlock Grid.Row="3"
+                           Text="Voir les activités"
+                           FontSize="13"
+                           HorizontalAlignment="Center"
+                           Margin="0,8,0,0" />
+
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="SyncLoadingMainTemplate">
+            <Grid HorizontalAlignment="Center"
+                  VerticalAlignment="Center">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <controls:LottiePlayer Grid.Row="0"
+                                       Height="178"
+                                       UriSource="ms-appx:///Assets/Animations/kDrive-Pause-LIGHT.json" />
+                <!-- Title -->
+                <TextBlock Grid.Row="1"
+                           Text="Synchronisation en cours"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           HorizontalAlignment="Center"
+                           Margin="0,14,0,6" />
+
+                <!-- Description -->
+                <TextBlock Grid.Row="2"
+                           Text="Vos fichiers récents sont en train d'être mis à jour."
+                           FontSize="13"
+                           HorizontalAlignment="Center"
+                           TextWrapping="Wrap"
+                           Margin="32,0,32,6" />
+
+                <!-- Link -->
+                <TextBlock Grid.Row="3"
+                           Text="Voir les activités"
+                           FontSize="13"
+                           HorizontalAlignment="Center"
+                           Margin="0,8,0,0" />
+
+            </Grid>
+        </DataTemplate>
+
+        <local:SyncStatusTemplateSelector x:Key="SyncStatusMainTemplateSelector"
+                                          SyncUpToDateTemplate="{StaticResource SyncUpToDateMainTemplate}"
+                                          SyncInProgressTemplate="{StaticResource SyncInProgressMainTemplate}"
+                                          SyncInPauseTemplate="{StaticResource SyncInPauseMainTemplate}"
+                                          SyncOfflineTemplate="{StaticResource SyncOfflineMainTemplate}"
+                                          SyncLoadingTemplate="{StaticResource SyncLoadingMainTemplate}" />
     </Page.Resources>
     <Grid Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.L}">
         <Grid.RowDefinitions>
@@ -60,12 +353,42 @@
             </Grid.RowDefinitions>
 
             <!-- Sync Status Bar -->
-            <controls:SyncStatusBar Grid.Row="0" />
+            <StackPanel Grid.Column="0"
+                        Grid.Row="0"
+                        Orientation="Horizontal">
+                <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.SubtitleSl}">
+                    <Run Text="Bonjour" />
+                    <Run Text="{x:Bind ViewModel.SelectedSync.Drive.User.Name, Mode=OneWay}" />
+                </TextBlock>
+                <ContentControl ContentTemplateSelector="{StaticResource SyncStatusMessageTemplateSelector}"
+                                Content="{x:Bind ViewModel.SelectedSync.SyncStatus,Mode=OneWay}" />
+            </StackPanel>
+            <!-- State widget -->
+            <Border Grid.Column="0"
+                    Grid.Row="1"
+                    CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"
+                    Padding="24">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0"
+                                         EndPoint="1,1">
+                        <GradientStop Color="{ThemeResource LayerFillColorDefault}"
+                                      Offset="0.0" />
+                        <GradientStop Color="{ThemeResource LayerFillColorDefault}"
+                                      Offset="0.45" />
+                        <GradientStop Color="{ThemeResource LayerFillColorDefault}"
+                                      Offset="0.55" />
+                        <GradientStop Color="{ThemeResource LayerFillColorDefault}"
+                                      Offset="1.0" />
+                    </LinearGradientBrush>
+                </Border.Background>
 
-            <!-- Left main pane -->
-            <controls:LottiePlayer Grid.Row="1"
-                                   Grid.Column="0"
-                                   UriSource="ms-appx:///Assets/Animations/kDrive-Pause-LIGHT.json" />
+                <!-- Main content layout -->
+                <ContentControl HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                ContentTemplateSelector="{StaticResource SyncStatusMainTemplateSelector}"
+                                Content="{x:Bind ViewModel.SelectedSync.SyncStatus,Mode=OneWay}" />
+            </Border>
+
             <!-- Right Side Buttons -->
             <controls:QuickAccess Grid.Row="1"
                                   Grid.Column="1" />

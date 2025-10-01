@@ -23,7 +23,7 @@ using Windows.Foundation.Collections;
 
 namespace Infomaniak.kDrive.CustomControls;
 
-public sealed partial class SyncStatusBar : UserControl
+public sealed partial class SyncStartPauseButton : UserControl
 {
     private AppModel _viewModel = ((App)Application.Current).Data;
     public AppModel ViewModel
@@ -31,14 +31,13 @@ public sealed partial class SyncStatusBar : UserControl
         get { return _viewModel; }
     }
 
-    public SyncStatusBar()
+    public SyncStartPauseButton()
     {
         InitializeComponent();
     }
 
     private async void StartPauseButton_Click(object sender, RoutedEventArgs e)
     {
-        StartPauseButton.IsEnabled = false;
         // TODO: Replace with actual start/pause logic
         if (ViewModel.SelectedSync?.SyncStatus == SyncStatus.Pause)
         {
@@ -54,7 +53,6 @@ public sealed partial class SyncStatusBar : UserControl
             await Task.Delay(1000); // Simulate some delay for pausing
             ViewModel.SelectedSync.SyncStatus = SyncStatus.Pause;
         }
-        StartPauseButton.IsEnabled = true;
     }
 }
 
@@ -67,14 +65,17 @@ public class StartPauseButtonTemplateSelector : DataTemplateSelector
     protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container)
     {
         // Null value can be passed by IDE designer
-        if (item == null) return null;
+        if (item == null)
+            return null;
         if (item is SyncStatus syncStatus)
         {
             switch (syncStatus)
             {
+                case SyncStatus.Idle:
                 case SyncStatus.Running:
                     return PauseButtonTemplate;
                 case SyncStatus.Pause:
+                case SyncStatus.Offline:
                     return StartButtonTemplate;
                 default:
                     return LoadingButtonTemplate;
@@ -84,42 +85,13 @@ public class StartPauseButtonTemplateSelector : DataTemplateSelector
     }
 }
 
-public class TextStatusTemplateSelector : DataTemplateSelector
-{
-    public DataTemplate? PausedStatusTemplate { get; set; }
-    public DataTemplate? PausingStatusTemplate { get; set; }
-    public DataTemplate? StartingStatusTemplate { get; set; }
-    public DataTemplate? SyncingStatusTemplate { get; set; }
-    public DataTemplate? SyncedStatusTemplate { get; set; }
-    public DataTemplate? UnknownStatusTemplate { get; set; }
-
-    protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container)
-    {
-        // Null value can be passed by IDE designer
-        if (item == null) return null;
-        if (item is SyncStatus syncStatus)
-        {
-            return syncStatus switch
-            {
-                SyncStatus.Running => SyncingStatusTemplate,
-                SyncStatus.Starting => StartingStatusTemplate,
-                SyncStatus.Pausing => PausingStatusTemplate,
-                SyncStatus.Pause => PausedStatusTemplate,
-                _ => UnknownStatusTemplate
-            };
-        }
-        return UnknownStatusTemplate;
-    }
-
-}
-
 public class SyncStatusToButtonEnabledConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
         if (value is SyncStatus syncStatus)
         {
-            return (syncStatus == SyncStatus.Running || syncStatus == SyncStatus.Pause);
+            return (syncStatus == SyncStatus.Running || syncStatus == SyncStatus.Pause || syncStatus == SyncStatus.Idle);
         }
         return false;
     }

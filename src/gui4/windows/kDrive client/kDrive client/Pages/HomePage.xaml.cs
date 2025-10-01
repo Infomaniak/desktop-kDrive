@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Infomaniak.kDrive.Types;
+using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -23,6 +25,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using Microsoft.VisualBasic.Devices;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -30,7 +33,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-using Infomaniak.kDrive.ViewModels;
+using Windows.Networking.Connectivity;
 
 namespace Infomaniak.kDrive.Pages
 {
@@ -43,6 +46,44 @@ namespace Infomaniak.kDrive.Pages
             Logger.Log(Logger.Level.Info, "Navigated to HomePage - Initializing HomePage components");
             InitializeComponent();
             Logger.Log(Logger.Level.Debug, "HomePage components initialized");
+        }
+
+
+    }
+    public class SyncStatusTemplateSelector : DataTemplateSelector
+    {
+        public DataTemplate? SyncUpToDateTemplate { get; set; }
+        public DataTemplate? SyncInProgressTemplate { get; set; }
+        public DataTemplate? SyncInPauseTemplate { get; set; }
+        public DataTemplate? SyncOfflineTemplate { get; set; }
+        public DataTemplate? SyncLoadingTemplate { get; set; }
+
+        protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container)
+        {
+            // Null value can be passed by IDE designer
+            if (item == null)
+                return null;
+            if (item is SyncStatus syncStatus)
+            {
+                switch (syncStatus)
+                {
+                    case SyncStatus.Starting:
+                    case SyncStatus.Pausing:
+                    case SyncStatus.Unknown:
+                        return SyncLoadingTemplate;
+                    case SyncStatus.Running:
+                        return SyncInProgressTemplate;
+                    case SyncStatus.Pause:
+                        return SyncInPauseTemplate;
+                    case SyncStatus.Offline:
+                        return SyncOfflineTemplate;
+                    case SyncStatus.Idle:
+                        return SyncUpToDateTemplate;
+                    default:
+                        return SyncLoadingTemplate;
+                }
+            }
+            return SyncLoadingTemplate;
         }
     }
 }

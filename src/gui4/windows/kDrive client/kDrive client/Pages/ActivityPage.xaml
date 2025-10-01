@@ -39,7 +39,7 @@
                                Visibility="{x:Bind ViewModel.HasErrors, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
         
         <!-- Sync Status Bar -->
-        <controls:SyncStatusBar Grid.Row="1" />
+        <controls:SyncStartPauseButton Height="32"  Grid.Row="1" />
         <CheckBox x:Name="ShowIncomingActivityCheckBox"
                   Grid.Row="1"
                   Grid.Column="1"
