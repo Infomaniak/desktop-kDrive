@@ -40,7 +40,8 @@ final class MainWindowRouter: WindowRouter {
             let viewController = PreloadingViewController()
             mainWindowController.setViewController(viewController)
         case .onboarding:
-            print("ToDo: Show Onboarding Controller")
+            let viewController = OnboardingViewController()
+            mainWindowController.setViewController(viewController)
         case .splitView:
             let viewController = MainSplitViewController()
             mainWindowController.setViewController(viewController)
