@@ -21,7 +21,7 @@
 #include "version.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 
-// Intput parameters keys
+// Input parameters keys
 static const auto inParamsStrValue = "strValue";
 static const auto inParamsStrValue2 = "strValue2";
 static const auto inParamsIntValue = "intValue";

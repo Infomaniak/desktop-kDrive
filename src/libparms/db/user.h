@@ -49,7 +49,7 @@ class PARMS_EXPORT User {
         inline const std::string &avatarUrl() const { return _avatarUrl; }
         inline void setAvatarUrl(const std::string &avatarUrl) { _avatarUrl = avatarUrl; }
         inline std::shared_ptr<CommBLOB> avatar() const { return _avatar; }
-        inline void setAvatar(std::shared_ptr<std::vector<char>> avatar) { _avatar = avatar; }
+        inline void setAvatar(std::shared_ptr<CommBLOB> avatar) { _avatar = avatar; }
         inline void setToMigrate(bool toMigrate) { _toMigrate = toMigrate; }
         inline int toMigrate() const { return _toMigrate; }
         [[nodiscard]] bool isStaff() const { return _isStaff; }
