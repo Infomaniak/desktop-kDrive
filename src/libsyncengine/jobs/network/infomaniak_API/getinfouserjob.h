@@ -22,7 +22,7 @@
 
 namespace KDC {
 
-class GetInfoUserJob : public AbstractTokenNetworkJob {
+class GetInfoUserJob final : public AbstractTokenNetworkJob {
     public:
         explicit GetInfoUserJob(int userDbId);
 
