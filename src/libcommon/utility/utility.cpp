@@ -935,7 +935,20 @@ const std::string CommonUtility::dbVersionNumber(const std::string &dbVersion) {
 #endif
 }
 
-void CommonUtility::extractIntFromStrVersion(const std::string &version, std::vector<int> &tabVersion) {
+namespace {
+bool appendNumberComponent(const size_t pos, const size_t length, const std::string &versionDigits,
+                           std::vector<uint32_t> &tabVersion) {
+    try {
+        const auto numberComponent = static_cast<uint32_t>(std::stoi(versionDigits.substr(pos, length))); // may throw
+        tabVersion.push_back(numberComponent);
+        return true;
+    } catch (const std::invalid_argument &) { // The conversion string-to-int fails.
+        return false;
+    }
+}
+} // namespace
+
+void CommonUtility::extractIntFromStrVersion(const std::string &version, std::vector<uint32_t> &tabVersion) {
     if (version.empty()) return;
 
     std::string versionDigits = version;
@@ -946,6 +959,8 @@ void CommonUtility::extractIntFromStrVersion(const std::string &version, std::ve
 
     if (!words.empty()) {
         assert(words.size() == 3 && "Wrong version format.");
+        if (words.size() != 3) return;
+
         versionDigits = words[1].str() + "." + words[2].str(); // Example: "3.6.9.20250220"
     }
 
@@ -955,13 +970,12 @@ void CommonUtility::extractIntFromStrVersion(const std::string &version, std::ve
     do {
         pos = versionDigits.find('.', prevPos);
         if (pos == std::string::npos) break;
-
-        tabVersion.push_back(std::stoi(versionDigits.substr(prevPos, pos - prevPos)));
+        if (!appendNumberComponent(prevPos, pos - prevPos, versionDigits, tabVersion)) return;
         prevPos = pos + 1;
     } while (true);
 
     if (prevPos < versionDigits.size()) {
-        tabVersion.push_back(std::stoi(versionDigits.substr(prevPos)));
+        if (!appendNumberComponent(prevPos, std::string::npos, versionDigits, tabVersion)) return;
     }
 }
 
@@ -975,10 +989,10 @@ SyncPath CommonUtility::signalFilePath(AppType appType, SignalCategory signalCat
 }
 
 bool CommonUtility::isVersionLower(const std::string &currentVersion, const std::string &targetVersion) {
-    std::vector<int> currTabVersion;
+    std::vector<uint32_t> currTabVersion;
     extractIntFromStrVersion(currentVersion, currTabVersion);
 
-    std::vector<int> targetTabVersion;
+    std::vector<uint32_t> targetTabVersion;
     extractIntFromStrVersion(targetVersion, targetTabVersion);
 
     if (currTabVersion.size() != targetTabVersion.size()) {

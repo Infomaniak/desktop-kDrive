@@ -28,6 +28,7 @@ namespace KDC {
 class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestUtility);
         CPPUNIT_TEST(testGetAppSupportDir);
+        CPPUNIT_TEST(extractIntFromStrVersion);
         CPPUNIT_TEST(testIsVersionLower);
         CPPUNIT_TEST(testStringToAppStateValue);
         CPPUNIT_TEST(testArgsWriter);
@@ -68,6 +69,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
 
     protected:
         void testGetAppSupportDir();
+        void extractIntFromStrVersion();
         void testIsVersionLower();
         void testStringToAppStateValue();
         void testArgsWriter();

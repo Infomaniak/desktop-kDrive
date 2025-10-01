@@ -49,6 +49,50 @@ void TestUtility::testGetAppSupportDir() {
     CPPUNIT_ASSERT_MESSAGE(faillureMessage.c_str(), appSupportDir.string().find(APPLICATION_NAME) != std::wstring::npos);
 }
 
+void TestUtility::extractIntFromStrVersion() {
+    {
+        const std::string versionString = "3.7.6";
+        std::vector<uint32_t> versionNumberComponents;
+
+        CommonUtility::extractIntFromStrVersion(versionString, versionNumberComponents);
+        CPPUNIT_ASSERT(bool(std::vector<uint32_t>{3, 7, 6} == versionNumberComponents));
+    }
+
+    {
+        const std::string versionString = "3.7.61.10.12";
+        std::vector<uint32_t> versionNumberComponents;
+
+        CommonUtility::extractIntFromStrVersion(versionString, versionNumberComponents);
+        CPPUNIT_ASSERT((std::vector<uint32_t>{3, 7, 61, 10, 12} == versionNumberComponents));
+    }
+
+    {
+        const std::string versionString = "155.75.0 (build 20250221)";
+        std::vector<uint32_t> versionNumberComponents;
+
+        CommonUtility::extractIntFromStrVersion(versionString, versionNumberComponents);
+        CPPUNIT_ASSERT((std::vector<uint32_t>{155, 75, 0, 20250221} == versionNumberComponents));
+    }
+
+    // Invalid version string
+    {
+        const std::string versionString = ".0";
+        std::vector<uint32_t> versionNumberComponents;
+
+        CommonUtility::extractIntFromStrVersion(versionString, versionNumberComponents);
+        CPPUNIT_ASSERT(versionNumberComponents.empty());
+    }
+
+    // Invalid version string
+    {
+        const std::string versionString = "1.x.0";
+        std::vector<uint32_t> versionNumberComponents;
+
+        CommonUtility::extractIntFromStrVersion(versionString, versionNumberComponents);
+        CPPUNIT_ASSERT((std::vector<uint32_t>{1} == versionNumberComponents));
+    }
+}
+
 void TestUtility::testIsVersionLower() {
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("3.5.8", "3.5.8"));
 
@@ -91,6 +135,14 @@ void TestUtility::testIsVersionLower() {
     // With a build version
     CPPUNIT_ASSERT(CommonUtility::isVersionLower("155.75.0 (build 20250221)", "155.75.0 (build 20250222)"));
     CPPUNIT_ASSERT(CommonUtility::isVersionLower("255.85.0 (build 20240221)", "255.85.0 (build 20250222)"));
+
+    // With an invalid version
+    CPPUNIT_ASSERT(!CommonUtility::isVersionLower(".155.75.0", "156.75.0"));
+    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("155.75.0", ".156.75.0"));
+    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("1.x.0", "156.75.0"));
+    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("156.75.0", "1.x.0"));
+    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("a.0.0", "156.75.0"));
+    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("156.75.0", "a.0.0"));
 }
 
 void TestUtility::testStringToAppStateValue() {
