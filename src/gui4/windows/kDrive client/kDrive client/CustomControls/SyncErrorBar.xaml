@@ -7,45 +7,35 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d">
 
-    <Grid Height="56"
+    <Grid Height="auto"
           HorizontalAlignment="Stretch">
-        <Border CornerRadius="8"
-                BorderThickness="1"
-                Padding="1"
-                Background="#FFF5D3"
-                BorderBrush="#FFE7A5">
-
-            <Grid VerticalAlignment="Center"
-                  Padding="24,0,24,0"
-                  ColumnSpacing="8">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="auto" />
-                    <ColumnDefinition Width="auto" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <!-- Warning Icon -->
-                <Image Height="16"
-                       Grid.Column="0">
-                    <Image.Source>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+        </Grid.RowDefinitions>
+        <InfoBar x:Uid="CC_SyncErrorBar_message"
+                 Grid.Row="1"
+                 IsOpen="True"
+                 Severity="Warning"
+                 Title=""
+                 Message="Essential app message for your"
+                 IsIconVisible="True">
+            <InfoBar.IconSource>
+                <ImageIconSource>
+                    <ImageIconSource.ImageSource>
                         <SvgImageSource UriSource="ms-appx:///Assets/Icons/file-warning.svg" />
-                    </Image.Source>
-                </Image>
-
-                <!-- Message -->
-                <TextBlock x:Uid="CC_SyncErrorBar_message"
-                           VerticalAlignment="Center"
-                           Style="{StaticResource BodyTextBlockStyle}"
-                           Grid.Column="1" />
-
-                <!-- Check files link -->
+                    </ImageIconSource.ImageSource>
+                </ImageIconSource>
+            </InfoBar.IconSource>
+            <InfoBar.ActionButton>
                 <HyperlinkButton x:Uid="CC_SyncErrorBar_button"
                                  Grid.Column="2"
                                  VerticalAlignment="Center"
                                  HorizontalAlignment="Right"
                                  Background="Transparent"
-                                 Click="CheckFileButton_Click" />
-
-            </Grid>
-        </Border>
+                                 Click="CheckFileButton_Click"
+                                 Visibility="Collapsed" />
+            </InfoBar.ActionButton>
+        </InfoBar>
     </Grid>
 </UserControl>
