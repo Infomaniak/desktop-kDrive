@@ -340,11 +340,11 @@ The log files will be generated in the `/tmp/kDrive-logdir` directory.
 # Build in Release
 
 Currently, the release appImage file is generated in a podman container.
-For this part, please replace `[arch]` by either `amd64` or `arm64` depending on your architecture.
 
 ## Podman image
 
 You will need Podman installed for this step, as currently our building script runs through a podman container.
+For this part, please replace `[arch]` by either `amd64` or `arm64` depending on your architecture.
 
 To pull the podman image from our github, run :
 ```bash
@@ -353,8 +353,9 @@ podman pull --arch [arch] ghcr.io/infomaniak/kdrive-desktop-linux:latest
 
 ## Building
 
-You can start a Linux build with the script located in `infomaniak-build-tools/linux/build-release-[arch].sh`  
-The script will start a podman machine on Arm64 architecture from the image pulled using the command above, and run the `build-release-appimage-arm64.sh` script. 
-If you do not want to build through podman, you can adapt the `build-release-appimage-arm64.sh` script to your environment.
+You can start a Linux build with the script located in `infomaniak-build-tools/linux/build-release.sh`  
+The script will start a podman machine with from the image pulled using the command above, and run the `build-release-appimage.sh` script. 
+The architecture (Arm64 or Amd64) used for building is the host architecture.
+If you do not want to build through podman, use the `build-release-appimage.sh` script directly.
 
 The generated AppImage file will be located in the `build-linux-[arch]/client/install` directory.

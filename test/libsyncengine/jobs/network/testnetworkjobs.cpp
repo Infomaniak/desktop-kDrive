@@ -32,7 +32,7 @@
 #include "jobs/network/kDrive_API/movejob.h"
 #include "jobs/network/kDrive_API/renamejob.h"
 #include "jobs/network/kDrive_API/getsizejob.h"
-#include "jobs/jobmanager.h"
+#include "jobs/syncjobmanager.h"
 #include "network/proxy.h"
 #include "utility/jsonparserutility.h"
 #include "requests/parameterscache.h"
@@ -142,9 +142,8 @@ void TestNetworkJobs::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
     ParametersCache::reset();
-    JobManager::instance()->stop();
-    JobManager::instance()->clear();
-    JobManager::instance().reset();
+    SyncJobManagerSingleton::instance()->stop();
+    SyncJobManagerSingleton::clear();
     IoHelperTestUtilities::resetFunctions();
     TestBase::stop();
 }
@@ -769,7 +768,7 @@ void TestNetworkJobs::testDownloadAborted() {
 
     std::shared_ptr<DownloadJob> job =
             std::make_shared<DownloadJob>(vfs, _driveDbId, testBigFileRemoteId, localDestFilePath, 0, 0, 0, false);
-    JobManager::instance()->queueAsyncJob(job);
+    SyncJobManagerSingleton::instance()->queueAsyncJob(job);
 
     int counter = 0;
     while (!job->isRunning()) {
@@ -1154,6 +1153,53 @@ void TestNetworkJobs::testUpload() {
     CPPUNIT_ASSERT_LESS(modificationTimeIn.count(), modificationTimeOut);
 }
 
+void TestNetworkJobs::testDriveUploadSessionWithSizeMismatchError() {
+    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionWithSizeMismatchError");
+
+    const std::string context = "testDriveUploadSessionWithSizeMismatchError";
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, context);
+    const LocalTemporaryDirectory localTmpDir(context);
+    const SyncPath localFilePath = testhelpers::generateBigFile(localTmpDir.path(), 20);
+
+    DriveUploadSession job(nullptr, _driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
+                           testhelpers::defaultTime, testhelpers::defaultTime, false, 2);
+
+    {
+        std::ofstream os(localFilePath, std::ios_base::app);
+        os << "Increase the size of the file to be uploaded.";
+    }
+
+    const auto exitInfo = job.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::SystemError, exitInfo.code());
+    CPPUNIT_ASSERT_EQUAL(ExitCause::FileAccessError, exitInfo.cause());
+    CPPUNIT_ASSERT(job.isCancelled());
+    CPPUNIT_ASSERT(job.isAborted());
+}
+
+void TestNetworkJobs::testDriveUploadSessionWithNullChunkSizeError() {
+    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionWithNullChunkSizeError");
+
+    const std::string context = "testDriveUploadSessionWithNullChunkSizeError";
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, context);
+    const LocalTemporaryDirectory localTmpDir(context);
+    const SyncPath localFilePath = testhelpers::generateBigFile(localTmpDir.path(), 20);
+
+    DriveUploadSession job(nullptr, _driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
+                           testhelpers::defaultTime, testhelpers::defaultTime, false, 2);
+
+    {
+        std::ofstream os(localFilePath);
+        os << "Overwrite the file content.";
+    }
+
+    const auto exitInfo = job.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::SystemError, exitInfo.code());
+    CPPUNIT_ASSERT_EQUAL(ExitCause::FileAccessError, exitInfo.cause());
+    CPPUNIT_ASSERT(job.isCancelled());
+    CPPUNIT_ASSERT(job.isAborted());
+}
+
+
 void TestNetworkJobs::testUploadAborted() {
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUploadAborted");
     const LocalTemporaryDirectory temporaryDirectory("testUploadAborted");
@@ -1169,7 +1215,7 @@ void TestNetworkJobs::testUploadAborted() {
 
     auto job = std::make_shared<UploadJob>(vfs, _driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
                                            0, 0);
-    JobManager::instance()->queueAsyncJob(job);
+    SyncJobManagerSingleton::instance()->queueAsyncJob(job);
 
     int counter = 0;
     while (!job->isRunning()) {
@@ -1179,7 +1225,7 @@ void TestNetworkJobs::testUploadAborted() {
     job->abort();
 
     // Wait for job to finish
-    while (!JobManager::instance()->isJobFinished(job->jobId())) {
+    while (!SyncJobManagerSingleton::instance()->isJobFinished(job->jobId())) {
         Utility::msleep(100);
     }
 
@@ -1344,7 +1390,7 @@ void TestNetworkJobs::testDriveUploadSessionSynchronousAborted() {
     auto DriveUploadSessionJob =
             std::make_shared<DriveUploadSession>(vfs, _driveDbId, nullptr, localFilePath, localFilePath.filename().native(),
                                                  remoteTmpDir.id(), testhelpers::defaultTime, testhelpers::defaultTime, false, 1);
-    JobManager::instance()->queueAsyncJob(DriveUploadSessionJob);
+    SyncJobManagerSingleton::instance()->queueAsyncJob(DriveUploadSessionJob);
 
     int counter = 0;
     while (!DriveUploadSessionJob->isRunning()) {
@@ -1382,7 +1428,7 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronousAborted() {
     auto driveUploadSessionJob = std::make_shared<DriveUploadSession>(
             vfs, _driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
             testhelpers::defaultTime, testhelpers::defaultTime, false, _nbParallelThreads);
-    JobManager::instance()->queueAsyncJob(driveUploadSessionJob);
+    SyncJobManagerSingleton::instance()->queueAsyncJob(driveUploadSessionJob);
 
     int counter = 0;
     while (static_cast<int>(driveUploadSessionJob->state()) <= static_cast<int>(DriveUploadSession::StateStartUploadSession)) {

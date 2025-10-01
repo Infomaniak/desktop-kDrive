@@ -249,4 +249,109 @@
   <data name="CC_UpdateAvailableBar_link.Content" xml:space="preserve">
     <value />
   </data>
+  <data name="Global_SignupUrl" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Processing_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_RestartOAuthButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Success_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Processing_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Success_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_WelcomePage_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_WelcomePage_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_WelcomePage_SigninButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_WelcomePage_SignupButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_FinishButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.PrimaryButtonText" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.CloseButtonText" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Description.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_InfoBar.Message" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_CustomizeButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Title" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Subtitle" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_FinishPage_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_FinishPage_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_FinishPage_OpenButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_DriveAlreadyConfigured.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_FinishingPage_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_FinishingPage_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_NoDrive_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_NoDrive_Text.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_StartFreeButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_OffersButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_kDriveOffersUrl" xml:space="preserve">
+    <value />
+  </data>
 </root>

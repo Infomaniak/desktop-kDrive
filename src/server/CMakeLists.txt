@@ -149,6 +149,8 @@ include(ECMAddAppIcon)
 
 file(GLOB_RECURSE KDRIVE_ICONS "${theme_dir}/colored/*-${APPLICATION_ICON_NAME}-icon*")
 if(APPLE)
+    # Sidebar icons for macOS < 26
+    # For macOS >= 26, the icon is defined by the value of CFBundleSymbolName in Info.plist
     file(GLOB_RECURSE KDRIVE_SIDEBAR_ICONS "${theme_dir}/colored/*-${APPLICATION_ICON_NAME}-sidebar*")
     message(STATUS "KDRIVE_SIDEBAR_ICONS: ${APPLICATION_ICON_NAME}: ${KDRIVE_SIDEBAR_ICONS}")
 endif()

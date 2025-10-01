@@ -18,11 +18,11 @@
 
 #pragma once
 
-#include "jobs/abstractjob.h"
+#include "jobs/syncjob.h"
 
 namespace KDC {
 
-class LocalCreateDirJob : public AbstractJob {
+class LocalCreateDirJob : public SyncJob {
     public:
         LocalCreateDirJob(const SyncPath &destFilepath);
 

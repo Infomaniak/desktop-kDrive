@@ -21,6 +21,7 @@ using DynamicData;
 using DynamicData.Binding;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -117,6 +118,7 @@ namespace Infomaniak.kDrive.ViewModels
             AppErrors.CollectionChanged += (_, __) => OnPropertyChanged(nameof(HasErrors));
 
             AppErrors.Add(new Errors.AppError(0) { ExitCause = 4 , ExitCode = 1234}); // TODO: Remove this line, only for testing
+       
         }
 
         private void EnsureValidSelectedSync()

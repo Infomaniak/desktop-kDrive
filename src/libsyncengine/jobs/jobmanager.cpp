@@ -35,20 +35,6 @@
 
 namespace KDC {
 
-std::shared_ptr<JobManager> JobManager::_instance = nullptr;
-
-std::shared_ptr<JobManager> JobManager::instance() noexcept {
-    if (_instance == nullptr) {
-        try {
-            _instance = std::shared_ptr<JobManager>(new JobManager());
-        } catch (...) {
-            return nullptr;
-        }
-    }
-
-    return _instance;
-}
-
 void JobManager::startMainThreadIfNeeded() {
     if (!_mainThread) {
         const std::function<void()> runFunction = std::bind_front(&JobManager::run, this);
@@ -61,7 +47,7 @@ void JobManager::stop() {
 }
 
 void JobManager::clear() {
-    Poco::ThreadPool::defaultPool().stopAll();
+    _threadPool.stopAll();
     if (_mainThread) {
         if (_mainThread->joinable()) _mainThread->join();
         _mainThread = nullptr;
@@ -69,10 +55,6 @@ void JobManager::clear() {
 
     _data.clear();
     _stop = false;
-
-    if (_instance) {
-        _instance.reset();
-    }
 }
 
 void JobManager::queueAsyncJob(const std::shared_ptr<AbstractJob> job,
@@ -97,7 +79,7 @@ void JobManager::setPoolCapacity(const int nbThread) {
     static_assert(threadPoolMinCapacity >= 2 && "Thread pool min capacity is too low.");
 
     _maxNbThread = std::max(nbThread, threadPoolMinCapacity);
-    Poco::ThreadPool::defaultPool().addCapacity(_maxNbThread - Poco::ThreadPool::defaultPool().capacity());
+    _threadPool.addCapacity(_maxNbThread - _threadPool.capacity());
     LOG_DEBUG(_logger, "Max number of thread changed to " << _maxNbThread << " threads");
 }
 
@@ -129,7 +111,7 @@ void JobManager::run() noexcept {
         // Always keep 1 thread available for jobs with highest priority
         while (availableThreads > 1 && !_stop && _data.hasQueuedJob()) {
             const auto [job, priority] = _data.pop();
-            if (canRunjob(job)) {
+            if (canRunJob(job)) {
                 startJob(job, priority);
             } else {
                 addToPendingJobs(job, priority);
@@ -138,7 +120,7 @@ void JobManager::run() noexcept {
             availableThreads = availableThreadsInPool();
         }
 
-        // Start job with highest priority
+        // Start job with the highest priority
         if (_data.hasHighestPriorityJob()) {
             const auto [job, priority] = _data.pop();
             startJob(job, priority);
@@ -157,7 +139,7 @@ void JobManager::startJob(std::shared_ptr<AbstractJob> job, Poco::Thread::Priori
             _data.erase(job->jobId());
         } else {
             LOG_DEBUG(Log::instance()->getLogger(), "Starting job " << job->jobId() << " with priority " << priority);
-            Poco::ThreadPool::defaultPool().startWithPriority(priority, *job);
+            _threadPool.startWithPriority(priority, *job);
             if (!_data.addToRunningJobs(job->jobId())) {
                 LOG_WARN(Log::instance()->getLogger(), "Failed to insert job " << job->jobId() << " in _runningJobs map");
             }
@@ -184,43 +166,14 @@ void JobManager::addToPendingJobs(const std::shared_ptr<AbstractJob> job, const 
 
 int JobManager::availableThreadsInPool() const {
     try {
-        return static_cast<int>(Poco::ThreadPool::defaultPool().available());
+        return static_cast<int>(_threadPool.available());
     } catch (Poco::Exception &) {
         return 0;
     }
 }
 
-bool JobManager::canRunjob(const std::shared_ptr<AbstractJob> job) const {
-    if (isBigFileUploadJob(job)) {
-        for (const auto &runningJobId: _data.runningJobs()) {
-            if (const auto &uploadSession = std::dynamic_pointer_cast<DriveUploadSession>(getJob(runningJobId)); uploadSession) {
-                // An upload session is already running.
-                return false;
-            }
-        }
-        return true;
-    }
-    if (isBigFileDownloadJob(job) && availableThreadsInPool() < 0.5 * Poco::ThreadPool::defaultPool().capacity()) {
-        // Allow big file download only if there is more than 50% of thread available in the pool.
-        return false;
-    }
+bool JobManager::canRunJob(const std::shared_ptr<AbstractJob>) const {
     return true;
-}
-
-bool JobManager::isBigFileDownloadJob(const std::shared_ptr<AbstractJob> job) const {
-    if (const auto &downloadJob = std::dynamic_pointer_cast<DownloadJob>(job);
-        downloadJob && downloadJob->expectedSize() > bigFileThreshold) {
-        return true;
-    }
-    return false;
-}
-
-bool JobManager::isBigFileUploadJob(const std::shared_ptr<AbstractJob> job) const {
-    if (std::dynamic_pointer_cast<DriveUploadSession>(job)) {
-        // Upload sessions are only for big files
-        return true;
-    }
-    return false;
 }
 
 void JobManager::managePendingJobs() {
@@ -229,7 +182,7 @@ void JobManager::managePendingJobs() {
         const auto &job = jobInfo.first;
         const auto priority = jobInfo.second;
 
-        if (canRunjob(job)) {
+        if (canRunJob(job)) {
             if (job->isAborted()) {
                 // The job is aborted, remove it completely from job manager
                 _data.erase(job->jobId());

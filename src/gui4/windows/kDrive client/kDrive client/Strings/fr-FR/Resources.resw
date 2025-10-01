@@ -274,4 +274,110 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
     <value>Mettre à jour</value>
     <comment>Message of the button to start the update</comment>
   </data>
+  <data name="Global_SignupUrl" xml:space="preserve">
+    <value>https://www.infomaniak.com/fr/ksuite</value>
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Title.Text" xml:space="preserve">
+    <value>Connectez-vous dans le navigateur</value>
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Processing_Title.Text" xml:space="preserve">
+    <value>Encore un instant...</value>
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_RestartOAuthButton.Content" xml:space="preserve">
+    <value>Relancer la connexion</value>
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Success_Title.Text" xml:space="preserve">
+    <value>Connexion réussie !</value>
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Subtitle.Text" xml:space="preserve">
+    <value>Une fois connecté, vous pourrez passer à l’étape suivante.</value>
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Processing_Subtitle.Text" xml:space="preserve">
+    <value>Nous récupérons vos informations...</value>
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Success_Subtitle.Text" xml:space="preserve">
+    <value />
+    <comment>Empty</comment>
+  </data>
+  <data name="Page_Onboarding_WelcomePage_Title.Text" xml:space="preserve">
+    <value>Bienvenue dans kDrive</value>
+  </data>
+  <data name="Page_Onboarding_WelcomePage_Subtitle.Text" xml:space="preserve">
+    <value>Connectez-vous pour commencer à utiliser kDrive, le cloud éthique et sécurisé, hébergé en Suisse.</value>
+  </data>
+  <data name="Page_Onboarding_WelcomePage_SigninButton.Content" xml:space="preserve">
+    <value>Connexion</value>
+  </data>
+  <data name="Page_Onboarding_WelcomePage_SignupButton.Content" xml:space="preserve">
+    <value>Créer un compte</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_Title.Text" xml:space="preserve">
+    <value>Content de vous retrouver !</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_Subtitle.Text" xml:space="preserve">
+    <value>Choisissez les kDrive à synchroniser sur cet ordinateur :</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_FinishButton.Content" xml:space="preserve">
+    <value>Terminer la configuration</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedButton.Content" xml:space="preserve">
+    <value>Paramètres avancés</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Confirmer</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.CloseButtonText" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Title.Text" xml:space="preserve">
+    <value>Paramètres avancés</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Description.Text" xml:space="preserve">
+    <value>Personnalisez l’emplacement de vos dossiers kDrive</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_InfoBar.Message" xml:space="preserve">
+    <value>Sélectionnez un dossier vide pour chaque kDrive.</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_CustomizeButton.Content" xml:space="preserve">
+    <value>Personnaliser</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Title" xml:space="preserve">
+    <value>Ce dossier ne peut pas être sélectionné</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Subtitle" xml:space="preserve">
+    <value>Veuillez choisir un dossier vide qui ne se trouve pas a la racine d'un lecteur.</value>
+  </data>
+  <data name="Page_Onboarding_FinishPage_Title.Text" xml:space="preserve">
+    <value>Tout est prêt !</value>
+  </data>
+  <data name="Page_Onboarding_FinishPage_Subtitle.Text" xml:space="preserve">
+    <value>Vos fichiers sont prêts à être synchronisés en toute sécurité sur votre ordinateur.</value>
+  </data>
+  <data name="Page_Onboarding_FinishPage_OpenButton.Content" xml:space="preserve">
+    <value>Ouvrir kDrive</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_DriveAlreadyConfigured.Content" xml:space="preserve">
+    <value>Ce drive est déja configuré, rendez vous dans vos paramètres pour le modifier.</value>
+  </data>
+  <data name="Page_Onboarding_FinishingPage_Title.Text" xml:space="preserve">
+    <value>Synchronisation en cours</value>
+  </data>
+  <data name="Page_Onboarding_FinishingPage_Subtitle.Text" xml:space="preserve">
+    <value>Vos fichiers kDrive sont en cours de synchronisation. Nous vous invitons à patienter quelques instants.</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_NoDrive_Subtitle.Text" xml:space="preserve">
+    <value>Vous n’avez pas encore de kDrive.</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_NoDrive_Text.Text" xml:space="preserve">
+    <value>Commencez gratuitement avec my kSuite, ou choisissez une offre adaptée à vos besoins.</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_StartFreeButton.Content" xml:space="preserve">
+    <value>Commencer gratuitement</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_OffersButton.Content" xml:space="preserve">
+    <value>Voir les offres</value>
+  </data>
+  <data name="Global_kDriveOffersUrl" xml:space="preserve">
+    <value>https://www.infomaniak.com/fr/ksuite/kdrive</value>
+  </data>
 </root>

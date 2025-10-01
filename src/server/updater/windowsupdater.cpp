@@ -20,7 +20,7 @@
 #include "windowsupdater.h"
 #include "log/log.h"
 #include "jobs/network/directdownloadjob.h"
-#include "jobs/jobmanager.h"
+#include "jobs/syncjobmanager.h"
 #include "io/iohelper.h"
 #include "libcommonserver/utility/utility.h" // Path2WStr
 
@@ -64,12 +64,12 @@ void WindowsUpdater::downloadUpdate() noexcept {
     auto job = std::make_shared<DirectDownloadJob>(filepath, versionInfo(_currentChannel).downloadUrl);
     const std::function<void(UniqueId)> callback = std::bind_front(&WindowsUpdater::downloadFinished, this);
     job->setAdditionalCallback(callback);
-    JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
+    SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
     setState(UpdateState::Downloading);
 }
 
 void WindowsUpdater::downloadFinished(const UniqueId jobId) {
-    auto job = JobManager::instance()->getJob(jobId);
+    auto job = SyncJobManagerSingleton::instance()->getJob(jobId);
     const auto downloadJob = std::dynamic_pointer_cast<DirectDownloadJob>(job);
     if (!downloadJob) {
         const auto error = "Could not cast job pointer.";

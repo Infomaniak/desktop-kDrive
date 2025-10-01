@@ -10,17 +10,21 @@ namespace Infomaniak.kDrive.Converters
 {
     public class BooleanToInvertedBooleanConverter : IValueConverter
     {
-       public object Convert(object value, Type targetType, object parameter, string language)
+        public object Convert(object value, Type targetType, object parameter, string language)
         {
             if (value is bool boolValue)
             {
                 return !boolValue;
             }
+            else if (value is int intValue)
+            {
+                return intValue == 0;
+            }
             Logger.Log(Logger.Level.Fatal, "BooleanToInvertedBooleanConverter: value is not a boolean.");
             throw new ArgumentException("Invalid value type", nameof(value));
         }
 
-       public object ConvertBack(object value, Type targetType, object parameter, string language)
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
             if (value is bool boolValue)
             {

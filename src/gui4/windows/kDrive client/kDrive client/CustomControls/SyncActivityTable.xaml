@@ -84,18 +84,18 @@
                         <TextBlock x:Uid="CC_ActivityList_Header_Name"
                                    Grid.Column="0"
                                    Padding="8,0,0,0"
-                                   Style="{StaticResource TextBlockStyle}" />
+                                   Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                         <TextBlock x:Uid="CC_ActivityList_Header_LastLocation"
                                    Padding="16,0,0,0"
-                                   Style="{StaticResource TextBlockStyle}"
+                                   Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                                    Grid.Column="1" />
                         <TextBlock x:Uid="CC_ActivityList_Header_Size"
                                    Padding="16,0,0,0"
-                                   Style="{StaticResource TextBlockStyle}"
+                                   Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                                    Grid.Column="2" />
                         <TextBlock x:Uid="CC_ActivityList_Header_State"
                                    Padding="16,0,0,0"
-                                   Style="{StaticResource TextBlockStyle}"
+                                   Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                                    Grid.Column="3" />
                     </Grid>
                 </ListView.Header>

@@ -57,5 +57,14 @@ namespace Infomaniak.kDrive.Types
         ES,
         EN
     };
+
+    public enum OAuth2State
+    {
+        None,
+        WaitingForUserAction,
+        ProcessingResponse,
+        Success,
+        Error
+    }
 }
 

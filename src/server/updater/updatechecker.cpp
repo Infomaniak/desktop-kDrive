@@ -19,7 +19,7 @@
 #include "updatechecker.h"
 
 #include "db/parmsdb.h"
-#include "jobs/jobmanager.h"
+#include "jobs/syncjobmanager.h"
 #include "jobs/network/abstractnetworkjob.h"
 #include "jobs/network/infomaniak_API/getappversionjob.h"
 #include "libcommon/utility/utility.h"
@@ -37,7 +37,7 @@ ExitCode UpdateChecker::checkUpdateAvailability(UniqueId *id /*= nullptr*/) {
 
     const std::function<void(UniqueId)> callback = std::bind_front(&UpdateChecker::versionInfoReceived, this);
     job->setAdditionalCallback(callback);
-    JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
+    SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
     return ExitCode::Ok;
 }
 
@@ -85,7 +85,7 @@ void UpdateChecker::versionInfoReceived(UniqueId jobId) {
     _versionsInfo.clear();
     LOG_INFO(Log::instance()->getLogger(), "App version info received");
 
-    const auto job = JobManager::instance()->getJob(jobId);
+    const auto job = SyncJobManagerSingleton::instance()->getJob(jobId);
     const auto getAppVersionJobPtr = std::dynamic_pointer_cast<GetAppVersionJob>(job);
     if (!getAppVersionJobPtr) {
         LOG_ERROR(Log::instance()->getLogger(), "Could not cast job pointer.");

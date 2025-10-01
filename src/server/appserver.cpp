@@ -39,7 +39,7 @@
 #include "libcommonserver/utility/utility.h"
 #include "libsyncengine/requests/parameterscache.h"
 #include "libsyncengine/requests/exclusiontemplatecache.h"
-#include "libsyncengine/jobs/jobmanager.h"
+#include "libsyncengine/jobs/syncjobmanager.h"
 
 #include <iostream>
 #include <fstream>
@@ -217,8 +217,7 @@ void AppServer::init() {
         ExitCode exitCode = migrateConfiguration(proxyNotSupported);
         if (exitCode != ExitCode::Ok) {
             LOG_WARN(_logger, "Error in migrateConfiguration");
-            addError(
-                    Error(ERR_ID, exitCode, exitCode == ExitCode::SystemError ? ExitCause::MigrationError : ExitCause::Unknown));
+            addError(Error(ERR_ID, exitCode, exitCode == ExitCode::SystemError ? ExitCause::MigrationError : ExitCause::Unknown));
         }
 
         if (proxyNotSupported) {
@@ -290,7 +289,7 @@ void AppServer::init() {
     }
 
     // Init JobManager
-    if (!JobManager::instance()) {
+    if (!SyncJobManagerSingleton::instance()) {
         LOG_WARN(_logger, "Error in JobManager::instance");
         throw std::runtime_error("Unable to initialize job manager.");
     }
@@ -437,7 +436,7 @@ void AppServer::cleanup() {
     _commManager->stop();
 
     // Stop JobManager
-    JobManager::instance()->stop();
+    SyncJobManagerSingleton::instance()->stop();
     LOG_DEBUG(_logger, "JobManager stopped");
 
     // Stop SyncPals
@@ -460,7 +459,7 @@ void AppServer::cleanup() {
     _commManager.reset();
 
     // Clear JobManager
-    JobManager::instance()->clear();
+    SyncJobManagerSingleton::clear();
     LOG_DEBUG(_logger, "JobManager::clear() done");
 
     // Clear maps
@@ -1456,7 +1455,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> nodeId;
 
             std::string linkUrl;
-            ExitCode exitCode = ServerRequests::getPublicLinkUrl(driveDbId, nodeId.toStdString(), linkUrl);
+            const auto exitCode = ServerRequests::getPublicLinkUrl(driveDbId, nodeId.toStdString(), linkUrl);
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in Requests::getLinkUrl");
                 addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
@@ -1464,6 +1463,9 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             resultStream << toInt(exitCode);
             resultStream << QString::fromStdString(linkUrl);
+
+            sendShowNotification(tr("Share link copied to clipboard"), QString::fromStdString(linkUrl));
+
             break;
         }
         case RequestNum::SYNC_GETPRIVATELINKURL: {
@@ -2310,7 +2312,7 @@ void AppServer::uploadLog(const bool includeArchivedLogs) {
         }
     };
     logUploadJob->setAdditionalCallback(jobResultCallback);
-    JobManager::instance()->queueAsyncJob(logUploadJob, Poco::Thread::PRIO_HIGH);
+    SyncJobManagerSingleton::instance()->queueAsyncJob(logUploadJob, Poco::Thread::PRIO_HIGH);
 }
 
 ExitInfo AppServer::checkIfSyncIsValid(const Sync &sync) {
@@ -2550,13 +2552,14 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
-            {&MigrationParams::migrateSelectiveSyncs, "migrateSelectiveSyncs"}};
+        {&MigrationParams::migrateSelectiveSyncs, "migrateSelectiveSyncs"}
+    };
 
     for (const auto &migrate: migrateArr) {
         ExitCode functionExitCode = (mp.*migrate.first)();
@@ -4027,7 +4030,7 @@ void AppServer::addError(const Error &error) {
         ParametersCache::instance()->decreaseUploadSessionParallelThreads();
 
         // Decrease JobManager pool capacity
-        JobManager::instance()->decreasePoolCapacity();
+        SyncJobManagerSingleton::instance()->decreasePoolCapacity();
     } else if (error.exitCode() == ExitCode::SystemError && error.exitCause() == ExitCause::FileAccessError) {
         // Remove child errors
         std::unordered_set<int64_t> toBeRemovedErrorIds;

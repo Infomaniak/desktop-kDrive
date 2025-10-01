@@ -1124,11 +1124,6 @@ void SynthesisPopover::onAddToFavouriteItem(const SynchronizedItem &item) {
     msgBox.exec();
 }
 
-/*void SynthesisPopover::onManageRightAndSharingItem(const SynchronizedItem &item)
-{
-    _gui->onManageRightAndSharingItem(item.syncDbId(), item.filePath());
-}*/
-
 void SynthesisPopover::onCopyLinkItem(const SynchronizedItem &item) {
     _gui->onCopyLinkItem(_gui->currentDriveDbId(), item.fileId());
 }

@@ -45,21 +45,8 @@ class AbstractJob : public Poco::Runnable {
             const std::scoped_lock lock(_additionalCallbackMutex);
             _additionalCallback = newCallback;
         }
-        void setProgressPercentCallback(const std::function<void(UniqueId, int)> &newCallback) {
-            _progressPercentCallback = newCallback;
-        }
-        ExitInfo exitInfo() const { return _exitInfo; }
 
-        void setProgressExpectedFinalValue(const int64_t newExpectedFinishProgress) {
-            _expectedFinishProgress = newExpectedFinishProgress;
-        }
-        virtual int64_t getProgress() { return _progress; }
-        void setProgress(int64_t newProgress);
-        void addProgress(int64_t progressToAdd);
-        bool progressChanged();
-        const SyncPath &affectedFilePath() const { return _affectedFilePath; }
-        void setAffectedFilePath(const SyncPath &newAffectedFilePath) { _affectedFilePath = newAffectedFilePath; }
-        bool isProgressTracked() const { return _progress > -1; }
+        ExitInfo exitInfo() const { return _exitInfo; }
 
         UniqueId jobId() const { return _jobId; }
 
@@ -69,40 +56,28 @@ class AbstractJob : public Poco::Runnable {
         virtual void abort();
         bool isAborted() const;
 
-        [[nodiscard]] bool bypassCheck() const { return _bypassCheck; }
-        void setBypassCheck(bool newBypassCheck) { _bypassCheck = newBypassCheck; }
-
     protected:
+        void run() override;
         virtual bool canRun() { return true; }
 
         log4cplus::Logger _logger;
         ExitInfo _exitInfo;
 
-    private:
-        void run() final;
+        bool _isRunning = false;
         virtual void callback(UniqueId) final;
 
+    private:
         std::function<void(UniqueId)> _mainCallback = nullptr; // Used by the job manager to keep track of running jobs
         std::mutex _additionalCallbackMutex;
         std::function<void(UniqueId)> _additionalCallback = nullptr; // Used by the caller to be notified of job completion
-        std::function<void(UniqueId id, int progress)> _progressPercentCallback =
-                nullptr; // Used by the caller to be notified of job progress.
 
         static UniqueId _nextJobId;
         static std::mutex _nextJobIdMutex;
 
         UniqueId _jobId = 0;
 
-        int64_t _expectedFinishProgress =
-                expectedFinishProgressNotSetValue; // Expected progress value when the job is finished. -2 means it is not set.
-        int64_t _progress = -1; // Progress is -1 when it is not relevant for the current job
-        int64_t _lastProgress = -1; // Progress last time it was checked using progressChanged()
-        SyncPath _affectedFilePath; // The file path associated to _progress
-
         bool _abort = false;
-        bool _bypassCheck = false;
         bool _isExtendedLog = false;
-        bool _isRunning = false;
 };
 
 } // namespace KDC

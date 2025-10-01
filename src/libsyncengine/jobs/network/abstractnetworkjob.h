@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "libsyncengine/jobs/abstractjob.h"
+#include "libsyncengine/jobs/syncjob.h"
 
 #include <string>
 #include <unordered_map>
@@ -31,9 +31,9 @@
 
 namespace KDC {
 
-class AbstractJob;
+class SyncJob;
 
-class AbstractNetworkJob : public AbstractJob {
+class AbstractNetworkJob : public SyncJob {
     public:
         /// @throw std::runtime_error
         AbstractNetworkJob();
