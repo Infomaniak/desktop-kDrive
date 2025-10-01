@@ -19,11 +19,20 @@
 #include "guicommserver.h"
 #include "abstractcommserver_mac.h"
 #include "../../extensions/MacOSX/kDriveFinderSync/kDriveModel/xpcGuiProtocol.h"
+#include "libcommon/utility/types.h"
+#include "libcommon/comm.h"
+#include "comm/guijobs/abstractguijob.h"
 
 //
 // Interfaces
 //
 @interface GuiLocalEnd : AbstractLocalEnd <XPCGuiProtocol>
+
+@property(retain) NSMutableDictionary *_Nonnull callbackDictionary;
+
+- (NSInteger)newRequestId;
+- (void (^_Nonnull)(...))callback:(NSInteger)requestId;
+
 @end
 
 @interface GuiRemoteEnd : AbstractRemoteEnd <XPCGuiRemoteProtocol>
@@ -50,9 +59,26 @@ class GuiCommServerPrivate : public AbstractCommServerPrivate {
 //
 @implementation GuiLocalEnd
 
+static NSInteger lastRequestId = 0;
+
+- (id)init {
+    if (self = [super init]) {
+        _callbackDictionary = [[NSMutableDictionary alloc] init];
+    }
+    return self;
+}
+
+- (NSInteger)newRequestId {
+    return lastRequestId++;
+}
+
+- (void (^_Nonnull)(...))callback:(NSInteger)requestId {
+    return _callbackDictionary[[NSNumber numberWithInteger:requestId]];
+}
+
 // XPCGuiRemoteProtocol protocol implementation
-// TODO: POC => replace with real C/S functions
-- (void)sendQuery:(NSData *)msg {
+// TODO: Test query method to remove later
+- (void)sendQuery:(NSData *_Nonnull)msg {
     NSString *answer = [[NSString alloc] initWithData:msg encoding:NSUTF8StringEncoding];
     NSLog(@"[KD] Query received %@", answer);
 
@@ -77,24 +103,79 @@ class GuiCommServerPrivate : public AbstractCommServerPrivate {
     }
 }
 
+- (void)loginRequestToken:(NSString *_Nonnull)code
+             codeVerifier:(NSString *_Nonnull)codeVerifier
+                 callback:(void (^_Nonnull)(int userDbId, NSString *_Nullable error, NSString *_Nullable errorDescr))callback {
+    if (self.wrapper && self.wrapper->publicPtr) {
+        NSInteger requestNum = (NSInteger) RequestNum::LOGIN_REQUESTTOKEN;
+
+        // Add callback to dictionary
+        NSInteger requestId = [self newRequestId];
+        _callbackDictionary[[NSNumber numberWithInteger:requestId]] = callback;
+
+        // Generate JSON inputParamsStr
+        // TODO: Provisional code
+        NSDictionary *paramsDictionary =
+                [NSDictionary dictionaryWithObjectsAndKeys:@"code", code, @"codeVerifier", codeVerifier, nil];
+        NSDictionary *queryDictionary = [NSDictionary
+                dictionaryWithObjectsAndKeys:@"id", requestId, @"num", requestNum, @"params", paramsDictionary, nil];
+        NSError *error;
+        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:queryDictionary
+                                                           options:NSJSONWritingPrettyPrinted
+                                                             error:&error];
+        NSString *inputParamsStr = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+
+        self.wrapper->inBuffer += std::string([inputParamsStr UTF8String]);
+        self.wrapper->inBuffer += "\n";
+        self.wrapper->publicPtr->readyReadCbk();
+    }
+}
+
 @end
 
 @implementation GuiRemoteEnd
 
 // XPCGuiProtocol protocol implementation
-// TODO: POC => replace with real C/S functions
-- (void)sendSignal:(NSData *)msg {
+// TODO: Test signal method to remove later
+- (void)sendSignal:(NSData *_Nonnull)msg {
     if (self.connection == nil) {
         return;
     }
 
-    NSString *query = [[NSString alloc] initWithData:msg encoding:NSUTF8StringEncoding];
-    NSLog(@"[KD] Send signal %@", query);
+    NSLog(@"[KD] Call sendSignal");
 
     @try {
         [[self.connection remoteObjectProxy] sendSignal:msg];
     } @catch (NSException *e) {
         NSLog(@"[KD] Send signal error %@", e.name);
+    }
+}
+
+- (void)signalUserUpdate:(UserInfo *_Nonnull)userInfo {
+    if (self.connection == nil) {
+        return;
+    }
+
+    NSLog(@"[KD] Call signalUserUpdate");
+
+    @try {
+        [[self.connection remoteObjectProxy] signalUserUpdate:userInfo];
+    } @catch (NSException *e) {
+        NSLog(@"[KD] Error in signalUserUpdate: error=%@", e.name);
+    }
+}
+
+- (void)signalUserCreate:(UserInfo *_Nonnull)userInfo {
+    if (self.connection == nil) {
+        return;
+    }
+
+    NSLog(@"[KD] Call signalUserUpdate");
+
+    @try {
+        [[self.connection remoteObjectProxy] signalUserUpdate:userInfo];
+    } @catch (NSException *e) {
+        NSLog(@"[KD] Error in signalUserUpdate: error=%@", e.name);
     }
 }
 
@@ -173,17 +254,120 @@ GuiCommServerPrivate::GuiCommServerPrivate() {
 uint64_t KDC::GuiCommChannel::writeData(const KDC::CommChar *data, uint64_t len) {
     if (_privatePtr->isRemoteDisconnected) return -1;
 
-    @try {
-        // TODO: POC => replace with real C/S functions depending on data content
-        [(GuiRemoteEnd *) _privatePtr->remoteEnd sendSignal:[NSData dataWithBytesNoCopy:const_cast<KDC::CommChar *>(data)
-                                                                                  length:static_cast<NSUInteger>(len)
-                                                                            freeWhenDone:NO]];
-        return len;
-    } @catch (NSException *e) {
-        _privatePtr->disconnectRemote();
-        lostConnectionCbk();
+    NSData *msg = [NSData dataWithBytesNoCopy:const_cast<KDC::CommChar *>(data)
+                                       length:static_cast<NSUInteger>(len)
+                                 freeWhenDone:NO];
+
+    NSError *error = nil;
+    NSDictionary *jsonDict = [NSJSONSerialization JSONObjectWithData:msg options:NSJSONReadingMutableContainers error:&error];
+
+    if (error) {
+        NSLog(@"[KD] Parsing error: error=%@", [error description]);
         return -1;
     }
+
+    // TODO: Provisional code
+    KDC::AbstractGuiJob::GuiJobType requestType = static_cast<KDC::AbstractGuiJob::GuiJobType>([jsonDict[@"type"] integerValue]);
+    int requestId = [jsonDict[@"id"] integerValue];
+    NSDictionary *paramsDict = jsonDict[@"params"];
+
+    if (requestType == KDC::AbstractGuiJob::GuiJobType::Query) {
+        RequestNum requestNum = static_cast<RequestNum>([jsonDict[@"num"] integerValue]);
+        ExitCode exitCode = static_cast<ExitCode>([jsonDict[@"code"] integerValue]);
+        ExitCause exitCause = static_cast<ExitCause>([jsonDict[@"cause"] integerValue]);
+
+        @try {
+            auto cbk = [(GuiLocalEnd *) _privatePtr->localEnd callback:requestId];
+
+            @try {
+                switch (requestNum) {
+                    case RequestNum::LOGIN_REQUESTTOKEN: {
+                        int userDbId = [paramsDict[@"userId"] integerValue];
+                        NSString *error = paramsDict[@"error"];
+                        NSString *errorDescr = paramsDict[@"errorDescr"];
+
+                        auto callback = (void (^_Nonnull)(int, NSString *_Nullable, NSString *_Nullable)) cbk;
+                        callback(userDbId, error, errorDescr);
+                        break;
+                    }
+                    default:
+                        NSLog(@"[KD] Request is not managed: num=%d", toInt(requestNum));
+                        return -1;
+                }
+            } @catch (NSException *e) {
+                NSLog(@"[KD] Exception when calling callback: error=%@", [error description]);
+                _privatePtr->disconnectRemote();
+                lostConnectionCbk();
+                return -1;
+            }
+        } @catch (NSException *e) {
+            NSLog(@"[KD] Exception when calling callback: error=%@", [error description]);
+            _privatePtr->disconnectRemote();
+            lostConnectionCbk();
+            return -1;
+        }
+    } else {
+        SignalNum signalNum = static_cast<SignalNum>([jsonDict[@"num"] integerValue]);
+
+        @try {
+            switch (signalNum) {
+                case SignalNum::USER_ADDED:
+                case SignalNum::USER_UPDATED: {
+                    UserInfo *userInfo = [[UserInfo alloc] init];
+                    userInfo->dbId = [paramsDict[@"dbId"] integerValue];
+                    userInfo->userId = [paramsDict[@"userId"] integerValue];
+                    userInfo->name = paramsDict[@"name"];
+                    userInfo->email = paramsDict[@"email"];
+                    userInfo->avatar = paramsDict[@"avatar"];
+                    userInfo->connected = [paramsDict[@"connected"] integerValue];
+                    userInfo->credentialsAsked = [paramsDict[@"credentialsAsked"] integerValue];
+                    userInfo->isStaff = [paramsDict[@"isStaff"] integerValue];
+
+                    if (signalNum == SignalNum::USER_ADDED) {
+                        [(GuiRemoteEnd *) _privatePtr->remoteEnd signalUserCreate:userInfo];
+                    } else {
+                        [(GuiRemoteEnd *) _privatePtr->remoteEnd signalUserUpdate:userInfo];
+                    }
+                    break;
+                }
+                default:
+                    NSLog(@"[KD] Signal is not managed: num=%d", toInt(signalNum));
+                    return -1;
+            }
+        } @catch (NSException *e) {
+            NSLog(@"[KD] Exception when sending signal: error=%@", [error description]);
+            _privatePtr->disconnectRemote();
+            lostConnectionCbk();
+            return -1;
+        }
+    }
+
+    return len;
+}
+
+void KDC::GuiCommChannel::testLoginRequestToken(const std::string &code, const std::string &codeVerifier) {
+    // TODO: Provisional code
+    GuiCommChannelPrivate *channelPrivate = new GuiCommChannelPrivate(nil);
+    auto channel = std::make_shared<KDC::GuiCommChannel>(channelPrivate);
+    channel->setReadyReadCbk([](std::shared_ptr<AbstractCommChannel> channel) {
+        if (channel->canReadMessage()) {
+            CommString query = channel->readMessage();
+            if (!query.empty()) {
+                NSLog(@"[KD] Query received: %@", [[NSString alloc] initWithUTF8String:query.c_str()]);
+            }
+        }
+    });
+
+    NSString *nsCode = [[NSString alloc] initWithUTF8String:code.c_str()];
+    NSString *nsCodeVerifier = [[NSString alloc] initWithUTF8String:codeVerifier.c_str()];
+    [(GuiLocalEnd *) channel->_privatePtr->localEnd
+            loginRequestToken:nsCode
+                 codeVerifier:nsCodeVerifier
+                     callback:(void (^_Nonnull)(int userDbId, NSString *_Nullable error, NSString *_Nullable errorDescr)) {
+                         NSLog(@"[KD] Callback called: userDbId=%d error=%@ errorDescr=%@", userDbId,
+                               [[NSString alloc] initWithUTF8String:error.c_str()],
+                               [[NSString alloc] initWithUTF8String:errorDescr.c_str()]);
+                     }];
 }
 
 // GuiCommServer implementation

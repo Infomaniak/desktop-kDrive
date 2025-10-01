@@ -33,13 +33,7 @@ class GuiJobFactory {
 
         std::shared_ptr<AbstractGuiJob> make(RequestNum requestNum, std::shared_ptr<CommManager> commManager, int requestId,
                                              const Poco::DynamicStruct &inParams,
-                                             const std::shared_ptr<AbstractCommChannel> channel) {
-            auto makeElt = _makeMap.find(requestNum);
-            if (makeElt != _makeMap.end())
-                return makeElt->second(commManager, requestId, inParams, channel);
-            else
-                return nullptr;
-        }
+                                             const std::shared_ptr<AbstractCommChannel> channel);
 
     private:
         std::map<RequestNum, AbstractGuiJobSharedConst> _makeMap;

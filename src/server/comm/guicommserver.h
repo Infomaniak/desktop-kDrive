@@ -41,6 +41,11 @@ class GuiCommChannel : public SocketCommChannel {
         bool canReadMessage() final;
         CommString readMessage() final;
 
+#if defined(KD_MACOS)
+        // For tests only
+        static void testLoginRequestToken(const std::string &code, const std::string &codeVerifier);
+#endif
+
     private:
 #if defined(KD_MACOS)
         uint64_t writeData(const KDC::CommChar *data, uint64_t len) override;

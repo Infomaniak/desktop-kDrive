@@ -29,4 +29,14 @@ GuiJobFactory::GuiJobFactory() {
                  }}};
 }
 
+std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::shared_ptr<CommManager> commManager,
+                                                    int requestId, const Poco::DynamicStruct &inParams,
+                                                    const std::shared_ptr<AbstractCommChannel> channel) {
+    auto makeElt = _makeMap.find(requestNum);
+    if (makeElt != _makeMap.end())
+        return makeElt->second(commManager, requestId, inParams, channel);
+    else
+        return nullptr;
+}
+
 } // namespace KDC
