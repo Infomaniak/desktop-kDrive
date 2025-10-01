@@ -26,6 +26,7 @@
       xmlns:controls="using:Infomaniak.kDrive.CustomControls"
       xmlns:converters="using:Infomaniak.kDrive.Converters"
       xmlns:viewmodel="using:Infomaniak.kDrive.ViewModels"
+      xmlns:templateSelectors="using:Infomaniak.kDrive.TemplateSelectors"
       mc:Ignorable="d">
     <Page.Resources>
         <!-- Converters -->
@@ -100,7 +101,7 @@
 
         </DataTemplate>
 
-        <local:SyncStatusTemplateSelector x:Key="SyncStatusMessageTemplateSelector"
+        <templateSelectors:SyncStatusTemplateSelector x:Key="SyncStatusMessageTemplateSelector"
                                           SyncUpToDateTemplate="{StaticResource SyncUpToDateTemplate}"
                                           SyncInProgressTemplate="{StaticResource SyncInProgressTemplate}"
                                           SyncInPauseTemplate="{StaticResource SyncInPauseTemplate}"
@@ -258,7 +259,7 @@
 
                 <controls:ContentLoader Grid.Row="0"
                                         IsLoading="True"
-                                        LoaderCornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"
+                                        CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"
                                         Height="130"
                                         Width="180" />
 
@@ -266,19 +267,19 @@
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
                     <!-- Title -->
                     <controls:ContentLoader IsLoading="True"
-                                            LoaderCornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
+                                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
                                             Height="{StaticResource Infomaniak.Style.Spacing.L}"
                                             Width="150" />
 
                     <!-- Description -->
                     <controls:ContentLoader IsLoading="True"
-                                            LoaderCornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
+                                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
                                             Height="{StaticResource Infomaniak.Style.Spacing.L}"
                                             Width="300" />
 
                     <!-- Link -->
                     <controls:ContentLoader IsLoading="True"
-                                            LoaderCornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
+                                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
                                             Height="{StaticResource Infomaniak.Style.Spacing.L}"
                                             Width="100" />
                 </StackPanel>
@@ -286,7 +287,7 @@
             </Grid>
         </DataTemplate>
 
-        <local:SyncStatusTemplateSelector x:Key="SyncStatusMainTemplateSelector"
+        <templateSelectors:SyncStatusTemplateSelector x:Key="SyncStatusMainTemplateSelector"
                                           SyncUpToDateTemplate="{StaticResource SyncUpToDateMainTemplate}"
                                           SyncInProgressTemplate="{StaticResource SyncInProgressMainTemplate}"
                                           SyncInPauseTemplate="{StaticResource SyncInPauseMainTemplate}"

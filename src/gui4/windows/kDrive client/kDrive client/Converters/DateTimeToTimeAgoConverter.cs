@@ -12,6 +12,7 @@ namespace Infomaniak.kDrive.Converters
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
+            string prefix = ((parameter as bool?) ?? false) ? "Il y a " : "";
             if (value is DateTime dateTime)
             {
                 var timeSpan = DateTime.Now - dateTime;
@@ -23,13 +24,13 @@ namespace Infomaniak.kDrive.Converters
                 }
                 if (timeSpan.TotalMinutes < 60)
                 {
-                    return $"{Math.Floor(timeSpan.TotalMinutes)} {resourceLoader.GetString("Global_Minute")}";
+                    return $"{prefix} {Math.Floor(timeSpan.TotalMinutes)} {resourceLoader.GetString("Global_Minute")}";
                 }
                 if (timeSpan.TotalHours < 24)
                 {
-                    return $"{Math.Floor(timeSpan.TotalHours)} {resourceLoader.GetString("Global_Hour")}";
+                    return $"{prefix} {Math.Floor(timeSpan.TotalHours)} {resourceLoader.GetString("Global_Hour")}";
                 }
-                return $"{Math.Floor(timeSpan.TotalDays)} {resourceLoader.GetString("Global_Day")}";
+                return $"{prefix} {Math.Floor(timeSpan.TotalDays)} {resourceLoader.GetString("Global_Day")}";
             }
             Logger.Log(Logger.Level.Fatal, $"Unexpected value type is not a {nameof(DateTime)}.");
             throw new ArgumentException("Invalid value type", nameof(value));

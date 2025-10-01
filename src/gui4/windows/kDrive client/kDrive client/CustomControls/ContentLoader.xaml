@@ -17,8 +17,8 @@
         <Grid Visibility="{x:Bind IsLoading, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
               MaxHeight="200">
             <ProgressBar IsIndeterminate="True"
-                         CornerRadius="{x:Bind LoaderCornerRadius, Mode=OneWay}" />
-            <Border CornerRadius="{x:Bind LoaderCornerRadius, Mode=OneWay}">
+                         CornerRadius="{x:Bind CornerRadius, Mode=OneWay}" />
+            <Border CornerRadius="{x:Bind CornerRadius, Mode=OneWay}">
                 <Border.Background>
                     <AcrylicBrush TintColor="{ThemeResource SystemAccentColor}" 
                         TintOpacity="0.3" />

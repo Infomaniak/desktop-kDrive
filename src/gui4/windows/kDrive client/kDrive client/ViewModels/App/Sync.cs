@@ -17,19 +17,20 @@
  */
 
 using CommunityToolkit.Mvvm.ComponentModel;
+using DynamicData.Binding;
 using Infomaniak.kDrive.ServerCommunication;
+using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels.Errors;
 using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
-using Infomaniak.kDrive.Types;
-using DynamicData.Binding;
 
 namespace Infomaniak.kDrive.ViewModels
 {
@@ -46,6 +47,7 @@ namespace Infomaniak.kDrive.ViewModels
         private SyncStatus _syncStatus = SyncStatus.Pause;
         private SyncType _syncType = SyncType.Unknown;
         private ObservableCollection<Errors.BaseError> _syncErrors = new();
+        private SyncActivity? _lastActivity;
 
         // Sync UI properties
         private bool _showIncomingActivity = true;
@@ -192,6 +194,7 @@ namespace Infomaniak.kDrive.ViewModels
 
                 }
             });
+            
             (App.Current as App)?.Data.WhenAnyPropertyChanged("NetworkAvailable").Subscribe(appModel =>
             {
                 if (SyncStatus == SyncStatus.Pause || SyncStatus == SyncStatus.Offline)
@@ -200,6 +203,19 @@ namespace Infomaniak.kDrive.ViewModels
                     SyncStatus = networkAvailable ? SyncStatus.Pause : SyncStatus.Offline;
                 }
             });
+
+            SyncActivities.CollectionChanged += (s, args) =>
+            {
+                try
+                {
+                    LastActivity = SyncActivities[0];
+                }
+                catch
+                {
+                    LastActivity = null;
+                }
+
+            };
         }
 
         public DbId DbId
@@ -261,6 +277,12 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _syncErrors;
             set => SetProperty(ref _syncErrors, value);
+        }
+
+        public SyncActivity? LastActivity
+        {
+            get => _lastActivity;
+            set => SetProperty(ref _lastActivity, value);
         }
 
         public async Task Reload()

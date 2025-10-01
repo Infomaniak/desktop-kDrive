@@ -58,12 +58,12 @@ namespace Infomaniak.kDrive.ServerCommunication
             Drives.Add(new Drive(6, Users[0]) { Id = 105, Name = "FrenchCloud", Color = Color.FromArgb(255, 123, 179, 12), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
             Drives.Add(new Drive(7, Users[0]) { Id = 106, Name = "EuropaCloud", Color = Color.FromArgb(255, 160, 12, 213), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
             Drives.Add(new Drive(8, Users[0]) { Id = 107, Name = "WinUI cloud", Color = Color.FromArgb(255, 12, 168, 179), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
-            Users[0].Drives.Add(Drives[4]);
 
             Users[0].Drives.Add(Drives[0]);
             Users[0].Drives.Add(Drives[1]);
             Users[0].Drives.Add(Drives[2]);
             Users[0].Drives.Add(Drives[3]);
+            Users[0].Drives.Add(Drives[4]);
             Users[0].Drives.Add(Drives[5]);
             Users[0].Drives.Add(Drives[6]);
             Users[0].Drives.Add(Drives[7]);

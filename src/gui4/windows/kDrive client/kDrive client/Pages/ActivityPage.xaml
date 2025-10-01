@@ -8,11 +8,128 @@
       xmlns:controls="using:Infomaniak.kDrive.CustomControls"
       xmlns:converters="using:Infomaniak.kDrive.Converters"
       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
+      xmlns:templateSelectors="using:Infomaniak.kDrive.TemplateSelectors"
       mc:Ignorable="d">
     <Page.Resources>
         <converters:BooleanToInvertedVisibilityConverter  x:Key="BooleanToInvertedVisibilityConverter" />
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:BooleanToInvertedBooleanConverter x:Key="BooleanToInvertedBooleanConverter" />
+        <converters:DateTimeToTimeAgoConverter x:Key="DateTimeToTimeAgoConverter" />
+        <converters:IsNullToVisibilityConverter x:Key="IsNullToVisibilityConverter" />
+
+        <!-- Title templates -->
+        <DataTemplate x:Key="UpToDateTitleTemplate"
+                      x:DataType="viewmodels:Sync">
+            <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
+                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}"
+                            Orientation="Horizontal">
+                    <TextBlock Text="Synchronisation terminée"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
+                    <ImageIcon Height="16"
+                               Width="16">
+                        <ImageIcon.Source>
+                            <SvgImageSource UriSource="ms-appx:///Assets/Icons/circle-check-plain.svg" />
+                        </ImageIcon.Source>
+                    </ImageIcon>
+                </StackPanel>
+                <TextBlock Text="{x:Bind LastActivity.ActivityTime, Converter={StaticResource DateTimeToTimeAgoConverter}, Mode=OneWay}"
+                           Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
+                           Visibility="{x:Bind LastActivity, Converter={StaticResource IsNullToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}" />
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="InProgressTitleTemplate"
+                      x:DataType="viewmodels:Sync">
+            <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
+                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}"
+                            Orientation="Horizontal">
+                    <TextBlock Text="Synchronisation en cours"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
+                    <ImageIcon Height="16"
+                               Width="16">
+                        <ImageIcon.Source>
+                            <SvgImageSource UriSource="ms-appx:///Assets/Icons/arrows-loop.svg" />
+                        </ImageIcon.Source>
+                    </ImageIcon>
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="InPauseTitleTemplate"
+                      x:DataType="viewmodels:Sync">
+            <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
+                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}"
+                            Orientation="Horizontal">
+                    <TextBlock Text="Synchronisation en pause"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
+                    <ImageIcon Height="16"
+                               Width="16">
+                        <ImageIcon.Source>
+                            <SvgImageSource UriSource="ms-appx:///Assets/Icons/pause-orange.svg" />
+                        </ImageIcon.Source>
+                    </ImageIcon>
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="ErrorTitleTemplate"
+                      x:DataType="viewmodels:Sync">
+            <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
+                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}"
+                            Orientation="Horizontal">
+                    <TextBlock Text="Erreurs de synchronisation"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
+                    <ImageIcon Height="16"
+                               Width="16">
+                        <ImageIcon.Source>
+                            <SvgImageSource UriSource="ms-appx:///Assets/Icons/triangle-alert.svg" />
+                        </ImageIcon.Source>
+                    </ImageIcon>
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="OfflineTitleTemplate"
+                      x:DataType="viewmodels:Sync">
+            <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
+                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}"
+                            Orientation="Horizontal">
+                    <TextBlock Text="Hors ligne"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
+                    <ImageIcon Height="16"
+                               Width="16">
+                        <ImageIcon.Source>
+                            <SvgImageSource UriSource="ms-appx:///Assets/Icons/cloud-offline.svg" />
+                        </ImageIcon.Source>
+                    </ImageIcon>
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="NoActivityTitleTemplate"
+                      x:DataType="viewmodels:Sync">
+            <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
+                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}"
+                            Orientation="Horizontal">
+                    <TextBlock Text="Erreurs de synchronisation"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
+                    <ImageIcon Height="16"
+                               Width="16">
+                        <ImageIcon.Source>
+                            <SvgImageSource UriSource="ms-appx:///Assets/Icons/triangle-alert.svg" />
+                        </ImageIcon.Source>
+                    </ImageIcon>
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="LoadingTitleTemplate"
+                      x:DataType="viewmodels:Sync">
+            <controls:ContentLoader IsLoading="True"
+                                    CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"
+                                    Height="{StaticResource Infomaniak.Style.Spacing.L}"
+                                    Width="300"/>
+        </DataTemplate>
     </Page.Resources>
 
     <Grid Margin="24"
@@ -23,41 +140,20 @@
             <ColumnDefinition Width="auto" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <!-- Sync status bar -->
-            <RowDefinition Height="Auto" />
-            <!-- Error bar -->
+            <!-- Header -->
             <RowDefinition Height="Auto" />
             <!-- Main content -->
             <RowDefinition Height="*" />
-            <!-- Upgrade offer bar -->
-            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- Error bar -->
-        <controls:SyncErrorBar Grid.Row="0"
-                               Grid.ColumnSpan="2"
-                               Visibility="{x:Bind ViewModel.HasErrors, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
-        
         <!-- Sync Status Bar -->
-        <controls:SyncStartPauseButton Height="32"  Grid.Row="1" />
-        <CheckBox x:Name="ShowIncomingActivityCheckBox"
-                  Grid.Row="1"
-                  Grid.Column="1"
-                  VerticalAlignment="Center"
-                  Content="Mon activité uniquement"
-                  IsChecked="{x:Bind ViewModel.SelectedSync.ShowIncomingActivity, Mode=TwoWay, Converter={StaticResource BooleanToInvertedBooleanConverter}}" />
-
-        
+        <ContentControl x:Name="TitleContentControl"
+                        ContentTemplate="{StaticResource LoadingTitleTemplate}"
+                        Content="{x:Bind ViewModel.SelectedSync, Mode=OneWay}" />
 
         <!-- Left main pane -->
         <controls:SyncActivityTable Grid.Row="2"
                                     Grid.ColumnSpan="2"
                                     ShowIncomingActivity="{x:Bind ViewModel.SelectedSync.ShowIncomingActivity, Mode=OneWay}" />
-
-        <!-- Upgrade offer bar -->
-        <controls:KSuiteUpgradeBar Grid.Row="3"
-                                   Grid.ColumnSpan="2"
-                                   Visibility="{x:Bind ViewModel.SelectedSync.Drive.IsPaidOffer, Mode=OneWay, Converter={StaticResource BooleanToInvertedVisibilityConverter }}" />
-
     </Grid>
 </Page>

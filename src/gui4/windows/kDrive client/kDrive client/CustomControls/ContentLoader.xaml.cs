@@ -37,17 +37,8 @@ namespace Infomaniak.kDrive.CustomControls
             set { SetValue(LoaderContentProperty, value); }
         }
 
-        public CornerRadius LoaderCornerRadius
-        {
-            get { return (CornerRadius)GetValue(LoaderCornerRadiusProperty); }
-            set { SetValue(LoaderCornerRadiusProperty, value); }
-        }
-
         public static readonly DependencyProperty IsLoadingProperty =
             DependencyProperty.Register("IsLoading", typeof(bool), typeof(ContentLoader), new PropertyMetadata(false));
-
-        public static readonly DependencyProperty LoaderCornerRadiusProperty =
-            DependencyProperty.Register("LoaderCornerRadius", typeof(CornerRadius), typeof(ContentLoader), new PropertyMetadata(new CornerRadius(0)));
 
         public static readonly DependencyProperty LoaderContentProperty =
             DependencyProperty.Register("LoaderContent", typeof(object), typeof(ContentLoader), new PropertyMetadata(null));

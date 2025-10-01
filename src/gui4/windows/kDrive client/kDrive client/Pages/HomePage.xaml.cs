@@ -68,40 +68,4 @@ namespace Infomaniak.kDrive.Pages
             ViewModel.SelectedSync.SyncStatus = SyncStatus.Running; // Todo: Replace with actual resume logic
         }
     }
-    public class SyncStatusTemplateSelector : DataTemplateSelector
-    {
-        public DataTemplate? SyncUpToDateTemplate { get; set; }
-        public DataTemplate? SyncInProgressTemplate { get; set; }
-        public DataTemplate? SyncInPauseTemplate { get; set; }
-        public DataTemplate? SyncOfflineTemplate { get; set; }
-        public DataTemplate? SyncLoadingTemplate { get; set; }
-
-        protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container)
-        {
-            // Null value can be passed by IDE designer
-            if (item == null)
-                return null;
-            if (item is SyncStatus syncStatus)
-            {
-                switch (syncStatus)
-                {
-                    case SyncStatus.Starting:
-                    case SyncStatus.Pausing:
-                    case SyncStatus.Unknown:
-                        return SyncLoadingTemplate;
-                    case SyncStatus.Running:
-                        return SyncInProgressTemplate;
-                    case SyncStatus.Pause:
-                        return SyncInPauseTemplate;
-                    case SyncStatus.Offline:
-                        return SyncOfflineTemplate;
-                    case SyncStatus.Idle:
-                        return SyncUpToDateTemplate;
-                    default:
-                        return SyncLoadingTemplate;
-                }
-            }
-            return SyncLoadingTemplate;
-        }
-    }
 }
