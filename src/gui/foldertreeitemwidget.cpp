@@ -52,20 +52,10 @@ Q_LOGGING_CATEGORY(lcFolderTreeItemWidget, "gui.foldertreeitemwidget", QtInfoMsg
 FolderTreeItemWidget::FolderTreeItemWidget(std::shared_ptr<ClientGui> gui, bool displayRoot, QWidget *parent) :
     QTreeWidget(parent),
     _gui(gui),
-    _syncDbId(0),
-    _userDbId(0),
-    _driveId(0),
-    _driveName(QString()),
-    _driveColor(QColor()),
-    _nodeId(QString()),
-    _displayRoot(displayRoot),
-    _mode(Update),
-    _oldBlackList(QSet<QString>()),
-    _oldUndecidedList(QSet<QString>()),
-    _inserting(false) {
+    _displayRoot(displayRoot) {
     initUI();
 
-    // Make sure we don't get crashes if the sync is destroyed while the dialog is still opened
+    // Make sure we don't get crashes if the sync is destroyed while the dialog is still open.
     connect(_gui.get(), &ClientGui::syncListRefreshed, this, &FolderTreeItemWidget::onSyncListRefreshed);
     connect(_gui.get(), &ClientGui::folderSizeCompleted, this, &FolderTreeItemWidget::onFolderSizeCompleted);
 }
@@ -73,14 +63,12 @@ FolderTreeItemWidget::FolderTreeItemWidget(std::shared_ptr<ClientGui> gui, bool 
 void FolderTreeItemWidget::setSyncDbId(int syncDbId) {
     _syncDbId = syncDbId;
 
-    ExitCode exitCode = updateBlackUndecidedSet();
-    if (exitCode != ExitCode::Ok) {
+    if (const auto exitCode = updateBlackUndecidedSet(); exitCode != ExitCode::Ok) {
         qCWarning(lcFolderTreeItemWidget()) << "Error in updateBlackUndecidedSet";
         return;
     }
 
-    exitCode = GuiRequests::getDriveIdFromSyncDbId(_syncDbId, _driveId);
-    if (exitCode != ExitCode::Ok) {
+    if (const auto exitCode = GuiRequests::getDriveIdFromSyncDbId(_syncDbId, _driveId); exitCode != ExitCode::Ok) {
         qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getDriveIdFromSyncDbId";
         return;
     }
@@ -123,8 +111,7 @@ void FolderTreeItemWidget::setUserDbIdAndDriveInfo(int userDbId, const DriveAvai
 }
 
 void FolderTreeItemWidget::setDriveDbIdAndFolderNodeId(int driveDbId, const QString &serverFolderNodeId) {
-    ExitCode exitCode = GuiRequests::getDriveIdFromDriveDbId(driveDbId, _driveId);
-    if (exitCode != ExitCode::Ok) {
+    if (const auto exitCode = GuiRequests::getDriveIdFromDriveDbId(driveDbId, _driveId); ExitCode::Ok != exitCode) {
         qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getDriveIdFromDriveDbId";
         return;
     }
@@ -135,17 +122,14 @@ void FolderTreeItemWidget::setDriveDbIdAndFolderNodeId(int driveDbId, const QStr
 }
 
 void FolderTreeItemWidget::loadSubFolders() {
-    if (!_userDbId || !_driveId) {
-        return;
-    }
+    if (!_userDbId || !_driveId) return;
 
     _subFoldersMap.clear();
     _blacklistCache.clear();
     clear();
 
     QList<NodeInfo> nodeInfoList;
-    if (const auto exitInfo = GuiRequests::getSubFolders(_userDbId, _driveId, _nodeId, nodeInfoList, true);
-        exitInfo.code() != ExitCode::Ok) {
+    if (const auto exitInfo = GuiRequests::getSubFolders(_userDbId, _driveId, _nodeId, nodeInfoList, true); !exitInfo) {
         qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getSubFolders";
         emit terminated(true, exitInfo.cause());
         return;
@@ -170,33 +154,31 @@ void FolderTreeItemWidget::loadSubFolders() {
 ExitCode FolderTreeItemWidget::updateBlackUndecidedSet() {
     _newlyBlackListedItems.clear();
 
-    if (_syncDbId) {
-        bool userConnected = false;
-        auto userInfoIt = _gui->userInfoMap().find(_userDbId);
-        if (userInfoIt != _gui->userInfoMap().end()) {
-            userConnected = userInfoIt->second.connected();
-        }
+    if (!_syncDbId) return ExitCode::Ok;
 
-        if (userConnected) {
-            ExitCode exitCode = GuiRequests::getSyncIdSet(_syncDbId, SyncNodeType::BlackList, _oldBlackList);
-            if (exitCode != ExitCode::Ok) {
-                qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getSyncIdSet with SyncNodeType::BlackList";
-                return exitCode;
-            }
+    bool userConnected = false;
+    if (auto userInfoIt = _gui->userInfoMap().find(_userDbId); userInfoIt != _gui->userInfoMap().end()) {
+        userConnected = userInfoIt->second.connected();
+    }
 
-            exitCode = GuiRequests::getSyncIdSet(_syncDbId, SyncNodeType::UndecidedList, _oldUndecidedList);
-            if (exitCode != ExitCode::Ok) {
-                qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getSyncIdSet with SyncNodeType::UndecidedList";
-                return exitCode;
-            }
-        }
+    if (!userConnected) return ExitCode::Ok;
+
+    if (auto exitCode = GuiRequests::getSyncIdSet(_syncDbId, SyncNodeType::BlackList, _oldBlackList); exitCode != ExitCode::Ok) {
+        qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getSyncIdSet with SyncNodeType::BlackList";
+        return exitCode;
+    }
+
+    if (auto exitCode = GuiRequests::getSyncIdSet(_syncDbId, SyncNodeType::UndecidedList, _oldUndecidedList);
+        exitCode != ExitCode::Ok) {
+        qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getSyncIdSet with SyncNodeType::UndecidedList";
+        return exitCode;
     }
 
     return ExitCode::Ok;
 }
 
 void FolderTreeItemWidget::updateBlacklistPathMap() {
-    for (auto i = 0; i < 2; i++) {
+    for (auto i = 0; i < 2; ++i) {
         for (const QString &nodeId: i == 0 ? _oldBlackList : _oldUndecidedList) {
             QString path;
             if (const auto exitCode = GuiRequests::getNodePath(_syncDbId, nodeId, path); exitCode != ExitCode::Ok) {
@@ -210,50 +192,50 @@ void FolderTreeItemWidget::updateBlacklistPathMap() {
 }
 
 void FolderTreeItemWidget::insertNode(QTreeWidgetItem *parent, const NodeInfo &nodeInfo) {
-    CustomTreeWidgetItem *item = static_cast<CustomTreeWidgetItem *>(findFirstChild(parent, nodeInfo.name()));
-    if (!item) {
-        item = new CustomTreeWidgetItem(parent);
-        item->setData(TreeWidgetColumn::Folder, nodeIdRole, nodeInfo.nodeId());
+    auto *item = dynamic_cast<CustomTreeWidgetItem *>(findFirstChild(parent, nodeInfo.name()));
+    if (item) return;
 
-        // Set check status
-        bool ignoreState = !_displayRoot && isRoot(parent);
-        if (!ignoreState && parent->checkState(TreeWidgetColumn::Folder) == Qt::Checked) {
-            item->setCheckState(TreeWidgetColumn::Folder, Qt::Checked);
-        } else if (!ignoreState && parent->checkState(TreeWidgetColumn::Folder) == Qt::Unchecked) {
+    item = new CustomTreeWidgetItem(parent);
+    item->setData(TreeWidgetColumn::Folder, nodeIdRole, nodeInfo.nodeId());
+
+    // Set check status
+    if (const bool ignoreState = !_displayRoot && isRoot(parent);
+        !ignoreState && parent->checkState(TreeWidgetColumn::Folder) == Qt::Checked) {
+        item->setCheckState(TreeWidgetColumn::Folder, Qt::Checked);
+    } else if (!ignoreState && parent->checkState(TreeWidgetColumn::Folder) == Qt::Unchecked) {
+        item->setCheckState(TreeWidgetColumn::Folder, Qt::Unchecked);
+    } else {
+        if (_oldBlackList.contains(nodeInfo.nodeId()) || _oldUndecidedList.contains(nodeInfo.nodeId())) {
+            // Current item is blacklisted
             item->setCheckState(TreeWidgetColumn::Folder, Qt::Unchecked);
         } else {
-            if (_oldBlackList.contains(nodeInfo.nodeId()) || _oldUndecidedList.contains(nodeInfo.nodeId())) {
-                // Current item is blacklisted
-                item->setCheckState(TreeWidgetColumn::Folder, Qt::Unchecked);
-            } else {
-                bool isChecked = true;
-                foreach (const QString &blacklistItemPath, _blacklistCache) {
-                    if (blacklistItemPath.startsWith(nodeInfo.path() + "/")) {
-                        // At least 1 child is blacklisted
-                        item->setCheckState(TreeWidgetColumn::Folder, Qt::PartiallyChecked);
-                        isChecked = false;
-                        break;
-                    }
-                }
-
-                if (isChecked) {
-                    item->setCheckState(TreeWidgetColumn::Folder, Qt::Checked);
+            bool isChecked = true;
+            foreach (const QString &blacklistItemPath, _blacklistCache) {
+                if (blacklistItemPath.startsWith(nodeInfo.path() + "/")) {
+                    // At least 1 child is blacklisted
+                    item->setCheckState(TreeWidgetColumn::Folder, Qt::PartiallyChecked);
+                    isChecked = false;
+                    break;
                 }
             }
+
+            if (isChecked) {
+                item->setCheckState(TreeWidgetColumn::Folder, Qt::Checked);
+            }
         }
-
-        // Set icon
-        setFolderIcon(item, nodeInfo.name());
-
-        // Set name
-        item->setText(TreeWidgetColumn::Folder, nodeInfo.name());
-
-        if (!nodeInfo.nodeId().isEmpty()) {
-            addTreeWidgetItemToQueue(nodeInfo.nodeId(), item);
-        }
-
-        item->setChildIndicatorPolicy(QTreeWidgetItem::ShowIndicator);
     }
+
+    // Set icon
+    setFolderIcon(item, nodeInfo.name());
+
+    // Set name
+    item->setText(TreeWidgetColumn::Folder, nodeInfo.name());
+
+    if (!nodeInfo.nodeId().isEmpty()) {
+        addTreeWidgetItemToQueue(nodeInfo.nodeId(), item);
+    }
+
+    item->setChildIndicatorPolicy(QTreeWidgetItem::ShowIndicator);
 }
 
 QSet<QString> FolderTreeItemWidget::createBlackSet() {
@@ -263,13 +245,8 @@ QSet<QString> FolderTreeItemWidget::createBlackSet() {
 }
 
 void FolderTreeItemWidget::createBlackSet(const QTreeWidgetItem *parentItem, QSet<QString> &blackset) {
-    if (!parentItem) {
-        parentItem = topLevelItem(0);
-    }
-
-    if (!parentItem) {
-        return;
-    }
+    if (!parentItem) parentItem = topLevelItem(0);
+    if (!parentItem) return;
 
     const auto parentNodeId = parentItem->data(TreeWidgetColumn::Folder, nodeIdRole).toString();
 
@@ -287,7 +264,6 @@ void FolderTreeItemWidget::createBlackSet(const QTreeWidgetItem *parentItem, QSe
             return;
         }
         case Qt::Checked:
-            removeChildNodeFromSet(parentNodeId, blackset);
             [[fallthrough]];
         case Qt::PartiallyChecked:
             break;
@@ -304,6 +280,8 @@ void FolderTreeItemWidget::createBlackSet(const QTreeWidgetItem *parentItem, QSe
 }
 
 void FolderTreeItemWidget::removeChildNodeFromSet(const QString &parentId, QSet<QString> &blackset) {
+    assert(_blacklistCache.contains(parentId) && "parentId was not found in black list cache.");
+
     const auto parentPath = _blacklistCache[parentId];
     for (auto it = _blacklistCache.begin(); it != _blacklistCache.end();) {
         if (const auto &path = it.value(); path.startsWith(parentPath + "/")) {
@@ -311,7 +289,7 @@ void FolderTreeItemWidget::removeChildNodeFromSet(const QString &parentId, QSet<
             it = _blacklistCache.erase(it);
             continue;
         }
-        it++;
+        ++it;
     }
 }
 
@@ -322,13 +300,9 @@ QSet<QString> FolderTreeItemWidget::createWhiteSet() {
 }
 
 void FolderTreeItemWidget::createWhiteSet(QTreeWidgetItem *parentItem, QSet<QString> &whiteSet) {
-    if (!parentItem) {
-        parentItem = topLevelItem(0);
-    }
+    if (!parentItem) parentItem = topLevelItem(0);
 
-    if (!parentItem) {
-        return;
-    }
+    if (!parentItem) return;
 
     QString parentNodeId = parentItem->data(TreeWidgetColumn::Folder, nodeIdRole).toString();
 
@@ -346,10 +320,8 @@ void FolderTreeItemWidget::createWhiteSet(QTreeWidgetItem *parentItem, QSet<QStr
         }
     }
 
-    if (parentItem->childCount()) {
-        for (int i = 0; i < parentItem->childCount(); ++i) {
-            createWhiteSet(parentItem->child(i), whiteSet);
-        }
+    for (auto i = 0; i < parentItem->childCount(); ++i) {
+        createWhiteSet(parentItem->child(i), whiteSet);
     }
 }
 
@@ -361,7 +333,7 @@ qint64 FolderTreeItemWidget::nodeSize(QTreeWidgetItem *item) const {
         size = item->data(TreeWidgetColumn::Size, sizeRole).toLongLong();
 
         // Remove the size of unchecked subfolders
-        for (int i = 0; i < item->childCount(); ++i) {
+        for (auto i = 0; i < item->childCount(); ++i) {
             if (item->child(i)->checkState(TreeWidgetColumn::Folder) == Qt::PartiallyChecked) {
                 size -= nodeSize(item->child(i));
             } else if (item->child(i)->checkState(TreeWidgetColumn::Folder) == Qt::Unchecked) {
@@ -464,26 +436,23 @@ void FolderTreeItemWidget::updateDirectories(QTreeWidgetItem *item, const QStrin
     QMutableListIterator<NodeInfo> it(list);
     while (it.hasNext()) {
         bool excluded = false;
-        ExitCode exitCode = GuiRequests::getNameExcluded(it.next().name(), excluded);
-
-        if (exitCode != ExitCode::Ok) {
+        if (const auto exitCode = GuiRequests::getNameExcluded(it.next().name(), excluded); ExitCode::Ok != exitCode) {
             qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getNameExcluded";
             return;
         }
-        if (excluded) {
-            it.remove();
-        }
+
+        if (excluded) it.remove();
     }
 
-    if (list.size() == 0) {
+    if (list.empty()) {
         // No sub folder
         emit terminated(false, ExitCause::Unknown, true);
         return;
-    } else {
-        emit terminated(false, ExitCause::Unknown, false);
     }
 
-    _root = static_cast<CustomTreeWidgetItem *>(topLevelItem(0));
+    emit terminated(false, ExitCause::Unknown, false);
+
+    _root = dynamic_cast<CustomTreeWidgetItem *>(topLevelItem(0));
     if (!_root) {
         // Create root node
         _root = new CustomTreeWidgetItem(this);
@@ -496,10 +465,8 @@ void FolderTreeItemWidget::updateDirectories(QTreeWidgetItem *item, const QStrin
             _root->setIcon(TreeWidgetColumn::Folder,
                            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/drive.svg", _driveColor));
         } else {
-            ExitCode exitCode;
             NodeInfo nodeInfo;
-            exitCode = GuiRequests::getNodeInfo(_userDbId, _driveId, nodeId, nodeInfo);
-            if (exitCode != ExitCode::Ok) {
+            if (const auto exitCode = GuiRequests::getNodeInfo(_userDbId, _driveId, nodeId, nodeInfo); exitCode != ExitCode::Ok) {
                 qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getNodeInfo";
                 return;
             }
@@ -522,12 +489,12 @@ void FolderTreeItemWidget::updateDirectories(QTreeWidgetItem *item, const QStrin
     }
 
     KDC::CommonGuiUtility::sortSubfolders(list);
-    for (NodeInfo nodeInfo: list) {
+    for (const NodeInfo &nodeInfo: list) {
         insertNode(item, nodeInfo);
     }
 
     // Root is partially checked if any children are not checked
-    for (int i = 0; i < _root->childCount(); ++i) {
+    for (auto i = 0; i < _root->childCount(); ++i) {
         const auto child = _root->child(i);
         if (child->checkState(TreeWidgetColumn::Folder) != Qt::Checked) {
             _root->setCheckState(TreeWidgetColumn::Folder, Qt::PartiallyChecked);
@@ -542,15 +509,13 @@ void FolderTreeItemWidget::onItemExpanded(QTreeWidgetItem *item) {
     MatomoClient::sendEvent("folderTreeItem", MatomoEventAction::Click, "expandButton");
     item->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicatorWhenChildless);
 
-    QString nodeId = item->data(TreeWidgetColumn::Folder, nodeIdRole).toString();
+    const QString nodeId = item->data(TreeWidgetColumn::Folder, nodeIdRole).toString();
     if (nodeId.isEmpty()) {
         return;
     }
 
     QList<NodeInfo> nodeInfoList;
-    ExitCode exitCode;
-    exitCode = GuiRequests::getSubFolders(_userDbId, _driveId, nodeId, nodeInfoList, true);
-    if (exitCode != ExitCode::Ok) {
+    if (const auto exitInfo = GuiRequests::getSubFolders(_userDbId, _driveId, nodeId, nodeInfoList, true); !exitInfo) {
         qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getSubFolders";
         return;
     }
@@ -559,14 +524,13 @@ void FolderTreeItemWidget::onItemExpanded(QTreeWidgetItem *item) {
 }
 
 bool FolderTreeItemWidget::isNewlyBlackListed(const QTreeWidgetItem *item) const {
-    const bool isUnchecked = item->checkState(TreeWidgetColumn::Folder) == Qt::Unchecked;
-    if (!isUnchecked) {
+    if (const bool isUnchecked = item->checkState(TreeWidgetColumn::Folder) == Qt::Unchecked; !isUnchecked) {
         return false;
     }
 
     // The descendants of a blacklisted item are only implicitly blacklisted:
     // such descendants are not stored in `_oldBlackList` or `_oldUndecidedList`.
-    // Therefore ancestors need to be checked.
+    // Therefore, ancestors need to be checked.
     while (item != nullptr) {
         const QString id = item->data(TreeWidgetColumn::Folder, nodeIdRole).toString();
         if (_oldBlackList.contains(id) || _oldUndecidedList.contains(id)) {
@@ -612,7 +576,7 @@ void FolderTreeItemWidget::onItemChanged(QTreeWidgetItem *item, int col) {
     }
 
     const Qt::CheckState checkState = item->checkState(TreeWidgetColumn::Folder);
-    QTreeWidgetItem *parent = item->parent();
+    QTreeWidgetItem *const parent = item->parent();
     if (checkState != Qt::PartiallyChecked) {
         MatomoClient::sendEvent("folderTreeItem", MatomoEventAction::Click, "syncFolder", (checkState == Qt::Checked ? 1 : 0));
     }
@@ -621,7 +585,7 @@ void FolderTreeItemWidget::onItemChanged(QTreeWidgetItem *item, int col) {
             // Need to check the parent as well if all siblings are also checked
             if (parent && parent->checkState(TreeWidgetColumn::Folder) != Qt::Checked) {
                 bool hasUnchecked = false;
-                for (int i = 0; i < parent->childCount(); ++i) {
+                for (auto i = 0; i < parent->childCount(); ++i) {
                     if (parent->child(i)->checkState(TreeWidgetColumn::Folder) != Qt::Checked) {
                         hasUnchecked = true;
                         break;
@@ -635,7 +599,7 @@ void FolderTreeItemWidget::onItemChanged(QTreeWidgetItem *item, int col) {
             }
 
             // Check all children
-            for (int i = 0; i < item->childCount(); ++i) {
+            for (auto i = 0; i < item->childCount(); ++i) {
                 item->child(i)->setCheckState(TreeWidgetColumn::Folder, Qt::Checked);
             }
         } break;
@@ -655,7 +619,6 @@ void FolderTreeItemWidget::onItemChanged(QTreeWidgetItem *item, int col) {
             }
         } break;
         case Qt::PartiallyChecked: {
-            QTreeWidgetItem *parent = item->parent();
             if (parent) {
                 parent->setCheckState(TreeWidgetColumn::Folder, Qt::PartiallyChecked);
             }
@@ -674,7 +637,7 @@ void FolderTreeItemWidget::onSyncListRefreshed() {
     }
 }
 
-void FolderTreeItemWidget::onFolderSizeCompleted(QString nodeId, qint64 size) {
+void FolderTreeItemWidget::onFolderSizeCompleted(const QString &nodeId, qint64 size) {
     const auto &subFoldersMapIt = _subFoldersMap.find(nodeId);
     if (subFoldersMapIt != _subFoldersMap.end()) {
         setItemSize(subFoldersMapIt.value(), size);

@@ -43,7 +43,7 @@ class FolderTreeItemWidget : public QTreeWidget {
         void loadSubFolders();
         QSet<QString> createBlackSet();
         QSet<QString> createWhiteSet();
-        inline int syncDbId() { return _syncDbId; }
+        int syncDbId() const { return _syncDbId; }
         qint64 nodeSize(QTreeWidgetItem *item) const;
 
     signals:
@@ -56,26 +56,20 @@ class FolderTreeItemWidget : public QTreeWidget {
             Size
         };
 
-        enum Mode {
-            Creation = 0,
-            Update
-        };
-
         std::shared_ptr<ClientGui> _gui;
-        int _syncDbId;
-        int _userDbId;
-        int _driveId;
+        int _syncDbId{0};
+        int _userDbId{0};
+        int _driveId{0};
         QString _driveName;
         QColor _driveColor;
         QString _nodeId;
         bool _displayRoot;
-        Mode _mode;
         QSet<QString> _oldBlackList;
         QSet<QString> _oldUndecidedList;
         static const QColor _folderIconColor;
         static const QSize _folderIconSize;
         static const QColor _sizeTextColor;
-        bool _inserting;
+        bool _inserting{false};
         QHash<QString, QTreeWidgetItem *> _subFoldersMap;
         using GuiNodeId = QString;
         using GuiPath = QString;
@@ -86,10 +80,6 @@ class FolderTreeItemWidget : public QTreeWidget {
         // whitelisted during the latest synchronization.
         QSet<const QTreeWidgetItem *> _newlyBlackListedItems;
 
-        inline QColor folderIconColor() const { return _folderIconColor; }
-        inline QSize folderIconSize() const { return _folderIconSize; }
-        inline QColor sizeTextColor() const { return _sizeTextColor; }
-
         void initUI();
         QString iconPath(const QString &folderName);
         QColor iconColor(const QString &folderName);
@@ -97,7 +87,6 @@ class FolderTreeItemWidget : public QTreeWidget {
         void setFolderIcon(QTreeWidgetItem *item, const QString &folderName);
         void setSubFoldersIcon(QTreeWidgetItem *parent);
         QTreeWidgetItem *findFirstChild(QTreeWidgetItem *parent, const QString &text);
-        int getDriveId();
         void insertNode(QTreeWidgetItem *parent, const NodeInfo &nodeInfo);
         void updateDirectories(QTreeWidgetItem *item, const QString &nodeId, QList<NodeInfo> list);
         ExitCode updateBlackUndecidedSet();
@@ -129,7 +118,7 @@ class FolderTreeItemWidget : public QTreeWidget {
         void onItemExpanded(QTreeWidgetItem *item);
         void onItemChanged(QTreeWidgetItem *item, int col);
         void onSyncListRefreshed();
-        void onFolderSizeCompleted(QString nodeId, qint64 size);
+        void onFolderSizeCompleted(const QString &nodeId, qint64 size);
 };
 
 } // namespace KDC
