@@ -58,28 +58,28 @@ void AbstractGuiJob::runJob() {
     if (_type == GuiJobType::Unknown) {
         LOG_WARN(_logger, "The job type must be set");
         _exitInfo = ExitCode::LogicError;
+        return;
     }
 
     _exitInfo = ExitCode::Ok;
     if (_type == GuiJobType::Query) {
         if (!deserializeInputParms()) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in deserializeInputParms for job=" << jobId());
+            LOG_WARN(_logger, "Error in deserializeInputParms for job=" << jobId());
         }
 
         if (_exitInfo && !process()) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in process for job=" << jobId());
+            LOG_WARN(_logger, "Error in process for job=" << jobId());
         }
     }
 
     if (!serializeOutputParms()) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in serializeOutputParms for job=" << jobId());
+        LOG_WARN(_logger, "Error in serializeOutputParms for job=" << jobId());
     }
 
     if (_type == GuiJobType::Signal && !_exitInfo) return;
 
     if (!serializeGenericOutputParms()) {
-        LOG_WARN(_logger, "Error in serializeGenericOutputParms");
-        return;
+        LOG_WARN(_logger, "Error in serializeGenericOutputParms for job=" << jobId());
     }
 
     _channel->sendMessage(_outputParamsStr);
@@ -98,7 +98,8 @@ bool AbstractGuiJob::deserializeGenericInputParms(const CommString &inputParamsS
 
         assert(paramsStruct[inRequestParams].isStruct());
         inParams = paramsStruct[inRequestParams].extract<Poco::DynamicStruct>();
-    } catch (std::exception &) {
+    } catch (std::exception &e) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in CommonUtility::readValueFromStruct: error=" << e.what());
         return false;
     }
 
@@ -123,7 +124,8 @@ bool AbstractGuiJob::serializeGenericOutputParms() {
 
     try {
         _outputParamsStr = CommonUtility::str2CommString(Poco::Dynamic::structToString(paramsStruct));
-    } catch (Poco::Exception &) {
+    } catch (Poco::Exception &e) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in Poco::Dynamic::structToString: error=" << e.what());
         return false;
     }
 

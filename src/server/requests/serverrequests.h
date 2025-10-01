@@ -84,9 +84,9 @@ struct SYNCENGINE_EXPORT ServerRequests {
 
         // C/S requests (access to network)
         // !!! Use COMM_AVERAGE_TIMEOUT !!!
-        static ExitCode requestToken(std::string code, std::string codeVerifier, UserInfo &userInfo, bool &userCreated,
-                                     std::string &error, std::string &errorDescr);
-        static ExitCode requestToken(QString code, QString codeVerifier, UserInfo &userInfo, bool &userCreated,
+        static ExitCode requestToken(const std::string &code, const std::string &codeVerifier, UserInfo &userInfo,
+                                     bool &userCreated, std::string &error, std::string &errorDescr);
+        static ExitCode requestToken(const QString &code, const QString &codeVerifier, UserInfo &userInfo, bool &userCreated,
                                      std::string &error, std::string &errorDescr);
         static ExitCode getUserAvailableDrives(int userDbId, QHash<int, DriveAvailableInfo> &list);
         static ExitCode addSync(int userDbId, int accountId, int driveId, const QString &localFolderPath,
@@ -115,7 +115,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitInfo loadDriveInfo(Drive &drive, Account &account, bool &updated, bool &quotaUpdated, bool &accountUpdated);
         static ExitCode loadUserInfo(User &user, bool &updated);
         static ExitCode loadUserAvatar(User &user);
-        static ExitCode getThumbnail(int driveDbId, NodeId nodeId, int width, std::string &thumbnail);
+        static ExitCode getThumbnail(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail);
 
         // Utility
         static void userToUserInfo(const User &user, UserInfo &userInfo);

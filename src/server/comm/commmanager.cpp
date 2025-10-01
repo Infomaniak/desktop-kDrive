@@ -233,8 +233,8 @@ void CommManager::onLostExtConnection(std::shared_ptr<AbstractCommChannel> chann
 
 void CommManager::executeGuiQuery(const CommString &commandLineStr, std::shared_ptr<AbstractCommChannel> channel) {
     // Deserialize generic parameters
-    int requestId;
-    RequestNum requestNum;
+    int requestId = 0;
+    RequestNum requestNum = RequestNum::Unknown;
     Poco::DynamicStruct inParams;
     if (!AbstractGuiJob::deserializeGenericInputParms(commandLineStr, requestId, requestNum, inParams)) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in AbstractGuiJob::deserializeGenericInputParms - query="
@@ -249,7 +249,10 @@ void CommManager::executeGuiQuery(const CommString &commandLineStr, std::shared_
         return;
     }
 
-    job->runJob();
+    // TODO: Add job to JobManager pool
+    if (!job->runSynchronously()) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in AbstractGuiJob::runSynchronously: num=" << requestNum);
+    }
 }
 
 void CommManager::onNewGuiConnection() {

@@ -70,7 +70,7 @@ bool LoginRequestTokenJob::serializeOutputParms() {
 
 bool LoginRequestTokenJob::process() {
     UserInfo userInfo;
-    bool userCreated;
+    bool userCreated = false;
     ExitCode exitCode =
             ServerRequests::requestToken(CommonUtility::commString2Str(_code), CommonUtility::commString2Str(_codeVerifier),
                                          userInfo, userCreated, _error, _errorDescr);
@@ -79,18 +79,19 @@ bool LoginRequestTokenJob::process() {
         _exitInfo = exitCode;
         return false;
     }
+
     _userDbId = userInfo.dbId();
     _commManager->updateSentryUserCbk();
     if (userCreated) {
-        std::unique_ptr<SignalUserAddedJob> signalUserAddedJob =
-                std::make_unique<SignalUserAddedJob>(_commManager, _channel, userInfo);
-        signalUserAddedJob->runJob();
+        auto signalUserAddedJob = std::make_unique<SignalUserAddedJob>(_commManager, _channel, userInfo);
+        // TODO: Add job to JobManager pool
+        _exitInfo = signalUserAddedJob->runSynchronously();
     } else {
-        std::unique_ptr<SignalUserUpdatedJob> signalUserUpdatedJob =
-                std::make_unique<SignalUserUpdatedJob>(_commManager, _channel, userInfo);
-        signalUserUpdatedJob->runJob();
+        auto signalUserUpdatedJob = std::make_unique<SignalUserUpdatedJob>(_commManager, _channel, userInfo);
+        // TODO: Add job to JobManager pool
+        _exitInfo = signalUserUpdatedJob->runSynchronously();
     }
-    return true;
+    return _exitInfo;
 }
 
 } // namespace KDC

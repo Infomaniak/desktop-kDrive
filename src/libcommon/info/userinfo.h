@@ -49,8 +49,8 @@ class UserInfo {
         [[nodiscard]] bool isStaff() const { return _isStaff; }
         void setIsStaff(const bool is_staff) { _isStaff = is_staff; }
 
-        void toDynamicStruct(Poco::DynamicStruct &str) const;
-        void fromDynamicStruct(const Poco::DynamicStruct &str);
+        void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
+        void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
 
         friend QDataStream &operator>>(QDataStream &in, UserInfo &userInfo);
         friend QDataStream &operator<<(QDataStream &out, const UserInfo &userInfo);

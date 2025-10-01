@@ -369,8 +369,8 @@ ExitCode ServerRequests::findGoodPathForNewSync(int driveDbId, const QString &ba
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::requestToken(std::string code, std::string codeVerifier, UserInfo &userInfo, bool &userCreated,
-                                      std::string &error, std::string &errorDescr) {
+ExitCode ServerRequests::requestToken(const std::string &code, const std::string &codeVerifier, UserInfo &userInfo,
+                                      bool &userCreated, std::string &error, std::string &errorDescr) {
     ExitCode exitCode;
 
     // Generate keychainKey
@@ -396,7 +396,7 @@ ExitCode ServerRequests::requestToken(std::string code, std::string codeVerifier
     return exitCode;
 }
 
-ExitCode ServerRequests::requestToken(QString code, QString codeVerifier, UserInfo &userInfo, bool &userCreated,
+ExitCode ServerRequests::requestToken(const QString &code, const QString &codeVerifier, UserInfo &userInfo, bool &userCreated,
                                       std::string &error, std::string &errorDescr) {
     return requestToken(QStr2Str(code), QStr2Str(codeVerifier), userInfo, userCreated, error, errorDescr);
 }
@@ -1672,7 +1672,7 @@ ExitInfo ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &upd
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getThumbnail(int driveDbId, NodeId nodeId, int width, std::string &thumbnail) {
+ExitCode ServerRequests::getThumbnail(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) {
     std::shared_ptr<GetThumbnailJob> job = nullptr;
     try {
         job = std::make_shared<GetThumbnailJob>(driveDbId, nodeId, width);

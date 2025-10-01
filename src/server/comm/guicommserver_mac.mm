@@ -360,14 +360,14 @@ void KDC::GuiCommChannel::testLoginRequestToken(const std::string &code, const s
 
     NSString *nsCode = [[NSString alloc] initWithUTF8String:code.c_str()];
     NSString *nsCodeVerifier = [[NSString alloc] initWithUTF8String:codeVerifier.c_str()];
-    [(GuiLocalEnd *) channel->_privatePtr->localEnd
+    /*[(GuiLocalEnd *) channel->_privatePtr->localEnd
             loginRequestToken:nsCode
                  codeVerifier:nsCodeVerifier
                      callback:(void (^_Nonnull)(int userDbId, NSString *_Nullable error, NSString *_Nullable errorDescr)) {
                          NSLog(@"[KD] Callback called: userDbId=%d error=%@ errorDescr=%@", userDbId,
                                [[NSString alloc] initWithUTF8String:error.c_str()],
                                [[NSString alloc] initWithUTF8String:errorDescr.c_str()]);
-                     }];
+                     }];*/
 }
 
 // GuiCommServer implementation

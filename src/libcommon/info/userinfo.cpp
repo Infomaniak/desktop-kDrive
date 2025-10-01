@@ -41,34 +41,34 @@ UserInfo::UserInfo(const int dbId, const int userId, const QString &name, const 
 
 UserInfo::UserInfo() {}
 
-void UserInfo::toDynamicStruct(Poco::DynamicStruct &str) const {
-    CommonUtility::writeValueToStruct(str, userInfoDbId, _dbId);
-    CommonUtility::writeValueToStruct(str, userInfoUserId, _userId);
-    CommonUtility::writeValueToStruct(str, userInfoName, CommonUtility::qStr2CommString(_name));
-    CommonUtility::writeValueToStruct(str, userInfoEmail, CommonUtility::qStr2CommString(_email));
+void UserInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
+    CommonUtility::writeValueToStruct(dstruct, userInfoDbId, _dbId);
+    CommonUtility::writeValueToStruct(dstruct, userInfoUserId, _userId);
+    CommonUtility::writeValueToStruct(dstruct, userInfoName, CommonUtility::qStr2CommString(_name));
+    CommonUtility::writeValueToStruct(dstruct, userInfoEmail, CommonUtility::qStr2CommString(_email));
 
     QByteArray avatarQBA = QByteArray::fromRawData((const char *) _avatar.bits(), _avatar.sizeInBytes());
     CommBLOB avatarBLOB(avatarQBA.begin(), avatarQBA.end());
-    CommonUtility::writeValueToStruct(str, userInfoAvatar, avatarBLOB);
+    CommonUtility::writeValueToStruct(dstruct, userInfoAvatar, avatarBLOB);
 
-    CommonUtility::writeValueToStruct(str, userInfoConnected, _connected);
-    CommonUtility::writeValueToStruct(str, userInfoIsStaff, _isStaff);
+    CommonUtility::writeValueToStruct(dstruct, userInfoConnected, _connected);
+    CommonUtility::writeValueToStruct(dstruct, userInfoIsStaff, _isStaff);
 }
 
-void UserInfo::fromDynamicStruct(const Poco::DynamicStruct &str) {
-    CommonUtility::readValueFromStruct(str, userInfoDbId, _dbId);
-    CommonUtility::readValueFromStruct(str, userInfoUserId, _userId);
+void UserInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
+    CommonUtility::readValueFromStruct(dstruct, userInfoDbId, _dbId);
+    CommonUtility::readValueFromStruct(dstruct, userInfoUserId, _userId);
 
     CommString name;
-    CommonUtility::readValueFromStruct(str, userInfoName, name);
+    CommonUtility::readValueFromStruct(dstruct, userInfoName, name);
     _name = CommonUtility::commString2QStr(name);
 
     CommString email;
-    CommonUtility::readValueFromStruct(str, userInfoEmail, email);
+    CommonUtility::readValueFromStruct(dstruct, userInfoEmail, email);
     _email = CommonUtility::commString2QStr(email);
 
-    CommonUtility::readValueFromStruct(str, userInfoConnected, _connected);
-    CommonUtility::readValueFromStruct(str, userInfoIsStaff, _isStaff);
+    CommonUtility::readValueFromStruct(dstruct, userInfoConnected, _connected);
+    CommonUtility::readValueFromStruct(dstruct, userInfoIsStaff, _isStaff);
 }
 
 QDataStream &operator>>(QDataStream &in, UserInfo &userInfo) {

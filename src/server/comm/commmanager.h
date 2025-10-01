@@ -54,10 +54,10 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
         }
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
-        inline void setGetThumbnailCbk(ExitCode (*getThumbnailCbk)(int, NodeId, int, std::string &)) {
+        inline void setGetThumbnailCbk(ExitCode (*getThumbnailCbk)(int, const NodeId &, int, std::string &)) {
             _getThumbnailCbk = getThumbnailCbk;
         }
-        inline ExitCode getThumbnailCbk(int driveDbId, NodeId nodeId, int width, std::string &thumbnail) {
+        inline ExitCode getThumbnailCbk(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) {
             if (_getThumbnailCbk)
                 return _getThumbnailCbk(driveDbId, nodeId, width, thumbnail);
             else
@@ -94,7 +94,7 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
         void (*_addErrorCbk)(const Error &error);
         void (*_updateSentryUserCbk)();
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
-        ExitCode (*_getThumbnailCbk)(int driveDbId, NodeId nodeId, int width, std::string &thumbnail);
+        ExitCode (*_getThumbnailCbk)(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail);
         ExitCode (*_getPublicLinkUrlCbk)(int driveDbId, const NodeId &nodeId, std::string &linkUrl);
 #endif
 
