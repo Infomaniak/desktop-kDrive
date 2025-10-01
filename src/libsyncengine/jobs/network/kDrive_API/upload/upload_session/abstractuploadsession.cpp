@@ -20,7 +20,7 @@
 
 #include "io/iohelper.h"
 #include "jobs/network/networkjobsparams.h"
-#include "jobs/jobmanager.h"
+#include "jobs/syncjobmanager.h"
 #include "log/log.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
@@ -137,7 +137,7 @@ void AbstractUploadSession::uploadChunkCallback(const UniqueId jobId) {
 
 void AbstractUploadSession::abort() {
     LOG_DEBUG(_logger, "Aborting upload session job " << jobId());
-    AbstractJob::abort();
+    SyncJob::abort();
 }
 
 bool AbstractUploadSession::handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob) {
@@ -302,6 +302,14 @@ bool AbstractUploadSession::sendChunks() {
             break;
         }
 
+        std::error_code ec; // Using noexcept signature of file_size.
+        if (const auto actualFileSize = std::filesystem::file_size(_filePath, ec); actualFileSize != _filesize) {
+            LOG_ERROR(_logger, "File size has changed while uploading.");
+            sentry::Handler::captureMessage(sentry::Level::Warning, "Upload chunk error", "File size has changed");
+            readError = true;
+            break;
+        }
+
         const std::streamsize actualChunkSize = file.gcount();
         if (actualChunkSize <= 0) {
             LOG_ERROR(_logger, "Chunk size is 0");
@@ -334,7 +342,7 @@ bool AbstractUploadSession::sendChunks() {
                 const std::scoped_lock lock(_mutex);
                 _threadCounter++;
                 chunkJob->setAdditionalCallback(callback);
-                JobManager::instance()->queueAsyncJob(chunkJob, Poco::Thread::PRIO_NORMAL);
+                SyncJobManagerSingleton::instance()->queueAsyncJob(chunkJob, Poco::Thread::PRIO_NORMAL);
                 const auto &[_, inserted] = _ongoingChunkJobs.try_emplace(chunkJob->jobId(), chunkJob);
                 if (!inserted) {
                     LOG_ERROR(_logger, "Session " << _sessionToken << ", job " << chunkJob->jobId()
@@ -429,10 +437,13 @@ bool AbstractUploadSession::closeSession() {
         return false;
     }
 
-    if (const auto exitInfo = finishJob->runSynchronously(); exitInfo.code() != ExitCode::Ok || finishJob->hasHttpError()) {
+    if (const auto exitInfo = finishJob->runSynchronously(); !exitInfo || finishJob->hasHttpError()) {
         _exitInfo = exitInfo;
-        LOGW_WARN(_logger, L"Error in UploadSessionFinishJob::runSynchronously: " << exitInfo << L" file="
-                                                                                  << Path2WStr(_filePath.filename()));
+        LOGW_WARN(_logger, L"Error in UploadSessionFinishJob::runSynchronously: "
+                                   << exitInfo << L" " << Utility::formatSyncPath(_filePath) << L". Cancelling upload session.");
+        // Cancelling the session is a backend requirement. Otherwise, subsequent upload attempts will fail.
+        (void) cancelSession();
+
         return false;
     }
 

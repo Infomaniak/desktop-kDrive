@@ -77,23 +77,26 @@ DownloadJob::DownloadJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const N
 DownloadJob::~DownloadJob() {
     // Remove tmp file
     // For a remote CREATE operation, the tmp file should no longer exist, but if an error occurred in handleResponse, it must
-    // be deleted
+    // be deleted.
     if (!removeTmpFile() && !_isCreate) {
         LOGW_WARN(_logger, L"Failed to remove tmp file: " << Utility::formatSyncPath(_tmpPath));
     }
+
     if (!_vfs) return;
+
+    // If the download job intent is to create a new local file, then there is no downloaded file after cancellation.
+    if (_responseHandlingCanceled && _isCreate) return;
+
     if (_responseHandlingCanceled) {
         if (const ExitInfo exitInfo = _vfs->setPinState(_localpath, PinState::OnlineOnly); !exitInfo) {
             LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
         }
 
-        // TODO: usefull ?
         if (const ExitInfo exitInfo = _vfs->forceStatus(_localpath, VfsStatus()); !exitInfo) {
             LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
         }
 
         _vfs->cancelHydrate(_localpath);
-
     } else {
         if (const ExitInfo exitInfo = _vfs->setPinState(
                     _localpath, _exitInfo.code() == ExitCode::Ok ? PinState::AlwaysLocal : PinState::OnlineOnly);
@@ -103,7 +106,7 @@ DownloadJob::~DownloadJob() {
 
         if (const ExitInfo exitInfo = _vfs->forceStatus(_localpath, VfsStatus({.isHydrated = _exitInfo.code() == ExitCode::Ok}));
             !exitInfo) {
-            LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L" : " << exitInfo);
+            LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
         }
     }
 }
@@ -254,7 +257,6 @@ bool DownloadJob::handleResponse(std::istream &is) {
         }
 
         if (_responseHandlingCanceled) {
-            SyncPath lowDiskSpacePath;
             // NB: VFS reset is done in the destructor
             if (isAborted() || fetchCanceled) {
                 // Download aborted or canceled by the user

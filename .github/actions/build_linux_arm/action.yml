@@ -24,14 +24,14 @@ runs:
 
 
       - name: Download sentry-cli for macOS (ARM64)
-        if: steps.build.outcome == 'success'
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
         run: |
           curl -L https://github.com/getsentry/sentry-cli/releases/download/2.50.2/sentry-cli-Darwin-arm64 -o sentry-cli \
           && chmod +x ./sentry-cli
         shell: bash
 
       - name: Create sentry server artifacts
-        if: steps.build.outcome == 'success'
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
         run: |
           DBG_FILE="${{ github.workspace }}/build-linux-arm64/kDrive.dbg"
           ./sentry-cli debug-files bundle-sources "$DBG_FILE"
@@ -41,7 +41,7 @@ runs:
         shell: bash
 
       - name: Create sentry client artifacts
-        if: steps.build.outcome == 'success'
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
         run: |
           DBG_FILE="${{ github.workspace }}/build-linux-arm64/kDrive_client.dbg"
           ./sentry-cli debug-files bundle-sources "$DBG_FILE"
@@ -51,7 +51,7 @@ runs:
         shell: bash
 
       - name: Upload sentry server artifacts
-        if: steps.build.outcome == 'success'
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: linux-release-artifacts-server-debug-arm64
@@ -60,7 +60,7 @@ runs:
           compression-level: 0
 
       - name: Upload sentry client artifacts
-        if: steps.build.outcome == 'success'
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: linux-release-artifacts-client-debug-arm64

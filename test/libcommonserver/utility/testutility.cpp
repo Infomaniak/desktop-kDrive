@@ -236,7 +236,7 @@ void TestUtility::testXxHash() {
 }
 
 void TestUtility::testErrId() {
-    CPPUNIT_ASSERT_EQUAL(std::string("TES:") + std::to_string(__LINE__), errId());
+    CPPUNIT_ASSERT_EQUAL(std::string("TES:") + std::to_string(__LINE__), ERR_ID);
 }
 
 void TestUtility::testIsSubDir() {

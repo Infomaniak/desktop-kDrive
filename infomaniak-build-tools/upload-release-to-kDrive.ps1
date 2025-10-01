@@ -35,16 +35,17 @@ if (-not $env:KDRIVE_DIR_ID) {
     exit 1
 }
 
-#version example 3.7.1.20250708
+# version example 3.7.1.20250708
 $app = "kDrive-$version"
 
-#Extract the date  (after the 3rd .)
+# Extract the date  (after the 3rd .)
 $versionTab = $version.Split('.')
 $date = $versionTab[3]
 if ($date.Length -ne 8) {
     Write-Host "Invalid version format, expected x.x.x.yyyymmdd, got $version" -f Red
     exit 1
 }
+# version number example: 3.7.1
 $versionNumber = $versionTab[0..2] -join '.'
 
 $headers = @{
@@ -70,8 +71,8 @@ foreach ($os in $os_s)
 {
     foreach ($lang in $languages)
     {
-        $fileName = "$app-$os-$lang.html"
-        $filePath = ".\release_notes\$app\$fileName"
+        $fileName = "kDrive-$versionNumber-$os-$lang.html"
+        $filePath = ".\release_notes\kDrive-$versionNumber\$fileName"
         if (-not (Test-Path $filePath)) {
             Write-Host "❌ File $filePath does not exist, aborting upload." -f Red
             exit 1

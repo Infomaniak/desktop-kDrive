@@ -19,9 +19,6 @@
 #include "testio.h"
 
 #include "libcommonserver/io/filestat.h"
-#if defined(KD_MACOS)
-#include "libcommonserver/vfs/mac/litesyncextconnector.h"
-#endif
 
 #include <filesystem>
 

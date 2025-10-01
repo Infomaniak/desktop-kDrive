@@ -85,15 +85,13 @@ void TestServerRequests::testGetPublicLink() {
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, "1", "testGetPublicLink");
 
     // 1st call : sent POST request to generate the public share link
-    QString url;
-    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok,
-                         ServerRequests::getPublicLinkUrl(_driveDbId, QString::fromStdString(remoteTmpDir.id()), url));
-    CPPUNIT_ASSERT(!url.isEmpty());
+    std::string url;
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ServerRequests::getPublicLinkUrl(_driveDbId, remoteTmpDir.id(), url));
+    CPPUNIT_ASSERT(!url.empty());
     // 2nd call : POST request will fail and a GET request should be sent to retreive exisiting share link
     url.clear();
-    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok,
-                         ServerRequests::getPublicLinkUrl(_driveDbId, QString::fromStdString(remoteTmpDir.id()), url));
-    CPPUNIT_ASSERT(!url.isEmpty());
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ServerRequests::getPublicLinkUrl(_driveDbId, remoteTmpDir.id(), url));
+    CPPUNIT_ASSERT(!url.empty());
 }
 
 } // namespace KDC

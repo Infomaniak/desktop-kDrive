@@ -1,0 +1,27 @@
+configure_file(${CMAKE_CURRENT_LIST_DIR}/vfspluginmetadata.json.in ${CMAKE_CURRENT_LIST_DIR}/vfspluginmetadata.json)
+
+if(MSVC)
+  list(APPEND VIRTUAL_FILE_SYSTEM_PLUGINS "win")
+elseif(APPLE)
+  list(APPEND VIRTUAL_FILE_SYSTEM_PLUGINS "mac")
+endif()
+
+foreach(vfsPlugin ${VIRTUAL_FILE_SYSTEM_PLUGINS})
+    set(vfsPluginPath ${vfsPlugin})
+    get_filename_component(vfsPluginName ${vfsPlugin} NAME)
+    if(NOT IS_ABSOLUTE ${vfsPlugin})
+        set(vfsPluginPath "${CMAKE_CURRENT_LIST_DIR}/${vfsPlugin}")
+    endif()
+    if(NOT IS_DIRECTORY ${vfsPluginPath})
+        continue()
+    endif()
+
+    add_subdirectory(${vfsPluginPath} ${vfsPluginName})
+
+    if(UNIT_TESTING AND IS_DIRECTORY "${vfsPluginPath}/test")
+        add_subdirectory("${vfsPluginPath}/test" "${vfsPluginName}_test")
+        message(STATUS "Added vfsPlugin with tests: ${vfsPluginName}")
+    else()
+        message(STATUS "Added vfsPlugin without tests: ${vfsPluginName}")
+    endif()
+endforeach()

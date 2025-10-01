@@ -1,0 +1,28 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    <Fragment>
+        <ComponentGroup Id="DLLComponents" Directory="INSTALLFOLDER">
+            <Component Guid="96EBFD2F-1509-42B6-9768-079D6C989865">
+                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/d3dcompiler_47.dll" />
+                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/KDContextMenu.dll" />
+                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/KDOverlays.dll" />
+                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/kDrivecommonserver_vfs_win.dll" />
+                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/libcrypto-3-x64.dll" />
+                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/libssl-3-x64.dll" />
+                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/log4cplus.dll" />
+                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/opengl32sw.dll" />
+                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/PocoCrypto.dll" />
+                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/PocoFoundation.dll" />
+                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/PocoJSON.dll" />
+                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/PocoNet.dll" />
+                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/PocoNetSSL.dll" />
+                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/PocoUtil.dll" />
+                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/PocoXML.dll" />
+                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/sentry.dll" />
+                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/Vfs.dll" />
+                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/xxhash.dll" />
+                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/zip.dll" />
+                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/zlib1.dll" />
+            </Component>
+        </ComponentGroup>
+    </Fragment>
+</Wix>

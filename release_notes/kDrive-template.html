@@ -19,9 +19,22 @@
 <!DOCTYPE html>
 <html>
 <body>
-<h1>Release notes - kDrive 3.7.5</h1>
+<h1>Release notes - kDrive 3.7.6</h1>
 <h2><b>Bug fixes</b></h2>
 <ul>
-  <li>Removal of the limit of 50 blacklisted folders.</li>
+  <li>Fixed synchronization loops due to incorrect resolution of EDIT-DELETE conflicts.</li>
+  <li>Fixed synchronization loops due to null creation dates of folders.</li>
+  <li>Fixed synchronization loops caused by the destruction and the reconstruction of a branch in the sync folder hierarchy.</li>
+  <li>Fixed the update of the list of folders excluded by the user.</li>
+  <li>Fixed synchronization loops caused by incorrect management of modification dates on FAT systems.</li>
+  <li>Fixed incorrect creation dates set after local edit.</li>
+  <li>Fixed actions on files (e.g., make available locally) whose names contain special characters.</li>
+  <li>Fixed truncated logs.</li>
+  <li>Fixed synchronization loops caused by created directories reusing the identifiers of deleted items.</li>
+  <li>Fixed a bug causing file names containing a new line character not to be excluded when requested by the user.</li>
+  <li>Fixed synchronization loops caused by a change of synchronization directory.</li>
+  <li>Display an error when the upload of the logs fails.</li>
+  <li>macos - Fixed download of bundle files.</li>
+</ul>
 </body>
 </html>

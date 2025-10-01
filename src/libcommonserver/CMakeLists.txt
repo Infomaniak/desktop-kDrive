@@ -21,8 +21,6 @@ set(CMAKE_AUTOMOC TRUE)
 add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)
 
-add_subdirectory(vfs)
-
 # Sources
 set(libcommonserver_SRCS
     # Utility

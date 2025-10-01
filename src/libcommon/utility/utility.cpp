@@ -78,8 +78,8 @@
 #define MAX_PATH_LENGTH_LINUX 4096
 
 #if defined(KD_MACOS)
-constexpr char liteSyncExtBundleIdStr[] = "com.infomaniak.drive.desktopclient.LiteSyncExt";
-constexpr char loginItemAgentIdStr[] = "864VDCS2QY.com.infomaniak.drive.desktopclient.LoginItemAgent";
+constexpr std::string_view liteSyncExtBundleIdStr = "com.infomaniak.drive.desktopclient.LiteSyncExt";
+constexpr std::string_view loginItemAgentIdStr = "com.infomaniak.drive.desktopclient.LoginItemAgent";
 #endif
 
 namespace KDC {
@@ -184,6 +184,20 @@ const std::string &CommonUtility::currentVersion() {
         str = ss.str();
     }
     return str;
+}
+
+const std::string &CommonUtility::versionTag() {
+    static std::string str;
+    if (str.empty()) {
+        std::stringstream ss;
+        ss << KDRIVE_VERSION_MAJOR << "." << KDRIVE_VERSION_MINOR << "." << KDRIVE_VERSION_PATCH;
+        str = ss.str();
+    }
+    return str;
+}
+
+uint64_t CommonUtility::versionBuild() {
+    return KDRIVE_VERSION_BUILD;
 }
 
 static std::unordered_map<std::string, std::string> rootFsTypeMap;
@@ -564,6 +578,12 @@ std::string CommonUtility::appStateKeyToString(const AppStateKey &appStateValue)
             return "LogUploadState";
         case AppStateKey::LogUploadPercent:
             return "LogUploadPercent";
+        case AppStateKey::LogUploadToken:
+            return "LogUploadToken";
+        case AppStateKey::AppUid:
+            return "AppUid";
+        case AppStateKey::NoUpdate:
+            return "NoUpdate";
         case AppStateKey::Unknown:
             return "Unknown";
         default:
@@ -915,7 +935,20 @@ const std::string CommonUtility::dbVersionNumber(const std::string &dbVersion) {
 #endif
 }
 
-void CommonUtility::extractIntFromStrVersion(const std::string &version, std::vector<int> &tabVersion) {
+namespace {
+bool appendNumberComponent(const size_t pos, const size_t length, const std::string &versionDigits,
+                           std::vector<uint32_t> &tabVersion) {
+    try {
+        const auto numberComponent = static_cast<uint32_t>(std::stoi(versionDigits.substr(pos, length))); // may throw
+        tabVersion.push_back(numberComponent);
+        return true;
+    } catch (const std::invalid_argument &) { // The conversion string-to-int fails.
+        return false;
+    }
+}
+} // namespace
+
+void CommonUtility::extractIntFromStrVersion(const std::string &version, std::vector<uint32_t> &tabVersion) {
     if (version.empty()) return;
 
     std::string versionDigits = version;
@@ -926,6 +959,8 @@ void CommonUtility::extractIntFromStrVersion(const std::string &version, std::ve
 
     if (!words.empty()) {
         assert(words.size() == 3 && "Wrong version format.");
+        if (words.size() != 3) return;
+
         versionDigits = words[1].str() + "." + words[2].str(); // Example: "3.6.9.20250220"
     }
 
@@ -935,13 +970,12 @@ void CommonUtility::extractIntFromStrVersion(const std::string &version, std::ve
     do {
         pos = versionDigits.find('.', prevPos);
         if (pos == std::string::npos) break;
-
-        tabVersion.push_back(std::stoi(versionDigits.substr(prevPos, pos - prevPos)));
+        if (!appendNumberComponent(prevPos, pos - prevPos, versionDigits, tabVersion)) return;
         prevPos = pos + 1;
     } while (true);
 
     if (prevPos < versionDigits.size()) {
-        tabVersion.push_back(std::stoi(versionDigits.substr(prevPos)));
+        if (!appendNumberComponent(prevPos, std::string::npos, versionDigits, tabVersion)) return;
     }
 }
 
@@ -955,10 +989,10 @@ SyncPath CommonUtility::signalFilePath(AppType appType, SignalCategory signalCat
 }
 
 bool CommonUtility::isVersionLower(const std::string &currentVersion, const std::string &targetVersion) {
-    std::vector<int> currTabVersion;
+    std::vector<uint32_t> currTabVersion;
     extractIntFromStrVersion(currentVersion, currTabVersion);
 
-    std::vector<int> targetTabVersion;
+    std::vector<uint32_t> targetTabVersion;
     extractIntFromStrVersion(targetVersion, targetTabVersion);
 
     if (currTabVersion.size() != targetTabVersion.size()) {
@@ -1023,11 +1057,11 @@ bool CommonUtility::fileNameIsValid(const SyncName &name) {
 
 #if defined(KD_MACOS)
 const std::string CommonUtility::loginItemAgentId() {
-    return loginItemAgentIdStr;
+    return TEAM_IDENTIFIER_PREFIX + std::string(loginItemAgentIdStr);
 }
 
 const std::string CommonUtility::liteSyncExtBundleId() {
-    return liteSyncExtBundleIdStr;
+    return std::string(liteSyncExtBundleIdStr);
 }
 #endif
 
@@ -1056,6 +1090,21 @@ std::string CommonUtility::envVarValue(const std::string &name, bool &isSet) {
 #endif
 
     return std::string();
+}
+
+int CommonUtility::setenv(const char *const name, const char *const value, const int overwrite) {
+#if defined(KD_WINDOWS)
+    // https://stackoverflow.com/a/23616164/4675396
+    int errcode = 0;
+    if (!overwrite) {
+        size_t envsize = 0;
+        errcode = getenv_s(&envsize, nullptr, 0, name);
+        if (errcode || envsize) return errcode;
+    }
+    return _putenv_s(name, value);
+#else
+    return ::setenv(name, value, overwrite);
+#endif
 }
 
 void CommonUtility::handleSignals(void (*sigHandler)(int)) {
@@ -1116,19 +1165,12 @@ void CommonUtility::clearSignalFile(const AppType appType, const SignalCategory 
     }
 }
 
-#if defined(KD_MACOS) || defined(KD_LINUX)
-bool CommonUtility::isLikeFileNotFoundError(const std::error_code &ec) noexcept {
-    return ec.value() == static_cast<int>(std::errc::no_such_file_or_directory);
-}
-#endif
-
 #ifdef KD_MACOS
 bool CommonUtility::isLiteSyncExtEnabled() {
     QProcess *process = new QProcess();
-    process->start(
-            "bash",
-            QStringList() << "-c"
-                          << QString("systemextensionsctl list | grep %1 | grep enabled | wc -l").arg(liteSyncExtBundleIdStr));
+    process->start("bash", QStringList() << "-c"
+                                         << QString("systemextensionsctl list | grep %1 | grep enabled | wc -l")
+                                                    .arg(liteSyncExtBundleIdStr.data()));
     process->waitForStarted();
     process->waitForFinished();
     QByteArray result = process->readAll();
@@ -1149,14 +1191,14 @@ bool CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr) {
                                   " and client = \"%2\""
                                   " and client_type = 0")
                                   .arg(serviceStr)
-                                  .arg(liteSyncExtBundleIdStr));
+                                  .arg(liteSyncExtBundleIdStr.data()));
         } else {
             query.prepare(QString("SELECT auth_value FROM access"
                                   " WHERE service = \"%1\""
                                   " and client = \"%2\""
                                   " and client_type = 0")
                                   .arg(serviceStr)
-                                  .arg(liteSyncExtBundleIdStr));
+                                  .arg(liteSyncExtBundleIdStr.data()));
         }
 
         query.exec();
@@ -1271,10 +1313,11 @@ std::list<SyncName> CommonUtility::splitSyncPath(const SyncPath &path) {
     return itemNames;
 }
 
-std::vector<SyncName> CommonUtility::splitSyncName(SyncName name, const SyncName &separator) {
-    std::vector<SyncName> tokens;
+template<typename T>
+std::vector<T> CommonUtility::splitString(T name, const T &separator) {
+    std::vector<T> tokens;
     size_t pos = 0;
-    SyncName token;
+    T token;
 
     while ((pos = name.find(separator)) != std::string::npos) {
         token = name.substr(0, pos);
@@ -1284,6 +1327,14 @@ std::vector<SyncName> CommonUtility::splitSyncName(SyncName name, const SyncName
     tokens.push_back(name);
 
     return tokens;
+}
+
+std::vector<SyncName> CommonUtility::splitSyncName(SyncName name, const SyncName &separator) {
+    return CommonUtility::splitString<SyncName>(name, separator);
+}
+
+std::vector<CommString> CommonUtility::splitCommString(CommString str, const CommString &separator) {
+    return CommonUtility::splitString<CommString>(str, separator);
 }
 
 std::vector<SyncName> CommonUtility::splitPath(const SyncName &pathName) {

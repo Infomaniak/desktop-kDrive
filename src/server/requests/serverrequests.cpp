@@ -1064,9 +1064,7 @@ ExitCode ServerRequests::createDir(int driveDbId, const QString &parentNodeId, c
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, QString &linkUrl) {
-    NodeId nodeId = fileId.toStdString();
-
+ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const NodeId &nodeId, std::string &linkUrl) {
     auto logWarning = [&](const std::string &context_, const int driveDbId_, const std::string &nodeId_,
                           const std::string &error_) {
         LOG_WARN(Log::instance()->getLogger(),
@@ -1115,12 +1113,10 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
         return ExitCode::BackError;
     }
 
-    std::string tmp;
-    if (!JsonParserUtility::extractValue(dataObj, urlKey, tmp)) {
+    if (!JsonParserUtility::extractValue(dataObj, urlKey, linkUrl)) {
         logWarning("ServerRequests::getPublicLinkUrl", driveDbId, nodeId, "Fail to extract URL");
         return ExitCode::BackError;
     }
-    linkUrl = QString::fromStdString(tmp);
 
     return ExitCode::Ok;
 }

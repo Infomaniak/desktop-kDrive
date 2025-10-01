@@ -63,7 +63,7 @@ class AbstractUpdater {
         void setStateChangeCallback(const std::function<void(UpdateState)> &stateChangeCallback);
 
         static void skipVersion(const std::string &skippedVersion);
-        virtual void unskipVersion();
+        static void unskipVersion();
         [[nodiscard]] static bool isVersionSkipped(const std::string &version);
 
         void setCurrentChannel(const VersionChannel currentChannel) { _currentChannel = currentChannel; }

@@ -130,4 +130,5 @@ bool DriveUploadSession::handleCancelJobResult(const std::shared_ptr<UploadSessi
 
     return true;
 }
+
 } // namespace KDC
