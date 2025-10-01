@@ -406,6 +406,9 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
   <data name="Global_Bytes" xml:space="preserve">
     <value>octets</value>
   </data>
+  <data name="Page_HomePage_Hello.Text" xml:space="preserve">
+    <value>Bonjour</value>
+  </data>
   <data name="Global_TeraBytes" xml:space="preserve">
     <value>To</value>
   </data>
@@ -420,5 +423,53 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
   </data>
   <data name="Page_StoragePage_DiskUnavailable.Message" xml:space="preserve">
     <value>Disque indisponible</value>
+  </data>
+  <data name="Page_HomePage_Status_SyncUpToDate.Text" xml:space="preserve">
+    <value>, vos fichiers sont à jour</value>
+  </data>
+  <data name="Page_HomePage_Main_SyncUpToDate_Title.Text" xml:space="preserve">
+    <value>Pas d’activité en cours</value>
+  </data>
+  <data name="Page_HomePage_Main_SyncInPause_Title.Text" xml:space="preserve">
+    <value>Synchronisation en pause</value>
+  </data>
+  <data name="Page_HomePage_Main_SyncInProgress_Title.Text" xml:space="preserve">
+    <value>Synchronisation en cours</value>
+  </data>
+  <data name="Page_HomePage_Main_SyncUpToDate_HyperLink.Content" xml:space="preserve">
+    <value>Fermer kDrive</value>
+  </data>
+  <data name="Page_HomePage_Main_SyncInPause_HyperLink.Content" xml:space="preserve">
+    <value>Réactiver la synchronisation</value>
+  </data>
+  <data name="Page_HomePage_Main_SyncInProgress_HyperLink.Content" xml:space="preserve">
+    <value>Voir les activités</value>
+  </data>
+  <data name="Page_HomePage_Main_SyncUpToDate_Description.Text" xml:space="preserve">
+    <value>Vos fichiers sont accessibles et synchronisés.</value>
+  </data>
+  <data name="Page_HomePage_Main_SyncInProgress_Description.Text" xml:space="preserve">
+    <value>Vos fichiers récents sont en train d'être mis à jour.</value>
+  </data>
+  <data name="Page_HomePage_Status_SyncOffline.Text" xml:space="preserve">
+    <value>, la synchronisation est en pause</value>
+  </data>
+  <data name="Page_HomePage_Status_SyncInPause.Text" xml:space="preserve">
+    <value>, la synchronisation est en pause</value>
+  </data>
+  <data name="Page_HomePage_Status_SyncInProgress.Text" xml:space="preserve">
+    <value>, vos fichiers se synchronisent</value>
+  </data>
+  <data name="Page_HomePage_Main_SyncInPause_Description.Text" xml:space="preserve">
+    <value>La synchronisation est temporairement arrêtée.</value>
+  </data>
+  <data name="Page_HomePage_Main_SyncOffline_Title.Text" xml:space="preserve">
+    <value>Hors ligne</value>
+  </data>
+  <data name="Page_HomePage_Main_SyncOffline_Description_Line1.Text" xml:space="preserve">
+    <value>Vos fichiers locaux restent accessibles.</value>
+  </data>
+  <data name="Page_HomePage_Main_SyncOffline_Description_Line2.Text" xml:space="preserve">
+    <value>La synchronisation reprendra automatiquement dès que vous serez reconnecté.</value>
   </data>
 </root>

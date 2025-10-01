@@ -84,9 +84,9 @@ namespace Infomaniak.kDrive.ViewModels
         public Settings Settings { get; } = new Settings();
 
         // Helpers
-        private Network _network = new();
-        private Task? _networkWatcher;
-        private CancellationTokenSource _networkWatcherCancellationSource = new();
+        private readonly Network _network = new();
+        private readonly Task? _networkWatcher;
+        private readonly CancellationTokenSource _networkWatcherCancellationSource = new();
         private bool _networkAvailable;
 
 
@@ -147,6 +147,7 @@ namespace Infomaniak.kDrive.ViewModels
         {
             _networkWatcherCancellationSource.Cancel();
             _networkWatcher?.Wait();
+            _networkWatcherCancellationSource.Dispose();
         }
 
         private async Task WatchNetwork(CancellationToken cancellationToken)
@@ -164,7 +165,7 @@ namespace Infomaniak.kDrive.ViewModels
                 }
                 if (_networkAvailable != result)
                     UIThreadDispatcher.TryEnqueue(() => { NetworkAvailable = result; });
-                await Task.Delay(1000).ConfigureAwait(false);
+                await Task.Delay(5000).ConfigureAwait(false);
             }
         }
 

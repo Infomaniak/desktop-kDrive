@@ -10,14 +10,14 @@
 
         <!-- Data templates for different button states -->
         <DataTemplate x:Key="PauseButtonTemplate">
-            <Image Margin="0">
+            <Image>
                 <Image.Source>
                     <SvgImageSource UriSource="ms-appx:///Assets/Icons/pause.svg" />
                 </Image.Source>
             </Image>
         </DataTemplate>
         <DataTemplate x:Key="StartButtonTemplate">
-            <Image Margin="0">
+            <Image>
                 <Image.Source>
                     <SvgImageSource UriSource="ms-appx:///Assets/Icons/play.svg" />
                 </Image.Source>
