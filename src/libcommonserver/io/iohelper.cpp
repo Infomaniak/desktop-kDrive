@@ -1081,16 +1081,16 @@ bool IoHelper::_setRightsStd(const SyncPath &path, bool read, bool write, bool e
 }
 
 IoError IoHelper::setReadOnly(const SyncPath &path) noexcept {
-    // Retrieve `exec` rights. It is not modified by this method.
+    // Retrieve the `exec` right.
     bool dummyRead = false;
     bool dummyWrite = false;
     bool exec = false;
     if (const auto ioError = IoHelper::getRights(path, dummyRead, dummyWrite, exec); ioError != IoError::Success) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to set rights for " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to get rights for " << Utility::formatSyncPath(path));
         return IoError::Unknown;
     }
 
-    // Remove write right.
+    // Remove the `write` right and force the `read` right. `exec` right is not modified.
     if (const auto ioError = IoHelper::setRights(path, true, false, exec); ioError != IoError::Success) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to set rights for " << Utility::formatSyncPath(path));
         return ioError;
