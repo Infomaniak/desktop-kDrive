@@ -36,8 +36,6 @@ class GetInfoUserJob final : public AbstractTokenNetworkJob {
 
     private:
         std::string getSpecificUrl() override;
-        void setQueryParameters(Poco::URI &, bool &canceled) override { canceled = false; }
-        ExitInfo setData() override { return ExitCode::Ok; }
 
         std::string _name;
         std::string _email;

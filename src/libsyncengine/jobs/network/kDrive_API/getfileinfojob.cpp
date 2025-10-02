@@ -100,11 +100,10 @@ std::string GetFileInfoJob::getSpecificUrl() {
     return str;
 }
 
-void GetFileInfoJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
+void GetFileInfoJob::setQueryParameters(Poco::URI &uri) {
     if (_withPath) {
         uri.addQueryParameter("with", "path");
     }
-    canceled = false;
 }
 
 } // namespace KDC

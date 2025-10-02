@@ -275,6 +275,13 @@ void FolderTreeItemWidget::createBlackSet(const QTreeWidgetItem *parentItem, QSe
 
     switch (parentItem->checkState(TreeWidgetColumn::Folder)) {
         case Qt::Unchecked: {
+            if (!_blacklistCache.contains(parentNodeId)) {
+                QString path;
+                if (const auto exitCode = GuiRequests::getNodePath(_syncDbId, parentNodeId, path); exitCode != ExitCode::Ok) {
+                    qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getNodePath";
+                }
+                (void) _blacklistCache.insert(parentNodeId, path);
+            }
             (void) blackset.insert(parentNodeId);
             removeChildNodeFromSet(parentNodeId, blackset);
             return;

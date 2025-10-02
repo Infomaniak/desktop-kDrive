@@ -113,7 +113,8 @@ bool PipeCommServer::listen() {
         return false;
     }
 
-    LOGW_INFO(Log::instance()->getLogger(), L"Starting " << CommonUtility::s2ws(name()) << L": " << Utility::formatSyncPath(_pipePath));
+    LOGW_INFO(Log::instance()->getLogger(),
+              L"Starting " << CommonUtility::s2ws(name()) << L": " << Utility::formatSyncPath(_pipePath));
 
     _stopAsked = false;
     _isRunning = true;

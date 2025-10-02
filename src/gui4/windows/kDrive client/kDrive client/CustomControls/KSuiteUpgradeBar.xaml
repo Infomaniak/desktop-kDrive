@@ -6,27 +6,10 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d">
-    <Grid Height="56"
+    <Grid Height="58"
           HorizontalAlignment="Stretch">
-        <!-- Layer 1: Gradient Border -->
-        <Border CornerRadius="8"
-                BorderThickness="1"
-                Padding="1">
-            <Border.BorderBrush>
-                <LinearGradientBrush StartPoint="0,0"
-                                     EndPoint="1,0">
-                    <GradientStop Color="#1DDDFD"
-                                  Offset="0.0" />
-                    <GradientStop Color="#337CFF"
-                                  Offset="0.25" />
-                    <GradientStop Color="#A055FC"
-                                  Offset="0.5" />
-                    <GradientStop Color="#F34BBB"
-                                  Offset="0.75" />
-                    <GradientStop Color="#FDBC3D"
-                                  Offset="1.0" />
-                </LinearGradientBrush>
-            </Border.BorderBrush>
+        <!-- Layer 1: Gradient background -->
+        <Border CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}">
             <Border.Background>
                 <LinearGradientBrush StartPoint="0,0"
                                      EndPoint="1,0">
@@ -45,22 +28,37 @@
         </Border>
 
         <!-- Layer 2: Acrylic background with content -->
-        <Border CornerRadius="7"
-                Margin="1">
+        <Border CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"
+                BorderThickness="1">
+            <Border.BorderBrush>
+                <LinearGradientBrush StartPoint="0,0"
+                                     EndPoint="1,0">
+                    <GradientStop Color="#1DDDFD"
+                                  Offset="0.0" />
+                    <GradientStop Color="#337CFF"
+                                  Offset="0.25" />
+                    <GradientStop Color="#A055FC"
+                                  Offset="0.5" />
+                    <GradientStop Color="#F34BBB"
+                                  Offset="0.75" />
+                    <GradientStop Color="#FDBC3D"
+                                  Offset="1.0" />
+                </LinearGradientBrush>
+            </Border.BorderBrush>
             <Border.Background>
-                <AcrylicBrush TintColor="White"
+                <AcrylicBrush TintColor="{ThemeResource SolidBackgroundFillColorBaseAlt}"
                               TintOpacity="0.6" />
             </Border.Background>
 
             <Grid VerticalAlignment="Center"
-                  Padding="24,0,0,0"
-                  ColumnSpacing="8">
+                  Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.M}"
+                  ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="auto" />
                     <ColumnDefinition Width="auto" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Image Height="24"
+                <Image Height="{StaticResource Infomaniak.Style.Spacing.L}"
                        Grid.Column="0">
                     <Image.Source>
                         <SvgImageSource UriSource="ms-appx:///Assets/Logo/logoKsuite.svg" />
@@ -75,7 +73,6 @@
 
                 <HyperlinkButton x:Name="UpgradeHyperLinkButton"
                                  x:Uid="CC_KSuiteUpgradeBar_link"
-                                 Margin="0,0,20,0"
                                  Grid.Column="2"
                                  HorizontalAlignment="Right" />
             </Grid>

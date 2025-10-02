@@ -95,13 +95,7 @@ std::string GetAppVersionJob::getSpecificUrl() {
     return ss.str();
 }
 
-std::string GetAppVersionJob::getContentType(bool &canceled) {
-    canceled = false;
-    return {};
-}
-
-void GetAppVersionJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
-    (void) canceled;
+void GetAppVersionJob::setQueryParameters(Poco::URI &uri) {
     for (const auto &id: _userIdList) {
         uri.addQueryParameter("user_ids[]", std::to_string(id));
     }

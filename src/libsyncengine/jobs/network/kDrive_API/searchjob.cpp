@@ -40,8 +40,7 @@ std::string SearchJob::getSpecificUrl() {
     return str;
 }
 
-void SearchJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
-    canceled = false;
+void SearchJob::setQueryParameters(Poco::URI &uri) {
     if (_searchString.size() > 3) {
         // To search by pattern, the provided string must be at least 3 character long.
         uri.addQueryParameter("query", _searchString);

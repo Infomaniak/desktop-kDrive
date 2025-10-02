@@ -26,13 +26,13 @@ template<typename T>
 class ClassFactory : public winrt::implements<ClassFactory<T>, IClassFactory> {
     public:
         // IClassFactory
-        IFACEMETHODIMP CreateInstance(_In_opt_ IUnknown* unkOuter, REFIID riid, _COM_Outptr_ void** object) {
+        IFACEMETHODIMP CreateInstance(_In_opt_ IUnknown *unkOuter, REFIID riid, _COM_Outptr_ void **object) {
             try {
                 auto provider = winrt::make<T>();
                 winrt::com_ptr<IUnknown> unkn{provider.as<IUnknown>()};
                 winrt::check_hresult(unkn->QueryInterface(riid, object));
                 return S_OK;
-            } catch (winrt::hresult_error const& ex) {
+            } catch (winrt::hresult_error const &ex) {
                 TRACE_ERROR(L"WinRT error caught : hr %08x - %s!", static_cast<HRESULT>(winrt::to_hresult()),
                             ex.message().c_str());
                 return winrt::to_hresult();
