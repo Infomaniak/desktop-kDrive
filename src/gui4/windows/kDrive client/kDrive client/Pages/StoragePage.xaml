@@ -56,6 +56,7 @@
                  IsClosable="False"
                  Message="{x:Bind PageViewModel.DiskRoot, Mode=OneWay}"
                  Visibility="{x:Bind PageViewModel.IsDiskConnected, Mode=OneWay, Converter={StaticResource BooleanToInvertedVisibilityConverter}}">
+            <!-- TODO: Replace this infobar once the page is ready on the UI/UX side-->
             <InfoBar.ActionButton>
                 <Button Content="Réessayer"
                         Click="RetryButton_click"
