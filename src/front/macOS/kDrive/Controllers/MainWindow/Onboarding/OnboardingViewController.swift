@@ -19,11 +19,18 @@
 import Cocoa
 
 final class OnboardingViewController: NSViewController {
+    private let viewModel = OnboardingViewModel()
+
+    private var currentContentViewController: NSViewController?
+
+    private let contentView = NSView()
     private let animationsView = OnboardingAnimationsView()
 
     override func viewDidLoad() {
         super.viewDidLoad()
+
         setupUI()
+        transition(toStep: .login)
     }
 
     override func viewDidAppear() {
@@ -42,11 +49,67 @@ final class OnboardingViewController: NSViewController {
         animationsView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(animationsView)
 
+        contentView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(contentView)
+
         NSLayoutConstraint.activate([
             animationsView.topAnchor.constraint(equalTo: view.topAnchor),
             animationsView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             animationsView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            animationsView.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.33)
+            animationsView.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.33),
+
+            contentView.topAnchor.constraint(equalTo: view.topAnchor),
+            contentView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            contentView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            contentView.trailingAnchor.constraint(equalTo: animationsView.leadingAnchor)
         ])
+    }
+
+    private func transition(toStep step: OnboardingStep) {
+        removeCurrentContentViewController()
+
+        let viewController = getContentViewBuilder(forStep: step)
+        addContentViewController(viewController)
+    }
+
+    private func getContentViewBuilder(forStep step: OnboardingStep) -> NSViewController {
+        switch step {
+        case .login:
+            return LoginViewController()
+        case .driveSelection:
+            print("Not Implemented Yet")
+            return NSViewController()
+        case .autorisations:
+            print("Not Implemented Yet")
+            return NSViewController()
+        case .synchronisation:
+            print("Not Implemented Yet")
+            return NSViewController()
+        }
+    }
+
+    private func removeCurrentContentViewController() {
+        guard let currentContentViewController else { return }
+
+        currentContentViewController.view.removeFromSuperview()
+        currentContentViewController.removeFromParent()
+
+        self.currentContentViewController = nil
+    }
+
+    private func addContentViewController(_ viewController: NSViewController) {
+        addChild(viewController)
+
+        viewController.view.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(viewController.view)
+
+        NSLayoutConstraint.activate([
+            viewController.view.topAnchor.constraint(equalTo: contentView.topAnchor),
+            viewController.view.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            viewController.view.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            viewController.view.trailingAnchor.constraint(equalTo: contentView.trailingAnchor)
+        ])
+
+        currentContentViewController = viewController
     }
 }

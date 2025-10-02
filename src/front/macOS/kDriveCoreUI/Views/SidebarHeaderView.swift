@@ -17,6 +17,7 @@
  */
 
 import Cocoa
+import kDriveCoreUI
 
 final class SidebarHeaderView: NSView {
     init() {
@@ -47,7 +48,7 @@ final class SidebarHeaderView: NSView {
             imageView.bottomAnchor.constraint(equalTo: bottomAnchor),
             imageView.widthAnchor.constraint(equalToConstant: 24),
             imageView.heightAnchor.constraint(equalTo: imageView.widthAnchor),
-            textField.leadingAnchor.constraint(equalTo: imageView.trailingAnchor, constant: 8),
+            textField.leadingAnchor.constraint(equalTo: imageView.trailingAnchor, constant: AppPadding.padding8),
             textField.centerYAnchor.constraint(equalTo: imageView.centerYAnchor),
             textField.trailingAnchor.constraint(greaterThanOrEqualTo: trailingAnchor)
         ])

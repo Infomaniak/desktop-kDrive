@@ -19,6 +19,7 @@
 import Cocoa
 import InfomaniakDI
 import kDriveCore
+import kDriveCoreUI
 import Lottie
 
 final class PreloadingViewController: NSViewController {
@@ -84,13 +85,13 @@ extension PreloadingViewController {
             animationView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             animationView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
 
-            animationView.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 16),
-            view.trailingAnchor.constraint(greaterThanOrEqualTo: animationView.trailingAnchor, constant: 16),
-            animationView.topAnchor.constraint(greaterThanOrEqualTo: view.topAnchor, constant: 16),
+            animationView.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: AppPadding.padding16),
+            view.trailingAnchor.constraint(greaterThanOrEqualTo: animationView.trailingAnchor, constant: AppPadding.padding16),
+            animationView.topAnchor.constraint(greaterThanOrEqualTo: view.topAnchor, constant: AppPadding.padding16),
 
-            progressIndicator.topAnchor.constraint(equalTo: animationView.bottomAnchor, constant: 48),
+            progressIndicator.topAnchor.constraint(equalTo: animationView.bottomAnchor, constant: AppPadding.padding48),
             progressIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            view.bottomAnchor.constraint(greaterThanOrEqualTo: progressIndicator.bottomAnchor, constant: 16)
+            view.bottomAnchor.constraint(greaterThanOrEqualTo: progressIndicator.bottomAnchor, constant: AppPadding.padding16)
         ])
     }
 

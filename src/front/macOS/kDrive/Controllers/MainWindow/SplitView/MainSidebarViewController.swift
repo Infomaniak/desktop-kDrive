@@ -66,14 +66,20 @@ final class MainSidebarViewController: NSViewController {
 
         NSLayoutConstraint.activate([
             headerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            headerView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
-            headerView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+            headerView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: AppPadding.padding16),
+            headerView.trailingAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.trailingAnchor,
+                constant: -AppPadding.padding16
+            ),
 
-            popUpButton.topAnchor.constraint(equalTo: headerView.bottomAnchor, constant: 16),
-            popUpButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
-            popUpButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+            popUpButton.topAnchor.constraint(equalTo: headerView.bottomAnchor, constant: AppPadding.padding16),
+            popUpButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: AppPadding.padding16),
+            popUpButton.trailingAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.trailingAnchor,
+                constant: -AppPadding.padding16
+            ),
 
-            scrollView.topAnchor.constraint(equalTo: popUpButton.bottomAnchor, constant: 16),
+            scrollView.topAnchor.constraint(equalTo: popUpButton.bottomAnchor, constant: AppPadding.padding16),
             scrollView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)

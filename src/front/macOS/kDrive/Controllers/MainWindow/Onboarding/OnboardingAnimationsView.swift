@@ -17,16 +17,49 @@
  */
 
 import Cocoa
+import kDriveCoreUI
+import Lottie
 
 class OnboardingAnimationsView: NSView {
+    private let animationView = LottieAnimationView()
+
     init() {
         super.init(frame: .zero)
 
         wantsLayer = true
         layer?.backgroundColor = NSColor.surfaceSecondary.cgColor
+
+        setupAnimationView()
+        transitionAnimation(forStep: .login)
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    private func setupAnimationView() {
+        animationView.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(animationView)
+
+        NSLayoutConstraint.activate([
+            animationView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: AppPadding.padding32),
+            trailingAnchor.constraint(equalTo: animationView.trailingAnchor, constant: AppPadding.padding32)
+        ])
+    }
+
+    private func transitionAnimation(forStep step: OnboardingStep) {}
+
+    private func getAnimation(forStep step: OnboardingStep) {
+        switch step {
+        case .login:
+            fatalError("Not Implemented Yet")
+        case .driveSelection:
+            fatalError("Not Implemented Yet")
+        case .autorisations:
+            fatalError("Not Implemented Yet")
+        case .synchronisation:
+            fatalError("Not Implemented Yet")
+        }
     }
 }
