@@ -46,6 +46,7 @@ class XPCCommServer : public KDC::AbstractCommServer {
         bool listen() override;
         std::shared_ptr<KDC::AbstractCommChannel> nextPendingConnection() override;
         std::list<std::shared_ptr<KDC::AbstractCommChannel>> connections() override;
+
     protected:
         std::unique_ptr<AbstractCommServerPrivate> _privatePtr;
 };

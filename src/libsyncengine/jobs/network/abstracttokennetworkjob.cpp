@@ -267,6 +267,9 @@ bool AbstractTokenNetworkJob::handleResponse(std::istream &is) {
     if (_returnJson) {
         std::string replyBody;
         getStringFromStream(is, replyBody);
+        if (isExtendedLog()) {
+            LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << CommonUtility::s2ws(replyBody));
+        }
         return handleJsonResponse(replyBody);
     }
     return handleOctetStreamResponse(is);
@@ -491,8 +494,7 @@ std::string AbstractTokenNetworkJob::loadToken() {
     return token;
 }
 
-std::string AbstractTokenNetworkJob::getContentType(bool &canceled) {
-    canceled = false;
+std::string AbstractTokenNetworkJob::getContentType() {
     return mimeTypeJson;
 }
 

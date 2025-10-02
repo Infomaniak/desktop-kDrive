@@ -41,7 +41,7 @@ set(syncengine_SRCS
     jobs/network/abstracttokennetworkjob.h jobs/network/abstracttokennetworkjob.cpp
     jobs/network/kDrive_API/getrootfilelistjob.h jobs/network/kDrive_API/getrootfilelistjob.cpp
     jobs/network/kDrive_API/getfilelistjob.h jobs/network/kDrive_API/getfilelistjob.cpp
-    jobs/network/kDrive_API/initfilelistwithcursorjob.h jobs/network/kDrive_API/initfilelistwithcursorjob.cpp
+    jobs/network/kDrive_API/listing/initfilelistwithcursorjob.h jobs/network/kDrive_API/listing/initfilelistwithcursorjob.cpp
     jobs/network/kDrive_API/listing/abstractlistingjob.h jobs/network/kDrive_API/listing/abstractlistingjob.cpp
     jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.h jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.cpp
     jobs/network/kDrive_API/listing/snapshotitemhandler.h jobs/network/kDrive_API/listing/snapshotitemhandler.cpp

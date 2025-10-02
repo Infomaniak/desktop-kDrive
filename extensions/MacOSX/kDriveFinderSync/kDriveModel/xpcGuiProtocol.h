@@ -20,12 +20,12 @@
 
 @protocol XPCGuiProtocol
 
-- (void)sendQuery:(NSData*)msg;
+- (void)sendQuery:(NSData *)msg;
 
 @end
 
 @protocol XPCGuiRemoteProtocol
 
-- (void)sendSignal:(NSData*)msg;
+- (void)sendSignal:(NSData *)msg;
 
 @end

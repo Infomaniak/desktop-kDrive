@@ -56,6 +56,7 @@ class ExtCommServer : public XPCCommServer {
 #else
 class ExtCommServer : public PipeCommServer {
 #endif
+
     public:
 #if defined(KD_MACOS)
         ExtCommServer(const std::string &name);

@@ -37,10 +37,9 @@ std::string GetThumbnailJob::getSpecificUrl() {
     return str;
 }
 
-void GetThumbnailJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
+void GetThumbnailJob::setQueryParameters(Poco::URI &uri) {
     uri.addQueryParameter("width", std::to_string(_width));
     uri.addQueryParameter("height", std::to_string(_width));
-    canceled = false;
 }
 
 } // namespace KDC

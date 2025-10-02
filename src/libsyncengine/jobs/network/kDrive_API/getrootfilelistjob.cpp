@@ -48,7 +48,7 @@ std::string GetRootFileListJob::getSpecificUrl() {
     return str;
 }
 
-void GetRootFileListJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
+void GetRootFileListJob::setQueryParameters(Poco::URI &uri) {
     uri.addQueryParameter("per_page", std::to_string(_nbItemsPerPage));
     if (_page > 0) {
         uri.addQueryParameter("page", std::to_string(_page));
@@ -61,7 +61,6 @@ void GetRootFileListJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
     } else {
         uri.addQueryParameter("with", "total");
     }
-    canceled = false;
 }
 
 bool GetRootFileListJob::handleResponse(std::istream &is) {

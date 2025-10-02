@@ -33,7 +33,7 @@
 namespace KDC {
 
 LocalDeleteJob::Path::Path(const SyncPath &path) :
-    _path(path){};
+    _path(path) {};
 
 bool LocalDeleteJob::Path::endsWith(SyncPath &&ending) const {
     if (!_path.empty() && ending.empty()) return false;

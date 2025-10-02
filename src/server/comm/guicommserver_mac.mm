@@ -176,8 +176,8 @@ uint64_t KDC::GuiCommChannel::writeData(const KDC::CommChar *data, uint64_t len)
     @try {
         // TODO: POC => replace with real C/S functions depending on data content
         [(GuiRemoteEnd *) _privatePtr->remoteEnd sendSignal:[NSData dataWithBytesNoCopy:const_cast<KDC::CommChar *>(data)
-                                                                                  length:static_cast<NSUInteger>(len)
-                                                                            freeWhenDone:NO]];
+                                                                                 length:static_cast<NSUInteger>(len)
+                                                                           freeWhenDone:NO]];
         return len;
     } @catch (NSException *e) {
         _privatePtr->disconnectRemote();
