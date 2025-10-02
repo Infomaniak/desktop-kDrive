@@ -113,7 +113,7 @@
                   VerticalAlignment="Center"
                   RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
@@ -125,13 +125,12 @@
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
                     <!-- Title -->
                     <TextBlock x:Uid="Page_HomePage_Main_SyncUpToDate_Title"
-                               FontSize="16"
-                               FontWeight="SemiBold"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
                                HorizontalAlignment="Center" />
 
                     <!-- Description -->
                     <TextBlock x:Uid="Page_HomePage_Main_SyncUpToDate_Description"
-                               FontSize="13"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.CaptionSb}"
                                HorizontalAlignment="Center"
                                TextWrapping="WrapWholeWords" />
 
@@ -148,7 +147,7 @@
                   VerticalAlignment="Center"
                   RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
@@ -160,13 +159,12 @@
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
                     <!-- Title -->
                     <TextBlock x:Uid="Page_HomePage_Main_SyncInProgress_Title"
-                               FontSize="16"
-                               FontWeight="SemiBold"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
                                HorizontalAlignment="Center" />
 
                     <!-- Description -->
                     <TextBlock x:Uid="Page_HomePage_Main_SyncInProgress_Description"
-                               FontSize="13"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.CaptionSb}"
                                HorizontalAlignment="Center"
                                TextWrapping="Wrap" />
 
@@ -183,7 +181,7 @@
                   VerticalAlignment="Center"
                   RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
@@ -195,13 +193,12 @@
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
                     <!-- Title -->
                     <TextBlock x:Uid="Page_HomePage_Main_SyncInPause_Title"
-                               FontSize="16"
-                               FontWeight="SemiBold"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
                                HorizontalAlignment="Center" />
 
                     <!-- Description -->
                     <TextBlock x:Uid="Page_HomePage_Main_SyncInPause_Description"
-                               FontSize="13"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.CaptionSb}"
                                HorizontalAlignment="Center"
                                TextWrapping="Wrap" />
 
@@ -218,7 +215,7 @@
                   VerticalAlignment="Center"
                   RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
@@ -231,16 +228,15 @@
                     <!-- Title -->
                     <TextBlock Grid.Row="1"
                                x:Uid="Page_HomePage_Main_SyncOffline_Title"
-                               FontSize="16"
-                               FontWeight="SemiBold"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
                                HorizontalAlignment="Center" />
 
                     <!-- Description -->
                     <TextBlock x:Name="subtitle"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.CaptionSb}"
                                Grid.Row="2"
                                TextWrapping="WrapWholeWords"
                                TextAlignment="Center"
-                               FontSize="13"
                                HorizontalAlignment="Center"
                                MaxWidth="300">
                         <Run x:Uid="Page_HomePage_Main_SyncOffline_Description_Line1" />
@@ -256,7 +252,7 @@
                   VerticalAlignment="Center"
                   RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
@@ -329,6 +325,7 @@
 
             <!-- Sync Status Bar -->
             <StackPanel Grid.Column="0"
+                        Grid.ColumnSpan="2"
                         Grid.Row="0"
                         Orientation="Horizontal">
                 <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.SubtitleSl}">

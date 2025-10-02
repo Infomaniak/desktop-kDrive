@@ -154,7 +154,7 @@
         <Setter Property="FontSize"
                 Value="14" />
     </Style>
-    <Style x:Key="Infomaniak.Style.TextBlock.CaptionStrong"
+    <Style x:Key="Infomaniak.Style.TextBlock.CaptionSb"
            TargetType="TextBlock"
            BasedOn="{StaticResource Infomaniak.Style.TextBlock.Base}">
         <Setter Property="FontWeight"
