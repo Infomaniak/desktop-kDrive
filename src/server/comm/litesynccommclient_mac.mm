@@ -24,12 +24,11 @@
 #import <SystemExtensions/SystemExtensions.h>
 #import <Foundation/Foundation.h>
 
-#include "../common/filepermissionholder.h"
-#include "../common/filesystembase.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/io/filestat.h"
+#include "libcommonserver/io/permissionsholder.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -1502,7 +1501,7 @@ bool LiteSyncCommClient::vfsProcessDirStatus(const SyncPath &path, const SyncPat
     return true;
 }
 
-void LiteSyncExtConnector::vfsClearFileAttributes(const SyncPath &path) {
+void LiteSyncCommClient::vfsClearFileAttributes(const SyncPath &path) {
     PermissionsHolder permsHolder(path, _logger);
     removexattr(path.c_str(), litesync_attrs::status.data(), 0);
     removexattr(path.c_str(), litesync_attrs::pinState.data(), 0);
