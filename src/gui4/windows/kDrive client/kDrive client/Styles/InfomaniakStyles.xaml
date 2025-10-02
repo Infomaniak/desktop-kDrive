@@ -22,7 +22,7 @@
 
     <!-- Standard values -->
     <!-- FontFamily -->
-    <FontFamily x:Key="Infomaniak.Style.FontFamily.Default">Segoe UI</FontFamily>
+    <FontFamily x:Key="Infomaniak.Style.FontFamily.Default">Segoe UI Variable</FontFamily>
 
     <!-- Font Sizes -->
     <x:Double x:Key="Infomaniak.Style.FontSize.TitleLarge">40</x:Double>
@@ -41,10 +41,14 @@
     <!-- Colors -->
     <!-- Brand Colors -->
     <Color x:Key="Infomaniak.Style.Color.Brand.Default">#0098FF</Color>
+    <SolidColorBrush x:Key="Infomaniak.Style.Color.Brand.DefaultBrush"
+                     Color="{StaticResource Infomaniak.Style.Color.Brand.Default}" />
     <Color x:Key="Infomaniak.Style.Color.Brand.Dark">#006AB2</Color>
     <Color x:Key="Infomaniak.Style.Color.Brand.Light">#4CB7FF</Color>
     <!-- Product Colors -->
     <Color x:Key="Infomaniak.Style.Color.Product.Default">#5C89F7</Color>
+    <SolidColorBrush x:Key="Infomaniak.Style.Color.Product.DefaultBrush"
+                     Color="{StaticResource Infomaniak.Style.Color.Product.Default}" />
     <Color x:Key="Infomaniak.Style.Color.Product.Dark">#345AC1</Color>
     <Color x:Key="Infomaniak.Style.Color.Product.Light">#84A9F9</Color>
 
@@ -67,6 +71,7 @@
     <Thickness x:Key="Infomaniak.Style.Thickness.Uniform.XL">32</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Uniform.XXL">36</Thickness>
 
+    <Thickness x:Key="Infomaniak.Style.Thickness.Sides.Horizontal.S">12,0</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Sides.Horizontal.M">16,0</Thickness>
 
     <Thickness x:Key="Infomaniak.Style.Thickness.Top.XXS">0,4,0,0</Thickness>

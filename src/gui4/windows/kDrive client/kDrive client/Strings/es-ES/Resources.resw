@@ -354,4 +354,43 @@
   <data name="Global_kDriveOffersUrl" xml:space="preserve">
     <value />
   </data>
+  <data name="Page_StoragePage_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_StoragePage_ThisComputer.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_StoragePage_Used.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_StoragePage_Free.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_StoragePage_OfflineFiles.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_StoragePage_OtherFiles.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_StoragePage_FreeSpace.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_Bytes" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_TeraBytes" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_MegaBytes" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_GigaBytes" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_KiloBytes" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_StoragePage_DiskUnavailable.Message" xml:space="preserve">
+    <value />
+  </data>
 </root>

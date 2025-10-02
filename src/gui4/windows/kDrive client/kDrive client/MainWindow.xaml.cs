@@ -69,6 +69,9 @@ namespace Infomaniak.kDrive
                     case "Settings":
                         ((App)Application.Current).StartOnboarding();
                         break;
+                    case "StoragePage":
+                        contentFrame.Navigate(typeof(Pages.StoragePage));
+                        break;
                     default:
                         Logger.Log(Logger.Level.Warning, $"Unknown navigation tag: {selectedItem.Tag}... Going to HomePage");
                         contentFrame.Navigate(typeof(Pages.HomePage));

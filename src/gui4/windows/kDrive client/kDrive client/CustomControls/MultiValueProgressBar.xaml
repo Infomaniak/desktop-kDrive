@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="Infomaniak.kDrive.CustomControls.MultiValueProgressBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:Infomaniak.kDrive.CustomControls"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converters="using:Infomaniak.kDrive.Converters"
+             mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <converters:NumberToGridLengthConverter  x:Key="DoubleToGridLengthConverter" />
+    </UserControl.Resources>
+    <Border Height="16"
+            Background="LightGray"
+            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}">
+
+        <Grid x:Name="SizeBarGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="{x:Bind Value1, Mode=OneWay, Converter={StaticResource DoubleToGridLengthConverter}}" />
+                <ColumnDefinition Width="{x:Bind Value2, Mode=OneWay, Converter={StaticResource DoubleToGridLengthConverter}}" />
+                <ColumnDefinition Width="{x:Bind Value3, Mode=OneWay, Converter={StaticResource DoubleToGridLengthConverter}}" />
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0"
+                    Background="{x:Bind Color1, Mode=OneWay}"
+                    HorizontalAlignment="Stretch" />
+            <Border Grid.Column="1"
+                    Background="{x:Bind Color2, Mode=OneWay}"
+                    HorizontalAlignment="Stretch" />
+            <Border Grid.Column="2"
+                    Background="{x:Bind Color3, Mode=OneWay}"
+                    HorizontalAlignment="Stretch" />
+        </Grid>
+    </Border>
+</UserControl>

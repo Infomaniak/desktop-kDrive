@@ -75,6 +75,8 @@ namespace Infomaniak.kDrive.ViewModels
         */
         public ReadOnlyObservableCollection<Sync> AllSyncs { get; set; }
 
+        public ReadOnlyObservableCollection<Drive> AllDrives { get; set; }
+
         // Application settings
         public Settings Settings { get; } = new Settings();
 
@@ -109,6 +111,15 @@ namespace Infomaniak.kDrive.ViewModels
                 .Bind(out var allSyncs)
                 .Subscribe();
             AllSyncs = allSyncs;
+
+            // Create a read-only observable collection of all drives across all users
+            _users.ToObservableChangeSet()
+                .AutoRefresh(u => u.Drives.Count)
+                .TransformMany(u => u.Drives)
+                .Filter(d => (d.Syncs.Any()))
+                .Bind(out var allDrives)
+                .Subscribe();
+            AllDrives = allDrives;
 
             // Observe changes to ActiveDrives list and ensure SelectedSync is valid
             AllSyncs.ToObservableChangeSet()
