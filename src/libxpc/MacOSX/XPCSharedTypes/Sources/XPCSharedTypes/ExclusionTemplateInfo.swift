@@ -35,7 +35,7 @@ protocol ExclusionTemplateInfoProtocol {
     public let isDefault: Bool
     public let isDeleted: Bool
 
-    required init(template: NSString, warning: Bool, isDefault: Bool, isDeleted: Bool) {
+    public required init(template: NSString, warning: Bool, isDefault: Bool, isDeleted: Bool) {
         self.template = template
         self.warning = warning
         self.isDefault = isDefault

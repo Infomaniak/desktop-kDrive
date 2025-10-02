@@ -39,7 +39,7 @@ protocol DriveAvailableInfoProtocol {
     public let hexColor: NSString
     public let userDbId: NSInteger
 
-    required init(
+    public required init(
         driveId: NSInteger,
         userId: NSInteger,
         userDbId: NSInteger,

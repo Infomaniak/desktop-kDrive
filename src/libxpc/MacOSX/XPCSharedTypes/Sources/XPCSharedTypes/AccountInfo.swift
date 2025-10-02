@@ -31,7 +31,7 @@ protocol AccountInfoProtocol {
     public let dbId: NSInteger
     public let userDbId: NSInteger
 
-    required init(dbId: NSInteger, userDbId: NSInteger) {
+    public required init(dbId: NSInteger, userDbId: NSInteger) {
         self.dbId = dbId
         self.userDbId = userDbId
     }

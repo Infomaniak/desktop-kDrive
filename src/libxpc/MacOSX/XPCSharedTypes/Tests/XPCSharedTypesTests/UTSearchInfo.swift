@@ -18,14 +18,13 @@
 
 import Foundation
 import Testing
-@testable import XPCSharedTypes
+import XPCSharedTypes
 
 @Test func searchInfoConstructor() async throws {
     // GIVEN
     let expectedId = UUID().uuidString as NSString
     let expectedName = "Test Search" as NSString
     let expectedType: NSInteger = 1234
-    
 
     // WHEN
     let searchInfo = SearchInfo(id: expectedId, name: expectedName, type: expectedType)

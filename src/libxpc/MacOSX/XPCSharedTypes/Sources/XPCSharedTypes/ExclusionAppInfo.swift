@@ -33,7 +33,7 @@ protocol ExclusionAppInfoProtocol {
     public let exclusionDescription: NSString
     public let isDefault: Bool
 
-    required init(appId: NSString, description: NSString, isDefault: Bool) {
+    public required init(appId: NSString, description: NSString, isDefault: Bool) {
         self.appId = appId
         self.exclusionDescription = description
         self.isDefault = isDefault

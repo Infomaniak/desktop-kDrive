@@ -41,23 +41,23 @@ protocol SyncInfoProtocol {
 @objc public class SyncInfo: NSObject, NSSecureCoding, SyncInfoProtocol {
     public static let supportsSecureCoding = true
 
-    let dbId: NSInteger
-    let driveDbId: NSInteger
-    let localPath: NSString
-    let targetPath: NSString
-    let targetNodeId: NSString
-    let supportVfs: Bool
-    let virtualFileMode: NSInteger
-    let navigationPaneClsid: NSString
+    public let dbId: NSInteger
+    public let driveDbId: NSInteger
+    public let localPath: NSString
+    public let targetPath: NSString
+    public let targetNodeId: NSString
+    public let supportVfs: Bool
+    public let virtualFileMode: NSInteger
+    public let navigationPaneClsid: NSString
 
-    required init(dbId: NSInteger,
-                  driveDbId: NSInteger,
-                  localPath: NSString,
-                  targetPath: NSString,
-                  targetNodeId: NSString,
-                  supportVfs: Bool,
-                  virtualFileMode: NSInteger,
-                  navigationPaneClsid: NSString) {
+    public required init(dbId: NSInteger,
+                         driveDbId: NSInteger,
+                         localPath: NSString,
+                         targetPath: NSString,
+                         targetNodeId: NSString,
+                         supportVfs: Bool,
+                         virtualFileMode: NSInteger,
+                         navigationPaneClsid: NSString) {
         self.dbId = dbId
         self.driveDbId = driveDbId
         self.localPath = localPath

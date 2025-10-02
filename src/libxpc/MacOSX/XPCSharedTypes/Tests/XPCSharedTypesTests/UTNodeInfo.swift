@@ -18,15 +18,15 @@
 
 import Foundation
 import Testing
-@testable import XPCSharedTypes
+import XPCSharedTypes
 
 @Test func nodeInfoConstructor() async throws {
     // GIVEN
     let expectedNodeId = NSString(string: UUID().uuidString)
     let expectedName: NSString = "hello name"
-    let expectedSize = Int64.random(in: 0...1000)
+    let expectedSize = Int64.random(in: 0 ... 1000)
     let expectedParentNodeId = NSString(string: UUID().uuidString)
-    let expectedModTime = Int64.random(in: 0...1000)
+    let expectedModTime = Int64.random(in: 0 ... 1000)
     let expectedPath: NSString = "/dev/null"
 
     // WHEN

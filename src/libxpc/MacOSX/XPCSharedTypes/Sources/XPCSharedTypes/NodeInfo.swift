@@ -39,7 +39,7 @@ protocol NodeInfoProtocol {
     public let modTime: Int64
     public let path: NSString
 
-    required init(nodeId: NSString, name: NSString, size: Int64, parentNodeId: NSString, modTime: Int64, path: NSString) {
+    public required init(nodeId: NSString, name: NSString, size: Int64, parentNodeId: NSString, modTime: Int64, path: NSString) {
         self.nodeId = nodeId
         self.name = name
         self.size = size

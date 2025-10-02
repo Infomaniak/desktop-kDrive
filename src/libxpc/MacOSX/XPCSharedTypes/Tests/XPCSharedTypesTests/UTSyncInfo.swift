@@ -18,7 +18,7 @@
 
 import Foundation
 import Testing
-@testable import XPCSharedTypes
+import XPCSharedTypes
 
 @Test func syncInfoConstructor() async throws {
     // GIVEN

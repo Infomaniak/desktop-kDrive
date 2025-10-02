@@ -39,7 +39,7 @@ protocol ProxyConfigInfoProtocol {
     public let user: NSString
     public let pwd: NSString
 
-    required init(type: NSString, hostName: NSString, port: NSInteger, needsAuth: Bool, user: NSString, pwd: NSString) {
+    public required init(type: NSString, hostName: NSString, port: NSInteger, needsAuth: Bool, user: NSString, pwd: NSString) {
         self.type = type
         self.hostName = hostName
         self.port = port

@@ -17,12 +17,12 @@
  */
 
 import Testing
-@testable import XPCSharedTypes
+import XPCSharedTypes
 
 @Test func accountInfoConstructor() async throws {
     // GIVEN
-    let expectedDbId = Int.random(in: 0...1000)
-    let expectedUserDbId = Int.random(in: 0...1000)
+    let expectedDbId = Int.random(in: 0 ... 1000)
+    let expectedUserDbId = Int.random(in: 0 ... 1000)
 
     // WHEN
     let accountInfo = AccountInfo(dbId: expectedDbId, userDbId: expectedUserDbId)

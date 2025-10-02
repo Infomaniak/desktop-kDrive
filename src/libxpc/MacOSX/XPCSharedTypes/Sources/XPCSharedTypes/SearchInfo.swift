@@ -33,7 +33,7 @@ protocol SearchInfoProtocol {
     public let name: NSString
     public let type: NSInteger
 
-    required init(id: NSString, name: NSString, type: NSInteger) {
+    public required init(id: NSString, name: NSString, type: NSInteger) {
         self.id = id
         self.name = name
         self.type = type

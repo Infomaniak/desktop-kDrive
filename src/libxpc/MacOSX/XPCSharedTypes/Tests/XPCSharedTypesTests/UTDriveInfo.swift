@@ -18,13 +18,13 @@
 
 import Foundation
 import Testing
-@testable import XPCSharedTypes
+import XPCSharedTypes
 
 @Test func driveInfoConstructor() async throws {
     // GIVEN
-    let expectedDbId = Int.random(in: 0...1000)
-    let expectedId = Int.random(in: 0...1000)
-    let expectedAccountDbId = Int.random(in: 0...1000)
+    let expectedDbId = Int.random(in: 0 ... 1000)
+    let expectedId = Int.random(in: 0 ... 1000)
+    let expectedAccountDbId = Int.random(in: 0 ... 1000)
     let expectedName: NSString = "hello name"
     let expectedHexColor: NSString = "#AABBCCDD"
     let expectedNotifications = Bool.random()

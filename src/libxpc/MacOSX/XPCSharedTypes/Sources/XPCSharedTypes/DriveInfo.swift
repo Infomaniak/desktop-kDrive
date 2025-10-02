@@ -58,18 +58,16 @@ protocol DriveInfoProtocol {
     public let locked: Bool
     public let accessDenied: Bool
 
-    required init(
-        dbId: NSInteger,
-        id: NSInteger,
-        accountDbId: NSInteger,
-        name: NSString,
-        hexColor: NSString,
-        notifications: Bool,
-        admin: Bool,
-        maintenance: Bool,
-        locked: Bool,
-        accessDenied: Bool
-    ) {
+    public required init(dbId: NSInteger,
+                         id: NSInteger,
+                         accountDbId: NSInteger,
+                         name: NSString,
+                         hexColor: NSString,
+                         notifications: Bool,
+                         admin: Bool,
+                         maintenance: Bool,
+                         locked: Bool,
+                         accessDenied: Bool) {
         self.dbId = dbId
         self.id = id
         self.accountDbId = accountDbId

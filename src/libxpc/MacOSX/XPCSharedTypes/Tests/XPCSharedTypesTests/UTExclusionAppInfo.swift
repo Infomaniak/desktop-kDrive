@@ -18,7 +18,7 @@
 
 import Foundation
 import Testing
-@testable import XPCSharedTypes
+import XPCSharedTypes
 
 @Test func exclusionAppInfoConstructor() async throws {
     // GIVEN
@@ -28,8 +28,8 @@ import Testing
 
     // WHEN
     let exclusionAppInfo = ExclusionAppInfo(appId: expectedAppId,
-                                       description: expectedDescription,
-                                       isDefault: expectedIsDefault)
+                                            description: expectedDescription,
+                                            isDefault: expectedIsDefault)
 
     // THEN
     #expect(exclusionAppInfo.appId == expectedAppId)
