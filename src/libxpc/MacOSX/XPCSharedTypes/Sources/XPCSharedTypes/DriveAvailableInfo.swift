@@ -56,14 +56,15 @@ protocol DriveAvailableInfoProtocol {
     }
 
     public required init?(coder: NSCoder) {
-        guard let driveId = coder.decodeObject(forKey: "driveId") as? NSInteger,
-              let userId = coder.decodeObject(forKey: "userId") as? NSInteger,
-              let accountId = coder.decodeObject(forKey: "accountId") as? NSInteger,
-              let userDbId = coder.decodeObject(forKey: "userDbId") as? NSInteger,
-              let name = coder.decodeObject(forKey: "name") as? NSString,
+        guard let name = coder.decodeObject(forKey: "name") as? NSString,
               let hexColor = coder.decodeObject(forKey: "hexColor") as? NSString else {
             return nil
         }
+
+        let driveId = coder.decodeInteger(forKey: "driveId")
+        let userId = coder.decodeInteger(forKey: "userId")
+        let accountId = coder.decodeInteger(forKey: "accountId")
+        let userDbId = coder.decodeInteger(forKey: "userDbId")
 
         self.driveId = driveId
         self.userId = userId
