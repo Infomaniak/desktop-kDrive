@@ -121,7 +121,7 @@ std::string UploadJob::getSpecificUrl() {
     return str;
 }
 
-void UploadJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
+void UploadJob::setQueryParameters(Poco::URI &uri) {
     if (_fileId.empty()) {
         uri.addQueryParameter("file_name", SyncName2Str(_filename));
         uri.addQueryParameter("directory_id", _remoteParentDirId);
@@ -143,8 +143,6 @@ void UploadJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
         auto str2HtmlStr = [](const std::string &str) { return str.empty() ? "%02%03" : str; };
         uri.addQueryParameter(symbolicLinkKey, str2HtmlStr(Path2Str(_linkTarget)));
     }
-
-    canceled = false;
 }
 
 ExitInfo UploadJob::setData() {
@@ -179,8 +177,7 @@ ExitInfo UploadJob::setData() {
     return ExitCode::Ok;
 }
 
-std::string UploadJob::getContentType(bool &canceled) {
-    canceled = false;
+std::string UploadJob::getContentType() {
     switch (_linkType) {
         case LinkType::Symlink:
             return _targetType == NodeType::File ? mimeTypeSymlink : mimeTypeSymlinkFolder;

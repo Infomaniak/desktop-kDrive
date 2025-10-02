@@ -26,7 +26,7 @@
 
 namespace KDC {
 SyncJobManager::SyncJobManager() :
-    JobManager(){};
+    JobManager() {};
 
 namespace {
 

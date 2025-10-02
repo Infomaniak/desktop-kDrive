@@ -151,6 +151,7 @@ struct COMMON_EXPORT CommonUtility {
 #endif
         static std::string envVarValue(const std::string &name);
         static std::string envVarValue(const std::string &name, bool &isSet);
+        static int setenv(const char *const name, const char *const value, const int overwrite);
 
         static void handleSignals(void (*sigHandler)(int));
         static SyncPath signalFilePath(AppType appType, SignalCategory signalCategory);
@@ -439,7 +440,7 @@ struct COMMON_EXPORT CommonUtility {
         static std::string generateRandomString(const char *charArray, std::uniform_int_distribution<int> &distrib,
                                                 const int length = 10);
 
-        static void extractIntFromStrVersion(const std::string &version, std::vector<int> &tabVersion);
+        static void extractIntFromStrVersion(const std::string &version, std::vector<uint32_t> &tabVersion);
 
         //! Computes recursively and returns all possible NFC and NFD normalizations of `pathSegments` segments
         //! interpreted as a file system path.
@@ -463,6 +464,9 @@ struct COMMON_EXPORT CommonUtility {
         static SyncNameSet computePathNormalizations(const std::vector<SyncName> &pathSegments);
 
         static SyncPath getGenericAppSupportDir();
+
+
+        friend class TestUtility;
 };
 
 struct COMMON_EXPORT StdLoggingThread : public std::thread {

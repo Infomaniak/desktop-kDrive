@@ -46,8 +46,6 @@ class UploadSessionFinishJob : public AbstractUploadSessionJob {
 
     private:
         std::string getSpecificUrl() override;
-        void setQueryParameters(Poco::URI &, bool &) override { /*No query parameters*/
-        }
         inline ExitInfo setData() override;
 
         std::string _totalChunkHash;

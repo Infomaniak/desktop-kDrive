@@ -1021,7 +1021,7 @@ bool LiteSyncCommClient::vfsConvertToPlaceHolder(const SyncPath &filePath, bool 
 }
 
 bool LiteSyncCommClient::vfsCreatePlaceHolder(const SyncPath &relativePath, const SyncPath &localSyncPath,
-                                                const struct stat *fileStat) {
+                                              const struct stat *fileStat) {
     if (!fileStat) {
         LOG_WARN(_logger, "Bad parameters");
         return false;
@@ -1113,8 +1113,8 @@ bool LiteSyncCommClient::vfsCreatePlaceHolder(const SyncPath &relativePath, cons
 }
 
 bool LiteSyncCommClient::vfsUpdateFetchStatus(const SyncPath &tmpFilePath, const SyncPath &filePath,
-                                                const SyncPath &localSyncPath, unsigned long long completed, bool &canceled,
-                                                bool &finished) {
+                                              const SyncPath &localSyncPath, unsigned long long completed, bool &canceled,
+                                              bool &finished) {
     canceled = false;
 
     @autoreleasepool {
@@ -1259,7 +1259,7 @@ bool LiteSyncCommClient::vfsSetThumbnail(const SyncPath &absoluteFilePath, const
 }
 
 bool LiteSyncCommClient::vfsGetStatus(const SyncPath &absoluteFilePath, VfsStatus &vfsStatus,
-                                        log4cplus::Logger &logger) noexcept {
+                                      log4cplus::Logger &logger) noexcept {
     constexpr auto isExpectedError = [](IoError error) -> bool {
         return error == IoError::Success || error == IoError::AttrNotFound || error == IoError::NoSuchFileOrDirectory;
     };
@@ -1518,7 +1518,7 @@ bool LiteSyncCommClient::sendStatusToFinder(const SyncPath &path, const VfsStatu
 }
 
 bool LiteSyncCommClient::checkFilesAttributes(const SyncPath &path, const SyncPath &localSyncPath,
-                                                std::list<SyncPath> &filesToFix) {
+                                              std::list<SyncPath> &filesToFix) {
     IoError ioError = IoError::Unknown;
     IoHelper::DirectoryIterator dirIt(path, false, ioError);
     bool endOfDir = false;

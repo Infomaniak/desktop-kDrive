@@ -116,12 +116,9 @@ class AbstractNetworkJob : public SyncJob {
         Poco::JSON::Object::Ptr _jsonRes{nullptr};
         std::string _octetStreamRes;
 
-        virtual void setQueryParameters(Poco::URI &, bool &canceled) { canceled = false; }
+        virtual void setQueryParameters(Poco::URI &) { /* Empty by default */ }
         virtual ExitInfo setData() { return ExitCode::Ok; }
-        virtual std::string getContentType(bool &canceled) {
-            canceled = false;
-            return {};
-        }
+        virtual std::string getContentType() { return {}; }
 
         std::unique_ptr<Poco::Net::HTTPSClientSession> _session;
         std::recursive_mutex _mutexSession;

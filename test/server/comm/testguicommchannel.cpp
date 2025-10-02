@@ -79,7 +79,7 @@ void TestGuiCommChannel::testSendMessage() {
 
 void TestGuiCommChannel::testReadMessage() {
     std::shared_ptr<GuiCommChannelTest> channelTest = std::make_shared<GuiCommChannelTest>();
-   
+
     // Read a single JSON
     CommString message[3] = {Str("{\"type\":\"test\",\"content\":\"Hello, World!\"}"),
                              Str("{\"type\":\"test\",\"content\":\"Another message\"}"),

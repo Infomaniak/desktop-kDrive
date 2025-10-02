@@ -50,14 +50,14 @@ namespace Infomaniak.kDrive.ServerCommunication
             Users.Add(new User(3) { Id = 12, Name = "Bob", Email = "Bob.doe@infomaniak.com", IsConnected = false, IsStaff = false });
 
             // Create mock drives
-            Drives.Add(new Drive(1) { Id = 140946, Name = "Infomaniak", Color = Color.FromArgb(255, 0, 150, 136), Size = 1000000000, UsedSize = 250000000, IsActive = true, IsPaidOffer = false });
+            Drives.Add(new Drive(1) { Id = 140946, Name = "Infomaniak", Color = Color.FromArgb(255, 0, 150, 136), Size = 1000000000, UsedSize = 250000000, IsActive = true, IsPaidOffer = true });
             Drives.Add(new Drive(2) { Id = 101, Name = "Test_kDrive", Color = Color.FromArgb(255, 156, 38, 176), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
             Drives.Add(new Drive(3) { Id = 101, Name = "Test kDrive2", Color = Color.FromArgb(255, 255, 168, 44), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
             Drives.Add(new Drive(4) { Id = 101, Name = "Test kDrive 3", Color = Color.FromArgb(255, 255, 168, 44), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
             Drives.Add(new Drive(8) { Id = 101, Name = "Test kDrive 4", Color = Color.FromArgb(255, 156, 38, 176), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
             Drives.Add(new Drive(9) { Id = 101, Name = "Test kDrive 5", Color = Color.FromArgb(255, 0, 150, 136), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
             Users[0].Drives.Add(Drives[0]);
-            //Users[0].Drives.Add(Drives[1]);
+            Users[0].Drives.Add(Drives[1]);
             //Users[0].Drives.Add(Drives[2]);
             //Users[0].Drives.Add(Drives[3]);
             Users[0].Drives.Add(Drives[4]);

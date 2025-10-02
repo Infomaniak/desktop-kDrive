@@ -43,7 +43,7 @@ class GetFileInfoJob : public AbstractTokenNetworkJob {
 
     private:
         std::string getSpecificUrl() override;
-        void setQueryParameters(Poco::URI &, bool &) override;
+        void setQueryParameters(Poco::URI &) override;
         inline ExitInfo setData() override { return ExitCode::Ok; }
 
         NodeId _nodeId;

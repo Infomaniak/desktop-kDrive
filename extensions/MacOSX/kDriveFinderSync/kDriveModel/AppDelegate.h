@@ -22,8 +22,11 @@
 
 #import <Cocoa/Cocoa.h>
 
-@interface AppDelegate
-    : NSObject <NSApplicationDelegate, NSXPCListenerDelegate, XPCExtensionRemoteProtocol, XPCLoginItemRemoteProtocol, XPCGuiProtocol>
+@interface AppDelegate : NSObject <NSApplicationDelegate,
+                                   NSXPCListenerDelegate,
+                                   XPCExtensionRemoteProtocol,
+                                   XPCLoginItemRemoteProtocol,
+                                   XPCGuiProtocol>
 
 @property(retain) NSXPCListener *extListener;
 @property(retain) NSXPCListener *guiListener;
@@ -35,6 +38,6 @@
 - (void)connectToLoginAgent;
 - (void)scheduleRetryToConnectToLoginAgent;
 
-- (IBAction) okButtonAction : (id) sender;
+- (IBAction)okButtonAction:(id)sender;
 
 @end

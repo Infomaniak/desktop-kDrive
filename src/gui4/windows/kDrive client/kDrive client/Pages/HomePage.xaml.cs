@@ -44,48 +44,5 @@ namespace Infomaniak.kDrive.Pages
             InitializeComponent();
             Logger.Log(Logger.Level.Debug, "HomePage components initialized");
         }
-
-        private async void TrashButton_Click(object sender, RoutedEventArgs e)
-        {
-            Uri? trashUrl = ViewModel.SelectedSync?.Drive.GetWebTrashUri();
-            if (trashUrl != null)
-            {
-                Logger.Log(Logger.Level.Debug, $"TrashButton_Click: Launching trash URL: {trashUrl}");
-                await Windows.System.Launcher.LaunchUriAsync(trashUrl);
-            }
-            else
-            {
-                Logger.Log(Logger.Level.Error, "No sync selected or unable to get trash URL.");
-            }
-        }
-
-        private async void FavoritesButton_Click(object sender, RoutedEventArgs e)
-        {
-            Uri? favoritesUrl = ViewModel.SelectedSync?.Drive.GetWebFavoritesUri();
-            if (favoritesUrl != null)
-            {
-                Logger.Log(Logger.Level.Debug, $"Launching favorites URL: {favoritesUrl}");
-                await Windows.System.Launcher.LaunchUriAsync(favoritesUrl);
-            }
-            else
-            {
-                Logger.Log(Logger.Level.Error, "No sync selected or unable to get favorites URL.");
-            }
-
-        }
-
-        private async void SharedButton_Click(object sender, RoutedEventArgs e)
-        {
-            Uri? sharedUrl = ViewModel.SelectedSync?.Drive.GetWebSharedUri();
-            if (sharedUrl != null)
-            {
-                Logger.Log(Logger.Level.Debug, $"Launching shared URL: {sharedUrl}");
-                await Windows.System.Launcher.LaunchUriAsync(sharedUrl);
-            }
-            else
-            {
-                Logger.Log(Logger.Level.Error, "No sync selected or unable to get shared URL.");
-            }
-        }
     }
 }

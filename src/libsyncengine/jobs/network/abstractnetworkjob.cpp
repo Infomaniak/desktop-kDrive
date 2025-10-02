@@ -135,20 +135,13 @@ void AbstractNetworkJob::runJob() noexcept {
             _exitInfo = ExitCode::NetworkError;
             break;
         }
-
-        bool canceled = false;
         if (ExitInfo exitInfo = setData(); !exitInfo) { // Must be called before setQueryParameters
             LOG_WARN(_logger, "Job " << jobId() << " is cancelled " << exitInfo);
             _exitInfo = exitInfo;
             break;
         }
 
-        setQueryParameters(uri, canceled);
-        if (canceled) {
-            LOG_WARN(_logger, "Job " << jobId() << " is cancelled");
-            _exitInfo = ExitCode::DataError;
-            break;
-        }
+        setQueryParameters(uri);
 
         // Send request
         auto sendChrono = std::chrono::steady_clock::now();
@@ -323,20 +316,11 @@ bool AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
 
     LOG_DEBUG(_logger, "Sending " << _httpMethod << " request " << jobId() << " : " << uri.toString());
 
-    // Get Content Type
-    bool canceled = false;
-    std::string contentType = getContentType(canceled);
-    if (canceled) {
-        LOG_WARN(_logger, "Unable to get content type!");
-        _exitInfo = ExitCode::DataError;
-        return false;
-    }
-
     Poco::Net::HTTPRequest req(_httpMethod, path, Poco::Net::HTTPMessage::HTTP_1_1);
 
     // Set headers
     req.set("User-Agent", _userAgent);
-    req.setContentType(contentType);
+    req.setContentType(getContentType());
     for (const auto &header: _rawHeaders) {
         req.add(header.first, header.second);
     }
@@ -418,8 +402,11 @@ bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
 
     if (Utility::isError500(_resHttp.getStatus())) {
         _exitInfo = {ExitCode::BackError, ExitCause::Http5xx};
+        std::string replyBody;
+        getStringFromStream(stream[0].get(), replyBody);
+        LOG_WARN(_logger, "Reply " << jobId() << ": " << replyBody);
         disableRetry();
-        return true;
+        return false;
     }
 
     bool res = true;
@@ -451,6 +438,16 @@ bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
                 }
                 return true;
             }
+            break;
+        }
+        case Poco::Net::HTTPResponse::HTTP_UNPROCESSABLE_ENTITY: {
+            _exitInfo = {ExitCode::BackError, ExitCause::HttpErr};
+            disableRetry();
+            std::string replyBody;
+            getStringFromStream(stream[0].get(), replyBody);
+            LOG_WARN(_logger, "Reply " << jobId() << ": " << replyBody);
+            (void) extractJsonError(replyBody);
+            res = false;
             break;
         }
         case Poco::Net::HTTPResponse::HTTP_UPGRADE_REQUIRED: {
@@ -493,6 +490,7 @@ bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
 bool AbstractNetworkJob::handleError(std::istream &inputStream, const Poco::URI &uri) {
     std::string replyBody;
     getStringFromStream(inputStream, replyBody);
+    LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << CommonUtility::s2ws(replyBody));
     return handleError(replyBody, uri);
 }
 
@@ -504,9 +502,6 @@ void AbstractNetworkJob::getStringFromStream(std::istream &inputStream, std::str
     } else {
         std::string tmp(std::istreambuf_iterator<char>(inputStream), (std::istreambuf_iterator<char>()));
         res = std::move(tmp);
-    }
-    if (isExtendedLog()) {
-        LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << CommonUtility::s2ws(res));
     }
 }
 

@@ -58,8 +58,8 @@ void TestIo::tearDown() {
 void TestIo::testTempDirectoryPath() {
     {
         SyncPath tmpPath;
-        IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(_testObj->tempDirectoryPath(tmpPath, ioError));
+        IoError ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(IoHelper::tempDirectoryPath(tmpPath, ioError));
         CPPUNIT_ASSERT(!tmpPath.empty());
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
@@ -73,11 +73,30 @@ void TestIo::testTempDirectoryPath() {
             return SyncPath{};
         });
 
-        CPPUNIT_ASSERT(!_testObj->tempDirectoryPath(tmpPath, ioError));
+        CPPUNIT_ASSERT(!IoHelper::tempDirectoryPath(tmpPath, ioError));
         CPPUNIT_ASSERT(tmpPath.empty());
         CPPUNIT_ASSERT(ioError == IoError::Unknown);
 
         _testObj->resetFunctions();
+    }
+
+    {
+        // Saves the current value of "KDRIVE_TMP_PATH".
+        const std::string previousPathString = CommonUtility::envVarValue("KDRIVE_TMP_PATH");
+
+        LocalTemporaryDirectory temporaryDirectory;
+        const auto pathStringToSet = Path2Str(SyncPath(temporaryDirectory.path() / "testTempDirectoryPath"));
+        (void) CommonUtility::setenv("KDRIVE_TMP_PATH", pathStringToSet.c_str(), 1);
+
+        SyncPath tmpPath;
+        IoError ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(IoHelper::tempDirectoryPath(tmpPath, ioError));
+        CPPUNIT_ASSERT(temporaryDirectory.path() / "testTempDirectoryPath" == tmpPath);
+        CPPUNIT_ASSERT(std::filesystem::exists(tmpPath));
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+
+        // Restores previous value.
+        (void) CommonUtility::setenv("KDRIVE_TMP_PATH", previousPathString.c_str(), 1);
     }
 }
 
