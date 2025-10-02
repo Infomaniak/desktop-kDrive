@@ -20,17 +20,17 @@
 import Cocoa
 import Lottie
 
-final class ThemedAnimationView: LottieAnimationView {
+public final class ThemedAnimationView: LottieAnimationView {
     private var themedAnimation: ThemedAnimation?
 
-    override func viewDidChangeEffectiveAppearance() {
+    override public func viewDidChangeEffectiveAppearance() {
         guard let themedAnimation else { return }
         Task {
             try await loadAnimation(themedAnimation: themedAnimation)
         }
     }
 
-    func loadAnimation(themedAnimation: ThemedAnimation) async throws {
+    public func loadAnimation(themedAnimation: ThemedAnimation) async throws {
         self.themedAnimation = themedAnimation
 
         let animationName = themedAnimation.animation(forAppearance: NSApp.appearance)

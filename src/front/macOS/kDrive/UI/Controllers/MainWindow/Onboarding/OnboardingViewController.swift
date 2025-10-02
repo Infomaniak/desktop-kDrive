@@ -30,7 +30,7 @@ final class OnboardingViewController: NSViewController {
         super.viewDidLoad()
 
         setupUI()
-        transition(toStep: .login)
+        transition(toStep: .login(.initial))
     }
 
     override func viewDidAppear() {
@@ -75,7 +75,7 @@ final class OnboardingViewController: NSViewController {
     private func getContentViewBuilder(forStep step: OnboardingStep) -> NSViewController {
         switch step {
         case .login:
-            return LoginViewController()
+            return LoginViewController(viewModel: viewModel)
         case .driveSelection:
             print("Not Implemented Yet")
             return NSViewController()

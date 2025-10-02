@@ -30,7 +30,7 @@ class OnboardingAnimationsView: NSView {
         layer?.backgroundColor = NSColor.surfaceSecondary.cgColor
 
         setupAnimationView()
-        transitionAnimation(forStep: .login)
+        transitionAnimation(forStep: .login(.initial))
     }
 
     @available(*, unavailable)

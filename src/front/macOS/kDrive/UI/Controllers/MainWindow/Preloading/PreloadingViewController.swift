@@ -23,7 +23,7 @@ import kDriveCoreUI
 import Lottie
 
 final class PreloadingViewController: NSViewController {
-    private var animationView = LottieAnimationView()
+    private var animationView = ThemedAnimationView()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -97,8 +97,7 @@ extension PreloadingViewController {
 
     private func loadAndPlayAnimation() {
         Task {
-            let dotLottieFile = try await DotLottieFile.loadedFromBundle(forResource: "kdrive-loader-light")
-            animationView.loadAnimation(from: dotLottieFile)
+            try await animationView.loadAnimation(themedAnimation: .kDriveLoader)
 
             animationView.loopMode = .loop
             animationView.play()
