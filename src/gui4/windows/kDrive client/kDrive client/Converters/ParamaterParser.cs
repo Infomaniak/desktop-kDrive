@@ -38,7 +38,7 @@ namespace Infomaniak.kDrive.Converters
             }
         }
 
-        public bool Contains(string key, object parameter)
+        public bool Contains(string key)
         {
             if (_parametersDictionary is null)
                 return false;

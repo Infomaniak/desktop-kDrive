@@ -39,8 +39,15 @@ namespace Infomaniak.kDrive.Types
     {
         Unknown = 0,
         Outgoing,
-        Incoming,
-        EnumEnd
+        Incoming
+    };
+
+    public enum SyncActivityState
+    {
+        Unknown = 0,
+        Successful,
+        Failed,
+        InProgress
     };
 
     public enum SyncType
@@ -59,7 +66,6 @@ namespace Infomaniak.kDrive.Types
         ES,
         EN
     };
-
     public enum OAuth2State
     {
         None,

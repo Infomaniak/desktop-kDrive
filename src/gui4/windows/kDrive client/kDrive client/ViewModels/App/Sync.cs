@@ -121,7 +121,7 @@ namespace Infomaniak.kDrive.ViewModels
             {
                 sb.Append(sampleFileNames[rand.Next(sampleFileNames.Length)]);
             }
-            SyncDirection direction = (SyncDirection)rand.Next(2); // Randomly choose direction
+            SyncDirection direction = (SyncDirection)rand.Next(1,3); // Randomly choose direction
             NodeType nodeType = isFile ? NodeType.File : NodeType.Directory;
             long size = isFile ? rand.Next(0, 5000000) : 0; // Random size for files, 0 for directories
             DateTime activityTime = DateTime.Now;
@@ -163,7 +163,7 @@ namespace Infomaniak.kDrive.ViewModels
                     {
                         if (random.Next(10) == 1)
                         {
-                            AppModel.UIThreadDispatcher.TryEnqueue(() => { SyncStatus = SyncStatus.Idle; });
+                          //  AppModel.UIThreadDispatcher.TryEnqueue(() => { SyncStatus = SyncStatus.Idle; });
                             continue;
                         }
                         else
@@ -173,12 +173,13 @@ namespace Infomaniak.kDrive.ViewModels
                             AppModel.UIThreadDispatcher.TryEnqueue(() =>
                             {
                                 _syncActivities.Insert(0, newActivity);
-                                if (_syncActivities.Count > 100)
+                                if (_syncActivities.Count > 500)
                                 {
                                     _syncActivities.RemoveAt(_syncActivities.Count - 1);
                                 }
                             });
-                            await Task.Delay(random.Next(1000)).ConfigureAwait(false);
+                            // await Task.Delay(random.Next(0, 10)).ConfigureAwait(false);
+                            await Task.Delay(100).ConfigureAwait(false);
 
                         }
                     }
@@ -188,7 +189,7 @@ namespace Infomaniak.kDrive.ViewModels
                         {
                             AppModel.UIThreadDispatcher.TryEnqueue(() => { SyncStatus = SyncStatus.Running; });
                         }
-                        await Task.Delay(random.Next(2000)).ConfigureAwait(false);
+                        //await Task.Delay(random.Next(2000)).ConfigureAwait(false);
                     }
 
 

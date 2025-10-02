@@ -71,6 +71,8 @@ namespace Infomaniak.kDrive.Pages
                 case SyncStatus.Idle:
                     if (ViewModel.SelectedSync.SyncErrors.Any())
                         TitleContentControl.ContentTemplate = (DataTemplate)this.Resources["ErrorTitleTemplate"];
+                    else if (!ViewModel.SelectedSync.SyncActivities.Any())
+                        TitleContentControl.ContentTemplate = (DataTemplate)this.Resources["NoActivityTitleTemplate"];
                     else
                         TitleContentControl.ContentTemplate = (DataTemplate)this.Resources["UpToDateTitleTemplate"];
                     break;

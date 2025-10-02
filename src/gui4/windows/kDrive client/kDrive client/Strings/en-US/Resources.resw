@@ -159,16 +159,34 @@
   <data name="CC_SyncErrorBar_button.Content" xml:space="preserve">
     <value />
   </data>
-  <data name="CC_ActivityList_Header_Name.Text" xml:space="preserve">
+  <data name="CC_SyncActivityTable_Header_Name.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="CC_ActivityList_Header_State.Text" xml:space="preserve">
+  <data name="CC_SyncActivityTable_Header_State.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="CC_ActivityList_Header_Size.Text" xml:space="preserve">
+  <data name="Converter_SyncDirectionToToolTipConverter_Outgoing" xml:space="preserve">
     <value />
   </data>
-  <data name="CC_ActivityList_Header_LastLocation.Text" xml:space="preserve">
+  <data name="Converter_DateTimeToTimeAgoConverter_Since" xml:space="preserve">
+    <value>{0} ago</value>
+  </data>
+  <data name="Converter_DateTimeToTimeAgoConverter_Ago" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncActivityTable_Header_Size.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncActivityTable_Header_LastLocation.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncActivityTable_Empty_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncActivityTable_Empty_Link.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncActivityTable_Empty_Description.Text" xml:space="preserve">
     <value />
   </data>
   <data name="Global_Second" xml:space="preserve">
@@ -375,8 +393,8 @@
   <data name="Page_StoragePage_FreeSpace.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="Global_Bytes" xml:space="preserve">
-    <value />
+  <data name="Converter_SyncDirectionToToolTipConverter_Incoming" xml:space="preserve">
+    <value>Since {0}</value>
   </data>
   <data name="Page_HomePage_Hello.Text" xml:space="preserve">
     <value />

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.Converters
 {
-    public class NodeTypeToSvgUriConverter : IValueConverter
+    public class ItemTypeToIconConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
@@ -18,12 +18,12 @@ namespace Infomaniak.kDrive.Converters
             {
                 return nodeType switch
                 {
-                    NodeType.Pdf => AssetLoader.GetAssetUri(AssetLoader.AssetType.Icon, "file-pdf"),
-                    NodeType.Doc => AssetLoader.GetAssetUri(AssetLoader.AssetType.Icon, "file-text"),
-                    NodeType.Grid => AssetLoader.GetAssetUri(AssetLoader.AssetType.Icon, "file-grid"),
-                    NodeType.Directory => AssetLoader.GetAssetUri(AssetLoader.AssetType.Icon, "folder"),
+                    NodeType.Pdf => AssetLoader.GetAssetUri(AssetLoader.AssetType.Icon, "file-pdf.svg"),
+                    NodeType.Doc => AssetLoader.GetAssetUri(AssetLoader.AssetType.Icon, "file-text.svg"),
+                    NodeType.Grid => AssetLoader.GetAssetUri(AssetLoader.AssetType.Icon, "file-grid.svg"),
+                    NodeType.Directory => AssetLoader.GetAssetUri(AssetLoader.AssetType.Icon, "folder.svg"),
                     // TODO: Add specific icons for audio and video files
-                    _ => AssetLoader.GetAssetUri(AssetLoader.AssetType.Icon, "file-text")
+                    _ => AssetLoader.GetAssetUri(AssetLoader.AssetType.Icon, "file-text.svg")
                 };
             }
             Logger.Log(Logger.Level.Fatal, "NodeTypeToSvgUriConverter: value is not a NodeType.");

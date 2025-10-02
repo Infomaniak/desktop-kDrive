@@ -33,7 +33,7 @@
                         </ImageIcon.Source>
                     </ImageIcon>
                 </StackPanel>
-                <TextBlock Text="{x:Bind LastActivity.ActivityTime, Converter={StaticResource DateTimeToTimeAgoConverter}, Mode=OneWay}"
+                <TextBlock Text="{x:Bind LastActivity.ActivityTime, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Ago', Mode=OneWay}"
                            Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                            Visibility="{x:Bind LastActivity, Converter={StaticResource IsNullToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}" />
             </StackPanel>
@@ -70,6 +70,9 @@
                         </ImageIcon.Source>
                     </ImageIcon>
                 </StackPanel>
+                <TextBlock Text="{x:Bind LastActivity.ActivityTime, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Since', Mode=OneWay}"
+                           Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
+                           Visibility="{x:Bind LastActivity, Converter={StaticResource IsNullToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}" />
             </StackPanel>
         </DataTemplate>
 
@@ -112,14 +115,8 @@
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
                 <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}"
                             Orientation="Horizontal">
-                    <TextBlock Text="Erreurs de synchronisation"
+                    <TextBlock Text="Aucune activité récente"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
-                    <ImageIcon Height="16"
-                               Width="16">
-                        <ImageIcon.Source>
-                            <SvgImageSource UriSource="ms-appx:///Assets/Icons/triangle-alert.svg" />
-                        </ImageIcon.Source>
-                    </ImageIcon>
                 </StackPanel>
             </StackPanel>
         </DataTemplate>
@@ -163,8 +160,7 @@
                 <ComboBoxItem>
                     <StackPanel Orientation="Horizontal"
                                 Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                        <ImageIcon Height="14"
-                                   Width="12.25">
+                        <ImageIcon Height="14">
                             <ImageIcon.Source>
                                 <SvgImageSource UriSource="ms-appx:///Assets/Icons/user.svg" />
                             </ImageIcon.Source>
