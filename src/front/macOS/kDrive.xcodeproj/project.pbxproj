@@ -59,6 +59,7 @@
 		F9A9A0562E61A887005FA196 /* Exceptions for "kDriveCoreUI" folder in "kDrive" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				"Utils/DotLottieFile+Load.swift",
 				Views/SidebarHeaderView.swift,
 			);
 			target = 37A1C4252E546A5200596DBB /* kDrive */;
@@ -73,6 +74,7 @@
 		F9C97F782E86DFB600C01B85 /* Exceptions for "kDriveCoreUI" folder in "kDriveCoreUI" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				"Utils/DotLottieFile+Load.swift",
 				Views/SidebarHeaderView.swift,
 			);
 			target = 37A1C43E2E546A9600596DBB /* kDriveCoreUI */;
