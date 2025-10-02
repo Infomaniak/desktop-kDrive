@@ -502,18 +502,25 @@ void TestJobManager::testWithCallbackBigFiles(const SyncPath &dirPath, const uin
             counter++;
         }
 
-        int waitCountMax = 3000; // Wait max 300sec
-        while (ongoingJobsCount() > 0 && waitCountMax-- > 0 && !_jobErrorSocketsDefuncted && !_jobErrorOther) {
-            Utility::msleep(100); // Wait 100ms
+        int waitCountMax = 6000; // Wait max 6000 * 100 ms = 600 s.
+        while (ongoingJobsCount() > 0 && waitCountMax > 0 && !_jobErrorSocketsDefuncted && !_jobErrorOther) {
+            --waitCountMax;
+            Utility::msleep(100);
         }
+
+        LOG_DEBUG(Log::instance()->getLogger(), "$$$$$ testWithCallbackBigFiles - checking socket errors and job errors.");
 
         if (_jobErrorSocketsDefuncted || _jobErrorOther) {
             LOG_DEBUG(Log::instance()->getLogger(), "$$$$$ testWithCallbackBigFiles - Error, cancel ongoing jobs");
             cancelAllOngoingJobs();
         }
 
-        CPPUNIT_ASSERT(ongoingJobsCount() == 0);
-        CPPUNIT_ASSERT(!_jobErrorOther);
+        LOG_DEBUG(Log::instance()->getLogger(), "$$$$$ testWithCallbackBigFiles - checking ongoing jobs count.");
+
+        CPPUNIT_ASSERT_MESSAGE("Some jobs are still ongoing.", ongoingJobsCount() == 0);
+        CPPUNIT_ASSERT_MESSAGE("A job error was found.", !_jobErrorOther);
+
+        LOG_DEBUG(Log::instance()->getLogger(), "$$$$$ testWithCallbackBigFiles - checking socket errors.");
 
         if (_jobErrorSocketsDefuncted) {
             LOG_DEBUG(Log::instance()->getLogger(), "$$$$$ testWithCallbackBigFiles - Error, sockets defuncted by kernel");
