@@ -37,10 +37,8 @@ protocol AccountInfoProtocol {
     }
 
     public required init?(coder: NSCoder) {
-        guard let dbId = coder.decodeObject(forKey: "dbId") as? NSInteger,
-              let userDbId = coder.decodeObject(forKey: "userDbId") as? NSInteger else {
-            return nil
-        }
+        let dbId = coder.decodeInteger(forKey: "dbId")
+        let userDbId = coder.decodeInteger(forKey: "userDbId")
 
         self.dbId = dbId
         self.userDbId = userDbId
