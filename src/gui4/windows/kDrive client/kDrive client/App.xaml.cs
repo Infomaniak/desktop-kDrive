@@ -92,21 +92,17 @@ namespace Infomaniak.kDrive
             }
 
             Logger.Log(Logger.Level.Info, $"App launched with kind: {args.UWPLaunchActivatedEventArgs.Kind}, arguments: {args.Arguments}");
-            AppModel.UIThreadDispatcher = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread(); // Save the UI thread dispatcher for later use in view models
             CurrentWindow = new MainWindow();
             TrayIcoManager.Initialize();
             await ComClient.Initialize();
-            await Data.InitializeAsync().ConfigureAwait(false);
-
-            AppModel.UIThreadDispatcher.TryEnqueue(() =>
+            await Data.InitializeAsync();
+            StartOnboardingIfNeeded();
+            Data.AllSyncs.AsObservableChangeSet()
+            .Subscribe(_ =>
             {
                 StartOnboardingIfNeeded();
-                Data.AllSyncs.AsObservableChangeSet()
-                .Subscribe(_ =>
-                {
-                    StartOnboardingIfNeeded();
-                });
             });
+
         }
 
         public void StartOnboarding()
@@ -135,9 +131,9 @@ namespace Infomaniak.kDrive
 
         public void StartOnboardingIfNeeded()
         {
-            if (!Data.AllSyncs.Any() && !(CurrentWindow is OnBoarding.OnBoardingWindow))
+            if (!Data.Users.Any() && !(CurrentWindow is OnBoarding.OnBoardingWindow))
             {
-                Logger.Log(Logger.Level.Info, "No syncs available after initialization, starting onboarding process.");
+                Logger.Log(Logger.Level.Info, "No users available after initialization, starting onboarding process.");
                 StartOnboarding();
             }
         }
