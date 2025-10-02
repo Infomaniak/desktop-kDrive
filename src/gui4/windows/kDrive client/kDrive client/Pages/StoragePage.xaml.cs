@@ -79,11 +79,11 @@ namespace Infomaniak.kDrive.Pages
         private readonly AppModel _viewModel = ((App)Application.Current).Data;
         public AppModel AppViewModel => _viewModel;
 
-        private double? _diskSize;
-        private double? _diskUsedSize;
-        private double? _diskFreeSize;
-        private double? _hydratedFileSize;
-        private double? _otherFileSize;
+        private long? _diskSize;
+        private long? _diskUsedSize;
+        private long? _diskFreeSize;
+        private long? _hydratedFileSize;
+        private long? _otherFileSize;
         private bool _loading = false;
         private string _diskRoot = "";
         private bool _isDiskConnected = false;
@@ -114,31 +114,31 @@ namespace Infomaniak.kDrive.Pages
             _cancellationTokenSource.Dispose();
         }
 
-        public double? DiskSize
+        public long? DiskSize
         {
             get => _diskSize;
             set => SetProperty(ref _diskSize, value);
         }
 
-        public double? DiskUsedSize
+        public long? DiskUsedSize
         {
             get => _diskUsedSize;
             set => SetProperty(ref _diskUsedSize, value);
         }
 
-        public double? DiskFreeSize
+        public long? DiskFreeSize
         {
             get => _diskFreeSize;
             set => SetProperty(ref _diskFreeSize, value);
         }
 
-        public double? HydratedFileSize
+        public long? HydratedFileSize
         {
             get => _hydratedFileSize;
             set => SetProperty(ref _hydratedFileSize, value);
         }
 
-        public double? OtherFileSize
+        public long? OtherFileSize
         {
             get => _otherFileSize;
             set => SetProperty(ref _otherFileSize, value);
@@ -212,12 +212,12 @@ namespace Infomaniak.kDrive.Pages
             Loading = false;
         }
 
-        private async Task<double?> GetHydratedFileSizeAsync(CancellationToken cancellationToken)
+        private async Task<long?> GetHydratedFileSizeAsync(CancellationToken cancellationToken)
         {
             // TODO: Replace this mock implementation with actual hydrated file size calculation logic.
             // This is a temporary stub that returns a random value for testing purposes.
             await Task.Delay(5000, cancellationToken);
-            return new Random().NextInt64((long?)DiskUsedSize ?? 0);
+            return new Random().NextInt64(DiskUsedSize ?? 0);
         }
     }
 }

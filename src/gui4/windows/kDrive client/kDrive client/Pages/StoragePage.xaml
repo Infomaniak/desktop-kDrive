@@ -29,7 +29,7 @@
     <Page.Resources>
         <converters:BooleanToVisibilityConverter  x:Key="BooleanToVisibilityConverter" />
         <converters:BooleanToInvertedVisibilityConverter  x:Key="BooleanToInvertedVisibilityConverter" />
-        <converters:DoubleByteToSizeStringConverter x:Key="DoubleByteToSizeStringConverter" />
+        <converters:BytesToHumanReadableStringConverter x:Key="BytesToHumanReadableStringConverter" />
         <converters:IsNullToVisibilityConverter x:Key="IsNullToVisibilityConverter" />
     </Page.Resources>
     <Grid Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.L}"
@@ -84,7 +84,7 @@
                     <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}">
                         <Run x:Uid="Page_StoragePage_ThisComputer" />
                         <Run Text=" -" />
-                        <Run Text="{x:Bind PageViewModel.DiskSize, Mode=OneWay, Converter={StaticResource DoubleByteToSizeStringConverter}}" />
+                        <Run Text="{x:Bind PageViewModel.DiskSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}}" />
                     </TextBlock>
                     <ProgressRing Height="8"
                                   Width="8"
@@ -99,13 +99,13 @@
                 <Grid>
                     <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                                Foreground="{ThemeResource TextFillColorDisabled}">
-                        <Run Text="{x:Bind PageViewModel.DiskUsedSize, Mode=OneWay, Converter={StaticResource DoubleByteToSizeStringConverter}}" />
+                        <Run Text="{x:Bind PageViewModel.DiskUsedSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}}" />
                         <Run x:Uid="Page_StoragePage_Used" />
                     </TextBlock>
                     <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                                HorizontalAlignment="Right"
                                Foreground="{ThemeResource TextFillColorDisabled}">
-                        <Run Text="{x:Bind PageViewModel.DiskFreeSize, Mode=OneWay, Converter={StaticResource DoubleByteToSizeStringConverter}}" />
+                        <Run Text="{x:Bind PageViewModel.DiskFreeSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}}" />
                         <Run x:Uid="Page_StoragePage_Free" />
                     </TextBlock>
                 </Grid>
@@ -131,7 +131,7 @@
                                   Foreground="{StaticResource Infomaniak.Style.Color.Product.DefaultBrush}"
                                   Visibility="{x:Bind PageViewModel.HydratedFileSize, Mode=OneWay, Converter={StaticResource IsNullToVisibilityConverter}}" />
                     <TextBlock Grid.Column="2"
-                               Text="{x:Bind PageViewModel.HydratedFileSize, Mode=OneWay, Converter={StaticResource DoubleByteToSizeStringConverter}}"
+                               Text="{x:Bind PageViewModel.HydratedFileSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}}"
                                HorizontalAlignment="Right"
                                Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
                                Foreground="{ThemeResource AccentTextFillColorDisabled}" />
@@ -160,7 +160,7 @@
                                Grid.Column="1"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                     <TextBlock Grid.Column="2"
-                               Text="{x:Bind PageViewModel.OtherFileSize, Mode=OneWay, Converter={StaticResource DoubleByteToSizeStringConverter}}"
+                               Text="{x:Bind PageViewModel.OtherFileSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}}"
                                HorizontalAlignment="Right"
                                Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
                                Foreground="{ThemeResource AccentTextFillColorDisabled}" />
@@ -188,7 +188,7 @@
                                Grid.Column="1"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                     <TextBlock Grid.Column="2"
-                               Text="{x:Bind PageViewModel.DiskFreeSize, Mode=OneWay, Converter={StaticResource DoubleByteToSizeStringConverter}}"
+                               Text="{x:Bind PageViewModel.DiskFreeSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}}"
                                HorizontalAlignment="Right"
                                Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
                                Foreground="{ThemeResource AccentTextFillColorDisabled}" />

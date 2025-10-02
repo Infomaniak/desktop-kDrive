@@ -9,7 +9,7 @@
              mc:Ignorable="d">
 
     <UserControl.Resources>
-        <converters:DoubleToGridLengthConverter  x:Key="DoubleToGridLengthConverter" />
+        <converters:NumberToGridLengthConverter  x:Key="DoubleToGridLengthConverter" />
     </UserControl.Resources>
     <Border Height="16"
             Background="LightGray"
