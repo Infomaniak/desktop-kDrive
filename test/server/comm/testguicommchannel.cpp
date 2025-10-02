@@ -17,7 +17,14 @@
  */
 
 #include "testguicommchannel.h"
+#include "comm/guijobs/abstractguijob.h"
+#include "comm/guijobs/guijobfactory.h"
+#include "comm/guijobs/loginrequesttokenjob.h"
+#include "libcommon/comm.h"
 #include "log/log.h"
+
+#include "mocks/libcommonserver/db/mockdb.h"
+#include "test_utility/testhelpers.h"
 
 namespace KDC {
 
@@ -45,6 +52,12 @@ uint64_t GuiCommChannelTest::bytesAvailable() const {
 
 void TestGuiCommChannel::setUp() {
     TestBase::start();
+
+    // Create parmsDb
+    bool alreadyExists = false;
+    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
+    std::filesystem::remove(parmsDbPath);
+    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 }
 
 void TestGuiCommChannel::tearDown() {
@@ -113,4 +126,94 @@ void TestGuiCommChannel::testCanReadMessage() {
     CPPUNIT_ASSERT(channelTest.writeData(message.substr(10).c_str(), message.size() - 10)); // Complete the JSON
     CPPUNIT_ASSERT(channelTest.canReadMessage()); // Now should be able to read a message
 }
+
+void TestGuiCommChannel::testLoginRequestToken() {
+    const auto outputParamsStr{Str(R"({ "cause": 0,)"
+                                   R"( "code": 0,)"
+                                   R"( "id": 1,)"
+                                   R"( "num": 1,)"
+                                   R"( "params": {)"
+                                   R"( "userDbId": 1 },)"
+                                   R"( "type": 1 })")};
+
+    GuiJobFactory guiJobFactory;
+
+    auto test = [&](const CommString &inputStr, std::shared_ptr<AbstractCommChannel> channel) {
+        //  Deserialize generic parameters
+        int requestId = 0;
+        RequestNum requestNum = RequestNum::Unknown;
+        Poco::DynamicStruct inParams;
+        if (!AbstractGuiJob::deserializeGenericInputParms(inputStr, requestId, requestNum, inParams)) {
+            CPPUNIT_ASSERT(false);
+        }
+
+        CPPUNIT_ASSERT(requestId == 1);
+        CPPUNIT_ASSERT(requestNum == RequestNum::LOGIN_REQUESTTOKEN);
+        CPPUNIT_ASSERT(inParams["code"] == "YWFhYQ=="); // "aaaa" base64 encoded
+        CPPUNIT_ASSERT(inParams["codeVerifier"] == "YmJiYg=="); // "bbbb" base64 encoded
+
+        // Create job
+        auto job = guiJobFactory.make(requestNum, nullptr, requestId, inParams, channel);
+        CPPUNIT_ASSERT(job != nullptr);
+
+        // Deserialize specific parameters
+        if (!job->deserializeInputParms()) {
+            CPPUNIT_ASSERT(false);
+        }
+
+        auto loginRequestTokenJob = std::dynamic_pointer_cast<LoginRequestTokenJob>(job);
+        CPPUNIT_ASSERT(loginRequestTokenJob->_code == "aaaa");
+        CPPUNIT_ASSERT(loginRequestTokenJob->_codeVerifier == "bbbb");
+
+        // Process job simulation
+        loginRequestTokenJob->_userDbId = 1;
+        job->_exitInfo = ExitCode::Ok;
+
+        // Serialize specific parameters
+        if (!job->serializeOutputParms()) {
+            CPPUNIT_ASSERT(false);
+        }
+
+        CPPUNIT_ASSERT(job->_outParams["userDbId"] == 1);
+
+        if (!job->serializeGenericOutputParms()) {
+            CPPUNIT_ASSERT(false);
+        }
+
+        CPPUNIT_ASSERT(job->_outputParamsStr == outputParamsStr);
+
+        channel->sendMessage(job->_outputParamsStr);
+    };
+
+#if defined(KD_WINDOWS)
+    const auto inputParamsStr{Str(R"({ "id": 1,)"
+                                  R"( "num": 1,)" // LOGIN_REQUESTTOKEN
+                                  R"( "params": {)"
+                                  R"( "code": "YWFhYQ==",)"
+                                  R"( "codeVerifier": "YmJiYg==" } })")};
+
+    auto channel = std::make_shared<GuiCommChannel>(Poco::Net::StreamSocket());
+    test(inputParamsStr, channel);
+#else
+    auto readyReadCbk = [&](std::shared_ptr<AbstractCommChannel> channel) {
+        if (channel->canReadMessage()) {
+            CommString query = channel->readMessage();
+            if (!query.empty()) {
+                test(query, channel);
+            } else {
+                CPPUNIT_ASSERT(false);
+            }
+        }
+    };
+
+    auto answerCbk = [](int userDbId, const std::string &error, const std::string &errorDescr) {
+        CPPUNIT_ASSERT(userDbId == 1);
+        CPPUNIT_ASSERT(error.empty());
+        CPPUNIT_ASSERT(errorDescr.empty());
+    };
+
+    GuiCommChannel::runLoginRequestToken("aaaa", "bbbb", readyReadCbk, answerCbk);
+#endif
+}
+
 } // namespace KDC

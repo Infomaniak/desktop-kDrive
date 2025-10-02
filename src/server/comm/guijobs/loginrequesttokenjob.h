@@ -38,6 +38,8 @@ class LoginRequestTokenJob : public AbstractGuiJob {
         bool deserializeInputParms() override;
         bool serializeOutputParms() override;
         bool process() override;
+
+        friend class TestGuiCommChannel;
 };
 
 } // namespace KDC

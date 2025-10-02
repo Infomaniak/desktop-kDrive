@@ -243,7 +243,7 @@ void CommManager::executeGuiQuery(const CommString &commandLineStr, std::shared_
     }
 
     // Create and execute GUI job
-    std::shared_ptr<AbstractGuiJob> job = _guiJobFactory->make(requestNum, shared_from_this(), requestId, inParams, channel);
+    auto job = _guiJobFactory->make(requestNum, shared_from_this(), requestId, inParams, channel);
     if (!job) {
         LOG_WARN(Log::instance()->getLogger(), "Job not implemented: num=" << requestNum);
         return;

@@ -42,8 +42,11 @@ class GuiCommChannel : public SocketCommChannel {
         CommString readMessage() final;
 
 #if defined(KD_MACOS)
-        // For tests only
-        static void testLoginRequestToken(const std::string &code, const std::string &codeVerifier);
+        // Run xpc method - For tests only
+        static void runLoginRequestToken(
+                const std::string &code, const std::string &codeVerifier,
+                const std::function<void(std::shared_ptr<AbstractCommChannel>)> &readyReadCbk,
+                const std::function<void(int userDbId, const std::string &error, const std::string &errorDescr)> &answerCbk);
 #endif
 
     private:

@@ -140,6 +140,7 @@ class AbstractGuiJob : public AbstractJob {
         }
 
         friend class TestAbstractGuiJob;
+        friend class TestGuiCommChannel;
 };
 
 using AbstractGuiJobSharedConst = std::function<std::shared_ptr<AbstractGuiJob>(

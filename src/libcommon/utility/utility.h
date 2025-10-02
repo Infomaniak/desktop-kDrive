@@ -18,6 +18,10 @@
 
 #pragma once
 
+#if defined(KD_MACOS)
+#pragma clang diagnostic ignored "-Wnullability-completeness"
+#endif
+
 #include "libcommon/libcommon.h"
 #include "types.h"
 
@@ -418,10 +422,16 @@ struct COMMON_EXPORT CommonUtility {
         static void convertFromBase64Str(const std::string &base64Str, std::string &value);
         static void convertFromBase64Str(const std::string &base64Str, std::wstring &value);
         static void convertFromBase64Str(const std::string &base64Str, CommBLOB &value);
+#if defined(KD_MACOS)
+        static void convertFromBase64Str(NSString *const _Nonnull base64Str, NSString **_Nullable str);
+#endif
 
         static void convertToBase64Str(const std::string &str, std::string &base64Str);
         static void convertToBase64Str(const std::wstring &wstr, std::string &base64Str);
         static void convertToBase64Str(const CommBLOB &blob, std::string &base64Str);
+#if defined(KD_MACOS)
+        static void convertToBase64Str(NSString *const _Nonnull str, NSString **_Nullable base64Str);
+#endif
 
     private:
         static std::mutex _generateRandomStringMutex;
