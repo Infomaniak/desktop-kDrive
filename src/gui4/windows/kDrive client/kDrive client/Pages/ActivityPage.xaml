@@ -14,6 +14,7 @@
         <converters:BooleanToInvertedVisibilityConverter  x:Key="BooleanToInvertedVisibilityConverter" />
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:BooleanToInvertedBooleanConverter x:Key="BooleanToInvertedBooleanConverter" />
+        <converters:BooleanToIntegerConverter x:Key="BooleanToIntegerConverter" />
         <converters:DateTimeToTimeAgoConverter x:Key="DateTimeToTimeAgoConverter" />
         <converters:IsNullToVisibilityConverter x:Key="IsNullToVisibilityConverter" />
 
@@ -128,7 +129,7 @@
             <controls:ContentLoader IsLoading="True"
                                     CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"
                                     Height="{StaticResource Infomaniak.Style.Spacing.L}"
-                                    Width="300"/>
+                                    Width="300" />
         </DataTemplate>
     </Page.Resources>
 
@@ -137,7 +138,7 @@
           ColumnSpacing="24">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="auto" />
+            <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <!-- Header -->
@@ -146,10 +147,44 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- Sync Status Bar -->
         <ContentControl x:Name="TitleContentControl"
+                        Grid.Row="0"
+                        Grid.Column="0"
                         ContentTemplate="{StaticResource LoadingTitleTemplate}"
                         Content="{x:Bind ViewModel.SelectedSync, Mode=OneWay}" />
+
+        <ComboBox  Grid.Row="0"
+                   Grid.Column="1"
+                   Background="Transparent"
+                   BorderBrush="Transparent"
+                   FlowDirection="RightToLeft"
+                   SelectedIndex="{x:Bind ViewModel.SelectedSync.ShowIncomingActivity, Converter={StaticResource BooleanToIntegerConverter}, Mode=TwoWay}">
+            <ComboBox.Items>
+                <ComboBoxItem>
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                        <ImageIcon Height="14"
+                                   Width="12.25">
+                            <ImageIcon.Source>
+                                <SvgImageSource UriSource="ms-appx:///Assets/Icons/user.svg" />
+                            </ImageIcon.Source>
+                        </ImageIcon>
+                        <TextBlock Text="Mon activité uniquement" />
+                    </StackPanel>
+                </ComboBoxItem>
+                <ComboBoxItem>
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                        <ImageIcon Height="14">
+                            <ImageIcon.Source>
+                                <SvgImageSource UriSource="ms-appx:///Assets/Icons/multi-user.svg" />
+                            </ImageIcon.Source>
+                        </ImageIcon>
+                        <TextBlock Text="Toutes les activités" />
+                    </StackPanel>
+                </ComboBoxItem>
+            </ComboBox.Items>
+        </ComboBox>
 
         <!-- Left main pane -->
         <controls:SyncActivityTable Grid.Row="2"
