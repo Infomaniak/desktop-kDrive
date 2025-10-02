@@ -35,7 +35,7 @@ ComputeChecksumJob::ComputeChecksumJob(const NodeId &nodeId, const SyncPath &fil
     _filePath(filepath),
     _localSnapshot(localSnapshot) {}
 
-void ComputeChecksumJob::runJob() {
+ExitInfo ComputeChecksumJob::runJob() {
     if (isExtendedLog()) {
         LOGW_DEBUG(_logger, L"Checksum job started: id: " << jobId() << L", path: " << Path2WStr(_filePath));
     }
@@ -47,13 +47,13 @@ void ComputeChecksumJob::runJob() {
     XXH3_state_t *const state = XXH3_createState();
     if (!state) {
         LOGW_WARN(_logger, L"Checksum computation " << jobId() << L" failed for file " << Path2WStr(_filePath));
-        return;
+        return ExitInfo();
     }
 
     // Initialize state with selected seed
     if (XXH3_64bits_reset(state) == XXH_ERROR) {
         LOGW_WARN(_logger, L"Checksum computation " << jobId() << L" failed for file " << Path2WStr(_filePath));
-        return;
+        return ExitInfo();
     }
 
     try {
@@ -65,7 +65,7 @@ void ComputeChecksumJob::runJob() {
                 len = fread(buf, 1, BUFSIZ, f);
                 if (XXH3_64bits_update(state, buf, len) == XXH_ERROR) {
                     LOGW_WARN(_logger, L"Checksum computation " << jobId() << L" failed for file " << Path2WStr(_filePath));
-                    return;
+                    return ExitInfo();
                 }
             } while (len == BUFSIZ);
 
@@ -97,6 +97,7 @@ void ComputeChecksumJob::runJob() {
     if (isExtendedLog()) {
         LOG_DEBUG(_logger, "Checksum job finished: id=" << jobId());
     }
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

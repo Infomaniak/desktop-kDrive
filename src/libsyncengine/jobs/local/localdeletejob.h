@@ -47,13 +47,13 @@ class LocalDeleteJob : public SyncJob {
     protected:
         SyncPath _absolutePath;
 
-        virtual bool canRun() override;
+        virtual ExitInfo canRun() override;
         virtual bool findRemoteItem(SyncPath &remoteItemPath) const;
         virtual bool moveToTrash();
         void handleTrashMoveOutcome(const bool success);
 
     private:
-        virtual void runJob() override;
+        ExitInfo runJob() override;
 
         SyncPalInfo _syncInfo;
         SyncPath _relativePath;

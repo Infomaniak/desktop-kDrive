@@ -72,7 +72,7 @@ AbstractUploadSession::AbstractUploadSession(const SyncPath &filepath, const Syn
     setProgressExpectedFinalValue(static_cast<int64_t>(_filesize));
 }
 
-void AbstractUploadSession::runJob() {
+ExitInfo AbstractUploadSession::runJob() {
     if (isExtendedLog()) {
         LOGW_DEBUG(_logger, L"Starting upload session " << jobId() << L" for file " << Path2WStr(_filePath.filename())
                                                         << L" with " << _nbParallelThread << L" threads");
@@ -117,6 +117,7 @@ void AbstractUploadSession::runJob() {
 
     LOGW_DEBUG(_logger, L"Upload session job " << jobId() << (isAborted() ? L" aborted after " : L" finished after ")
                                                << timer.elapsed<DoubleSeconds>().count() << L"s");
+    return ExitCode::Ok;
 }
 
 void AbstractUploadSession::uploadChunkCallback(const UniqueId jobId) {
@@ -149,15 +150,14 @@ bool AbstractUploadSession::handleCancelJobResult(const std::shared_ptr<UploadSe
     return true;
 }
 
-bool AbstractUploadSession::canRun() {
+ExitInfo AbstractUploadSession::canRun() {
     if (_uploadSessionType == UploadSessionType::Unknown) {
         LOGW_ERROR(_logger, L"Upload session type is unknown");
-        _exitInfo = ExitCode::DataError;
-        return false;
+        return ExitCode::DataError;
     }
 
     if (bypassCheck()) {
-        return true;
+        return ExitCode::Ok;
     }
 
     // Check that the item still exist
@@ -165,23 +165,20 @@ bool AbstractUploadSession::canRun() {
     auto ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_filePath, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_filePath, ioError));
-        _exitInfo = ExitCode::SystemError;
-        return false;
+        return ExitCode::SystemError;
     }
     if (ioError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_filePath));
-        _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
-        return false;
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     if (!exists) {
         LOGW_DEBUG(_logger,
                    L"Item does not exist anymore. Aborting current sync and restart " << Utility::formatSyncPath(_filePath));
-        _exitInfo = {ExitCode::DataError, ExitCause::NotFound};
-        return false;
+        return {ExitCode::DataError, ExitCause::NotFound};
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
 bool AbstractUploadSession::initChunks() {

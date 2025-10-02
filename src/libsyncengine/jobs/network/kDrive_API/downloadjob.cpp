@@ -118,9 +118,9 @@ std::string DownloadJob::getSpecificUrl() {
     return str;
 }
 
-bool DownloadJob::canRun() {
+ExitInfo DownloadJob::canRun() {
     if (bypassCheck()) {
-        return true;
+        return ExitCode::Ok;
     }
 
     // Check that we can create the item here
@@ -128,21 +128,19 @@ bool DownloadJob::canRun() {
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_localpath, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_localpath, ioError));
-        _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
-        return false;
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     if (_isCreate && exists) {
         LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(_localpath)
                                           << L" already exists. Aborting current sync and restarting.");
-        _exitInfo = {ExitCode::DataError, ExitCause::FileExists};
-        return false;
+        return {ExitCode::DataError, ExitCause::FileExists};
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
-void DownloadJob::runJob() noexcept {
+ExitInfo DownloadJob::runJob() noexcept {
     if (!_isCreate && _vfs) {
         // Get hydration status
         VfsStatus vfsStatus;
@@ -154,35 +152,30 @@ void DownloadJob::runJob() noexcept {
         IoError ioError = IoError::Success;
         if (!IoHelper::getFileStat(_localpath, &filestat, ioError)) {
             LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_localpath, ioError));
-            _exitInfo = ExitCode::SystemError;
-            return;
+            return ExitCode::SystemError;
         }
         if (ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_localpath));
-            _exitInfo = {ExitCode::SystemError, ExitCause::NotFound};
-            return;
+            return {ExitCode::SystemError, ExitCause::NotFound};
         } else if (ioError == IoError::AccessDenied) {
             LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_localpath));
-            _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
-            return;
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
 
         if (const ExitInfo exitInfo = _vfs->updateMetadata(_localpath, filestat.creationTime, filestat.modificationTime,
                                                            _expectedSize, std::to_string(filestat.inode));
             !exitInfo) {
             LOGW_WARN(_logger, L"Update metadata failed " << exitInfo << L" " << Utility::formatSyncPath(_localpath));
-            _exitInfo = exitInfo;
-            return;
+            return exitInfo;
         }
 
         if (const ExitInfo exitInfo = _vfs->forceStatus(_localpath, VfsStatus({.isSyncing = true})); !exitInfo) {
             LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
-            _exitInfo = exitInfo;
-            return;
+            return exitInfo;
         }
     }
 
-    AbstractTokenNetworkJob::runJob();
+    return AbstractTokenNetworkJob::runJob();
 }
 
 bool DownloadJob::handleResponse(std::istream &is) {

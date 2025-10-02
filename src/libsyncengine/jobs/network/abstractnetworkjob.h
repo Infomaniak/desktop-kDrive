@@ -52,7 +52,7 @@ class AbstractNetworkJob : public SyncJob {
         [[nodiscard]] const std::string &errorDescr() const { return _errorDescr; }
 
     protected:
-        void runJob() noexcept override;
+        ExitInfo runJob() noexcept override;
         void addRawHeader(const std::string &key, const std::string &value);
 
         virtual bool handleResponse(std::istream &inputStream) = 0;

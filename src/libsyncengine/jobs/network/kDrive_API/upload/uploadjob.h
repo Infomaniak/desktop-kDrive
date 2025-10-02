@@ -44,7 +44,7 @@ class UploadJob : public AbstractTokenNetworkJob {
         int64_t size() const { return _sizeOut; }
 
     protected:
-        bool canRun() override;
+        ExitInfo canRun() override;
         bool handleResponse(std::istream &is) override;
 
     private:

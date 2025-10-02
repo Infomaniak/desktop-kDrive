@@ -105,18 +105,19 @@ bool AbstractNetworkJob::isManagedError(const ExitInfo exitInfo) noexcept {
     }
 }
 
-void AbstractNetworkJob::runJob() noexcept {
+ExitInfo AbstractNetworkJob::runJob() noexcept {
     std::string url = getUrl();
     if (url == "") {
         LOG_WARN(_logger, "URL is not set");
-        return;
+        return ExitInfo();
     }
 
     assert(!_httpMethod.empty());
 
     Poco::URI uri;
+    ExitInfo outputExitInfo = ExitCode::Ok;
     for (int trials = 1; trials <= std::min(_trials, MAX_TRIALS); trials++) {
-        _exitInfo = ExitCode::Ok;
+        outputExitInfo = ExitCode::Ok;
 
         if (trials > 1) {
             Utility::msleep(500); // Sleep for 0.5s
@@ -127,17 +128,16 @@ void AbstractNetworkJob::runJob() noexcept {
         createSession(uri);
 
         try {
-            if (!canRun()) {
-                return;
+            if (outputExitInfo = canRun(); outputExitInfo) {
+                return outputExitInfo;
             }
         } catch (Poco::Exception const &e) {
             LOG_INFO(_logger, "Error with request " << jobId() << " " << uri.toString() << " : " << errorText(e));
-            _exitInfo = ExitCode::NetworkError;
+            outputExitInfo = ExitCode::NetworkError;
             break;
         }
-        if (ExitInfo exitInfo = setData(); !exitInfo) { // Must be called before setQueryParameters
-            LOG_WARN(_logger, "Job " << jobId() << " is cancelled " << exitInfo);
-            _exitInfo = exitInfo;
+        if (outputExitInfo = setData(); !outputExitInfo) { // Must be called before setQueryParameters
+            LOG_WARN(_logger, "Job " << jobId() << " is cancelled " << outputExitInfo);
             break;
         }
 
@@ -161,7 +161,7 @@ void AbstractNetworkJob::runJob() noexcept {
                 break;
             }
 
-            if (_exitInfo.code() == ExitCode::NetworkError && _exitInfo.cause() == ExitCause::SocketsDefuncted) {
+            if (exitInfo().code() == ExitCode::NetworkError && exitInfo().cause() == ExitCause::SocketsDefuncted) {
                 break;
             }
 
@@ -193,7 +193,7 @@ void AbstractNetworkJob::runJob() noexcept {
             // Attempt to detect network timeout
             auto errChrono = std::chrono::steady_clock::now();
             std::chrono::duration<double> requestDuration = errChrono - sendChrono;
-            if (_exitInfo.code() == ExitCode::NetworkError) {
+            if (exitInfo().code() == ExitCode::NetworkError) {
                 _timeoutHelper.add(requestDuration);
                 if (_timeoutHelper.isTimeoutDetected()) {
                     LOG_WARN(_logger, "Network timeout detected - value=" << _timeoutHelper.value());
@@ -210,16 +210,18 @@ void AbstractNetworkJob::runJob() noexcept {
             break;
         }
 
-        if (_exitInfo.code() == ExitCode::TokenRefreshed || _exitInfo.code() == ExitCode::RateLimited) {
+        if (exitInfo().code() == ExitCode::TokenRefreshed || exitInfo().code() == ExitCode::RateLimited) {
             _trials++; // Add one more chance
             continue;
-        } else if (isManagedError(_exitInfo)) {
+        } else if (isManagedError(exitInfo())) {
             break;
         } else {
             _exitInfo = ExitCode::Ok;
             break;
         }
     }
+
+    return outputExitInfo;
 }
 
 bool AbstractNetworkJob::hasHttpError(std::string *errorCode /*= nullptr*/) const {
@@ -431,7 +433,7 @@ bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
             // Redirection
             if (!isAborted()) {
                 if (!followRedirect()) {
-                    if (_exitInfo.code() != ExitCode::Ok && _exitInfo.code() != ExitCode::DataError) {
+                    if (exitInfo().code() != ExitCode::Ok && exitInfo().code() != ExitCode::DataError) {
                         LOG_WARN(_logger, "Redirect handling failed");
                     }
                     return false;
@@ -472,9 +474,9 @@ bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
                 }
 
                 if (!ok) {
-                    if (_exitInfo.code() != ExitCode::Ok && _exitInfo.code() != ExitCode::DataError &&
-                        _exitInfo.code() != ExitCode::InvalidToken &&
-                        (_exitInfo.code() != ExitCode::BackError || _exitInfo.cause() != ExitCause::NotFound)) {
+                    if (exitInfo().code() != ExitCode::Ok && exitInfo().code() != ExitCode::DataError &&
+                        exitInfo().code() != ExitCode::InvalidToken &&
+                        (exitInfo().code() != ExitCode::BackError || exitInfo().cause() != ExitCause::NotFound)) {
                         LOG_WARN(_logger, "Error handling failed");
                     }
                     res = false;

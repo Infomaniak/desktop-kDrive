@@ -70,7 +70,7 @@ AbstractTokenNetworkJob::AbstractTokenNetworkJob(ApiType apiType, bool returnJso
     AbstractTokenNetworkJob(apiType, 0, 0, 0, 0, returnJson) {}
 
 ExitCause AbstractTokenNetworkJob::getExitCause() const {
-    if (_exitInfo.cause() == ExitCause::Unknown) {
+    if (exitInfo().cause() == ExitCause::Unknown) {
         if (!_errorCode.empty()) {
             return ExitCause::ApiErr;
         }
@@ -79,7 +79,7 @@ ExitCause AbstractTokenNetworkJob::getExitCause() const {
         }
         return ExitCause::HttpErr;
     }
-    return _exitInfo.cause();
+    return exitInfo().cause();
 }
 
 void AbstractTokenNetworkJob::updateLoginByUserDbId(const Login &login, int userDbId) {

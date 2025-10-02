@@ -73,8 +73,8 @@ class AbstractUploadSession : public SyncJob {
         bool isCancelled() const noexcept { return _sessionCancelled; }
 
     private:
-        bool canRun() override;
-        void runJob() override;
+        ExitInfo canRun() override;
+        ExitInfo runJob() override;
 
         bool initChunks();
         bool startSession();

@@ -42,12 +42,12 @@ class DownloadJob : public AbstractTokenNetworkJob {
         [[nodiscard]] int64_t expectedSize() const { return _expectedSize; }
 
     private:
-        virtual std::string getSpecificUrl() override;
-        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
+        std::string getSpecificUrl() override;
+        inline ExitInfo setData() override { return ExitCode::Ok; }
 
-        virtual bool canRun() override;
-        virtual void runJob() noexcept override;
-        virtual bool handleResponse(std::istream &is) override;
+        ExitInfo canRun() override;
+        ExitInfo runJob() noexcept override;
+        bool handleResponse(std::istream &is) override;
 
         bool createLink(const std::string &mimeType, const std::string &data);
         bool removeTmpFile();

@@ -38,31 +38,29 @@ BlacklistPropagator::~BlacklistPropagator() {
     LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(), "BlacklistPropagator destroyed");
 }
 
-void BlacklistPropagator::runJob() {
+ExitInfo BlacklistPropagator::runJob() {
     LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(), "BlacklistPropagator started");
 
     // Select sync
     bool found = true;
     if (!ParmsDb::instance()->selectSync(_syncPal->syncDbId(), _sync, found)) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectSync");
-        _exitInfo = ExitCode::DbError;
-        return;
+        return ExitCode::DbError;
+        ;
     }
     if (!found) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Sync not found");
-        _exitInfo = ExitCode::DataError;
-        return;
+        return ExitCode::DataError;
+        ;
     }
 
-    ExitCode exitCode = checkNodes();
-    if (exitCode != ExitCode::Ok) {
+    if (const auto exitCode = checkNodes(); exitCode != ExitCode::Ok) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in BlacklistPropagator::checkNodes");
-        _exitInfo = exitCode;
-        return;
+        return exitCode;
     }
 
     LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(), "BlacklistPropagator ended");
-    _exitInfo = ExitCode::Ok;
+    return ExitCode::Ok;
 }
 
 ExitCode BlacklistPropagator::checkNodes() {
@@ -138,7 +136,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
         return ExitCode::DataError;
     }
 
-    SyncPath absolutePath = _sync.localPath() / localPath;
+    SyncPath absoluteLocalPath = _sync.localPath() / localPath;
 
     // Cancel hydration
     const bool liteSyncActivated = _syncPal->vfsMode() != VirtualFileMode::Off;
@@ -146,7 +144,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
         try {
             std::error_code ec;
             auto dirIt = std::filesystem::recursive_directory_iterator(
-                    absolutePath, std::filesystem::directory_options::skip_permission_denied, ec);
+                    absoluteLocalPath, std::filesystem::directory_options::skip_permission_denied, ec);
             if (ec) {
                 LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
                                   L"Error in BlacklistPropagator::removeItem :" << Utility::formatStdError(ec));
@@ -213,16 +211,16 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
             return ExitCode::SystemError;
         }
 
-        LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Cancel hydration: " << Utility::formatSyncPath(absolutePath));
-        _syncPal->vfs()->cancelHydrate(absolutePath);
+        LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Cancel hydration: " << Utility::formatSyncPath(absoluteLocalPath));
+        _syncPal->vfs()->cancelHydrate(absoluteLocalPath);
     }
 
     // Remove item from filesystem
     bool exists = false;
     IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(absolutePath, exists, ioError)) {
+    if (!IoHelper::checkIfPathExists(absoluteLocalPath, exists, ioError)) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in IoHelper::checkIfPathExists for path=" << Utility::formatIoError(absolutePath, ioError));
+                  L"Error in IoHelper::checkIfPathExists for path=" << Utility::formatIoError(absoluteLocalPath, ioError));
         return ExitCode::SystemError;
     }
 
@@ -239,19 +237,19 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
         job.runSynchronously();
         if (job.exitInfo().code() != ExitCode::Ok) {
             LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
-                              L"Failed to remove item with " << Utility::formatSyncPath(absolutePath) << L" ("
+                              L"Failed to remove item with " << Utility::formatSyncPath(absoluteLocalPath) << L" ("
                                                              << CommonUtility::s2ws(localNodeId)
                                                              << L") removed from local replica. It will not be blacklisted.");
 
             SyncPath destPath;
             PlatformInconsistencyCheckerUtility::renameLocalFile(
-                    absolutePath, PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted, &destPath);
+                    absoluteLocalPath, PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted, &destPath);
 
-            Error err(_syncPal->syncDbId(), "", "", NodeType::Directory, absolutePath, ConflictType::None,
+            Error err(_syncPal->syncDbId(), "", "", NodeType::Directory, absoluteLocalPath, ConflictType::None,
                       InconsistencyType::None, CancelType::MoveToBinFailed, destPath);
             _syncPal->addError(err);
         } else {
-            LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Item with " << Utility::formatSyncPath(absolutePath) << L" ("
+            LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Item with " << Utility::formatSyncPath(absoluteLocalPath) << L" ("
                                                                            << CommonUtility::s2ws(localNodeId)
                                                                            << L") removed from local replica.");
         }
