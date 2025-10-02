@@ -1,0 +1,4 @@
+[tools]
+swiftformat = "0.57.2"
+swiftlint = "0.59.1"
+swiftgen = "latest"
