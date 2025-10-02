@@ -47,11 +47,6 @@ namespace Infomaniak.kDrive.CustomControls
             else
             {
                 var container = DriveListView.ContainerFromItem(drive) as ListViewItem;
-                if (container == null)
-                {
-                    Logger.Log(Logger.Level.Error, "container is null in DriveListView_ItemClick for multi-sync drive.");
-                    return;
-                }
                 if (container is null)
                 {
                     Logger.Log(Logger.Level.Error, "container is null in DriveListView_ItemClick for multi-sync drive.");
@@ -67,7 +62,7 @@ namespace Infomaniak.kDrive.CustomControls
                 // To work around this, we first call ShowAt() on another element to interrupt/cancel the closing,
                 // then immediately call ShowAt() again on the intended container.
                 var fe = container?.ContentTemplateRoot as FrameworkElement;
-                if (fe != null)
+                if (fe is not null)
                 {
                     var menu = Flyout.GetAttachedFlyout(fe);
                     if (_lastOpenedSyncMenu == menu)
@@ -149,7 +144,7 @@ namespace Infomaniak.kDrive.CustomControls
             var fe = listViewItem?.ContentTemplateRoot as FrameworkElement;
             int itemIndex = DriveListView.IndexFromContainer(listViewItem);
             _hoveredItemIndex = itemIndex;
-            if (_lastOpenedSyncMenu != null)
+            if (_lastOpenedSyncMenu is not null)
             {
                 // Wait to see if the pointer entered another item within 200ms
                 await Task.Delay(200);
@@ -157,9 +152,9 @@ namespace Infomaniak.kDrive.CustomControls
                     return;
             }
 
-            if (fe == null)
+            if (fe is null)
             {
-                if (_lastOpenedSyncMenu != null)
+                if (_lastOpenedSyncMenu is not null)
                     _lastOpenedSyncMenu.Hide();
                 _lastOpenedSyncMenu = null;
                 return;
@@ -171,7 +166,7 @@ namespace Infomaniak.kDrive.CustomControls
                 menu.ShowAt(listViewItem);
             }
 
-            if (_lastOpenedSyncMenu != null && _lastOpenedSyncMenu != menu)
+            if (_lastOpenedSyncMenu is not null && _lastOpenedSyncMenu != menu)
                 _lastOpenedSyncMenu.Hide();
             _lastOpenedSyncMenu = menu;
         }
@@ -291,7 +286,7 @@ namespace Infomaniak.kDrive.CustomControls
         {
             if (item is Drive drive)
             {
-                return (drive.Syncs != null && drive.Syncs.Count > 1) ? MultiSyncDrive : SingleSyncDrive;
+                return (drive.Syncs is not null && drive.Syncs.Count > 1) ? MultiSyncDrive : SingleSyncDrive;
             }
 
             return base.SelectTemplateCore(item, container);
