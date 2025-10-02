@@ -97,12 +97,8 @@ extension PreloadingViewController {
 
     private func loadAndPlayAnimation() {
         Task {
-            guard let dotLottieFileURL = Bundle.main.url(forResource: "kdrive-loader-light", withExtension: "lottie") else {
-                return
-            }
-
-            let dotLottieFile = try await DotLottieFile.loadedFrom(url: dotLottieFileURL)
-            animationView.animation = dotLottieFile.animations.first?.animation
+            let dotLottieFile = try await DotLottieFile.loadedFromBundle(forResource: "kdrive-loader-light")
+            animationView.loadAnimation(from: dotLottieFile)
 
             animationView.loopMode = .loop
             animationView.play()

@@ -17,10 +17,14 @@
  */
 
 import Foundation
+import Lottie
 
-public enum AppPadding {
-    public static let padding48: CGFloat = 48
-    public static let padding32: CGFloat = 32
-    public static let padding16: CGFloat = 16
-    public static let padding8: CGFloat = 8
+public extension DotLottieFile {
+    static func loadedFromBundle(forResource name: String) async throws -> DotLottieFile {
+        guard let dotLottieFileURL = Bundle.main.url(forResource: name, withExtension: "lottie") else {
+            throw DotLottieError.assetNotFound(name: name, bundle: .main)
+        }
+
+        return try await Self.loadedFrom(url: dotLottieFileURL)
+    }
 }
