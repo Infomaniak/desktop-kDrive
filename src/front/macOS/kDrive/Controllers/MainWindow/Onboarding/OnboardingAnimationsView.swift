@@ -44,16 +44,30 @@ class OnboardingAnimationsView: NSView {
 
         NSLayoutConstraint.activate([
             animationView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: AppPadding.padding32),
-            trailingAnchor.constraint(equalTo: animationView.trailingAnchor, constant: AppPadding.padding32)
+            trailingAnchor.constraint(equalTo: animationView.trailingAnchor, constant: AppPadding.padding32),
+            animationView.centerYAnchor.constraint(equalTo: centerYAnchor)
         ])
     }
 
-    private func transitionAnimation(forStep step: OnboardingStep) {}
+    private func transitionAnimation(forStep step: OnboardingStep) {
+        let animationName = getAnimationName(forStep: step)
+        loadAndPlayAnimation(withName: animationName)
+    }
 
-    private func getAnimation(forStep step: OnboardingStep) {
+    private func loadAndPlayAnimation(withName name: String) {
+        Task {
+            let dotLottieFile = try await DotLottieFile.loadedFromBundle(forResource: name)
+            animationView.loadAnimation(from: dotLottieFile)
+
+            animationView.loopMode = .loop
+            animationView.play()
+        }
+    }
+
+    private func getAnimationName(forStep step: OnboardingStep) -> String {
         switch step {
         case .login:
-            fatalError("Not Implemented Yet")
+            return "kdrive-loader-light"
         case .driveSelection:
             fatalError("Not Implemented Yet")
         case .autorisations:
