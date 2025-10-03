@@ -55,45 +55,14 @@
 		F9ACC5372E5DF50B0081E80B /* swiftgen.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = swiftgen.yml; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		F9A9A0562E61A887005FA196 /* Exceptions for "kDriveCoreUI" folder in "kDrive" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Views/SidebarHeaderView.swift,
-			);
-			target = 37A1C4252E546A5200596DBB /* kDrive */;
-		};
-		F9ACC5322E5DCC780081E80B /* Exceptions for "kDrive" folder in "kDrive" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Resources/Info.plist,
-			);
-			target = 37A1C4252E546A5200596DBB /* kDrive */;
-		};
-		F9C97F782E86DFB600C01B85 /* Exceptions for "kDriveCoreUI" folder in "kDriveCoreUI" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Views/SidebarHeaderView.swift,
-			);
-			target = 37A1C43E2E546A9600596DBB /* kDriveCoreUI */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		37A1C4282E546A5200596DBB /* kDrive */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				F9ACC5322E5DCC780081E80B /* Exceptions for "kDrive" folder in "kDrive" target */,
-			);
 			path = kDrive;
 			sourceTree = "<group>";
 		};
 		37A1C4402E546A9600596DBB /* kDriveCoreUI */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				F9A9A0562E61A887005FA196 /* Exceptions for "kDriveCoreUI" folder in "kDrive" target */,
-				F9C97F782E86DFB600C01B85 /* Exceptions for "kDriveCoreUI" folder in "kDriveCoreUI" target */,
-			);
 			path = kDriveCoreUI;
 			sourceTree = "<group>";
 		};

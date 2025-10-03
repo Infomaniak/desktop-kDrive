@@ -17,6 +17,7 @@
  */
 
 import Cocoa
+import kDriveCoreUI
 
 final class LoginViewController: NSViewController {
     private let viewModel: OnboardingViewModel
@@ -32,6 +33,7 @@ final class LoginViewController: NSViewController {
         super.init(nibName: nil, bundle: nil)
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -54,6 +56,7 @@ final class LoginViewController: NSViewController {
 
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
         descriptionLabel.font = .preferredFont(forTextStyle: .body)
+        descriptionLabel.lineBreakMode = .byWordWrapping
         // TODO: Set foreground
         containerView.addSubview(descriptionLabel)
 
@@ -66,7 +69,29 @@ final class LoginViewController: NSViewController {
         NSLayoutConstraint.activate([
             containerView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             containerView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            
+            containerView.widthAnchor.constraint(greaterThanOrEqualToConstant: 200),
+            containerView.widthAnchor.constraint(lessThanOrEqualToConstant: 450),
+
+            containerView.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: AppPadding.padding16),
+            view.trailingAnchor.constraint(greaterThanOrEqualTo: containerView.trailingAnchor, constant: AppPadding.padding16),
+            containerView.topAnchor.constraint(greaterThanOrEqualTo: view.topAnchor, constant: AppPadding.padding16),
+            view.bottomAnchor.constraint(greaterThanOrEqualTo: containerView.bottomAnchor, constant: AppPadding.padding16),
+
+            titleLabel.topAnchor.constraint(equalTo: containerView.topAnchor),
+            titleLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+            titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: containerView.trailingAnchor),
+
+            descriptionLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: AppPadding.padding8),
+            descriptionLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+            descriptionLabel.trailingAnchor.constraint(lessThanOrEqualTo: containerView.trailingAnchor),
+
+            loginButton.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: AppPadding.padding32),
+            loginButton.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+            containerView.bottomAnchor.constraint(equalTo: loginButton.bottomAnchor),
+
+            createAccountButton.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: AppPadding.padding32),
+            createAccountButton.leadingAnchor.constraint(equalTo: loginButton.trailingAnchor, constant: AppPadding.padding8),
+            containerView.bottomAnchor.constraint(equalTo: createAccountButton.bottomAnchor)
         ])
     }
 
