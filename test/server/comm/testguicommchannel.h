@@ -47,6 +47,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSendMessage);
         CPPUNIT_TEST(testReadMessage);
         CPPUNIT_TEST(testCanReadMessage);
+        CPPUNIT_TEST(testLoginRequestToken);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -56,5 +57,6 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testSendMessage();
         void testReadMessage();
         void testCanReadMessage();
+        void testLoginRequestToken();
 };
 } // namespace KDC

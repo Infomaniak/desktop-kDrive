@@ -393,7 +393,7 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             _syncPal->stopEstimateUpdates();
             if (!_syncPal->restart()) {
                 _syncPal->resetSnapshotInvalidationCounters();
-                _syncPal->setSyncHasFullyCompletedInParms(true);
+                _syncPal->setSyncHasFullyCompletedInParams(true);
             }
             if (_syncPal->updateTreesNeedToBeCleared()) {
                 LOG_SYNCPAL_DEBUG(_logger, "Clearing update trees");

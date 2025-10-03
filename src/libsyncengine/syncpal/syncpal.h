@@ -360,7 +360,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitCode setSyncPaused(bool value);
         bool createOrOpenDb(const SyncPath &syncDbPath, const std::string &version,
                             const std::string &targetNodeId = std::string());
-        void setSyncHasFullyCompletedInParms(bool syncHasFullyCompleted);
+        void setSyncHasFullyCompletedInParams(bool syncHasFullyCompleted);
         ExitInfo setListingCursor(const std::string &value, int64_t timestamp);
         ExitInfo listingCursor(std::string &value, int64_t &timestamp);
         ExitCode updateSyncNode(SyncNodeType syncNodeType);

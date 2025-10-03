@@ -17,6 +17,16 @@
  */
 
 #include "userinfo.h"
+#include "libcommon/utility/types.h"
+#include "libcommon/utility/utility.h"
+
+static const auto userInfoDbId = "dbId";
+static const auto userInfoUserId = "userId";
+static const auto userInfoName = "name";
+static const auto userInfoEmail = "email";
+static const auto userInfoAvatar = "avatar";
+static const auto userInfoConnected = "connected";
+static const auto userInfoIsStaff = "isStaff";
 
 namespace KDC {
 
@@ -30,6 +40,36 @@ UserInfo::UserInfo(const int dbId, const int userId, const QString &name, const 
     _connected(connected) {}
 
 UserInfo::UserInfo() {}
+
+void UserInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
+    CommonUtility::writeValueToStruct(dstruct, userInfoDbId, _dbId);
+    CommonUtility::writeValueToStruct(dstruct, userInfoUserId, _userId);
+    CommonUtility::writeValueToStruct(dstruct, userInfoName, CommonUtility::qStr2CommString(_name));
+    CommonUtility::writeValueToStruct(dstruct, userInfoEmail, CommonUtility::qStr2CommString(_email));
+
+    QByteArray avatarQBA = QByteArray::fromRawData((const char *) _avatar.bits(), _avatar.sizeInBytes());
+    CommBLOB avatarBLOB(avatarQBA.begin(), avatarQBA.end());
+    CommonUtility::writeValueToStruct(dstruct, userInfoAvatar, avatarBLOB);
+
+    CommonUtility::writeValueToStruct(dstruct, userInfoConnected, _connected);
+    CommonUtility::writeValueToStruct(dstruct, userInfoIsStaff, _isStaff);
+}
+
+void UserInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
+    CommonUtility::readValueFromStruct(dstruct, userInfoDbId, _dbId);
+    CommonUtility::readValueFromStruct(dstruct, userInfoUserId, _userId);
+
+    CommString name;
+    CommonUtility::readValueFromStruct(dstruct, userInfoName, name);
+    _name = CommonUtility::commString2QStr(name);
+
+    CommString email;
+    CommonUtility::readValueFromStruct(dstruct, userInfoEmail, email);
+    _email = CommonUtility::commString2QStr(email);
+
+    CommonUtility::readValueFromStruct(dstruct, userInfoConnected, _connected);
+    CommonUtility::readValueFromStruct(dstruct, userInfoIsStaff, _isStaff);
+}
 
 QDataStream &operator>>(QDataStream &in, UserInfo &userInfo) {
     in >> userInfo._dbId >> userInfo._userId >> userInfo._name >> userInfo._email >> userInfo._avatar >> userInfo._connected >>
