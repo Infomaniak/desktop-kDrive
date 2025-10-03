@@ -176,24 +176,24 @@ void TestLogUploadJob::testLogUploadSingleConcurrentJob() {
 
     // Start a second job that should not run if the first one is running
     auto job2 = std::make_shared<MockLogUploadJob>(true, dummyCallback);
-    bool job2Runned = false;
-    job2->setArchiveMock([&job2Runned]([[maybe_unused]] SyncPath &path) -> ExitInfo {
-        job2Runned = true;
+    bool job2Run = false;
+    job2->setArchiveMock([&job2Run]([[maybe_unused]] SyncPath &path) -> ExitInfo {
+        job2Run = true;
         return ExitCode::Ok;
     });
     job2->setUploadMock([]([[maybe_unused]] const SyncPath &path) -> ExitInfo { return ExitCode::Ok; });
     job2->runSynchronously();
 
     CPPUNIT_ASSERT(job1->isRunning()); // Job1 is still running
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job2->exitInfo()); // Job2 exit successfully
-    CPPUNIT_ASSERT_MESSAGE("Job2 runned while job1 was running!", !job2Runned); // Job2 did not run
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job2->exitInfo().code()); // Job2 exit successfully
+    CPPUNIT_ASSERT_MESSAGE("Job2 run while job1 was running!", !job2Run); // Job2 did not run
 
     job1Mutex.unlock();
     t1.join();
 
     job2->runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job2->exitInfo());
-    CPPUNIT_ASSERT(job2Runned);
+    CPPUNIT_ASSERT(job2Run);
 }
 
 void TestLogUploadJob::testLogUploadJobWithoutConnectedUser() {

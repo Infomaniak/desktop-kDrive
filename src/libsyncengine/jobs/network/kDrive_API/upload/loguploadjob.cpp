@@ -106,7 +106,7 @@ bool LogUploadJob::getLogDirEstimatedSize(uint64_t &size, IoError &ioError) {
 ExitInfo LogUploadJob::runJob() {
     if (const auto exitInfo = canRun(); !exitInfo) {
         LOG_DEBUG(Log::instance()->getLogger(), "LogUploadJob job cannot run.");
-        return exitInfo;
+        return ExitCode::Ok;
     }
 
     if (const ExitInfo exitInfo = init(); !exitInfo) {
@@ -206,7 +206,7 @@ ExitInfo LogUploadJob::canRun() {
     const std::scoped_lock lock(_runningJobMutex);
     if (_runningJob) {
         LOG_WARN(Log::instance()->getLogger(), "Another log upload job is already running");
-        return ExitCode();
+        return ExitInfo();
     }
 
     _runningJob = shared_from_this();
