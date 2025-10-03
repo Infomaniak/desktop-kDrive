@@ -1,0 +1,22 @@
+name: CI workflow XPC library
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build_and_test_XPC_shared_types_macOS:
+    name: Build and Test XPCSharedTypes library on macOS
+    runs-on: [ self-hosted, macOS ]
+
+    steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          access_token: ${{ github.token }}
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build
+        run: swift build --package-path ./src/libxpc/MacOSX/XPCSharedTypes
+      - name: Test
+        run: swift test --package-path ./src/libxpc/MacOSX/XPCSharedTypes
