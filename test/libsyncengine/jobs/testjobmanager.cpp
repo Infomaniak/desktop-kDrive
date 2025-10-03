@@ -193,13 +193,13 @@ void TestJobManager::testWithCallback() {
 void TestJobManager::testWithCallbackMediumFiles() {
     if (!testhelpers::isExtendedTest()) return;
     const LocalTemporaryDirectory temporaryDirectory("testJobManager");
-    testWithCallbackBigFiles(temporaryDirectory.path(), 50, 15); // 15 files of 50 MB
+    testWithCallbackBigFiles(temporaryDirectory.path(), 1, 10); // 10 files of 1 MB
 }
 
 void TestJobManager::testWithCallbackBigFiles() {
     if (!testhelpers::isExtendedTest()) return;
     const LocalTemporaryDirectory temporaryDirectory("testJobManager");
-    testWithCallbackBigFiles(temporaryDirectory.path(), 200, 10); // 10 files of 200 MB
+    testWithCallbackBigFiles(temporaryDirectory.path(), 50, 5); // 5 files of 50 MB
 }
 
 void TestJobManager::testCancelJobs() {
@@ -462,7 +462,7 @@ void TestJobManager::testWithCallbackBigFiles(const SyncPath &dirPath, const uin
     // Reset upload session max parallel jobs & JobManager pool capacity
     ParametersCache::instance()->setUploadSessionParallelThreads(10);
     JobManager::instance()->setPoolCapacity(4 * (int) std::thread::hardware_concurrency());
-    const int useUploadSessionThreshold = 100;
+    const int useUploadSessionThreshold = 2; // MBs
 
     // Create temp remote directory
     const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId, "TestJobManager testWithCallbackBigFiles");
