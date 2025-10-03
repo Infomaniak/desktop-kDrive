@@ -1549,7 +1549,7 @@ bool TestNetworkJobs::createTestFiles() {
 void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
     class GetInfoUserJobMock final : public GetInfoUserJob {
         public:
-            explicit GetInfoUserJobMock(int userDbId) :
+            explicit GetInfoUserJobMock(int32_t userDbId) :
                 GetInfoUserJob(userDbId){};
 
         protected:

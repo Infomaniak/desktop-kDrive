@@ -53,7 +53,7 @@ Q_LOGGING_CATEGORY(lcAddDriveLoginWidget, "gui.adddriveloginwidget", QtInfoMsg)
 
 AddDriveLoginWidget::AddDriveLoginWidget(QWidget *parent) :
     QWidget(parent) {
-    auto *mainLayout = new QVBoxLayout();
+    auto *const mainLayout = new QVBoxLayout();
     mainLayout->setContentsMargins(0, 0, 0, 0);
     setLayout(mainLayout);
     refreshPage();

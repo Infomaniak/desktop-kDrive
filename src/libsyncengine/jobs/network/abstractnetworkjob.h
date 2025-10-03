@@ -51,7 +51,7 @@ class AbstractNetworkJob : public SyncJob {
         [[nodiscard]] const std::string &errorCode() const { return _errorCode; }
         [[nodiscard]] const std::string &errorDescr() const { return _errorDescr; }
 
-        int trials() const noexcept { return _trials; };
+        int32_t trials() const noexcept { return _trials; };
 
     protected:
         void runJob() noexcept override;
@@ -84,7 +84,7 @@ class AbstractNetworkJob : public SyncJob {
         std::string _data;
         Poco::Net::HTTPResponse _resHttp;
         int _customTimeout = 0;
-        int _trials = 2; // By default, try again once if exception is thrown
+        int32_t _trials = 2; // By default, try again once if exception is thrown
         std::string _errorCode;
         std::string _errorDescr;
 
@@ -121,7 +121,8 @@ class AbstractNetworkJob : public SyncJob {
         Poco::JSON::Object::Ptr _jsonRes{nullptr};
         std::string _octetStreamRes;
 
-        virtual void setQueryParameters(Poco::URI &) { /* Empty by default */ }
+        virtual void setQueryParameters(Poco::URI &) { /* Empty by default */
+        }
         virtual ExitInfo setData() { return ExitCode::Ok; }
         virtual std::string getContentType() { return {}; }
 
