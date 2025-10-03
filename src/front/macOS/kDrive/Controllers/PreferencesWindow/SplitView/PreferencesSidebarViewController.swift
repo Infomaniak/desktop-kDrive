@@ -26,7 +26,7 @@ extension SidebarItem {
 }
 
 class PreferencesSidebarViewController: NSViewController {
-    static let navigationCellIdentifier = NSUserInterfaceItemIdentifier("NavigationSidebarCell")
+    static let navigationCellIdentifier = NSUserInterfaceItemIdentifier(String(describing: SidebarTableCellView.self))
 
     weak var delegate: NavigableSidebarViewControllerDelegate?
 
