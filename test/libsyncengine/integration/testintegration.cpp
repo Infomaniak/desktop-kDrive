@@ -321,7 +321,7 @@ void TestIntegration::testBlacklist() {
     CPPUNIT_ASSERT(std::filesystem::exists(dirpath));
 
     // Add lots of folders in the blacklist (but not too many).
-    const auto idInt = std::stoll(_remoteSyncDir.id());
+    const auto idInt = static_cast<uint64_t>(std::stoll(_remoteSyncDir.id()));
     NodeSet blacklist;
     for (uint64_t i = idInt - 499; i < idInt + 499; i++) {
         (void) blacklist.emplace(std::to_string(i));
