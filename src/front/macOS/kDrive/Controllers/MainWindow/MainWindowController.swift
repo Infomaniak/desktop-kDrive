@@ -31,7 +31,6 @@ final class MainWindowController: NSWindowController {
             defer: false
         )
 
-        window.title = "kDrive"
         window.toolbarStyle = .unified
         window.center()
 

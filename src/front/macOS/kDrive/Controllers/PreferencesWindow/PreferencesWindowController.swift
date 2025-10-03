@@ -31,7 +31,6 @@ final class PreferencesWindowController: NSWindowController {
             defer: false
         )
 
-        window.title = "!Preferences"
         window.isReleasedWhenClosed = true
         window.toolbarStyle = .unified
         window.center()
