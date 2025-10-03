@@ -161,6 +161,9 @@ void TestIntegration::testAll() {
     testParentRename();
     testNegativeModificationTime();
     testDeleteAndRecreateBranch();
+    testSymLinkWithTooManySymbolicLevels();
+    testDirSymLinkWithTooManySymbolicLevels();
+    testSynchronizationOfSymLinks();
 }
 
 void TestIntegration::inconsistencyTests() {
@@ -318,7 +321,7 @@ void TestIntegration::testBlacklist() {
     CPPUNIT_ASSERT(std::filesystem::exists(dirpath));
 
     // Add lots of folders in the blacklist (but not too many).
-    const auto idInt = std::stoll(_remoteSyncDir.id());
+    const auto idInt = static_cast<uint64_t>(std::stoll(_remoteSyncDir.id()));
     NodeSet blacklist;
     for (uint64_t i = idInt - 499; i < idInt + 499; i++) {
         (void) blacklist.emplace(std::to_string(i));
@@ -947,7 +950,83 @@ SyncPath TestIntegration::findLocalFileByNamePrefix(const SyncPath &parentAbsolu
     while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
         if (CommonUtility::startsWith(entry.path().filename(), namePrefix)) return entry.path();
     }
-    return SyncPath();
+    return {};
 }
+
+void TestIntegration::testSynchronizationOfSymLinks() {
+    RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id(), "test_sym_link_sync");
+
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    testhelpers::generateOrEditTestFile(_syncPal->localPath() / tmpRemoteDir.name() / "file.txt");
+    std::filesystem::create_symlink(_syncPal->localPath() / tmpRemoteDir.name() / "file.txt",
+                                    _syncPal->localPath() / tmpRemoteDir.name() / "file_symlink");
+    std::filesystem::create_symlink(_syncPal->localPath() / tmpRemoteDir.name() / "non_existing_file.txt",
+                                    _syncPal->localPath() / tmpRemoteDir.name() / "dangling_symlink");
+
+    (void) std::filesystem::create_directories(_syncPal->localPath() / tmpRemoteDir.name() / "directory");
+    std::filesystem::create_directory_symlink(_syncPal->localPath() / tmpRemoteDir.name() / "directory",
+                                              _syncPal->localPath() / tmpRemoteDir.name() / "directory_symlink");
+    std::filesystem::create_directory_symlink(_syncPal->localPath() / tmpRemoteDir.name() / "non_existing_directory",
+                                              _syncPal->localPath() / tmpRemoteDir.name() / "dangling_directory_symlink");
+
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    const auto remoteTestFileInfo1 = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("file_symlink"));
+    const auto remoteTestFileInfo2 = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("directory_symlink"));
+    const auto remoteTestFileInfo3 = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("dangling_symlink"));
+    const auto remoteTestFileInfo4 = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("dangling_directory_symlink"));
+
+    CPPUNIT_ASSERT(remoteTestFileInfo1.isValid());
+    CPPUNIT_ASSERT(remoteTestFileInfo2.isValid());
+    CPPUNIT_ASSERT(remoteTestFileInfo3.isValid());
+    CPPUNIT_ASSERT(remoteTestFileInfo4.isValid());
+
+    CPPUNIT_ASSERT_EQUAL(int64_t{6}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
+
+    logStep("testSynchronizationOfSymLinks");
+}
+
+void TestIntegration::testSymLinkWithTooManySymbolicLevels() {
+    RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
+
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    testhelpers::createSymLinkLoop(_syncPal->localPath() / tmpRemoteDir.name() / "file_symlink_1.txt",
+                                   _syncPal->localPath() / tmpRemoteDir.name() / "file_symlink_2.txt", NodeType::File);
+
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    const auto remoteTestFileInfo1 = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("file_symlink_1.txt"));
+    const auto remoteTestFileInfo2 = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("file_symlink_2.txt"));
+
+    CPPUNIT_ASSERT(remoteTestFileInfo1.isValid());
+    CPPUNIT_ASSERT(remoteTestFileInfo2.isValid());
+    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(2), countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
+
+    logStep("testSymLinkWithTooManySymbolicLevels");
+}
+
+void TestIntegration::testDirSymLinkWithTooManySymbolicLevels() {
+    RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
+
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    testhelpers::createSymLinkLoop(_syncPal->localPath() / tmpRemoteDir.name() / "folder_symlink_1",
+                                   _syncPal->localPath() / tmpRemoteDir.name() / "folder_symlink_2", NodeType::Directory);
+
+
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    const auto remoteTestFileInfo1 = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("folder_symlink_1"));
+    const auto remoteTestFileInfo2 = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("folder_symlink_2"));
+
+    CPPUNIT_ASSERT(remoteTestFileInfo1.isValid());
+    CPPUNIT_ASSERT(remoteTestFileInfo2.isValid());
+    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(2), countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
+
+    logStep("testDirSymLinkWithTooManySymbolicLevels");
+}
+
 
 } // namespace KDC
