@@ -174,7 +174,7 @@
     <value>Depuis {0}</value>
   </data>
   <data name="Converter_DateTimeToTimeAgoConverter_Ago" xml:space="preserve">
-    <value>Il y à {0}</value>
+    <value>Il y a {0}</value>
   </data>
   <data name="CC_SyncActivityTable_Header_Size.Text" xml:space="preserve">
     <value>Taille</value>
