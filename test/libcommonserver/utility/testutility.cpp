@@ -172,14 +172,13 @@ void TestUtility::testMoveItemToTrash(void) {
     CPPUNIT_ASSERT(!std::filesystem::exists(subdir, ec));
     CPPUNIT_ASSERT(!ec);
 
-#if defined(KD_WINDOWS)
     // A regular directory that misses all permissions:
     const testhelpers::RightsSet noPermission(false, false, false);
     CPPUNIT_ASSERT(IoHelper::setRights(subdir, noPermission.read, noPermission.write, noPermission.execute, rightsError));
     CPPUNIT_ASSERT(!Utility::moveItemToTrash(subdir));
     CPPUNIT_ASSERT(!std::filesystem::exists(subdir, ec));
     CPPUNIT_ASSERT(!ec);
-#endif
+    CPPUNIT_ASSERT(IoHelper::setRights(subdir, true, true, true, rightsError));
 }
 
 void TestUtility::testGetLinuxDesktopType() {
