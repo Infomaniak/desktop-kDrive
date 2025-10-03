@@ -43,12 +43,12 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
         const VfsMap &vfsMap() const { return _vfsMap; }
 
         // AppServer callbacks
-        inline void setAddErrorCbk(std::function<void(const Error &)> addErrorCbk) { _addErrorCbk = addErrorCbk; }
+        inline void setAddErrorCbk(const std::function<void(const Error &)> &addErrorCbk) { _addErrorCbk = addErrorCbk; }
         inline void addErrorCbk(const Error &error) const {
             if (_addErrorCbk) _addErrorCbk(error);
         }
 
-        inline void setUpdateSentryUserCbk(std::function<void()> updateSentryUserCbk) {
+        inline void setUpdateSentryUserCbk(const std::function<void()> &updateSentryUserCbk) {
             _updateSentryUserCbk = updateSentryUserCbk;
         }
         inline void updateSentryUserCbk() const {
@@ -56,7 +56,7 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
         }
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
-        inline void setGetThumbnailCbk(std::function<ExitCode(int, const NodeId &, int, std::string &)> getThumbnailCbk) {
+        inline void setGetThumbnailCbk(const std::function<ExitCode(int, const NodeId &, int, std::string &)> &getThumbnailCbk) {
             _getThumbnailCbk = getThumbnailCbk;
         }
         inline ExitCode getThumbnailCbk(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) const {
@@ -66,7 +66,8 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
                 return ExitCode::LogicError;
         }
 
-        inline void setGetPublicLinkUrlCbk(std::function<ExitCode(int, const NodeId &, std::string &)> getPublicLinkUrlCbk) {
+        inline void setGetPublicLinkUrlCbk(
+                const std::function<ExitCode(int, const NodeId &, std::string &)> &getPublicLinkUrlCbk) {
             _getPublicLinkUrlCbk = getPublicLinkUrlCbk;
         }
         inline ExitCode getPublicLinkUrlCbk(int driveDbId, const NodeId &nodeId, std::string &linkUrl) const {

@@ -419,7 +419,7 @@ void TestUtility::testGenerateRandomStringAlphaNum() {
             std::mutex resultsMutex;
             bool wait = true;
             for (int i = 0; i < 3; i++) {
-                workers.emplace_back(std::thread([&]() {
+                (void) workers.emplace_back(std::thread([&]() {
                     while (wait) {
                         std::this_thread::sleep_for(std::chrono::milliseconds(1));
                     };
@@ -907,9 +907,9 @@ void TestUtility::testReadValueFromStruct() {
     (void) dstruct.insert("boolValue", true);
 
     Poco::DynamicStruct structValue;
-    structValue.insert("intValue", 12345);
+    (void) structValue.insert("intValue", 12345);
     CommonUtility::convertToBase64Str("qwertz", base64StrValue);
-    structValue.insert("strValue", base64StrValue);
+    (void) structValue.insert("strValue", base64StrValue);
     (void) dstruct.insert("structValue", structValue);
 
     Poco::Dynamic::Array intValues{999, 888, 777};
@@ -917,17 +917,17 @@ void TestUtility::testReadValueFromStruct() {
 
     Poco::Dynamic::Array strValues;
     CommonUtility::convertToBase64Str("éééé", base64StrValue);
-    strValues.emplace_back(base64StrValue);
+    (void) strValues.emplace_back(base64StrValue);
     CommonUtility::convertToBase64Str("àààà", base64StrValue);
-    strValues.emplace_back(base64StrValue);
+    (void) strValues.emplace_back(base64StrValue);
     (void) dstruct.insert("strValues", strValues);
 
     Poco::Dynamic::Array structValues;
-    structValues.emplace_back(structValue);
+    (void) structValues.emplace_back(structValue);
     structValue["intValue"] = 67890;
     CommonUtility::convertToBase64Str("ztrewq", base64StrValue);
     structValue["strValue"] = base64StrValue;
-    structValues.emplace_back(structValue);
+    (void) structValues.emplace_back(structValue);
     (void) dstruct.insert("structValues", structValues);
 
     // Read data
