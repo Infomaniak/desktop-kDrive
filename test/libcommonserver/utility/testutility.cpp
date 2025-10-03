@@ -153,13 +153,9 @@ void TestUtility::testMoveItemToTrash(void) {
     (void) std::filesystem::create_directory(subdir);
     path = subdir / "file.txt";
     { std::ofstream ofs(path); }
-#if defined(KD_WINDOWS)
-    const testhelpers::RightsSet rightSet(false, false, false);
+    const testhelpers::RightsSet rightSet(true, true, false);
     auto rightsError = IoError::Unknown;
     CPPUNIT_ASSERT(IoHelper::setRights(subdir, rightSet.read, rightSet.write, rightSet.execute, rightsError));
-#else
-    std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::remove);
-#endif
 
     std::error_code ec;
 #if defined(KD_WINDOWS)
