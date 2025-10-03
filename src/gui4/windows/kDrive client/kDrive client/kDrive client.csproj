@@ -69,6 +69,12 @@
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
   </PropertyGroup>
   <ItemGroup>
+    <Page Update="CustomControls\MultiValueProgressBar.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\QuickAccess.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="CustomControls\DriveIcon.xaml">
       <SubType>Designer</SubType>
     </Page>

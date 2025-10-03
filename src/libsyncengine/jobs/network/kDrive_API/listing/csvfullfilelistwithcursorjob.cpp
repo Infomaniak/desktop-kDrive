@@ -56,7 +56,7 @@ std::string CsvFullFileListWithCursorJob::getSpecificUrl() {
     return str;
 }
 
-void CsvFullFileListWithCursorJob::setSpecificQueryParameters(Poco::URI &uri) {
+void CsvFullFileListWithCursorJob::setQueryParameters(Poco::URI &uri) {
     uri.addQueryParameter("directory_id", _dirId);
     uri.addQueryParameter("recursive", "true");
     uri.addQueryParameter("format", "safe_csv");

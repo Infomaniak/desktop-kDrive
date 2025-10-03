@@ -28,8 +28,7 @@ class LongPollJob final : public AbstractListingJob {
 
     private:
         std::string getSpecificUrl() override;
-        void setSpecificQueryParameters(Poco::URI &uri) override;
-        ExitInfo setData() override { return ExitCode::Ok; }
+        void setQueryParameters(Poco::URI &uri) override;
 
         std::string _cursor;
 };

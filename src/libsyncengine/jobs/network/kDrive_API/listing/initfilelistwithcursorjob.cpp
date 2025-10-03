@@ -22,8 +22,8 @@
 
 namespace KDC {
 
-InitFileListWithCursorJob::InitFileListWithCursorJob(int driveDbId, const NodeId &dirId) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
+InitFileListWithCursorJob::InitFileListWithCursorJob(const int driveDbId, const NodeId &dirId) :
+    AbstractListingJob(ApiType::Drive, driveDbId),
     _dirId(dirId) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
@@ -34,12 +34,11 @@ std::string InitFileListWithCursorJob::getSpecificUrl() {
     return str;
 }
 
-void InitFileListWithCursorJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
+void InitFileListWithCursorJob::setQueryParameters(Poco::URI &uri) {
     uri.addQueryParameter("directory_id", _dirId);
     uri.addQueryParameter("recursive", "true");
     uri.addQueryParameter("with", "files.capabilities");
     uri.addQueryParameter("limit", nbItemPerPage);
-    canceled = false;
 }
 
 } // namespace KDC

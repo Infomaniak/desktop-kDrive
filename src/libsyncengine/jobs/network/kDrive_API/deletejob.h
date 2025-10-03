@@ -32,7 +32,6 @@ class DeleteJob : public AbstractTokenNetworkJob {
 
     private:
         virtual std::string getSpecificUrl() override;
-        virtual void setQueryParameters(Poco::URI &, bool &) override {}
         inline virtual ExitInfo setData() override { return ExitCode::Ok; }
 
         const NodeId _remoteItemId;

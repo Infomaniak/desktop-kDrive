@@ -155,7 +155,7 @@
   <data name="CC_SyncStatusBar_SyncedStatus.Text" xml:space="preserve">
     <value>Tous les fichiers sont synchronisés</value>
   </data>
-  <data name="CC_SyncErrorBar_message.Text" xml:space="preserve">
+  <data name="CC_SyncErrorBar_message.Message" xml:space="preserve">
     <value>Impossible de synchroniser certains fichiers</value>
   </data>
   <data name="CC_SyncErrorBar_button.Content" xml:space="preserve">
@@ -243,15 +243,15 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
 
 </comment>
   </data>
-  <data name="Page_HomePage_favorites.Text" xml:space="preserve">
+  <data name="CC_QuickAccess_favorites.Text" xml:space="preserve">
     <value>Favoris</value>
     <comment>Redirect to the favorite folder (in browser)</comment>
   </data>
-  <data name="Page_HomePage_trash.Text" xml:space="preserve">
+  <data name="CC_QuickAccess_trash.Text" xml:space="preserve">
     <value>Corbeille</value>
     <comment>Redirect to the trash folder (in browser)</comment>
   </data>
-  <data name="Page_HomePage_shared.Text" xml:space="preserve">
+  <data name="CC_QuickAccess_shared.Text" xml:space="preserve">
     <value>Partages</value>
     <comment>Redirect to the favorite folder (in browser)</comment>
   </data>
@@ -379,5 +379,46 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
   </data>
   <data name="Global_kDriveOffersUrl" xml:space="preserve">
     <value>https://www.infomaniak.com/fr/ksuite/kdrive</value>
+  </data>
+  <data name="Page_StoragePage_Title.Text" xml:space="preserve">
+    <value>Stockage</value>
+  </data>
+  <data name="Page_StoragePage_ThisComputer.Text" xml:space="preserve">
+    <value>Ce PC</value>
+  </data>
+  <data name="Page_StoragePage_Used.Text" xml:space="preserve">
+    <value>utilisé(s)</value>
+    <comment>Use mix singular/plural form.</comment>
+  </data>
+  <data name="Page_StoragePage_Free.Text" xml:space="preserve">
+    <value>libre(s)</value>
+    <comment>Use mix singular/plural form.</comment>
+  </data>
+  <data name="Page_StoragePage_OfflineFiles.Text" xml:space="preserve">
+    <value>Fichiers kDrive accessibles hors ligne</value>
+  </data>
+  <data name="Page_StoragePage_OtherFiles.Text" xml:space="preserve">
+    <value>Autres fichiers de l’ordinateur</value>
+  </data>
+  <data name="Page_StoragePage_FreeSpace.Text" xml:space="preserve">
+    <value>Espace libre</value>
+  </data>
+  <data name="Global_Bytes" xml:space="preserve">
+    <value>octets</value>
+  </data>
+  <data name="Global_TeraBytes" xml:space="preserve">
+    <value>To</value>
+  </data>
+  <data name="Global_MegaBytes" xml:space="preserve">
+    <value>Mo</value>
+  </data>
+  <data name="Global_GigaBytes" xml:space="preserve">
+    <value>Go</value>
+  </data>
+  <data name="Global_KiloBytes" xml:space="preserve">
+    <value>Ko</value>
+  </data>
+  <data name="Page_StoragePage_DiskUnavailable.Message" xml:space="preserve">
+    <value>Disque indisponible</value>
   </data>
 </root>

@@ -23,7 +23,7 @@
 
 namespace KDC {
 
-void SyncJob::setProgress(int64_t newProgress) {
+void SyncJob::setProgress(const int64_t newProgress) {
     _progress = newProgress;
     if (_progressPercentCallback) {
         if (_expectedFinishProgress == expectedFinishProgressNotSetValue) {
@@ -35,12 +35,12 @@ void SyncJob::setProgress(int64_t newProgress) {
         } else if (_expectedFinishProgress == expectedFinishProgressNotSetValueWarningLogged) {
             _progressPercentCallback(jobId(), 100);
         } else {
-            _progressPercentCallback(jobId(), static_cast<int>((_progress * 100) / _expectedFinishProgress));
+            _progressPercentCallback(jobId(), (_progress * 100) / _expectedFinishProgress);
         }
     }
 }
 
-void SyncJob::addProgress(int64_t progressToAdd) {
+void SyncJob::addProgress(const int64_t progressToAdd) {
     setProgress(_progress + progressToAdd);
 }
 
@@ -51,12 +51,4 @@ bool SyncJob::progressChanged() {
     }
     return false;
 }
-
-void SyncJob::run() {
-    _isRunning = true;
-    runJob();
-    callback(jobId());
-    // Don't put code after this line as object has been destroyed
-}
-
 } // namespace KDC

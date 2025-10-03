@@ -37,11 +37,6 @@ std::string GetAvatarJob::getUrl() {
     return _avatarUrl;
 }
 
-std::string GetAvatarJob::getContentType(bool &canceled) {
-    canceled = false;
-    return std::string();
-}
-
 bool GetAvatarJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
     Poco::XML::DOMParser parser;
     Poco::AutoPtr<Poco::XML::Document> pDoc = parser.parseString(replyBody);

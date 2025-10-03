@@ -28,7 +28,7 @@
 
 namespace KDC {
 
-class ExtensionJob;
+class GuiJobFactory;
 
 class CommManager : public std::enable_shared_from_this<CommManager> {
     public:
@@ -38,14 +38,43 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
         void start();
         void stop();
 
-        // AppServer callbacks setting
-        inline void setAddErrorCallback(void (*addError)(const Error &)) { _addError = addError; }
-#if defined(KD_MACOS) || defined(KD_WINDOWS)
-        inline void setGetThumbnailCallback(ExitCode (*getThumbnail)(int, NodeId, int, std::string &)) {
-            _getThumbnail = getThumbnail;
+        // AppServer maps
+        const SyncPalMap &syncPalMap() const { return _syncPalMap; }
+        const VfsMap &vfsMap() const { return _vfsMap; }
+
+        // AppServer callbacks
+        inline void setAddErrorCbk(const std::function<void(const Error &)> &addErrorCbk) { _addErrorCbk = addErrorCbk; }
+        inline void addErrorCbk(const Error &error) const {
+            if (_addErrorCbk) _addErrorCbk(error);
         }
-        inline void setGetPublicLinkUrlCallback(ExitCode (*getPublicLinkUrl)(int, const NodeId &, std::string &)) {
-            _getPublicLinkUrl = getPublicLinkUrl;
+
+        inline void setUpdateSentryUserCbk(const std::function<void()> &updateSentryUserCbk) {
+            _updateSentryUserCbk = updateSentryUserCbk;
+        }
+        inline void updateSentryUserCbk() const {
+            if (_updateSentryUserCbk) _updateSentryUserCbk();
+        }
+
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+        inline void setGetThumbnailCbk(const std::function<ExitCode(int, const NodeId &, int, std::string &)> &getThumbnailCbk) {
+            _getThumbnailCbk = getThumbnailCbk;
+        }
+        inline ExitCode getThumbnailCbk(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) const {
+            if (_getThumbnailCbk)
+                return _getThumbnailCbk(driveDbId, nodeId, width, thumbnail);
+            else
+                return ExitCode::LogicError;
+        }
+
+        inline void setGetPublicLinkUrlCbk(
+                const std::function<ExitCode(int, const NodeId &, std::string &)> &getPublicLinkUrlCbk) {
+            _getPublicLinkUrlCbk = getPublicLinkUrlCbk;
+        }
+        inline ExitCode getPublicLinkUrlCbk(int driveDbId, const NodeId &nodeId, std::string &linkUrl) const {
+            if (_getPublicLinkUrlCbk)
+                return _getPublicLinkUrlCbk(driveDbId, nodeId, linkUrl);
+            else
+                return ExitCode::LogicError;
         }
 
         // Register a new sync path on all the Finder/File Explorer channels
@@ -65,15 +94,20 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
         const VfsMap &_vfsMap;
 
         // AppServer callbacks
-        void (*_addError)(const Error &error);
-        ExitCode (*_getThumbnail)(int driveDbId, NodeId nodeId, int width, std::string &thumbnail);
-        ExitCode (*_getPublicLinkUrl)(int driveDbId, const NodeId &nodeId, std::string &linkUrl);
+        std::function<void(const Error &)> _addErrorCbk;
+        std::function<void()> _updateSentryUserCbk;
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+        std::function<ExitCode(int, const NodeId &, int, std::string &)> _getThumbnailCbk;
+        std::function<ExitCode(int, const NodeId &, std::string &)> _getPublicLinkUrlCbk;
+#endif
 
         // Communication servers
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         std::shared_ptr<AbstractCommServer> _extCommServer;
 #endif
         std::shared_ptr<AbstractCommServer> _guiCommServer;
+
+        std::unique_ptr<GuiJobFactory> _guiJobFactory;
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         // Execute a command received from an extension, which does not require an answer
@@ -88,15 +122,13 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
         void onExtQueryReceived(std::shared_ptr<AbstractCommChannel> channel);
         void onLostExtConnection(std::shared_ptr<AbstractCommChannel> channel);
 #endif
+        // Execute a query received from the GUI and responds on the provided channel
+        void executeGuiQuery(const CommString &commandLineStr, std::shared_ptr<AbstractCommChannel> channel);
 
         // GUI callbacks
         void onNewGuiConnection();
         void onGuiQueryReceived(std::shared_ptr<AbstractCommChannel> channel);
         void onLostGuiConnection(std::shared_ptr<AbstractCommChannel> channel);
-
-#if defined(KD_MACOS) || defined(KD_WINDOWS)
-        friend class ExtensionJob;
-#endif
 };
 
 } // namespace KDC

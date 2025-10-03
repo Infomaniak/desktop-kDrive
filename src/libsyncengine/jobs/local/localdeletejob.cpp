@@ -33,7 +33,7 @@
 namespace KDC {
 
 LocalDeleteJob::Path::Path(const SyncPath &path) :
-    _path(path){};
+    _path(path) {};
 
 bool LocalDeleteJob::Path::endsWith(SyncPath &&ending) const {
     if (!_path.empty() && ending.empty()) return false;
@@ -171,7 +171,7 @@ void LocalDeleteJob::hardDelete(const SyncPath &path) {
     std::error_code ec;
     (void) std::filesystem::remove_all(path, ec);
     if (ec) {
-        LOGW_WARN(_logger, L"Failed to delete item with path " << Utility::formatStdError(path, ec));
+        LOGW_WARN(_logger, L"Failed to delete item with " << Utility::formatStdError(_absolutePath, ec));
         if (IoHelper::stdError2ioError(ec) == IoError::AccessDenied) {
             _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
             return;

@@ -27,6 +27,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.ViewModels
@@ -75,6 +76,8 @@ namespace Infomaniak.kDrive.ViewModels
         */
         public ReadOnlyObservableCollection<Sync> AllSyncs { get; set; }
 
+        public ReadOnlyObservableCollection<Drive> AllDrives { get; set; }
+
         // Application settings
         public Settings Settings { get; } = new Settings();
 
@@ -104,11 +107,19 @@ namespace Infomaniak.kDrive.ViewModels
                 .AutoRefresh(u => u.Drives.Count)
                 .TransformMany(u => u.Drives)
                 .AutoRefresh(d => d.Syncs.Count)
-                .Filter(d => (d.Syncs.Any()))
                 .TransformMany(d => d.Syncs)
                 .Bind(out var allSyncs)
                 .Subscribe();
             AllSyncs = allSyncs;
+
+            // Create a read-only observable collection of all drives across all users
+            AllSyncs.ToObservableChangeSet()
+                .AutoRefresh(s => s.Drive) // Refresh when the Drive property changes
+                .Transform(s => s.Drive) // Transform Sync to Drive
+                .DistinctValues(d => d)
+                .Bind(out var allDrives) // Bind to a read-only observable collection
+                .Subscribe();
+            AllDrives = allDrives;
 
             // Observe changes to ActiveDrives list and ensure SelectedSync is valid
             AllSyncs.ToObservableChangeSet()
@@ -117,8 +128,8 @@ namespace Infomaniak.kDrive.ViewModels
             // Observe changes to AppErrors and SelectedSync.SyncErrors to update HasNoErrors property
             AppErrors.CollectionChanged += (_, __) => OnPropertyChanged(nameof(HasErrors));
 
-            AppErrors.Add(new Errors.AppError(0) { ExitCause = 4 , ExitCode = 1234}); // TODO: Remove this line, only for testing
-       
+            AppErrors.Add(new Errors.AppError(0) { ExitCause = 4, ExitCode = 1234 }); // TODO: Remove this line, only for testing
+
         }
 
         private void EnsureValidSelectedSync()
@@ -160,35 +171,28 @@ namespace Infomaniak.kDrive.ViewModels
          */
         public async Task InitializeAsync()
         {
+
             Logger.Log(Logger.Level.Info, "Initializing AppModel...");
-            var userDbIds = await ServerCommunication.CommRequests.GetUserDbIds().ConfigureAwait(false);
+            var userDbIds = await ServerCommunication.CommRequests.GetUserDbIds();
             if (userDbIds != null)
             {
                 Logger.Log(Logger.Level.Debug, $"Found {userDbIds.Count} users on the server. Loading user data...");
                 List<Task> reloadTasks = new List<Task>();
-                List<User> users = new List<User>();
                 for (int i = 0; i < userDbIds.Count; i++)
                 {
                     User user = new User(userDbIds[i]);
+                    Users.Add(user);
                     reloadTasks.Add(user.Reload());
-                    users.Add(user);
                 }
-                await Task.WhenAll(reloadTasks).ConfigureAwait(false);
+                await Task.WhenAll(reloadTasks);
                 Logger.Log(Logger.Level.Info, "All user data loaded successfully.");
-                UIThreadDispatcher.TryEnqueue(() =>
-                {
-                    Users.AddRange(users);
-                });
+                IsInitialized = true;
             }
             else
             {
                 Logger.Log(Logger.Level.Info, "No users found on the server.");
             }
 
-            UIThreadDispatcher.TryEnqueue(() =>
-            {
-                IsInitialized = true;
-            });
         }
 
         private void SyncErrors_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)

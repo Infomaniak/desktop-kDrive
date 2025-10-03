@@ -153,7 +153,7 @@
   <data name="CC_SyncStatusBar_SyncedStatus.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="CC_SyncErrorBar_message.Text" xml:space="preserve">
+  <data name="CC_SyncErrorBar_message.Message" xml:space="preserve">
     <value />
   </data>
   <data name="CC_SyncErrorBar_button.Content" xml:space="preserve">
@@ -225,13 +225,13 @@
   <data name="  /!\  Ressource naming convention" xml:space="preserve">
     <value>-</value>
   </data>
-  <data name="Page_HomePage_favorites.Text" xml:space="preserve">
+  <data name="CC_QuickAccess_favorites.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="Page_HomePage_trash.Text" xml:space="preserve">
+  <data name="CC_QuickAccess_trash.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="Page_HomePage_shared.Text" xml:space="preserve">
+  <data name="CC_QuickAccess_shared.Text" xml:space="preserve">
     <value />
   </data>
   <data name="CC_KSuiteUpgradeBar_link.Content" xml:space="preserve">
@@ -352,6 +352,45 @@
     <value />
   </data>
   <data name="Global_kDriveOffersUrl" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_StoragePage_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_StoragePage_ThisComputer.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_StoragePage_Used.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_StoragePage_Free.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_StoragePage_OfflineFiles.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_StoragePage_OtherFiles.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_StoragePage_FreeSpace.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_Bytes" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_TeraBytes" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_MegaBytes" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_GigaBytes" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_KiloBytes" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_StoragePage_DiskUnavailable.Message" xml:space="preserve">
     <value />
   </data>
 </root>

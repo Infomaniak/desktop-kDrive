@@ -60,8 +60,7 @@ class AbstractCommChannel : public std::enable_shared_from_this<AbstractCommChan
             if (_onReadyReadCbk) _onReadyReadCbk(shared_from_this());
         }
 
-protected:
-
+    protected:
         //! Reads from the device.
         /*!
           \param data is a char array pointer.

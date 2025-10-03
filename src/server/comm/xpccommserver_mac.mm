@@ -22,7 +22,7 @@
 // XPCCommChannel implementation
 XPCCommChannel::XPCCommChannel(AbstractCommChannelPrivate *p) :
     _privatePtr(p) {
-    if(p == nullptr) {
+    if (p == nullptr) {
         LOG_FATAL(KDC::Log::instance()->getLogger(), "XPCCommChannel created with null private pointer");
         return;
     }

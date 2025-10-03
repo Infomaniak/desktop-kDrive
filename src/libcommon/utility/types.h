@@ -129,6 +129,7 @@ using OStringStream = std::ostringstream;
 // Types used by the Communication layer
 using CommString = std::filesystem::path::string_type;
 using CommChar = std::filesystem::path::value_type;
+using CommBLOB = std::vector<char>;
 
 static const auto messageCdeSeparator = Str(":");
 static const auto messageArgSeparator = Str("\x1e");

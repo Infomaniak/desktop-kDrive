@@ -226,7 +226,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         void logExtendedLogActivationMessage(bool isExtendedLogEnabled) noexcept;
 
-        void updateSentryUser() const;
+        static void updateSentryUser();
 
         bool clientHasCrashed() const;
         void handleClientCrash(bool &quit);

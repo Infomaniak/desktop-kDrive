@@ -178,6 +178,10 @@
     }
 }
 
+- (void)loginRequestToken:(NSString *)code codeVerifier:(NSString *)codeVerifier callback:(void (^)(int userDbId, NSString *error, NSString *errorDescr))callback {
+    callback(0, nil, nil);
+}
+
 // XPCExtensionRemoteProtocol protocol implementation
 - (void)initConnection:(void (^)(BOOL))reply
 {

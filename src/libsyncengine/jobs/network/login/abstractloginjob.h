@@ -37,8 +37,7 @@ class AbstractLoginJob : public AbstractNetworkJob {
     private:
         virtual std::string getSpecificUrl() override;
         virtual std::string getUrl() override;
-        virtual void setQueryParameters(Poco::URI &, bool &) override {}
-        virtual std::string getContentType(bool &canceled) override;
+        virtual std::string getContentType() override;
 
         virtual bool handleResponse(std::istream &inputStream) override;
         virtual bool handleError(const std::string &replyBody, const Poco::URI &uri) override;

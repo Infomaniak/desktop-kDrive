@@ -16,22 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
-
-#include "jobs/network/abstracttokennetworkjob.h"
+#include "server/comm/guijobs/abstractguijob.h"
+#include "libcommon/info/userinfo.h"
 
 namespace KDC {
 
-class InitFileListWithCursorJob : public AbstractTokenNetworkJob {
+class SignalUserAddedJob : public AbstractGuiJob {
     public:
-        InitFileListWithCursorJob(int driveDbId, const NodeId &dirId);
+        SignalUserAddedJob(std::shared_ptr<CommManager> commManager, const std::shared_ptr<AbstractCommChannel> channel,
+                           const UserInfo &userInfo);
 
     private:
-        virtual std::string getSpecificUrl() override;
-        virtual void setQueryParameters(Poco::URI &uri, bool &canceled) override;
-        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
+        // Output parameters
+        UserInfo _userInfo;
 
-        NodeId _dirId;
+        bool deserializeInputParms() override { return true; }
+        bool serializeOutputParms() override;
+        bool process() override { return true; }
 };
 
 } // namespace KDC

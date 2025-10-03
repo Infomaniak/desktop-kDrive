@@ -54,7 +54,7 @@ void TestExecutorWorker::setUp() {
     // Create parmsDb
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
-    std::filesystem::remove(parmsDbPath);
+    (void) std::filesystem::remove(parmsDbPath);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     // Insert user, account, drive & sync
@@ -222,7 +222,7 @@ SyncOpPtr TestExecutorWorker::generateSyncOperationWithNestedNodes(const DbNodeI
 class ExecutorWorkerMock : public ExecutorWorker {
     public:
         ExecutorWorkerMock(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName) :
-            ExecutorWorker(syncPal, name, shortName){};
+            ExecutorWorker(syncPal, name, shortName) {};
 
         using ArgsMap = std::map<std::shared_ptr<Node>, std::shared_ptr<Node>>;
         void setCorrespondingNodeInOtherTree(ArgsMap nodeMap) { _correspondingNodeInOtherTree = nodeMap; };

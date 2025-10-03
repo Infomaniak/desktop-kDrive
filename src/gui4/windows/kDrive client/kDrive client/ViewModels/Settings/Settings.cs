@@ -21,7 +21,7 @@ namespace Infomaniak.kDrive.ViewModels
         private readonly ObservableCollection<ExclusionTemplate> _exclusionTemplates = new ObservableCollection<ExclusionTemplate>();
         private bool _sentryEnabled = false;
         private bool _matomoEnabled = false;
-        private Logger.Level _logLevel = Logger.Level.Info;
+        private Logger.Level _logLevel = Logger.Level.Extended;
         private bool _autoFlushLogs = true;
 
         public Settings() { }

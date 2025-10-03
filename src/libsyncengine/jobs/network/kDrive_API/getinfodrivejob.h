@@ -31,7 +31,6 @@ class GetInfoDriveJob : public AbstractTokenNetworkJob {
         virtual bool handleError(const std::string &replyBody, const Poco::URI &uri) override;
 
     private:
-        virtual void setQueryParameters(Poco::URI &, bool &canceled) override { canceled = false; }
         inline virtual ExitInfo setData() override { return ExitCode::Ok; }
 };
 

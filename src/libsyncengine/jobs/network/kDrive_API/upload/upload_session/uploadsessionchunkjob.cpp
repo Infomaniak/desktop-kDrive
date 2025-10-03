@@ -55,16 +55,14 @@ std::string UploadSessionChunkJob::getSpecificUrl() {
     return str;
 }
 
-std::string UploadSessionChunkJob::getContentType(bool &canceled) {
-    canceled = false;
+std::string UploadSessionChunkJob::getContentType() {
     return mimeTypeOctetStream;
 }
 
-void UploadSessionChunkJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
+void UploadSessionChunkJob::setQueryParameters(Poco::URI &uri) {
     uri.addQueryParameter("chunk_hash", "xxh3:" + _chunkHash);
     uri.addQueryParameter("chunk_number", std::to_string(_chunkNb));
     uri.addQueryParameter("chunk_size", std::to_string(_chunkSize));
-    canceled = false;
 }
 
 } // namespace KDC

@@ -32,9 +32,9 @@ namespace Infomaniak.kDrive.Pages.Onboarding
         public ViewModels.Onboarding? ObViewModel { get => _onBoardingViewModel; }
         public DriveSelectionPage()
         {
-            Logger.Log(Logger.Level.Info, "Navigated to WelcomePage - Initializing WelcomePage components");
+            Logger.Log(Logger.Level.Info, "Navigated to DriveSelectionPage - Initializing DriveSelectionPage components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "WelcomePage components initialized");
+            Logger.Log(Logger.Level.Debug, "DriveSelectionPage components initialized");
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)

@@ -35,6 +35,7 @@ namespace KDC {
 class JobManager {
     public:
         JobManager();
+        virtual ~JobManager() = default;
         JobManager(JobManager const &) = delete;
         void operator=(JobManager const &) = delete;
 
@@ -56,10 +57,11 @@ class JobManager {
         void setPoolCapacity(int nbThread);
         void decreasePoolCapacity();
 
+        const JobManagerData &data() const { return _data; }
+
     protected:
         int availableThreadsInPool() const;
         virtual bool canRunJob(const std::shared_ptr<AbstractJob> job) const;
-        JobManagerData _data;
 
     private:
         void startMainThreadIfNeeded();
@@ -70,6 +72,7 @@ class JobManager {
         void addToPendingJobs(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority);
         void managePendingJobs();
 
+        JobManagerData _data;
         bool _stop{false};
         int _maxNbThread{0};
         Poco::ThreadPool _threadPool;

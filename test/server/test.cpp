@@ -30,6 +30,7 @@
 #include "appserver/testappserver.h"
 #include "comm/testguicommchannel.h"
 #include "comm/testsocketcomm.h"
+#include "comm/guijobs/testabstractguijob.h"
 
 namespace KDC {
 
@@ -44,6 +45,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestServerRequests);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAppServer);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSocketComm);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestGuiCommChannel);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractGuiJob);
 
 } // namespace KDC
 

@@ -67,7 +67,7 @@ namespace Infomaniak.kDrive
 
         static public Level LogLevel
         {
-            get => (App.Current as App)?.Data.Settings.LogLevel ?? Level.Info;
+            get => (App.Current as App)?.Data.Settings.LogLevel ?? Level.Extended;
         }
 
         public static void Log(Level level, string message, [CallerFilePath] string filePath = "?", [CallerLineNumber] int lineNumber = -1, [CallerMemberName] string memberName = "?")

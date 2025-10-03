@@ -49,12 +49,14 @@ bool hasSuccessfullyFinished(const std::shared_ptr<ISyncWorker> w1, const std::s
 bool shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr) {
     const auto networkIssue =
             (w1 && w1->exitCode() == ExitCode::NetworkError) || (w2 && w2->exitCode() == ExitCode::NetworkError);
-    const auto http500error = (w1 && w1->exitCode() == ExitCode::BackError && w1->exitCause() == ExitCause::Http5xx) ||
-                              (w2 && w2->exitCode() == ExitCode::BackError && w2->exitCause() == ExitCause::Http5xx);
+    const auto httpBlockingError = (w1 && w1->exitCode() == ExitCode::BackError &&
+                                    (w1->exitCause() == ExitCause::Http5xx || w1->exitCause() == ExitCause::HttpErr)) ||
+                                   (w2 && w2->exitCode() == ExitCode::BackError &&
+                                    (w2->exitCause() == ExitCause::Http5xx || w2->exitCause() == ExitCause::HttpErr));
     const auto syncDirNotAccessible =
             (w1 && w1->exitCode() == ExitCode::SystemError && w1->exitCause() == ExitCause::SyncDirAccessError) ||
             (w2 && w2->exitCode() == ExitCode::SystemError && w2->exitCause() == ExitCause::SyncDirAccessError);
-    return networkIssue || http500error || syncDirNotAccessible;
+    return networkIssue || httpBlockingError || syncDirNotAccessible;
 }
 
 bool shouldBeStoppedAndRestarted(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr) {
@@ -391,7 +393,7 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             _syncPal->stopEstimateUpdates();
             if (!_syncPal->restart()) {
                 _syncPal->resetSnapshotInvalidationCounters();
-                _syncPal->setSyncHasFullyCompletedInParms(true);
+                _syncPal->setSyncHasFullyCompletedInParams(true);
             }
             if (_syncPal->updateTreesNeedToBeCleared()) {
                 LOG_SYNCPAL_DEBUG(_logger, "Clearing update trees");

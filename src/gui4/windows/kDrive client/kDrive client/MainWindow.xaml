@@ -32,7 +32,7 @@
     <Window.SystemBackdrop>
         <!--<DesktopAcrylicBackdrop/> -->
         <!-- <MicaBackdrop Kind="BaseAlt"/> -->
-        <MicaBackdrop Kind="Base" />
+        <MicaBackdrop Kind="BaseAlt" />
     </Window.SystemBackdrop>
     <Grid>
         <Grid.RowDefinitions>
@@ -89,32 +89,7 @@
             </NavigationView.Resources>
 
             <NavigationView.PaneCustomContent>
-                <StackPanel>
-                    <ComboBox x:Name="DriveComboBox"
-                              Margin="{StaticResource Infomaniak.Style.Thickness.Left.XS}"
-                              Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}"
-                              Background="Transparent"
-                              BorderBrush="Transparent"
-                              ItemsSource="{x:Bind ViewModel.AllSyncs}"
-                              SelectedItem="{x:Bind ViewModel.SelectedSync, Mode=TwoWay}"
-                              IsEnabled="{x:Bind ViewModel.IsInitialized, Mode=OneWay}"
-                              >
-
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate x:DataType="viewModel:Sync">
-                                <StackPanel Orientation="Horizontal"
-                                            Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                                    <customControls:DriveIcon IconColor="{x:Bind Drive.Color}"
-                                                              Style="{StaticResource Infomaniak.Style.Icon.Size.S}" />
-                                    <TextBlock Text="{x:Bind Drive.Name}"
-                                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
-                                               VerticalAlignment="Center" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-
-                </StackPanel>
+                    <customControls:SyncSelector HorizontalAlignment="Stretch" Margin="0,9,4,20"/>
             </NavigationView.PaneCustomContent>
 
             <NavigationView.MenuItems>
@@ -138,9 +113,8 @@
                     </NavigationViewItem.InfoBadge>
                 </NavigationViewItem>
                 <NavigationViewItem x:Uid="W_MainWindow_NavBar_Storage"
-                                    Tag="SamplePage3"
-                                    MinHeight="30"
-                                    IsEnabled="False">
+                                    Tag="StoragePage"
+                                    MinHeight="30">
                     <NavigationViewItem.Icon>
                         <SymbolIcon Symbol="MapDrive" />
                     </NavigationViewItem.Icon>

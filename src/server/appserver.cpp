@@ -330,10 +330,11 @@ void AppServer::init() {
 
     // Init CommManager
     _commManager = std::make_shared<CommManager>(_syncPalMap, _vfsMap);
-    _commManager->setAddErrorCallback(&addError);
+    _commManager->setAddErrorCbk(&addError);
+    _commManager->setUpdateSentryUserCbk(&updateSentryUser);
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
-    _commManager->setGetThumbnailCallback(&ServerRequests::getThumbnail);
-    _commManager->setGetPublicLinkUrlCallback(&ServerRequests::getPublicLinkUrl);
+    _commManager->setGetThumbnailCbk(&ServerRequests::getThumbnail);
+    _commManager->setGetPublicLinkUrlCbk(&ServerRequests::getPublicLinkUrl);
 #endif
     _commManager->start();
 
@@ -590,7 +591,7 @@ void AppServer::logExtendedLogActivationMessage(bool isExtendedLogEnabled) noexc
     LOG_INFO(_logger, msg);
 }
 
-void AppServer::updateSentryUser() const {
+void AppServer::updateSentryUser() {
     User user;
     bool found = false;
     ParmsDb::instance()->selectLastConnectedUser(user, found);
@@ -2551,14 +2552,13 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
-        {&MigrationParams::migrateSelectiveSyncs, "migrateSelectiveSyncs"}
-    };
+            {&MigrationParams::migrateSelectiveSyncs, "migrateSelectiveSyncs"}};
 
     for (const auto &migrate: migrateArr) {
         ExitCode functionExitCode = (mp.*migrate.first)();

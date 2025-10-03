@@ -28,7 +28,7 @@ bool GuiCommChannel::sendMessage(const CommString &message) {
     // Check that the message is a valid JSON
     Poco::JSON::Parser parser;
     try {
-        parser.parse(SyncName2Str(message));
+        parser.parse(CommonUtility::commString2Str(message));
     } catch (const Poco::Exception &e) {
         LOGW_ERROR(Log::instance()->getLogger(), L"Failed to send message to GUI, invalid JSON: "
                                                          << CommonUtility::commString2WStr(message) << L", error: "

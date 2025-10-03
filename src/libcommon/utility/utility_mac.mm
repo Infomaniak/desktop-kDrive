@@ -76,4 +76,18 @@ bool CommonUtility::setFolderCustomIcon(const SyncPath &folderPath, const IconTy
     return [[NSWorkspace sharedWorkspace] setIcon:iconImage forFile:folderPathStr options:0];
 }
 
+void CommonUtility::convertFromBase64Str(NSString *const _Nonnull base64Str, NSString **_Nullable str) {
+    if (base64Str != nil) {
+        NSData *base64Data = [[NSData alloc] initWithBase64EncodedString:base64Str options:0];
+        *str = [[NSString alloc] initWithData:base64Data encoding:NSUTF8StringEncoding];
+    }
+}
+
+void CommonUtility::convertToBase64Str(NSString *const _Nonnull str, NSString **_Nullable base64Str) {
+    if (str != nil) {
+        NSData *strData = [str dataUsingEncoding:NSUTF8StringEncoding];
+        *base64Str = [strData base64EncodedStringWithOptions:0];
+    }
+}
+
 } // namespace KDC
