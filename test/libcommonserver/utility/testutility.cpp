@@ -148,7 +148,6 @@ void TestUtility::testMoveItemToTrash(void) {
     CPPUNIT_ASSERT(!std::filesystem::exists(dirPath));
 
     // A regular file within a subdirectory that misses owner exec permission:
-    // - No issue on Windows
     const SyncPath subdir = tempDir.path() / "permission_less_subdirectory";
     (void) std::filesystem::create_directory(subdir);
     path = subdir / "file.txt";
@@ -169,14 +168,18 @@ void TestUtility::testMoveItemToTrash(void) {
 #endif
 
     // A regular directory that misses owner exec permission:
-
-#if defined(KD_WINDOWS)
-    CPPUNIT_ASSERT(!Utility::moveItemToTrash(subdir));
-#else
     CPPUNIT_ASSERT(Utility::moveItemToTrash(subdir));
-#endif
     CPPUNIT_ASSERT(!std::filesystem::exists(subdir, ec));
     CPPUNIT_ASSERT(!ec);
+
+#if defined(KD_WINDOWS)
+    // A regular directory that misses all permissions:
+    const testhelpers::RightsSet noPermission(false, false, false);
+    CPPUNIT_ASSERT(IoHelper::setRights(subdir, noPermission.read, noPermission.write, noPermission.execute, rightsError));
+    CPPUNIT_ASSERT(!Utility::moveItemToTrash(subdir));
+    CPPUNIT_ASSERT(!std::filesystem::exists(subdir, ec));
+    CPPUNIT_ASSERT(!ec);
+#endif
 }
 
 void TestUtility::testGetLinuxDesktopType() {
