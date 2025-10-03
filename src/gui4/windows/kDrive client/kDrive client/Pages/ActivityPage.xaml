@@ -123,10 +123,17 @@
 
         <DataTemplate x:Key="LoadingTitleTemplate"
                       x:DataType="viewmodels:Sync">
-            <controls:ContentLoader IsLoading="True"
-                                    CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"
-                                    Height="{StaticResource Infomaniak.Style.Spacing.L}"
-                                    Width="300" />
+            <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
+                <controls:ContentLoader IsLoading="True"
+                                        CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.XS}"
+                                        Height="{StaticResource Infomaniak.Style.Spacing.L}"
+                                        Width="300" />
+                <controls:ContentLoader IsLoading="True"
+                                        HorizontalAlignment="Left"
+                                        CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.XS}"
+                                        Height="{StaticResource Infomaniak.Style.Spacing.S}"
+                                        Width="60" />
+            </StackPanel>
         </DataTemplate>
     </Page.Resources>
 
@@ -148,7 +155,8 @@
                         Grid.Row="0"
                         Grid.Column="0"
                         ContentTemplate="{StaticResource LoadingTitleTemplate}"
-                        Content="{x:Bind ViewModel.SelectedSync, Mode=OneWay}" />
+                        Content="{x:Bind ViewModel.SelectedSync, Mode=OneWay}"
+                        MinHeight="50" />
 
         <ComboBox  Grid.Row="0"
                    Grid.Column="1"
