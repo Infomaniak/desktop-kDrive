@@ -21,6 +21,7 @@ using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Infomaniak.kDrive.ViewModels.Errors;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
@@ -48,6 +49,7 @@ namespace Infomaniak.kDrive.ServerCommunication
         {
             // Create mock users
             Users.Add(new User(1) { Id = 10, Name = "John", Email = "John.doe@infomaniak.com", IsConnected = true, IsStaff = false });
+            Users.Add(new User(2) { Id = 11, Name = "Alice", Email = "Alice.doe@infomaniak.com", IsConnected = false, IsStaff = false });
 
             // Create mock drives
             Drives.Add(new Drive(1, Users[0]) { Id = 140946, Name = "Infomaniak", Color = Color.FromArgb(255, 0, 150, 136), Size = 1000000000, UsedSize = 250000000, IsActive = true, IsPaidOffer = true });
@@ -56,8 +58,8 @@ namespace Infomaniak.kDrive.ServerCommunication
             Drives.Add(new Drive(4, Users[0]) { Id = 103, Name = "The cloud", Color = Color.FromArgb(255, 255, 168, 110), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
             Drives.Add(new Drive(5, Users[0]) { Id = 104, Name = "SwissCloud", Color = Color.FromArgb(255, 160, 168, 213), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
             Drives.Add(new Drive(6, Users[0]) { Id = 105, Name = "FrenchCloud", Color = Color.FromArgb(255, 123, 179, 12), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
-            Drives.Add(new Drive(7, Users[0]) { Id = 106, Name = "EuropaCloud", Color = Color.FromArgb(255, 160, 12, 213), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
-            Drives.Add(new Drive(8, Users[0]) { Id = 107, Name = "WinUI cloud", Color = Color.FromArgb(255, 12, 168, 179), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
+            Drives.Add(new Drive(7, Users[1]) { Id = 106, Name = "EuropaCloud", Color = Color.FromArgb(255, 160, 12, 213), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
+            Drives.Add(new Drive(8, Users[1]) { Id = 107, Name = "WinUI cloud", Color = Color.FromArgb(255, 12, 168, 179), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
 
             Users[0].Drives.Add(Drives[0]);
             Users[0].Drives.Add(Drives[1]);
@@ -65,8 +67,8 @@ namespace Infomaniak.kDrive.ServerCommunication
             Users[0].Drives.Add(Drives[3]);
             Users[0].Drives.Add(Drives[4]);
             Users[0].Drives.Add(Drives[5]);
-            Users[0].Drives.Add(Drives[6]);
-            Users[0].Drives.Add(Drives[7]);
+            Users[1].Drives.Add(Drives[6]);
+            Users[1].Drives.Add(Drives[7]);
 
 
             // Create mock syncs
@@ -232,7 +234,7 @@ namespace Infomaniak.kDrive.ServerCommunication
             return users.FirstOrDefault(u => u.DbId == dbId)?.Email;
         }
 
-        public static async Task<Image?> GetUserAvatar(DbId dbId)
+        public static async Task<ImageSource?> GetUserAvatar(DbId dbId)
         {
             //var users = await GetUsers().ConfigureAwait(false);
             var users = _mockServerData.Users;
@@ -394,7 +396,7 @@ namespace Infomaniak.kDrive.ServerCommunication
 
                 for (int i = 0; i < count; i++)
                 {
-                    User user = User.ReadFrom(reader);
+                    User user = await User.ReadFrom(reader);
                     result.Add(user);
                 }
             }

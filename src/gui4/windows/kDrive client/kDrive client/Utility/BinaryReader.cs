@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -23,6 +25,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Storage.Streams;
 
 namespace Infomaniak.kDrive
 {
@@ -38,13 +41,13 @@ namespace Infomaniak.kDrive
             return Encoding.UTF8.GetString(bytes).Replace("\0", "");
         }
 
-        public Image? ReadPNG()
+        public async Task<ImageSource?> ReadPNGAsync()
         {
             base.ReadInt32(); // skip length
 
             var originPosition = base.BaseStream.Position;
             MemoryStream ms = new MemoryStream();
-            base.BaseStream.CopyTo(ms);
+            await base.BaseStream.CopyToAsync(ms);
 
             byte[] pngBytes = ms.ToArray();
 
@@ -69,7 +72,28 @@ namespace Infomaniak.kDrive
             base.BaseStream.Position = originPosition + iendIndex;
             pngBytes = pngBytes.Take(iendIndex).ToArray();
 
-            return Image.FromStream(new MemoryStream(pngBytes));
+            return await ByteArrayToImageSource(pngBytes);
+        }
+
+        static public async Task<ImageSource> ByteArrayToImageSource(byte[] imageData)
+        {
+            if (imageData == null || imageData.Length == 0)
+                return null!;
+
+            var bitmap = new BitmapImage();
+            using (var stream = new InMemoryRandomAccessStream())
+            {
+                // Write byte[] to the stream
+                var writer = new DataWriter(stream);
+                writer.WriteBytes(imageData);
+                await writer.StoreAsync();
+                await stream.FlushAsync();
+                stream.Seek(0);
+
+                // Set BitmapImage source
+                await bitmap.SetSourceAsync(stream);
+            }
+            return bitmap;
         }
     }
 }
