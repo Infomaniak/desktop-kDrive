@@ -34,13 +34,12 @@ DirectDownloadJob::DirectDownloadJob(const SyncPath &destinationFile, const std:
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
-bool DirectDownloadJob::handleResponse(std::istream &is) {
+ExitInfo DirectDownloadJob::handleResponse(std::istream &is) {
     std::ofstream output(_destinationFile.native().c_str(), std::ios::binary);
     if (!output) {
         LOGW_WARN(_logger, L"Failed to create file: " << Utility::formatSyncPath(_destinationFile));
-        _exitInfo = {ExitCode::SystemError,
-                     Utility::enoughSpace(_destinationFile) ? ExitCause::FileAccessError : ExitCause::NotEnoughDiskSpace};
-        return false;
+        return {ExitCode::SystemError,
+                Utility::enoughSpace(_destinationFile) ? ExitCause::FileAccessError : ExitCause::NotEnoughDiskSpace};
     }
 
     setProgress(0);
@@ -107,14 +106,14 @@ bool DirectDownloadJob::handleResponse(std::istream &is) {
         LOG_WARN(_logger, "Request " << jobId() << ": error after closing tmp file");
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
-bool DirectDownloadJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
+ExitInfo DirectDownloadJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
     (void) replyBody;
     const auto errorCode = std::to_string(_resHttp.getStatus());
     LOG_WARN(_logger, "Download " << uri.toString() << " failed with error: " << errorCode << " - " << _resHttp.getReason());
-    return false;
+    return ExitInfo();
 }
 
 } // namespace KDC

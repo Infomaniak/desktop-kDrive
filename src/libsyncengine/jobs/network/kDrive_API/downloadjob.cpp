@@ -97,15 +97,15 @@ DownloadJob::~DownloadJob() {
 
         _vfs->cancelHydrate(_localpath);
     } else {
-        if (const ExitInfo exitInfo = _vfs->setPinState(
-                    _localpath, _exitInfo.code() == ExitCode::Ok ? PinState::AlwaysLocal : PinState::OnlineOnly);
-            !exitInfo) {
-            LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
+        if (const ExitInfo res = _vfs->setPinState(
+                    _localpath, exitInfo().code() == ExitCode::Ok ? PinState::AlwaysLocal : PinState::OnlineOnly);
+            !res) {
+            LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath) << L": " << res);
         }
 
-        if (const ExitInfo exitInfo = _vfs->forceStatus(_localpath, VfsStatus({.isHydrated = _exitInfo.code() == ExitCode::Ok}));
-            !exitInfo) {
-            LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L": " << exitInfo);
+        if (const ExitInfo res = _vfs->forceStatus(_localpath, VfsStatus({.isHydrated = exitInfo().code() == ExitCode::Ok}));
+            !res) {
+            LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath) << L": " << res);
         }
     }
 }
@@ -178,7 +178,7 @@ ExitInfo DownloadJob::runJob() noexcept {
     return AbstractTokenNetworkJob::runJob();
 }
 
-bool DownloadJob::handleResponse(std::istream &is) {
+ExitInfo DownloadJob::handleResponse(std::istream &is) {
     // Get Mime type
     std::string contentType;
     contentType = _resHttp.get("Content-Type", "");
@@ -204,8 +204,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
         // Create link
         LOG_DEBUG(_logger, "Create link: mimeType=" << mimeType);
         if (!createLink(mimeType, linkData)) { // We consider this as a permission denied error
-            _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
-            return false;
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
     } else {
         // Create file
@@ -214,9 +213,9 @@ bool DownloadJob::handleResponse(std::istream &is) {
         bool fetchCanceled = false;
         bool fetchFinished = false;
         bool fetchError = false;
-        if (!createTmpFile(is, readError, writeError, fetchCanceled, fetchFinished, fetchError)) {
+        if (const auto exitInfo = createTmpFile(is, readError, writeError, fetchCanceled, fetchFinished, fetchError); !exitInfo) {
             LOGW_WARN(_logger, L"Error in createTmpFile");
-            return false;
+            return exitInfo;
         }
 
         _responseHandlingCanceled = isAborted() || readError || writeError || fetchCanceled || fetchError;
@@ -252,22 +251,18 @@ bool DownloadJob::handleResponse(std::istream &is) {
             // NB: VFS reset is done in the destructor
             if (isAborted() || fetchCanceled) {
                 // Download aborted or canceled by the user
-                _exitInfo = ExitCode::Ok;
-                return true;
+                return ExitCode::Ok;
             } else if (readError) {
                 // Download issue
-                _exitInfo = {ExitCode::BackError, ExitCause::InvalidSize};
-                return false;
+                return {ExitCode::BackError, ExitCause::InvalidSize};
             } else if (const std::streamsize neededPlace =
                                _resHttp.getContentLength() == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH
                                        ? BUF_SIZE
                                        : (_resHttp.getContentLength() - getProgress());
                        !hasEnoughPlace(_tmpPath, _localpath, neededPlace, _logger)) {
-                _exitInfo = {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
-                return false;
+                return {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
             } else {
-                _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
-                return false;
+                return {ExitCode::SystemError, ExitCause::FileAccessError};
             }
         }
     }
@@ -280,8 +275,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
         } else if (ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied) {
             LOGW_INFO(_logger, L"Item does not exist anymore or access is denied. Restarting sync: "
                                        << Utility::formatSyncPath(_localpath));
-            _exitInfo = {ExitCode::DataError, ExitCause::InvalidSnapshot};
-            return false;
+            return {ExitCode::DataError, ExitCause::InvalidSnapshot};
         }
     }
 
@@ -290,18 +284,15 @@ bool DownloadJob::handleResponse(std::istream &is) {
     IoError ioError = IoError::Success;
     if (!IoHelper::getFileStat(_localpath, &filestat, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_localpath, ioError));
-        _exitInfo = ExitCode::SystemError;
-        return false;
+        return ExitCode::SystemError;
     }
 
     if (ioError == IoError::NoSuchFileOrDirectory) {
         LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_localpath));
-        _exitInfo = {ExitCode::DataError, ExitCause::InvalidSnapshot};
-        return false;
+        return {ExitCode::DataError, ExitCause::InvalidSnapshot};
     } else if (ioError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_localpath));
-        _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
-        return false;
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     _localNodeId = std::to_string(filestat.inode);
@@ -327,12 +318,10 @@ bool DownloadJob::handleResponse(std::istream &is) {
     }
 #endif
 
-    _exitInfo = ExitCode::Ok;
-
-    return true;
+    return ExitCode::Ok;
 }
 
-bool DownloadJob::createLink(const std::string &mimeType, const std::string &data) {
+ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string &data) {
     // Delete in case it already exists (EDIT operation)
     std::error_code ec;
     std::filesystem::remove_all(_localpath, ec);
@@ -342,7 +331,7 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
         const auto targetPath = Str2Path(data);
         if (targetPath == _localpath) {
             LOGW_DEBUG(_logger, L"Cannot create symlink on itself: " << Utility::formatSyncPath(_localpath));
-            return false;
+            return ExitInfo();
         }
 
         LOGW_DEBUG(_logger, L"Create symlink with target " << Utility::formatSyncPath(targetPath) << L", "
@@ -352,26 +341,25 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
         IoError ioError = IoError::Success;
         if (!IoHelper::createSymlink(targetPath, _localpath, isFolder, ioError)) {
             LOGW_WARN(_logger, L"Failed to create symlink: " << Utility::formatIoError(targetPath, ioError));
-            return false;
+            return ExitInfo();
         }
     } else if (mimeType == mimeTypeHardlink) {
         // Unreachable code
         const auto targetPath = Str2Path(data);
         if (targetPath == _localpath) {
             LOGW_DEBUG(_logger, L"Cannot create hardlink on itself: " << Utility::formatSyncPath(_localpath));
-            return false;
+            return ExitInfo();
         }
 
         LOGW_DEBUG(_logger, L"Create hardlink: target " << Utility::formatSyncPath(targetPath) << L", "
                                                         << Utility::formatSyncPath(_localpath));
 
-        std::error_code ec;
         std::filesystem::create_hard_link(targetPath, _localpath, ec);
         if (ec) {
             LOGW_WARN(_logger, L"Failed to create hardlink: target " << Utility::formatSyncPath(targetPath) << L", "
                                                                      << Utility::formatSyncPath(_localpath) << L", "
                                                                      << Utility::formatStdError(ec));
-            return false;
+            return ExitInfo();
         }
     } else if (mimeType == mimeTypeJunction) {
 #if defined(KD_WINDOWS)
@@ -380,7 +368,7 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
         IoError ioError = IoError::Success;
         if (!IoHelper::createJunction(data, _localpath, ioError)) {
             LOGW_WARN(_logger, L"Failed to create junction: " << Utility::formatIoError(_localpath, ioError));
-            return false;
+            return ExitInfo();
         }
 #endif
     } else if (mimeType == mimeTypeFinderAlias) {
@@ -394,9 +382,9 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
             if (ioError == IoError::Unknown) {
                 // Could be an alias imported into the drive by drag&drop in the webapp
                 bool writeError = false;
-                if (!createTmpFile(data, writeError)) {
+                if (const auto exitInfo = createTmpFile(data, writeError); !exitInfo) {
                     LOGW_WARN(_logger, L"Error in createTmpFile");
-                    return false;
+                    return exitInfo;
                 }
 
                 _responseHandlingCanceled = isAborted() || writeError;
@@ -406,38 +394,36 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
                     SyncPath targetPath;
                     if (!IoHelper::readAlias(_tmpPath, data2, targetPath, ioError)) {
                         LOGW_WARN(_logger, L"Error in IoHelper::readAlias: " << Utility::formatIoError(_tmpPath, ioError));
-                        return false;
+                        return ExitInfo();
                     }
 
                     if (!IoHelper::createAlias(data2, _localpath, ioError)) {
                         LOGW_WARN(_logger, L"Failed to create alias: " << Utility::formatIoError(_localpath, ioError));
-                        return false;
+                        return ExitInfo();
                     }
 
-                    return true;
+                    return ExitCode::Ok;
                 }
 
                 if (_responseHandlingCanceled) {
                     if (isAborted()) {
                         // Download aborted or canceled by the user
-                        _exitInfo = ExitCode::Ok;
-                        return true;
+                        return ExitCode::Ok;
                     } else {
-                        _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
-                        return false;
+                        return {ExitCode::SystemError, ExitCause::FileAccessError};
                     }
                 }
             }
 
-            return false;
+            return ExitInfo();
         }
 #endif
     } else {
         LOG_WARN(_logger, "Link type not managed: MIME type=" << mimeType);
-        return false;
+        return ExitInfo();
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
 bool DownloadJob::removeTmpFile() {
@@ -453,7 +439,7 @@ bool DownloadJob::removeTmpFile() {
     return true;
 }
 
-bool DownloadJob::moveTmpFile() {
+ExitInfo DownloadJob::moveTmpFile() {
     // Move downloaded file from tmp directory to sync directory
 #if defined(KD_WINDOWS)
     bool retry = true;
@@ -511,27 +497,24 @@ bool DownloadJob::moveTmpFile() {
                     counter--;
                     continue;
                 } else {
-                    return false;
+                    return ExitInfo();
                 }
             }
 #endif
 
             if (accessDeniedError) {
-                _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
-                return false;
+                return {ExitCode::SystemError, ExitCause::FileAccessError};
             } else {
                 bool exists = false;
                 IoError ioError = IoError::Success;
                 if (!IoHelper::checkIfPathExists(_localpath.parent_path(), exists, ioError)) {
                     LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
                                                << Utility::formatIoError(_localpath.parent_path(), ioError));
-                    _exitInfo = ExitCode::SystemError;
-                    return false;
+                    return ExitCode::SystemError;
                 }
                 if (ioError == IoError::AccessDenied) {
                     LOGW_WARN(_logger, L"Access denied to item " << Utility::formatSyncPath(_localpath.parent_path()));
-                    _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
-                    return false;
+                    return {ExitCode::SystemError, ExitCause::FileAccessError};
                 }
 
                 if (!exists) {
@@ -539,14 +522,14 @@ bool DownloadJob::moveTmpFile() {
                     disableRetry();
                 }
 
-                return false;
+                return ExitInfo();
             }
         }
 #if defined(KD_WINDOWS)
     }
 #endif
 
-    return true;
+    return ExitCode::Ok;
 }
 
 bool DownloadJob::hasEnoughPlace(const SyncPath &tmpDirPath, const SyncPath &destDirPath, int64_t neededPlace,
@@ -570,9 +553,9 @@ bool DownloadJob::hasEnoughPlace(const SyncPath &tmpDirPath, const SyncPath &des
     return true;
 }
 
-bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istream>> istr,
-                                std::optional<std::reference_wrapper<const std::string>> data, bool &readError, bool &writeError,
-                                bool &fetchCanceled, bool &fetchFinished, bool &fetchError) {
+ExitInfo DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istream>> istr,
+                                    std::optional<std::reference_wrapper<const std::string>> data, bool &readError,
+                                    bool &writeError, bool &fetchCanceled, bool &fetchFinished, bool &fetchError) {
     assert(istr || data);
 
     readError = false;
@@ -584,8 +567,7 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
     SyncPath cacheDirectoryPath;
     if (!IoHelper::cacheDirectoryPath(cacheDirectoryPath)) {
         LOGW_WARN(_logger, L"Failed to get cache directory");
-        _exitInfo = ExitCode::SystemError;
-        return false;
+        return ExitCode::SystemError;
     }
 
     std::ofstream output;
@@ -596,9 +578,8 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
         output.open(_tmpPath.native().c_str(), std::ofstream::out | std::ofstream::binary);
         if (!output.is_open()) {
             LOGW_WARN(_logger, L"Failed to open tmp file: " << Utility::formatSyncPath(_tmpPath));
-            _exitInfo = {ExitCode::SystemError,
-                         Utility::enoughSpace(_tmpPath) ? ExitCause::FileAccessError : ExitCause::NotEnoughDiskSpace};
-            return false;
+            return {ExitCode::SystemError,
+                    Utility::enoughSpace(_tmpPath) ? ExitCause::FileAccessError : ExitCause::NotEnoughDiskSpace};
         }
 
         output.seekp(0, std::ios_base::end);
@@ -722,16 +703,16 @@ bool DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::istrea
         writeError = true;
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
-bool DownloadJob::createTmpFile(std::istream &is, bool &readError, bool &writeError, bool &fetchCanceled, bool &fetchFinished,
-                                bool &fetchError) {
+ExitInfo DownloadJob::createTmpFile(std::istream &is, bool &readError, bool &writeError, bool &fetchCanceled, bool &fetchFinished,
+                                    bool &fetchError) {
     return createTmpFile(std::make_optional<std::reference_wrapper<std::istream>>(is), std::nullopt, readError, writeError,
                          fetchCanceled, fetchFinished, fetchError);
 }
 
-bool DownloadJob::createTmpFile(const std::string &data, bool &writeError) {
+ExitInfo DownloadJob::createTmpFile(const std::string &data, bool &writeError) {
     bool readError = false;
     bool fetchCanceled = false;
     bool fetchFinished = false;

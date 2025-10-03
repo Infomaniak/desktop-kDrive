@@ -34,30 +34,26 @@ GetInfoUserJob::GetInfoUserJob(const int userDbId) :
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
-bool GetInfoUserJob::handleJsonResponse(const std::string &replyBody) {
-    if (!AbstractTokenNetworkJob::handleJsonResponse(replyBody)) return false;
+ExitInfo GetInfoUserJob::handleJsonResponse(const std::string &replyBody) {
+    if (const auto exitInfo = AbstractTokenNetworkJob::handleJsonResponse(replyBody); !exitInfo) return exitInfo;
 
     Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
-    if (!dataObj || dataObj->size() == 0) return false;
-
+    if (!dataObj || dataObj->size() == 0) return ExitInfo();
 
     if (!JsonParserUtility::extractValue(dataObj, displayNameKey, _name)) {
-        _exitInfo = ExitCode::BackError;
-        return false;
+        return ExitCode::BackError;
     }
 
     if (!JsonParserUtility::extractValue(dataObj, emailKey, _email)) {
-        _exitInfo = ExitCode::BackError;
-        return false;
+        return ExitCode::BackError;
     }
 
     if (!JsonParserUtility::extractValue(dataObj, avatarKey, _avatarUrl)) {
-        _exitInfo = ExitCode::BackError;
-        return false;
+        return ExitCode::BackError;
     }
 
     JsonParserUtility::extractValue(dataObj, isStaffKey, _isStaff, false);
-    return true;
+    return ExitCode::Ok;
 }
 
 std::string GetInfoUserJob::getSpecificUrl() {

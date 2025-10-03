@@ -36,30 +36,29 @@ GetSizeJob::GetSizeJob(int driveDbId, const NodeId &nodeId) :
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
-bool GetSizeJob::handleResponse(std::istream &is) {
-    if (!AbstractTokenNetworkJob::handleResponse(is)) {
-        return false;
+ExitInfo GetSizeJob::handleResponse(std::istream &is) {
+    if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) {
+        return exitInfo;
     }
 
     if (jsonRes()) {
         Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
         if (dataObj) {
             if (!JsonParserUtility::extractValue(dataObj, sizeKey, _size)) {
-                return false;
+                return ExitInfo();
             }
         }
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
-bool GetSizeJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
+ExitInfo GetSizeJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
     if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN) {
         // Access to the directory is forbidden
-        return true;
-    } else {
-        return AbstractTokenNetworkJob::handleError(replyBody, uri);
+        return ExitCode::Ok;
     }
+    return AbstractTokenNetworkJob::handleError(replyBody, uri);
 }
 
 std::string GetSizeJob::getSpecificUrl() {

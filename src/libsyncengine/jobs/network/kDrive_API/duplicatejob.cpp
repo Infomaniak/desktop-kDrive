@@ -41,23 +41,23 @@ DuplicateJob::~DuplicateJob() {
     }
 }
 
-bool DuplicateJob::handleResponse(std::istream &is) {
-    if (!AbstractTokenNetworkJob::handleResponse(is)) {
-        return false;
+ExitInfo DuplicateJob::handleResponse(std::istream &is) {
+    if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) {
+        return exitInfo;
     }
 
     if (jsonRes()) {
         if (Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey)) {
             if (!JsonParserUtility::extractValue(dataObj, idKey, _nodeId)) {
-                return false;
+                return ExitInfo();
             }
             if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modtime)) {
-                return false;
+                return ExitInfo();
             }
         }
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
 std::string DuplicateJob::getSpecificUrl() {

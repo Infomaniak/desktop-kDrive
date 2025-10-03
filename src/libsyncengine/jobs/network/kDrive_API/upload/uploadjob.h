@@ -45,7 +45,7 @@ class UploadJob : public AbstractTokenNetworkJob {
 
     protected:
         ExitInfo canRun() override;
-        bool handleResponse(std::istream &is) override;
+        ExitInfo handleResponse(std::istream &is) override;
 
     private:
         std::string getSpecificUrl() override;

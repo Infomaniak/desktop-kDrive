@@ -347,7 +347,7 @@ struct ExitInfo {
             // Example: "ExitInfo{Ok-Unknown}"
             return "ExitInfo{" + toString(code()) + "-" + toString(cause()) + srcLocStr() + "}";
         }
-        constexpr operator bool() const { return _code == ExitCode::Ok; }
+        constexpr operator bool() const { return _code == ExitCode::Ok || _code == ExitCode::TokenRefreshed; }
         constexpr explicit operator int() const { return toInt(_code) * 100 + toInt(_cause); }
         constexpr bool operator==(const ExitInfo &other) const { return _code == other._code && _cause == other._cause; }
         constexpr bool operator!=(const ExitInfo &other) const { return !(*this == other); }

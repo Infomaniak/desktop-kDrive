@@ -55,21 +55,21 @@ UploadSessionFinishJob::~UploadSessionFinishJob() {
     }
 }
 
-bool UploadSessionFinishJob::handleResponse(std::istream &is) {
-    if (!AbstractTokenNetworkJob::handleResponse(is)) {
-        return false;
+ExitInfo UploadSessionFinishJob::handleResponse(std::istream &is) {
+    if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) {
+        return exitInfo;
     }
 
     if (getApiType() == ApiType::Drive) {
         UploadJobReplyHandler replyHandler(_absoluteFilePath, false, _creationTimeIn, _modificationTimeIn);
-        if (!replyHandler.extractData(jsonRes())) return false;
+        if (!replyHandler.extractData(jsonRes())) return ExitInfo();
         _nodeId = replyHandler.nodeId();
         _creationTimeOut = replyHandler.creationTime();
         _modificationTimeOut = replyHandler.modificationTime();
         _sizeOut = replyHandler.size();
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
 std::string UploadSessionFinishJob::getSpecificUrl() {

@@ -199,7 +199,6 @@ void LogUploadJob::finalize() {
     }
 
     (void) notifyLogUploadProgress(LogUploadState::Success, 100);
-    _exitInfo = ExitCode::Ok;
     _runningJob.reset();
 }
 
@@ -611,7 +610,6 @@ void LogUploadJob::handleJobFailure(const ExitInfo &exitInfo, const bool clearTm
                                         "Log upload failed with exitInfo: " + exitInfo.operator std::string());
     }
     _runningJob.reset();
-    _exitInfo = exitInfo;
 }
 
 bool LogUploadJob::getFileSize(const SyncPath &path, uint64_t &size) {

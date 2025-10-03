@@ -75,25 +75,23 @@ ExitInfo LocalCreateDirJob::runJob() {
         return ExitCode::SystemError;
     }
 
-    if (_exitInfo.code() == ExitCode::Ok) {
-        FileStat filestat;
-        if (!IoHelper::getFileStat(_destFilePath, &filestat, ioError)) {
-            LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_destFilePath, ioError));
-            return ExitCode::SystemError;
-        }
-
-        if (ioError == IoError::NoSuchFileOrDirectory) {
-            LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_destFilePath));
-            return {ExitCode::DataError, ExitCause::InvalidSize};
-        } else if (ioError == IoError::AccessDenied) {
-            LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_destFilePath));
-            return {ExitCode::SystemError, ExitCause::FileAccessError};
-        }
-
-        _nodeId = std::to_string(filestat.inode);
-        _modtime = filestat.modificationTime;
-        _creationTime = filestat.creationTime;
+    FileStat filestat;
+    if (!IoHelper::getFileStat(_destFilePath, &filestat, ioError)) {
+        LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_destFilePath, ioError));
+        return ExitCode::SystemError;
     }
+
+    if (ioError == IoError::NoSuchFileOrDirectory) {
+        LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_destFilePath));
+        return {ExitCode::DataError, ExitCause::InvalidSize};
+    } else if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_destFilePath));
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
+    }
+
+    _nodeId = std::to_string(filestat.inode);
+    _modtime = filestat.modificationTime;
+    _creationTime = filestat.creationTime;
     return ExitCode::Ok;
 }
 

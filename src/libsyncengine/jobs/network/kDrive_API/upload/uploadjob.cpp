@@ -97,19 +97,19 @@ ExitInfo UploadJob::canRun() {
     return ExitCode::Ok;
 }
 
-bool UploadJob::handleResponse(std::istream &is) {
-    if (!AbstractTokenNetworkJob::handleResponse(is)) {
-        return false;
+ExitInfo UploadJob::handleResponse(std::istream &is) {
+    if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) {
+        return exitInfo;
     }
 
     UploadJobReplyHandler replyHandler(_absoluteFilePath, IoHelper::isLink(_linkType), _creationTimeIn, _modificationTimeIn);
-    if (!replyHandler.extractData(jsonRes())) return false;
+    if (!replyHandler.extractData(jsonRes())) return ExitInfo();
     _nodeIdOut = replyHandler.nodeId();
     _creationTimeOut = replyHandler.creationTime();
     _modificationTimeOut = replyHandler.modificationTime();
     _sizeOut = replyHandler.size();
 
-    return true;
+    return ExitCode::Ok;
 }
 
 std::string UploadJob::getSpecificUrl() {

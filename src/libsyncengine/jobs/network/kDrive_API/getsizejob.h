@@ -31,12 +31,12 @@ class GetSizeJob : public AbstractTokenNetworkJob {
         inline int64_t size() const { return _size; }
 
     protected:
-        virtual bool handleResponse(std::istream &is) override;
-        virtual bool handleError(const std::string &replyBody, const Poco::URI &uri) override;
+        ExitInfo handleResponse(std::istream &is) override;
+        ExitInfo handleError(const std::string &replyBody, const Poco::URI &uri) override;
 
     private:
-        virtual std::string getSpecificUrl() override;
-        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
+        std::string getSpecificUrl() override;
+        inline ExitInfo setData() override { return ExitCode::Ok; }
 
         NodeId _nodeId;
         int64_t _size{0};

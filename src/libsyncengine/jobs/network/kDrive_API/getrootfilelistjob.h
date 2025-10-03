@@ -36,7 +36,7 @@ class GetRootFileListJob : public AbstractTokenNetworkJob {
         void setQueryParameters(Poco::URI &uri) override;
         ExitInfo setData() override { return ExitCode::Ok; }
 
-        bool handleResponse(std::istream &is) override;
+        ExitInfo handleResponse(std::istream &is) override;
 
         uint64_t _page{0};
         bool _dirOnly{false};

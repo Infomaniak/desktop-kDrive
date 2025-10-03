@@ -45,12 +45,12 @@ class GetAppVersionJob : public AbstractNetworkJob {
         static std::string toStr(VersionChannel channel);
 
     protected:
-        bool handleResponse(std::istream &is) override;
+        ExitInfo handleResponse(std::istream &is) override;
 
     private:
         std::string getSpecificUrl() override;
         void setQueryParameters(Poco::URI &uri) override;
-        bool handleError(const std::string &replyBody, const Poco::URI &uri) override;
+        ExitInfo handleError(const std::string &replyBody, const Poco::URI &uri) override;
 
         [[nodiscard]] VersionChannel toDistributionChannel(const std::string &val) const;
 

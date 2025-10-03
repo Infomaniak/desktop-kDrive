@@ -35,12 +35,12 @@ class AbstractLoginJob : public AbstractNetworkJob {
         ApiToken _apiToken;
 
     private:
-        virtual std::string getSpecificUrl() override;
-        virtual std::string getUrl() override;
-        virtual std::string getContentType() override;
+        std::string getSpecificUrl() override;
+        std::string getUrl() override;
+        std::string getContentType() override;
 
-        virtual bool handleResponse(std::istream &inputStream) override;
-        virtual bool handleError(const std::string &replyBody, const Poco::URI &uri) override;
+        ExitInfo handleResponse(std::istream &inputStream) override;
+        ExitInfo handleError(const std::string &replyBody, const Poco::URI &uri) override;
 
         std::string _errorCode;
         std::string _errorDescr;

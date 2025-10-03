@@ -34,8 +34,8 @@ class DirectDownloadJob final : public AbstractNetworkJob {
         std::string getSpecificUrl() override { return ""; }
 
     private:
-        bool handleResponse(std::istream &inputStream) override;
-        bool handleError(const std::string &replyBody, const Poco::URI &uri) override;
+        ExitInfo handleResponse(std::istream &inputStream) override;
+        ExitInfo handleError(const std::string &replyBody, const Poco::URI &uri) override;
 
         const SyncPath _destinationFile;
         const std::string _url;
