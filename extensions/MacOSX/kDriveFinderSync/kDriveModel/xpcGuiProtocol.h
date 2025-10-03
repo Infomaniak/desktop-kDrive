@@ -42,7 +42,8 @@
 // TODO: Test query method to remove later
 - (void)sendQuery:(NSData *_Nonnull)msg;
 
-- (void)loginRequestToken:(NSString *_Nonnull)code codeVerifier:(NSString *_Nonnull)codeVerifier callback:(void (^_Nonnull)(int userDbId, NSString *_Nullable error, NSString *_Nullable errorDescr))callback;
+typedef void (^_Nonnull loginRequestTokenCbk)(int userDbId, NSString *_Nullable error, NSString *_Nullable errorDescr);
+- (void)loginRequestToken:(NSString *_Nonnull)code codeVerifier:(NSString *_Nonnull)codeVerifier callback:(loginRequestTokenCbk)callback;
 
 @end
 

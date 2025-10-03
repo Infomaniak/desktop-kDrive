@@ -18,7 +18,7 @@
 
 #include "testabstractguijob.h"
 #include "log/log.h"
-#include "version.h"
+#include "test_utility/testhelpers.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 
 // Input parameters keys
@@ -132,7 +132,7 @@ void TestAbstractGuiJob::testAll() {
     CPPUNIT_ASSERT(requestNum == RequestNum::Unknown);
 
     // deserializeInputParms
-    std::unique_ptr<GuiJobTest> job = std::make_unique<GuiJobTest>(nullptr, requestId, inParams, _channel);
+    auto job = std::make_unique<GuiJobTest>(nullptr, requestId, inParams, _channel);
     job->_exitInfo = ExitCode::Ok;
     CPPUNIT_ASSERT(job->deserializeInputParms());
     CPPUNIT_ASSERT(job->exitInfo());
@@ -192,7 +192,7 @@ bool GuiJobTest::deserializeInputParms() {
 
         std::function<Dummy(const Poco::Dynamic::Var &)> dynamicVar2Dummy = [](const Poco::Dynamic::Var &value) {
             assert(value.isStruct());
-            auto structValue = value.extract<Poco::DynamicStruct>();
+            const auto &structValue = value.extract<Poco::DynamicStruct>();
             Dummy dummy;
             CommonUtility::readValueFromStruct(structValue, inParamsDummyStrValue, dummy.strValue);
             CommonUtility::readValueFromStruct(structValue, inParamsDummyIntValue, dummy.intValue);

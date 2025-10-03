@@ -39,35 +39,37 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
         void stop();
 
         // AppServer maps
-        const SyncPalMap &syncPalMap() { return _syncPalMap; }
-        const VfsMap &vfsMap() { return _vfsMap; }
+        const SyncPalMap &syncPalMap() const { return _syncPalMap; }
+        const VfsMap &vfsMap() const { return _vfsMap; }
 
         // AppServer callbacks
-        inline void setAddErrorCbk(void (*addErrorCbk)(const Error &)) { _addErrorCbk = addErrorCbk; }
-        inline void addErrorCbk(const Error &error) {
+        inline void setAddErrorCbk(std::function<void(const Error &)> addErrorCbk) { _addErrorCbk = addErrorCbk; }
+        inline void addErrorCbk(const Error &error) const {
             if (_addErrorCbk) _addErrorCbk(error);
         }
 
-        inline void setUpdateSentryUserCbk(void (*updateSentryUserCbk)()) { _updateSentryUserCbk = updateSentryUserCbk; }
-        inline void updateSentryUserCbk() {
+        inline void setUpdateSentryUserCbk(std::function<void()> updateSentryUserCbk) {
+            _updateSentryUserCbk = updateSentryUserCbk;
+        }
+        inline void updateSentryUserCbk() const {
             if (_updateSentryUserCbk) _updateSentryUserCbk();
         }
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
-        inline void setGetThumbnailCbk(ExitCode (*getThumbnailCbk)(int, const NodeId &, int, std::string &)) {
+        inline void setGetThumbnailCbk(std::function<ExitCode(int, const NodeId &, int, std::string &)> getThumbnailCbk) {
             _getThumbnailCbk = getThumbnailCbk;
         }
-        inline ExitCode getThumbnailCbk(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) {
+        inline ExitCode getThumbnailCbk(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) const {
             if (_getThumbnailCbk)
                 return _getThumbnailCbk(driveDbId, nodeId, width, thumbnail);
             else
                 return ExitCode::LogicError;
         }
 
-        inline void setGetPublicLinkUrlCbk(ExitCode (*getPublicLinkUrlCbk)(int, const NodeId &, std::string &)) {
+        inline void setGetPublicLinkUrlCbk(std::function<ExitCode(int, const NodeId &, std::string &)> getPublicLinkUrlCbk) {
             _getPublicLinkUrlCbk = getPublicLinkUrlCbk;
         }
-        inline ExitCode getPublicLinkUrlCbk(int driveDbId, const NodeId &nodeId, std::string &linkUrl) {
+        inline ExitCode getPublicLinkUrlCbk(int driveDbId, const NodeId &nodeId, std::string &linkUrl) const {
             if (_getPublicLinkUrlCbk)
                 return _getPublicLinkUrlCbk(driveDbId, nodeId, linkUrl);
             else
@@ -91,11 +93,11 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
         const VfsMap &_vfsMap;
 
         // AppServer callbacks
-        void (*_addErrorCbk)(const Error &error);
-        void (*_updateSentryUserCbk)();
+        std::function<void(const Error &)> _addErrorCbk;
+        std::function<void()> _updateSentryUserCbk;
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
-        ExitCode (*_getThumbnailCbk)(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail);
-        ExitCode (*_getPublicLinkUrlCbk)(int driveDbId, const NodeId &nodeId, std::string &linkUrl);
+        std::function<ExitCode(int, const NodeId &, int, std::string &)> _getThumbnailCbk;
+        std::function<ExitCode(int, const NodeId &, std::string &)> _getPublicLinkUrlCbk;
 #endif
 
         // Communication servers

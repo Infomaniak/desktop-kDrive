@@ -33,6 +33,9 @@
 - (instancetype)initWithWrapper:(AbstractCommChannelPrivate *)wrapper;
 - (NSNumber *_Nonnull)newRequestId;
 - (void (^_Nonnull)(...))callback:(NSNumber *_Nonnull)requestId;
+- (void)processRequest:(RequestNum)requestNum
+        paramsDictionary:(NSDictionary *_Nonnull)paramsDictionary
+                callback:(void (^_Nonnull)(...))callback;
 
 @end
 
@@ -80,6 +83,27 @@ static NSNumber *lastRequestId = @0;
     return cbk;
 }
 
+- (void)processRequest:(RequestNum)requestNum
+        paramsDictionary:(NSDictionary *_Nonnull)paramsDictionary
+                callback:(void (^_Nonnull)(...))callback {
+    if (self.wrapper && self.wrapper->publicPtr) {
+        // Add callback to dictionary
+        NSNumber *requestId = [self newRequestId];
+        [_callbackDictionary setObject:callback forKey:requestId];
+
+        // Generate full JSON
+        NSDictionary *queryDictionary = @{@"id" : requestId, @"num" : @((int) requestNum), @"params" : paramsDictionary};
+        NSError *error;
+        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:queryDictionary options:0 error:&error];
+        NSString *inputParamsStr = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+
+        // Write JSON on the channel
+        self.wrapper->inBuffer += std::string([inputParamsStr UTF8String]);
+        self.wrapper->inBuffer += "\n";
+        self.wrapper->publicPtr->readyReadCbk();
+    }
+}
+
 // XPCGuiRemoteProtocol protocol implementation
 // TODO: Test query method to remove later
 - (void)sendQuery:(NSData *_Nonnull)msg {
@@ -109,29 +133,19 @@ static NSNumber *lastRequestId = @0;
 
 - (void)loginRequestToken:(NSString *_Nonnull)code
              codeVerifier:(NSString *_Nonnull)codeVerifier
-                 callback:(void (^_Nonnull)(int userDbId, NSString *_Nullable error, NSString *_Nullable errorDescr))callback {
-    if (self.wrapper && self.wrapper->publicPtr) {
-        NSNumber *requestNum = @((int) RequestNum::LOGIN_REQUESTTOKEN);
+                 callback:(loginRequestTokenCbk)callback {
+    NSLog(@"[KD] loginRequestToken called");
 
-        // Add callback to dictionary
-        NSNumber *requestId = [self newRequestId];
-        [_callbackDictionary setObject:callback forKey:requestId];
+    // Generate params JSON
+    NSString *b64Code;
+    KDC::CommonUtility::convertToBase64Str(code, &b64Code);
+    NSString *b64CodeVerifier;
+    KDC::CommonUtility::convertToBase64Str(codeVerifier, &b64CodeVerifier);
+    NSDictionary *paramsDictionary = @{@"code" : b64Code, @"codeVerifier" : b64CodeVerifier};
 
-        // Generate JSON inputParamsStr
-        NSString *b64Code;
-        KDC::CommonUtility::convertToBase64Str(code, &b64Code);
-        NSString *b64CodeVerifier;
-        KDC::CommonUtility::convertToBase64Str(codeVerifier, &b64CodeVerifier);
-        NSDictionary *paramsDictionary = @{@"code" : b64Code, @"codeVerifier" : b64CodeVerifier};
-        NSDictionary *queryDictionary = @{@"id" : requestId, @"num" : requestNum, @"params" : paramsDictionary};
-        NSError *error;
-        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:queryDictionary options:0 error:&error];
-        NSString *inputParamsStr = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-
-        self.wrapper->inBuffer += std::string([inputParamsStr UTF8String]);
-        self.wrapper->inBuffer += "\n";
-        self.wrapper->publicPtr->readyReadCbk();
-    }
+    [self processRequest:RequestNum::LOGIN_REQUESTTOKEN
+            paramsDictionary:paramsDictionary
+                    callback:(void (^_Nonnull)(...)) callback];
 }
 
 @end
@@ -154,26 +168,22 @@ static NSNumber *lastRequestId = @0;
     }
 }
 
-- (void)signalUserUpdate:(UserInfo *_Nonnull)userInfo {
-    if (self.connection == nil) {
-        return;
-    }
-
-    NSLog(@"[KD] Call signalUserUpdate");
-
-    @try {
-        [[self.connection remoteObjectProxy] signalUserUpdate:userInfo];
-    } @catch (NSException *e) {
-        NSLog(@"[KD] Error in signalUserUpdate: error=%@", e.name);
-    }
-}
-
 - (void)signalUserCreate:(UserInfo *_Nonnull)userInfo {
     if (self.connection == nil) {
         return;
     }
 
-    NSLog(@"[KD] Call signalUserUpdate");
+    @try {
+        [[self.connection remoteObjectProxy] signalUserCreate:userInfo];
+    } @catch (NSException *e) {
+        NSLog(@"[KD] Error in signalUserCreate: error=%@", e.name);
+    }
+}
+
+- (void)signalUserUpdate:(UserInfo *_Nonnull)userInfo {
+    if (self.connection == nil) {
+        return;
+    }
 
     @try {
         [[self.connection remoteObjectProxy] signalUserUpdate:userInfo];
@@ -289,8 +299,8 @@ uint64_t KDC::GuiCommChannel::writeData(const KDC::CommChar *data, uint64_t len)
                     NSString *errorDescr;
                     CommonUtility::convertFromBase64Str(paramsDict[@"errorDescr"], &error);
 
-                    NSLog(@"[KD] Calling callback: num=%d", toInt(requestNum));
-                    auto callback = (void (^_Nonnull)(int, NSString *_Nullable, NSString *_Nullable)) cbk;
+                    NSLog(@"[KD] Call loginRequestToken callback");
+                    auto callback = (loginRequestTokenCbk) cbk;
                     callback(userDbId, error, errorDescr);
                     break;
                 }
@@ -322,8 +332,10 @@ uint64_t KDC::GuiCommChannel::writeData(const KDC::CommChar *data, uint64_t len)
                     userInfo->isStaff = [paramsDict[@"isStaff"] integerValue];
 
                     if (signalNum == SignalNum::USER_ADDED) {
+                        NSLog(@"[KD] Call signalUserCreate");
                         [(GuiRemoteEnd *) _privatePtr->remoteEnd signalUserCreate:userInfo];
                     } else {
+                        NSLog(@"[KD] Call signalUserUpdate");
                         [(GuiRemoteEnd *) _privatePtr->remoteEnd signalUserUpdate:userInfo];
                     }
                     break;
@@ -351,11 +363,9 @@ void KDC::GuiCommChannel::runLoginRequestToken(
     auto channel = std::make_shared<KDC::GuiCommChannel>(channelPrivate);
     channel->setReadyReadCbk(readyReadCbk);
 
-    NSString *nsCode = [[NSString alloc] initWithUTF8String:code.c_str()];
-    NSString *nsCodeVerifier = [[NSString alloc] initWithUTF8String:codeVerifier.c_str()];
     [(GuiLocalEnd *) channel->_privatePtr->localEnd
-            loginRequestToken:nsCode
-                 codeVerifier:nsCodeVerifier
+            loginRequestToken:[[NSString alloc] initWithUTF8String:code.c_str()]
+                 codeVerifier:[[NSString alloc] initWithUTF8String:codeVerifier.c_str()]
                      callback:^(int userDbId, NSString *_Nullable error, NSString *_Nullable errorDescr) {
                        std::string errorStr(error == nil ? "" : [error UTF8String]);
                        std::string errorDescrStr(errorDescr == nil ? "" : [errorDescr UTF8String]);

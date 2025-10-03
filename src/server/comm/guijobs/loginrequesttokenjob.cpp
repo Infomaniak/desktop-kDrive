@@ -47,8 +47,8 @@ bool LoginRequestTokenJob::deserializeInputParms() {
     try {
         readParamValue(inParamsCode, _code);
         readParamValue(inParamsCodeVerifier, _codeVerifier);
-    } catch (std::exception &) {
-        LOG_WARN(_logger, "Exception in AbstractGuiJob::readParamValue");
+    } catch (std::exception &e) {
+        LOG_WARN(_logger, "Exception in AbstractGuiJob::readParamValue: error=" << e.what());
         _exitInfo = ExitCode::LogicError;
         return false;
     }

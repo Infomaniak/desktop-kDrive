@@ -53,12 +53,13 @@
 namespace KDC {
 CommManager::CommManager(const SyncPalMap &syncPalMap, const VfsMap &vfsMap) :
     _syncPalMap(syncPalMap),
-    _vfsMap(vfsMap),
+    _vfsMap(vfsMap) {
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
-    _extCommServer(std::make_shared<ExtCommServer>("Extension Comm Server")),
+    _extCommServer = std::make_shared<ExtCommServer>("Extension Comm Server");
 #endif
-    _guiCommServer(std::make_shared<GuiCommServer>("GUI Comm Server")),
-    _guiJobFactory(std::make_unique<GuiJobFactory>()) {
+    _guiCommServer = std::make_shared<GuiCommServer>("GUI Comm Server");
+    _guiJobFactory = std::make_unique<GuiJobFactory>();
+
 #if defined(KD_MACOS)
     // Tell the Finder to use the Extension (checking it from System Preferences -> Extensions)
     std::string cmd("pluginkit -v -e use -i ");

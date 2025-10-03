@@ -419,7 +419,7 @@ void TestUtility::testGenerateRandomStringAlphaNum() {
             std::mutex resultsMutex;
             bool wait = true;
             for (int i = 0; i < 3; i++) {
-                workers.push_back(std::thread([&]() {
+                workers.emplace_back(std::thread([&]() {
                     while (wait) {
                         std::this_thread::sleep_for(std::chrono::milliseconds(1));
                     };
@@ -917,17 +917,17 @@ void TestUtility::testReadValueFromStruct() {
 
     Poco::Dynamic::Array strValues;
     CommonUtility::convertToBase64Str("éééé", base64StrValue);
-    strValues.push_back(base64StrValue);
+    strValues.emplace_back(base64StrValue);
     CommonUtility::convertToBase64Str("àààà", base64StrValue);
-    strValues.push_back(base64StrValue);
+    strValues.emplace_back(base64StrValue);
     dstruct.insert("strValues", strValues);
 
     Poco::Dynamic::Array structValues;
-    structValues.push_back(structValue);
+    structValues.emplace_back(structValue);
     structValue["intValue"] = 67890;
     CommonUtility::convertToBase64Str("ztrewq", base64StrValue);
     structValue["strValue"] = base64StrValue;
-    structValues.push_back(structValue);
+    structValues.emplace_back(structValue);
     dstruct.insert("structValues", structValues);
 
     // Read data
@@ -965,7 +965,7 @@ void TestUtility::testReadValueFromStruct() {
 
         std::function<Dummy(const Poco::Dynamic::Var &)> dynamicVar2Dummy = [](const Poco::Dynamic::Var &value) {
             assert(value.isStruct());
-            auto structValue = value.extract<Poco::DynamicStruct>();
+            const auto &structValue = value.extract<Poco::DynamicStruct>();
             Dummy dummy;
             CommonUtility::readValueFromStruct(structValue, "intValue", dummy.intValue);
             CommonUtility::readValueFromStruct(structValue, "strValue", dummy.strValue);
