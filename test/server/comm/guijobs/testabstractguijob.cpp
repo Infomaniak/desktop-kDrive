@@ -98,7 +98,7 @@ void TestAbstractGuiJob::setUp() {
     // Create parmsDb
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
-    std::filesystem::remove(parmsDbPath);
+    (void) std::filesystem::remove(parmsDbPath);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     _channel = std::make_shared<GuiCommChannelTest2>();
@@ -112,7 +112,7 @@ void TestAbstractGuiJob::testAll() {
     // convertToBase64Str
     std::string blobStr("0123456789abcdefghijklmnopqrtsuvwxyz");
     CommBLOB blob;
-    std::copy(blobStr.begin(), blobStr.end(), std::back_inserter(blob));
+    (void) std::copy(blobStr.begin(), blobStr.end(), std::back_inserter(blob));
 
     std::string base64Str;
     CommonUtility::convertToBase64Str(blob, base64Str);
@@ -124,8 +124,8 @@ void TestAbstractGuiJob::testAll() {
     CPPUNIT_ASSERT(blob2 == blob);
 
     // deserializeGenericInputParms
-    int requestId;
-    RequestNum requestNum;
+    int requestId = 0;
+    RequestNum requestNum = RequestNum::Unknown;
     Poco::DynamicStruct inParams;
     CPPUNIT_ASSERT(AbstractGuiJob::deserializeGenericInputParms(inputParamsStr, requestId, requestNum, inParams));
     CPPUNIT_ASSERT(requestId == 999);
@@ -218,7 +218,7 @@ bool GuiJobTest::serializeOutputParms() {
 
     std::string blobStr("0123456789abcdefghijklmnopqrtsuvwxyz");
     CommBLOB blob;
-    std::copy(blobStr.begin(), blobStr.end(), std::back_inserter(blob));
+    (void) std::copy(blobStr.begin(), blobStr.end(), std::back_inserter(blob));
     writeParamValue(outParamsBLOBValue, blob);
 
     writeParamValue(outParamsEnumValue, GuiJobTest::DummyEnum::Dummy3);

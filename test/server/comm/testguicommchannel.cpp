@@ -56,7 +56,7 @@ void TestGuiCommChannel::setUp() {
     // Create parmsDb
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
-    std::filesystem::remove(parmsDbPath);
+    (void) std::filesystem::remove(parmsDbPath);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 }
 
@@ -182,7 +182,7 @@ void TestGuiCommChannel::testLoginRequestToken() {
 
         CPPUNIT_ASSERT(job->_outputParamsStr == outputParamsStr);
 
-        channel->sendMessage(job->_outputParamsStr);
+        CPPUNIT_ASSERT(channel->sendMessage(job->_outputParamsStr));
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)

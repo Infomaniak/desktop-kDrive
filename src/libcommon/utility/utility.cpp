@@ -1451,27 +1451,27 @@ void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::wstr
 void CommonUtility::convertFromBase64Str(const std::string &base64Str, CommBLOB &value) {
     std::istringstream istr(base64Str);
     Poco::Base64Decoder b64in(istr);
-    std::copy(std::istream_iterator<char>(b64in), std::istream_iterator<char>(), std::back_inserter(value));
+    (void) std::copy(std::istream_iterator<char>(b64in), std::istream_iterator<char>(), std::back_inserter(value));
 }
 
 void CommonUtility::convertToBase64Str(const std::string &str, std::string &base64Str) {
     std::ostringstream ostr;
     Poco::Base64Encoder b64out(ostr);
     b64out << str;
-    b64out.close();
+    (void) b64out.close();
     base64Str = ostr.str();
 }
 
 void CommonUtility::convertToBase64Str(const std::wstring &wstr, std::string &base64Str) {
-    std::string str = ws2s(wstr);
+    const std::string str = ws2s(wstr);
     convertToBase64Str(str, base64Str);
 }
 
 void CommonUtility::convertToBase64Str(const CommBLOB &blob, std::string &base64Str) {
     std::ostringstream ostr;
     Poco::Base64Encoder b64out(ostr);
-    std::copy(blob.begin(), blob.end(), std::ostream_iterator<char>(b64out));
-    b64out.close();
+    (void) std::copy(blob.begin(), blob.end(), std::ostream_iterator<char>(b64out));
+    (void) b64out.close();
     base64Str = ostr.str();
 }
 

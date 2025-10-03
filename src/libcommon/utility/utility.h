@@ -301,8 +301,7 @@ struct COMMON_EXPORT CommonUtility {
                 const auto base64Str = dstruct[key].convert<std::string>();
                 convertFromBase64Str(base64Str, value);
             } else if constexpr (std::is_enum_v<T>) {
-                int intValue;
-                intValue = dstruct[key].convert<int>();
+                int intValue = dstruct[key].convert<int>();
                 if (intValue >= 0 && intValue < static_cast<int>(T::EnumEnd)) {
                     value = static_cast<T>(intValue);
                 } else {
@@ -337,7 +336,7 @@ struct COMMON_EXPORT CommonUtility {
                                          std::function<T(const Poco::Dynamic::Var &)> dynamicVar2T) {
             assert(dstruct[key].isArray());
             auto varValues = dstruct[key].extract<Poco::Dynamic::Array>();
-            std::transform(varValues.begin(), varValues.end(), std::back_inserter(values), dynamicVar2T);
+            (void) std::transform(varValues.begin(), varValues.end(), std::back_inserter(values), dynamicVar2T);
         }
 
         template<template<typename, typename> class C, typename T, typename A = std::allocator<T>>
@@ -366,11 +365,11 @@ struct COMMON_EXPORT CommonUtility {
             if constexpr (std::is_same_v<T, std::string> || std::is_same_v<T, std::wstring> || std::is_same_v<T, CommBLOB>) {
                 std::string base64Str;
                 convertToBase64Str(value, base64Str);
-                dstruct.insert(key, base64Str);
+                (void) dstruct.insert(key, base64Str);
             } else if constexpr (std::is_enum_v<T>) {
-                dstruct.insert(key, static_cast<int>(value));
+                (void) dstruct.insert(key, static_cast<int>(value));
             } else {
-                dstruct.insert(key, value);
+                (void) dstruct.insert(key, value);
             }
         }
 
@@ -378,7 +377,7 @@ struct COMMON_EXPORT CommonUtility {
         static void writeValueToStruct(Poco::DynamicStruct &str, const std::string &key, const T &value,
                                        std::function<Poco::Dynamic::Var(const T &)> t2DynamicVar) {
             auto varValue = t2DynamicVar(value);
-            str.insert(key, varValue);
+            (void) str.insert(key, varValue);
         }
 
         template<size_t n>
@@ -401,8 +400,8 @@ struct COMMON_EXPORT CommonUtility {
         static void writeValuesToStruct(Poco::DynamicStruct &dstruct, const std::string &key, const C<T, A> &values,
                                         std::function<Poco::Dynamic::Var(const T &)> t2DynamicVar) {
             Poco::Dynamic::Array arrValues;
-            std::transform(values.begin(), values.end(), std::back_inserter(arrValues), t2DynamicVar);
-            dstruct.insert(key, arrValues);
+            (void) std::transform(values.begin(), values.end(), std::back_inserter(arrValues), t2DynamicVar);
+            (void) dstruct.insert(key, arrValues);
         }
 
         template<template<typename, typename> class C, typename T, typename A = std::allocator<T>>

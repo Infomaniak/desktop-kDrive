@@ -82,7 +82,9 @@ void AbstractGuiJob::runJob() {
         LOG_WARN(_logger, "Error in serializeGenericOutputParms for job=" << jobId());
     }
 
-    _channel->sendMessage(_outputParamsStr);
+    if (!_channel->sendMessage(_outputParamsStr)) {
+        LOG_WARN(_logger, "Error in AbstractCommChannel::sendMessage for job=" << jobId());
+    }
 }
 
 bool AbstractGuiJob::deserializeGenericInputParms(const CommString &inputParamsStr, int &requestId, RequestNum &requestNum,

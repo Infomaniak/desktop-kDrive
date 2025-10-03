@@ -36,8 +36,6 @@ class GuiCommChannelTest2 : public GuiCommChannel {
         }
 #endif
 
-        ~GuiCommChannelTest2() = default;
-
         uint64_t readData(CommChar *, uint64_t) override { return 0; }
         uint64_t writeData(const CommChar *, uint64_t) override { return 0; }
         uint64_t bytesAvailable() const override { return 0; }

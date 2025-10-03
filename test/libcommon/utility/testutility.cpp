@@ -887,40 +887,40 @@ void TestUtility::testTrim() {
 void TestUtility::testReadValueFromStruct() {
     // Insert data
     Poco::DynamicStruct dstruct;
-    dstruct.insert("intValue", 666);
+    (void) dstruct.insert("intValue", 666);
 
-    dstruct.insert("floatValue", 123.456f);
+    (void) dstruct.insert("floatValue", 123.456f);
 
     std::string base64StrValue;
     CommonUtility::convertToBase64Str("yxcv", base64StrValue);
-    dstruct.insert("strValue", base64StrValue);
+    (void) dstruct.insert("strValue", base64StrValue);
 
     std::string base64WStrValue;
     CommonUtility::convertToBase64Str(L"asdf", base64WStrValue);
-    dstruct.insert("wstrValue", base64WStrValue);
+    (void) dstruct.insert("wstrValue", base64WStrValue);
 
     std::string blobStr("0123456789abcdefghijklmnopqrtsuvwxyz");
     std::string base64BlobStr;
     CommonUtility::convertToBase64Str(blobStr, base64BlobStr);
-    dstruct.insert("blobValue", base64BlobStr);
+    (void) dstruct.insert("blobValue", base64BlobStr);
 
-    dstruct.insert("boolValue", true);
+    (void) dstruct.insert("boolValue", true);
 
     Poco::DynamicStruct structValue;
     structValue.insert("intValue", 12345);
     CommonUtility::convertToBase64Str("qwertz", base64StrValue);
     structValue.insert("strValue", base64StrValue);
-    dstruct.insert("structValue", structValue);
+    (void) dstruct.insert("structValue", structValue);
 
     Poco::Dynamic::Array intValues{999, 888, 777};
-    dstruct.insert("intValues", intValues);
+    (void) dstruct.insert("intValues", intValues);
 
     Poco::Dynamic::Array strValues;
     CommonUtility::convertToBase64Str("éééé", base64StrValue);
     strValues.emplace_back(base64StrValue);
     CommonUtility::convertToBase64Str("àààà", base64StrValue);
     strValues.emplace_back(base64StrValue);
-    dstruct.insert("strValues", strValues);
+    (void) dstruct.insert("strValues", strValues);
 
     Poco::Dynamic::Array structValues;
     structValues.emplace_back(structValue);
@@ -928,7 +928,7 @@ void TestUtility::testReadValueFromStruct() {
     CommonUtility::convertToBase64Str("ztrewq", base64StrValue);
     structValue["strValue"] = base64StrValue;
     structValues.emplace_back(structValue);
-    dstruct.insert("structValues", structValues);
+    (void) dstruct.insert("structValues", structValues);
 
     // Read data
     try {
@@ -949,7 +949,7 @@ void TestUtility::testReadValueFromStruct() {
         CPPUNIT_ASSERT(wstrValue == L"asdf");
 
         CommBLOB blobValue;
-        std::copy(blobStr.begin(), blobStr.end(), std::back_inserter(blobValue));
+        (void) std::copy(blobStr.begin(), blobStr.end(), std::back_inserter(blobValue));
         CommBLOB blobValue2;
         CommonUtility::readValueFromStruct(dstruct, "blobValue", blobValue2);
         CPPUNIT_ASSERT(blobValue2 == blobValue);
@@ -1012,7 +1012,7 @@ void TestUtility::testWriteValueToStruct() {
 
     std::string blobStr("0123456789abcdefghijklmnopqrtsuvwxyz");
     CommBLOB blob;
-    std::copy(blobStr.begin(), blobStr.end(), std::back_inserter(blob));
+    (void) std::copy(blobStr.begin(), blobStr.end(), std::back_inserter(blob));
     CommonUtility::writeValueToStruct(dstruct, "blobValue", blob);
 
     CommonUtility::writeValueToStruct(dstruct, "boolValue", true);
@@ -1108,7 +1108,7 @@ void TestUtility::testConvertFromBase64Str() {
 
     std::string blobStr("0123456789abcdefghijklmnopqrtsuvwxyz");
     CommBLOB blob;
-    std::copy(blobStr.begin(), blobStr.end(), std::back_inserter(blob));
+    (void) std::copy(blobStr.begin(), blobStr.end(), std::back_inserter(blob));
 
     CommBLOB blob2;
     CommonUtility::convertFromBase64Str("MDEyMzQ1Njc4OWFiY2RlZmdoaWprbG1ub3BxcnRzdXZ3eHl6", blob2);
@@ -1131,7 +1131,7 @@ void TestUtility::testConvertToBase64Str() {
 
     std::string blobStr("0123456789abcdefghijklmnopqrtsuvwxyz");
     CommBLOB blob;
-    std::copy(blobStr.begin(), blobStr.end(), std::back_inserter(blob));
+    (void) std::copy(blobStr.begin(), blobStr.end(), std::back_inserter(blob));
 
     CommonUtility::convertToBase64Str(blob, value);
     CPPUNIT_ASSERT(value == "MDEyMzQ1Njc4OWFiY2RlZmdoaWprbG1ub3BxcnRzdXZ3eHl6");
