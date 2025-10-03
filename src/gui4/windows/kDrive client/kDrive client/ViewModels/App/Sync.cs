@@ -211,7 +211,7 @@ namespace Infomaniak.kDrive.ViewModels
                 {
                     LastActivity = SyncActivities[0];
                 }
-                catch
+                catch(ArgumentOutOfRangeException)
                 {
                     LastActivity = null;
                 }

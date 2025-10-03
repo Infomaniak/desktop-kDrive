@@ -83,6 +83,11 @@ namespace Infomaniak.kDrive.ViewModels
         {
             _simulationTask = Simulate();
         }
+
+        ~SyncActivity()
+        {
+            _simulationTask?.Dispose();
+        }
         private async Task Simulate()
         {
             Random random = new();

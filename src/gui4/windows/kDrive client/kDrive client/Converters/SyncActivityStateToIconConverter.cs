@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.Converters
 {
-    public class ItemTypeToIconConverter : IValueConverter
+    public class NodeTypeToIconConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {

@@ -51,6 +51,12 @@ namespace Infomaniak.kDrive.CustomControls
             RefreshFilteredActivities();
         }
 
+        ~SyncActivityTable()
+        {
+            _activitySubscription?.Dispose();
+            ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+        }
+
         private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(ViewModel.SelectedSync) && ViewModel.SelectedSync is not null)
@@ -152,7 +158,7 @@ namespace Infomaniak.kDrive.CustomControls
                 return null;
 
             Types.NodeType nodeType;
-            if (item is ViewModels.SyncActivity syncActivity)
+            if (item is SyncActivity syncActivity)
             {
                 nodeType = syncActivity.NodeType;
             }
