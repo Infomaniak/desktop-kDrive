@@ -83,26 +83,26 @@ ExitInfo AbstractUploadSession::runJob() {
     assert(_uploadSessionType != UploadSessionType::Unknown);
 
     (void) runJobInit();
-    bool ok = true;
+    ExitInfo exitInfo;
     while (_state != StateFinished && !isAborted()) {
         switch (_state) {
             case StateInitChunk: {
-                ok = initChunks();
+                exitInfo = initChunks();
                 _state = StateStartUploadSession;
                 break;
             }
             case StateStartUploadSession: {
-                ok = startSession();
+                exitInfo = startSession();
                 _state = StateUploadChunks;
                 break;
             }
             case StateUploadChunks: {
-                ok = sendChunks();
+                exitInfo = sendChunks();
                 _state = StateStopUploadSession;
                 break;
             }
             case StateStopUploadSession: {
-                ok = closeSession();
+                exitInfo = closeSession();
                 _state = StateFinished;
                 break;
             }
@@ -110,14 +110,14 @@ ExitInfo AbstractUploadSession::runJob() {
                 break;
         }
 
-        if (!ok) {
+        if (!exitInfo) {
             abort();
         }
     }
 
     LOGW_DEBUG(_logger, L"Upload session job " << jobId() << (isAborted() ? L" aborted after " : L" finished after ")
                                                << timer.elapsed<DoubleSeconds>().count() << L"s");
-    return ExitCode::Ok;
+    return exitInfo;
 }
 
 void AbstractUploadSession::uploadChunkCallback(const UniqueId jobId) {
