@@ -162,8 +162,8 @@ void TestGuiCommChannel::testLoginRequestToken() {
         }
 
         auto loginRequestTokenJob = std::dynamic_pointer_cast<LoginRequestTokenJob>(job);
-        CPPUNIT_ASSERT(loginRequestTokenJob->_code == "aaaa");
-        CPPUNIT_ASSERT(loginRequestTokenJob->_codeVerifier == "bbbb");
+        CPPUNIT_ASSERT(loginRequestTokenJob->_code == Str("aaaa"));
+        CPPUNIT_ASSERT(loginRequestTokenJob->_codeVerifier == Str("bbbb"));
 
         // Process job simulation
         loginRequestTokenJob->_userDbId = 1;
@@ -185,7 +185,7 @@ void TestGuiCommChannel::testLoginRequestToken() {
         channel->sendMessage(job->_outputParamsStr);
     };
 
-#if defined(KD_WINDOWS)
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
     const auto inputParamsStr{Str(R"({ "id": 1,)"
                                   R"( "num": 1,)" // LOGIN_REQUESTTOKEN
                                   R"( "params": {)"
