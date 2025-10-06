@@ -36,8 +36,8 @@ class OperationSorterWorker : public OperationProcessor {
         [[nodiscard]] bool hasOrderChanged() const { return _hasOrderChanged; }
 
     private:
-        struct CreatePair {
-                CreatePair(SyncOpPtr op_, const int32_t opNodeDepth_, SyncOpPtr ancestorOp_) :
+        struct CreateOperationPair {
+                CreateOperationPair(SyncOpPtr op_, const int32_t opNodeDepth_, SyncOpPtr ancestorOp_) :
                     op(op_),
                     opNodeDepth(opNodeDepth_),
                     ancestorOp(ancestorOp_) {}
@@ -45,18 +45,23 @@ class OperationSorterWorker : public OperationProcessor {
                 int32_t opNodeDepth{};
                 SyncOpPtr ancestorOp{nullptr};
         };
-        class CreatePairDepthCmp {
+        class CreateOperationPairDepthCmp {
             public:
-                bool operator()(const CreatePair &a, const CreatePair &b) const {
+                bool operator()(const CreateOperationPair &a, const CreateOperationPair &b) const {
                     if (a.opNodeDepth == b.opNodeDepth) {
-                        // If depths are equal, put op to move with greatest ID first to preserve initial ordering.
+                        // If depths are equal, nodes with higher IDs have higher priority in the queue.
+                        // This has the benefit of preserving the initial ordering of nodes with of equal depth
+                        // and with the same parent.
                         return a.op->id() < b.op->id();
                     }
+                    // Nodes with higher depth have a higher priority in the queue.
                     return a.opNodeDepth < b.opNodeDepth;
                 }
         };
 
-        using CreatePairQueue = std::priority_queue<CreatePair, std::vector<CreatePair>, CreatePairDepthCmp>;
+        // Recall that `std::priority_queue` is a max-heap (https://en.wikipedia.org/wiki/Heap_(data_structure)).
+        using CreateOperationPairQueue =
+                std::priority_queue<CreateOperationPair, std::vector<CreateOperationPair>, CreateOperationPairDepthCmp>;
 
         void sortOperations();
 

@@ -243,7 +243,7 @@ void OperationSorterWorker::fixCreateBeforeCreate() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixCreateBeforeCreate");
     // The method described in the thesis slow. Therefore, we use a std::priority_queue to efficiently sort the
     // operations before moving them in the sorted list.
-    CreatePairQueue opsToMove;
+    CreateOperationPairQueue opsToMove;
 
     std::unordered_map<UniqueId, int32_t> opIdToIndexMap;
     _syncPal->_syncOps->getOpIdToIndexMap(opIdToIndexMap, OperationType::Create);

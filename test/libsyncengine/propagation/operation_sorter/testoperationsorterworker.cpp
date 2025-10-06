@@ -389,13 +389,13 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
 // create before create, e.g. user creates directory "X" and then creates an object inside it.
 void TestOperationSorterWorker::testFixCreateBeforeCreateComplexOrdering() {
     /* Insert branch
-    .
-    ├── A
-         └── B
-         └── C
-             └── D
-                 ├── E
-                 └── F
+        .
+        ├── A
+             └── B
+             └── C
+                 └── D
+                     ├── E
+                     └── F
     */
     const auto nodeA = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::Directory, "A", "");
     const auto opA = generateSyncOperation(OperationType::Create, nodeA);
