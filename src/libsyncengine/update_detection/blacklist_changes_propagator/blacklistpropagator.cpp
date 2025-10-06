@@ -46,12 +46,10 @@ ExitInfo BlacklistPropagator::runJob() {
     if (!ParmsDb::instance()->selectSync(_syncPal->syncDbId(), _sync, found)) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectSync");
         return ExitCode::DbError;
-        ;
     }
     if (!found) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Sync not found");
         return ExitCode::DataError;
-        ;
     }
 
     if (const auto exitCode = checkNodes(); exitCode != ExitCode::Ok) {
