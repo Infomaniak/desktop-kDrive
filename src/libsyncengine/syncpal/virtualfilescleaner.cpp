@@ -101,8 +101,8 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
                     if (!std::filesystem::remove(dirIt->path(), ec)) {
                         if (ec.value() != 0) {
                             LOGW_WARN(_logger, L"Failed to remove all " << Utility::formatSyncPath(absolutePath) << L": "
-                                                                        << Utility::s2ws(ec.message()) << L" (" << ec.value()
-                                                                        << L")");
+                                                                        << CommonUtility::s2ws(ec.message()) << L" ("
+                                                                        << ec.value() << L")");
                             _exitCode = ExitCode::SystemError;
                             _exitCause = ExitCause::FileAccessError;
                             return false;
@@ -228,7 +228,7 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
                     if (!std::filesystem::remove(filePath, ec)) {
                         if (ec.value() != 0) {
                             LOGW_WARN(_logger, L"Failed to remove " << SyncName2WStr(filePathStr) << L": "
-                                                                    << Utility::s2ws(ec.message()) << L" (" << ec.value()
+                                                                    << CommonUtility::s2ws(ec.message()) << L" (" << ec.value()
                                                                     << L")");
                             _exitCode = ExitCode::SystemError;
                             _exitCause = ExitCause::FileAccessError;

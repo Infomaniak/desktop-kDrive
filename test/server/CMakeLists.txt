@@ -27,6 +27,7 @@ set(server_SRCS
     ${server_srcs_path}/updater/abstractupdater.h ${server_srcs_path}/updater/abstractupdater.cpp
     ${server_srcs_path}/updater/updatechecker.h ${server_srcs_path}/updater/updatechecker.cpp
     ${server_srcs_path}/requests/serverrequests.h ${server_srcs_path}/requests/serverrequests.cpp
+    ${server_srcs_path}/requests/offlinefilessizeestimator.h ${server_srcs_path}/requests/offlinefilessizeestimator.cpp
     ${server_srcs_path}/commserver.h ${server_srcs_path}/commserver.cpp
     ${server_srcs_path}/navigationpanehelper.h ${server_srcs_path}/navigationpanehelper.cpp
     ${server_srcs_path}/migration/migrationparams.h ${server_srcs_path}/migration/migrationparams.cpp
@@ -34,7 +35,6 @@ set(server_SRCS
 )
 
 if(APPLE)
-    list(APPEND server_SRCS ${server_srcs_path}/../common/utility_mac.cpp)
     list(APPEND server_SRCS ${server_srcs_path}/socketapisocket_mac.mm)
     set_property(SOURCE ${server_srcs_path}/socketapisocket_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 
@@ -49,9 +49,7 @@ if(APPLE)
         list(APPEND updater_DEPS ${SPARKLE_LIBRARY})
     endif()
 elseif(WIN32)
-    list(APPEND server_SRCS ${server_srcs_path}/updater/windowsupdater.h ${server_srcs_path}/updater/windowsupdater.cpp ${server_srcs_path}/../common/utility_win.cpp)
-else()
-    list(APPEND server_SRCS ${server_srcs_path}/updater/linuxupdater.h ${server_srcs_path}/updater/linuxupdater.cpp ${server_srcs_path}/../common/utility_linux.cpp)
+    list(APPEND server_SRCS ${server_srcs_path}/updater/windowsupdater.h ${server_srcs_path}/updater/windowsupdater.cpp)
 endif()
 
 set(3rdparty_SRC

@@ -26,7 +26,7 @@
 #include "jobs/local/localmovejob.h"
 #include "jobs/jobmanager.h"
 #include "jobs/local/localcreatedirjob.h"
-#include "jobs/network/API_v2/upload/uploadjob.h"
+#include "jobs/network/kDrive_API/upload/uploadjob.h"
 #include "requests/syncnodecache.h"
 #include "requests/exclusiontemplatecache.h"
 #include "libcommon/utility/utility.h"
@@ -35,14 +35,14 @@
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/network/proxy.h"
-#include "libsyncengine/jobs/network/API_v2/copytodirectoryjob.h"
-#include "libsyncengine/jobs/network/API_v2/createdirjob.h"
-#include "libsyncengine/jobs/network/API_v2/deletejob.h"
-#include "libsyncengine/jobs/network/API_v2/duplicatejob.h"
-#include "libsyncengine/jobs/network/API_v2/getfileinfojob.h"
-#include "libsyncengine/jobs/network/API_v2/getfilelistjob.h"
-#include "libsyncengine/jobs/network/API_v2/movejob.h"
-#include "libsyncengine/jobs/network/API_v2/renamejob.h"
+#include "libsyncengine/jobs/network/kDrive_API/copytodirectoryjob.h"
+#include "libsyncengine/jobs/network/kDrive_API/createdirjob.h"
+#include "libsyncengine/jobs/network/kDrive_API/deletejob.h"
+#include "libsyncengine/jobs/network/kDrive_API/duplicatejob.h"
+#include "libsyncengine/jobs/network/kDrive_API/getfileinfojob.h"
+#include "libsyncengine/jobs/network/kDrive_API/getfilelistjob.h"
+#include "libsyncengine/jobs/network/kDrive_API/movejob.h"
+#include "libsyncengine/jobs/network/kDrive_API/renamejob.h"
 #include "libsyncengine/update_detection/file_system_observer/filesystemobserverworker.h"
 #include "requests/syncnodecache.h"
 #include "requests/exclusiontemplatecache.h"
@@ -131,7 +131,7 @@ void TestIntegration::setUp() {
 }
 
 void TestIntegration::tearDown() {
-    _syncPal->stop(false, true, false);
+    if (_syncPal) _syncPal->stop(false, true, false);
     _remoteSyncDir.deleteDirectory();
 
     ParmsDb::instance()->close();
@@ -160,6 +160,7 @@ void TestIntegration::testAll() {
     testEncoding();
     testParentRename();
     testNegativeModificationTime();
+    testDeleteAndRecreateBranch();
 }
 
 void TestIntegration::inconsistencyTests() {
@@ -562,6 +563,69 @@ void TestIntegration::testNegativeModificationTime() {
     logStep("testNegativeModificationTime");
 }
 
+void TestIntegration::testDeleteAndRecreateBranch() {
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    // Setup initial situation
+    // .
+    // └── A(a)
+    //     └── AA(aa)
+    //         └── AAA(aaa)
+    //             └── AAAA(aaaa)
+    _syncPal->pause(); // We need to pause the sync because the back might take some time to notify all the events.
+    const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
+    NodeId nodeIdA;
+    NodeId nodeIdAA;
+    NodeId nodeIdAAA;
+    NodeId nodeIdAAAA;
+    const SyncPath filename = "AAAA";
+    const auto filepath = _syncPal->localPath() / tmpRemoteDir.name() / filename;
+    {
+        CreateDirJob jobA(nullptr, _driveDbId, tmpRemoteDir.id(), Str("A"));
+        (void) jobA.runSynchronously();
+        nodeIdA = jobA.nodeId();
+        CreateDirJob jobAA(nullptr, _driveDbId, jobA.nodeId(), Str("AA"));
+        (void) jobAA.runSynchronously();
+        nodeIdAA = jobAA.nodeId();
+        CreateDirJob jobAAA(nullptr, _driveDbId, nodeIdAA, Str("AAA"));
+        (void) jobAAA.runSynchronously();
+        nodeIdAAA = jobAAA.nodeId();
+
+        nodeIdAAAA = duplicateRemoteFile(_driveDbId, _testFileRemoteId, filename);
+        moveRemoteFile(_driveDbId, nodeIdAAAA, nodeIdAAA);
+    }
+    _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
+    _syncPal->unpause();
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    _syncPal->pause();
+
+    {
+        // Move test file outside deleted directory
+        moveRemoteFile(_driveDbId, nodeIdAAAA, tmpRemoteDir.id());
+
+        // Delete A/AA
+        deleteRemoteFile(_driveDbId, nodeIdAA);
+
+        // Create A/AA/AAA1
+        CreateDirJob jobAA(nullptr, _driveDbId, nodeIdA, Str("AA"));
+        (void) jobAA.runSynchronously();
+        nodeIdAA = jobAA.nodeId();
+        CreateDirJob jobAAA(nullptr, _driveDbId, nodeIdAA, Str("AAA1"));
+        (void) jobAAA.runSynchronously();
+
+        // Move back test file
+        moveRemoteFile(_driveDbId, nodeIdAAAA, jobAAA.nodeId());
+    }
+
+    _syncPal->unpause();
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() / "A" / "AA" / "AAA1"));
+
+    logStep("testDeleteAndRecreateBranch");
+}
+
 #if defined(KD_LINUX)
 void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     if (!testhelpers::isExtendedTest()) return;
@@ -580,7 +644,7 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     MockIoHelperFileStat mockIoHelper;
     // Create a file with a custom inode on the local side
     mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseFile", 2);
-    { const std::ofstream file((absoluteLocalWorkingDir / "testNodeIdReuseFile").string()); }
+    { const std::ofstream file(absoluteLocalWorkingDir / "testNodeIdReuseFile"); }
     waitForSyncToBeIdle(SourceLocation::currentLoc());
     CPPUNIT_ASSERT_EQUAL(NodeId("2"),
                          _syncPal->liveSnapshot(ReplicaSide::Local).itemId(relativeWorkingDirPath / "testNodeIdReuseFile"));
@@ -601,10 +665,13 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     IoHelper::createDirectory(absoluteLocalWorkingDir / "testNodeIdReuseDir", false, ioError);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
+    // Create a child file within "testNodeIdReuseDir".
+    { const std::ofstream childFile(absoluteLocalWorkingDir / "testNodeIdReuseDir" / "childFile.txt"); }
+
     _syncPal->unpause();
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
-    // Check that the file has been replaced by a directory on the remote with a different ID
+    // Check that the file has been replaced by a directory on the remote replica with a different ID.
     const NodeId newRemoteDirId =
             _syncPal->liveSnapshot(ReplicaSide::Remote).itemId(relativeWorkingDirPath / "testNodeIdReuseDir");
     CPPUNIT_ASSERT(!newRemoteDirId.empty());
@@ -612,20 +679,26 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     CPPUNIT_ASSERT_EQUAL(NodeType::Directory, _syncPal->liveSnapshot(ReplicaSide::Remote).type(newRemoteDirId));
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(remoteFileId));
 
-    // Replace the directory with a file on the local side with the same id
+    // Check that the new directory contains the file "childFile.txt" that was created locally.
+    const NodeId newRemoteChildFileId =
+            _syncPal->liveSnapshot(ReplicaSide::Remote).itemId(relativeWorkingDirPath / "testNodeIdReuseDir" / "childFile.txt");
+    CPPUNIT_ASSERT(!newRemoteChildFileId.empty());
+    CPPUNIT_ASSERT_EQUAL(NodeType::File, _syncPal->liveSnapshot(ReplicaSide::Remote).type(newRemoteChildFileId));
+
+    // Replace the directory with a file on the local side with the same ID.
     _syncPal->pause();
     while (!_syncPal->isPaused()) {
         Utility::msleep(100);
     }
     IoHelper::deleteItem(absoluteLocalWorkingDir / "testNodeIdReuseDir", ioError);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-    { const std::ofstream file((absoluteLocalWorkingDir / "testNodeIdReuseFile").string()); }
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+    { const std::ofstream file(absoluteLocalWorkingDir / "testNodeIdReuseFile"); }
 
     _syncPal->unpause();
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
-    // Check that the directory has been replaced by a file on the remote with a different ID
+    // Check that the directory has been replaced by a file on the remote with a different ID.
     const NodeId newRemoteFileId =
             _syncPal->liveSnapshot(ReplicaSide::Remote).itemId(relativeWorkingDirPath / "testNodeIdReuseFile");
     CPPUNIT_ASSERT(newRemoteFileId != "");
@@ -652,7 +725,7 @@ void TestIntegration::testNodeIdReuseFile2File() {
 
     MockIoHelperFileStat mockIoHelper;
     mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseFile", 2);
-    { const std::ofstream file((absoluteLocalWorkingDir / "testNodeIdReuseFile").string()); }
+    { const std::ofstream file(absoluteLocalWorkingDir / "testNodeIdReuseFile"); }
     waitForSyncToBeIdle(SourceLocation::currentLoc());
     CPPUNIT_ASSERT_EQUAL(NodeId("2"),
                          _syncPal->liveSnapshot(ReplicaSide::Local).itemId(relativeWorkingDirPath / "testNodeIdReuseFile"));
@@ -840,7 +913,7 @@ SyncPath TestIntegration::findLocalFileByNamePrefix(const SyncPath &parentAbsolu
     bool endOfDir = false;
     DirectoryEntry entry;
     while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
-        if (Utility::startsWith(entry.path().filename(), namePrefix)) return entry.path();
+        if (CommonUtility::startsWith(entry.path().filename(), namePrefix)) return entry.path();
     }
     return SyncPath();
 }

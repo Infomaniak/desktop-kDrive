@@ -20,15 +20,20 @@
 #
 
 import argparse
-import datetime
+from bs4 import BeautifulSoup
 import deepl
-import errno
 import os
 from pathlib import Path
 import re
 import shutil
 import subprocess
 import sys
+
+def prettify_html(html_filepath):
+    with open(html_filepath, "r") as f:
+        soup = BeautifulSoup(f.read(), "html.parser")
+    with open(html_filepath, "w") as f:
+        f.write(soup.prettify())
 
 def version_regex(arg_value, pattern=re.compile(r'^(\d+\.)?(\d+\.)?(\*|\d+)')):
     if not pattern.match(arg_value):
@@ -54,13 +59,12 @@ To add more systems, edit the script to append the new system to the list.
     formatter_class=argparse.RawTextHelpFormatter)
 
 parser.add_argument('-v', '--version', metavar="", type=version_regex, help='The release version (eg: 3.6.0)', required=True)
-parser.add_argument('-d', '--date', metavar="", type=int, help='The planned release date (defaults to today)', default=datetime.date.today().strftime('%Y%m%d'))
 args = parser.parse_args()
 
 if not os.path.isfile("kDrive-template.html"):
     sys.exit("Unable to find 'kDrive-template.html'.")
 
-fullName = f"kDrive-{args.version}.{args.date}"
+fullName = f"kDrive-{args.version}"
 dirPath = Path(__file__).parent.parent / "release_notes"
 
 if not dirPath.exists():
@@ -103,7 +107,10 @@ def split_os(lang, fullName):
                 else:
                     f.write(line)
 
-print(f"Generating Release Notes for kDrive-{args.version}.{args.date}")
+        prettify_html(f"{fullName}-{os_ext}-{lang_ext}.html") 
+        
+
+print(f"Generating Release Notes for kDrive-{args.version}")
 Path(dirPath).mkdir(mode=0o755, exist_ok=True)
 
 shutil.copyfile("kDrive-template.html", f"{dirPath}/{fullName}-en.html")

@@ -69,23 +69,25 @@ jobs:
         shell: cmd
 
       - name: Execute tests
-        run: powershell ./infomaniak-build-tools/run-tests.ps1
-          # & "cov01.exe" "-1" # coverage on
-          # & "cov01.exe" "-s" # show status
+        run: |
+          & "cov01.exe" "-1" # coverage on
+          & "cov01.exe" "-s" # show status
 
-      # - name: Compute code coverage
-      #   run : |          
-      #     & "covselect.exe" "--add" 'exclude folder c:/'
-      #     & "covselect.exe" "--add" 'exclude folder ../'
-      #     & "covselect.exe" "--add" 'exclude folder 3rdparty/'
-      #     & "covselect.exe" "--add" 'exclude folder gui/'
-      #     & "cov01.exe" "-0" # coverage off
-      #     & "cov01.exe" "-s" # show status
-      #     & "covhtml.exe" "coverage_html"
+          ./infomaniak-build-tools/run-tests.ps1
 
-      # - name: Deactivate code coverage
-      #   run : "cov01.exe -0" # coverage off
-      #   if: always()
+      - name: Compute code coverage
+        run : |          
+          & "covselect.exe" "--add" 'exclude folder c:/'
+          & "covselect.exe" "--add" 'exclude folder ../'
+          & "covselect.exe" "--add" 'exclude folder 3rdparty/'
+          & "covselect.exe" "--add" 'exclude folder gui/'
+          & "cov01.exe" "-0" # coverage off
+          & "cov01.exe" "-s" # show status
+          & "covhtml.exe" "coverage_html"
+
+      - name: Deactivate code coverage
+        run : "cov01.exe -0" # coverage off
+        if: always()
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
@@ -196,7 +198,7 @@ jobs:
 
       - name: Clean-up generated code
         run : rm -rf build-linux
-
+  
   kChat_notification:
     if: ((github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && always())
     needs: [ Windows-extended-tests, MacOS-extended-tests, Linux-extended-tests ]
@@ -209,7 +211,7 @@ jobs:
         uses: actions/checkout@v4.1.1
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || 'develop' }}
-  
+
       - name: Notify kChat (Success or Failure)
         run:
           ./infomaniak-build-tools/notify_kchat.ps1 "[![Build and run extended tests](https://github.com/Infomaniak/desktop-kDrive/actions/workflows/build-and-run-extended-tests.yml/badge.svg?branch=${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || 'develop' }})](https://github.com/Infomaniak/desktop-kDrive/actions/workflows/build-and-run-extended-tests.yml)"

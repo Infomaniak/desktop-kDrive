@@ -121,7 +121,7 @@ void SyncPalWorker::execute() {
                         continue;
                     }
 
-                    syncDirChanged = fsoWorkers[index]->exitCode() == ExitCode::SystemError &&
+                    syncDirChanged = fsoWorkers[index]->exitCode() == ExitCode::DataError &&
                                      fsoWorkers[index]->exitCause() == ExitCause::SyncDirChanged;
                     if (syncDirChanged) {
                         break;
@@ -143,8 +143,8 @@ void SyncPalWorker::execute() {
             LOG_SYNCPAL_INFO(_logger,
                              "Sync dir changed and we are unable to automaticaly fix syncDb, stopping all workers and exiting");
             stopAndWaitForExitOfAllWorkers(fsoWorkers, stepWorkers);
-            exitCode = ExitCode::FatalError;
-            setExitCause(ExitCause::WorkerExited);
+            exitCode = ExitCode::DataError;
+            setExitCause(ExitCause::SyncDirChanged);
             break;
         }
 
@@ -258,7 +258,7 @@ void SyncPalWorker::execute() {
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
 
-    LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " stoped");
+    LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " stopped");
     setDone(exitCode);
 }
 
@@ -392,6 +392,12 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             if (!_syncPal->restart()) {
                 _syncPal->resetSnapshotInvalidationCounters();
                 _syncPal->setSyncHasFullyCompletedInParms(true);
+            }
+            if (_syncPal->updateTreesNeedToBeCleared()) {
+                LOG_SYNCPAL_DEBUG(_logger, "Clearing update trees");
+                _syncPal->_localUpdateTree->clear();
+                _syncPal->_remoteUpdateTree->clear();
+                _syncPal->setUpdateTreesNeedToBeCleared(false);
             }
             sentry::pTraces::basic::Sync(syncDbId()).stop();
             break;

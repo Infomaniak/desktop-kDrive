@@ -55,6 +55,7 @@ class LiteSyncExtConnector {
         bool vfsCreatePlaceHolder(const QString &relativePath, const QString &localSyncPath, const struct stat *fileStat);
         bool vfsUpdateFetchStatus(const QString &tmpFilePath, const QString &filePath, const QString &localSyncPath,
                                   unsigned long long completed, bool &canceled, bool &finished);
+        bool vfsUpdateFetchStatus(const QString &absolutePath, const QString &status);
         bool vfsCancelHydrate(const QString &filePath);
         bool vfsSetThumbnail(const QString &absoluteFilePath, const QPixmap &pixmap);
         bool vfsSetStatus(const QString &path, const QString &localSyncPath, const VfsStatus &vfsStatus);

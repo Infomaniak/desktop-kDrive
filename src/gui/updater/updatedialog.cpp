@@ -61,7 +61,7 @@ void UpdateDialog::initUi(const VersionInfo &versionInfo) {
     QString txt = tr("<p>The new version <b>%1</b> of the %2 Client is available and has been downloaded.</p>"
                      "<p>The installed version is %3.</p>")
                           .arg(KDC::CommonUtility::escape(versionInfo.beautifulVersion().c_str()),
-                               KDC::CommonUtility::escape(Theme::instance()->appNameGUI()),
+                               KDC::CommonUtility::escape(QString::fromStdString(Theme::instance()->appName())),
                                KDC::CommonUtility::escape(CommonUtility::currentVersion().c_str()));
 
     lbl->setText(txt);
@@ -78,19 +78,15 @@ void UpdateDialog::initUi(const VersionInfo &versionInfo) {
     const Language language = ParametersCache::instance()->parametersInfo().language();
     QString languageCode = CommonUtility::languageCode(language);
     if (languageCode.isEmpty()) languageCode = "en";
-    const QUrl notesUrl(
-        QString("%1-%2-win-%3.html")
-        .arg(APPLICATION_STORAGE_URL, versionInfo.fullVersion().c_str(), languageCode.left(2))
-    );
+    const QUrl notesUrl(QString("%1-%2-win-%3.html").arg(APPLICATION_STORAGE_URL, versionInfo.tag.c_str(), languageCode.left(2)));
 
-    connect(manager, &QNetworkAccessManager::finished, this,
-        [releaseNoteContentWidget](QNetworkReply *reply) {
-            if (reply->error() == QNetworkReply::NoError) {
-                const QByteArray html = reply->readAll();
-                releaseNoteContentWidget->setHtml(QString::fromUtf8(html));
-            }
-            reply->deleteLater();
-        });
+    (void) connect(manager, &QNetworkAccessManager::finished, this, [releaseNoteContentWidget](QNetworkReply *const reply) {
+        if (reply->error() == QNetworkReply::NoError) {
+            const QByteArray html = reply->readAll();
+            releaseNoteContentWidget->setHtml(QString::fromUtf8(html));
+        }
+        reply->deleteLater();
+    });
     manager->get(QNetworkRequest(notesUrl));
 
 
@@ -122,6 +118,12 @@ void UpdateDialog::initUi(const VersionInfo &versionInfo) {
 #ifdef Q_OS_WIN
     MatomoClient::sendVisit(MatomoNameField::PG_Preferences_UpdateDialog);
 #endif
+}
+
+void UpdateDialog::paintEvent(QPaintEvent *event) {
+    Q_UNUSED(event)
+
+    drawRoundRectangle();
 }
 
 void UpdateDialog::reject() {

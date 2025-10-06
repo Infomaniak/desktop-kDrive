@@ -19,7 +19,6 @@
 #include "appserver.h"
 #include "config.h"
 #include "version.h"
-#include "common/utility.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/log/sentry/handler.h"
@@ -62,7 +61,7 @@ void signalHandler(int signum) {
     exit(signum);
 }
 
-int main(int argc, char **argv) {
+std::int32_t init(int argc, char **argv, std::unique_ptr<KDC::AppServer> &appPtr) {
     // KDC::CommonUtility::handleSignals(signalHandler); // !!! The signal handler interferes with Sentry !!!
 
     std::cout << "kDrive server starting" << std::endl;
@@ -82,7 +81,6 @@ int main(int argc, char **argv) {
 
     Q_INIT_RESOURCE(client);
 
-    std::unique_ptr<KDC::AppServer> appPtr = nullptr;
     try {
         appPtr = std::make_unique<KDC::AppServer>(argc, argv);
         appPtr->init();
@@ -91,6 +89,44 @@ int main(int argc, char **argv) {
         return -1;
     }
 
+    return 0;
+}
+
+#ifdef Q_OS_UNIX
+void increaseFileSystemCapacity() {
+    // Increase the size limit of core dumps
+    struct rlimit coreLimit;
+    coreLimit.rlim_cur = RLIM_INFINITY;
+    coreLimit.rlim_max = RLIM_INFINITY;
+    if (setrlimit(RLIMIT_CORE, &coreLimit) < 0) {
+        LOG_WARN(KDC::Log::instance()->getLogger(), "Unable to set RLIMIT_CORE");
+    }
+
+    // Increase the limit of simultaneously open files
+    struct rlimit numFiles;
+    if (getrlimit(RLIMIT_NOFILE, &numFiles) == 0 && numFiles.rlim_cur < APP_RLIMIT_NOFILE) {
+        numFiles.rlim_cur = qMin(rlim_t(APP_RLIMIT_NOFILE), numFiles.rlim_max);
+        if (setrlimit(RLIMIT_NOFILE, &numFiles) < 0) {
+            LOG_WARN(KDC::Log::instance()->getLogger(), "Unable to set RLIMIT_NOFILE - err =" << errno);
+        }
+    } else {
+        LOG_WARN(KDC::Log::instance()->getLogger(), "Unable to get RLIMIT_NOFILE - err=" << errno);
+    }
+
+    // Increase the limit of stack size
+    struct rlimit stackSize;
+    if (getrlimit(RLIMIT_STACK, &stackSize) == 0 && numFiles.rlim_cur < APP_RLIMIT_STACK) {
+        stackSize.rlim_cur = qMin(rlim_t(APP_RLIMIT_STACK), numFiles.rlim_max);
+        if (setrlimit(RLIMIT_STACK, &stackSize) < 0) {
+            LOG_WARN(KDC::Log::instance()->getLogger(), "Unable to set RLIMIT_STACK - err =" << errno);
+        }
+    } else {
+        LOG_WARN(KDC::Log::instance()->getLogger(), "Unable to get RLIMIT_STACK - err=" << errno);
+    }
+}
+#endif
+
+std::int32_t exec(std::unique_ptr<KDC::AppServer> &appPtr) {
     if (appPtr->helpAsked()) {
         appPtr->showHelp();
         return 0;
@@ -127,43 +163,15 @@ int main(int argc, char **argv) {
 #endif
 
 #ifdef Q_OS_UNIX
-    // Increase the size limit of core dumps
-    struct rlimit coreLimit;
-    coreLimit.rlim_cur = RLIM_INFINITY;
-    coreLimit.rlim_max = RLIM_INFINITY;
-    if (setrlimit(RLIMIT_CORE, &coreLimit) < 0) {
-        LOG_WARN(KDC::Log::instance()->getLogger(), "Unable to set RLIMIT_CORE");
-    }
-
-    // Increase the limit of simultaneously open files
-    struct rlimit numFiles;
-    if (getrlimit(RLIMIT_NOFILE, &numFiles) == 0 && numFiles.rlim_cur < APP_RLIMIT_NOFILE) {
-        numFiles.rlim_cur = qMin(rlim_t(APP_RLIMIT_NOFILE), numFiles.rlim_max);
-        if (setrlimit(RLIMIT_NOFILE, &numFiles) < 0) {
-            LOG_WARN(KDC::Log::instance()->getLogger(), "Unable to set RLIMIT_NOFILE - err =" << errno);
-        }
-    } else {
-        LOG_WARN(KDC::Log::instance()->getLogger(), "Unable to get RLIMIT_NOFILE - err=" << errno);
-    }
-
-    // Increase the limit of stack size
-    struct rlimit stackSize;
-    if (getrlimit(RLIMIT_STACK, &stackSize) == 0 && numFiles.rlim_cur < APP_RLIMIT_STACK) {
-        stackSize.rlim_cur = qMin(rlim_t(APP_RLIMIT_STACK), numFiles.rlim_max);
-        if (setrlimit(RLIMIT_STACK, &stackSize) < 0) {
-            LOG_WARN(KDC::Log::instance()->getLogger(), "Unable to set RLIMIT_STACK - err =" << errno);
-        }
-    } else {
-        LOG_WARN(KDC::Log::instance()->getLogger(), "Unable to get RLIMIT_STACK - err=" << errno);
-    }
+    increaseFileSystemCapacity();
 #endif
 
     // If the application is already running, notify it.
     if (appPtr->isRunning()) {
-        LOG_INFO(KDC::Log::instance()->getLogger(), "Server already running");
+        std::cout << "Server already running" << std::endl;
         if (appPtr->isSessionRestored()) {
             // This call is mirrored with the one in Application::slotParseMessage
-            LOG_DEBUG(KDC::Log::instance()->getLogger(), "Session was restored, don't notify app!");
+            std::cout << "Session was restored, don't notify app!" << std::endl;
             return -1;
         }
 
@@ -177,10 +185,37 @@ int main(int argc, char **argv) {
             return 0;
         }
 
-        LOG_INFO(KDC::Log::instance()->getLogger(), "Asking the running server to start a newClient.");
+        std::cout << "Asking the running server to start a newClient." << std::endl;
         appPtr->sendRestartClientMsg();
         return 0;
     }
 
     return appPtr->exec();
+}
+
+int main(int argc, char **argv) {
+    std::unique_ptr<KDC::AppServer> appPtr = nullptr;
+    if (auto result = init(argc, argv, appPtr); result != 0) return result;
+
+    std::int32_t execResult = 0;
+
+    try {
+        execResult = exec(appPtr);
+    } catch (const std::bad_alloc &badAllocationException) {
+        LOG_WARN(KDC::Log::instance()->getLogger(),
+                 std::string("A bad allocation caused the interruption of the server application: ") +
+                         badAllocationException.what());
+        return -1;
+    } catch (const std::exception &standardException) {
+        LOG_WARN(KDC::Log::instance()->getLogger(),
+                 std::string("A standard exception caused the interruption of the server application: ") +
+                         standardException.what());
+        return -1;
+    } catch (...) {
+        LOG_WARN(KDC::Log::instance()->getLogger(),
+                 std::string("An exception of unknown type caused the interruption of the server application."));
+        return -1;
+    }
+
+    return execResult;
 }

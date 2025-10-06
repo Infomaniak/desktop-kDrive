@@ -51,16 +51,20 @@ struct COMMON_EXPORT CommonUtility {
         static const int logsPurgeRate; // Delay after which the logs are purged, expressed in days
         static const int logMaxSize;
 
-        static QString getIconPath(IconType iconType);
+        static std::string getIconPath(IconType iconType);
         static SyncPath _workingDirPath;
 
         static bool hasDarkSystray();
-        static bool setFolderCustomIcon(const QString &folderPath, IconType iconType);
+        static bool setFolderCustomIcon(const SyncPath &folderPath, IconType iconType);
 
         static std::string generateRandomStringAlphaNum(int length = 10);
         static std::string generateRandomStringPKCE(int length = 10);
 
-        static QString fileSystemName(const QString &dirPath);
+        // File system type
+        static bool isNTFS(const SyncPath &targetPath);
+        static bool isAPFS(const SyncPath &targetPath);
+        static bool isFAT(const SyncPath &targetPath);
+        static std::string fileSystemName(const SyncPath &targetPath);
 
         static qint64 freeDiskSpace(const QString &path);
         static void crash();
@@ -147,12 +151,42 @@ struct COMMON_EXPORT CommonUtility {
         // Converts a std::wstring to std::string assuming that it contains only mono byte chars
         static std::string toUnsafeStr(const SyncName &name);
 #endif
+        static bool isLikeFileNotFoundError(const std::error_code &ec) noexcept;
 
         static QString truncateLongLogMessage(const QString &message);
 
         static SyncPath applicationFilePath();
 
         static void resetTranslations();
+
+        // String manipulation
+        static bool startsWith(const std::string &str, const std::string &prefix);
+        static bool startsWithInsensitive(const std::string &str, const std::string &prefix);
+        static bool endsWith(const std::string &str, const std::string &suffix);
+        static bool endsWithInsensitive(const std::string &str, const std::string &suffix);
+#if defined(KD_WINDOWS)
+        static bool startsWithInsensitive(const SyncName &str, const SyncName &prefix);
+        static bool startsWith(const SyncName &str, const SyncName &prefix);
+        static bool endsWith(const SyncName &str, const SyncName &suffix);
+        static bool endsWithInsensitive(const SyncName &str, const SyncName &suffix);
+#endif
+        static bool contains(const std::string &str, const std::string &substr);
+        static std::string toUpper(const std::string &str);
+        static std::string toLower(const std::string &str);
+        static std::wstring s2ws(const std::string &str);
+        static std::string ws2s(const std::wstring &wstr);
+        static std::string ltrim(const std::string &s);
+        static std::string rtrim(const std::string &s);
+        static std::string trim(const std::string &s);
+#if defined(KD_WINDOWS)
+        static SyncName ltrim(const SyncName &s);
+        static SyncName rtrim(const SyncName &s);
+        static SyncName trim(const SyncName &s);
+#endif
+
+        static bool isDescendantOrEqual(const SyncPath &potentialDescendant, const SyncPath &path);
+        static bool isStrictDescendant(const SyncPath &potentialDescendant, const SyncPath &path);
+
 
         static bool normalizedSyncName(const SyncName &name, SyncName &normalizedName,
                                        UnicodeNormalization normalization = UnicodeNormalization::NFC) noexcept;
@@ -195,7 +229,6 @@ struct COMMON_EXPORT CommonUtility {
         static SyncName preferredPathSeparator();
 
 
-        //
         //! Computes and returns the NFC and NFD normalizations of `name`.
         /*!
           \param name is the string the normalizations of which are queried.
@@ -203,18 +236,21 @@ struct COMMON_EXPORT CommonUtility {
           The returned set contains additionally the SyncName name in any case.
         */
         static SyncNameSet computeSyncNameNormalizations(const SyncName &name);
-
-        //
         //! Computes and returns all possible NFC and NFD normalizations of `path` segments
         //! interpreted as a file system path.
         /*!
           \param templateString is the path string the normalizations of which are queried.
           \return a set of SyncNames containing the NFC and NFD normalizations of path, when those are successful.
-          The returned set contains additionally the string path in any case.
+          The returned set additionally contains the string path in any case.
         */
         static SyncNameSet computePathNormalizations(const SyncName &path);
 
         static ReplicaSide syncNodeTypeSide(SyncNodeType type);
+
+        // Convenience OS detection methods
+        static bool isWindows();
+        static bool isMac();
+        static bool isLinux();
 
     private:
         static std::mutex _generateRandomStringMutex;
@@ -224,7 +260,6 @@ struct COMMON_EXPORT CommonUtility {
 
         static void extractIntFromStrVersion(const std::string &version, std::vector<int> &tabVersion);
 
-        //
         //! Computes recursively and returns all possible NFC and NFD normalizations of `pathSegments` segments
         //! interpreted as a file system path.
         /*!
@@ -237,7 +272,6 @@ struct COMMON_EXPORT CommonUtility {
         */
         static SyncNameSet computePathNormalizations(const std::vector<SyncName> &pathSegments, const int64_t lastIndex);
 
-        //
         //! Computes recursively and returns all possible NFC and NFD normalizations of `pathSegments` segments
         //! interpreted as a file system path.
         /*!
@@ -246,6 +280,8 @@ struct COMMON_EXPORT CommonUtility {
           The returned set contains additionally the concatenated pathSegments in any case.
         */
         static SyncNameSet computePathNormalizations(const std::vector<SyncName> &pathSegments);
+
+        static SyncPath getGenericAppSupportDir();
 };
 
 struct COMMON_EXPORT StdLoggingThread : public std::thread {

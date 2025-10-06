@@ -18,9 +18,10 @@
 
 #include "testsnapshotitemhandler.h"
 
-#include "jobs/network/API_v2/listing/snapshotitemhandler.h"
+#include "jobs/network/kDrive_API/listing/snapshotitemhandler.h"
 #include "libcommonserver/log/log.h"
 #include "update_detection/file_system_observer/snapshot/snapshotitem.h"
+#include "libcommon/utility/utility.h"
 
 using namespace CppUnit;
 
@@ -49,7 +50,7 @@ Result compare(const SnapshotItem &lhs, const SnapshotItem &rhs) noexcept {
         CPPUNIT_ASSERT_EQUAL(lhs.isLink(), rhs.isLink());
     } catch (const CppUnit::Exception &e) {
         return Result{false, makeMessage(e)};
-    };
+    }
 
     return {};
 }

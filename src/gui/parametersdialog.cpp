@@ -373,14 +373,6 @@ QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, const Ex
             return tr("The synchronization folder is no longer accessible (error %1).<br>"
                       "Synchronization will resume as soon as the folder is accessible.")
                     .arg(err);
-        case ExitCause::SyncDirChanged:
-            return tr("The synchronization folder has been replaced or moved in a way that prevents syncing (error %1).<br>"
-                      "This can happen after copying, moving, or restoring the folder.<br>"
-                      "To fix this, please create a new synchronization with a new folder.<br>"
-                      "Note: if you have unsynced changes in the old folder, you will need to copy them manually into the new "
-                      "one.")
-                    .arg(err);
-
         case ExitCause::NotEnoughDiskSpace:
             return tr(
                     "There is not enough space left on your computer.<br>"
@@ -411,12 +403,12 @@ QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, const Ex
             }
         }
         case ExitCause::UnableToCreateVfs: {
-            if (OldUtility::isWindows()) {
+            if (CommonUtility::isWindows()) {
                 return tr("Unable to start Lite Sync plugin (error %1).<br>"
                           "Check that the Lite Sync extension is installed and Windows Search service is enabled.<br>"
                           "Please empty the history, restart and if the error persists, contact our support team.")
                         .arg(err);
-            } else if (OldUtility::isMac()) {
+            } else if (CommonUtility::isMac()) {
                 return tr("Unable to start Lite Sync plugin (error %1).<br>"
                           "Check that the Lite Sync extension has the correct permissions and is running.<br>"
                           "Please empty the history, restart and if the error persists, contact our support team.")
@@ -426,6 +418,11 @@ QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, const Ex
                           "Please empty the history, restart and if the error persists, contact our support team.")
                         .arg(err);
             }
+        }
+        case ExitCause::FileOrDirectoryCorrupted: {
+            return tr(
+                    "A file or folder inside your synchronisation folder appears to be corrupted.<br>"
+                    "The synchronization has been stopped.");
         }
         default:
             return tr("A technical error has occurred (error %1).<br>"
@@ -513,6 +510,13 @@ QString ParametersDialog::getSyncPalErrorText(const QString &fctCode, const Exit
                         "this "
                         "time.<br>"
                         "The application will use system proxy settings instead.");
+            } else if (exitCause == ExitCause::SyncDirChanged) {
+                return tr("The synchronization folder has been replaced or moved in a way that prevents syncing (error %1).<br>"
+                          "This can happen after copying, moving, or restoring the folder.<br>"
+                          "To fix this, please create a new synchronization with a new folder.<br>"
+                          "Note: if you have unsynced changes in the old folder, you will need to copy them manually into the "
+                          "new one.")
+                        .arg(err);
             } else {
                 return tr("A technical error has occurred (error %1).<br>"
                           "Synchronization has been restarted. Please empty the history and if the error persists, please "

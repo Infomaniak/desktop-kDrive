@@ -37,6 +37,7 @@ class UpdateDialog : public CustomDialog {
         explicit UpdateDialog(const VersionInfo &versionInfo, QWidget *parent = nullptr);
         ~UpdateDialog() override;
 
+        void paintEvent(QPaintEvent *event) override;
         void reject() override;
         void accept() override;
 

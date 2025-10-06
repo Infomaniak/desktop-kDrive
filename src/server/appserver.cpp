@@ -17,11 +17,11 @@
  */
 
 #include "appserver.h"
-#include "common/utility.h"
 #include "migration/migrationparams.h"
 #include "socketapi.h"
 #include "keychainmanager/keychainmanager.h"
 #include "requests/serverrequests.h"
+#include "requests/syncnodecache.h"
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
@@ -53,8 +53,9 @@
 #include <windows.h>
 #endif
 
-#include "jobs/network/API_v2/upload/loguploadjob.h"
-#include "jobs/network/API_v2/upload/upload_session/uploadsessioncanceljob.h"
+#include "jobs/network/kDrive_API/upload/loguploadjob.h"
+#include "jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.h"
+#include "requests/offlinefilessizeestimator.h"
 #include "updater/updatemanager.h"
 
 #include <QDesktopServices>
@@ -108,7 +109,7 @@ static void displayHelpText(const QString &t) // No console on Windows.
     QString spaces(80, ' '); // Add a line of non-wrapped space to make the messagebox wide enough.
     QString text = QLatin1String("<qt><pre style='white-space:pre-wrap'>") + t.toHtmlEscaped() + QLatin1String("</pre><pre>") +
                    spaces + QLatin1String("</pre></qt>");
-    QMessageBox::information(0, Theme::instance()->appNameGUI(), text);
+    QMessageBox::information(0, QString::fromStdString(Theme::instance()->appName()), text);
 }
 
 #else
@@ -119,36 +120,38 @@ static void displayHelpText(const QString &t) {
 #endif
 
 AppServer::AppServer(int &argc, char **argv) :
-    SharedTools::QtSingleApplication(Theme::instance()->appName(), argc, argv) {
+    SharedTools::QtSingleApplication(QString::fromStdString(Theme::instance()->appName()), argc, argv) {
     _arguments = arguments();
     _theme = Theme::instance();
 }
 
 AppServer::~AppServer() {
-    LOG_DEBUG(_logger, "~AppServer");
+    if (Log::isSet()) {
+        LOG_DEBUG(_logger, "~AppServer");
+    }
 }
 
 void AppServer::init() {
     _startedAt.start();
     setOrganizationDomain(QLatin1String(APPLICATION_REV_DOMAIN));
-    setApplicationName(_theme->appName());
+    setApplicationName(QString::fromStdString(_theme->appName()));
     setWindowIcon(_theme->applicationIcon());
-    setApplicationVersion(_theme->version());
-
-    // Setup logging with default parameters
-    if (!initLogging()) {
-        throw std::runtime_error("Unable to init logging.");
-    }
+    setApplicationVersion(QString::fromStdString(_theme->version()));
 
     parseOptions(_arguments);
     if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked) {
-        LOG_INFO(_logger, "Command line options processed");
+        std::cout << "Command line options processed" << std::endl;
         return;
     }
 
     if (isRunning()) {
-        LOG_INFO(_logger, "AppServer already running");
+        std::cout << "AppServer already running" << std::endl;
         return;
+    }
+
+    // Setup logging with default parameters
+    if (!initLogging()) {
+        throw std::runtime_error("Unable to init logging.");
     }
 
     // Cleanup at quit
@@ -195,7 +198,7 @@ void AppServer::init() {
     LOGW_INFO(_logger, L"Old config exists : " << Path2WStr(pre334ConfigFilePath) << L" => " << oldConfigExists);
 
     // Init ParmsDb instance
-    if (!initParmsDB(parmsDbPath, _theme->version().toStdString())) {
+    if (!initParmsDB(parmsDbPath, _theme->version())) {
         LOG_WARN(_logger, "Error in AppServer::initParmsDB");
         throw std::runtime_error("Unable to initialize ParmsDb.");
     }
@@ -297,11 +300,11 @@ void AppServer::init() {
 #if defined(KD_LINUX)
     // On Linux, override the auto startup file on every app launch to make sure it points to the correct executable.
     if (ParametersCache::instance()->parameters().autoStart()) {
-        OldUtility::setLaunchOnStartup(_theme->appName(), _theme->appNameGUI(), true, _logger);
+        (void) Utility::setLaunchOnStartup(_theme->appName(), _theme->appName(), true);
     }
 #else
-    if (ParametersCache::instance()->parameters().autoStart() && !OldUtility::hasLaunchOnStartup(_theme->appName(), _logger)) {
-        OldUtility::setLaunchOnStartup(_theme->appName(), _theme->appClientName(), true, _logger);
+    if (ParametersCache::instance()->parameters().autoStart() && !Utility::hasLaunchOnStartup(_theme->appName())) {
+        (void) Utility::setLaunchOnStartup(_theme->appName(), _theme->appClientName(), true);
     }
 #endif
 #endif
@@ -376,8 +379,6 @@ void AppServer::init() {
         QTimer::singleShot(0, this, &AppServer::quit);
         return;
     }
-
-    sentry::Handler::captureMessage(sentry::Level::Info, "kDrive started", "kDrive started");
 
     // Start syncs
     QTimer::singleShot(0, [=, this]() { startSyncsAndRetryOnError(); });
@@ -1015,7 +1016,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             int driveDbId = 0;
             ArgsWriter(params).write(driveDbId);
 
-            // Get syncs do delete
+            // Get syncs to delete
             std::vector<int> syncDbIdList;
             for (const auto &syncPalMapElt: _syncPalMap) {
                 if (!syncPalMapElt.second) continue;
@@ -1029,8 +1030,51 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 AppServer::stopAllSyncsTask(syncDbIdList);
                 AppServer::deleteDrive(driveDbId);
             });
-
+#if defined(__APPLE__)
             Utility::restartFinderExtension();
+#endif
+            break;
+        }
+        case RequestNum::DRIVE_GET_OFFLINE_FILES_TOTAL_SIZE: {
+            int driveDbId = 0;
+            ArgsWriter(params).write(driveDbId);
+
+            std::vector<std::shared_ptr<SyncPal>> syncPals;
+            for (const auto &[_, syncpal]: _syncPalMap) {
+                if (!syncpal || syncpal->driveDbId() != driveDbId || !syncpal->vfs()) continue;
+                (void) syncPals.emplace_back(syncpal);
+            }
+
+            OfflineFilesSizeEstimator estimator(syncPals);
+            resultStream << estimator.runSynchronously().code(); // Run synchronously for now.
+            resultStream << static_cast<quint64>(estimator.offlineFilesTotalSize());
+            break;
+        }
+        case RequestNum::DRIVE_SEARCH: {
+            int driveDbId = 0;
+            QList<DriveInfo> list;
+            ArgsWriter(params).write(driveDbId);
+            ArgsWriter(params).write(list);
+
+            // Find drive ID
+            Drive drive;
+            bool found = false;
+            if (!ParmsDb::instance()->selectDrive(driveDbId, drive, found)) {
+                LOG_WARN(_logger, "Error in ParmsDb::selectSync");
+                resultStream << ExitCode::DbError;
+                break;
+            }
+            if (!found) {
+                LOG_WARN(_logger, "Drive not found for ID: " << driveDbId);
+                resultStream << ExitCode::DataError;
+                break;
+            }
+
+            // Send search request (synchonously for now)
+
+
+            resultStream << ExitCode::Ok;
+
 
             break;
         }
@@ -1096,9 +1140,9 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 addError(Error(errId(), exitInfo));
                 mainExitInfo.merge(exitInfo, {ExitCode::SystemError});
             }
-
+#if defined(__APPLE__)
             Utility::restartFinderExtension();
-
+#endif
             resultStream << mainExitInfo.code();
             break;
         }
@@ -1285,8 +1329,9 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
                     sendSyncRemoved(syncInfo.dbId());
                 }
-
+#if defined(__APPLE__)
                 Utility::restartFinderExtension();
+#endif
             });
             break;
         }
@@ -1331,7 +1376,9 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
                 // Delete sync from DB
                 deleteSync(syncDbId);
+#if defined(__APPLE__)
                 Utility::restartFinderExtension();
+#endif
             });
 
             break;
@@ -1452,14 +1499,18 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
 
             QString path;
-            ExitCode exitCode = ServerRequests::getPathByNodeId(_syncPalMap[syncDbId]->userDbId(),
+            ExitInfo exitInfo = ServerRequests::getPathByNodeId(_syncPalMap[syncDbId]->userDbId(),
                                                                 _syncPalMap[syncDbId]->driveId(), nodeId, path);
-            if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in AppServer::getPathByNodeId: code=" << exitCode);
-                addError(Error(errId(), exitCode, ExitCause::Unknown));
+            if (!exitInfo) {
+                if (exitInfo.cause() == ExitCause::NotFound) {
+                    (void) SyncNodeCache::instance()->deleteSyncNode(syncDbId, QStr2Str(nodeId));
+                } else {
+                    LOG_WARN(_logger, "Error in AppServer::getPathByNodeId: " << exitInfo);
+                    addError(Error(errId(), exitInfo.code(), exitInfo.cause()));
+                }
             }
 
-            resultStream << toInt(exitCode);
+            resultStream << toInt(exitInfo.code());
             resultStream << path;
             break;
         }
@@ -1880,26 +1931,24 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::UTILITY_HASSYSTEMLAUNCHONSTARTUP: {
-            bool enabled = OldUtility::hasSystemLaunchOnStartup(Theme::instance()->appName(), _logger);
-
+            const bool enabled = Utility::hasSystemLaunchOnStartup(Theme::instance()->appName());
             resultStream << ExitCode::Ok;
             resultStream << enabled;
             break;
         }
         case RequestNum::UTILITY_HASLAUNCHONSTARTUP: {
-            bool enabled = OldUtility::hasLaunchOnStartup(Theme::instance()->appName(), _logger);
-
+            const bool enabled = Utility::hasLaunchOnStartup(Theme::instance()->appName());
             resultStream << ExitCode::Ok;
             resultStream << enabled;
             break;
         }
         case RequestNum::UTILITY_SETLAUNCHONSTARTUP: {
-            bool enabled;
+            bool enabled = false;
             QDataStream paramsStream(params);
             paramsStream >> enabled;
 
             Theme *theme = Theme::instance();
-            OldUtility::setLaunchOnStartup(theme->appName(), theme->appNameGUI(), enabled, _logger);
+            (void) Utility::setLaunchOnStartup(theme->appName(), theme->appName(), enabled);
 
             resultStream << ExitCode::Ok;
             break;
@@ -1989,7 +2038,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::UTILITY_DISPLAY_CLIENT_REPORT: {
-            using namespace std::chrono;
             if (_clientManuallyRestarted) {
                 // If the client initially started by the server never sends the UTILITY_DISPLAY_CLIENT_REPORT,
                 // we consider the client's startup aborted, and the user was forced to manually start the client again.
@@ -1997,8 +2045,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     sentry::pTraces::basic::AppStart().stop(sentry::PTraceStatus::Aborted);
                     _appStartPTraceStopped = true;
                 }
-                sentry::Handler::captureMessage(sentry::Level::Info, "kDrive client restarted by user",
-                                                "A user has restarted the kDrive client");
             }
 
             if (!_appStartPTraceStopped) {
@@ -2641,9 +2687,9 @@ ExitInfo AppServer::startSyncs() {
             mainExitInfo.merge(exitInfo, {ExitCode::SystemError});
         }
     }
-
+#if defined(__APPLE__)
     Utility::restartFinderExtension();
-
+#endif
     return mainExitInfo;
 }
 
@@ -2892,7 +2938,7 @@ bool AppServer::initLogging() noexcept {
 void AppServer::logUsefulInformation() const {
     LOG_INFO(_logger, "***** APP INFO *****");
 
-    LOG_INFO(_logger, "version: " << _theme->version().toStdString());
+    LOG_INFO(_logger, "version: " << _theme->version());
     LOG_INFO(_logger, "os: " << CommonUtility::platformName().toStdString());
     LOG_INFO(_logger, "kernel version : " << QSysInfo::kernelVersion().toStdString());
     LOG_INFO(_logger, "kernel type : " << QSysInfo::kernelType().toStdString());
@@ -2905,6 +2951,7 @@ void AppServer::logUsefulInformation() const {
         LOGW_WARN(_logger, L"Error getting cache directory");
     }
     LOGW_INFO(_logger, L"cache " << Utility::formatSyncPath(cachePath));
+    LOGW_INFO(_logger, L"free space for cache: " << Utility::getFreeDiskSpace(cachePath) << L" bytes");
 
     // Log app ID
     AppStateValue appStateValue = "";
@@ -2924,7 +2971,8 @@ void AppServer::logUsefulInformation() const {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
     }
     for (const auto &user: userList) {
-        LOGW_INFO(Log::instance()->getLogger(), L"User ID: " << user.userId() << L", email: " << Utility::s2ws(user.email()));
+        LOGW_INFO(Log::instance()->getLogger(),
+                  L"User ID: " << user.userId() << L", email: " << CommonUtility::s2ws(user.email()));
     }
 
     // Log drive IDs
@@ -3147,7 +3195,8 @@ void AppServer::parseOptions(const QStringList &options) {
 void AppServer::showHelp() {
     QString helpText;
     QTextStream stream(&helpText);
-    stream << _theme->appName() << QLatin1String(" version ") << _theme->version() << Qt::endl;
+    stream << QString::fromStdString(_theme->appName()) << QLatin1String(" version ") << QString::fromStdString(_theme->version())
+           << Qt::endl;
 
     stream << QLatin1String("File synchronisation desktop utility.") << Qt::endl << Qt::endl << QLatin1String(optionsC);
 
@@ -3169,7 +3218,7 @@ void AppServer::clearSyncNodes() {
         throw std::runtime_error("Unable to get ParmsDb path.");
     }
 
-    if (!ParmsDb::instance(parmsDbPath, _theme->version().toStdString())) {
+    if (!ParmsDb::instance(parmsDbPath, _theme->version())) {
         LOG_WARN(_logger, "Error in ParmsDb::instance");
         throw std::runtime_error("Unable to initialize ParmsDb.");
     }
@@ -3184,7 +3233,7 @@ void AppServer::clearSyncNodes() {
     // Clear node tables
     for (const auto &sync: syncList) {
         SyncPath dbPath = sync.dbPath();
-        auto syncDbPtr = std::make_shared<SyncDb>(dbPath.string(), _theme->version().toStdString());
+        auto syncDbPtr = std::make_shared<SyncDb>(dbPath.string(), _theme->version());
         syncDbPtr->clearNodes();
     }
 }
@@ -3219,7 +3268,7 @@ void AppServer::clearKeychainKeys() {
         throw std::runtime_error("Unable to get ParmsDb path.");
     }
 
-    if (!ParmsDb::instance(parmsDbPath, _theme->version().toStdString())) {
+    if (!ParmsDb::instance(parmsDbPath, _theme->version())) {
         LOG_WARN(_logger, "Error in ParmsDb::instance");
         throw std::runtime_error("Unable to initialize ParmsDb.");
     }
@@ -3412,7 +3461,7 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, cons
 
         // Create SyncPal
         try {
-            _syncPalMap[sync.dbId()] = std::make_shared<SyncPal>(vfsPtr, sync.dbId(), _theme->version().toStdString());
+            _syncPalMap[sync.dbId()] = std::make_shared<SyncPal>(vfsPtr, sync.dbId(), _theme->version());
         } catch (std::exception const &) {
             LOG_WARN(_logger, "Error in SyncPal::SyncPal for syncDbId=" << sync.dbId());
             return {ExitCode::DbError, ExitCause::Unknown};
@@ -3646,16 +3695,15 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
     tmpSync.setNavigationPaneClsid(_vfsMap[sync.dbId()]->namespaceCLSID());
 
     if (tmpSync.virtualFileMode() == KDC::VirtualFileMode::Win) {
-        OldUtility::setFolderPinState(QUuid(QString::fromStdString(tmpSync.navigationPaneClsid())),
-                                      _navigationPaneHelper->showInExplorerNavigationPane());
+        Utility::setFolderPinState(CommonUtility::s2ws(tmpSync.navigationPaneClsid()),
+                                   _navigationPaneHelper->showInExplorerNavigationPane());
     } else {
         if (tmpSync.navigationPaneClsid().empty()) {
             tmpSync.setNavigationPaneClsid(QUuid::createUuid().toString().toStdString());
             _vfsMap[sync.dbId()]->setNamespaceCLSID(tmpSync.navigationPaneClsid());
         }
-        OldUtility::addLegacySyncRootKeys(QUuid(QString::fromStdString(sync.navigationPaneClsid())),
-                                          SyncName2QStr(sync.localPath().native()),
-                                          _navigationPaneHelper->showInExplorerNavigationPane());
+        Utility::addLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()), sync.localPath(),
+                                       _navigationPaneHelper->showInExplorerNavigationPane());
     }
 
     bool found = false;
@@ -3746,7 +3794,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
 #if defined(KD_WINDOWS)
         if (newMode == VirtualFileMode::Win) {
             // Remove legacy sync root keys
-            OldUtility::removeLegacySyncRootKeys(QUuid(QString::fromStdString(sync.navigationPaneClsid())));
+            Utility::removeLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()));
             sync.setNavigationPaneClsid(std::string());
         } else if (sync.virtualFileMode() == VirtualFileMode::Win) {
             // Add legacy sync root keys
@@ -3754,8 +3802,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
             if (sync.navigationPaneClsid().empty()) {
                 sync.setNavigationPaneClsid(QUuid::createUuid().toString().toStdString());
             }
-            OldUtility::addLegacySyncRootKeys(QUuid(QString::fromStdString(sync.navigationPaneClsid())),
-                                              SyncName2QStr(sync.localPath().native()), show);
+            Utility::addLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()), sync.localPath(), show);
         }
 #endif
 
@@ -3905,7 +3952,7 @@ void AppServer::addError(const Error &error) {
         std::unordered_set<int64_t> toBeRemovedErrorIds;
         for (const Error &parentError: errorList) {
             for (const Error &childError: errorList) {
-                if (Utility::isDescendantOrEqual(childError.path(), parentError.path()) &&
+                if (CommonUtility::isDescendantOrEqual(childError.path(), parentError.path()) &&
                     childError.dbId() != parentError.dbId()) {
                     toBeRemovedErrorIds.insert(childError.dbId());
                 }
@@ -4203,10 +4250,10 @@ void AppServer::onUpdateSyncsProgress() {
                     undecidedSetUpdated = true;
 
                     QString path;
-                    if (const auto exitCode = ServerRequests::getPathByNodeId(syncPal->userDbId(), syncPal->driveId(),
+                    if (const auto exitInfo = ServerRequests::getPathByNodeId(syncPal->userDbId(), syncPal->driveId(),
                                                                               QString::fromStdString(nodeId), path);
-                        exitCode != ExitCode::Ok) {
-                        LOG_WARN(_logger, "Error in Requests::getPathByNodeId: code=" << exitCode);
+                        exitInfo.code() != ExitCode::Ok) {
+                        LOG_WARN(_logger, "Error in Requests::getPathByNodeId: " << exitInfo);
                         continue;
                     }
 
@@ -4215,7 +4262,7 @@ void AppServer::onUpdateSyncsProgress() {
 
                     // Ask client to display notification
                     sendShowNotification(
-                            Theme::instance()->appNameGUI(),
+                            QString::fromStdString(Theme::instance()->appName()),
                             tr("A new folder larger than %1 MB has been added in the drive %2, you must validate its "
                                "synchronization: %3.\n")
                                     .arg(ParametersCache::instance()->parameters().bigFolderSizeLimit())
@@ -4302,7 +4349,9 @@ void AppServer::onRestartSyncs() {
         if ((syncPtr->isPaused() || syncPtr->pauseAsked()) &&
             syncPtr->pauseTime() + std::chrono::minutes(1) < std::chrono::steady_clock::now()) {
             syncPtr->unpause();
+#if defined(__APPLE__)
             Utility::restartFinderExtension();
+#endif
         }
     }
 }

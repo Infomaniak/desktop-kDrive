@@ -34,9 +34,8 @@ class Theme : public QObject {
 
         ~Theme();
 
-        virtual QString appNameGUI() const;
-        virtual QString appName() const;
-        virtual QString appClientName() const;
+        virtual std::string appName() const;
+        virtual std::string appClientName() const;
 
         virtual QIcon syncStateIcon(KDC::SyncStatus status, bool sysTray = false, bool sysTrayMenuVisible = false,
                                     bool alert = false) const;
@@ -44,14 +43,12 @@ class Theme : public QObject {
         virtual QIcon folderOfflineIcon(bool sysTray = false, bool sysTrayMenuVisible = false) const;
         virtual QIcon applicationIcon() const;
 
-        virtual QString version() const;
+        virtual std::string version() const;
 
         virtual QString helpUrl() const;
         QString feedbackUrl(Language language) const;
 
         virtual QString conflictHelpUrl() const;
-
-        virtual QString defaultClientFolder() const;
 
         void setSystrayUseMonoIcons(bool mono);
         bool systrayUseMonoIcons() const;

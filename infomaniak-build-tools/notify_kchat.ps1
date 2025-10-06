@@ -24,7 +24,7 @@ if (-not $env:KCHAT_WEBHOOK_URL) {
 
 # Check if a message argument is provided
 if ($args.Count -lt 1) {
-    Write-Host "Usage: .\send_webhook.ps1 '<message>'"
+    Write-Host "Usage: .\notify_kchat.ps1 '<message>'"
     exit 1
 }
 

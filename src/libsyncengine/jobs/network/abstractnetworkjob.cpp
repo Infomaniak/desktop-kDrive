@@ -115,6 +115,8 @@ void AbstractNetworkJob::runJob() noexcept {
 
     Poco::URI uri;
     for (int trials = 1; trials <= std::min(_trials, MAX_TRIALS); trials++) {
+        _exitInfo = ExitCode::Ok;
+
         if (trials > 1) {
             Utility::msleep(500); // Sleep for 0.5s
         }
@@ -215,7 +217,6 @@ void AbstractNetworkJob::runJob() noexcept {
         }
 
         if (_exitInfo.code() == ExitCode::TokenRefreshed || _exitInfo.code() == ExitCode::RateLimited) {
-            _exitInfo = ExitCode::Ok;
             _trials++; // Add one more chance
             continue;
         } else if (isManagedError(_exitInfo)) {
@@ -604,7 +605,7 @@ bool AbstractNetworkJob::extractJson(std::istream &is, Poco::JSON::Object::Ptr &
         jsonObj = Poco::JSON::Parser{}.parse(is).extract<Poco::JSON::Object::Ptr>();
     } catch (const Poco::Exception &exc) {
         LOGW_WARN(_logger, L"Reply " << jobId() << L" received doesn't contain a valid JSON payload: "
-                                     << Utility::s2ws(exc.displayText()));
+                                     << CommonUtility::s2ws(exc.displayText()));
         Utility::logGenericServerError(_logger, "Request error", is, _resHttp);
         _exitInfo = {ExitCode::BackError, ExitCause::ApiErr};
         return false;
@@ -613,7 +614,7 @@ bool AbstractNetworkJob::extractJson(std::istream &is, Poco::JSON::Object::Ptr &
     if (isExtendedLog()) {
         std::ostringstream os;
         jsonObj->stringify(os);
-        LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << Utility::s2ws(os.str()));
+        LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << CommonUtility::s2ws(os.str()));
     }
     return true;
 }

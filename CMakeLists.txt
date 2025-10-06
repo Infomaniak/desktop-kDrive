@@ -36,7 +36,7 @@ if(CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
 endif()
 
 if(APPLE)
-    if(NOT BUILD_UNIT_TESTS AND CMAKE_BUILD_TYPE MATCHES "Release")
+    if(NOT BUILD_UNIT_TESTS AND CMAKE_BUILD_TYPE MATCHES "Release")  # cppunit cannot be built as a universal binary.
         set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64" CACHE STRING "Build architectures for Mac OS X" FORCE)
     else()
         execute_process(COMMAND uname -m OUTPUT_VARIABLE OSX_ARCH)
@@ -74,7 +74,7 @@ set(ENABLE_JSON TRUE)
 
 # For config.h
 include_directories(BEFORE ${CMAKE_CURRENT_BINARY_DIR})
-# Allows includes based on src/ like #include "common/utility.h"
+# Allows includes based on src/ like #include "libcommon/utility.h"
 include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_CURRENT_BINARY_DIR}/src
@@ -257,9 +257,15 @@ elseif(BUILD_CLIENT)
         configure_file(cmake/modules/NSIS.template.nsi.in ${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.nsi @ONLY)
 
         # Default sync exclude list
-        message(STATUS "sync-exclude-win.lst copied to ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}")
-        file(COPY sync-exclude-win.lst DESTINATION ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE})
-        file(RENAME ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/sync-exclude-win.lst ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/sync-exclude.lst)
+        if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+            message(STATUS "sync-exclude-win.lst copied to ${CMAKE_BINARY_DIR}/bin")
+            file(COPY sync-exclude-win.lst DESTINATION ${CMAKE_BINARY_DIR}/bin)
+            file(RENAME ${CMAKE_BINARY_DIR}/bin/sync-exclude-win.lst ${CMAKE_BINARY_DIR}/bin/sync-exclude.lst)
+        else()
+            message(STATUS "sync-exclude-win.lst copied to ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}")
+            file(COPY sync-exclude-win.lst DESTINATION ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE})
+            file(RENAME ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/sync-exclude-win.lst ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/sync-exclude.lst)
+        endif()
 
         # Vfs
         set(CMAKE_FIND_LIBRARY_SUFFIXES .dll)

@@ -21,7 +21,6 @@
 #include "enablestateholder.h"
 #include "clientgui.h"
 #include "guirequests.h"
-#include "common/filesystembase.h"
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
 #include "libcommongui/utility/utility.h"
@@ -186,7 +185,7 @@ void AddDriveWizard::startNextStep(bool backward) {
         setBackgroundForcedColor(QColor());
         _addDriveLocalFolderWidget->setDrive(_driveInfo.name());
         _addDriveLocalFolderWidget->setLiteSync(_liteSync);
-        QString localFolderPath = Theme::instance()->defaultClientFolder();
+        QString localFolderPath = QString::fromStdString(Theme::instance()->appName());
         if (!QDir(localFolderPath).isAbsolute()) {
             localFolderPath = QDir::homePath() + dirSeparator + localFolderPath;
         }
@@ -220,11 +219,9 @@ bool AddDriveWizard::addSync(int userDbId, int accountId, int driveId, const QSt
 
     const QDir localFolderDir(localFolderPathNormalized);
     if (localFolderDir.exists()) {
-        FileSystem::setFolderMinimumPermissions(localFolderPathNormalized);
         KDC::CommonGuiUtility::setupFavLink(localFolderPathNormalized);
     } else {
         if (localFolderDir.mkpath(localFolderPathNormalized)) {
-            FileSystem::setFolderMinimumPermissions(localFolderPathNormalized);
             KDC::CommonGuiUtility::setupFavLink(localFolderPathNormalized);
         } else {
             qCWarning(lcAddDriveWizard()) << "Failed to create local folder" << localFolderDir.path();
@@ -293,7 +290,6 @@ void AddDriveWizard::onStepTerminated(bool next) {
     } else if (_currentStep == RemoteFolders) {
         MatomoClient::sendVisit(MatomoNameField::PG_AddNewDrive_SelectRemoteFolder);
         if (next) {
-            _selectionSize = _addDriveServerFoldersWidget->selectionSize();
             _blackList = _addDriveServerFoldersWidget->createBlackList();
             if (!GuiUtility::checkBlacklistSize(_blackList.size(), this)) return;
             _whiteList = _addDriveServerFoldersWidget->createWhiteList();

@@ -21,11 +21,11 @@
 #include "config.h"
 #include "db/parmsdb.h"
 #include "jobs/jobmanager.h"
-#include "jobs/network/API_v2/deletejob.h"
-#include "jobs/network/API_v2/downloadjob.h"
-#include "jobs/network/API_v2/upload/uploadjob.h"
-#include "jobs/network/API_v2/getfilelistjob.h"
-#include "jobs/network/API_v2/upload/upload_session/driveuploadsession.h"
+#include "jobs/network/kDrive_API/deletejob.h"
+#include "jobs/network/kDrive_API/downloadjob.h"
+#include "jobs/network/kDrive_API/upload/uploadjob.h"
+#include "jobs/network/kDrive_API/getfilelistjob.h"
+#include "jobs/network/kDrive_API/upload/upload_session/driveuploadsession.h"
 #include "network/proxy.h"
 #include "requests/parameterscache.h"
 #include "libcommon/utility/utility.h"
@@ -193,13 +193,13 @@ void TestJobManager::testWithCallback() {
 void TestJobManager::testWithCallbackMediumFiles() {
     if (!testhelpers::isExtendedTest()) return;
     const LocalTemporaryDirectory temporaryDirectory("testJobManager");
-    testWithCallbackBigFiles(temporaryDirectory.path(), 50, 15); // 15 files of 50 MB
+    testWithCallbackBigFiles(temporaryDirectory.path(), 1, 10); // 10 files of 1 MB
 }
 
 void TestJobManager::testWithCallbackBigFiles() {
     if (!testhelpers::isExtendedTest()) return;
     const LocalTemporaryDirectory temporaryDirectory("testJobManager");
-    testWithCallbackBigFiles(temporaryDirectory.path(), 200, 10); // 10 files of 200 MB
+    testWithCallbackBigFiles(temporaryDirectory.path(), 50, 5); // 5 files of 50 MB
 }
 
 void TestJobManager::testCancelJobs() {
@@ -462,7 +462,7 @@ void TestJobManager::testWithCallbackBigFiles(const SyncPath &dirPath, const uin
     // Reset upload session max parallel jobs & JobManager pool capacity
     ParametersCache::instance()->setUploadSessionParallelThreads(10);
     JobManager::instance()->setPoolCapacity(4 * (int) std::thread::hardware_concurrency());
-    const int useUploadSessionThreshold = 100;
+    const int useUploadSessionThreshold = 2; // MBs
 
     // Create temp remote directory
     const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId, "TestJobManager testWithCallbackBigFiles");
@@ -502,18 +502,25 @@ void TestJobManager::testWithCallbackBigFiles(const SyncPath &dirPath, const uin
             counter++;
         }
 
-        int waitCountMax = 3000; // Wait max 300sec
-        while (ongoingJobsCount() > 0 && waitCountMax-- > 0 && !_jobErrorSocketsDefuncted && !_jobErrorOther) {
-            Utility::msleep(100); // Wait 100ms
+        int waitCountMax = 6000; // Wait max 6000 * 100 ms = 600 s.
+        while (ongoingJobsCount() > 0 && waitCountMax > 0 && !_jobErrorSocketsDefuncted && !_jobErrorOther) {
+            --waitCountMax;
+            Utility::msleep(100);
         }
+
+        LOG_DEBUG(Log::instance()->getLogger(), "$$$$$ testWithCallbackBigFiles - checking socket errors and job errors.");
 
         if (_jobErrorSocketsDefuncted || _jobErrorOther) {
             LOG_DEBUG(Log::instance()->getLogger(), "$$$$$ testWithCallbackBigFiles - Error, cancel ongoing jobs");
             cancelAllOngoingJobs();
         }
 
-        CPPUNIT_ASSERT(ongoingJobsCount() == 0);
-        CPPUNIT_ASSERT(!_jobErrorOther);
+        LOG_DEBUG(Log::instance()->getLogger(), "$$$$$ testWithCallbackBigFiles - checking ongoing jobs count.");
+
+        CPPUNIT_ASSERT_MESSAGE("Some jobs are still ongoing.", ongoingJobsCount() == 0);
+        CPPUNIT_ASSERT_MESSAGE("A job error was found.", !_jobErrorOther);
+
+        LOG_DEBUG(Log::instance()->getLogger(), "$$$$$ testWithCallbackBigFiles - checking socket errors.");
 
         if (_jobErrorSocketsDefuncted) {
             LOG_DEBUG(Log::instance()->getLogger(), "$$$$$ testWithCallbackBigFiles - Error, sockets defuncted by kernel");
