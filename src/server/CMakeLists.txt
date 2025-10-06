@@ -48,6 +48,7 @@ set(server_SRCS
     comm/abstractcommserver.h
     comm/commmanager.h comm/commmanager.cpp
     comm/guicommserver.h comm/guicommserver.cpp
+    comm/guijobmanager.h comm/guijobmanager.cpp
     comm/guijobs/abstractguijob.h comm/guijobs/abstractguijob.cpp
     comm/guijobs/guijobfactory.h comm/guijobs/guijobfactory.cpp
     comm/guijobs/loginrequesttokenjob.h comm/guijobs/loginrequesttokenjob.cpp
@@ -65,11 +66,15 @@ set(updater_SRCS
     updater/updatechecker.h updater/updatechecker.cpp
 )
 
+if(APPLE OR WIN32)
+    list(APPEND server_SRCS comm/extcommserver.h comm/extcommserver.cpp)
+    list(APPEND server_SRCS comm/extjobmanager.h comm/extjobmanager.cpp)
+    list(APPEND server_SRCS comm/extensionjob.h comm/extensionjob.cpp)
+endif()
+
 if(APPLE)
     list(APPEND server_SRCS ../common/utility_mac.cpp)
-    list(APPEND server_SRCS comm/extensionjob.h comm/extensionjob.cpp)
     list(APPEND server_SRCS comm/abstractcommserver_mac.h comm/abstractcommserver_mac.mm)
-    list(APPEND server_SRCS comm/extcommserver.h comm/extcommserver.cpp)
     list(APPEND server_SRCS comm/xpccommserver_mac.h comm/xpccommserver_mac.mm)
     list(APPEND server_SRCS comm/extcommserver_mac.mm)
     list(APPEND server_SRCS comm/guicommserver_mac.mm)
@@ -96,16 +101,12 @@ if(APPLE)
     endif()
 elseif(WIN32)
     list(APPEND server_SRCS ../common/utility_win.cpp)
-    list(APPEND server_SRCS comm/extensionjob.h comm/extensionjob.cpp)
     list(APPEND server_SRCS comm/socketcommserver.h comm/socketcommserver.cpp)
     list(APPEND server_SRCS comm/pipecommserver.h comm/pipecommserver.cpp)
-    list(APPEND server_SRCS comm/extcommserver.h comm/extcommserver.cpp)
-    list(APPEND server_SRCS comm/guicommserver.h comm/guicommserver.cpp)
     list(APPEND updater_SRCS updater/windowsupdater.h updater/windowsupdater.cpp)
 else()
     list(APPEND server_SRCS ../common/utility_linux.cpp)
     list(APPEND server_SRCS comm/socketcommserver.h comm/socketcommserver.cpp)
-    list(APPEND server_SRCS comm/guicommserver.h comm/guicommserver.cpp)
     list(APPEND updater_SRCS updater/linuxupdater.h updater/linuxupdater.cpp)
 endif()
 

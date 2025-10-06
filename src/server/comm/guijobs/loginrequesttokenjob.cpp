@@ -17,6 +17,7 @@
  */
 
 #include "loginrequesttokenjob.h"
+#include "../guijobmanager.h"
 #include "requests/serverrequests.h"
 #include "signaluseraddedjob.h"
 #include "signaluserupdatedjob.h"
@@ -83,13 +84,13 @@ bool LoginRequestTokenJob::process() {
     _userDbId = userInfo.dbId();
     _commManager->updateSentryUserCbk();
     if (userCreated) {
-        auto signalUserAddedJob = std::make_unique<SignalUserAddedJob>(_commManager, _channel, userInfo);
-        // TODO: Add job to JobManager pool
-        _exitInfo = signalUserAddedJob->runSynchronously();
+        auto signalUserAddedJob = std::make_shared<SignalUserAddedJob>(_commManager, _channel, userInfo);
+        // Add job to JobManager pool
+        GuiJobManagerSingleton::instance()->queueAsyncJob(signalUserAddedJob, Poco::Thread::PRIO_NORMAL);
     } else {
-        auto signalUserUpdatedJob = std::make_unique<SignalUserUpdatedJob>(_commManager, _channel, userInfo);
-        // TODO: Add job to JobManager pool
-        _exitInfo = signalUserUpdatedJob->runSynchronously();
+        auto signalUserUpdatedJob = std::make_shared<SignalUserUpdatedJob>(_commManager, _channel, userInfo);
+        // Add job to JobManager pool
+        GuiJobManagerSingleton::instance()->queueAsyncJob(signalUserUpdatedJob, Poco::Thread::PRIO_NORMAL);
     }
     return _exitInfo;
 }
