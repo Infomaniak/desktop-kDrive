@@ -463,7 +463,7 @@ bool Utility::registryExistKeyTree(HKEY hRootKey, const std::wstring &subKey) {
 
     REGSAM sam = KEY_READ | KEY_WOW64_64KEY;
     LONG result = RegOpenKeyEx(hRootKey, subKey.c_str(), 0, sam, &hKey);
-    LOG_IF_FAIL(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
+    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
     if (result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND) return false;
 
     RegCloseKey(hKey);
@@ -476,12 +476,12 @@ bool Utility::registryExistKeyValue(HKEY hRootKey, const std::wstring &subKey, c
 
     REGSAM sam = KEY_READ | KEY_WOW64_64KEY;
     LONG result = RegOpenKeyEx(hRootKey, subKey.c_str(), 0, sam, &hKey);
-    LOG_IF_FAIL(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
+    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
     if (result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND) return false;
 
     DWORD type = 0, sizeInBytes = 0;
     result = RegQueryValueEx(hKey, valueName.c_str(), 0, &type, nullptr, &sizeInBytes);
-    LOG_IF_FAIL(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
+    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
     if (result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND) return false;
 
     RegCloseKey(hKey);
@@ -496,13 +496,13 @@ Utility::kdVariant Utility::registryGetKeyValue(const HKEY hRootKey, const std::
 
     const REGSAM sam = KEY_READ | KEY_WOW64_64KEY;
     LONG result = RegOpenKeyEx(hRootKey, subKey.c_str(), 0, sam, &hKey);
-    LOG_IF_FAIL(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
+    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
     if (result != ERROR_SUCCESS) return value;
 
     DWORD type = 0;
     DWORD sizeInBytes = 0;
     result = RegQueryValueEx(hKey, valueName.c_str(), 0, &type, nullptr, &sizeInBytes);
-    LOG_IF_FAIL(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
+    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
     if (result != ERROR_SUCCESS) {
         (void) RegCloseKey(hKey);
         return value;
@@ -539,7 +539,7 @@ Utility::kdVariant Utility::registryGetKeyValue(const HKEY hRootKey, const std::
         default:
             Q_UNREACHABLE();
     }
-    LOG_IF_FAIL(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
+    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
 
     RegCloseKey(hKey);
     return value;
@@ -555,7 +555,7 @@ bool Utility::registrySetKeyValue(HKEY hRootKey, const std::wstring &subKey, con
     // for both 32 and 64bit.
     REGSAM sam = KEY_WRITE | KEY_WOW64_64KEY;
     LONG result = RegCreateKeyEx(hRootKey, subKey.c_str(), 0, nullptr, 0, sam, nullptr, &hKey, nullptr);
-    LOG_IF_FAIL(result == ERROR_SUCCESS)
+    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS)
     if (result != ERROR_SUCCESS) {
         LPTSTR errorText = nullptr;
         if (!FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr,
@@ -587,7 +587,7 @@ bool Utility::registrySetKeyValue(HKEY hRootKey, const std::wstring &subKey, con
         default:
             Q_UNREACHABLE();
     }
-    LOG_IF_FAIL(result == ERROR_SUCCESS)
+    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS)
     if (result != ERROR_SUCCESS) {
         LPTSTR errorText = nullptr;
         if (!FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr,
@@ -610,15 +610,15 @@ bool Utility::registryDeleteKeyTree(HKEY hRootKey, const std::wstring &subKey) {
     HKEY hKey;
     REGSAM sam = DELETE | KEY_ENUMERATE_SUB_KEYS | KEY_QUERY_VALUE | KEY_SET_VALUE | KEY_WOW64_64KEY;
     LONG result = RegOpenKeyEx(hRootKey, subKey.c_str(), 0, sam, &hKey);
-    LOG_IF_FAIL(result == ERROR_SUCCESS)
+    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS)
     if (result != ERROR_SUCCESS) return false;
 
     result = RegDeleteTree(hKey, nullptr);
     RegCloseKey(hKey);
-    LOG_IF_FAIL(result == ERROR_SUCCESS)
+    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS)
 
     result |= RegDeleteKeyEx(hRootKey, subKey.c_str(), sam, 0);
-    LOG_IF_FAIL(result == ERROR_SUCCESS)
+    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS)
 
     return result == ERROR_SUCCESS;
 }
@@ -627,11 +627,11 @@ bool Utility::registryDeleteKeyValue(HKEY hRootKey, const std::wstring &subKey, 
     HKEY hKey;
     REGSAM sam = KEY_WRITE | KEY_WOW64_64KEY;
     LONG result = RegOpenKeyEx(hRootKey, subKey.c_str(), 0, sam, &hKey);
-    LOG_IF_FAIL(result == ERROR_SUCCESS)
+    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS)
     if (result != ERROR_SUCCESS) return false;
 
     result = RegDeleteValue(hKey, valueName.c_str());
-    LOG_IF_FAIL(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
+    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
 
     RegCloseKey(hKey);
     return result == ERROR_SUCCESS;
@@ -642,14 +642,14 @@ bool Utility::registryWalkSubKeys(HKEY hRootKey, const std::wstring &subKey,
     HKEY hKey;
     REGSAM sam = KEY_READ | KEY_WOW64_64KEY;
     LONG result = RegOpenKeyEx(hRootKey, subKey.c_str(), 0, sam, &hKey);
-    LOG_IF_FAIL(result == ERROR_SUCCESS)
+    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_INVALID_FUNCTION)
     if (result != ERROR_SUCCESS) return false;
 
     DWORD maxSubKeyNameSize;
     // Get the largest keyname size once instead of relying each call on ERROR_MORE_DATA.
     result = RegQueryInfoKey(hKey, nullptr, nullptr, nullptr, nullptr, &maxSubKeyNameSize, nullptr, nullptr, nullptr, nullptr,
                              nullptr, nullptr);
-    LOG_IF_FAIL(result == ERROR_SUCCESS)
+    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS)
     if (result != ERROR_SUCCESS) {
         RegCloseKey(hKey);
         return false;
@@ -667,7 +667,7 @@ bool Utility::registryWalkSubKeys(HKEY hRootKey, const std::wstring &subKey,
         retCode = RegEnumKeyEx(hKey, i, reinterpret_cast<LPWSTR>(subKeyName.data()), &subKeyNameSize, nullptr, nullptr, nullptr,
                                nullptr);
 
-        LOG_IF_FAIL(result == ERROR_SUCCESS || retCode == ERROR_NO_MORE_ITEMS)
+        LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS || retCode == ERROR_NO_MORE_ITEMS)
         if (retCode == ERROR_SUCCESS) {
             // subKeyNameSize excludes the trailing \0
             subKeyName.resize(subKeyNameSize);
