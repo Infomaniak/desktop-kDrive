@@ -151,11 +151,11 @@ void TestIntegration::testAll() {
     logStep("initialization");
 
     // Run test cases
-    // basicTests();
-    // inconsistencyTests();
-    // conflictTests();
-    // testBreakCycle();
-    // testBlacklist();
+    basicTests();
+    inconsistencyTests();
+    conflictTests();
+    testBreakCycle();
+    testBlacklist();
     testExclusionTemplates();
     testEncoding();
     testParentRename();
@@ -347,6 +347,13 @@ void TestIntegration::testBlacklist() {
         Utility::msleep(100);
     }
     CPPUNIT_ASSERT(_syncPal->isPaused());
+
+    // Clean up blacklist.
+    (void) SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, {});
+    // Apply new blacklist.
+    _syncPal->stop();
+    (void) BlacklistPropagator(_syncPal).runSynchronously();
+    _syncPal->start();
 
     logStep("testBlacklist");
 }
