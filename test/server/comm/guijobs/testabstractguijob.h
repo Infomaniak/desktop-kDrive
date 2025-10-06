@@ -77,9 +77,9 @@ class GuiJobTest : public AbstractGuiJob {
         Dummy _dummyValue;
         std::vector<Dummy> _dummyValues;
 
-        bool deserializeInputParms() override;
-        bool serializeOutputParms() override;
-        bool process() override;
+        ExitInfo deserializeInputParms() override;
+        ExitInfo serializeOutputParms(bool hasError = false) override;
+        ExitInfo process() override;
 
         friend class TestAbstractGuiJob;
 };

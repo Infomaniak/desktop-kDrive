@@ -167,16 +167,15 @@ void TestGuiCommChannel::testLoginRequestToken() {
 
         // Process job simulation
         loginRequestTokenJob->_userDbId = 1;
-        job->_exitInfo = ExitCode::Ok;
 
         // Serialize specific parameters
-        if (!job->serializeOutputParms()) {
+        if (!job->serializeOutputParms(false)) {
             CPPUNIT_ASSERT(false);
         }
 
         CPPUNIT_ASSERT(job->_outParams["userDbId"] == 1);
 
-        if (!job->serializeGenericOutputParms()) {
+        if (!job->serializeGenericOutputParms(ExitCode::Ok)) {
             CPPUNIT_ASSERT(false);
         }
 

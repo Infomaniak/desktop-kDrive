@@ -43,32 +43,30 @@ LoginRequestTokenJob::LoginRequestTokenJob(std::shared_ptr<CommManager> commMana
     _requestNum = RequestNum::LOGIN_REQUESTTOKEN;
 }
 
-bool LoginRequestTokenJob::deserializeInputParms() {
+ExitInfo LoginRequestTokenJob::deserializeInputParms() {
     try {
         readParamValue(inParamsCode, _code);
         readParamValue(inParamsCodeVerifier, _codeVerifier);
     } catch (std::exception &e) {
         LOG_WARN(_logger, "Exception in AbstractGuiJob::readParamValue: error=" << e.what());
-        _exitInfo = ExitCode::LogicError;
-        return false;
+        return ExitCode::LogicError;
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
-bool LoginRequestTokenJob::serializeOutputParms() {
+ExitInfo LoginRequestTokenJob::serializeOutputParms(bool hasError /*= false*/) {
     // Output parameters serialization
-    if (_exitInfo) {
-        writeParamValue(outParamsUserDbId, _userDbId);
-    } else {
+    if (hasError) {
         writeParamValue(outParamsError, CommonUtility::str2CommString(_error));
         writeParamValue(outParamsErrorDescr, CommonUtility::str2CommString(_errorDescr));
+    } else {
+        writeParamValue(outParamsUserDbId, _userDbId);
     }
-
-    return true;
+    return ExitCode::Ok;
 }
 
-bool LoginRequestTokenJob::process() {
+ExitInfo LoginRequestTokenJob::process() {
     UserInfo userInfo;
     bool userCreated = false;
     ExitCode exitCode =
@@ -76,8 +74,7 @@ bool LoginRequestTokenJob::process() {
                                          userInfo, userCreated, _error, _errorDescr);
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in ServerRequests::requestToken: code=" << exitCode);
-        _exitInfo = exitCode;
-        return false;
+        return exitCode;
     }
 
     _userDbId = userInfo.dbId();
@@ -85,13 +82,12 @@ bool LoginRequestTokenJob::process() {
     if (userCreated) {
         auto signalUserAddedJob = std::make_unique<SignalUserAddedJob>(_commManager, _channel, userInfo);
         // TODO: Add job to JobManager pool
-        _exitInfo = signalUserAddedJob->runSynchronously();
-    } else {
-        auto signalUserUpdatedJob = std::make_unique<SignalUserUpdatedJob>(_commManager, _channel, userInfo);
-        // TODO: Add job to JobManager pool
-        _exitInfo = signalUserUpdatedJob->runSynchronously();
+        return signalUserAddedJob->runSynchronously();
     }
-    return _exitInfo;
+
+    auto signalUserUpdatedJob = std::make_unique<SignalUserUpdatedJob>(_commManager, _channel, userInfo);
+    // TODO: Add job to JobManager pool
+    return signalUserUpdatedJob->runSynchronously();
 }
 
 } // namespace KDC
