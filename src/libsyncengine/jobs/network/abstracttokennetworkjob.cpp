@@ -174,6 +174,7 @@ void AbstractTokenNetworkJob::defaultBackErrorHandling(NetworkErrorCode errorCod
     if (errorHandling == errorCodeHandlingMap.cend()) {
         LOG_WARN(_logger, "Error in request " << Utility::formatRequest(uri, _errorCode, _errorDescr));
         exitCause = ExitCause::HttpErr;
+        return;
     }
     // Regular handling
     const auto &exitHandler = errorHandling->second;
