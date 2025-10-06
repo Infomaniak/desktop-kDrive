@@ -37,8 +37,6 @@ class TestSituationGeneratorException final : public std::runtime_error {
 };
 
 TestSituationGenerator::TestSituationGenerator() {
-    const LocalTemporaryDirectory temporaryDirectory("TestSituationGenerator");
-
     const auto syncDbPath = _temporaryDirectory.path() / ("dummySyncDb_" + CommonUtility::generateRandomStringAlphaNum());
     _syncDb = std::make_shared<SyncDb>(syncDbPath.string(), "3.6.10");
     (void) _syncDb->init("3.6.10");
