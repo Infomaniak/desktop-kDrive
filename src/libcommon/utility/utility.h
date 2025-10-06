@@ -273,6 +273,11 @@ struct COMMON_EXPORT CommonUtility {
         static std::wstring commString2WStr(const CommString &s) { return s; }
         static CommString qStr2CommString(const QString &s) { return s.toStdWString(); }
         static QString commString2QStr(const CommString &s) { return QString::fromStdWString(s); }
+        //! Returns the length of a string
+        /*!
+          \param s is a null-terminated string.
+          \return the length of the string or 0 if s is a nullptr.
+        */
         static size_t strLen(const CommChar *const s) { return s ? wcslen(s) : 0; }
 #else
         static CommString str2CommString(const std::string &s) { return s; }
@@ -280,6 +285,11 @@ struct COMMON_EXPORT CommonUtility {
         static std::wstring commString2WStr(const CommString &s) { return KDC::CommonUtility::s2ws(s); }
         static CommString qStr2CommString(const QString &s) { return s.toStdString(); }
         static QString commString2QStr(const CommString &s) { return QString::fromStdString(s); }
+        //! Returns the length of a string
+        /*!
+          \param s is a null-terminated string.
+          \return the length of the string or 0 if s is a nullptr.
+        */
         static size_t strLen(const CommChar *const s) { return s ? strlen(s) : 0; }
 #endif
 
