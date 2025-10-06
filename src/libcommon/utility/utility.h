@@ -273,12 +273,14 @@ struct COMMON_EXPORT CommonUtility {
         static std::wstring commString2WStr(const CommString &s) { return s; }
         static CommString qStr2CommString(const QString &s) { return s.toStdWString(); }
         static QString commString2QStr(const CommString &s) { return QString::fromStdWString(s); }
+        static size_t strLen(const CommChar *s) { return wcslen(s); }
 #else
         static CommString str2CommString(const std::string &s) { return s; }
         static std::string commString2Str(const CommString &s) { return s; }
         static std::wstring commString2WStr(const CommString &s) { return KDC::CommonUtility::s2ws(s); }
         static CommString qStr2CommString(const QString &s) { return s.toStdString(); }
         static QString commString2QStr(const CommString &s) { return QString::fromStdString(s); }
+        static size_t strLen(const CommChar *s) { return strlen(s); }
 #endif
 
         //! Read an input built-in/std::string/std::wstring/CommBLOB parameter from a Poco::DynamicStruct.
