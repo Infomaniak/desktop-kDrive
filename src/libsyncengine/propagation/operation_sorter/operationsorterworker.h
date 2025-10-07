@@ -36,6 +36,33 @@ class OperationSorterWorker : public OperationProcessor {
         [[nodiscard]] bool hasOrderChanged() const { return _hasOrderChanged; }
 
     private:
+        struct CreateOperationPair {
+                CreateOperationPair(SyncOpPtr op_, const int32_t opNodeDepth_, SyncOpPtr ancestorOp_) :
+                    op(op_),
+                    opNodeDepth(opNodeDepth_),
+                    ancestorOp(ancestorOp_) {}
+                SyncOpPtr op{nullptr};
+                int32_t opNodeDepth{};
+                SyncOpPtr ancestorOp{nullptr};
+        };
+        class CreateOperationPairDepthCmp {
+            public:
+                bool operator()(const CreateOperationPair &a, const CreateOperationPair &b) const {
+                    if (a.opNodeDepth == b.opNodeDepth) {
+                        // If depths are equal, nodes with higher IDs have higher priority in the queue.
+                        // This has the benefit of preserving the initial ordering of nodes with of equal depth
+                        // and with the same parent.
+                        return a.op->id() < b.op->id();
+                    }
+                    // Nodes with higher depth have a higher priority in the queue.
+                    return a.opNodeDepth < b.opNodeDepth;
+                }
+        };
+
+        // Recall that `std::priority_queue` is a max-heap (https://en.wikipedia.org/wiki/Heap_(data_structure)).
+        using CreateOperationPairQueue =
+                std::priority_queue<CreateOperationPair, std::vector<CreateOperationPair>, CreateOperationPairDepthCmp>;
+
         void sortOperations();
 
         /**
@@ -98,14 +125,13 @@ class OperationSorterWorker : public OperationProcessor {
          * @param opIdToIndexMap A map giving the correspondence between an operation ID and its position in the sorted operation
          * list.
          * @param op The child operation to be compared.
-         * @param ancestorOpWithHighestDistance The ancestor operation, positioned further the op in the sorted list, with the
          * highest distance.
-         * @param relativeDepth The distance between the child node and the ancestor node in a tree. For example, in the path
-         * A/AA/AAA/AAAA, the distance between A and AA is 1, the distance between A and AAAA is 3.
-         * @return
+         * @param depth The depth of op's affected node.
+         * @return The operation on an ancestor of op's node with the highest index in the operation list, if it exists. Returns
+         * nullptr otherwise.
          */
-        bool hasParentWithHigherIndex(const std::unordered_map<UniqueId, int32_t> &opIdToIndexMap, const SyncOpPtr &op,
-                                      SyncOpPtr &ancestorOpWithHighestDistance, int32_t &relativeDepth) const;
+        SyncOpPtr getAncestorOpWithHighestIndex(const std::unordered_map<UniqueId, int32_t> &opIdToIndexMap, const SyncOpPtr &op,
+                                                int32_t &relativeDepth) const;
 
         bool getIdFromDb(ReplicaSide side, const SyncPath &path, NodeId &id) const;
 
