@@ -136,7 +136,8 @@ ExitInfo AbstractTokenNetworkJob::handleUnauthorizedResponse() {
         if (const auto exitInfo = refreshToken(); !exitInfo) {
             LOG_WARN(_logger, "Refresh token failed");
             disableRetry();
-            return ExitCode::InvalidToken;
+            return {ExitCode::InvalidToken, ExitCause::LoginError};
+            ;
         }
 
         LOG_DEBUG(_logger, "Refresh token succeeded");
@@ -144,10 +145,16 @@ ExitInfo AbstractTokenNetworkJob::handleUnauthorizedResponse() {
     }
 
     LOG_WARN(_logger, "Token already refreshed once");
+
+    if (_trials > 2) {
+        disableRetry();
+        return {ExitCode::InvalidToken, ExitCause::LoginError};
+    }
+
     return ExitCode::InvalidToken;
 }
 
-bool AbstractTokenNetworkJob::defaultBackErrorHandling(NetworkErrorCode errorCode, const Poco::URI &uri, ExitCause &exitCause) {
+void AbstractTokenNetworkJob::defaultBackErrorHandling(NetworkErrorCode errorCode, const Poco::URI &uri, ExitCause &exitCause) {
     static const std::map<NetworkErrorCode, AbstractTokenNetworkJob::ExitHandler> errorCodeHandlingMap = {
             {NetworkErrorCode::ValidationFailed, ExitHandler{ExitCause::InvalidName, "Invalid file or directory name"}},
             {NetworkErrorCode::UploadNotTerminatedError, ExitHandler{ExitCause::UploadNotTerminated, "Upload not terminated"}},
@@ -167,14 +174,11 @@ bool AbstractTokenNetworkJob::defaultBackErrorHandling(NetworkErrorCode errorCod
     if (errorHandling == errorCodeHandlingMap.cend()) {
         LOG_WARN(_logger, "Error in request " << Utility::formatRequest(uri, _errorCode, _errorDescr));
         exitCause = ExitCause::HttpErr;
-        return false;
     }
     // Regular handling
     const auto &exitHandler = errorHandling->second;
     LOG_DEBUG(_logger, exitHandler.debugMessage);
     exitCause = exitHandler.exitCause;
-
-    return true;
 }
 
 
@@ -231,7 +235,7 @@ ExitInfo AbstractTokenNetworkJob::handleError(const std::string &replyBody, cons
         }
         default:
             ExitCause exitCause = ExitCause::Unknown;
-            bool res = defaultBackErrorHandling(errorCode, uri, exitCause);
+            defaultBackErrorHandling(errorCode, uri, exitCause);
             exitInfo.setCause(exitCause);
             return exitInfo;
     }

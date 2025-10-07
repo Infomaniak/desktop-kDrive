@@ -51,10 +51,14 @@ class AbstractNetworkJob : public SyncJob {
         [[nodiscard]] const std::string &errorCode() const { return _errorCode; }
         [[nodiscard]] const std::string &errorDescr() const { return _errorDescr; }
 
+        int32_t trials() const noexcept { return _trials; };
+
     protected:
         ExitInfo runJob() noexcept override;
         void addRawHeader(const std::string &key, const std::string &value);
 
+        using StreamVector = std::vector<std::reference_wrapper<std::istream>>;
+        virtual ExitInfo receiveResponseFromSession(StreamVector &stream);
         virtual ExitInfo handleResponse(std::istream &inputStream) = 0;
         virtual ExitInfo handleError(const std::string &replyBody, const Poco::URI &uri) = 0;
 
@@ -79,11 +83,12 @@ class AbstractNetworkJob : public SyncJob {
         std::string _data;
         Poco::Net::HTTPResponse _resHttp;
         int _customTimeout = 0;
-        int _trials = 2; // By default, try again once if exception is thrown
+        int32_t _trials = 2; // By default, try again once if exception is thrown
         std::string _errorCode;
         std::string _errorDescr;
 
     private:
+        ExitInfo receiveResponse(const Poco::URI &uri);
         ExitInfo handleError(std::istream &inputStream, const Poco::URI &uri);
 
         struct TimeoutHelper {
@@ -126,7 +131,6 @@ class AbstractNetworkJob : public SyncJob {
         void clearSession();
         void abortSession();
         ExitInfo sendRequest(const Poco::URI &uri);
-        ExitInfo receiveResponse(const Poco::URI &uri);
         ExitInfo followRedirect();
         ExitInfo processSocketError(const std::string &msg, UniqueId jobId);
         ExitInfo processSocketError(const std::string &msg, UniqueId jobId, const std::exception &e);

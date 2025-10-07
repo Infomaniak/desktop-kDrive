@@ -161,30 +161,25 @@ bool Utility::moveItemToTrash(const SyncPath &itemPath) {
     }
 
     BOOL aborted = false;
+    BOOL result = true;
     hr = fileOperation->GetAnyOperationsAborted(&aborted);
-    if (!FAILED(hr) && aborted) {
-        // failed to carry out delete - return
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in GetAnyOperationsAborted - path="
-                                                        << Path2WStr(itemPath) << L" err="
+    if (FAILED(hr)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in GetAnyOperationsAborted - "
+                                                        << Utility::formatSyncPath(itemPath) << L" err="
                                                         << CommonUtility::s2ws(std::system_category().message(hr)));
-
-        std::wstringstream errorStream;
-        errorStream << L"Move to trash aborted for item " << Path2WStr(itemPath);
-        std::wstring errorStr = errorStream.str();
-        LOGW_WARN(Log::instance()->getLogger(), errorStr);
-
-        sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "Move to trash aborted");
-
-        fileOrFolderItem->Release();
-        fileOperation->Release();
-        CoUninitialize();
-        return false;
+        result = false;
+    } else if (aborted) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Move to trash aborted for item with " << Utility::formatSyncPath(itemPath));
+        result = false;
+    } else {
+        // MISRA Coding Guideline
     }
 
     fileOrFolderItem->Release();
     fileOperation->Release();
     CoUninitialize();
-    return true;
+
+    return result;
 }
 
 bool Utility::totalRamAvailable(uint64_t &ram, int &errorCode) {
