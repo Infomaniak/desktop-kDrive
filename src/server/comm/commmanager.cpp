@@ -17,7 +17,11 @@
  */
 
 #include "commmanager.h"
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+#include "extjobmanager.h"
 #include "extensionjob.h"
+#endif
+#include "guijobmanager.h"
 #include "guijobs/guijobfactory.h"
 #include "config.h"
 #include "libcommon/utility/logiffail.h"
@@ -157,10 +161,9 @@ void CommManager::executeExtCommand(const CommString &commandLineStr) {
 
     auto job =
             std::make_shared<ExtensionJob>(shared_from_this(), commandLineStr, std::list<std::shared_ptr<AbstractCommChannel>>());
-    if (ExitInfo exitInfo = job->runSynchronously(); !exitInfo) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in ExtensionJob::runSynchronously - cmd=" << CommonUtility::commString2WStr(commandLineStr));
-    }
+
+    // Add job to JobManager pool
+    ExtJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
 }
 
 void CommManager::executeExtCommand(const CommString &commandLineStr, std::shared_ptr<AbstractCommChannel> channel) {
@@ -169,10 +172,9 @@ void CommManager::executeExtCommand(const CommString &commandLineStr, std::share
     if (channel) {
         auto job = std::make_shared<ExtensionJob>(shared_from_this(), commandLineStr,
                                                   std::list<std::shared_ptr<AbstractCommChannel>>({channel}));
-        if (ExitInfo exitInfo = job->runSynchronously(); !exitInfo) {
-            LOGW_WARN(Log::instance()->getLogger(),
-                      L"Error in ExtensionJob::runSynchronously - cmd=" << CommonUtility::commString2WStr(commandLineStr));
-        }
+
+        // Add job to JobManager pool
+        ExtJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
     }
 }
 
@@ -181,10 +183,9 @@ void CommManager::broadcastExtCommand(const CommString &commandLineStr) {
 
     if (!_extCommServer->connections().empty()) {
         auto job = std::make_shared<ExtensionJob>(shared_from_this(), commandLineStr, _extCommServer->connections());
-        if (ExitInfo exitInfo = job->runSynchronously(); !exitInfo) {
-            LOGW_WARN(Log::instance()->getLogger(),
-                      L"Error in ExtensionJob::runSynchronously - cmd=" << CommonUtility::commString2WStr(commandLineStr));
-        }
+
+        // Add job to JobManager pool
+        ExtJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
     }
 }
 
@@ -250,10 +251,8 @@ void CommManager::executeGuiQuery(const CommString &commandLineStr, std::shared_
         return;
     }
 
-    // TODO: Add job to JobManager pool
-    if (!job->runSynchronously()) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in AbstractGuiJob::runSynchronously: num=" << requestNum);
-    }
+    // Add job to JobManager pool
+    GuiJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
 }
 
 void CommManager::onNewGuiConnection() {
