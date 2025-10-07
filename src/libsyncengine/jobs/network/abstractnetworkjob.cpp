@@ -458,7 +458,7 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
                 }
 
                 if (!exitInfo) {
-                    if (exitInfo.code() != ExitCode::Ok && exitInfo.code() != ExitCode::DataError &&
+                    if (exitInfo.code() != ExitCode::DataError &&
                         exitInfo.code() != ExitCode::InvalidToken &&
                         (exitInfo.code() != ExitCode::BackError || exitInfo.cause() != ExitCause::NotFound)) {
                         LOG_WARN(_logger, "Error handling failed");
