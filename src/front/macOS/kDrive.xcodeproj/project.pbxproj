@@ -362,8 +362,8 @@
 			projectRoot = "";
 			targets = (
 				37A1C4252E546A5200596DBB /* kDrive */,
-				37A1C43E2E546A9600596DBB /* kDriveCoreUI */,
 				37A1C4592E546CB600596DBB /* kDriveCore */,
+				37A1C43E2E546A9600596DBB /* kDriveCoreUI */,
 				F967009D2E95352C00EDD4D7 /* kDriveResources */,
 			);
 		};
