@@ -57,12 +57,12 @@ bool LocalDeleteJob::matchRelativePaths(const SyncPath &targetPath, const SyncPa
     return Path(remoteRelativePath).endsWith(SyncPath(targetPath.filename()) / localRelativePath);
 }
 
-LocalDeleteJob::LocalDeleteJob(const SyncPalInfo &syncPalInfo, const SyncPath &relativePath, bool isDehydratedPlaceholder,
-                               NodeId remoteId, bool forceToTrash /* = false */) :
+LocalDeleteJob::LocalDeleteJob(const SyncPalInfo &syncPalInfo, const SyncPath &relativePath, bool liteIsSyncEnabled,
+                               const NodeId &remoteId, bool forceToTrash /* = false */) :
     _absolutePath(syncPalInfo.localPath / relativePath),
+    _liteSyncIsEnabled(liteIsSyncEnabled),
     _syncInfo(syncPalInfo),
     _relativePath(relativePath),
-    _isDehydratedPlaceholder(isDehydratedPlaceholder),
     _remoteNodeId(remoteId),
     _forceToTrash(forceToTrash) {}
 
@@ -156,46 +156,121 @@ bool LocalDeleteJob::canRun() {
     return true;
 }
 
-void LocalDeleteJob::handleTrashMoveOutcome(bool success) {
+void LocalDeleteJob::handleTrashMoveOutcome(const bool success, const SyncPath &path) {
     if (!success) {
-        LOGW_WARN(_logger,
-                  L"Failed to move item: " << Utility::formatSyncPath(_absolutePath) << L" to trash. Trying hard delete.");
+        LOGW_WARN(_logger, L"Failed to move item: " << Utility::formatSyncPath(path) << L" to trash. Trying hard delete.");
+        hardDelete(path);
     } else if (ParametersCache::isExtendedLogEnabled()) {
-        LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(_absolutePath) << L" was moved to trash");
+        LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(path) << L" was moved to trash");
     }
 }
 
-bool LocalDeleteJob::moveToTrash() {
-    const bool success = Utility::moveItemToTrash(_absolutePath);
-    handleTrashMoveOutcome(success);
-    return success;
-}
+void LocalDeleteJob::hardDelete(const SyncPath &path) {
+    LOGW_DEBUG(_logger, L"Try to hard delete item with " << Utility::formatSyncPath(path));
 
-void LocalDeleteJob::runJob() {
-    if (!canRun()) return;
-
-    const bool tryMoveToTrash =
-            (ParametersCache::instance()->parameters().moveToTrash() && !_isDehydratedPlaceholder) || _forceToTrash;
-
-    _exitInfo = ExitCode::Ok;
-    if (tryMoveToTrash && moveToTrash()) return;
-
-    LOGW_DEBUG(_logger, L"Delete item with " << Utility::formatSyncPath(_absolutePath));
     std::error_code ec;
-    std::filesystem::remove_all(_absolutePath, ec);
+    (void) std::filesystem::remove_all(path, ec);
     if (ec) {
         LOGW_WARN(_logger, L"Failed to delete item with " << Utility::formatStdError(_absolutePath, ec));
         if (IoHelper::stdError2ioError(ec) == IoError::AccessDenied) {
             _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
-        } else {
-            _exitInfo = ExitCode::SystemError;
+            return;
         }
+        _exitInfo = ExitCode::SystemError;
         return;
     }
 
     if (ParametersCache::isExtendedLogEnabled()) {
-        LOGW_INFO(_logger, L"Item: " << Utility::formatSyncPath(_absolutePath) << L" deleted");
+        LOGW_INFO(_logger, L"Item: " << Utility::formatSyncPath(path) << L" deleted.");
     }
+}
+
+namespace {
+bool isFileDehydrated(const SyncPath &localPath, log4cplus::Logger logger) {
+    bool isDehydrated = false;
+    if (auto errorOnHydrationCheck = IoError::Success;
+        !IoHelper::checkIfFileIsDehydrated(localPath, isDehydrated, errorOnHydrationCheck) ||
+        errorOnHydrationCheck != IoError::Success) {
+        LOGW_WARN(logger,
+                  L"Error in IoHelper::checkIfFileIsDehydrated: " << Utility::formatIoError(localPath, errorOnHydrationCheck));
+    }
+
+    return isDehydrated;
+}
+} // namespace
+
+void LocalDeleteJob::handleLiteSyncFile(const SyncPath &path, bool &moveToTrashOutcome) {
+    if (isFileDehydrated(path, _logger)) {
+        hardDelete(path);
+    } else {
+        const bool outcome = Utility::moveItemToTrash(path);
+        handleTrashMoveOutcome(outcome, path);
+        moveToTrashOutcome = moveToTrashOutcome && outcome;
+    }
+}
+
+void LocalDeleteJob::hardDeleteDehydratedPlaceholders() {
+    IoError ioError = IoError::Success;
+    IoHelper::DirectoryIterator dir;
+    if (!IoHelper::getDirectoryIterator(_absolutePath, true, ioError, dir)) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in DirectoryIterator: " << Utility::formatIoError(_absolutePath, ioError));
+    }
+
+    DirectoryEntry entry;
+    bool endOfDirectory = false;
+    while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
+        if ((entry.is_symlink() || entry.is_regular_file()) && isFileDehydrated(entry.path(), _logger)) {
+            hardDelete(entry.path());
+        }
+    }
+
+    if (!endOfDirectory) {
+        LOGW_WARN(_logger, L"Error in DirectoryIterator: " << Utility::formatIoError(_absolutePath, ioError));
+    }
+}
+
+bool LocalDeleteJob::moveToTrash() {
+    if (!_liteSyncIsEnabled) {
+        const bool moveToTrashSuccess = Utility::moveItemToTrash(_absolutePath);
+        handleTrashMoveOutcome(moveToTrashSuccess, _absolutePath);
+
+        return moveToTrashSuccess;
+    }
+
+    bool isDirectory = false;
+    auto ioErrorCheckIfIsDirectory = IoError::Success;
+    if (const bool success = IoHelper::checkIfIsDirectory(_absolutePath, isDirectory, ioErrorCheckIfIsDirectory); !success) {
+        LOGW_WARN(_logger, L"Failed to check if path is a directory: "
+                                   << Utility::formatIoError(_absolutePath, ioErrorCheckIfIsDirectory));
+
+        hardDelete(_absolutePath);
+        return false;
+    }
+
+    bool moveToTrashOutcome = true;
+    if (!isDirectory) {
+        handleLiteSyncFile(_absolutePath, moveToTrashOutcome);
+        return moveToTrashOutcome;
+    }
+
+    hardDeleteDehydratedPlaceholders();
+
+    moveToTrashOutcome = Utility::moveItemToTrash(_absolutePath);
+    handleTrashMoveOutcome(moveToTrashOutcome, _absolutePath);
+
+    return moveToTrashOutcome;
+}
+
+void LocalDeleteJob::runJob() {
+    _exitInfo = ExitCode::Ok; //
+
+    if (!canRun()) return;
+
+    if (const bool tryMoveToTrash = (ParametersCache::instance()->parameters().moveToTrash()) || _forceToTrash)
+        (void) moveToTrash();
+    else
+        hardDelete(_absolutePath);
 }
 
 } // namespace KDC

@@ -141,4 +141,26 @@ std::string Utility::userName() {
     return CommonUtility::envVarValue("USER", isSet);
 }
 
+SyncPath Utility::getTrashPath() {
+    const char *homePathEnv = std::getenv("HOME");
+    if (!homePathEnv) {
+        LOG_WARN(Log::instance()->getLogger(), "Path to HOME not found.");
+        return {};
+    }
+
+    return SyncPath(homePathEnv) / ".Trash";
+}
+
+
+bool Utility::isInTrash(const SyncPath &path) {
+    if (std::error_code ec; !std::filesystem::exists(getTrashPath() / path, ec) || ec) {
+        if (ec) {
+            LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::exists - " << Utility::formatStdError(ec));
+        }
+        return false;
+    }
+
+    return true;
+}
+
 } // namespace KDC

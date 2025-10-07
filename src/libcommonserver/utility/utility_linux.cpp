@@ -22,6 +22,7 @@
 #include "libcommon/utility/utility.h"
 
 #include <filesystem>
+#include <regex>
 #include <string>
 #include <pwd.h>
 #include <sys/stat.h>
@@ -37,28 +38,92 @@
 
 namespace KDC {
 
-bool Utility::moveItemToTrash(const SyncPath &itemPath) {
-    std::string xdgDataHome, homePath, trashPath;
-
-    const char *xdgDataHomeEnv = std::getenv("XDG_DATA_HOME");
+SyncPath Utility::getTrashPath() {
     const char *homePathEnv = std::getenv("HOME");
-
-    if (xdgDataHomeEnv) {
-        xdgDataHome = std::string(xdgDataHomeEnv);
-    }
     if (!homePathEnv) {
         LOG_WARN(Log::instance()->getLogger(), "Path to HOME not found");
+        return {};
+    }
+
+    if (const char *xdgDataHomeEnv = std::getenv("XDG_DATA_HOME"); xdgDataHomeEnv) {
+        return std::string(xdgDataHomeEnv) + "/Trash/files/";
+    }
+
+    return std::string(homePathEnv) + "/.local/share/Trash/files/";
+}
+
+SyncPath removeNumericSuffix(const SyncPath &relativePath) {
+    if (relativePath.empty()) return {};
+
+    static const std::regex numericSuffixRegex(".*(\\.[0-9]+)$");
+
+    std::list<SyncName> segments = CommonUtility::splitSyncPath(relativePath);
+    auto &root = segments.front();
+
+    std::smatch words;
+    const std::string rootStr = SyncName2Str(root);
+    (void) std::regex_match(rootStr, words, numericSuffixRegex);
+
+    if (words.size() <= 1) return relativePath; // No numeric suffix.
+
+    root = root.substr(0, rootStr.size() - std::string{words[1]}.size()); // Removes suffix from root directory name.
+
+    // Adapt the relative path.
+    std::stringstream ss;
+    std::uint64_t i = 0;
+    for (const auto &segment: segments) {
+        if (i > 0) ss << "/";
+        ss << SyncName2Str(segment);
+        ++i;
+    }
+
+    return SyncPath{ss.str()};
+}
+
+void Utility::eraseFromTrash(const KDC::SyncPath &relativePath) {
+    const auto trashPath = getTrashPath();
+    std::error_code ec;
+
+    auto dirIt = std::filesystem::recursive_directory_iterator(trashPath,
+                                                               std::filesystem::directory_options::skip_permission_denied, ec);
+    if (ec) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::eraseFromTrash: " << Utility::formatStdError(ec));
+        return;
+    }
+
+    std::vector<SyncPath> itemsToErase;
+    for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
+        const auto dirItemRelativePath = std::filesystem::relative(dirIt->path(), trashPath);
+        // Filter out the numerical suffix of the root directory name, e.g: `dirname.15` is replaced with `dirname`.
+        const auto suffixFreedirectorEntryPath = removeNumericSuffix(dirItemRelativePath);
+        if (relativePath == suffixFreedirectorEntryPath) itemsToErase.push_back(dirIt->path());
+    }
+
+    for (const auto &pathToErase: itemsToErase) (void) std::filesystem::remove_all(pathToErase);
+}
+
+bool Utility::isInTrash(const SyncPath &relativePath) {
+    const auto trashPath = getTrashPath();
+    std::error_code ec;
+
+    auto dirIt = std::filesystem::recursive_directory_iterator(trashPath,
+                                                               std::filesystem::directory_options::skip_permission_denied, ec);
+    if (ec) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::isInTrash: " << Utility::formatStdError(ec));
         return false;
     }
 
-    homePath = std::string(homePathEnv);
-
-    if (xdgDataHome.empty()) {
-        trashPath = homePath + "/.local/share/Trash/files/";
-    } else {
-        trashPath = xdgDataHome + "/Trash/files/";
+    for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
+        const auto dirItemRelativePath = std::filesystem::relative(dirIt->path(), trashPath);
+        // Filter out the numerical suffix of the root directory name, e.g: `dirname.15` is replaced with `dirname`.
+        const auto suffixFreedirectorEntryPath = removeNumericSuffix(dirItemRelativePath);
+        if (relativePath == suffixFreedirectorEntryPath) return true;
     }
 
+    return false;
+}
+
+bool Utility::moveItemToTrash(const SyncPath &itemPath) {
     std::string desktopType;
     if (!Utility::getLinuxDesktopType(desktopType)) {
         desktopType = "GNOME";
@@ -74,28 +139,26 @@ bool Utility::moveItemToTrash(const SyncPath &itemPath) {
         return true;
     }
 
-    std::filesystem::path trash_path(trashPath);
+    const SyncPath trashPath = getTrashPath();
 
     // Check if the trash/files & trash/info path exists and create it if needed
-    std::error_code ec;
-    if (!std::filesystem::exists(trash_path, ec)) {
-        if (ec.value() != 0) {
-            LOG_WARN(Log::instance()->getLogger(),
-                     "Error in std::filesystem::exists - err=" << ec.message() << " (" << std::to_string(ec.value()) << ")");
+    if (std::error_code ec; !std::filesystem::exists(trashPath, ec)) {
+        if (ec) {
+            LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::exists - " << Utility::formatStdError(ec));
             return false;
         }
 
-        if (!std::filesystem::create_directories(trash_path)) {
-            LOG_WARN(Log::instance()->getLogger(), "Failed to create directory - path=" << trash_path.string());
+        if (!std::filesystem::create_directories(trashPath)) {
+            LOGW_WARN(Log::instance()->getLogger(), L"Failed to create directory - " << Utility::formatSyncPath(trashPath));
             return false;
         }
     }
 
-    int result = system(command.c_str());
-    if (result != 0) {
+    if (const auto result = system(command.c_str()); result) {
         LOG_WARN(Log::instance()->getLogger(), "Failed to move item to trash - err=" << std::to_string(result));
         return false;
     }
+
     return true;
 }
 

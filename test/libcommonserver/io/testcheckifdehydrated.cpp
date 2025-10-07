@@ -52,8 +52,8 @@ void TestIo::testCheckIfFileIsDehydrated() {
             ofs << "Some content.\n";
         }
 
-        IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "com.infomaniak.drive.desktopclient.litesync.status", "O", ioError));
+        IoError ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(IoHelper::setDehydratedPlaceholderStatus(path, ioError));
         bool isDehydrated = false;
         CPPUNIT_ASSERT(IoHelper::checkIfFileIsDehydrated(path, isDehydrated, ioError));
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
@@ -68,8 +68,8 @@ void TestIo::testCheckIfFileIsDehydrated() {
             ofs << "Some content.\n";
         }
 
-        IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "com.infomaniak.drive.desktopclient.litesync.status", "F", ioError));
+        IoError ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(IoHelper::setXAttrValue(path, "com.infomaniak.drive.desktopclient.litesync.status", "F", ioError));
         bool isDehydrated = true;
         CPPUNIT_ASSERT(IoHelper::checkIfFileIsDehydrated(path, isDehydrated, ioError));
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
@@ -84,8 +84,8 @@ void TestIo::testCheckIfFileIsDehydrated() {
         const SyncPath path = temporaryDirectory.path() / "dehydrated_file";
         { std::ofstream ofs(path); }
 
-        IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(_testObj->setXAttrValue(path, FILE_ATTRIBUTE_OFFLINE, ioError));
+        IoError ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(IoHelper::setDehydratedPlaceholderStatus(path, ioError));
         bool isDehydrated = false;
         CPPUNIT_ASSERT(IoHelper::checkIfFileIsDehydrated(path, isDehydrated, ioError));
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
@@ -97,7 +97,7 @@ void TestIo::testCheckIfFileIsDehydrated() {
         const SyncPath path = temporaryDirectory.path() / "hydrated_file";
         { std::ofstream ofs(path); }
 
-        IoError ioError = IoError::Success;
+        IoError ioError = IoError::Unknown;
         bool isDehydrated = true;
         CPPUNIT_ASSERT(IoHelper::checkIfFileIsDehydrated(path, isDehydrated, ioError));
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);

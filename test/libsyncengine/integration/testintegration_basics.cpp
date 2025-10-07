@@ -98,6 +98,12 @@ void TestIntegration::testLocalChanges() {
 
     remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, remoteTestDirInfo.id, filePath.filename());
     CPPUNIT_ASSERT(!remoteTestFileInfo.isValid());
+
+    CPPUNIT_ASSERT(Utility::isInTrash(subDirPath.filename()));
+#if defined(KD_MACOS) || defined(KD_LINUX)
+    Utility::eraseFromTrash(subDirPath.filename());
+#endif
+
     logStep("test delete local file");
 }
 
@@ -166,6 +172,11 @@ void TestIntegration::testRemoteChanges() {
 
     CPPUNIT_ASSERT(!std::filesystem::exists(subDirPath));
     CPPUNIT_ASSERT(!std::filesystem::exists(filePath));
+    CPPUNIT_ASSERT(Utility::isInTrash(subDirPath.filename()));
+#if defined(KD_MACOS) || defined(KD_LINUX)
+    Utility::eraseFromTrash(subDirPath.filename());
+#endif
+
     logStep("test delete remote file");
 }
 

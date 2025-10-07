@@ -19,8 +19,6 @@
 #include "utility.h"
 
 #include "libcommon/utility/utility.h"
-#include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/io/iohelper_win.h"
 #include "log/log.h"
 
 #include <filesystem>
@@ -31,6 +29,8 @@
 #include <windows.h>
 #include <Shobjidl.h> //Required for IFileOperation Interface
 #include <shellapi.h> //Required for Flags set in "SetOperationFlags"
+#include <shlobj_core.h> // SHCreateItemFromIDList
+#include <atlbase.h> // CComPtr
 #include <objbase.h>
 #include <objidl.h>
 #include <shlguid.h>
@@ -679,6 +679,113 @@ void Utility::unixTimeToFiletime(time_t t, FILETIME *filetime) {
     LONGLONG ll = Int32x32To64(t, 10000000) + 116444736000000000;
     filetime->dwLowDateTime = (DWORD) ll;
     filetime->dwHighDateTime = ll >> 32;
+}
+
+namespace {
+HRESULT bindToCsidl(const int csidl, REFIID riid, void **ppv) {
+    auto hr = S_OK;
+    PIDLIST_ABSOLUTE pidl = nullptr;
+    hr = SHGetSpecialFolderLocation(nullptr, csidl, &pidl);
+    if (SUCCEEDED(hr)) {
+        IShellFolder *psfDesktop = nullptr;
+        hr = SHGetDesktopFolder(&psfDesktop);
+        if (SUCCEEDED(hr)) {
+            if (pidl->mkid.cb) {
+                hr = psfDesktop->BindToObject(pidl, nullptr, riid, ppv);
+            } else {
+                hr = psfDesktop->QueryInterface(riid, ppv);
+            }
+            (void) psfDesktop->Release();
+        }
+        CoTaskMemFree(pidl);
+    }
+    return hr;
+}
+
+bool isFolder(IShellItem *item) {
+    if (!item) return false;
+
+    SFGAOF attributes = SFGAO_FOLDER;
+    if (const HRESULT hr = item->GetAttributes(SFGAO_FOLDER, &attributes); SUCCEEDED(hr)) {
+        return (attributes & SFGAO_FOLDER) != 0;
+    }
+
+    return false;
+}
+
+bool isInFolder(const std::list<SyncName> &relativePath, IShellFolder2 *folder) {
+    IEnumIDList *peidl = nullptr;
+
+    if (const auto enumHr = folder->EnumObjects(nullptr, SHCONTF_FOLDERS | SHCONTF_NONFOLDERS, &peidl); SUCCEEDED(enumHr)) {
+        PITEMID_CHILD pidlItem = nullptr;
+        while (peidl->Next(1, &pidlItem, nullptr) == S_OK) {
+            CComPtr<IShellItem> pItem;
+            if (const auto createItemHr = SHCreateItemFromIDList(pidlItem, IID_PPV_ARGS(&pItem)); FAILED(createItemHr)) {
+                CoTaskMemFree(pidlItem);
+                continue;
+            }
+
+            STRRET strRet;
+            ZeroMemory(&strRet, sizeof(strRet));
+            strRet.uType = STRRET_WSTR;
+
+            if (const auto displayNameHr =
+                        folder->GetDisplayNameOf(pidlItem, SHGDN_FORADDRESSBAR | SHGDN_INFOLDER | SHGDN_FOREDITING, &strRet);
+                FAILED(displayNameHr)) {
+                CoTaskMemFree(pidlItem);
+                continue;
+            }
+
+            LPTSTR lptstr = nullptr;
+            if (const auto stringReturnToStrHr = StrRetToStr(&strRet, pidlItem, &lptstr); FAILED(stringReturnToStrHr)) {
+                CoTaskMemFree(pidlItem);
+                CoTaskMemFree(lptstr);
+                continue;
+            }
+
+            const bool match = SyncPath(lptstr) == SyncPath(relativePath.front()).stem();
+            if (relativePath.size() == 1 && match) {
+                return true;
+                CoTaskMemFree(pidlItem);
+                CoTaskMemFree(lptstr);
+                break;
+            }
+
+            if (match && isFolder(pItem)) {
+                auto childRelativedPath = relativePath;
+                childRelativedPath.pop_front();
+                IShellFolder2 *psChildFolder = nullptr;
+                (void) SHBindToObject(folder, pidlItem, nullptr, IID_IShellFolder2, reinterpret_cast<void **>(&psChildFolder));
+
+                return isInFolder(childRelativedPath, psChildFolder);
+            }
+        }
+    }
+
+    if (peidl) (void) peidl->Release();
+
+    return false;
+}
+
+bool isInFolder(const SyncPath &relativePath, IShellFolder2 *folder) {
+    return isInFolder(CommonUtility::splitSyncPath(relativePath), folder);
+}
+
+} // namespace
+
+bool Utility::isInTrash(const SyncPath &relativePath) {
+    bool found = false;
+
+    if (const auto coInitializeHr = CoInitialize(nullptr); SUCCEEDED(coInitializeHr)) {
+        IShellFolder2 *psfRecycleBin = nullptr;
+        if (const auto bindingHr = bindToCsidl(CSIDL_BITBUCKET, IID_PPV_ARGS(&psfRecycleBin)); SUCCEEDED(bindingHr)) {
+            found = isInFolder(relativePath, psfRecycleBin);
+            (void) psfRecycleBin->Release();
+        }
+        CoUninitialize();
+    }
+
+    return found;
 }
 
 } // namespace KDC

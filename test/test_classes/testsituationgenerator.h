@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include "test_utility/localtemporarydirectory.h"
+
 #include "db/dbnode.h"
 #include "update_detection/update_detector/node.h"
 #include "update_detection/file_system_observer/snapshot/livesnapshot.h"
@@ -123,6 +125,8 @@ class TestSituationGenerator {
 
         std::shared_ptr<UpdateTree> _localUpdateTree;
         std::shared_ptr<UpdateTree> _remoteUpdateTree;
+
+        const LocalTemporaryDirectory _temporaryDirectory = LocalTemporaryDirectory("TestSituationGenerator");
 };
 
 } // namespace KDC

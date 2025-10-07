@@ -292,6 +292,10 @@ void TestIntegration::testBlacklist() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     CPPUNIT_ASSERT(!std::filesystem::exists(dirpath));
+    CPPUNIT_ASSERT(Utility::isInTrash(dirpath.filename()));
+#if defined(KD_MACOS) || defined(KD_LINUX)
+    Utility::eraseFromTrash(dirpath.filename());
+#endif
 
     // Move a file inside a blacklisted directory.
     moveRemoteFile(_driveDbId, fileId, tmpRemoteDir.id());
@@ -299,6 +303,10 @@ void TestIntegration::testBlacklist() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     CPPUNIT_ASSERT(!std::filesystem::exists(dirpath / filename));
+    CPPUNIT_ASSERT(Utility::isInTrash(filename));
+#if defined(KD_MACOS) || defined(KD_LINUX)
+    Utility::eraseFromTrash(filename);
+#endif
 
     // Move a file from inside a blacklisted directory to a synchronized directory.
     moveRemoteFile(_driveDbId, fileId, _remoteSyncDir.id());
@@ -438,8 +446,14 @@ void TestIntegration::testExclusionTemplates() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(fileRemoteId));
-    CPPUNIT_ASSERT(
-            !std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() / filename)); // The local file has been deleted.
+    CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() /
+                                            filename)); // The local file has been moved to trash.
+
+    CPPUNIT_ASSERT(!std::filesystem::exists(filename));
+    CPPUNIT_ASSERT(Utility::isInTrash(filename));
+#if defined(KD_MACOS) || defined(KD_LINUX)
+    Utility::eraseFromTrash(filename);
+#endif
 
     // Remove the exclusion template.
     (void) templateList.pop_back();
@@ -454,6 +468,7 @@ void TestIntegration::testExclusionTemplates() {
     IoHelper::getFileStat(_syncPal->localPath() / tmpRemoteDir.name() / testName, &filestat, found);
     fileLocalId = std::to_string(filestat.inode);
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
+
     logStep("testExclusionTemplates");
 }
 
@@ -654,6 +669,11 @@ void TestIntegration::testDeleteAndRecreateBranch() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() / "A" / "AA" / "AAA1"));
+
+    CPPUNIT_ASSERT(Utility::isInTrash(SyncPath{"AA/AAA"}));
+#if defined(KD_MACOS) || defined(KD_LINUX)
+    Utility::eraseFromTrash(SyncPath{"AA/AAA"});
+#endif
 
     logStep("testDeleteAndRecreateBranch");
 }
