@@ -65,8 +65,8 @@ void GetRootFileListJob::setQueryParameters(Poco::URI &uri) {
 
 ExitInfo GetRootFileListJob::handleResponse(std::istream &is) {
     if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) return exitInfo;
-    if (!jsonRes()) return ExitInfo();
-    if (!JsonParserUtility::extractValue(jsonRes(), pagesKey, _totalPages)) return ExitInfo();
+    if (!jsonRes()) return {};
+    if (!JsonParserUtility::extractValue(jsonRes(), pagesKey, _totalPages)) return {};
     return ExitCode::Ok;
 }
 

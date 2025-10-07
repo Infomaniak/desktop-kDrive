@@ -47,13 +47,13 @@ ExitInfo ComputeChecksumJob::runJob() {
     XXH3_state_t *const state = XXH3_createState();
     if (!state) {
         LOGW_WARN(_logger, L"Checksum computation " << jobId() << L" failed for file " << Path2WStr(_filePath));
-        return ExitInfo();
+        return {};
     }
 
     // Initialize state with selected seed
     if (XXH3_64bits_reset(state) == XXH_ERROR) {
         LOGW_WARN(_logger, L"Checksum computation " << jobId() << L" failed for file " << Path2WStr(_filePath));
-        return ExitInfo();
+        return {};
     }
 
     try {
@@ -65,7 +65,7 @@ ExitInfo ComputeChecksumJob::runJob() {
                 len = fread(buf, 1, BUFSIZ, f);
                 if (XXH3_64bits_update(state, buf, len) == XXH_ERROR) {
                     LOGW_WARN(_logger, L"Checksum computation " << jobId() << L" failed for file " << Path2WStr(_filePath));
-                    return ExitInfo();
+                    return {};
                 }
             } while (len == BUFSIZ);
 

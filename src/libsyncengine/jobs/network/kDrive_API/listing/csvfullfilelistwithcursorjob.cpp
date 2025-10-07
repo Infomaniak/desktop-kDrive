@@ -75,7 +75,7 @@ ExitInfo CsvFullFileListWithCursorJob::handleResponse(std::istream &is) {
     const auto length = _ss.tellg();
     if (length == 0) {
         LOG_ERROR(_logger, "Reply " << jobId() << " received with empty content.");
-        return ExitInfo();
+        return {};
     }
 
     _ss.seekg(0, std::ios_base::beg);

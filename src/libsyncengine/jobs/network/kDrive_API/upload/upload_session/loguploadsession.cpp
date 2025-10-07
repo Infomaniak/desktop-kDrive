@@ -68,7 +68,7 @@ ExitInfo LogUploadSession::handleStartJobResult(const std::shared_ptr<UploadSess
             cancelJob = std::make_unique<UploadSessionCancelJob>(UploadSessionType::Log, logUploadToken);
         } catch (const std::runtime_error &e) {
             LOG_WARN(getLogger(), "Error in UploadSessionCancelJob::UploadSessionCancelJob: error=" << e.what());
-            return ExitInfo();
+            return {};
         }
 
         if (const ExitCode exitCode = cancelJob->runSynchronously(); exitCode != ExitCode::Ok) {

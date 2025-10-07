@@ -272,12 +272,12 @@ ExitInfo AbstractTokenNetworkJob::handleJsonResponse(const std::string &replyBod
     if (const auto exitInfo = AbstractNetworkJob::handleJsonResponse(replyBody); !exitInfo) return exitInfo;
 
     // Check for maintenance error
-    if (!jsonRes()) return ExitInfo();
+    if (!jsonRes()) return {};
 
     if (const Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey); dataObj != nullptr) {
         std::string maintenanceReason;
         if (!JsonParserUtility::extractValue(dataObj, maintenanceReasonKey, maintenanceReason, false)) {
-            return ExitInfo();
+            return {};
         }
 
         if (getNetworkErrorReason(maintenanceReason) == NetworkErrorReason::NotRenew) {

@@ -103,7 +103,7 @@ void GetAppVersionJob::setQueryParameters(Poco::URI &uri) {
 
 ExitInfo GetAppVersionJob::handleError(const std::string &, const Poco::URI &uri) {
     LOG_DEBUG(_logger, "Request failed: " << Utility::formatRequest(uri, _errorCode, _errorDescr));
-    return ExitInfo();
+    return {};
 }
 
 VersionChannel GetAppVersionJob::toDistributionChannel(const std::string &val) const {
@@ -120,35 +120,35 @@ ExitInfo GetAppVersionJob::handleResponse(std::istream &is) {
     if (const auto exitCode = AbstractNetworkJob::handleJsonResponse(replyBody); !exitCode) return exitCode;
 
     const Poco::JSON::Object::Ptr dataObj = JsonParserUtility::extractJsonObject(jsonRes(), dataKey);
-    if (!dataObj) return ExitInfo();
+    if (!dataObj) return {};
 
     std::string tmpStr;
-    if (!JsonParserUtility::extractValue(dataObj, prodVersionKey, tmpStr)) return ExitInfo();
+    if (!JsonParserUtility::extractValue(dataObj, prodVersionKey, tmpStr)) return {};
     _prodVersionChannel = toDistributionChannel(tmpStr);
 
     const Poco::JSON::Object::Ptr applicationObj = JsonParserUtility::extractJsonObject(dataObj, applicationKey);
-    if (!applicationObj) return ExitInfo();
+    if (!applicationObj) return {};
 
     const Poco::JSON::Array::Ptr publishedVersions = JsonParserUtility::extractArrayObject(applicationObj, publishedVersionsKey);
-    if (!publishedVersions) return ExitInfo();
+    if (!publishedVersions) return {};
 
     for (const auto &versionInfo: *publishedVersions) {
         const auto &obj = versionInfo.extract<Poco::JSON::Object::Ptr>();
         std::string versionType;
-        if (!JsonParserUtility::extractValue(obj, typeKey, versionType)) return ExitInfo();
+        if (!JsonParserUtility::extractValue(obj, typeKey, versionType)) return {};
 
         const VersionChannel channel = toDistributionChannel(versionType);
         _versionsInfo[channel].channel = channel;
 
-        if (!JsonParserUtility::extractValue(obj, tagKey, _versionsInfo[channel].tag)) return ExitInfo();
-        if (!JsonParserUtility::extractValue(obj, buildVersionKey, _versionsInfo[channel].buildVersion)) return ExitInfo();
+        if (!JsonParserUtility::extractValue(obj, tagKey, _versionsInfo[channel].tag)) return {};
+        if (!JsonParserUtility::extractValue(obj, buildVersionKey, _versionsInfo[channel].buildVersion)) return {};
         if (!JsonParserUtility::extractValue(obj, buildMinOsVersionKey, _versionsInfo[channel].buildMinOsVersion, false))
-            return ExitInfo();
-        if (!JsonParserUtility::extractValue(obj, downloadUrlKey, _versionsInfo[channel].downloadUrl)) return ExitInfo();
+            return {};
+        if (!JsonParserUtility::extractValue(obj, downloadUrlKey, _versionsInfo[channel].downloadUrl)) return {};
 
         if (!_versionsInfo[channel].isValid()) {
             LOG_WARN(_logger, "Missing mandatory value.");
-            return ExitInfo();
+            return {};
         }
     }
 

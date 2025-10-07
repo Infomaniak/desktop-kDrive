@@ -45,7 +45,7 @@ ExitInfo GetSizeJob::handleResponse(std::istream &is) {
         Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
         if (dataObj) {
             if (!JsonParserUtility::extractValue(dataObj, sizeKey, _size)) {
-                return ExitInfo();
+                return {};
             }
         }
     }

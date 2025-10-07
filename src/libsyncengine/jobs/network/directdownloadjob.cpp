@@ -113,7 +113,7 @@ ExitInfo DirectDownloadJob::handleError(const std::string &replyBody, const Poco
     (void) replyBody;
     const auto errorCode = std::to_string(_resHttp.getStatus());
     LOG_WARN(_logger, "Download " << uri.toString() << " failed with error: " << errorCode << " - " << _resHttp.getReason());
-    return ExitInfo();
+    return {};
 }
 
 } // namespace KDC

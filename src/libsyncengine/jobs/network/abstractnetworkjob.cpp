@@ -109,7 +109,7 @@ ExitInfo AbstractNetworkJob::runJob() noexcept {
     std::string url = getUrl();
     if (url.empty()) {
         LOG_WARN(_logger, "URL is not set");
-        return ExitInfo();
+        return {};
     }
 
     assert(!_httpMethod.empty());
@@ -350,7 +350,7 @@ ExitInfo AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
         const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
         if (isAborted()) {
             LOG_DEBUG(_logger, "Request " << jobId() << ": aborting HTTPS session");
-            return ExitInfo();
+            return {};
         }
 
         std::string::const_iterator itEnd = (_data.end() - itBegin > BUF_SIZE ? itBegin + BUF_SIZE : _data.end());
@@ -414,7 +414,7 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
                 return handleResponse(stream[0].get());
             } catch (std::exception &e) {
                 LOG_WARN(_logger, "handleResponse exception: " << errorText(e));
-                return ExitInfo();
+                return {};
             }
             break;
         }
@@ -454,12 +454,11 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
                     exitInfo = handleError(stream[0].get(), uri);
                 } catch (std::exception &e) {
                     LOG_WARN(_logger, "handleError failed: " << errorText(e));
-                    return ExitInfo();
+                    return {};
                 }
 
                 if (!exitInfo) {
-                    if (exitInfo.code() != ExitCode::DataError &&
-                        exitInfo.code() != ExitCode::InvalidToken &&
+                    if (exitInfo.code() != ExitCode::DataError && exitInfo.code() != ExitCode::InvalidToken &&
                         (exitInfo.code() != ExitCode::BackError || exitInfo.cause() != ExitCause::NotFound)) {
                         LOG_WARN(_logger, "Error handling failed");
                     }
@@ -613,10 +612,10 @@ ExitInfo AbstractNetworkJob::extractJsonError(const std::string &replyBody, Poco
 
     errorObjPtr = jsonObj->getObject(errorKey);
     if (!JsonParserUtility::extractValue(errorObjPtr, codeKey, _errorCode)) {
-        return ExitInfo();
+        return {};
     }
     if (!JsonParserUtility::extractValue(errorObjPtr, descriptionKey, _errorDescr)) {
-        return ExitInfo();
+        return {};
     }
 
     return ExitCode::Ok;

@@ -42,10 +42,10 @@ ExitInfo CopyToDirectoryJob::handleResponse(std::istream &is) {
         Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
         if (dataObj) {
             if (!JsonParserUtility::extractValue(dataObj, idKey, _nodeId)) {
-                return ExitInfo();
+                return {};
             }
             if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modtime)) {
-                return ExitInfo();
+                return {};
             }
         }
     }

@@ -60,34 +60,34 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
     }
     if (!jsonRes()) {
         LOG_WARN(_logger, "Invalid JSON object");
-        return ExitInfo();
+        return {};
     }
 
     if (!JsonParserUtility::extractValue(jsonRes(), cursorKey, _cursorOutput)) {
-        return ExitInfo();
+        return {};
     }
     if (!JsonParserUtility::extractValue(jsonRes(), hasMoreKey, _hasMore)) {
-        return ExitInfo();
+        return {};
     }
 
     const auto dataArray = jsonRes()->getArray(dataKey);
     if (!dataArray) {
         LOG_WARN(_logger, "Missing data array for search string:" << _searchString);
-        return ExitInfo();
+        return {};
     }
     for (auto it = dataArray->begin(); it != dataArray->end(); ++it) {
         const auto obj = it->extract<Poco::JSON::Object::Ptr>();
         NodeId nodeId;
         if (!JsonParserUtility::extractValue(obj, idKey, nodeId)) {
-            return ExitInfo();
+            return {};
         }
         SyncName name;
         if (!JsonParserUtility::extractValue(obj, nameKey, name)) {
-            return ExitInfo();
+            return {};
         }
         std::string type;
         if (!JsonParserUtility::extractValue(obj, typeKey, type)) {
-            return ExitInfo();
+            return {};
         }
         (void) _searchResults.emplace_back(nodeId, name, type == "dir" ? NodeType::Directory : NodeType::File);
     }

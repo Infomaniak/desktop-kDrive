@@ -47,21 +47,21 @@ ExitInfo GetFileInfoJob::handleResponse(std::istream &is) {
     if (!dataObj) return ExitCode::Ok;
 
     if (!JsonParserUtility::extractValue(dataObj, parentIdKey, _parentNodeId)) {
-        return ExitInfo();
+        return {};
     }
     if (!JsonParserUtility::extractValue(dataObj, createdAtKey, _creationTime)) {
-        return ExitInfo();
+        return {};
     }
     if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modificationTime)) {
-        return ExitInfo();
+        return {};
     }
     std::string tmp;
     if (!JsonParserUtility::extractValue(dataObj, typeKey, tmp)) {
-        return ExitInfo();
+        return {};
     }
     if (tmp != dirKey) {
         if (!JsonParserUtility::extractValue(dataObj, sizeKey, _size)) {
-            return ExitInfo();
+            return {};
         }
     }
 
@@ -72,7 +72,7 @@ ExitInfo GetFileInfoJob::handleResponse(std::istream &is) {
     if (_withPath) {
         std::string relativePathStr;
         if (!JsonParserUtility::extractValue(dataObj, pathKey, relativePathStr)) {
-            return ExitInfo();
+            return {};
         }
         if (CommonUtility::startsWith(relativePathStr, "/")) {
             relativePathStr.erase(0, 1);

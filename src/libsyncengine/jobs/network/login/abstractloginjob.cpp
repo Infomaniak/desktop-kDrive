@@ -84,10 +84,10 @@ ExitInfo AbstractLoginJob::handleError(const std::string &replyBody, const Poco:
     Poco::JSON::Object::Ptr errorObj = jsonError->getObject(errorKey);
     if (errorObj) {
         if (!JsonParserUtility::extractValue(errorObj, codeKey, _errorCode)) {
-            return ExitInfo();
+            return {};
         }
         if (!JsonParserUtility::extractValue(errorObj, descriptionKey, _errorDescr)) {
-            return ExitInfo();
+            return {};
         }
         LOG_WARN(_logger, "Error in request " << uri.toString() << " : " << _errorCode << " - " << _errorDescr);
         exitInfo = ExitCode::BackError;

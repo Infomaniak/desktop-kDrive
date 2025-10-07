@@ -62,7 +62,7 @@ ExitInfo UploadSessionFinishJob::handleResponse(std::istream &is) {
 
     if (getApiType() == ApiType::Drive) {
         UploadJobReplyHandler replyHandler(_absoluteFilePath, false, _creationTimeIn, _modificationTimeIn);
-        if (!replyHandler.extractData(jsonRes())) return ExitInfo();
+        if (!replyHandler.extractData(jsonRes())) return {};
         _nodeId = replyHandler.nodeId();
         _creationTimeOut = replyHandler.creationTime();
         _modificationTimeOut = replyHandler.modificationTime();

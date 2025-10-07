@@ -38,7 +38,7 @@ ExitInfo GetInfoUserJob::handleJsonResponse(const std::string &replyBody) {
     if (const auto exitInfo = AbstractTokenNetworkJob::handleJsonResponse(replyBody); !exitInfo) return exitInfo;
 
     Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
-    if (!dataObj || dataObj->size() == 0) return ExitInfo();
+    if (!dataObj || dataObj->size() == 0) return {};
 
     if (!JsonParserUtility::extractValue(dataObj, displayNameKey, _name)) {
         return ExitCode::BackError;

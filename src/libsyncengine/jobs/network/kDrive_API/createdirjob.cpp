@@ -81,10 +81,10 @@ ExitInfo CreateDirJob::handleResponse(std::istream &is) {
     if (jsonRes()) {
         if (const auto dataObj = jsonRes()->getObject(dataKey); dataObj) {
             if (!JsonParserUtility::extractValue(dataObj, idKey, _nodeId)) {
-                return ExitInfo();
+                return {};
             }
             if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modtime)) {
-                return ExitInfo();
+                return {};
             }
         }
 

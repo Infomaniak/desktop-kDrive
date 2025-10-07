@@ -206,7 +206,7 @@ ExitInfo LogUploadJob::canRun() {
     const std::scoped_lock lock(_runningJobMutex);
     if (_runningJob) {
         LOG_WARN(Log::instance()->getLogger(), "Another log upload job is already running");
-        return ExitInfo();
+        return {};
     }
 
     _runningJob = shared_from_this();

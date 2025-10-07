@@ -331,7 +331,7 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
         const auto targetPath = Str2Path(data);
         if (targetPath == _localpath) {
             LOGW_DEBUG(_logger, L"Cannot create symlink on itself: " << Utility::formatSyncPath(_localpath));
-            return ExitInfo();
+            return {};
         }
 
         LOGW_DEBUG(_logger, L"Create symlink with target " << Utility::formatSyncPath(targetPath) << L", "
@@ -341,14 +341,14 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
         IoError ioError = IoError::Success;
         if (!IoHelper::createSymlink(targetPath, _localpath, isFolder, ioError)) {
             LOGW_WARN(_logger, L"Failed to create symlink: " << Utility::formatIoError(targetPath, ioError));
-            return ExitInfo();
+            return {};
         }
     } else if (mimeType == mimeTypeHardlink) {
         // Unreachable code
         const auto targetPath = Str2Path(data);
         if (targetPath == _localpath) {
             LOGW_DEBUG(_logger, L"Cannot create hardlink on itself: " << Utility::formatSyncPath(_localpath));
-            return ExitInfo();
+            return {};
         }
 
         LOGW_DEBUG(_logger, L"Create hardlink: target " << Utility::formatSyncPath(targetPath) << L", "
@@ -359,7 +359,7 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
             LOGW_WARN(_logger, L"Failed to create hardlink: target " << Utility::formatSyncPath(targetPath) << L", "
                                                                      << Utility::formatSyncPath(_localpath) << L", "
                                                                      << Utility::formatStdError(ec));
-            return ExitInfo();
+            return {};
         }
     } else if (mimeType == mimeTypeJunction) {
 #if defined(KD_WINDOWS)
@@ -368,7 +368,7 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
         IoError ioError = IoError::Success;
         if (!IoHelper::createJunction(data, _localpath, ioError)) {
             LOGW_WARN(_logger, L"Failed to create junction: " << Utility::formatIoError(_localpath, ioError));
-            return ExitInfo();
+            return {};
         }
 #endif
     } else if (mimeType == mimeTypeFinderAlias) {
@@ -394,12 +394,12 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
                     SyncPath targetPath;
                     if (!IoHelper::readAlias(_tmpPath, data2, targetPath, ioError)) {
                         LOGW_WARN(_logger, L"Error in IoHelper::readAlias: " << Utility::formatIoError(_tmpPath, ioError));
-                        return ExitInfo();
+                        return {};
                     }
 
                     if (!IoHelper::createAlias(data2, _localpath, ioError)) {
                         LOGW_WARN(_logger, L"Failed to create alias: " << Utility::formatIoError(_localpath, ioError));
-                        return ExitInfo();
+                        return {};
                     }
 
                     return ExitCode::Ok;
@@ -415,12 +415,12 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
                 }
             }
 
-            return ExitInfo();
+            return {};
         }
 #endif
     } else {
         LOG_WARN(_logger, "Link type not managed: MIME type=" << mimeType);
-        return ExitInfo();
+        return {};
     }
 
     return ExitCode::Ok;
@@ -497,7 +497,7 @@ ExitInfo DownloadJob::moveTmpFile() {
                     counter--;
                     continue;
                 } else {
-                    return ExitInfo();
+                    return {};
                 }
             }
 #endif
@@ -522,7 +522,7 @@ ExitInfo DownloadJob::moveTmpFile() {
                     disableRetry();
                 }
 
-                return ExitInfo();
+                return {};
             }
         }
 #if defined(KD_WINDOWS)

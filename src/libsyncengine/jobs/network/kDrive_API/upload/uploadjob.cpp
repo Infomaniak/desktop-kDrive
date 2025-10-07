@@ -103,7 +103,7 @@ ExitInfo UploadJob::handleResponse(std::istream &is) {
     }
 
     UploadJobReplyHandler replyHandler(_absoluteFilePath, IoHelper::isLink(_linkType), _creationTimeIn, _modificationTimeIn);
-    if (!replyHandler.extractData(jsonRes())) return ExitInfo();
+    if (!replyHandler.extractData(jsonRes())) return {};
     _nodeIdOut = replyHandler.nodeId();
     _creationTimeOut = replyHandler.creationTime();
     _modificationTimeOut = replyHandler.modificationTime();
