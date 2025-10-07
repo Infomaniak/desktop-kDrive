@@ -1051,12 +1051,19 @@ void TestNetworkJobs::testThumbnail() {
 }
 
 void TestNetworkJobs::testDuplicateRenameMove() {
-    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDuplicateRenameMove");
+    // Create the file to be duplicated inside a temporary remote directory.
+    const RemoteTemporaryDirectory remoteSourceTmpDir(_driveDbId, _remoteDirId, "testDuplicateRenameMoveSource");
 
-    // Duplicate
-    DuplicateJob dupJob(nullptr, _driveDbId, testFileRemoteId, Str("test_duplicate.txt"));
-    ExitCode exitCode = dupJob.runSynchronously();
-    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
+    const SyncName filename =
+            Str("file_to_duplicate_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()) + Str(".txt");
+    CopyToDirectoryJob copyFileJob(_driveDbId, testFileRemoteId, remoteSourceTmpDir.id(), filename);
+    const ExitCode copyFileJobExitCode = copyFileJob.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, copyFileJobExitCode);
+
+    // Duplicate the uploaded file
+    DuplicateJob dupJob(nullptr, _driveDbId, copyFileJob.nodeId(), Str("test_duplicate.txt"));
+    const ExitCode duplicateJobExitCode = dupJob.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, duplicateJobExitCode);
 
     NodeId dupFileId;
     if (dupJob.jsonRes()) {
@@ -1069,14 +1076,15 @@ void TestNetworkJobs::testDuplicateRenameMove() {
     CPPUNIT_ASSERT(!dupFileId.empty());
 
     // Move
-    MoveJob moveJob(nullptr, _driveDbId, "", dupFileId, remoteTmpDir.id());
+    const RemoteTemporaryDirectory remoteTargetTmpDir(_driveDbId, _remoteDirId, "testDuplicateRenameMoveTarget");
+    MoveJob moveJob(nullptr, _driveDbId, "", dupFileId, remoteTargetTmpDir.id());
     moveJob.setBypassCheck(true);
-    exitCode = moveJob.runSynchronously();
-    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
+    const ExitCode moveExitCode = moveJob.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, moveExitCode);
 
-    GetFileListJob fileListJob(_driveDbId, remoteTmpDir.id());
-    exitCode = fileListJob.runSynchronously();
-    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
+    GetFileListJob fileListJob(_driveDbId, remoteTargetTmpDir.id());
+    const ExitCode getFileListExitCode = fileListJob.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, getFileListExitCode);
 
     Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();
     CPPUNIT_ASSERT(resObj);
