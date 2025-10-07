@@ -26,16 +26,20 @@
 //
 // Interfaces
 //
+@interface GuiCommServerUtility : NSObject
+
++ (NSData *_Nonnull)errorMsg:(NSNumber *_Nonnull)code cause:(NSNumber *_Nonnull)cause requestId:(NSNumber *_Nonnull)requestId;
+
+@end
+
 @interface GuiLocalEnd : AbstractLocalEnd <XPCGuiProtocol>
 
 @property(retain) NSMutableDictionary *_Nonnull callbackDictionary;
 
 - (instancetype)initWithWrapper:(AbstractCommChannelPrivate *)wrapper;
+- (void)setCurrentRequestId:(NSNumber *_Nonnull)requestId;
 - (NSNumber *_Nonnull)newRequestId;
 - (void (^_Nonnull)(...))callback:(NSNumber *_Nonnull)requestId;
-- (void)processRequest:(RequestNum)requestNum
-        paramsDictionary:(NSDictionary *_Nonnull)paramsDictionary
-                callback:(void (^_Nonnull)(...))callback;
 
 @end
 
@@ -61,6 +65,26 @@ class GuiCommServerPrivate : public AbstractCommServerPrivate {
 //
 // Implementation
 //
+@implementation GuiCommServerUtility
+
++ (NSData *_Nonnull)errorMsg:(NSNumber *_Nonnull)code cause:(NSNumber *_Nonnull)cause requestId:(NSNumber *_Nonnull)requestId {
+    NSMutableDictionary *jsonDict = [[NSMutableDictionary alloc] init];
+    [jsonDict setObject:code forKey:@"code"];
+    [jsonDict setObject:cause forKey:@"cause"];
+    [jsonDict setObject:requestId forKey:@"id"];
+
+    NSError *error = nil;
+    NSData *msg = [NSJSONSerialization dataWithJSONObject:jsonDict options:NSJSONWritingSortedKeys error:&error];
+    if (error) {
+        NSLog(@"[KD] Error message serialization error: error=%@", [error description]);
+        return nil;
+    }
+    return msg;
+}
+
+@end
+
+
 @implementation GuiLocalEnd
 
 static NSNumber *lastRequestId = @0;
@@ -70,6 +94,10 @@ static NSNumber *lastRequestId = @0;
         _callbackDictionary = [[NSMutableDictionary alloc] init];
     }
     return self;
+}
+
+- (void)setCurrentRequestId:(NSNumber *_Nonnull)requestId {
+    lastRequestId = requestId;
 }
 
 - (NSNumber *_Nonnull)newRequestId {
@@ -83,69 +111,47 @@ static NSNumber *lastRequestId = @0;
     return cbk;
 }
 
-- (void)processRequest:(RequestNum)requestNum
-        paramsDictionary:(NSDictionary *_Nonnull)paramsDictionary
-                callback:(void (^_Nonnull)(...))callback {
+// XPCGuiRemoteProtocol protocol implementation
+- (void)sendQuery:(NSData *_Nonnull)query callback:(queryCbk)callback {
     if (self.wrapper && self.wrapper->publicPtr) {
-        // Add callback to dictionary
+        // Deserialize query
+        NSError *error = nil;
+        NSMutableDictionary *jsonDict = [NSJSONSerialization JSONObjectWithData:query
+                                                                        options:NSJSONReadingMutableContainers
+                                                                          error:&error];
+        if (error) {
+            NSLog(@"[KD] Message deserialization error: content=%@ error=%@", query, [error description]);
+            NSData *msg = [GuiCommServerUtility errorMsg:@(toInt(KDC::ExitCode::LogicError))
+                                                   cause:@(toInt(KDC::ExitCause::InvalidArgument))
+                                               requestId:@(0)];
+            if (msg) callback(msg);
+            return;
+        }
+
+        // Add request id
         NSNumber *requestId = [self newRequestId];
+        [jsonDict setObject:requestId forKey:@"id"];
+
+        // Serialize new query
+        NSData *newQuery = [NSJSONSerialization dataWithJSONObject:jsonDict options:NSJSONWritingSortedKeys error:&error];
+        if (error) {
+            NSLog(@"[KD] Message serialization error: error=%@", [error description]);
+            NSData *msg = [GuiCommServerUtility errorMsg:@(toInt(KDC::ExitCode::LogicError))
+                                                   cause:@(toInt(KDC::ExitCause::Unknown))
+                                               requestId:requestId];
+            if (msg) callback(msg);
+            return;
+        }
+
+        // Add callback to dictionary
         [_callbackDictionary setObject:callback forKey:requestId];
 
-        // Generate full JSON
-        NSDictionary *queryDictionary = @{@"id" : requestId, @"num" : @((int) requestNum), @"params" : paramsDictionary};
-        NSError *error;
-        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:queryDictionary options:0 error:&error];
-        NSString *inputParamsStr = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-
         // Write JSON on the channel
-        self.wrapper->inBuffer += std::string([inputParamsStr UTF8String]);
+        NSString *queryStr = [[NSString alloc] initWithData:newQuery encoding:NSUTF8StringEncoding];
+        self.wrapper->inBuffer += std::string([queryStr UTF8String]);
         self.wrapper->inBuffer += "\n";
         self.wrapper->publicPtr->readyReadCbk();
     }
-}
-
-// XPCGuiRemoteProtocol protocol implementation
-// TODO: Test query method to remove later
-- (void)sendQuery:(NSData *_Nonnull)msg {
-    NSString *answer = [[NSString alloc] initWithData:msg encoding:NSUTF8StringEncoding];
-    NSLog(@"[KD] Query received %@", answer);
-
-    // Send ack
-    NSArray *answerArr = [answer componentsSeparatedByString:@";"];
-    NSString *query = [NSString stringWithFormat:@"%@", answerArr[0]];
-    NSLog(@"[KD] Send ack signal %@", query);
-
-    @try {
-        if (self.wrapper && self.wrapper->remoteEnd.connection) {
-            [[self.wrapper->remoteEnd.connection remoteObjectProxy] sendSignal:[query dataUsingEncoding:NSUTF8StringEncoding]];
-        }
-    } @catch (NSException *e) {
-        // Do nothing and wait for invalidationHandler
-        NSLog(@"[KD] Error sending ack signal: %@", e.name);
-    }
-
-    if (self.wrapper && self.wrapper->publicPtr) {
-        self.wrapper->inBuffer += std::string([answer UTF8String]);
-        self.wrapper->inBuffer += "\n";
-        self.wrapper->publicPtr->readyReadCbk();
-    }
-}
-
-- (void)loginRequestToken:(NSString *_Nonnull)code
-             codeVerifier:(NSString *_Nonnull)codeVerifier
-                 callback:(loginRequestTokenCbk)callback {
-    NSLog(@"[KD] loginRequestToken called");
-
-    // Generate params JSON
-    NSString *b64Code;
-    KDC::CommonUtility::convertToBase64Str(code, &b64Code);
-    NSString *b64CodeVerifier;
-    KDC::CommonUtility::convertToBase64Str(codeVerifier, &b64CodeVerifier);
-    NSDictionary *paramsDictionary = @{@"code" : b64Code, @"codeVerifier" : b64CodeVerifier};
-
-    [self processRequest:RequestNum::LOGIN_REQUESTTOKEN
-            paramsDictionary:paramsDictionary
-                    callback:(void (^_Nonnull)(...)) callback];
 }
 
 @end
@@ -153,42 +159,15 @@ static NSNumber *lastRequestId = @0;
 @implementation GuiRemoteEnd
 
 // XPCGuiProtocol protocol implementation
-// TODO: Test signal method to remove later
 - (void)sendSignal:(NSData *_Nonnull)msg {
     if (self.connection == nil) {
         return;
     }
 
-    NSLog(@"[KD] Call sendSignal");
-
     @try {
         [[self.connection remoteObjectProxy] sendSignal:msg];
     } @catch (NSException *e) {
-        NSLog(@"[KD] Send signal error %@", e.name);
-    }
-}
-
-- (void)signalUserCreate:(UserInfo *_Nonnull)userInfo {
-    if (self.connection == nil) {
-        return;
-    }
-
-    @try {
-        [[self.connection remoteObjectProxy] signalUserCreate:userInfo];
-    } @catch (NSException *e) {
-        NSLog(@"[KD] Error in signalUserCreate: error=%@", e.name);
-    }
-}
-
-- (void)signalUserUpdate:(UserInfo *_Nonnull)userInfo {
-    if (self.connection == nil) {
-        return;
-    }
-
-    @try {
-        [[self.connection remoteObjectProxy] signalUserUpdate:userInfo];
-    } @catch (NSException *e) {
-        NSLog(@"[KD] Error in signalUserUpdate: error=%@", e.name);
+        NSLog(@"[KD] Error in sendSignal: error=%@", e.name);
     }
 }
 
@@ -267,110 +246,106 @@ GuiCommServerPrivate::GuiCommServerPrivate() {
 uint64_t KDC::GuiCommChannel::writeData(const KDC::CommChar *data, uint64_t len) {
     if (_privatePtr->isRemoteDisconnected) return -1;
 
+    // Deserialize message
     NSData *msg = [NSData dataWithBytesNoCopy:const_cast<KDC::CommChar *>(data)
                                        length:static_cast<NSUInteger>(len)
                                  freeWhenDone:NO];
-
     NSError *error = nil;
-    NSDictionary *jsonDict = [NSJSONSerialization JSONObjectWithData:msg options:NSJSONReadingMutableContainers error:&error];
-
+    NSMutableDictionary *jsonDict = [NSJSONSerialization JSONObjectWithData:msg
+                                                                    options:NSJSONReadingMutableContainers
+                                                                      error:&error];
     if (error) {
-        NSLog(@"[KD] Parsing error: error=%@", [error description]);
+        NSLog(@"[KD] Message deserialization error: content=%@ error=%@", msg, [error description]);
         return -1;
     }
 
-    KDC::AbstractGuiJob::GuiJobType requestType = static_cast<KDC::AbstractGuiJob::GuiJobType>([jsonDict[@"type"] integerValue]);
-    NSNumber *requestId = jsonDict[@"id"];
-    NSDictionary *paramsDict = jsonDict[@"params"];
+    NSNumber *type = jsonDict[@"type"];
+    assert(type);
 
+    NSNumber *id = jsonDict[@"id"];
+    assert(id);
+
+    NSNumber *num = jsonDict[@"num"];
+    assert(num);
+
+    // Remove request type
+    [jsonDict removeObjectForKey:@"type"];
+
+    KDC::AbstractGuiJob::GuiJobType requestType = static_cast<KDC::AbstractGuiJob::GuiJobType>([type integerValue]);
     if (requestType == KDC::AbstractGuiJob::GuiJobType::Query) {
-        RequestNum requestNum = static_cast<RequestNum>([jsonDict[@"num"] integerValue]);
-        ExitCode exitCode = static_cast<ExitCode>([jsonDict[@"code"] integerValue]);
-        ExitCause exitCause = static_cast<ExitCause>([jsonDict[@"cause"] integerValue]);
+        // Retrieve answer callback
+        auto cbk = [(GuiLocalEnd *) _privatePtr->localEnd callback:id];
+        assert(cbk);
+        auto callback = (queryCbk) cbk;
 
-        auto cbk = [(GuiLocalEnd *) _privatePtr->localEnd callback:requestId];
+        // Remove request num
+        [jsonDict removeObjectForKey:@"num"];
+
+        // Serialize answer
+        NSData *answer = [NSJSONSerialization dataWithJSONObject:jsonDict options:NSJSONWritingSortedKeys error:&error];
+        if (error) {
+            NSLog(@"[KD] Message serialization error: error=%@", [error description]);
+            NSData *msg = [GuiCommServerUtility errorMsg:@(toInt(KDC::ExitCode::LogicError))
+                                                   cause:@(toInt(KDC::ExitCause::Unknown))
+                                               requestId:id];
+            if (msg) callback(msg);
+            return -1;
+        }
 
         @try {
-            switch (requestNum) {
-                case RequestNum::LOGIN_REQUESTTOKEN: {
-                    int userDbId = [paramsDict[@"userDbId"] integerValue];
-                    NSString *error;
-                    CommonUtility::convertFromBase64Str(paramsDict[@"error"], &error);
-                    NSString *errorDescr;
-                    CommonUtility::convertFromBase64Str(paramsDict[@"errorDescr"], &error);
-
-                    NSLog(@"[KD] Call loginRequestToken callback");
-                    auto callback = (loginRequestTokenCbk) cbk;
-                    callback(userDbId, error, errorDescr);
-                    break;
-                }
-                default:
-                    NSLog(@"[KD] Request is not managed: num=%d", toInt(requestNum));
-                    return -1;
-            }
+            NSLog(@"[KD] Call answer callback: id=%@ num=%@", id, num);
+            callback(answer);
         } @catch (NSException *e) {
-            NSLog(@"[KD] Exception when calling callback: error=%@", [e description]);
+            NSLog(@"[KD] Exception when calling answer callback: error=%@", [e description]);
             _privatePtr->disconnectRemote();
             lostConnectionCbk();
             return -1;
         }
-    } else {
-        SignalNum signalNum = static_cast<SignalNum>([jsonDict[@"num"] integerValue]);
+    } else if (requestType == KDC::AbstractGuiJob::GuiJobType::Signal) {
+        // Serialize message
+        NSData *newMsg = [NSJSONSerialization dataWithJSONObject:jsonDict options:NSJSONWritingSortedKeys error:&error];
+        if (error) {
+            NSLog(@"[KD] Message serialization error: error=%@", [error description]);
+            return -1;
+        }
 
         @try {
-            switch (signalNum) {
-                case SignalNum::USER_ADDED:
-                case SignalNum::USER_UPDATED: {
-                    UserInfo *userInfo = [[UserInfo alloc] init];
-                    userInfo->dbId = [paramsDict[@"dbId"] integerValue];
-                    userInfo->userId = [paramsDict[@"userId"] integerValue];
-                    userInfo->name = paramsDict[@"name"];
-                    userInfo->email = paramsDict[@"email"];
-                    userInfo->avatar = paramsDict[@"avatar"];
-                    userInfo->connected = [paramsDict[@"connected"] integerValue];
-                    userInfo->credentialsAsked = [paramsDict[@"credentialsAsked"] integerValue];
-                    userInfo->isStaff = [paramsDict[@"isStaff"] integerValue];
-
-                    if (signalNum == SignalNum::USER_ADDED) {
-                        NSLog(@"[KD] Call signalUserCreate");
-                        [(GuiRemoteEnd *) _privatePtr->remoteEnd signalUserCreate:userInfo];
-                    } else {
-                        NSLog(@"[KD] Call signalUserUpdate");
-                        [(GuiRemoteEnd *) _privatePtr->remoteEnd signalUserUpdate:userInfo];
-                    }
-                    break;
-                }
-                default:
-                    NSLog(@"[KD] Signal is not managed: num=%d", toInt(signalNum));
-                    return -1;
-            }
+            NSLog(@"[KD] Send signal: id=%@ num=%@", id, num);
+            [(GuiRemoteEnd *) _privatePtr->remoteEnd sendSignal:newMsg];
         } @catch (NSException *e) {
             NSLog(@"[KD] Exception when sending signal: error=%@", [e description]);
             _privatePtr->disconnectRemote();
             lostConnectionCbk();
             return -1;
         }
+    } else {
+        NSLog(@"[KD] Bad request type");
+        return -1;
     }
 
     return len;
 }
 
-void KDC::GuiCommChannel::runLoginRequestToken(
-        const std::string &code, const std::string &codeVerifier,
-        const std::function<void(std::shared_ptr<AbstractCommChannel>)> &readyReadCbk,
-        const std::function<void(int, const std::string &, const std::string &)> &answerCbk) {
+void KDC::GuiCommChannel::runSendQuery(const CommString &query,
+                                       const std::function<void(std::shared_ptr<AbstractCommChannel>)> &readyReadCbk,
+                                       const std::function<void(const CommString &answer)> &answerCbk) {
     GuiCommChannelPrivate *channelPrivate = new GuiCommChannelPrivate(nullptr);
     auto channel = std::make_shared<KDC::GuiCommChannel>(channelPrivate);
     channel->setReadyReadCbk(readyReadCbk);
 
-    [(GuiLocalEnd *) channel->_privatePtr->localEnd
-            loginRequestToken:[[NSString alloc] initWithUTF8String:code.c_str()]
-                 codeVerifier:[[NSString alloc] initWithUTF8String:codeVerifier.c_str()]
-                     callback:^(int userDbId, NSString *_Nullable error, NSString *_Nullable errorDescr) {
-                       std::string errorStr(error == nil ? "" : [error UTF8String]);
-                       std::string errorDescrStr(errorDescr == nil ? "" : [errorDescr UTF8String]);
-                       answerCbk(userDbId, errorStr, errorDescrStr);
-                     }];
+    NSString *queryStr = [NSString stringWithCString:query.c_str() encoding:[NSString defaultCStringEncoding]];
+    NSData *queryData = [queryStr dataUsingEncoding:NSUTF8StringEncoding];
+
+    [(GuiLocalEnd *) channel->_privatePtr->localEnd setCurrentRequestId:@(0)];
+
+    [(GuiLocalEnd *) channel->_privatePtr->localEnd sendQuery:queryData
+                                                     callback:^(NSData *_Nonnull answerData) {
+                                                       NSString *answerStr = [[NSString alloc] initWithData:answerData
+                                                                                                   encoding:NSUTF8StringEncoding];
+                                                       std::string answer([answerStr UTF8String]);
+
+                                                       answerCbk(answer);
+                                                     }];
 }
 
 // GuiCommServer implementation
