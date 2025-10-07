@@ -17,11 +17,15 @@
  */
 
 import Foundation
+import kDriveResources
 import Lottie
 
 public extension DotLottieFile {
-    static func loadedFromBundle(forResource name: String) async throws -> DotLottieFile {
-        guard let dotLottieFileURL = Bundle.main.url(forResource: name, withExtension: "lottie") else {
+    static func loadedFromBundle(
+        forResource name: String,
+        bundle: Bundle = KDriveResourcesBundle.bundle
+    ) async throws -> DotLottieFile {
+        guard let dotLottieFileURL = bundle.url(forResource: name, withExtension: "lottie") else {
             throw DotLottieError.assetNotFound(name: name, bundle: .main)
         }
 

@@ -19,13 +19,13 @@
 import Combine
 import Foundation
 
-enum OnboardingStep {
-    case login(LoginStep)
+enum OnboardingStep: Sendable {
+    case login(LoginStep = .initial)
     case driveSelection
     case autorisations
     case synchronisation
 
-    enum LoginStep {
+    enum LoginStep: Sendable {
         case initial
         case success
         case fail

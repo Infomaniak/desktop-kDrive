@@ -16,11 +16,10 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import kDriveCoreUI
+import Foundation
 
-extension ThemedAnimation {
-    static let kDriveLoader = ThemedAnimation(
-        light: "kdrive-loader-light",
-        dark: "kdrive-loader-light"
-    )
+public final class KDriveResourcesBundle {
+  public static let bundle: Bundle = {
+    return Bundle(for: KDriveResourcesBundle.self)
+  }()
 }

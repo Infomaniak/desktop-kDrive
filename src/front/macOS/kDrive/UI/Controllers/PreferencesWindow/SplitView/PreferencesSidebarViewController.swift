@@ -18,11 +18,12 @@
 
 import Cocoa
 import kDriveCoreUI
+import kDriveResources
 
 extension SidebarItem {
-    static let general = SidebarItem(icon: NSImage(resource: .settings), title: KDriveLocalizable.sidebarItemGeneral)
-    static let accounts = SidebarItem(icon: NSImage(resource: .persons), title: KDriveLocalizable.sidebarItemAccounts)
-    static let advanced = SidebarItem(icon: NSImage(resource: .hammerWrench), title: KDriveLocalizable.sidebarItemAdvanced)
+    static let general = SidebarItem(icon: KDriveResources.settings.image, title: KDriveLocalizable.sidebarItemGeneral)
+    static let accounts = SidebarItem(icon: KDriveResources.persons.image, title: KDriveLocalizable.sidebarItemAccounts)
+    static let advanced = SidebarItem(icon: KDriveResources.hammerWrench.image, title: KDriveLocalizable.sidebarItemAdvanced)
 }
 
 class PreferencesSidebarViewController: NSViewController {

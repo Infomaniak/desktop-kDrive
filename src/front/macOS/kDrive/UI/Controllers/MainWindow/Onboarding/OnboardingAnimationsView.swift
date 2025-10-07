@@ -17,20 +17,26 @@
  */
 
 import Cocoa
+import Combine
 import kDriveCoreUI
 import Lottie
 
 class OnboardingAnimationsView: NSView {
-    private let animationView = LottieAnimationView()
+    private let viewModel: OnboardingViewModel
 
-    init() {
+    private let animationView = ThemedAnimationView()
+
+    private var bindStore = Set<AnyCancellable>()
+
+    init(viewModel: OnboardingViewModel) {
+        self.viewModel = viewModel
         super.init(frame: .zero)
 
         wantsLayer = true
         layer?.backgroundColor = NSColor.surfaceSecondary.cgColor
 
         setupAnimationView()
-        transitionAnimation(forStep: .login(.initial))
+        bindViewModel()
     }
 
     @available(*, unavailable)
@@ -49,25 +55,33 @@ class OnboardingAnimationsView: NSView {
         ])
     }
 
-    private func transitionAnimation(forStep step: OnboardingStep) {
-        let animationName = getAnimationName(forStep: step)
-        loadAndPlayAnimation(withName: animationName)
+    private func bindViewModel() {
+        transitionAnimation(forStep: viewModel.currentStep)
+        viewModel.$currentStep.receive(on: DispatchQueue.main)
+            .sink { [weak self] step in
+                self?.transitionAnimation(forStep: step)
+            }
+            .store(in: &bindStore)
     }
 
-    private func loadAndPlayAnimation(withName name: String) {
+    private func transitionAnimation(forStep step: OnboardingStep) {
+        let themedAnimation = getThemedAnimation(forStep: step)
+        loadAndPlayAnimation(themedAnimation)
+    }
+
+    private func loadAndPlayAnimation(_ animation: ThemedAnimation) {
         Task {
-            let dotLottieFile = try await DotLottieFile.loadedFromBundle(forResource: name)
-            animationView.loadAnimation(from: dotLottieFile)
+            try await animationView.loadAnimation(themedAnimation: animation)
 
             animationView.loopMode = .loop
             animationView.play()
         }
     }
 
-    private func getAnimationName(forStep step: OnboardingStep) -> String {
+    private func getThemedAnimation(forStep step: OnboardingStep) -> ThemedAnimation {
         switch step {
         case .login:
-            return "kdrive-loader-light"
+            return .kDriveLoader
         case .driveSelection:
             fatalError("Not Implemented Yet")
         case .autorisations:

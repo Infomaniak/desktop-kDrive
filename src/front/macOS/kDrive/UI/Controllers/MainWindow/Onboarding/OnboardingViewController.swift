@@ -17,20 +17,36 @@
  */
 
 import Cocoa
+import Combine
 
 final class OnboardingViewController: NSViewController {
-    private let viewModel = OnboardingViewModel()
+    private let viewModel: OnboardingViewModel
 
     private var currentContentViewController: NSViewController?
 
-    private let contentView = NSView()
-    private let animationsView = OnboardingAnimationsView()
+    private let contentView: NSView
+    private let animationsView: OnboardingAnimationsView
+
+    private var bindStore = Set<AnyCancellable>()
+
+    init() {
+        viewModel = OnboardingViewModel()
+
+        contentView = NSView()
+        animationsView = OnboardingAnimationsView(viewModel: viewModel)
+
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         setupUI()
-        transition(toStep: .login(.initial))
+        bindViewModel()
     }
 
     override func viewDidAppear() {
@@ -43,6 +59,7 @@ final class OnboardingViewController: NSViewController {
 
         window.title = "!Bienvenue dans kDrive"
         window.titlebarAppearsTransparent = true
+        window.isMovableByWindowBackground = false
     }
 
     private func setupUI() {
@@ -65,14 +82,23 @@ final class OnboardingViewController: NSViewController {
         ])
     }
 
+    private func bindViewModel() {
+        transition(toStep: viewModel.currentStep)
+        viewModel.$currentStep.receive(on: DispatchQueue.main)
+            .sink { [weak self] step in
+                self?.transition(toStep: step)
+            }
+            .store(in: &bindStore)
+    }
+
     private func transition(toStep step: OnboardingStep) {
         removeCurrentContentViewController()
 
-        let viewController = getContentViewBuilder(forStep: step)
+        let viewController = getViewController(forStep: step)
         addContentViewController(viewController)
     }
 
-    private func getContentViewBuilder(forStep step: OnboardingStep) -> NSViewController {
+    private func getViewController(forStep step: OnboardingStep) -> NSViewController {
         switch step {
         case .login:
             return LoginViewController(viewModel: viewModel)

@@ -18,6 +18,7 @@
 
 import Cocoa
 import kDriveCoreUI
+import kDriveResources
 
 final class SidebarHeaderView: NSView {
     init() {
@@ -31,7 +32,7 @@ final class SidebarHeaderView: NSView {
     }
 
     private func setupView() {
-        let imageView = NSImageView(image: NSImage(resource: .kdriveAppIcon))
+        let imageView = NSImageView(image: KDriveResources.kdriveAppIcon.image)
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.imageScaling = .scaleProportionallyUpOrDown
         addSubview(imageView)

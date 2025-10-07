@@ -17,16 +17,13 @@
  */
 
 import Cocoa
+import Combine
 import kDriveCoreUI
 
-final class LoginViewController: NSViewController {
+final class LoginViewController: OnboardingStepViewController {
     private let viewModel: OnboardingViewModel
 
-    private let containerView = NSView()
-    private var titleLabel = NSTextField(labelWithString: "")
-    private var descriptionLabel = NSTextField(labelWithString: "")
-    private var loginButton = NSButton()
-    private var createAccountButton = NSButton()
+    private var bindStore = Set<AnyCancellable>()
 
     init(viewModel: OnboardingViewModel) {
         self.viewModel = viewModel
@@ -40,66 +37,35 @@ final class LoginViewController: NSViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        setupComponents()
-        setupInitialView()
+        bindViewModel()
     }
 
-    private func setupComponents() {
-        containerView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(containerView)
+    private func bindViewModel() {
+        transitionContent(toStep: viewModel.currentStep)
+        viewModel.$currentStep.receive(on: DispatchQueue.main).sink { [weak self] step in
+            self?.transitionContent(toStep: step)
+        }
+        .store(in: &bindStore)
+    }
 
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.font = .preferredFont(forTextStyle: .largeTitle)
-        // TODO: Set foreground
-        containerView.addSubview(titleLabel)
+    private func transitionContent(toStep step: OnboardingStep) {
+        guard case .login(let loginStep) = viewModel.currentStep else { return }
 
-        descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
-        descriptionLabel.font = .preferredFont(forTextStyle: .body)
-        descriptionLabel.lineBreakMode = .byWordWrapping
-        // TODO: Set foreground
-        containerView.addSubview(descriptionLabel)
-
-        loginButton.translatesAutoresizingMaskIntoConstraints = false
-        containerView.addSubview(loginButton)
-
-        createAccountButton.translatesAutoresizingMaskIntoConstraints = false
-        containerView.addSubview(createAccountButton)
-
-        NSLayoutConstraint.activate([
-            containerView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            containerView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            containerView.widthAnchor.constraint(greaterThanOrEqualToConstant: 200),
-            containerView.widthAnchor.constraint(lessThanOrEqualToConstant: 450),
-
-            containerView.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: AppPadding.padding16),
-            view.trailingAnchor.constraint(greaterThanOrEqualTo: containerView.trailingAnchor, constant: AppPadding.padding16),
-            containerView.topAnchor.constraint(greaterThanOrEqualTo: view.topAnchor, constant: AppPadding.padding16),
-            view.bottomAnchor.constraint(greaterThanOrEqualTo: containerView.bottomAnchor, constant: AppPadding.padding16),
-
-            titleLabel.topAnchor.constraint(equalTo: containerView.topAnchor),
-            titleLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
-            titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: containerView.trailingAnchor),
-
-            descriptionLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: AppPadding.padding8),
-            descriptionLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
-            descriptionLabel.trailingAnchor.constraint(lessThanOrEqualTo: containerView.trailingAnchor),
-
-            loginButton.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: AppPadding.padding32),
-            loginButton.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
-            containerView.bottomAnchor.constraint(equalTo: loginButton.bottomAnchor),
-
-            createAccountButton.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: AppPadding.padding32),
-            createAccountButton.leadingAnchor.constraint(equalTo: loginButton.trailingAnchor, constant: AppPadding.padding8),
-            containerView.bottomAnchor.constraint(equalTo: createAccountButton.bottomAnchor)
-        ])
+        switch loginStep {
+        case .initial:
+            setupInitialView()
+        case .success:
+            fatalError()
+        case .fail:
+            fatalError()
+        }
     }
 
     private func setupInitialView() {
         titleLabel.stringValue = "!Bienvenue dans kDrive !"
         descriptionLabel.stringValue = "!Le cloud privé, rapide et sécurisé, hébergé en Suisse.\n\nConnectez-vous et gardez vos documents synchronisés sur tous vos appareils."
 
-        loginButton.title = "Se connecter"
-        createAccountButton.title = "Créer un compte"
+        primaryButton.title = "Se connecter"
+        secondaryButton.title = "Créer un compte"
     }
 }

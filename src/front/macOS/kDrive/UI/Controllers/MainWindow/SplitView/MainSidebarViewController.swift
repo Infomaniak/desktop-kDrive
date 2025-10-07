@@ -19,22 +19,23 @@
 import Cocoa
 import kDriveCore
 import kDriveCoreUI
+import kDriveResources
 
 extension SidebarItem {
     static let home = SidebarItem(
-        icon: NSImage(resource: .house),
+        icon: KDriveResources.house.image,
         title: KDriveLocalizable.tabTitleHome
     )
     static let activity = SidebarItem(
-        icon: NSImage(resource: .circularArrowsClockwise),
+        icon: KDriveResources.circularArrowsClockwise.image,
         title: KDriveLocalizable.tabTitleActivity
     )
     static let storage = SidebarItem(
-        icon: NSImage(resource: .hardDiskDrive),
+        icon: KDriveResources.hardDiskDrive.image,
         title: KDriveLocalizable.tabTitleStorage
     )
     static let kDriveFolder = SidebarItem(
-        icon: NSImage(resource: .kdriveFoldersStacked),
+        icon: KDriveResources.kdriveFoldersStacked.image,
         title: KDriveLocalizable.sidebarItemKDriveTitle,
         type: .menu
     )
@@ -97,7 +98,7 @@ final class MainSidebarViewController: NSViewController {
         ]
 
         for drive in drives {
-            popUpButton.addItem(withTitle: drive.name, image: NSImage(resource: .kdriveFoldersStacked), color: drive.color)
+            popUpButton.addItem(withTitle: drive.name, image: KDriveResources.kdriveFoldersStacked.image, color: drive.color)
         }
 
         view.addSubview(popUpButton)
