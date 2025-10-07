@@ -65,7 +65,7 @@ jobs:
       - name: Build kDrive desktop
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
-          powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci -coverage
+          powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci -coverage -unitTests
         shell: cmd
 
       - name: Execute tests
