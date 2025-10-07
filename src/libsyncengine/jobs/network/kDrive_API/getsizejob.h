@@ -36,7 +36,7 @@ class GetSizeJob : public AbstractTokenNetworkJob {
 
     private:
         std::string getSpecificUrl() override;
-        inline ExitInfo setData() override { return ExitCode::Ok; }
+       ExitInfo setData() override { return ExitCode::Ok; }
 
         NodeId _nodeId;
         int64_t _size{0};

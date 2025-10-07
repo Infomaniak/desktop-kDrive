@@ -134,7 +134,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
         return ExitCode::DataError;
     }
 
-    SyncPath absoluteLocalPath = _sync.localPath() / localPath;
+    const SyncPath absoluteLocalPath = _sync.localPath() / localPath;
 
     // Cancel hydration
     const bool liteSyncActivated = _syncPal->vfsMode() != VirtualFileMode::Off;
@@ -218,7 +218,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(absoluteLocalPath, exists, ioError)) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in IoHelper::checkIfPathExists for path=" << Utility::formatIoError(absoluteLocalPath, ioError));
+                  L"Error in IoHelper::checkIfPathExists for " << Utility::formatIoError(absoluteLocalPath, ioError));
         return ExitCode::SystemError;
     }
 
