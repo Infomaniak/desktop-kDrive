@@ -128,7 +128,8 @@ ExitInfo AbstractNetworkJob::runJob() noexcept {
         createSession(uri);
 
         try {
-            if (outputExitInfo = canRun(); !outputExitInfo) {
+            outputExitInfo = canRun();
+            if (!outputExitInfo) {
                 return outputExitInfo;
             }
         } catch (Poco::Exception const &e) {
@@ -136,7 +137,9 @@ ExitInfo AbstractNetworkJob::runJob() noexcept {
             outputExitInfo = ExitCode::NetworkError;
             break;
         }
-        if (outputExitInfo = setData(); !outputExitInfo) { // Must be called before setQueryParameters
+
+        outputExitInfo = setData();
+        if (!outputExitInfo) { // Must be called before setQueryParameters
             LOG_WARN(_logger, "Job " << jobId() << " is cancelled " << outputExitInfo);
             break;
         }
