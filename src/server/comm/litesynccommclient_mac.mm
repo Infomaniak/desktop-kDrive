@@ -877,8 +877,8 @@ bool LiteSyncCommClient::vfsDehydratePlaceHolder(const SyncPath &absoluteFilepat
     }
 
     struct stat fileStat;
-    if (stat(absoluteFilepath.c_str(), &fileStat) == -1) {
-        LOGW_WARN(_logger, L"Call to stat failed: " << Utility::formatErrno(absoluteFilepath, errno));
+    if (lstat(absoluteFilepath.c_str(), &fileStat) == -1) {
+        LOGW_WARN(_logger, L"Call to lstat failed: " << Utility::formatErrno(absoluteFilepath, errno));
         return false;
     }
 

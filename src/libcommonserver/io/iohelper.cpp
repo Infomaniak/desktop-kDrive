@@ -336,6 +336,7 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
 }
 #endif
 
+
 bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
     itemType = ItemType{};
 
@@ -552,7 +553,7 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
     ioError = IoError::Success;
     bool endOfDirectory = false;
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
-        if (entry.is_directory() && !entry.is_symlink()) {
+        if (!entry.is_symlink() && entry.is_directory()) {
             if (maxDepth == 0) {
                 LOGW_WARN(logger(), L"Max depth reached in getDirectorySize, skipping deeper directories for "
                                             << Utility::formatSyncPath(path));
@@ -948,11 +949,12 @@ bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, b
 
     std::error_code ec;
     if (isFolder) {
-        LOGW_DEBUG(logger(),
-                   L"Create directory symlink: target " << Path2WStr(targetPath) << L", " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(logger(), L"Create directory symlink: target " << Utility::formatSyncPath(targetPath) << L", "
+                                                                  << Utility::formatSyncPath(path));
         std::filesystem::create_directory_symlink(targetPath, path, ec);
     } else {
-        LOGW_DEBUG(logger(), L"Create file symlink: target " << Path2WStr(targetPath) << L", " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(logger(), L"Create file symlink: target " << Utility::formatSyncPath(targetPath) << L", "
+                                                             << Utility::formatSyncPath(path));
         std::filesystem::create_symlink(targetPath, path, ec);
     }
 
@@ -1067,4 +1069,15 @@ bool IoHelper::_setRightsStd(const SyncPath &path, bool read, bool write, bool e
 
     return true;
 }
+
+#if defined(KD_MACOS) || defined(KD_LINUX)
+NodeType IoHelper::getTargetNodeType(const SyncPath &path) {
+    auto nodeType = NodeType::Unknown;
+    if (struct stat sbTarget; stat(path.string().c_str(), &sbTarget) >= 0) {
+        nodeType = S_ISDIR(sbTarget.st_mode) ? NodeType::Directory : NodeType::File;
+    }
+
+    return nodeType;
+}
+#endif
 } // namespace KDC

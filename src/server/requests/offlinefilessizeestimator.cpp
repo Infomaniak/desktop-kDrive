@@ -37,7 +37,7 @@ ExitInfo OfflineFilesSizeEstimator::runSynchronously() {
         DirectoryEntry entry;
         bool endOfDir = false;
         while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
-            if (entry.is_directory() || entry.is_symlink()) continue;
+            if (entry.is_symlink() || entry.is_directory()) continue;
 
             VfsStatus vfsStatus;
             if (const auto exitInfo = syncPal->vfs()->status(entry.path(), vfsStatus); !exitInfo) {

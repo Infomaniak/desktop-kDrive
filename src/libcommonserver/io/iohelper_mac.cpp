@@ -157,21 +157,12 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
 
     buf->inode = sb.st_ino;
     buf->creationTime =
-            sb.st_birthtime; // Supported on all 64-bits macOS versions (32-bits macOS are not supported since nov 2014)
+            sb.st_birthtime; // Supported on all 64-bits macOS versions (32-bits macOS are not supported since nov 2014).
     buf->modificationTime = sb.st_mtime;
     buf->size = sb.st_size;
-    if (S_ISLNK(sb.st_mode)) {
-        // The item is a symlink.
-        struct stat sbTarget;
-        if (stat(path.string().c_str(), &sbTarget) < 0) {
-            // Cannot access target => undetermined
-            buf->nodeType = NodeType::Unknown;
-        } else {
-            buf->nodeType = S_ISDIR(sbTarget.st_mode) ? NodeType::Directory : NodeType::File;
-        }
-    } else {
-        buf->nodeType = S_ISDIR(sb.st_mode) ? NodeType::Directory : NodeType::File;
-    }
+    buf->nodeType = S_ISDIR(sb.st_mode) ? NodeType::Directory : NodeType::File;
+
+    if (S_ISLNK(sb.st_mode)) buf->nodeType = getTargetNodeType(path);
 
     return true;
 }

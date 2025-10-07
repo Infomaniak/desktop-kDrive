@@ -80,29 +80,20 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
         } else if (err == ENOTSUP) {
             if (!_unsuportedFSLogged) {
                 LOG_ERROR(logger(), "The file system does not support extended attributes: " << strerror(errno));
-                sentry::Handler::captureMessage(sentry::Level::Warning, "Unsuported file system",
+                sentry::Handler::captureMessage(sentry::Level::Warning, "Unsupported file system",
                                                 "The file system does not support neither creation time nor extended attributes");
                 _unsuportedFSLogged = true;
             }
         } else {
-            LOG_ERROR(logger(), "Failed to get user.kDrive.birthtime extended attribute: " << strerror(errno));
+            LOG_ERROR(logger(), "Failed to get 'user.kDrive.birthtime' extended attribute: " << strerror(errno));
         }
     }
 
     buf->modificationTime = sb.stx_mtime.tv_sec;
     buf->size = static_cast<int64_t>(sb.stx_size);
-    if (S_ISLNK(sb.stx_mode)) {
-        // The item is a symlink.
-        struct stat sbTarget;
-        if (stat(path.string().c_str(), &sbTarget) < 0) {
-            // Cannot access target => undetermined
-            buf->nodeType = NodeType::Unknown;
-        } else {
-            buf->nodeType = S_ISDIR(sbTarget.st_mode) ? NodeType::Directory : NodeType::File;
-        }
-    } else {
-        buf->nodeType = S_ISDIR(sb.stx_mode) ? NodeType::Directory : NodeType::File;
-    }
+    buf->nodeType = S_ISDIR(sb.stx_mode) ? NodeType::Directory : NodeType::File;
+
+    if (S_ISLNK(sb.stx_mode)) buf->nodeType = getTargetNodeType(path);
 
     return true;
 }

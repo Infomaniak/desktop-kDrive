@@ -134,9 +134,9 @@ void TestFsOperationSet::testClear() {
     fsOperationSet.clear();
 
     nodeIdSuffix = '0';
-    CPPUNIT_ASSERT_EQUAL(uint64_t(0), fsOperationSet.nbOps());
+    CPPUNIT_ASSERT_EQUAL(uint64_t{0}, fsOperationSet.nbOps());
     for (OperationType type: _operationTypes) {
-        CPPUNIT_ASSERT_EQUAL(uint64_t(0), fsOperationSet.nbOpsByType(type));
+        CPPUNIT_ASSERT_EQUAL(uint64_t{0}, fsOperationSet.nbOpsByType(type));
         for (int i = 1; i <= 2; i++) {
             std::unordered_set<UniqueId> ops = fsOperationSet.getOpsByNodeId(nodeId + nodeIdSuffix);
             CPPUNIT_ASSERT_EQUAL(size_t(0), ops.size());
