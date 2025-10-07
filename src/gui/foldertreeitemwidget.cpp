@@ -253,19 +253,25 @@ void FolderTreeItemWidget::createBlackSet(const QTreeWidgetItem *parentItem, QSe
 
     switch (parentItem->checkState(TreeWidgetColumn::Folder)) {
         case Qt::Unchecked: {
+            QString path;
             if (!_blacklistCache.contains(parentNodeId)) {
-                QString path;
                 if (const auto exitCode = GuiRequests::getNodePath(_syncDbId, parentNodeId, path); exitCode != ExitCode::Ok) {
                     qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getNodePath";
                 }
                 (void) _blacklistCache.insert(parentNodeId, path);
             }
             (void) blackset.insert(parentNodeId);
-            removeChildNodeFromSet(parentNodeId, blackset);
+            removeChildNodeFromSet(path, blackset);
             return;
         }
-        case Qt::Checked:
-            [[fallthrough]];
+        case Qt::Checked: {
+            QString path;
+            if (const auto exitCode = GuiRequests::getNodePath(_syncDbId, parentNodeId, path); exitCode != ExitCode::Ok) {
+                qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getNodePath";
+            }
+            removeChildNodeFromSet(path, blackset);
+            return;
+        }
         case Qt::PartiallyChecked:
             break;
     }
@@ -273,17 +279,10 @@ void FolderTreeItemWidget::createBlackSet(const QTreeWidgetItem *parentItem, QSe
     (void) blackset.remove(parentNodeId);
     (void) _blacklistCache.remove(parentNodeId);
 
-    if (parentItem->childCount()) {
-        for (auto i = 0; i < parentItem->childCount(); ++i) {
-            createBlackSet(parentItem->child(i), blackset);
-        }
-    }
+    for (auto i = 0; i < parentItem->childCount(); ++i) createBlackSet(parentItem->child(i), blackset);
 }
 
-void FolderTreeItemWidget::removeChildNodeFromSet(const QString &parentId, QSet<QString> &blackset) {
-    assert(_blacklistCache.contains(parentId) && "parentId was not found in black list cache.");
-
-    const auto parentPath = _blacklistCache[parentId];
+void FolderTreeItemWidget::removeChildNodeFromSet(const QString &parentPath, QSet<QString> &blackset) {
     for (auto it = _blacklistCache.begin(); it != _blacklistCache.end();) {
         if (const auto &path = it.value(); path.startsWith(parentPath + "/")) {
             (void) blackset.remove(it.key());
@@ -321,9 +320,7 @@ void FolderTreeItemWidget::createWhiteSet(QTreeWidgetItem *parentItem, QSet<QStr
         }
     }
 
-    for (auto i = 0; i < parentItem->childCount(); ++i) {
-        createWhiteSet(parentItem->child(i), whiteSet);
-    }
+    for (auto i = 0; i < parentItem->childCount(); ++i) createWhiteSet(parentItem->child(i), whiteSet);
 }
 
 qint64 FolderTreeItemWidget::nodeSize(QTreeWidgetItem *item) const {
