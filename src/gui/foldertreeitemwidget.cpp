@@ -157,18 +157,19 @@ ExitCode FolderTreeItemWidget::updateBlackUndecidedSet() {
     if (!_syncDbId) return ExitCode::Ok;
 
     bool userConnected = false;
-    if (auto userInfoIt = _gui->userInfoMap().find(_userDbId); userInfoIt != _gui->userInfoMap().end()) {
+    if (const auto userInfoIt = _gui->userInfoMap().find(_userDbId); userInfoIt != _gui->userInfoMap().end()) {
         userConnected = userInfoIt->second.connected();
     }
 
     if (!userConnected) return ExitCode::Ok;
 
-    if (auto exitCode = GuiRequests::getSyncIdSet(_syncDbId, SyncNodeType::BlackList, _oldBlackList); exitCode != ExitCode::Ok) {
+    if (const auto exitCode = GuiRequests::getSyncIdSet(_syncDbId, SyncNodeType::BlackList, _oldBlackList);
+        exitCode != ExitCode::Ok) {
         qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getSyncIdSet with SyncNodeType::BlackList";
         return exitCode;
     }
 
-    if (auto exitCode = GuiRequests::getSyncIdSet(_syncDbId, SyncNodeType::UndecidedList, _oldUndecidedList);
+    if (const auto exitCode = GuiRequests::getSyncIdSet(_syncDbId, SyncNodeType::UndecidedList, _oldUndecidedList);
         exitCode != ExitCode::Ok) {
         qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getSyncIdSet with SyncNodeType::UndecidedList";
         return exitCode;
@@ -637,7 +638,7 @@ void FolderTreeItemWidget::onSyncListRefreshed() {
     }
 }
 
-void FolderTreeItemWidget::onFolderSizeCompleted(const QString &nodeId, qint64 size) {
+void FolderTreeItemWidget::onFolderSizeCompleted(const QString &nodeId, const qint64 size) {
     const auto &subFoldersMapIt = _subFoldersMap.find(nodeId);
     if (subFoldersMapIt != _subFoldersMap.end()) {
         setItemSize(subFoldersMapIt.value(), size);
