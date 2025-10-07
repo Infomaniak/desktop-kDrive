@@ -17,16 +17,14 @@
  */
 
 #include "syncjobmanager.h"
-#include "jobmanager.h"
-
-#include <memory>
 #include "jobs/network/kDrive_API/downloadjob.h"
 #include "jobs/network/kDrive_API/upload/upload_session/driveuploadsession.h"
 
+#include <memory>
 
 namespace KDC {
 SyncJobManager::SyncJobManager() :
-    JobManager() {};
+    JobManager() {}
 
 namespace {
 
