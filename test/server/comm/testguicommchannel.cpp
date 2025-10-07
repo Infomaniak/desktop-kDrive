@@ -196,6 +196,7 @@ void TestGuiCommChannel::testLoginRequestToken() {
     auto channel = std::make_shared<GuiCommChannel>(Poco::Net::StreamSocket());
     test(queryStr, answerStr, channel);
 #else
+    // There is no need to pass a request id as the response is via a callback.
     const auto queryStr{Str(R"({ "num": 1,)" // RequestNum::LOGIN_REQUESTTOKEN
                             R"( "params": {)"
                             R"( "code": "YWFhYQ==",)" // "aaaa" base64 encoded
