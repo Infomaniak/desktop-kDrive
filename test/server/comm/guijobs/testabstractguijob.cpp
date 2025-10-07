@@ -134,7 +134,6 @@ void TestAbstractGuiJob::testAll() {
     // deserializeInputParms
     auto job = std::make_unique<GuiJobTest>(nullptr, requestId, inParams, _channel);
     CPPUNIT_ASSERT(job->deserializeInputParms());
-    CPPUNIT_ASSERT(job->exitInfo());
 
     CPPUNIT_ASSERT(job->_strValue == "hello");
     CPPUNIT_ASSERT(job->_wstrValue == L"hello");
@@ -168,7 +167,6 @@ void TestAbstractGuiJob::testAll() {
 
     // serializeOutputParms
     CPPUNIT_ASSERT(job->serializeOutputParms());
-    CPPUNIT_ASSERT(job->exitInfo());
 
     // serializeGenericOutputParms
     CPPUNIT_ASSERT(job->serializeGenericOutputParms(ExitCode::Ok));

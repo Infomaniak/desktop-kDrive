@@ -232,7 +232,7 @@ ExitInfo AbstractTokenNetworkJob::handleError(const std::string &replyBody, cons
         default:
             ExitCause exitCause = ExitCause::Unknown;
             bool res = defaultBackErrorHandling(errorCode, uri, exitCause);
-            exitInfo.setCause(ExitCause::DriveMaintenance);
+            exitInfo.setCause(exitCause);
             return exitInfo;
     }
     return exitInfo;
