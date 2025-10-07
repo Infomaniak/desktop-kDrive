@@ -51,10 +51,14 @@ class AbstractNetworkJob : public SyncJob {
         [[nodiscard]] const std::string &errorCode() const { return _errorCode; }
         [[nodiscard]] const std::string &errorDescr() const { return _errorDescr; }
 
+        int32_t trials() const noexcept { return _trials; };
+
     protected:
         void runJob() noexcept override;
         void addRawHeader(const std::string &key, const std::string &value);
 
+        using StreamVector = std::vector<std::reference_wrapper<std::istream>>;
+        virtual bool receiveResponseFromSession(StreamVector &stream);
         virtual bool handleResponse(std::istream &inputStream) = 0;
         virtual bool handleError(const std::string &replyBody, const Poco::URI &uri) = 0;
 
@@ -80,11 +84,12 @@ class AbstractNetworkJob : public SyncJob {
         std::string _data;
         Poco::Net::HTTPResponse _resHttp;
         int _customTimeout = 0;
-        int _trials = 2; // By default, try again once if exception is thrown
+        int32_t _trials = 2; // By default, try again once if exception is thrown
         std::string _errorCode;
         std::string _errorDescr;
 
     private:
+        bool receiveResponse(const Poco::URI &uri);
         bool handleError(std::istream &inputStream, const Poco::URI &uri);
 
         struct TimeoutHelper {
@@ -116,7 +121,8 @@ class AbstractNetworkJob : public SyncJob {
         Poco::JSON::Object::Ptr _jsonRes{nullptr};
         std::string _octetStreamRes;
 
-        virtual void setQueryParameters(Poco::URI &) { /* Empty by default */ }
+        virtual void setQueryParameters(Poco::URI &) { /* Empty by default */
+        }
         virtual ExitInfo setData() { return ExitCode::Ok; }
         virtual std::string getContentType() { return {}; }
 
@@ -127,7 +133,6 @@ class AbstractNetworkJob : public SyncJob {
         void clearSession();
         void abortSession();
         bool sendRequest(const Poco::URI &uri);
-        bool receiveResponse(const Poco::URI &uri);
         bool followRedirect();
         bool processSocketError(const std::string &msg, UniqueId jobId);
         bool processSocketError(const std::string &msg, UniqueId jobId, const std::exception &e);

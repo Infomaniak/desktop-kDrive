@@ -138,6 +138,7 @@ bool AbstractTokenNetworkJob::handleUnauthorizedResponse() {
         // The token has not already been refreshed or was refreshed more than its lifetime ago
         if (!refreshToken()) {
             LOG_WARN(_logger, "Refresh token failed");
+            _exitInfo = {ExitCode::InvalidToken, ExitCause::LoginError};
             disableRetry();
 
             return false;
@@ -150,6 +151,11 @@ bool AbstractTokenNetworkJob::handleUnauthorizedResponse() {
     }
 
     LOG_WARN(_logger, "Token already refreshed once");
+
+    if (_trials > 2) {
+        disableRetry();
+        _exitInfo = {ExitCode::InvalidToken, ExitCause::LoginError};
+    }
 
     return false;
 }

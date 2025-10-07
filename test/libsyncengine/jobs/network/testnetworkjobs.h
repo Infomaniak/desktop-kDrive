@@ -60,6 +60,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testDirectDownload);
         CPPUNIT_TEST(testDownloadHasEnoughSpace);
         CPPUNIT_TEST(testSearch);
+        CPPUNIT_TEST(testGetInfoUserTrialsOn401Error);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -100,6 +101,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         void testDirectDownload();
         void testDownloadHasEnoughSpace();
         void testSearch();
+        void testGetInfoUserTrialsOn401Error();
 
     private:
         bool createTestFiles();

@@ -1545,4 +1545,25 @@ bool TestNetworkJobs::createTestFiles() {
     return true;
 }
 
+
+void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
+    class GetInfoUserJobMock final : public GetInfoUserJob {
+        public:
+            explicit GetInfoUserJobMock(int32_t userDbId) :
+                GetInfoUserJob(userDbId){};
+
+        protected:
+            bool receiveResponseFromSession(StreamVector &stream) override {
+                AbstractNetworkJob::receiveResponseFromSession(stream);
+                _resHttp.setStatus("401");
+                return true;
+            };
+    };
+
+    GetInfoUserJobMock job(_userDbId);
+    ExitCode exitCode = job.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::InvalidToken, exitCode);
+    CPPUNIT_ASSERT_EQUAL(0, job.trials());
+}
+
 } // namespace KDC
