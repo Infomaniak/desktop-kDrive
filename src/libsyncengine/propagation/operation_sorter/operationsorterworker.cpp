@@ -69,12 +69,18 @@ void OperationSorterWorker::sortOperations() {
         fixEditBeforeMove();
         fixMoveBeforeMoveHierarchyFlip();
 
-        CycleFinder cycleFinder(_reorderings);
-        cycleFinder.findCompleteCycle();
-        if (cycleFinder.hasCompleteCycle()) {
-            completeCycle = cycleFinder.completeCycle();
-            cycleFound = true;
-            break;
+        // Cycles can occur only in presence of at least 1 Move operation.
+        if (!_syncPal->_syncOps->opListIdByType(OperationType::Move).empty() ||
+            !_syncPal->_syncOps->opListIdByType(OperationType::MoveEdit).empty() ||
+            !_syncPal->_syncOps->opListIdByType(OperationType::MoveOut).empty()) {
+            // Check for cycles.
+            CycleFinder cycleFinder(_reorderings);
+            cycleFinder.findCompleteCycle();
+            if (cycleFinder.hasCompleteCycle()) {
+                completeCycle = cycleFinder.completeCycle();
+                cycleFound = true;
+                break;
+            }
         }
     }
 
