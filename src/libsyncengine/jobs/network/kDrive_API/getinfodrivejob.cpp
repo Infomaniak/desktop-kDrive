@@ -33,8 +33,8 @@ GetInfoDriveJob::GetInfoDriveJob(int driveDbId) :
 }
 
 ExitInfo GetInfoDriveJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
-    if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
-        _resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
+    if (httpResponse().getStatus() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
+        httpResponse().getStatus() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
         // The drive is not accessible or doesn't exist
         return ExitCode::Ok;
     }

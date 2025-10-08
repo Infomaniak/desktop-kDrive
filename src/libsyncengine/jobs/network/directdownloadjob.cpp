@@ -28,13 +28,14 @@ namespace KDC {
 
 constexpr uint64_t bufferSize = 4096 * 1000; // 4MB     // TODO : this should be defined in a common parent class
 
-DirectDownloadJob::DirectDownloadJob(const SyncPath &destinationFile, const std::string &url) :
+DirectDownloadJob::DirectDownloadJob(const SyncPath &destinationFile, const std::string &url, const bool headerOnly /*= false*/) :
     _destinationFile(destinationFile),
     _url(url) {
-    _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+    _httpMethod = headerOnly ? Poco::Net::HTTPRequest::HTTP_HEAD : Poco::Net::HTTPRequest::HTTP_GET;
 }
 
 ExitInfo DirectDownloadJob::handleResponse(std::istream &is) {
+    if (_httpMethod == Poco::Net::HTTPRequest::HTTP_HEAD) return ExitCode::Ok;
     std::ofstream output(_destinationFile.native().c_str(), std::ios::binary);
     if (!output) {
         LOGW_WARN(_logger, L"Failed to create file: " << Utility::formatSyncPath(_destinationFile));
@@ -55,13 +56,14 @@ ExitInfo DirectDownloadJob::handleResponse(std::istream &is) {
 
 ExitInfo DirectDownloadJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
     (void) replyBody;
-    const auto errorCode = std::to_string(_resHttp.getStatus());
-    LOG_WARN(_logger, "Download " << uri.toString() << " failed with error: " << errorCode << " - " << _resHttp.getReason());
+    const auto errorCode = std::to_string(httpResponse().getStatus());
+    LOG_WARN(_logger,
+             "Download " << uri.toString() << " failed with error: " << errorCode << " - " << httpResponse().getReason());
     return {};
 }
 
 ExitInfo DirectDownloadJob::readFromStream(std::istream &is, std::ofstream &output) {
-    const auto expectedSize = _resHttp.getContentLength();
+    const auto expectedSize = httpResponse().getContentLength();
     if (expectedSize != Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH && expectedSize == 0) {
         LOG_WARN(_logger, "Reply " << jobId() << " is empty");
         return ExitCode::Ok;

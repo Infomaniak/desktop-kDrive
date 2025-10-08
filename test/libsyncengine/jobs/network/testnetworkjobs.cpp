@@ -1563,7 +1563,7 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
         protected:
             ExitInfo receiveResponseFromSession(StreamVector &stream) override {
                 AbstractNetworkJob::receiveResponseFromSession(stream);
-                _resHttp.setStatus("401");
+                httpResponse().setStatus("401");
                 return ExitCode::Ok;
             };
     };

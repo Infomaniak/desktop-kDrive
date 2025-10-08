@@ -225,8 +225,8 @@ ExitInfo AbstractNetworkJob::runJob() noexcept {
 }
 
 bool AbstractNetworkJob::hasHttpError(std::string *errorCode /*= nullptr*/) const {
-    if (_resHttp.getStatus() != Poco::Net::HTTPResponse::HTTP_OK) {
-        if (errorCode) *errorCode = std::to_string(_resHttp.getStatus());
+    if (_httpResponse.getStatus() != Poco::Net::HTTPResponse::HTTP_OK) {
+        if (errorCode) *errorCode = std::to_string(_httpResponse.getStatus());
         return true;
     }
     return false;
@@ -382,7 +382,7 @@ ExitInfo AbstractNetworkJob::receiveResponseFromSession(StreamVector &stream) {
     try {
         const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
         if (_session) {
-            (void) stream.emplace_back(_session->receiveResponse(_resHttp));
+            (void) stream.emplace_back(_session->receiveResponse(_httpResponse));
             if (ioOrLogicalErrorOccurred(stream[0].get())) {
                 return processSocketError("invalid receive stream", jobId());
             }
@@ -405,10 +405,10 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
         return ExitCode::Ok;
     }
 
-    LOG_DEBUG(_logger,
-              "Request " << jobId() << " finished with status: " << _resHttp.getStatus() << " / " << _resHttp.getReason());
+    LOG_DEBUG(_logger, "Request " << jobId() << " finished with status: " << _httpResponse.getStatus() << " / "
+                                  << _httpResponse.getReason());
 
-    if (Utility::isError500(_resHttp.getStatus())) {
+    if (Utility::isError500(_httpResponse.getStatus())) {
         std::string replyBody;
         getStringFromStream(stream[0].get(), replyBody);
         LOG_WARN(_logger, "Reply " << jobId() << ": " << replyBody);
@@ -416,7 +416,7 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
         return {ExitCode::BackError, ExitCause::Http5xx};
     }
 
-    switch (_resHttp.getStatus()) {
+    switch (_httpResponse.getStatus()) {
         case Poco::Net::HTTPResponse::HTTP_OK: {
             try {
                 const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
@@ -489,7 +489,7 @@ ExitInfo AbstractNetworkJob::handleError(std::istream &inputStream, const Poco::
 }
 
 void AbstractNetworkJob::getStringFromStream(std::istream &inputStream, std::string &res) {
-    if (const std::string encoding = _resHttp.get("content-encoding", ""); encoding == "gzip") {
+    if (const std::string encoding = _httpResponse.get("content-encoding", ""); encoding == "gzip") {
         std::stringstream ss;
         unzip(inputStream, ss);
         res = ss.str();
@@ -502,7 +502,7 @@ void AbstractNetworkJob::getStringFromStream(std::istream &inputStream, std::str
 ExitInfo AbstractNetworkJob::followRedirect() {
     // Get redirection URL
     std::string redirectUrl;
-    redirectUrl = _resHttp.get("Location", "");
+    redirectUrl = _httpResponse.get("Location", "");
 
     if (redirectUrl.empty()) {
         LOG_WARN(_logger, "Request " << jobId() << ": Failed to retrieve redirection URL");
@@ -603,7 +603,7 @@ ExitInfo AbstractNetworkJob::extractJson(const std::string &replyBody, Poco::JSO
     } catch (const Poco::Exception &exc) {
         LOGW_WARN(_logger, L"Reply " << jobId() << L" received doesn't contain a valid JSON payload: "
                                      << CommonUtility::s2ws(exc.displayText()));
-        Utility::logGenericServerError(_logger, "Request error", replyBody, _resHttp);
+        Utility::logGenericServerError(_logger, "Request error", replyBody, _httpResponse);
         return {ExitCode::BackError, ExitCause::ApiErr};
     }
 

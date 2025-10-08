@@ -86,7 +86,8 @@ ExitInfo GetFileInfoJob::handleResponse(std::istream &is) {
 
 ExitInfo GetFileInfoJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
     using namespace Poco::Net;
-    if (_resHttp.getStatus() == HTTPResponse::HTTP_FORBIDDEN || _resHttp.getStatus() == HTTPResponse::HTTP_NOT_FOUND) {
+    if (httpResponse().getStatus() == HTTPResponse::HTTP_FORBIDDEN ||
+        httpResponse().getStatus() == HTTPResponse::HTTP_NOT_FOUND) {
         return ExitCode::Ok; // The file is not accessible or doesn't exist
     }
 

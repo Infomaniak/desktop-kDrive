@@ -42,9 +42,10 @@ class AbstractNetworkJob : public SyncJob {
 
         [[nodiscard]] bool hasHttpError(std::string *errorCode = nullptr) const;
         bool hasErrorApi() const;
-        [[nodiscard]] Poco::Net::HTTPResponse::HTTPStatus getStatusCode() const { return _resHttp.getStatus(); }
+        [[nodiscard]] Poco::Net::HTTPResponse::HTTPStatus getStatusCode() const { return _httpResponse.getStatus(); }
         void abort() override;
 
+        [[nodiscard]] Poco::Net::HTTPResponse httpResponse() const { return _httpResponse; }
         [[nodiscard]] std::string octetStreamRes() const { return _octetStreamRes; }
         Poco::JSON::Object::Ptr jsonRes() { return _jsonRes; }
 
@@ -81,7 +82,6 @@ class AbstractNetworkJob : public SyncJob {
         std::string _httpMethod;
         uint8_t _apiVersion{2};
         std::string _data;
-        Poco::Net::HTTPResponse _resHttp;
         int _customTimeout = 0;
         int32_t _trials = 2; // By default, try again once if exception is thrown
         std::string _errorCode;
@@ -117,6 +117,7 @@ class AbstractNetworkJob : public SyncJob {
         static Poco::Net::Context::Ptr _context;
         static TimeoutHelper _timeoutHelper;
 
+        Poco::Net::HTTPResponse _httpResponse;
         Poco::JSON::Object::Ptr _jsonRes{nullptr};
         std::string _octetStreamRes;
 

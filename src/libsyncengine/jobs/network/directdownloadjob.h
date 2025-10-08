@@ -25,7 +25,7 @@ namespace KDC {
 
 class DirectDownloadJob final : public AbstractNetworkJob {
     public:
-        DirectDownloadJob(const SyncPath &destinationFile, const std::string &url);
+        DirectDownloadJob(const SyncPath &destinationFile, const std::string &url, bool headerOnly = false);
 
         [[nodiscard]] const SyncPath &getDestinationFile() const { return _destinationFile; }
 

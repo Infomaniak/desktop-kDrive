@@ -33,7 +33,19 @@ void WindowsUpdater::onUpdateFound() {
         setState(UpdateState::DownloadError);
         return;
     }
-    if (std::filesystem::exists(filepath)) {
+
+    // Get the expected size of the installer.
+    DirectDownloadJob test(filepath, versionInfo(_currentChannel).downloadUrl, true);
+    (void) test.runSynchronously();
+    const auto expectedSize = test.httpResponse().getContentLength();
+
+    // Check if an installer is already downloaded and get its size.
+    uint64_t localSize = 0;
+    auto ioError = IoError::Success;
+    if (!IoHelper::getFileSize(filepath, localSize, ioError)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::getFileSize for " << Utility::formatSyncPath(filepath));
+    }
+    if (ioError == IoError::Success && localSize == expectedSize) {
         LOGW_INFO(Log::instance()->getLogger(), L"Installer already downloaded at " << Utility::formatSyncPath(filepath)
                                                                                     << L". Update is ready to be installed.");
         setState(UpdateState::Ready);
@@ -50,8 +62,8 @@ void WindowsUpdater::startInstaller() {
         return;
     }
     LOGW_INFO(Log::instance()->getLogger(), L"Starting updater " << Utility::formatSyncPath(filepath));
-    auto cmd = filepath.wstring() + L" /S /launch";
-    Utility::runDetachedProcess(cmd);
+    const auto cmd = filepath.wstring() + L" /S /launch";
+    (void) Utility::runDetachedProcess(cmd);
 }
 
 void WindowsUpdater::downloadUpdate() noexcept {
@@ -61,7 +73,14 @@ void WindowsUpdater::downloadUpdate() noexcept {
         return;
     }
 
-    auto job = std::make_shared<DirectDownloadJob>(filepath, versionInfo(_currentChannel).downloadUrl);
+    // Remove an eventual already existing installer file.
+    auto ioError = IoError::Success;
+    (void) IoHelper::deleteItem(filepath, ioError);
+    if (ioError != IoError::Success && ioError != IoError::NoSuchFileOrDirectory) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Failed to to remove existing installer " << Utility::formatSyncPath(filepath));
+    }
+
+    const auto job = std::make_shared<DirectDownloadJob>(filepath, versionInfo(_currentChannel).downloadUrl);
     const std::function<void(UniqueId)> callback = std::bind_front(&WindowsUpdater::downloadFinished, this);
     job->setAdditionalCallback(callback);
     SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
@@ -69,7 +88,7 @@ void WindowsUpdater::downloadUpdate() noexcept {
 }
 
 void WindowsUpdater::downloadFinished(const UniqueId jobId) {
-    auto job = SyncJobManagerSingleton::instance()->getJob(jobId);
+    const auto job = SyncJobManagerSingleton::instance()->getJob(jobId);
     const auto downloadJob = std::dynamic_pointer_cast<DirectDownloadJob>(job);
     if (!downloadJob) {
         const auto error = "Could not cast job pointer.";
