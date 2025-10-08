@@ -22,7 +22,7 @@ import kDriveCoreUI
 
 open class OnboardingStepViewController: NSViewController {
     private static let minContainerWidth: CGFloat = 200
-    private static let mawContainerWidth: CGFloat = 450
+    private static let maxContainerWidth: CGFloat = 450
 
     public let containerView = NSView()
     public let titleLabel = NSTextField(labelWithString: "")
@@ -61,7 +61,7 @@ open class OnboardingStepViewController: NSViewController {
             containerView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             containerView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
             containerView.widthAnchor.constraint(greaterThanOrEqualToConstant: Self.minContainerWidth),
-            containerView.widthAnchor.constraint(lessThanOrEqualToConstant: Self.mawContainerWidth),
+            containerView.widthAnchor.constraint(lessThanOrEqualToConstant: Self.maxContainerWidth),
 
             containerView.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: AppPadding.padding16),
             view.trailingAnchor.constraint(greaterThanOrEqualTo: containerView.trailingAnchor, constant: AppPadding.padding16),

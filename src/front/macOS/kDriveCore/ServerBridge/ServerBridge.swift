@@ -24,6 +24,7 @@ public protocol ServerBridgeable: Sendable {
 
 public final class ServerBridge: ServerBridgeable {
     public func getConnectedUser() async -> Bool {
+        // It will be removed when the server part will be ready
         try? await Task.sleep(nanoseconds: 2 * 1_000_000_000)
         return false
     }

@@ -18,6 +18,7 @@
 
 import Cocoa
 import Combine
+import kDriveResources
 
 final class OnboardingViewController: NSViewController {
     private let viewModel: OnboardingViewModel
@@ -57,7 +58,7 @@ final class OnboardingViewController: NSViewController {
     private func setupWindowAppearance() {
         guard let window = view.window else { return }
 
-        window.title = "!Bienvenue dans kDrive"
+        window.title = KDriveLocalizable.onboardingLoginTitle
         window.titlebarAppearsTransparent = true
         window.isMovableByWindowBackground = false
     }

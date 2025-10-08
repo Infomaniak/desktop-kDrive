@@ -26,7 +26,7 @@ open class IKSplitViewController: NSSplitViewController {
     public var toolbar = NSToolbar()
 
     override open func viewDidAppear() {
-        super.viewWillAppear()
+        super.viewDidAppear()
         setupToolbar()
     }
 

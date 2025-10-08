@@ -19,6 +19,7 @@
 import Cocoa
 import Combine
 import kDriveCoreUI
+import kDriveResources
 
 final class LoginViewController: OnboardingStepViewController {
     private let viewModel: OnboardingViewModel
@@ -62,10 +63,10 @@ final class LoginViewController: OnboardingStepViewController {
     }
 
     private func setupInitialView() {
-        titleLabel.stringValue = "!Bienvenue dans kDrive !"
-        descriptionLabel.stringValue = "!Le cloud privé, rapide et sécurisé, hébergé en Suisse.\n\nConnectez-vous et gardez vos documents synchronisés sur tous vos appareils."
+        titleLabel.stringValue = KDriveLocalizable.onboardingLoginTitle
+        descriptionLabel.stringValue = KDriveLocalizable.onboardingLoginDescription
 
-        primaryButton.title = "!Se connecter"
-        secondaryButton.title = "!Créer un compte"
+        primaryButton.title = KDriveLocalizable.buttonLogin
+        secondaryButton.title = KDriveLocalizable.buttonCreateAccount
     }
 }

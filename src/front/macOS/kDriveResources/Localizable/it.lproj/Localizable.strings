@@ -2,15 +2,28 @@
  * Loco ios export: Xcode Strings (legacy)
  * Project: kDrive Desktop
  * Locale: it, Italian
+ * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Fri, 19 Sep 2025 13:17:41 +0200
+ * Exported at: Wed, 08 Oct 2025 16:23:50 +0200
  */
+
+/* loco:68e673c48af12c42e80027c8 */
+"buttonCreateAccount" = "Creare un account";
+
+/* loco:68e673b2042a15d8470f9452 */
+"buttonLogin" = "Accedi";
 
 /* loco:68b04d823f2b735c170caea2 */
 "buttonOpenInBrowser" = "Aprire nel browser";
 
 /* loco:68b04d5a63085b7ab90cea63 */
 "buttonOpenInFinder" = "Aprire nel Finder";
+
+/* loco:68e6739c8af12c42e80027c5 */
+"onboardingLoginDescription" = "Il cloud privato veloce e sicuro, ospitato in Svizzera.\n\nCollegatevi e mantenete i vostri documenti sincronizzati su tutti i vostri dispositivi.";
+
+/* loco:68e673754d80559c460bdf02 */
+"onboardingLoginTitle" = "Benvenuti su kDrive!";
 
 /* loco:68cd386502633dee14000352 */
 "sidebarItemAccounts" = "Conti";

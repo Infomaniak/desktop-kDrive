@@ -344,11 +344,11 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
-				Base,
 				fr,
 				es,
 				de,
 				it,
+				Base,
 			);
 			mainGroup = 37A1C41D2E546A5200596DBB;
 			minimizedProjectReferenceProxies = 1;
