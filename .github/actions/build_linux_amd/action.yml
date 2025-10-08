@@ -19,6 +19,7 @@ runs:
         run: |
           if [[ "${{ inputs.release_build }}" == "true" ]]; then
             SCRIPT="${{ github.workspace }}/infomaniak-build-tools/linux/build-release.sh"
+            ARGS="-d ${{ github.workspace }}"
           else
             SCRIPT="${{ github.workspace }}/infomaniak-build-tools/linux/build-ci-amd64.sh"
             ARGS="-u -t release"
