@@ -113,6 +113,10 @@ class FolderTreeItemWidget : public QTreeWidget {
         // depending on user actions (check or uncheck folder items).
         void updateNewlyBlackListedItems(const QTreeWidgetItem *item);
 
+        // Returns the relative path associated of the item identified with remote identifier `nodeId`
+        // Note: We first check the existence of the path in _blacklistCache first to avoid unnecessary HTTP GET requests.
+        QString getPath(const QString &nodeId);
+
 
     private slots:
         void onItemExpanded(QTreeWidgetItem *item);
