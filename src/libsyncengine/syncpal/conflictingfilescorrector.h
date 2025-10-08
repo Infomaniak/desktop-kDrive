@@ -30,7 +30,7 @@ class ConflictingFilesCorrector : public AbstractPropagatorJob {
     public:
         ConflictingFilesCorrector(std::shared_ptr<SyncPal> syncPal, bool keepLocalVersion, std::vector<Error> &errors);
 
-        virtual void runJob() override;
+        ExitInfo runJob() override;
 
         inline uint64_t nbErrors() const { return _nbErrors; }
 

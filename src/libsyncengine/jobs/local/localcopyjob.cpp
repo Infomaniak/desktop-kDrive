@@ -28,9 +28,9 @@ LocalCopyJob::LocalCopyJob(const SyncPath &source, const SyncPath &dest) :
     _source(source),
     _dest(dest) {}
 
-bool LocalCopyJob::canRun() {
+ExitInfo LocalCopyJob::canRun() {
     if (bypassCheck()) {
-        return true;
+        return ExitCode::Ok;
     }
 
     // Check that we can copy the file in destination
@@ -38,65 +38,59 @@ bool LocalCopyJob::canRun() {
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_dest, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_dest, ioError));
-        _exitInfo = ExitCode::SystemError;
-        return false;
+        return ExitCode::SystemError;
     }
     if (ioError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"Access denied to " << Path2WStr(_dest));
-        _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
-        return false;
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     if (exists) {
         LOGW_DEBUG(_logger, L"Item " << Path2WStr(_dest) << L" already exist. Aborting current sync and restart.");
-        _exitInfo = {ExitCode::DataError, ExitCause::FileExists};
-        return false;
+        return {ExitCode::DataError, ExitCause::FileExists};
     }
 
     // Check that source file still exists
     if (!IoHelper::checkIfPathExists(_source, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_source, ioError));
-        _exitInfo = ExitCode::SystemError;
-        return false;
+        return ExitCode::SystemError;
     }
     if (ioError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"Access denied to " << Path2WStr(_source));
-        _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
-        return false;
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     if (!exists) {
         LOGW_DEBUG(_logger, L"Item does not exist anymore. Aborting current sync and restart. Item with "
                                     << Utility::formatSyncPath(_source));
-        _exitInfo = {ExitCode::DataError, ExitCause::NotFound};
-        return false;
+        return {ExitCode::DataError, ExitCause::NotFound};
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
-void LocalCopyJob::runJob() {
-    if (!canRun()) {
-        return;
+ExitInfo LocalCopyJob::runJob() {
+    if (const auto exitInfo = canRun(); !exitInfo) {
+        return exitInfo;
     }
-
+    ExitInfo exitInfo = ExitCode::Ok;
     try {
         std::filesystem::copy(_source, _dest);
         LOGW_INFO(_logger, L"Item " << Path2WStr(_source) << L" copied to " << Path2WStr(_dest));
-        _exitInfo = ExitCode::Ok;
     } catch (std::filesystem::filesystem_error &fsError) {
         LOGW_WARN(_logger, L"Failed to copy item " << Path2WStr(_source) << L" to " << Path2WStr(_dest) << L": "
                                                    << CommonUtility::s2ws(fsError.what()) << L" (" << fsError.code().value()
                                                    << L")");
-        _exitInfo = ExitCode::SystemError;
+        exitInfo = ExitCode::SystemError;
         if (IoHelper::stdError2ioError(fsError.code()) == IoError::AccessDenied) {
-            _exitInfo.setCause(ExitCause::FileAccessError);
+            exitInfo.setCause(ExitCause::FileAccessError);
         }
     } catch (...) {
         LOGW_WARN(_logger, L"Failed to copy item " << Utility::formatSyncPath(_source) << L" to "
                                                    << Utility::formatSyncPath(_dest) << L": Unknown error");
-        _exitInfo = ExitCode::SystemError;
+        exitInfo = ExitCode::SystemError;
     }
+    return exitInfo;
 }
 
 } // namespace KDC

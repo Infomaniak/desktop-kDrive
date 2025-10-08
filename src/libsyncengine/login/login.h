@@ -44,8 +44,8 @@ class Login {
         /*
          * Retrieve the API tokens
          */
-        ExitCode requestToken(const std::string &authorizationCode, const std::string &codeVerifier = "");
-        ExitCode refreshToken();
+        ExitInfo requestToken(const std::string &authorizationCode, const std::string &codeVerifier = "");
+        ExitInfo refreshToken();
 
         inline bool hasToken() const { return !_apiToken.accessToken().empty(); }
         long tokenUpdateDurationFromNow() const;

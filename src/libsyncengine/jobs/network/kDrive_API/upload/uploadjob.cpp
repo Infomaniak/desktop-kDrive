@@ -71,9 +71,9 @@ UploadJob::~UploadJob() {
     }
 }
 
-bool UploadJob::canRun() {
+ExitInfo UploadJob::canRun() {
     if (bypassCheck()) {
-        return true;
+        return ExitCode::Ok;
     }
 
     // Check that the item still exist
@@ -81,38 +81,35 @@ bool UploadJob::canRun() {
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_absoluteFilePath, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_absoluteFilePath, ioError));
-        _exitInfo = ExitCode::SystemError;
-        return false;
+        return ExitCode::SystemError;
     }
     if (ioError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_absoluteFilePath));
-        _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
-        return false;
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     if (!exists) {
         LOGW_DEBUG(_logger, L"Item does not exist anymore. Aborting current sync and restart "
                                     << Utility::formatSyncPath(_absoluteFilePath));
-        _exitInfo = {ExitCode::DataError, ExitCause::NotFound};
-        return false;
+        return {ExitCode::DataError, ExitCause::NotFound};
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
-bool UploadJob::handleResponse(std::istream &is) {
-    if (!AbstractTokenNetworkJob::handleResponse(is)) {
-        return false;
+ExitInfo UploadJob::handleResponse(std::istream &is) {
+    if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) {
+        return exitInfo;
     }
 
     UploadJobReplyHandler replyHandler(_absoluteFilePath, IoHelper::isLink(_linkType), _creationTimeIn, _modificationTimeIn);
-    if (!replyHandler.extractData(jsonRes())) return false;
+    if (!replyHandler.extractData(jsonRes())) return {};
     _nodeIdOut = replyHandler.nodeId();
     _creationTimeOut = replyHandler.creationTime();
     _modificationTimeOut = replyHandler.modificationTime();
     _sizeOut = replyHandler.size();
 
-    return true;
+    return ExitCode::Ok;
 }
 
 std::string UploadJob::getSpecificUrl() {

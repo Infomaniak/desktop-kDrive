@@ -49,7 +49,7 @@ AbstractJob::~AbstractJob() {
 
 void AbstractJob::run() {
     _isRunning = true;
-    runJob();
+    _exitInfo = runJob();
     callback(jobId());
     // Don't put code after this line as object has been destroyed
 }

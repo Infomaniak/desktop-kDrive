@@ -27,8 +27,8 @@ LogUploadSession::LogUploadSession(const SyncPath &filepath, const uint64_t nbPa
     _uploadSessionType = UploadSessionType::Log;
 }
 
-bool LogUploadSession::runJobInit() {
-    return true;
+ExitInfo LogUploadSession::runJobInit() {
+    return ExitCode::Ok;
 }
 
 std::shared_ptr<UploadSessionStartJob> LogUploadSession::createStartJob() {
@@ -53,8 +53,8 @@ std::shared_ptr<UploadSessionCancelJob> LogUploadSession::createCancelJob() {
     return std::make_shared<UploadSessionCancelJob>(UploadSessionType::Log, getSessionToken());
 }
 
-bool LogUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &startJob,
-                                            const std::string &uploadToken) {
+ExitInfo LogUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &startJob,
+                                                const std::string &uploadToken) {
     (void) startJob;
 
     AppStateValue appStateValue = "";
@@ -68,7 +68,7 @@ bool LogUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionS
             cancelJob = std::make_unique<UploadSessionCancelJob>(UploadSessionType::Log, logUploadToken);
         } catch (const std::runtime_error &e) {
             LOG_WARN(getLogger(), "Error in UploadSessionCancelJob::UploadSessionCancelJob: error=" << e.what());
-            return false;
+            return {};
         }
 
         if (const ExitCode exitCode = cancelJob->runSynchronously(); exitCode != ExitCode::Ok) {
@@ -85,21 +85,21 @@ bool LogUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionS
     if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadToken, uploadToken, found) || !found) {
         LOG_WARN(getLogger(), "Error in ParmsDb::updateAppState");
     }
-    return true;
+    return ExitCode::Ok;
 }
 
-bool LogUploadSession::handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) {
+ExitInfo LogUploadSession::handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) {
     (void) finishJob;
 
     if (bool found = true; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadToken, std::string(), found) || !found) {
         LOG_WARN(getLogger(), "Error in ParmsDb::updateAppState");
     }
-    return true;
+    return ExitCode::Ok;
 }
 
-bool LogUploadSession::handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob) {
-    if (!AbstractUploadSession::handleCancelJobResult(cancelJob)) {
-        return false;
+ExitInfo LogUploadSession::handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob) {
+    if (const auto exitInfo = AbstractUploadSession::handleCancelJobResult(cancelJob); !exitInfo) {
+        return exitInfo;
     }
     return handleFinishJobResult(nullptr);
 }

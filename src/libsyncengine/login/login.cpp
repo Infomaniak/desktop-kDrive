@@ -48,7 +48,7 @@ Login::Login(const std::string &keychainKey) :
 
 Login::~Login() {}
 
-ExitCode Login::requestToken(const std::string &authorizationCode, const std::string &codeVerifier /*= ""*/) {
+ExitInfo Login::requestToken(const std::string &authorizationCode, const std::string &codeVerifier /*= ""*/) {
     LOG_DEBUG(_logger, "Start token request");
 
     try {
@@ -91,7 +91,7 @@ ExitCode Login::requestToken(const std::string &authorizationCode, const std::st
     return ExitCode::Ok;
 }
 
-ExitCode Login::refreshToken() {
+ExitInfo Login::refreshToken() {
     return refreshToken(_keychainKey, _apiToken, _error, _errorDescr);
 }
 

@@ -42,11 +42,11 @@ class DriveUploadSession : public AbstractUploadSession {
         int64_t size() const { return _sizeOut; }
 
     protected:
-        bool handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &startJob,
-                                  const std::string &uploadToken) override;
-        bool handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) override;
-        bool handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob) override;
-        bool runJobInit() override;
+        ExitInfo handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &startJob,
+                                      const std::string &uploadToken) override;
+        ExitInfo handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) override;
+        ExitInfo handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob) override;
+        ExitInfo runJobInit() override;
 
         std::shared_ptr<UploadSessionStartJob> createStartJob() override;
         std::shared_ptr<UploadSessionChunkJob> createChunkJob(const std::string &chunkContent, uint64_t chunkNb,

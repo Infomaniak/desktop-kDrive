@@ -88,7 +88,7 @@ void TestServerRequests::testGetPublicLink() {
     std::string url;
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ServerRequests::getPublicLinkUrl(_driveDbId, remoteTmpDir.id(), url));
     CPPUNIT_ASSERT(!url.empty());
-    // 2nd call : POST request will fail and a GET request should be sent to retreive exisiting share link
+    // 2nd call : POST request will fail and a GET request should be sent to retrieve existing share link
     url.clear();
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ServerRequests::getPublicLinkUrl(_driveDbId, remoteTmpDir.id(), url));
     CPPUNIT_ASSERT(!url.empty());

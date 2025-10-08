@@ -323,7 +323,7 @@ void TestIntegration::testBlacklist() {
     // Add lots of folders in the blacklist (but not too many).
     const auto idInt = static_cast<uint64_t>(std::stoll(_remoteSyncDir.id()));
     NodeSet blacklist;
-    for (uint64_t i = idInt - 499; i < idInt + 499; i++) {
+    for (auto i = idInt + 1; i < idInt + 1000; i++) {
         (void) blacklist.emplace(std::to_string(i));
     }
     (void) SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, blacklist);
@@ -336,8 +336,8 @@ void TestIntegration::testBlacklist() {
     CPPUNIT_ASSERT(!std::filesystem::exists(dirpath));
 
     // Add too many folders in the blacklist.
-    (void) blacklist.emplace(std::to_string(idInt + 500));
-    (void) blacklist.emplace(std::to_string(idInt + 501));
+    (void) blacklist.emplace(std::to_string(idInt + 1001));
+    (void) blacklist.emplace(std::to_string(idInt + 1002));
     (void) SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, blacklist);
     // Apply new blacklist.
     _syncPal->stop();
@@ -350,6 +350,13 @@ void TestIntegration::testBlacklist() {
         Utility::msleep(100);
     }
     CPPUNIT_ASSERT(_syncPal->isPaused());
+
+    // Clean up blacklist.
+    (void) SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, {});
+    // Apply new blacklist.
+    _syncPal->stop();
+    (void) BlacklistPropagator(_syncPal).runSynchronously();
+    _syncPal->start();
 
     logStep("testBlacklist");
 }

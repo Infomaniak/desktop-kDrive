@@ -57,11 +57,11 @@ class AbstractUploadSession : public SyncJob {
         virtual std::shared_ptr<UploadSessionChunkJob> createChunkJob(const std::string &chunkContent, uint64_t chunkNb,
                                                                       std::streamsize actualChunkSize) = 0;
 
-        virtual bool runJobInit() = 0;
-        virtual bool handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob,
-                                          const std::string &uploadToken) = 0;
-        virtual bool handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) = 0;
-        virtual bool handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob);
+        virtual ExitInfo runJobInit() = 0;
+        virtual ExitInfo handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob,
+                                              const std::string &uploadToken) = 0;
+        virtual ExitInfo handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) = 0;
+        virtual ExitInfo handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob);
 
         SyncPath getFilePath() const { return _filePath; }
         log4cplus::Logger &getLogger() { return _logger; }
@@ -73,14 +73,14 @@ class AbstractUploadSession : public SyncJob {
         bool isCancelled() const noexcept { return _sessionCancelled; }
 
     private:
-        bool canRun() override;
-        void runJob() override;
+        ExitInfo canRun() override;
+        ExitInfo runJob() override;
 
-        bool initChunks();
-        bool startSession();
-        bool sendChunks();
-        bool closeSession();
-        bool cancelSession();
+        ExitInfo initChunks();
+        ExitInfo startSession();
+        ExitInfo sendChunks();
+        ExitInfo closeSession();
+        ExitInfo cancelSession();
         void waitForJobsToComplete(bool all);
 
         log4cplus::Logger _logger;

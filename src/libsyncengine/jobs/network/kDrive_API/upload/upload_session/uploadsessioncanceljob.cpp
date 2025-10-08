@@ -40,10 +40,9 @@ std::string UploadSessionCancelJob::getSpecificUrl() {
     return str;
 }
 
-bool UploadSessionCancelJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
+ExitInfo UploadSessionCancelJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
     if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_BAD_REQUEST) {
-        _exitInfo = ExitCode::BackError; // TODO: why here???
-        return false;
+        return ExitCode::BackError;
     }
 
     return AbstractTokenNetworkJob::handleError(replyBody, uri);

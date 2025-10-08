@@ -54,29 +54,28 @@ class AbstractNetworkJob : public SyncJob {
         int32_t trials() const noexcept { return _trials; };
 
     protected:
-        void runJob() noexcept override;
+        ExitInfo runJob() noexcept override;
         void addRawHeader(const std::string &key, const std::string &value);
 
         using StreamVector = std::vector<std::reference_wrapper<std::istream>>;
-        virtual bool receiveResponseFromSession(StreamVector &stream);
-        virtual bool handleResponse(std::istream &inputStream) = 0;
-        virtual bool handleError(const std::string &replyBody, const Poco::URI &uri) = 0;
+        virtual ExitInfo receiveResponseFromSession(StreamVector &stream);
+        virtual ExitInfo handleResponse(std::istream &inputStream) = 0;
+        virtual ExitInfo handleError(const std::string &replyBody, const Poco::URI &uri) = 0;
 
         virtual std::string getSpecificUrl() = 0;
         virtual std::string getUrl() = 0;
 
         void unzip(std::istream &inputStream, std::stringstream &ss);
 
-
         [[nodiscard]] std::string errorText(Poco::Exception const &e) const;
         [[nodiscard]] std::string errorText(std::exception const &e) const;
 
         void disableRetry() { _trials = 0; }
 
-        virtual bool handleJsonResponse(const std::string &replyBody);
-        virtual bool handleOctetStreamResponse(std::istream &is);
-        bool extractJson(const std::string &replyBody, Poco::JSON::Object::Ptr &jsonObj);
-        bool extractJsonError(const std::string &replyBody, Poco::JSON::Object::Ptr errorObjPtr = nullptr);
+        virtual ExitInfo handleJsonResponse(const std::string &replyBody);
+        virtual ExitInfo handleOctetStreamResponse(std::istream &is);
+        ExitInfo extractJson(const std::string &replyBody, Poco::JSON::Object::Ptr &jsonObj);
+        ExitInfo extractJsonError(const std::string &replyBody, Poco::JSON::Object::Ptr errorObjPtr = nullptr);
         void getStringFromStream(std::istream &inputStream, std::string &res);
 
         std::string _httpMethod;
@@ -89,8 +88,8 @@ class AbstractNetworkJob : public SyncJob {
         std::string _errorDescr;
 
     private:
-        bool receiveResponse(const Poco::URI &uri);
-        bool handleError(std::istream &inputStream, const Poco::URI &uri);
+        ExitInfo receiveResponse(const Poco::URI &uri);
+        ExitInfo handleError(std::istream &inputStream, const Poco::URI &uri);
 
         struct TimeoutHelper {
                 void add(std::chrono::duration<double> duration);
@@ -121,8 +120,7 @@ class AbstractNetworkJob : public SyncJob {
         Poco::JSON::Object::Ptr _jsonRes{nullptr};
         std::string _octetStreamRes;
 
-        virtual void setQueryParameters(Poco::URI &) { /* Empty by default */
-        }
+        virtual void setQueryParameters(Poco::URI &) { /* Empty by default */ }
         virtual ExitInfo setData() { return ExitCode::Ok; }
         virtual std::string getContentType() { return {}; }
 
@@ -132,12 +130,12 @@ class AbstractNetworkJob : public SyncJob {
         void createSession(const Poco::URI &uri);
         void clearSession();
         void abortSession();
-        bool sendRequest(const Poco::URI &uri);
-        bool followRedirect();
-        bool processSocketError(const std::string &msg, UniqueId jobId);
-        bool processSocketError(const std::string &msg, UniqueId jobId, const std::exception &e);
-        bool processSocketError(const std::string &msg, UniqueId jobId, const Poco::Exception &e);
-        bool processSocketError(const std::string &msg, UniqueId jobId, int err, const std::string &errMsg);
+        ExitInfo sendRequest(const Poco::URI &uri);
+        ExitInfo followRedirect();
+        ExitInfo processSocketError(const std::string &msg, UniqueId jobId);
+        ExitInfo processSocketError(const std::string &msg, UniqueId jobId, const std::exception &e);
+        ExitInfo processSocketError(const std::string &msg, UniqueId jobId, const Poco::Exception &e);
+        ExitInfo processSocketError(const std::string &msg, UniqueId jobId, int err, const std::string &errMsg);
         bool ioOrLogicalErrorOccurred(std::ios &stream);
         static bool isManagedError(ExitInfo exitInfo) noexcept;
 

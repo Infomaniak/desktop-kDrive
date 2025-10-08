@@ -40,17 +40,16 @@ DeleteJob::DeleteJob(const int driveDbId, const NodeId &remoteItemId, const Node
 DeleteJob::DeleteJob(const int driveDbId, const NodeId &remoteItemId) :
     DeleteJob(driveDbId, remoteItemId, {}, {}, NodeType::Unknown) {}
 
-bool DeleteJob::canRun() {
+ExitInfo DeleteJob::canRun() {
     if (bypassCheck()) {
-        return true;
+        return ExitCode::Ok;
     }
 
     if (_remoteItemId.empty() || _localItemId.empty() || _absoluteLocalFilepath.empty()) {
         LOGW_WARN(_logger, L"Error in DeleteJob::canRun: missing required input, remote ID:"
                                    << CommonUtility::s2ws(_remoteItemId) << L", local ID: " << CommonUtility::s2ws(_localItemId)
                                    << L", " << Utility::formatSyncPath(_absoluteLocalFilepath));
-        _exitInfo = ExitCode::DataError;
-        return false;
+        return ExitCode::DataError;
     }
 
     // The item must be absent on local replica for the job to run
@@ -60,12 +59,10 @@ bool DeleteJob::canRun() {
     if (!IoHelper::checkIfPathExistsWithSameNodeId(_absoluteLocalFilepath, _localItemId, existsWithSameId, otherNodeId,
                                                    ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_absoluteLocalFilepath, ioError));
-        _exitInfo = ExitCode::SystemError;
-        return false;
+        return ExitCode::SystemError;
     }
     if (ioError == IoError::AccessDenied) {
-        _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
-        return false;
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     if (existsWithSameId) {
@@ -73,30 +70,26 @@ bool DeleteJob::canRun() {
         ioError = IoError::Success;
         if (!IoHelper::getFileStat(_absoluteLocalFilepath, &filestat, ioError)) {
             LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_absoluteLocalFilepath, ioError));
-            _exitInfo = ExitCode::SystemError;
-            return false;
+            return ExitCode::SystemError;
         }
 
         if (ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_absoluteLocalFilepath));
-            _exitInfo = {ExitCode::DataError, ExitCause::InvalidSnapshot};
-            return false;
+            return {ExitCode::DataError, ExitCause::InvalidSnapshot};
         } else if (ioError == IoError::AccessDenied) {
             LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_absoluteLocalFilepath));
-            _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
-            return false;
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
 
         if (filestat.nodeType != _nodeType && filestat.nodeType != NodeType::Unknown && _nodeType != NodeType::Unknown) {
             // The nodeId has been reused by a new item.
             LOGW_DEBUG(_logger,
                        L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath) << L" has been reused by a new item.");
-            return true;
+            return ExitCode::Ok;
         }
 
         LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath) << L" still exists on local replica.");
-        _exitInfo = {ExitCode::DataError, ExitCause::FileExists};
-        return false;
+        return {ExitCode::DataError, ExitCause::FileExists};
     } else if (!otherNodeId.empty() && _localItemId != otherNodeId) {
         LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath)
                                       << L" exists on local replica with another ID (" << CommonUtility::s2ws(_localItemId)
@@ -107,7 +100,7 @@ bool DeleteJob::canRun() {
         sentry::Handler::captureMessage(sentry::Level::Warning, "IoHelper::checkIfPathExistsWithSameNodeId", ss.str());
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
 std::string DeleteJob::getSpecificUrl() {

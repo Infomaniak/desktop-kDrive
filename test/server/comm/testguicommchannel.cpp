@@ -18,7 +18,6 @@
 
 #include "testguicommchannel.h"
 #include "comm/guijobs/abstractguijob.h"
-#include "comm/guijobs/guijobfactory.h"
 #include "comm/guijobs/loginrequesttokenjob.h"
 #include "comm/guijobs/userdbidlistjob.h"
 #include "libcommon/comm.h"
@@ -138,8 +137,6 @@ void TestGuiCommChannel::testLoginRequestTokenJob() {
                              R"( "userDbId": 1 },)"
                              R"( "type": 1 })")}; // GuiJobType::Query
 
-    GuiJobFactory guiJobFactory;
-
     auto test = [&](const CommString &query, const CommString &answer, std::shared_ptr<AbstractCommChannel> channel) {
         //  Deserialize generic parameters
         int requestId = 0;
@@ -156,7 +153,7 @@ void TestGuiCommChannel::testLoginRequestTokenJob() {
         CPPUNIT_ASSERT(inParams["codeVerifier"] == "YmJiYg==");
 
         // Create job
-        auto job = guiJobFactory.make(requestNum, nullptr, requestId, inParams, channel);
+        auto job = _guiJobFactory.make(requestNum, nullptr, requestId, inParams, channel);
         CPPUNIT_ASSERT(job != nullptr);
 
         // Deserialize specific parameters
@@ -170,7 +167,7 @@ void TestGuiCommChannel::testLoginRequestTokenJob() {
 
         // Process job simulation
         loginRequestTokenJob->_userDbId = 1;
-        job->_exitInfo = ExitCode::Ok;
+        job->setExitInfo(ExitCode::Ok);
 
         // Serialize specific parameters
         if (!job->serializeOutputParms()) {
@@ -179,7 +176,7 @@ void TestGuiCommChannel::testLoginRequestTokenJob() {
 
         CPPUNIT_ASSERT(job->_outParams["userDbId"] == 1);
 
-        if (!job->serializeGenericOutputParms()) {
+        if (!job->serializeGenericOutputParms(ExitCode::Ok)) {
             CPPUNIT_ASSERT(false);
         }
 
@@ -234,8 +231,6 @@ void TestGuiCommChannel::testUserDbIdListJob() {
                              R"( "userDbIdList": [ 1, 2, 3 ] },)"
                              R"( "type": 1 })")}; // GuiJobType::Query
 
-    GuiJobFactory guiJobFactory;
-
     auto test = [&](const CommString &query, const CommString &answer, std::shared_ptr<AbstractCommChannel> channel) {
         //  Deserialize generic parameters
         int requestId = 0;
@@ -250,7 +245,7 @@ void TestGuiCommChannel::testUserDbIdListJob() {
         CPPUNIT_ASSERT(inParams.size() == 0);
 
         // Create job
-        auto job = guiJobFactory.make(requestNum, nullptr, requestId, inParams, channel);
+        auto job = _guiJobFactory.make(requestNum, nullptr, requestId, inParams, channel);
         CPPUNIT_ASSERT(job != nullptr);
 
         // Deserialize specific parameters
@@ -262,7 +257,7 @@ void TestGuiCommChannel::testUserDbIdListJob() {
 
         // Process job simulation
         userDbIdListJob->_userDbIdList = {1, 2, 3};
-        job->_exitInfo = ExitCode::Ok;
+        job->setExitInfo(ExitCode::Ok);
 
         // Serialize specific parameters
         if (!job->serializeOutputParms()) {
@@ -271,7 +266,7 @@ void TestGuiCommChannel::testUserDbIdListJob() {
 
         CPPUNIT_ASSERT(job->_outParams["userDbIdList"] == "[ 1, 2, 3 ]");
 
-        if (!job->serializeGenericOutputParms()) {
+        if (!job->serializeGenericOutputParms(ExitCode::Ok)) {
             CPPUNIT_ASSERT(false);
         }
 

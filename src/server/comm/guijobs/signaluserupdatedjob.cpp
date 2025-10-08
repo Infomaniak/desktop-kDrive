@@ -26,14 +26,14 @@ static const auto outParamsUserInfo = "userInfo";
 
 namespace KDC {
 
-SignalUserUpdatedJob::SignalUserUpdatedJob(std::shared_ptr<CommManager> commManager,
-                                           const std::shared_ptr<AbstractCommChannel> channel, const UserInfo &userInfo) :
+SignalUserUpdatedJob::SignalUserUpdatedJob(std::shared_ptr<CommManager> commManager, std::shared_ptr<AbstractCommChannel> channel,
+                                           const UserInfo &userInfo) :
     AbstractGuiJob(commManager, channel),
     _userInfo(userInfo) {
     _signalNum = SignalNum::USER_UPDATED;
 }
 
-bool SignalUserUpdatedJob::serializeOutputParms() {
+ExitInfo SignalUserUpdatedJob::serializeOutputParms() {
     // Output parameters serialization
     std::function<Poco::Dynamic::Var(const UserInfo &)> userInfo2DynamicVar = [](const UserInfo &value) {
         Poco::DynamicStruct structValue;
@@ -41,8 +41,7 @@ bool SignalUserUpdatedJob::serializeOutputParms() {
         return structValue;
     };
     writeParamValue(outParamsUserInfo, _userInfo, userInfo2DynamicVar);
-
-    return true;
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

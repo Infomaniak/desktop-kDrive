@@ -57,14 +57,13 @@ std::string AbstractLoginJob::getContentType() {
     return "application/x-www-form-urlencoded";
 }
 
-bool AbstractLoginJob::handleResponse(std::istream &inputStream) {
+ExitInfo AbstractLoginJob::handleResponse(std::istream &inputStream) {
     std::string str(std::istreambuf_iterator<char>(inputStream), {});
     _apiToken = ApiToken(str);
-
-    return true;
+    return ExitCode::Ok;
 }
 
-bool AbstractLoginJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
+ExitInfo AbstractLoginJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
     Poco::JSON::Parser jsonParser;
     Poco::JSON::Object::Ptr jsonError;
     try {
@@ -72,9 +71,7 @@ bool AbstractLoginJob::handleError(const std::string &replyBody, const Poco::URI
     } catch (Poco::Exception &exc) {
         LOG_WARN(_logger, "Reply " << jobId() << " received doesn't contain a valid JSON error: " << exc.displayText());
         Utility::logGenericServerError(_logger, "Login error", replyBody, _resHttp);
-
-        _exitInfo = {ExitCode::BackError, ExitCause::ApiErr};
-        return false;
+        return {ExitCode::BackError, ExitCause::ApiErr};
     }
 
     if (isExtendedLog()) {
@@ -83,16 +80,17 @@ bool AbstractLoginJob::handleError(const std::string &replyBody, const Poco::URI
         LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << CommonUtility::s2ws(os.str()));
     }
 
+    ExitInfo exitInfo;
     Poco::JSON::Object::Ptr errorObj = jsonError->getObject(errorKey);
     if (errorObj) {
         if (!JsonParserUtility::extractValue(errorObj, codeKey, _errorCode)) {
-            return false;
+            return {};
         }
         if (!JsonParserUtility::extractValue(errorObj, descriptionKey, _errorDescr)) {
-            return false;
+            return {};
         }
         LOG_WARN(_logger, "Error in request " << uri.toString() << " : " << _errorCode << " - " << _errorDescr);
-        _exitInfo = ExitCode::BackError;
+        exitInfo = ExitCode::BackError;
     } else {
         JsonParserUtility::extractValue(jsonError, errorKey, _errorCode, false);
 
@@ -104,15 +102,15 @@ bool AbstractLoginJob::handleError(const std::string &replyBody, const Poco::URI
             _errorDescr = errorReason;
             LOG_WARN(_logger, "Error in request " << uri.toString() << " : refresh token has been revoked ");
             disableRetry();
-            _exitInfo = ExitCode::InvalidToken;
+            exitInfo = ExitCode::InvalidToken;
         } else {
             LOG_WARN(_logger, "Error in request " << uri.toString() << " : " << errorReason);
-            _exitInfo = ExitCode::BackError;
+            exitInfo = ExitCode::BackError;
         }
     }
 
-    _exitInfo.setCause(ExitCause::LoginError);
-    return false;
+    exitInfo.setCause(ExitCause::LoginError);
+    return exitInfo;
 }
 
 } // namespace KDC

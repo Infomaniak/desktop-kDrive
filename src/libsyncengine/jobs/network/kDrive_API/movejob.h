@@ -30,7 +30,7 @@ class MoveJob : public AbstractTokenNetworkJob {
                 const NodeId &destDirId, const SyncName &name = Str(""));
         ~MoveJob() override;
 
-        bool canRun() override;
+        ExitInfo canRun() override;
 
     private:
         std::string getSpecificUrl() override;

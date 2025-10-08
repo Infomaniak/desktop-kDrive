@@ -57,7 +57,7 @@ class GuiJobTest : public AbstractGuiJob {
         };
 
         GuiJobTest(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                   const std::shared_ptr<AbstractCommChannel> channel) :
+                   std::shared_ptr<AbstractCommChannel> channel) :
             AbstractGuiJob(commManager, requestId, inParams, channel) {
             _requestNum = RequestNum::Unknown;
         }
@@ -77,9 +77,9 @@ class GuiJobTest : public AbstractGuiJob {
         Dummy _dummyValue;
         std::vector<Dummy> _dummyValues;
 
-        bool deserializeInputParms() override;
-        bool serializeOutputParms() override;
-        bool process() override;
+        ExitInfo deserializeInputParms() override;
+        ExitInfo serializeOutputParms() override;
+        ExitInfo process() override;
 
         friend class TestAbstractGuiJob;
 };

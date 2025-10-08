@@ -33,10 +33,10 @@ class LocalCreateDirJob : public SyncJob {
         SyncTime creationTime() const { return _creationTime; }
 
     protected:
-        virtual bool canRun() override;
+        ExitInfo canRun() override;
 
     private:
-        virtual void runJob() override;
+        ExitInfo runJob() override;
 
         SyncPath _destFilePath;
 

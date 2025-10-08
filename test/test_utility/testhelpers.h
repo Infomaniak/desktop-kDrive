@@ -88,11 +88,11 @@ struct RightsSet {
         RightsSet(int rights) :
             read(rights & 4),
             write(rights & 2),
-            execute(rights & 1){};
+            execute(rights & 1) {};
         RightsSet(bool read, bool write, bool execute) :
             read(read),
             write(write),
-            execute(execute){};
+            execute(execute) {};
         bool read;
         bool write;
         bool execute;

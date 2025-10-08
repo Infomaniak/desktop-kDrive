@@ -29,31 +29,29 @@ static const auto outParamsUserDbIdList = "userDbIdList";
 namespace KDC {
 
 UserDbIdListJob::UserDbIdListJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                                 const std::shared_ptr<AbstractCommChannel> channel) :
+                                 std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
     _requestNum = RequestNum::USER_DBIDLIST;
 }
 
-bool UserDbIdListJob::deserializeInputParms() {
-    return true;
+ExitInfo UserDbIdListJob::deserializeInputParms() {
+    return ExitCode::Ok;
 }
 
-bool UserDbIdListJob::serializeOutputParms() {
+ExitInfo UserDbIdListJob::serializeOutputParms() {
     // Output parameters serialization
     writeParamValue(outParamsUserDbIdList, _userDbIdList);
 
-    return true;
+    return ExitCode::Ok;
 }
 
-bool UserDbIdListJob::process() {
+ExitInfo UserDbIdListJob::process() {
     ExitCode exitCode = ServerRequests::getUserDbIdList(_userDbIdList);
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in ServerRequests::getUserDbIdList: code=" << exitCode);
-        _exitInfo = exitCode;
-        return false;
     }
 
-    return _exitInfo;
+    return exitCode;
 }
 
 } // namespace KDC

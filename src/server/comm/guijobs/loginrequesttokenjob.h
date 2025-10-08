@@ -23,7 +23,7 @@ namespace KDC {
 class LoginRequestTokenJob : public AbstractGuiJob {
     public:
         LoginRequestTokenJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                             const std::shared_ptr<AbstractCommChannel> channel);
+                             std::shared_ptr<AbstractCommChannel> channel);
 
     private:
         // Input parameters
@@ -35,9 +35,9 @@ class LoginRequestTokenJob : public AbstractGuiJob {
         std::string _error;
         std::string _errorDescr;
 
-        bool deserializeInputParms() override;
-        bool serializeOutputParms() override;
-        bool process() override;
+        ExitInfo deserializeInputParms() override;
+        ExitInfo serializeOutputParms() override;
+        ExitInfo process() override;
 
         friend class TestGuiCommChannel;
 };

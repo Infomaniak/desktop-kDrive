@@ -66,13 +66,13 @@ class MockGetAppVersionJob final : public GetAppVersionJob {
             GetAppVersionJob(platform, appID),
             _updateShouldBeAvailable(updateShouldBeAvailable) {}
 
-        void runJob() noexcept override {
+        ExitInfo runJob() noexcept override {
             const auto str = _updateShouldBeAvailable ? generateJsonReply(highTagValue, highBuildVersionValue)
                                                       : generateJsonReply(lowTagValue, lowBuildVersionValue);
             const std::istringstream iss(str);
             std::istream is(iss.rdbuf());
             GetAppVersionJob::handleResponse(is);
-            _exitInfo = ExitCode::Ok;
+            return ExitCode::Ok;
         }
 
     private:

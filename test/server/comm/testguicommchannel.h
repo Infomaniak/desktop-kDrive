@@ -18,6 +18,7 @@
 
 #include "testincludes.h"
 #include "server/comm/guicommserver.h"
+#include "server/comm/guijobs/guijobfactory.h"
 #include <log4cplus/logger.h>
 
 namespace KDC {
@@ -60,5 +61,8 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testCanReadMessage();
         void testLoginRequestTokenJob();
         void testUserDbIdListJob();
+
+    private:
+        GuiJobFactory _guiJobFactory;
 };
 } // namespace KDC
