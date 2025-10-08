@@ -27,8 +27,8 @@ open class OnboardingStepViewController: NSViewController {
     public let containerView = NSView()
     public let titleLabel = NSTextField(labelWithString: "")
     public let descriptionLabel = NSTextField(labelWithString: "")
-    public let primaryButton = NSButton()
-    public let secondaryButton = NSButton()
+    public let primaryButton = BorderedProminentButton()
+    public let secondaryButton = BorderlessButton()
 
     override open func viewDidLoad() {
         super.viewDidLoad()
@@ -41,23 +41,20 @@ open class OnboardingStepViewController: NSViewController {
 
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.font = .preferredFont(forTextStyle: .largeTitle)
-        titleLabel.textColor = .textPrimary
+        titleLabel.textColor = .Tokens.Text.primary
         containerView.addSubview(titleLabel)
 
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
         descriptionLabel.font = .preferredFont(forTextStyle: .body)
         descriptionLabel.lineBreakMode = .byWordWrapping
-        descriptionLabel.textColor = .textSecondary
+        descriptionLabel.textColor = .Tokens.Text.secondary
         containerView.addSubview(descriptionLabel)
 
         primaryButton.translatesAutoresizingMaskIntoConstraints = false
-        primaryButton.bezelColor = .primary
-        primaryButton.contentTintColor = .secondaryLabelColor
+        primaryButton.keyEquivalent = "\r"
         containerView.addSubview(primaryButton)
 
         secondaryButton.translatesAutoresizingMaskIntoConstraints = false
-        secondaryButton.isBordered = false
-        secondaryButton.contentTintColor = .primary
         containerView.addSubview(secondaryButton)
 
         NSLayoutConstraint.activate([

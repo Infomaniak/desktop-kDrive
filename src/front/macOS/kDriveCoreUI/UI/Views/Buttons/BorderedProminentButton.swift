@@ -1,4 +1,3 @@
-//
 /*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2025 Infomaniak Network SA
@@ -18,14 +17,41 @@
  */
 
 import Cocoa
+import kDriveResources
 
-public class BorderedProminentButton: NSButton {
-    public init() {
-        super.init(frame: .zero)
+public final class BorderedProminentButton: NSButton {
+    var backgroundColor: NSColor = .Tokens.Action.primary
+    var foregroundColor: NSColor = .Tokens.Action.onPrimary
+
+    public override var title: String {
+        didSet {
+            setupTitleColor()
+        }
     }
 
-    @available(*, unavailable)
+    public override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        setupColors()
+    }
+
     public required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        super.init(coder: coder)
+        setupColors()
     }
+
+    private func setupColors() {
+        bezelColor = backgroundColor
+        setupTitleColor()
+    }
+
+    private func setupTitleColor() {
+        attributedTitle = NSAttributedString(string: title, attributes: [.foregroundColor: foregroundColor])
+    }
+}
+
+@available(macOS 14.0, *)
+#Preview {
+    let button = BorderedProminentButton()
+    button.title = "Bordered Button"
+    return button
 }

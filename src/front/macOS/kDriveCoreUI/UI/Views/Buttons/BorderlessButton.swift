@@ -1,4 +1,3 @@
-//
 /*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2025 Infomaniak Network SA
@@ -19,13 +18,28 @@
 
 import Cocoa
 
-public class BorderlessButton: NSButton {
-    public init() {
-        super.init(frame: .zero)
+public final class BorderlessButton: NSButton {
+    var foregroundColor: NSColor = .Tokens.Action.primary
+
+    public override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        setupColors()
     }
 
-    @available(*, unavailable)
     public required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        super.init(coder: coder)
+        setupColors()
     }
+
+    private func setupColors() {
+        isBordered = false
+        contentTintColor = foregroundColor
+    }
+}
+
+@available(macOS 14.0, *)
+#Preview {
+    let button = BorderlessButton()
+    button.title = "Borderless Button"
+    return button
 }

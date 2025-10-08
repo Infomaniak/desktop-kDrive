@@ -33,7 +33,7 @@ class OnboardingAnimationsView: NSView {
         super.init(frame: .zero)
 
         wantsLayer = true
-        layer?.backgroundColor = NSColor.surfaceSecondary.cgColor
+        layer?.backgroundColor = NSColor.Tokens.Surface.secondary.cgColor
 
         setupAnimationView()
         bindViewModel()

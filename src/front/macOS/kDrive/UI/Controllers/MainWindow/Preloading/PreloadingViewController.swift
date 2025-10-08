@@ -65,7 +65,7 @@ extension PreloadingViewController {
 
     private func setupView() {
         view.wantsLayer = true
-        view.layer?.backgroundColor = NSColor.surfaceSecondary.cgColor
+        view.layer?.backgroundColor = NSColor.Tokens.Surface.secondary.cgColor
 
         animationView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(animationView)

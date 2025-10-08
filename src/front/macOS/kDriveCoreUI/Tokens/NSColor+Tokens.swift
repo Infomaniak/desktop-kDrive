@@ -19,19 +19,31 @@
 import Cocoa
 import kDriveResources
 
-public extension NSColor {
-    // MARK: Tier 2
+// swiftlint:disable nesting
+extension NSColor {
+    public enum Tokens {
+        public enum Action {
+            public static let primary = NSColor(light: KDriveColors.drive600, dark: KDriveColors.drive400)
+            public static let onPrimary = NSColor(light: KDriveColors.neutralBlue100, dark: KDriveColors.neutralBlue800)
+        }
 
-    static let textPrimary = NSColor(light: KDriveColors.neutralBlue800.color, dark: KDriveColors.neutralBlue50.color)
-    static let textSecondary = NSColor(light: KDriveColors.neutralBlue600.color, dark: KDriveColors.neutralBlue200.color)
+        public enum Text {
+            public static let primary = NSColor(light: KDriveColors.neutralBlue800, dark: KDriveColors.neutralBlue50)
+            public static let secondary = NSColor(light: KDriveColors.neutralBlue600, dark: KDriveColors.neutralBlue200)
+        }
 
-    static let primary = NSColor(light: KDriveColors.drive600.color, dark: KDriveColors.drive400.color)
-    static let onPrimary = NSColor(light: KDriveColors.neutralBlue100.color, dark: KDriveColors.neutralBlue800.color)
-
-    static let surfaceSecondary = NSColor(light: KDriveColors.neutralBlue50.color, dark: KDriveColors.neutralBlue700.color)
+        public enum Surface {
+            public static let secondary = NSColor(light: KDriveColors.neutralBlue50, dark: KDriveColors.neutralBlue700)
+        }
+    }
 }
+// swiftlint:enable nesting
 
 extension NSColor {
+    convenience init(light: ColorAsset, dark: ColorAsset) {
+        self.init(light: light.color, dark: dark.color)
+    }
+
     convenience init(light: NSColor, dark: NSColor) {
         self.init(name: nil) { appearance in
             appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? dark : light
