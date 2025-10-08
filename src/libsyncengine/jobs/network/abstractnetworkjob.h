@@ -45,7 +45,7 @@ class AbstractNetworkJob : public SyncJob {
         [[nodiscard]] Poco::Net::HTTPResponse::HTTPStatus getStatusCode() const { return _httpResponse.getStatus(); }
         void abort() override;
 
-        [[nodiscard]] Poco::Net::HTTPResponse httpResponse() const { return _httpResponse; }
+        [[nodiscard]] virtual Poco::Net::HTTPResponse httpResponse() const { return _httpResponse; }
         [[nodiscard]] std::string octetStreamRes() const { return _octetStreamRes; }
         Poco::JSON::Object::Ptr jsonRes() { return _jsonRes; }
 
