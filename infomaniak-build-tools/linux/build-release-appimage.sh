@@ -19,7 +19,7 @@
 #
 
 script_directory_path="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
-source "$script_directory_path/../build-utils.sh"
+source "$script_directory_path/build-utils.sh"
 
 program_name="$(basename "$0")"
 
