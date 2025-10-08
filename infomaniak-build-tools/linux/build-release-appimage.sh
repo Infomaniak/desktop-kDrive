@@ -24,7 +24,7 @@ source "$script_directory_path/build-utils.sh"
 program_name="$(basename "$0")"
 
 function display_help {
-  echo "$program_name [-h] [-d architecture]"
+  echo "$program_name [-h]"
   echo "  Build the Linux release AppImage for desktop-kDrive."
   echo "where:"
   echo "-h  Show this help text."

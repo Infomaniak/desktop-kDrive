@@ -20,19 +20,9 @@
 
 set -e
 
-
 program_name="$(basename "$0")"
-
-
-function get_default_src_dir() {
-  if [[ -n "$KDRIVE_SRC_DIR" ]]; then
-     echo "$KDRIVE_SRC_DIR"
-  elif [[ -d "$HOME/Projects/desktop-kDrive" ]]; then
-     echo "$HOME/Projects/desktop-kDrive"
-  else
-     echo "$PWD"
-    fi
-}
+script_directory_path="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+source "$script_directory_path/../build-utils.sh"
 
 src_dir="$(get_default_src_dir)"
 
