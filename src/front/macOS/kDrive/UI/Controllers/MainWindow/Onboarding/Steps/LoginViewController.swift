@@ -65,7 +65,7 @@ final class LoginViewController: OnboardingStepViewController {
         titleLabel.stringValue = "!Bienvenue dans kDrive !"
         descriptionLabel.stringValue = "!Le cloud privé, rapide et sécurisé, hébergé en Suisse.\n\nConnectez-vous et gardez vos documents synchronisés sur tous vos appareils."
 
-        primaryButton.title = "Se connecter"
-        secondaryButton.title = "Créer un compte"
+        primaryButton.title = "!Se connecter"
+        secondaryButton.title = "!Créer un compte"
     }
 }

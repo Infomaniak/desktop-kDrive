@@ -50,12 +50,12 @@ open class OnboardingStepViewController: NSViewController {
         descriptionLabel.textColor = .Tokens.Text.secondary
         containerView.addSubview(descriptionLabel)
 
+        secondaryButton.translatesAutoresizingMaskIntoConstraints = false
+        containerView.addSubview(secondaryButton)
+
         primaryButton.translatesAutoresizingMaskIntoConstraints = false
         primaryButton.keyEquivalent = "\r"
         containerView.addSubview(primaryButton)
-
-        secondaryButton.translatesAutoresizingMaskIntoConstraints = false
-        containerView.addSubview(secondaryButton)
 
         NSLayoutConstraint.activate([
             containerView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -76,13 +76,13 @@ open class OnboardingStepViewController: NSViewController {
             descriptionLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
             descriptionLabel.trailingAnchor.constraint(lessThanOrEqualTo: containerView.trailingAnchor),
 
-            primaryButton.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: AppPadding.padding32),
-            primaryButton.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
-            containerView.bottomAnchor.constraint(equalTo: primaryButton.bottomAnchor),
-
             secondaryButton.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: AppPadding.padding32),
-            secondaryButton.leadingAnchor.constraint(equalTo: primaryButton.trailingAnchor, constant: AppPadding.padding8),
-            containerView.bottomAnchor.constraint(equalTo: secondaryButton.bottomAnchor)
+            secondaryButton.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+            containerView.bottomAnchor.constraint(equalTo: secondaryButton.bottomAnchor),
+
+            primaryButton.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: AppPadding.padding32),
+            primaryButton.leadingAnchor.constraint(equalTo: secondaryButton.trailingAnchor, constant: AppPadding.padding8),
+            containerView.bottomAnchor.constraint(equalTo: primaryButton.bottomAnchor)
         ])
     }
 }
