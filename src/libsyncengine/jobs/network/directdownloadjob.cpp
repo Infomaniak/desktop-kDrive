@@ -28,11 +28,17 @@ namespace KDC {
 
 constexpr uint64_t bufferSize = 4096 * 1000; // 4MB     // TODO : this should be defined in a common parent class
 
-DirectDownloadJob::DirectDownloadJob(const SyncPath &destinationFile, const std::string &url, const bool headerOnly /*= false*/) :
+DirectDownloadJob::DirectDownloadJob(const std::string &url) :
+    _url(url) {
+    _httpMethod = Poco::Net::HTTPRequest::HTTP_HEAD;
+}
+
+DirectDownloadJob::DirectDownloadJob(const SyncPath &destinationFile, const std::string &url) :
     _destinationFile(destinationFile),
     _url(url) {
-    _httpMethod = headerOnly ? Poco::Net::HTTPRequest::HTTP_HEAD : Poco::Net::HTTPRequest::HTTP_GET;
+    _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
+
 
 ExitInfo DirectDownloadJob::handleResponse(std::istream &is) {
     if (_httpMethod == Poco::Net::HTTPRequest::HTTP_HEAD) return ExitCode::Ok;

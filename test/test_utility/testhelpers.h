@@ -98,7 +98,10 @@ struct RightsSet {
         bool execute;
 };
 
+void generateTestFile(const SyncPath &path, const uint64_t size = 0);
 void generateOrEditTestFile(const SyncPath &path);
+void setTestFileSize(const SyncPath &path, uint64_t size);
+
 /**
  * @brief Generate test files.
  * @param dirPath Directory in which the files will be created.

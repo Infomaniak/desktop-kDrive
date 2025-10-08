@@ -28,7 +28,7 @@ namespace KDC {
 class MockUpdateChecker : public UpdateChecker {
     public:
         using UpdateChecker::UpdateChecker;
-        void setUpdateShoudBeAvailable(const bool val) { _updateShouldBeAvailable = val; }
+        void setUpdateShouldBeAvailable(const bool val) { _updateShouldBeAvailable = val; }
         void setAllVersionInfo(const AllVersionsInfo &versionInfo) { _versionsInfo = versionInfo; }
 
     private:

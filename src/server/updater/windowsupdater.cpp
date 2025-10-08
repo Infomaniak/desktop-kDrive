@@ -34,10 +34,7 @@ void WindowsUpdater::onUpdateFound() {
         return;
     }
 
-    // Get the expected size of the installer.
-    DirectDownloadJob test(filepath, versionInfo(_currentChannel).downloadUrl, true);
-    (void) test.runSynchronously();
-    const auto expectedSize = test.httpResponse().getContentLength();
+    const auto expectedSize = getExpectedInstallerSize(versionInfo(_currentChannel).downloadUrl);
 
     // Check if an installer is already downloaded and get its size.
     uint64_t localSize = 0;
@@ -45,7 +42,7 @@ void WindowsUpdater::onUpdateFound() {
     if (!IoHelper::getFileSize(filepath, localSize, ioError)) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::getFileSize for " << Utility::formatSyncPath(filepath));
     }
-    if (ioError == IoError::Success && localSize == expectedSize) {
+    if (ioError == IoError::Success && localSize == static_cast<uint64_t>(expectedSize)) {
         LOGW_INFO(Log::instance()->getLogger(), L"Installer already downloaded at " << Utility::formatSyncPath(filepath)
                                                                                     << L". Update is ready to be installed.");
         setState(UpdateState::Ready);
@@ -139,6 +136,13 @@ bool WindowsUpdater::getInstallerPath(SyncPath &path) const {
     }
     path = tmpDirPath / installerName;
     return true;
+}
+
+std::streamsize WindowsUpdater::getExpectedInstallerSize(const SyncPath &destinationPath, const std::string &downloadUrl) {
+    // Get the expected size of the installer.
+    DirectDownloadJob job(downloadUrl);
+    (void) job.runSynchronously();
+    return job.httpResponse().getContentLength();
 }
 
 } // namespace KDC

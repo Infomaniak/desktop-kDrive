@@ -53,10 +53,27 @@ SyncName makeNfcSyncName() {
     return nfcNormalized;
 }
 
+void generateTestFile(const SyncPath &path, const uint64_t size /*= 0*/) {
+    std::ofstream testFile(path, std::ios::app);
+    if (size) {
+        setTestFileSize(path, size);
+    }
+    testFile.close();
+}
+
 void generateOrEditTestFile(const SyncPath &path) {
     std::ofstream testFile(path, std::ios::app);
     testFile << "test" << std::endl;
     testFile.close();
+}
+
+void setTestFileSize(const SyncPath &path, uint64_t size) {
+    const std::string str{"0123456789"};
+    std::ofstream ofs(path, std::ios_base::in | std::ios_base::trunc);
+    for (uint64_t i = 0;
+         i < static_cast<uint64_t>(round(static_cast<double>(size * 1000000) / static_cast<double>(str.length()))); i++) {
+        ofs << str;
+    }
 }
 
 void generateBigFiles(const SyncPath &dirPath, const uint16_t size, const uint16_t count) {
