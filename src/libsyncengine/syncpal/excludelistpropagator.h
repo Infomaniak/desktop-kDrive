@@ -30,7 +30,7 @@ class ExcludeListPropagator : public AbstractPropagatorJob {
         ~ExcludeListPropagator();
 
     private:
-        virtual void runJob() override;
+        ExitInfo runJob() override;
 
         std::shared_ptr<SyncPal> _syncPal;
 

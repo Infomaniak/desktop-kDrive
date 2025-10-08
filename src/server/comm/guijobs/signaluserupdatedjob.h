@@ -30,9 +30,9 @@ class SignalUserUpdatedJob : public AbstractGuiJob {
         // Output parameters
         UserInfo _userInfo;
 
-        bool deserializeInputParms() override { return true; }
-        bool serializeOutputParms() override;
-        bool process() override { return true; }
+        ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
+        ExitInfo serializeOutputParms(bool hasError = false) override;
+        ExitInfo process() override { return ExitCode::Ok; }
 };
 
 } // namespace KDC

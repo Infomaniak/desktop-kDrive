@@ -103,7 +103,7 @@ ExtensionJob::ExtensionJob(std::shared_ptr<CommManager> commManager, const CommS
     };
 }
 
-void ExtensionJob::runJob() {
+ExitInfo ExtensionJob::runJob() {
     if (_channels.empty()) {
         executeCommand(_commandLineStr, nullptr);
     } else {
@@ -112,7 +112,7 @@ void ExtensionJob::runJob() {
         }
     }
 
-    _exitInfo = ExitCode::Ok;
+    return ExitCode::Ok;
 }
 
 void ExtensionJob::commandGetMenuItems(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {

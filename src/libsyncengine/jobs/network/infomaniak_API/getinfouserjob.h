@@ -32,7 +32,7 @@ class GetInfoUserJob : public AbstractTokenNetworkJob {
         [[nodiscard]] bool isStaff() const { return _isStaff; }
 
     protected:
-        bool handleJsonResponse(const std::string &replyBody) override;
+        ExitInfo handleJsonResponse(const std::string &replyBody) override;
 
     private:
         std::string getSpecificUrl() override;

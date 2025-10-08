@@ -54,37 +54,37 @@ AbstractGuiJob::AbstractGuiJob(std::shared_ptr<CommManager> commManager, const s
     _signalId = _lastSignalId++;
 }
 
-void AbstractGuiJob::runJob() {
+ExitInfo AbstractGuiJob::runJob() {
     if (_type == GuiJobType::Unknown) {
         LOG_WARN(_logger, "The job type must be set");
-        _exitInfo = ExitCode::LogicError;
-        return;
+        return ExitCode::LogicError;
     }
 
-    _exitInfo = ExitCode::Ok;
+    auto exitInfo = ExitInfo(ExitCode::Ok);
     if (_type == GuiJobType::Query) {
-        if (!deserializeInputParms()) {
-            LOG_WARN(_logger, "Error in deserializeInputParms for job=" << jobId());
+        if (exitInfo = deserializeInputParms(); !exitInfo) {
+            LOG_WARN(_logger, "Error in deserializeInputParms for job=" << jobId() << " : " << exitInfo);
         }
 
-        if (_exitInfo && !process()) {
-            LOG_WARN(_logger, "Error in process for job=" << jobId());
+        if (exitInfo = process(); !exitInfo) {
+            LOG_WARN(_logger, "Error in process for job=" << jobId() << " : " << exitInfo);
         }
     }
 
-    if (!serializeOutputParms()) {
-        LOG_WARN(_logger, "Error in serializeOutputParms for job=" << jobId());
+    if (exitInfo = serializeOutputParms(); !exitInfo) {
+        LOG_WARN(_logger, "Error in serializeOutputParms for job=" << jobId() << " : " << exitInfo);
     }
 
-    if (_type == GuiJobType::Signal && !_exitInfo) return;
+    if (_type == GuiJobType::Signal && !exitInfo) return exitInfo;
 
-    if (!serializeGenericOutputParms()) {
+    if (!serializeGenericOutputParms(exitInfo)) {
         LOG_WARN(_logger, "Error in serializeGenericOutputParms for job=" << jobId());
     }
 
     if (!_channel->sendMessage(_outputParamsStr)) {
         LOG_WARN(_logger, "Error in AbstractCommChannel::sendMessage for job=" << jobId());
     }
+    return exitInfo;
 }
 
 bool AbstractGuiJob::deserializeGenericInputParms(const CommString &inputParamsStr, int &requestId, RequestNum &requestNum,
@@ -108,14 +108,14 @@ bool AbstractGuiJob::deserializeGenericInputParms(const CommString &inputParamsS
     return true;
 }
 
-bool AbstractGuiJob::serializeGenericOutputParms() {
+bool AbstractGuiJob::serializeGenericOutputParms(const ExitInfo &exitInfo) {
     Poco::DynamicStruct paramsStruct;
     if (_type == GuiJobType::Query) {
         CommonUtility::writeValueToStruct(paramsStruct, outRequestType, GuiJobType::Query);
         CommonUtility::writeValueToStruct(paramsStruct, outRequestId, _requestId);
         CommonUtility::writeValueToStruct(paramsStruct, outRequestNum, _requestNum);
-        CommonUtility::writeValueToStruct(paramsStruct, outRequestCode, _exitInfo.code());
-        CommonUtility::writeValueToStruct(paramsStruct, outRequestCause, _exitInfo.cause());
+        CommonUtility::writeValueToStruct(paramsStruct, outRequestCode, exitInfo.code());
+        CommonUtility::writeValueToStruct(paramsStruct, outRequestCause, exitInfo.cause());
     } else {
         CommonUtility::writeValueToStruct(paramsStruct, outRequestType, GuiJobType::Signal);
         CommonUtility::writeValueToStruct(paramsStruct, outRequestId, _signalId);

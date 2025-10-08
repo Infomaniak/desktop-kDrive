@@ -33,7 +33,7 @@ SignalUserUpdatedJob::SignalUserUpdatedJob(std::shared_ptr<CommManager> commMana
     _signalNum = SignalNum::USER_UPDATED;
 }
 
-bool SignalUserUpdatedJob::serializeOutputParms() {
+ExitInfo SignalUserUpdatedJob::serializeOutputParms([[maybe_unused]] bool hasError /*= false*/) {
     // Output parameters serialization
     std::function<Poco::Dynamic::Var(const UserInfo &)> userInfo2DynamicVar = [](const UserInfo &value) {
         Poco::DynamicStruct structValue;
@@ -41,8 +41,7 @@ bool SignalUserUpdatedJob::serializeOutputParms() {
         return structValue;
     };
     writeParamValue(outParamsUserInfo, _userInfo, userInfo2DynamicVar);
-
-    return true;
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

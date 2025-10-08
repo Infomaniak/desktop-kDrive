@@ -32,9 +32,9 @@ CopyToDirectoryJob::CopyToDirectoryJob(int driveDbId, const NodeId &remoteFileId
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 
-bool CopyToDirectoryJob::handleResponse(std::istream &is) {
-    if (!AbstractTokenNetworkJob::handleResponse(is)) {
-        return false;
+ExitInfo CopyToDirectoryJob::handleResponse(std::istream &is) {
+    if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) {
+        return exitInfo;
     }
 
     NodeId res;
@@ -42,15 +42,15 @@ bool CopyToDirectoryJob::handleResponse(std::istream &is) {
         Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
         if (dataObj) {
             if (!JsonParserUtility::extractValue(dataObj, idKey, _nodeId)) {
-                return false;
+                return {};
             }
             if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modtime)) {
-                return false;
+                return {};
             }
         }
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
 std::string CopyToDirectoryJob::getSpecificUrl() {

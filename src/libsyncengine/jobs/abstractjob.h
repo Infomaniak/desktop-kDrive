@@ -33,7 +33,7 @@ class AbstractJob : public Poco::Runnable {
         AbstractJob();
         ~AbstractJob() override;
 
-        virtual void runJob() = 0;
+        virtual ExitInfo runJob() = 0;
         ExitInfo runSynchronously();
 
         /*
@@ -58,13 +58,12 @@ class AbstractJob : public Poco::Runnable {
 
     protected:
         void run() override;
-        virtual bool canRun() { return true; }
+        virtual ExitInfo canRun() { return ExitCode::Ok; }
 
         log4cplus::Logger _logger;
-        ExitInfo _exitInfo;
 
-        bool _isRunning = false;
         virtual void callback(UniqueId) final;
+
 
     private:
         std::function<void(UniqueId)> _mainCallback = nullptr; // Used by the job manager to keep track of running jobs
@@ -76,6 +75,8 @@ class AbstractJob : public Poco::Runnable {
 
         UniqueId _jobId = 0;
 
+        bool _isRunning = false;
+        ExitInfo _exitInfo;
         bool _abort = false;
         bool _isExtendedLog = false;
 };
