@@ -248,13 +248,12 @@ QSet<QString> FolderTreeItemWidget::createBlackSet() {
 QString FolderTreeItemWidget::getPath(const QString &nodeId) {
     QString path;
 
-    if (!_blacklistCache.contains(nodeId)) {
-        if (const auto exitCode = GuiRequests::getNodePath(_syncDbId, nodeId, path); exitCode != ExitCode::Ok) {
-            qCWarning(lcFolderTreeItemWidget())
-                    << "Error in GuiRequests::getNodePath. Failed to retrieve path of nodeId '" << nodeId << "'.";
-        }
-    } else
+    if (_blacklistCache.contains(nodeId)) {
         path = _blacklistCache[nodeId];
+    } else if (const auto exitCode = GuiRequests::getNodePath(_syncDbId, nodeId, path); exitCode != ExitCode::Ok) {
+        qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getNodePath. Failed to retrieve path of nodeId '" << nodeId
+                                            << "'.";
+    }
 
     return path;
 }
@@ -268,14 +267,17 @@ void FolderTreeItemWidget::createBlackSet(const QTreeWidgetItem *parentItem, QSe
     switch (parentItem->checkState(TreeWidgetColumn::Folder)) {
         case Qt::Unchecked: {
             const QString path = getPath(parentNodeId);
-            if (!path.isEmpty()) (void) blackset.insert(parentNodeId);
+            if (!path.isEmpty()) {
+                (void) blackset.insert(parentNodeId);
+                (void) _blacklistCache.emplace(parentNodeId, path);
+            }
             removeChildNodeFromSet(path, blackset);
             return;
         }
         case Qt::Checked: {
             const QString path = getPath(parentNodeId);
             removeChildNodeFromSet(path, blackset);
-            return;
+            break;
         }
         case Qt::PartiallyChecked:
             break;
