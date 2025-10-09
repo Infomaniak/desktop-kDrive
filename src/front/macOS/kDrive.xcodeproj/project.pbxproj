@@ -163,8 +163,8 @@
 				37A1C45B2E546CB700596DBB /* kDriveCore */,
 				37A1C4402E546A9600596DBB /* kDriveCoreUI */,
 				F967009F2E95352C00EDD4D7 /* kDriveResources */,
-				37A1C4272E546A5200596DBB /* Products */,
 				F9ACC5372E5DF50B0081E80B /* swiftgen.yml */,
+				37A1C4272E546A5200596DBB /* Products */,
 				F967014F2E953CF600EDD4D7 /* Frameworks */,
 			);
 			sourceTree = "<group>";

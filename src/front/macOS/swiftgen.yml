@@ -24,21 +24,17 @@ strings:
         publicAccess: true
 
 xcassets:
-  inputs:
-    - kDriveResources/Images.xcassets
-  outputs:
-    - templateName: swift5
-      output: kDriveResources/Generated/Assets+Generated.swift
-      params:
-        enumName: KDriveResources
-        publicAccess: true
-
-xcassets:
-  inputs:
-    - kDriveResources/Colors.xcassets
-  outputs:
-    - templateName: swift5
-      output: kDriveResources/Generated/Colors+Generated.swift
-      params:
-        enumName: KDriveColors
-        publicAccess: true
+  - inputs: kDriveResources/Images.xcassets
+    outputs:
+      - templateName: swift5
+        output: kDriveResources/Generated/Assets+Generated.swift
+        params:
+          enumName: KDriveResources
+          publicAccess: true
+  - inputs: kDriveResources/Colors.xcassets
+    outputs:
+      - templateName: swift5
+        output: kDriveResources/Generated/Colors+Generated.swift
+        params:
+          enumName: KDriveColors
+          publicAccess: true
