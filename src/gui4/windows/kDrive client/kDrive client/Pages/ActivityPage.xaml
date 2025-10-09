@@ -16,7 +16,7 @@
         <converters:BooleanToInvertedBooleanConverter x:Key="BooleanToInvertedBooleanConverter" />
         <converters:BooleanToIntegerConverter x:Key="BooleanToIntegerConverter" />
         <converters:DateTimeToTimeAgoConverter x:Key="DateTimeToTimeAgoConverter" />
-        <converters:IsNullToVisibilityConverter x:Key="IsNullToVisibilityConverter" />
+        <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
 
         <!-- Title templates -->
         <DataTemplate x:Key="UpToDateTitleTemplate"
@@ -35,7 +35,7 @@
                 </StackPanel>
                 <TextBlock Text="{x:Bind LastActivity.ActivityTime, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Ago', Mode=OneWay}"
                            Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
-                           Visibility="{x:Bind LastActivity, Converter={StaticResource IsNullToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}" />
+                           Visibility="{x:Bind LastActivity, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}" />
             </StackPanel>
         </DataTemplate>
 
@@ -72,7 +72,7 @@
                 </StackPanel>
                 <TextBlock Text="{x:Bind LastActivity.ActivityTime, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Since', Mode=OneWay}"
                            Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
-                           Visibility="{x:Bind LastActivity, Converter={StaticResource IsNullToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}" />
+                           Visibility="{x:Bind LastActivity, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}" />
             </StackPanel>
         </DataTemplate>
 

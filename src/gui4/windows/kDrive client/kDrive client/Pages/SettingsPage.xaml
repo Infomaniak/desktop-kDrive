@@ -32,6 +32,7 @@
     <Page.Resources>
         <!-- Converters -->
         <converters:BooleanToInvertedVisibilityConverter  x:Key="BooleanToInvertedVisibilityConverter" />
+        <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
     </Page.Resources>
     <Grid Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.L}"
           RowSpacing="{StaticResource Infomaniak.Style.Spacing.L}">
@@ -152,7 +153,8 @@
                                    Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
 
                         <HyperlinkButton HorizontalAlignment="Right"
-                                         Content="Connecter un compte" />
+                                         Content="Connecter un compte" 
+                                         Click="CreateAccountButton_Click"/>
                     </Grid>
                     <!-- Account - List -->
                     <ListView ItemsSource="{x:Bind ViewModel.Users}"
@@ -179,13 +181,13 @@
 
                                             <controls:ContentLoader Height="36"
                                                                     Width="36"
-                                                                    IsLoading="True"
+                                                                    IsLoading="{x:Bind AvatarImageSource, Converter={StaticResource IsNullToBoolOrVisibilityConverter} , Mode=OneWay}"
                                                                     CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Circle}">
                                                 <controls:ContentLoader.LoaderContent>
-                                                    <ImageIcon Height="24"
-                                                               Width="24"
+                                                    <PersonPicture Height="36"
+                                                               Width="36"
                                                                HorizontalAlignment="Left"
-                                                               Source="{x:Bind Avatar, Mode=OneWay}" />
+                                                               ProfilePicture="{x:Bind AvatarImageSource, Mode=OneWay}" />
                                                 </controls:ContentLoader.LoaderContent>
                                             </controls:ContentLoader>
                                             <StackPanel>

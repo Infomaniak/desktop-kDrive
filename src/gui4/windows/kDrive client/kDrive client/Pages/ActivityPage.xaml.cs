@@ -1,6 +1,7 @@
 using DynamicData.Binding;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -22,7 +23,7 @@ namespace Infomaniak.kDrive.Pages
 {
     public sealed partial class ActivityPage : Page
     {
-        private AppModel _viewModel = ((App)Application.Current).Data;
+        private AppModel _viewModel = (App.Current as App).Data;
         public AppModel ViewModel { get { return _viewModel; } }
         public ActivityPage()
         {

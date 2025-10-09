@@ -2,6 +2,7 @@ using DynamicData;
 using DynamicData.Binding;
 using Infomaniak.kDrive.ViewModels;
 using Infomaniak.kDrive.ViewModels.Errors;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -30,7 +31,7 @@ namespace Infomaniak.kDrive.CustomControls
 {
     public sealed partial class ErrorItem : UserControl
     {
-        private AppModel _viewModel = ((App)Application.Current).Data;
+        private AppModel _viewModel = (App.Current as App).Data;
         public AppModel ViewModel => _viewModel;
 
         public static readonly DependencyProperty ErrorProperty =

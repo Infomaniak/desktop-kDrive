@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.ViewModels
 {
-    public class UpdateManager : ObservableObject
+    public class UpdateManager : UISafeObservableObject
     {
         public enum ReleaseChannel
         {
@@ -24,19 +24,19 @@ namespace Infomaniak.kDrive.ViewModels
         public bool IsUpdateAvailable
         {
             get => _isUpdateAvailable;
-            set => SetProperty(ref _isUpdateAvailable, value);
+            set => SetPropertyInUIThread(ref _isUpdateAvailable, value);
         }
 
         public bool AutoUpdateEnabled
         {
             get => _autoUpdateEnabled;
-            set => SetProperty(ref _autoUpdateEnabled, value);
+            set => SetPropertyInUIThread(ref _autoUpdateEnabled, value);
         }
 
         public ReleaseChannel CurrentChannel
         {
             get => _currentChannel;
-            set => SetProperty(ref _currentChannel, value);
+            set => SetPropertyInUIThread(ref _currentChannel, value);
         }
         public UpdateData? AvailableUpdate { get; set; } = null;
 

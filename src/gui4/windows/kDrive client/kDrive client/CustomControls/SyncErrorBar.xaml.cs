@@ -1,4 +1,5 @@
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -21,7 +22,7 @@ namespace Infomaniak.kDrive.CustomControls
 {
     public sealed partial class SyncErrorBar : UserControl
     {
-        private AppModel _viewModel = ((App)Application.Current).Data;
+        private AppModel _viewModel = (App.Current as App).Data;
         public AppModel ViewModel => _viewModel;
 
         public SyncErrorBar()

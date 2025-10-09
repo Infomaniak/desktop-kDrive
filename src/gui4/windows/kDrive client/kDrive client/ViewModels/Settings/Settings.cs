@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.ViewModels
 {
-    public class Settings : ObservableObject
+    public class Settings : UISafeObservableObject
     {
 
         private bool _startAtLogin = false;
@@ -32,7 +32,7 @@ namespace Infomaniak.kDrive.ViewModels
         public bool StartAtLogin
         {
             get => _startAtLogin;
-            set => SetProperty(ref _startAtLogin, value);
+            set => SetPropertyInUIThread(ref _startAtLogin, value);
         }
 
         public Language CurrentLanguage
@@ -45,9 +45,9 @@ namespace Infomaniak.kDrive.ViewModels
             get => _selectedLanguage;
             set
             {
-                if (SetProperty(ref _selectedLanguage, value) && value != CurrentLanguage)
+                if (SetPropertyInUIThread(ref _selectedLanguage, value) && value != CurrentLanguage)
                 {
-                    SetProperty(ref _selectLanguageMatchesCurrent, false);
+                    SetPropertyInUIThread(ref _selectLanguageMatchesCurrent, false);
                 }
             }
         }
@@ -65,25 +65,25 @@ namespace Infomaniak.kDrive.ViewModels
         public bool SentryEnabled
         {
             get => _sentryEnabled;
-            set => SetProperty(ref _sentryEnabled, value);
+            set => SetPropertyInUIThread(ref _sentryEnabled, value);
         }
 
         public bool MatomoEnabled
         {
             get => _matomoEnabled;
-            set => SetProperty(ref _matomoEnabled, value);
+            set => SetPropertyInUIThread(ref _matomoEnabled, value);
         }
 
         public Logger.Level LogLevel
         {
             get => _logLevel;
-            set => SetProperty(ref _logLevel, value);
+            set => SetPropertyInUIThread(ref _logLevel, value);
         }
 
         public bool AutoFlushLogs
         {
             get => _autoFlushLogs;
-            set => SetProperty(ref _autoFlushLogs, value);
+            set => SetPropertyInUIThread(ref _autoFlushLogs, value);
         }
     }
 }

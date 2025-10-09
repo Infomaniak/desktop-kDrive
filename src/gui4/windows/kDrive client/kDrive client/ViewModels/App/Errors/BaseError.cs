@@ -30,7 +30,7 @@ using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.ViewModels.Errors
 {
-    public abstract class BaseError : ObservableObject
+    public abstract class BaseError : UISafeObservableObject
     {
         public class ButtonData
         {
@@ -59,25 +59,25 @@ namespace Infomaniak.kDrive.ViewModels.Errors
         public DbId DbId
         {
             get => _dbId;
-            set => SetProperty(ref _dbId, value);
+            set => SetPropertyInUIThread(ref _dbId, value);
         }
 
         public DateTime Time
         {
             get => _time;
-            set => SetProperty(ref _time, value);
+            set => SetPropertyInUIThread(ref _time, value);
         }
 
         public ExitCode ExitCode
         {
             get => _exitCode;
-            set => SetProperty(ref _exitCode, value);
+            set => SetPropertyInUIThread(ref _exitCode, value);
         }
 
         public ExitCause ExitCause
         {
             get => _exitCause;
-            set => SetProperty(ref _exitCause, value);
+            set => SetPropertyInUIThread(ref _exitCause, value);
         }
 
         public string Title
@@ -103,7 +103,7 @@ namespace Infomaniak.kDrive.ViewModels.Errors
         public ButtonData? SolveButton
         {
             get => _solveButton;
-            set => SetProperty(ref _solveButton, value);
+            set => SetPropertyInUIThread(ref _solveButton, value);
         }
 
         public bool HasSolveButton
@@ -114,7 +114,7 @@ namespace Infomaniak.kDrive.ViewModels.Errors
         public ButtonData? InfoHyperLink
         {
             get => _infoHyperLink;
-            set => SetProperty(ref _infoHyperLink, value);
+            set => SetPropertyInUIThread(ref _infoHyperLink, value);
         }
 
         public bool HasInfoHyperLink
