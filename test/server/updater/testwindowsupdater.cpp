@@ -76,21 +76,21 @@ void TestWindowsUpdater::testOnUpdateFound() {
     testObj.onUpdateFound();
     CPPUNIT_ASSERT_EQUAL(UpdateState::Downloading, testObj.state());
 
-    // Installer exist locally but is empty.
+    // Installer exists locally but is empty.
     testhelpers::generateTestFile(dummyInstallerPath);
 
     testObj.onUpdateFound();
     CPPUNIT_ASSERT_EQUAL(UpdateState::Downloading, testObj.state());
     CPPUNIT_ASSERT(std::filesystem::exists(dummyInstallerPath)); // Local file has been removed.
 
-    // Installer exist locally but incomplete.
+    // Installer exists locally but is incomplete.
     testhelpers::generateOrEditTestFile(dummyInstallerPath);
 
     testObj.onUpdateFound();
     CPPUNIT_ASSERT_EQUAL(UpdateState::Downloading, testObj.state());
     CPPUNIT_ASSERT(std::filesystem::exists(dummyInstallerPath)); // Local file has been removed.
 
-    // Installer exist locally and is valid.
+    // Installer exists locally and is valid.
     testhelpers::generateTestFile(dummyInstallerPath, 10);
 
     testObj.onUpdateFound();
