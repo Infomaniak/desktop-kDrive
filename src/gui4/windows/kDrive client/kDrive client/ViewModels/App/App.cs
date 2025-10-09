@@ -31,6 +31,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.Networking.Connectivity;
 
 namespace Infomaniak.kDrive.ViewModels
 
@@ -140,35 +141,54 @@ namespace Infomaniak.kDrive.ViewModels
 
             AppErrors.Add(new Errors.AppError(0) { ExitCause = 4, ExitCode = 1234 }); // TODO: Remove this line, only for testing
             _networkAvailable = _network.IsAvailable;
-            _networkWatcher = WatchNetwork(_networkWatcherCancellationSource.Token);
+            _networkWatcher = WatchNetworkAsync(_networkWatcherCancellationSource.Token);
         }
 
         ~AppModel()
         {
             _networkWatcherCancellationSource.Cancel();
             _networkWatcher?.Wait();
-            _networkWatcherCancellationSource.Dispose();
         }
-
-        private async Task WatchNetwork(CancellationToken cancellationToken)
+        private async Task WatchNetworkAsync(CancellationToken cancellationToken)
         {
-            bool result = false;
+            bool previousStatus = _networkAvailable;
+
             while (!cancellationToken.IsCancellationRequested)
             {
+                bool isAvailable = false;
+
                 try
                 {
-                    result = _network.Ping("www.infomaniak.com", 1000);
+                    var profile = NetworkInformation.GetInternetConnectionProfile();
+
+                    if (profile != null)
+                    {
+                        var level = profile.GetNetworkConnectivityLevel();
+                        isAvailable = level == NetworkConnectivityLevel.InternetAccess;
+                    }
                 }
                 catch
                 {
-                    result = false;
+                    // Any unexpected error -> assume offline
                 }
-                if (_networkAvailable != result)
-                    UIThreadDispatcher.TryEnqueue(() => { NetworkAvailable = result; });
-                await Task.Delay(5000).ConfigureAwait(false);
+
+                if (previousStatus != isAvailable)
+                {
+                    previousStatus = isAvailable;
+                    UIThreadDispatcher.TryEnqueue(() => NetworkAvailable = isAvailable);
+                }
+
+                try
+                {
+                    // Check every 5 seconds (adjust as needed)
+                    await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken).ConfigureAwait(false);
+                }
+                catch (TaskCanceledException)
+                {
+                    break; // clean exit when cancelled
+                }
             }
         }
-
 
 
         private void EnsureValidSelectedSync()
