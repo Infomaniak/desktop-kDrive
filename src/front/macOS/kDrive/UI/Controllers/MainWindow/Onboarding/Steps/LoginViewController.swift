@@ -67,6 +67,9 @@ final class LoginViewController: OnboardingStepViewController {
         descriptionLabel.stringValue = KDriveLocalizable.onboardingLoginDescription
 
         primaryButton.title = KDriveLocalizable.buttonLogin
+        primaryButton.action = #selector(openLoginWebView)
         secondaryButton.title = KDriveLocalizable.buttonCreateAccount
     }
+
+    @objc private func openLoginWebView() {}
 }
