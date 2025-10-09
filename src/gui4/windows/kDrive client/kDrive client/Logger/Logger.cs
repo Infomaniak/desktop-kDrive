@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -68,12 +69,11 @@ namespace Infomaniak.kDrive
 
         static public Level LogLevel
         {
-            get => (App.Current as App)?.Data?.Settings.LogLevel ?? Level.Extended;
+            get => App.ServiceProvider.GetService<AppModel>()?.Settings.LogLevel ?? Level.Extended;
         }
 
         public static void Log(Level level, string message, [CallerFilePath] string filePath = "?", [CallerLineNumber] int lineNumber = -1, [CallerMemberName] string memberName = "?")
         {
-
 #if !DEBUG
             if (LogLevel > level || _logStream is null)
                 return;

@@ -26,7 +26,7 @@ namespace Infomaniak.kDrive.CustomControls;
 
 public sealed partial class SyncStartPauseButton : UserControl
 {
-    private AppModel _viewModel = (App.Current as App).Data;
+    private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
     public AppModel ViewModel
     {
         get { return _viewModel; }

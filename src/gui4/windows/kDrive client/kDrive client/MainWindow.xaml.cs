@@ -29,7 +29,7 @@ namespace Infomaniak.kDrive
 {
     public sealed partial class MainWindow : Window
     {
-        public readonly AppModel _viewModel = (App.Current as App).Data;
+        public readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel { get { return _viewModel; } }
         public MainWindow()
         {

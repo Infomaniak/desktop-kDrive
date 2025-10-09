@@ -23,7 +23,7 @@ namespace Infomaniak.kDrive.Pages
 {
     public sealed partial class ActivityPage : Page
     {
-        private AppModel _viewModel = (App.Current as App).Data;
+        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel { get { return _viewModel; } }
         public ActivityPage()
         {

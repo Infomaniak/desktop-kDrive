@@ -29,7 +29,7 @@ namespace Infomaniak.kDrive.OnBoarding
 {
     public sealed partial class OnBoardingWindow : Window
     {
-        private readonly AppModel _viewModel = (App.Current as App).Data;
+        private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         private ViewModels.Onboarding _onBoardingViewModel = new(App.ServiceProvider.GetRequiredService<ServerCommunication.Interfaces.IServerCommService>());
 
         public AppModel ViewModel { get { return _viewModel; } }

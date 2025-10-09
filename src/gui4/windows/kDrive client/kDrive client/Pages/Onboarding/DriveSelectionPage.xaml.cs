@@ -27,7 +27,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 {
     public sealed partial class DriveSelectionPage : Page
     {
-        private AppModel _viewModel = (App.Current as App).Data;
+        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         private ViewModels.Onboarding? _onBoardingViewModel;
         private Dictionary<Sync, string> _previousSyncPaths = new Dictionary<Sync, string>(); // To store previous sync paths and allow reverting if needed in advanced settings
         public AppModel ViewModel { get { return _viewModel; } }

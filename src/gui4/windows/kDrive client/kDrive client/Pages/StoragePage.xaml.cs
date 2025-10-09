@@ -77,7 +77,7 @@ namespace Infomaniak.kDrive.Pages
 
     public class StoragePageViewModel : UISafeObservableObject
     {
-        private readonly AppModel _viewModel = (App.Current as App).Data;
+        private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel AppViewModel => _viewModel;
 
         private long? _diskSize;

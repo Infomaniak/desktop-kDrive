@@ -33,7 +33,7 @@ namespace Infomaniak.kDrive.CustomControls
 {
     public sealed partial class SyncActivityTable : UserControl
     {
-        private AppModel _viewModel = (App.Current as App).Data;
+        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel => _viewModel;
 
         private readonly ObservableCollection<SyncActivity> _outGoingActivities = new();

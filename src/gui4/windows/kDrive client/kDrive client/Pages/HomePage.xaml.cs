@@ -40,7 +40,7 @@ namespace Infomaniak.kDrive.Pages
 {
     public sealed partial class HomePage : Page
     {
-        private AppModel _viewModel = (App.Current as App).Data;
+        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel => _viewModel;
         public HomePage()
         {

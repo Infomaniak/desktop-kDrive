@@ -16,27 +16,17 @@ namespace Infomaniak.kDrive.Converters
             var parser = new ParameterParser(parameter);
             bool result = false;
             if (value is null)
-            {
                 result = !parser.KeyEquals("Inverted", "True");
-            }
             else
-            {
                 result = parser.KeyEquals("Inverted", "True");
-            }
 
-            if(targetType == typeof(Microsoft.UI.Xaml.Visibility))
-            {
+            if (targetType == typeof(Microsoft.UI.Xaml.Visibility))
                 return result ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
-            }
-            else if(targetType == typeof(bool))
-            {
+            else if (targetType == typeof(bool))
                 return result;
-            }
-            else
-            {
-                Logger.Log(Logger.Level.Fatal, "IsNullToBoolOrVisibilityConverter: Convert - Unsupported target type.");
-                throw new NotSupportedException("IsNullToBoolOrVisibilityConverter: Convert - Unsupported target type.");
-            }
+
+            Logger.Log(Logger.Level.Fatal, "IsNullToBoolOrVisibilityConverter: Convert - Unsupported target type.");
+            throw new NotSupportedException("IsNullToBoolOrVisibilityConverter: Convert - Unsupported target type.");
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

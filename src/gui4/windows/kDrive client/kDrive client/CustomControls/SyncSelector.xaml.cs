@@ -20,7 +20,7 @@ namespace Infomaniak.kDrive.CustomControls
 {
     public sealed partial class SyncSelector : UserControl
     {
-        public readonly AppModel _viewModel = (App.Current as App).Data;
+        public readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel => _viewModel;
 
         private FlyoutBase? _lastOpenedSyncMenu = null;

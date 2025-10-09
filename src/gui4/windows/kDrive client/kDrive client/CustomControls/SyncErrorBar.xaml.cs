@@ -22,7 +22,7 @@ namespace Infomaniak.kDrive.CustomControls
 {
     public sealed partial class SyncErrorBar : UserControl
     {
-        private AppModel _viewModel = (App.Current as App).Data;
+        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel => _viewModel;
 
         public SyncErrorBar()
