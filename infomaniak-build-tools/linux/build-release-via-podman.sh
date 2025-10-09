@@ -85,8 +85,7 @@ echo
 
 set -ex
 
-podman machine stop build_kdrive 2>/dev/null || true
-podman wait build_kdrive
+podman machine stop build_kdrive 2>/dev/null
 
 inode_max_limit=100000
 ulimit_error=$( { ulimit -n $inode_max_limit; } 2>&1)
