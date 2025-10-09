@@ -13,6 +13,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <Content Remove="Assets\Animations\Readme.md" />
+  </ItemGroup>
+  <ItemGroup>
     <None Remove="CustomControls\AppTitleBarLogo.xaml" />
     <None Remove="Pages\KSuiteUpgradeBar.xaml" />
   </ItemGroup>
@@ -135,4 +138,7 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
     </PRIResource>
   </ItemGroup>
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="powershell -ExecutionPolicy Bypass -NoProfile -File &quot;$(ProjectDir)\Assets\Animations\lottieConverter.ps1&quot; -Directory &quot;$(ProjectDir)\Assets\Animations&quot;" />
+  </Target>
 </Project>
