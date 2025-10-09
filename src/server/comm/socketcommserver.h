@@ -65,7 +65,7 @@ class SocketCommServer : public AbstractCommServer {
 
     private:
         Poco::Net::ServerSocket _serverSocket;
-        std::mutex _channelsMutex;
+        std::recursive_mutex _channelsMutex;
         std::list<std::shared_ptr<AbstractCommChannel>> _channels;
         bool _isListening = false;
         bool _stopAsked = false;

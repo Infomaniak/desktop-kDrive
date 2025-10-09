@@ -1,4 +1,5 @@
 ﻿global using UserId = System.Int64;
+global using AccountId = System.Int64;
 global using DriveId = System.Int64;
 global using SyncId = System.Int64;
 global using NodeId = System.Int64;

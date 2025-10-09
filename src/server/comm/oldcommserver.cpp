@@ -112,7 +112,7 @@ void OldCommServer::start() {
     if (_tcpServer.isListening()) {
         _tcpServer.close();
     } else {
-        connect(&_tcpServer, &QTcpServer::newConnection, this, &OldCommServer::onNewConnection);
+       // connect(&_tcpServer, &QTcpServer::newConnection, this, &OldCommServer::onNewConnection);
     }
 
     _tcpServer.listen(QHostAddress::LocalHost);

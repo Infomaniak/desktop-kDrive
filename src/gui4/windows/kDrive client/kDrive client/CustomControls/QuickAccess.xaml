@@ -23,7 +23,7 @@
                             Canvas.ZIndex="0"
                             Canvas.Left="0"
                             Canvas.Top="0">
-                        <PersonPicture ProfilePicture="https://learn.microsoft.com/windows/uwp/contacts-and-calendar/images/shoulder-tap-static-payload.png"
+                        <PersonPicture ProfilePicture="{x:Bind ViewModel.SelectedSync.Drive.Account.User.AvatarImageSource, Mode=OneWay}"
                                        Height="41"
                                        Width="41">
                         </PersonPicture>

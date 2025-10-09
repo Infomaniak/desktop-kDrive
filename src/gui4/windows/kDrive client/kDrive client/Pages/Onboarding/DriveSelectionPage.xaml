@@ -43,7 +43,7 @@
                 <StackPanel Orientation="Horizontal"
                             Spacing="12"
                             VerticalAlignment="Center">
-                    <PersonPicture ProfilePicture="https://learn.microsoft.com/windows/uwp/contacts-and-calendar/images/shoulder-tap-static-payload.png"
+                    <PersonPicture ProfilePicture="{x:Bind ObViewModel.SelectedUser.AvatarImageSource, Mode=OneWay}"
                                    Height="24"
                                    Width="24" />
                     <TextBlock Text="{x:Bind ObViewModel.SelectedUser.Name}"

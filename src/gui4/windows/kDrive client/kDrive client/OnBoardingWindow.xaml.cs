@@ -17,6 +17,7 @@
  */
 
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using System.Linq;
 using System.Reactive.Linq;
@@ -28,8 +29,8 @@ namespace Infomaniak.kDrive.OnBoarding
 {
     public sealed partial class OnBoardingWindow : Window
     {
-        private readonly AppModel _viewModel = ((App)Application.Current).Data;
-        private ViewModels.Onboarding _onBoardingViewModel = new();
+        private readonly AppModel _viewModel = (App.Current as App).Data;
+        private ViewModels.Onboarding _onBoardingViewModel = new(App.ServiceProvider.GetRequiredService<ServerCommunication.Interfaces.IServerCommService>());
 
         public AppModel ViewModel { get { return _viewModel; } }
         public OnBoardingWindow()
