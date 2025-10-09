@@ -288,21 +288,6 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _lastActivity, value);
         }
 
-        public async Task Reload()
-        {
-            Logger.Log(Logger.Level.Info, $"Reloading sync properties for DbId {DbId}...");
-            Task[] tasks = new Task[]
-            {
-               ServerInterface.GetSyncId(DbId).ContinueWith(t => { if (t.Result != null) Id = t.Result.Value; }, TaskScheduler.FromCurrentSynchronizationContext()),
-               ServerInterface.GetSyncLocalPath(DbId).ContinueWith(t => { if (t.Result != null) LocalPath = t.Result; }, TaskScheduler.FromCurrentSynchronizationContext()),
-               ServerInterface.GetSyncRemotePath(DbId).ContinueWith(t => { if (t.Result != null) RemotePath = t.Result; }, TaskScheduler.FromCurrentSynchronizationContext()),
-               ServerInterface.GetSyncSupportOfflineMode(DbId).ContinueWith(t => { if (t.Result != null) SupportOnlineMode = t.Result.Value; }, TaskScheduler.FromCurrentSynchronizationContext()),
-               ServerInterface.GetSyncType(DbId).ContinueWith(t => { if (t.Result != null) SyncType = t.Result.Value; }, TaskScheduler.FromCurrentSynchronizationContext())
-            };
-            await Task.WhenAll(tasks);
-            Logger.Log(Logger.Level.Info, $"Finished reloading sync properties for DbId {DbId}.");
-        }
-
         public bool ShowIncomingActivity
         {
             get => _showIncomingActivity;
