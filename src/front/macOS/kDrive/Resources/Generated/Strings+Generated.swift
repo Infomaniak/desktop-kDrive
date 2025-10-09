@@ -10,12 +10,14 @@ import Foundation
 // swiftlint:disable explicit_type_interface function_parameter_count identifier_name line_length
 // swiftlint:disable nesting type_body_length type_name vertical_whitespace_opening_braces
 internal enum KDriveLocalizable {
+  /// loco:68b04d823f2b735c170caea2
+  internal static let buttonOpenInBrowser = KDriveLocalizable.tr("Localizable", "buttonOpenInBrowser", fallback: "Open in browser")
+  /// loco:68b04d5a63085b7ab90cea63
+  internal static let buttonOpenInFinder = KDriveLocalizable.tr("Localizable", "buttonOpenInFinder", fallback: "Open in Finder")
   /// loco:68a7228730d0f594cc03e4b3
   internal static let menuItemSearch = KDriveLocalizable.tr("Localizable", "menuItemSearch", fallback: "Search")
   /// loco:68a70c92c32749426b06db02
   internal static let sidebarItemKDriveTitle = KDriveLocalizable.tr("Localizable", "sidebarItemKDriveTitle", fallback: "kDrive folder")
-  /// loco:68a8031da6bad911b30ec9c2
-  internal static let sidebarSectionAdvancedSync = KDriveLocalizable.tr("Localizable", "sidebarSectionAdvancedSync", fallback: "Advanced sync.")
   /// loco:68a70be4b749277aa1081dc2
   internal static let tabTitleActivity = KDriveLocalizable.tr("Localizable", "tabTitleActivity", fallback: "Activity")
   /// loco:68a705225b0066f86e001d52

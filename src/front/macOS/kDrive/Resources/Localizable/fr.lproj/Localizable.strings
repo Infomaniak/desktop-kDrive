@@ -3,17 +3,20 @@
  * Project: kDrive Desktop
  * Locale: fr, French
  * Exported by: Valentin Perignon
- * Exported at: Tue, 26 Aug 2025 16:15:21 +0200
+ * Exported at: Thu, 28 Aug 2025 14:43:06 +0200
  */
+
+/* loco:68b04d823f2b735c170caea2 */
+"buttonOpenInBrowser" = "Ouvrir dans le navigateur";
+
+/* loco:68b04d5a63085b7ab90cea63 */
+"buttonOpenInFinder" = "Ouvrir dans Finder";
 
 /* loco:68a7228730d0f594cc03e4b3 */
 "menuItemSearch" = "Recherche";
 
 /* loco:68a70c92c32749426b06db02 */
 "sidebarItemKDriveTitle" = "Dossier kDrive";
-
-/* loco:68a8031da6bad911b30ec9c2 */
-"sidebarSectionAdvancedSync" = "Sync. avancées";
 
 /* loco:68a70be4b749277aa1081dc2 */
 "tabTitleActivity" = "Activité";

@@ -20,6 +20,7 @@ import Cocoa
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     private var window: NSWindow!
+    private var contentViewController: NSViewController!
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         window = NSWindow(
@@ -28,13 +29,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             backing: .buffered,
             defer: false
         )
+
         window.toolbarStyle = .unified
-
         window.setFrameAutosaveName("kDriveMainWindow")
-
-        let rootViewController = RootViewController()
-        window.contentView = rootViewController.view
-
+        contentViewController = SplitViewController()
+        window.contentView = contentViewController.view
         window.makeKeyAndOrderFront(nil)
     }
 

@@ -20,9 +20,10 @@ import Cocoa
 
 extension NSToolbarItem.Identifier {
     static let trackingSplitView = NSToolbarItem.Identifier("TrackingSplitView")
+    static let searchTextField = NSToolbarItem.Identifier("SearchTextField")
 }
 
-class RootViewController: NSSplitViewController {
+final class SplitViewController: NSSplitViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupSplitView()
@@ -38,12 +39,13 @@ class RootViewController: NSSplitViewController {
         splitView.isVertical = true
 
         let sidebarViewController = SidebarViewController()
+        sidebarViewController.delegate = self
         let sidebarItem = NSSplitViewItem(sidebarWithViewController: sidebarViewController)
         sidebarItem.minimumThickness = 150
         sidebarItem.maximumThickness = 300
         addSplitViewItem(sidebarItem)
 
-        let homeViewController = HomeViewController()
+        let homeViewController = HomeViewController(toolbarTitle: SidebarItem.home.title)
         let homeDetailItem = NSSplitViewItem(viewController: homeViewController)
         addSplitViewItem(homeDetailItem)
     }
@@ -57,19 +59,46 @@ class RootViewController: NSSplitViewController {
     }
 }
 
+// MARK: - SidebarViewControllerDelegate
+
+extension SplitViewController: SidebarViewControllerDelegate {
+    func sidebarViewController(_ controller: SidebarViewController, didSelectItem item: SidebarItem) {
+        var contentViewController: NSViewController
+        switch item {
+        case .home:
+            contentViewController = HomeViewController(toolbarTitle: item.title)
+        case .activity:
+            contentViewController = ActivityViewController(toolbarTitle: item.title)
+        case .storage:
+            contentViewController = StorageViewController(toolbarTitle: item.title)
+        default:
+            fatalError("Destination not handled")
+        }
+
+        removeSplitViewItem(splitViewItems[1])
+        addSplitViewItem(NSSplitViewItem(viewController: contentViewController))
+    }
+}
+
 // MARK: - NSToolbarDelegate
 
-extension RootViewController: NSToolbarDelegate {
+extension SplitViewController: NSToolbarDelegate {
     func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        return [.trackingSplitView]
+        return [.trackingSplitView, .searchTextField]
     }
 
     func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        return [.trackingSplitView]
+        return [.trackingSplitView, .searchTextField]
     }
 
     func toolbar(_ toolbar: NSToolbar, itemForItemIdentifier itemIdentifier: NSToolbarItem.Identifier, willBeInsertedIntoToolbar flag: Bool) -> NSToolbarItem? {
-        guard itemIdentifier == .trackingSplitView else { return nil }
-        return NSTrackingSeparatorToolbarItem(identifier: .trackingSplitView, splitView: splitView, dividerIndex: 0)
+        switch itemIdentifier {
+        case .trackingSplitView:
+            return NSTrackingSeparatorToolbarItem(identifier: .trackingSplitView, splitView: splitView, dividerIndex: 0)
+        case .searchTextField:
+            return NSSearchToolbarItem(itemIdentifier: .searchTextField)
+        default:
+            return nil
+        }
     }
 }

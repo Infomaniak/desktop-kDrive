@@ -18,12 +18,13 @@
 
 import Cocoa
 
-class SidebarHeaderView: NSView {
+final class SidebarHeaderView: NSView {
     init() {
         super.init(frame: .zero)
         setupView()
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -48,7 +49,7 @@ class SidebarHeaderView: NSView {
             imageView.heightAnchor.constraint(equalTo: imageView.widthAnchor),
             textField.leadingAnchor.constraint(equalTo: imageView.trailingAnchor, constant: 8),
             textField.centerYAnchor.constraint(equalTo: imageView.centerYAnchor),
-            textField.trailingAnchor.constraint(equalTo: trailingAnchor)
+            textField.trailingAnchor.constraint(greaterThanOrEqualTo: trailingAnchor)
         ])
     }
 }

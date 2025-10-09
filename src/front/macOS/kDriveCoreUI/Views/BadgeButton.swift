@@ -17,6 +17,19 @@
  */
 
 import Cocoa
-import kDriveCoreUI
 
-final class HomeViewController: TitledViewController {}
+final class BadgeButton: NSButton {
+    init() {
+        super.init(frame: .zero)
+        bezelStyle = .badge
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        return nil
+    }
+}
