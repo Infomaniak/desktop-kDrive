@@ -42,7 +42,6 @@ namespace Infomaniak.kDrive.ViewModels
         private bool _isActive = false; // Indicates if the user configured this drive on the current device.
         private bool _isPaidOffer = false; // Indicates if the drive is a paid offer (i.e. myKsuite+/pro +, ...)
         private ObservableCollection<Sync> _syncs = new ObservableCollection<Sync>();
-        private bool _hasError = false; // Indicate if any of the syncs has an error
         private Account _account;
         public Drive(DbId dbId, Account account)
         {
@@ -121,59 +120,10 @@ namespace Infomaniak.kDrive.ViewModels
             return new Uri($"https://ksuite.infomaniak.com/kdrive/app/drive/{DriveId}/shared-with-me");
         }
 
-        public bool HasError
-        {
-            get => _hasError;
-            set => SetPropertyInUIThread(ref _hasError, value);
-        }
-
         public Account Account
         {
             get => _account;
             set => SetPropertyInUIThread(ref _account, value);
-        }
-
-        private void Sync_PropertyChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(Sync.SyncErrors))
-            {
-                HasError = Syncs.Any(s => s.SyncErrors.Count > 0);
-            }
-        }
-
-        private void RefreshHasError()
-        {
-            foreach (var sync in Syncs)
-            {
-                if (sync.SyncErrors.Any())
-                {
-                    HasError = true;
-                    return;
-                }
-            }
-            HasError = false;
-        }
-
-        private void InitWatchers()
-        {
-            _syncs.CollectionChanged += (s, e) =>
-            {
-                if (e.NewItems != null)
-                {
-                    foreach (Sync sync in e.NewItems)
-                    {
-                        sync.PropertyChanged += Sync_PropertyChanged;
-                    }
-                }
-                if (e.OldItems != null)
-                {
-                    foreach (Sync sync in e.OldItems)
-                    {
-                        sync.PropertyChanged -= Sync_PropertyChanged;
-                    }
-                }
-                RefreshHasError();
-            };
         }
     }
 }

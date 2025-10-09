@@ -36,6 +36,7 @@ using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommProtoco
 
 namespace Infomaniak.kDrive.ServerCommunication.Services
 {
+    // For the moment, non implemented methods will fallback to the MockServerCommProtocol implementation
     public class SocketServerCommProtocol : MockServerCommProtocol, Interfaces.IServerCommProtocol
     {
         private TcpClient? _client;
@@ -57,7 +58,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             Initialize();
         }
 
-        public void Initialize()
+        public new void Initialize()
         {
             // Fetch the port from the .comm4 file
             string homePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + Path.DirectorySeparatorChar + ".comm4";
@@ -99,7 +100,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             else
             {
-                // TODO: Implement a retry mechanism to connect to the server (waiting for it to be ready)
                 Logger.Log(Logger.Level.Error, "Client is null or not connected, read loop not started.");
             }
         }
