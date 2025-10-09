@@ -18,15 +18,32 @@
 
 import Cocoa
 import kDriveCore
+import kDriveCoreUI
 
-protocol SidebarViewControllerDelegate: AnyObject {
-    func sidebarViewController(_ controller: SidebarViewController, didSelectItem item: SidebarItem)
+extension SidebarItem {
+    static let home = SidebarItem(
+        icon: NSImage(resource: .house),
+        title: KDriveLocalizable.tabTitleHome
+    )
+    static let activity = SidebarItem(
+        icon: NSImage(resource: .circularArrowsClockwise),
+        title: KDriveLocalizable.tabTitleActivity
+    )
+    static let storage = SidebarItem(
+        icon: NSImage(resource: .hardDiskDrive),
+        title: KDriveLocalizable.tabTitleStorage
+    )
+    static let kDriveFolder = SidebarItem(
+        icon: NSImage(resource: .kdriveFoldersStacked),
+        title: KDriveLocalizable.sidebarItemKDriveTitle,
+        type: .menu
+    )
 }
 
-final class SidebarViewController: NSViewController {
-    static let navigationCellIdentifier = NSUserInterfaceItemIdentifier("NavigationSidebarCell")
+final class MainSidebarViewController: NSViewController {
+    static let navigationCellIdentifier = NSUserInterfaceItemIdentifier(String(describing: SidebarTableCellView.self))
 
-    weak var delegate: SidebarViewControllerDelegate?
+    weak var delegate: NavigableSidebarViewControllerDelegate?
 
     private var scrollView: NSScrollView!
     private var outlineView: ClickableOutlineView!
@@ -128,7 +145,7 @@ final class SidebarViewController: NSViewController {
 
 // MARK: - NSOutlineViewDataSource
 
-extension SidebarViewController: NSOutlineViewDataSource {
+extension MainSidebarViewController: NSOutlineViewDataSource {
     func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?) -> Any {
         return items[index]
     }
@@ -145,7 +162,7 @@ extension SidebarViewController: NSOutlineViewDataSource {
 
 // MARK: - OutlineViewDelegate
 
-extension SidebarViewController: ClickableOutlineViewDelegate {
+extension MainSidebarViewController: ClickableOutlineViewDelegate {
     func outlineView(_ outlineView: NSOutlineView, shouldSelectItem item: Any) -> Bool {
         guard let item = item as? SidebarItem else { return false }
         return item.canBeSelected
@@ -160,9 +177,7 @@ extension SidebarViewController: ClickableOutlineViewDelegate {
             cell?.identifier = Self.navigationCellIdentifier
         }
 
-        cell?.imageView?.image = NSImage(resource: item.icon)
-        cell?.textField?.stringValue = item.title
-
+        cell?.setupForItem(item)
         return cell
     }
 
@@ -183,7 +198,7 @@ extension SidebarViewController: ClickableOutlineViewDelegate {
 
 // MARK: - Menu actions
 
-extension SidebarViewController {
+extension MainSidebarViewController {
     private func createMenu(forItem item: SidebarItem) -> NSMenu? {
         guard item == .kDriveFolder else { return nil }
 

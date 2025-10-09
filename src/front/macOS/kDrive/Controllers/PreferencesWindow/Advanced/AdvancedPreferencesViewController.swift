@@ -17,17 +17,10 @@
  */
 
 import Cocoa
+import kDriveCoreUI
 
-public class ColoredMenuItem: NSMenuItem {
-    public init(title: String, image: NSImage, color: NSColor) {
-        self.color = color
-        super.init(title: title, action: nil, keyEquivalent: "")
-        self.image = image
+class AdvancedPreferencesViewController: TitledViewController {
+    convenience init() {
+        self.init(toolbarTitle: SidebarItem.advanced.title)
     }
-
-    public required init(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    public var color: NSColor
 }

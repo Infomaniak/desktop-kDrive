@@ -18,16 +18,31 @@
 
 import Cocoa
 
-public class ColoredMenuItem: NSMenuItem {
-    public init(title: String, image: NSImage, color: NSColor) {
-        self.color = color
-        super.init(title: title, action: nil, keyEquivalent: "")
-        self.image = image
+final class MainWindowController: NSWindowController {
+    private var mainViewController: MainSplitViewController!
+
+    private static let contentRect = NSRect(x: 0, y: 0, width: 900, height: 600)
+
+    init() {
+        let window = NSWindow(
+            contentRect: Self.contentRect,
+            styleMask: [.titled, .closable, .resizable, .miniaturizable, .fullSizeContentView],
+            backing: .buffered,
+            defer: false
+        )
+
+        window.toolbarStyle = .unified
+        window.center()
+
+        super.init(window: window)
+
+        window.setFrameAutosaveName("kDriveMainWindow")
+
+        mainViewController = MainSplitViewController()
+        window.contentView = mainViewController.view
     }
 
-    public required init(coder: NSCoder) {
+    required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
-    public var color: NSColor
 }

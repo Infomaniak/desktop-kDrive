@@ -16,18 +16,26 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Foundation
 import Cocoa
 
-public class ColoredMenuItem: NSMenuItem {
-    public init(title: String, image: NSImage, color: NSColor) {
-        self.color = color
-        super.init(title: title, action: nil, keyEquivalent: "")
-        self.image = image
+public struct SidebarItem: Sendable, Equatable, Hashable {
+    public enum ItemType: Sendable, Equatable {
+        case navigation
+        case menu
     }
 
-    public required init(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    public let icon: NSImage
+    public let title: String
+    public let type: ItemType
+
+    public var canBeSelected: Bool {
+        return type == .navigation
     }
 
-    public var color: NSColor
+    public init(icon: NSImage, title: String, type: ItemType = .navigation) {
+        self.icon = icon
+        self.title = title
+        self.type = type
+    }
 }

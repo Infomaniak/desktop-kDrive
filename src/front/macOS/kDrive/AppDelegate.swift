@@ -18,26 +18,32 @@
 
 import Cocoa
 
-class AppDelegate: NSObject, NSApplicationDelegate {
-    private var window: NSWindow!
-    private var contentViewController: NSViewController!
+@MainActor
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    private lazy var mainWindow = MainWindowController()
+    private lazy var preferencesWindow = PreferencesWindowController()
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 850, height: 530),
-            styleMask: [.titled, .closable, .resizable, .miniaturizable, .fullSizeContentView],
-            backing: .buffered,
-            defer: false
-        )
-
-        window.toolbarStyle = .unified
-        window.setFrameAutosaveName("kDriveMainWindow")
-        contentViewController = SplitViewController()
-        window.contentView = contentViewController.view
-        window.makeKeyAndOrderFront(nil)
+        openMainWindow()
     }
 
     func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
         return true
+    }
+
+    public func openMainWindow() {
+        mainWindow.showWindow(nil)
+        mainWindow.window?.makeKeyAndOrderFront(nil)
+
+        if #available(macOS 14.0, *) {
+            NSApp.activate()
+        } else {
+            NSApp.activate(ignoringOtherApps: true)
+        }
+    }
+
+    @objc public func openPreferencesWindow(_ sender: Any?) {
+        preferencesWindow.showWindow(sender)
+        preferencesWindow.window?.makeKeyAndOrderFront(sender)
     }
 }

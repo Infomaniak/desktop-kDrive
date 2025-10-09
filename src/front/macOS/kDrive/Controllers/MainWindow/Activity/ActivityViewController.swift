@@ -19,4 +19,8 @@
 import Cocoa
 import kDriveCoreUI
 
-final class ActivityViewController: TitledViewController {}
+final class ActivityViewController: TitledViewController {
+    convenience init() {
+        self.init(toolbarTitle: SidebarItem.activity.title)
+    }
+}

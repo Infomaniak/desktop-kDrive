@@ -18,8 +18,10 @@
 
 import Cocoa
 
-let kDriveApp = NSApplication.shared
 let delegate = AppDelegate()
-kDriveApp.delegate = delegate
+NSApplication.shared.delegate = delegate
 
-_ = NSApplicationMain(CommandLine.argc, CommandLine.unsafeArgv)
+let mainMenu = MainMenu()
+mainMenu.setAsAppMainMenu()
+
+NSApplication.shared.run()
