@@ -89,7 +89,7 @@ podman machine stop build_kdrive
 
 inode_max_limit=100000
 ulimit_error=$( { ulimit -n $inode_max_limit; } 2>&1)
-if [[ -n ulimit_error ]]; then
+if [[ -n "$ulimit_error" ]]; then
     echo "Failed to set the max limit of open inodes with '$inode_max_limit'."
     echo "Current limit: '$(ulimit -n)'."
 fi
