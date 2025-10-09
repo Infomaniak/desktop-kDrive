@@ -18,10 +18,7 @@
 
 #pragma once
 
-#include "test_utility/testbase.h"
-
-#include <cppunit/TestFixture.h>
-#include <cppunit/extensions/HelperMacros.h>
+#include "testincludes.h"
 
 namespace KDC {
 
@@ -34,7 +31,7 @@ class TestWindowsUpdater final : public CppUnit::TestFixture, public TestBase {
         void setUp() override;
         void tearDown() override;
 
-    protected:
+    private:
         void testOnUpdateFound();
 };
 

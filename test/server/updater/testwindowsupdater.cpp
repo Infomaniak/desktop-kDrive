@@ -18,12 +18,36 @@
 
 #include "testwindowsupdater.h"
 
+#include "db/parmsdb.h"
+#include "requests/parameterscache.h"
 #include "io/iohelper.h"
+#include "mocks/libcommonserver/db/mockdb.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/testhelpers.h"
 #include "updater/windowsupdater.h"
 
 namespace KDC {
+
+void TestWindowsUpdater::setUp() {
+    TestBase::start();
+
+    testhelpers::setupLogging();
+
+    // Init parmsDb
+    bool alreadyExists = false;
+    const std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
+    (void) ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
+
+    // Setup parameters cache in test mode
+    ParametersCache::instance(true);
+}
+
+void TestWindowsUpdater::tearDown() {
+    ParmsDb::instance()->close();
+    ParmsDb::reset();
+    ParametersCache::reset();
+    TestBase::stop();
+}
 
 void TestWindowsUpdater::testOnUpdateFound() {
     class WindowsUpdaterMock final : public WindowsUpdater {
@@ -36,12 +60,14 @@ void TestWindowsUpdater::testOnUpdateFound() {
                 return true;
             }
 
+            void downloadUpdate() noexcept override { setState(UpdateState::Downloading); }
+
             std::streamsize getExpectedInstallerSize([[maybe_unused]] const std::string &downloadUrl) override { return 10; }
 
             SyncPath _installerPath;
     };
 
-    LocalTemporaryDirectory tempDir("TestWindowsUpdater");
+    const LocalTemporaryDirectory tempDir("TestWindowsUpdater");
     WindowsUpdaterMock testObj;
     const auto dummyInstallerPath = tempDir.path() / "TestWindowsUpdater";
     testObj.setInstallerPath(dummyInstallerPath);
@@ -55,14 +81,14 @@ void TestWindowsUpdater::testOnUpdateFound() {
 
     testObj.onUpdateFound();
     CPPUNIT_ASSERT_EQUAL(UpdateState::Downloading, testObj.state());
-    CPPUNIT_ASSERT(!std::filesystem::exists(dummyInstallerPath)); // Local file has been removed.
+    CPPUNIT_ASSERT(std::filesystem::exists(dummyInstallerPath)); // Local file has been removed.
 
     // Installer exist locally but incomplete.
     testhelpers::generateOrEditTestFile(dummyInstallerPath);
 
     testObj.onUpdateFound();
     CPPUNIT_ASSERT_EQUAL(UpdateState::Downloading, testObj.state());
-    CPPUNIT_ASSERT(!std::filesystem::exists(dummyInstallerPath)); // Local file has been removed.
+    CPPUNIT_ASSERT(std::filesystem::exists(dummyInstallerPath)); // Local file has been removed.
 
     // Installer exist locally and is valid.
     testhelpers::generateTestFile(dummyInstallerPath, 10);

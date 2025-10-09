@@ -120,4 +120,6 @@ void setModificationDate(const SyncPath &path, const std::chrono::time_point<std
 // `filepath1` and `filepath2`.
 void createSymLinkLoop(const SyncPath &filepath1, const SyncPath &filepath2, const NodeType nodeType = NodeType::File);
 
+void setupLogging();
+
 } // namespace KDC::testhelpers

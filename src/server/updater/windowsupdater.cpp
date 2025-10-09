@@ -138,7 +138,7 @@ bool WindowsUpdater::getInstallerPath(SyncPath &path) const {
     return true;
 }
 
-std::streamsize WindowsUpdater::getExpectedInstallerSize(const SyncPath &destinationPath, const std::string &downloadUrl) {
+std::streamsize WindowsUpdater::getExpectedInstallerSize(const std::string &downloadUrl) {
     // Get the expected size of the installer.
     DirectDownloadJob job(downloadUrl);
     (void) job.runSynchronously();

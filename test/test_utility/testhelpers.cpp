@@ -54,7 +54,7 @@ SyncName makeNfcSyncName() {
 }
 
 void generateTestFile(const SyncPath &path, const uint64_t size /*= 0*/) {
-    std::ofstream testFile(path, std::ios::app);
+    std::ofstream testFile(path, std::ios_base::in | std::ios_base::trunc);
     if (size) {
         setTestFileSize(path, size);
     }
@@ -70,8 +70,7 @@ void generateOrEditTestFile(const SyncPath &path) {
 void setTestFileSize(const SyncPath &path, uint64_t size) {
     const std::string str{"0123456789"};
     std::ofstream ofs(path, std::ios_base::in | std::ios_base::trunc);
-    for (uint64_t i = 0;
-         i < static_cast<uint64_t>(round(static_cast<double>(size * 1000000) / static_cast<double>(str.length()))); i++) {
+    for (uint64_t i = 0; i < static_cast<uint64_t>(round(static_cast<double>(size) / static_cast<double>(str.length()))); i++) {
         ofs << str;
     }
 }
@@ -145,6 +144,18 @@ void createSymLinkLoop(const SyncPath &filepath1, const SyncPath &filepath2, con
 
     std::filesystem::current_path(currentPath);
     std::filesystem::rename(tempDir.path() / filepath1.filename(), filepath1);
+}
+
+void setupLogging() {
+    IoError ioError = IoError::Success;
+    SyncPath logDirPath;
+    if (!IoHelper::logDirectoryPath(logDirPath, ioError)) {}
+
+    // Setup log4cplus
+    const std::filesystem::path logFilePath = logDirPath / Utility::logFileNameWithTime();
+    if (!Log::instance(Path2WStr(logFilePath))) {
+        assert(false);
+    }
 }
 
 } // namespace KDC::testhelpers
