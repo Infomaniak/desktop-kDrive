@@ -46,10 +46,7 @@ final class SidebarTableCellView: NSTableCellView {
         imageView = cellImageView
         addSubview(cellImageView)
 
-        let cellTextField = NSTextField()
-        cellTextField.isSelectable = false
-        cellTextField.isBezeled = false
-        cellTextField.drawsBackground = false
+        let cellTextField = NSTextField(labelWithString: "")
         cellTextField.maximumNumberOfLines = 1
         cellTextField.lineBreakMode = .byTruncatingTail
         textField = cellTextField
