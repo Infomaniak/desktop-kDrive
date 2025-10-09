@@ -85,7 +85,8 @@ echo
 
 set -ex
 
-podman machine stop build_kdrive
+podman machine stop build_kdrive 2>/dev/null || true
+podman wait build_kdrive
 
 inode_max_limit=100000
 ulimit_error=$( { ulimit -n $inode_max_limit; } 2>&1)
@@ -97,7 +98,7 @@ fi
 podman machine start build_kdrive
 podman run --rm -it \
 	--privileged \
-	--ulimit nofile=4000000:4000000 \
+	--ulimit nofile=$inode_max_limit:$inode_max_limit \
 	--volume "$git_dir:/src" \
 	--volume "$build_dir:/build" \
 	--volume "$install_dir:/install" \
