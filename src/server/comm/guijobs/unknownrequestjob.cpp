@@ -25,12 +25,7 @@
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
 
-// Input parameters keys
-static const auto inParamsCode = "code";
-static const auto inParamsCodeVerifier = "codeVerifier";
-
 // Output parameters keys
-static const auto outParamsUserDbId = "userDbId";
 static const auto outParamsError = "error";
 static const auto outParamsErrorDescr = "errorDescr";
 

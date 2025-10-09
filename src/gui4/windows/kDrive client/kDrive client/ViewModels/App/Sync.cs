@@ -58,7 +58,7 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get
             {
-                if (_syncStatus == SyncStatus.Pause && !(App.Current as App).Data.NetworkAvailable)
+                if (_syncStatus == SyncStatus.Pause && !App.ServiceProvider.GetRequiredService<AppModel>().NetworkAvailable)
                 {
                     return SyncStatus.Offline;
                 }
@@ -198,7 +198,7 @@ namespace Infomaniak.kDrive.ViewModels
                 }
             });
 
-            (App.Current as App).Data.WhenAnyPropertyChanged("NetworkAvailable").Subscribe(appModel =>
+            App.ServiceProvider.GetRequiredService<AppModel>().WhenAnyPropertyChanged("NetworkAvailable").Subscribe(appModel =>
             {
                 if (SyncStatus == SyncStatus.Pause || SyncStatus == SyncStatus.Offline)
                 {

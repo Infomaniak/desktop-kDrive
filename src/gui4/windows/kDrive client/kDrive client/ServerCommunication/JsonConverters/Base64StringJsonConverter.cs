@@ -12,23 +12,21 @@ namespace Infomaniak.kDrive.ServerCommunication.JsonConverters
 {
     internal class Base64StringJsonConverter : JsonConverter<string>
     {
-
         public override string Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             // Decode base64 strings
-            if (reader.TokenType == JsonTokenType.String)
+            if (reader.TokenType != JsonTokenType.String)
+                throw new JsonException("Expected string token type for Base64StringJsonConverter.");
+
+            try
             {
-                try
-                {
-                    byte[] bytes = reader.GetBytesFromBase64();
-                    return Encoding.UTF8.GetString(bytes);
-                }
-                catch (FormatException ex)
-                {
-                    return reader.GetString() ?? throw new JsonException("Invalid Base64 string format.", ex);
-                }
+                byte[] bytes = reader.GetBytesFromBase64();
+                return Encoding.UTF8.GetString(bytes);
             }
-            throw new JsonException("Expected string token type for Base64StringJsonConverter.");
+            catch (FormatException ex)
+            {
+                return reader.GetString() ?? throw new JsonException("Invalid Base64 string format.", ex);
+            }
         }
         public override void Write(Utf8JsonWriter writer, string value, JsonSerializerOptions options)
         {

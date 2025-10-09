@@ -13,29 +13,32 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
     {
         Task Initialize();
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
         public class CommData
         {
+            // Type can be Request or Signal
             public CommMessageType Type { get; set; } = CommMessageType.Unknown;
+
+            // Unique identifier for the request/response pair or signal
             public int Id { get; set; } = -1;
+
+            // Number identifying the specific request or signal type
             public int Num { get; set; } = -1;
             public SignalNum SignalNum
             {
                 get { return (SignalNum)Num; }
                 set { Num = (int)value; }
             }
-
             public RequestNum RequestNum
             {
                 get { return (RequestNum)Num; }
                 set { Num = (int)value; }
             }
 
+            // Parameters for requests or data for signals
             public JsonObject? Params { get; set; }
-            public string? Result { get; set; }
         }
 
-        Task<CommData> SendRequestAsync(RequestNum requestNum, JsonObject parameters, CancellationToken cancellationToken = default);
+        public Task<CommData> SendRequestAsync(RequestNum requestNum, JsonObject parameters, CancellationToken cancellationToken = default);
 
         // Signals
         public class SignalEventArgs : EventArgs

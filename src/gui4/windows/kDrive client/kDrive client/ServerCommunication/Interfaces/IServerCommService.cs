@@ -48,7 +48,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task RefreshSyncs(CancellationToken cancellationToken);
 
 
-
         // Event handlers for user-related signals
         void HandleUserUpdatedOrAddedAsync(object? sender, SignalEventArgs args);
 

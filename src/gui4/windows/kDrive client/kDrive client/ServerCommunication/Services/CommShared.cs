@@ -76,8 +76,6 @@ namespace Infomaniak.kDrive.ServerCommunication
             public bool? Maintenance { get; set; }
             public bool? Locked { get; set; }
             public bool? AccessDenied { get; set; }
-
-
         }
 
         public struct SyncInfo

@@ -43,7 +43,7 @@ namespace Infomaniak.kDrive
             }
         }
         public TrayIcon.TrayIconManager TrayIcoManager { get; private set; }
-        public AppModel Data { get; set; } = new AppModel();
+
         private readonly IServiceCollection _services = new ServiceCollection();
         private static IServiceProvider? _serviceProvider = null;
         internal static IServiceProvider ServiceProvider => _serviceProvider ?? throw new InvalidOperationException("Service provider is not initialized.");
@@ -51,13 +51,14 @@ namespace Infomaniak.kDrive
         {
             InitializeComponent();
             TrayIcoManager = new TrayIcon.TrayIconManager();
-            _services.AddSingleton(Data);
+            _services.AddSingleton<AppModel>();
             _services.AddSingleton<IServerCommProtocol, SocketServerCommProtocol>();
             //_services.AddSingleton<IServerCommProtocol, MockServerCommProtocol>();
             _services.AddSingleton<IServerCommService, ServerCommService>();
             _serviceProvider = _services.BuildServiceProvider();
             foreach (var serviceDescriptor in _services.Where(sd => sd.Lifetime == ServiceLifetime.Singleton))
             {
+                // Force the initialization of singleton services
                 _serviceProvider.GetRequiredService(serviceDescriptor.ServiceType);
             }
 
@@ -89,9 +90,10 @@ namespace Infomaniak.kDrive
             Logger.Log(Logger.Level.Info, $"App launched with kind: {args.UWPLaunchActivatedEventArgs.Kind}, arguments: {args.Arguments}");
             CurrentWindow = new MainWindow();
             TrayIcoManager.Initialize();
-            await Data.InitializeAsync();
+            AppModel appModel = ServiceProvider.GetRequiredService<AppModel>();
+            await appModel.InitializeAsync();
             StartOnboardingIfNeeded();
-            Data.AllSyncs.AsObservableChangeSet()
+            appModel.AllSyncs.AsObservableChangeSet()
             .Subscribe(_ =>
             {
                 StartOnboardingIfNeeded();
@@ -112,7 +114,7 @@ namespace Infomaniak.kDrive
                 CurrentWindow = new OnBoarding.OnBoardingWindow();
                 ((OnBoarding.OnBoardingWindow)CurrentWindow).Closed += (s, e) =>
                 {
-                    if (Data.Users.Any())
+                    if (ServiceProvider.GetRequiredService<AppModel>().Users.Any())
                     {
                         Logger.Log(Logger.Level.Info, "OnBoardingWindow closed, restarting MainWindow.");
                         CurrentWindow = new MainWindow();
@@ -125,7 +127,7 @@ namespace Infomaniak.kDrive
 
         public void StartOnboardingIfNeeded()
         {
-            if (!Data.Users.Any() && !(CurrentWindow is OnBoarding.OnBoardingWindow))
+            if (!ServiceProvider.GetRequiredService<AppModel>().Users.Any() && !(CurrentWindow is OnBoarding.OnBoardingWindow))
             {
                 Logger.Log(Logger.Level.Info, "No users available after initialization, starting onboarding process.");
                 StartOnboarding();
