@@ -252,7 +252,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 Type = CommMessageType.Request,
                 Id = (int)NextId,
-                RequestNum = RequestNum.AccountInfoList,
+                RequestNum = RequestNum.SyncInfoList,
                 Params = result
             };
         }

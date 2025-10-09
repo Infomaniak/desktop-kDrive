@@ -61,11 +61,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public new void Initialize()
         {
             // Fetch the port from the .comm4 file
+            // TODO: Decide where to store this file on Windows
             string homePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + Path.DirectorySeparatorChar + ".comm4";
             int port = int.Parse((File.ReadAllText(homePath)).Trim());
 
+
             Logger.Log(Logger.Level.Info, $"Connecting to port {port}");
-            // Prefer a using declaration to ensure the instance is Disposed later.
             try
             {
                 _client = new TcpClient("localhost", port);
@@ -165,7 +166,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
         }
        
-        private async Task<CommData> WaitForReplyAsync(long requestId, CancellationToken canceletionToken = default)
+        private async Task<CommData> WaitForReplyAsync(long requestId, CancellationToken cancellationToken = default)
         {
             // Ensure the slot exists
             _pendingRequests[requestId] = null;
@@ -181,7 +182,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     }
                     else
                     {
-                        Logger.Log(Logger.Level.Debug, $"Found request(Id) {requestId}, but the respons is not available yet null");
+                        Logger.Log(Logger.Level.Debug, $"Found request(Id) {requestId}, but the response is not available yet null");
                     }
                 }
                 else
@@ -189,11 +190,11 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     Logger.Log(Logger.Level.Debug, $"No request(Id) found for {requestId}");
                 }
                 await Task.Delay(10).ConfigureAwait(false);
-                if (canceletionToken.IsCancellationRequested)
+                if (cancellationToken.IsCancellationRequested)
                 {
                     Logger.Log(Logger.Level.Info, $"Request(Id) {requestId} canceled before completion.");
                     _pendingRequests.Remove(requestId, out _);
-                    canceletionToken.ThrowIfCancellationRequested();
+                    cancellationToken.ThrowIfCancellationRequested();
                 }
             }
         }
