@@ -19,6 +19,8 @@
 #pragma once
 
 #include "testincludes.h"
+#include "test_utility/localtemporarydirectory.h"
+
 #include "update_detection/update_detector/updatetreeworker.h"
 
 using namespace CppUnit;
@@ -125,5 +127,7 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture, public TestBase {
 
         DbNodeId _dbnodeIdDir41;
         DbNodeId _dbnodeIdDir411;
+
+        LocalTemporaryDirectory _localTempDir = LocalTemporaryDirectory("TestUpdateTreeWorker");
 };
 } // namespace KDC

@@ -20,6 +20,7 @@
 
 #include "testincludes.h"
 #include "test_utility/dataextractor.h"
+#include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"
 #include "test_utility/testhelpers.h"
 #include "utility/types.h"
@@ -54,6 +55,7 @@ class BenchmarkParallelJobs : public CppUnit::TestFixture, public TestBase {
 
         SyncPath _localDirPath;
         const testhelpers::TestVariables _testVariables;
+        LocalTemporaryDirectory _localTempDir{"BenchmarkParallelJob"};
 };
 
 } // namespace KDC

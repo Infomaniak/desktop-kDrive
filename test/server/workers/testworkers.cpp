@@ -26,6 +26,7 @@
 
 #include "test_utility/testhelpers.h"
 
+
 #if defined(KD_WINDOWS)
 #include <combaseapi.h>
 #endif
@@ -58,7 +59,7 @@ void TestWorkers::setUp() {
 
     const testhelpers::TestVariables testVariables;
 
-    const std::string localPathStr = _localTempDir.path().string();
+    const std::string localPathStr = _localTempDir.path().string() + "/local_sync_dir";
 
     // Insert api token into keystore
     std::string keychainKey("123");
@@ -66,10 +67,7 @@ void TestWorkers::setUp() {
     KeyChainManager::instance()->writeToken(keychainKey, testVariables.apiToken);
 
     // Create parmsDb
-    bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
-    (void) std::filesystem::remove(parmsDbPath);
-    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
+    ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
 
     // Insert user, account, drive & sync
     int userId(12321);

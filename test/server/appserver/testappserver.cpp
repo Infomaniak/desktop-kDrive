@@ -32,14 +32,17 @@ namespace KDC {
 void TestAppServer::setUp() {
     TestBase::start();
 
+    // Create parmsDb
+    const SyncPath parmsDbPath = _localTempDir.path() / MockDb::makeDbMockFileName();
+    (void) ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
+    ParametersCache::instance()->parameters().setExtendedLog(true);
+
     if (QCoreApplication::instance()) {
         _appPtr = dynamic_cast<MockAppServer *>(QCoreApplication::instance());
         return;
     }
 
     const testhelpers::TestVariables testVariables;
-
-    const std::string localPathStr = _localTempDir.path().string();
 
     // Insert api token into keystore
     ApiToken apiToken;
@@ -48,12 +51,6 @@ void TestAppServer::setUp() {
     const std::string keychainKey("123");
     (void) KeyChainManager::instance(true);
     (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
-
-    // Create parmsDb
-    bool alreadyExists = false;
-    const std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
-    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, false, true);
-    ParametersCache::instance()->parameters().setExtendedLog(true);
 
     // Insert user, account, drive & sync
     const int userId(atoi(testVariables.userId.c_str()));
@@ -68,13 +65,12 @@ void TestAppServer::setUp() {
     const Drive drive(1, driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
 
-    _localPath = localPathStr;
+    _localPath = _localTempDir.path().string() + "/local_sync_directory";
+    std::filesystem::create_directories(_localPath);
+
     _remotePath = testVariables.remotePath;
     Sync sync(1, drive.dbId(), _localPath, "", _remotePath);
     (void) ParmsDb::instance()->insertSync(sync);
-
-    ParmsDb::instance()->close();
-    ParmsDb::reset();
 
     // Create AppServer
     SyncPath exePath = KDC::CommonUtility::applicationFilePath();
@@ -103,6 +99,7 @@ void TestAppServer::testInitAndStopSyncPal() {
 
     Sync sync;
     bool found = false;
+
     CPPUNIT_ASSERT(ParmsDb::instance()->selectSync(syncDbId, sync, found) && found);
 
     // Check sync nesting

@@ -18,6 +18,7 @@
 #pragma once
 #include "testincludes.h"
 #include "test_utility/localtemporarydirectory.h"
+
 #include "syncpal/syncpal.h"
 
 using namespace CppUnit;

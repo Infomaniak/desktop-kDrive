@@ -77,9 +77,7 @@ static const std::vector<std::string> acceptedFiles = {"~test",
 void TestExclusionTemplateCache::setUp() {
     TestBase::start();
     // Create parmsDb
-    bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
-    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
+    ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
 }
 
 void TestExclusionTemplateCache::tearDown() {

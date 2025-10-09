@@ -19,6 +19,8 @@
 #pragma once
 
 #include "testincludes.h"
+#include "test_utility/localtemporarydirectory.h"
+
 #include "utility/types.h"
 #include "libcommonserver/io/iohelper.h"
 using namespace CppUnit;
@@ -119,5 +121,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         NodeId _dummyRemoteFileId;
 
         static uint64_t _nbParallelThreads;
+
+        LocalTemporaryDirectory _localTempDir{"testNetworkJobs"};
 };
 } // namespace KDC

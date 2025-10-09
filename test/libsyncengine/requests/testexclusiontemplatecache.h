@@ -17,6 +17,7 @@
  */
 
 #include "testincludes.h"
+#include "test_utility/localtemporarydirectory.h"
 
 #include "libsyncengine/requests/exclusiontemplatecache.h"
 
@@ -43,6 +44,9 @@ class TestExclusionTemplateCache : public CppUnit::TestFixture, public TestBase 
         void testRescueFolderIsExcluded();
         void testNFCNFDExclusion();
         void testaddRegexForAllNormalizationForms();
+
+    private:
+        LocalTemporaryDirectory _localTempDir{"TestExeclusionTemplateCache"};
 };
 
 } // namespace KDC
