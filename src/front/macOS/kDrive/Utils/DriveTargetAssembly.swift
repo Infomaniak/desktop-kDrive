@@ -21,7 +21,7 @@ import InfomaniakDI
 import kDriveCore
 
 final class DriveTargetAssembly: TargetAssembly {
-    override class func getTargetServices() -> [Factory] {
+    override static func getTargetServices() -> [Factory] {
         return [
             Factory(type: WindowRouter.self) { _, _ in
                 MainWindowRouter()
