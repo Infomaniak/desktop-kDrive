@@ -60,7 +60,7 @@ namespace Infomaniak.kDrive.Pages
 
         private void SyncInPauseHyperlinkButton_Click(object sender, RoutedEventArgs e)
         {
-            if(ViewModel.SelectedSync == null)
+            if (ViewModel.SelectedSync == null)
             {
                 Logger.Log(Logger.Level.Warning, "No sync is selected, cannot resume sync.");
                 return;

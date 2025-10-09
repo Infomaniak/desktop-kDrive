@@ -196,7 +196,8 @@ namespace Infomaniak.kDrive.ViewModels
             {
                 if (SyncStatus == SyncStatus.Pause || SyncStatus == SyncStatus.Offline)
                 {
-                    SyncStatus = ((App.Current as App)?.Data.NetworkAvailable ?? true) ? SyncStatus.Pause : SyncStatus.Offline;
+                    bool networkAvailable = appModel?.NetworkAvailable ?? true;
+                    SyncStatus = networkAvailable ? SyncStatus.Pause : SyncStatus.Offline;
                 }
             });
         }

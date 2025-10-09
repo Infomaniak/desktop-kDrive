@@ -148,6 +148,7 @@ namespace Infomaniak.kDrive.ViewModels
         {
             _networkWatcherCancellationSource.Cancel();
             _networkWatcher?.Wait();
+            _networkWatcherCancellationSource.Dispose();
         }
         private async Task WatchNetworkAsync(CancellationToken cancellationToken)
         {
@@ -169,7 +170,8 @@ namespace Infomaniak.kDrive.ViewModels
                 }
                 catch
                 {
-                    // Any unexpected error -> assume offline
+                    // Any unexpected error -> assume online to avoid blocking the user
+                    isAvailable = true;
                 }
 
                 if (previousStatus != isAvailable)
@@ -180,12 +182,11 @@ namespace Infomaniak.kDrive.ViewModels
 
                 try
                 {
-                    // Check every 5 seconds (adjust as needed)
                     await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken).ConfigureAwait(false);
                 }
                 catch (TaskCanceledException)
                 {
-                    break; // clean exit when cancelled
+                    break;
                 }
             }
         }
