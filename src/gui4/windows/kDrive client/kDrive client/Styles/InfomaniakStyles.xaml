@@ -100,6 +100,7 @@
     <Thickness x:Key="Infomaniak.Style.Thickness.Right.S">0,0,12,0</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Right.M">0,0,16,0</Thickness>
     <!-- Corner Radius -->
+    <CornerRadius x:Key="Infomaniak.Style.CornerRadius.XS">2</CornerRadius>
     <CornerRadius x:Key="Infomaniak.Style.CornerRadius.S">4</CornerRadius>
     <CornerRadius x:Key="Infomaniak.Style.CornerRadius.M">8</CornerRadius>
     <CornerRadius x:Key="Infomaniak.Style.CornerRadius.Circle">1000</CornerRadius>

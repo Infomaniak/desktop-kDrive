@@ -53,7 +53,8 @@ namespace Infomaniak.kDrive
                         contentFrame.Navigate(typeof(Pages.ActivityPage));
                         break;
                     case "Settings":
-                        ((App)Application.Current).StartOnboarding();
+                        //((App)Application.Current).StartOnboarding();
+                        contentFrame.Navigate(typeof(Pages.SettingsPage));
                         break;
                     case "StoragePage":
                         contentFrame.Navigate(typeof(Pages.StoragePage));
