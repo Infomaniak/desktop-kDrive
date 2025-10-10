@@ -29,7 +29,7 @@ $files = @(
     $app,
     "kDrive.pdb",
     "kDrive_client.pdb",
-    "kDrivecommonserver_vfs_win.pdb"
+    "kDrive_vfs_win.pdb"
 )
 
 $headers = @{

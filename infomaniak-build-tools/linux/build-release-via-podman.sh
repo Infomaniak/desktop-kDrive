@@ -19,15 +19,17 @@
 #
 
 script_directory_path="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
-source "$script_directory_path/../build-utils.sh"
+source "$script_directory_path/build-utils.sh"
 
+git_dir="$(get_default_src_dir)"
 program_name="$(basename "$0")"
 
 function display_help {
-  echo "$program_name [-h] [-a architecture]"
+  echo "$program_name [-h] [-d git-directory]"
   echo "  Build the Linux release AppImage for desktop-kDrive via Podman."
   echo "where:"
   echo "-h  Show this help text."
+  echo "-d  Set the git directory path that will be mapped to the image '/src' folder. Defaults to '$git_dir'."
 }
 
 while :
@@ -36,6 +38,10 @@ do
       -h | --help)
           display_help
           exit 0
+          ;;
+      -d | --git-dir)
+          git_dir="$2"
+          shift 2
           ;;
       --) # End of all options
           shift
@@ -66,6 +72,12 @@ mkdir -p "$install_dir"
 mkdir -p "$conan_cache_folder"
 mkdir -p "$local_recipes_index"
 
+if [ ! -d "$git_dir" ]; then
+    echo "Git directory does not exist: '$git_dir'"
+    exit 1
+fi
+
+echo "Using git directory '${git_dir}'."
 echo "Using temporary build folder '${build_dir}'."
 architecture=$(get_host_arch)
 echo "Building desktop-kDrive AppImage for architecture ${architecture} via Podman ..."
@@ -73,13 +85,21 @@ echo
 
 set -ex
 
-podman machine stop build_kdrive
-ulimit -n unlimited
+podman machine stop build_kdrive 2>/dev/null
+
+inode_max_limit=100000
+ulimit_error=$( { ulimit -n $inode_max_limit; } 2>&1)
+if [[ -n "$ulimit_error" ]]; then
+    echo "Failed to set the max limit of open inodes with '$inode_max_limit'."
+    inode_max_limit=$(ulimit -n)
+    echo "Current limit: '$inode_max_limit'."
+fi
+
 podman machine start build_kdrive
 podman run --rm -it \
 	--privileged \
-	--ulimit nofile=4000000:4000000 \
-	--volume "$HOME/Projects/desktop-kDrive:/src" \
+	--ulimit nofile=$inode_max_limit:$inode_max_limit \
+	--volume "$git_dir:/src" \
 	--volume "$build_dir:/build" \
 	--volume "$install_dir:/install" \
 	--volume "$conan_cache_folder:/root/.conan2/p" \

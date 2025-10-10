@@ -11,7 +11,7 @@ runs:
       - name: Run the build script
         id: build
         run: |
-          /usr/bin/env bash ${{ github.workspace }}/infomaniak-build-tools/linux/build-release-arm64-via-podman.sh --src-dir ${{ github.workspace }}
+          /usr/bin/env bash ${{ github.workspace }}/infomaniak-build-tools/linux/build-release.sh -d ${{ github.workspace }}
         shell: bash
 
       - name: Upload app AppImage

@@ -5,7 +5,7 @@
                 <File Source="$(desktop-kDriveDir)/build-windows/install/bin/d3dcompiler_47.dll" />
                 <File Source="$(desktop-kDriveDir)/build-windows/install/bin/KDContextMenu.dll" />
                 <File Source="$(desktop-kDriveDir)/build-windows/install/bin/KDOverlays.dll" />
-                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/kDrivecommonserver_vfs_win.dll" />
+                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/kDrive_vfs_win.dll" />
                 <File Source="$(desktop-kDriveDir)/build-windows/install/bin/libcrypto-3-x64.dll" />
                 <File Source="$(desktop-kDriveDir)/build-windows/install/bin/libssl-3-x64.dll" />
                 <File Source="$(desktop-kDriveDir)/build-windows/install/bin/log4cplus.dll" />

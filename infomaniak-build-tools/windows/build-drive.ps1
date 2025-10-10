@@ -576,9 +576,12 @@ function Create-Archive {
 }
 
 function Create-MSI-Package {
+    Write-Host "Creating MSI package ..."
+
 	$appName = Get-Package-Name $buildPath
 	
 	dotnet build "$msiInstallerFolderPath/kDriveInstaller.sln" /p:Configuration="Release" /p:Platform="x64" /p:OutputName=$appName
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 	Move-Item -Path "$msiPackageFolderPath/$appName.msi" -Destination "$contentPath"
 	if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

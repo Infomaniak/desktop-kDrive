@@ -28,3 +28,13 @@ function get_host_arch() {
 
     echo $architecture
 }
+
+function get_default_src_dir() {
+  if [[ -n "$KDRIVE_SRC_DIR" ]]; then
+     echo "$KDRIVE_SRC_DIR"
+  elif [[ -d "$HOME/Projects/desktop-kDrive" ]]; then
+     echo "$HOME/Projects/desktop-kDrive"
+  else
+     echo "$PWD"
+    fi
+}
