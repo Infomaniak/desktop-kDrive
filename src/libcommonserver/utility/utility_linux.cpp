@@ -282,7 +282,7 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
         testFile << L"[Desktop Entry]" << std::endl;
         testFile << L"Name=" << CommonUtility::s2ws(guiName) << std::endl;
         testFile << L"GenericName=File Synchronizer" << std::endl;
-        testFile << L"Exec=" << Utility::formatSyncPath(appimageDir) << std::endl;
+        testFile << L"Exec=" << L"'" << CommonUtility::s2ws(appimageDir) << L"'" << std::endl;
         testFile << L"Terminal=false" << std::endl;
         testFile << L"Icon=" << CommonUtility::s2ws(CommonUtility::toLower(appName)) << std::endl;
         testFile << L"Categories=Network" << std::endl;
