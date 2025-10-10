@@ -272,7 +272,7 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
             return false;
         }
 
-        std::wofstream testFile(userAutoStartFilePath, std::ios_base::in);
+        std::wofstream testFile{userAutoStartFilePath};
         if (!testFile.is_open()) {
             LOGW_WARN(logger(), L"Could not write auto start entry." << Utility::formatSyncPath(userAutoStartFilePath));
             return false;
