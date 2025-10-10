@@ -64,7 +64,7 @@ final class LoginViewController: OnboardingStepViewController {
         case .success:
             fatalError("Not Implemented Yet")
         case .fail:
-            fatalError("Not Implemented Yet")
+            setupErrorView()
         }
     }
 
@@ -76,6 +76,11 @@ final class LoginViewController: OnboardingStepViewController {
         primaryButton.target = self
         primaryButton.action = #selector(openLoginWebView)
         secondaryButton.title = KDriveLocalizable.buttonCreateAccount
+    }
+
+    private func setupErrorView() {
+        titleLabel.stringValue = KDriveLocalizable.onboardingErrorTitle
+        descriptionLabel.stringValue = KDriveLocalizable.onboardingLoginErrorDescription
     }
 
     private func markButtonsAsLoading(_ isLoading: Bool) {
