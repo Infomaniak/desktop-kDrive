@@ -74,7 +74,9 @@ class GuiCommServerPrivate : public AbstractCommServerPrivate {
     [jsonDict setObject:requestId forKey:@"id"];
 
     NSError *error = nil;
-    NSData *msg = [NSJSONSerialization dataWithJSONObject:jsonDict options:NSJSONWritingSortedKeys error:&error];
+    NSData *msg = [NSJSONSerialization dataWithJSONObject:jsonDict
+                                                  options:NSJSONWritingSortedKeys | NSJSONWritingWithoutEscapingSlashes
+                                                    error:&error];
     if (error) {
         NSLog(@"[KD] Error message serialization error: error=%@", [error description]);
         return nil;
@@ -133,7 +135,9 @@ static NSNumber *lastRequestId = @0;
         [jsonDict setObject:requestId forKey:@"id"];
 
         // Serialize new query
-        NSData *newQuery = [NSJSONSerialization dataWithJSONObject:jsonDict options:NSJSONWritingSortedKeys error:&error];
+        NSData *newQuery = [NSJSONSerialization dataWithJSONObject:jsonDict
+                                                           options:NSJSONWritingSortedKeys | NSJSONWritingWithoutEscapingSlashes
+                                                             error:&error];
         if (error) {
             NSLog(@"[KD] Message serialization error: error=%@", [error description]);
             NSData *msg = [GuiCommServerUtility errorMsg:@(toInt(KDC::ExitCode::LogicError))
@@ -282,7 +286,9 @@ uint64_t KDC::GuiCommChannel::writeData(const KDC::CommChar *data, uint64_t len)
         [jsonDict removeObjectForKey:@"num"];
 
         // Serialize answer
-        NSData *answer = [NSJSONSerialization dataWithJSONObject:jsonDict options:NSJSONWritingSortedKeys error:&error];
+        NSData *answer = [NSJSONSerialization dataWithJSONObject:jsonDict
+                                                         options:NSJSONWritingSortedKeys | NSJSONWritingWithoutEscapingSlashes
+                                                           error:&error];
         if (error) {
             NSLog(@"[KD] Message serialization error: error=%@", [error description]);
             NSData *msg = [GuiCommServerUtility errorMsg:@(toInt(KDC::ExitCode::LogicError))
@@ -303,7 +309,9 @@ uint64_t KDC::GuiCommChannel::writeData(const KDC::CommChar *data, uint64_t len)
         }
     } else if (requestType == KDC::AbstractGuiJob::GuiJobType::Signal) {
         // Serialize message
-        NSData *newMsg = [NSJSONSerialization dataWithJSONObject:jsonDict options:NSJSONWritingSortedKeys error:&error];
+        NSData *newMsg = [NSJSONSerialization dataWithJSONObject:jsonDict
+                                                         options:NSJSONWritingSortedKeys | NSJSONWritingWithoutEscapingSlashes
+                                                           error:&error];
         if (error) {
             NSLog(@"[KD] Message serialization error: error=%@", [error description]);
             return -1;
@@ -336,16 +344,16 @@ void KDC::GuiCommChannel::runSendQuery(const CommString &query,
     NSString *queryStr = [NSString stringWithCString:query.c_str() encoding:[NSString defaultCStringEncoding]];
     NSData *queryData = [queryStr dataUsingEncoding:NSUTF8StringEncoding];
 
-    [(GuiLocalEnd *) channel->_privatePtr->localEnd setCurrentRequestId:@(0)];
+    [(GuiLocalEnd *) channelPrivate->localEnd setCurrentRequestId:@(0)];
 
-    [(GuiLocalEnd *) channel->_privatePtr->localEnd sendQuery:queryData
-                                                     callback:^(NSData *_Nonnull answerData) {
-                                                       NSString *answerStr = [[NSString alloc] initWithData:answerData
-                                                                                                   encoding:NSUTF8StringEncoding];
-                                                       std::string answer([answerStr UTF8String]);
+    [(GuiLocalEnd *) channelPrivate->localEnd sendQuery:queryData
+                                               callback:^(NSData *_Nonnull answerData) {
+                                                 NSString *answerStr = [[NSString alloc] initWithData:answerData
+                                                                                             encoding:NSUTF8StringEncoding];
+                                                 std::string answer([answerStr UTF8String]);
 
-                                                       answerCbk(answer);
-                                                     }];
+                                                 answerCbk(answer);
+                                               }];
 }
 
 // GuiCommServer implementation

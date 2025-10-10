@@ -72,6 +72,7 @@
 #include <Poco/UnicodeConverter.h>
 #include <Poco/Base64Decoder.h>
 #include <Poco/Base64Encoder.h>
+#include <Poco/StreamCopier.h>
 
 #define MAX_PATH_LENGTH_WIN_LONG 32767
 #define MAX_PATH_LENGTH_WIN_SHORT 259
@@ -1437,7 +1438,8 @@ bool CommonUtility::isLinux() {
 void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::string &value) {
     std::istringstream istr(base64Str);
     Poco::Base64Decoder b64in(istr);
-    b64in >> value;
+    // /!\ Do not use >> because it stops on a space character
+    Poco::StreamCopier::copyToString(b64in, value, 1);
 }
 
 void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::wstring &value) {
@@ -1447,9 +1449,12 @@ void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::wstr
 }
 
 void CommonUtility::convertFromBase64Str(const std::string &base64Str, CommBLOB &value) {
-    std::istringstream istr(base64Str);
+    /*std::istringstream istr(base64Str);
     Poco::Base64Decoder b64in(istr);
-    (void) std::copy(std::istream_iterator<char>(b64in), std::istream_iterator<char>(), std::back_inserter(value));
+    (void) std::copy(std::istream_iterator<char>(b64in), std::istream_iterator<char>(), std::back_inserter(value));*/
+    std::string strValue;
+    convertFromBase64Str(base64Str, strValue);
+    (void) std::copy(strValue.begin(), strValue.end(), std::back_inserter(value));
 }
 
 void CommonUtility::convertToBase64Str(const std::string &str, std::string &base64Str) {

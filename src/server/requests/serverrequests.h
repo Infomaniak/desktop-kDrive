@@ -54,7 +54,8 @@ struct SYNCENGINE_EXPORT ServerRequests {
         // Use COMM_SHORT_TIMEOUT
         static ExitCode getUserDbIdList(QList<int> &list); // TODO: Delete after switching to the new comm layer
         static ExitCode getUserDbIdList(std::vector<int> &list);
-        static ExitCode getUserInfoList(QList<UserInfo> &list);
+        static ExitCode getUserInfoList(QList<UserInfo> &list); // TODO: Delete after switching to the new comm layer
+        static ExitCode getUserInfoList(std::vector<UserInfo> &list);
         static ExitCode getUserIdFromUserDbId(int userDbId, int &userId);
         static ExitCode getAccountInfoList(QList<AccountInfo> &list);
         static ExitCode getDriveInfoList(QList<DriveInfo> &list);
