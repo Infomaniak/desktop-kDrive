@@ -96,10 +96,7 @@ void TestAbstractGuiJob::setUp() {
     _logger = Log::instance()->getLogger();
 
     // Create parmsDb
-    bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
-    (void) std::filesystem::remove(parmsDbPath);
-    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
+    (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
 
     _channel = std::make_shared<GuiCommChannelTest2>();
 }

@@ -21,6 +21,7 @@
 #include "testincludes.h"
 
 #include "test_classes/syncpaltest.h"
+#include "test_utility/localtemporarydirectory.h"
 
 using namespace CppUnit;
 
@@ -47,6 +48,8 @@ class TestRemoteFileSystemObserverWorker : public CppUnit::TestFixture, public T
         int _driveDbId{0};
         NodeId _testFolderId;
         NodeId _testFileId;
+
+        LocalTemporaryDirectory _localTempDir{"testRemoteFileSystemObserverrWorker"};
 };
 
 } // namespace KDC

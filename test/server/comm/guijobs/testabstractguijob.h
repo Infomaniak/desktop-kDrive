@@ -17,6 +17,8 @@
  */
 
 #include "testincludes.h"
+#include "test_utility/localtemporarydirectory.h"
+
 #include "libcommon/comm.h"
 #include "server/comm/guicommserver.h"
 #include "server/comm/guijobs/abstractguijob.h"
@@ -98,6 +100,8 @@ class TestAbstractGuiJob : public CppUnit::TestFixture, public TestBase {
     private:
         log4cplus::Logger _logger;
         std::shared_ptr<GuiCommChannelTest2> _channel;
+
+        LocalTemporaryDirectory _localTempDir{"testAbstractGuiJob"};
 };
 
 } // namespace KDC

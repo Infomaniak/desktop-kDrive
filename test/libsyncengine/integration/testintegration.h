@@ -24,6 +24,7 @@
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommon/utility/sourcelocation.h"
+#include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"
 #include "utility/timerutility.h"
 
@@ -143,6 +144,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         int _driveDbId = 0;
         LocalTemporaryDirectory _localSyncDir;
         RemoteTemporaryDirectory _remoteSyncDir{"testIntegration"};
+        LocalTemporaryDirectory _localTempDir{"testIntegration"};
         NodeId _testFileRemoteId;
         TimerUtility _timer;
 };
