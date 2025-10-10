@@ -16,8 +16,11 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import AuthenticationServices
 import Combine
 import Foundation
+import InfomaniakDI
+import InfomaniakLogin
 
 enum OnboardingStep: Sendable {
     case login(LoginStep = .initial)
@@ -32,6 +35,43 @@ enum OnboardingStep: Sendable {
     }
 }
 
+@MainActor
 final class OnboardingViewModel: ObservableObject {
-    @Published private(set) var currentStep = OnboardingStep.login(.initial)
+    @LazyInjectService private var loginService: InfomaniakLoginable
+
+    @Published private(set) var currentStep = OnboardingStep.login()
+    @Published private(set) var isShowingAuthenticationWindow = false
+
+    func startWebAuthenticationLogin(anchor: ASPresentationAnchor?) {
+        isShowingAuthenticationWindow = true
+        loginService.asWebAuthenticationLoginFrom(
+            anchor: anchor ?? ASPresentationAnchor(),
+            useEphemeralSession: true,
+            hideCreateAccountButton: true,
+            delegate: self
+        )
+    }
+}
+
+// MARK: - InfomaniakLoginDelegate
+
+extension OnboardingViewModel: InfomaniakLoginDelegate {
+    func didCompleteLoginWith(code: String, verifier: String) {
+        isShowingAuthenticationWindow = false
+
+        // TODO: Server should code & verifier into a token
+        // TODO: Get user + drives
+
+        currentStep = .driveSelection
+    }
+
+    func didFailLoginWith(error: any Error) {
+        isShowingAuthenticationWindow = false
+
+        guard (error as? ASWebAuthenticationSessionError)?.code != .canceledLogin else {
+            return
+        }
+
+        currentStep = .login(.fail)
+    }
 }

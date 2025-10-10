@@ -17,7 +17,6 @@
  */
 
 import Cocoa
-import kDriveCoreUI
 
 public final class SidebarTableCellView: NSTableCellView {
     public var badge: Int? {

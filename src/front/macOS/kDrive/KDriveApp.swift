@@ -18,10 +18,16 @@
 
 import Cocoa
 
-let delegate = AppDelegate()
-NSApplication.shared.delegate = delegate
+@main
+struct KDriveApp {
+    @MainActor
+    static func main() async {
+        let delegate = AppDelegate()
+        NSApplication.shared.delegate = delegate
 
-let mainMenu = MainMenu()
-mainMenu.setAsAppMainMenu()
+        let mainMenu = MainMenu()
+        mainMenu.setAsAppMainMenu()
 
-NSApplication.shared.run()
+        NSApplication.shared.run()
+    }
+}

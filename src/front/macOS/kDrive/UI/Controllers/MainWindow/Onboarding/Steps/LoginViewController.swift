@@ -16,14 +16,16 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import AuthenticationServices
 import Cocoa
 import Combine
+import InfomaniakLogin
 import kDriveCoreUI
+import kDriveLogin
 import kDriveResources
 
 final class LoginViewController: OnboardingStepViewController {
     private let viewModel: OnboardingViewModel
-
     private var bindStore = Set<AnyCancellable>()
 
     init(viewModel: OnboardingViewModel) {
@@ -42,9 +44,13 @@ final class LoginViewController: OnboardingStepViewController {
     }
 
     private func bindViewModel() {
-        transitionContent(toStep: viewModel.currentStep)
         viewModel.$currentStep.receive(on: DispatchQueue.main).sink { [weak self] step in
             self?.transitionContent(toStep: step)
+        }
+        .store(in: &bindStore)
+
+        viewModel.$isShowingAuthenticationWindow.receive(on: DispatchQueue.main).sink { [weak self] isShowing in
+            self?.markButtonsAsLoading(isShowing)
         }
         .store(in: &bindStore)
     }
@@ -58,7 +64,7 @@ final class LoginViewController: OnboardingStepViewController {
         case .success:
             fatalError("Not Implemented Yet")
         case .fail:
-            fatalError("Not Implemented Yet")
+            setupErrorView()
         }
     }
 
@@ -67,6 +73,22 @@ final class LoginViewController: OnboardingStepViewController {
         descriptionLabel.stringValue = KDriveLocalizable.onboardingLoginDescription
 
         primaryButton.title = KDriveLocalizable.buttonLogin
+        primaryButton.target = self
+        primaryButton.action = #selector(openLoginWebView)
         secondaryButton.title = KDriveLocalizable.buttonCreateAccount
+    }
+
+    private func setupErrorView() {
+        titleLabel.stringValue = KDriveLocalizable.onboardingErrorTitle
+        descriptionLabel.stringValue = KDriveLocalizable.onboardingLoginErrorDescription
+    }
+
+    private func markButtonsAsLoading(_ isLoading: Bool) {
+        primaryButton.isEnabled = !isLoading
+        secondaryButton.isEnabled = !isLoading
+    }
+
+    @objc private func openLoginWebView() {
+        viewModel.startWebAuthenticationLogin(anchor: view.window)
     }
 }

@@ -18,13 +18,22 @@
 
 import Cocoa
 import InfomaniakDI
+import InfomaniakLogin
 import kDriveCore
 
 final class DriveTargetAssembly: TargetAssembly {
-    override class func getTargetServices() -> [Factory] {
+    static let loginConfig = InfomaniakLogin.Config(
+        clientId: "5EA39279-FF64-4BB8-A872-4A40B5786317",
+        redirectURI: "kdrive://auth-desktop"
+    )
+
+    override static func getTargetServices() -> [Factory] {
         return [
             Factory(type: WindowRouter.self) { _, _ in
                 MainWindowRouter()
+            },
+            Factory(type: InfomaniakLoginable.self) { _, _ in
+                InfomaniakLogin(config: Self.loginConfig)
             }
         ]
     }
