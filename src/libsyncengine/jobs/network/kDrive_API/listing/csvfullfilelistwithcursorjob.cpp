@@ -47,7 +47,7 @@ bool CsvFullFileListWithCursorJob::getItem(SnapshotItem &item, bool &error, bool
 }
 
 std::string CsvFullFileListWithCursorJob::getCursor() {
-    return _resHttp.get("X-kDrive-Cursor", "");
+    return httpResponse().get("X-kDrive-Cursor", "");
 }
 
 std::string CsvFullFileListWithCursorJob::getSpecificUrl() {

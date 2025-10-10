@@ -48,7 +48,7 @@ ExitInfo AbstractListingJob::setData() {
 }
 
 ExitInfo AbstractListingJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
-    if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN) {
+    if (httpResponse().getStatus() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN) {
         // Access to the directory is forbidden or it doesn't exist
         return {ExitCode::InvalidSync, ExitCause::SyncDirAccessError};
     }

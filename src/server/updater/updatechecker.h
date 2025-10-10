@@ -43,11 +43,11 @@ class UpdateChecker {
          * to the selected distribution channel. That means if the `Beta` version is newer than the `Internal` version, the the
          * `Beta` version wins over the `Internal` one and must be proposed even if the user has selected the `Internal` channel.
          * The rule is the `Production` version wins over all others, the `Beta` verison wins over the `Internal` version.
-         * @param choosedChannel The selected distribution channel.
+         * @param chosenChannel The selected distribution channel.
          * @return A reference to the found `VersionInfo` object. If not found, return a reference to default constructed, invalid
          * `VersionInfo`object.
          */
-        const VersionInfo &versionInfo(VersionChannel choosedChannel);
+        const VersionInfo &versionInfo(VersionChannel chosenChannel);
 
         [[nodiscard]] const std::unordered_map<VersionChannel, VersionInfo> &versionsInfo() const { return _versionsInfo; }
         [[nodiscard]] bool isVersionReceived() const { return _isVersionReceived; }
