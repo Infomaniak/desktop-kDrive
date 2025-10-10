@@ -69,6 +69,9 @@ Each request initiated by the client has a **unique `id`**, allowing responses t
 
 ## Common Data Structures
 
+### /!\ Warning /!\
+
+All string value must be base64-encoded to ensure safe transmission.
 ### UserInfo
 
 Represents a user known to the application.
@@ -81,7 +84,7 @@ Represents a user known to the application.
   "userId": "u_abc123",
   "name": "John Doe",
   "email": "john.doe@example.com",
-  "avatar": "<base64-encoded-bytes>",
+  "avatar": "<Binary of a PNG>",
   "isConnected": true,
   "isStaff": false
 }
@@ -106,7 +109,7 @@ Represents an account (organization) associated with a user.
 
 ### DriveInfo
 
-Represents a drive (cloud space) belonging to an account.
+Represents a drive belonging to an account.
 
 **JSON Model:**
 
@@ -116,7 +119,7 @@ Represents a drive (cloud space) belonging to an account.
   "accountDbId": 56789,
   "driveId": "d_abc456",
   "name": "My Drive",
-  "color": 3,
+  "color": #TODO: define color format,
   "notification": true,
   "maintenance": false,
   "locked": false,
@@ -132,8 +135,10 @@ Represents a synchronization configuration between a local folder and a remote d
 
 **JSON Model:**
 
+
 ```json
 {
+  #### TODO: This structure is not final, some fields may be added/removed or changed.
   "dbId": 22222,
   "driveDbId": 11111,
   "localPath": "C:\\Users\\John\\Documents\\MyDrive",
@@ -145,19 +150,25 @@ Represents a synchronization configuration between a local folder and a remote d
 ```
 
 ---
-## Requests list
-### `UserInfoList`
+# Requests
+### `LoginRequestToken`
 
 **Description:**
-Retrieves information about all users stored in the server’s database.
+Request the server to add a new user using the provided OAuth2 token.
+If the user already exists, it will simply be marked as connected.
+In case of success, a signal `UserAdded` or `UserUpdated` will be emitted to notify the client of the change.
 
 **Request JSON:**
 
 ```json
 {
   [...]
-  "num": (int)RequestNum.UserInfoList,
-  "params": null
+  "num": (int)RequestNum.LoginRequestToken,
+  "params": 
+    {
+        "code": "<OAuth2 authorization code>",
+        "codeVerifier": "<PKCE code verifier>"
+    }
 }
 ```
 
@@ -167,7 +178,7 @@ Retrieves information about all users stored in the server’s database.
 {
   [...]
   "params": {
-    "userInfos": [{UserInfo json model}, ...]
+    "userDbId": (int)<DbId of the newly added or updated user>
   }
 }
 ```
@@ -176,12 +187,12 @@ Retrieves information about all users stored in the server’s database.
 
 ```json
 {
-  "type": 1,
-  "id": 42,
-  "num": (int)RequestNum.UserInfoList,
+  [...]
   "params": {
     "code": (int)ExitCode,
-    "cause": (int)ExitCause
+    "cause": (int)ExitCause,
+    "error": "<Error message>",
+    "errorDescription": "<Detailed error description>"
   }
 }
 ```
@@ -189,3 +200,36 @@ Retrieves information about all users stored in the server’s database.
 ---
 
 ## Signals list
+### `UserAdded`
+
+**Description:**
+Emitted when a new user is added to the application.
+
+**Signal JSON:**
+```json
+{
+  [...]
+  "num": (int)SignalEnum.UserAdded,
+  "params": {
+    "userInfo": { <UserInfo> }
+  }
+}
+```
+
+---
+
+### `UserUpdated`
+
+**Description:**
+Emitted when an existing user is updated in the application.
+
+**Signal JSON:**
+```json
+{
+  [...]
+  "num": (int)SignalEnum.UserUpdated,
+  "params": {
+    "userInfo": { <UserInfo> }
+  }
+}
+```
