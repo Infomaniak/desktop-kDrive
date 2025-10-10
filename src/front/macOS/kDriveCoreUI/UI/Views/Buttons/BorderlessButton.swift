@@ -19,7 +19,7 @@
 import Cocoa
 
 public final class BorderlessButton: NSButton {
-    var foregroundColor: NSColor = .Tokens.Action.primary
+    var foregroundColor = NSColor.Tokens.Action.primary
 
     public override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
