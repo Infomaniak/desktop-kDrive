@@ -418,16 +418,26 @@ struct IoHelper {
          */
         static bool checkIfFileIsDehydrated(const SyncPath &path, bool &isDehydrated, IoError &ioError) noexcept;
 
+        // Access right management
         //! Get the rights of the item indicated by `path`.
         /*!
          \param path is the file system path of the item.
          \param read is a boolean indicating whether the item is readable.
          \param write is a boolean indicating whether the item is writable.
          \param exec is a boolean indicating whether the item is executable.
-         \param exists is a boolean indicating whether the item exists.
+         \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
          */
         static bool getRights(const SyncPath &path, bool &read, bool &write, bool &exec, IoError &ioError) noexcept;
+        //! Get the rights of the item indicated by `path`.
+        /*!
+         \param path is the file system path of the item.
+         \param read is a boolean indicating whether the item is readable.
+         \param write is a boolean indicating whether the item is writable.
+         \param exec is a boolean indicating whether the item is executable.
+         \return An ioError representing the success or failure of the underlying OS API call.
+         */
+        static IoError getRights(const SyncPath &path, bool &read, bool &write, bool &exec) noexcept;
 
         //! Set the rights of the item indicated by `path`.
         /*!
@@ -439,6 +449,48 @@ struct IoHelper {
          \return true if no unexpected error occurred, false otherwise.
         */
         static bool setRights(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept;
+        //! Set the rights of the item indicated by `path`.
+        /*!
+         \param path is the file system path of the item.
+         \param read is a boolean indicating whether the item should be readable.
+         \param write is a boolean indicating whether the item should be writable.
+         \param exec is a boolean indicating whether the item should be executable.
+         \return An ioError representing the success or failure of the underlying OS API call.
+        */
+        static IoError setRights(const SyncPath &path, bool read, bool write, bool exec) noexcept;
+
+        /**
+         * @brief Utility function to lock an item.
+         * @param path is the file system path of the item.
+         * @return An ioError representing the success or failure of the underlying OS API call.
+         */
+        static IoError lock(const SyncPath &path) noexcept;
+        /**
+         * @brief Utility function to unlock an item.
+         * @param path is the file system path of the item.
+         * @return An ioError representing the success or failure of the underlying OS API call.
+         */
+        static IoError unlock(const SyncPath &path) noexcept;
+        /**
+         * @brief Utility function to check if an item is locked.
+         * @param path is the file system path of the item.
+         * @param locked is a boolean indicating whether the item is locked.
+         * @return An ioError representing the success or failure of the underlying OS API call.
+         */
+        static IoError isLocked(const SyncPath &path, bool &locked) noexcept;
+
+        /**
+         * @brief Utility function to set, for the current user, read only access to an item.
+         * @param path is the file system path of the item.
+         * @return An ioError representing the success or failure of the underlying OS API call.
+         */
+        static IoError setReadOnly(const SyncPath &path) noexcept;
+        /**
+         * @brief Utility function to set, for the current user, full access to an item.
+         * @param path is the file system path of the item.
+         * @return An ioError representing the success or failure of the underlying OS API call.
+         */
+        static IoError setFullAccess(const SyncPath &path) noexcept;
 
         /**
          * @brief Set the dates using native API.

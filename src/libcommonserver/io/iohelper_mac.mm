@@ -231,18 +231,7 @@ void IoHelper::setFileHidden(const SyncPath &path, bool hidden) noexcept {
     [pathURL setResourceValue:value forKey:NSURLIsHiddenKey error:NULL];
 }
 
-bool isLocked(const SyncPath &path) {
-    NSString *pathStr = [NSString stringWithCString:path.c_str() encoding:NSUTF8StringEncoding];
-    if (pathStr == nil) {
-        return false;
-    }
-
-    NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:pathStr error:nil];
-    BOOL isLocked = [[attributes objectForKey:NSFileImmutable] boolValue];
-    return isLocked;
-}
-
-IoError IoHelper::setFileDates(const SyncPath &filePath, const SyncTime creationDate, const SyncTime modificationDate,
+IoError IoHelper::setFileDates(const SyncPath &filePath, SyncTime creationDate, SyncTime modificationDate,
                                bool symlink) noexcept {
     NSDate *cDate = [[NSDate alloc] initWithTimeIntervalSince1970:creationDate];
     NSDate *mDate = [[NSDate alloc] initWithTimeIntervalSince1970:modificationDate];

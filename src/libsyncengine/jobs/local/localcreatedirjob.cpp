@@ -17,6 +17,8 @@
  */
 
 #include "localcreatedirjob.h"
+
+#include "libcommonserver/io/permissionsholder.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
@@ -25,8 +27,9 @@
 
 namespace KDC {
 
-LocalCreateDirJob::LocalCreateDirJob(const SyncPath &destFilepath) :
-    _destFilePath(destFilepath) {}
+LocalCreateDirJob::LocalCreateDirJob(const SyncPath &destFilepath, bool readOnly /*= false*/) :
+    _destFilePath(destFilepath),
+    _readOnly(readOnly) {}
 
 ExitInfo LocalCreateDirJob::canRun() {
     if (bypassCheck()) {
@@ -58,18 +61,19 @@ ExitInfo LocalCreateDirJob::runJob() {
         return exitInfo;
     }
 
+    // Make sure we are allowed to propagate the change
+    PermissionsHolder _(_destFilePath.parent_path(), _logger);
+
     IoError ioError = IoError::Success;
     if (IoHelper::createDirectory(_destFilePath, false, ioError) && ioError == IoError::Success) {
         if (isExtendedLog()) {
             LOGW_DEBUG(_logger, L"Directory: " << Utility::formatSyncPath(_destFilePath) << L" created");
         }
     }
-
     if (ioError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"Search permission missing: =" << Utility::formatSyncPath(_destFilePath));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
-
     if (ioError != IoError::Success) { // Unexpected error
         LOGW_WARN(_logger, L"Failed to create directory: " << Utility::formatIoError(_destFilePath, ioError));
         return ExitCode::SystemError;
@@ -87,6 +91,12 @@ ExitInfo LocalCreateDirJob::runJob() {
     } else if (ioError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_destFilePath));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
+    }
+
+    if (_readOnly) {
+        if (IoHelper::setReadOnly(_destFilePath) != IoError::Success) {
+            LOGW_WARN(_logger, L"Failed to set read-only rights: " << Utility::formatSyncPath(_destFilePath));
+        }
     }
 
     _nodeId = std::to_string(filestat.inode);

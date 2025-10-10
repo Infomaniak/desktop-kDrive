@@ -24,12 +24,11 @@
 #import <SystemExtensions/SystemExtensions.h>
 #import <Foundation/Foundation.h>
 
-#include "../common/filepermissionholder.h"
-#include "../common/filesystembase.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/io/filestat.h"
+#include "libcommonserver/io/permissionsholder.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -659,6 +658,8 @@ bool LiteSyncCommClientPrivate::setThumbnail(const SyncPath &filePath, const QPi
         return false;
     }
 
+    PermissionsHolder permsHolder(filePath, _logger);
+
     // Source image
     bool error = false;
     CGImageRef imageRef = pixmap.toImage().toCGImage();
@@ -876,6 +877,8 @@ bool LiteSyncCommClient::vfsDehydratePlaceHolder(const SyncPath &absoluteFilepat
         return false;
     }
 
+    PermissionsHolder permsHolder(absoluteFilepath, _logger);
+
     struct stat fileStat;
     if (lstat(absoluteFilepath.c_str(), &fileStat) == -1) {
         LOGW_WARN(_logger, L"Call to lstat failed: " << Utility::formatErrno(absoluteFilepath, errno));
@@ -1028,6 +1031,7 @@ bool LiteSyncCommClient::vfsCreatePlaceHolder(const SyncPath &relativePath, cons
     }
 
     const auto absolutePath = localSyncPath / relativePath;
+    PermissionsHolder permsHolder(absolutePath.parent_path(), _logger);
 
     if (fileStat->st_mode == S_IFDIR) {
         IoError ioError = IoError::Success;
@@ -1149,6 +1153,8 @@ bool LiteSyncCommClient::vfsUpdateFetchStatus(const SyncPath &tmpFilePath, const
 
             SyncTime modificationDate = filestat.modificationTime;
             SyncTime creationDate = filestat.creationTime;
+
+            PermissionsHolder permsHolder(filePath, _logger);
 
             // Copy tmp file content to file
             @try {
@@ -1307,6 +1313,8 @@ bool LiteSyncCommClient::vfsUpdateMetadata(const SyncPath &absoluteFilePath, con
         LOG_WARN(_logger, "Bad parameters");
         return false;
     }
+
+    PermissionsHolder permsHolder(absoluteFilePath, _logger);
 
     // Check status
     VfsStatus vfsStatus;
@@ -1494,6 +1502,7 @@ bool LiteSyncCommClient::vfsProcessDirStatus(const SyncPath &path, const SyncPat
 }
 
 void LiteSyncCommClient::vfsClearFileAttributes(const SyncPath &path) {
+    PermissionsHolder permsHolder(path, _logger);
     removexattr(path.c_str(), litesync_attrs::status.data(), 0);
     removexattr(path.c_str(), litesync_attrs::pinState.data(), 0);
 }

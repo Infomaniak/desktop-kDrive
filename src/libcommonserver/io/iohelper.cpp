@@ -100,6 +100,7 @@ IoError IoHelper::posixError2ioError(int error) noexcept {
     switch (error) {
         case 0:
             return IoError::Success;
+        case EPERM:
         case EACCES:
             return IoError::AccessDenied;
         case EEXIST:
@@ -295,20 +296,20 @@ bool IoHelper::_checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoErro
 }
 
 bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &exec, IoError &ioError) noexcept {
+    ioError = getRights(path, read, write, exec);
+    return ioError == IoError::Success || isExpectedError(ioError);
+}
+
+IoError IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &exec) noexcept {
     read = false;
     write = false;
     exec = false;
-    ioError = IoError::Success;
 
     ItemType itemType;
     const bool success = getItemType(path, itemType);
-    if (!success) {
+    if (!success || itemType.ioError != IoError::Success) {
         LOGW_WARN(logger(), L"Failed to get item type: " << Utility::formatIoError(path, itemType.ioError));
-        return false;
-    }
-    ioError = itemType.ioError;
-    if (ioError != IoError::Success) {
-        return isExpectedError(ioError);
+        return itemType.ioError;
     }
 
     std::error_code ec;
@@ -317,22 +318,27 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
                                            : std::filesystem::status(path, ec).permissions();
     if (ec) {
         const bool exists = (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory));
-        ioError = stdError2ioError(ec);
+        IoError ioError = stdError2ioError(ec);
         if (!exists) {
             ioError = IoError::NoSuchFileOrDirectory;
         }
         LOGW_WARN(logger(), L"Failed to get permissions: " << Utility::formatStdError(path, ec));
-        return isExpectedError(ioError);
+        return ioError;
     }
 
     read = ((perms & std::filesystem::perms::owner_read) != std::filesystem::perms::none);
 #if defined(KD_MACOS)
-    write = isLocked(path) ? false : ((perms & std::filesystem::perms::owner_write) != std::filesystem::perms::none);
+    bool isLocked = false;
+    if (const auto ioError = IoHelper::isLocked(path, isLocked); ioError != IoError::Success) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to check if file is locked for " << Utility::formatSyncPath(path));
+        return ioError;
+    }
+    write = isLocked ? false : ((perms & std::filesystem::perms::owner_write) != std::filesystem::perms::none);
 #elif defined(KD_LINUX)
     write = ((perms & std::filesystem::perms::owner_write) != std::filesystem::perms::none);
 #endif
     exec = ((perms & std::filesystem::perms::owner_exec) != std::filesystem::perms::none);
-    return true;
+    return IoError::Success;
 }
 #endif
 
@@ -1045,6 +1051,12 @@ void IoHelper::DirectoryIterator::disableRecursionPending() {
 bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept {
     return _setRightsStd(path, read, write, exec, ioError);
 }
+
+IoError IoHelper::setRights(const SyncPath &path, const bool read, const bool write, const bool exec) noexcept {
+    IoError ioError = IoError::Unknown;
+    (void) setRights(path, read, write, exec, ioError);
+    return ioError;
+}
 #endif
 
 bool IoHelper::_setRightsStd(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept {
@@ -1080,4 +1092,48 @@ NodeType IoHelper::getTargetNodeType(const SyncPath &path) {
     return nodeType;
 }
 #endif
+
+IoError IoHelper::setReadOnly(const SyncPath &path) noexcept {
+    // Retrieve the `exec` right.
+    bool dummyRead = false;
+    bool dummyWrite = false;
+    bool exec = false;
+    if (const auto ioError = IoHelper::getRights(path, dummyRead, dummyWrite, exec); ioError != IoError::Success) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to get rights for " << Utility::formatSyncPath(path));
+        return IoError::Unknown;
+    }
+
+    // Remove the `write` right and force the `read` right. `exec` right is not modified.
+    if (const auto ioError = IoHelper::setRights(path, true, false, exec); ioError != IoError::Success) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to set rights for " << Utility::formatSyncPath(path));
+        return ioError;
+    }
+
+    // Lock the file.
+    return lock(path);
+}
+
+IoError IoHelper::setFullAccess(const SyncPath &path) noexcept {
+    // Retrieve `exec` rights. It is not modified by this method.
+    bool dummyRead = false;
+    bool dummyWrite = false;
+    bool exec = false;
+    if (const auto ioError = IoHelper::getRights(path, dummyRead, dummyWrite, exec); ioError != IoError::Success) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to set rights for: " << Utility::formatSyncPath(path));
+        return IoError::Unknown;
+    }
+
+    // The file must be unlocked before changing its access rights.
+    if (const auto ioError = unlock(path); ioError != IoError::Success) {
+        return ioError;
+    }
+
+    // Set full access rights.
+    if (const auto ioError = IoHelper::setRights(path, true, true, exec); ioError != IoError::Success) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to set rights for: " << Utility::formatSyncPath(path));
+        return IoError::Unknown;
+    }
+    return IoError::Success;
+}
+
 } // namespace KDC

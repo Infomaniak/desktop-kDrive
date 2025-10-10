@@ -52,7 +52,21 @@ LocalTemporaryDirectory::LocalTemporaryDirectory(const std::string &testType, co
 
 LocalTemporaryDirectory::~LocalTemporaryDirectory() {
     auto ioError = IoError::Success;
+
+    // Set full access to temp directory.
+    (void) IoHelper::unlock(_path);
     (void) IoHelper::setRights(_path, true, true, true, ioError);
+
+    // Set full access to all children of temp directory.
+    IoHelper::DirectoryIterator dir;
+    IoHelper::getDirectoryIterator(_path, true, ioError, dir);
+    DirectoryEntry entry;
+    ioError = IoError::Success;
+    bool endOfDirectory = false;
+    while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
+        (void) IoHelper::unlock(entry.path());
+        (void) IoHelper::setRights(entry.path(), true, true, true, ioError);
+    }
 
     std::error_code ec;
     std::filesystem::remove_all(_path, ec);

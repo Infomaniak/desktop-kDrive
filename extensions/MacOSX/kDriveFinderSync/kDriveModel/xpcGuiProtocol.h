@@ -20,7 +20,7 @@
 
 // Objects shared betwin client & server
 // TODO: Provisional code
-@interface UserInfo: NSObject {
+@interface UserInfo : NSObject {
 @public
     int dbId;
     int userId;
@@ -43,7 +43,9 @@
 - (void)sendQuery:(NSData *_Nonnull)msg;
 
 typedef void (^_Nonnull loginRequestTokenCbk)(int userDbId, NSString *_Nullable error, NSString *_Nullable errorDescr);
-- (void)loginRequestToken:(NSString *_Nonnull)code codeVerifier:(NSString *_Nonnull)codeVerifier callback:(loginRequestTokenCbk)callback;
+- (void)loginRequestToken:(NSString *_Nonnull)code
+             codeVerifier:(NSString *_Nonnull)codeVerifier
+                 callback:(loginRequestTokenCbk)callback;
 
 @end
 
