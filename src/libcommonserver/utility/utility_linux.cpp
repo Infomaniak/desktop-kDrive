@@ -249,8 +249,9 @@ namespace {
 // Returns the autostart directory the linux way
 // and respects the XDG_CONFIG_HOME env variable
 SyncPath getUserAutostartDir() {
-    auto configPath = CommonUtility::getAppSupportDir();
+    auto configPath = CommonUtility::getAppSupportDir().parent_path();
     configPath /= "autostart";
+
     return configPath;
 }
 } // namespace
@@ -271,7 +272,7 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
             return false;
         }
 
-        std::wofstream testFile(userAutoStartFilePath, std::ios_base::in);
+        std::wofstream testFile{userAutoStartFilePath};
         if (!testFile.is_open()) {
             LOGW_WARN(logger(), L"Could not write auto start entry." << Utility::formatSyncPath(userAutoStartFilePath));
             return false;
@@ -281,7 +282,7 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
         testFile << L"[Desktop Entry]" << std::endl;
         testFile << L"Name=" << CommonUtility::s2ws(guiName) << std::endl;
         testFile << L"GenericName=File Synchronizer" << std::endl;
-        testFile << L"Exec=" << Utility::formatSyncPath(appimageDir) << std::endl;
+        testFile << L"Exec=" << L"'" << CommonUtility::s2ws(appimageDir) << L"'" << std::endl;
         testFile << L"Terminal=false" << std::endl;
         testFile << L"Icon=" << CommonUtility::s2ws(CommonUtility::toLower(appName)) << std::endl;
         testFile << L"Categories=Network" << std::endl;

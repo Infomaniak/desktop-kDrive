@@ -1137,4 +1137,12 @@ void TestUtility::testConvertToBase64Str() {
     CPPUNIT_ASSERT(value == "MDEyMzQ1Njc4OWFiY2RlZmdoaWprbG1ub3BxcnRzdXZ3eHl6");
 }
 
+void TestUtility::isLikeSomeError() {
+    std::error_code errorCode = std::make_error_code(std::errc::too_many_symbolic_link_levels);
+    CPPUNIT_ASSERT(utility_base::isLikeTooManySymbolicLinkLevelsError(errorCode));
+
+    errorCode = std::make_error_code(std::errc::no_such_file_or_directory);
+    CPPUNIT_ASSERT(utility_base::isLikeFileNotFoundError(errorCode));
+}
+
 } // namespace KDC
