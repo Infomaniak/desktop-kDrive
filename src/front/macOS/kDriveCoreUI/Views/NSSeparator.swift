@@ -18,18 +18,13 @@
 
 import Cocoa
 
-public final class ColoredPopUpButton: NSPopUpButton {
+public final class NSSeparator: NSBox {
     public init() {
-        super.init(frame: .zero, pullsDown: false)
-        cell = ColoredPopUpButtonCell()
+        super.init(frame: .zero)
+        boxType = .separator
     }
 
-    @available(*, unavailable)
     public required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-
-    public func addItem(withTitle title: String, image: NSImage, color: NSColor) {
-        menu?.addItem(ColoredMenuItem(title: title, image: image, color: color))
     }
 }

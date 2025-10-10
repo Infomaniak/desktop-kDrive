@@ -72,7 +72,11 @@ class PreferencesSidebarViewController: NSViewController {
             scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             scrollView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+            scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+
+            outlineView.topAnchor.constraint(equalTo: scrollView.contentView.topAnchor),
+            outlineView.leadingAnchor.constraint(equalTo: scrollView.contentView.leadingAnchor),
+            outlineView.trailingAnchor.constraint(equalTo: scrollView.contentView.trailingAnchor)
         ])
     }
 }

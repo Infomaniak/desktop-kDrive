@@ -58,28 +58,9 @@
 		F9A9A0562E61A887005FA196 /* Exceptions for "kDriveCoreUI" folder in "kDrive" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Utils/ColoredMenuItem.swift,
-				Views/BadgeButton.swift,
-				Views/ClickableOutlineView.swift,
-				Views/ColoredPopUpButton.swift,
-				Views/ColoredPopUpButtonCell.swift,
 				Views/SidebarHeaderView.swift,
-				Views/SidebarTableCellView.swift,
 			);
 			target = 37A1C4252E546A5200596DBB /* kDrive */;
-		};
-		F9A9A0572E61A887005FA196 /* Exceptions for "kDriveCoreUI" folder in "kDriveCoreUI" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Utils/ColoredMenuItem.swift,
-				Views/BadgeButton.swift,
-				Views/ClickableOutlineView.swift,
-				Views/ColoredPopUpButton.swift,
-				Views/ColoredPopUpButtonCell.swift,
-				Views/SidebarHeaderView.swift,
-				Views/SidebarTableCellView.swift,
-			);
-			target = 37A1C43E2E546A9600596DBB /* kDriveCoreUI */;
 		};
 		F9ACC5322E5DCC780081E80B /* Exceptions for "kDrive" folder in "kDrive" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -87,6 +68,13 @@
 				Resources/Info.plist,
 			);
 			target = 37A1C4252E546A5200596DBB /* kDrive */;
+		};
+		F9C97F782E86DFB600C01B85 /* Exceptions for "kDriveCoreUI" folder in "kDriveCoreUI" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Views/SidebarHeaderView.swift,
+			);
+			target = 37A1C43E2E546A9600596DBB /* kDriveCoreUI */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -103,7 +91,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				F9A9A0562E61A887005FA196 /* Exceptions for "kDriveCoreUI" folder in "kDrive" target */,
-				F9A9A0572E61A887005FA196 /* Exceptions for "kDriveCoreUI" folder in "kDriveCoreUI" target */,
+				F9C97F782E86DFB600C01B85 /* Exceptions for "kDriveCoreUI" folder in "kDriveCoreUI" target */,
 			);
 			path = kDriveCoreUI;
 			sourceTree = "<group>";

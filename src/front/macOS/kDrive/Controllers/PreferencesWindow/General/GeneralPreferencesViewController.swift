@@ -19,8 +19,41 @@
 import Cocoa
 import kDriveCoreUI
 
-class GeneralPreferencesViewController: TitledViewController {
+class GeneralPreferencesViewController: InsetGroupedPreferencesPaneController {
     convenience init() {
         self.init(toolbarTitle: SidebarItem.general.title)
     }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupSection()
+    }
+
+    private func setupSection() {
+        let automaticUpdateLabel = NSTextField(labelWithString: "Mises à jour automatiques")
+        let automaticUpdateSwitch = NSSwitch()
+
+        let languageLabel = NSTextField(labelWithString: "Langue")
+        let languagePopUpButton = NSPopUpButton()
+
+        let startAtLoginLabel = NSTextField(labelWithString: "Ouvrir kDrive au démarrage de l’ordinateur")
+        let startAtLoginSwitch = NSSwitch()
+
+        let aboutLabel = NSTextField(labelWithString: "À propos de kDrive")
+        let aboutButton = NSButton()
+        aboutButton.bezelStyle = .helpButton
+        aboutButton.controlSize = .small
+
+        insertNewGroupedSection(with: [
+            [automaticUpdateLabel, automaticUpdateSwitch],
+            [languageLabel, languagePopUpButton],
+            [startAtLoginLabel, startAtLoginSwitch],
+            [aboutLabel, aboutButton]
+        ])
+    }
+}
+
+@available(macOS 14, *)
+#Preview {
+    GeneralPreferencesViewController()
 }

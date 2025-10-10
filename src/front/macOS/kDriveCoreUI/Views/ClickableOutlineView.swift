@@ -18,16 +18,16 @@
 
 import Cocoa
 
-protocol ClickableOutlineViewDelegate: NSOutlineViewDelegate {
+public protocol ClickableOutlineViewDelegate: NSOutlineViewDelegate {
     func outlineView(_ outlineView: NSOutlineView, didClick item: Any?)
 }
 
-final class ClickableOutlineView: NSOutlineView {
+public final class ClickableOutlineView: NSOutlineView {
     private static let menuTopPadding: CGFloat = 4.0
 
     private(set) var activatedRowIndexes = IndexSet()
 
-    override func mouseDown(with event: NSEvent) {
+    override public func mouseDown(with event: NSEvent) {
         super.mouseDown(with: event)
 
         guard window?.isKeyWindow == true else { return }
@@ -36,7 +36,7 @@ final class ClickableOutlineView: NSOutlineView {
         }
     }
 
-    override func rowView(atRow row: Int, makeIfNecessary: Bool) -> NSTableRowView? {
+    override public func rowView(atRow row: Int, makeIfNecessary: Bool) -> NSTableRowView? {
         let tableRow = super.rowView(atRow: row, makeIfNecessary: makeIfNecessary)
         if let tableRow, makeIfNecessary {
             markRowAsActivated(tableRow, isActivated: activatedRowIndexes.contains(row))
@@ -45,7 +45,7 @@ final class ClickableOutlineView: NSOutlineView {
         return tableRow
     }
 
-    func showMenu(_ menu: NSMenu, at item: Any) {
+    public func showMenu(_ menu: NSMenu, at item: Any) {
         let itemRow = row(forItem: item)
         guard itemRow != -1 else { return }
 
