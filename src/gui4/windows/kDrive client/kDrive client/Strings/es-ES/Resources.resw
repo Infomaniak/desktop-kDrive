@@ -159,16 +159,34 @@
   <data name="CC_SyncErrorBar_button.Content" xml:space="preserve">
     <value />
   </data>
-  <data name="CC_ActivityList_Header_Name.Text" xml:space="preserve">
+  <data name="CC_SyncActivityTable_Header_Name.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="CC_ActivityList_Header_State.Text" xml:space="preserve">
+  <data name="CC_SyncActivityTable_Header_State.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="CC_ActivityList_Header_Size.Text" xml:space="preserve">
+  <data name="Converter_SyncDirectionToToolTipConverter_Outgoing" xml:space="preserve">
     <value />
   </data>
-  <data name="CC_ActivityList_Header_LastLocation.Text" xml:space="preserve">
+  <data name="Converter_DateTimeToTimeAgoConverter_Since" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Converter_DateTimeToTimeAgoConverter_Ago" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncActivityTable_Header_Size.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncActivityTable_Header_LastLocation.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncActivityTable_Empty_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncActivityTable_Empty_Link.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncActivityTable_Empty_Description.Text" xml:space="preserve">
     <value />
   </data>
   <data name="Global_Second" xml:space="preserve">
@@ -375,7 +393,10 @@
   <data name="Page_StoragePage_FreeSpace.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="Global_Bytes" xml:space="preserve">
+  <data name="Converter_SyncDirectionToToolTipConverter_Incoming" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Hello.Text" xml:space="preserve">
     <value />
   </data>
   <data name="Global_TeraBytes" xml:space="preserve">
@@ -391,6 +412,54 @@
     <value />
   </data>
   <data name="Page_StoragePage_DiskUnavailable.Message" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Status_SyncUpToDate.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Main_SyncUpToDate_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Main_SyncInPause_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Main_SyncInProgress_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Main_SyncUpToDate_HyperLink.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Main_SyncInPause_HyperLink.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Main_SyncInProgress_HyperLink.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Main_SyncUpToDate_Description.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Main_SyncInProgress_Description.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Status_SyncOffline.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Status_SyncInPause.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Status_SyncInProgress.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Main_SyncInPause_Description.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Main_SyncOffline_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Main_SyncOffline_Description_Line1.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Main_SyncOffline_Description_Line2.Text" xml:space="preserve">
     <value />
   </data>
 </root>

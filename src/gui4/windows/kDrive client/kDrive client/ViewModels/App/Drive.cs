@@ -42,10 +42,11 @@ namespace Infomaniak.kDrive.ViewModels
         private bool _isPaidOffer = false; // Indicates if the drive is a paid offer (i.e. myKsuite+/pro +, ...)
         private ObservableCollection<Sync> _syncs = new ObservableCollection<Sync>();
         private bool _hasError = false; // Indicate if any of the syncs has an error
-
-        public Drive(DbId dbId)
+        private User _user;
+        public Drive(DbId dbId, User user)
         {
             DbId = dbId;
+            _user = user;
         }
 
         public async Task Reload()
@@ -156,6 +157,12 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _hasError;
             set => SetProperty(ref _hasError, value);
+        }
+
+        public User User
+        {
+            get => _user;
+            set => SetProperty(ref _user, value);
         }
 
         private void Sync_PropertyChanged(object? sender, PropertyChangedEventArgs e)

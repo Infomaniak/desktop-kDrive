@@ -2,6 +2,7 @@
 using Infomaniak.kDrive.Types;
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.ViewModels
 {
@@ -16,6 +17,7 @@ namespace Infomaniak.kDrive.ViewModels
         private SyncDirection _direction;
         private Int64 _size;
         private NodeType _nodeType;
+        private SyncActivityState _state = SyncActivityState.InProgress;
 
         public string Name { get => _name; }
         public SyncPath LocalPath
@@ -46,7 +48,7 @@ namespace Infomaniak.kDrive.ViewModels
                     {
                         OnPropertyChanged(nameof(ActivityTime));
                     });
-                }, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+                }, null, TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(30));
             }
         }
         public SyncDirection Direction { get => _direction; set => SetProperty(ref _direction, value); }
@@ -68,5 +70,34 @@ namespace Infomaniak.kDrive.ViewModels
             }
         }
         public SyncPath ParentFolderPath { get => _parentFolderPath; }
+
+        public SyncActivityState State
+        {
+            get => _state;
+            set => SetProperty(ref _state, value);
+        }
+
+
+        private readonly Task _simulationTask;
+        public SyncActivity()
+        {
+            _simulationTask = Simulate();
+        }
+
+        ~SyncActivity()
+        {
+            _simulationTask?.Dispose();
+        }
+        private async Task Simulate()
+        {
+            Random random = new();
+            await Task.Delay(random.Next(1000, 15000));
+            bool success = random.Next(0, 10) > 2;
+            AppModel.UIThreadDispatcher.TryEnqueue(() =>
+            {
+                State = success ? SyncActivityState.Successful : SyncActivityState.Failed;
+                ActivityTime = DateTime.Now;
+            });
+        }
     }
 }

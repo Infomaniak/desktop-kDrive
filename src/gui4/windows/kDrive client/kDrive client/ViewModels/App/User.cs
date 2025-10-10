@@ -84,7 +84,7 @@ namespace Infomaniak.kDrive.ViewModels
                           List<Task> driveTasks = new List<Task>();
                           foreach (var driveDbId in t.Result)
                           {
-                            Drive drive = new Drive(driveDbId);
+                            Drive drive = new Drive(driveDbId, this);
                             Drives.Add(drive);
                             driveTasks.Add(drive.Reload());
                           }

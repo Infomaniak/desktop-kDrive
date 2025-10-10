@@ -22,13 +22,16 @@ using DynamicData.Binding;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using Microsoft.VisualBasic.Devices;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Windows.Networking.Connectivity;
 
 namespace Infomaniak.kDrive.ViewModels
 
@@ -81,6 +84,14 @@ namespace Infomaniak.kDrive.ViewModels
         // Application settings
         public Settings Settings { get; } = new Settings();
 
+        // Helpers
+        private readonly Network _network = new();
+        private readonly Task? _networkWatcher;
+        private readonly CancellationTokenSource _networkWatcherCancellationSource = new();
+        private bool _networkAvailable;
+
+
+
         public Sync? SelectedSync
         {
             get => _selectedSync;
@@ -128,9 +139,57 @@ namespace Infomaniak.kDrive.ViewModels
             // Observe changes to AppErrors and SelectedSync.SyncErrors to update HasNoErrors property
             AppErrors.CollectionChanged += (_, __) => OnPropertyChanged(nameof(HasErrors));
 
-            AppErrors.Add(new Errors.AppError(0) { ExitCause = 4, ExitCode = 1234 }); // TODO: Remove this line, only for testing
-
+            _networkAvailable = _network.IsAvailable;
+            _networkWatcher = WatchNetworkAsync(_networkWatcherCancellationSource.Token);
         }
+
+        ~AppModel()
+        {
+            _networkWatcherCancellationSource.Cancel();
+            _networkWatcher?.Wait();
+            _networkWatcherCancellationSource.Dispose();
+        }
+        private async Task WatchNetworkAsync(CancellationToken cancellationToken)
+        {
+            bool previousStatus = _networkAvailable;
+
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                bool isAvailable = false;
+
+                try
+                {
+                    var profile = NetworkInformation.GetInternetConnectionProfile();
+
+                    if (profile != null)
+                    {
+                        var level = profile.GetNetworkConnectivityLevel();
+                        isAvailable = level == NetworkConnectivityLevel.InternetAccess;
+                    }
+                }
+                catch
+                {
+                    // Any unexpected error -> assume online to avoid blocking the user
+                    isAvailable = true;
+                }
+
+                if (previousStatus != isAvailable)
+                {
+                    previousStatus = isAvailable;
+                    UIThreadDispatcher.TryEnqueue(() => NetworkAvailable = isAvailable);
+                }
+
+                try
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken).ConfigureAwait(false);
+                }
+                catch (TaskCanceledException)
+                {
+                    break;
+                }
+            }
+        }
+
 
         private void EnsureValidSelectedSync()
         {
@@ -163,6 +222,12 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _appErrors;
             set => SetProperty(ref _appErrors, value);
+        }
+
+        public bool NetworkAvailable
+        {
+            get => _networkAvailable;
+            set => SetProperty(ref _networkAvailable, value);
         }
 
         /** Initialize the model by loading data from the server.

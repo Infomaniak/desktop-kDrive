@@ -129,7 +129,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="CustomControls\SyncStatusBar.xaml">
+    <Page Update="CustomControls\SyncStartPauseButton.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

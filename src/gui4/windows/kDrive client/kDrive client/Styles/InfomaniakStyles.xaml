@@ -35,6 +35,7 @@
     <FontWeight x:Key="Infomaniak.Style.FontWeight.Light">Light</FontWeight>
     <FontWeight x:Key="Infomaniak.Style.FontWeight.Normal">Normal</FontWeight>
     <FontWeight x:Key="Infomaniak.Style.FontWeight.SemiBold">SemiBold</FontWeight>
+    <FontWeight x:Key="Infomaniak.Style.FontWeight.SemiLight">SemiLight</FontWeight>
     <FontWeight x:Key="Infomaniak.Style.FontWeight.Bold">Bold</FontWeight>
     <FontWeight x:Key="Infomaniak.Style.FontWeight.ExtraBold">ExtraBold</FontWeight>
 
@@ -71,10 +72,16 @@
     <Thickness x:Key="Infomaniak.Style.Thickness.Uniform.XL">32</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Uniform.XXL">36</Thickness>
 
+    <Thickness x:Key="Infomaniak.Style.Thickness.Sides.Horizontal.XXS">4,0</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Sides.Horizontal.XS">8,0</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Sides.Horizontal.S">12,0</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Sides.Horizontal.M">16,0</Thickness>
 
+    <Thickness x:Key="Infomaniak.Style.Thickness.Sides.Vertical.XXS">0,4</Thickness>
+    <Thickness x:Key="Infomaniak.Style.Thickness.Sides.Vertical.XS">0,8</Thickness>
+    <Thickness x:Key="Infomaniak.Style.Thickness.Sides.Vertical.S">0,12</Thickness>
+    <Thickness x:Key="Infomaniak.Style.Thickness.Sides.Vertical.M">0,16</Thickness>
+    
     <Thickness x:Key="Infomaniak.Style.Thickness.Top.XXS">0,4,0,0</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Top.XS">0,8,0,0</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Top.S">0,12,0,0</Thickness>
@@ -95,6 +102,7 @@
     <!-- Corner Radius -->
     <CornerRadius x:Key="Infomaniak.Style.CornerRadius.S">4</CornerRadius>
     <CornerRadius x:Key="Infomaniak.Style.CornerRadius.M">8</CornerRadius>
+    <CornerRadius x:Key="Infomaniak.Style.CornerRadius.Circle">1000</CornerRadius>
 
     <!-- Elements styles -->
     <!-- TextBlock -->
@@ -117,6 +125,14 @@
            BasedOn="{StaticResource Infomaniak.Style.TextBlock.Base}">
         <Setter Property="FontWeight"
                 Value="{StaticResource Infomaniak.Style.FontWeight.SemiBold}" />
+        <Setter Property="FontSize"
+                Value="{StaticResource Infomaniak.Style.FontSize.Subtitle}" />
+    </Style>
+    <Style x:Key="Infomaniak.Style.TextBlock.SubtitleSl"
+           TargetType="TextBlock"
+           BasedOn="{StaticResource Infomaniak.Style.TextBlock.Base}">
+        <Setter Property="FontWeight"
+                Value="{StaticResource Infomaniak.Style.FontWeight.SemiLight}" />
         <Setter Property="FontSize"
                 Value="{StaticResource Infomaniak.Style.FontSize.Subtitle}" />
     </Style>
@@ -144,7 +160,7 @@
         <Setter Property="FontSize"
                 Value="14" />
     </Style>
-    <Style x:Key="Infomaniak.Style.TextBlock.CaptionStrong"
+    <Style x:Key="Infomaniak.Style.TextBlock.CaptionSb"
            TargetType="TextBlock"
            BasedOn="{StaticResource Infomaniak.Style.TextBlock.Base}">
         <Setter Property="FontWeight"
