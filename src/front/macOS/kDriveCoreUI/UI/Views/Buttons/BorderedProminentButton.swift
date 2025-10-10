@@ -38,7 +38,7 @@ public final class BorderedProminentButton: NSButton {
         super.init(coder: coder)
         setupColors()
     }
-
+    
     private func setupColors() {
         bezelColor = backgroundColor
         setupTitleColor()

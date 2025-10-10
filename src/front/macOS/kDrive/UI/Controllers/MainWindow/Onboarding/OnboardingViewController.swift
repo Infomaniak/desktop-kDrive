@@ -84,7 +84,6 @@ final class OnboardingViewController: NSViewController {
     }
 
     private func bindViewModel() {
-        transition(toStep: viewModel.currentStep)
         viewModel.$currentStep.receive(on: DispatchQueue.main)
             .sink { [weak self] step in
                 self?.transition(toStep: step)

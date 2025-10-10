@@ -18,7 +18,6 @@
 
 import Cocoa
 import Combine
-import InfomaniakDI
 import InfomaniakLogin
 import kDriveCoreUI
 import kDriveLogin
@@ -26,8 +25,6 @@ import kDriveResources
 import AuthenticationServices
 
 final class LoginViewController: OnboardingStepViewController {
-    @LazyInjectService private var loginService: InfomaniakLoginable
-
     private let viewModel: OnboardingViewModel
     private var bindStore = Set<AnyCancellable>()
 
@@ -47,9 +44,13 @@ final class LoginViewController: OnboardingStepViewController {
     }
 
     private func bindViewModel() {
-        transitionContent(toStep: viewModel.currentStep)
         viewModel.$currentStep.receive(on: DispatchQueue.main).sink { [weak self] step in
             self?.transitionContent(toStep: step)
+        }
+        .store(in: &bindStore)
+
+        viewModel.$isShowingAuthenticationWindow.receive(on: DispatchQueue.main).sink { [weak self] isShowing in
+            self?.markButtonsAsLoading(isShowing)
         }
         .store(in: &bindStore)
     }
@@ -77,22 +78,12 @@ final class LoginViewController: OnboardingStepViewController {
         secondaryButton.title = KDriveLocalizable.buttonCreateAccount
     }
 
+    private func markButtonsAsLoading(_ isLoading: Bool) {
+        primaryButton.isEnabled = !isLoading
+        secondaryButton.isEnabled = !isLoading
+    }
+
     @objc private func openLoginWebView() {
-        loginService.asWebAuthenticationLoginFrom(
-            anchor: view.window ?? ASPresentationAnchor(),
-            useEphemeralSession: true,
-            hideCreateAccountButton: true,
-            delegate: self
-        )
-    }
-}
-
-extension LoginViewController: InfomaniakLoginDelegate {
-    func didCompleteLoginWith(code: String, verifier: String) {
-        // TODO: Send code & verifier to server
-    }
-
-    func didFailLoginWith(error: any Error) {
-        // TODO: Handle error
+        viewModel.startWebAuthenticationLogin(anchor: view.window)
     }
 }
