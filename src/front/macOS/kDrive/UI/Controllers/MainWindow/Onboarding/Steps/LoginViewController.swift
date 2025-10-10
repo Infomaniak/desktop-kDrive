@@ -16,19 +16,16 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import AuthenticationServices
 import Cocoa
 import Combine
 import InfomaniakDI
 import InfomaniakLogin
 import kDriveCoreUI
+import kDriveLogin
 import kDriveResources
+import AuthenticationServices
 
-final class LoginViewController: OnboardingStepViewController, ASWebAuthenticationPresentationContextProviding {
-    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
-        return view.window!
-    }
-
+final class LoginViewController: OnboardingStepViewController {
     @LazyInjectService private var loginService: InfomaniakLoginable
 
     private let viewModel: OnboardingViewModel
@@ -92,10 +89,10 @@ final class LoginViewController: OnboardingStepViewController, ASWebAuthenticati
 
 extension LoginViewController: InfomaniakLoginDelegate {
     func didCompleteLoginWith(code: String, verifier: String) {
-        print("Success")
+        // TODO: Send code & verifier to server
     }
 
     func didFailLoginWith(error: any Error) {
-        print("Failure")
+        // TODO: Handle error
     }
 }
