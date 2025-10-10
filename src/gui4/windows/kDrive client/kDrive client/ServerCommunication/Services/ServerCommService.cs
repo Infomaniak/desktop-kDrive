@@ -54,7 +54,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return null;
             }
 
-            int userDbId = data.Params["userDbId"]?.GetValue<int>() ?? -1;
+            DbId userDbId = data.Params["userDbId"]?.GetValue<DbId>() ?? -1;
 
             await Utility.RunOnUIThread(() =>
             {
