@@ -24,6 +24,7 @@ public final class ColoredPopUpButton: NSPopUpButton {
         cell = ColoredPopUpButtonCell()
     }
 
+    @available(*, unavailable)
     public required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -31,4 +32,16 @@ public final class ColoredPopUpButton: NSPopUpButton {
     public func addItem(withTitle title: String, image: NSImage, color: NSColor) {
         menu?.addItem(ColoredMenuItem(title: title, image: image, color: color))
     }
+}
+
+@available(macOS 14.0, *)
+#Preview {
+    let button = ColoredPopUpButton()
+    let symbols = ["house", "bell", "star", "heart"]
+    for name in symbols {
+        let image = NSImage(systemSymbolName: name, accessibilityDescription: nil)!
+        button.addItem(withTitle: name, image: image, color: NSColor.orange)
+    }
+
+    return button
 }
