@@ -53,13 +53,25 @@ final class OnboardingViewModel: ObservableObject {
     }
 }
 
+// MARK: - InfomaniakLoginDelegate
+
 extension OnboardingViewModel: InfomaniakLoginDelegate {
     func didCompleteLoginWith(code: String, verifier: String) {
         isShowingAuthenticationWindow = false
-        // TODO: get user token
+
+        // TODO: Server should code & verifier into a token
+        // TODO: Get user + drives
+
+        currentStep = .driveSelection
     }
 
     func didFailLoginWith(error: any Error) {
         isShowingAuthenticationWindow = false
+
+        guard (error as? ASWebAuthenticationSessionError)?.code != .canceledLogin else {
+            return
+        }
+
+        currentStep = .login(.fail)
     }
 }
