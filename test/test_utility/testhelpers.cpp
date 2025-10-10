@@ -18,6 +18,7 @@
 
 #include "testhelpers.h"
 #include "localtemporarydirectory.h"
+#include "io/iohelper.h"
 
 #include "libcommon/utility/utility.h"
 
