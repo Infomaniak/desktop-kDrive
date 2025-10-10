@@ -106,7 +106,7 @@ final class OnboardingViewController: NSViewController {
         case .driveSelection:
             print("Not Implemented Yet")
             return NSViewController()
-        case .autorisations:
+        case .permissions:
             print("Not Implemented Yet")
             return NSViewController()
         case .synchronisation:

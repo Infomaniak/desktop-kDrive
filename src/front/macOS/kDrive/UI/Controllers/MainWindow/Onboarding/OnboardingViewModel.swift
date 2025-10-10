@@ -22,7 +22,7 @@ import Foundation
 enum OnboardingStep: Sendable {
     case login(LoginStep = .initial)
     case driveSelection
-    case autorisations
+    case permissions
     case synchronisation
 
     enum LoginStep: Sendable {

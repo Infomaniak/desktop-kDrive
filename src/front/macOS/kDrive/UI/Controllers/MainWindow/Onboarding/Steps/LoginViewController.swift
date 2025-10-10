@@ -56,9 +56,9 @@ final class LoginViewController: OnboardingStepViewController {
         case .initial:
             setupInitialView()
         case .success:
-            fatalError()
+            fatalError("Not Implemented Yet")
         case .fail:
-            fatalError()
+            fatalError("Not Implemented Yet")
         }
     }
 
