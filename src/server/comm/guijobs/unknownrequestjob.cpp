@@ -38,22 +38,21 @@ UnknownRequestJob::UnknownRequestJob(std::shared_ptr<CommManager> commManager, i
     _requestNum = RequestNum::Unknown;
 }
 
-bool UnknownRequestJob::deserializeInputParms() {
-    return true;
+ExitInfo UnknownRequestJob::deserializeInputParms() {
+    return ExitCode::Ok;
 }
 
-bool UnknownRequestJob::serializeOutputParms() {
+ExitInfo UnknownRequestJob::serializeOutputParms(bool hasError) {
     // Output parameters serialization
     writeParamValue(outParamsError, CommonUtility::str2CommString(_error));
     writeParamValue(outParamsErrorDescr, CommonUtility::str2CommString(_errorDescr));
-    return true;
+    return ExitCode::Ok;
 }
 
-bool UnknownRequestJob::process() {
-    _exitInfo = ExitCode::LogicError;
+ExitInfo UnknownRequestJob::process() {
     _error = "unknown_request";
     _errorDescr = "The request is unknown by the server application.";
-    return _exitInfo;
+    return ExitCode::LogicError;
 }
 
 } // namespace KDC
