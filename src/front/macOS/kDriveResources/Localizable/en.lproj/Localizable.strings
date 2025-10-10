@@ -4,7 +4,7 @@
  * Locale: en, English
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Wed, 08 Oct 2025 16:23:50 +0200
+ * Exported at: Fri, 10 Oct 2025 14:22:19 +0200
  */
 
 /* loco:68e673c48af12c42e80027c8 */
@@ -19,11 +19,20 @@
 /* loco:68b04d5a63085b7ab90cea63 */
 "buttonOpenInFinder" = "Open in Finder";
 
+/* loco:68e8fa06c1b003290f0ccf42 */
+"onboardingErrorTitle" = "Erreur de connexion";
+
 /* loco:68e6739c8af12c42e80027c5 */
 "onboardingLoginDescription" = "The fast, secure private cloud, hosted in Switzerland.\n\nLog in and keep your documents synchronized on all your devices.";
 
+/* loco:68e8fa543a683192560af9e2 */
+"onboardingLoginErrorDescription" = "Une erreur est survenue, veuillez réessayer.";
+
 /* loco:68e673754d80559c460bdf02 */
 "onboardingLoginTitle" = "Welcome to kDrive!";
+
+/* loco:68e8fa27d09187683c0679b2 */
+"onboardingWindowTitle" = "Bienvenue dans kDrive";
 
 /* loco:68cd386502633dee14000352 */
 "sidebarItemAccounts" = "Accounts";
