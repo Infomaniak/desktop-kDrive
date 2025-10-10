@@ -23,6 +23,7 @@ public extension IKLogger {
     private static let subsystem = Bundle.main.bundleIdentifier ?? "com.infomaniak.drive"
 
     static let view = IKLogger(subsystem: subsystem, category: "view")
+    static let xpc = IKLogger(subsystem: subsystem, category: "xpc")
     static let general = IKLogger(subsystem: subsystem, category: "general")
     static let debug = IKLogger(subsystem: subsystem, category: "debug")
 }
