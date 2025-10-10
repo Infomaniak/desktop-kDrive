@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.250402" />
     <PackageReference Include="CommunityToolkit.WinUI.Lottie" Version="8.2.250604" />
     <PackageReference Include="DynamicData" Version="9.4.1" />
     <PackageReference Include="H.NotifyIcon.WinUI" Version="2.3.0" />

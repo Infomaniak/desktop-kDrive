@@ -18,6 +18,7 @@
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using Infomaniak.kDrive.ServerCommunication;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Buffers.Binary;
@@ -38,7 +39,7 @@ namespace Infomaniak.kDrive.ViewModels
         private UserId _id = -1;
         private string _name = "";
         private string _email = "";
-        private Image? _avatar;
+        private ImageSource? _avatar;
         private bool _isConnected = false;
         private bool _isStaff = false;
         private ObservableCollection<Drive> _drives = new ObservableCollection<Drive>();
@@ -49,14 +50,14 @@ namespace Infomaniak.kDrive.ViewModels
         }
 
         // Parses a User from a stream, should be removed/replaced when the new communication protocol is done
-        public static User ReadFrom(BinaryReader reader)
+        public static async Task<User> ReadFrom(BinaryReader reader)
         {
             int dbId = reader.ReadInt32();
             var user = new User(dbId);
             user.Id = reader.ReadInt32();
             user.Name = reader.ReadString();
             user.Email = reader.ReadString();
-            user.Avatar = reader.ReadPNG();
+            user.Avatar = await reader.ReadPNGAsync();
             user.IsConnected = reader.ReadBoolean();
             user.IsStaff = reader.ReadBoolean();
             return user;
@@ -120,7 +121,7 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetProperty(ref _email, value);
         }
 
-        public Image? Avatar
+        public ImageSource? Avatar
         {
             get => _avatar;
             set => SetProperty(ref _avatar, value);
