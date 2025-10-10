@@ -17,6 +17,7 @@
  */
 
 import Cocoa
+import kDriveCore
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
@@ -24,6 +25,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private lazy var preferencesWindow = PreferencesWindowController()
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
+        DriveTargetAssembly.setupDI()
         openMainWindow()
     }
 
@@ -31,7 +33,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return true
     }
 
-    public func openMainWindow() {
+    func openMainWindow() {
         mainWindow.showWindow(nil)
         mainWindow.window?.makeKeyAndOrderFront(nil)
 
@@ -42,7 +44,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    @objc public func openPreferencesWindow(_ sender: Any?) {
+    @objc func openPreferencesWindow(_ sender: Any?) {
         preferencesWindow.showWindow(sender)
         preferencesWindow.window?.makeKeyAndOrderFront(sender)
     }

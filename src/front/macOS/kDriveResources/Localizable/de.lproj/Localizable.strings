@@ -1,0 +1,47 @@
+/*
+ * Loco ios export: Xcode Strings (legacy)
+ * Project: kDrive Desktop
+ * Locale: de, German
+ * Tagged: macOS
+ * Exported by: Valentin Perignon
+ * Exported at: Wed, 08 Oct 2025 16:23:50 +0200
+ */
+
+/* loco:68e673c48af12c42e80027c8 */
+"buttonCreateAccount" = "Ein Konto erstellen";
+
+/* loco:68e673b2042a15d8470f9452 */
+"buttonLogin" = "Sich anmelden";
+
+/* loco:68b04d823f2b735c170caea2 */
+"buttonOpenInBrowser" = "Im Browser öffnen";
+
+/* loco:68b04d5a63085b7ab90cea63 */
+"buttonOpenInFinder" = "In Finder öffnen";
+
+/* loco:68e6739c8af12c42e80027c5 */
+"onboardingLoginDescription" = "Die schnelle und sichere private Cloud, die in der Schweiz gehostet wird.\n\nMelden Sie sich an und halten Sie Ihre Dokumente auf all Ihren Geräten synchronisiert.";
+
+/* loco:68e673754d80559c460bdf02 */
+"onboardingLoginTitle" = "Willkommen bei kDrive!";
+
+/* loco:68cd386502633dee14000352 */
+"sidebarItemAccounts" = "Konten";
+
+/* loco:68cd389fcc36238762040074 */
+"sidebarItemAdvanced" = "Erweiterte";
+
+/* loco:68cd3843fbf0b4c60d0c9c82 */
+"sidebarItemGeneral" = "Allgemein";
+
+/* loco:68a70c92c32749426b06db02 */
+"sidebarItemKDriveTitle" = "kDrive-Ordner";
+
+/* loco:68a70be4b749277aa1081dc2 */
+"tabTitleActivity" = "Tätigkeit";
+
+/* loco:68a705225b0066f86e001d52 */
+"tabTitleHome" = "Startseite";
+
+/* loco:68a70c659c53feed83039c42 */
+"tabTitleStorage" = "Speicherplatz";
