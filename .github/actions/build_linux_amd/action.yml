@@ -116,7 +116,7 @@ runs:
       - name: Fetch Conan dependencies
         run: |
           echo "Sourcing conanrun.sh to get LD_LIBRARY_PATH..."
-          source $(find "${{ github.workspace }}/build-linux" -name conanrun.sh | head -n 1)
+          source $(find "${{ github.workspace }}/build-linux-amd64" -name conanrun.sh | head -n 1)
           echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
           IFS=':' read -ra dirs <<< "$LD_LIBRARY_PATH"
           for dir in "${dirs[@]}"; do
@@ -205,5 +205,5 @@ runs:
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }}
 
       - name: Clean-up generated code
-        run : rm -rf build-linux
+        run : rm -rf build-linux-amd64
         shell: bash
