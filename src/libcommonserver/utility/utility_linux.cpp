@@ -249,8 +249,9 @@ namespace {
 // Returns the autostart directory the linux way
 // and respects the XDG_CONFIG_HOME env variable
 SyncPath getUserAutostartDir() {
-    auto configPath = CommonUtility::getAppSupportDir();
+    auto configPath = CommonUtility::getAppSupportDir().parent_path();
     configPath /= "autostart";
+
     return configPath;
 }
 } // namespace
