@@ -2,7 +2,6 @@
 using DynamicData;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.JsonConverters;
-using Infomaniak.kDrive.ServerCommunication.MockData;
 using Infomaniak.kDrive.ViewModels;
 using System;
 using System.Collections.Generic;
