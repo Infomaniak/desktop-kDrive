@@ -18,10 +18,16 @@ public enum KDriveLocalizable {
   public static let buttonOpenInBrowser = KDriveLocalizable.tr("Localizable", "buttonOpenInBrowser", fallback: "Open in browser")
   /// loco:68b04d5a63085b7ab90cea63
   public static let buttonOpenInFinder = KDriveLocalizable.tr("Localizable", "buttonOpenInFinder", fallback: "Open in Finder")
+  /// loco:68e8fa06c1b003290f0ccf42
+  public static let onboardingErrorTitle = KDriveLocalizable.tr("Localizable", "onboardingErrorTitle", fallback: "Erreur de connexion")
   /// loco:68e6739c8af12c42e80027c5
   public static let onboardingLoginDescription = KDriveLocalizable.tr("Localizable", "onboardingLoginDescription", fallback: "The fast, secure private cloud, hosted in Switzerland.\n\nLog in and keep your documents synchronized on all your devices.")
+  /// loco:68e8fa543a683192560af9e2
+  public static let onboardingLoginErrorDescription = KDriveLocalizable.tr("Localizable", "onboardingLoginErrorDescription", fallback: "Une erreur est survenue, veuillez réessayer.")
   /// loco:68e673754d80559c460bdf02
   public static let onboardingLoginTitle = KDriveLocalizable.tr("Localizable", "onboardingLoginTitle", fallback: "Welcome to kDrive!")
+  /// loco:68e8fa27d09187683c0679b2
+  public static let onboardingWindowTitle = KDriveLocalizable.tr("Localizable", "onboardingWindowTitle", fallback: "Bienvenue dans kDrive")
   /// loco:68cd386502633dee14000352
   public static let sidebarItemAccounts = KDriveLocalizable.tr("Localizable", "sidebarItemAccounts", fallback: "Accounts")
   /// loco:68cd389fcc36238762040074
