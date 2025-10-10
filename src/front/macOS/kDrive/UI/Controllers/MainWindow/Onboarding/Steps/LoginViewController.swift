@@ -16,14 +16,22 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import AuthenticationServices
 import Cocoa
 import Combine
+import InfomaniakDI
+import InfomaniakLogin
 import kDriveCoreUI
 import kDriveResources
 
-final class LoginViewController: OnboardingStepViewController {
-    private let viewModel: OnboardingViewModel
+final class LoginViewController: OnboardingStepViewController, ASWebAuthenticationPresentationContextProviding {
+    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+        return view.window!
+    }
 
+    @LazyInjectService private var loginService: InfomaniakLoginable
+
+    private let viewModel: OnboardingViewModel
     private var bindStore = Set<AnyCancellable>()
 
     init(viewModel: OnboardingViewModel) {
@@ -67,9 +75,27 @@ final class LoginViewController: OnboardingStepViewController {
         descriptionLabel.stringValue = KDriveLocalizable.onboardingLoginDescription
 
         primaryButton.title = KDriveLocalizable.buttonLogin
+        primaryButton.target = self
         primaryButton.action = #selector(openLoginWebView)
         secondaryButton.title = KDriveLocalizable.buttonCreateAccount
     }
 
-    @objc private func openLoginWebView() {}
+    @objc private func openLoginWebView() {
+        loginService.asWebAuthenticationLoginFrom(
+            anchor: view.window ?? ASPresentationAnchor(),
+            useEphemeralSession: true,
+            hideCreateAccountButton: true,
+            delegate: self
+        )
+    }
+}
+
+extension LoginViewController: InfomaniakLoginDelegate {
+    func didCompleteLoginWith(code: String, verifier: String) {
+        print("Success")
+    }
+
+    func didFailLoginWith(error: any Error) {
+        print("Failure")
+    }
 }
