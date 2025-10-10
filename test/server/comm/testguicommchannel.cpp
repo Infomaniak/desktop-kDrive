@@ -162,7 +162,6 @@ void TestGuiCommChannel::testLoginRequestTokenJob() {
 
         // Process job simulation
         loginRequestTokenJob->_userDbId = 1;
-        job->setExitInfo(ExitCode::Ok);
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
@@ -199,7 +198,6 @@ void TestGuiCommChannel::testUserDbIdListJob() {
         auto userDbIdListJob = std::dynamic_pointer_cast<UserDbIdListJob>(job);
 
         userDbIdListJob->_userDbIdList = {1, 2, 3};
-        job->setExitInfo(ExitCode::Ok);
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
