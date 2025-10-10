@@ -293,7 +293,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 case CommMessageType.Signal:
                     // Signal
                     SignalNum signalNum = (SignalNum)data.Num;
-                    RaiseSignal(signalNum, data.Params);
+                    RaiseSignal(signalNum, data.Params ?? new JsonObject());
                     break;
                 default:
                     Logger.Log(Logger.Level.Warning, $"Unknown message type: {data.Type}");

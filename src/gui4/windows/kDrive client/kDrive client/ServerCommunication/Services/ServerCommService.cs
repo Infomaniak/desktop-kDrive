@@ -69,7 +69,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     Logger.Log(Logger.Level.Info, $"AddOrRelogUser: New user added with DbId {userDbId}.");
                 }
             });
-            return _viewModel.Users.FirstOrDefault(u => u.DbId == userDbId, null);
+            return _viewModel.Users.FirstOrDefault(u => u?.DbId == userDbId, null);
         }
 
         public async Task RefreshUsers(CancellationToken cancellationToken)
@@ -460,7 +460,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             foreach (var user in _viewModel.Users)
             {
 
-                var drive = user.Drives.FirstOrDefault(d => d.DbId == driveInfo.DbId, null);
+                var drive = user.Drives.FirstOrDefault(d => d?.DbId == driveInfo.DbId, null);
                 if (drive == null)
                 {
                     continue;
@@ -503,7 +503,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             foreach (var drive in allDrives)
             {
-                var sync = drive.Syncs.FirstOrDefault(s => s.DbId == syncInfo.DbId, null);
+                var sync = drive.Syncs.FirstOrDefault(s => s?.DbId == syncInfo.DbId, null);
                 if (sync == null)
                 {
                     continue;

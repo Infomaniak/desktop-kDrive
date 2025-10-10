@@ -70,7 +70,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
         }
 
-        private async Task<CommData> LoginRequestToken(JsonObject parameters)
+        private Task<CommData> LoginRequestToken(JsonObject parameters)
         {
             var random = new Random();
             var randomUserIndex = random.Next(0, _mockData.Users.Count);
@@ -95,7 +95,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             };
             EnqueueSignal(SignalNum.UserAdded, userData);
 
-            return new CommData
+            return Task.FromResult(new CommData
             {
                 Type = CommMessageType.Request,
                 Id = (int)NextId,
@@ -104,13 +104,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 {
                     { "userDbId", user.DbId }
                 }
-            };
+            });
         }
 
-        private async Task<CommData> UserDbIdsRequest(JsonObject parameters)
+        private Task<CommData> UserDbIdsRequest(JsonObject parameters)
         {
             List<DbId> userDbIds = _mockData.Users.Select(u => u.DbId).ToList();
-            return new CommData
+            return Task.FromResult(new CommData
             {
                 Type = CommMessageType.Request,
                 Id = (int)NextId,
@@ -119,10 +119,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 {
                     { "userDbIds", JsonSerializer.SerializeToNode(userDbIds) }
                 }
-            };
+            });
         }
 
-        private async Task<CommData> UserInfoListRequest(JsonObject parameters)
+        private Task<CommData> UserInfoListRequest(JsonObject parameters)
         {
             var users = _mockData.Users;
 
@@ -146,16 +146,16 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             }
 
-            return new CommData
+            return Task.FromResult(new CommData
             {
                 Type = CommMessageType.Request,
                 Id = (int)NextId,
                 RequestNum = RequestNum.UserInfoList,
                 Params = result
-            };
+            });
         }
 
-        private async Task<CommData> AccountInfoListRequest(JsonObject parameters)
+        private Task<CommData> AccountInfoListRequest(JsonObject parameters)
         {
             var accounts = _mockData.Accounts;
 
@@ -175,16 +175,16 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             }
 
-            return new CommData
+            return Task.FromResult(new CommData
             {
                 Type = CommMessageType.Request,
                 Id = (int)NextId,
                 RequestNum = RequestNum.AccountInfoList,
                 Params = result
-            };
+            });
         }
 
-        private async Task<CommData> DriveInfoListRequest(JsonObject parameters)
+        private Task<CommData> DriveInfoListRequest(JsonObject parameters)
         {
             var drives = _mockData.Drives;
 
@@ -210,16 +210,16 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 ((JsonArray)result["driveInfo"]!).Add(driveData);
             }
 
-            return new CommData
+            return Task.FromResult(new CommData
             {
                 Type = CommMessageType.Request,
                 Id = (int)NextId,
                 RequestNum = RequestNum.DriveInfoList,
                 Params = result
-            };
+            });
         }
 
-        private async Task<CommData> SyncInfoListRequest(JsonObject parameters)
+        private Task<CommData> SyncInfoListRequest(JsonObject parameters)
         {
             var syncs = _mockData.Syncs;
 
@@ -244,13 +244,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             }
 
-            return new CommData
+            return Task.FromResult(new CommData
             {
                 Type = CommMessageType.Request,
                 Id = (int)NextId,
                 RequestNum = RequestNum.SyncInfoList,
                 Params = result
-            };
+            });
         }
 
         private void EnqueueSignal(SignalNum signalNum, JsonObject parameters)
