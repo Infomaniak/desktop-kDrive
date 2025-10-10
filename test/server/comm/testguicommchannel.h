@@ -18,6 +18,8 @@
 
 #include "testincludes.h"
 #include "server/comm/guicommserver.h"
+#include "server/comm/guijobs/guijobfactory.h"
+
 #include <log4cplus/logger.h>
 
 namespace KDC {
@@ -47,7 +49,8 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSendMessage);
         CPPUNIT_TEST(testReadMessage);
         CPPUNIT_TEST(testCanReadMessage);
-        CPPUNIT_TEST(testLoginRequestToken);
+        CPPUNIT_TEST(testLoginRequestTokenJob);
+        CPPUNIT_TEST(testUserDbIdListJob);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -57,6 +60,13 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testSendMessage();
         void testReadMessage();
         void testCanReadMessage();
-        void testLoginRequestToken();
+        void testLoginRequestTokenJob();
+        void testUserDbIdListJob();
+
+    private:
+        GuiJobFactory _guiJobFactory;
+
+        void testGenericJob(const CommString &query, const CommString &answer, const CommString &cbkAnswer,
+                            const std::function<void(std::shared_ptr<AbstractGuiJob>)> &processFct);
 };
 } // namespace KDC

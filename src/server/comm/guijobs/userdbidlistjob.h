@@ -20,20 +20,14 @@
 
 namespace KDC {
 
-class LoginRequestTokenJob : public AbstractGuiJob {
+class UserDbIdListJob : public AbstractGuiJob {
     public:
-        LoginRequestTokenJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                             std::shared_ptr<AbstractCommChannel> channel);
+        UserDbIdListJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                        std::shared_ptr<AbstractCommChannel> channel);
 
     private:
-        // Input parameters
-        CommString _code;
-        CommString _codeVerifier;
-
         // Output parameters
-        int _userDbId = 0;
-        std::string _error;
-        std::string _errorDescr;
+        std::vector<int> _userDbIdList;
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;

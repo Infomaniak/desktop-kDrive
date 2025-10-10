@@ -23,7 +23,7 @@ namespace KDC {
 
 class SignalUserAddedJob : public AbstractGuiJob {
     public:
-        SignalUserAddedJob(std::shared_ptr<CommManager> commManager, const std::shared_ptr<AbstractCommChannel> channel,
+        SignalUserAddedJob(std::shared_ptr<CommManager> commManager, std::shared_ptr<AbstractCommChannel> channel,
                            const UserInfo &userInfo);
 
     private:
@@ -31,7 +31,7 @@ class SignalUserAddedJob : public AbstractGuiJob {
         UserInfo _userInfo;
 
         ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
-        ExitInfo serializeOutputParms(bool hasError = false) override;
+        ExitInfo serializeOutputParms() override;
         ExitInfo process() override { return ExitCode::Ok; }
 };
 

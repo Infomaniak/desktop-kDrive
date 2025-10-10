@@ -40,14 +40,14 @@ namespace KDC {
 int AbstractGuiJob::_lastSignalId = 0;
 
 AbstractGuiJob::AbstractGuiJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                               const std::shared_ptr<AbstractCommChannel> channel) :
+                               std::shared_ptr<AbstractCommChannel> channel) :
     _commManager(commManager),
     _requestId(requestId),
     _inParams(inParams),
     _channel(channel),
     _type(GuiJobType::Query) {}
 
-AbstractGuiJob::AbstractGuiJob(std::shared_ptr<CommManager> commManager, const std::shared_ptr<AbstractCommChannel> channel) :
+AbstractGuiJob::AbstractGuiJob(std::shared_ptr<CommManager> commManager, std::shared_ptr<AbstractCommChannel> channel) :
     _commManager(commManager),
     _channel(channel),
     _type(GuiJobType::Signal) {
