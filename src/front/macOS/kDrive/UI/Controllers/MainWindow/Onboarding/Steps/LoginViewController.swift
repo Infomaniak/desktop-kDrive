@@ -16,13 +16,13 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import AuthenticationServices
 import Cocoa
 import Combine
 import InfomaniakLogin
 import kDriveCoreUI
 import kDriveLogin
 import kDriveResources
-import AuthenticationServices
 
 final class LoginViewController: OnboardingStepViewController {
     private let viewModel: OnboardingViewModel
