@@ -26,8 +26,14 @@ set(server_SRCS
     ${server_srcs_path}/comm/oldcommserver.h ${server_srcs_path}/comm/oldcommserver.cpp
     ${server_srcs_path}/comm/abstractcommchannel.h ${server_srcs_path}/comm/abstractcommchannel.cpp
     ${server_srcs_path}/comm/socketcommserver.h ${server_srcs_path}/comm/socketcommserver.cpp
-    ${server_srcs_path}/comm/guicommserver.h ${server_srcs_path}/comm/guicommserver.cpp
     ${server_srcs_path}/comm/commmanager.h ${server_srcs_path}/comm/commmanager.cpp
+    ${server_srcs_path}/comm/guicommserver.h ${server_srcs_path}/comm/guicommserver.cpp
+    ${server_srcs_path}/comm/guijobmanager.h ${server_srcs_path}/comm/guijobmanager.cpp
+    ${server_srcs_path}/comm/guijobs/abstractguijob.h ${server_srcs_path}/comm/guijobs/abstractguijob.cpp
+    ${server_srcs_path}/comm/guijobs/guijobfactory.h ${server_srcs_path}/comm/guijobs/guijobfactory.cpp
+    ${server_srcs_path}/comm/guijobs/loginrequesttokenjob.h ${server_srcs_path}/comm/guijobs/loginrequesttokenjob.cpp
+    ${server_srcs_path}/comm/guijobs/signaluseraddedjob.h ${server_srcs_path}/comm/guijobs/signaluseraddedjob.cpp
+    ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.h ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.cpp
     ${server_srcs_path}/migration/migrationparams.h ${server_srcs_path}/migration/migrationparams.cpp
     ${server_srcs_path}/requests/serverrequests.h ${server_srcs_path}/requests/serverrequests.cpp
     ${server_srcs_path}/updater/abstractupdater.h ${server_srcs_path}/updater/abstractupdater.cpp
@@ -38,11 +44,12 @@ set(server_SRCS
 
 if(APPLE OR WIN32)
     list(APPEND server_SRCS ${server_srcs_path}/comm/extcommserver.h ${server_srcs_path}/comm/extcommserver.cpp)
+    list(APPEND server_SRCS ${server_srcs_path}/comm/extjobmanager.h ${server_srcs_path}/comm/extjobmanager.cpp)
+    list(APPEND server_SRCS ${server_srcs_path}/comm/extensionjob.h ${server_srcs_path}/comm/extensionjob.cpp)
 endif()
 
 if(APPLE)
     list(APPEND server_SRCS ${server_srcs_path}/../common/utility_mac.cpp)
-    list(APPEND server_SRCS ${server_srcs_path}/comm/extensionjob.h ${server_srcs_path}/comm/extensionjob.cpp)
     list(APPEND server_SRCS ${server_srcs_path}/comm/abstractcommserver_mac.h ${server_srcs_path}/comm/abstractcommserver_mac.mm)
     list(APPEND server_SRCS ${server_srcs_path}/comm/xpccommserver_mac.h ${server_srcs_path}/comm/xpccommserver_mac.mm)
     list(APPEND server_SRCS ${server_srcs_path}/comm/extcommserver_mac.mm)
@@ -65,7 +72,6 @@ if(APPLE)
         list(APPEND updater_DEPS ${SPARKLE_LIBRARY})
     endif()
 elseif(WIN32)
-    list(APPEND server_SRCS ${server_srcs_path}/comm/extensionjob.h ${server_srcs_path}/comm/extensionjob.cpp)
     list(APPEND server_SRCS ${server_srcs_path}/comm/pipecommserver.h ${server_srcs_path}/comm/pipecommserver.cpp)
     list(APPEND server_SRCS ${server_srcs_path}/updater/windowsupdater.h ${server_srcs_path}/updater/windowsupdater.cpp ${server_srcs_path}/../common/utility_win.cpp)
 else()
@@ -104,6 +110,7 @@ set(testserver_SRCS
     appserver/testappserver.h appserver/testappserver.cpp
     comm/testsocketcomm.h comm/testsocketcomm.cpp
     comm/testguicommchannel.h comm/testguicommchannel.cpp
+    comm/guijobs/testabstractguijob.h comm/guijobs/testabstractguijob.cpp
 )
 
 if(APPLE)

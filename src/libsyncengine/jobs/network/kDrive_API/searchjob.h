@@ -34,8 +34,8 @@ class SearchJob : public AbstractTokenNetworkJob {
 
     private:
         std::string getSpecificUrl() override;
-        void setQueryParameters(Poco::URI &uri, bool &canceled) override;
-        bool handleResponse(std::istream &is) override;
+        void setQueryParameters(Poco::URI &uri) override;
+        ExitInfo handleResponse(std::istream &is) override;
 
         std::string _searchString;
         std::string _cursorInput;

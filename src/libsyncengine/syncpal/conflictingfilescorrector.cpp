@@ -37,7 +37,7 @@ ConflictingFilesCorrector::ConflictingFilesCorrector(std::shared_ptr<SyncPal> sy
     _keepLocalVersion(keepLocalVersion),
     _errors(std::move(errors)) {}
 
-void ConflictingFilesCorrector::runJob() {
+ExitInfo ConflictingFilesCorrector::runJob() {
     for (auto &error: _errors) {
         bool exists = false;
         IoError ioError = IoError::Success;
@@ -69,7 +69,7 @@ void ConflictingFilesCorrector::runJob() {
         }
     }
 
-    _exitInfo = ExitCode::Ok;
+    return ExitCode::Ok;
 }
 
 bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {

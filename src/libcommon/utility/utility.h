@@ -18,6 +18,10 @@
 
 #pragma once
 
+#if defined(KD_MACOS)
+#pragma clang diagnostic ignored "-Wnullability-completeness"
+#endif
+
 #include "libcommon/libcommon.h"
 #include "types.h"
 
@@ -34,6 +38,8 @@
 #include <QDataStream>
 #include <QIODevice>
 #include <QThread>
+
+#include <Poco/Dynamic/Struct.h>
 
 #include <log4cplus/log4cplus.h>
 
@@ -267,12 +273,176 @@ struct COMMON_EXPORT CommonUtility {
         static std::wstring commString2WStr(const CommString &s) { return s; }
         static CommString qStr2CommString(const QString &s) { return s.toStdWString(); }
         static QString commString2QStr(const CommString &s) { return QString::fromStdWString(s); }
+        //! Returns the length of a string
+        /*!
+          \param s is a null-terminated string.
+          \return the length of the string or 0 if s is a nullptr.
+        */
+        static size_t strLen(const CommChar *const s) { return s ? wcslen(s) : 0; }
 #else
         static CommString str2CommString(const std::string &s) { return s; }
         static std::string commString2Str(const CommString &s) { return s; }
         static std::wstring commString2WStr(const CommString &s) { return KDC::CommonUtility::s2ws(s); }
         static CommString qStr2CommString(const QString &s) { return s.toStdString(); }
         static QString commString2QStr(const CommString &s) { return QString::fromStdString(s); }
+        //! Returns the length of a string
+        /*!
+          \param s is a null-terminated string.
+          \return the length of the string or 0 if s is a nullptr.
+        */
+        static size_t strLen(const CommChar *const s) { return s ? strlen(s) : 0; }
+#endif
+
+        //! Read an input built-in/std::string/std::wstring/CommBLOB parameter from a Poco::DynamicStruct.
+        /*!
+          \param parms is a Poco::DynamicStruct.
+          \param key is the key of the JSON pair.
+          \param value is the value of the JSON pair.
+          \exception
+                throws a Poco::RangeException if the value does not fit into the result variable.
+                throws a Poco::NotImplementedException if conversion is not available for the given type.
+                throws an Poco::InvalidAccessException if the key is not found.
+                throws a std::runtime_error if T is an enum and the value is not in [T::Unknown + 1, T::EnumEnd]
+        */
+        template<typename T>
+        static void readValueFromStruct(const Poco::DynamicStruct &dstruct, const std::string &key, T &value) {
+            if constexpr (std::is_same_v<T, bool>) {
+                value = dstruct[key].convert<bool>();
+            } else if constexpr (std::is_same_v<T, std::string> || std::is_same_v<T, std::wstring> ||
+                                 std::is_same_v<T, CommBLOB>) {
+                const auto base64Str = dstruct[key].convert<std::string>();
+                convertFromBase64Str(base64Str, value);
+            } else if constexpr (std::is_enum_v<T>) {
+                int intValue = dstruct[key].convert<int>();
+                if (intValue >= 0 && intValue < static_cast<int>(T::EnumEnd)) {
+                    value = static_cast<T>(intValue);
+                } else {
+                    throw std::runtime_error("Invalid enumeration value");
+                }
+            } else {
+                value = dstruct[key].convert<T>();
+            }
+        }
+
+        template<typename T>
+        static void readValueFromStruct(const Poco::DynamicStruct &dstruct, const std::string &key, T &value,
+                                        std::function<T(const Poco::Dynamic::Var &)> dynamicVar2T) {
+            assert(dstruct[key].isStruct());
+            auto varValue = dstruct[key].extract<Poco::DynamicStruct>();
+            value = dynamicVar2T(varValue);
+        }
+
+        //! Read an input std container parameter from a Poco::DynamicStruct.
+        /*!
+          \param parms is a Poco::DynamicStruct.
+          \param key is the key of the JSON pair.
+          \param value is the value of the JSON pair.
+          \exception
+                throws a Poco::RangeException if the value does not fit into the result variable.
+                throws a Poco::NotImplementedException if conversion is not available for the given type.
+                throws an Poco::InvalidAccessException if the key is not found.
+                throws a std::runtime_error if T is an enum and the value is not in [T::Unknown + 1, T::EnumEnd]
+        */
+        template<template<typename, typename> class C, typename T, typename A = std::allocator<T>>
+        static void readValuesFromStruct(const Poco::DynamicStruct &dstruct, const std::string &key, C<T, A> &values,
+                                         std::function<T(const Poco::Dynamic::Var &)> dynamicVar2T) {
+            assert(dstruct[key].isArray());
+            auto varValues = dstruct[key].extract<Poco::Dynamic::Array>();
+            (void) std::transform(varValues.begin(), varValues.end(), std::back_inserter(values), dynamicVar2T);
+        }
+
+        template<template<typename, typename> class C, typename T, typename A = std::allocator<T>>
+        static void readValuesFromStruct(const Poco::DynamicStruct &dstruct, const std::string &key, C<T, A> &values) {
+            std::function<T(const Poco::Dynamic::Var &)> dynamicVar2T = [](const Poco::Dynamic::Var &value) {
+                if constexpr (std::is_same_v<T, std::string> || std::is_same_v<T, std::wstring> || std::is_same_v<T, CommBLOB>) {
+                    const auto base64Str = value.convert<std::string>();
+                    T str;
+                    convertFromBase64Str(base64Str, str);
+                    return str;
+                } else {
+                    return value.convert<T>();
+                }
+            };
+            readValuesFromStruct(dstruct, key, values, dynamicVar2T);
+        }
+
+        //! Write an output built-in/std::string/std::wstring/CommBLOB parameter to a Poco::DynamicStruct..
+        /*!
+          \param parms is a Poco::DynamicStruct.
+          \param key is the key of the JSON pair.
+          \param value is the value of the JSON pair.
+        */
+        template<typename T>
+        static void writeValueToStruct(Poco::DynamicStruct &dstruct, const std::string &key, const T &value) {
+            if constexpr (std::is_same_v<T, std::string> || std::is_same_v<T, std::wstring> || std::is_same_v<T, CommBLOB>) {
+                std::string base64Str;
+                convertToBase64Str(value, base64Str);
+                (void) dstruct.insert(key, base64Str);
+            } else if constexpr (std::is_enum_v<T>) {
+                (void) dstruct.insert(key, static_cast<int>(value));
+            } else {
+                (void) dstruct.insert(key, value);
+            }
+        }
+
+        template<typename T>
+        static void writeValueToStruct(Poco::DynamicStruct &str, const std::string &key, const T &value,
+                                       std::function<Poco::Dynamic::Var(const T &)> t2DynamicVar) {
+            auto varValue = t2DynamicVar(value);
+            (void) str.insert(key, varValue);
+        }
+
+        template<size_t n>
+        static void writeValueToStruct(Poco::DynamicStruct &dstruct, const std::string &key, const char (&value)[n]) {
+            writeValueToStruct(dstruct, key, std::string(value));
+        }
+
+        template<size_t n>
+        static void writeValueToStruct(Poco::DynamicStruct &dstruct, const std::string &key, const wchar_t (&value)[n]) {
+            writeValueToStruct(dstruct, key, std::wstring(value));
+        }
+
+        //! Write an output std container parameter to a a Poco::DynamicStruct.
+        /*!
+          \param parms is a Poco::DynamicStruct.
+          \param key is the key of the JSON pair.
+          \param value is the value of the JSON pair.
+        */
+        template<template<typename, typename> class C, typename T, typename A = std::allocator<T>>
+        static void writeValuesToStruct(Poco::DynamicStruct &dstruct, const std::string &key, const C<T, A> &values,
+                                        std::function<Poco::Dynamic::Var(const T &)> t2DynamicVar) {
+            Poco::Dynamic::Array arrValues;
+            (void) std::transform(values.begin(), values.end(), std::back_inserter(arrValues), t2DynamicVar);
+            (void) dstruct.insert(key, arrValues);
+        }
+
+        template<template<typename, typename> class C, typename T, typename A = std::allocator<T>>
+        static void writeValuesToStruct(Poco::DynamicStruct &dstruct, const std::string &key, const C<T, A> &values) {
+            std::function<Poco::Dynamic::Var(const T &)> t2DynamicVar = [](const T &value) {
+                if constexpr (std::is_same_v<T, std::string> || std::is_same_v<T, std::wstring> || std::is_same_v<T, CommBLOB>) {
+                    std::string base64Str;
+                    convertToBase64Str(value, base64Str);
+                    return Poco::Dynamic::Var(base64Str);
+                } else {
+                    return Poco::Dynamic::Var(value);
+                }
+            };
+            CommonUtility::writeValuesToStruct(dstruct, key, values, t2DynamicVar);
+        }
+
+        // Base64 conversion
+        static void convertFromBase64Str(const std::string &base64Str, std::string &value);
+        static void convertFromBase64Str(const std::string &base64Str, std::wstring &value);
+        static void convertFromBase64Str(const std::string &base64Str, CommBLOB &value);
+#if defined(KD_MACOS)
+        static void convertFromBase64Str(NSString *const _Nonnull base64Str, NSString **_Nullable str);
+#endif
+
+        static void convertToBase64Str(const std::string &str, std::string &base64Str);
+        static void convertToBase64Str(const std::wstring &wstr, std::string &base64Str);
+        static void convertToBase64Str(const CommBLOB &blob, std::string &base64Str);
+#if defined(KD_MACOS)
+        static void convertToBase64Str(NSString *const _Nonnull str, NSString **_Nullable base64Str);
 #endif
 
     private:

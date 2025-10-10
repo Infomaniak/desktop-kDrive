@@ -30,12 +30,11 @@ class CopyToDirectoryJob : public AbstractTokenNetworkJob {
         inline SyncTime modtime() const { return _modtime; }
 
     protected:
-        virtual bool handleResponse(std::istream &is) override;
+        ExitInfo handleResponse(std::istream &is) override;
 
     private:
-        virtual std::string getSpecificUrl() override;
-        virtual void setQueryParameters(Poco::URI &, bool &) override {}
-        virtual ExitInfo setData() override;
+        std::string getSpecificUrl() override;
+        ExitInfo setData() override;
 
         NodeId _remoteFileId;
         NodeId _remoteDestId;

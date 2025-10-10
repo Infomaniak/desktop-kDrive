@@ -62,8 +62,8 @@ DriveUploadSession::~DriveUploadSession() {
     }
 }
 
-bool DriveUploadSession::runJobInit() {
-    return true;
+ExitInfo DriveUploadSession::runJobInit() {
+    return ExitCode::Ok;
 }
 
 std::shared_ptr<UploadSessionStartJob> DriveUploadSession::createStartJob() {
@@ -91,18 +91,17 @@ std::shared_ptr<UploadSessionCancelJob> DriveUploadSession::createCancelJob() {
     return std::make_shared<UploadSessionCancelJob>(UploadSessionType::Drive, _driveDbId, getFilePath(), getSessionToken());
 }
 
-bool DriveUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &startJob,
-                                              const std::string &uploadToken) {
+ExitInfo DriveUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &startJob,
+                                                  const std::string &uploadToken) {
     (void) startJob;
     if (_syncDb && !_syncDb->insertUploadSessionToken(UploadSessionToken(uploadToken), _uploadSessionTokenDbId)) {
         LOG_WARN(getLogger(), "Error in SyncDb::insertUploadSessionToken");
-        _exitInfo = ExitCode::DbError;
-        return false;
+        return ExitCode::DbError;
     }
-    return true;
+    return ExitCode::Ok;
 }
 
-bool DriveUploadSession::handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) {
+ExitInfo DriveUploadSession::handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) {
     _nodeId = finishJob->nodeId();
     _creationTimeOut = finishJob->creationTime();
     _modificationTimeOut = finishJob->modificationTime();
@@ -110,25 +109,23 @@ bool DriveUploadSession::handleFinishJobResult(const std::shared_ptr<UploadSessi
 
     if (bool found = false; _syncDb && !_syncDb->deleteUploadSessionTokenByDbId(_uploadSessionTokenDbId, found)) {
         LOG_WARN(getLogger(), "Error in SyncDb::deleteUploadSessionTokenByDbId");
-        _exitInfo = ExitCode::DbError;
-        return false;
+        return ExitCode::DbError;
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
-bool DriveUploadSession::handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob) {
-    if (!AbstractUploadSession::handleCancelJobResult(cancelJob)) {
-        return false;
+ExitInfo DriveUploadSession::handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob) {
+    if (const auto exitInfo = AbstractUploadSession::handleCancelJobResult(cancelJob); !exitInfo) {
+        return exitInfo;
     }
 
     if (bool found = false; _syncDb && !_syncDb->deleteUploadSessionTokenByDbId(_uploadSessionTokenDbId, found)) {
         LOG_WARN(getLogger(), "Error in SyncDb::deleteUploadSessionTokenByDbId");
-        _exitInfo = ExitCode::DbError;
-        return false;
+        return ExitCode::DbError;
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

@@ -1,0 +1,47 @@
+/*
+ * Loco ios export: Xcode Strings (legacy)
+ * Project: kDrive Desktop
+ * Locale: fr, French
+ * Tagged: macOS
+ * Exported by: Valentin Perignon
+ * Exported at: Wed, 08 Oct 2025 16:23:50 +0200
+ */
+
+/* loco:68e673c48af12c42e80027c8 */
+"buttonCreateAccount" = "Créer un compte";
+
+/* loco:68e673b2042a15d8470f9452 */
+"buttonLogin" = "Se connecter";
+
+/* loco:68b04d823f2b735c170caea2 */
+"buttonOpenInBrowser" = "Ouvrir dans le navigateur";
+
+/* loco:68b04d5a63085b7ab90cea63 */
+"buttonOpenInFinder" = "Ouvrir dans Finder";
+
+/* loco:68e6739c8af12c42e80027c5 */
+"onboardingLoginDescription" = "Le cloud privé, rapide et sécurisé, hébergé en Suisse.\n\nConnectez-vous et gardez vos documents synchronisés sur tous vos appareils.";
+
+/* loco:68e673754d80559c460bdf02 */
+"onboardingLoginTitle" = "Bienvenue dans kDrive !";
+
+/* loco:68cd386502633dee14000352 */
+"sidebarItemAccounts" = "Comptes";
+
+/* loco:68cd389fcc36238762040074 */
+"sidebarItemAdvanced" = "Avancés";
+
+/* loco:68cd3843fbf0b4c60d0c9c82 */
+"sidebarItemGeneral" = "Général";
+
+/* loco:68a70c92c32749426b06db02 */
+"sidebarItemKDriveTitle" = "Dossier kDrive";
+
+/* loco:68a70be4b749277aa1081dc2 */
+"tabTitleActivity" = "Activité";
+
+/* loco:68a705225b0066f86e001d52 */
+"tabTitleHome" = "Accueil";
+
+/* loco:68a70c659c53feed83039c42 */
+"tabTitleStorage" = "Stockage";

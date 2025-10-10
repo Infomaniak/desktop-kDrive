@@ -40,8 +40,7 @@ std::string SearchJob::getSpecificUrl() {
     return str;
 }
 
-void SearchJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
-    canceled = false;
+void SearchJob::setQueryParameters(Poco::URI &uri) {
     if (_searchString.size() > 3) {
         // To search by pattern, the provided string must be at least 3 character long.
         uri.addQueryParameter("query", _searchString);
@@ -55,45 +54,45 @@ void SearchJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
     }
 }
 
-bool SearchJob::handleResponse(std::istream &is) {
-    if (!AbstractTokenNetworkJob::handleResponse(is)) {
-        return false;
+ExitInfo SearchJob::handleResponse(std::istream &is) {
+    if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) {
+        return exitInfo;
     }
     if (!jsonRes()) {
         LOG_WARN(_logger, "Invalid JSON object");
-        return false;
+        return {};
     }
 
     if (!JsonParserUtility::extractValue(jsonRes(), cursorKey, _cursorOutput)) {
-        return false;
+        return {};
     }
     if (!JsonParserUtility::extractValue(jsonRes(), hasMoreKey, _hasMore)) {
-        return false;
+        return {};
     }
 
     const auto dataArray = jsonRes()->getArray(dataKey);
     if (!dataArray) {
         LOG_WARN(_logger, "Missing data array for search string:" << _searchString);
-        return false;
+        return {};
     }
     for (auto it = dataArray->begin(); it != dataArray->end(); ++it) {
         const auto obj = it->extract<Poco::JSON::Object::Ptr>();
         NodeId nodeId;
         if (!JsonParserUtility::extractValue(obj, idKey, nodeId)) {
-            return false;
+            return {};
         }
         SyncName name;
         if (!JsonParserUtility::extractValue(obj, nameKey, name)) {
-            return false;
+            return {};
         }
         std::string type;
         if (!JsonParserUtility::extractValue(obj, typeKey, type)) {
-            return false;
+            return {};
         }
         (void) _searchResults.emplace_back(nodeId, name, type == "dir" ? NodeType::Directory : NodeType::File);
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

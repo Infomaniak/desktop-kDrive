@@ -42,11 +42,10 @@ class UploadSessionFinishJob : public AbstractUploadSessionJob {
         int64_t size() const { return _sizeOut; }
 
     protected:
-        bool handleResponse(std::istream &is) override;
+        ExitInfo handleResponse(std::istream &is) override;
 
     private:
         std::string getSpecificUrl() override;
-        void setQueryParameters(Poco::URI &, bool &) override { /*No query parameters*/ }
         inline ExitInfo setData() override;
 
         std::string _totalChunkHash;

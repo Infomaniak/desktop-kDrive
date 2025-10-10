@@ -27,10 +27,9 @@ GetDrivesListJob::GetDrivesListJob(int userDbId) :
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
-void GetDrivesListJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
+void GetDrivesListJob::setQueryParameters(Poco::URI &uri) {
     uri.addQueryParameter("roles[]", "admin");
     uri.addQueryParameter("roles[]", "user");
-    canceled = false;
 }
 
 std::string GetDrivesListJob::getSpecificUrl() {

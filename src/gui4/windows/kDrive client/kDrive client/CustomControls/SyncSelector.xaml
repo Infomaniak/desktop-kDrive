@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="Infomaniak.kDrive.CustomControls.SyncSelector"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:Infomaniak.kDrive.CustomControls"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModel="using:Infomaniak.kDrive.ViewModels"
+             xmlns:customControls="using:Infomaniak.kDrive.CustomControls"
+             xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
+             xmlns:converters="using:Infomaniak.kDrive.Converters"
+             mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <converters:IsGreaterConverter x:Key="IsGreaterConverter" />
+        <converters:DriveToHasErrorConverter x:Key="DriveToHasErrorConverter" />
+
+        <!-- Drive template when multiple syncs -->
+        <DataTemplate x:Key="MultiSyncDrive"
+                      x:DataType="viewModel:Drive">
+            <Grid>
+                <FlyoutBase.AttachedFlyout>
+                    <Flyout x:Name="SyncFlyout"
+                            Placement="RightEdgeAlignedTop"
+                            ShowMode="Transient"
+                            Opened="SyncFlyout_Opened">
+                        <Flyout.FlyoutPresenterStyle>
+                            <Style TargetType="FlyoutPresenter">
+                                <Setter Property="MinWidth"
+                                        Value="250" />
+                                <Setter Property="Padding"
+                                        Value="0" />
+                                <Setter Property="CornerRadius"
+                                        Value="{StaticResource Infomaniak.Style.CornerRadius.S}" />
+                            </Style>
+                        </Flyout.FlyoutPresenterStyle>
+
+                        <StackPanel>
+                            <!-- Syncs for selected drive -->
+                            <AutoSuggestBox x:Name="SyncAutoSuggestBox"
+                                            PlaceholderText="Rechercher dans vos synchronisations"
+                                            TextChanged="SyncAutoSuggestBox_TextChanged"
+                                            QuerySubmitted="SyncAutoSuggestBox_QuerySubmitted"
+                                            ItemsSource="{x:Bind Syncs, Mode=OneWay}"
+                                            Visibility="Collapsed"
+                                            ItemTemplate="{StaticResource SyncItem}"
+                                            UpdateTextOnSelect="False"
+                                            Tag="{x:Bind Mode=OneWay}" />
+                            <ListView IsItemClickEnabled="True"
+                                      ItemClick="SyncListView_ItemClick"
+                                      ItemsSource="{x:Bind Syncs, Mode=OneWay}"
+                                      ItemTemplate="{StaticResource SyncItem}"
+                                      Visibility="Visible" />
+                        </StackPanel>
+                    </Flyout>
+                </FlyoutBase.AttachedFlyout>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <ContentControl Grid.Column="0"
+                                ContentTemplate="{StaticResource DriveItem}"
+                                Content="{x:Bind Mode=OneWay}" />
+                <Grid Width="12"
+                      Height="12"
+                      RenderTransformOrigin="0.5,0.5"
+                      Grid.Column="1">
+                    <Grid.RenderTransform>
+                        <RotateTransform Angle="-90" />
+                    </Grid.RenderTransform>
+
+                    <AnimatedIcon>
+                        <AnimatedIcon.Source>
+                            <animatedvisuals:AnimatedChevronDownSmallVisualSource />
+                        </AnimatedIcon.Source>
+                    </AnimatedIcon>
+                </Grid>
+            </Grid>
+        </DataTemplate>
+
+        <!-- Sync item template -->
+        <DataTemplate x:Key="SyncItem"
+                      x:DataType="viewModel:Sync">
+            <Border>
+                <ToolTipService.ToolTip>
+                    <ToolTip Content="{x:Bind LocalPath, Mode=OneWay}"
+                             Placement="Right" />
+                </ToolTipService.ToolTip>
+                <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0"
+                                Orientation="Horizontal"
+                                Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                        <ImageIcon Height="12">
+                            <ImageIcon.Source>
+                                <SvgImageSource UriSource="ms-appx:///Assets/Icons/folder.svg" />
+                            </ImageIcon.Source>
+                        </ImageIcon>
+                        <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                                   Text="{x:Bind LocalPath, Converter={StaticResource StringPathToFileNameConverter}, Mode=OneWay}" />
+                    </StackPanel>
+                    <ImageIcon Grid.Column="1"
+                               Height="14"
+                               Width="14"
+                               Visibility="{x:Bind SyncErrors.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+                        <ImageIcon.Source>
+                            <SvgImageSource UriSource="ms-appx:///Assets/Icons/triangle-alert.svg" />
+                        </ImageIcon.Source>
+                    </ImageIcon>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="DriveItem"
+                      x:DataType="viewModel:Drive">
+            <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0"
+                            Orientation="Horizontal"
+                            Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                    <customControls:DriveIcon IconColor="{x:Bind Color, Mode=OneWay}"
+                                              Height="16" />
+
+                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                               Text="{x:Bind Name, Mode=OneWay}" />
+                </StackPanel>
+                <ImageIcon Grid.Column="1"
+                           Height="14"
+                           Width="14"
+                           Visibility="{x:Bind Converter={StaticResource DriveToHasErrorConverter}, Mode=OneWay}">
+                    <ImageIcon.Source>
+                        <SvgImageSource UriSource="ms-appx:///Assets/Icons/triangle-alert.svg" />
+                    </ImageIcon.Source>
+                </ImageIcon>
+            </Grid>
+        </DataTemplate>
+        <!-- Template selector for drives -->
+        <local:DriveTemplateSelector x:Key="DriveTemplateSelector"
+                                     SingleSyncDrive="{StaticResource DriveItem}"
+                                     MultiSyncDrive="{StaticResource MultiSyncDrive}" />
+    </UserControl.Resources>
+
+    <StackPanel>
+        <!-- Multiple drives -->
+        <StackPanel x:Name="MultiDriveSelector"
+                    Visibility="Collapsed">
+            <Button x:Name="DriveButton"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch"
+                    Margin="{StaticResource Infomaniak.Style.Thickness.Left.XS}"
+                    Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}">
+                <Button.Content>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ContentControl Grid.Column="0"
+                                        ContentTemplate="{StaticResource DriveItem}"
+                                        Content="{x:Bind ViewModel.SelectedSync.Drive, Mode=OneWay}" />
+                        <AnimatedIcon Height="12"
+                                      HorizontalAlignment="Right"
+                                      Margin="{StaticResource Infomaniak.Style.Thickness.Left.S}">
+                            <AnimatedIcon.Source>
+                                <animatedvisuals:AnimatedChevronDownSmallVisualSource />
+                            </AnimatedIcon.Source>
+                        </AnimatedIcon>
+                    </Grid>
+                </Button.Content>
+
+                <!-- Flyout -->
+                <Button.Flyout>
+                    <Flyout x:Name="DriveFlyout"
+                            Placement="Bottom"
+                            Opened="DriveFlyout_Opened">
+                        <Flyout.FlyoutPresenterStyle>
+                            <Style TargetType="FlyoutPresenter">
+                                <Setter Property="MinWidth"
+                                        Value="250" />
+                                <Setter Property="Padding"
+                                        Value="0" />
+                                <Setter Property="CornerRadius"
+                                        Value="{StaticResource Infomaniak.Style.CornerRadius.S}" />
+                            </Style>
+                        </Flyout.FlyoutPresenterStyle>
+
+                        <!-- Drives -->
+                        <ListView x:Name="DriveListView"
+                                  ItemsSource="{x:Bind ViewModel.AllDrives, Mode=OneWay}"
+                                  IsItemClickEnabled="True"
+                                  ItemClick="DriveListView_ItemClick"
+                                  SelectionMode="None"
+                                  ItemTemplateSelector="{StaticResource DriveTemplateSelector}"
+                                  ContainerContentChanging="DriveListView_ContainerContentChanging" />
+
+                    </Flyout>
+                </Button.Flyout>
+            </Button>
+
+            <!-- Sync summary below the button -->
+            <ContentControl Margin="{StaticResource Infomaniak.Style.Thickness.Left.XS}"
+                            Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}"
+                            ContentTemplate="{StaticResource SyncItem}"
+                            Content="{x:Bind ViewModel.SelectedSync, Mode=OneWay}"
+                            Foreground="{ThemeResource TextFillColorDisabledBrush}"
+                            Visibility="{x:Bind ViewModel.SelectedSync.Drive.Syncs.Count, Converter={StaticResource IsGreaterConverter}, ConverterParameter=1, Mode=OneWay}" />
+        </StackPanel>
+
+        <!-- Single drive single sync-->
+        <Grid x:Name="SingleDriveSingleSyncSelector"
+              Visibility="Collapsed"
+              ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.S}"
+              Margin="{StaticResource Infomaniak.Style.Thickness.Left.XS}"
+              Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0"
+                        Orientation="Horizontal"
+                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                <customControls:DriveIcon IconColor="{x:Bind ViewModel.SelectedSync.Drive.Color, Mode=OneWay}"
+                                          Height="16" />
+
+                <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                           Text="{x:Bind ViewModel.SelectedSync.Drive.Name, Mode=OneWay}" />
+            </StackPanel>
+            <ImageIcon Grid.Column="1"
+                       Height="14"
+                       Width="14"
+                       Visibility="{x:Bind ViewModel.SelectedSync.Drive, Converter={StaticResource DriveToHasErrorConverter}, Mode=OneWay}">
+                <ImageIcon.Source>
+                    <SvgImageSource UriSource="ms-appx:///Assets/Icons/triangle-alert.svg" />
+                </ImageIcon.Source>
+            </ImageIcon>
+        </Grid>
+
+        <!-- Single drive multi sync-->
+        <StackPanel x:Name="SingleDriveMultiSyncSelector"
+                    Visibility="Collapsed"
+                    Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.XS}"
+                    Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}"
+                    Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+            <StackPanel Orientation="Horizontal"
+                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                        Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.S}">
+                <customControls:DriveIcon IconColor="{x:Bind ViewModel.SelectedSync.Drive.Color, Mode=OneWay}"
+                                          Height="14" />
+
+                <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
+                           Text="{x:Bind ViewModel.SelectedSync.Drive.Name, Mode=OneWay}" />
+            </StackPanel>
+            <ComboBox ItemTemplate="{StaticResource SyncItem}"
+                      ItemsSource="{x:Bind ViewModel.AllSyncs, Mode=OneWay}"
+                      SelectedItem="{x:Bind ViewModel.SelectedSync, Mode=TwoWay}"
+                      HorizontalAlignment="Stretch"
+                      HorizontalContentAlignment="Stretch" />
+        </StackPanel>
+        
+        <!-- No Sync configured TODO: Edit once the UI is implemented -->
+        <TextBlock x:Name="NoSyncConfigured"
+                   Style="{StaticResource Infomaniak.Style.TextBlock.BodyStrong}"
+                   Text="Aucune synchronisation configurée"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Visibility="Visible"
+                   Margin="{StaticResource Infomaniak.Style.Thickness.Left.XS}"
+                   Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}" />
+    </StackPanel>
+
+</UserControl>

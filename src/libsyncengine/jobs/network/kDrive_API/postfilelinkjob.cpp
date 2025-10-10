@@ -36,9 +36,8 @@ std::string PostFileLinkJob::getSpecificUrl() {
     return str;
 }
 
-void KDC::PostFileLinkJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
+void KDC::PostFileLinkJob::setQueryParameters(Poco::URI &uri) {
     uri.addQueryParameter("right", "public");
-    canceled = false;
 }
 
 } // namespace KDC

@@ -27,9 +27,8 @@ class AbstractListingJob : public AbstractTokenNetworkJob {
         explicit AbstractListingJob(int driveDbId, const NodeSet &blacklist = {});
         explicit AbstractListingJob(ApiType apiType, int driveDbId, const NodeSet &blacklist = {});
 
-        void setQueryParameters(Poco::URI &uri, bool &) final;
-        virtual void setSpecificQueryParameters(Poco::URI &uri) = 0;
-        virtual bool handleError(const std::string &replyBody, const Poco::URI &uri) override;
+        ExitInfo setData() override;
+        ExitInfo handleError(const std::string &replyBody, const Poco::URI &uri) override;
 
     private:
         NodeSet _blacklist;

@@ -16,22 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+import Foundation
 
-#include "jobs/network/abstracttokennetworkjob.h"
+public protocol ServerBridgeable: Sendable {
+    func getConnectedUser() async -> Bool
+}
 
-namespace KDC {
-
-class InitFileListWithCursorJob : public AbstractTokenNetworkJob {
-    public:
-        InitFileListWithCursorJob(int driveDbId, const NodeId &dirId);
-
-    private:
-        virtual std::string getSpecificUrl() override;
-        virtual void setQueryParameters(Poco::URI &uri, bool &canceled) override;
-        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
-
-        NodeId _dirId;
-};
-
-} // namespace KDC
+public final class ServerBridge: ServerBridgeable {
+    public func getConnectedUser() async -> Bool {
+        // It will be removed when the server part will be ready
+        try? await Task.sleep(nanoseconds: 2 * 1_000_000_000)
+        return false
+    }
+}

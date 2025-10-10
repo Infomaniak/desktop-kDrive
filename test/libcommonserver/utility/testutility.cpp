@@ -21,6 +21,7 @@
 #include "test_utility/testhelpers.h"
 #include "config.h"
 #include "libcommon/utility/utility.h" // CommonUtility::isSubDir
+#include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
 
 #include <Poco/URI.h>
@@ -137,7 +138,7 @@ void TestUtility::testMoveItemToTrash(void) {
     CPPUNIT_ASSERT(Utility::moveItemToTrash(path));
     CPPUNIT_ASSERT(!std::filesystem::exists(path));
 
-    // Test with a non existing file
+    // Test with a non-existing file
     CPPUNIT_ASSERT(!Utility::moveItemToTrash(tempDir.path() / "test2.txt"));
 
     // Test with a directory
@@ -145,11 +146,43 @@ void TestUtility::testMoveItemToTrash(void) {
     std::filesystem::create_directory(dirPath);
     CPPUNIT_ASSERT(Utility::moveItemToTrash(dirPath));
     CPPUNIT_ASSERT(!std::filesystem::exists(dirPath));
+
+    // A regular file within a subdirectory that misses owner exec permission:
+    const SyncPath subdir = tempDir.path() / "permission_less_subdirectory";
+    (void) std::filesystem::create_directory(subdir);
+    path = subdir / "file.txt";
+    { std::ofstream ofs(path); }
+    const testhelpers::RightsSet rightSet(true, true, false);
+    auto rightsError = IoError::Unknown;
+    CPPUNIT_ASSERT(IoHelper::setRights(subdir, rightSet.read, rightSet.write, rightSet.execute, rightsError));
+
+    std::error_code ec;
+#if defined(KD_WINDOWS)
+    CPPUNIT_ASSERT(Utility::moveItemToTrash(path));
+    CPPUNIT_ASSERT(!std::filesystem::exists(path, ec));
+    CPPUNIT_ASSERT_EQUAL(0, ec.value());
+#elif defined(KD_MACOS) || defined(KD_LINUX)
+    CPPUNIT_ASSERT(!Utility::moveItemToTrash(path));
+    CPPUNIT_ASSERT(!std::filesystem::exists(path, ec));
+    CPPUNIT_ASSERT_EQUAL(13, ec.value()); // EACCES 13 Permission denied
+#endif
+
+    // A regular directory that misses owner exec permission:
+    CPPUNIT_ASSERT(Utility::moveItemToTrash(subdir));
+    CPPUNIT_ASSERT(!std::filesystem::exists(subdir, ec));
+    CPPUNIT_ASSERT(!ec);
+
+    // A regular directory that misses all permissions:
+    const testhelpers::RightsSet noPermission(false, false, false);
+    CPPUNIT_ASSERT(IoHelper::setRights(subdir, noPermission.read, noPermission.write, noPermission.execute, rightsError));
+    CPPUNIT_ASSERT(!Utility::moveItemToTrash(subdir));
+    CPPUNIT_ASSERT(!std::filesystem::exists(subdir, ec));
+    CPPUNIT_ASSERT(!ec);
+    CPPUNIT_ASSERT(IoHelper::setRights(subdir, true, true, true, rightsError));
 }
 
 void TestUtility::testGetLinuxDesktopType() {
     std::string currentDesktop;
-
 #if defined(KD_LINUX)
     CPPUNIT_ASSERT(Utility::getLinuxDesktopType(currentDesktop));
     CPPUNIT_ASSERT(!currentDesktop.empty());
@@ -302,20 +335,60 @@ void TestUtility::testCheckIfDirEntryIsManaged() {
     CPPUNIT_ASSERT(isManaged);
     CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
-    // Check with a simlink (managed)
-    const SyncPath simLinkDir = tempDir.path() / "simLinkDir";
-    std::filesystem::create_directory(simLinkDir);
-    std::filesystem::create_symlink(path, simLinkDir / "testLink.txt");
-    entry = std::filesystem::recursive_directory_iterator(simLinkDir);
-    CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(*entry, isManaged, ioError));
-    CPPUNIT_ASSERT(isManaged);
-    CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+    // Check with a symlink on a directory (managed)
+    const SyncPath testDir = tempDir.path() / "testDir";
+    (void) std::filesystem::create_directory(testDir);
+    std::filesystem::create_symlink(testDir, tempDir.path() / "testSymLink");
+    std::filesystem::create_directory_symlink(testDir, tempDir.path() / "testSymLinkDir");
+    for (auto it = std::filesystem::recursive_directory_iterator(tempDir.path());
+         it != std::filesystem::recursive_directory_iterator(); ++it) {
+        isManaged = false;
+        ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(*entry, isManaged, ioError));
+        CPPUNIT_ASSERT(isManaged);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+    }
+
+    // Check with a dangling symlink (managed)
+    std::filesystem::create_symlink(tempDir.path() / "non_existing_file.png", tempDir.path() / "danglingSymLink");
+    std::filesystem::create_directory_symlink(tempDir.path() / "non_existing_directory", tempDir.path() / "danglingSymLinkDir§");
+    for (auto it = std::filesystem::recursive_directory_iterator(tempDir.path());
+         it != std::filesystem::recursive_directory_iterator(); ++it) {
+        isManaged = false;
+        ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(*entry, isManaged, ioError));
+        CPPUNIT_ASSERT(isManaged);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+    }
 
     // Check with a directory
+    isManaged = false;
     entry = std::filesystem::recursive_directory_iterator(tempDir.path());
     CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(*entry, isManaged, ioError));
     CPPUNIT_ASSERT(isManaged);
     CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+
+    // A symbolic link on a file with too many levels of indirection.
+    testhelpers::createSymLinkLoop(tempDir.path() / "file1.txt", tempDir.path() / "file2.txt", NodeType::File);
+    for (auto it = std::filesystem::recursive_directory_iterator(tempDir.path());
+         it != std::filesystem::recursive_directory_iterator(); ++it) {
+        isManaged = false;
+        ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(*entry, isManaged, ioError));
+        CPPUNIT_ASSERT(isManaged);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+    }
+
+    // A symbolic link on a folder with too many levels of indirection.
+    testhelpers::createSymLinkLoop(tempDir.path() / "folder1", tempDir.path() / "folder2", NodeType::Directory);
+    for (auto it = std::filesystem::recursive_directory_iterator(tempDir.path());
+         it != std::filesystem::recursive_directory_iterator(); ++it) {
+        isManaged = false;
+        ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(*entry, isManaged, ioError));
+        CPPUNIT_ASSERT(isManaged);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+    }
 }
 
 void TestUtility::testFormatStdError() {

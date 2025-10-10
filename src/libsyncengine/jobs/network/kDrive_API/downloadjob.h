@@ -42,17 +42,16 @@ class DownloadJob : public AbstractTokenNetworkJob {
         [[nodiscard]] int64_t expectedSize() const { return _expectedSize; }
 
     private:
-        virtual std::string getSpecificUrl() override;
-        virtual void setQueryParameters(Poco::URI &, bool &) override {}
-        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
+        std::string getSpecificUrl() override;
+        inline ExitInfo setData() override { return ExitCode::Ok; }
 
-        virtual bool canRun() override;
-        virtual void runJob() noexcept override;
-        virtual bool handleResponse(std::istream &is) override;
+        ExitInfo canRun() override;
+        ExitInfo runJob() noexcept override;
+        ExitInfo handleResponse(std::istream &is) override;
 
-        bool createLink(const std::string &mimeType, const std::string &data);
+        ExitInfo createLink(const std::string &mimeType, const std::string &data);
         bool removeTmpFile();
-        bool moveTmpFile();
+        ExitInfo moveTmpFile();
         //! Create a tmp file from a std::istream or a std::string
         /*!
           \param istr is a stream used to read the file data.
@@ -63,14 +62,14 @@ class DownloadJob : public AbstractTokenNetworkJob {
           \param fetchError will be true if the read on the input stream has failed.
           \return true if no unexpected error occurred, false otherwise.
         */
-        bool createTmpFile(std::optional<std::reference_wrapper<std::istream>> istr,
-                           std::optional<std::reference_wrapper<const std::string>> data, bool &readError, bool &writeError,
-                           bool &fetchCanceled, bool &fetchFinished, bool &fetchError);
+        ExitInfo createTmpFile(std::optional<std::reference_wrapper<std::istream>> istr,
+                               std::optional<std::reference_wrapper<const std::string>> data, bool &readError, bool &writeError,
+                               bool &fetchCanceled, bool &fetchFinished, bool &fetchError);
         //! Create a tmp file from an std::istream
-        bool createTmpFile(std::istream &is, bool &readError, bool &writeError, bool &fetchCanceled, bool &fetchFinished,
-                           bool &fetchError);
+        ExitInfo createTmpFile(std::istream &is, bool &readError, bool &writeError, bool &fetchCanceled, bool &fetchFinished,
+                               bool &fetchError);
         //! Create a tmp file from a std::string
-        bool createTmpFile(const std::string &data, bool &writeError);
+        ExitInfo createTmpFile(const std::string &data, bool &writeError);
         static bool hasEnoughPlace(const SyncPath &tmpDirPath, const SyncPath &destDirPath, int64_t neededPlace,
                                    log4cplus::Logger logger);
 

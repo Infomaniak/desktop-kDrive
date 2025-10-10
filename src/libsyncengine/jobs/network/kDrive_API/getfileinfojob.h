@@ -38,12 +38,12 @@ class GetFileInfoJob : public AbstractTokenNetworkJob {
         inline SyncPath path() const { return _path; }
 
     protected:
-        bool handleResponse(std::istream &is) override;
-        bool handleError(const std::string &replyBody, const Poco::URI &uri) override;
+        ExitInfo handleResponse(std::istream &is) override;
+        ExitInfo handleError(const std::string &replyBody, const Poco::URI &uri) override;
 
     private:
         std::string getSpecificUrl() override;
-        void setQueryParameters(Poco::URI &, bool &) override;
+        void setQueryParameters(Poco::URI &) override;
         inline ExitInfo setData() override { return ExitCode::Ok; }
 
         NodeId _nodeId;

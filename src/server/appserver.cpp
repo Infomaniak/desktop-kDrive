@@ -21,6 +21,10 @@
 #include "keychainmanager/keychainmanager.h"
 #include "requests/serverrequests.h"
 #include "requests/syncnodecache.h"
+#include "comm/guijobmanager.h"
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+#include "comm/extjobmanager.h"
+#endif
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
@@ -288,11 +292,21 @@ void AppServer::init() {
         throw std::runtime_error("Unable to initialize proxy.");
     }
 
-    // Init JobManager
-    if (!SyncJobManagerSingleton::instance()) {
-        LOG_WARN(_logger, "Error in JobManager::instance");
-        throw std::runtime_error("Unable to initialize job manager.");
+    // Init JobManager(s)
+    if (!GuiJobManagerSingleton::instance()) {
+        LOG_WARN(_logger, "Error in GuiJobManager::instance");
+        throw std::runtime_error("Unable to initialize GUI job manager.");
     }
+    if (!SyncJobManagerSingleton::instance()) {
+        LOG_WARN(_logger, "Error in SyncJobManager::instance");
+        throw std::runtime_error("Unable to initialize Sync job manager.");
+    }
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+    if (!ExtJobManagerSingleton::instance()) {
+        LOG_WARN(_logger, "Error in ExtJobManager::instance");
+        throw std::runtime_error("Unable to initialize Ext job manager.");
+    }
+#endif
 
     // Setup auto start
 #ifdef NDEBUG
@@ -330,10 +344,11 @@ void AppServer::init() {
 
     // Init CommManager
     _commManager = std::make_shared<CommManager>(_syncPalMap, _vfsMap);
-    _commManager->setAddErrorCallback(&addError);
+    _commManager->setAddErrorCbk(&addError);
+    _commManager->setUpdateSentryUserCbk(&updateSentryUser);
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
-    _commManager->setGetThumbnailCallback(&ServerRequests::getThumbnail);
-    _commManager->setGetPublicLinkUrlCallback(&ServerRequests::getPublicLinkUrl);
+    _commManager->setGetThumbnailCbk(&ServerRequests::getThumbnail);
+    _commManager->setGetPublicLinkUrlCbk(&ServerRequests::getPublicLinkUrl);
 #endif
     _commManager->start();
 
@@ -434,9 +449,17 @@ void AppServer::cleanup() {
     // Stop CommManager
     _commManager->stop();
 
-    // Stop JobManager
+    // Stop JobManager(s)
+    GuiJobManagerSingleton::instance()->stop();
+    LOG_DEBUG(_logger, "GuiJobManager stopped");
+
     SyncJobManagerSingleton::instance()->stop();
-    LOG_DEBUG(_logger, "JobManager stopped");
+    LOG_DEBUG(_logger, "SyncJobManager stopped");
+
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+    ExtJobManagerSingleton::instance()->stop();
+    LOG_DEBUG(_logger, "ExtJobManager stopped");
+#endif
 
     // Stop SyncPals
     for (const auto &syncPalMapElt: _syncPalMap) {
@@ -457,9 +480,17 @@ void AppServer::cleanup() {
     // Clear CommManager
     _commManager.reset();
 
-    // Clear JobManager
+    // Clear JobManager(s)
+    GuiJobManagerSingleton::clear();
+    LOG_DEBUG(_logger, "GuiJobManager::clear() done");
+
     SyncJobManagerSingleton::clear();
-    LOG_DEBUG(_logger, "JobManager::clear() done");
+    LOG_DEBUG(_logger, "SyncJobManager::clear() done");
+
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+    ExtJobManagerSingleton::clear();
+    LOG_DEBUG(_logger, "ExtJobManager::clear() done");
+#endif
 
     // Clear maps
     _syncPalMap.clear();
@@ -590,7 +621,7 @@ void AppServer::logExtendedLogActivationMessage(bool isExtendedLogEnabled) noexc
     LOG_INFO(_logger, msg);
 }
 
-void AppServer::updateSentryUser() const {
+void AppServer::updateSentryUser() {
     User user;
     bool found = false;
     ParmsDb::instance()->selectLastConnectedUser(user, found);

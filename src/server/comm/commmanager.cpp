@@ -17,11 +17,17 @@
  */
 
 #include "commmanager.h"
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+#include "extjobmanager.h"
 #include "extensionjob.h"
+#endif
+#include "guijobmanager.h"
+#include "guijobs/guijobfactory.h"
 #include "config.h"
 #include "libcommon/utility/logiffail.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/theme/theme.h"
+#include "libcommon/comm.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
@@ -34,7 +40,8 @@
 #endif
 
 #include "guicommserver.h"
-
+#include "guijobs/abstractguijob.h"
+#include "guijobs/loginrequesttokenjob.h"
 
 #include <QByteArray>
 #include <QDataStream>
@@ -48,14 +55,15 @@
 #include <log4cplus/loggingmacros.h>
 
 namespace KDC {
-
 CommManager::CommManager(const SyncPalMap &syncPalMap, const VfsMap &vfsMap) :
     _syncPalMap(syncPalMap),
-    _vfsMap(vfsMap),
+    _vfsMap(vfsMap) {
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
-    _extCommServer(std::make_shared<ExtCommServer>("Extension Comm Server")),
+    _extCommServer = std::make_shared<ExtCommServer>("Extension Comm Server");
 #endif
-    _guiCommServer(std::make_shared<GuiCommServer>("GUI Comm Server")) {
+    _guiCommServer = std::make_shared<GuiCommServer>("GUI Comm Server");
+    _guiJobFactory = std::make_unique<GuiJobFactory>();
+
 #if defined(KD_MACOS)
     // Tell the Finder to use the Extension (checking it from System Preferences -> Extensions)
     std::string cmd("pluginkit -v -e use -i ");
@@ -101,7 +109,7 @@ void CommManager::start() {
     LOGW_INFO(Log::instance()->getLogger(), L"Starting " << CommonUtility::s2ws(_guiCommServer->name()));
     if (!_guiCommServer->listen()) {
         LOGW_WARN(Log::instance()->getLogger(), L"Can't start " << CommonUtility::s2ws(_guiCommServer->name()));
-        _addError(Error(ERR_ID, ExitCode::SystemError, ExitCause::Unknown));
+        _addErrorCbk(Error(ERR_ID, ExitCode::SystemError, ExitCause::Unknown));
     } else {
         LOGW_INFO(Log::instance()->getLogger(), CommonUtility::s2ws(_guiCommServer->name()) << L" started");
     }
@@ -111,7 +119,7 @@ void CommManager::start() {
     LOGW_INFO(Log::instance()->getLogger(), L"Starting " << CommonUtility::s2ws(_extCommServer->name()));
     if (!_extCommServer->listen()) {
         LOGW_WARN(Log::instance()->getLogger(), L"Can't start " << CommonUtility::s2ws(_extCommServer->name()));
-        _addError(Error(ERR_ID, ExitCode::SystemError, ExitCause::Unknown));
+        _addErrorCbk(Error(ERR_ID, ExitCode::SystemError, ExitCause::Unknown));
     } else {
         LOGW_INFO(Log::instance()->getLogger(), CommonUtility::s2ws(_extCommServer->name()) << L" started");
     }
@@ -153,10 +161,9 @@ void CommManager::executeExtCommand(const CommString &commandLineStr) {
 
     auto job =
             std::make_shared<ExtensionJob>(shared_from_this(), commandLineStr, std::list<std::shared_ptr<AbstractCommChannel>>());
-    if (ExitInfo exitInfo = job->runSynchronously(); !exitInfo) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in ExtensionJob::runSynchronously - cmd=" << CommonUtility::commString2WStr(commandLineStr));
-    }
+
+    // Add job to JobManager pool
+    ExtJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
 }
 
 void CommManager::executeExtCommand(const CommString &commandLineStr, std::shared_ptr<AbstractCommChannel> channel) {
@@ -165,10 +172,9 @@ void CommManager::executeExtCommand(const CommString &commandLineStr, std::share
     if (channel) {
         auto job = std::make_shared<ExtensionJob>(shared_from_this(), commandLineStr,
                                                   std::list<std::shared_ptr<AbstractCommChannel>>({channel}));
-        if (ExitInfo exitInfo = job->runSynchronously(); !exitInfo) {
-            LOGW_WARN(Log::instance()->getLogger(),
-                      L"Error in ExtensionJob::runSynchronously - cmd=" << CommonUtility::commString2WStr(commandLineStr));
-        }
+
+        // Add job to JobManager pool
+        ExtJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
     }
 }
 
@@ -177,10 +183,9 @@ void CommManager::broadcastExtCommand(const CommString &commandLineStr) {
 
     if (!_extCommServer->connections().empty()) {
         auto job = std::make_shared<ExtensionJob>(shared_from_this(), commandLineStr, _extCommServer->connections());
-        if (ExitInfo exitInfo = job->runSynchronously(); !exitInfo) {
-            LOGW_WARN(Log::instance()->getLogger(),
-                      L"Error in ExtensionJob::runSynchronously - cmd=" << CommonUtility::commString2WStr(commandLineStr));
-        }
+
+        // Add job to JobManager pool
+        ExtJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
     }
 }
 
@@ -195,7 +200,7 @@ void CommManager::onNewExtConnection() {
     std::vector<Sync> syncList;
     if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
-        _addError(Error(ERR_ID, ExitCode::DbError, ExitCause::Unknown));
+        _addErrorCbk(Error(ERR_ID, ExitCode::DbError, ExitCause::Unknown));
         return;
     }
 
@@ -225,7 +230,30 @@ void CommManager::onExtQueryReceived(std::shared_ptr<AbstractCommChannel> channe
 void CommManager::onLostExtConnection(std::shared_ptr<AbstractCommChannel> channel) {
     LOG_INFO(Log::instance()->getLogger(), "Lost ext connection - channel=" << channel->id());
 }
+
 #endif
+
+void CommManager::executeGuiQuery(const CommString &commandLineStr, std::shared_ptr<AbstractCommChannel> channel) {
+    // Deserialize generic parameters
+    int requestId = 0;
+    RequestNum requestNum = RequestNum::Unknown;
+    Poco::DynamicStruct inParams;
+    if (!AbstractGuiJob::deserializeGenericInputParms(commandLineStr, requestId, requestNum, inParams)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in AbstractGuiJob::deserializeGenericInputParms - query="
+                                                        << CommonUtility::commString2WStr(commandLineStr));
+        return;
+    }
+
+    // Create and execute GUI job
+    auto job = _guiJobFactory->make(requestNum, shared_from_this(), requestId, inParams, channel);
+    if (!job) {
+        LOG_WARN(Log::instance()->getLogger(), "Job not implemented: num=" << requestNum);
+        return;
+    }
+
+    // Add job to JobManager pool
+    GuiJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
+}
 
 void CommManager::onNewGuiConnection() {
     std::shared_ptr<AbstractCommChannel> channel = _guiCommServer->nextPendingConnection();
@@ -241,46 +269,14 @@ void CommManager::onGuiQueryReceived(std::shared_ptr<AbstractCommChannel> channe
 
     while (channel->canReadMessage()) {
         CommString query = channel->readMessage();
-        LOGW_INFO(Log::instance()->getLogger(), L"Query received: " << CommonUtility::commString2WStr(query));
-
-        Poco::JSON::Parser parser;
-        auto result = parser.parse(CommonUtility::commString2Str(query));
-        Poco::JSON::Object::Ptr pObject = result.extract<Poco::JSON::Object::Ptr>();
-        if (!pObject->has("id")) {
-            LOG_WARN(Log::instance()->getLogger(), "Query has no id");
-            continue;
+        if (query.empty()) {
+            LOG_WARN(Log::instance()->getLogger(), "Failed to read message or empty message");
+            break;
         }
-        if (!pObject->has("num")) {
-            LOG_WARN(Log::instance()->getLogger(), "Query has no num");
-            continue;
-        }
-
-        // Query ID
-        const int id = pObject->getValue<int>("id");
-        // Query type
-        const RequestNum num = static_cast<RequestNum>(pObject->getValue<int>("num"));
-
-
-        // Create gui job
-        if (num == RequestNum::SYNC_START ||
-            num == RequestNum::SYNC_STOP) { // TODO: Replace with Gui jobs and commManager once ready.
-            if (!pObject->has("args")) {
-                LOG_WARN(Log::instance()->getLogger(), "Query expects args");
-                continue;
-            }
-            if (!pObject->isObject("args")) {
-                LOG_WARN(Log::instance()->getLogger(), "Query args is not an object");
-                continue;
-            }
-
-            auto args = pObject->getObject("args");
-            const int syncDbId = args->getValue<int>("syncDbId");
-            QByteArray params;
-            QDataStream paramsStream(&params, QIODevice::WriteOnly);
-            paramsStream << syncDbId;
-
-            emit OldCommServer::instance().get() -> requestReceived(id, num, params);
-        }
+        LOGW_INFO(Log::instance()->getLogger(), L"Received GUI message - msg=" << CommonUtility::commString2WStr(query)
+                                                                               << L" channel="
+                                                                               << CommonUtility::s2ws(channel->id()));
+        executeGuiQuery(query, channel);
     }
 }
 

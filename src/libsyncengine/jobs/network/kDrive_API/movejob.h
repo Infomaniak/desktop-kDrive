@@ -30,11 +30,11 @@ class MoveJob : public AbstractTokenNetworkJob {
                 const NodeId &destDirId, const SyncName &name = Str(""));
         ~MoveJob() override;
 
-        bool canRun() override;
+        ExitInfo canRun() override;
 
     private:
         std::string getSpecificUrl() override;
-        void setQueryParameters(Poco::URI &uri, bool &canceled) override;
+        void setQueryParameters(Poco::URI &uri) override;
         ExitInfo setData() override;
 
         SyncPath _destFilepath;

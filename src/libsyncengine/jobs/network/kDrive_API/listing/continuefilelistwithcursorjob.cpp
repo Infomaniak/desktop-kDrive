@@ -31,7 +31,7 @@ std::string ContinueFileListWithCursorJob::getSpecificUrl() {
     return str;
 }
 
-void ContinueFileListWithCursorJob::setSpecificQueryParameters(Poco::URI &uri) {
+void ContinueFileListWithCursorJob::setQueryParameters(Poco::URI &uri) {
     uri.addQueryParameter("cursor", _cursor);
     uri.addQueryParameter("with", "files.capabilities");
     uri.addQueryParameter("limit", nbItemPerPage);

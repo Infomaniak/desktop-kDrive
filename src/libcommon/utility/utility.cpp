@@ -34,7 +34,6 @@
 #include <fileapi.h>
 #endif
 
-
 #include <fstream>
 #include <random>
 #include <regex>
@@ -55,7 +54,6 @@
 
 #include "utility_base.h"
 
-
 #include <QDir>
 #include <QTranslator>
 #include <QLibraryInfo>
@@ -66,11 +64,14 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QOperatingSystemVersion>
-#include <Poco/UnicodeConverter.h>
 
 #if defined(Q_OS_MAC)
 #include <mach-o/dyld.h>
 #endif
+
+#include <Poco/UnicodeConverter.h>
+#include <Poco/Base64Decoder.h>
+#include <Poco/Base64Encoder.h>
 
 #define MAX_PATH_LENGTH_WIN_LONG 32767
 #define MAX_PATH_LENGTH_WIN_SHORT 259
@@ -767,12 +768,10 @@ SyncPath CommonUtility::getAppSupportDir() {
     SyncPath dirPath(getGenericAppSupportDir());
 
     dirPath.append(APPLICATION_NAME);
-    std::error_code ec;
-    if (!std::filesystem::is_directory(dirPath, ec)) {
-        bool exists = false;
-        exists = !utility_base::isLikeFileNotFoundError(ec);
-        if (exists) return SyncPath();
-        if (!std::filesystem::create_directory(dirPath, ec)) return SyncPath();
+
+    if (std::error_code ec; !std::filesystem::is_directory(dirPath, ec)) {
+        const bool exists = !utility_base::isLikeFileNotFoundError(ec);
+        if (exists || !std::filesystem::create_directory(dirPath, ec)) return {};
     }
 
     return dirPath;
@@ -1433,6 +1432,45 @@ bool CommonUtility::isLinux() {
 #else
     return false;
 #endif
+}
+
+void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::string &value) {
+    std::istringstream istr(base64Str);
+    Poco::Base64Decoder b64in(istr);
+    b64in >> value;
+}
+
+void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::wstring &value) {
+    std::string strValue;
+    convertFromBase64Str(base64Str, strValue);
+    value = s2ws(strValue);
+}
+
+void CommonUtility::convertFromBase64Str(const std::string &base64Str, CommBLOB &value) {
+    std::istringstream istr(base64Str);
+    Poco::Base64Decoder b64in(istr);
+    (void) std::copy(std::istream_iterator<char>(b64in), std::istream_iterator<char>(), std::back_inserter(value));
+}
+
+void CommonUtility::convertToBase64Str(const std::string &str, std::string &base64Str) {
+    std::ostringstream ostr;
+    Poco::Base64Encoder b64out(ostr);
+    b64out << str;
+    (void) b64out.close();
+    base64Str = ostr.str();
+}
+
+void CommonUtility::convertToBase64Str(const std::wstring &wstr, std::string &base64Str) {
+    const std::string str = ws2s(wstr);
+    convertToBase64Str(str, base64Str);
+}
+
+void CommonUtility::convertToBase64Str(const CommBLOB &blob, std::string &base64Str) {
+    std::ostringstream ostr;
+    Poco::Base64Encoder b64out(ostr);
+    (void) std::copy(blob.begin(), blob.end(), std::ostream_iterator<char>(b64out));
+    (void) b64out.close();
+    base64Str = ostr.str();
 }
 
 } // namespace KDC

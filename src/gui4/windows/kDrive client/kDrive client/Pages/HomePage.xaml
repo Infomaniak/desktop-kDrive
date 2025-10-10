@@ -63,9 +63,9 @@
             <controls:SyncStatusBar Grid.Row="0" />
 
             <!-- Left main pane -->
-            <controls:SyncActivityTable Grid.Row="1"
-                                        Grid.Column="0" />
-
+            <controls:LottiePlayer Grid.Row="1"
+                                   Grid.Column="0"
+                                   UriSource="ms-appx:///Assets/Animations/kDrive-Pause-LIGHT.json" />
             <!-- Right Side Buttons -->
             <controls:QuickAccess Grid.Row="1"
                                   Grid.Column="1" />

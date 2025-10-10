@@ -22,7 +22,7 @@
 
 namespace KDC {
 
-class GetInfoUserJob final : public AbstractTokenNetworkJob {
+class GetInfoUserJob : public AbstractTokenNetworkJob {
     public:
         explicit GetInfoUserJob(int userDbId);
 
@@ -32,12 +32,10 @@ class GetInfoUserJob final : public AbstractTokenNetworkJob {
         [[nodiscard]] bool isStaff() const { return _isStaff; }
 
     protected:
-        bool handleJsonResponse(const std::string &replyBody) override;
+        ExitInfo handleJsonResponse(const std::string &replyBody) override;
 
     private:
         std::string getSpecificUrl() override;
-        void setQueryParameters(Poco::URI &, bool &canceled) override { canceled = false; }
-        ExitInfo setData() override { return ExitCode::Ok; }
 
         std::string _name;
         std::string _email;

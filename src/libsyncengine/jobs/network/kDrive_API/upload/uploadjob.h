@@ -44,14 +44,14 @@ class UploadJob : public AbstractTokenNetworkJob {
         int64_t size() const { return _sizeOut; }
 
     protected:
-        bool canRun() override;
-        bool handleResponse(std::istream &is) override;
+        ExitInfo canRun() override;
+        ExitInfo handleResponse(std::istream &is) override;
 
     private:
         std::string getSpecificUrl() override;
-        void setQueryParameters(Poco::URI &, bool &canceled) override;
+        void setQueryParameters(Poco::URI &) override;
         ExitInfo setData() override;
-        std::string getContentType(bool &canceled) override;
+        std::string getContentType() override;
 
         ExitInfo readFile();
         ExitInfo readLink();

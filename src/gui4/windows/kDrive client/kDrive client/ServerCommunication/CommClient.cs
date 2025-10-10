@@ -70,7 +70,7 @@ namespace Infomaniak.kDrive.ServerCommunication
                 _client = new TcpClient("localhost", port);
                 Logger.Log(Logger.Level.Info, "Connected to server.");
             }
-            catch (Exception ex)
+            catch (System.Net.Sockets.SocketException ex)
             {
                 Logger.Log(Logger.Level.Error, $"Socket connection error: {ex.Message}");
                 _client = null;
