@@ -91,8 +91,6 @@ ExitInfo LocalCreateDirJob::runJob() {
     } else if (ioError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_destFilePath));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
-        _exitInfo = ExitCode::SystemError;
-        return;
     }
 
     if (_readOnly) {
