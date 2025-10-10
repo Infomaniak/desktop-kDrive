@@ -15,8 +15,8 @@
 		F96700A52E95352C00EDD4D7 /* kDriveResources.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F967009E2E95352C00EDD4D7 /* kDriveResources.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F96701502E953CF600EDD4D7 /* kDriveResources.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F967009E2E95352C00EDD4D7 /* kDriveResources.framework */; };
 		F967FC8C2E8BC9FE00EDD4D7 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = F967FC8B2E8BC9FE00EDD4D7 /* Lottie */; };
+		F97269782E98F1CE002EA08D /* InfomaniakLogin in Frameworks */ = {isa = PBXBuildFile; productRef = F97269772E98F1CE002EA08D /* InfomaniakLogin */; };
 		F97805BE2E97E3AF00BC146C /* InfomaniakDI in Frameworks */ = {isa = PBXBuildFile; productRef = F97805BD2E97E3AF00BC146C /* InfomaniakDI */; };
-		F97805C12E97E3C500BC146C /* InfomaniakLogin in Frameworks */ = {isa = PBXBuildFile; productRef = F97805C02E97E3C500BC146C /* InfomaniakLogin */; };
 		F97805C32E97E3F900BC146C /* InfomaniakDI in Frameworks */ = {isa = PBXBuildFile; productRef = F97805C22E97E3F900BC146C /* InfomaniakDI */; };
 		F9ACC5382E5DF50F0081E80B /* swiftgen.yml in Resources */ = {isa = PBXBuildFile; fileRef = F9ACC5372E5DF50B0081E80B /* swiftgen.yml */; };
 /* End PBXBuildFile section */
@@ -49,6 +49,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = F967009D2E95352C00EDD4D7;
 			remoteInfo = kDriveResources;
+		};
+		F97269752E98EFAF002EA08D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 37A1C41E2E546A5200596DBB /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F97269622E98EC15002EA08D;
+			remoteInfo = kDriveLogin;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -136,9 +143,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				F97805BE2E97E3AF00BC146C /* InfomaniakDI in Frameworks */,
-				F97805C12E97E3C500BC146C /* InfomaniakLogin in Frameworks */,
 				37A1C4602E546CB700596DBB /* kDriveCore.framework in Frameworks */,
 				F96700A42E95352C00EDD4D7 /* kDriveResources.framework in Frameworks */,
+				F97269782E98F1CE002EA08D /* InfomaniakLogin in Frameworks */,
 				37A1C4452E546A9600596DBB /* kDriveCoreUI.framework in Frameworks */,
 				F967FC8C2E8BC9FE00EDD4D7 /* Lottie in Frameworks */,
 			);
@@ -244,6 +251,7 @@
 				37A1C4442E546A9600596DBB /* PBXTargetDependency */,
 				37A1C45F2E546CB700596DBB /* PBXTargetDependency */,
 				F96700A32E95352C00EDD4D7 /* PBXTargetDependency */,
+				F97269762E98EFAF002EA08D /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				37A1C4282E546A5200596DBB /* kDrive */,
@@ -252,7 +260,7 @@
 			packageProductDependencies = (
 				F967FC8B2E8BC9FE00EDD4D7 /* Lottie */,
 				F97805BD2E97E3AF00BC146C /* InfomaniakDI */,
-				F97805C02E97E3C500BC146C /* InfomaniakLogin */,
+				F97269772E98F1CE002EA08D /* InfomaniakLogin */,
 			);
 			productName = kDrive;
 			productReference = 37A1C4262E546A5200596DBB /* kDrive.app */;
@@ -492,6 +500,10 @@
 			target = F967009D2E95352C00EDD4D7 /* kDriveResources */;
 			targetProxy = F96701522E953CF600EDD4D7 /* PBXContainerItemProxy */;
 		};
+		F97269762E98EFAF002EA08D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			targetProxy = F97269752E98EFAF002EA08D /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -649,7 +661,7 @@
 				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 6.0;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -685,7 +697,7 @@
 				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 6.0;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
@@ -723,7 +735,7 @@
 				SWIFT_INSTALL_MODULE = YES;
 				SWIFT_INSTALL_OBJC_HEADER = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 6.0;
+				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -763,7 +775,7 @@
 				SWIFT_INSTALL_MODULE = YES;
 				SWIFT_INSTALL_OBJC_HEADER = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 6.0;
+				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -802,7 +814,7 @@
 				SWIFT_INSTALL_MODULE = YES;
 				SWIFT_INSTALL_OBJC_HEADER = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 6.0;
+				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -841,7 +853,7 @@
 				SWIFT_INSTALL_MODULE = YES;
 				SWIFT_INSTALL_OBJC_HEADER = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 6.0;
+				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -996,8 +1008,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Infomaniak/ios-login.git";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 7.3.1;
+				branch = "chore/swift-5.10";
+				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -1008,15 +1020,15 @@
 			package = F967FC8A2E8BC9FE00EDD4D7 /* XCRemoteSwiftPackageReference "lottie-spm" */;
 			productName = Lottie;
 		};
+		F97269772E98F1CE002EA08D /* InfomaniakLogin */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F97805BF2E97E3C500BC146C /* XCRemoteSwiftPackageReference "ios-login" */;
+			productName = InfomaniakLogin;
+		};
 		F97805BD2E97E3AF00BC146C /* InfomaniakDI */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = F97805BC2E97E3AF00BC146C /* XCRemoteSwiftPackageReference "ios-dependency-injection" */;
 			productName = InfomaniakDI;
-		};
-		F97805C02E97E3C500BC146C /* InfomaniakLogin */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = F97805BF2E97E3C500BC146C /* XCRemoteSwiftPackageReference "ios-login" */;
-			productName = InfomaniakLogin;
 		};
 		F97805C22E97E3F900BC146C /* InfomaniakDI */ = {
 			isa = XCSwiftPackageProductDependency;
