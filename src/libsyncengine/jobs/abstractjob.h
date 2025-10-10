@@ -46,7 +46,6 @@ class AbstractJob : public Poco::Runnable {
             _additionalCallback = newCallback;
         }
 
-        void setExitInfo(const ExitInfo &exitInfo) { _exitInfo = exitInfo; }
         ExitInfo exitInfo() const { return _exitInfo; }
 
         UniqueId jobId() const { return _jobId; }

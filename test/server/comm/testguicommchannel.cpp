@@ -170,7 +170,6 @@ void TestGuiCommChannel::testLoginRequestTokenJob() {
 
         // Process job simulation
         loginRequestTokenJob->_userDbId = 1;
-        job->setExitInfo(ExitCode::Ok);
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
@@ -207,7 +206,6 @@ void TestGuiCommChannel::testUserDbIdListJob() {
         auto userDbIdListJob = std::dynamic_pointer_cast<UserDbIdListJob>(job);
 
         userDbIdListJob->_userDbIdList = {1, 2, 3};
-        job->setExitInfo(ExitCode::Ok);
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
@@ -255,25 +253,18 @@ void TestGuiCommChannel::testUserInfoListJob() {
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto userInfoListJob = std::dynamic_pointer_cast<UserInfoListJob>(job);
         std::string avatarBase64Str{
-                R"(iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAA\r\nAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYA\r\nAAAASUVORK5CYII=)"};
+                R"(iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=)"};
         CommBLOB avatarBLOB;
         CommonUtility::convertFromBase64Str(avatarBase64Str, avatarBLOB);
-        std::string avatarBase64Str2;
-        CommonUtility::convertToBase64Str(avatarBLOB, avatarBase64Str2);
         QByteArray avatarQBA;
         std::copy(avatarBLOB.begin(), avatarBLOB.end(), std::back_inserter(avatarQBA));
         QImage avatar;
-        bool ret = avatar.loadFromData(avatarQBA);
-
-        QImage avatar1("/Users/chrilarc/Downloads/1x1.png");
-
-        bool b2 = (avatar1 == avatar);
+        (void) avatar.loadFromData(avatarQBA);
 
         UserInfo ui1(1, 1001, "aaaaa", "aaaaa@xxx.com", avatar, true);
         UserInfo ui2(2, 1002, "bbbbb", "bbbbb@xxx.com", avatar, false);
 
         userInfoListJob->_userInfoList = {ui1, ui2};
-        job->setExitInfo(ExitCode::Ok);
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
