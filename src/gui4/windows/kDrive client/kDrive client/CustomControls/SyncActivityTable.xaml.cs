@@ -2,6 +2,7 @@ using DynamicData;
 using DynamicData.Binding;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -32,7 +33,7 @@ namespace Infomaniak.kDrive.CustomControls
 {
     public sealed partial class SyncActivityTable : UserControl
     {
-        private AppModel _viewModel = ((App)Application.Current).Data;
+        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel => _viewModel;
 
         private readonly ObservableCollection<SyncActivity> _outGoingActivities = new();

@@ -60,7 +60,7 @@ uint64_t SocketCommChannel::readData(CommChar *data, uint64_t maxlen) {
             return 0;
         }
         _pendingRead = false;
-        return static_cast<unsigned int>(lenReceived);
+        return static_cast<unsigned int>(lenReceived) / sizeof(CommChar);
     } catch (Poco::IOException &ex) {
         LOG_ERROR(Log::instance()->getLogger(), "Socket receiveBytes error: " << ex.displayText());
         lostConnectionCbk();
@@ -121,10 +121,10 @@ void SocketCommChannel::callbackHandler() {
 
 uint64_t SocketCommChannel::bytesAvailable() const {
     try {
-        return (std::max)(0, _socket.available());
+        return static_cast<uint64_t>((std::max)(0, _socket.available()));
     } catch (Poco::IOException &ex) {
         LOG_ERROR(Log::instance()->getLogger(), "Socket available error: " << ex.displayText());
-        return 0;
+        return static_cast<uint64_t>(0);
     }
 }
 
@@ -196,8 +196,21 @@ std::list<std::shared_ptr<AbstractCommChannel>> SocketCommServer::connections() 
     return _channels;
 }
 
+void saveCommPort(unsigned short port) {
+    // Build the path: $HOME/.comm
+    std::filesystem::path commPath = std::filesystem::path(std::getenv("USERPROFILE")) / ".comm4";
+
+    // Open the file and write the port
+    std::ofstream commFile(commPath, std::ios_base::trunc | std::ios_base::out);
+    if (commFile.is_open()) {
+        commFile << port;
+        commFile.close();
+    }
+}
 void SocketCommServer::execute() {
     _serverSocket.bind(Poco::Net::SocketAddress("localhost", "0"), true, true);
+    LOG_DEBUG(Log::instance()->getLogger(), name() << " listening on port " << getPort());
+    saveCommPort(getPort());
     while (!_stopAsked) {
         _serverSocket.listen();
         _isListening = true;
@@ -212,5 +225,4 @@ void SocketCommServer::execute() {
     _isListening = false;
     log4cplus::threadCleanup();
 }
-
 } // namespace KDC

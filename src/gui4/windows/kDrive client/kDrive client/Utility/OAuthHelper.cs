@@ -1,4 +1,5 @@
-﻿using Microsoft.Security.Authentication.OAuth;
+﻿using Infomaniak.kDrive.ServerCommunication;
+using Microsoft.Security.Authentication.OAuth;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using System;
@@ -17,7 +18,12 @@ namespace Infomaniak.kDrive
         private static readonly Uri _authorizationEndpoint = new Uri("https://login.infomaniak.com/authorize");
         private static readonly Uri _tokenEndpoint = new Uri("https://login.infomaniak.com/token");
 
-        public static async Task<string> GetToken(CancellationToken cancellationToken)
+        public struct OAuthResult
+        {
+            public string Code;
+            public string CodeVerifier;
+        }
+        public static async Task<OAuthResult> GetCode(CancellationToken cancellationToken)
         {
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(((App)Application.Current).CurrentWindow);
             var parentWindowId = Win32Interop.GetWindowIdFromWindow(hWnd);
@@ -34,7 +40,8 @@ namespace Infomaniak.kDrive
                 if (authRequestResult.Response is AuthResponse authResponse)
                 {
                     Logger.Log(Logger.Level.Info, "OAuth authorization successful.");
-                    return await DoTokenExchange(authResponse);
+                    TokenRequestParams tokenRequestParams = TokenRequestParams.CreateForAuthorizationCodeRequest(authResponse);
+                    return new OAuthResult { Code = authResponse.Code, CodeVerifier = tokenRequestParams.CodeVerifier };
                 }
 
                 if (authRequestResult.Failure is AuthFailure authFailure)
@@ -54,26 +61,7 @@ namespace Infomaniak.kDrive
                 throw;
             }
 
-            return "";
-        }
-
-
-        private static async Task<string> DoTokenExchange(AuthResponse authResponse)
-        {
-            TokenRequestParams tokenRequestParams = TokenRequestParams.CreateForAuthorizationCodeRequest(authResponse);
-            TokenRequestResult tokenRequestResult = await OAuth2Manager.RequestTokenAsync(_tokenEndpoint, tokenRequestParams);
-
-            if (tokenRequestResult.Response is TokenResponse tokenResponse)
-            {
-                Logger.Log(Logger.Level.Info, "OAuth token exchange successful.");
-                return tokenResponse.AccessToken;
-            }
-            else
-            {
-                TokenFailure tokenFailure = tokenRequestResult.Failure;
-                Logger.Log(Logger.Level.Error, $"OAuth token exchange failed: {tokenFailure.Error}, {tokenFailure.ErrorDescription}");
-                return "";
-            }
+            return new OAuthResult { Code = "", CodeVerifier = "" };
         }
     }
 }

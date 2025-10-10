@@ -86,7 +86,7 @@ bool GuiCommChannel::containsValidJson(const CommString &message, size_t &endInd
 void GuiCommChannel::fetchDataToBuffer() {
     while (bytesAvailable() > 0) {
         CommChar data[1024];
-        if (uint64_t charRead = readData(data, 1024); charRead > 0) {
+        if (uint64_t charRead = readData(data, (std::min)(bytesAvailable(), static_cast<uint64_t>(1024))); charRead > 0) {
             _readBuffer.append(data, charRead);
         } else {
             break;

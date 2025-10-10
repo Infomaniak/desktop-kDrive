@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.ViewModels
 {
-    public class ExclusionTemplate : ObservableObject
+    public class ExclusionTemplate : UISafeObservableObject
     {
         private bool _isActive;
         private bool _isDefault; // True if the template is a default one, false if it's user-defined
@@ -23,19 +23,19 @@ namespace Infomaniak.kDrive.ViewModels
         public bool IsActive
         {
             get => _isActive;
-            set => SetProperty(ref _isActive, value);
+            set => SetPropertyInUIThread(ref _isActive, value);
         }
 
         public bool IsDefault
         {
             get => _isDefault;
-            set => SetProperty(ref _isDefault, value);
+            set => SetPropertyInUIThread(ref _isDefault, value);
         }
 
         public string Template
         {
             get => _template;
-            set => SetProperty(ref _template, value);
+            set => SetPropertyInUIThread(ref _template, value);
         }
     }
 }

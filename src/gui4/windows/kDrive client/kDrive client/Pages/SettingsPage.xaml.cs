@@ -18,6 +18,7 @@
 
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -39,7 +40,7 @@ namespace Infomaniak.kDrive.Pages
 {
     public sealed partial class SettingsPage : Page
     {
-        private AppModel _viewModel = ((App)Application.Current).Data;
+        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel => _viewModel;
         public SettingsPage()
         {
@@ -66,6 +67,10 @@ namespace Infomaniak.kDrive.Pages
                 return;
             }
             ViewModel.SelectedSync.SyncStatus = SyncStatus.Running; // Todo: Replace with actual resume logic
+        }
+        private void CreateAccountButton_Click(object sender, RoutedEventArgs e)
+        {
+            (App.Current as App)?.StartOnboarding();
         }
     }
 }

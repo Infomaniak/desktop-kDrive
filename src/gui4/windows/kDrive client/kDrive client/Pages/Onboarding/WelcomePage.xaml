@@ -38,14 +38,13 @@
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Left"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-
-                <Button Style="{StaticResource Infomaniak.Style.Button.WithBackground}"
-                        Click="SigninButton_Click"
-                        x:Uid="Page_Onboarding_WelcomePage_SigninButton" />
-
                 <Button x:Uid="Page_Onboarding_WelcomePage_SignupButton"
                         Style="{StaticResource Infomaniak.Style.Button.WithoutBackground}"
                         Click="SignupButton_Click" />
+                
+                <Button Style="{StaticResource Infomaniak.Style.Button.WithBackground}"
+                        Click="SigninButton_Click"
+                        x:Uid="Page_Onboarding_WelcomePage_SigninButton" />
             </StackPanel>
         </StackPanel>
     </Grid>
