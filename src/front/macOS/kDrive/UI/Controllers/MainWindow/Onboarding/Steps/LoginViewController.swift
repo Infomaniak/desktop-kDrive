@@ -16,12 +16,9 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import AuthenticationServices
 import Cocoa
 import Combine
-import InfomaniakLogin
 import kDriveCoreUI
-import kDriveLogin
 import kDriveResources
 
 final class LoginViewController: OnboardingStepViewController {
@@ -44,24 +41,27 @@ final class LoginViewController: OnboardingStepViewController {
     }
 
     private func bindViewModel() {
+        transitionLogin(toStep: viewModel.currentStep)
         viewModel.$currentStep.receive(on: DispatchQueue.main).sink { [weak self] step in
-            self?.transitionContent(toStep: step)
+            self?.transitionLogin(toStep: step)
         }
         .store(in: &bindStore)
 
+        markButtonsAsLoading(viewModel.isShowingAuthenticationWindow)
         viewModel.$isShowingAuthenticationWindow.receive(on: DispatchQueue.main).sink { [weak self] isShowing in
             self?.markButtonsAsLoading(isShowing)
         }
         .store(in: &bindStore)
     }
 
-    private func transitionContent(toStep step: OnboardingStep) {
+    private func transitionLogin(toStep step: OnboardingStep) {
         guard case .login(let loginStep) = viewModel.currentStep else { return }
 
         switch loginStep {
         case .initial:
             setupInitialView()
         case .success:
+            // TODO: Check if this step is necessary once the server is implemented
             fatalError("Not Implemented Yet")
         case .fail:
             setupErrorView()

@@ -19,6 +19,7 @@
 import Foundation
 
 public enum AppPadding {
+    public static let padding64: CGFloat = 64
     public static let padding48: CGFloat = 48
     public static let padding32: CGFloat = 32
     public static let padding16: CGFloat = 16
