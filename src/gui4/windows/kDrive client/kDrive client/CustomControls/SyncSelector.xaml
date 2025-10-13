@@ -126,8 +126,9 @@
                 <StackPanel Grid.Column="0"
                             Orientation="Horizontal"
                             Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                    <customControls:DriveIcon IconColor="{x:Bind Color, Mode=OneWay}"
-                                              Height="16" />
+                    <customControls:SvgIcon Uri="ms-appx:///Assets/Icons/drive-custom.svg"
+                                            IconColor="{x:Bind Color, Mode=OneWay}"
+                                            Height="16" />
 
                     <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                                Text="{x:Bind Name, Mode=OneWay}" />
@@ -227,8 +228,9 @@
             <StackPanel Grid.Column="0"
                         Orientation="Horizontal"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                <customControls:DriveIcon IconColor="{x:Bind ViewModel.SelectedSync.Drive.Color, Mode=OneWay}"
-                                          Height="16" />
+                <customControls:SvgIcon Uri="ms-appx:///Assets/Icons/drive-custom.svg"
+                                        IconColor="{x:Bind ViewModel.SelectedSync.Drive.Color, Mode=OneWay}"
+                                        Height="16" />
 
                 <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                            Text="{x:Bind ViewModel.SelectedSync.Drive.Name, Mode=OneWay}" />
@@ -252,8 +254,9 @@
             <StackPanel Orientation="Horizontal"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
                         Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.S}">
-                <customControls:DriveIcon IconColor="{x:Bind ViewModel.SelectedSync.Drive.Color, Mode=OneWay}"
-                                          Height="14" />
+                <customControls:SvgIcon Uri="ms-appx:///Assets/Icons/drive-custom.svg"
+                                        IconColor="{x:Bind ViewModel.SelectedSync.Drive.Color, Mode=OneWay}"
+                                        Height="14" />
 
                 <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                            Text="{x:Bind ViewModel.SelectedSync.Drive.Name, Mode=OneWay}" />
@@ -264,7 +267,7 @@
                       HorizontalAlignment="Stretch"
                       HorizontalContentAlignment="Stretch" />
         </StackPanel>
-        
+
         <!-- No Sync configured TODO: Edit once the UI is implemented -->
         <TextBlock x:Name="NoSyncConfigured"
                    Style="{StaticResource Infomaniak.Style.TextBlock.BodyStrong}"
