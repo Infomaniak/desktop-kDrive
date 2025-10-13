@@ -197,9 +197,7 @@ std::list<std::shared_ptr<AbstractCommChannel>> SocketCommServer::connections() 
 }
 
 void saveCommPort(unsigned short port) {
-    // Build the path: $HOME/.comm
-    std::filesystem::path commPath = std::filesystem::path(std::getenv("USERPROFILE")) / ".comm4";
-
+    std::filesystem::path commPath = CommonUtility::getAppSupportDir() / ".comm";
     // Open the file and write the port
     std::ofstream commFile(commPath, std::ios_base::trunc | std::ios_base::out);
     if (commFile.is_open()) {
@@ -207,6 +205,7 @@ void saveCommPort(unsigned short port) {
         commFile.close();
     }
 }
+
 void SocketCommServer::execute() {
     _serverSocket.bind(Poco::Net::SocketAddress("localhost", "0"), true, true);
     LOG_DEBUG(Log::instance()->getLogger(), name() << " listening on port " << getPort());

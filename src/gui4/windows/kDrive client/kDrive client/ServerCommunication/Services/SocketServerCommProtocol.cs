@@ -62,7 +62,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         {
             // Fetch the port from the .comm4 file
             // TODO: Decide where to store this file on Windows
-            string homePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + Path.DirectorySeparatorChar + ".comm4";
+            string homePath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + Path.DirectorySeparatorChar + "kDrive" + Path.DirectorySeparatorChar + ".comm";
             int port = int.Parse((File.ReadAllText(homePath)).Trim());
 
 
