@@ -637,7 +637,7 @@ bool Utility::registryWalkSubKeys(HKEY hRootKey, const std::wstring &subKey,
     HKEY hKey;
     REGSAM sam = KEY_READ | KEY_WOW64_64KEY;
     LONG result = RegOpenKeyEx(hRootKey, subKey.c_str(), 0, sam, &hKey);
-    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_INVALID_FUNCTION)
+    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS)
     if (result != ERROR_SUCCESS) return false;
 
     DWORD maxSubKeyNameSize;
