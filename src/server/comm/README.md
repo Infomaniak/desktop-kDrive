@@ -164,7 +164,7 @@ Each request includes a **unique `id`** for correlation.
 ---
 
 <details id="loginrequesttoken">
-<summary><b>🧾 LoginRequestToken</b> — Add a user via OAuth2 token</summary>
+<summary><b>LoginRequestToken</b> — Add a user via OAuth2 token</summary>
 
 **Description:**
 Adds a new user using an OAuth2 token.
@@ -230,7 +230,7 @@ Emits `UserAdded` or `UserUpdated` upon success.
 ---
 
 <details id="useradded">
-<summary><b>🔔 UserAdded</b> — Triggered when a new user is added</summary>
+<summary><b>UserAdded</b> — Triggered when a new user is added</summary>
 
 #### JSON
 
@@ -249,7 +249,7 @@ Emits `UserAdded` or `UserUpdated` upon success.
 ---
 
 <details id="userupdated">
-<summary><b>🔄 UserUpdated</b> — Triggered when a user is updated</summary>
+<summary><b>UserUpdated</b> — Triggered when a user is updated</summary>
 
 #### JSON
 
