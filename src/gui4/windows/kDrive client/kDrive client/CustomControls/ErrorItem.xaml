@@ -12,7 +12,7 @@
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:BooleanToInvertedVisibilityConverter  x:Key="BooleanToInvertedVisibilityConverter" />
-        <converters:NodeTypeToSvgUriConverter x:Key="NodeTypeToSvgUriConverter" />
+        <converters:NodeTypeToIconConverter x:Key="NodeTypeToSvgUriConverter" />
         <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
         <converters:DateTimeToTimeAgoConverter x:Key="DateTimeToTimeAgoConverter" />
     </UserControl.Resources>
@@ -52,7 +52,7 @@
                        Grid.Row="1"
                        Text="{x:Bind Error.HowToSolve, Mode=OneWay}"
                        VerticalAlignment="Center"
-                       Style="{StaticResource Infomaniak.Style.TextBlock.CaptionStrong}"
+                       Style="{StaticResource Infomaniak.Style.TextBlock.CaptionSb}"
                        Margin="0,0,0,2"
                        Foreground="#666666" />
 

@@ -1,18 +1,16 @@
-﻿using Infomaniak.kDrive.OnBoarding;
-using Infomaniak.kDrive.Types;
+﻿using Infomaniak.kDrive.Types;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using System;
-using System.Collections.Generic;
-using System.Data.Common;
+
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
+
+using Windows.Graphics;
 
 namespace Infomaniak.kDrive
 {
@@ -237,6 +235,18 @@ namespace Infomaniak.kDrive
             }
         }
 
+
+        public static class DpiHelper
+        {
+            [DllImport("User32.dll")]
+            private static extern uint GetDpiForWindow(IntPtr hWnd);
+
+            public static double GetScaleForWindow(IntPtr hWnd)
+            {
+                uint dpi = GetDpiForWindow(hWnd);
+                return dpi / 96.0; // 96 DPI = 100%
+            }
+        }
         public static void SetWindowProperties(Window window, int width, int height, bool resizable)
         {
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
@@ -247,8 +257,21 @@ namespace Infomaniak.kDrive
                 presenter.IsMaximizable = false;
                 presenter.IsMinimizable = true;
                 presenter.IsResizable = resizable;
-                appWindow.Resize(new Windows.Graphics.SizeInt32(width, height));
+
+                // Use the RasterizationScale to scale the desired size
+                double scale = DpiHelper.GetScaleForWindow(hWnd);
+
+                int scaledWidth = (int)(width * scale);
+                int scaledHeight = (int)(height * scale);
+                presenter.PreferredMinimumWidth = scaledWidth;
+                presenter.PreferredMinimumHeight = scaledHeight;
+                appWindow.Resize(new SizeInt32(scaledWidth, scaledHeight));
             }
         }
     }
 }
+
+
+
+
+

@@ -17,9 +17,8 @@
                  Grid.Row="1"
                  IsOpen="True"
                  Severity="Warning"
-                 Title=""
-                 Message="Essential app message for your"
-                 IsIconVisible="True">
+                 IsIconVisible="True"
+                 IsClosable="False">
             <InfoBar.IconSource>
                 <ImageIconSource>
                     <ImageIconSource.ImageSource>
@@ -34,7 +33,7 @@
                                  HorizontalAlignment="Right"
                                  Background="Transparent"
                                  Click="CheckFileButton_Click"
-                                 Visibility="Collapsed" />
+                                 Visibility="Visible" />
             </InfoBar.ActionButton>
         </InfoBar>
     </Grid>

@@ -67,7 +67,7 @@ namespace Infomaniak.kDrive.CustomControls
                     var menu = Flyout.GetAttachedFlyout(fe);
                     if (_lastOpenedSyncMenu == menu)
                     {
-                        menu.ShowAt(container.ContentTemplateRoot as Grid);
+                        menu.ShowAt(container?.ContentTemplateRoot as Grid);
                         menu.ShowAt(container);
                     }
                     else
