@@ -330,7 +330,10 @@ void TestGuiCommChannel::testGenericJob(const CommString &query, const CommStrin
         if (!job->serializeGenericOutputParms(ExitCode::Ok)) {
             CPPUNIT_ASSERT(false);
         }
-        
+
+        LOGW_DEBUG(Log::instance()->getLogger(),
+                   L"job->_outputParamsStr=" << CommonUtility::commString2WStr(job->_outputParamsStr));
+        LOGW_DEBUG(Log::instance()->getLogger(), L"answer=" << CommonUtility::commString2WStr(answer));
         CPPUNIT_ASSERT(job->_outputParamsStr == answer);
 
         CPPUNIT_ASSERT(testChannel->sendMessage(job->_outputParamsStr));
