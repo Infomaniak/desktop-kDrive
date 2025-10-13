@@ -42,7 +42,7 @@ ExitInfo UnknownRequestJob::deserializeInputParms() {
     return ExitCode::Ok;
 }
 
-ExitInfo UnknownRequestJob::serializeOutputParms(bool hasError) {
+ExitInfo UnknownRequestJob::serializeOutputParms() {
     // Output parameters serialization
     writeParamValue(outParamsError, CommonUtility::str2CommString(_error));
     writeParamValue(outParamsErrorDescr, CommonUtility::str2CommString(_errorDescr));

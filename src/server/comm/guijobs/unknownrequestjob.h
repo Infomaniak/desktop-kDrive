@@ -31,7 +31,7 @@ class UnknownRequestJob : public AbstractGuiJob {
         std::string _errorDescr;
 
         ExitInfo deserializeInputParms() override;
-        ExitInfo serializeOutputParms(bool hasError = false) override;
+        ExitInfo serializeOutputParms() override;
         ExitInfo process() override;
 
         friend class TestGuiCommChannel;

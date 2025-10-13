@@ -19,6 +19,7 @@
 #include "guijobfactory.h"
 #include "loginrequesttokenjob.h"
 #include "unknownrequestjob.h"
+#include "userdbidlistjob.h"
 
 namespace KDC {
 
