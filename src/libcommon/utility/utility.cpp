@@ -1436,6 +1436,7 @@ bool CommonUtility::isLinux() {
 }
 
 void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::string &value) {
+    value.clear();
     std::istringstream istr(base64Str);
     Poco::Base64Decoder b64in(istr);
     b64in >> std::noskipws; // Does not stop decoding on space characters
@@ -1443,12 +1444,14 @@ void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::stri
 }
 
 void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::wstring &value) {
+    value.clear();
     std::string strValue;
     convertFromBase64Str(base64Str, strValue);
     value = s2ws(strValue);
 }
 
 void CommonUtility::convertFromBase64Str(const std::string &base64Str, CommBLOB &value) {
+    value.clear();
     std::istringstream istr(base64Str);
     Poco::Base64Decoder b64in(istr);
     b64in >> std::noskipws; // Does not stop decoding on space characters
@@ -1456,6 +1459,7 @@ void CommonUtility::convertFromBase64Str(const std::string &base64Str, CommBLOB 
 }
 
 void CommonUtility::convertToBase64Str(const std::string &str, std::string &base64Str) {
+    base64Str.clear();
     std::ostringstream ostr;
     Poco::Base64Encoder b64out(ostr);
     b64out.rdbuf()->setLineLength(0); // Does not insert line breaks
@@ -1465,11 +1469,13 @@ void CommonUtility::convertToBase64Str(const std::string &str, std::string &base
 }
 
 void CommonUtility::convertToBase64Str(const std::wstring &wstr, std::string &base64Str) {
+    base64Str.clear();
     const std::string str = ws2s(wstr);
     convertToBase64Str(str, base64Str);
 }
 
 void CommonUtility::convertToBase64Str(const CommBLOB &blob, std::string &base64Str) {
+    base64Str.clear();
     std::ostringstream ostr;
     Poco::Base64Encoder b64out(ostr);
     b64out.rdbuf()->setLineLength(0); // Does not insert line breaks

@@ -226,6 +226,19 @@ void TestGuiCommChannel::testUserInfoListJob() {
     const auto queryStr{Str(R"({ "id": 1,)"
                             R"( "num": 3,)" // RequestNum::USER_INFOLIST
                             R"( "params": { } })")};
+
+    // Job expected answer
+    const auto answerStr{
+            Str(R"({ "cause": 0,)"
+                R"( "code": 0,)"
+                R"( "id": 1,)"
+                R"( "num": 3,)" // RequestNum::USER_INFOLIST
+                R"( "params": {)"
+                R"( "userInfoList": [)"
+                R"( { "avatar": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJlj8AUAAE8ATtVVwbsAAAAASUVORK5CYII=", "connected": true, "dbId": 1, "email": "YWFhYWFAeHh4LmNvbQ==", "isStaff": false, "name": "YWFhYWE=", "userId": 1001 },)"
+                R"( { "avatar": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJlj8AUAAE8ATtVVwbsAAAAASUVORK5CYII=", "connected": false, "dbId": 2, "email": "YmJiYmJAeHh4LmNvbQ==", "isStaff": false, "name": "YmJiYmI=", "userId": 1002 } ] },)"
+                R"( "type": 1 })") // GuiJobType::Query
+    };
 #else
     // There is no need to pass a request id as the response is via a callback.
     const auto queryStr{Str(R"({ "num": 3,)" // RequestNum::USER_INFOLIST
@@ -236,24 +249,30 @@ void TestGuiCommChannel::testUserInfoListJob() {
             R"({"cause":0,"code":0,"id":1,"params":{"userInfoList":[)"
             R"({"avatar":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=","connected":true,"dbId":1,"email":"YWFhYWFAeHh4LmNvbQ==","isStaff":false,"name":"YWFhYWE=","userId":1001},)"
             R"({"avatar":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=","connected":false,"dbId":2,"email":"YmJiYmJAeHh4LmNvbQ==","isStaff":false,"name":"YmJiYmI=","userId":1002}]}})")};
-#endif
 
     // Job expected answer
-    const auto answerStr{Str(
-            R"({ "cause": 0,)"
-            R"( "code": 0,)"
-            R"( "id": 1,)"
-            R"( "num": 3,)" // RequestNum::USER_INFOLIST
-            R"( "params": {)"
-            R"( "userInfoList": [)"
-            R"( { "avatar": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=", "connected": true, "dbId": 1, "email": "YWFhYWFAeHh4LmNvbQ==", "isStaff": false, "name": "YWFhYWE=", "userId": 1001 },)"
-            R"( { "avatar": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=", "connected": false, "dbId": 2, "email": "YmJiYmJAeHh4LmNvbQ==", "isStaff": false, "name": "YmJiYmI=", "userId": 1002 } ] },)"
-            R"( "type": 1 })")}; // GuiJobType::Query
+    const auto answerStr{
+            Str(R"({ "cause": 0,)"
+                R"( "code": 0,)"
+                R"( "id": 1,)"
+                R"( "num": 3,)" // RequestNum::USER_INFOLIST
+                R"( "params": {)"
+                R"( "userInfoList": [)"
+                R"( { "avatar": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=", "connected": true, "dbId": 1, "email": "YWFhYWFAeHh4LmNvbQ==", "isStaff": false, "name": "YWFhYWE=", "userId": 1001 },)"
+                R"( { "avatar": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=", "connected": false, "dbId": 2, "email": "YmJiYmJAeHh4LmNvbQ==", "isStaff": false, "name": "YmJiYmI=", "userId": 1002 } ] },)"
+                R"( "type": 1 })") // GuiJobType::Query
+    };
+#endif
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto userInfoListJob = std::dynamic_pointer_cast<UserInfoListJob>(job);
         std::string avatarBase64Str{
-                R"(iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=)"};
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+            R"(iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJlj8AUAAE8ATtVVwbsAAAAASUVORK5CYII=)"
+#else
+            R"(iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=)"
+#endif
+        };
         CommBLOB avatarBLOB;
         CommonUtility::convertFromBase64Str(avatarBase64Str, avatarBLOB);
         QByteArray avatarQBA;
@@ -311,7 +330,7 @@ void TestGuiCommChannel::testGenericJob(const CommString &query, const CommStrin
         if (!job->serializeGenericOutputParms(ExitCode::Ok)) {
             CPPUNIT_ASSERT(false);
         }
-
+        
         CPPUNIT_ASSERT(job->_outputParamsStr == answer);
 
         CPPUNIT_ASSERT(testChannel->sendMessage(job->_outputParamsStr));

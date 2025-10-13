@@ -1142,6 +1142,14 @@ void TestUtility::testConvertToBase64Str() {
 
     CommonUtility::convertToBase64Str(blob, value);
     CPPUNIT_ASSERT(value == "MDEyMzQ1Njc4OWFiY2RlZmdoaWprbG1ub3BxcnRzdXZ3eHl6");
+
+    CommonUtility::convertFromBase64Str(
+            R"(iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=)",
+            blob);
+    CommonUtility::convertToBase64Str(blob, value);
+    CPPUNIT_ASSERT(
+            value ==
+            R"(iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=)");
 }
 
 } // namespace KDC
