@@ -22,9 +22,20 @@ public protocol ServerBridgeable: Sendable {
     func getConnectedUser() async -> Bool
 }
 
-public final class ServerBridge: ServerBridgeable {
+@preconcurrency public final class ServerBridge: ServerBridgeable {
+    let loginItemAgent: XPCLoginItemAgent
+
+    init() {
+        guard let loginItemAgentConnection = XPCLoginItemAgent() else {
+            fatalError("Unable to create XPCLoginItemAgent")
+        }
+        
+        loginItemAgent = loginItemAgentConnection
+    }
+
     public func getConnectedUser() async -> Bool {
-        // It will be removed when the server part will be ready
+        loginItemAgent.connectToLoginAgent()
+
         try? await Task.sleep(nanoseconds: 2 * 1_000_000_000)
         return false
     }
