@@ -62,14 +62,10 @@
         <customControls:AppTitleBarLogo Grid.Column="0"
                                         Margin="8,8,0,0" />
 
-        <Image Grid.Row="1"
-               Grid.Column="2"
-               Stretch="Uniform"
-               MaxHeight="120">
-            <Image.Source>
-                <SvgImageSource UriSource="ms-appx:///Assets/Images/folder.svg" />
-            </Image.Source>
-        </Image>
+        <customControls:LottiePlayer Grid.Row="1"
+                                     Grid.Column="2"
+                                     Height="120"
+                                     UriSource="ms-appx:///Assets/Animations/kDrive-LoaderStroke.json"/>
         <Border Grid.Row="1"
                 Grid.Column="0">
             <Frame x:Name="ContentFrame" />

@@ -1,0 +1,467 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2025 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see<http://www.gnu.org/licenses/> .
+ -->
+
+<Page x:Class="Infomaniak.kDrive.Pages.SettingsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:local="using:Infomaniak.kDrive.Pages"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+      xmlns:converters="using:Infomaniak.kDrive.Converters"
+      xmlns:viewmodel="using:Infomaniak.kDrive.ViewModels"
+      xmlns:templateSelectors="using:Infomaniak.kDrive.TemplateSelectors"
+      xmlns:toolKit="using:CommunityToolkit.WinUI.Controls"
+      mc:Ignorable="d">
+    <Page.Resources>
+        <!-- Converters -->
+        <converters:BooleanToInvertedVisibilityConverter  x:Key="BooleanToInvertedVisibilityConverter" />
+    </Page.Resources>
+    <Grid Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.L}"
+          RowSpacing="{StaticResource Infomaniak.Style.Spacing.L}">
+        <Grid.RowDefinitions>
+            <!-- Title -->
+            <RowDefinition Height="Auto" />
+            <!-- Main -->
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0"
+                   Text="Paramètres"
+                   Style="{StaticResource Infomaniak.Style.TextBlock.Title}" />
+
+        <ScrollView Grid.Row="1">
+
+            <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.L}">
+                <!-- General -->
+                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                    <TextBlock Text="Général"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
+
+                    <!-- General - Update -->
+                    <toolKit:SettingsExpander Header="Mise à jour">
+                        <TextBlock Text="kDrive build 3.7.3 disponible"
+                                   Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
+                                   Foreground="{ThemeResource TextFillColorDisabled}" />
+                        <toolKit:SettingsExpander.HeaderIcon>
+                            <ImageIcon Height="16"
+                                       Width="16"
+                                       HorizontalAlignment="Left">
+                                <ImageIcon.Source>
+                                    <SvgImageSource UriSource="ms-appx:///Assets/Icons/arrows-loop.svg" />
+                                </ImageIcon.Source>
+                            </ImageIcon>
+
+                        </toolKit:SettingsExpander.HeaderIcon>
+                        <toolKit:SettingsExpander.Items>
+                            <toolKit:SettingsCard Header="Mise à jour disponible"
+                                                  Background="{ThemeResource LayerFillColorDefault}">
+                                <StackPanel Orientation="Horizontal">
+                                    <HyperlinkButton Content="Afficher le changelog" />
+                                    <Button Content="Mettre à jour"
+                                            Style="{ThemeResource AccentButtonStyle}" />
+                                </StackPanel>
+                            </toolKit:SettingsCard>
+                            <toolKit:SettingsCard Header="Mettre à jour kDrive automatiquement"
+                                                  Background="{ThemeResource LayerFillColorDefault}">
+                                <ToggleSwitch />
+                            </toolKit:SettingsCard>
+                        </toolKit:SettingsExpander.Items>
+                    </toolKit:SettingsExpander>
+
+                    <!-- General - Beta -->
+                    <toolKit:SettingsCard Description="kDrive Beta est disponible."
+                                          Header="Version Beta">
+                        <toolKit:SettingsCard.HeaderIcon>
+                            <ImageIcon Height="16"
+                                       Width="16"
+                                       HorizontalAlignment="Left">
+                                <ImageIcon.Source>
+                                    <SvgImageSource UriSource="ms-appx:///Assets/Icons/arrows-loop.svg" />
+                                </ImageIcon.Source>
+                            </ImageIcon>
+
+                        </toolKit:SettingsCard.HeaderIcon>
+                        <ComboBox SelectedIndex="0">
+                            <ComboBoxItem>Stable</ComboBoxItem>
+                            <ComboBoxItem IsEnabled="False">Beta</ComboBoxItem>
+                            <ComboBoxItem IsEnabled="False">Alpha</ComboBoxItem>
+                        </ComboBox>
+                    </toolKit:SettingsCard>
+
+                    <!-- General - Language -->
+                    <toolKit:SettingsCard Header="Langue">
+                        <toolKit:SettingsCard.HeaderIcon>
+                            <ImageIcon Height="16"
+                                       Width="16"
+                                       HorizontalAlignment="Left">
+                                <ImageIcon.Source>
+                                    <SvgImageSource UriSource="ms-appx:///Assets/Icons/arrows-loop.svg" />
+                                </ImageIcon.Source>
+                            </ImageIcon>
+
+                        </toolKit:SettingsCard.HeaderIcon>
+                        <ComboBox SelectedIndex="0">
+                            <ComboBoxItem>Français</ComboBoxItem>
+                            <ComboBoxItem>Anglais</ComboBoxItem>
+                            <ComboBoxItem>Allemand</ComboBoxItem>
+                            <ComboBoxItem>Espagnol</ComboBoxItem>
+                            <ComboBoxItem>Italien</ComboBoxItem>
+                        </ComboBox>
+                    </toolKit:SettingsCard>
+
+                    <!-- General - Auto start -->
+                    <toolKit:SettingsCard Header="Ouvrir kDrive au démarrage de l’ordinateur">
+                        <toolKit:SettingsCard.HeaderIcon>
+                            <ImageIcon Height="16"
+                                       Width="16"
+                                       HorizontalAlignment="Left">
+                                <ImageIcon.Source>
+                                    <SvgImageSource UriSource="ms-appx:///Assets/Icons/arrows-loop.svg" />
+                                </ImageIcon.Source>
+                            </ImageIcon>
+
+                        </toolKit:SettingsCard.HeaderIcon>
+                        <ToggleSwitch />
+
+                    </toolKit:SettingsCard>
+                </StackPanel>
+
+                <!-- Account -->
+                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+
+                    <Grid>
+                        <TextBlock HorizontalAlignment="Left"
+                                   Text="Comptes"
+                                   Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
+
+                        <HyperlinkButton HorizontalAlignment="Right"
+                                         Content="Connecter un compte" />
+                    </Grid>
+                    <!-- Account - List -->
+                    <ListView ItemsSource="{x:Bind ViewModel.Users}"
+                              SelectionMode="None">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="Padding"
+                                        Value="0" />
+                                <Setter Property="Margin"
+                                        Value="0" />
+                                <Setter Property="HorizontalContentAlignment"
+                                        Value="Stretch" />
+                            </Style>
+                        </ListView.ItemContainerStyle>
+
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="viewmodel:User">
+                                <toolKit:SettingsExpander ItemsSource="{x:Bind Drives, Mode=OneWay}">
+                                    <HyperlinkButton Content="Déconnecter ce compte"
+                                                     Foreground="#F44336" />
+                                    <toolKit:SettingsExpander.Header>
+                                        <StackPanel Orientation="Horizontal"
+                                                    Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+
+                                            <controls:ContentLoader Height="36"
+                                                                    Width="36"
+                                                                    IsLoading="True"
+                                                                    CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Circle}">
+                                                <controls:ContentLoader.LoaderContent>
+                                                    <ImageIcon Height="24"
+                                                               Width="24"
+                                                               HorizontalAlignment="Left"
+                                                               Source="{x:Bind Avatar, Mode=OneWay}" />
+                                                </controls:ContentLoader.LoaderContent>
+                                            </controls:ContentLoader>
+                                            <StackPanel>
+                                                <TextBlock Text="{x:Bind Name, Mode=OneWay}"
+                                                           Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
+                                                <TextBlock Text="{x:Bind Email, Mode=OneWay}"
+                                                           Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
+                                                           Foreground="{ThemeResource TextFillColorDisabled}" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </toolKit:SettingsExpander.Header>
+
+                                    <toolKit:SettingsExpander.ItemTemplate>
+                                        <DataTemplate x:DataType="viewmodel:Drive">
+                                            <toolKit:SettingsCard Header="{x:Bind Name, Mode=OneWay}"
+                                                                  Background="{ThemeResource LayerFillColorDefault}">
+                                                <toolKit:SettingsCard.HeaderIcon>
+                                                    <controls:DriveIcon IconColor="{x:Bind Color}" />
+                                                </toolKit:SettingsCard.HeaderIcon>
+                                                <StackPanel Orientation="Horizontal"
+                                                            Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                                                    <TextBlock Text="Synchronisé"
+                                                               VerticalAlignment="Center"
+                                                               Style="{StaticResource CaptionTextBlockStyle}"
+                                                               Foreground="{ThemeResource TextFillColorDisabled}" />
+                                                    <Button VerticalAlignment="Center"
+                                                            Style="{ThemeResource AccentButtonStyle}"
+                                                            Content="Gérer" />
+                                                </StackPanel>
+                                            </toolKit:SettingsCard>
+                                        </DataTemplate>
+                                    </toolKit:SettingsExpander.ItemTemplate>
+                                </toolKit:SettingsExpander>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </StackPanel>
+
+                <!-- Advanced -->
+                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                    <TextBlock Text="Avancé"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
+
+                    <!-- Advanced - Sync rules -->
+                    <toolKit:SettingsCard Header="Règles de synchronisation"
+                                          IsClickEnabled="True">
+                        <toolKit:SettingsCard.HeaderIcon>
+                            <ImageIcon Height="16"
+                                       Width="16"
+                                       HorizontalAlignment="Left">
+                                <ImageIcon.Source>
+                                    <SvgImageSource UriSource="ms-appx:///Assets/Icons/arrows-loop.svg" />
+                                </ImageIcon.Source>
+                            </ImageIcon>
+                        </toolKit:SettingsCard.HeaderIcon>
+                    </toolKit:SettingsCard>
+
+                    <!-- Advanced - Privacy -->
+                    <toolKit:SettingsExpander Header="Gestion des données">
+                        <toolKit:SettingsExpander.HeaderIcon>
+                            <ImageIcon Height="16"
+                                       Width="16"
+                                       HorizontalAlignment="Left">
+                                <ImageIcon.Source>
+                                    <SvgImageSource UriSource="ms-appx:///Assets/Icons/arrows-loop.svg" />
+                                </ImageIcon.Source>
+                            </ImageIcon>
+
+                        </toolKit:SettingsExpander.HeaderIcon>
+                        <toolKit:SettingsExpander.Items>
+                            <!-- General -->
+                            <toolKit:SettingsCard ContentAlignment="Left"
+                                                  Background="{ThemeResource LayerFillColorDefault}"
+                                                  Foreground="{ThemeResource TextFillColorDisabled}">
+                                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.M}"
+                                            Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.M}">
+                                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                                               TextWrapping="WrapWholeWords"
+                                               Text="Vous pouvez personnaliser les données d'utilisation et opérationnelles qui sont récupérées par Infomaniak pour corriger des bugs et faire évoluer l'application. Les deux outils utilisés sont hébergés et gérés exclusivement chez nous." />
+                                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                                               TextWrapping="WrapWholeWords"
+                                               Text="Infomaniak respecte votre vie privée : le code source de cette application peut être vérifié, les informations récoltées sont anonymes et vos informations personnelles restent strictement confidentielles et ne sont jamais partagées avec des tiers." />
+                                    <HyperlinkButton Content="Voir le code source"
+                                                     Margin="-12,0,0,0" />
+                                </StackPanel>
+                            </toolKit:SettingsCard>
+                            <!-- Matomo -->
+                            <toolKit:SettingsCard ContentAlignment="Left"
+                                                  Background="{ThemeResource LayerFillColorDefault}"
+                                                  Foreground="{ThemeResource TextFillColorDisabled}">
+                                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.M}"
+                                            Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.M}">
+                                    <Grid>
+                                        <TextBlock HorizontalAlignment="Left"
+                                                   Text="Matomo" />
+                                        <ToggleSwitch OnContent="Autoriser le suivi"
+                                                      OffContent="Refuser le suivi"
+                                                      HorizontalAlignment="Right" />
+                                    </Grid>
+
+                                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                                               TextWrapping="WrapWholeWords"
+                                               Text="Matomo est un outil d'analyse hébergé et géré exclusivement par Infomaniak pour comprendre comment l’application est utilisée." />
+                                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                                               TextWrapping="WrapWholeWords"
+                                               Text="L’étude de ces données permet à notre équipe d’améliorer en continue l’interface de l’application." />
+                                </StackPanel>
+                            </toolKit:SettingsCard>
+
+                            <toolKit:SettingsCard ContentAlignment="Left"
+                                                  Background="{ThemeResource LayerFillColorDefault}"
+                                                  Foreground="{ThemeResource TextFillColorDisabled}">
+                                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.M}"
+                                            Margin="{StaticResource Infomaniak.Style.Thickness.Top.M}">
+                                    <Grid>
+                                        <TextBlock HorizontalAlignment="Left"
+                                                   Text="Sentry" />
+                                        <ToggleSwitch OnContent="Autoriser le suivi"
+                                                      OffContent="Refuser le suivi"
+                                                      HorizontalAlignment="Right" />
+                                    </Grid>
+
+                                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                                               TextWrapping="WrapWholeWords"
+                                               Text="Sentry est un outil hébergé et géré exclusivement par Infomaniak pour surveiller en temps réel la stabilité de l'application et signaler automatiquement d’éventuelles erreurs techniques à nos développeurs." />
+                                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                                               TextWrapping="WrapWholeWords"
+                                               Text="Ces données permettent à notre équipe de rapidement corriger et optimiser l’application, ce qui se traduit par une meilleure expérience d’utilisation pour vous" />
+                                </StackPanel>
+                            </toolKit:SettingsCard>
+                        </toolKit:SettingsExpander.Items>
+                    </toolKit:SettingsExpander>
+
+                    <!-- Advanced - Proxy -->
+                    <toolKit:SettingsExpander Description="Par défaut, kDrive utilise les paramètres système."
+                                              Header="Réseau Proxy">
+                        <toolKit:SettingsExpander.HeaderIcon>
+                            <ImageIcon Height="16"
+                                       Width="16"
+                                       HorizontalAlignment="Left">
+                                <ImageIcon.Source>
+                                    <SvgImageSource UriSource="ms-appx:///Assets/Icons/arrows-loop.svg" />
+                                </ImageIcon.Source>
+                            </ImageIcon>
+
+                        </toolKit:SettingsExpander.HeaderIcon>
+                        <ComboBox SelectedIndex="0">
+                            <ComboBoxItem>Configuration manuelle</ComboBoxItem>
+                            <ComboBoxItem>Identique au système</ComboBoxItem>
+                        </ComboBox>
+
+                        <toolKit:SettingsExpander.Items>
+                            <toolKit:SettingsCard Header="Type de proxy"
+                                                  IsEnabled="False">
+                                <TextBox PlaceholderText="HTTP(S)"
+                                         IsEnabled="False" />
+                            </toolKit:SettingsCard>
+                            <toolKit:SettingsCard Header="Serveur"
+                                                  IsEnabled="False">
+                                <TextBox PlaceholderText="0.0.0.0" />
+                            </toolKit:SettingsCard>
+                            <toolKit:SettingsCard Header="Port"
+                                                  IsEnabled="False">
+                                <TextBox PlaceholderText="8080" />
+                            </toolKit:SettingsCard >
+                            <toolKit:SettingsCard Header="Authentification requise"
+                                                  IsEnabled="False">
+                                <ToggleSwitch />
+                            </toolKit:SettingsCard>
+                        </toolKit:SettingsExpander.Items>
+                    </toolKit:SettingsExpander>
+
+                    <!-- Advanced - Log -->
+                    <toolKit:SettingsExpander Description="Aide le support à identifier l’origine d’un incident"
+                                              Header="Journal de débogage">
+                        <toolKit:SettingsExpander.HeaderIcon>
+                            <ImageIcon Height="16"
+                                       Width="16"
+                                       HorizontalAlignment="Left">
+                                <ImageIcon.Source>
+                                    <SvgImageSource UriSource="ms-appx:///Assets/Icons/arrows-loop.svg" />
+                                </ImageIcon.Source>
+                            </ImageIcon>
+
+                        </toolKit:SettingsExpander.HeaderIcon>
+                        <ToggleSwitch />
+
+                        <toolKit:SettingsExpander.Items>
+                            <toolKit:SettingsCard Header="Niveau des informations enregistrées"
+                                                  Description="Choisir la quantité d’informations techniques enregistrées">
+                                <ComboBox SelectedIndex="0">
+                                    <ComboBoxItem>Debug</ComboBoxItem>
+                                    <ComboBoxItem>Info</ComboBoxItem>
+                                    <ComboBoxItem>Warning</ComboBoxItem>
+                                    <ComboBoxItem>Error</ComboBoxItem>
+                                    <ComboBoxItem>Fatal</ComboBoxItem>
+                                </ComboBox>
+                            </toolKit:SettingsCard>
+                            <toolKit:SettingsCard Header="Journal complet étendu"
+                                                  Description="Collecte plus de détails pour le support. Peut ralentir légèrement kDrive">
+                                <ToggleSwitch />
+                            </toolKit:SettingsCard>
+                            <toolKit:SettingsCard Header="Supprimer les journaux datant de plus de 7 jours">
+                                <ToggleSwitch />
+                            </toolKit:SettingsCard>
+                            <toolKit:SettingsCard Header="Envoyer le journal au support"
+                                                  Description="Aide à résoudre un problème plus rapidement">
+                                <Button Content="Envoyer au support"
+                                        Style="{ThemeResource AccentButtonStyle}" />
+                            </toolKit:SettingsCard>
+                            <toolKit:SettingsCard Header="Dossier de débogage">
+                                <Button Content="Ouvrir dans l’explorateur de fichiers" />
+                            </toolKit:SettingsCard>
+                        </toolKit:SettingsExpander.Items>
+                    </toolKit:SettingsExpander>
+                </StackPanel>
+
+                <!-- About kDrive -->
+                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                    <TextBlock Text="Avancé"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
+
+                    <!-- About - Privacy -->
+                    <toolKit:SettingsExpander Header="Version et informations légales">
+                        <toolKit:SettingsExpander.HeaderIcon>
+                            <ImageIcon Height="16"
+                                       Width="16"
+                                       HorizontalAlignment="Left">
+                                <ImageIcon.Source>
+                                    <SvgImageSource UriSource="ms-appx:///Assets/Icons/arrows-loop.svg" />
+                                </ImageIcon.Source>
+                            </ImageIcon>
+
+                        </toolKit:SettingsExpander.HeaderIcon>
+                        <toolKit:SettingsExpander.Items>
+                            <!-- General -->
+                            <toolKit:SettingsCard ContentAlignment="Left"
+                                                  Header="kDrive"
+                                                  Background="{ThemeResource LayerFillColorDefault}"
+                                                  Foreground="{ThemeResource TextFillColorDisabled}">
+                                <toolKit:SettingsCard.HeaderIcon>
+                                    <ImageIcon Height="16"
+                                               Width="16"
+                                               HorizontalAlignment="Left">
+                                        <ImageIcon.Source>
+                                            <SvgImageSource UriSource="ms-appx:///Assets/Icons/arrows-loop.svg" />
+                                        </ImageIcon.Source>
+                                    </ImageIcon>
+                                </toolKit:SettingsCard.HeaderIcon>
+
+                                <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                                           TextWrapping="WrapWholeWords"
+                                           Text="Swiss Made cloud, open source et hébergé exclusivement en Suisse dans nos datacenters certifiés ISO (sécurité et environnement). kDrive allie transparence, souveraineté et respect de la vie privée." />
+                            </toolKit:SettingsCard>
+                            <toolKit:SettingsCard ContentAlignment="Left"
+                                                  Header="kDrive"
+                                                  Background="{ThemeResource LayerFillColorDefault}"
+                                                  Foreground="{ThemeResource TextFillColorDisabled}">
+                                <toolKit:SettingsCard.HeaderIcon>
+                                    <ImageIcon Height="16"
+                                               Width="16"
+                                               HorizontalAlignment="Left">
+                                        <ImageIcon.Source>
+                                            <SvgImageSource UriSource="ms-appx:///Assets/Icons/arrows-loop.svg" />
+                                        </ImageIcon.Source>
+                                    </ImageIcon>
+                                </toolKit:SettingsCard.HeaderIcon>
+
+                                <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                                           TextWrapping="WrapWholeWords"
+                                           Text="Version 3.7.3 (build 20250728), compilée le 28 juillet 2025 © 2019–2025 Infomaniak Network SA — Licence LGPL v3 — Sources Git" />
+                            </toolKit:SettingsCard>
+                        </toolKit:SettingsExpander.Items>
+                    </toolKit:SettingsExpander>
+                </StackPanel>
+            </StackPanel>
+        </ScrollView>
+    </Grid>
+</Page>

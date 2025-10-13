@@ -13,13 +13,15 @@ namespace Infomaniak.kDrive.Converters
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
+            var parser = new ParameterParser(parameter);
+
             if (value is null)
             {
-                return Microsoft.UI.Xaml.Visibility.Visible;
+                return (parser.KeyNotEquals("Inverted", "True")) ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
             }
             else
             {
-                return Microsoft.UI.Xaml.Visibility.Collapsed;
+                return (parser.KeyNotEquals("Inverted", "True")) ? Microsoft.UI.Xaml.Visibility.Collapsed : Microsoft.UI.Xaml.Visibility.Visible;
             }
         }
 

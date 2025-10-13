@@ -17,28 +17,35 @@
  */
 
 import Cocoa
+import kDriveCore
 
-class AppDelegate: NSObject, NSApplicationDelegate {
-    private var window: NSWindow!
+@MainActor
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    private lazy var mainWindow = MainWindowController()
+    private lazy var preferencesWindow = PreferencesWindowController()
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 850, height: 530),
-            styleMask: [.titled, .closable, .resizable, .miniaturizable, .fullSizeContentView],
-            backing: .buffered,
-            defer: false
-        )
-        window.toolbarStyle = .unified
-
-        window.setFrameAutosaveName("kDriveMainWindow")
-
-        let rootViewController = RootViewController()
-        window.contentView = rootViewController.view
-
-        window.makeKeyAndOrderFront(nil)
+        DriveTargetAssembly.setupDI()
+        openMainWindow()
     }
 
     func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
         return true
+    }
+
+    func openMainWindow() {
+        mainWindow.showWindow(nil)
+        mainWindow.window?.makeKeyAndOrderFront(nil)
+
+        if #available(macOS 14.0, *) {
+            NSApp.activate()
+        } else {
+            NSApp.activate(ignoringOtherApps: true)
+        }
+    }
+
+    @objc func openPreferencesWindow(_ sender: Any?) {
+        preferencesWindow.showWindow(sender)
+        preferencesWindow.window?.makeKeyAndOrderFront(sender)
     }
 }

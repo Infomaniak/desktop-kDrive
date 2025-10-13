@@ -17,18 +17,20 @@
  */
 
 using CommunityToolkit.Mvvm.ComponentModel;
+using DynamicData.Binding;
 using Infomaniak.kDrive.ServerCommunication;
+using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels.Errors;
 using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
-using Infomaniak.kDrive.Types;
 
 namespace Infomaniak.kDrive.ViewModels
 {
@@ -45,13 +47,21 @@ namespace Infomaniak.kDrive.ViewModels
         private SyncStatus _syncStatus = SyncStatus.Pause;
         private SyncType _syncType = SyncType.Unknown;
         private ObservableCollection<Errors.BaseError> _syncErrors = new();
+        private SyncActivity? _lastActivity;
 
         // Sync UI properties
         private bool _showIncomingActivity = true;
 
         public SyncStatus SyncStatus
         {
-            get => _syncStatus;
+            get
+            {
+                if (_syncStatus == SyncStatus.Pause && !((App.Current as App)?.Data.NetworkAvailable ?? true))
+                {
+                    return SyncStatus.Offline;
+                }
+                return _syncStatus;
+            }
             set => SetProperty(ref _syncStatus, value);
         }
 
@@ -111,7 +121,7 @@ namespace Infomaniak.kDrive.ViewModels
             {
                 sb.Append(sampleFileNames[rand.Next(sampleFileNames.Length)]);
             }
-            SyncDirection direction = (SyncDirection)rand.Next(2); // Randomly choose direction
+            SyncDirection direction = (SyncDirection)rand.Next(1,3); // Randomly choose direction
             NodeType nodeType = isFile ? NodeType.File : NodeType.Directory;
             long size = isFile ? rand.Next(0, 5000000) : 0; // Random size for files, 0 for directories
             DateTime activityTime = DateTime.Now;
@@ -143,23 +153,70 @@ namespace Infomaniak.kDrive.ViewModels
 
                 while (true)
                 {
-                    await Task.Delay(random.Next(1, 5000)); // Wait between 0 to 5 seconds
-                    if (SyncStatus != SyncStatus.Running)
+                    if (SyncStatus != SyncStatus.Running && SyncStatus != SyncStatus.Idle)
                     {
+                        await Task.Delay(500).ConfigureAwait(false);
                         continue;
                     }
-                    var newActivity = GenerateTestActivity();
 
-                    AppModel.UIThreadDispatcher.TryEnqueue(() =>
+                    if (SyncStatus == SyncStatus.Running)
                     {
-                        _syncActivities.Insert(0, newActivity);
-                        if (_syncActivities.Count > 100)
+                        if (random.Next(10) == 1)
                         {
-                            _syncActivities.RemoveAt(_syncActivities.Count - 1);
+                          //  AppModel.UIThreadDispatcher.TryEnqueue(() => { SyncStatus = SyncStatus.Idle; });
+                            continue;
                         }
-                    });
+                        else
+                        {
+                            var newActivity = GenerateTestActivity();
+
+                            AppModel.UIThreadDispatcher.TryEnqueue(() =>
+                            {
+                                _syncActivities.Insert(0, newActivity);
+                                if (_syncActivities.Count > 500)
+                                {
+                                    _syncActivities.RemoveAt(_syncActivities.Count - 1);
+                                }
+                            });
+                            // await Task.Delay(random.Next(0, 10)).ConfigureAwait(false);
+                            await Task.Delay(100).ConfigureAwait(false);
+
+                        }
+                    }
+                    else if (SyncStatus == SyncStatus.Idle)
+                    {
+                        if (random.Next(10) == 1)
+                        {
+                            AppModel.UIThreadDispatcher.TryEnqueue(() => { SyncStatus = SyncStatus.Running; });
+                        }
+                        //await Task.Delay(random.Next(2000)).ConfigureAwait(false);
+                    }
+
+
                 }
             });
+            
+            (App.Current as App)?.Data.WhenAnyPropertyChanged("NetworkAvailable").Subscribe(appModel =>
+            {
+                if (SyncStatus == SyncStatus.Pause || SyncStatus == SyncStatus.Offline)
+                {
+                    bool networkAvailable = appModel?.NetworkAvailable ?? true;
+                    SyncStatus = networkAvailable ? SyncStatus.Pause : SyncStatus.Offline;
+                }
+            });
+
+            SyncActivities.CollectionChanged += (s, args) =>
+            {
+                try
+                {
+                    LastActivity = SyncActivities[0];
+                }
+                catch(ArgumentOutOfRangeException)
+                {
+                    LastActivity = null;
+                }
+
+            };
         }
 
         public DbId DbId
@@ -221,6 +278,12 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _syncErrors;
             set => SetProperty(ref _syncErrors, value);
+        }
+
+        public SyncActivity? LastActivity
+        {
+            get => _lastActivity;
+            set => SetProperty(ref _lastActivity, value);
         }
 
         public async Task Reload()
