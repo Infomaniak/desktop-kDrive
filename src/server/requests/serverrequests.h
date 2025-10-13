@@ -52,7 +52,8 @@ namespace KDC {
 struct SYNCENGINE_EXPORT ServerRequests {
         // C/S requests (access to DB)
         // Use COMM_SHORT_TIMEOUT
-        static ExitCode getUserDbIdList(QList<int> &list);
+        static ExitCode getUserDbIdList(QList<int> &list); // TODO: Delete after switching to the new comm layer
+        static ExitCode getUserDbIdList(std::vector<int> &list);
         static ExitCode getUserInfoList(QList<UserInfo> &list);
         static ExitCode getUserIdFromUserDbId(int userDbId, int &userId);
         static ExitCode getAccountInfoList(QList<AccountInfo> &list);

@@ -20,6 +20,9 @@
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
 
+#include <QImageWriter>
+#include <QBuffer>
+
 static const auto userInfoDbId = "dbId";
 static const auto userInfoUserId = "userId";
 static const auto userInfoName = "name";
@@ -47,9 +50,13 @@ void UserInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, userInfoName, CommonUtility::qStr2CommString(_name));
     CommonUtility::writeValueToStruct(dstruct, userInfoEmail, CommonUtility::qStr2CommString(_email));
 
-    QByteArray avatarQBA = QByteArray::fromRawData((const char *) _avatar.bits(), _avatar.sizeInBytes());
-    CommBLOB avatarBLOB(avatarQBA.begin(), avatarQBA.end());
-    CommonUtility::writeValueToStruct(dstruct, userInfoAvatar, avatarBLOB);
+    QByteArray avatarQBA;
+    QBuffer buffer(&avatarQBA);
+    if (buffer.open(QIODevice::WriteOnly) && _avatar.save(&buffer, "PNG")) {
+        CommBLOB avatarBLOB(avatarQBA.begin(), avatarQBA.end());
+        buffer.close();
+        CommonUtility::writeValueToStruct(dstruct, userInfoAvatar, avatarBLOB);
+    }
 
     CommonUtility::writeValueToStruct(dstruct, userInfoConnected, _connected);
     CommonUtility::writeValueToStruct(dstruct, userInfoIsStaff, _isStaff);
