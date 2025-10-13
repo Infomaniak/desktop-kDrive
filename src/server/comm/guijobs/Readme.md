@@ -217,6 +217,52 @@ Emits `UserAdded` or `UserUpdated` upon success.
 </details>
 
 ---
+<details id="loginrequesttoken">
+<summary><b>UserDbIdList</b> — Get list of user database IDs</summary>
+
+**Description:**
+Retrieves database IDs of all users.
+
+#### Request
+
+```json
+{
+  "type": 1,
+  "id": 42,
+  "num": (int)RequestNum.UserDBIDList,
+  "params": {}
+}
+```
+
+#### Successful Response
+
+```json
+{
+  "type": 1,
+  "id": 42,
+  "num": (int)RequestNum.UserDBIDList,
+  "params": {
+    "userDbIdList": [<int>UserDbId, ...]
+  }
+}
+```
+
+#### Failure Response
+
+```json
+{
+  "type": 1,
+  "id": 42,
+  "num": (int)RequestNum.UserDBIDList,
+  "params": {
+    "userDbIdList": [] // Empty list on failure
+  }
+}
+```
+
+</details>
+---
+
 
 # 📡 Signals
 
