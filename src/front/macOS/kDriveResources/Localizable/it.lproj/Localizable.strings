@@ -4,7 +4,7 @@
  * Locale: it, Italian
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Fri, 10 Oct 2025 14:22:19 +0200
+ * Exported at: Mon, 13 Oct 2025 08:40:02 +0200
  */
 
 /* loco:68e673c48af12c42e80027c8 */
@@ -26,7 +26,7 @@
 "onboardingLoginDescription" = "Il cloud privato veloce e sicuro, ospitato in Svizzera.\n\nCollegatevi e mantenete i vostri documenti sincronizzati su tutti i vostri dispositivi.";
 
 /* loco:68e8fa543a683192560af9e2 */
-"onboardingLoginErrorDescription" = "È stato commesso un errore, quindi è necessario ripetere l'operazione.";
+"onboardingLoginErrorDescription" = "Si è verificato un errore, riprovare.";
 
 /* loco:68e673754d80559c460bdf02 */
 "onboardingLoginTitle" = "Benvenuti su kDrive!";
