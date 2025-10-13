@@ -38,8 +38,7 @@ static const auto outParamsErrorDescr = "errorDescr";
 namespace KDC {
 
 LoginRequestTokenJob::LoginRequestTokenJob(std::shared_ptr<CommManager> commManager, int requestId,
-                                           const Poco::DynamicStruct &inParams,
-                                           const std::shared_ptr<AbstractCommChannel> channel) :
+                                           const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
     _requestNum = RequestNum::LOGIN_REQUESTTOKEN;
 }
@@ -56,14 +55,15 @@ ExitInfo LoginRequestTokenJob::deserializeInputParms() {
     return ExitCode::Ok;
 }
 
-ExitInfo LoginRequestTokenJob::serializeOutputParms(bool hasError /*= false*/) {
+ExitInfo LoginRequestTokenJob::serializeOutputParms() {
     // Output parameters serialization
-    if (hasError) {
+    if (_error.empty()) {
+        writeParamValue(outParamsUserDbId, _userDbId);
+    } else {
         writeParamValue(outParamsError, CommonUtility::str2CommString(_error));
         writeParamValue(outParamsErrorDescr, CommonUtility::str2CommString(_errorDescr));
-    } else {
-        writeParamValue(outParamsUserDbId, _userDbId);
     }
+
     return ExitCode::Ok;
 }
 

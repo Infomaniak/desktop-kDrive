@@ -68,6 +68,21 @@ ExitCode ServerRequests::getUserDbIdList(QList<int> &list) {
     return ExitCode::Ok;
 }
 
+ExitCode ServerRequests::getUserDbIdList(std::vector<int> &list) {
+    std::vector<User> userList;
+    if (!ParmsDb::instance()->selectAllUsers(userList)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
+        return ExitCode::DbError;
+    }
+
+    list.clear();
+    for (const User &user: userList) {
+        list.push_back(user.dbId());
+    }
+
+    return ExitCode::Ok;
+}
+
 ExitCode ServerRequests::getUserInfoList(QList<UserInfo> &list) {
     std::vector<User> userList;
     if (!ParmsDb::instance()->selectAllUsers(userList)) {
