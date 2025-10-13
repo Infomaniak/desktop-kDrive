@@ -234,8 +234,8 @@ void TestGuiCommChannel::testUserInfoListJob() {
     // Callback expected answer
     const auto cbkAnswerStr{Str(
             R"({"cause":0,"code":0,"id":1,"params":{"userInfoList":[)"
-            R"({"avatar":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAA\r\nAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYA\r\nAAAASUVORK5CYII=","connected":true,"dbId":1,"email":"YWFhYWFAeHh4LmNvbQ==","isStaff":false,"name":"YWFhYWE=","userId":1001},)"
-            R"({"avatar":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAA\r\nAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYA\r\nAAAASUVORK5CYII=","connected":false,"dbId":2,"email":"YmJiYmJAeHh4LmNvbQ==","isStaff":false,"name":"YmJiYmI=","userId":1002}]}})")};
+            R"({"avatar":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=","connected":true,"dbId":1,"email":"YWFhYWFAeHh4LmNvbQ==","isStaff":false,"name":"YWFhYWE=","userId":1001},)"
+            R"({"avatar":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=","connected":false,"dbId":2,"email":"YmJiYmJAeHh4LmNvbQ==","isStaff":false,"name":"YmJiYmI=","userId":1002}]}})")};
 #endif
 
     // Job expected answer
@@ -246,8 +246,8 @@ void TestGuiCommChannel::testUserInfoListJob() {
             R"( "num": 3,)" // RequestNum::USER_INFOLIST
             R"( "params": {)"
             R"( "userInfoList": [)"
-            R"( { "avatar": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAA\r\nAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYA\r\nAAAASUVORK5CYII=", "connected": true, "dbId": 1, "email": "YWFhYWFAeHh4LmNvbQ==", "isStaff": false, "name": "YWFhYWE=", "userId": 1001 },)"
-            R"( { "avatar": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAA\r\nAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYA\r\nAAAASUVORK5CYII=", "connected": false, "dbId": 2, "email": "YmJiYmJAeHh4LmNvbQ==", "isStaff": false, "name": "YmJiYmI=", "userId": 1002 } ] },)"
+            R"( { "avatar": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=", "connected": true, "dbId": 1, "email": "YWFhYWFAeHh4LmNvbQ==", "isStaff": false, "name": "YWFhYWE=", "userId": 1001 },)"
+            R"( { "avatar": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=", "connected": false, "dbId": 2, "email": "YmJiYmJAeHh4LmNvbQ==", "isStaff": false, "name": "YmJiYmI=", "userId": 1002 } ] },)"
             R"( "type": 1 })")}; // GuiJobType::Query
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
