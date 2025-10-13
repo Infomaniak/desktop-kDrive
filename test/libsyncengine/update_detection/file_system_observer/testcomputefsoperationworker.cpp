@@ -58,7 +58,7 @@ void TestComputeFSOperationWorker::setUp() {
     (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     /// Create parmsDb
-    ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
+    ParmsDb::instance(_localParmsTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
 
     /// Insert user, account, drive & sync
     int userId = atoi(testVariables.userId.c_str());

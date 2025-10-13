@@ -35,8 +35,10 @@ void TestUpdateTreeWorker::setUp() {
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
     // Create DB
-    _syncDb = std::make_shared<SyncDb>(ParmsDb::instance()->dbPath().string(), KDRIVE_VERSION_STRING);
-    _syncDb->init("3.6.1");
+    bool alreadyExists = false;
+    const SyncPath syncDbPath = MockDb::makeDbName(1, 1, 1, 1, alreadyExists);
+    _syncDb = std::make_shared<SyncDb>(syncDbPath, KDRIVE_VERSION_STRING);
+    _syncDb->init(KDRIVE_VERSION_STRING);
     _syncDb->setAutoDelete(true);
     _operationSet = std::make_shared<FSOperationSet>(ReplicaSide::Unknown);
 
