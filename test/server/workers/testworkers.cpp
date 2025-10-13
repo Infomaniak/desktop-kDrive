@@ -68,7 +68,8 @@ void TestWorkers::setUp() {
     // Create parmsDb
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
-    (void) std::filesystem::remove(parmsDbPath);
+    std::error_code ec;
+    (void) std::filesystem::remove(parmsDbPath, ec);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     // Insert user, account, drive & sync
@@ -262,7 +263,7 @@ void TestWorkers::testCreatePlaceholder() {
 
         // Remove placeholder
         std::error_code ec;
-        std::filesystem::remove(_syncPal->localPath() / relativeFilePath);
+        std::filesystem::remove(_syncPal->localPath() / relativeFilePath, ec);
         if (ec) {
             // Cannot remove file
             CPPUNIT_ASSERT(false);
