@@ -205,7 +205,7 @@
                                             <toolKit:SettingsCard Header="{x:Bind Name, Mode=OneWay}"
                                                                   Background="{ThemeResource LayerFillColorDefault}">
                                                 <toolKit:SettingsCard.HeaderIcon>
-                                                    <controls:DriveIcon IconColor="{x:Bind Color}" />
+                                                    <controls:SvgIcon Uri="ms-appx:///Assets/Icons/drive-custom.svg" IconColor="{x:Bind Color}" />
                                                 </toolKit:SettingsCard.HeaderIcon>
                                                 <StackPanel Orientation="Horizontal"
                                                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
