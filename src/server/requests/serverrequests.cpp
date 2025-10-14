@@ -117,23 +117,6 @@ ExitCode ServerRequests::getUserInfoList(std::vector<UserInfo> &list) {
     return ExitCode::Ok;
 }
 
-ExitCode KDC::ServerRequests::getUserIdFromUserDbId(int userDbId, int &userId) {
-    User user;
-    bool found;
-    if (!ParmsDb::instance()->selectUser(userDbId, user, found)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectUser");
-        return ExitCode::DbError;
-    }
-    if (!found) {
-        LOG_WARN(Log::instance()->getLogger(), "User with id=" << userDbId << " not found");
-        return ExitCode::DataError;
-    }
-
-    userId = user.userId();
-
-    return ExitCode::Ok;
-}
-
 ExitCode ServerRequests::deleteUser(int userDbId) {
     // Delete user (and linked accounts/drives/syncs by cascade)
     bool found;
@@ -246,50 +229,6 @@ ExitCode ServerRequests::getDriveInfo(int driveDbId, DriveInfo &driveInfo) {
     }
 
     driveToDriveInfo(drive, driveInfo);
-
-    return ExitCode::Ok;
-}
-
-ExitCode ServerRequests::getDriveIdFromDriveDbId(int driveDbId, int &driveId) {
-    Drive drive;
-    bool found;
-    if (!ParmsDb::instance()->selectDrive(driveDbId, drive, found)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectDrive");
-        return ExitCode::DbError;
-    }
-    if (!found) {
-        LOG_WARN(Log::instance()->getLogger(), "Drive with id=" << driveDbId << " not found");
-        return ExitCode::DataError;
-    }
-
-    driveId = drive.driveId();
-
-    return ExitCode::Ok;
-}
-
-ExitCode KDC::ServerRequests::getDriveIdFromSyncDbId(int syncDbId, int &driveId) {
-    Sync sync;
-    bool found;
-    if (!ParmsDb::instance()->selectSync(syncDbId, sync, found)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectSync");
-        return ExitCode::DbError;
-    }
-    if (!found) {
-        LOG_WARN(Log::instance()->getLogger(), "Sync with id=" << syncDbId << " not found");
-        return ExitCode::DataError;
-    }
-
-    Drive drive;
-    if (!ParmsDb::instance()->selectDrive(sync.driveDbId(), drive, found)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectDrive");
-        return ExitCode::DbError;
-    }
-    if (!found) {
-        LOG_WARN(Log::instance()->getLogger(), "Drive with id=" << sync.driveDbId() << " not found");
-        return ExitCode::DataError;
-    }
-
-    driveId = drive.driveId();
 
     return ExitCode::Ok;
 }

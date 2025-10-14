@@ -56,12 +56,9 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode getUserDbIdList(std::vector<int> &list);
         static ExitCode getUserInfoList(QList<UserInfo> &list); // TODO: Delete after switching to the new comm layer
         static ExitCode getUserInfoList(std::vector<UserInfo> &list);
-        static ExitCode getUserIdFromUserDbId(int userDbId, int &userId);
         static ExitCode getAccountInfoList(QList<AccountInfo> &list);
         static ExitCode getDriveInfoList(QList<DriveInfo> &list);
         static ExitCode getDriveInfo(int driveDbId, DriveInfo &driveInfo);
-        static ExitCode getDriveIdFromDriveDbId(int driveDbId, int &driveId);
-        static ExitCode getDriveIdFromSyncDbId(int syncDbId, int &driveId);
         static ExitCode updateDrive(const DriveInfo &driveInfo);
         static ExitCode getSyncInfoList(QList<SyncInfo> &list);
         static ExitCode getParameters(ParametersInfo &parametersInfo);

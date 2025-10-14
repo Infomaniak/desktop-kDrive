@@ -979,22 +979,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << list;
             break;
         }
-        case RequestNum::USER_ID_FROM_USERDBID: {
-            int userDbId;
-            QDataStream paramsStream(params);
-            paramsStream >> userDbId;
-
-            int userId;
-            ExitCode exitCode = ServerRequests::getUserIdFromUserDbId(userDbId, userId);
-            if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::getUserIdFromUserDbId: code=" << exitCode);
-                addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
-            }
-
-            resultStream << toInt(exitCode);
-            resultStream << userId;
-            break;
-        }
         case RequestNum::ACCOUNT_INFOLIST: {
             QList<AccountInfo> list;
             ExitCode exitCode = ServerRequests::getAccountInfoList(list);
@@ -1017,54 +1001,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             resultStream << toInt(exitCode);
             resultStream << list;
-            break;
-        }
-        case RequestNum::DRIVE_INFO: {
-            int driveDbId;
-            QDataStream paramsStream(params);
-            paramsStream >> driveDbId;
-
-            DriveInfo driveInfo;
-            ExitCode exitCode = ServerRequests::getDriveInfo(driveDbId, driveInfo);
-            if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::getDriveInfo: code=" << exitCode);
-                addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
-            }
-
-            resultStream << toInt(exitCode);
-            resultStream << driveInfo;
-            break;
-        }
-        case RequestNum::DRIVE_ID_FROM_DRIVEDBID: {
-            int driveDbId;
-            QDataStream paramsStream(params);
-            paramsStream >> driveDbId;
-
-            int driveId;
-            ExitCode exitCode = ServerRequests::getDriveIdFromDriveDbId(driveDbId, driveId);
-            if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::getDriveIdFromDriveDbId: code=" << exitCode);
-                addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
-            }
-
-            resultStream << toInt(exitCode);
-            resultStream << driveId;
-            break;
-        }
-        case RequestNum::DRIVE_ID_FROM_SYNCDBID: {
-            int syncDbId;
-            QDataStream paramsStream(params);
-            paramsStream >> syncDbId;
-
-            int driveId;
-            ExitCode exitCode = ServerRequests::getDriveIdFromSyncDbId(syncDbId, driveId);
-            if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::getDriveIdFromSyncDbId: code=" << exitCode);
-                addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
-            }
-
-            resultStream << toInt(exitCode);
-            resultStream << driveId;
             break;
         }
         case RequestNum::DRIVE_DEFAULTCOLOR: {
