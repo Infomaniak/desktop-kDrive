@@ -6,8 +6,12 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+             xmlns:converters="using:Infomaniak.kDrive.Converters"
              mc:Ignorable="d">
 
+    <UserControl.Resources>
+        <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />
+    </UserControl.Resources>
     <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
             CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"
             Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.M}">
@@ -36,7 +40,9 @@
                             CornerRadius="100"
                             Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XXS}">
                         <Viewbox>
-                            <controls:SvgIcon Uri="ms-appx:///Assets/Icons/drive-custom.svg" IconColor="{x:Bind ViewModel.SelectedSync.Drive.Color, Mode=OneWay}" />
+                            <controls:SvgIcon Height="16"
+                                              UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom}"
+                                              Foreground="{x:Bind ViewModel.SelectedSync.Drive.Color, Mode=OneWay, Converter={StaticResource ColorToBrushConverter}}" />
                         </Viewbox>
                     </Border>
 
@@ -124,12 +130,9 @@
                       HorizontalAlignment="Center">
                     <StackPanel Orientation="Horizontal"
                                 Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                        <ImageIcon Height="16"
-                                   VerticalAlignment="Center">
-                            <ImageIcon.Source>
-                                <SvgImageSource UriSource="ms-appx:///Assets/Icons/trash.svg" />
-                            </ImageIcon.Source>
-                        </ImageIcon>
+                        <controls:SvgIcon Height="16"
+                                          UriString="{StaticResource Infomaniak.DS.Icons.Actions.trashbin}" />
+
                         <TextBlock x:Uid="CC_QuickAccess_trash"
                                    Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                     </StackPanel>

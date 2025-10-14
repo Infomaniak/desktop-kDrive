@@ -16,7 +16,7 @@
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:IsGreaterConverter x:Key="IsGreaterConverter" />
         <converters:DriveToHasErrorConverter x:Key="DriveToHasErrorConverter" />
-
+        <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />
         <!-- Drive template when multiple syncs -->
         <DataTemplate x:Key="MultiSyncDrive"
                       x:DataType="viewModel:Drive">
@@ -126,8 +126,8 @@
                 <StackPanel Grid.Column="0"
                             Orientation="Horizontal"
                             Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                    <customControls:SvgIcon Uri="ms-appx:///Assets/Icons/drive-custom.svg"
-                                            IconColor="{x:Bind Color, Mode=OneWay}"
+                    <customControls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom}"
+                                            Foreground="{x:Bind Color, Mode=OneWay, Converter={StaticResource ColorToBrushConverter}}"
                                             Height="16" />
 
                     <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
@@ -228,8 +228,8 @@
             <StackPanel Grid.Column="0"
                         Orientation="Horizontal"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                <customControls:SvgIcon Uri="ms-appx:///Assets/Icons/drive-custom.svg"
-                                        IconColor="{x:Bind ViewModel.SelectedSync.Drive.Color, Mode=OneWay}"
+                <customControls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom}"
+                                        Foreground="{x:Bind ViewModel.SelectedSync.Drive.Color, Mode=OneWay, Converter={StaticResource ColorToBrushConverter}}"
                                         Height="16" />
 
                 <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
@@ -254,8 +254,8 @@
             <StackPanel Orientation="Horizontal"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
                         Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.S}">
-                <customControls:SvgIcon Uri="ms-appx:///Assets/Icons/drive-custom.svg"
-                                        IconColor="{x:Bind ViewModel.SelectedSync.Drive.Color, Mode=OneWay}"
+                <customControls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom}"
+                                        Foreground="{x:Bind ViewModel.SelectedSync.Drive.Color, Mode=OneWay, Converter={StaticResource ColorToBrushConverter}}"
                                         Height="14" />
 
                 <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
