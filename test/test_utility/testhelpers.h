@@ -21,6 +21,7 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/utility/types.h"
 #include "libcommonserver/utility/utility.h"
+#include "libsyncengine/update_detection/update_detector/node.h"
 #include "version.h"
 #include "io/filestat.h"
 
@@ -42,6 +43,7 @@ inline const SyncPath localTestDirPath() {
 const SyncTime defaultTime = std::time(nullptr);
 constexpr int64_t defaultFileSize = 123;
 constexpr int64_t defaultDirSize = 0;
+const Node::MoveOriginInfos dummyMoveOriginInfo = Node::MoveOriginInfos("/dummy", "1");
 
 SyncName makeNfdSyncName();
 SyncName makeNfcSyncName();
