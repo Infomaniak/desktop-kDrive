@@ -17,6 +17,7 @@
  */
 
 #include "commmanager.h"
+#include "appserver.h"
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
 #include "extjobmanager.h"
 #include "extensionjob.h"
@@ -55,9 +56,8 @@
 #include <log4cplus/loggingmacros.h>
 
 namespace KDC {
-CommManager::CommManager(const SyncPalMap &syncPalMap, const VfsMap &vfsMap) :
-    _syncPalMap(syncPalMap),
-    _vfsMap(vfsMap) {
+CommManager::CommManager(AppServer &appServer) :
+    _appServer(appServer) {
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
     _extCommServer = std::make_shared<ExtCommServer>("Extension Comm Server");
 #endif
@@ -109,7 +109,7 @@ void CommManager::start() {
     LOGW_INFO(Log::instance()->getLogger(), L"Starting " << CommonUtility::s2ws(_guiCommServer->name()));
     if (!_guiCommServer->listen()) {
         LOGW_WARN(Log::instance()->getLogger(), L"Can't start " << CommonUtility::s2ws(_guiCommServer->name()));
-        _addErrorCbk(Error(ERR_ID, ExitCode::SystemError, ExitCause::Unknown));
+        _appServer.addError(Error(ERR_ID, ExitCode::SystemError, ExitCause::Unknown));
     } else {
         LOGW_INFO(Log::instance()->getLogger(), CommonUtility::s2ws(_guiCommServer->name()) << L" started");
     }
@@ -119,7 +119,7 @@ void CommManager::start() {
     LOGW_INFO(Log::instance()->getLogger(), L"Starting " << CommonUtility::s2ws(_extCommServer->name()));
     if (!_extCommServer->listen()) {
         LOGW_WARN(Log::instance()->getLogger(), L"Can't start " << CommonUtility::s2ws(_extCommServer->name()));
-        _addErrorCbk(Error(ERR_ID, ExitCode::SystemError, ExitCause::Unknown));
+        _appServer.addError(Error(ERR_ID, ExitCode::SystemError, ExitCause::Unknown));
     } else {
         LOGW_INFO(Log::instance()->getLogger(), CommonUtility::s2ws(_extCommServer->name()) << L" started");
     }
@@ -200,7 +200,7 @@ void CommManager::onNewExtConnection() {
     std::vector<Sync> syncList;
     if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
-        _addErrorCbk(Error(ERR_ID, ExitCode::DbError, ExitCause::Unknown));
+        _appServer.addError(Error(ERR_ID, ExitCode::DbError, ExitCause::Unknown));
         return;
     }
 

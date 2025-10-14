@@ -21,6 +21,7 @@
 #include "qtsingleapplication.h"
 #include "navigationpanehelper.h"
 #include "config.h"
+#include "requests/serverrequests.h"
 #include "comm/oldcommserver.h"
 #include "comm/commmanager.h"
 #include "syncpal/syncpal.h"
@@ -93,6 +94,23 @@ class AppServer : public SharedTools::QtSingleApplication {
         void clearKeychainKeys();
 
         void showHint(std::string errorHint);
+
+        const SyncPalMap &syncPalMap() const { return _syncPalMap; }
+        const VfsMap &vfsMap() const { return _vfsMap; }
+
+        void stopAllSyncsTask(const std::vector<int> &syncDbIdList);
+
+        static void addError(const Error &error);
+        static void updateSentryUser();
+
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+        static ExitCode getThumbnail(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) {
+            return ServerRequests::getThumbnail(driveDbId, nodeId, width, thumbnail);
+        }
+        static ExitCode getPublicLinkUrl(int driveDbId, const NodeId &nodeId, std::string &linkUrl) {
+            return ServerRequests::getPublicLinkUrl(driveDbId, nodeId, linkUrl);
+        }
+#endif
 
     private:
         QStringList _arguments;
@@ -197,12 +215,10 @@ class AppServer : public SharedTools::QtSingleApplication {
         void sendLogUploadStatusUpdated(LogUploadState status, int percent);
 
         void stopSyncTask(int syncDbId); // Long task which can block GUI: post-poned in the event loop by means of timer
-        void stopAllSyncsTask(const std::vector<int> &syncDbIdList); // Idem.
         void deleteAccount(int accountDbId);
         void deleteDrive(int driveDbId);
         void deleteSync(int syncDbId);
 
-        static void addError(const Error &error);
         static void sendErrorAdded(bool serverLevel, ExitCode exitCode, int syncDbId);
         static void addCompletedItem(int syncDbId, const SyncFileItem &item, bool notify);
         static void sendSignal(SignalNum sigNum, int syncDbId, const SigValueType &val);
@@ -225,8 +241,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         void showSynthesis();
 
         void logExtendedLogActivationMessage(bool isExtendedLogEnabled) noexcept;
-
-        static void updateSentryUser();
 
         bool clientHasCrashed() const;
         void handleClientCrash(bool &quit);

@@ -28,55 +28,20 @@
 
 namespace KDC {
 
+class AppServer;
 class GuiJobFactory;
 
 class CommManager : public std::enable_shared_from_this<CommManager> {
     public:
-        explicit CommManager(const SyncPalMap &syncPalMap, const VfsMap &vfsMap);
+        explicit CommManager(AppServer &appServer);
         ~CommManager();
 
         void start();
         void stop();
 
-        // AppServer maps
-        const SyncPalMap &syncPalMap() const { return _syncPalMap; }
-        const VfsMap &vfsMap() const { return _vfsMap; }
-
-        // AppServer callbacks
-        inline void setAddErrorCbk(const std::function<void(const Error &)> &addErrorCbk) { _addErrorCbk = addErrorCbk; }
-        inline void addErrorCbk(const Error &error) const {
-            if (_addErrorCbk) _addErrorCbk(error);
-        }
-
-        inline void setUpdateSentryUserCbk(const std::function<void()> &updateSentryUserCbk) {
-            _updateSentryUserCbk = updateSentryUserCbk;
-        }
-        inline void updateSentryUserCbk() const {
-            if (_updateSentryUserCbk) _updateSentryUserCbk();
-        }
+        AppServer &appServer() { return _appServer; }
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
-        inline void setGetThumbnailCbk(const std::function<ExitCode(int, const NodeId &, int, std::string &)> &getThumbnailCbk) {
-            _getThumbnailCbk = getThumbnailCbk;
-        }
-        inline ExitCode getThumbnailCbk(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) const {
-            if (_getThumbnailCbk)
-                return _getThumbnailCbk(driveDbId, nodeId, width, thumbnail);
-            else
-                return ExitCode::LogicError;
-        }
-
-        inline void setGetPublicLinkUrlCbk(
-                const std::function<ExitCode(int, const NodeId &, std::string &)> &getPublicLinkUrlCbk) {
-            _getPublicLinkUrlCbk = getPublicLinkUrlCbk;
-        }
-        inline ExitCode getPublicLinkUrlCbk(int driveDbId, const NodeId &nodeId, std::string &linkUrl) const {
-            if (_getPublicLinkUrlCbk)
-                return _getPublicLinkUrlCbk(driveDbId, nodeId, linkUrl);
-            else
-                return ExitCode::LogicError;
-        }
-
         // Register a new sync path on all the Finder/File Explorer channels
         // macOS: Multiple copies of the Finder extension can be running at the same time
         // cf. https://developer.apple.com/library/archive/documentation/General/Conceptual/ExtensibilityPG/Finder.html
@@ -90,16 +55,7 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
 
     private:
         // AppServer maps
-        const SyncPalMap &_syncPalMap;
-        const VfsMap &_vfsMap;
-
-        // AppServer callbacks
-        std::function<void(const Error &)> _addErrorCbk;
-        std::function<void()> _updateSentryUserCbk;
-#if defined(KD_MACOS) || defined(KD_WINDOWS)
-        std::function<ExitCode(int, const NodeId &, int, std::string &)> _getThumbnailCbk;
-        std::function<ExitCode(int, const NodeId &, std::string &)> _getPublicLinkUrlCbk;
-#endif
+        AppServer &_appServer;
 
         // Communication servers
 #if defined(KD_MACOS) || defined(KD_WINDOWS)

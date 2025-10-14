@@ -19,7 +19,6 @@
 #include "appserver.h"
 #include "migration/migrationparams.h"
 #include "keychainmanager/keychainmanager.h"
-#include "requests/serverrequests.h"
 #include "requests/syncnodecache.h"
 #include "comm/guijobmanager.h"
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
@@ -343,16 +342,10 @@ void AppServer::init() {
     if (KDC::isVfsPluginAvailable(VirtualFileMode::Suffix, error)) LOG_INFO(_logger, "VFS suffix plugin is available");
 
     // Init CommManager
-    _commManager = std::make_shared<CommManager>(_syncPalMap, _vfsMap);
-    _commManager->setAddErrorCbk(&addError);
-    _commManager->setUpdateSentryUserCbk(&updateSentryUser);
-#if defined(KD_MACOS) || defined(KD_WINDOWS)
-    _commManager->setGetThumbnailCbk(&ServerRequests::getThumbnail);
-    _commManager->setGetPublicLinkUrlCbk(&ServerRequests::getPublicLinkUrl);
-#endif
+    _commManager = std::make_shared<CommManager>(*this);
     _commManager->start();
 
-    // Init CommServer instance
+    // Init OldCommServer instance
     if (!OldCommServer::instance()) {
         LOG_WARN(_logger, "Error in CommServer::instance");
         throw std::runtime_error("Unable to initialize CommServer.");
