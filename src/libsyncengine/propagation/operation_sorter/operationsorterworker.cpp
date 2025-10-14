@@ -102,8 +102,11 @@ void OperationSorterWorker::fixDeleteBeforeMove() {
 
         const auto deleteNode = deleteOp->affectedNode();
         LOG_IF_FAIL(deleteNode)
+        const auto parentPath = deleteNode->parentNode()->hasChangeEvent(OperationType::Move)
+                                        ? deleteNode->parentNode()->moveOriginInfos().path()
+                                        : deleteNode->parentNode()->getPath();
         NodeId deleteNodeParentId;
-        if (!getIdFromDb(deleteNode->side(), deleteNode->getPath().parent_path(), deleteNodeParentId)) {
+        if (!getIdFromDb(deleteNode->side(), parentPath, deleteNodeParentId)) {
             continue;
         }
 
@@ -188,8 +191,11 @@ void OperationSorterWorker::fixDeleteBeforeCreate() {
 
         const auto deleteNode = deleteOp->affectedNode();
         LOG_IF_FAIL(deleteNode)
+        const auto parentPath = deleteNode->parentNode()->hasChangeEvent(OperationType::Move)
+                                        ? deleteNode->parentNode()->moveOriginInfos().path()
+                                        : deleteNode->parentNode()->getPath();
         NodeId deleteNodeParentId;
-        if (!getIdFromDb(deleteNode->side(), deleteNode->getPath().parent_path(), deleteNodeParentId)) {
+        if (!getIdFromDb(deleteNode->side(), parentPath, deleteNodeParentId)) {
             continue;
         }
 
