@@ -1193,7 +1193,7 @@ void TestUpdateTreeWorker::testIntegrityCheck() {
     CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
     newNode->setChangeEvents(OperationType::Edit);
     CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
-    newNode->setMoveOriginInfos(testhelpers::dummyMoveOriginInfo);
+    newNode->setMoveOriginInfos(Node::MoveOriginInfos("/dummy", "1"));
     newNode->setChangeEvents(OperationType::Move);
     CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
     newNode->setChangeEvents(OperationType::Delete);
