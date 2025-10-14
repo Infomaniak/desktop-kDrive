@@ -37,7 +37,7 @@ void TestUpdateTreeWorker::setUp() {
     // Create DB
     bool alreadyExists = false;
     const SyncPath syncDbPath = MockDb::makeDbName(1, 1, 1, 1, alreadyExists);
-    _syncDb = std::make_shared<SyncDb>(syncDbPath, KDRIVE_VERSION_STRING);
+    _syncDb = std::make_shared<SyncDb>(syncDbPath.string(), KDRIVE_VERSION_STRING);
     _syncDb->init(KDRIVE_VERSION_STRING);
     _syncDb->setAutoDelete(true);
     _operationSet = std::make_shared<FSOperationSet>(ReplicaSide::Unknown);
