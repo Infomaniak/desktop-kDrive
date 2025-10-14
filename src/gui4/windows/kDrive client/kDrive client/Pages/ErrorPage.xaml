@@ -89,7 +89,7 @@
                                    Margin="0,0,0,4" />
                         <TextBlock x:Uid="Page_ErrorPage_Application_HowTosolve"
                                    VerticalAlignment="Center"
-                                   Style="{StaticResource CaptionSemiBoldTextBlockStyle}"
+                                   Style="{StaticResource Infomaniak.Style.TextBlock.CaptionStrong}"
                                    Margin="0,0,0,2"
                                    Foreground="#666666" />
                         <ListView SelectionMode="None"
@@ -113,7 +113,7 @@
                                 <DataTemplate x:DataType="viewmodels_error:AppError">
                                     <TextBlock Text="{x:Bind Cause, Mode=OneWay}"
                                                TextWrapping="WrapWholeWords"
-                                               Style="{StaticResource CaptionTextBlockStyle}"
+                                               Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                                                Foreground="#666666" />
                                 </DataTemplate>
                             </ListView.ItemTemplate>
@@ -223,11 +223,11 @@
                             </Image.Source>
                         </Image>
                         <TextBlock x:Uid="Page_ErrorPage_NoErrors_Line1"
-                                   Style="{StaticResource CaptionTextBlockStyle}"
+                                   Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                                    Opacity="0.6"
                                    HorizontalAlignment="Center" />
                         <TextBlock x:Uid="Page_ErrorPage_NoErrors_Line2"
-                                   Style="{StaticResource CaptionTextBlockStyle}"
+                                   Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                                    Opacity="0.6"
                                    HorizontalAlignment="Center" />
                     </StackPanel>

@@ -9,14 +9,14 @@
              xmlns:lottie="using:CommunityToolkit.WinUI.Lottie"
              mc:Ignorable="d">
 
-    <Grid Opacity="0">
-        <Grid.OpacityTransition>
-            <ScalarTransition Duration="0:0:0.1" />
-        </Grid.OpacityTransition>
+        <Grid Opacity="0">
+            <Grid.OpacityTransition>
+                <ScalarTransition Duration="0:0:0.5" />
+            </Grid.OpacityTransition>
 
-        <AnimatedVisualPlayer x:Name="AnimatedVisualPlayer"
-                              Loaded="AnimatedVisualPlayer_Loaded">
-            <lottie:LottieVisualSource UriSource="{x:Bind UriSource, Mode=OneWay}" />
-        </AnimatedVisualPlayer>
-    </Grid>
+            <AnimatedVisualPlayer x:Name="AnimatedVisualPlayer"
+                                  Loaded="AnimatedVisualPlayer_Loaded">
+                <lottie:LottieVisualSource UriSource="{x:Bind UriSource, Mode=OneWay}" />
+            </AnimatedVisualPlayer>
+        </Grid>
 </UserControl>

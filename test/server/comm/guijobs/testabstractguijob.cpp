@@ -204,7 +204,7 @@ ExitInfo GuiJobTest::deserializeInputParms() {
     return ExitCode::Ok;
 }
 
-ExitInfo GuiJobTest::serializeOutputParms([[maybe_unused]] bool hasError /*= false*/) {
+ExitInfo GuiJobTest::serializeOutputParms() {
     writeParamValue(outParamsStrValue, "qwertz");
     writeParamValue(outParamsStrValue2, "每个人都有他的作战策略");
     writeParamValue(outParamsWStrValue, L"asdfgh");

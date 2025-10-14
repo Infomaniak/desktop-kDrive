@@ -18,8 +18,8 @@
 
 #include "testguicommchannel.h"
 #include "comm/guijobs/abstractguijob.h"
-#include "comm/guijobs/guijobfactory.h"
 #include "comm/guijobs/loginrequesttokenjob.h"
+#include "comm/guijobs/userdbidlistjob.h"
 #include "libcommon/comm.h"
 #include "log/log.h"
 
@@ -127,33 +127,105 @@ void TestGuiCommChannel::testCanReadMessage() {
     CPPUNIT_ASSERT(channelTest.canReadMessage()); // Now should be able to read a message
 }
 
-void TestGuiCommChannel::testLoginRequestToken() {
-    const auto outputParamsStr{Str(R"({ "cause": 0,)"
-                                   R"( "code": 0,)"
-                                   R"( "id": 1,)"
-                                   R"( "num": 1,)"
-                                   R"( "params": {)"
-                                   R"( "userDbId": 1 },)"
-                                   R"( "type": 1 })")};
+void TestGuiCommChannel::testLoginRequestTokenJob() {
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    const auto queryStr{Str(R"({ "id": 1,)"
+                            R"( "num": 1,)" // RequestNum::LOGIN_REQUESTTOKEN
+                            R"( "params": {)"
+                            R"( "code": "YWFhYQ==",)" // "aaaa" base64 encoded
+                            R"( "codeVerifier": "YmJiYg==" } })")}; // "bbbb" base64 encoded
 
-    GuiJobFactory guiJobFactory;
+#else
+    // There is no need to pass a request id as the response is via a callback.
+    const auto queryStr{Str(R"({ "num": 1,)" // RequestNum::LOGIN_REQUESTTOKEN
+                            R"( "params": {)"
+                            R"( "code": "YWFhYQ==",)" // "aaaa" base64 encoded
+                            R"( "codeVerifier": "YmJiYg==" } })")}; // "bbbb" base64 encoded
 
-    auto test = [&](const CommString &inputStr, std::shared_ptr<AbstractCommChannel> channel) {
+    // Callback expected answer
+    const auto cbkAnswerStr{Str(R"({"cause":0,"code":0,"id":1,"params":{"userDbId":1}})")};
+#endif
+
+    // Job expected answer
+    const auto answerStr{Str(R"({ "cause": 0,)"
+                             R"( "code": 0,)"
+                             R"( "id": 1,)"
+                             R"( "num": 1,)" // RequestNum::LOGIN_REQUESTTOKEN
+                             R"( "params": {)"
+                             R"( "userDbId": 1 },)"
+                             R"( "type": 1 })")}; // GuiJobType::Query
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto loginRequestTokenJob = std::dynamic_pointer_cast<LoginRequestTokenJob>(job);
+        CPPUNIT_ASSERT(loginRequestTokenJob->_code == Str("aaaa"));
+        CPPUNIT_ASSERT(loginRequestTokenJob->_codeVerifier == Str("bbbb"));
+
+        // Process job simulation
+        loginRequestTokenJob->_userDbId = 1;
+    };
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(queryStr, answerStr, {}, processFct);
+#else
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
+void TestGuiCommChannel::testUserDbIdListJob() {
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    const auto queryStr{Str(R"({ "id": 1,)"
+                            R"( "num": 2,)" // RequestNum::USER_DBIDLIST
+                            R"( "params": { } })")};
+#else
+    // There is no need to pass a request id as the response is via a callback.
+    const auto queryStr{Str(R"({ "num": 2,)" // RequestNum::USER_DBIDLIST
+                            R"( "params": { } })")};
+
+    // Callback expected answer
+    const auto cbkAnswerStr{Str(R"({"cause":0,"code":0,"id":1,"params":{"userDbIdList":[1,2,3]}})")};
+#endif
+
+    // Job expected answer
+    const auto answerStr{Str(R"({ "cause": 0,)"
+                             R"( "code": 0,)"
+                             R"( "id": 1,)"
+                             R"( "num": 2,)" // RequestNum::USER_DBIDLIST
+                             R"( "params": {)"
+                             R"( "userDbIdList": [ 1, 2, 3 ] },)"
+                             R"( "type": 1 })")}; // GuiJobType::Query
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto userDbIdListJob = std::dynamic_pointer_cast<UserDbIdListJob>(job);
+
+        userDbIdListJob->_userDbIdList = {1, 2, 3};
+    };
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(queryStr, answerStr, {}, processFct);
+#else
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
+void TestGuiCommChannel::testGenericJob(const CommString &query, const CommString &answer, const CommString &cbkAnswer,
+                                        const std::function<void(std::shared_ptr<AbstractGuiJob>)> &processFct) {
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    assert(cbkAnswer.empty());
+#else
+    assert(!cbkAnswer.empty());
+#endif
+
+    auto test = [&](const CommString &testQuery, std::shared_ptr<AbstractCommChannel> testChannel) {
         //  Deserialize generic parameters
         int requestId = 0;
         RequestNum requestNum = RequestNum::Unknown;
         Poco::DynamicStruct inParams;
-        if (!AbstractGuiJob::deserializeGenericInputParms(inputStr, requestId, requestNum, inParams)) {
+        if (!AbstractGuiJob::deserializeGenericInputParms(testQuery, requestId, requestNum, inParams)) {
             CPPUNIT_ASSERT(false);
         }
 
-        CPPUNIT_ASSERT(requestId == 1);
-        CPPUNIT_ASSERT(requestNum == RequestNum::LOGIN_REQUESTTOKEN);
-        CPPUNIT_ASSERT(inParams["code"] == "YWFhYQ=="); // "aaaa" base64 encoded
-        CPPUNIT_ASSERT(inParams["codeVerifier"] == "YmJiYg=="); // "bbbb" base64 encoded
-
         // Create job
-        auto job = guiJobFactory.make(requestNum, nullptr, requestId, inParams, channel);
+        auto job = _guiJobFactory.make(requestNum, nullptr, requestId, inParams, testChannel);
         CPPUNIT_ASSERT(job != nullptr);
 
         // Deserialize specific parameters
@@ -161,57 +233,41 @@ void TestGuiCommChannel::testLoginRequestToken() {
             CPPUNIT_ASSERT(false);
         }
 
-        auto loginRequestTokenJob = std::dynamic_pointer_cast<LoginRequestTokenJob>(job);
-        CPPUNIT_ASSERT(loginRequestTokenJob->_code == Str("aaaa"));
-        CPPUNIT_ASSERT(loginRequestTokenJob->_codeVerifier == Str("bbbb"));
-
         // Process job simulation
-        loginRequestTokenJob->_userDbId = 1;
+        processFct(job);
 
         // Serialize specific parameters
-        if (!job->serializeOutputParms(false)) {
+        if (!job->serializeOutputParms()) {
             CPPUNIT_ASSERT(false);
         }
-
-        CPPUNIT_ASSERT(job->_outParams["userDbId"] == 1);
 
         if (!job->serializeGenericOutputParms(ExitCode::Ok)) {
             CPPUNIT_ASSERT(false);
         }
 
-        CPPUNIT_ASSERT(job->_outputParamsStr == outputParamsStr);
+        CPPUNIT_ASSERT(job->_outputParamsStr == answer);
 
-        CPPUNIT_ASSERT(channel->sendMessage(job->_outputParamsStr));
+        CPPUNIT_ASSERT(testChannel->sendMessage(job->_outputParamsStr));
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto inputParamsStr{Str(R"({ "id": 1,)"
-                                  R"( "num": 1,)" // LOGIN_REQUESTTOKEN
-                                  R"( "params": {)"
-                                  R"( "code": "YWFhYQ==",)"
-                                  R"( "codeVerifier": "YmJiYg==" } })")};
-
-    auto channel = std::make_shared<GuiCommChannel>(Poco::Net::StreamSocket());
-    test(inputParamsStr, channel);
+    auto testChannel = std::make_shared<GuiCommChannel>(Poco::Net::StreamSocket());
+    test(query, testChannel);
 #else
-    auto readyReadCbk = [&](std::shared_ptr<AbstractCommChannel> channel) {
-        if (channel->canReadMessage()) {
-            CommString query = channel->readMessage();
-            if (!query.empty()) {
-                test(query, channel);
+    auto readyReadCbk = [&](std::shared_ptr<AbstractCommChannel> testChannel) {
+        if (testChannel->canReadMessage()) {
+            CommString testQuery = testChannel->readMessage();
+            if (!testQuery.empty()) {
+                test(testQuery, testChannel);
             } else {
                 CPPUNIT_ASSERT(false);
             }
         }
     };
 
-    auto answerCbk = [](int userDbId, const std::string &error, const std::string &errorDescr) {
-        CPPUNIT_ASSERT(userDbId == 1);
-        CPPUNIT_ASSERT(error.empty());
-        CPPUNIT_ASSERT(errorDescr.empty());
-    };
+    auto answerCbk = [=](const CommString &answer) { CPPUNIT_ASSERT(answer == CommString(cbkAnswer)); };
 
-    GuiCommChannel::runLoginRequestToken("aaaa", "bbbb", readyReadCbk, answerCbk);
+    GuiCommChannel::runSendQuery(query, readyReadCbk, answerCbk);
 #endif
 }
 

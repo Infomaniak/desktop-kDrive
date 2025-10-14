@@ -11,163 +11,187 @@
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:BooleanToInvertedVisibilityConverter  x:Key="BooleanToInvertedVisibilityConverter" />
-        <converters:NodeTypeToSvgUriConverter x:Key="NodeTypeToSvgUriConverter" />
+        <converters:NodeTypeToIconConverter x:Key="NodeTypeToSvgUriConverter" />
         <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
         <converters:DateTimeToTimeAgoConverter x:Key="DateTimeToTimeAgoConverter" />
+        <converters:BytesToHumanReadableStringConverter x:Key="BytesToHumanReadableStringConverter" />
+        <converters:SyncActivityStateToIconConverter x:Key="SyncActivityStateToIconConverter" />
+        <converters:SyncDirectionToIconConverter x:Key="SyncDirectionToIconConverter" />
+        <converters:SyncDirectionToToolTipConverter x:Key="SyncDirectionToToolTipConverter" />
     </UserControl.Resources>
-    <Border Background="{ThemeResource LayerFillColorDefaultBrush }"
-            CornerRadius="8"
-            BorderThickness="1"
-            BorderBrush="#E6EAF5">
-        <Grid>
-            <!-- Empty list-->
-            <Grid CornerRadius="8"
-                  Visibility="{x:Bind ViewModel.SelectedSync.SyncActivities.Count, Converter={StaticResource BooleanToInvertedVisibilityConverter }, Mode=OneWay}">
-                <Grid.Background>
-                    <LinearGradientBrush StartPoint="0,0"
-                                         EndPoint="1,0">
-                        <GradientStop Color="#EBF1FF"
-                                      Offset="0.0" />
-                        <GradientStop Color="#5C89F7"
-                                      Offset="1.0" />
-                    </LinearGradientBrush>
-                </Grid.Background>
-                <Border CornerRadius="8">
-                    <Border.Background>
-                        <AcrylicBrush TintColor="White"
-                                      TintOpacity="0.4" />
-                    </Border.Background>
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <StackPanel Grid.Row="0"
-                                    VerticalAlignment="Center"
-                                    HorizontalAlignment="Center">
-                            <Image Width="96"
-                                   Height="96"
-                                   HorizontalAlignment="Center">
-                                <Image.Source>
-                                    <SvgImageSource UriSource="ms-appx:///Assets/Images/folder.svg" />
-                                </Image.Source>
-                            </Image>
-                            <TextBlock Text="Aucune activité récente."
-                                       FontWeight="Bold"
-                                       FontSize="16"
-                                       HorizontalAlignment="Center"
-                                       Margin="0,24,0,0" />
-                            <TextBlock Text="Vous pouvez fermer l’application."
-                                       FontSize="14"
-                                       Opacity="0.6"
-                                       HorizontalAlignment="Center"
-                                       Margin="0,8,0,0" />
-                        </StackPanel>
-                    </Grid>
-                </Border>
-            </Grid>
+    <Grid>
+        <!-- Empty list-->
+        <Grid RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}"
+              Visibility="{x:Bind ViewModel.SelectedSync.SyncActivities.Count, Converter={StaticResource BooleanToInvertedVisibilityConverter }, Mode=OneWay}"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center">
 
-            <!-- Non empty list -->
-            <ListView x:Name="ActivityList"
-                      ItemsSource="{x:Bind ViewModel.SelectedSync.SyncActivities, Mode=OneWay}"
-                      SelectionMode="None"
-                      Visibility="{x:Bind ViewModel.SelectedSync.SyncActivities.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
-                <ListView.Header>
-                    <Grid Padding="15"
-                          Background="{ThemeResource AppBarBackgroundThemeBrush}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <ImageIcon Height="120"
+                       Grid.Row="0">
+                <ImageIcon.Source>
+                    <SvgImageSource UriSource="ms-appx:///Assets/Images/servin-light.svg" />
+                </ImageIcon.Source>
+            </ImageIcon>
+
+            <StackPanel Grid.Row="1"
+                        Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                <!-- Title -->
+                <TextBlock x:Uid="CC_SyncActivityTable_Empty_Title"
+                           Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
+                           HorizontalAlignment="Center" />
+
+                <!-- Description -->
+                <TextBlock x:Uid="CC_SyncActivityTable_Empty_Description"
+                           Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
+                           HorizontalAlignment="Center"
+                           TextWrapping="WrapWholeWords" />
+
+                <!-- Link -->
+                <HyperlinkButton x:Uid="CC_SyncActivityTable_Empty_Link"
+                                 HorizontalAlignment="Center"
+                                 Click="UpToDateLink_Click" />
+            </StackPanel>
+        </Grid>
+
+        <!-- Non empty list -->
+        <ListView x:Name="ActivityList"
+                  SelectionMode="None"
+                  Visibility="{x:Bind ViewModel.SelectedSync.SyncActivities.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+            <ListView.Header>
+                <Grid Height="40">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="204*" />
+                        <ColumnDefinition Width="204*" />
+                        <ColumnDefinition Width="92*" />
+                        <ColumnDefinition Width="72*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Uid="CC_SyncActivityTable_Header_Name"
+                               Grid.Column="0"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                               VerticalAlignment="Center"
+                               Padding="{StaticResource Infomaniak.Style.Thickness.Left.S}"
+                               Foreground="{ThemeResource TextFillColorDisabled}" />
+                    <TextBlock x:Uid="CC_SyncActivityTable_Header_LastLocation"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                               Grid.Column="1"
+                               VerticalAlignment="Center"
+                               Padding="{StaticResource Infomaniak.Style.Thickness.Left.S}"
+                               Foreground="{ThemeResource TextFillColorDisabled}" />
+
+                    <TextBlock x:Uid="CC_SyncActivityTable_Header_Size"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                               Grid.Column="2"
+                               VerticalAlignment="Center"
+                               Foreground="{ThemeResource TextFillColorDisabled}" />
+
+                    <TextBlock x:Uid="CC_SyncActivityTable_Header_State"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                               Grid.Column="3"
+                               VerticalAlignment="Center"
+                               Foreground="{ThemeResource TextFillColorDisabled}" />
+
+                </Grid>
+            </ListView.Header>
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment"
+                            Value="Stretch" />
+                    <Setter Property="VerticalContentAlignment"
+                            Value="Stretch" />
+                    <Setter Property="Padding"
+                            Value="1" />
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="viewmodels:SyncActivity">
+                    <Grid CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
+                          MinHeight="34"
+                          Background="{ThemeResource LayerFillColorAlt}">
+                        <Grid.Resources>
+                            <DataTemplate x:Key="FileTemplate"
+                                          x:DataType="viewmodels:SyncActivity">
+                                <TextBlock Text="{x:Bind Size, Converter={StaticResource BytesToHumanReadableStringConverter}}"
+                                           VerticalAlignment="Center" />
+                            </DataTemplate>
+                            <DataTemplate x:Key="DirectoryTemplate"
+                                          x:DataType="viewmodels:SyncActivity">
+                                <TextBlock Text="-"
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Center" />
+                            </DataTemplate>
+                            <local:ItemTypeDataTemplateSelector x:Key="ItemTypeDataTemplateSelector"
+                                                                FileTemplate="{StaticResource FileTemplate}"
+                                                                DirectoryTemplate="{StaticResource DirectoryTemplate}" />
+                        </Grid.Resources>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="2*" />
-                            <ColumnDefinition Width="3*" />
-                            <ColumnDefinition Width="1*" />
-                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="204*" />
+                            <ColumnDefinition Width="204*" />
+                            <ColumnDefinition Width="92*" />
+                            <ColumnDefinition Width="72*" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock x:Uid="CC_ActivityList_Header_Name"
-                                   Grid.Column="0"
-                                   Padding="8,0,0,0"
-                                   Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
-                        <TextBlock x:Uid="CC_ActivityList_Header_LastLocation"
-                                   Padding="16,0,0,0"
-                                   Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
-                                   Grid.Column="1" />
-                        <TextBlock x:Uid="CC_ActivityList_Header_Size"
-                                   Padding="16,0,0,0"
-                                   Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
-                                   Grid.Column="2" />
-                        <TextBlock x:Uid="CC_ActivityList_Header_State"
-                                   Padding="16,0,0,0"
-                                   Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
-                                   Grid.Column="3" />
-                    </Grid>
-                </ListView.Header>
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem">
-                        <Setter Property="Margin"
-                                Value="4" />
-                        <Setter Property="HorizontalContentAlignment"
-                                Value="Stretch" />
-                        <Setter Property="VerticalContentAlignment"
-                                Value="Stretch" />
-                        <Setter Property="Padding"
-                                Value="0" />
-                    </Style>
-                </ListView.ItemContainerStyle>
-                <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="viewmodels:SyncActivity">
-                        <Grid Padding="16,4,16,4"
-                              CornerRadius="8"
-                              Loading="Grid_Loading">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="2*" />
-                                <ColumnDefinition Width="3*" />
-                                <ColumnDefinition Width="1*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="40" />
-                            </Grid.RowDefinitions>
-                            <StackPanel Orientation="Horizontal"
-                                        Grid.Column="0"
-                                        VerticalAlignment="Center">
-                                <ImageIcon Height="16"
-                                           Margin="0,0,0,8"
-                                           Grid.Column="0">
-                                    <ImageIcon.Source>
-                                        <SvgImageSource UriSource="{x:Bind NodeType, Converter={StaticResource NodeTypeToSvgUriConverter}}" />
-                                    </ImageIcon.Source>
-                                </ImageIcon>
-                                <TextBlock Text="{x:Bind Name}"
-                                           Grid.Column="0"
-                                           Padding="10,0,0,0" />
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal"
-                                        Grid.Column="1"
-                                        VerticalAlignment="Center">
-                                <HyperlinkButton Content="{x:Bind ParentFolderPath, Converter={StaticResource StringPathToFileNameConverter}}"
-                                                 Tag="{x:Bind ParentFolderPath}"
-                                                 VerticalAlignment="Center"
-                                                 Click="SyncActivityParent_Click"
-                                                 Margin="8,0,0,0"
-                                                 Padding="0,0,0,0" />
-                                <TextBlock VerticalAlignment="Center">
-                                    <Run Text=" - " />
-                                    <Run Text="{x:Bind ActivityTime, Converter={StaticResource DateTimeToTimeAgoConverter}, Mode=OneWay}" />
-                                </TextBlock>
-                            </StackPanel>
-                            <TextBlock Text="{x:Bind Size}"
-                                       Grid.Column="2"
-                                       VerticalAlignment="Center" />
+                        <StackPanel Orientation="Horizontal"
+                                    Grid.Column="0"
+                                    VerticalAlignment="Center"
+                                    Padding="{StaticResource Infomaniak.Style.Thickness.Left.S}"
+                                    Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
                             <ImageIcon Height="16"
-                                       Margin="0,0,0,8"
-                                       Grid.Column="3"
-                                       VerticalAlignment="Center">
+                                       Grid.Column="0">
                                 <ImageIcon.Source>
-                                    <SvgImageSource UriSource="ms-appx:///Assets/Icons/circle-check.svg" />
+                                    <SvgImageSource UriSource="{x:Bind NodeType, Converter={StaticResource NodeTypeToSvgUriConverter}}" />
                                 </ImageIcon.Source>
                             </ImageIcon>
-                        </Grid>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-        </Grid>
-    </Border>
+                            <TextBlock Text="{x:Bind Name}"
+                                       Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal"
+                                    Grid.Column="1"
+                                    VerticalAlignment="Center">
+                            <HyperlinkButton Content="{x:Bind ParentFolderPath, Converter={StaticResource StringPathToFileNameConverter}}"
+                                             Tag="{x:Bind ParentFolderPath}"
+                                             VerticalAlignment="Center"
+                                             Click="SyncActivityParent_Click" />
+                            <TextBlock VerticalAlignment="Center"
+                                       Style="{StaticResource Infomaniak.Style.TextBlock.Body}">
+                                    <Run Text=" - " />
+                                    <Run Text="{x:Bind ActivityTime, Converter={StaticResource DateTimeToTimeAgoConverter}, Mode=OneWay}" />
+                            </TextBlock>
+                        </StackPanel>
+
+                        <ContentControl Grid.Column="2"
+                                        VerticalAlignment="Center"
+                                        ContentTemplateSelector="{StaticResource ItemTypeDataTemplateSelector}"
+                                        Content="{x:Bind}" />
+
+                        <StackPanel Orientation="Horizontal"
+                                    Grid.Column="3"
+                                    VerticalAlignment="Center"
+                                    Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
+                            <ImageIcon Height="16"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Left">
+                                <ImageIcon.Source>
+                                    <SvgImageSource UriSource="{x:Bind State, Converter={StaticResource SyncActivityStateToIconConverter}, Mode=OneWay}" />
+                                </ImageIcon.Source>
+                            </ImageIcon>
+                            <ImageIcon Height="16"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Left">
+                                <ToolTipService.ToolTip>
+                                    <ToolTip Content="{x:Bind Direction, Converter={StaticResource SyncDirectionToToolTipConverter}, Mode=OneWay}" />
+                                </ToolTipService.ToolTip>
+                                <ImageIcon.Source>
+                                    <SvgImageSource UriSource="{x:Bind Direction, Converter={StaticResource SyncDirectionToIconConverter}, Mode=OneWay}" />
+                                </ImageIcon.Source>
+                            </ImageIcon>
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
 </UserControl>

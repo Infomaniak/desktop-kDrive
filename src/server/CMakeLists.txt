@@ -52,6 +52,7 @@ set(server_SRCS
     comm/guijobs/abstractguijob.h comm/guijobs/abstractguijob.cpp
     comm/guijobs/guijobfactory.h comm/guijobs/guijobfactory.cpp
     comm/guijobs/loginrequesttokenjob.h comm/guijobs/loginrequesttokenjob.cpp
+    comm/guijobs/userdbidlistjob.h comm/guijobs/userdbidlistjob.cpp
     comm/guijobs/signaluseraddedjob.h comm/guijobs/signaluseraddedjob.cpp
     comm/guijobs/signaluserupdatedjob.h comm/guijobs/signaluserupdatedjob.cpp
     migration/migrationparams.h migration/migrationparams.cpp

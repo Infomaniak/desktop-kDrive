@@ -61,18 +61,28 @@
                 <!-- Left: Logo + App Name -->
                 <customControls:AppTitleBarLogo Grid.Column="0" />
 
-                <!-- Middle: Search Box (centered in its column, which takes remaining space) -->
-                <AutoSuggestBox x:Uid="W_MainWindow_TitleBar_SearchBox"
-                                x:Name="W_MainWindow_TitleBar_SearchBox"
-                                Grid.Column="0"
-                                Grid.ColumnSpan="3"
-                                QueryIcon="Find"
-                                Width="319"
-                                Height="32"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
-                                BorderThickness="1" />
+                <StackPanel Grid.Column="0"
+                            Grid.ColumnSpan="3"
+                            Height="32"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                    <customControls:SyncStartPauseButton />
+
+                    <!-- Middle: Search Box (centered in its column, which takes remaining space) -->
+                    <AutoSuggestBox x:Uid="W_MainWindow_TitleBar_SearchBox"
+                                    x:Name="W_MainWindow_TitleBar_SearchBox"
+                                    Grid.Column="0"
+                                    Grid.ColumnSpan="3"
+                                    QueryIcon="Find"
+                                    Width="319"
+                                    Height="32"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
+                                    BorderThickness="1" />
+                </StackPanel>
             </Grid>
         </Border>
 
@@ -89,7 +99,8 @@
             </NavigationView.Resources>
 
             <NavigationView.PaneCustomContent>
-                    <customControls:SyncSelector HorizontalAlignment="Stretch" Margin="0,9,4,20"/>
+                <customControls:SyncSelector HorizontalAlignment="Stretch"
+                                             Margin="0,9,4,20" />
             </NavigationView.PaneCustomContent>
 
             <NavigationView.MenuItems>
