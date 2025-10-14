@@ -16,7 +16,6 @@ namespace Infomaniak.kDrive
         private static readonly string _clientId = "5EA39279-FF64-4BB8-A872-4A40B5786317";
         private static readonly Uri _redirectUri = new Uri("kdrive://auth-desktop");
         private static readonly Uri _authorizationEndpoint = new Uri("https://login.infomaniak.com/authorize");
-        private static readonly Uri _tokenEndpoint = new Uri("https://login.infomaniak.com/token");
 
         public struct OAuthResult
         {
@@ -30,7 +29,6 @@ namespace Infomaniak.kDrive
 
             var authRequestParams = AuthRequestParams.CreateForAuthorizationCodeRequest(_clientId, _redirectUri);
             authRequestParams.CodeChallengeMethod = CodeChallengeMethodKind.S256;
-
             try
             {
                 var authRequestResult = await OAuth2Manager

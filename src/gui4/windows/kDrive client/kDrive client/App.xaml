@@ -27,6 +27,10 @@
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
                 <ResourceDictionary Source="TrayIcon/TrayIconResources.xaml" />
                 <ResourceDictionary Source="Styles/InfomaniakStyles.xaml" />
+                
+                <!-- Icon ressource -->
+                <ResourceDictionary Source="Styles/DS/InfomaniakIcons.xaml" />
+                <ResourceDictionary Source="Styles/Custom/InfomaniakIcons.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

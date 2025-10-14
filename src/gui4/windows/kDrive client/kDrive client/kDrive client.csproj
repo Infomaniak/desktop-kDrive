@@ -51,6 +51,7 @@
     <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.3.2" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.6584" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.250916003" />
+    <PackageReference Include="Svg" Version="3.4.7" />
   </ItemGroup>
 
   <!--
@@ -73,9 +74,6 @@
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
   </PropertyGroup>
   <ItemGroup>
-    <Page Update="CustomControls\SvgIcon.xaml">
-      <SubType>Designer</SubType>
-    </Page>
     <Page Update="CustomControls\LottiePlayer.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -100,6 +98,12 @@
     <Page Update="Pages\Onboarding\FinishingPage.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="Styles\Custom\InfomaniakIcons.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Styles\DS\InfomaniakIcons.xaml">
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <PRIResource Update="Strings\fr-FR\Resources.resw">
@@ -108,6 +112,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="AnimatedElements\" />
+    <Folder Include="Assets\DS\Icons\Communication\" />
   </ItemGroup>
   <ItemGroup>
     <Page Update="CustomControls\AppTitleBarLogo.xaml">
