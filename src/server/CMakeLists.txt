@@ -54,8 +54,10 @@ set(server_SRCS
     comm/guijobs/loginrequesttokenjob.h comm/guijobs/loginrequesttokenjob.cpp
     comm/guijobs/userdbidlistjob.h comm/guijobs/userdbidlistjob.cpp
     comm/guijobs/userinfolistjob.h comm/guijobs/userinfolistjob.cpp
+    comm/guijobs/userdeletejob.h comm/guijobs/userdeletejob.cpp
     comm/guijobs/signaluseraddedjob.h comm/guijobs/signaluseraddedjob.cpp
     comm/guijobs/signaluserupdatedjob.h comm/guijobs/signaluserupdatedjob.cpp
+    comm/guijobs/signaluserremovedjob.h comm/guijobs/signaluserremovedjob.cpp
     migration/migrationparams.h migration/migrationparams.cpp
     requests/serverrequests.h requests/serverrequests.cpp
     requests/offlinefilessizeestimator.h requests/offlinefilessizeestimator.cpp

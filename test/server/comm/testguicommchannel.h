@@ -52,6 +52,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testLoginRequestTokenJob);
         CPPUNIT_TEST(testUserDbIdListJob);
         CPPUNIT_TEST(testUserInfoListJob);
+        CPPUNIT_TEST(testUserDeleteJob);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -64,6 +65,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testLoginRequestTokenJob();
         void testUserDbIdListJob();
         void testUserInfoListJob();
+        void testUserDeleteJob();
 
     private:
         GuiJobFactory _guiJobFactory;

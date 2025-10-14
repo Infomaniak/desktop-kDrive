@@ -16,30 +16,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "signaluseraddedjob.h"
+#include "signaluserremovedjob.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 
 // Output parameters keys
-static const auto outParamsUserInfo = "userInfo";
+static const auto outParamsUserDbId = "userDbId";
 
 namespace KDC {
 
-SignalUserAddedJob::SignalUserAddedJob(std::shared_ptr<CommManager> commManager, std::shared_ptr<AbstractCommChannel> channel,
-                                       const UserInfo &userInfo) :
+SignalUserRemovedJob::SignalUserRemovedJob(std::shared_ptr<CommManager> commManager, std::shared_ptr<AbstractCommChannel> channel,
+                                           int userDbId) :
     AbstractGuiJob(commManager, channel),
-    _userInfo(userInfo) {
-    _signalNum = SignalNum::USER_ADDED;
+    _userDbId(userDbId) {
+    _signalNum = SignalNum::USER_REMOVED;
 }
 
-ExitInfo SignalUserAddedJob::serializeOutputParms() {
+ExitInfo SignalUserRemovedJob::serializeOutputParms() {
     // Output parameters serialization
-    std::function<Poco::Dynamic::Var(const UserInfo &)> userInfo2DynamicVar = [](const UserInfo &value) {
-        Poco::DynamicStruct structValue;
-        value.toDynamicStruct(structValue);
-        return structValue;
-    };
-    writeParamValue(outParamsUserInfo, _userInfo, userInfo2DynamicVar);
+    writeParamValue(outParamsUserDbId, _userDbId);
     return ExitCode::Ok;
 }
 

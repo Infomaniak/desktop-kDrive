@@ -17,7 +17,6 @@
  */
 
 #include "signaluserupdatedjob.h"
-#include "libcommon/info/userinfo.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 
