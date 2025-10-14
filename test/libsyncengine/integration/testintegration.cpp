@@ -240,6 +240,7 @@ void TestIntegration::inconsistencyTests() {
 void TestIntegration::testBreakCycle() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
+    // Setup initial situation
     _syncPal->pause(); // We need to pause the sync because the back might take some time to notify all the events.
     const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
     NodeId nodeIdAA;
@@ -258,6 +259,7 @@ void TestIntegration::testBreakCycle() {
     _syncPal->unpause();
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
+    // Generate cycle
     _syncPal->pause(); // We need to pause the sync because the back might take some time to notify all the events.
     const auto pathAA = _syncPal->localPath() / tmpRemoteDir.name() / "A" / "AA";
     // Rename A/AA/AAA to A/AA/AAA2 on remote replica.

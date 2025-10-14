@@ -48,6 +48,11 @@ void OperationSorterWorker::execute() {
     setDone(ExitCode::Ok);
 }
 
+bool hasMoveOperation(const std::shared_ptr<SyncOperationList> &syncOps) {
+    return !syncOps->opListIdByType(OperationType::Move).empty() || !syncOps->opListIdByType(OperationType::MoveEdit).empty() ||
+           !syncOps->opListIdByType(OperationType::MoveOut).empty();
+}
+
 void OperationSorterWorker::sortOperations() {
     _syncPal->_syncOps->startUpdate();
     SyncOperationList completeCycle;
@@ -70,9 +75,7 @@ void OperationSorterWorker::sortOperations() {
         fixMoveBeforeMoveHierarchyFlip();
 
         // Cycles can occur only in presence of at least 1 Move operation.
-        if (!_syncPal->_syncOps->opListIdByType(OperationType::Move).empty() ||
-            !_syncPal->_syncOps->opListIdByType(OperationType::MoveEdit).empty() ||
-            !_syncPal->_syncOps->opListIdByType(OperationType::MoveOut).empty()) {
+        if (hasMoveOperation(_syncPal->_syncOps)) {
             // Check for cycles.
             CycleFinder cycleFinder(_reorderings);
             cycleFinder.findCompleteCycle();
