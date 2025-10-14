@@ -55,6 +55,7 @@ set(server_SRCS
     comm/guijobs/userdbidlistjob.h comm/guijobs/userdbidlistjob.cpp
     comm/guijobs/userinfolistjob.h comm/guijobs/userinfolistjob.cpp
     comm/guijobs/userdeletejob.h comm/guijobs/userdeletejob.cpp
+    comm/guijobs/useravailabledrivesjob.h comm/guijobs/useravailabledrivesjob.cpp
     comm/guijobs/signaluseraddedjob.h comm/guijobs/signaluseraddedjob.cpp
     comm/guijobs/signaluserupdatedjob.h comm/guijobs/signaluserupdatedjob.cpp
     comm/guijobs/signaluserremovedjob.h comm/guijobs/signaluserremovedjob.cpp

@@ -21,6 +21,7 @@
 #include "comm/guijobs/loginrequesttokenjob.h"
 #include "comm/guijobs/userdbidlistjob.h"
 #include "comm/guijobs/userinfolistjob.h"
+#include "comm/guijobs/useravailabledrivesjob.h"
 #include "libcommon/comm.h"
 #include "log/log.h"
 
@@ -298,6 +299,58 @@ void TestGuiCommChannel::testUserDeleteJob() {
                              R"( "type": 1 })")}; // GuiJobType::Query
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob>) {};
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(queryStr, answerStr, {}, processFct);
+#else
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
+void TestGuiCommChannel::testUserAvailableDrivesJob() {
+    // Base64 conversions
+    // "#aabbcc" <=> "I2FhYmJjYw=="
+    // "#ddeeff" <=> "I2RkZWVmZg=="
+    // "drive1111" <=> "ZHJpdmUxMTEx"
+    // "drive2222" <=> "ZHJpdmUyMjIy"
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    const auto queryStr{Str(R"({ "id": 1,)"
+                            R"( "num": 5,)" // RequestNum::USER_AVAILABLEDRIVES
+                            R"( "params": { "userDbId": 1 } })")};
+#else
+    // There is no need to pass a request id as the response is via a callback.
+    const auto queryStr{Str(R"({ "num": 5,)" // RequestNum::USER_AVAILABLEDRIVES
+                            R"( "params": { "userDbId": 1 } })")};
+
+    // Callback expected answer
+    const auto cbkAnswerStr{
+            Str(R"({"cause":0,"code":0,"id":1,"params":{"driveAvailableInfoList":[)"
+                R"({"accountId":11,"color":"I2FhYmJjYw==","driveId":1111,"name":"ZHJpdmUxMTEx","userDbId":1,"userId":111},)"
+                R"({"accountId":22,"color":"I2RkZWVmZg==","driveId":2222,"name":"ZHJpdmUyMjIy","userDbId":2,"userId":222}]}})")};
+#endif
+
+    // Job expected answer
+    const auto answerStr{Str(
+            R"({ "cause": 0,)"
+            R"( "code": 0,)"
+            R"( "id": 1,)"
+            R"( "num": 5,)" // RequestNum::USER_AVAILABLEDRIVES
+            R"( "params": { "driveAvailableInfoList": [)"
+            R"( { "accountId": 11, "color": "I2FhYmJjYw==", "driveId": 1111, "name": "ZHJpdmUxMTEx", "userDbId": 1, "userId": 111 },)"
+            R"( { "accountId": 22, "color": "I2RkZWVmZg==", "driveId": 2222, "name": "ZHJpdmUyMjIy", "userDbId": 2, "userId": 222 } ] },)"
+            R"( "type": 1 })")}; // GuiJobType::Query
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto userAvailableDrivesJob = std::dynamic_pointer_cast<UserAvailableDrivesJob>(job);
+
+        DriveAvailableInfo dai1(1111, 111, 11, "drive1111", "#aabbcc");
+        dai1.setUserDbId(1);
+        DriveAvailableInfo dai2(2222, 222, 22, "drive2222", "#ddeeff");
+        dai2.setUserDbId(2);
+
+        userAvailableDrivesJob->_driveAvailableInfoList = {dai1, dai2};
+    };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(queryStr, answerStr, {}, processFct);

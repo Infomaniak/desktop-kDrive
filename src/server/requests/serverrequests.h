@@ -90,7 +90,9 @@ struct SYNCENGINE_EXPORT ServerRequests {
                                      bool &userCreated, std::string &error, std::string &errorDescr);
         static ExitCode requestToken(const QString &code, const QString &codeVerifier, UserInfo &userInfo, bool &userCreated,
                                      std::string &error, std::string &errorDescr);
-        static ExitCode getUserAvailableDrives(int userDbId, QHash<int, DriveAvailableInfo> &list);
+        static ExitCode getUserAvailableDrives(
+                int userDbId, QHash<int, DriveAvailableInfo> &list); // TODO: Delete after switching to the new comm layer
+        static ExitCode getUserAvailableDrives(int userDbId, std::vector<DriveAvailableInfo> &list);
         static ExitCode addSync(int userDbId, int accountId, int driveId, const QString &localFolderPath,
                                 const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
                                 bool showInNavigationPane, AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo);

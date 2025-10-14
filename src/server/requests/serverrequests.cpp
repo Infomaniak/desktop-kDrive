@@ -582,6 +582,88 @@ ExitCode ServerRequests::getUserAvailableDrives(int userDbId, QHash<int, DriveAv
     return ExitCode::Ok;
 }
 
+ExitCode ServerRequests::getUserAvailableDrives(int userDbId, std::vector<DriveAvailableInfo> &list) {
+    std::shared_ptr<GetDrivesListJob> job = nullptr;
+    try {
+        job = std::make_shared<GetDrivesListJob>(userDbId);
+    } catch (const std::exception &e) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in GetDrivesListJob::GetDrivesListJob for userDbId=" << userDbId << " error=" << e.what());
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
+    }
+
+    ExitCode exitCode = job->runSynchronously();
+    if (exitCode != ExitCode::Ok) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in GetDrivesListJob::runSynchronously for userDbId=" << userDbId << " code=" << exitCode);
+        return exitCode;
+    }
+
+    Poco::JSON::Object::Ptr resObj = job->jsonRes();
+    if (!resObj) {
+        LOG_WARN(Log::instance()->getLogger(), "GetDrivesListJob failed for userDbId=" << userDbId);
+        return ExitCode::BackError;
+    }
+
+    Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
+    if (!dataArray) {
+        LOG_WARN(Log::instance()->getLogger(), "GetDrivesListJob failed for userDbId=" << userDbId);
+        return ExitCode::BackError;
+    }
+
+    list.clear();
+    for (size_t i = 0; i < dataArray->size(); i++) {
+        Poco::JSON::Object::Ptr obj = dataArray->getObject(static_cast<unsigned int>(i));
+        if (!obj) {
+            continue;
+        }
+
+        int driveId = -1;
+        if (!JsonParserUtility::extractValue(obj, driveIdKey, driveId)) {
+            return ExitCode::BackError;
+        }
+
+        int userId = -1;
+        if (!JsonParserUtility::extractValue(obj, idKey, userId)) {
+            return ExitCode::BackError;
+        }
+
+        int accountId = -1;
+        if (!JsonParserUtility::extractValue(obj, accountIdKey, accountId)) {
+            return ExitCode::BackError;
+        }
+
+        std::string driveName;
+        if (!JsonParserUtility::extractValue(obj, driveNameKey, driveName)) {
+            return ExitCode::BackError;
+        }
+
+        std::string colorHex;
+        if (Poco::JSON::Object::Ptr prefObj = obj->getObject(preferenceKey)) {
+            if (!JsonParserUtility::extractValue(prefObj, colorKey, colorHex, false)) {
+                return ExitCode::BackError;
+            }
+        }
+        DriveAvailableInfo driveInfo(driveId, userId, accountId, QString::fromStdString(driveName),
+                                     QString::fromStdString(colorHex));
+
+        // Search user in DB
+        User user;
+        bool found = false;
+        if (!ParmsDb::instance()->selectUserByUserId(userId, user, found)) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectUserByUserId");
+            return ExitCode::DbError;
+        }
+        if (found) {
+            driveInfo.setUserDbId(user.dbId());
+        }
+
+        list.push_back(driveInfo);
+    }
+
+    return ExitCode::Ok;
+}
+
 ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, const QString &nodeId, QList<NodeInfo> &list,
                                        const bool withPath /*= false*/) {
     list.clear();

@@ -21,6 +21,7 @@
 #include "userdbidlistjob.h"
 #include "userinfolistjob.h"
 #include "userdeletejob.h"
+#include "useravailabledrivesjob.h"
 
 namespace KDC {
 
@@ -40,9 +41,15 @@ GuiJobFactory::GuiJobFactory() {
                     std::shared_ptr<AbstractCommChannel> channel) {
                      return std::make_shared<UserInfoListJob>(commManager, requestId, inParams, channel);
                  }},
-                {RequestNum::USER_DELETE, [](std::shared_ptr<CommManager> commManager, int requestId,
-                                             const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel) {
+                {RequestNum::USER_DELETE,
+                 [](std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                    std::shared_ptr<AbstractCommChannel> channel) {
                      return std::make_shared<UserDeleteJob>(commManager, requestId, inParams, channel);
+                 }},
+                {RequestNum::USER_AVAILABLEDRIVES,
+                 [](std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                    std::shared_ptr<AbstractCommChannel> channel) {
+                     return std::make_shared<UserAvailableDrivesJob>(commManager, requestId, inParams, channel);
                  }}};
 }
 
