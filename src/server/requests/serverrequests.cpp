@@ -199,6 +199,23 @@ ExitCode ServerRequests::getAccountInfoList(QList<AccountInfo> &list) {
     return ExitCode::Ok;
 }
 
+ExitCode ServerRequests::getAccountInfoList(std::vector<AccountInfo> &list) {
+    std::vector<Account> accountList;
+    if (!ParmsDb::instance()->selectAllAccounts(accountList)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllAccounts");
+        return ExitCode::DbError;
+    }
+
+    list.clear();
+    for (const Account &account: accountList) {
+        AccountInfo accountInfo;
+        accountToAccountInfo(account, accountInfo);
+        list.push_back(accountInfo);
+    }
+
+    return ExitCode::Ok;
+}
+
 ExitCode ServerRequests::getDriveInfoList(QList<DriveInfo> &list) {
     std::vector<Drive> driveList;
     if (!ParmsDb::instance()->selectAllDrives(driveList)) {

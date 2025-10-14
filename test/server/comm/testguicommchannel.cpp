@@ -22,6 +22,7 @@
 #include "comm/guijobs/userdbidlistjob.h"
 #include "comm/guijobs/userinfolistjob.h"
 #include "comm/guijobs/useravailabledrivesjob.h"
+#include "comm/guijobs/accountinfolistjob.h"
 #include "libcommon/comm.h"
 #include "log/log.h"
 
@@ -350,6 +351,51 @@ void TestGuiCommChannel::testUserAvailableDrivesJob() {
         dai2.setUserDbId(2);
 
         userAvailableDrivesJob->_driveAvailableInfoList = {dai1, dai2};
+    };
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(queryStr, answerStr, {}, processFct);
+#else
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
+void TestGuiCommChannel::testAccountInfoListJob() {
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    const auto queryStr{Str(R"({ "id": 1,)"
+                            R"( "num": 6,)" // RequestNum::ACCOUNT_INFOLIST
+                            R"( "params": { } })")};
+#else
+    // There is no need to pass a request id as the response is via a callback.
+    const auto queryStr{Str(R"({ "num": 6,)" // RequestNum::ACCOUNT_INFOLIST
+                            R"( "params": { } })")};
+
+    // Callback expected answer
+    const auto cbkAnswerStr{Str(R"({"cause":0,"code":0,"id":1,"params":{"accountInfoList":[)"
+                                R"({"dbId":1,"userDbId":1},)"
+                                R"({"dbId":2,"userDbId":1}]}})")};
+#endif
+
+    // Job expected answer
+    const auto answerStr{
+            Str(R"({ "cause": 0,)"
+                R"( "code": 0,)"
+                R"( "id": 1,)"
+                R"( "num": 6,)" // RequestNum::ACCOUNT_INFOLIST
+                R"( "params": {)"
+                R"( "accountInfoList": [)"
+                R"( { "dbId": 1, "userDbId": 1 },)"
+                R"( { "dbId": 2, "userDbId": 1 } ] },)"
+                R"( "type": 1 })") // GuiJobType::Query
+    };
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto accountInfoListJob = std::dynamic_pointer_cast<AccountInfoListJob>(job);
+
+        AccountInfo ai1(1, 1);
+        AccountInfo ai2(2, 1);
+
+        accountInfoListJob->_accountInfoList = {ai1, ai2};
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)

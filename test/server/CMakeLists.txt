@@ -36,6 +36,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/userinfolistjob.h ${server_srcs_path}/comm/guijobs/userinfolistjob.cpp
     ${server_srcs_path}/comm/guijobs/userdeletejob.h ${server_srcs_path}/comm/guijobs/userdeletejob.cpp
     ${server_srcs_path}/comm/guijobs/useravailabledrivesjob.h ${server_srcs_path}/comm/guijobs/useravailabledrivesjob.cpp
+    ${server_srcs_path}/comm/guijobs/accountinfolistjob.h ${server_srcs_path}/comm/guijobs/accountinfolistjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluseraddedjob.h ${server_srcs_path}/comm/guijobs/signaluseraddedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.h ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserremovedjob.h ${server_srcs_path}/comm/guijobs/signaluserremovedjob.cpp
