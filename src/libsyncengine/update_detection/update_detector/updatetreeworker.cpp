@@ -92,7 +92,8 @@ void UpdateTreeWorker::execute() {
     }
 
     if (exitCode == ExitCode::Ok && !integrityCheck()) {
-        exitCode = ExitCode::DataError;
+        exitCode = ExitCode::InvalidOperation;
+        setExitCause(ExitCause::UpdateTreeIntegrityCheckFailed);
     }
 
     if (exitCode == ExitCode::Ok) {
@@ -1154,28 +1155,47 @@ bool UpdateTreeWorker::mergingTempNodeToRealNode(std::shared_ptr<Node> tmpNode, 
     return true;
 }
 
+std::wstring logStr(const std::shared_ptr<Node> node) {
+    std::wstringstream logStream;
+    logStream << L" (node ID: '" << CommonUtility::s2ws(node->id().value_or("-1")) << L"', DB ID: '" << node->idb().value_or(-1)
+              << L"', " << Utility::formatSyncName(node->name()) << L")";
+    return logStream.str();
+}
+static const auto integrityCheckFailureMsg = L" update tree integrity check failed.";
+
 bool UpdateTreeWorker::integrityCheck() {
     // TODO : check if this does not slow the process too much
     LOGW_SYNCPAL_INFO(_logger, _side << L" update tree integrity check started");
     for (const auto &[_, node]: _updateTree->nodes()) {
         if (!node->id().has_value() || node->id() == NodeId{} || node->isTmp() ||
             CommonUtility::startsWith(*node->id(), "tmp_")) {
-            std::wstringstream logStream;
-            logStream << L", DB ID: '" << node->idb().value_or(-1) << L"', name: '" << SyncName2WStr(node->name()) << L"')";
-            const auto integrityCheckFailureMsg = L" update tree integrity check failed.";
-
             if (!node->id().has_value() || node->id() == NodeId{}) {
                 LOGW_SYNCPAL_WARN(_logger, _side << integrityCheckFailureMsg << L" Found a non-temporary node without ID: "
-                                                 << L" (node ID: ''" << logStream.str());
+                                                 << logStr(node));
             } else {
                 LOGW_SYNCPAL_WARN(_logger, _side << integrityCheckFailureMsg << L" A temporary node remains in the update tree: "
-                                                 << L" (node ID: '" << CommonUtility::s2ws(node->id().value_or(""))
-                                                 << logStream.str());
+                                                 << logStr(node));
             }
 
             sentry::Handler::captureMessage(sentry::Level::Warning, "UpdateTreeWorker::integrityCheck",
                                             "A node without a valid ID remains in the update tree");
 
+            return false;
+        }
+
+        if (!checkOperationTypes(node)) return false;
+    }
+    return true;
+}
+
+bool UpdateTreeWorker::checkOperationTypes(const std::shared_ptr<Node> node) {
+    for (const auto type: {OperationType::Create, OperationType::Delete}) {
+        if (node->hasChangeEvent(type) && (node->changeEvents() | type) != type) {
+            auto typeStr = type == OperationType::Create ? L"Create" : L"Delete";
+            LOGW_SYNCPAL_WARN(_logger, _side << integrityCheckFailureMsg << L" " << typeStr
+                                             << L"d node has associated operations other than " << typeStr << L" : "
+                                             << logStr(node));
+            sentry::Handler::captureMessage(sentry::Level::Warning, "UpdateTreeWorker::integrityCheck", "Bad operations types!");
             return false;
         }
     }

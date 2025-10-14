@@ -537,6 +537,7 @@ QString ParametersDialog::getSyncPalErrorText(const QString &fctCode, const Exit
             return getSyncPalBackErrorText(err, exitCause, userIsAdmin);
         case ExitCode::SystemError:
             return getSyncPalSystemErrorText(err, exitCause);
+        case ExitCode::InvalidOperation:
         case ExitCode::FatalError:
             return tr("A technical error has occurred (error %1).<br>"
                       "Please empty the history and if the error persists, contact our support team.")
@@ -568,7 +569,6 @@ QString ParametersDialog::getSyncPalErrorText(const QString &fctCode, const Exit
         case ExitCode::TokenRefreshed:
         case ExitCode::RateLimited:
         case ExitCode::OperationCanceled:
-        case ExitCode::InvalidOperation:
         case ExitCode::UpdateRequired:
         case ExitCode::LogUploadFailed:
         case ExitCode::UpdateFailed:

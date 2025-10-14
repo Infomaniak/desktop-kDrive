@@ -55,7 +55,9 @@ bool shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr
     const auto syncDirNotAccessible =
             (w1 && w1->exitCode() == ExitCode::SystemError && w1->exitCause() == ExitCause::SyncDirAccessError) ||
             (w2 && w2->exitCode() == ExitCode::SystemError && w2->exitCause() == ExitCause::SyncDirAccessError);
-    return networkIssue || httpBlockingError || syncDirNotAccessible;
+    const auto invalidOperation =
+            (w1 && w1->exitCode() == ExitCode::InvalidOperation) || (w2 && w2->exitCode() == ExitCode::InvalidOperation);
+    return networkIssue || httpBlockingError || syncDirNotAccessible || invalidOperation;
 }
 
 bool shouldBeStoppedAndRestarted(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr) {
