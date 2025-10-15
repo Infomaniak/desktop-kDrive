@@ -704,7 +704,7 @@ void TestIntegration::testDeleteAndMoveCase() {
         (void) jobBB.runSynchronously();
         nodeIdBB = jobBB.nodeId();
 
-        const auto filename = "test.txt";
+        const auto filename = Str("test.txt");
         nodeIdAAA = duplicateRemoteFile(_driveDbId, _testFileRemoteId, filename);
         moveRemoteFile(_driveDbId, nodeIdAAA, nodeIdAA);
         nodeIdBBB = duplicateRemoteFile(_driveDbId, _testFileRemoteId, filename);
