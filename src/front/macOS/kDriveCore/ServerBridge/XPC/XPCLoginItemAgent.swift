@@ -143,17 +143,32 @@ import Foundation
         // Resume connection
         appConnection?.resume()
 
-        // Start communication
-        IKLogger.xpc.log("Start communication with app")
+        dummyServerQuery(appConnection)
+    }
+
+    func dummyServerQuery(_ appConnection: NSXPCConnection?) {
+        IKLogger.xpc.log("[KD] Start communication with app server")
 
         let remoteObject = appConnection?.remoteObjectProxyWithErrorHandler { error in
-            IKLogger.xpc.error("Error during remote object proxy call: \(error)")
+            IKLogger.xpc.error("[KD] Error during remote object proxy call: \(error)")
         } as? XPCGuiProtocol
 
-        let dummyData = Data()
-        remoteObject?.sendQuery(dummyData) { data in
-            IKLogger.xpc.error("recv query data :\(String(describing: data))")
+        let json = """
+        { "num": 1,
+            "params": {
+            "code": "YWJhYQ==",
+            "codeVerifier": "abFmJiYg==" } }
+        """
+
+        let dummyData = json.data(using: .utf8)!
+        IKLogger.xpc.error("[KD] sending bytes: \(dummyData.count)")
+
+        let queryCallback: @Sendable (Data) -> Void = { answer in
+            // Your closure logic here
+            IKLogger.xpc.log("[KD] recv answer of length: \(answer.count)")
         }
+
+        remoteObject?.sendQuery(dummyData, callback: queryCallback)
     }
 }
 
