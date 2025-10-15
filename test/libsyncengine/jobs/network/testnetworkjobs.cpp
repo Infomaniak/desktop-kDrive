@@ -99,9 +99,7 @@ void TestNetworkJobs::setUp() {
     (void) KeyChainManager::instance(true);
     (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
     // Create parmsDb
-    bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
-    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
+    (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
     // Insert user, account & drive
@@ -1558,7 +1556,7 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
     class GetInfoUserJobMock final : public GetInfoUserJob {
         public:
             explicit GetInfoUserJobMock(int32_t userDbId) :
-                GetInfoUserJob(userDbId) {};
+                GetInfoUserJob(userDbId){};
 
         protected:
             ExitInfo receiveResponseFromSession(StreamVector &stream) override {

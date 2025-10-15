@@ -52,7 +52,8 @@ class TestWorkers : public CppUnit::TestFixture, public TestBase {
         log4cplus::Logger _logger;
         std::shared_ptr<SyncPal> _syncPal;
         Sync _sync;
-        LocalTemporaryDirectory _localTempDir{"TestExecutorWorker"};
+        LocalTemporaryDirectory _localTempDir{"TestWorkers"};
+        LocalTemporaryDirectory _localParmsDbTempDir{"testParmsDbTempDir"};
 
         std::unique_ptr<CommManager> _commManager;
 

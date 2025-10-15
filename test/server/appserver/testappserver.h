@@ -54,7 +54,7 @@ class TestAppServer : public CppUnit::TestFixture, public TestBase {
 
     private:
         MockAppServer *_appPtr;
-        LocalTemporaryDirectory _localTempDir = LocalTemporaryDirectory("TestSyncpal");
+        LocalTemporaryDirectory _localTempDir = LocalTemporaryDirectory("TestAppServer");
         SyncPath _localPath;
         SyncPath _remotePath;
 
