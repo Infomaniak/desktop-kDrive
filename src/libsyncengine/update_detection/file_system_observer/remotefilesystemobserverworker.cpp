@@ -736,14 +736,14 @@ ExitInfo RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &
 bool RemoteFileSystemObserverWorker::hasUnsupportedCharacters(const SyncName &name, const NodeId &nodeId, NodeType type) {
 #if defined(KD_MACOS)
     // Check that the name doesn't contain a character not yet supported by the filesystem (ex: U+1FA77 on pre macOS 13.4)
-    bool valid = false;
+    auto ioError = IoError::Unknown;
     if (type == NodeType::File) {
-        valid = CommonUtility::fileNameIsValid(name);
+        ioError = Utility::tryCreateTmpFile(name);
     } else if (type == NodeType::Directory) {
-        valid = CommonUtility::dirNameIsValid(name);
+        ioError = Utility::tryCreateTmpDir(name);
     }
 
-    if (!valid) {
+    if (ioError != IoError::Success) {
         LOGW_SYNCPAL_DEBUG(_logger, L"The file/directory name contains a character not yet supported by the filesystem "
                                             << SyncName2WStr(name) << L". Item is ignored.");
 

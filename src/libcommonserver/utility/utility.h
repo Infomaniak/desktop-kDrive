@@ -197,6 +197,19 @@ struct COMMONSERVER_EXPORT Utility {
 #endif
         static bool isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode);
 
+        /**
+         * @brief Check if a directory can be created in the temp directory.
+         * @param name the name of the directory to create.
+         * @return IoError
+         */
+        static IoError tryCreateTmpDir(const SyncName &name = "testDir");
+        /**
+         * @brief Check if a file can be created in the temp directory.
+         * @param name the name of the file to create.
+         * @return IoError
+         */
+        static IoError tryCreateTmpFile(const SyncName &name = "testFile");
+
     private:
         static log4cplus::Logger _logger;
 

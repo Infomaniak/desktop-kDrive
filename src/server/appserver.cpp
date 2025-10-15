@@ -418,8 +418,13 @@ void AppServer::init() {
         return;
     }
 
-    // Start syncs
-    QTimer::singleShot(0, [=, this]() { startSyncsAndRetryOnError(); });
+    // Check if temp directory is accessible.
+    if (Utility::tryCreateTmpFile() == IoError::Success) {
+        // Start syncs
+        QTimer::singleShot(0, [=, this]() { startSyncsAndRetryOnError(); });
+    } else {
+        addError(Error(ERR_ID, ExitCode::SystemError, ExitCause::TmpDirAccessError));
+    }
 
     // Process possible interrupted logs upload
     processInterruptedLogsUpload();

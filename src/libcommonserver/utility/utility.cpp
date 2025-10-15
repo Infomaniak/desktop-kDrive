@@ -667,4 +667,50 @@ bool Utility::isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode
     }
 }
 
+IoError Utility::tryCreateTmpDir(const SyncName &name /*= "testDir"*/) {
+#if defined(KD_MACOS)
+    static std::string tmpDirName = "kdrive_" + CommonUtility::generateRandomStringAlphaNum();
+    std::error_code ec;
+    SyncPath tmpDirPath = std::filesystem::temp_directory_path() / tmpDirName;
+    if (!std::filesystem::exists(tmpDirPath, ec)) {
+        std::filesystem::create_directory(tmpDirPath, ec);
+        if (ec.value()) {
+            return IoHelper::stdError2ioError(ec);
+        }
+    }
+
+    SyncPath tmpPath = tmpDirPath / name;
+    std::filesystem::create_directory(tmpPath, ec);
+    bool illegalByteSequence = (ec.value() == static_cast<int>(std::errc::illegal_byte_sequence));
+    if (illegalByteSequence) {
+        return IoError::InvalidFileName;
+    }
+
+    std::filesystem::remove_all(tmpPath, ec);
+#else
+    (void) name;
+#endif
+    return IoError::Success;
+}
+
+IoError Utility::tryCreateTmpFile(const SyncName &name /*= "testFile"*/) {
+    SyncPath tmpDirPath;
+    if (auto ioError = IoError::Unknown; !IoHelper::tempDirectoryPath(tmpDirPath, ioError)) {
+        return ioError;
+    }
+
+    SyncPath tmpPath = tmpDirPath / name;
+    std::ofstream output(tmpPath.native().c_str(), std::ios::binary);
+    if (!output) {
+        return IoError::Unknown;
+    }
+
+    output.close();
+
+    std::error_code ec;
+    std::filesystem::remove_all(tmpPath, ec);
+    return /*IoError::Success*/ IoError::Unknown;
+    ;
+}
+
 } // namespace KDC
