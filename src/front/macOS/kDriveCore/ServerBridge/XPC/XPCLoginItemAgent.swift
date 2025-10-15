@@ -35,7 +35,7 @@ import Foundation
 
     func scheduleRetryToConnectToLoginAgent() {
         DispatchQueue.main.async {
-            IKLogger.xpc.log("Set timer to retry to connect to login agent")
+            IKLogger.xpc.log("[KD] Set timer to retry to connect to login agent")
             Timer.scheduledTimer(withTimeInterval: 10, repeats: false) { [weak self] _ in
                 self?.connectToLoginAgent()
             }
@@ -44,16 +44,16 @@ import Foundation
 
     func connectToLoginAgent() {
         if loginItemAgentConnection != nil {
-            IKLogger.xpc.log("Already connected to item agent")
+            IKLogger.xpc.log("[KD] Already connected to item agent")
             return
         }
 
         // Initialize connection with login item agent
-        IKLogger.xpc.log("Initialize connection with login item agent")
+        IKLogger.xpc.log("[KD] Initialize connection with login item agent")
         let connection = NSXPCConnection(machServiceName: machServiceName, options: [])
 
         guard connection != nil else {
-            IKLogger.xpc.error("Failed to connect to login item agent")
+            IKLogger.xpc.error("[KD] Failed to connect to login item agent")
             scheduleRetryToConnectToLoginAgent()
             return
         }
@@ -61,32 +61,32 @@ import Foundation
         loginItemAgentConnection = connection
 
         // Set exported interface
-        IKLogger.xpc.log("Set exported interface for connection with login agent")
+        IKLogger.xpc.log("[KD] Set exported interface for connection with login agent")
         connection.exportedInterface = NSXPCInterface(with: XPCLoginItemRemoteProtocol.self)
         connection.exportedObject = self
 
         // Set remote object interface
-        IKLogger.xpc.log("Set remote object interface for connection with login agent")
+        IKLogger.xpc.log("[KD] Set remote object interface for connection with login agent")
         connection.remoteObjectInterface = NSXPCInterface(with: XPCLoginItemProtocol.self)
 
         // Set connection handlers
-        IKLogger.xpc.log("Set connection handlers for connection with login item agent")
+        IKLogger.xpc.log("[KD] Set connection handlers for connection with login item agent")
         connection.interruptionHandler = { [weak self] in
-            IKLogger.xpc.error("Connection with login item agent interrupted (server crash)")
+            IKLogger.xpc.error("[KD] Connection with login item agent interrupted (server crash)")
             guard let self = self else { return }
             self.loginItemAgentConnection = nil
             self.scheduleRetryToConnectToLoginAgent()
         }
 
         connection.invalidationHandler = { [weak self] in
-            IKLogger.xpc.error("Connection with login item agent invalidated (no server running)")
+            IKLogger.xpc.error("[KD] Connection with login item agent invalidated (no server running)")
             guard let self = self else { return }
             self.loginItemAgentConnection = nil
             self.scheduleRetryToConnectToLoginAgent()
         }
 
         // Resume connection
-        IKLogger.xpc.log("Resume connection with login item agent")
+        IKLogger.xpc.log("[KD] Resume connection with login item agent")
         connection.resume()
 
         // Get server endpoint from login item agent
@@ -101,26 +101,26 @@ import Foundation
 
     func connectToServer(endpoint: NSXPCListenerEndpoint?) {
         guard let endpoint = endpoint else {
-            IKLogger.xpc.log("Endpoint is nil, unable to connect to it")
+            IKLogger.xpc.log("[KD] Endpoint is nil, unable to connect to it")
             return
         }
 
         if appConnection != nil {
-            IKLogger.xpc.log("Already connected to app")
+            IKLogger.xpc.log("[KD] Already connected to app")
             return
         }
 
         // Setup connection with app
-        IKLogger.xpc.log("Setup connection with app")
+        IKLogger.xpc.log("[KD] Setup connection with app")
         appConnection = NSXPCConnection(listenerEndpoint: endpoint)
 
         // Set exported interface
-        IKLogger.xpc.log("Set server -> gui interface")
+        IKLogger.xpc.log("[KD] Set server -> gui interface")
         appConnection?.exportedInterface = NSXPCInterface(with: XPCGuiRemoteProtocol.self)
         appConnection?.exportedObject = self
 
         // Set remote object interface
-        IKLogger.xpc.log("Set gui -> server interface")
+        IKLogger.xpc.log("[KD] Set gui -> server interface")
         appConnection?.remoteObjectInterface = NSXPCInterface(with: XPCGuiProtocol.self)
 
         // Set connection handlers
@@ -174,19 +174,20 @@ import Foundation
 // TODO: Move to dedicated types
 
 extension XPCLoginItemAgent: XPCLoginItemRemoteProtocol {
-    func processType(_ callback: @escaping (ProcessType) -> Void) {
-        IKLogger.xpc.log("query processType")
+    public func processType(_ callback: @escaping (ProcessType) -> Void) {
+        IKLogger.xpc.log("[KD] query processType")
         callback(ProcessType.client)
+        IKLogger.xpc.log("[KD] POST query processType")
     }
 
-    func serverIsRunning(_ endPoint: NSXPCListenerEndpoint?) {
-        IKLogger.xpc.log("serverIsRunning :\(String(describing: endPoint))")
+    public func serverIsRunning(_ endPoint: NSXPCListenerEndpoint?) {
+        IKLogger.xpc.log("[KD] serverIsRunning :\(String(describing: endPoint))")
         connectToServer(endpoint: endPoint)
     }
 }
 
 extension XPCLoginItemAgent: XPCGuiRemoteProtocol {
     func sendSignal(_ msg: Data?) {
-        IKLogger.xpc.log("recv signal:\(msg?.count ?? 0)")
+        IKLogger.xpc.log("[KD] recv signal:\(msg?.count ?? 0)")
     }
 }
