@@ -102,6 +102,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         static void addError(const Error &error);
         static void updateSentryUser();
+        void deleteDrive(int driveDbId);
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         static ExitCode getThumbnail(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) {
@@ -216,7 +217,6 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         void stopSyncTask(int syncDbId); // Long task which can block GUI: post-poned in the event loop by means of timer
         void deleteAccount(int accountDbId);
-        void deleteDrive(int driveDbId);
         void deleteSync(int syncDbId);
 
         static void sendErrorAdded(bool serverLevel, ExitCode exitCode, int syncDbId);
