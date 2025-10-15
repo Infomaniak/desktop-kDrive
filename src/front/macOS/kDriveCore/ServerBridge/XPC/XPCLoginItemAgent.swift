@@ -90,9 +90,9 @@ import Foundation
         connection.resume()
 
         // Get server endpoint from login item agent
-        IKLogger.xpc.log("Get server ext endpoint from login item agent")
-        (connection.remoteObjectProxy as? XPCLoginItemProtocol)?.serverExtEndpoint { [weak self] endpoint in
-            IKLogger.xpc.log("Server ext endpoint received \(String(describing: endpoint))")
+        IKLogger.xpc.log("[KD] Get server ext endpoint from login item agent")
+        (connection.remoteObjectProxy as? XPCLoginItemProtocol)?.serverGuiEndpoint { [weak self] endpoint in
+            IKLogger.xpc.log("[KD] Server ext endpoint received \(String(describing: endpoint))")
             if let endpoint = endpoint {
                 self?.connectToServer(endpoint: endpoint)
             }
