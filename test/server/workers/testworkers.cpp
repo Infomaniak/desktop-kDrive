@@ -64,7 +64,7 @@ void TestWorkers::setUp() {
     KeyChainManager::instance()->writeToken(keychainKey, testVariables.apiToken);
 
     // Create parmsDb
-    ParmsDb::instance(_localParmsDbTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
+    (void) ParmsDb::instance(_localParmsDbTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
 
     // Insert user, account, drive & sync
     int userId(12321);
@@ -130,18 +130,18 @@ void TestWorkers::setUp() {
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createProgressInfo();
 
-    // Setup CommManager
+    // Setup and start CommManager
     std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> syncPalMap;
     syncPalMap[_sync.dbId()] = _syncPal;
     std::unordered_map<int, std::shared_ptr<KDC::Vfs>> vfsMap;
     vfsMap[_sync.dbId()] = _vfsPtr;
     _commManager = std::make_unique<CommManager>(syncPalMap, vfsMap);
+    _commManager->start();
 
 #if defined(KD_WINDOWS)
     // Initializes the COM library
     CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 #endif
-
     // Start Vfs
 #if defined(KD_MACOS)
     if (connectorsAreAlreadyInstalled) {
@@ -166,6 +166,7 @@ void TestWorkers::tearDown() {
         _vfsPtr->stopImpl(true);
         _vfsPtr = nullptr;
     }
+    _commManager->stop();
     TestBase::stop();
 }
 
