@@ -30,50 +30,15 @@
 namespace KDC {
 
 GuiJobFactory::GuiJobFactory() {
-    _makeMap = {{RequestNum::LOGIN_REQUESTTOKEN,
-                 [](std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                    std::shared_ptr<AbstractCommChannel> channel) {
-                     return std::make_shared<LoginRequestTokenJob>(commManager, requestId, inParams, channel);
-                 }},
-                {RequestNum::USER_DBIDLIST,
-                 [](std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                    std::shared_ptr<AbstractCommChannel> channel) {
-                     return std::make_shared<UserDbIdListJob>(commManager, requestId, inParams, channel);
-                 }},
-                {RequestNum::USER_INFOLIST,
-                 [](std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                    std::shared_ptr<AbstractCommChannel> channel) {
-                     return std::make_shared<UserInfoListJob>(commManager, requestId, inParams, channel);
-                 }},
-                {RequestNum::USER_DELETE,
-                 [](std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                    std::shared_ptr<AbstractCommChannel> channel) {
-                     return std::make_shared<UserDeleteJob>(commManager, requestId, inParams, channel);
-                 }},
-                {RequestNum::USER_AVAILABLEDRIVES,
-                 [](std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                    std::shared_ptr<AbstractCommChannel> channel) {
-                     return std::make_shared<UserAvailableDrivesJob>(commManager, requestId, inParams, channel);
-                 }},
-                {RequestNum::ACCOUNT_INFOLIST,
-                 [](std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                    std::shared_ptr<AbstractCommChannel> channel) {
-                     return std::make_shared<AccountInfoListJob>(commManager, requestId, inParams, channel);
-                 }},
-                {RequestNum::DRIVE_INFOLIST,
-                 [](std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                    std::shared_ptr<AbstractCommChannel> channel) {
-                     return std::make_shared<DriveInfoListJob>(commManager, requestId, inParams, channel);
-                 }},
-                {RequestNum::DRIVE_UPDATE,
-                 [](std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                    std::shared_ptr<AbstractCommChannel> channel) {
-                     return std::make_shared<DriveUpdateJob>(commManager, requestId, inParams, channel);
-                 }},
-                {RequestNum::DRIVE_DELETE, [](std::shared_ptr<CommManager> commManager, int requestId,
-                                              const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel) {
-                     return std::make_shared<DriveDeleteJob>(commManager, requestId, inParams, channel);
-                 }}};
+    _makeMap = {{RequestNum::LOGIN_REQUESTTOKEN, makeShared<LoginRequestTokenJob>},
+                {RequestNum::USER_DBIDLIST, makeShared<UserDbIdListJob>},
+                {RequestNum::USER_INFOLIST, makeShared<UserInfoListJob>},
+                {RequestNum::USER_DELETE, makeShared<UserDeleteJob>},
+                {RequestNum::USER_AVAILABLEDRIVES, makeShared<UserAvailableDrivesJob>},
+                {RequestNum::ACCOUNT_INFOLIST, makeShared<AccountInfoListJob>},
+                {RequestNum::DRIVE_INFOLIST, makeShared<DriveInfoListJob>},
+                {RequestNum::DRIVE_UPDATE, makeShared<DriveUpdateJob>},
+                {RequestNum::DRIVE_DELETE, makeShared<DriveDeleteJob>}};
 }
 
 std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::shared_ptr<CommManager> commManager,

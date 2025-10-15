@@ -36,6 +36,12 @@ class GuiJobFactory {
 
     private:
         std::map<RequestNum, AbstractGuiJobSharedConst> _makeMap;
+
+        template<class C>
+        static std::shared_ptr<C> makeShared(std::shared_ptr<CommManager> commManager, int requestId,
+                                             const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel) {
+            return std::make_shared<C>(commManager, requestId, inParams, channel);
+        }
 };
 
 } // namespace KDC
