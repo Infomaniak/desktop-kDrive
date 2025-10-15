@@ -78,6 +78,8 @@ class COMMONSERVER_EXPORT Db {
         bool tableExists(const std::string &tableName, bool &exist);
         bool columnExists(const std::string &tableName, const std::string &columnName, bool &exist);
 
+        [[nodiscard]] bool versionUpdated() const { return _versionUpdated; }
+
     protected:
         void startTransaction();
         void commitTransaction();
@@ -97,9 +99,10 @@ class COMMONSERVER_EXPORT Db {
         std::shared_ptr<SqliteDb> _sqliteDb;
         std::filesystem::path _dbPath;
         mutable std::recursive_mutex _mutex;
-        int _transaction;
+        int _transaction{0};
         std::string _journalMode;
         std::string _fromVersion;
+        bool _versionUpdated{false};
 
     private:
         bool insertVersion(const std::string &version);
