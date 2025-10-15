@@ -98,7 +98,13 @@
     <Page Update="Pages\Onboarding\FinishingPage.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="Styles\Custom\dark\InfomaniakImages.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Styles\Custom\InfomaniakIcons.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Styles\Custom\light\InfomaniakImages.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Styles\DS\InfomaniakIcons.xaml">

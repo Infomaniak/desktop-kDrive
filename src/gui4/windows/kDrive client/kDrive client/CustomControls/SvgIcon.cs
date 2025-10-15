@@ -45,13 +45,26 @@ namespace Infomaniak.kDrive.CustomControls
             set => SetValue(UriSourceProperty, value);
         }
 
+        public static readonly DependencyProperty UriSourceStringProperty =
+            DependencyProperty.Register(
+                nameof(UriString),
+                typeof(string),
+                typeof(SvgIcon),
+                new PropertyMetadata(null, OnUriChanged));
+
         public string UriString
         {
-            set => UriSource = new Uri(value);
+            get => (string)GetValue(UriSourceStringProperty);
+            set
+            {
+                SetValue(UriSourceStringProperty, value);
+                UriSource = new Uri(value);
+            }
         }
 
         private static void OnUriChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
+            var type = d.GetType();
             if (d is SvgIcon icon && icon._isLoaded)
                 icon.ScheduleRefresh();
         }
@@ -71,10 +84,12 @@ namespace Infomaniak.kDrive.CustomControls
 
         private void ScheduleRefresh()
         {
-            // Cancel any previous refresh
-            _refreshCts?.Cancel();
-            _refreshCts = new CancellationTokenSource();
-            var token = _refreshCts.Token;
+            if(UriString != UriSource?.ToString())
+                UriSource = new Uri(UriString);
+                    // Cancel any previous refresh
+                    _refreshCts?.Cancel();
+                _refreshCts = new CancellationTokenSource();
+                var token = _refreshCts.Token;
 
             // Enqueue on UI dispatcher
             _ = DispatcherQueue.TryEnqueue(async () =>
@@ -106,7 +121,9 @@ namespace Infomaniak.kDrive.CustomControls
                 // Resolve ms-appx URIs
                 var fullUri = ResolveUri(UriSource);
                 if (!File.Exists(fullUri.LocalPath))
-                    return;
+                {
+                    Logger.Log(Logger.Level.Error, $"SVG file not found: {fullUri.LocalPath}");
+                }
 
                 token.ThrowIfCancellationRequested();
 

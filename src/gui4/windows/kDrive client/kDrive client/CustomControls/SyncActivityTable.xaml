@@ -31,12 +31,9 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <ImageIcon Height="120"
-                       Grid.Row="0">
-                <ImageIcon.Source>
-                    <SvgImageSource UriSource="ms-appx:///Assets/Images/servin-light.svg" />
-                </ImageIcon.Source>
-            </ImageIcon>
+            <local:SvgIcon Height="120"
+                           Grid.Row="0"
+                           UriString="{ThemeResource Infomaniak.Custom.Images.servin}" />
 
             <StackPanel Grid.Row="1"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
