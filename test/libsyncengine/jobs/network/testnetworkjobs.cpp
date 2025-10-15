@@ -99,7 +99,7 @@ void TestNetworkJobs::setUp() {
     (void) KeyChainManager::instance(true);
     (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
     // Create parmsDb
-    (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
+    (void) ParmsDb::instance(_localParmsDbTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
     // Insert user, account & drive
