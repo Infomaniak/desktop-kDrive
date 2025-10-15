@@ -60,6 +60,7 @@ set(server_SRCS
     comm/guijobs/driveinfolistjob.h comm/guijobs/driveinfolistjob.cpp
     comm/guijobs/driveupdatejob.h comm/guijobs/driveupdatejob.cpp
     comm/guijobs/drivedeletejob.h comm/guijobs/drivedeletejob.cpp
+    comm/guijobs/drivesearchjob.h comm/guijobs/drivesearchjob.cpp
     comm/guijobs/signaluseraddedjob.h comm/guijobs/signaluseraddedjob.cpp
     comm/guijobs/signaluserupdatedjob.h comm/guijobs/signaluserupdatedjob.cpp
     comm/guijobs/signaluserremovedjob.h comm/guijobs/signaluserremovedjob.cpp
