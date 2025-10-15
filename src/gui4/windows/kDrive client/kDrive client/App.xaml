@@ -25,13 +25,41 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
-                <ResourceDictionary Source="TrayIcon/TrayIconResources.xaml" />
-                <ResourceDictionary Source="Styles/InfomaniakStyles.xaml" />
-                
+                <ResourceDictionary Source="/TrayIcon/TrayIconResources.xaml" />
+                <ResourceDictionary Source="/Styles/InfomaniakStyles.xaml" />
+
                 <!-- Icon ressource -->
-                <ResourceDictionary Source="Styles/DS/InfomaniakIcons.xaml" />
-                <ResourceDictionary Source="Styles/Custom/InfomaniakIcons.xaml" />
+                <ResourceDictionary Source="/Styles/DS/InfomaniakIcons.xaml" />
+                <ResourceDictionary Source="/Styles/Custom/InfomaniakIcons.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <x:String x:Key="Infomaniak_Custom_Icons_folder-start">
+                        ms-appx:///Assets/Custom/Icons/folder-star.svg
+                    </x:String>
+                    <x:String x:Key="Infomaniak.Custom.Images.servin">
+                        ms-appx:///Assets/Custom/Images/servin-light.svg
+                    </x:String>
+                </ResourceDictionary>
+
+                <ResourceDictionary x:Key="Dark">
+                    <x:String x:Key="Infomaniak_Custom_Icons_folder-start">
+                        ms-appx:///Assets/Custom/Icons/folder-share.svg
+                    </x:String>
+                    <x:String x:Key="Infomaniak.Custom.Images.servin">
+                        ms-appx:///Assets/Custom/Images/folder-share.svg
+                    </x:String>
+                </ResourceDictionary>
+
+                <ResourceDictionary x:Key="HighContrast">
+                    <x:String x:Key="Infomaniak_Custom_Icons_folder-start">
+                        ms-appx:///Assets/Custom/Icons/folder-share.svg
+                    </x:String>
+                    <x:String x:Key="Infomaniak.Custom.Images.servin">
+                        ms-appx:///Assets/Custom/Images/servin-dark.svg
+                    </x:String>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

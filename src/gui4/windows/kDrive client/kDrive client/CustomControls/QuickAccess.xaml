@@ -54,24 +54,17 @@
                         <Grid>
                             <StackPanel Orientation="Horizontal"
                                         Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                                <ImageIcon Height="16"
-                                           VerticalAlignment="Center">
-                                    <ImageIcon.Source>
-                                        <SvgImageSource UriSource="ms-appx:///Assets/Icons/folder-star.svg" />
-                                    </ImageIcon.Source>
-                                </ImageIcon>
+                                <controls:SvgIcon Height="12"
+                                                  VerticalAlignment="Center"
+                                                  HorizontalAlignment="Right"
+                                                  UriString="{StaticResource Infomaniak.Custom.Icons.folder-star}" />
                                 <TextBlock x:Uid="CC_QuickAccess_favorites"
                                            Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                             </StackPanel>
-
-                            <ImageIcon Height="12"
-                                       Width="12"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Right">
-                                <ImageIcon.Source>
-                                    <SvgImageSource UriSource="ms-appx:///Assets/Icons/square-arrow-diagonal-up.svg" />
-                                </ImageIcon.Source>
-                            </ImageIcon>
+                            <controls:SvgIcon Height="12"
+                                              VerticalAlignment="Center"
+                                              HorizontalAlignment="Right"
+                                              UriString="{StaticResource Infomaniak.DS.Icons.Arrows.square-arrow-diagonal-up}" />
                         </Grid>
                     </Button>
 
@@ -81,24 +74,16 @@
                         <Grid>
                             <StackPanel Orientation="Horizontal"
                                         Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                                <ImageIcon Height="16"
-                                           VerticalAlignment="Center">
-                                    <ImageIcon.Source>
-                                        <SvgImageSource UriSource="ms-appx:///Assets/Icons/folder-share.svg" />
-                                    </ImageIcon.Source>
-                                </ImageIcon>
+                                <controls:SvgIcon Height="16"
+                                                  UriString="{StaticResource Infomaniak.Custom.Icons.folder-share}" />
                                 <TextBlock x:Uid="CC_QuickAccess_shared"
                                            Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                             </StackPanel>
 
-                            <ImageIcon Height="12"
-                                       Width="12"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Right">
-                                <ImageIcon.Source>
-                                    <SvgImageSource UriSource="ms-appx:///Assets/Icons/square-arrow-diagonal-up.svg" />
-                                </ImageIcon.Source>
-                            </ImageIcon>
+                            <controls:SvgIcon Height="12"
+                                              VerticalAlignment="Center"
+                                              HorizontalAlignment="Right"
+                                              UriString="{StaticResource Infomaniak.DS.Icons.Arrows.square-arrow-diagonal-up}" />
                         </Grid>
                     </Button>
                 </StackPanel>
@@ -131,7 +116,8 @@
                     <StackPanel Orientation="Horizontal"
                                 Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                         <controls:SvgIcon Height="16"
-                                          UriString="{StaticResource Infomaniak.DS.Icons.Actions.trashbin}" />
+                                          UriString="{StaticResource Infomaniak.DS.Icons.Actions.trashbin}"
+                                          Foreground="#5C89F7"/>
 
                         <TextBlock x:Uid="CC_QuickAccess_trash"
                                    Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
