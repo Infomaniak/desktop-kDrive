@@ -1053,21 +1053,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 #endif
             break;
         }
-        case RequestNum::DRIVE_GET_OFFLINE_FILES_TOTAL_SIZE: {
-            int driveDbId = 0;
-            ArgsWriter(params).write(driveDbId);
-
-            std::vector<std::shared_ptr<SyncPal>> syncPals;
-            for (const auto &[_, syncpal]: _syncPalMap) {
-                if (!syncpal || syncpal->driveDbId() != driveDbId || !syncpal->vfs()) continue;
-                (void) syncPals.emplace_back(syncpal);
-            }
-
-            OfflineFilesSizeEstimator estimator(syncPals);
-            resultStream << estimator.runSynchronously().code(); // Run synchronously for now.
-            resultStream << static_cast<quint64>(estimator.offlineFilesTotalSize());
-            break;
-        }
         case RequestNum::DRIVE_SEARCH: {
             int driveDbId = 0;
             QString searchString;

@@ -23,6 +23,7 @@
 #include "comm/guijobs/userinfolistjob.h"
 #include "comm/guijobs/useravailabledrivesjob.h"
 #include "comm/guijobs/accountinfolistjob.h"
+#include "comm/guijobs/driveinfolistjob.h"
 #include "libcommon/comm.h"
 #include "log/log.h"
 
@@ -396,6 +397,78 @@ void TestGuiCommChannel::testAccountInfoListJob() {
         AccountInfo ai2(2, 1);
 
         accountInfoListJob->_accountInfoList = {ai1, ai2};
+    };
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(queryStr, answerStr, {}, processFct);
+#else
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
+void TestGuiCommChannel::testDriveInfoListJob() {
+    // Base64 conversions
+    // "#aabbcc" <=> "I2FhYmJjYw=="
+    // "#ddeeff" <=> "I2RkZWVmZg=="
+    // "drive1111" <=> "ZHJpdmUxMTEx"
+    // "drive2222" <=> "ZHJpdmUyMjIy"
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    const auto queryStr{Str(R"({ "id": 1,)"
+                            R"( "num": 7,)" // RequestNum::DRIVE_INFOLIST
+                            R"( "params": { } })")};
+#else
+    // There is no need to pass a request id as the response is via a callback.
+    const auto queryStr{Str(R"({ "num": 7,)" // RequestNum::DRIVE_INFOLIST
+                            R"( "params": { } })")};
+
+    // Callback expected answer
+    const auto cbkAnswerStr{Str(
+            R"({"cause":0,"code":0,"id":1,"params":{"driveInfoList":[)"
+            R"({"accessDenied":false,"accountDbId":1,"admin":true,"color":"I2FhYmJjYw==","dbId":1,"id":1111,"locked":false,"maintenance":false,"name":"ZHJpdmUxMTEx","notifications":true},)"
+            R"({"accessDenied":true,"accountDbId":1,"admin":false,"color":"I2RkZWVmZg==","dbId":2,"id":2222,"locked":true,"maintenance":true,"name":"ZHJpdmUyMjIy","notifications":false}]}})")};
+#endif
+
+    // Job expected answer
+    const auto answerStr{
+            Str(R"({ "cause": 0,)"
+                R"( "code": 0,)"
+                R"( "id": 1,)"
+                R"( "num": 7,)" // RequestNum::DRIVE_INFOLIST
+                R"( "params": {)"
+                R"( "driveInfoList": [)"
+                R"( { "accessDenied": false, "accountDbId": 1, "admin": true, "color": "I2FhYmJjYw==", "dbId": 1, "id": 1111, "locked": false, "maintenance": false, "name": "ZHJpdmUxMTEx", "notifications": true },)"
+                R"( { "accessDenied": true, "accountDbId": 1, "admin": false, "color": "I2RkZWVmZg==", "dbId": 2, "id": 2222, "locked": true, "maintenance": true, "name": "ZHJpdmUyMjIy", "notifications": false } ] },)"
+                R"( "type": 1 })") // GuiJobType::Query
+    };
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto driveInfoListJob = std::dynamic_pointer_cast<DriveInfoListJob>(job);
+
+        DriveInfo di1;
+        di1.setDbId(1);
+        di1.setId(1111);
+        di1.setAccountDbId(1);
+        di1.setName("drive1111");
+        di1.setColor("#aabbcc");
+        di1.setNotifications(true);
+        di1.setAdmin(true);
+        di1.setMaintenance(false);
+        di1.setLocked(false);
+        di1.setAccessDenied(false);
+        DriveInfo di2;
+        di2.setDbId(2);
+        di2.setId(2222);
+        di2.setAccountDbId(1);
+        di2.setName("drive2222");
+        di2.setColor("#ddeeff");
+        di2.setNotifications(false);
+        di2.setAdmin(false);
+        di2.setMaintenance(true);
+        di2.setLocked(true);
+        di2.setAccessDenied(true);
+
+        driveInfoListJob->_driveInfoList = {di1, di2};
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)

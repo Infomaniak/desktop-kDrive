@@ -459,13 +459,13 @@ void ExtensionJob::commandGetAllMenuItems(const CommString &argument, std::share
     std::unordered_map<int, std::shared_ptr<Vfs>>::const_iterator vfsMapIt;
     if (sync.dbId()) {
         syncPalMapIt = retrieveSyncPalMapIt(sync.dbId());
-        if (syncPalMapIt == _commManager->syncPalMap().end()) {
+        if (syncPalMapIt == _commManager->appServer().syncPalMap().end()) {
             channel->sendMessage(response);
             return;
         }
 
         vfsMapIt = retrieveVfsMapIt(sync.dbId());
-        if (vfsMapIt == _commManager->vfsMap().end()) {
+        if (vfsMapIt == _commManager->appServer().vfsMap().end()) {
             channel->sendMessage(response);
             return;
         }

@@ -17,10 +17,55 @@
  */
 
 #include "driveinfo.h"
+#include "libcommon/utility/utility.h"
+
+static const auto driveInfoDbId = "dbId";
+static const auto driveInfoId = "id";
+static const auto driveInfoAccountDbId = "accountDbId";
+static const auto driveInfoName = "name";
+static const auto driveInfoColor = "color";
+static const auto driveInfoNotifications = "notifications";
+static const auto driveInfoAdmin = "admin";
+static const auto driveInfoMaintenance = "maintenance";
+static const auto driveInfoLocked = "locked";
+static const auto driveInfoAccessDenied = "accessDenied";
 
 namespace KDC {
 
 DriveInfo::DriveInfo() {}
+
+void DriveInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
+    CommonUtility::writeValueToStruct(dstruct, driveInfoDbId, _dbId);
+    CommonUtility::writeValueToStruct(dstruct, driveInfoId, _id);
+    CommonUtility::writeValueToStruct(dstruct, driveInfoAccountDbId, _accountDbId);
+    CommonUtility::writeValueToStruct(dstruct, driveInfoName, CommonUtility::qStr2CommString(_name));
+    CommonUtility::writeValueToStruct(dstruct, driveInfoColor, CommonUtility::qStr2CommString(_color.name()));
+    CommonUtility::writeValueToStruct(dstruct, driveInfoNotifications, _notifications);
+    CommonUtility::writeValueToStruct(dstruct, driveInfoAdmin, _admin);
+    CommonUtility::writeValueToStruct(dstruct, driveInfoMaintenance, _maintenance);
+    CommonUtility::writeValueToStruct(dstruct, driveInfoLocked, _locked);
+    CommonUtility::writeValueToStruct(dstruct, driveInfoAccessDenied, _accessDenied);
+}
+
+void DriveInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
+    CommonUtility::readValueFromStruct(dstruct, driveInfoDbId, _dbId);
+    CommonUtility::readValueFromStruct(dstruct, driveInfoId, _id);
+    CommonUtility::readValueFromStruct(dstruct, driveInfoAccountDbId, _accountDbId);
+
+    CommString name;
+    CommonUtility::readValueFromStruct(dstruct, driveInfoName, name);
+    _name = CommonUtility::commString2QStr(name);
+
+    CommString color;
+    CommonUtility::readValueFromStruct(dstruct, driveInfoColor, color);
+    _color = QColor(CommonUtility::commString2QStr(color));
+
+    CommonUtility::readValueFromStruct(dstruct, driveInfoNotifications, _notifications);
+    CommonUtility::readValueFromStruct(dstruct, driveInfoAdmin, _admin);
+    CommonUtility::readValueFromStruct(dstruct, driveInfoMaintenance, _maintenance);
+    CommonUtility::readValueFromStruct(dstruct, driveInfoLocked, _locked);
+    CommonUtility::readValueFromStruct(dstruct, driveInfoAccessDenied, _accessDenied);
+}
 
 void operator>>(QDataStream &in, DriveInfo &info) {
     int dbId{0};

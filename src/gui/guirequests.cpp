@@ -303,26 +303,6 @@ ExitCode GuiRequests::deleteDrive(const int driveDbId) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getOfflineFilesTotalSize(const int driveDbId, uint64_t &totalSize) {
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << driveDbId;
-
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::DRIVE_GET_OFFLINE_FILES_TOTAL_SIZE, params, results)) {
-        return ExitCode::SystemError;
-    }
-
-    auto exitCode = ExitCode::Ok;
-    quint64 tmpSize = 0;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
-    resultStream >> tmpSize;
-    totalSize = tmpSize;
-
-    return exitCode;
-}
-
 ExitCode GuiRequests::searchItemInDrive(const int driveDbId, const QString &searchString, QList<SearchInfo> &list, bool &hasMore,
                                         QString &cursor) {
     QByteArray params;

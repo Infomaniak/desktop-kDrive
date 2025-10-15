@@ -233,6 +233,23 @@ ExitCode ServerRequests::getDriveInfoList(QList<DriveInfo> &list) {
     return ExitCode::Ok;
 }
 
+ExitCode ServerRequests::getDriveInfoList(std::vector<DriveInfo> &list) {
+    std::vector<Drive> driveList;
+    if (!ParmsDb::instance()->selectAllDrives(driveList)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllDrives");
+        return ExitCode::DbError;
+    }
+
+    list.clear();
+    for (const Drive &drive: driveList) {
+        DriveInfo driveInfo;
+        driveToDriveInfo(drive, driveInfo);
+        list.push_back(driveInfo);
+    }
+
+    return ExitCode::Ok;
+}
+
 ExitCode ServerRequests::getDriveInfo(int driveDbId, DriveInfo &driveInfo) {
     Drive drive;
     bool found;
