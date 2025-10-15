@@ -26,11 +26,7 @@ public protocol ServerBridgeable: Sendable {
     let loginItemAgent: XPCLoginItemAgent
 
     init() {
-        guard let loginItemAgentConnection = XPCLoginItemAgent() else {
-            fatalError("Unable to create XPCLoginItemAgent")
-        }
-        
-        loginItemAgent = loginItemAgentConnection
+        loginItemAgent = XPCLoginItemAgent()
     }
 
     public func getConnectedUser() async -> Bool {

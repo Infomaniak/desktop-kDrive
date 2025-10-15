@@ -18,19 +18,18 @@
 
 import Foundation
 
-@preconcurrency class XPCLoginItemAgent: @unchecked Sendable {
+@preconcurrency @objc open class XPCLoginItemAgent: NSObject, @unchecked Sendable {
     let machServiceName: String
 
     var loginItemAgentConnection: NSXPCConnection?
     var appConnection: NSXPCConnection?
 
-    init?() {
+    override init() {
         guard let loginItemAgentMachName = Bundle.main.object(forInfoDictionaryKey: "LoginItemAgentMachName") as? String else {
-            IKLogger.xpc.error("Unable to read process name to connect to")
-            return nil
+            fatalError("Malformed info.plist, missing LoginItemAgentMachName")
         }
 
-        IKLogger.xpc.log("mach name: \(loginItemAgentMachName)")
+        IKLogger.xpc.log("[KD] mach name: \(loginItemAgentMachName)")
         machServiceName = loginItemAgentMachName
     }
 
