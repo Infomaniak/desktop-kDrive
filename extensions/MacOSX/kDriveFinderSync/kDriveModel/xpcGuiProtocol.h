@@ -25,6 +25,14 @@ typedef void (^_Nonnull queryCbk)(NSData *_Nonnull answer);
 
 - (void)sendQuery:(NSData *_Nonnull)query callback:(queryCbk)callback;
 
+// For tests
+typedef void (^_Nonnull stringCallback)(NSString *_Nonnull answer);
+
+- (void)dummy;
+- (void)dummyCallback:(stringCallback)callback;
+- (void)sendQuery:(NSData *_Nonnull)query;
+// For tests - End
+
 @end
 
 // Client protocol
