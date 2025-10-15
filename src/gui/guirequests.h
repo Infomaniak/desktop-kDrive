@@ -48,7 +48,6 @@ struct GuiRequests {
         static ExitCode getUserInfoList(QList<UserInfo> &list);
         static ExitCode getAccountInfoList(QList<AccountInfo> &list);
         static ExitCode getDriveInfoList(QList<DriveInfo> &list);
-        static ExitCode getDriveDefaultColor(QColor &color);
         static ExitCode updateDrive(const DriveInfo &driveInfo);
         static ExitCode getSyncInfoList(QList<SyncInfo> &list);
         static ExitCode getSyncStatus(int syncDbId, SyncStatus &status);

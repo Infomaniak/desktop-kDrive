@@ -24,45 +24,50 @@
 #include "useravailabledrivesjob.h"
 #include "accountinfolistjob.h"
 #include "driveinfolistjob.h"
+#include "driveupdatejob.h"
 
 namespace KDC {
 
 GuiJobFactory::GuiJobFactory() {
-    _makeMap = {
-            {RequestNum::LOGIN_REQUESTTOKEN,
-             [](std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                std::shared_ptr<AbstractCommChannel> channel) {
-                 return std::make_shared<LoginRequestTokenJob>(commManager, requestId, inParams, channel);
-             }},
-            {RequestNum::USER_DBIDLIST,
-             [](std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                std::shared_ptr<AbstractCommChannel> channel) {
-                 return std::make_shared<UserDbIdListJob>(commManager, requestId, inParams, channel);
-             }},
-            {RequestNum::USER_INFOLIST,
-             [](std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                std::shared_ptr<AbstractCommChannel> channel) {
-                 return std::make_shared<UserInfoListJob>(commManager, requestId, inParams, channel);
-             }},
-            {RequestNum::USER_DELETE,
-             [](std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                std::shared_ptr<AbstractCommChannel> channel) {
-                 return std::make_shared<UserDeleteJob>(commManager, requestId, inParams, channel);
-             }},
-            {RequestNum::USER_AVAILABLEDRIVES,
-             [](std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                std::shared_ptr<AbstractCommChannel> channel) {
-                 return std::make_shared<UserAvailableDrivesJob>(commManager, requestId, inParams, channel);
-             }},
-            {RequestNum::ACCOUNT_INFOLIST,
-             [](std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                std::shared_ptr<AbstractCommChannel> channel) {
-                 return std::make_shared<AccountInfoListJob>(commManager, requestId, inParams, channel);
-             }},
-            {RequestNum::DRIVE_INFOLIST, [](std::shared_ptr<CommManager> commManager, int requestId,
-                                            const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel) {
-                 return std::make_shared<DriveInfoListJob>(commManager, requestId, inParams, channel);
-             }}};
+    _makeMap = {{RequestNum::LOGIN_REQUESTTOKEN,
+                 [](std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                    std::shared_ptr<AbstractCommChannel> channel) {
+                     return std::make_shared<LoginRequestTokenJob>(commManager, requestId, inParams, channel);
+                 }},
+                {RequestNum::USER_DBIDLIST,
+                 [](std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                    std::shared_ptr<AbstractCommChannel> channel) {
+                     return std::make_shared<UserDbIdListJob>(commManager, requestId, inParams, channel);
+                 }},
+                {RequestNum::USER_INFOLIST,
+                 [](std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                    std::shared_ptr<AbstractCommChannel> channel) {
+                     return std::make_shared<UserInfoListJob>(commManager, requestId, inParams, channel);
+                 }},
+                {RequestNum::USER_DELETE,
+                 [](std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                    std::shared_ptr<AbstractCommChannel> channel) {
+                     return std::make_shared<UserDeleteJob>(commManager, requestId, inParams, channel);
+                 }},
+                {RequestNum::USER_AVAILABLEDRIVES,
+                 [](std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                    std::shared_ptr<AbstractCommChannel> channel) {
+                     return std::make_shared<UserAvailableDrivesJob>(commManager, requestId, inParams, channel);
+                 }},
+                {RequestNum::ACCOUNT_INFOLIST,
+                 [](std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                    std::shared_ptr<AbstractCommChannel> channel) {
+                     return std::make_shared<AccountInfoListJob>(commManager, requestId, inParams, channel);
+                 }},
+                {RequestNum::DRIVE_INFOLIST,
+                 [](std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                    std::shared_ptr<AbstractCommChannel> channel) {
+                     return std::make_shared<DriveInfoListJob>(commManager, requestId, inParams, channel);
+                 }},
+                {RequestNum::DRIVE_UPDATE, [](std::shared_ptr<CommManager> commManager, int requestId,
+                                              const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel) {
+                     return std::make_shared<DriveUpdateJob>(commManager, requestId, inParams, channel);
+                 }}};
 }
 
 std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::shared_ptr<CommManager> commManager,

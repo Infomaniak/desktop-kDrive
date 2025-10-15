@@ -53,7 +53,6 @@ enum class RequestNum {
     USER_AVAILABLEDRIVES,
     ACCOUNT_INFOLIST,
     DRIVE_INFOLIST,
-    DRIVE_DEFAULTCOLOR,
     DRIVE_UPDATE,
     DRIVE_DELETE,
     DRIVE_SEARCH,
@@ -141,8 +140,6 @@ inline std::string toString(RequestNum e) {
             return "ACCOUNT_INFOLIST";
         case RequestNum::DRIVE_INFOLIST:
             return "DRIVE_INFOLIST";
-        case RequestNum::DRIVE_DEFAULTCOLOR:
-            return "DRIVE_DEFAULTCOLOR";
         case RequestNum::DRIVE_UPDATE:
             return "DRIVE_UPDATE";
         case RequestNum::DRIVE_DELETE:

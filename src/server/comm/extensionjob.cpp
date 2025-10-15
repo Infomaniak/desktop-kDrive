@@ -567,7 +567,7 @@ void ExtensionJob::commandGetThumbnail(const CommString &argument, std::shared_p
     }
 
     auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
-    if (syncPalMapIt == _commManager->syncPalMap().end()) return;
+    if (syncPalMapIt == _commManager->appServer().syncPalMap().end()) return;
 
     // Get NodeId
     NodeId nodeId;

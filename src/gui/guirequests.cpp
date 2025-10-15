@@ -255,20 +255,6 @@ ExitCode GuiRequests::getDriveInfoList(QList<DriveInfo> &list) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getDriveDefaultColor(QColor &color) {
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::DRIVE_DEFAULTCOLOR, {}, results)) {
-        return ExitCode::SystemError;
-    }
-
-    auto exitCode = ExitCode::Unknown;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
-    resultStream >> color;
-
-    return exitCode;
-}
-
 ExitCode GuiRequests::updateDrive(const DriveInfo &driveInfo) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);

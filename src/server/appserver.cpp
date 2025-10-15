@@ -1003,13 +1003,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << list;
             break;
         }
-        case RequestNum::DRIVE_DEFAULTCOLOR: {
-            static const QColor driveDefaultColor(0x9F9F9F);
-
-            resultStream << ExitCode::Ok;
-            resultStream << driveDefaultColor;
-            break;
-        }
         case RequestNum::DRIVE_UPDATE: {
             DriveInfo driveInfo;
             QDataStream paramsStream(params);

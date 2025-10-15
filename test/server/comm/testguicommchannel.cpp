@@ -478,6 +478,49 @@ void TestGuiCommChannel::testDriveInfoListJob() {
 #endif
 }
 
+void TestGuiCommChannel::testDriveUpdateJob() {
+    // Base64 conversions
+    // "#aabbcc" <=> "I2FhYmJjYw=="
+    // "#ddeeff" <=> "I2RkZWVmZg=="
+    // "drive1111" <=> "ZHJpdmUxMTEx"
+    // "drive2222" <=> "ZHJpdmUyMjIy"
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    const auto queryStr{Str(
+            R"({ "id": 1,)"
+            R"( "num": 8,)" // RequestNum::DRIVE_UPDATE
+            R"( "params": {)"
+            R"( "driveInfo": { "accessDenied": false, "accountDbId": 1, "admin": true, "color": "I2FhYmJjYw==", "dbId": 1, "id": 1111, "locked": false, "maintenance": false, "name": "ZHJpdmUxMTEx", "notifications": true } } })")};
+#else
+    // There is no need to pass a request id as the response is via a callback.
+    const auto queryStr{Str(
+            R"({ "num": 8,)" // RequestNum::DRIVE_UPDATE
+            R"( "params": {)"
+            R"( "driveInfo": { "accessDenied": false, "accountDbId": 1, "admin": true, "color": "I2FhYmJjYw==", "dbId": 1, "id": 1111, "locked": false, "maintenance": false, "name": "ZHJpdmUxMTEx", "notifications": true } } })")};
+
+    // Callback expected answer
+    const auto cbkAnswerStr{Str(R"({"cause":0,"code":0,"id":1,"params":{}})")};
+#endif
+
+    // Job expected answer
+    const auto answerStr{
+            Str(R"({ "cause": 0,)"
+                R"( "code": 0,)"
+                R"( "id": 1,)"
+                R"( "num": 8,)" // RequestNum::DRIVE_UPDATE
+                R"( "params": {  },)"
+                R"( "type": 1 })") // GuiJobType::Query
+    };
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob>) {};
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(queryStr, answerStr, {}, processFct);
+#else
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
 void TestGuiCommChannel::testGenericJob(const CommString &query, const CommString &answer, const CommString &cbkAnswer,
                                         const std::function<void(std::shared_ptr<AbstractGuiJob>)> &processFct) {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
