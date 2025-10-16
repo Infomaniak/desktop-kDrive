@@ -13,7 +13,26 @@ using System.Windows.Threading;
 
 namespace Infomaniak.kDrive
 {
-    public class UISafeObservableObject : ObservableObject
+    /// <summary>
+    /// Provides a thread-safe version of <see cref="ObservableObject"/> that ensures
+    /// property change notifications are always raised on the UI thread when using
+    /// <see cref="SetPropertyInUIThread"/>.
+    ///
+    /// This class is particularly useful for view models whose properties are bound
+    /// to UI elements but may be updated from background threads. Since UI elements
+    /// can only be modified from the UI thread, this class helps prevent cross-thread
+    /// access issues and simplifies synchronization logic.
+    ///
+    /// By using <see cref="SetPropertyInUIThread"/>, you avoid the need to manually
+    /// dispatch property change notifications to the UI thread in every background
+    /// update scenario.
+    ///
+    /// For properties that are not related to the UI, the regular
+    /// <see cref="ObservableObject.SetProperty"/> method can still be used to avoid
+    /// unnecessary thread marshalling overhead.
+    /// </summary>
+
+    public partial class UISafeObservableObject : ObservableObject
     {
         protected bool SetPropertyInUIThread<T>([NotNullIfNotNull(nameof(newValue))] ref T field, T newValue, [CallerMemberName] string? propertyName = null)
         {
