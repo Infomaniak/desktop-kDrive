@@ -43,6 +43,7 @@ namespace Infomaniak.kDrive.CustomControls
         {
             get => (Uri?)GetValue(UriSourceProperty);
             set => SetValue(UriSourceProperty, value);
+
         }
 
         public static readonly DependencyProperty UriSourceStringProperty =
@@ -84,12 +85,12 @@ namespace Infomaniak.kDrive.CustomControls
 
         private void ScheduleRefresh()
         {
-            if(UriString != UriSource?.ToString())
+            if (UriString != UriSource?.ToString())
                 UriSource = new Uri(UriString);
-                    // Cancel any previous refresh
-                    _refreshCts?.Cancel();
-                _refreshCts = new CancellationTokenSource();
-                var token = _refreshCts.Token;
+            // Cancel any previous refresh
+            _refreshCts?.Cancel();
+            _refreshCts = new CancellationTokenSource();
+            var token = _refreshCts.Token;
 
             // Enqueue on UI dispatcher
             _ = DispatcherQueue.TryEnqueue(async () =>

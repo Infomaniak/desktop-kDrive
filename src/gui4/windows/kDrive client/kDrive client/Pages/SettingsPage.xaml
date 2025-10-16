@@ -187,7 +187,7 @@
                                             <toolKit:SettingsCard Header="{x:Bind Name, Mode=OneWay}"
                                                                   Background="{ThemeResource LayerFillColorDefault}">
                                                 <toolKit:SettingsCard.HeaderIcon>
-                                                    <controls:SvgIcon UriSource="ms-appx:///Assets/Icons/drive-custom.svg"
+                                                    <controls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom }"
                                                                       Foreground="{x:Bind Color, Converter={StaticResource ColorToBrushConverter}}" />
                                                 </toolKit:SettingsCard.HeaderIcon>
                                                 <StackPanel Orientation="Horizontal"

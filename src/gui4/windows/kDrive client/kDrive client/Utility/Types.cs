@@ -36,7 +36,7 @@ namespace Infomaniak.kDrive.Types
         Offline
     }
 
-    public enum SyncDirection
+    public enum SyncActivityDirection
     {
         Unknown = 0,
         Outgoing,

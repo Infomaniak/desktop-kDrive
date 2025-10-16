@@ -6,7 +6,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:viewModel="using:Infomaniak.kDrive.ViewModels"
-             xmlns:customControls="using:Infomaniak.kDrive.CustomControls"
+             xmlns:controls="using:Infomaniak.kDrive.CustomControls"
              xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
              xmlns:converters="using:Infomaniak.kDrive.Converters"
              mc:Ignorable="d">
@@ -126,7 +126,7 @@
                 <StackPanel Grid.Column="0"
                             Orientation="Horizontal"
                             Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                    <customControls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom}"
+                    <controls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom}"
                                             Foreground="{x:Bind Color, Mode=OneWay, Converter={StaticResource ColorToBrushConverter}}"
                                             Height="16" />
 
@@ -228,7 +228,7 @@
             <StackPanel Grid.Column="0"
                         Orientation="Horizontal"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                <customControls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom}"
+                <controls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom}"
                                         Foreground="{x:Bind ViewModel.SelectedSync.Drive.Color, Mode=OneWay, Converter={StaticResource ColorToBrushConverter}}"
                                         Height="16" />
 
@@ -254,7 +254,7 @@
             <StackPanel Orientation="Horizontal"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
                         Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.S}">
-                <customControls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom}"
+                <controls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom}"
                                         Foreground="{x:Bind ViewModel.SelectedSync.Drive.Color, Mode=OneWay, Converter={StaticResource ColorToBrushConverter}}"
                                         Height="14" />
 
