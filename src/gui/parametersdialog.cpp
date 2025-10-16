@@ -323,7 +323,7 @@ QString ParametersDialog::getAppErrorText(const QString &fctCode, const ExitCode
         case ExitCode::SystemError:
             if (exitCause == ExitCause::TmpDirAccessError) {
                 return tr("kDrive needs to have write access to your computer's temporary directory.<br>"
-                          "Restarting kDrive might fix this error.")
+                          "Please restart the kDrive app to resolve this issue.")
                         .arg(err);
             }
             [[fallthrough]];
