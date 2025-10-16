@@ -6,7 +6,7 @@
 	<true/>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>864VDCS2QY.com.infomaniak.drive.desktopclient</string>
+		<string>864VDCS2QY.com.infomaniak.drive</string>
 	</array>
 </dict>
 </plist>
