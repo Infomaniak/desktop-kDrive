@@ -21,6 +21,7 @@
 #include "config.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
+#include "test_utility/localtemporarydirectory.h"
 
 #include "utility/utility_base.h"
 
@@ -669,17 +670,15 @@ bool Utility::isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode
 
 IoError Utility::tryCreateTmpDir(const SyncName &name /*= "testDir"*/) {
 #if defined(KD_MACOS)
-    static std::string tmpDirName = "kdrive_" + CommonUtility::generateRandomStringAlphaNum();
-    std::error_code ec;
-    SyncPath tmpDirPath = std::filesystem::temp_directory_path() / tmpDirName;
-    if (!std::filesystem::exists(tmpDirPath, ec)) {
-        std::filesystem::create_directory(tmpDirPath, ec);
-        if (ec.value()) {
-            return IoHelper::stdError2ioError(ec);
-        }
+    // Add random suffix to make sure the file does not already exist.
+    const auto filename = name + SyncName(CommonUtility::generateRandomStringAlphaNum());
+    SyncPath tmpDirPath;
+    if (auto ioError = IoError::Unknown; !IoHelper::tempDirectoryPath(tmpDirPath, ioError)) {
+        return ioError;
     }
 
-    SyncPath tmpPath = tmpDirPath / name;
+    SyncPath tmpPath = tmpDirPath / filename;
+    std::error_code ec;
     std::filesystem::create_directory(tmpPath, ec);
     if (ec.value()) {
         if (ec.value() == static_cast<int>(std::errc::illegal_byte_sequence)) {
@@ -696,12 +695,15 @@ IoError Utility::tryCreateTmpDir(const SyncName &name /*= "testDir"*/) {
 }
 
 IoError Utility::tryCreateTmpFile(const SyncName &name /*= "testFile"*/) {
+    // Add random suffix to make sure the file does not already exist.
     SyncPath tmpDirPath;
     if (auto ioError = IoError::Unknown; !IoHelper::tempDirectoryPath(tmpDirPath, ioError)) {
         return ioError;
     }
 
-    SyncPath tmpPath = tmpDirPath / name;
+    const auto filename = name + SyncName(CommonUtility::generateRandomStringAlphaNum());
+
+    SyncPath tmpPath = tmpDirPath / filename;
     std::ofstream output(tmpPath.native().c_str(), std::ios::binary);
     if (!output) {
         bool read = false;
