@@ -195,8 +195,31 @@ namespace Infomaniak.kDrive.CustomControls
                 WinRT.Interop.WindowNative.GetWindowHandle((Application.Current as App)?.CurrentWindow));
 
             var ratio = svgDoc.Height.Value / svgDoc.Width.Value;
-            double width = double.IsNaN(Width) ? svgDoc.Width.Value : Width;
-            double height = double.IsNaN(Height) ? width * ratio : Height;
+            if (double.IsNaN(ratio) || double.IsInfinity(ratio))
+                ratio = 1.0F;
+
+            double width = 0;
+            double height = 0;
+            if (double.IsNaN(Width) && double.IsNaN(Height))
+            {
+                height = svgDoc.Height.Value;
+                width = height / ratio;
+            }
+            else if (double.IsNaN(Width) && !double.IsNaN(Height))
+            {
+                height = Height;
+                width = height / ratio;
+            }
+            else if (double.IsNaN(Height) && !double.IsNaN(Width))
+            {
+                width = Width;
+                height = width * ratio;
+            }
+            else
+            {
+                width = Width;
+                height = Height;
+            }
 
             return (width * scale, height * scale);
         }
