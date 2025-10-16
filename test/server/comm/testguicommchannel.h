@@ -58,6 +58,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testDriveInfoListJob);
         CPPUNIT_TEST(testDriveUpdateJob);
         CPPUNIT_TEST(testDriveSearchJob);
+        CPPUNIT_TEST(testSyncInfoListJob);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -77,6 +78,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testDriveUpdateJob();
         void testDriveDeleteJob();
         void testDriveSearchJob();
+        void testSyncInfoListJob();
 
     private:
         GuiJobFactory _guiJobFactory;

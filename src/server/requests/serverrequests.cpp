@@ -309,6 +309,22 @@ ExitCode ServerRequests::getSyncInfoList(QList<SyncInfo> &list) {
     return ExitCode::Ok;
 }
 
+ExitCode ServerRequests::getSyncInfoList(std::vector<SyncInfo> &list) {
+    std::vector<Sync> syncList;
+    if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
+        return ExitCode::DbError;
+    }
+    list.clear();
+    SyncInfo syncInfo;
+    for (const Sync &sync: syncList) {
+        syncToSyncInfo(sync, syncInfo);
+        list.push_back(syncInfo);
+    }
+
+    return ExitCode::Ok;
+}
+
 ExitCode ServerRequests::getParameters(ParametersInfo &parametersInfo) {
     parametersToParametersInfo(ParametersCache::instance()->parameters(), parametersInfo);
     return ExitCode::Ok;

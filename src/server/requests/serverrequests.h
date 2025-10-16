@@ -64,6 +64,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode getDriveInfo(int driveDbId, DriveInfo &driveInfo);
         static ExitCode updateDrive(const DriveInfo &driveInfo);
         static ExitCode getSyncInfoList(QList<SyncInfo> &list);
+        static ExitCode getSyncInfoList(std::vector<SyncInfo> &list);
         static ExitCode getParameters(ParametersInfo &parametersInfo);
         static ExitCode updateParameters(const ParametersInfo &parametersInfo);
         static ExitCode findGoodPathForNewSync(int driveDbId, const QString &basePath, QString &path, QString &error);

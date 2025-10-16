@@ -25,6 +25,7 @@
 #include "comm/guijobs/accountinfolistjob.h"
 #include "comm/guijobs/driveinfolistjob.h"
 #include "comm/guijobs/drivesearchjob.h"
+#include "comm/guijobs/syncinfolistjob.h"
 #include "libcommon/comm.h"
 #include "log/log.h"
 
@@ -595,6 +596,60 @@ void TestGuiCommChannel::testDriveSearchJob() {
 
         driveSearchJob->_searchInfoList = {si1, si2};
         driveSearchJob->_hasMore = false;
+    };
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(queryStr, answerStr, {}, processFct);
+#else
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
+void TestGuiCommChannel::testSyncInfoListJob() {
+    // Base64 conversions
+    // "/Users/test/kDrive1" <=> "L1VzZXJzL3Rlc3Qva0RyaXZlMQ=="
+    // "/Users/test/kDrive2" <=> "L1VzZXJzL3Rlc3Qva0RyaXZlMg=="
+    // "folder1" <=> "Zm9sZGVyMQ=="
+    // "999" <=> "OTk5"
+    // "{645FF040-5081-101B-9F08-00AA002F954E}" <=> "ezY0NUZGMDQwLTUwODEtMTAxQi05RjA4LTAwQUEwMDJGOTU0RX0="
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    const auto queryStr{Str(R"({ "id": 1,)"
+                            R"( "num": 11,)" // RequestNum::SYNC_INFOLIST
+                            R"( "params": { } })")};
+#else
+    // There is no need to pass a request id as the response is via a callback.
+    const auto queryStr{Str(R"({ "num": 11,)" // RequestNum::SYNC_INFOLIST
+                            R"( "params": { } })")};
+
+    // Callback expected answer
+    const auto cbkAnswerStr{Str(
+            R"({"cause":0,"code":0,"id":1,"params":{"syncInfoList":[)"
+            R"({"dbId":1,"driveDbId":1,"localPath":"L1VzZXJzL3Rlc3Qva0RyaXZlMQ==","navigationPaneClsid":"","supportVfs":true,"targetNodeId":"","targetPath":"","virtualFileMode":1},)"
+            R"({"dbId":2,"driveDbId":1,"localPath":"L1VzZXJzL3Rlc3Qva0RyaXZlMg==","navigationPaneClsid":"ezY0NUZGMDQwLTUwODEtMTAxQi05RjA4LTAwQUEwMDJGOTU0RX0=","supportVfs":false,"targetNodeId":"OTk5","targetPath":"Zm9sZGVyMQ==","virtualFileMode":0}]}})")};
+#endif
+
+    // Job expected answer
+    const auto answerStr{
+            Str(R"({ "cause": 0,)"
+                R"( "code": 0,)"
+                R"( "id": 1,)"
+                R"( "num": 11,)" // RequestNum::SYNC_INFOLIST
+                R"( "params": {)"
+                R"( "syncInfoList": [)"
+                R"( { "dbId": 1, "driveDbId": 1, "localPath": "L1VzZXJzL3Rlc3Qva0RyaXZlMQ==", "navigationPaneClsid": "", "supportVfs": true, "targetNodeId": "", "targetPath": "", "virtualFileMode": 1 },)"
+                R"( { "dbId": 2, "driveDbId": 1, "localPath": "L1VzZXJzL3Rlc3Qva0RyaXZlMg==", "navigationPaneClsid": "ezY0NUZGMDQwLTUwODEtMTAxQi05RjA4LTAwQUEwMDJGOTU0RX0=", "supportVfs": false, "targetNodeId": "OTk5", "targetPath": "Zm9sZGVyMQ==", "virtualFileMode": 0 } ] },)"
+                R"( "type": 1 })") // GuiJobType::Query
+    };
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto syncInfoListJob = std::dynamic_pointer_cast<SyncInfoListJob>(job);
+
+        SyncInfo si1(1, 1, Str("/Users/test/kDrive1"), Str(""), Str(""), true, VirtualFileMode::Win, Str(""));
+        SyncInfo si2(2, 1, Str("/Users/test/kDrive2"), Str("folder1"), Str("999"), false, VirtualFileMode::Off,
+                     Str("{645FF040-5081-101B-9F08-00AA002F954E}"));
+
+        syncInfoListJob->_syncInfoList = {si1, si2};
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
