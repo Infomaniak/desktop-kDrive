@@ -114,7 +114,7 @@ final class OnboardingViewController: NSViewController {
         case .login:
             return LoginViewController(viewModel: viewModel)
         case .driveSelection:
-            fatalError("Not Implemented Yet")
+            return DriveSelectionViewController()
         case .permissions:
             fatalError("Not Implemented Yet")
         case .synchronisation:

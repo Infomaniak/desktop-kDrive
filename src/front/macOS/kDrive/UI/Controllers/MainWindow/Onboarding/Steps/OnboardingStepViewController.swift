@@ -30,6 +30,8 @@ open class OnboardingStepViewController: NSViewController {
     public let primaryButton = BorderedProminentButton()
     public let secondaryButton = BorderlessButton()
 
+    private var customContent: NSView?
+
     override open func viewDidLoad() {
         super.viewDidLoad()
         setupComponents()
