@@ -23,6 +23,10 @@ public extension ThemedAnimation {
         light: "kdrive-loader-light",
         dark: "kdrive-loader-dark"
     )
+    static let kDriveSynchronizeFiles = ThemedAnimation(
+        light: "kdrive-synchronize-files-light",
+        dark: "kdrive-synchronize-files-light"
+    )
 }
 
 public struct ThemedAnimation: Sendable {

@@ -86,7 +86,7 @@ class OnboardingAnimationsView: NSView {
         case .login:
             return .kDriveLoader
         case .driveSelection:
-            fatalError("Not Implemented Yet")
+            return .kDriveSynchronizeFiles
         case .permissions:
             fatalError("Not Implemented Yet")
         case .synchronisation:
