@@ -341,9 +341,9 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         }
 
         // Check unsupported characters
-        if (const auto ioError = checkForUnsupportedCharacters(item.name(), item.id(), item.type()); !ioError) {
-            if (ioError.cause() == ExitCause::TmpDirAccessError) {
-                return ioError;
+        if (const auto exitInfo = checkForUnsupportedCharacters(item.name(), item.id(), item.type()); !exitInfo) {
+            if (exitInfo.cause() == ExitCause::TmpDirAccessError) {
+                return exitInfo;
             }
             continue;
         }
@@ -483,11 +483,11 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
         }
 
         // Check unsupported characters
-        if (const auto ioError = checkForUnsupportedCharacters(actionInfo.snapshotItem.name(), actionInfo.snapshotItem.id(),
-                                                               actionInfo.snapshotItem.type());
-            !ioError) {
-            if (ioError.cause() == ExitCause::TmpDirAccessError) {
-                return ioError;
+        if (const auto exitInfo = checkForUnsupportedCharacters(actionInfo.snapshotItem.name(), actionInfo.snapshotItem.id(),
+                                                                actionInfo.snapshotItem.type());
+            !exitInfo) {
+            if (exitInfo.cause() == ExitCause::TmpDirAccessError) {
+                return exitInfo;
             }
             continue;
         }
