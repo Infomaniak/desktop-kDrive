@@ -31,8 +31,9 @@ public protocol ServerBridgeable: Sendable {
 
     public func getConnectedUser() async -> Bool {
         loginItemAgent.connectToLoginAgent()
-
-        try? await Task.sleep(nanoseconds: 2 * 1_000_000_000)
+        try? await Task.sleep(nanoseconds: 5 * 1_000_000_000)
+        loginItemAgent.dummyServerQuery()
+        
         return false
     }
 }
