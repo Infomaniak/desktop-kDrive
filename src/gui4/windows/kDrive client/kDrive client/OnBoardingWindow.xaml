@@ -25,7 +25,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModel="using:Infomaniak.kDrive.ViewModels"
         xmlns:converters="using:Infomaniak.kDrive.Converters"
-        xmlns:customControls="using:Infomaniak.kDrive.CustomControls"
+        xmlns:controls="using:Infomaniak.kDrive.CustomControls"
         mc:Ignorable="d"
         Title="kDrive">
 
@@ -59,13 +59,13 @@
                 Grid.Column="1"
                 Background="{ThemeResource LayerFillColorDefaultBrush}">
         </Border>
-        <customControls:AppTitleBarLogo Grid.Column="0"
-                                        Margin="8,8,0,0" />
-
-        <customControls:LottiePlayer Grid.Row="1"
-                                     Grid.Column="2"
-                                     Height="120"
-                                     UriSource="ms-appx:///Assets/Animations/kDrive-LoaderStroke.json"/>
+        <controls:AppTitleBarLogo Grid.Column="0"
+                                  Margin="8,8,0,0" />
+        
+        <controls:LottiePlayer Grid.Row="1"
+                               Grid.Column="2"
+                               Height="120"
+                               UriSource="{ThemeResource Infomaniak.Custom.Animations.loader-stroke}" />
         <Border Grid.Row="1"
                 Grid.Column="0">
             <Frame x:Name="ContentFrame" />

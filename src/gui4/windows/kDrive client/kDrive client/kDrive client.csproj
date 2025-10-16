@@ -13,7 +13,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <Content Remove="Assets\Animations\Readme.md" />
+    <Content Remove="Assets\Custom\Animations\Readme.md" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="CustomControls\AppTitleBarLogo.xaml" />
@@ -98,16 +98,22 @@
     <Page Update="Pages\Onboarding\FinishingPage.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="Styles\Custom\dark\InfomaniakImages.xaml">
+    <Page Update="Styles\Custom\InfomaniakStylesDark.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="Styles\Custom\InfomaniakIcons.xaml">
+    <Page Update="Styles\Custom\InfomaniakStylesStatic.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="Styles\Custom\light\InfomaniakImages.xaml">
+    <Page Update="Styles\Custom\InfomaniakStylesLight.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="Styles\DS\InfomaniakIcons.xaml">
+    <Page Update="Styles\DS\InfomaniakStylesDark.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Styles\DS\InfomaniakStylesLight.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Styles\DS\InfomaniakStylesStatic.xaml">
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
@@ -151,6 +157,6 @@
     </PRIResource>
   </ItemGroup>
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="powershell -ExecutionPolicy Bypass -NoProfile -File &quot;$(ProjectDir)\Assets\Animations\lottieConverter.ps1&quot; -Directory &quot;$(ProjectDir)\Assets\Animations&quot;" />
+    <Exec Command="powershell -ExecutionPolicy Bypass -NoProfile -File &quot;$(ProjectDir)\Assets\Custom\Animations\lottieConverter.ps1&quot; -Directory &quot;$(ProjectDir)\Assets\Custom\Animations&quot;" />
   </Target>
 </Project>

@@ -73,13 +73,10 @@
                 <StackPanel Orientation="Horizontal"
                             Grid.Row="1"
                             Margin="16,0,0,0">
-                    <ImageIcon Height="16"
-                               VerticalAlignment="Top"
-                               Margin="0,16,0,0">
-                        <ImageIcon.Source>
-                            <SvgImageSource UriSource="ms-appx:///Assets/Icons/headphones.svg" />
-                        </ImageIcon.Source>
-                    </ImageIcon>
+                    <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Devices.headphones}"
+                                      Height="16"
+                                      VerticalAlignment="Top"
+                                      Foreground="{ThemeResource TextFillColorSecondaryBrush}" /> 
                     <StackPanel Orientation="Vertical"
                                 Grid.Row="1"
                                 Margin="16,14,0,0">
@@ -219,7 +216,7 @@
                                HorizontalAlignment="Center"
                                Margin="20">
                             <Image.Source>
-                                <SvgImageSource UriSource="ms-appx:///Assets/Images/no-errors.svg" />
+                                <SvgImageSource UriSource="ms-appx:///Assets/Images/no-errors.svg" /> <!-- TODO: Replace by SvgIcon once the error page is ready (UX)-->
                             </Image.Source>
                         </Image>
                         <TextBlock x:Uid="Page_ErrorPage_NoErrors_Line1"

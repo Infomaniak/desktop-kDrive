@@ -18,8 +18,7 @@
  -->
 
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:controls="using:Infomaniak.kDrive.CustomControls">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!-- Actions -->
     <x:String x:Key="Infomaniak.DS.Icons.Actions.power">ms-appx:///Assets/DS/Icons/Actions/power.svg</x:String>
@@ -50,8 +49,20 @@
 
     <!-- Media -->
     <x:String x:Key="Infomaniak.DS.Icons.Media.pause">ms-appx:///Assets/DS/Icons/Media/pause.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Media.play">ms-appx:///Assets/DS/Icons/Media/play.svg</x:String>
 
     <!-- Users -->
     <x:String x:Key="Infomaniak.DS.Icons.Users.user">ms-appx:///Assets/DS/Icons/Users/user.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Users.users">ms-appx:///Assets/DS/Icons/Users/users.svg</x:String>
+
+    <!-- Documents -->
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.file-grid">ms-appx:///Assets/DS/Icons/Documents/file-grid.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.file-pdf">ms-appx:///Assets/DS/Icons/Documents/file-pdf.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.file-text">ms-appx:///Assets/DS/Icons/Documents/file-text.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.folder">ms-appx:///Assets/DS/Icons/Documents/folder.svg</x:String>
+
+    <!-- Devices -->
+    <x:String x:Key="Infomaniak.DS.Icons.Devices.computer">ms-appx:///Assets/DS/Icons/Devices/computer.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Devices.headphones">ms-appx:///Assets/DS/Icons/Devices/headphones.svg</x:String>
+
 </ResourceDictionary>

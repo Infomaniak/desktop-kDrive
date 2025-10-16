@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.UI.Xaml;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -43,7 +44,13 @@ namespace Infomaniak.kDrive.ViewModels.Errors
 
         public override Uri IconUri()
         {
-            return AssetLoader.GetAssetUri(AssetLoader.AssetType.Icon, "headphones");
+            const string resourceKey = "Infomaniak.DS.Icons.Devices.headphones";
+            if (Application.Current.Resources[resourceKey] is string iconUriStr)
+            {
+                return new Uri(iconUriStr);
+            }
+            Logger.Log(Logger.Level.Error, $"Resource for AppError icon should be {resourceKey} but was not found or is not a string.");
+            return new Uri("");
         }
     }
 }

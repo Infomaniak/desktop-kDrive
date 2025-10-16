@@ -7,16 +7,17 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
              xmlns:converters="using:Infomaniak.kDrive.Converters"
+             xmlns:controls="using:Infomaniak.kDrive.CustomControls"
              mc:Ignorable="d">
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:BooleanToInvertedVisibilityConverter  x:Key="BooleanToInvertedVisibilityConverter" />
-        <converters:NodeTypeToIconConverter x:Key="NodeTypeToSvgUriConverter" />
+        <converters:NodeTypeToIconUriConverter x:Key="NodeTypeToSvgUriConverter" />
         <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
         <converters:DateTimeToTimeAgoConverter x:Key="DateTimeToTimeAgoConverter" />
         <converters:BytesToHumanReadableStringConverter x:Key="BytesToHumanReadableStringConverter" />
-        <converters:SyncActivityStateToIconConverter x:Key="SyncActivityStateToIconConverter" />
-        <converters:SyncDirectionToIconConverter x:Key="SyncDirectionToIconConverter" />
+        <converters:SyncActivityStateToIconUriConverter x:Key="SyncActivityStateToIconConverter" />
+        <converters:SyncActivityDirectionToIconUriConverter x:Key="SyncActivityDirectionToIconConverter" />
         <converters:SyncDirectionToToolTipConverter x:Key="SyncDirectionToToolTipConverter" />
     </UserControl.Resources>
     <Grid>
@@ -110,20 +111,35 @@
                           MinHeight="34"
                           Background="{ThemeResource LayerFillColorAlt}">
                         <Grid.Resources>
-                            <DataTemplate x:Key="FileTemplate"
+                            <DataTemplate x:Key="FileSizeTemplate"
                                           x:DataType="viewmodels:SyncActivity">
                                 <TextBlock Text="{x:Bind Size, Converter={StaticResource BytesToHumanReadableStringConverter}}"
                                            VerticalAlignment="Center" />
                             </DataTemplate>
-                            <DataTemplate x:Key="DirectoryTemplate"
+                            <DataTemplate x:Key="DirectorySizeTemplate"
                                           x:DataType="viewmodels:SyncActivity">
                                 <TextBlock Text="-"
                                            VerticalAlignment="Center"
                                            HorizontalAlignment="Center" />
                             </DataTemplate>
-                            <local:ItemTypeDataTemplateSelector x:Key="ItemTypeDataTemplateSelector"
-                                                                FileTemplate="{StaticResource FileTemplate}"
-                                                                DirectoryTemplate="{StaticResource DirectoryTemplate}" />
+                            <DataTemplate x:Key="FileIconTemplate"
+                                          x:DataType="viewmodels:SyncActivity">
+                                <controls:SvgIcon Height="16"
+                                                  UriString="{x:Bind NodeType, Converter={StaticResource NodeTypeToSvgUriConverter}}" />
+                            </DataTemplate>
+                            <DataTemplate x:Key="DirectoryIconTemplate"
+                                          x:DataType="viewmodels:SyncActivity">
+                                <controls:SvgIcon Height="16"
+                                                  UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder}"
+                                                  Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                            </DataTemplate>
+                            <local:ItemTypeDataTemplateSelector x:Key="ItemTypeSizeDataTemplateSelector"
+                                                                FileTemplate="{StaticResource FileSizeTemplate}"
+                                                                DirectoryTemplate="{StaticResource DirectorySizeTemplate}" />
+
+                            <local:ItemTypeDataTemplateSelector x:Key="ItemTypeIconDataTemplateSelector"
+                                                                FileTemplate="{StaticResource FileIconTemplate}"
+                                                                DirectoryTemplate="{StaticResource DirectoryIconTemplate}" />
                         </Grid.Resources>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="204*" />
@@ -136,12 +152,10 @@
                                     VerticalAlignment="Center"
                                     Padding="{StaticResource Infomaniak.Style.Thickness.Left.S}"
                                     Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                            <ImageIcon Height="16"
-                                       Grid.Column="0">
-                                <ImageIcon.Source>
-                                    <SvgImageSource UriSource="{x:Bind NodeType, Converter={StaticResource NodeTypeToSvgUriConverter}}" />
-                                </ImageIcon.Source>
-                            </ImageIcon>
+
+                            <ContentControl Grid.Column="0"
+                                            ContentTemplateSelector="{StaticResource ItemTypeIconDataTemplateSelector}"
+                                            Content="{x:Bind}" />
                             <TextBlock Text="{x:Bind Name}"
                                        Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                         </StackPanel>
@@ -161,31 +175,32 @@
 
                         <ContentControl Grid.Column="2"
                                         VerticalAlignment="Center"
-                                        ContentTemplateSelector="{StaticResource ItemTypeDataTemplateSelector}"
+                                        ContentTemplateSelector="{StaticResource ItemTypeSizeDataTemplateSelector}"
                                         Content="{x:Bind}" />
 
-                        <StackPanel Orientation="Horizontal"
-                                    Grid.Column="3"
-                                    VerticalAlignment="Center"
-                                    Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
-                            <ImageIcon Height="16"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Left">
-                                <ImageIcon.Source>
-                                    <SvgImageSource UriSource="{x:Bind State, Converter={StaticResource SyncActivityStateToIconConverter}, Mode=OneWay}" />
-                                </ImageIcon.Source>
-                            </ImageIcon>
-                            <ImageIcon Height="16"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Left">
+                        <Grid Grid.Column="3"
+                              VerticalAlignment="Center"
+                              ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="18" />
+                                <ColumnDefinition Width="18" />
+                            </Grid.ColumnDefinitions>
+                            <controls:SvgIcon Width="16"
+                                              Grid.Column="0"
+                                              VerticalAlignment="Center"
+                                              HorizontalAlignment="Left"
+                                              UriString="{x:Bind State, Converter={StaticResource SyncActivityStateToIconConverter}, Mode=OneWay}" />
+                            <controls:SvgIcon Width="16"
+                                              Grid.Column="1"
+                                              VerticalAlignment="Center"
+                                              HorizontalAlignment="Left"
+                                              UriString="{x:Bind Direction, Converter={StaticResource SyncActivityDirectionToIconConverter}, Mode=OneWay}"
+                                              Foreground="{ThemeResource TextFillColorDisabledBrush}">
                                 <ToolTipService.ToolTip>
                                     <ToolTip Content="{x:Bind Direction, Converter={StaticResource SyncDirectionToToolTipConverter}, Mode=OneWay}" />
                                 </ToolTipService.ToolTip>
-                                <ImageIcon.Source>
-                                    <SvgImageSource UriSource="{x:Bind Direction, Converter={StaticResource SyncDirectionToIconConverter}, Mode=OneWay}" />
-                                </ImageIcon.Source>
-                            </ImageIcon>
-                        </StackPanel>
+                            </controls:SvgIcon>
+                        </Grid>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
