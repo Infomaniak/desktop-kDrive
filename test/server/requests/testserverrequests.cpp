@@ -43,9 +43,7 @@ void TestServerRequests::setUp() {
     (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
-    bool alreadyExists = false;
-    const std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
-    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
+    (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
     // Insert user, account & drive

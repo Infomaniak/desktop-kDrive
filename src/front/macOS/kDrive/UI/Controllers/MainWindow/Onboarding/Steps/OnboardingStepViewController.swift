@@ -21,8 +21,8 @@ import Combine
 import kDriveCoreUI
 
 open class OnboardingStepViewController: NSViewController {
-    private static let minContainerWidth: CGFloat = 200
-    private static let maxContainerWidth: CGFloat = 450
+    private static let minContainerWidth: CGFloat = 300
+    private static let maxContainerWidth: CGFloat = 500
 
     public let containerView = NSView()
     public let titleLabel = NSTextField(labelWithString: "")
@@ -48,6 +48,7 @@ open class OnboardingStepViewController: NSViewController {
         descriptionLabel.font = .preferredFont(forTextStyle: .body)
         descriptionLabel.lineBreakMode = .byWordWrapping
         descriptionLabel.textColor = .Tokens.Text.secondary
+        descriptionLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         containerView.addSubview(descriptionLabel)
 
         secondaryButton.translatesAutoresizingMaskIntoConstraints = false
@@ -58,15 +59,14 @@ open class OnboardingStepViewController: NSViewController {
         containerView.addSubview(primaryButton)
 
         NSLayoutConstraint.activate([
-            containerView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             containerView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
             containerView.widthAnchor.constraint(greaterThanOrEqualToConstant: Self.minContainerWidth),
             containerView.widthAnchor.constraint(lessThanOrEqualToConstant: Self.maxContainerWidth),
 
-            containerView.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: AppPadding.padding16),
-            view.trailingAnchor.constraint(greaterThanOrEqualTo: containerView.trailingAnchor, constant: AppPadding.padding16),
-            containerView.topAnchor.constraint(greaterThanOrEqualTo: view.topAnchor, constant: AppPadding.padding16),
-            view.bottomAnchor.constraint(greaterThanOrEqualTo: containerView.bottomAnchor, constant: AppPadding.padding16),
+            containerView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: AppPadding.padding64),
+            view.trailingAnchor.constraint(greaterThanOrEqualTo: containerView.trailingAnchor, constant: AppPadding.padding64),
+            containerView.topAnchor.constraint(greaterThanOrEqualTo: view.topAnchor, constant: AppPadding.padding32),
+            view.bottomAnchor.constraint(greaterThanOrEqualTo: containerView.bottomAnchor, constant: AppPadding.padding32),
 
             titleLabel.topAnchor.constraint(equalTo: containerView.topAnchor),
             titleLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
