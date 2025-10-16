@@ -681,9 +681,11 @@ IoError Utility::tryCreateTmpDir(const SyncName &name /*= "testDir"*/) {
 
     SyncPath tmpPath = tmpDirPath / name;
     std::filesystem::create_directory(tmpPath, ec);
-    bool illegalByteSequence = (ec.value() == static_cast<int>(std::errc::illegal_byte_sequence));
-    if (illegalByteSequence) {
-        return IoError::InvalidFileName;
+    if (ec.value()) {
+        if (ec.value() == static_cast<int>(std::errc::illegal_byte_sequence)) {
+            return IoError::InvalidFileName;
+        }
+        return IoHelper::stdError2ioError(ec);
     }
 
     std::filesystem::remove_all(tmpPath, ec);
@@ -709,7 +711,7 @@ IoError Utility::tryCreateTmpFile(const SyncName &name /*= "testFile"*/) {
 
     std::error_code ec;
     std::filesystem::remove_all(tmpPath, ec);
-    return /*IoError::Success*/ IoError::Unknown;
+    return IoError::Success;
     ;
 }
 

@@ -537,4 +537,16 @@ void TestUtility::testUserName() {
 #endif
 }
 
+void TestUtility::testTryCreateTmpDir() {
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir());
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir("test name"));
+    CPPUNIT_ASSERT(Utility::tryCreateTmpDir("test/name") != IoError::Success);
+}
+
+void TestUtility::testTryCreateTmpFile() {
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile());
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile("test name"));
+    CPPUNIT_ASSERT(Utility::tryCreateTmpFile("test/name") != IoError::Success);
+}
+
 } // namespace KDC
