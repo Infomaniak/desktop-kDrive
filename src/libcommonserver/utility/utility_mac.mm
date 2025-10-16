@@ -129,7 +129,6 @@ NSArray *getPIDsForProcessName(NSString *processName) {
 
     for (NSString *line in lines) {
         if ([line rangeOfString:processName].location != NSNotFound && ![line rangeOfString:@"grep"].location != NSNotFound) {
-            // Extraire le PID (premier champ)
             NSArray *fields = [line componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
             for (NSString *field in fields) {
                 if (!field || [field length] == 0 || [field isEqualToString:processName]) continue;
@@ -150,7 +149,9 @@ void Utility::restartLoginItemAgent() {
     NSString *processName =
             [NSString stringWithFormat:@"%@%@.LoginItemAgent", [NSString stringWithUTF8String:TEAM_IDENTIFIER_PREFIX], bundleID];
     NSMutableArray *pids = getPIDsForProcessName(processName);
-    for (NSNumber *pidNumber: pids) {
+    assert(pids.count <= 1);
+    if (pids.count == 1) {
+        NSNumber *pidNumber = [pids objectAtIndex:0];
         pid_t pid = [pidNumber longValue];
         runKillCommand(pid);
     }
