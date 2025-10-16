@@ -26,6 +26,7 @@
 #include "driveinfolistjob.h"
 #include "driveupdatejob.h"
 #include "drivedeletejob.h"
+#include "drivesearchjob.h"
 
 namespace KDC {
 
@@ -38,7 +39,8 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::ACCOUNT_INFOLIST, makeShared<AccountInfoListJob>},
                 {RequestNum::DRIVE_INFOLIST, makeShared<DriveInfoListJob>},
                 {RequestNum::DRIVE_UPDATE, makeShared<DriveUpdateJob>},
-                {RequestNum::DRIVE_DELETE, makeShared<DriveDeleteJob>}};
+                {RequestNum::DRIVE_DELETE, makeShared<DriveDeleteJob>},
+                {RequestNum::DRIVE_SEARCH, makeShared<DriveSearchJob>}};
 }
 
 std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::shared_ptr<CommManager> commManager,

@@ -24,6 +24,7 @@
 #include "comm/guijobs/useravailabledrivesjob.h"
 #include "comm/guijobs/accountinfolistjob.h"
 #include "comm/guijobs/driveinfolistjob.h"
+#include "comm/guijobs/drivesearchjob.h"
 #include "libcommon/comm.h"
 #include "log/log.h"
 
@@ -544,6 +545,57 @@ void TestGuiCommChannel::testDriveDeleteJob() {
                              R"( "type": 1 })")}; // GuiJobType::Query
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob>) {};
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(queryStr, answerStr, {}, processFct);
+#else
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
+void TestGuiCommChannel::testDriveSearchJob() {
+    // Base64 conversions
+    // "info*" <=> "aW5mbyo="
+    // "1000" <=> "MTAwMA=="
+    // "2000" <=> "MjAwMA=="
+    // "toto" <=> "dG90bw=="
+    // "titi" <=> "dGl0aQ=="
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    const auto queryStr{Str(R"({ "id": 1,)"
+                            R"( "num": 10,)" // RequestNum::DRIVE_SEARCH
+                            R"( "params": { "driveDbId": 1, "searchString": "aW5mbyo=" } })")};
+#else
+    // There is no need to pass a request id as the response is via a callback.
+    const auto queryStr{Str(R"({ "num": 10,)" // RequestNum::DRIVE_SEARCH
+                            R"( "params": { "driveDbId": 1, "searchString": "aW5mbyo=" } })")};
+
+    // Callback expected answer
+    const auto cbkAnswerStr{Str(
+            R"({"cause":0,"code":0,"id":1,"params":{"hasMore":false,"searchInfoList":[{"id":"MTAwMA==","name":"dG90bw==","type":1},{"id":"MjAwMA==","name":"dGl0aQ==","type":2}]}})")};
+#endif
+
+    // Job expected answer
+    const auto answerStr{Str(R"({ "cause": 0,)"
+                             R"( "code": 0,)"
+                             R"( "id": 1,)"
+                             R"( "num": 10,)" // RequestNum::DRIVE_SEARCH
+                             R"( "params": {)"
+                             R"( "hasMore": false,)"
+                             R"( "searchInfoList": [)"
+                             R"( { "id": "MTAwMA==", "name": "dG90bw==", "type": 1 },)"
+                             R"( { "id": "MjAwMA==", "name": "dGl0aQ==", "type": 2 } ] },)"
+                             R"( "type": 1 })")}; // GuiJobType::Query
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto driveSearchJob = std::dynamic_pointer_cast<DriveSearchJob>(job);
+
+        SearchInfo si1("1000", Str("toto"), NodeType::File);
+        SearchInfo si2("2000", Str("titi"), NodeType::Directory);
+
+        driveSearchJob->_searchInfoList = {si1, si2};
+        driveSearchJob->_hasMore = false;
+    };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(queryStr, answerStr, {}, processFct);
