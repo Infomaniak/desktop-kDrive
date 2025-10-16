@@ -517,7 +517,7 @@ void CloudProvider::onNotifyDehydrate(_In_ CONST CF_CALLBACK_INFO *callbackInfo,
                         fullPath.wstring().c_str());
         }
 
-        if (!PipeClient::getInstance().sendMessageWithoutAnswer(L"MAKE_ONLINE_ONLY", fullPath.wstring())) {
+        if (!PipeClient::getInstance().sendMessageWithoutAnswer(L"MAKE_ONLINE_ONLY_DIRECT", fullPath.wstring())) {
             TRACE_ERROR(L"Error in Utilities::writeMessage!");
         }
     } else {
