@@ -33,6 +33,7 @@ using System.Collections.Specialized;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -141,16 +142,11 @@ namespace Infomaniak.kDrive.ViewModels
                 return null;
 
             using var stream = new InMemoryRandomAccessStream();
-            using (var writer = new DataWriter(stream.GetOutputStreamAt(0)))
-            {
-                writer.WriteBytes(imageData);
-                await writer.StoreAsync();
-            }
+            await stream.WriteAsync(imageData.AsBuffer());
+            stream.Seek(0);
 
             var bitmap = new BitmapImage();
-            stream.Seek(0);
             await bitmap.SetSourceAsync(stream);
-
             return bitmap;
         }
     }
