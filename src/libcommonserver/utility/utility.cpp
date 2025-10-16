@@ -668,7 +668,7 @@ bool Utility::isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode
     }
 }
 
-IoError Utility::tryCreateTmpDir(const SyncName &name /*= "testDir"*/) {
+IoError Utility::tryCreateTmpDir(const SyncName &name /*= Str("testDir")*/) {
 #if defined(KD_MACOS)
     // Add random suffix to make sure the file does not already exist.
     const auto filename = name + SyncName(CommonUtility::generateRandomStringAlphaNum());
@@ -694,16 +694,16 @@ IoError Utility::tryCreateTmpDir(const SyncName &name /*= "testDir"*/) {
     return IoError::Success;
 }
 
-IoError Utility::tryCreateTmpFile(const SyncName &name /*= "testFile"*/) {
+IoError Utility::tryCreateTmpFile(const SyncName &name /*= Str("testFile")*/) {
     // Add random suffix to make sure the file does not already exist.
     SyncPath tmpDirPath;
     if (auto ioError = IoError::Unknown; !IoHelper::tempDirectoryPath(tmpDirPath, ioError)) {
         return ioError;
     }
 
-    const auto filename = name + SyncName(CommonUtility::generateRandomStringAlphaNum());
+    const auto filename = name + Str2SyncName(CommonUtility::generateRandomStringAlphaNum());
 
-    SyncPath tmpPath = tmpDirPath / filename;
+    const SyncPath tmpPath = tmpDirPath / filename;
     std::ofstream output(tmpPath.native().c_str(), std::ios::binary);
     if (!output) {
         bool read = false;
@@ -723,7 +723,7 @@ IoError Utility::tryCreateTmpFile(const SyncName &name /*= "testFile"*/) {
     output.close();
 
     std::error_code ec;
-    std::filesystem::remove_all(tmpPath, ec);
+    (void) std::filesystem::remove_all(tmpPath, ec);
     return IoError::Success;
 }
 
