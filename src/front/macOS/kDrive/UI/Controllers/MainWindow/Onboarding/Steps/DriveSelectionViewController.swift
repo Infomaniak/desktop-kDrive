@@ -27,5 +27,20 @@ class DriveSelectionViewController: OnboardingStepViewController {
     private func setupUI() {
         titleLabel.stringValue = "!Content de vous retrouver !"
         descriptionLabel.isHidden = true
+
+        primaryButton.stringValue = "!Continuer"
+        primaryButton.target = self
+        primaryButton.action = #selector(didTapContinue)
+        secondaryButton.stringValue = "!Paramètres avancés"
+        secondaryButton.target = self
+        secondaryButton.action = #selector(didTapAdvancedSettings)
+    }
+
+    @objc private func didTapContinue() {
+
+    }
+
+    @objc private func didTapAdvancedSettings() {
+
     }
 }

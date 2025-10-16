@@ -21,8 +21,17 @@ import Combine
 import kDriveCoreUI
 
 open class OnboardingStepViewController: NSViewController {
-    private static let minContainerWidth: CGFloat = 300
-    private static let maxContainerWidth: CGFloat = 500
+    enum Tokens {
+        static let minContainerWidth: CGFloat = 300
+        static let maxContainerWidth: CGFloat = 500
+
+        static let viewHorizontalPadding: CGFloat = AppPadding.padding64
+        static let viewVerticalPadding: CGFloat = AppPadding.padding32
+
+        static let titlePadding: CGFloat = AppPadding.padding8
+        static let descriptionPadding: CGFloat = AppPadding.padding32
+        static let contentPadding: CGFloat = AppPadding.padding24
+    }
 
     public let stackView = NSStackView()
     public let titleLabel = NSTextField(labelWithString: "")
@@ -67,13 +76,16 @@ open class OnboardingStepViewController: NSViewController {
 
         NSLayoutConstraint.activate([
             stackView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            stackView.widthAnchor.constraint(greaterThanOrEqualToConstant: Self.minContainerWidth),
-            stackView.widthAnchor.constraint(lessThanOrEqualToConstant: Self.maxContainerWidth),
+            stackView.widthAnchor.constraint(greaterThanOrEqualToConstant: Self.Tokens.minContainerWidth),
+            stackView.widthAnchor.constraint(lessThanOrEqualToConstant: Self.Tokens.maxContainerWidth),
 
-            stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: AppPadding.padding64),
-            view.trailingAnchor.constraint(greaterThanOrEqualTo: stackView.trailingAnchor, constant: AppPadding.padding64),
-            stackView.topAnchor.constraint(greaterThanOrEqualTo: view.topAnchor, constant: AppPadding.padding32),
-            view.bottomAnchor.constraint(greaterThanOrEqualTo: stackView.bottomAnchor, constant: AppPadding.padding32)
+            stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Self.Tokens.viewHorizontalPadding),
+            view.trailingAnchor.constraint(
+                greaterThanOrEqualTo: stackView.trailingAnchor,
+                constant: Self.Tokens.viewHorizontalPadding
+            ),
+            stackView.topAnchor.constraint(greaterThanOrEqualTo: view.topAnchor, constant: Self.Tokens.viewVerticalPadding),
+            view.bottomAnchor.constraint(greaterThanOrEqualTo: stackView.bottomAnchor, constant: Self.Tokens.viewVerticalPadding)
         ])
     }
 }
