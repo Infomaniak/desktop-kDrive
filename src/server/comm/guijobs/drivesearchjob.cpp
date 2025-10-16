@@ -23,6 +23,7 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
+#include "libsyncengine/jobs/network/kDrive_API/searchjob.h"
 
 // Input parameters keys
 static const auto inParamsDriveDbId = "driveDbId";
@@ -66,21 +67,24 @@ ExitInfo DriveSearchJob::serializeOutputParms() {
 }
 
 ExitInfo DriveSearchJob::process() {
-    // Get syncs to delete
-    std::vector<int> syncDbIdList;
-    for (const auto &syncPalMapElt: _commManager->appServer().syncPalMap()) {
-        if (!syncPalMapElt.second) continue;
-        if (syncPalMapElt.second->driveDbId() == _driveDbId) {
-            syncDbIdList.push_back(syncPalMapElt.first);
-        }
+    // Find drive ID
+    Drive drive;
+    bool found = false;
+    if (!ParmsDb::instance()->selectDrive(_driveDbId, drive, found)) {
+        LOG_WARN(_logger, "Error in ParmsDb::selectDrive");
+        return ExitCode::DbError;
+    }
+    if (!found) {
+        LOG_WARN(_logger, "Drive not found for ID: " << _driveDbId);
+        return ExitCode::DataError;
     }
 
-    // Stop syncs for this user and remove them from syncPalMap.
-    _commManager->appServer().stopAllSyncsTask(syncDbIdList);
-    _commManager->appServer().deleteDrive(_driveDbId);
-#if defined(KD_MACOS)
-    Utility::restartFinderExtension();
-#endif
+    // Send search request (synchronously for now)
+    SearchJob searchJob(_driveDbId, CommonUtility::commString2Str(_searchString));
+    (void) searchJob.runSynchronously();
+    for (const auto &searchInfo: searchJob.searchResults()) {
+        _searchInfoList.push_back(searchInfo);
+    }
 
     return ExitCode::Ok;
 }

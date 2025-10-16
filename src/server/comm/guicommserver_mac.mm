@@ -168,7 +168,7 @@ static NSNumber *lastRequestId = @0;
     callback(@"Hello");
 }
 
-- (void)sendQuery:(NSData *_Nonnull)query {
+- (void)sendQuery2:(NSData *_Nonnull)query {
     NSLog(@"[KD] sendQuery method called with data=%@", query);
 }
 // For tests - End

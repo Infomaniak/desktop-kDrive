@@ -22,16 +22,12 @@
 @protocol XPCGuiProtocol
 
 typedef void (^_Nonnull queryCbk)(NSData *_Nonnull answer);
+typedef void (^_Nonnull stringCallback)(NSString *_Nonnull answer); // For tests
 
 - (void)sendQuery:(NSData *_Nonnull)query callback:(queryCbk)callback;
-
-// For tests
-typedef void (^_Nonnull stringCallback)(NSString *_Nonnull answer);
-
-- (void)dummy;
-- (void)dummyCallback:(stringCallback)callback;
-- (void)sendQuery:(NSData *_Nonnull)query;
-// For tests - End
+- (void)dummy; // For tests
+- (void)dummyCallback:(stringCallback)callback; // For tests
+- (void)sendQuery2:(NSData *_Nonnull)query; // For tests
 
 @end
 
