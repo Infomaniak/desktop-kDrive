@@ -20,6 +20,7 @@ import Cocoa
 import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
+import kDriveResources
 import Lottie
 
 final class PreloadingViewController: NSViewController {

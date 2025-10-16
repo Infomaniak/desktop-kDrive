@@ -142,10 +142,6 @@
 		};
 		37A1C4402E546A9600596DBB /* kDriveCoreUI */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				F96700B82E953B8300EDD4D7 /* Exceptions for "kDriveCoreUI" folder in "kDrive" target */,
-				F96700B92E953B8300EDD4D7 /* Exceptions for "kDriveCoreUI" folder in "kDriveCoreUI" target */,
-			);
 			path = kDriveCoreUI;
 			sourceTree = "<group>";
 		};

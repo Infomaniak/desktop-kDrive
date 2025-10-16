@@ -16,11 +16,31 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import kDriveCoreUI
+import Cocoa
 
 public extension ThemedAnimation {
     static let kDriveLoader = ThemedAnimation(
         light: "kdrive-loader-light",
-        dark: "kdrive-loader-light"
+        dark: "kdrive-loader-dark"
     )
+}
+
+public struct ThemedAnimation: Sendable {
+    public let light: String
+    public let dark: String
+
+    public init(light: String, dark: String) {
+        self.light = light
+        self.dark = dark
+    }
+
+    public func animation(forAppearance appearance: NSAppearance?) -> String {
+        guard let appearance else { return light }
+
+        if appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua {
+            return dark
+        } else {
+            return light
+        }
+    }
 }

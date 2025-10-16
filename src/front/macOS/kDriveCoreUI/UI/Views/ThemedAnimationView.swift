@@ -17,6 +17,7 @@
  */
 
 import Cocoa
+import kDriveResources
 import Lottie
 
 public final class ThemedAnimationView: LottieAnimationView {

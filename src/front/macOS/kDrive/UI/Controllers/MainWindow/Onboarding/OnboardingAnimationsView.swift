@@ -19,6 +19,7 @@
 import Cocoa
 import Combine
 import kDriveCoreUI
+import kDriveResources
 import Lottie
 
 class OnboardingAnimationsView: NSView {
