@@ -18,12 +18,13 @@ using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Infomaniak.kDrive.Pages.Onboarding
 {
     public sealed partial class FinishPage : Page
     {
-        private AppModel _viewModel = ((App)Application.Current).Data;
+        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         private ViewModels.Onboarding? _onBoardingViewModel;
         public AppModel ViewModel { get { return _viewModel; } }
         public FinishPage()

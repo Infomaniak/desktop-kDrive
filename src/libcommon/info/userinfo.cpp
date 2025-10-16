@@ -28,7 +28,7 @@ static const auto userInfoUserId = "userId";
 static const auto userInfoName = "name";
 static const auto userInfoEmail = "email";
 static const auto userInfoAvatar = "avatar";
-static const auto userInfoConnected = "connected";
+static const auto userInfoConnected = "isConnected";
 static const auto userInfoIsStaff = "isStaff";
 
 namespace KDC {
@@ -52,11 +52,10 @@ void UserInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
 
     QByteArray avatarQBA;
     QBuffer buffer(&avatarQBA);
-    if (buffer.open(QIODevice::WriteOnly) && _avatar.save(&buffer, "PNG")) {
-        CommBLOB avatarBLOB(avatarQBA.begin(), avatarQBA.end());
-        buffer.close();
-        CommonUtility::writeValueToStruct(dstruct, userInfoAvatar, avatarBLOB);
-    }
+    buffer.open(QIODevice::WriteOnly);
+    _avatar.save(&buffer, "PNG");
+    CommBLOB avatarBLOB(avatarQBA.begin(), avatarQBA.end());
+    CommonUtility::writeValueToStruct(dstruct, userInfoAvatar, avatarBLOB);
 
     CommonUtility::writeValueToStruct(dstruct, userInfoConnected, _connected);
     CommonUtility::writeValueToStruct(dstruct, userInfoIsStaff, _isStaff);

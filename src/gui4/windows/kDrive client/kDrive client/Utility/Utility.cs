@@ -1,21 +1,52 @@
-﻿using Infomaniak.kDrive.Types;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.WinUI;
+using Infomaniak.kDrive.Types;
+using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using System;
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
-
+using System.Threading.Tasks;
 using Windows.Graphics;
 
 namespace Infomaniak.kDrive
 {
     public static class Utility
     {
+        public static async Task RunOnUIThread(Action action)
+        {
+            var dispatcher = AppModel.UIThreadDispatcher;
+            if (dispatcher.HasThreadAccess)
+            {
+                action();
+            }
+            else
+            {
+                TaskCompletionSource taskCompletionSource = new TaskCompletionSource();
+                await dispatcher.EnqueueAsync(() =>
+                {
+                    try
+                    {
+                        action();
+                        taskCompletionSource.SetResult();
+                    }
+                    catch (Exception ex)
+                    {
+                        taskCompletionSource.SetException(ex);
+                    }
+                });
+                await taskCompletionSource.Task;
+            }
+        }
+
         public static NodeType DeduceNodeTypeFromFilePath(string filePath)
         {
             string fileName = System.IO.Path.GetFileName(filePath);

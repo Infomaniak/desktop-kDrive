@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.ViewModels
 {
-    public class NetworkSettings : ObservableObject
+    public class NetworkSettings : UISafeObservableObject
     {
         public enum ProxyType
         {
@@ -37,37 +37,37 @@ namespace Infomaniak.kDrive.ViewModels
         public ProxyType CurrentProxyType
         {
             get => _proxyType;
-            set => SetProperty(ref _proxyType, value);
+            set => SetPropertyInUIThread(ref _proxyType, value);
         }
 
         public string ProxyAddress
         {
             get => _proxyAddress;
-            set => SetProperty(ref _proxyAddress, value);
+            set => SetPropertyInUIThread(ref _proxyAddress, value);
         }
 
         public int ProxyPort
         {
             get => _proxyPort;
-            set => SetProperty(ref _proxyPort, value);
+            set => SetPropertyInUIThread(ref _proxyPort, value);
         }
 
         public ProxyProtocol CurrentProxyProtocol
         {
             get => _proxyProtocol;
-            set => SetProperty(ref _proxyProtocol, value);
+            set => SetPropertyInUIThread(ref _proxyProtocol, value);
         }
 
         public bool ProxyRequiresAuth
         {
             get => _proxyRequiresAuth;
-            set => SetProperty(ref _proxyRequiresAuth, value);
+            set => SetPropertyInUIThread(ref _proxyRequiresAuth, value);
         }
 
         public string ProxyUsername
         {
             get => _proxyUsername;
-            set => SetProperty(ref _proxyUsername, value);
+            set => SetPropertyInUIThread(ref _proxyUsername, value);
         }
 
         public string ProxyPassword
