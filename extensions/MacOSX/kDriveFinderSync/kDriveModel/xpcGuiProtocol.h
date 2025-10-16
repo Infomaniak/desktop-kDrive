@@ -21,12 +21,9 @@
 // Server protocol
 @protocol XPCGuiProtocol
 
-typedef void (^_Nonnull queryCbk)(NSData *_Nonnull answer);
-typedef void (^_Nonnull stringCallback)(NSString *_Nonnull answer); // For tests
-
-- (void)sendQuery:(NSData *_Nonnull)query callback:(queryCbk)callback;
+- (void)sendQuery:(NSData *)query callback:(void (^)(NSData *answer))callback;
 - (void)dummy; // For tests
-- (void)dummyCallback:(stringCallback)callback; // For tests
+- (void)dummyCallback:(void (^)(NSString *str))callback; // For tests	
 - (void)sendQuery2:(NSData *_Nonnull)query; // For tests
 
 @end
@@ -34,6 +31,6 @@ typedef void (^_Nonnull stringCallback)(NSString *_Nonnull answer); // For tests
 // Client protocol
 @protocol XPCGuiRemoteProtocol
 
-- (void)sendSignal:(NSData *_Nonnull)msg;
+- (void)sendSignal:(NSData *)msg;
 
 @end

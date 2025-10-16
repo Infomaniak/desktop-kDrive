@@ -114,7 +114,7 @@ static NSNumber *lastRequestId = @0;
 }
 
 // XPCGuiRemoteProtocol protocol implementation
-- (void)sendQuery:(NSData *_Nonnull)query callback:(_Nonnull queryCbk)callback {
+- (void)sendQuery:(NSData *)query callback:(void (^)(NSData *answer))callback {
     if (self.wrapper && self.wrapper->publicPtr) {
         // Deserialize query
         NSError *error = nil;
@@ -163,12 +163,12 @@ static NSNumber *lastRequestId = @0;
     NSLog(@"[KD] dummy method called");
 }
 
-- (void)dummyCallback:(stringCallback)callback {
+- (void)dummyCallback:(void (^)(NSString *))callback {
     NSLog(@"[KD] dummyCallback method called");
     callback(@"Hello");
 }
 
-- (void)sendQuery2:(NSData *_Nonnull)query {
+- (void)sendQuery2:(NSData *)query {
     NSLog(@"[KD] sendQuery method called with data=%@", query);
 }
 // For tests - End
@@ -295,7 +295,7 @@ uint64_t KDC::GuiCommChannel::writeData(const KDC::CommChar *data, uint64_t len)
         // Retrieve answer callback
         auto cbk = [(GuiLocalEnd *) _privatePtr->localEnd callback:id];
         assert(cbk);
-        auto callback = (queryCbk) cbk;
+        auto callback = (void (^)(NSData *)) cbk;
 
         // Remove request num
         [jsonDict removeObjectForKey:@"num"];
