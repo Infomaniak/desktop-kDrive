@@ -316,10 +316,6 @@ void ParametersDialog::reset() {
 QString ParametersDialog::getAppErrorText(const QString &fctCode, const ExitCode exitCode, const ExitCause exitCause) const {
     const auto err = QString("%1:%2:%3").arg(fctCode).arg(toInt(exitCode)).arg(toInt(exitCause));
     switch (exitCode) {
-        case ExitCode::Unknown:
-        case ExitCode::DataError:
-        case ExitCode::DbError:
-        case ExitCode::BackError:
         case ExitCode::SystemError:
             if (exitCause == ExitCause::TmpDirAccessError) {
                 return tr("kDrive needs to have write access to your computer's temporary directory.<br>"
@@ -327,6 +323,10 @@ QString ParametersDialog::getAppErrorText(const QString &fctCode, const ExitCode
                         .arg(err);
             }
             [[fallthrough]];
+        case ExitCode::Unknown:
+        case ExitCode::DataError:
+        case ExitCode::DbError:
+        case ExitCode::BackError:
         case ExitCode::FatalError:
             return tr("A technical error has occurred (error %1).<br>"
                       "Please empty the history and if the error persists, contact our support team.")
