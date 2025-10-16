@@ -704,6 +704,17 @@ IoError Utility::tryCreateTmpFile(const SyncName &name /*= "testFile"*/) {
     SyncPath tmpPath = tmpDirPath / name;
     std::ofstream output(tmpPath.native().c_str(), std::ios::binary);
     if (!output) {
+        bool read = false;
+        bool write = false;
+        bool exec = false;
+        auto ioError = IoError::Unknown;
+        if (!IoHelper::getRights(tmpDirPath, read, write, exec, ioError)) {
+            return ioError;
+        }
+        if (!read || !write) {
+            return IoError::AccessDenied;
+        }
+
         return IoError::Unknown;
     }
 
@@ -712,7 +723,6 @@ IoError Utility::tryCreateTmpFile(const SyncName &name /*= "testFile"*/) {
     std::error_code ec;
     std::filesystem::remove_all(tmpPath, ec);
     return IoError::Success;
-    ;
 }
 
 } // namespace KDC
