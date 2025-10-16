@@ -19,12 +19,12 @@
 #
 
 script_directory_path="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
-source "$script_directory_path/../build-utils.sh"
+source "$script_directory_path/build-utils.sh"
 
 program_name="$(basename "$0")"
 
 function display_help {
-  echo "$program_name [-h] [-d architecture]"
+  echo "$program_name [-h]"
   echo "  Build the Linux release AppImage for desktop-kDrive."
   echo "where:"
   echo "-h  Show this help text."
@@ -194,7 +194,12 @@ do
     esac
 done
 
-ulimit -n 4000000
+inode_max_limit=100000
+ulimit_error=$( { ulimit -n $inode_max_limit; } 2>&1)
+if [[ -n "$ulimit_error" ]]; then
+    echo "Failed to set the max limit of open inodes with '$inode_max_limit'."
+    echo "Current limit: '$(ulimit -n)'."
+fi
 
 setup_build
 

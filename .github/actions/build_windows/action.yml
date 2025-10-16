@@ -64,7 +64,7 @@ runs:
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
           IF "${{ inputs.release_build }}"=="true" (
             powershell "certutil -scinfo -Silent"
-            powershell "./infomaniak-build-tools/windows/build-drive.ps1" -ci -ext -clean remake -upload -tokenPass ${{ inputs.physical_cert_pass }} -msi
+            powershell "./infomaniak-build-tools/windows/build-drive.ps1" -ci -ext -clean remake -upload -tokenPass ${{ inputs.physical_cert_pass }}
           ) ELSE (
             powershell -File "./infomaniak-build-tools/windows/build-drive.ps1" -ci -unitTests
           )

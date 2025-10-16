@@ -18,6 +18,44 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-
 script_directory_path="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
-bash "$script_directory_path/build-release-via-podman.sh"
+source "$script_directory_path/build-utils.sh"
+
+git_dir="$(get_default_src_dir)"
+
+function display_help {
+  echo "$program_name [-h] [-d git-directory]"
+  echo "  Build the Linux release AppImage for desktop-kDrive."
+  echo "where:"
+  echo "-h  Show this help text."
+  echo "-d  Set the git directory path of the project to build. Defaults to '$git_dir'."
+}
+
+while [[ $# -gt 0 ]];
+do
+    case "$1" in
+      -h | --help)
+          display_help
+          exit 0
+          ;;
+      -d | --git-dir)
+          git_dir="$2"
+          shift 2
+          ;;
+      --) # End of all options
+          shift
+          break
+          ;;
+      -*|--*)
+          echo "Error: Unknown option: $1" >&2
+          exit 1
+          ;;
+      *)  # No more options
+          break
+          ;;
+    esac
+done
+
+echo "Starting build via podman ..."
+
+bash "$script_directory_path/build-release-via-podman.sh" -d "$git_dir"
