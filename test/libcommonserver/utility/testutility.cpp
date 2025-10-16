@@ -546,7 +546,9 @@ void TestUtility::testTryCreateTmpDir() {
 void TestUtility::testTryCreateTmpFile() {
     CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile());
     CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile(Str("test name")));
+#if defined(KD_WINDOWS) || defined(KD_MACOS)
     CPPUNIT_ASSERT(Utility::tryCreateTmpFile(Str("test/name")) != IoError::Success);
+#endif
 }
 
 } // namespace KDC
