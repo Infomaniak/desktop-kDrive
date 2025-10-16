@@ -30,6 +30,7 @@ public enum KDriveResources {
   public static let persons = ImageAsset(name: "persons")
   public static let settings = ImageAsset(name: "settings")
   public static let kdriveAppIcon = ImageAsset(name: "kdrive-app-icon")
+  public static let onboardingGradient = ImageAsset(name: "OnboardingGradient")
 }
 // swiftlint:enable identifier_name line_length nesting type_body_length type_name
 

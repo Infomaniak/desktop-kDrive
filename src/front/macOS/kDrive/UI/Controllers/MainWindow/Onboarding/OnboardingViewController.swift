@@ -65,6 +65,10 @@ final class OnboardingViewController: NSViewController {
     }
 
     private func setupUI() {
+        let gradient = NSImageView(image: KDriveResources.onboardingGradient.image)
+        gradient.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(gradient)
+
         animationsView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(animationsView)
 
@@ -72,6 +76,11 @@ final class OnboardingViewController: NSViewController {
         view.addSubview(contentView)
 
         NSLayoutConstraint.activate([
+            gradient.widthAnchor.constraint(equalToConstant: 200),
+            gradient.heightAnchor.constraint(equalToConstant: 200),
+            gradient.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            gradient.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+
             animationsView.topAnchor.constraint(equalTo: view.topAnchor),
             animationsView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             animationsView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
