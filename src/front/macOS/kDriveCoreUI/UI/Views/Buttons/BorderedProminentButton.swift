@@ -23,13 +23,13 @@ public final class BorderedProminentButton: NSButton {
     var backgroundColor = NSColor.Tokens.Action.primary
     var foregroundColor = NSColor.Tokens.Action.onPrimary
 
-    public override var title: String {
+    override public var title: String {
         didSet {
             setupTitleColor()
         }
     }
 
-    public override init(frame frameRect: NSRect) {
+    override public init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
         setupColors()
     }

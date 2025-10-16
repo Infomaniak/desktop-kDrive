@@ -39,6 +39,7 @@ final class OnboardingViewController: NSViewController {
         super.init(nibName: nil, bundle: nil)
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -58,7 +59,7 @@ final class OnboardingViewController: NSViewController {
     private func setupWindowAppearance() {
         guard let window = view.window else { return }
 
-        window.title = KDriveLocalizable.onboardingLoginTitle
+        window.title = KDriveLocalizable.onboardingWindowTitle
         window.titlebarAppearsTransparent = true
         window.isMovableByWindowBackground = false
     }
@@ -104,14 +105,11 @@ final class OnboardingViewController: NSViewController {
         case .login:
             return LoginViewController(viewModel: viewModel)
         case .driveSelection:
-            print("Not Implemented Yet")
-            return NSViewController()
+            fatalError("Not Implemented Yet")
         case .permissions:
-            print("Not Implemented Yet")
-            return NSViewController()
+            fatalError("Not Implemented Yet")
         case .synchronisation:
-            print("Not Implemented Yet")
-            return NSViewController()
+            fatalError("Not Implemented Yet")
         }
     }
 
