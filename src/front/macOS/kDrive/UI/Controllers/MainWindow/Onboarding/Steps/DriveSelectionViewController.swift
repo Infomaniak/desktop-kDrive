@@ -17,6 +17,7 @@
  */
 
 import Cocoa
+import kDriveCoreUI
 
 class DriveSelectionViewController: OnboardingStepViewController {
     override func viewDidLoad() {
@@ -28,19 +29,15 @@ class DriveSelectionViewController: OnboardingStepViewController {
         titleLabel.stringValue = "!Content de vous retrouver !"
         descriptionLabel.isHidden = true
 
-        primaryButton.stringValue = "!Continuer"
+        primaryButton.title = "!Continuer"
         primaryButton.target = self
         primaryButton.action = #selector(didTapContinue)
-        secondaryButton.stringValue = "!Paramètres avancés"
+        secondaryButton.title = "!Paramètres avancés"
         secondaryButton.target = self
         secondaryButton.action = #selector(didTapAdvancedSettings)
     }
 
-    @objc private func didTapContinue() {
+    @objc private func didTapContinue() {}
 
-    }
-
-    @objc private func didTapAdvancedSettings() {
-
-    }
+    @objc private func didTapAdvancedSettings() {}
 }
