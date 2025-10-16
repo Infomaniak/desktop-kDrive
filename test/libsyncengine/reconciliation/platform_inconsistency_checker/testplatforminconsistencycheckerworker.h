@@ -55,6 +55,7 @@ class TestPlatformInconsistencyCheckerWorker : public CppUnit::TestFixture, publ
     private:
         std::shared_ptr<SyncPal> _syncPal{nullptr};
         LocalTemporaryDirectory _tempDir{"testNameClashAfterRename"};
+        LocalTemporaryDirectory _localTempDir{"testPlatformInconsistencyCheckerWorker"};
         void initUpdateTree(ReplicaSide side);
 };
 
