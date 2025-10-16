@@ -141,14 +141,16 @@ import Foundation
 
         // Resume connection
         appConnection?.resume()
-
-        dummyServerQuery(appConnection)
     }
 
-    func dummyServerQuery(_ appConnection: NSXPCConnection?) {
+    func dummyServerQuery() {
+        guard let appConnection else {
+            fatalError("no connection")
+        }
+        
         IKLogger.xpc.log("[KD] Start communication with app server")
 
-        let remoteObject = appConnection?.remoteObjectProxyWithErrorHandler { error in
+        let remoteObject = appConnection.remoteObjectProxyWithErrorHandler { error in
             IKLogger.xpc.error("[KD] Error during remote object proxy call: \(error)")
         } as? XPCGuiProtocol
 
