@@ -21,10 +21,10 @@
 // Server protocol
 @protocol XPCGuiProtocol
 
-- (void)sendQuery:(NSData *)query callback:(void (^)(NSData *answer))callback;
-- (void)dummy; // For tests
-- (void)dummyCallback:(void (^)(NSString *str))callback; // For tests	
-- (void)sendQuery2:(NSData *_Nonnull)query; // For tests
+//- (void)sendQuery:(NSData *)query callback:(void (^)(NSData *answer))callback;
+- (void)dummy;
+//- (void)dummyCallback:(void (^)(NSString *str))callback;
+//- (void)sendQuery2:(NSData *_Nonnull)query;
 
 @end
 

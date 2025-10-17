@@ -114,6 +114,19 @@ static NSNumber *lastRequestId = @0;
 }
 
 // XPCGuiRemoteProtocol protocol implementation
+- (void)dummy {
+    NSLog(@"[KD] dummy method called");
+}
+
+/*- (void)dummyCallback:(void (^)(NSString *))callback {
+    NSLog(@"[KD] dummyCallback method called");
+    callback(@"Hello");
+}
+
+- (void)sendQuery2:(NSData *)query {
+ NSLog(@"[KD] sendQuery method called with data=%@", query);
+}*/
+
 - (void)sendQuery:(NSData *)query callback:(void (^)(NSData *answer))callback {
     if (self.wrapper && self.wrapper->publicPtr) {
         // Deserialize query
@@ -157,21 +170,6 @@ static NSNumber *lastRequestId = @0;
         self.wrapper->publicPtr->readyReadCbk();
     }
 }
-
-// For tests
-- (void)dummy {
-    NSLog(@"[KD] dummy method called");
-}
-
-- (void)dummyCallback:(void (^)(NSString *))callback {
-    NSLog(@"[KD] dummyCallback method called");
-    callback(@"Hello");
-}
-
-- (void)sendQuery2:(NSData *)query {
-    NSLog(@"[KD] sendQuery method called with data=%@", query);
-}
-// For tests - End
 
 @end
 
