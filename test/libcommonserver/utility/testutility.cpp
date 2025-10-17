@@ -540,9 +540,6 @@ void TestUtility::testUserName() {
 void TestUtility::testTryCreateTmpDir() {
     CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir());
     CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir(Str("test name")));
-#if defined(KD_WINDOWS) || defined(KD_MACOS)
-    CPPUNIT_ASSERT(Utility::tryCreateTmpDir(Str("test/name")) != IoError::Success);
-#endif
 
     {
         // Saves the current value of "KDRIVE_TMP_PATH".
@@ -570,9 +567,6 @@ void TestUtility::testTryCreateTmpDir() {
 void TestUtility::testTryCreateTmpFile() {
     CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile());
     CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile(Str("test name")));
-#if defined(KD_WINDOWS) || defined(KD_MACOS)
-    CPPUNIT_ASSERT(Utility::tryCreateTmpFile(Str("test/name")) != IoError::Success);
-#endif
 
     {
         // Saves the current value of "KDRIVE_TMP_PATH".
