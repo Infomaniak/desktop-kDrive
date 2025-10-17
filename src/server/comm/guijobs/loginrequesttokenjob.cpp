@@ -80,7 +80,7 @@ ExitInfo LoginRequestTokenJob::process() {
     }
 
     _userDbId = userInfo.dbId();
-    _commManager->appServer().updateSentryUser();
+    AppServer::updateSentryUser();
     if (userCreated) {
         auto signalUserAddedJob = std::make_shared<SignalUserAddedJob>(_commManager, _channel, userInfo);
         // Add job to JobManager pool

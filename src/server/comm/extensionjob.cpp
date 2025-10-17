@@ -144,8 +144,8 @@ void ExtensionJob::commandGetMenuItems(const CommString &argument, std::shared_p
     }
 
     // Find SyncPal and Vfs associated to sync
-    SyncPalMap::const_iterator syncPalMapIt = _commManager->appServer().syncPalMap().end();
-    VfsMap::const_iterator vfsMapIt = _commManager->appServer().vfsMap().end();
+    auto syncPalMapIt = _commManager->appServer().syncPalMap().end();
+    auto vfsMapIt = _commManager->appServer().vfsMap().end();
     if (sync.dbId()) {
         syncPalMapIt = retrieveSyncPalMapIt(sync.dbId());
         if (syncPalMapIt == _commManager->appServer().syncPalMap().end()) return;
@@ -242,7 +242,7 @@ void ExtensionJob::commandCopyPublicLink(const CommString &argument, std::shared
 
     // Get public link URL
     std::string linkUrl;
-    exitCode = _commManager->appServer().getPublicLinkUrl(fileData.driveDbId, nodeId, linkUrl);
+    exitCode = AppServer::getPublicLinkUrl(fileData.driveDbId, nodeId, linkUrl);
     if (exitCode != ExitCode::Ok) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in getPublicLinkUrl - " << Utility::formatSyncPath(fileData.relativePath));
@@ -579,7 +579,7 @@ void ExtensionJob::commandGetThumbnail(const CommString &argument, std::shared_p
 
     // Get thumbnail
     std::string thumbnail;
-    exitCode = _commManager->appServer().getThumbnail(fileData.driveDbId, nodeId, 256, thumbnail);
+    exitCode = AppServer::getThumbnail(fileData.driveDbId, nodeId, 256, thumbnail);
     if (exitCode != ExitCode::Ok) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in getThumbnail - " << Utility::formatSyncPath(filePath));
         return;
@@ -732,7 +732,7 @@ void ExtensionJob::commandSetThumbnail(const CommString &argument, std::shared_p
 
     // Get thumbnail
     std::string thumbnail;
-    exitCode = _commManager->appServer().getThumbnail(fileData.driveDbId, nodeId, 256, thumbnail);
+    exitCode = AppServer::getThumbnail(fileData.driveDbId, nodeId, 256, thumbnail);
     if (exitCode != ExitCode::Ok) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in getThumbnail - " << Utility::formatSyncPath(argument));
         return;
@@ -832,7 +832,7 @@ void ExtensionJob::fetchPrivateLinkUrlHelper(const SyncPath &localFile,
     }
 
     // Find the syncpal associated to sync
-    SyncPalMap::const_iterator syncPalMapIt = _commManager->appServer().syncPalMap().end();
+    auto syncPalMapIt = _commManager->appServer().syncPalMap().end();
     if (sync.dbId()) {
         syncPalMapIt = retrieveSyncPalMapIt(sync.dbId());
     }

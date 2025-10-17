@@ -77,7 +77,7 @@ void UserInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommBLOB avatarBLOB;
     CommonUtility::readValueFromStruct(dstruct, userInfoAvatar, avatarBLOB);
     QByteArray avatarQBA;
-    std::copy(avatarBLOB.begin(), avatarBLOB.end(), std::back_inserter(avatarQBA));
+    (void) std::copy(avatarBLOB.begin(), avatarBLOB.end(), std::back_inserter(avatarQBA));
     (void) _avatar.loadFromData(avatarQBA);
 
     CommonUtility::readValueFromStruct(dstruct, userInfoConnected, _connected);

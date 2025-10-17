@@ -263,7 +263,7 @@ void TestGuiCommChannel::testUserInfoListJob() {
         CommBLOB avatarBLOB;
         CommonUtility::convertFromBase64Str(avatarBase64Str, avatarBLOB);
         QByteArray avatarQBA;
-        std::copy(avatarBLOB.begin(), avatarBLOB.end(), std::back_inserter(avatarQBA));
+        (void) std::copy(avatarBLOB.begin(), avatarBLOB.end(), std::back_inserter(avatarQBA));
         QImage avatar;
         (void) avatar.loadFromData(avatarQBA);
 

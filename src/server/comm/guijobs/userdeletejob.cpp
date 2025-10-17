@@ -54,10 +54,10 @@ ExitInfo UserDeleteJob::serializeOutputParms() {
 ExitInfo UserDeleteJob::process() {
     // Get syncs do delete
     std::vector<int> syncDbIdList;
-    for (const auto &syncPalMapElt: _commManager->appServer().syncPalMap()) {
-        if (!syncPalMapElt.second) continue;
-        if (syncPalMapElt.second->userDbId() == _userDbId) {
-            syncDbIdList.push_back(syncPalMapElt.first);
+    for (const auto &[syncDbId, syncPal]: _commManager->appServer().syncPalMap()) {
+        if (!syncPal) continue;
+        if (syncPal->userDbId() == _userDbId) {
+            syncDbIdList.push_back(syncDbId);
         }
     }
 
@@ -72,7 +72,7 @@ ExitInfo UserDeleteJob::process() {
         GuiJobManagerSingleton::instance()->queueAsyncJob(signalUserRemovedJob, Poco::Thread::PRIO_NORMAL);
     } else {
         LOG_WARN(_logger, "Error in ServerRequests::deleteUser: code=" << exitCode);
-        _commManager->appServer().addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+        AppServer::addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
         return exitCode;
     }
 
