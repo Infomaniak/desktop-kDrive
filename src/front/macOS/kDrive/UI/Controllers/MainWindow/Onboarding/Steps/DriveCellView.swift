@@ -18,13 +18,38 @@
  */
 
 import Cocoa
+import kDriveCore
 
-class DriveCell: NSView {
+final class DriveCellView: NSView {
+    let color: NSColor
+    let title: String
+    let subtitle: String?
 
-    override func draw(_ dirtyRect: NSRect) {
-        super.draw(dirtyRect)
+    init(color: NSColor, title: String, subtitle: String? = nil) {
+        self.color = color
+        self.title = title
+        self.subtitle = subtitle
 
-        // Drawing code here.
+        super.init(frame: .zero)
+        setupView()
     }
-    
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    private func setupView() {
+        let checkbox = NSButton()
+        checkbox.translatesAutoresizingMaskIntoConstraints = false
+        checkbox.setButtonType(.switch)
+        addSubview(checkbox)
+    }
+}
+
+@available(macOS 14.0, *)
+#Preview {
+    let driveCell = DriveCellView(color: .systemBlue, title: "Mon entreprise")
+    driveCell.frame = NSRect(x: 0, y: 0, width: 300, height: 35)
+    return driveCell
 }
