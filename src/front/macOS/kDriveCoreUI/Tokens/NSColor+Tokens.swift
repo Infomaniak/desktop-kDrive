@@ -30,6 +30,7 @@ extension NSColor {
         public enum Text {
             public static let primary = NSColor(light: KDriveColors.neutralBlue800, dark: KDriveColors.neutralBlue50)
             public static let secondary = NSColor(light: KDriveColors.neutralBlue600, dark: KDriveColors.neutralBlue200)
+            public static let tertiary = NSColor(light: KDriveColors.neutralBlue500, dark: KDriveColors.neutralBlue300)
         }
 
         public enum Surface {

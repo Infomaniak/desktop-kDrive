@@ -41,6 +41,7 @@ final class DriveCellView: NSView {
         let textField = NSTextField(labelWithString: title)
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.font = .preferredFont(forTextStyle: .body)
+        textField.textColor = .Tokens.Text.primary
         return textField
     }()
 
@@ -50,6 +51,7 @@ final class DriveCellView: NSView {
         let textField = NSTextField(labelWithString: subtitle)
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.font = .preferredFont(forTextStyle: .subheadline)
+        textField.textColor = .Tokens.Text.tertiary
         return textField
     }()
 
@@ -79,21 +81,26 @@ final class DriveCellView: NSView {
         addSubview(titleLabel)
 
         NSLayoutConstraint.activate([
-            checkbox.centerYAnchor.constraint(equalTo: centerYAnchor),
+            checkbox.centerYAnchor.constraint(equalTo: titleLabel.centerYAnchor),
             checkbox.leadingAnchor.constraint(equalTo: leadingAnchor, constant: AppPadding.padding8),
 
-            driveIcon.centerYAnchor.constraint(equalTo: centerYAnchor),
+            driveIcon.centerYAnchor.constraint(equalTo: titleLabel.centerYAnchor),
             driveIcon.leadingAnchor.constraint(equalTo: checkbox.trailingAnchor, constant: AppPadding.padding8),
 
-            titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
-            titleLabel.leadingAnchor.constraint(equalTo: driveIcon.trailingAnchor, constant: AppPadding.padding8)
+            titleLabel.leadingAnchor.constraint(equalTo: driveIcon.trailingAnchor, constant: AppPadding.padding8),
+            titleLabel.topAnchor.constraint(equalTo: topAnchor, constant: AppPadding.padding8)
         ])
 
         if let subtitleLabel {
             addSubview(subtitleLabel)
             NSLayoutConstraint.activate([
                 subtitleLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
-                subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: AppPadding.padding2)
+                subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: AppPadding.padding2),
+                bottomAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: AppPadding.padding8)
+            ])
+        } else {
+            NSLayoutConstraint.activate([
+                bottomAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: AppPadding.padding8)
             ])
         }
     }
