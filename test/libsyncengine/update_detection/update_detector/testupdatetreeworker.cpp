@@ -1187,6 +1187,28 @@ void TestUpdateTreeWorker::testIntegrityCheck() {
 
     newNode->setId(NodeId{"123"});
     CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
+
+    newNode->setChangeEvents(OperationType::Create);
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
+    newNode->setChangeEvents(OperationType::Edit);
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
+    newNode->setMoveOriginInfos(Node::MoveOriginInfos("/dummy", "1"));
+    newNode->setChangeEvents(OperationType::Move);
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
+    newNode->setChangeEvents(OperationType::Delete);
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
+    newNode->setChangeEvents(OperationType::Edit | OperationType::Move);
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
+    newNode->setChangeEvents(OperationType::Create | OperationType::Move);
+    CPPUNIT_ASSERT(!_localUpdateTreeWorker->integrityCheck());
+    newNode->setChangeEvents(OperationType::Create | OperationType::Edit);
+    CPPUNIT_ASSERT(!_localUpdateTreeWorker->integrityCheck());
+    newNode->setChangeEvents(OperationType::Delete | OperationType::Move);
+    CPPUNIT_ASSERT(!_localUpdateTreeWorker->integrityCheck());
+    newNode->setChangeEvents(OperationType::Delete | OperationType::Edit);
+    CPPUNIT_ASSERT(!_localUpdateTreeWorker->integrityCheck());
+    newNode->setChangeEvents(OperationType::Delete | OperationType::Create);
+    CPPUNIT_ASSERT(!_localUpdateTreeWorker->integrityCheck());
 }
 
 } // namespace KDC

@@ -131,6 +131,7 @@ enum class ExitCause {
     Http5xx,
     NotEnoughINotifyWatches,
     FileOrDirectoryCorrupted,
+    UpdateTreeIntegrityCheckFailed,
     EnumEnd
 };
 

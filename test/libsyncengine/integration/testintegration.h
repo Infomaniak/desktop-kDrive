@@ -83,6 +83,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testNegativeModificationTime();
 
         void testDeleteAndRecreateBranch();
+        void testDeleteAndMoveCase();
 
         void testSynchronizationOfSymLinks();
         void testSymLinkWithTooManySymbolicLevels();
@@ -134,7 +135,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void moveRemoteFile(const int driveDbId, const NodeId &remoteFileId, const NodeId &destinationRemoteParentId,
                             const SyncName &name = {}) const;
         NodeId duplicateRemoteFile(const int driveDbId, const NodeId &id, const SyncName &newName) const;
-        void deleteRemoteFile(const int driveDbId, const NodeId &id) const;
+        void deleteRemoteItem(const int driveDbId, const NodeId &id) const;
         SyncPath findLocalFileByNamePrefix(const SyncPath &parentAbsolutePath, const SyncName &namePrefix) const;
 
         log4cplus::Logger _logger;
