@@ -541,7 +541,7 @@ void TestUtility::testTryCreateTmpDir() {
     CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir());
     CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir(Str("test name")));
 
-#if defined(KD_WINDOWS)
+#if defined(KD_MACOS)
     {
         // Saves the current value of "KDRIVE_TMP_PATH".
         const std::string previousPathString = CommonUtility::envVarValue("KDRIVE_TMP_PATH");
