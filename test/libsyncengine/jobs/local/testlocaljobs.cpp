@@ -109,11 +109,11 @@ void KDC::TestLocalJobs::testLocalJobs() {
     LOGW_INFO(Log::instance()->getLogger(),
               L"copyDirPath in TestLocalJobs::testLocalJobs: " << Utility::formatSyncPath(copyDirPath));
 
-    CPPUNIT_ASSERT(Utility::isInTrash(copyDirPath.filename()));
-    CPPUNIT_ASSERT(Utility::isInTrash(SyncPath{copyDirPath.filename()} / _localTempDirName / "tmp_picture.jpg"));
-    CPPUNIT_ASSERT(!Utility::isInTrash(SyncPath{copyDirPath.filename()} / _localTempDirName / "dehydrated_placeholder.jpg"));
+    CPPUNIT_ASSERT(testhelpers::isInTrash(copyDirPath.filename()));
+    CPPUNIT_ASSERT(testhelpers::isInTrash(SyncPath{copyDirPath.filename()} / _localTempDirName / "tmp_picture.jpg"));
+    CPPUNIT_ASSERT(!testhelpers::isInTrash(SyncPath{copyDirPath.filename()} / _localTempDirName / "dehydrated_placeholder.jpg"));
 #if defined(KD_MACOS) || defined(KD_LINUX)
-    Utility::eraseFromTrash(copyDirPath.filename());
+    testhelpers::eraseFromTrash(copyDirPath.filename());
 #endif
 }
 
@@ -252,7 +252,7 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
     }
 
 #if defined(KD_MACOS) || defined(KD_LINUX)
-    Utility::eraseFromTrash(_localTempDirName);
+    testhelpers::eraseFromTrash(_localTempDirName);
 #endif
 }
 

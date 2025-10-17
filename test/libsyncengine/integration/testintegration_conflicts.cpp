@@ -253,9 +253,9 @@ void TestIntegration::testEditDeleteConflict() {
         // ... but the edited file has been rescued.
         CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / FileRescuer::rescueFolderName() / filepath.filename()));
 
-        CPPUNIT_ASSERT(Utility::isInTrash(dirpath.filename()));
+        CPPUNIT_ASSERT(testhelpers::isInTrash(dirpath.filename()));
 #if defined(KD_MACOS) || defined(KD_LINUX)
-        Utility::eraseFromTrash(dirpath.filename());
+        testhelpers::eraseFromTrash(dirpath.filename());
 #endif
 
         logStep("testEditDeleteConflict2");

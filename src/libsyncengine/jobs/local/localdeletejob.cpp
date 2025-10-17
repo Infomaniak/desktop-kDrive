@@ -33,7 +33,7 @@
 namespace KDC {
 
 LocalDeleteJob::Path::Path(const SyncPath &path) :
-    _path(path) {};
+    _path(path){};
 
 bool LocalDeleteJob::Path::endsWith(SyncPath &&ending) const {
     if (!_path.empty() && ending.empty()) return false;
@@ -57,10 +57,10 @@ bool LocalDeleteJob::matchRelativePaths(const SyncPath &targetPath, const SyncPa
     return Path(remoteRelativePath).endsWith(SyncPath(targetPath.filename()) / localRelativePath);
 }
 
-LocalDeleteJob::LocalDeleteJob(const SyncPalInfo &syncPalInfo, const SyncPath &relativePath, bool liteIsSyncEnabled,
+LocalDeleteJob::LocalDeleteJob(const SyncPalInfo &syncPalInfo, const SyncPath &relativePath, bool liteSyncIsEnabled,
                                const NodeId &remoteId, bool forceToTrash /* = false */) :
     _absolutePath(syncPalInfo.localPath / relativePath),
-    _liteSyncIsEnabled(liteIsSyncEnabled),
+    _liteSyncIsEnabled(liteSyncIsEnabled),
     _syncInfo(syncPalInfo),
     _relativePath(relativePath),
     _remoteNodeId(remoteId),

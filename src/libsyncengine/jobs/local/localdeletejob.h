@@ -26,7 +26,7 @@ namespace KDC {
 
 class LocalDeleteJob : public SyncJob {
     public:
-        LocalDeleteJob(const SyncPalInfo &syncInfo, const SyncPath &relativePath, bool liteIsSyncEnabled, const NodeId &remoteId,
+        LocalDeleteJob(const SyncPalInfo &syncInfo, const SyncPath &relativePath, bool liteSyncIsEnabled, const NodeId &remoteId,
                        bool forceToTrash = false); // Check existence of remote counterpart and abort if needed.
         LocalDeleteJob(const SyncPath &absolutePath); // Delete without checks
         ~LocalDeleteJob();

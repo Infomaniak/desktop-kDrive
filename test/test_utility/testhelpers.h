@@ -105,4 +105,14 @@ void setModificationDate(const SyncPath &path, const std::chrono::time_point<std
  */
 void createFileWithDehydratedStatus(const SyncPath &filePath);
 #endif
+
+#if defined(KD_MACOS) || defined(KD_LINUX)
+void eraseFromTrash(const SyncPath &relativePath);
+#endif
+/**
+ * Check whether a path indicates an item located in the trash.
+ * @param relativePath SyncPath relative to the trash directory path.
+ * @return true if `relativePath` indicated an existing item of the trash, false otherwise.
+ */
+bool isInTrash(const SyncPath &relativePath);
 } // namespace KDC::testhelpers

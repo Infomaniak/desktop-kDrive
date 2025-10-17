@@ -292,9 +292,9 @@ void TestIntegration::testBlacklist() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     CPPUNIT_ASSERT(!std::filesystem::exists(dirpath));
-    CPPUNIT_ASSERT(Utility::isInTrash(dirpath.filename()));
+    CPPUNIT_ASSERT(testhelpers::isInTrash(dirpath.filename()));
 #if defined(KD_MACOS) || defined(KD_LINUX)
-    Utility::eraseFromTrash(dirpath.filename());
+    testhelpers::eraseFromTrash(dirpath.filename());
 #endif
 
     // Move a file inside a blacklisted directory.
@@ -303,9 +303,9 @@ void TestIntegration::testBlacklist() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     CPPUNIT_ASSERT(!std::filesystem::exists(dirpath / filename));
-    CPPUNIT_ASSERT(Utility::isInTrash(filename));
+    CPPUNIT_ASSERT(testhelpers::isInTrash(filename));
 #if defined(KD_MACOS) || defined(KD_LINUX)
-    Utility::eraseFromTrash(filename);
+    testhelpers::eraseFromTrash(filename);
 #endif
 
     // Move a file from inside a blacklisted directory to a synchronized directory.
@@ -450,9 +450,9 @@ void TestIntegration::testExclusionTemplates() {
                                             filename)); // The local file has been moved to trash.
 
     CPPUNIT_ASSERT(!std::filesystem::exists(filename));
-    CPPUNIT_ASSERT(Utility::isInTrash(filename));
+    CPPUNIT_ASSERT(testhelpers::isInTrash(filename));
 #if defined(KD_MACOS) || defined(KD_LINUX)
-    Utility::eraseFromTrash(filename);
+    testhelpers::eraseFromTrash(filename);
 #endif
 
     // Remove the exclusion template.
@@ -670,9 +670,9 @@ void TestIntegration::testDeleteAndRecreateBranch() {
 
     CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() / "A" / "AA" / "AAA1"));
 
-    CPPUNIT_ASSERT(Utility::isInTrash(SyncPath{"AA/AAA"}));
+    CPPUNIT_ASSERT(testhelpers::isInTrash(SyncPath{"AA/AAA"}));
 #if defined(KD_MACOS) || defined(KD_LINUX)
-    Utility::eraseFromTrash(SyncPath{"AA/AAA"});
+    testhelpers::eraseFromTrash(SyncPath{"AA/AAA"});
 #endif
 
     logStep("testDeleteAndRecreateBranch");

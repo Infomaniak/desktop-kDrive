@@ -655,10 +655,4 @@ bool Utility::isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode
             return false;
     }
 }
-
-#if defined(KD_MACOS)
-void Utility::eraseFromTrash(const KDC::SyncPath &relativePath) {
-    (void) std::filesystem::remove_all(getTrashPath() / relativePath);
-}
-#endif
 } // namespace KDC
