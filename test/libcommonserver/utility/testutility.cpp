@@ -541,12 +541,13 @@ void TestUtility::testTryCreateTmpDir() {
     CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir());
     CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir(Str("test name")));
 
+#if defined(KD_WINDOWS)
     {
         // Saves the current value of "KDRIVE_TMP_PATH".
         const std::string previousPathString = CommonUtility::envVarValue("KDRIVE_TMP_PATH");
 
         // Change the tmp directory used by the app.
-        LocalTemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const auto newTmpPath = SyncPath(temporaryDirectory.path());
         (void) CommonUtility::setenv("KDRIVE_TMP_PATH", Path2Str(newTmpPath).c_str(), 1);
 
@@ -562,6 +563,7 @@ void TestUtility::testTryCreateTmpDir() {
         // Restores previous value for "KDRIVE_TMP_PATH".
         (void) CommonUtility::setenv("KDRIVE_TMP_PATH", previousPathString.c_str(), 1);
     }
+#endif
 }
 
 void TestUtility::testTryCreateTmpFile() {
@@ -573,7 +575,7 @@ void TestUtility::testTryCreateTmpFile() {
         const std::string previousPathString = CommonUtility::envVarValue("KDRIVE_TMP_PATH");
 
         // Change the tmp directory used by the app.
-        LocalTemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const auto newTmpPath = SyncPath(temporaryDirectory.path());
         (void) CommonUtility::setenv("KDRIVE_TMP_PATH", Path2Str(newTmpPath).c_str(), 1);
 
