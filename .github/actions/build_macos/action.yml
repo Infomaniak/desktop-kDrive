@@ -269,6 +269,6 @@ runs:
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
       - name: Clean-up generated code
-        run : rm -rf build-macos
+        run : rm -rf build-macos/
         shell: bash
 
