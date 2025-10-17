@@ -28,7 +28,7 @@ static const auto userInfoUserId = "userId";
 static const auto userInfoName = "name";
 static const auto userInfoEmail = "email";
 static const auto userInfoAvatar = "avatar";
-static const auto userInfoConnected = "connected";
+static const auto userInfoConnected = "isConnected";
 static const auto userInfoIsStaff = "isStaff";
 
 namespace KDC {

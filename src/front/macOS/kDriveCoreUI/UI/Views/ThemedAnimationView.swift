@@ -23,16 +23,22 @@ public final class ThemedAnimationView: LottieAnimationView {
     private var themedAnimation: ThemedAnimation?
 
     override public func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+
         guard let themedAnimation else { return }
+
         Task {
+            let oldLoopMode = loopMode
             try await loadAnimation(themedAnimation: themedAnimation)
+            loopMode = oldLoopMode
+            play()
         }
     }
 
     public func loadAnimation(themedAnimation: ThemedAnimation) async throws {
         self.themedAnimation = themedAnimation
 
-        let animationName = themedAnimation.animation(forAppearance: NSApp.appearance)
+        let animationName = themedAnimation.animation(forAppearance: effectiveAppearance)
 
         let dotLottieFile = try await DotLottieFile.loadedFromBundle(forResource: animationName)
         loadAnimation(from: dotLottieFile)

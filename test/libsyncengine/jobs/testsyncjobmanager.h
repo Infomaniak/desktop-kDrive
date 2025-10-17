@@ -23,9 +23,11 @@
 #endif
 
 #include "testincludes.h"
+#include "test_utility/testhelpers.h"
+#include "test_utility/localtemporarydirectory.h"
+
 #include "utility/types.h"
 #include "jobs/syncjob.h"
-#include "test_utility/testhelpers.h"
 #include "jobs/network/kDrive_API/upload/uploadjob.h"
 
 #include <mutex>
@@ -87,6 +89,8 @@ class TestSyncJobManagerSingleton : public CppUnit::TestFixture, public TestBase
         void testWithCallbackBigFiles(const SyncPath &dirPath, uint16_t size, uint16_t count);
         void cancelAllOngoingJobs();
         std::array<std::shared_ptr<UploadJob>, 5> getJobArray(const NodeId &remoteParentId);
+
+        LocalTemporaryDirectory _localTempDir{"testSyncJobManager"};
 };
 
 } // namespace KDC

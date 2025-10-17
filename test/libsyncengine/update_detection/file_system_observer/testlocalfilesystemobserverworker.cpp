@@ -68,13 +68,9 @@ void TestLocalFileSystemObserverWorker::setUp() {
         _testFiles.emplace_back(std::to_string(fileStat.inode), filepath);
     }
 
-
     // Create parmsDb
     const testhelpers::TestVariables testVariables;
-
-    bool alreadyExists = false;
-    const std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
-    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
+    (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
     // Insert user, account, drive & sync
@@ -94,7 +90,6 @@ void TestLocalFileSystemObserverWorker::setUp() {
     (void) ParmsDb::instance()->insertSync(sync);
 
     // Create SyncPal
-    const SyncPath syncDbPath = MockDb::makeDbName(1, 1, 1, 1, alreadyExists);
     _syncPal = std::make_shared<SyncPalTest>(1, KDRIVE_VERSION_STRING);
     _syncPal->setSyncHasFullyCompleted(true);
     _syncPal->syncDb()->setAutoDelete(true);

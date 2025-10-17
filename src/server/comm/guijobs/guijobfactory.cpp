@@ -18,6 +18,7 @@
 
 #include "guijobfactory.h"
 #include "loginrequesttokenjob.h"
+#include "unknownrequestjob.h"
 #include "userdbidlistjob.h"
 #include "userinfolistjob.h"
 #include "userdeletejob.h"
@@ -51,7 +52,7 @@ std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::
     if (const auto makeElt = _makeMap.find(requestNum); makeElt != _makeMap.end())
         return makeElt->second(commManager, requestId, inParams, channel);
     else
-        return nullptr;
+        return std::make_shared<UnknownRequestJob>(commManager, requestId, inParams, channel);
 }
 
 } // namespace KDC

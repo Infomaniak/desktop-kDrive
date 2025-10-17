@@ -16,12 +16,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Cocoa
+#include "server/comm/guijobs/abstractguijob.h"
 
-let delegate = AppDelegate()
-NSApplication.shared.delegate = delegate
+namespace KDC {
 
-let mainMenu = MainMenu()
-mainMenu.setAsAppMainMenu()
+class UnknownRequestJob : public AbstractGuiJob {
+    public:
+        UnknownRequestJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                             const std::shared_ptr<AbstractCommChannel> channel);
 
-NSApplication.shared.run()
+    private:
+        // Output parameters
+        std::string _error;
+        std::string _errorDescr;
+
+        ExitInfo deserializeInputParms() override;
+        ExitInfo serializeOutputParms() override;
+        ExitInfo process() override;
+
+        friend class TestGuiCommChannel;
+};
+
+} // namespace KDC
