@@ -101,9 +101,7 @@ Db::Db(const std::filesystem::path &dbPath) :
     _logger(Log::instance()->getLogger()),
     _sqliteDb(new SqliteDb()),
     _dbPath(dbPath),
-    _transaction(false),
-    _journalMode(defaultJournalMode(dbPath.string())),
-    _fromVersion(std::string()) {}
+    _journalMode(defaultJournalMode(dbPath.string())) {}
 
 Db::~Db() {
     close();
