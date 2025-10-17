@@ -71,16 +71,22 @@ final class LoginViewController: OnboardingStepViewController {
     private func setupInitialView() {
         titleLabel.stringValue = KDriveLocalizable.onboardingLoginTitle
         descriptionLabel.stringValue = KDriveLocalizable.onboardingLoginDescription
-
-        primaryButton.title = KDriveLocalizable.buttonLogin
-        primaryButton.target = self
-        primaryButton.action = #selector(openLoginWebView)
-        secondaryButton.title = KDriveLocalizable.buttonCreateAccount
+        setupButtons()
     }
 
     private func setupErrorView() {
         titleLabel.stringValue = KDriveLocalizable.onboardingErrorTitle
         descriptionLabel.stringValue = KDriveLocalizable.onboardingLoginErrorDescription
+        setupButtons()
+    }
+
+    private func setupButtons() {
+        primaryButton.title = KDriveLocalizable.buttonLogin
+        primaryButton.target = self
+        primaryButton.action = #selector(openLoginWebView)
+        secondaryButton.title = KDriveLocalizable.buttonCreateAccount
+        secondaryButton.target = self
+        secondaryButton.action = #selector(openCreateAccount)
     }
 
     private func markButtonsAsLoading(_ isLoading: Bool) {
@@ -90,5 +96,9 @@ final class LoginViewController: OnboardingStepViewController {
 
     @objc private func openLoginWebView() {
         viewModel.startWebAuthenticationLogin(anchor: view.window)
+    }
+
+    @objc private func openCreateAccount() {
+
     }
 }
