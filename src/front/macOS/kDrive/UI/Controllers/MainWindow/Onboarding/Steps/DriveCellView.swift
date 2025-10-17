@@ -1,4 +1,3 @@
-//
 /*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2025 Infomaniak Network SA
@@ -19,11 +18,40 @@
 
 import Cocoa
 import kDriveCore
+import kDriveCoreUI
 
 final class DriveCellView: NSView {
     let color: NSColor
     let title: String
     let subtitle: String?
+
+    private lazy var checkbox: NSButton = {
+        let checkboxButton = NSButton(checkboxWithTitle: "", target: self, action: #selector(didTapCheckbox))
+        checkboxButton.translatesAutoresizingMaskIntoConstraints = false
+        return checkboxButton
+    }()
+
+    private lazy var driveIcon: DriveSquareView = {
+        let driveSquareView = DriveSquareView(color: color)
+        driveSquareView.translatesAutoresizingMaskIntoConstraints = false
+        return driveSquareView
+    }()
+
+    private lazy var titleLabel: NSTextField = {
+        let textField = NSTextField(labelWithString: title)
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.font = .preferredFont(forTextStyle: .body)
+        return textField
+    }()
+
+    private lazy var subtitleLabel: NSTextField? = {
+        guard let subtitle else { return nil }
+
+        let textField = NSTextField(labelWithString: subtitle)
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.font = .preferredFont(forTextStyle: .subheadline)
+        return textField
+    }()
 
     init(color: NSColor, title: String, subtitle: String? = nil) {
         self.color = color
@@ -39,17 +67,43 @@ final class DriveCellView: NSView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    private func setupView() {
-        let checkbox = NSButton()
-        checkbox.translatesAutoresizingMaskIntoConstraints = false
-        checkbox.setButtonType(.switch)
-        addSubview(checkbox)
+    override func draw(_ dirtyRect: NSRect) {
+        let path = NSBezierPath(roundedRect: bounds, xRadius: AppRadius.radius8, yRadius: AppRadius.radius8)
+        NSColor.Tokens.Surface.secondary.setFill()
+        path.fill()
     }
+
+    private func setupView() {
+        addSubview(checkbox)
+        addSubview(driveIcon)
+        addSubview(titleLabel)
+
+        NSLayoutConstraint.activate([
+            checkbox.centerYAnchor.constraint(equalTo: centerYAnchor),
+            checkbox.leadingAnchor.constraint(equalTo: leadingAnchor, constant: AppPadding.padding8),
+
+            driveIcon.centerYAnchor.constraint(equalTo: centerYAnchor),
+            driveIcon.leadingAnchor.constraint(equalTo: checkbox.trailingAnchor, constant: AppPadding.padding8),
+
+            titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
+            titleLabel.leadingAnchor.constraint(equalTo: driveIcon.trailingAnchor, constant: AppPadding.padding8)
+        ])
+
+        if let subtitleLabel {
+            addSubview(subtitleLabel)
+            NSLayoutConstraint.activate([
+                subtitleLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
+                subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: AppPadding.padding2)
+            ])
+        }
+    }
+
+    @objc private func didTapCheckbox() {}
 }
 
 @available(macOS 14.0, *)
 #Preview {
-    let driveCell = DriveCellView(color: .systemBlue, title: "Mon entreprise")
-    driveCell.frame = NSRect(x: 0, y: 0, width: 300, height: 35)
+    let driveCell = DriveCellView(color: .systemBlue, title: "Mon entreprise", subtitle: "kDrive Pro")
+    driveCell.translatesAutoresizingMaskIntoConstraints = false
     return driveCell
 }

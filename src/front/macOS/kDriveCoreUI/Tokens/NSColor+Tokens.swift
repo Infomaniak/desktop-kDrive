@@ -33,7 +33,8 @@ extension NSColor {
         }
 
         public enum Surface {
-            public static let secondary = NSColor(light: KDriveColors.neutralBlue50, dark: KDriveColors.neutralBlue700)
+            public static let primary = NSColor(light: KDriveColors.neutralBlue50, dark: KDriveColors.neutralBlue800)
+            public static let secondary = NSColor(light: KDriveColors.neutralBlue100, dark: KDriveColors.neutralBlue700)
         }
     }
 }
