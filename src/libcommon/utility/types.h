@@ -321,6 +321,7 @@ enum class ExitCause {
     Http5xx,
     NotEnoughINotifyWatches,
     FileOrDirectoryCorrupted,
+    TmpDirAccessError,
     EnumEnd
 };
 std::string toString(ExitCause e);

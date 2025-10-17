@@ -140,9 +140,6 @@ struct COMMON_EXPORT CommonUtility {
         static const std::string dbVersionNumber(const std::string &dbVersion);
         static bool isVersionLower(const std::string &currentVersion, const std::string &targetVersion);
 
-        static bool dirNameIsValid(const SyncName &name);
-        static bool fileNameIsValid(const SyncName &name);
-
 #if defined(KD_MACOS)
         static const std::string loginItemAgentId();
         static const std::string liteSyncExtBundleId();

@@ -537,4 +537,60 @@ void TestUtility::testUserName() {
 #endif
 }
 
+void TestUtility::testTryCreateTmpDir() {
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir());
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir(Str("test name")));
+
+#if defined(KD_MACOS)
+    {
+        // Saves the current value of "KDRIVE_TMP_PATH".
+        const std::string previousPathString = CommonUtility::envVarValue("KDRIVE_TMP_PATH");
+
+        // Change the tmp directory used by the app.
+        const LocalTemporaryDirectory temporaryDirectory;
+        const auto newTmpPath = SyncPath(temporaryDirectory.path());
+        (void) CommonUtility::setenv("KDRIVE_TMP_PATH", Path2Str(newTmpPath).c_str(), 1);
+
+        // Remove access rights.
+        auto ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(IoHelper::setRights(newTmpPath, false, false, false, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::AccessDenied, Utility::tryCreateTmpDir());
+
+        // Add back access rights.
+        CPPUNIT_ASSERT(IoHelper::setRights(newTmpPath, true, true, true, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir());
+
+        // Restores previous value for "KDRIVE_TMP_PATH".
+        (void) CommonUtility::setenv("KDRIVE_TMP_PATH", previousPathString.c_str(), 1);
+    }
+#endif
+}
+
+void TestUtility::testTryCreateTmpFile() {
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile());
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile(Str("test name")));
+
+    {
+        // Saves the current value of "KDRIVE_TMP_PATH".
+        const std::string previousPathString = CommonUtility::envVarValue("KDRIVE_TMP_PATH");
+
+        // Change the tmp directory used by the app.
+        const LocalTemporaryDirectory temporaryDirectory;
+        const auto newTmpPath = SyncPath(temporaryDirectory.path());
+        (void) CommonUtility::setenv("KDRIVE_TMP_PATH", Path2Str(newTmpPath).c_str(), 1);
+
+        // Remove access rights.
+        auto ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(IoHelper::setRights(newTmpPath, false, false, false, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::AccessDenied, Utility::tryCreateTmpFile());
+
+        // Add back access rights.
+        CPPUNIT_ASSERT(IoHelper::setRights(newTmpPath, true, true, true, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile());
+
+        // Restores previous value for "KDRIVE_TMP_PATH".
+        (void) CommonUtility::setenv("KDRIVE_TMP_PATH", previousPathString.c_str(), 1);
+    }
+}
+
 } // namespace KDC
