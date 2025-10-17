@@ -22,9 +22,6 @@
 @protocol XPCGuiProtocol
 
 - (void)sendQuery:(NSData *)query callback:(void (^)(NSData *answer))callback;
-- (void)dummy;
-//- (void)dummyCallback:(void (^)(NSString *str))callback;
-//- (void)sendQuery2:(NSData *_Nonnull)query;
 
 @end
 
