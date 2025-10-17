@@ -414,6 +414,7 @@ struct IoHelper {
         //! Sets the extended attribute corresponding to a dehydrated placeholder (LiteSync).
         //! Note: Dehydrated placeholders are characterized by the `O` (online) status attribute on Mac and
         //! the attribute `FILE_ATTRIBUTE_OFFLINE` on Windows.
+        //! Note: should be used for testing only.
         /*!
          \param path is the file system path of the item.
          \param ioError holds the error returned when an underlying OS API call fails.
