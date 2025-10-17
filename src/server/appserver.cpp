@@ -418,6 +418,10 @@ void AppServer::init() {
         return;
     }
 
+#if defined(KD_MACOS)
+    if (ParmsDb::instance()->versionUpdated()) Utility::restartLoginItemAgent();
+#endif
+
     // Check if temp directory is accessible.
     if (Utility::tryCreateTmpFile() == IoError::Success) {
         // Start syncs

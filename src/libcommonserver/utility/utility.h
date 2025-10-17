@@ -114,6 +114,7 @@ struct COMMONSERVER_EXPORT Utility {
 #if defined(KD_MACOS)
         static bool preventSleeping(bool enable);
         static void restartFinderExtension();
+        static void restartLoginItemAgent();
 #endif
         static bool getLinuxDesktopType(std::string &currentDesktop);
 
