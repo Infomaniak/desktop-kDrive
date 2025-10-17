@@ -54,16 +54,12 @@
 namespace KDC {
 
 ExitCode ServerRequests::getUserDbIdList(QList<int> &list) {
-    std::vector<User> userList;
-    if (!ParmsDb::instance()->selectAllUsers(userList)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
-        return ExitCode::DbError;
+    std::vector<int> userList;
+    if (ExitCode exitCode = getUserDbIdList(userList); exitCode != ExitCode::Ok) {
+        return exitCode;
     }
 
-    list.clear();
-    for (const User &user: userList) {
-        list << user.dbId();
-    }
+    (void) std::copy(userList.begin(), userList.end(), std::back_inserter(list));
 
     return ExitCode::Ok;
 }
@@ -84,18 +80,12 @@ ExitCode ServerRequests::getUserDbIdList(std::vector<int> &list) {
 }
 
 ExitCode ServerRequests::getUserInfoList(QList<UserInfo> &list) {
-    std::vector<User> userList;
-    if (!ParmsDb::instance()->selectAllUsers(userList)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
-        return ExitCode::DbError;
+    std::vector<UserInfo> userInfoList;
+    if (ExitCode exitCode = getUserInfoList(userInfoList); exitCode != ExitCode::Ok) {
+        return exitCode;
     }
 
-    list.clear();
-    for (const User &user: userList) {
-        UserInfo userInfo;
-        userToUserInfo(user, userInfo);
-        list << userInfo;
-    }
+    (void) std::copy(userInfoList.begin(), userInfoList.end(), std::back_inserter(list));
 
     return ExitCode::Ok;
 }
@@ -183,18 +173,12 @@ ExitCode ServerRequests::deleteSync(int syncDbId) {
 }
 
 ExitCode ServerRequests::getAccountInfoList(QList<AccountInfo> &list) {
-    std::vector<Account> accountList;
-    if (!ParmsDb::instance()->selectAllAccounts(accountList)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllAccounts");
-        return ExitCode::DbError;
+    std::vector<AccountInfo> accountInfoList;
+    if (ExitCode exitCode = getAccountInfoList(accountInfoList); exitCode != ExitCode::Ok) {
+        return exitCode;
     }
 
-    list.clear();
-    for (const Account &account: accountList) {
-        AccountInfo accountInfo;
-        accountToAccountInfo(account, accountInfo);
-        list << accountInfo;
-    }
+    (void) std::copy(accountInfoList.begin(), accountInfoList.end(), std::back_inserter(list));
 
     return ExitCode::Ok;
 }
@@ -217,18 +201,12 @@ ExitCode ServerRequests::getAccountInfoList(std::vector<AccountInfo> &list) {
 }
 
 ExitCode ServerRequests::getDriveInfoList(QList<DriveInfo> &list) {
-    std::vector<Drive> driveList;
-    if (!ParmsDb::instance()->selectAllDrives(driveList)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllDrives");
-        return ExitCode::DbError;
+    std::vector<DriveInfo> driveInfoList;
+    if (ExitCode exitCode = getDriveInfoList(driveInfoList); exitCode != ExitCode::Ok) {
+        return exitCode;
     }
 
-    list.clear();
-    for (const Drive &drive: driveList) {
-        DriveInfo driveInfo;
-        driveToDriveInfo(drive, driveInfo);
-        list << driveInfo;
-    }
+    (void) std::copy(driveInfoList.begin(), driveInfoList.end(), std::back_inserter(list));
 
     return ExitCode::Ok;
 }
@@ -294,17 +272,12 @@ ExitCode ServerRequests::updateDrive(const DriveInfo &driveInfo) {
 }
 
 ExitCode ServerRequests::getSyncInfoList(QList<SyncInfo> &list) {
-    std::vector<Sync> syncList;
-    if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
-        return ExitCode::DbError;
+    std::vector<SyncInfo> syncInfoList;
+    if (ExitCode exitCode = getSyncInfoList(syncInfoList); exitCode != ExitCode::Ok) {
+        return exitCode;
     }
-    list.clear();
-    SyncInfo syncInfo;
-    for (const Sync &sync: syncList) {
-        syncToSyncInfo(sync, syncInfo);
-        list << syncInfo;
-    }
+
+    (void) std::copy(syncInfoList.begin(), syncInfoList.end(), std::back_inserter(list));
 
     return ExitCode::Ok;
 }

@@ -200,7 +200,7 @@ void CommManager::onNewExtConnection() {
     std::vector<Sync> syncList;
     if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
-        _appServer.addError(Error(ERR_ID, ExitCode::DbError, ExitCause::Unknown));
+        AppServer::addError(Error(ERR_ID, ExitCode::DbError, ExitCause::Unknown));
         return;
     }
 

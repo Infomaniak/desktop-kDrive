@@ -302,7 +302,9 @@ void TestGuiCommChannel::testUserDeleteJob() {
                              R"( "params": {  },)"
                              R"( "type": 1 })")}; // GuiJobType::Query
 
-    auto processFct = [](std::shared_ptr<AbstractGuiJob>) {};
+    auto processFct = [](std::shared_ptr<AbstractGuiJob>) {
+        // No output parameters
+    };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(queryStr, answerStr, {}, processFct);
@@ -514,7 +516,9 @@ void TestGuiCommChannel::testDriveUpdateJob() {
                 R"( "type": 1 })") // GuiJobType::Query
     };
 
-    auto processFct = [](std::shared_ptr<AbstractGuiJob>) {};
+    auto processFct = [](std::shared_ptr<AbstractGuiJob>) {
+        // No output parameters
+    };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(queryStr, answerStr, {}, processFct);
@@ -545,7 +549,9 @@ void TestGuiCommChannel::testDriveDeleteJob() {
                              R"( "params": {  },)"
                              R"( "type": 1 })")}; // GuiJobType::Query
 
-    auto processFct = [](std::shared_ptr<AbstractGuiJob>) {};
+    auto processFct = [](std::shared_ptr<AbstractGuiJob>) {
+        // No output parameters
+    };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(queryStr, answerStr, {}, processFct);
