@@ -198,8 +198,8 @@ static NSNumber *lastRequestId = @0;
 }
 
 - (BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)newConnection {
-    GuiCommChannelPrivate *channelPrivate = new GuiCommChannelPrivate(newConnection);
-    KDC::GuiCommServer *server = (KDC::GuiCommServer *) self.wrapper->publicPtr;
+    auto *channelPrivate = new GuiCommChannelPrivate(newConnection);
+    auto *server = (KDC::GuiCommServer *) self.wrapper->publicPtr;
 
     auto channel = std::make_shared<KDC::GuiCommChannel>(channelPrivate);
     channel->setLostConnectionCbk(std::bind(&KDC::GuiCommServer::lostConnectionCbk, server, std::placeholders::_1));
@@ -207,12 +207,12 @@ static NSNumber *lastRequestId = @0;
 
     // Set exported interface
     NSLog(@"[KD] Set exported interface for connection with gui");
-    newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCGuiRemoteProtocol)];
+    newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCGuiProtocol)];
     newConnection.exportedObject = channelPrivate->localEnd;
 
     // Set remote object interface
     NSLog(@"[KD] Set remote object interface for connection with gui");
-    newConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCGuiProtocol)];
+    newConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCGuiRemoteProtocol)];
 
     // Set connection handlers
     NSLog(@"[KD] Set connection handlers for connection with gui");
