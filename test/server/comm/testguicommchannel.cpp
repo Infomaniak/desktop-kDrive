@@ -239,8 +239,8 @@ void TestGuiCommChannel::testUserInfoListJob() {
     // Callback expected answer
     const auto cbkAnswerStr{Str(
             R"({"cause":0,"code":0,"id":1,"params":{"userInfoList":[)"
-            R"({"avatar":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=","connected":true,"dbId":1,"email":"YWFhYWFAeHh4LmNvbQ==","isStaff":false,"name":"YWFhYWE=","userId":1001},)"
-            R"({"avatar":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=","connected":false,"dbId":2,"email":"YmJiYmJAeHh4LmNvbQ==","isStaff":false,"name":"YmJiYmI=","userId":1002}]}})")};
+            R"({"avatar":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=","dbId":1,"email":"YWFhYWFAeHh4LmNvbQ==","isConnected":true,"isStaff":false,"name":"YWFhYWE=","userId":1001},)"
+            R"({"avatar":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=","dbId":2,"email":"YmJiYmJAeHh4LmNvbQ==","isConnected":false,"isStaff":false,"name":"YmJiYmI=","userId":1002}]}})")};
 #endif
 
     // Job expected answer
@@ -251,8 +251,8 @@ void TestGuiCommChannel::testUserInfoListJob() {
                 R"( "num": 3,)" // RequestNum::USER_INFOLIST
                 R"( "params": {)"
                 R"( "userInfoList": [)"
-                R"( { "avatar": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=", "connected": true, "dbId": 1, "email": "YWFhYWFAeHh4LmNvbQ==", "isStaff": false, "name": "YWFhYWE=", "userId": 1001 },)"
-                R"( { "avatar": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=", "connected": false, "dbId": 2, "email": "YmJiYmJAeHh4LmNvbQ==", "isStaff": false, "name": "YmJiYmI=", "userId": 1002 } ] },)"
+                R"( { "avatar": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=", "dbId": 1, "email": "YWFhYWFAeHh4LmNvbQ==", "isConnected": true, "isStaff": false, "name": "YWFhYWE=", "userId": 1001 },)"
+                R"( { "avatar": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=", "dbId": 2, "email": "YmJiYmJAeHh4LmNvbQ==", "isConnected": false, "isStaff": false, "name": "YmJiYmI=", "userId": 1002 } ] },)"
                 R"( "type": 1 })") // GuiJobType::Query
     };
 
@@ -697,9 +697,10 @@ void TestGuiCommChannel::testGenericJob(const CommString &query, const CommStrin
             CPPUNIT_ASSERT(false);
         }
 
-        if (requestNum != RequestNum::USER_INFOLIST) {
+        if (!(testhelpers::isRunningOnCI() && requestNum == RequestNum::USER_INFOLIST)) {
             // TODO: Remove this exception when UserInfo._avatar will be a CommBLOB instead of a QImage
             // (QImage.save() gives different results depending on the machine)
+            assert(job->_outputParamsStr == answer);
             CPPUNIT_ASSERT(job->_outputParamsStr == answer);
         }
 
