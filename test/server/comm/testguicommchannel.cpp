@@ -645,9 +645,9 @@ void TestGuiCommChannel::testSyncInfoListJob() {
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto syncInfoListJob = std::dynamic_pointer_cast<SyncInfoListJob>(job);
 
-        SyncInfo si1(1, 1, Str("/Users/test/kDrive1"), Str(""), Str(""), true, VirtualFileMode::Win, Str(""));
-        SyncInfo si2(2, 1, Str("/Users/test/kDrive2"), Str("folder1"), Str("999"), false, VirtualFileMode::Off,
-                     Str("{645FF040-5081-101B-9F08-00AA002F954E}"));
+        SyncInfo si1(1, 1, "/Users/test/kDrive1", "", "", true, VirtualFileMode::Win, "");
+        SyncInfo si2(2, 1, "/Users/test/kDrive2", "folder1", "999", false, VirtualFileMode::Off,
+                     "{645FF040-5081-101B-9F08-00AA002F954E}");
 
         syncInfoListJob->_syncInfoList = {si1, si2};
     };
