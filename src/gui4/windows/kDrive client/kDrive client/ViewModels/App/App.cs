@@ -19,7 +19,10 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using DynamicData;
 using DynamicData.Binding;
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
+using Infomaniak.kDrive.ServerCommunication.Services;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.VisualBasic.Devices;
@@ -36,7 +39,7 @@ using Windows.Networking.Connectivity;
 namespace Infomaniak.kDrive.ViewModels
 
 {
-    public class AppModel : ObservableObject
+    public class AppModel : UISafeObservableObject
     {
         /** Indicates if the model has been initialized (i.e. data loaded from the server)
          *  This is only set to true after InitializeAsync() has been called and completed.
@@ -90,8 +93,6 @@ namespace Infomaniak.kDrive.ViewModels
         private readonly CancellationTokenSource _networkWatcherCancellationSource = new();
         private bool _networkAvailable;
 
-
-
         public Sync? SelectedSync
         {
             get => _selectedSync;
@@ -101,13 +102,13 @@ namespace Infomaniak.kDrive.ViewModels
                 {
                     SelectedSync.SyncErrors.CollectionChanged -= SyncErrors_CollectionChanged;
                 }
-                SetProperty(ref _selectedSync, value);
+                SetPropertyInUIThread(ref _selectedSync, value);
 
                 if (SelectedSync != null)
                 {
                     SelectedSync.SyncErrors.CollectionChanged += SyncErrors_CollectionChanged;
                 }
-                OnPropertyChanged(nameof(HasErrors));
+                OnPropertyChangedInUIThread(nameof(HasErrors));
             }
         }
 
@@ -115,8 +116,10 @@ namespace Infomaniak.kDrive.ViewModels
         {
             // Create a read-only observable collection of active drives across all users
             _users.ToObservableChangeSet()
-                .AutoRefresh(u => u.Drives.Count)
-                .TransformMany(u => u.Drives)
+                .AutoRefresh(u => u.Accounts.Count)
+                .TransformMany(a => a.Accounts)
+                .AutoRefresh(a => a.Drives.Count)
+                .TransformMany(a => a.Drives)
                 .AutoRefresh(d => d.Syncs.Count)
                 .TransformMany(d => d.Syncs)
                 .Bind(out var allSyncs)
@@ -202,32 +205,32 @@ namespace Infomaniak.kDrive.ViewModels
             else if (_selectedSync == null || (_selectedSync != null && !AllSyncs.Contains(_selectedSync))) // If SelectedSync is null or not in AllSyncs, pick the first one
             {
                 Logger.Log(Logger.Level.Debug, "SelectedSync is null or not in AllSyncs, selecting the first available sync.");
-                UIThreadDispatcher.TryEnqueue(() => SelectedSync = AllSyncs[0]);
+                SelectedSync = AllSyncs[0];
             }
         }
 
         public ObservableCollection<User> Users
         {
             get => _users;
-            set => SetProperty(ref _users, value);
+            set => SetPropertyInUIThread(ref _users, value);
         }
 
         public bool IsInitialized
         {
             get => _isInitialized;
-            set => SetProperty(ref _isInitialized, value);
+            set => SetPropertyInUIThread(ref _isInitialized, value);
         }
 
         public ObservableCollection<Errors.AppError> AppErrors
         {
             get => _appErrors;
-            set => SetProperty(ref _appErrors, value);
+            set => SetPropertyInUIThread(ref _appErrors, value);
         }
 
         public bool NetworkAvailable
         {
             get => _networkAvailable;
-            set => SetProperty(ref _networkAvailable, value);
+            set => SetPropertyInUIThread(ref _networkAvailable, value);
         }
 
         /** Initialize the model by loading data from the server.
@@ -238,26 +241,16 @@ namespace Infomaniak.kDrive.ViewModels
         {
 
             Logger.Log(Logger.Level.Info, "Initializing AppModel...");
-            var userDbIds = await ServerCommunication.CommRequests.GetUserDbIds();
-            if (userDbIds != null)
-            {
-                Logger.Log(Logger.Level.Debug, $"Found {userDbIds.Count} users on the server. Loading user data...");
-                List<Task> reloadTasks = new List<Task>();
-                for (int i = 0; i < userDbIds.Count; i++)
-                {
-                    User user = new User(userDbIds[i]);
-                    Users.Add(user);
-                    reloadTasks.Add(user.Reload());
-                }
-                await Task.WhenAll(reloadTasks);
-                Logger.Log(Logger.Level.Info, "All user data loaded successfully.");
-                IsInitialized = true;
-            }
-            else
-            {
-                Logger.Log(Logger.Level.Info, "No users found on the server.");
-            }
+            Users.Clear();
+            SelectedSync = null;
 
+            IServerCommService serverCommService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            await serverCommService.RefreshUsers(new CancellationToken());
+            await serverCommService.RefreshAccounts(new CancellationToken());
+            await serverCommService.RefreshDrives(new CancellationToken());
+            await serverCommService.RefreshSyncs(new CancellationToken());
+            Logger.Log(Logger.Level.Info, "All user data loaded successfully.");
+            IsInitialized = true;
         }
 
         private void SyncErrors_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)

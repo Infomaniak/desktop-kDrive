@@ -17,6 +17,7 @@
  */
 
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System.Linq;
@@ -28,7 +29,7 @@ namespace Infomaniak.kDrive
 {
     public sealed partial class MainWindow : Window
     {
-        public readonly AppModel _viewModel = ((App)Application.Current).Data;
+        public readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel { get { return _viewModel; } }
         public MainWindow()
         {

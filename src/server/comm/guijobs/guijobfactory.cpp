@@ -18,6 +18,7 @@
 
 #include "guijobfactory.h"
 #include "loginrequesttokenjob.h"
+#include "unknownrequestjob.h"
 #include "userdbidlistjob.h"
 
 namespace KDC {
@@ -26,12 +27,17 @@ GuiJobFactory::GuiJobFactory() {
     _makeMap = {
             {RequestNum::LOGIN_REQUESTTOKEN,
              [](std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                std::shared_ptr<AbstractCommChannel> channel) {
+                const std::shared_ptr<AbstractCommChannel> channel) {
                  return std::make_shared<LoginRequestTokenJob>(commManager, requestId, inParams, channel);
              }},
-            {RequestNum::USER_DBIDLIST, [](std::shared_ptr<CommManager> commManager, int requestId,
-                                           const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel) {
+            {RequestNum::USER_DBIDLIST,
+             [](std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                std::shared_ptr<AbstractCommChannel> channel) {
                  return std::make_shared<UserDbIdListJob>(commManager, requestId, inParams, channel);
+             }},
+            {RequestNum::Unknown, [](std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                                     const std::shared_ptr<AbstractCommChannel> channel) {
+                 return std::make_shared<UnknownRequestJob>(commManager, requestId, inParams, channel);
              }}};
 }
 
@@ -41,7 +47,7 @@ std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::
     if (const auto makeElt = _makeMap.find(requestNum); makeElt != _makeMap.end())
         return makeElt->second(commManager, requestId, inParams, channel);
     else
-        return nullptr;
+        return std::make_shared<UnknownRequestJob>(commManager, requestId, inParams, channel);
 }
 
 } // namespace KDC

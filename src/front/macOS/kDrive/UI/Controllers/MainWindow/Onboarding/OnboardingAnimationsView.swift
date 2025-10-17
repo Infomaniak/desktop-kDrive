@@ -32,9 +32,6 @@ class OnboardingAnimationsView: NSView {
         self.viewModel = viewModel
         super.init(frame: .zero)
 
-        wantsLayer = true
-        layer?.backgroundColor = NSColor.Tokens.Surface.secondary.cgColor
-
         setupAnimationView()
         bindViewModel()
     }
@@ -42,6 +39,11 @@ class OnboardingAnimationsView: NSView {
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    override func draw(_ dirtyRect: NSRect) {
+        NSColor.Tokens.Surface.secondary.setFill()
+        bounds.fill()
     }
 
     private func setupAnimationView() {

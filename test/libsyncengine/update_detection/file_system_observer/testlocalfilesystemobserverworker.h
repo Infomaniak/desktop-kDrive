@@ -88,6 +88,7 @@ class TestLocalFileSystemObserverWorker final : public CppUnit::TestFixture, pub
         std::shared_ptr<SyncPal> _syncPal;
 
         LocalTemporaryDirectory _tempDir;
+        LocalTemporaryDirectory _localTempDir{"testLocalFileSystemObserverWorker"};
         SyncPath _rootFolderPath;
         SyncPath _subDirPath;
         std::vector<std::pair<NodeId, SyncPath>> _testFiles;

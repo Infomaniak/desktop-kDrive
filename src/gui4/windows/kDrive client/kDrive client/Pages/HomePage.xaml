@@ -331,7 +331,7 @@
                         Orientation="Horizontal">
                 <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.SubtitleSl}">
                     <Run x:Uid="Page_HomePage_Hello" />
-                    <Run Text="{x:Bind ViewModel.SelectedSync.Drive.User.Name, Mode=OneWay}" />
+                    <Run Text="{x:Bind ViewModel.SelectedSync.Drive.Account.User.Name, Mode=OneWay}" />
                 </TextBlock>
                 <ContentControl ContentTemplateSelector="{StaticResource SyncStatusMessageTemplateSelector}"
                                 Content="{x:Bind ViewModel.SelectedSync.SyncStatus,Mode=OneWay}" />

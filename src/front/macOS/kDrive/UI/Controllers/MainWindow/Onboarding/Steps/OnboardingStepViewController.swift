@@ -21,10 +21,10 @@ import Combine
 import kDriveCoreUI
 
 open class OnboardingStepViewController: NSViewController {
-    private static let minContainerWidth: CGFloat = 200
-    private static let maxContainerWidth: CGFloat = 450
+    private static let minContainerWidth: CGFloat = 300
+    private static let maxContainerWidth: CGFloat = 500
 
-    public let containerView = NSView()
+    public let stackView = NSStackView()
     public let titleLabel = NSTextField(labelWithString: "")
     public let descriptionLabel = NSTextField(labelWithString: "")
     public let primaryButton = BorderedProminentButton()
@@ -36,53 +36,42 @@ open class OnboardingStepViewController: NSViewController {
     }
 
     private func setupComponents() {
-        containerView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(containerView)
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.orientation = .vertical
+        stackView.alignment = .leading
+        view.addSubview(stackView)
 
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.font = .preferredFont(forTextStyle: .largeTitle)
         titleLabel.textColor = .Tokens.Text.primary
-        containerView.addSubview(titleLabel)
+        stackView.addArrangedSubview(titleLabel)
+        stackView.setCustomSpacing(AppPadding.padding8, after: titleLabel)
 
-        descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
         descriptionLabel.font = .preferredFont(forTextStyle: .body)
         descriptionLabel.lineBreakMode = .byWordWrapping
         descriptionLabel.textColor = .Tokens.Text.secondary
-        containerView.addSubview(descriptionLabel)
+        descriptionLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        stackView.addArrangedSubview(descriptionLabel)
+        stackView.setCustomSpacing(AppPadding.padding32, after: descriptionLabel)
+
+        let buttonStack = NSStackView(views: [secondaryButton, primaryButton])
+        buttonStack.spacing = AppPadding.padding8
+        buttonStack.alignment = .centerY
+        stackView.addArrangedSubview(buttonStack)
 
         secondaryButton.translatesAutoresizingMaskIntoConstraints = false
-        containerView.addSubview(secondaryButton)
 
         primaryButton.translatesAutoresizingMaskIntoConstraints = false
         primaryButton.keyEquivalent = "\r"
-        containerView.addSubview(primaryButton)
 
         NSLayoutConstraint.activate([
-            containerView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            containerView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            containerView.widthAnchor.constraint(greaterThanOrEqualToConstant: Self.minContainerWidth),
-            containerView.widthAnchor.constraint(lessThanOrEqualToConstant: Self.maxContainerWidth),
+            stackView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            stackView.widthAnchor.constraint(greaterThanOrEqualToConstant: Self.minContainerWidth),
+            stackView.widthAnchor.constraint(lessThanOrEqualToConstant: Self.maxContainerWidth),
 
-            containerView.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: AppPadding.padding16),
-            view.trailingAnchor.constraint(greaterThanOrEqualTo: containerView.trailingAnchor, constant: AppPadding.padding16),
-            containerView.topAnchor.constraint(greaterThanOrEqualTo: view.topAnchor, constant: AppPadding.padding16),
-            view.bottomAnchor.constraint(greaterThanOrEqualTo: containerView.bottomAnchor, constant: AppPadding.padding16),
-
-            titleLabel.topAnchor.constraint(equalTo: containerView.topAnchor),
-            titleLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
-            titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: containerView.trailingAnchor),
-
-            descriptionLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: AppPadding.padding8),
-            descriptionLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
-            descriptionLabel.trailingAnchor.constraint(lessThanOrEqualTo: containerView.trailingAnchor),
-
-            secondaryButton.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: AppPadding.padding32),
-            secondaryButton.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
-            containerView.bottomAnchor.constraint(equalTo: secondaryButton.bottomAnchor),
-
-            primaryButton.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: AppPadding.padding32),
-            primaryButton.leadingAnchor.constraint(equalTo: secondaryButton.trailingAnchor, constant: AppPadding.padding8),
-            containerView.bottomAnchor.constraint(equalTo: primaryButton.bottomAnchor)
+            stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: AppPadding.padding64),
+            view.trailingAnchor.constraint(greaterThanOrEqualTo: stackView.trailingAnchor, constant: AppPadding.padding64),
+            stackView.topAnchor.constraint(greaterThanOrEqualTo: view.topAnchor, constant: AppPadding.padding32),
+            view.bottomAnchor.constraint(greaterThanOrEqualTo: stackView.bottomAnchor, constant: AppPadding.padding32)
         ])
     }
 }
