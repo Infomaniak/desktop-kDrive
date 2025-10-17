@@ -697,11 +697,9 @@ void TestGuiCommChannel::testGenericJob(const CommString &query, const CommStrin
             CPPUNIT_ASSERT(false);
         }
 
-        if (requestNum == RequestNum::USER_INFOLIST) {
-            // TODO: Use the general case when UserInfo._avatar will be a CommBLOB instead of a QImage
+        if (requestNum != RequestNum::USER_INFOLIST) {
+            // TODO: Remove this exception when UserInfo._avatar will be a CommBLOB instead of a QImage
             // (QImage.save() gives different results depending on the machine)
-            CPPUNIT_ASSERT(job->_outputParamsStr.size() == answer.size());
-        } else {
             CPPUNIT_ASSERT(job->_outputParamsStr == answer);
         }
 
