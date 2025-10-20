@@ -1,4 +1,3 @@
-using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -10,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using WinRT;
 
 namespace Infomaniak.kDrive.CustomControls
 {
@@ -56,11 +54,7 @@ namespace Infomaniak.kDrive.CustomControls
         public string UriString
         {
             get => (string)GetValue(UriSourceStringProperty);
-            set
-            {
-                SetValue(UriSourceStringProperty, value);
-                UriSource = new Uri(value);
-            }
+            set => SetValue(UriSourceStringProperty, value);
         }
 
         private static void OnUriChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -86,7 +80,10 @@ namespace Infomaniak.kDrive.CustomControls
         private void ScheduleRefresh()
         {
             if (UriString != UriSource?.ToString())
+            {
                 UriSource = new Uri(UriString);
+                return; // UriSource changed will trigger Refresh
+            }
             // Cancel any previous refresh
             _refreshCts?.Cancel();
             _refreshCts = new CancellationTokenSource();
@@ -124,6 +121,8 @@ namespace Infomaniak.kDrive.CustomControls
                 if (!File.Exists(fullUri.LocalPath))
                 {
                     Logger.Log(Logger.Level.Error, $"SVG file not found: {fullUri.LocalPath}");
+                    TryFallback();
+                    return;
                 }
 
                 token.ThrowIfCancellationRequested();
@@ -198,30 +197,30 @@ namespace Infomaniak.kDrive.CustomControls
             if (double.IsNaN(ratio) || double.IsInfinity(ratio))
                 ratio = 1.0F;
 
-            double width = 0;
-            double height = 0;
+            double targetWidth = 0;
+            double targetHeight = 0;
             if (double.IsNaN(Width) && double.IsNaN(Height))
             {
-                height = svgDoc.Height.Value;
-                width = height / ratio;
+                targetHeight = svgDoc.Height.Value;
+                targetWidth = targetHeight / ratio;
             }
             else if (double.IsNaN(Width) && !double.IsNaN(Height))
             {
-                height = Height;
-                width = height / ratio;
+                targetHeight = Height;
+                targetWidth = targetHeight / ratio;
             }
             else if (double.IsNaN(Height) && !double.IsNaN(Width))
             {
-                width = Width;
-                height = width * ratio;
+                targetWidth = Width;
+                targetHeight = targetWidth * ratio;
             }
             else
             {
-                width = Width;
-                height = Height;
+                targetWidth = Width;
+                targetHeight = Height;
             }
 
-            return (width * scale, height * scale);
+            return (targetWidth * scale, targetHeight * scale);
         }
 
         private void TryFallback()
