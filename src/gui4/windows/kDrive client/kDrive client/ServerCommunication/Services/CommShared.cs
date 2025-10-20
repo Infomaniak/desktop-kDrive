@@ -16,9 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using Infomaniak.kDrive.ViewModels;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
-
 namespace Infomaniak.kDrive.ServerCommunication
 {
     public struct CommShared

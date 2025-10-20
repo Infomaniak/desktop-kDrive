@@ -20,6 +20,7 @@ namespace Infomaniak.kDrive.ViewModels
         private bool _isUpdateAvailable = false;
         private bool _autoUpdateEnabled = true;
         private ReleaseChannel _currentChannel = ReleaseChannel.Production;
+        private UpdateData? _updateData;
 
         public bool IsUpdateAvailable
         {
@@ -38,7 +39,16 @@ namespace Infomaniak.kDrive.ViewModels
             get => _currentChannel;
             set => SetPropertyInUIThread(ref _currentChannel, value);
         }
-        public UpdateData? AvailableUpdate { get; set; } = null;
+        public UpdateData? AvailableUpdate
+        {
+            get => _updateData;
+            set => SetPropertyInUIThread(ref _updateData, value);
+        }
+
+       public UpdateManager()
+        {
+            AvailableUpdate = new UpdateData { }
+        }
 
     }
 }

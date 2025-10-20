@@ -57,7 +57,8 @@
                                Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
 
                     <!-- General - Update -->
-                    <toolKit:SettingsExpander Header="Mise à jour">
+                    <toolKit:SettingsExpander Header="Mise à jour"
+                                              Visibility="{x:Bind ViewModel.Settings.UpdateManager.AvailableUpdate, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}/>
                         <TextBlock Text="kDrive build 3.7.3 disponible"
                                    Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                                    Foreground="{ThemeResource TextFillColorDisabled}" />

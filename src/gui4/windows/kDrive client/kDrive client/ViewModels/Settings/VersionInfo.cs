@@ -1,0 +1,15 @@
+﻿using Infomaniak.kDrive.Types;
+using System;
+using System.Windows.Media.Animation;
+
+namespace Infomaniak.kDrive.ViewModels
+{
+    public class VersionInfo: UISafeObservableObject
+    {
+        public VersionChannel Channel { get; set; } = VersionChannel.Unknown;
+        public string Tag { get; set; } = string.Empty; // Version number. Example: 3.6.4
+        public Int64 buildVersion = 0; // Example: 20240816
+
+        private string ChangeLogUrl = string.Empty;
+    }
+}
