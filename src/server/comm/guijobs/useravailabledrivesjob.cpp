@@ -17,7 +17,6 @@
  */
 
 #include "useravailabledrivesjob.h"
-#include "../guijobmanager.h"
 #include "appserver.h"
 #include "requests/serverrequests.h"
 #include "libcommon/utility/utility.h"

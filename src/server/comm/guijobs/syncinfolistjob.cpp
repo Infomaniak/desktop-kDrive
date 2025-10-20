@@ -17,7 +17,6 @@
  */
 
 #include "syncinfolistjob.h"
-#include "../guijobmanager.h"
 #include "requests/serverrequests.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
@@ -40,12 +39,7 @@ ExitInfo SyncInfoListJob::deserializeInputParms() {
 
 ExitInfo SyncInfoListJob::serializeOutputParms() {
     // Output parameters serialization
-    std::function<Poco::Dynamic::Var(const SyncInfo &)> syncInfo2DynamicVar = [](const SyncInfo &value) {
-        Poco::DynamicStruct structValue;
-        value.toDynamicStruct(structValue);
-        return structValue;
-    };
-    writeParamValues(outParamsSyncInfoList, _syncInfoList, syncInfo2DynamicVar);
+    writeParamValues(outParamsSyncInfoList, _syncInfoList, info2DynamicVar<SyncInfo>);
 
     return ExitCode::Ok;
 }

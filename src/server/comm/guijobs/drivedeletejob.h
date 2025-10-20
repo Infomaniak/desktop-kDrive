@@ -27,7 +27,7 @@ class DriveDeleteJob : public AbstractGuiJob {
 
     private:
         // Input parameters
-        int _driveDbId;
+        int _driveDbId = 0;
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;

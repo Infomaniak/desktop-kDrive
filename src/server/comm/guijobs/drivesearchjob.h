@@ -28,12 +28,12 @@ class DriveSearchJob : public AbstractGuiJob {
 
     private:
         // Input parameters
-        int _driveDbId;
+        int _driveDbId = 0;
         CommString _searchString;
 
         // Output parameters
         std::vector<SearchInfo> _searchInfoList;
-        bool _hasMore;
+        bool _hasMore = false;
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;

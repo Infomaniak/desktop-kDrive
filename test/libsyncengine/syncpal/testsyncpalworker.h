@@ -57,10 +57,10 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
 
     private:
         Sync _sync;
-        std::shared_ptr<SyncPal> _syncPal;
-        std::shared_ptr<ParmsDb> _parmsDb;
+        std::shared_ptr<SyncPal> _syncPal = nullptr;
+        std::shared_ptr<ParmsDb> _parmsDb = nullptr;
         LocalTemporaryDirectory _localTempDir = LocalTemporaryDirectory("TestSyncpal");
-        int _driveDbId;
+        int _driveDbId = 0;
         SyncPath _localPath;
         SyncPath _remotePath;
 

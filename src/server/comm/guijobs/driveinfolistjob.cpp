@@ -17,7 +17,6 @@
  */
 
 #include "driveinfolistjob.h"
-#include "../guijobmanager.h"
 #include "requests/serverrequests.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
@@ -40,12 +39,7 @@ ExitInfo DriveInfoListJob::deserializeInputParms() {
 
 ExitInfo DriveInfoListJob::serializeOutputParms() {
     // Output parameters serialization
-    std::function<Poco::Dynamic::Var(const DriveInfo &)> driveInfo2DynamicVar = [](const DriveInfo &value) {
-        Poco::DynamicStruct structValue;
-        value.toDynamicStruct(structValue);
-        return structValue;
-    };
-    writeParamValues(outParamsDriveInfoList, _driveInfoList, driveInfo2DynamicVar);
+    writeParamValues(outParamsDriveInfoList, _driveInfoList, info2DynamicVar<DriveInfo>);
 
     return ExitCode::Ok;
 }

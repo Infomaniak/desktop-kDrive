@@ -17,10 +17,10 @@
  */
 
 #include "userdeletejob.h"
-#include "../guijobmanager.h"
 #include "appserver.h"
 #include "requests/serverrequests.h"
 #include "signaluserremovedjob.h"
+#include "server/comm/guijobmanager.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"

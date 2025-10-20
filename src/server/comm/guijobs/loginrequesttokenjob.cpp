@@ -18,10 +18,10 @@
 
 #include "loginrequesttokenjob.h"
 #include "appserver.h"
-#include "../guijobmanager.h"
 #include "requests/serverrequests.h"
 #include "signaluseraddedjob.h"
 #include "signaluserupdatedjob.h"
+#include "server/comm/guijobmanager.h"
 #include "libcommon/info/userinfo.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"

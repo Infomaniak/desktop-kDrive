@@ -17,7 +17,6 @@
  */
 
 #include "accountinfolistjob.h"
-#include "../guijobmanager.h"
 #include "requests/serverrequests.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
@@ -40,12 +39,7 @@ ExitInfo AccountInfoListJob::deserializeInputParms() {
 
 ExitInfo AccountInfoListJob::serializeOutputParms() {
     // Output parameters serialization
-    std::function<Poco::Dynamic::Var(const AccountInfo &)> accountInfo2DynamicVar = [](const AccountInfo &value) {
-        Poco::DynamicStruct structValue;
-        value.toDynamicStruct(structValue);
-        return structValue;
-    };
-    writeParamValues(outParamsAccountInfoList, _accountInfoList, accountInfo2DynamicVar);
+    writeParamValues(outParamsAccountInfoList, _accountInfoList, info2DynamicVar<AccountInfo>);
 
     return ExitCode::Ok;
 }

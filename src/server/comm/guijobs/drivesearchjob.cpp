@@ -17,7 +17,6 @@
  */
 
 #include "drivesearchjob.h"
-#include "../guijobmanager.h"
 #include "appserver.h"
 #include "requests/serverrequests.h"
 #include "libcommon/utility/utility.h"
@@ -55,12 +54,7 @@ ExitInfo DriveSearchJob::deserializeInputParms() {
 
 ExitInfo DriveSearchJob::serializeOutputParms() {
     // Output parameters serialization
-    std::function<Poco::Dynamic::Var(const SearchInfo &)> searchInfo2DynamicVar = [](const SearchInfo &value) {
-        Poco::DynamicStruct structValue;
-        value.toDynamicStruct(structValue);
-        return structValue;
-    };
-    writeParamValues(outParamsSearchInfoList, _searchInfoList, searchInfo2DynamicVar);
+    writeParamValues(outParamsSearchInfoList, _searchInfoList, info2DynamicVar<SearchInfo>);
     writeParamValue(outParamsHasMore, _hasMore);
 
     return ExitCode::Ok;

@@ -17,7 +17,6 @@
  */
 
 #include "userdbidlistjob.h"
-#include "../guijobmanager.h"
 #include "requests/serverrequests.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
