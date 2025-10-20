@@ -1,12 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Infomaniak.kDrive.ViewModels
+﻿namespace Infomaniak.kDrive.ViewModels
 {
     public class UpdateManager : UISafeObservableObject
     {
@@ -17,16 +9,9 @@ namespace Infomaniak.kDrive.ViewModels
             Internal
         }
 
-        private bool _isUpdateAvailable = false;
         private bool _autoUpdateEnabled = true;
         private ReleaseChannel _currentChannel = ReleaseChannel.Production;
         private UpdateData? _updateData;
-
-        public bool IsUpdateAvailable
-        {
-            get => _isUpdateAvailable;
-            set => SetPropertyInUIThread(ref _isUpdateAvailable, value);
-        }
 
         public bool AutoUpdateEnabled
         {
@@ -47,7 +32,7 @@ namespace Infomaniak.kDrive.ViewModels
 
        public UpdateManager()
         {
-            AvailableUpdate = new UpdateData { }
+            AvailableUpdate = new UpdateData { Tag  ="4.0.0", BuildVersion="20251020"};
         }
 
     }

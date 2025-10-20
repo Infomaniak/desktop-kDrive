@@ -493,4 +493,16 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
   <data name="Page_HomePage_Main_SyncOffline_Description_Line2.Text" xml:space="preserve">
     <value>La synchronisation reprendra automatiquement dès que vous serez reconnecté.</value>
   </data>
+  <data name="Global_LanguageCode" xml:space="preserve">
+    <value>fr</value>
+    <comment>This value shouldn't be change, it is used to generate URL.</comment>
+  </data>
+  <data name="Page_SettingsPage_UpdateCard.Header" xml:space="preserve">
+    <value>Mise à jour</value>
+  </data>
+  <data name="Page_SettingsPage_UpdateDetails.TextTemplate" xml:space="preserve">
+    <value>Cette mise à jour apporte des correctifs importants et des améliorations liées à la sécurité, et est recommandée à tous les utilisateurs. Version {0} (build {1}), compilée le {2}
+© 2019–{3} Infomaniak Network SA</value>
+    <comment>{0}: version tag ie 4.0.0; {1} version build ie 20252010; {2}: pretty date ie nov 28, 2025, {3}: current year: 2025</comment>
+  </data>
 </root>

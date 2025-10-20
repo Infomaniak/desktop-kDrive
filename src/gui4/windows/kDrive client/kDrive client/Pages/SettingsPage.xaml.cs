@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Infomaniak.kDrive.Converters;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,12 +30,14 @@ using Microsoft.UI.Xaml.Navigation;
 using Microsoft.VisualBasic.Devices;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Networking.Connectivity;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Infomaniak.kDrive.Pages
 {
@@ -71,6 +74,32 @@ namespace Infomaniak.kDrive.Pages
         private void CreateAccountButton_Click(object sender, RoutedEventArgs e)
         {
             (App.Current as App)?.StartOnboarding();
+        }
+
+        private void TextBlockUpdateInfoLoaded(object sender, RoutedEventArgs e)
+        {
+            if(sender is TextBlock textBlock)
+            {
+                var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
+                var updateData = ViewModel.Settings.UpdateManager.AvailableUpdate;
+                if( updateData == null )
+                {
+                    textBlock.Text = string.Format(resourceLoader.GetString("Page_SettingsPage_UpdateDetails/Text"), "?", "?", "?", "?");
+                    return;
+                }
+                DateTime date;
+                if(DateTime.TryParseExact(updateData.BuildVersion, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedDate))
+                {
+                    date = parsedDate;
+                }
+                else
+                {
+                    Logger.Log(Logger.Level.Warning, "DateToStringConverter: string value is not in the expected format 'yyyyMMdd'.");
+                    date = DateTime.MinValue;
+                }
+                textBlock.Text = string.Format(resourceLoader.GetString("Page_SettingsPage_UpdateDetails/Text"), updateData.Tag, updateData.BuildVersion, date.ToString("D", CultureInfo.CurrentCulture), date.Year);
+
+            }
         }
     }
 }

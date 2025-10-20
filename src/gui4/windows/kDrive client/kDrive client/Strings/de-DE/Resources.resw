@@ -462,4 +462,13 @@
   <data name="Page_HomePage_Main_SyncOffline_Description_Line2.Text" xml:space="preserve">
     <value />
   </data>
+  <data name="Global_LanguageCode" xml:space="preserve">
+    <value>de</value>
+  </data>
+  <data name="Page_SettingsPage_UpdateCard.Header" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_UpdateDetails.TextTemplate" xml:space="preserve">
+    <value />
+  </data>
 </root>

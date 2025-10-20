@@ -58,6 +58,16 @@ namespace Infomaniak.kDrive.Types
         Online // (Ex liteSync)
     };
 
+    public enum VersionChannel
+    {
+        Prod,
+        Next,
+        Beta,
+        Internal,
+        Legacy,
+        Unknown
+    };
+
     public enum Language
     {
         SystemDefault = 0,
