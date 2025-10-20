@@ -19,7 +19,7 @@ param (
     [Parameter(Mandatory = $true)]
     [string]$version,
 
-    [ValidateSet('win', 'mac', 'linux-arm', 'linux-amd')]
+    [ValidateSet('win', 'macos', 'linux-arm', 'linux-amd')]
     [string] $os
 )
 
@@ -160,7 +160,7 @@ if ($os -eq "win") {
     Write-Host " - Windows Files - \n"
 }
 
-if ($os -eq "mac") {
+if ($os -eq "macos") {
     Write-Host " - macOS Files - " # macOS
     $macos_files = @(
         "$app.pkg",
