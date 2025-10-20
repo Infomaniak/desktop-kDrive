@@ -23,6 +23,13 @@ env:
 
 jobs:
 
+# Check for links in PR
+  check-no-links:
+    runs-on: [ self-hosted, Linux]
+    steps:
+      - name: Check for links in PR
+        uses: ./.github/actions/check-no-links
+
 # Build apps
   build-Windows:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
