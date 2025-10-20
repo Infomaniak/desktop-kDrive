@@ -1,14 +1,7 @@
 ﻿using Infomaniak.kDrive.Types;
-using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
 using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.Data.Xml.Dom;
 
 namespace Infomaniak.kDrive.Converters
 {
