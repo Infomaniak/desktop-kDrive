@@ -30,6 +30,10 @@ runs:
 
         # Load blocked domains
         mapfile -t BLOCKED_DOMAINS < "$CONFIG_FILE"
+        echo "Blocked domains loaded:"
+        for domain in "${BLOCKED_DOMAINS[@]}"; do
+          echo "- $domain"
+        done
 
         # Regex to detect links
         LINK_REGEX="(https?:\/\/[^\s\"'<>]+|www\.[^\s\"'<>]+|htptp:\/\/[^\s\"'<>]+)"
@@ -37,6 +41,7 @@ runs:
         FAIL=0
 
         for file in $CHANGED_FILES; do
+          echo "Checking file: $file"
           if [[ -f "$file" ]]; then
             while read -r line; do
               if [[ "$line" =~ $LINK_REGEX ]]; then
