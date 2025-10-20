@@ -1,4 +1,4 @@
-name: "Check Links in PR"
+﻿name: "Check Links in PR"
 description: "Fails if any changed file contains a blocked domain link from config."
 inputs:
   config-file:

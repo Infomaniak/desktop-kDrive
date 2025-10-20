@@ -1,0 +1,5 @@
+figma
+gitlab
+trello
+jira
+pages.infomaniak

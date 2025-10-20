@@ -27,6 +27,9 @@ jobs:
   check-no-links:
     runs-on: [ self-hosted, Linux]
     steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4
+
       - name: Check for links in PR
         uses: ./.github/actions/check-no-links
 
