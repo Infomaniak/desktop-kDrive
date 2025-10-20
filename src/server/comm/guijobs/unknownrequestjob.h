@@ -23,7 +23,7 @@ namespace KDC {
 class UnknownRequestJob : public AbstractGuiJob {
     public:
         UnknownRequestJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                             const std::shared_ptr<AbstractCommChannel> channel);
+                          const std::shared_ptr<AbstractCommChannel> channel);
 
     private:
         // Output parameters

@@ -17,7 +17,9 @@
  */
 
 #include "localdeletejob.h"
+
 #include "jobs/network/kDrive_API/getfileinfojob.h"
+#include "libcommonserver/io/permissionsholder.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
@@ -169,6 +171,10 @@ bool LocalDeleteJob::moveToTrash() {
 
 ExitInfo LocalDeleteJob::runJob() {
     if (const auto exitInfo = canRun(); !exitInfo) return exitInfo;
+
+    // Make sure we are allowed to propagate the change
+    PermissionsHolder permsHolder(_absolutePath.parent_path(), _logger);
+    PermissionsHolder permsHolder2(_absolutePath, _logger);
 
     const bool tryMoveToTrash =
             (ParametersCache::instance()->parameters().moveToTrash() && !_isDehydratedPlaceholder) || _forceToTrash;

@@ -1556,7 +1556,7 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
     class GetInfoUserJobMock final : public GetInfoUserJob {
         public:
             explicit GetInfoUserJobMock(int32_t userDbId) :
-                GetInfoUserJob(userDbId){};
+                GetInfoUserJob(userDbId) {};
 
             [[nodiscard]] Poco::Net::HTTPResponse httpResponse() const override {
                 return Poco::Net::HTTPResponse(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
