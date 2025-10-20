@@ -12,26 +12,34 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Checkout PR code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
     - name: Run link check
       shell: bash
       run: |
         set -e
 
         CONFIG_FILE="${{ inputs.config-file }}"
-        GITHUB_BASE_REF="${{ inputs.base-ref }}"
+        BASE_REF="${{ inputs.base-ref }}"
 
         if [[ ! -f "$CONFIG_FILE" ]]; then
           echo "Config file not found: $CONFIG_FILE"
           exit 1
         fi
 
-        # Get changed files
-        CHANGED_FILES=$(git diff --name-only origin/$GITHUB_BASE_REF...HEAD)
+        # Make sure the base branch is fetched
+        git fetch origin "$BASE_REF":"$BASE_REF"
+
+        # Get changed files relative to base
+        CHANGED_FILES=$(git diff --name-only "$BASE_REF"..HEAD)
 
         # Load blocked domains
         mapfile -t BLOCKED_DOMAINS < "$CONFIG_FILE"
 
-        # Regex to detect links
+        # Regex to detect links (including the typo htptp)
         LINK_REGEX="(https?:\/\/[^\s\"'<>]+|www\.[^\s\"'<>]+|htptp:\/\/[^\s\"'<>]+)"
 
         FAIL=0
@@ -58,4 +66,3 @@ runs:
         else
           echo "No blocked domain links found."
         fi
-
