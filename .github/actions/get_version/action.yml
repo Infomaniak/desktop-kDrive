@@ -45,6 +45,8 @@ runs:
                   if [[ "$LINK_FOUND" == *"$domain"* ]]; then
                     echo "Blocked domain link found in $file: $LINK_FOUND"
                     FAIL=1
+                  else
+                    echo "Allowed link found in $file: $LINK_FOUND"
                   fi
                 done
               fi
