@@ -69,6 +69,10 @@
                         <ToggleSwitch IsOn="{x:Bind ViewModel.Settings.UpdateManager.AutoUpdateEnabled, Mode=TwoWay}" />
                     </toolKit:SettingsCard>
 
+                    <toolKit:SettingsCard Header="Mettre à jour kDrive automatiquement">
+                        <ToggleSwitch />
+                    </toolKit:SettingsCard>
+
                     <!-- General - Beta -->
                     <toolKit:SettingsCard Description="kDrive Beta est disponible."
                                           Header="Version Beta">
@@ -127,7 +131,8 @@
                     </Grid>
                     <!-- Account - List -->
                     <ListView ItemsSource="{x:Bind ViewModel.Users}"
-                              SelectionMode="None">
+                              SelectionMode="None"
+                              IsEnabled="False">
                         <ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">
                                 <Setter Property="Padding"
