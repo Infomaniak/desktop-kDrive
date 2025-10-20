@@ -98,7 +98,10 @@ struct RightsSet {
         bool execute;
 };
 
+void generateTestFile(const SyncPath &path, const uint64_t size = 0);
 void generateOrEditTestFile(const SyncPath &path);
+void setTestFileSize(const SyncPath &path, uint64_t size);
+
 /**
  * @brief Generate test files.
  * @param dirPath Directory in which the files will be created.
@@ -116,5 +119,7 @@ void setModificationDate(const SyncPath &path, const std::chrono::time_point<std
 // The created target paths are relative paths. The implementation does not raise an DELETE event in the directories containing
 // `filepath1` and `filepath2`.
 void createSymLinkLoop(const SyncPath &filepath1, const SyncPath &filepath2, const NodeType nodeType = NodeType::File);
+
+void setupLogging();
 
 } // namespace KDC::testhelpers

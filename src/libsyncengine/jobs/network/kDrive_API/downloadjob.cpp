@@ -181,7 +181,7 @@ ExitInfo DownloadJob::runJob() noexcept {
 ExitInfo DownloadJob::handleResponse(std::istream &is) {
     // Get Mime type
     std::string contentType;
-    contentType = _resHttp.get("Content-Type", "");
+    contentType = httpResponse().get("Content-Type", "");
 
     std::string mimeType;
     if (!contentType.empty()) {
@@ -256,9 +256,9 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
                 // Download issue
                 return {ExitCode::BackError, ExitCause::InvalidSize};
             } else if (const std::streamsize neededPlace =
-                               _resHttp.getContentLength() == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH
+                               httpResponse().getContentLength() == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH
                                        ? BUF_SIZE
-                                       : (_resHttp.getContentLength() - getProgress());
+                                       : (httpResponse().getContentLength() - getProgress());
                        !hasEnoughPlace(_tmpPath, _localpath, neededPlace, _logger)) {
                 return {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
             } else {
@@ -587,7 +587,7 @@ ExitInfo DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::is
 
     std::streamsize expectedSize = 0;
     if (istr) {
-        expectedSize = _resHttp.getContentLength();
+        expectedSize = httpResponse().getContentLength();
         setProgress(0);
         if (expectedSize != Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH) {
             if (!hasEnoughPlace(_tmpPath, _localpath, expectedSize, _logger)) {

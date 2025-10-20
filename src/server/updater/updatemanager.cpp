@@ -38,7 +38,7 @@ UpdateManager::UpdateManager(QObject *parent) :
 
     initUpdater();
 
-    connect(&_updateCheckTimer, &QTimer::timeout, this, &UpdateManager::slotTimerFired);
+    (void) connect(&_updateCheckTimer, &QTimer::timeout, this, &UpdateManager::slotTimerFired);
 
     static constexpr auto checkInterval = std::chrono::hours(1);
     _updateCheckTimer.start(std::chrono::milliseconds(checkInterval).count());
@@ -46,7 +46,7 @@ UpdateManager::UpdateManager(QObject *parent) :
     // Setup callback for update state change notification
     const std::function<void(UpdateState)> callback = std::bind_front(&UpdateManager::onUpdateStateChanged, this);
     _updater->setStateChangeCallback(callback);
-    connect(this, &UpdateManager::updateStateChanged, this, &UpdateManager::slotUpdateStateChanged, Qt::QueuedConnection);
+    (void) connect(this, &UpdateManager::updateStateChanged, this, &UpdateManager::slotUpdateStateChanged, Qt::QueuedConnection);
 
     // At startup, do a check in any case and setup distribution channel.
     QTimer::singleShot(3000, this, [this]() { setDistributionChannel(_currentChannel); });
@@ -54,7 +54,7 @@ UpdateManager::UpdateManager(QObject *parent) :
 
 void UpdateManager::setDistributionChannel(const VersionChannel channel) {
     _currentChannel = channel;
-    _updater->checkUpdateAvailable(channel);
+    (void) _updater->checkUpdateAvailable(channel);
     ParametersCache::instance()->parameters().setDistributionChannel(channel);
     ParametersCache::instance()->save();
 }
@@ -69,7 +69,7 @@ void UpdateManager::startInstaller() const {
 }
 
 void UpdateManager::slotTimerFired() const {
-    _updater->checkUpdateAvailable(_currentChannel);
+    (void) _updater->checkUpdateAvailable(_currentChannel);
 }
 
 void UpdateManager::slotUpdateStateChanged(const UpdateState newState) {
@@ -94,7 +94,7 @@ void UpdateManager::slotUpdateStateChanged(const UpdateState newState) {
         }
         case UpdateState::Ready: {
             if (AbstractUpdater::isVersionSkipped(_updater->versionInfo(_currentChannel).fullVersion())) break;
-                // The new version is ready to be installed
+            // The new version is ready to be installed
 #if defined(KD_WINDOWS)
             emit showUpdateDialog();
 #endif
