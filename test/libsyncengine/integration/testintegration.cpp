@@ -161,6 +161,7 @@ void TestIntegration::testAll() {
     testParentRename();
     testNegativeModificationTime();
     testDeleteAndRecreateBranch();
+    testDeleteAndMoveCase();
     testSymLinkWithTooManySymbolicLevels();
     testDirSymLinkWithTooManySymbolicLevels();
     testSynchronizationOfSymLinks();
@@ -240,6 +241,7 @@ void TestIntegration::inconsistencyTests() {
 void TestIntegration::testBreakCycle() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
+    // Setup initial situation
     _syncPal->pause(); // We need to pause the sync because the back might take some time to notify all the events.
     const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
     NodeId nodeIdAA;
@@ -258,6 +260,7 @@ void TestIntegration::testBreakCycle() {
     _syncPal->unpause();
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
+    // Generate cycle
     _syncPal->pause(); // We need to pause the sync because the back might take some time to notify all the events.
     const auto pathAA = _syncPal->localPath() / tmpRemoteDir.name() / "A" / "AA";
     // Rename A/AA/AAA to A/AA/AAA2 on remote replica.
@@ -647,7 +650,7 @@ void TestIntegration::testDeleteAndRecreateBranch() {
         moveRemoteFile(_driveDbId, nodeIdAAAA, tmpRemoteDir.id());
 
         // Delete A/AA
-        deleteRemoteFile(_driveDbId, nodeIdAA);
+        deleteRemoteItem(_driveDbId, nodeIdAA);
 
         // Create A/AA/AAA1
         CreateDirJob jobAA(nullptr, _driveDbId, nodeIdA, Str("AA"));
@@ -666,6 +669,82 @@ void TestIntegration::testDeleteAndRecreateBranch() {
     CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() / "A" / "AA" / "AAA1"));
 
     logStep("testDeleteAndRecreateBranch");
+}
+
+void TestIntegration::testDeleteAndMoveCase() {
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    // Setup initial situation:
+    // .
+    // └── testDeleteAndMoveCase(m)
+    //     ├── A(a)
+    //     │   └── test(aa)
+    //     │       └── test.txt(aaa)
+    //     └── B(b)
+    //         └── test(bb)
+    //             └── test.txt(bbb)
+
+    _syncPal->pause(); // We need to pause the sync because the back might take some time to notify all the events.
+    const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id(), "testDeleteAndMoveCase");
+    NodeId nodeIdA;
+    NodeId nodeIdAA;
+    NodeId nodeIdAAA;
+    NodeId nodeIdB;
+    NodeId nodeIdBB;
+    NodeId nodeIdBBB;
+    {
+        CreateDirJob jobA(nullptr, _driveDbId, tmpRemoteDir.id(), Str("A"));
+        (void) jobA.runSynchronously();
+        nodeIdA = jobA.nodeId();
+        CreateDirJob jobAA(nullptr, _driveDbId, jobA.nodeId(), Str("test"));
+        (void) jobAA.runSynchronously();
+        nodeIdAA = jobAA.nodeId();
+        CreateDirJob jobB(nullptr, _driveDbId, tmpRemoteDir.id(), Str("B"));
+        (void) jobB.runSynchronously();
+        nodeIdB = jobB.nodeId();
+        CreateDirJob jobBB(nullptr, _driveDbId, jobB.nodeId(), Str("test"));
+        (void) jobBB.runSynchronously();
+        nodeIdBB = jobBB.nodeId();
+
+        const auto filename = Str("test.txt");
+        nodeIdAAA = duplicateRemoteFile(_driveDbId, _testFileRemoteId, filename);
+        moveRemoteFile(_driveDbId, nodeIdAAA, nodeIdAA);
+        nodeIdBBB = duplicateRemoteFile(_driveDbId, _testFileRemoteId, filename);
+        moveRemoteFile(_driveDbId, nodeIdBBB, nodeIdBB);
+    }
+    _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
+    _syncPal->unpause();
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    _syncPal->pause();
+
+    // Generate final situation:
+    // .
+    // └── main_folder(m)
+    //     └── A2(a)
+    //         └── test(bb)
+    //             └── test.txt(bbb)
+
+    // Delete aa
+    deleteRemoteItem(_driveDbId, nodeIdAA);
+    // Rename a
+    (void) RenameJob(nullptr, _driveDbId, nodeIdA, Str("A2")).runSynchronously();
+    // Move bb
+    moveRemoteFile(_driveDbId, nodeIdBB, nodeIdA);
+    // Delete b
+    deleteRemoteItem(_driveDbId, nodeIdB);
+
+    _syncPal->unpause();
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->exists(nodeIdA));
+    CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Remote)->exists(nodeIdAA));
+    CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Remote)->exists(nodeIdAAA));
+    CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Remote)->exists(nodeIdB));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->exists(nodeIdBB));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->exists(nodeIdBBB));
+
+    logStep("testDeleteAndMoveCase");
 }
 
 #if defined(KD_LINUX)
@@ -943,7 +1022,7 @@ NodeId TestIntegration::duplicateRemoteFile(const int driveDbId, const NodeId &i
     return job.nodeId();
 }
 
-void TestIntegration::deleteRemoteFile(const int driveDbId, const NodeId &id) const {
+void TestIntegration::deleteRemoteItem(const int driveDbId, const NodeId &id) const {
     DeleteJob job(driveDbId, id);
     job.setBypassCheck(true);
     (void) job.runSynchronously();

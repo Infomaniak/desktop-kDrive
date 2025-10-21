@@ -48,6 +48,11 @@ void OperationSorterWorker::execute() {
     setDone(ExitCode::Ok);
 }
 
+bool hasMoveOperation(const std::shared_ptr<SyncOperationList> &syncOps) {
+    return !syncOps->opListIdByType(OperationType::Move).empty() || !syncOps->opListIdByType(OperationType::MoveEdit).empty() ||
+           !syncOps->opListIdByType(OperationType::MoveOut).empty();
+}
+
 void OperationSorterWorker::sortOperations() {
     _syncPal->_syncOps->startUpdate();
     SyncOperationList completeCycle;
@@ -69,12 +74,16 @@ void OperationSorterWorker::sortOperations() {
         fixEditBeforeMove();
         fixMoveBeforeMoveHierarchyFlip();
 
-        CycleFinder cycleFinder(_reorderings);
-        cycleFinder.findCompleteCycle();
-        if (cycleFinder.hasCompleteCycle()) {
-            completeCycle = cycleFinder.completeCycle();
-            cycleFound = true;
-            break;
+        // Cycles can occur only in presence of at least 1 Move operation.
+        if (hasMoveOperation(_syncPal->_syncOps)) {
+            // Check for cycles.
+            CycleFinder cycleFinder(_reorderings);
+            cycleFinder.findCompleteCycle();
+            if (cycleFinder.hasCompleteCycle()) {
+                completeCycle = cycleFinder.completeCycle();
+                cycleFound = true;
+                break;
+            }
         }
     }
 
@@ -102,8 +111,11 @@ void OperationSorterWorker::fixDeleteBeforeMove() {
 
         const auto deleteNode = deleteOp->affectedNode();
         LOG_IF_FAIL(deleteNode)
+        const auto parentPath = deleteNode->parentNode()->hasChangeEvent(OperationType::Move)
+                                        ? deleteNode->parentNode()->moveOriginInfos().path()
+                                        : deleteNode->parentNode()->getPath();
         NodeId deleteNodeParentId;
-        if (!getIdFromDb(deleteNode->side(), deleteNode->getPath().parent_path(), deleteNodeParentId)) {
+        if (!getIdFromDb(deleteNode->side(), parentPath, deleteNodeParentId)) {
             continue;
         }
 
@@ -188,8 +200,11 @@ void OperationSorterWorker::fixDeleteBeforeCreate() {
 
         const auto deleteNode = deleteOp->affectedNode();
         LOG_IF_FAIL(deleteNode)
+        const auto parentPath = deleteNode->parentNode()->hasChangeEvent(OperationType::Move)
+                                        ? deleteNode->parentNode()->moveOriginInfos().path()
+                                        : deleteNode->parentNode()->getPath();
         NodeId deleteNodeParentId;
-        if (!getIdFromDb(deleteNode->side(), deleteNode->getPath().parent_path(), deleteNodeParentId)) {
+        if (!getIdFromDb(deleteNode->side(), parentPath, deleteNodeParentId)) {
             continue;
         }
 

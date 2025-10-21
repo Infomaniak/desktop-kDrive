@@ -31,9 +31,8 @@ static const auto outParamsErrorDescr = "errorDescr";
 
 namespace KDC {
 
-UnknownRequestJob::UnknownRequestJob(std::shared_ptr<CommManager> commManager, int requestId,
-                                               const Poco::DynamicStruct &inParams,
-                                               const std::shared_ptr<AbstractCommChannel> channel) :
+UnknownRequestJob::UnknownRequestJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                                     const std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
     _requestNum = RequestNum::Unknown;
 }

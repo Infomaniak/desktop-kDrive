@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "permissionsholder.h"
 #include "libcommon/utility/types.h"
 
 #include "libcommonserver/io/filestat.h"
@@ -94,7 +95,7 @@ bool IoHelper::setXAttrValue(const SyncPath &path, const std::string_view &attrN
     }
 
     const bool isSymlink = itemType.linkType == LinkType::Symlink;
-
+    PermissionsHolder permsHolder(path, logger());
     if (setxattr(path.native().c_str(), attrName.data(), value.data(), value.size(), 0, isSymlink ? XATTR_NOFOLLOW : 0) == -1) {
         ioError = posixError2ioError(errno);
         return _isXAttrValueExpectedError(ioError);
@@ -106,6 +107,7 @@ bool IoHelper::setXAttrValue(const SyncPath &path, const std::string_view &attrN
 }
 
 bool IoHelper::removeXAttrs(const SyncPath &path, const std::vector<std::string_view> &attrNames, IoError &ioError) noexcept {
+    PermissionsHolder permsHolder(path, logger());
     for (const auto &attrName: attrNames) {
         if (removexattr(path.native().c_str(), attrName.data(), XATTR_NOFOLLOW) == -1) {
             ioError = posixError2ioError(errno);
@@ -151,6 +153,7 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
     }
 
     buf->isHidden = false;
+    buf->_flags = sb.st_flags;
     if (sb.st_flags & UF_HIDDEN) {
         buf->isHidden = true;
     }
@@ -166,4 +169,46 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
 
     return true;
 }
+
+IoError IoHelper::lock(const SyncPath &path) noexcept {
+    // Set uchg flag to lock the item.
+    if (chflags(path.string().c_str(), UF_IMMUTABLE)) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to set uchg flag for " << Utility::formatSyncPath(path));
+        return IoError::Unknown;
+    }
+    return IoError::Success;
+}
+
+IoError IoHelper::unlock(const SyncPath &path) noexcept {
+    FileStat filestat;
+    bool found = false;
+    IoHelper::getFileStat(path, &filestat, found);
+    if (!found) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Not found: " << Utility::formatSyncPath(path));
+        return IoError::NoSuchFileOrDirectory;
+    }
+
+    // Unset uchg flag to unlock the item.
+    u_int flags = filestat._flags;
+    flags &= ~UF_IMMUTABLE;
+    if (chflags(path.string().c_str(), flags)) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to unset uchg flag for " << Utility::formatSyncPath(path));
+        return IoError::Unknown;
+    }
+    return IoError::Success;
+}
+
+IoError IoHelper::isLocked(const SyncPath &path, bool &locked) noexcept {
+    FileStat filestat;
+    bool found = false;
+    IoHelper::getFileStat(path, &filestat, found);
+    if (!found) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Not found: " << Utility::formatSyncPath(path));
+        return IoError::NoSuchFileOrDirectory;
+    }
+
+    locked = filestat._flags & UF_IMMUTABLE;
+    return IoError::Success;
+}
+
 } // namespace KDC

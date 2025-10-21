@@ -184,7 +184,7 @@ void AbstractTokenNetworkJob::defaultBackErrorHandling(NetworkErrorCode errorCod
 
 
 ExitInfo AbstractTokenNetworkJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
-    switch (_resHttp.getStatus()) {
+    switch (httpResponse().getStatus()) {
         case Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED:
             return handleUnauthorizedResponse();
         case Poco::Net::HTTPResponse::HTTP_NOT_FOUND: {

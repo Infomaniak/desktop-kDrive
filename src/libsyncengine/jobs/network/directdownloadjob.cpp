@@ -26,7 +26,12 @@
 
 namespace KDC {
 
-#define BUF_SIZE 4096 * 1000 // 4MB     // TODO : this should be defined in a common parent class
+constexpr uint64_t bufferSize = 4096 * 1000; // 4MB     // TODO : this should be defined in a common parent class
+
+DirectDownloadJob::DirectDownloadJob(const std::string &url) :
+    _url(url) {
+    _httpMethod = Poco::Net::HTTPRequest::HTTP_HEAD;
+}
 
 DirectDownloadJob::DirectDownloadJob(const SyncPath &destinationFile, const std::string &url) :
     _destinationFile(destinationFile),
@@ -34,7 +39,9 @@ DirectDownloadJob::DirectDownloadJob(const SyncPath &destinationFile, const std:
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
+
 ExitInfo DirectDownloadJob::handleResponse(std::istream &is) {
+    if (_httpMethod == Poco::Net::HTTPRequest::HTTP_HEAD) return ExitCode::Ok;
     std::ofstream output(_destinationFile.native().c_str(), std::ios::binary);
     if (!output) {
         LOGW_WARN(_logger, L"Failed to create file: " << Utility::formatSyncPath(_destinationFile));
@@ -42,63 +49,7 @@ ExitInfo DirectDownloadJob::handleResponse(std::istream &is) {
                 Utility::enoughSpace(_destinationFile) ? ExitCause::FileAccessError : ExitCause::NotEnoughDiskSpace};
     }
 
-    setProgress(0);
-    if (std::streamsize expectedSize = _resHttp.getContentLength();
-        expectedSize == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH || expectedSize > 0) {
-        std::unique_ptr<char[]> buffer(new char[BUF_SIZE]);
-        bool done = false;
-        while (!done) {
-            if (isAborted()) {
-                LOG_DEBUG(_logger, "Request " << jobId() << ": aborted");
-                break;
-            }
-
-            is.read(buffer.get(), BUF_SIZE);
-            if (is.bad() && !is.fail()) {
-                // Read/writing error and not logical error
-                LOG_WARN(_logger,
-                         "Request " << jobId() << ": error after reading " << getProgress() << " bytes from input stream");
-                break;
-            }
-
-            std::streamsize readSize = is.gcount();
-            addProgress(readSize);
-            LOG_DEBUG(_logger, "Request " << jobId() << ": " << getProgress() << " bytes read");
-            if (readSize > 0) {
-                output.write(buffer.get(), readSize);
-                if (output.bad()) {
-                    // Read/writing error or logical error
-                    LOG_WARN(_logger, "Request " << jobId() << ": error after writing " << getProgress() << " bytes to tmp file");
-                    break;
-                }
-                output.flush();
-                if (output.bad()) {
-                    // Read/writing error or logical error
-                    LOG_WARN(_logger,
-                             "Request " << jobId() << ": error after flushing " << getProgress() << " bytes to tmp file");
-                    break;
-                }
-            } else {
-                if (is.eof()) {
-                    // End of stream
-                    if (expectedSize == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH || getProgress() == expectedSize) {
-                        done = true;
-                    } else {
-                        // Expected size hasn't been read
-                        LOG_WARN(_logger,
-                                 "Request " << jobId() << ": eof after reading " << getProgress() << " bytes from input stream");
-                        break;
-                    }
-                } else {
-                    // Expected size hasn't been read
-                    LOG_WARN(_logger, "Request " << jobId() << ": nothing more to read but eof not reached");
-                    break;
-                }
-            }
-        }
-    } else {
-        LOG_WARN(_logger, "Reply " << jobId() << " is empty");
-    }
+    ExitInfo exitInfo = readFromStream(is, output);
 
     output.close();
     if (output.bad()) {
@@ -106,14 +57,71 @@ ExitInfo DirectDownloadJob::handleResponse(std::istream &is) {
         LOG_WARN(_logger, "Request " << jobId() << ": error after closing tmp file");
     }
 
-    return ExitCode::Ok;
+    return exitInfo;
 }
 
 ExitInfo DirectDownloadJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
     (void) replyBody;
-    const auto errorCode = std::to_string(_resHttp.getStatus());
-    LOG_WARN(_logger, "Download " << uri.toString() << " failed with error: " << errorCode << " - " << _resHttp.getReason());
+    const auto errorCode = std::to_string(httpResponse().getStatus());
+    LOG_WARN(_logger,
+             "Download " << uri.toString() << " failed with error: " << errorCode << " - " << httpResponse().getReason());
     return {};
+}
+
+ExitInfo DirectDownloadJob::readFromStream(std::istream &is, std::ofstream &output) {
+    const auto expectedSize = httpResponse().getContentLength();
+    if (expectedSize != Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH && expectedSize == 0) {
+        LOG_WARN(_logger, "Reply " << jobId() << " is empty");
+        return ExitCode::Ok;
+    }
+
+    setProgress(0);
+
+    const std::unique_ptr<char[]> buffer(new char[bufferSize]);
+    while (true) {
+        if (isAborted()) {
+            LOG_DEBUG(_logger, "Request " << jobId() << ": aborted");
+            return ExitCode::Ok;
+        }
+
+        (void) is.read(buffer.get(), bufferSize);
+        if (is.bad() && !is.fail()) {
+            // Read/writing error and not logical error
+            LOG_WARN(_logger, "Request " << jobId() << ": error after reading " << getProgress() << " bytes from input stream");
+            return ExitCode::SystemError;
+        }
+
+        const auto readSize = is.gcount();
+        addProgress(readSize);
+        LOG_DEBUG(_logger, "Request " << jobId() << ": " << getProgress() << " bytes read");
+        if (readSize > 0) {
+            (void) output.write(buffer.get(), readSize);
+            if (output.bad()) {
+                // Read/writing error or logical error
+                LOG_WARN(_logger, "Request " << jobId() << ": error after writing " << getProgress() << " bytes to tmp file");
+                return ExitCode::SystemError;
+            }
+            (void) output.flush();
+            if (output.bad()) {
+                // Read/writing error or logical error
+                LOG_WARN(_logger, "Request " << jobId() << ": error after flushing " << getProgress() << " bytes to tmp file");
+                return ExitCode::SystemError;
+            }
+        }
+
+        if (is.eof()) {
+            // End of stream
+            if (expectedSize == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH || getProgress() == expectedSize) {
+                return ExitCode::Ok;
+            }
+
+            // Expected size hasn't been read
+            LOG_WARN(_logger, "Request " << jobId() << ": eof after reading " << getProgress() << " bytes from input stream");
+            return ExitCode::SystemError;
+        }
+    }
+
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

@@ -113,4 +113,17 @@ IoError IoHelper::setFileDates(const SyncPath &filePath, const SyncTime /*creati
     return IoError::Success;
 }
 
+IoError IoHelper::lock(const SyncPath &path) noexcept {
+    return IoError::Success; // Only on macOS
+}
+
+IoError IoHelper::unlock(const SyncPath &path) noexcept {
+    return IoError::Success; // Only on macOS
+}
+
+IoError IoHelper::isLocked(const SyncPath &path, bool &locked) noexcept {
+    locked = false;
+    return IoError::Success; // Only on macOS
+}
+
 } // namespace KDC

@@ -17,6 +17,8 @@
  */
 
 #include "localmovejob.h"
+
+#include "libcommonserver/io/permissionsholder.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 
@@ -80,6 +82,9 @@ ExitInfo LocalMoveJob::runJob() {
     if (const auto exitInfo = canRun(); !exitInfo) {
         return exitInfo;
     }
+
+    // Make sure we are allowed to propagate the change
+    PermissionsHolder _(_dest.parent_path(), _logger);
 
     std::error_code ec;
     std::filesystem::rename(_source, _dest, ec);

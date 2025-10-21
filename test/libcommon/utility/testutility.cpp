@@ -1152,4 +1152,12 @@ void TestUtility::testConvertToBase64Str() {
             R"(iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=)");
 }
 
+void TestUtility::isLikeSomeError() {
+    std::error_code errorCode = std::make_error_code(std::errc::too_many_symbolic_link_levels);
+    CPPUNIT_ASSERT(utility_base::isLikeTooManySymbolicLinkLevelsError(errorCode));
+
+    errorCode = std::make_error_code(std::errc::no_such_file_or_directory);
+    CPPUNIT_ASSERT(utility_base::isLikeFileNotFoundError(errorCode));
+}
+
 } // namespace KDC

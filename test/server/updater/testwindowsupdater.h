@@ -16,17 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "filepermissionholder.h"
+#pragma once
+
+#include "testincludes.h"
 
 namespace KDC {
 
-FilePermissionHolder::FilePermissionHolder(QString filePath) :
-    _file(filePath) {
-    _initPermissions = _file.permissions();
-}
+class TestWindowsUpdater final : public CppUnit::TestFixture, public TestBase {
+        CPPUNIT_TEST_SUITE(TestWindowsUpdater);
+        CPPUNIT_TEST(testOnUpdateFound);
+        CPPUNIT_TEST_SUITE_END();
 
-FilePermissionHolder::~FilePermissionHolder() {
-    _file.setPermissions(_initPermissions);
-}
+    public:
+        void setUp() override;
+        void tearDown() override;
+
+    private:
+        void testOnUpdateFound();
+};
 
 } // namespace KDC

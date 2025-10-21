@@ -65,6 +65,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testWriteValueToStruct);
         CPPUNIT_TEST(testConvertFromBase64Str);
         CPPUNIT_TEST(testConvertToBase64Str);
+        CPPUNIT_TEST(isLikeSomeError);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -111,6 +112,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testWriteValueToStruct();
         void testConvertFromBase64Str();
         void testConvertToBase64Str();
+        void isLikeSomeError();
 
     private:
         /* Generate all the possible path for a set of items and separators

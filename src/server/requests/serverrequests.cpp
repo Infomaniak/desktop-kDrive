@@ -993,6 +993,7 @@ bool ServerRequests::isDisplayableError(const Error &error) {
                     return false;
             }
         }
+        case ExitCode::InvalidOperation:
         case ExitCode::LogicError: {
             return true;
         }

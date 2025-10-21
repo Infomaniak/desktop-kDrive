@@ -31,7 +31,7 @@ class AbstractUpdater {
         AbstractUpdater();
         virtual ~AbstractUpdater() = default;
 
-        [[nodiscard]] const VersionInfo &versionInfo(const VersionChannel channel) const {
+        [[nodiscard]] virtual const VersionInfo &versionInfo(const VersionChannel channel) const {
             return _updateChecker->versionInfo(channel);
         }
         [[nodiscard]] const UpdateState &state() const { return _state; }

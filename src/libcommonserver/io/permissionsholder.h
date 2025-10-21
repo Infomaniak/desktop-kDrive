@@ -1,7 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2025 Infomaniak Network SA
- *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -18,26 +17,28 @@
 
 #pragma once
 
-#include "testincludes.h"
+#include "iohelper.h"
 #include "utility/types.h"
-#include "server/updater/updatechecker.h"
-#include "libsyncengine/jobs/network/mockgetappversionjob.h"
 
+/**
+ * @brief Provide full access to a file or folder for the lifespan of the `PermissionsHolder` object. Access rights are reset to
+ * their initial values upon destruction.
+ * This class aims to simplify the management of items inside folders with restricted access (such as "Common documents" or
+ * "Shared") or files with read-only rights that need to be updated. It should be used everywhere an item (or its children) with
+ * limited access might be modified.
+ */
 namespace KDC {
 
-class MockUpdateChecker : public UpdateChecker {
+class PermissionsHolder {
     public:
-        using UpdateChecker::UpdateChecker;
-        void setUpdateShouldBeAvailable(const bool val) { _updateShouldBeAvailable = val; }
-        void setAllVersionInfo(const AllVersionsInfo &versionInfo) { _versionsInfo = versionInfo; }
+        explicit PermissionsHolder(const SyncPath &path, const log4cplus::Logger logger);
+        ~PermissionsHolder();
 
     private:
-        ExitCode generateGetAppVersionJob(std::shared_ptr<AbstractNetworkJob> &job) override {
-            static const std::string appUid = "1234567890";
-            job = std::make_shared<MockGetAppVersionJob>(CommonUtility::platform(), appUid, _updateShouldBeAvailable);
-            return ExitCode::Ok;
-        }
+        void log(const std::wstringstream &ss, LogLevel logLevel = LogLevel::Debug) const noexcept;
 
-        bool _updateShouldBeAvailable{false};
+        SyncPath _path;
+        const log4cplus::Logger _logger;
 };
+
 } // namespace KDC

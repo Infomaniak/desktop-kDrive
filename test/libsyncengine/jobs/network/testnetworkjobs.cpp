@@ -1556,14 +1556,11 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
     class GetInfoUserJobMock final : public GetInfoUserJob {
         public:
             explicit GetInfoUserJobMock(int32_t userDbId) :
-                GetInfoUserJob(userDbId){};
+                GetInfoUserJob(userDbId) {};
 
-        protected:
-            ExitInfo receiveResponseFromSession(StreamVector &stream) override {
-                AbstractNetworkJob::receiveResponseFromSession(stream);
-                _resHttp.setStatus("401");
-                return ExitCode::Ok;
-            };
+            [[nodiscard]] Poco::Net::HTTPResponse httpResponse() const override {
+                return Poco::Net::HTTPResponse(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
+            }
     };
 
     GetInfoUserJobMock job(_userDbId);

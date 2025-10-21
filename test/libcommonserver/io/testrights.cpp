@@ -17,6 +17,7 @@
  */
 
 #include "testio.h"
+#include "libcommonserver/io/permissionsholder.h"
 #include "test_utility/testhelpers.h"
 
 #include <filesystem>
@@ -529,4 +530,147 @@ void TestIo::testCheckSetAndGetRights() {
     IoHelper::_getAndSetRightsMethod = 0; // Set the method to use the std::filesystem method (fallback)
 #endif
 }
+
+void TestIo::testLock() {
+    const LocalTemporaryDirectory tempDir("testLockDir");
+    const auto filePath = tempDir.path() / "testLockFile";
+    testhelpers::generateOrEditTestFile(filePath);
+    bool isLocked = false;
+
+    // Lock a directory.
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::lock(tempDir.path()));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::isLocked(tempDir.path(), isLocked));
+#if defined(KD_MACOS)
+    CPPUNIT_ASSERT(isLocked);
+#else
+    CPPUNIT_ASSERT(!isLocked);
+#endif
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::isLocked(filePath, isLocked));
+    CPPUNIT_ASSERT(!isLocked);
+
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::unlock(tempDir.path()));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::isLocked(tempDir.path(), isLocked));
+    CPPUNIT_ASSERT(!isLocked);
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::isLocked(filePath, isLocked));
+    CPPUNIT_ASSERT(!isLocked);
+
+    // Lock a file.
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::lock(filePath));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::isLocked(filePath, isLocked));
+#if defined(KD_MACOS)
+    CPPUNIT_ASSERT(isLocked);
+#else
+    CPPUNIT_ASSERT(!isLocked);
+#endif
+
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::unlock(filePath));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::isLocked(filePath, isLocked));
+    CPPUNIT_ASSERT(!isLocked);
+}
+
+void TestIo::testReadOnly() {
+    const LocalTemporaryDirectory tempDir("testSetReadOnlyDir");
+    const auto filePath = tempDir.path() / "testSetReadOnlyFile";
+    testhelpers::generateOrEditTestFile(filePath);
+
+    // Set read-only access to a directory.
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::setReadOnly(tempDir.path()));
+    bool read = false;
+    bool write = false;
+    bool dummyExec = false;
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), read, write, dummyExec));
+    CPPUNIT_ASSERT_EQUAL(true, read);
+    CPPUNIT_ASSERT_EQUAL(false, write);
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(filePath, read, write, dummyExec));
+    CPPUNIT_ASSERT_EQUAL(true, read);
+    CPPUNIT_ASSERT_EQUAL(true, write);
+    bool isLocked = false;
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::isLocked(tempDir.path(), isLocked));
+#if defined(KD_MACOS)
+    CPPUNIT_ASSERT(isLocked);
+#else
+    CPPUNIT_ASSERT(!isLocked);
+#endif
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::isLocked(filePath, isLocked));
+    CPPUNIT_ASSERT(!isLocked);
+
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::setFullAccess(tempDir.path()));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), read, write, dummyExec));
+    CPPUNIT_ASSERT_EQUAL(true, read);
+    CPPUNIT_ASSERT_EQUAL(true, write);
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(filePath, read, write, dummyExec));
+    CPPUNIT_ASSERT_EQUAL(true, read);
+    CPPUNIT_ASSERT_EQUAL(true, write);
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::isLocked(tempDir.path(), isLocked));
+    CPPUNIT_ASSERT(!isLocked);
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::isLocked(filePath, isLocked));
+    CPPUNIT_ASSERT(!isLocked);
+
+    // Set read-only access to a file.
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::setReadOnly(filePath));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(filePath, read, write, dummyExec));
+    CPPUNIT_ASSERT_EQUAL(true, read);
+    CPPUNIT_ASSERT_EQUAL(false, write);
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::isLocked(filePath, isLocked));
+#if defined(KD_MACOS)
+    CPPUNIT_ASSERT(isLocked);
+#else
+    CPPUNIT_ASSERT(!isLocked);
+#endif
+
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::setFullAccess(filePath));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(filePath, read, write, dummyExec));
+    CPPUNIT_ASSERT_EQUAL(true, read);
+    CPPUNIT_ASSERT_EQUAL(true, write);
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::isLocked(filePath, isLocked));
+    CPPUNIT_ASSERT(!isLocked);
+}
+
+void TestIo::testPermissionsHolder() {
+    const LocalTemporaryDirectory tempDir("testPermissionsHolderDir");
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::setReadOnly(tempDir.path()));
+
+    const auto filePath = tempDir.path() / "testPermissionsHolderFile";
+    testhelpers::generateOrEditTestFile(filePath);
+    CPPUNIT_ASSERT(!std::filesystem::exists(filePath));
+
+    {
+        const PermissionsHolder permsHolder(tempDir.path(), Log::instance()->getLogger());
+        testhelpers::generateOrEditTestFile(filePath);
+        CPPUNIT_ASSERT(std::filesystem::exists(filePath));
+    }
+
+    const auto filePath2 = tempDir.path() / "testPermissionsHolderFile2";
+    testhelpers::generateOrEditTestFile(filePath2);
+    CPPUNIT_ASSERT(!std::filesystem::exists(filePath2));
+
+    // Test with several instance of perms holder on the same folder
+    bool dummyRead = false;
+    bool write = false;
+    bool dummyExec = false;
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), dummyRead, write, dummyExec));
+    CPPUNIT_ASSERT_EQUAL(false, write);
+    {
+        const PermissionsHolder permsHolder(tempDir.path(), Log::instance()->getLogger());
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), dummyRead, write, dummyExec));
+        CPPUNIT_ASSERT_EQUAL(true, write);
+        {
+            const PermissionsHolder permsHolder2(tempDir.path(), Log::instance()->getLogger());
+            CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), dummyRead, write, dummyExec));
+            CPPUNIT_ASSERT_EQUAL(true, write);
+            {
+                const PermissionsHolder permsHolder3(tempDir.path(), Log::instance()->getLogger());
+                CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), dummyRead, write, dummyExec));
+                CPPUNIT_ASSERT_EQUAL(true, write);
+            }
+            CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), dummyRead, write, dummyExec));
+            CPPUNIT_ASSERT_EQUAL(true, write);
+        }
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), dummyRead, write, dummyExec));
+        CPPUNIT_ASSERT_EQUAL(true, write);
+    }
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), dummyRead, write, dummyExec));
+    CPPUNIT_ASSERT_EQUAL(false, write);
+}
+
 } // namespace KDC
