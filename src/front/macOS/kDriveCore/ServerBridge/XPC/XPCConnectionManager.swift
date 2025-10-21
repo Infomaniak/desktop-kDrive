@@ -43,7 +43,7 @@ import Foundation
     }
 
     func connectToLoginAgent() {
-        if loginItemAgentConnection != nil {
+        guard loginItemAgentConnection == nil else {
             IKLogger.xpc.log("[KD] Already connected to item agent")
             return
         }
