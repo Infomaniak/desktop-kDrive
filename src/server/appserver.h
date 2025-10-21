@@ -103,6 +103,16 @@ class AppServer : public SharedTools::QtSingleApplication {
         static void addError(const Error &error);
         static void updateSentryUser();
         void deleteDrive(int driveDbId);
+        ExitCode clearErrors(int syncDbId, bool autoResolved = false);
+        // Check if the synchronization `sync` is registred in the sync database and
+        // if the `sync` folder does not contain any other sync subfolder.
+        [[nodiscard]] ExitInfo checkIfSyncIsValid(const Sync &sync);
+        [[nodiscard]] ExitInfo tryCreateAndStartVfs(const Sync &sync) noexcept;
+        [[nodiscard]] ExitInfo initSyncPal(const Sync &sync, const NodeSet &blackList = {}, const NodeSet &undecidedList = {},
+                                           const NodeSet &whiteList = {}, bool start = true,
+                                           const std::chrono::seconds &startDelay = std::chrono::seconds(0),
+                                           bool resumedByUser = false, bool firstInit = false);
+
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         static ExitCode getThumbnail(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) {
@@ -163,10 +173,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         ExitCode migrateConfiguration(bool &proxyNotSupported);
         ExitCode updateUserInfo(User &user);
         ExitCode updateAllUsersInfo();
-        [[nodiscard]] ExitInfo initSyncPal(const Sync &sync, const NodeSet &blackList = {}, const NodeSet &undecidedList = {},
-                                           const NodeSet &whiteList = {}, bool start = true,
-                                           const std::chrono::seconds &startDelay = std::chrono::seconds(0),
-                                           bool resumedByUser = false, bool firstInit = false);
         [[nodiscard]] ExitInfo initSyncPal(const Sync &sync, const QSet<QString> &blackList, const QSet<QString> &undecidedList,
                                            const QSet<QString> &whiteList, bool start = true,
                                            const std::chrono::seconds &startDelay = std::chrono::seconds(0),
@@ -175,7 +181,6 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         [[nodiscard]] ExitInfo createAndStartVfs(const Sync &sync) noexcept;
         // Call createAndStartVfs. Issue warnings, errors and pause the synchronization `sync` if needed.
-        [[nodiscard]] ExitInfo tryCreateAndStartVfs(const Sync &sync) noexcept;
         [[nodiscard]] ExitInfo stopVfs(int syncDbId, bool unregister);
 
         [[nodiscard]] ExitInfo setSupportsVirtualFiles(int syncDbId, bool value);
@@ -185,10 +190,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         [[nodiscard]] ExitInfo startSyncs(User &user);
         [[nodiscard]] ExitInfo processMigratedSyncOnceConnected(int userDbId, int driveId, Sync &sync, QSet<QString> &blackList,
                                                                 QSet<QString> &undecidedList, bool &syncUpdated);
-        ExitCode clearErrors(int syncDbId, bool autoResolved = false);
-        // Check if the synchronization `sync` is registred in the sync database and
-        // if the `sync` folder does not contain any other sync subfolder.
-        [[nodiscard]] ExitInfo checkIfSyncIsValid(const Sync &sync);
 
         void sendUserAdded(const UserInfo &userInfo);
         static void sendUserUpdated(const UserInfo &userInfo);
