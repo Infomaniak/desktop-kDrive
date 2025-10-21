@@ -19,12 +19,32 @@
 import kDriveCore
 import Testing
 
+struct TestUser: Codable {
+    @Base64Coded var name: String
+}
+
 struct Base64CodedTests {
-    @Test func example() async throws {
+    @Test func testDecodingUserWithBase64Name() async throws {
         // GIVEN
+        let sourceJson = #"{"name":"QmFzZTY0"}"# // "QmFzZTY0" is "Base64"
 
         // WHEN
+        let data = Data(sourceJson.utf8)
+        let user = try JSONDecoder().decode(TestUser.self, from: data)
 
         // THEN
+        #expect(user.name == "Base64")
+    }
+
+    @Test func testEncodingUserWithBase64Name() async throws {
+        // GIVEN
+        let user = TestUser(name: "Base64")
+
+        // WHEN
+        let data = try JSONEncoder().encode(user)
+        let jsonString = String(data: data, encoding: .utf8)
+
+        // THEN
+        #expect(jsonString == #"{"name":"QmFzZTY0"}"#)
     }
 }

@@ -19,11 +19,11 @@
 import Foundation
 
 @propertyWrapper
-struct Base64Coded: Codable {
-    var wrappedValue: String
+public struct Base64Coded: Codable {
+    public var wrappedValue: String
 
     // Decode: base64 string → regular string
-    init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let base64Encoded = try container.decode(String.self)
 
@@ -39,13 +39,13 @@ struct Base64Coded: Codable {
     }
 
     // Encode: regular string → base64 string
-    func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         let base64Encoded = Data(wrappedValue.utf8).base64EncodedString()
         try container.encode(base64Encoded)
     }
 
-    init(wrappedValue: String) {
+    public init(wrappedValue: String) {
         self.wrappedValue = wrappedValue
     }
 }
