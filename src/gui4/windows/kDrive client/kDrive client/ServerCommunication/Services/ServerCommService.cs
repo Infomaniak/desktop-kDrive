@@ -85,7 +85,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
-            List<UserInfo> userInfos = data.Params["userInfo"].Deserialize<List<UserInfo>>(options) ?? new List<UserInfo>();
+            List<UserInfo> userInfos = data.Params["userInfoList"].Deserialize<List<UserInfo>>(options) ?? new List<UserInfo>();
 
             // Add/update users
             foreach (var userInfo in userInfos)
@@ -114,7 +114,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public async Task RefreshAccounts(CancellationToken cancellationToken)
         {
             CommData data = await _commClient.SendRequestAsync(CommShared.RequestNum.AccountInfoList, new JsonObject(), cancellationToken);
-            if (data.Params == null || !data.Params.ContainsKey("accountInfo"))
+            if (data.Params == null || !data.Params.ContainsKey("accountInfoList"))
             {
                 Logger.Log(Logger.Level.Error, "accountInfo not found in response.");
                 return;
@@ -124,7 +124,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
-            List<AccountInfo> accountInfos = data.Params["accountInfo"].Deserialize<List<AccountInfo>>(options) ?? new List<AccountInfo>();
+            List<AccountInfo> accountInfos = data.Params["accountInfoList"].Deserialize<List<AccountInfo>>(options) ?? new List<AccountInfo>();
 
             // Add/update accounts
             foreach (var accountInfo in accountInfos)
@@ -165,9 +165,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public async Task RefreshDrives(CancellationToken cancellationToken)
         {
             CommData data = await _commClient.SendRequestAsync(CommShared.RequestNum.DriveInfoList, new JsonObject(), cancellationToken);
-            if (data.Params == null || !data.Params.ContainsKey("driveInfo"))
+            if (data.Params == null || !data.Params.ContainsKey("driveInfoList"))
             {
-                Logger.Log(Logger.Level.Error, "driveInfo not found in response.");
+                Logger.Log(Logger.Level.Error, "driveInfoList not found in response.");
                 return;
             }
             var options = new JsonSerializerOptions
@@ -175,7 +175,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
-            List<DriveInfo> driveInfos = data.Params["driveInfo"].Deserialize<List<DriveInfo>>(options) ?? new List<DriveInfo>();
+            options.Converters.Add(new ColorJsonConverter());
+            List<DriveInfo> driveInfos = data.Params["driveInfoList"].Deserialize<List<DriveInfo>>(options) ?? new List<DriveInfo>();
 
             // Add/update drives
             foreach (var driveInfo in driveInfos)
@@ -216,9 +217,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public async Task RefreshSyncs(CancellationToken cancellationToken)
         {
             CommData data = await _commClient.SendRequestAsync(CommShared.RequestNum.SyncInfoList, new JsonObject(), cancellationToken);
-            if (data.Params == null || !data.Params.ContainsKey("syncInfo"))
+            if (data.Params == null || !data.Params.ContainsKey("syncInfoList"))
             {
-                Logger.Log(Logger.Level.Error, "syncInfo not found in response.");
+                Logger.Log(Logger.Level.Error, "syncInfoList not found in response.");
                 return;
             }
             var options = new JsonSerializerOptions
@@ -226,7 +227,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
-            List<SyncInfo> syncInfos = data.Params["syncInfo"].Deserialize<List<SyncInfo>>(options) ?? new List<SyncInfo>();
+            List<SyncInfo> syncInfos = data.Params["syncInfoList"].Deserialize<List<SyncInfo>>(options) ?? new List<SyncInfo>();
 
             // Add/update drives
             foreach (var syncInfo in syncInfos)

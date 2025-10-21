@@ -26,11 +26,73 @@ namespace Infomaniak.kDrive.ServerCommunication
             LoginRequestToken,
             UserDbIds,
             UserInfoList,
+            USER_DELETE,
+            USER_AVAILABLEDRIVES,
             AccountInfoList,
             DriveInfoList,
-            SyncInfoList
-        }
-
+            DRIVE_UPDATE,
+            DRIVE_DELETE,
+            DRIVE_SEARCH,
+            SyncInfoList,
+            SYNC_START,
+            SYNC_STOP,
+            SYNC_STATUS,
+            SYNC_ISRUNNING,
+            SYNC_ADD,
+            SYNC_ADD2,
+            SYNC_START_AFTER_LOGIN,
+            SYNC_DELETE,
+            SYNC_GETPUBLICLINKURL,
+            SYNC_GETPRIVATELINKURL,
+            SYNC_ASKFORSTATUS,
+            SYNC_SETSUPPORTSVIRTUALFILES,
+            SYNC_SETROOTPINSTATE,
+            SYNC_PROPAGATE_SYNCLIST_CHANGE,
+            SYNCNODE_LIST,
+            SYNCNODE_SETLIST,
+            NODE_PATH,
+            NODE_INFO,
+            NODE_SUBFOLDERS,
+            NODE_SUBFOLDERS2,
+            NODE_FOLDER_SIZE,
+            NODE_CREATEMISSINGFOLDERS,
+            ERROR_INFOLIST,
+            ERROR_GET_CONFLICTS,
+            ERROR_DELETE_SERVER,
+            ERROR_DELETE_SYNC,
+            ERROR_DELETE_INVALIDTOKEN,
+            ERROR_RESOLVE_CONFLICTS,
+            ERROR_RESOLVE_UNSUPPORTED_CHAR,
+            EXCLTEMPL_GETEXCLUDED,
+            EXCLTEMPL_GETLIST,
+            EXCLTEMPL_SETLIST,
+            EXCLTEMPL_PROPAGATE_CHANGE,
+            PARAMETERS_INFO,
+            PARAMETERS_UPDATE,
+            UTILITY_FINDGOODPATHFORNEWSYNC,
+            UTILITY_BESTVFSAVAILABLEMODE,
+            UTILITY_SHOWSHORTCUT,
+            UTILITY_SETSHOWSHORTCUT,
+            UTILITY_ACTIVATELOADINFO,
+            UTILITY_CHECKCOMMSTATUS,
+            UTILITY_HASSYSTEMLAUNCHONSTARTUP,
+            UTILITY_HASLAUNCHONSTARTUP,
+            UTILITY_SETLAUNCHONSTARTUP,
+            UTILITY_SET_APPSTATE,
+            UTILITY_GET_APPSTATE,
+            UTILITY_SEND_LOG_TO_SUPPORT,
+            UTILITY_CANCEL_LOG_TO_SUPPORT,
+            UTILITY_GET_LOG_ESTIMATED_SIZE,
+            UTILITY_CRASH,
+            UTILITY_QUIT,
+            UTILITY_DISPLAY_CLIENT_REPORT, // Sent by the Client process as soon the UI is visible for the user.
+            UPDATER_CHANGE_CHANNEL,
+            UPDATER_VERSION_INFO,
+            UPDATER_STATE,
+            UPDATER_START_INSTALLER,
+            UPDATER_SKIP_VERSION,
+            EnumEnd
+        };
         public enum SignalNum
         {
             Unknown = 0,
@@ -68,7 +130,7 @@ namespace Infomaniak.kDrive.ServerCommunication
             public DbId? AccountDbId { get; set; }
             public DriveId? DriveId { get; set; }
             public string? Name { get; set; }
-            public int? Color { get; set; }
+            public System.Drawing.Color? Color { get; set; }
             public bool? Notification { get; set; }
             public bool? Maintenance { get; set; }
             public bool? Locked { get; set; }
