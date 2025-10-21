@@ -75,7 +75,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public async Task RefreshUsers(CancellationToken cancellationToken)
         {
             CommData data = await _commClient.SendRequestAsync(CommShared.RequestNum.UserInfoList, new JsonObject(), cancellationToken);
-            if (data.Params == null || !data.Params.ContainsKey("userInfo"))
+            if (data.Params == null || !data.Params.ContainsKey("userInfoList"))
             {
                 Logger.Log(Logger.Level.Error, "userInfo not found in response.");
                 return;

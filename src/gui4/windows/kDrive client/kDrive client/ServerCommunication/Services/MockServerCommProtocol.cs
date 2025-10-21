@@ -138,7 +138,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     { "isConnected", user.IsConnected },
                     { "isStaff", user.IsStaff }
                 };
-                if (!result.ContainsKey("userInfo"))
+                if (!result.ContainsKey("userInfoList"))
                 {
                     result["userInfo"] = new JsonArray();
                 }
