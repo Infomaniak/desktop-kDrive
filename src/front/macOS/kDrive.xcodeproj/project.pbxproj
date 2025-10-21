@@ -36,6 +36,13 @@
 			remoteGlobalIDString = 37A1C4592E546CB600596DBB;
 			remoteInfo = kDriveCore;
 		};
+		7A46E1D12EA7AC1B00880412 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 37A1C41E2E546A5200596DBB /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 37A1C4252E546A5200596DBB;
+			remoteInfo = kDrive;
+		};
 		F96700A22E95352C00EDD4D7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 37A1C41E2E546A5200596DBB /* Project object */;
@@ -79,6 +86,7 @@
 		37A1C4262E546A5200596DBB /* kDrive.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = kDrive.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		37A1C43F2E546A9600596DBB /* kDriveCoreUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = kDriveCoreUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		37A1C45A2E546CB600596DBB /* kDriveCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = kDriveCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		7A46E1CD2EA7AC1B00880412 /* kDriveTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = kDriveTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F967009E2E95352C00EDD4D7 /* kDriveResources.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = kDriveResources.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9ACC5372E5DF50B0081E80B /* swiftgen.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = swiftgen.yml; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -136,6 +144,11 @@
 			path = kDriveCore;
 			sourceTree = "<group>";
 		};
+		7A46E1CE2EA7AC1B00880412 /* kDriveTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = kDriveTests;
+			sourceTree = "<group>";
+		};
 		F967009F2E95352C00EDD4D7 /* kDriveResources */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = kDriveResources;
@@ -173,6 +186,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		7A46E1CA2EA7AC1B00880412 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F967009B2E95352C00EDD4D7 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -191,6 +211,7 @@
 				37A1C4402E546A9600596DBB /* kDriveCoreUI */,
 				F967009F2E95352C00EDD4D7 /* kDriveResources */,
 				F9ACC5372E5DF50B0081E80B /* swiftgen.yml */,
+				7A46E1CE2EA7AC1B00880412 /* kDriveTests */,
 				37A1C4272E546A5200596DBB /* Products */,
 				F967014F2E953CF600EDD4D7 /* Frameworks */,
 			);
@@ -203,6 +224,7 @@
 				37A1C43F2E546A9600596DBB /* kDriveCoreUI.framework */,
 				37A1C45A2E546CB600596DBB /* kDriveCore.framework */,
 				F967009E2E95352C00EDD4D7 /* kDriveResources.framework */,
+				7A46E1CD2EA7AC1B00880412 /* kDriveTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -320,6 +342,29 @@
 			productReference = 37A1C45A2E546CB600596DBB /* kDriveCore.framework */;
 			productType = "com.apple.product-type.framework";
 		};
+		7A46E1CC2EA7AC1B00880412 /* kDriveTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7A46E1D32EA7AC1B00880412 /* Build configuration list for PBXNativeTarget "kDriveTests" */;
+			buildPhases = (
+				7A46E1C92EA7AC1B00880412 /* Sources */,
+				7A46E1CA2EA7AC1B00880412 /* Frameworks */,
+				7A46E1CB2EA7AC1B00880412 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				7A46E1D22EA7AC1B00880412 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				7A46E1CE2EA7AC1B00880412 /* kDriveTests */,
+			);
+			name = kDriveTests;
+			packageProductDependencies = (
+			);
+			productName = kDriveTests;
+			productReference = 7A46E1CD2EA7AC1B00880412 /* kDriveTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		F967009D2E95352C00EDD4D7 /* kDriveResources */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = F96700A62E95352C00EDD4D7 /* Build configuration list for PBXNativeTarget "kDriveResources" */;
@@ -365,6 +410,10 @@
 						CreatedOnToolsVersion = 26.0;
 						LastSwiftMigration = 2600;
 					};
+					7A46E1CC2EA7AC1B00880412 = {
+						CreatedOnToolsVersion = 26.0.1;
+						TestTargetID = 37A1C4252E546A5200596DBB;
+					};
 					F967009D2E95352C00EDD4D7 = {
 						CreatedOnToolsVersion = 26.0.1;
 					};
@@ -397,6 +446,7 @@
 				37A1C4592E546CB600596DBB /* kDriveCore */,
 				37A1C43E2E546A9600596DBB /* kDriveCoreUI */,
 				F967009D2E95352C00EDD4D7 /* kDriveResources */,
+				7A46E1CC2EA7AC1B00880412 /* kDriveTests */,
 			);
 		};
 /* End PBXProject section */
@@ -418,6 +468,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		37A1C4582E546CB600596DBB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7A46E1CB2EA7AC1B00880412 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -477,6 +534,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		7A46E1C92EA7AC1B00880412 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F967009A2E95352C00EDD4D7 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -496,6 +560,11 @@
 			isa = PBXTargetDependency;
 			target = 37A1C4592E546CB600596DBB /* kDriveCore */;
 			targetProxy = 37A1C45E2E546CB700596DBB /* PBXContainerItemProxy */;
+		};
+		7A46E1D22EA7AC1B00880412 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 37A1C4252E546A5200596DBB /* kDrive */;
+			targetProxy = 7A46E1D12EA7AC1B00880412 /* PBXContainerItemProxy */;
 		};
 		F96700A32E95352C00EDD4D7 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -877,6 +946,46 @@
 			};
 			name = Release;
 		};
+		7A46E1D42EA7AC1B00880412 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = DS4VLDBZNC;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.helloXPC.ik.kDriveTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/kDrive.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/kDrive";
+			};
+			name = Debug;
+		};
+		7A46E1D52EA7AC1B00880412 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = DS4VLDBZNC;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.helloXPC.ik.kDriveTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/kDrive.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/kDrive";
+			};
+			name = Release;
+		};
 		F96700A72E95352C00EDD4D7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -990,6 +1099,15 @@
 			buildConfigurations = (
 				37A1C4632E546CB700596DBB /* Debug */,
 				37A1C4642E546CB700596DBB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7A46E1D32EA7AC1B00880412 /* Build configuration list for PBXNativeTarget "kDriveTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7A46E1D42EA7AC1B00880412 /* Debug */,
+				7A46E1D52EA7AC1B00880412 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
