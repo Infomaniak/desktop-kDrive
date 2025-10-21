@@ -183,7 +183,7 @@ if ($MakeRelease) {
 $remotes = & $ConanExe remote list
 if (-not ($remotes -match "^$LocalRemoteName.*\[.*Enabled: True.*\]")) {
     Log "Adding Conan remote '$LocalRemoteName' at '$ConanRemoteBaseFolder'."
-    & $ConanExe remote add $LocalRemoteName $ConanRemoteBaseFolder --profile:all="$ConanProfile"
+    & $ConanExe remote add $LocalRemoteName $ConanRemoteBaseFolder
     if ($LASTEXITCODE -ne 0) {
         Err "Failed to add local Conan remote."
     }
