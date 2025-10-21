@@ -26,9 +26,9 @@ public protocol ServerBridgeable: Sendable {
     let connectionManager = XPCConnectionManager()
 
     public func getConnectedUser() async -> Bool {
-        connectionManager.connectToLoginAgent()
+        try? await connectionManager.connectToLoginAgent()
         try? await Task.sleep(nanoseconds: 2 * 1_000_000_000)
-        connectionManager.dummyServerQuery()
+        try? await connectionManager.dummyServerQuery()
 
         return false
     }
