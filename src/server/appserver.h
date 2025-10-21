@@ -112,7 +112,7 @@ class AppServer : public SharedTools::QtSingleApplication {
                                            const NodeSet &whiteList = {}, bool start = true,
                                            const std::chrono::seconds &startDelay = std::chrono::seconds(0),
                                            bool resumedByUser = false, bool firstInit = false);
-
+        [[nodiscard]] ExitInfo stopSyncPal(int syncDbId, bool pausedByUser = false, bool quit = false, bool clear = false);
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         static ExitCode getThumbnail(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) {
@@ -177,7 +177,6 @@ class AppServer : public SharedTools::QtSingleApplication {
                                            const QSet<QString> &whiteList, bool start = true,
                                            const std::chrono::seconds &startDelay = std::chrono::seconds(0),
                                            bool resumedByUser = false, bool firstInit = false);
-        [[nodiscard]] ExitInfo stopSyncPal(int syncDbId, bool pausedByUser = false, bool quit = false, bool clear = false);
 
         [[nodiscard]] ExitInfo createAndStartVfs(const Sync &sync) noexcept;
         // Call createAndStartVfs. Issue warnings, errors and pause the synchronization `sync` if needed.

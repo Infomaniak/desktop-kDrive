@@ -44,6 +44,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/drivesearchjob.h ${server_srcs_path}/comm/guijobs/drivesearchjob.cpp
     ${server_srcs_path}/comm/guijobs/syncinfolistjob.h ${server_srcs_path}/comm/guijobs/syncinfolistjob.cpp
     ${server_srcs_path}/comm/guijobs/syncstartjob.h ${server_srcs_path}/comm/guijobs/syncstartjob.cpp
+    ${server_srcs_path}/comm/guijobs/syncstopjob.h ${server_srcs_path}/comm/guijobs/syncstopjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluseraddedjob.h ${server_srcs_path}/comm/guijobs/signaluseraddedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.h ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserremovedjob.h ${server_srcs_path}/comm/guijobs/signaluserremovedjob.cpp
