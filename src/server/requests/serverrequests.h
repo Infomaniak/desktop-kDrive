@@ -52,17 +52,19 @@ namespace KDC {
 struct SYNCENGINE_EXPORT ServerRequests {
         // C/S requests (access to DB)
         // Use COMM_SHORT_TIMEOUT
-        static ExitCode getUserDbIdList(QList<int> &list); // TODO: Delete after switching to the new comm layer
+        // TODO: Remove functions with QList parameter after switching to the new comm layer
+        static ExitCode getUserDbIdList(QList<int> &list);
         static ExitCode getUserDbIdList(std::vector<int> &list);
         static ExitCode getUserInfoList(QList<UserInfo> &list);
-        static ExitCode getUserIdFromUserDbId(int userDbId, int &userId);
+        static ExitCode getUserInfoList(std::vector<UserInfo> &list);
         static ExitCode getAccountInfoList(QList<AccountInfo> &list);
+        static ExitCode getAccountInfoList(std::vector<AccountInfo> &list);
         static ExitCode getDriveInfoList(QList<DriveInfo> &list);
+        static ExitCode getDriveInfoList(std::vector<DriveInfo> &list);
         static ExitCode getDriveInfo(int driveDbId, DriveInfo &driveInfo);
-        static ExitCode getDriveIdFromDriveDbId(int driveDbId, int &driveId);
-        static ExitCode getDriveIdFromSyncDbId(int syncDbId, int &driveId);
         static ExitCode updateDrive(const DriveInfo &driveInfo);
         static ExitCode getSyncInfoList(QList<SyncInfo> &list);
+        static ExitCode getSyncInfoList(std::vector<SyncInfo> &list);
         static ExitCode getParameters(ParametersInfo &parametersInfo);
         static ExitCode updateParameters(const ParametersInfo &parametersInfo);
         static ExitCode findGoodPathForNewSync(int driveDbId, const QString &basePath, QString &path, QString &error);
@@ -89,7 +91,9 @@ struct SYNCENGINE_EXPORT ServerRequests {
                                      bool &userCreated, std::string &error, std::string &errorDescr);
         static ExitCode requestToken(const QString &code, const QString &codeVerifier, UserInfo &userInfo, bool &userCreated,
                                      std::string &error, std::string &errorDescr);
-        static ExitCode getUserAvailableDrives(int userDbId, QHash<int, DriveAvailableInfo> &list);
+        static ExitCode getUserAvailableDrives(
+                int userDbId, QHash<int, DriveAvailableInfo> &list); // TODO: Delete after switching to the new comm layer
+        static ExitCode getUserAvailableDrives(int userDbId, std::vector<DriveAvailableInfo> &list);
         static ExitCode addSync(int userDbId, int accountId, int driveId, const QString &localFolderPath,
                                 const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
                                 bool showInNavigationPane, AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo);

@@ -17,7 +17,6 @@
  */
 
 #include "signaluserupdatedjob.h"
-#include "libcommon/info/userinfo.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 
@@ -35,12 +34,7 @@ SignalUserUpdatedJob::SignalUserUpdatedJob(std::shared_ptr<CommManager> commMana
 
 ExitInfo SignalUserUpdatedJob::serializeOutputParms() {
     // Output parameters serialization
-    std::function<Poco::Dynamic::Var(const UserInfo &)> userInfo2DynamicVar = [](const UserInfo &value) {
-        Poco::DynamicStruct structValue;
-        value.toDynamicStruct(structValue);
-        return structValue;
-    };
-    writeParamValue(outParamsUserInfo, _userInfo, userInfo2DynamicVar);
+    writeParamValue(outParamsUserInfo, _userInfo, info2DynamicVar<UserInfo>);
     return ExitCode::Ok;
 }
 

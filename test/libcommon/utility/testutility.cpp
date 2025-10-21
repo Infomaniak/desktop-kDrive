@@ -1120,6 +1120,13 @@ void TestUtility::testConvertToBase64Str() {
     CommonUtility::convertToBase64Str("abcdéàè", value);
     CPPUNIT_ASSERT(value == "YWJjZMOpw6DDqA==");
 
+    CommonUtility::convertToBase64Str(
+            "0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz",
+            value);
+    CPPUNIT_ASSERT(value ==
+                   "MDEyMzQ1Njc4OWFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6MDEyMzQ1Njc4OWFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6MDEyMzQ1Njc4O"
+                   "WFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6");
+
     CommonUtility::convertToBase64Str("每个人都有他的作战策略", value);
     CPPUNIT_ASSERT(value == "5q+P5Liq5Lq66YO95pyJ5LuW55qE5L2c5oiY562W55Wl");
 
@@ -1135,6 +1142,14 @@ void TestUtility::testConvertToBase64Str() {
 
     CommonUtility::convertToBase64Str(blob, value);
     CPPUNIT_ASSERT(value == "MDEyMzQ1Njc4OWFiY2RlZmdoaWprbG1ub3BxcnRzdXZ3eHl6");
+
+    CommonUtility::convertFromBase64Str(
+            R"(iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=)",
+            blob);
+    CommonUtility::convertToBase64Str(blob, value);
+    CPPUNIT_ASSERT(
+            value ==
+            R"(iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=)");
 }
 
 void TestUtility::isLikeSomeError() {

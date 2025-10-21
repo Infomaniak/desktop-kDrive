@@ -16,18 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#import <Foundation/Foundation.h>
+#include "server/comm/guijobs/abstractguijob.h"
 
-// Server protocol
-@protocol XPCGuiProtocol
+namespace KDC {
 
-- (void)sendQuery:(NSData *)query callback:(void (^)(NSData *answer))callback;
+class SignalUserRemovedJob : public AbstractGuiJob {
+    public:
+        SignalUserRemovedJob(std::shared_ptr<CommManager> commManager, std::shared_ptr<AbstractCommChannel> channel,
+                             int userDbId);
 
-@end
+    private:
+        // Output parameters
+        int _userDbId;
 
-// Client protocol
-@protocol XPCGuiRemoteProtocol
+        ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
+        ExitInfo serializeOutputParms() override;
+        ExitInfo process() override { return ExitCode::Ok; }
+};
 
-- (void)sendSignal:(NSData *)msg;
-
-@end
+} // namespace KDC

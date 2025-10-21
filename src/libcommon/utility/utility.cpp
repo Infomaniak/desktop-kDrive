@@ -72,6 +72,7 @@
 #include <Poco/UnicodeConverter.h>
 #include <Poco/Base64Decoder.h>
 #include <Poco/Base64Encoder.h>
+#include <Poco/StreamCopier.h>
 
 #define MAX_PATH_LENGTH_WIN_LONG 32767
 #define MAX_PATH_LENGTH_WIN_SHORT 259
@@ -1435,39 +1436,49 @@ bool CommonUtility::isLinux() {
 }
 
 void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::string &value) {
+    value.clear();
     std::istringstream istr(base64Str);
     Poco::Base64Decoder b64in(istr);
+    b64in >> std::noskipws; // Does not stop decoding on space characters
     b64in >> value;
 }
 
 void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::wstring &value) {
+    value.clear();
     std::string strValue;
     convertFromBase64Str(base64Str, strValue);
     value = s2ws(strValue);
 }
 
 void CommonUtility::convertFromBase64Str(const std::string &base64Str, CommBLOB &value) {
+    value.clear();
     std::istringstream istr(base64Str);
     Poco::Base64Decoder b64in(istr);
+    b64in >> std::noskipws; // Does not stop decoding on space characters
     (void) std::copy(std::istream_iterator<char>(b64in), std::istream_iterator<char>(), std::back_inserter(value));
 }
 
 void CommonUtility::convertToBase64Str(const std::string &str, std::string &base64Str) {
+    base64Str.clear();
     std::ostringstream ostr;
     Poco::Base64Encoder b64out(ostr);
+    b64out.rdbuf()->setLineLength(0); // Does not insert line breaks
     b64out << str;
     (void) b64out.close();
     base64Str = ostr.str();
 }
 
 void CommonUtility::convertToBase64Str(const std::wstring &wstr, std::string &base64Str) {
+    base64Str.clear();
     const std::string str = ws2s(wstr);
     convertToBase64Str(str, base64Str);
 }
 
 void CommonUtility::convertToBase64Str(const CommBLOB &blob, std::string &base64Str) {
+    base64Str.clear();
     std::ostringstream ostr;
     Poco::Base64Encoder b64out(ostr);
+    b64out.rdbuf()->setLineLength(0); // Does not insert line breaks
     (void) std::copy(blob.begin(), blob.end(), std::ostream_iterator<char>(b64out));
     (void) b64out.close();
     base64Str = ostr.str();

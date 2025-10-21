@@ -56,24 +56,6 @@ ExitCode GuiRequests::getUserInfoList(QList<UserInfo> &list) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getUserIdFromUserDbId(const int userDbId, int &userId) {
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << userDbId;
-
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::USER_ID_FROM_USERDBID, params, results)) {
-        return ExitCode::SystemError;
-    }
-
-    auto exitCode = ExitCode::Unknown;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
-    resultStream >> userId;
-
-    return exitCode;
-}
-
 ExitCode GuiRequests::getErrorInfoList(const ErrorLevel level, const int syncDbId, const int limit, QList<ErrorInfo> &list) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -273,56 +255,6 @@ ExitCode GuiRequests::getDriveInfoList(QList<DriveInfo> &list) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getDriveIdFromDriveDbId(const int driveDbId, int &driveId) {
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << driveDbId;
-
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::DRIVE_ID_FROM_DRIVEDBID, params, results)) {
-        return ExitCode::SystemError;
-    }
-
-    auto exitCode = ExitCode::Unknown;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
-    resultStream >> driveId;
-
-    return exitCode;
-}
-
-ExitCode GuiRequests::getDriveIdFromSyncDbId(const int syncDbId, int &driveId) {
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << syncDbId;
-
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::DRIVE_ID_FROM_SYNCDBID, params, results)) {
-        return ExitCode::SystemError;
-    }
-
-    auto exitCode = ExitCode::Unknown;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
-    resultStream >> driveId;
-
-    return exitCode;
-}
-
-ExitCode GuiRequests::getDriveDefaultColor(QColor &color) {
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::DRIVE_DEFAULTCOLOR, {}, results)) {
-        return ExitCode::SystemError;
-    }
-
-    auto exitCode = ExitCode::Unknown;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
-    resultStream >> color;
-
-    return exitCode;
-}
-
 ExitCode GuiRequests::updateDrive(const DriveInfo &driveInfo) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -353,26 +285,6 @@ ExitCode GuiRequests::deleteDrive(const int driveDbId) {
     auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
-
-    return exitCode;
-}
-
-ExitCode GuiRequests::getOfflineFilesTotalSize(const int driveDbId, uint64_t &totalSize) {
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << driveDbId;
-
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::DRIVE_GET_OFFLINE_FILES_TOTAL_SIZE, params, results)) {
-        return ExitCode::SystemError;
-    }
-
-    auto exitCode = ExitCode::Ok;
-    quint64 tmpSize = 0;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
-    resultStream >> tmpSize;
-    totalSize = tmpSize;
 
     return exitCode;
 }

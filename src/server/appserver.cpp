@@ -19,7 +19,6 @@
 #include "appserver.h"
 #include "migration/migrationparams.h"
 #include "keychainmanager/keychainmanager.h"
-#include "requests/serverrequests.h"
 #include "requests/syncnodecache.h"
 #include "comm/guijobmanager.h"
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
@@ -343,16 +342,10 @@ void AppServer::init() {
     if (KDC::isVfsPluginAvailable(VirtualFileMode::Suffix, error)) LOG_INFO(_logger, "VFS suffix plugin is available");
 
     // Init CommManager
-    _commManager = std::make_shared<CommManager>(_syncPalMap, _vfsMap);
-    _commManager->setAddErrorCbk(&addError);
-    _commManager->setUpdateSentryUserCbk(&updateSentryUser);
-#if defined(KD_MACOS) || defined(KD_WINDOWS)
-    _commManager->setGetThumbnailCbk(&ServerRequests::getThumbnail);
-    _commManager->setGetPublicLinkUrlCbk(&ServerRequests::getPublicLinkUrl);
-#endif
+    _commManager = std::make_shared<CommManager>(*this);
     _commManager->start();
 
-    // Init CommServer instance
+    // Init OldCommServer instance
     if (!OldCommServer::instance()) {
         LOG_WARN(_logger, "Error in CommServer::instance");
         throw std::runtime_error("Unable to initialize CommServer.");
@@ -986,22 +979,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << list;
             break;
         }
-        case RequestNum::USER_ID_FROM_USERDBID: {
-            int userDbId;
-            QDataStream paramsStream(params);
-            paramsStream >> userDbId;
-
-            int userId;
-            ExitCode exitCode = ServerRequests::getUserIdFromUserDbId(userDbId, userId);
-            if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::getUserIdFromUserDbId: code=" << exitCode);
-                addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
-            }
-
-            resultStream << toInt(exitCode);
-            resultStream << userId;
-            break;
-        }
         case RequestNum::ACCOUNT_INFOLIST: {
             QList<AccountInfo> list;
             ExitCode exitCode = ServerRequests::getAccountInfoList(list);
@@ -1024,61 +1001,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             resultStream << toInt(exitCode);
             resultStream << list;
-            break;
-        }
-        case RequestNum::DRIVE_INFO: {
-            int driveDbId;
-            QDataStream paramsStream(params);
-            paramsStream >> driveDbId;
-
-            DriveInfo driveInfo;
-            ExitCode exitCode = ServerRequests::getDriveInfo(driveDbId, driveInfo);
-            if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::getDriveInfo: code=" << exitCode);
-                addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
-            }
-
-            resultStream << toInt(exitCode);
-            resultStream << driveInfo;
-            break;
-        }
-        case RequestNum::DRIVE_ID_FROM_DRIVEDBID: {
-            int driveDbId;
-            QDataStream paramsStream(params);
-            paramsStream >> driveDbId;
-
-            int driveId;
-            ExitCode exitCode = ServerRequests::getDriveIdFromDriveDbId(driveDbId, driveId);
-            if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::getDriveIdFromDriveDbId: code=" << exitCode);
-                addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
-            }
-
-            resultStream << toInt(exitCode);
-            resultStream << driveId;
-            break;
-        }
-        case RequestNum::DRIVE_ID_FROM_SYNCDBID: {
-            int syncDbId;
-            QDataStream paramsStream(params);
-            paramsStream >> syncDbId;
-
-            int driveId;
-            ExitCode exitCode = ServerRequests::getDriveIdFromSyncDbId(syncDbId, driveId);
-            if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::getDriveIdFromSyncDbId: code=" << exitCode);
-                addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
-            }
-
-            resultStream << toInt(exitCode);
-            resultStream << driveId;
-            break;
-        }
-        case RequestNum::DRIVE_DEFAULTCOLOR: {
-            static const QColor driveDefaultColor(0x9F9F9F);
-
-            resultStream << ExitCode::Ok;
-            resultStream << driveDefaultColor;
             break;
         }
         case RequestNum::DRIVE_UPDATE: {
@@ -1122,21 +1044,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 #if defined(KD_MACOS)
             Utility::restartFinderExtension();
 #endif
-            break;
-        }
-        case RequestNum::DRIVE_GET_OFFLINE_FILES_TOTAL_SIZE: {
-            int driveDbId = 0;
-            ArgsWriter(params).write(driveDbId);
-
-            std::vector<std::shared_ptr<SyncPal>> syncPals;
-            for (const auto &[_, syncpal]: _syncPalMap) {
-                if (!syncpal || syncpal->driveDbId() != driveDbId || !syncpal->vfs()) continue;
-                (void) syncPals.emplace_back(syncpal);
-            }
-
-            OfflineFilesSizeEstimator estimator(syncPals);
-            resultStream << estimator.runSynchronously().code(); // Run synchronously for now.
-            resultStream << static_cast<quint64>(estimator.offlineFilesTotalSize());
             break;
         }
         case RequestNum::DRIVE_SEARCH: {

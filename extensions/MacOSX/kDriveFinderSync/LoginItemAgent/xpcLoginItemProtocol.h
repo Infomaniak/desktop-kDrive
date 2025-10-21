@@ -18,12 +18,12 @@
 
 #import <Foundation/Foundation.h>
 
-typedef enum {
+typedef NS_ENUM(NSInteger, ProcessType) {
     extServer,
     guiServer,
     client,
     finderExt
-} ProcessType;
+};
 
 @protocol XPCLoginItemProtocol
 

@@ -16,18 +16,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#import <Foundation/Foundation.h>
+#include "server/comm/guijobs/abstractguijob.h"
+#include "libcommon/info/driveavailableinfo.h"
 
-// Server protocol
-@protocol XPCGuiProtocol
+namespace KDC {
 
-- (void)sendQuery:(NSData *)query callback:(void (^)(NSData *answer))callback;
+class UserAvailableDrivesJob : public AbstractGuiJob {
+    public:
+        UserAvailableDrivesJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                               std::shared_ptr<AbstractCommChannel> channel);
 
-@end
+    private:
+        // Input parameters
+        int _userDbId;
 
-// Client protocol
-@protocol XPCGuiRemoteProtocol
+        // Output parameters
+        std::vector<DriveAvailableInfo> _driveAvailableInfoList;
 
-- (void)sendSignal:(NSData *)msg;
+        ExitInfo deserializeInputParms() override;
+        ExitInfo serializeOutputParms() override;
+        ExitInfo process() override;
 
-@end
+        friend class TestGuiCommChannel;
+};
+
+} // namespace KDC

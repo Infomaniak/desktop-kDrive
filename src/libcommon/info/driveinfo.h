@@ -23,6 +23,8 @@
 #include <QList>
 #include <QColor>
 
+#include <Poco/Dynamic/Struct.h>
+
 namespace KDC {
 
 class DriveInfo {
@@ -50,6 +52,9 @@ class DriveInfo {
         void setLocked(const bool newLocked) { _locked = newLocked; }
         bool accessDenied() const { return _accessDenied; }
         void setAccessDenied(const bool accessDenied) { _accessDenied = accessDenied; }
+
+        void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
+        void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
 
     protected:
         int _dbId{0};

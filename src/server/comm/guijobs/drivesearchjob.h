@@ -16,26 +16,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "signaluseraddedjob.h"
-#include "libcommon/utility/utility.h"
-#include "libcommon/comm.h"
-
-// Output parameters keys
-static const auto outParamsUserInfo = "userInfo";
+#include "server/comm/guijobs/abstractguijob.h"
+#include "libcommon/info/searchinfo.h"
 
 namespace KDC {
 
-SignalUserAddedJob::SignalUserAddedJob(std::shared_ptr<CommManager> commManager, std::shared_ptr<AbstractCommChannel> channel,
-                                       const UserInfo &userInfo) :
-    AbstractGuiJob(commManager, channel),
-    _userInfo(userInfo) {
-    _signalNum = SignalNum::USER_ADDED;
-}
+class DriveSearchJob : public AbstractGuiJob {
+    public:
+        DriveSearchJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                       std::shared_ptr<AbstractCommChannel> channel);
 
-ExitInfo SignalUserAddedJob::serializeOutputParms() {
-    // Output parameters serialization
-    writeParamValue(outParamsUserInfo, _userInfo, info2DynamicVar<UserInfo>);
-    return ExitCode::Ok;
-}
+    private:
+        // Input parameters
+        int _driveDbId = 0;
+        CommString _searchString;
+
+        // Output parameters
+        std::vector<SearchInfo> _searchInfoList;
+        bool _hasMore = false;
+
+        ExitInfo deserializeInputParms() override;
+        ExitInfo serializeOutputParms() override;
+        ExitInfo process() override;
+
+        friend class TestGuiCommChannel;
+};
 
 } // namespace KDC

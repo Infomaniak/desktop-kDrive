@@ -52,10 +52,11 @@ void UserInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
 
     QByteArray avatarQBA;
     QBuffer buffer(&avatarQBA);
-    buffer.open(QIODevice::WriteOnly);
-    _avatar.save(&buffer, "PNG");
-    CommBLOB avatarBLOB(avatarQBA.begin(), avatarQBA.end());
-    CommonUtility::writeValueToStruct(dstruct, userInfoAvatar, avatarBLOB);
+    if (buffer.open(QIODevice::WriteOnly) && _avatar.save(&buffer, "PNG")) {
+        buffer.close();
+        CommBLOB avatarBLOB(avatarQBA.begin(), avatarQBA.end());
+        CommonUtility::writeValueToStruct(dstruct, userInfoAvatar, avatarBLOB);
+    }
 
     CommonUtility::writeValueToStruct(dstruct, userInfoConnected, _connected);
     CommonUtility::writeValueToStruct(dstruct, userInfoIsStaff, _isStaff);
@@ -72,6 +73,12 @@ void UserInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommString email;
     CommonUtility::readValueFromStruct(dstruct, userInfoEmail, email);
     _email = CommonUtility::commString2QStr(email);
+
+    CommBLOB avatarBLOB;
+    CommonUtility::readValueFromStruct(dstruct, userInfoAvatar, avatarBLOB);
+    QByteArray avatarQBA;
+    (void) std::copy(avatarBLOB.begin(), avatarBLOB.end(), std::back_inserter(avatarQBA));
+    (void) _avatar.loadFromData(avatarQBA);
 
     CommonUtility::readValueFromStruct(dstruct, userInfoConnected, _connected);
     CommonUtility::readValueFromStruct(dstruct, userInfoIsStaff, _isStaff);

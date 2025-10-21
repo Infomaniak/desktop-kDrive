@@ -55,8 +55,6 @@ class TestWorkers : public CppUnit::TestFixture, public TestBase {
         LocalTemporaryDirectory _localTempDir{"TestWorkers"};
         LocalTemporaryDirectory _localParmsDbTempDir{"testParmsDbTempDir"};
 
-        std::unique_ptr<CommManager> _commManager;
-
 #if defined(KD_MACOS)
         static std::shared_ptr<VfsMac> _vfsPtr;
 #elif defined(KD_WINDOWS)

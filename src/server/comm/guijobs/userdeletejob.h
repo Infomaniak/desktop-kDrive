@@ -16,18 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#import <Foundation/Foundation.h>
+#include "server/comm/guijobs/abstractguijob.h"
 
-// Server protocol
-@protocol XPCGuiProtocol
+namespace KDC {
 
-- (void)sendQuery:(NSData *)query callback:(void (^)(NSData *answer))callback;
+class UserDeleteJob : public AbstractGuiJob {
+    public:
+        UserDeleteJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                      std::shared_ptr<AbstractCommChannel> channel);
 
-@end
+    private:
+        // Input parameters
+        int _userDbId;
 
-// Client protocol
-@protocol XPCGuiRemoteProtocol
+        ExitInfo deserializeInputParms() override;
+        ExitInfo serializeOutputParms() override;
+        ExitInfo process() override;
 
-- (void)sendSignal:(NSData *)msg;
+        friend class TestGuiCommChannel;
+};
 
-@end
+} // namespace KDC

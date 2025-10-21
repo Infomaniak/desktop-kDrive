@@ -16,38 +16,38 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "userdbidlistjob.h"
+#include "driveinfolistjob.h"
 #include "requests/serverrequests.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
 
 // Output parameters keys
-static const auto outParamsUserDbIdList = "userDbIdList";
+static const auto outParamsDriveInfoList = "driveInfoList";
 
 namespace KDC {
 
-UserDbIdListJob::UserDbIdListJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                                 std::shared_ptr<AbstractCommChannel> channel) :
+DriveInfoListJob::DriveInfoListJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                                   std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
-    _requestNum = RequestNum::USER_DBIDLIST;
+    _requestNum = RequestNum::DRIVE_INFOLIST;
 }
 
-ExitInfo UserDbIdListJob::deserializeInputParms() {
+ExitInfo DriveInfoListJob::deserializeInputParms() {
     return ExitCode::Ok;
 }
 
-ExitInfo UserDbIdListJob::serializeOutputParms() {
+ExitInfo DriveInfoListJob::serializeOutputParms() {
     // Output parameters serialization
-    writeParamValue(outParamsUserDbIdList, _userDbIdList);
+    writeParamValues(outParamsDriveInfoList, _driveInfoList, info2DynamicVar<DriveInfo>);
 
     return ExitCode::Ok;
 }
 
-ExitInfo UserDbIdListJob::process() {
-    ExitCode exitCode = ServerRequests::getUserDbIdList(_userDbIdList);
+ExitInfo DriveInfoListJob::process() {
+    ExitCode exitCode = ServerRequests::getDriveInfoList(_driveInfoList);
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in ServerRequests::getUserDbIdList: code=" << exitCode);
+        LOG_WARN(_logger, "Error in ServerRequests::getDriveInfoList: code=" << exitCode);
     }
 
     return exitCode;

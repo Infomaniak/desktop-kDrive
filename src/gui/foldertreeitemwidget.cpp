@@ -68,17 +68,19 @@ void FolderTreeItemWidget::setSyncDbId(int syncDbId) {
         return;
     }
 
-    if (const auto exitCode = GuiRequests::getDriveIdFromSyncDbId(_syncDbId, _driveId); exitCode != ExitCode::Ok) {
-        qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getDriveIdFromSyncDbId";
-        return;
-    }
-
     const auto &syncInfoMapIt = _gui->syncInfoMap().find(_syncDbId);
     if (syncInfoMapIt == _gui->syncInfoMap().end()) {
         qCWarning(lcFolderTreeItemWidget()) << "Sync not found in sync map for syncDbId=" << _syncDbId;
         return;
     }
 
+    const auto &driveInfoMapIt = _gui->driveInfoMap().find(syncInfoMapIt->second.driveDbId());
+    if (driveInfoMapIt == _gui->driveInfoMap().end()) {
+        qCWarning(lcFolderTreeItemWidget()) << "Drive not found in drive map for driveDbId=" << syncInfoMapIt->second.driveDbId();
+        return;
+    }
+
+    _driveId = driveInfoMapIt->second.id();
     _nodeId = syncInfoMapIt->second.targetNodeId();
 
     setDriveDbId(syncInfoMapIt->second.driveDbId());
@@ -111,11 +113,13 @@ void FolderTreeItemWidget::setUserDbIdAndDriveInfo(int userDbId, const DriveAvai
 }
 
 void FolderTreeItemWidget::setDriveDbIdAndFolderNodeId(int driveDbId, const QString &serverFolderNodeId) {
-    if (const auto exitCode = GuiRequests::getDriveIdFromDriveDbId(driveDbId, _driveId); ExitCode::Ok != exitCode) {
-        qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getDriveIdFromDriveDbId";
+    const auto &driveInfoMapIt = _gui->driveInfoMap().find(driveDbId);
+    if (driveInfoMapIt == _gui->driveInfoMap().end()) {
+        qCWarning(lcFolderTreeItemWidget()) << "Drive not found in drive map for driveDbId=" << driveDbId;
         return;
     }
 
+    _driveId = driveInfoMapIt->second.id();
     _nodeId = serverFolderNodeId;
 
     setDriveDbId(driveDbId);

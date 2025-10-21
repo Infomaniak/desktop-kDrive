@@ -17,10 +17,11 @@
  */
 
 #include "loginrequesttokenjob.h"
-#include "../guijobmanager.h"
+#include "appserver.h"
 #include "requests/serverrequests.h"
 #include "signaluseraddedjob.h"
 #include "signaluserupdatedjob.h"
+#include "server/comm/guijobmanager.h"
 #include "libcommon/info/userinfo.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
@@ -79,7 +80,7 @@ ExitInfo LoginRequestTokenJob::process() {
     }
 
     _userDbId = userInfo.dbId();
-    _commManager->updateSentryUserCbk();
+    AppServer::updateSentryUser();
     if (userCreated) {
         auto signalUserAddedJob = std::make_shared<SignalUserAddedJob>(_commManager, _channel, userInfo);
         // Add job to JobManager pool

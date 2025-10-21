@@ -16,18 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#import <Foundation/Foundation.h>
+#include "signaluserremovedjob.h"
+#include "libcommon/utility/utility.h"
+#include "libcommon/comm.h"
 
-// Server protocol
-@protocol XPCGuiProtocol
+// Output parameters keys
+static const auto outParamsUserDbId = "userDbId";
 
-- (void)sendQuery:(NSData *)query callback:(void (^)(NSData *answer))callback;
+namespace KDC {
 
-@end
+SignalUserRemovedJob::SignalUserRemovedJob(std::shared_ptr<CommManager> commManager, std::shared_ptr<AbstractCommChannel> channel,
+                                           int userDbId) :
+    AbstractGuiJob(commManager, channel),
+    _userDbId(userDbId) {
+    _signalNum = SignalNum::USER_REMOVED;
+}
 
-// Client protocol
-@protocol XPCGuiRemoteProtocol
+ExitInfo SignalUserRemovedJob::serializeOutputParms() {
+    // Output parameters serialization
+    writeParamValue(outParamsUserDbId, _userDbId);
+    return ExitCode::Ok;
+}
 
-- (void)sendSignal:(NSData *)msg;
-
-@end
+} // namespace KDC

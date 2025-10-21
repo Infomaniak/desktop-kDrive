@@ -16,38 +16,38 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "userdbidlistjob.h"
+#include "userinfolistjob.h"
 #include "requests/serverrequests.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
 
 // Output parameters keys
-static const auto outParamsUserDbIdList = "userDbIdList";
+static const auto outParamsUserInfoList = "userInfoList";
 
 namespace KDC {
 
-UserDbIdListJob::UserDbIdListJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+UserInfoListJob::UserInfoListJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
                                  std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
-    _requestNum = RequestNum::USER_DBIDLIST;
+    _requestNum = RequestNum::USER_INFOLIST;
 }
 
-ExitInfo UserDbIdListJob::deserializeInputParms() {
+ExitInfo UserInfoListJob::deserializeInputParms() {
     return ExitCode::Ok;
 }
 
-ExitInfo UserDbIdListJob::serializeOutputParms() {
+ExitInfo UserInfoListJob::serializeOutputParms() {
     // Output parameters serialization
-    writeParamValue(outParamsUserDbIdList, _userDbIdList);
+    writeParamValues(outParamsUserInfoList, _userInfoList, info2DynamicVar<UserInfo>);
 
     return ExitCode::Ok;
 }
 
-ExitInfo UserDbIdListJob::process() {
-    ExitCode exitCode = ServerRequests::getUserDbIdList(_userDbIdList);
+ExitInfo UserInfoListJob::process() {
+    ExitCode exitCode = ServerRequests::getUserInfoList(_userInfoList);
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in ServerRequests::getUserDbIdList: code=" << exitCode);
+        LOG_WARN(_logger, "Error in ServerRequests::getUserInfoList: code=" << exitCode);
     }
 
     return exitCode;
