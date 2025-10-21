@@ -48,22 +48,18 @@ import Foundation
             return
         }
 
-        // Initialize connection with login item agent
         IKLogger.xpc.log("[KD] Initialize connection with login item agent")
         let connection = NSXPCConnection(machServiceName: machServiceName, options: [])
 
         loginItemAgentConnection = connection
 
-        // Set exported interface
         IKLogger.xpc.log("[KD] Set exported interface for connection with login agent")
         connection.exportedInterface = NSXPCInterface(with: XPCLoginItemRemoteProtocol.self)
         connection.exportedObject = self
 
-        // Set remote object interface
         IKLogger.xpc.log("[KD] Set remote object interface for connection with login agent")
         connection.remoteObjectInterface = NSXPCInterface(with: XPCLoginItemProtocol.self)
 
-        // Set connection handlers
         IKLogger.xpc.log("[KD] Set connection handlers for connection with login item agent")
         connection.interruptionHandler = { [weak self] in
             IKLogger.xpc.error("[KD] Connection with login item agent interrupted (server crash)")
@@ -79,11 +75,9 @@ import Foundation
             self.scheduleRetryToConnectToLoginAgent()
         }
 
-        // Resume connection
         IKLogger.xpc.log("[KD] Resume connection with login item agent")
         connection.resume()
 
-        // Get server endpoint from login item agent
         IKLogger.xpc.log("[KD] Get server gui endpoint from login item agent")
         (connection.remoteObjectProxy as? XPCLoginItemProtocol)?.serverGuiEndpoint { [weak self] endpoint in
             IKLogger.xpc.log("[KD] Server gui endpoint received \(String(describing: endpoint))")
@@ -101,20 +95,16 @@ import Foundation
             return
         }
 
-        // Setup connection with app
         IKLogger.xpc.log("[KD] Setup connection with app")
         appConnection = NSXPCConnection(listenerEndpoint: endpoint)
 
-        // Set exported interface
         IKLogger.xpc.log("[KD] Set server -> gui interface")
         appConnection?.exportedInterface = NSXPCInterface(with: XPCGuiRemoteProtocol.self)
         appConnection?.exportedObject = self
 
-        // Set remote object interface
         IKLogger.xpc.log("[KD] Set gui -> server interface")
         appConnection?.remoteObjectInterface = NSXPCInterface(with: XPCGuiProtocol.self)
 
-        // Set connection handlers
         IKLogger.xpc.log("[KD] Setup connection handlers for connection with app")
         appConnection?.interruptionHandler = { [weak self] in
             IKLogger.xpc.error("[KD] Connection with app interrupted (server crash)")
