@@ -765,7 +765,7 @@ void TestGuiCommChannel::testGenericJob(const CommString &query, const CommStrin
 
     auto answerCbk = [=](const CommString &answer) { CPPUNIT_ASSERT(answer == CommString(cbkAnswer)); };
 
-    GuiCommChannel::runSendQuery(query, readyReadCbk, answerCbk);
+    GuiCommChannel::runProcessQuery(query, readyReadCbk, answerCbk);
 #endif
 }
 

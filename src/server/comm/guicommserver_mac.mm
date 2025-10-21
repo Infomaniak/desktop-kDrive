@@ -114,7 +114,7 @@ static NSNumber *lastRequestId = @0;
 }
 
 // XPCGuiRemoteProtocol protocol implementation
-- (void)sendQuery:(NSData *)query callback:(void (^)(NSData *answer))callback {
+- (void)processQuery:(NSData *_Nonnull)query callback:(void (^_Nonnull)(NSData *_Nonnull))callback {
     if (self.wrapper && self.wrapper->publicPtr) {
         // Deserialize query
         NSError *error = nil;
@@ -162,16 +162,15 @@ static NSNumber *lastRequestId = @0;
 
 @implementation GuiRemoteEnd
 
-// XPCGuiProtocol protocol implementation
-- (void)sendSignal:(NSData *_Nonnull)msg {
+- (void)processSignal:(NSData *_Nonnull)msg {
     if (self.connection == nil) {
         return;
     }
 
     @try {
-        [[self.connection remoteObjectProxy] sendSignal:msg];
+        [[self.connection remoteObjectProxy] processSignal:msg];
     } @catch (NSException *e) {
-        NSLog(@"[KD] Error in sendSignal: error=%@", e.name);
+        NSLog(@"[KD] Error in processSignal: error=%@", e.name);
     }
 }
 
@@ -319,7 +318,7 @@ uint64_t KDC::GuiCommChannel::writeData(const KDC::CommChar *data, uint64_t len)
 
         @try {
             NSLog(@"[KD] Send signal: id=%@ num=%@", id, num);
-            [(GuiRemoteEnd *) _privatePtr->remoteEnd sendSignal:newMsg];
+            [(GuiRemoteEnd *) _privatePtr->remoteEnd processSignal:newMsg];
         } @catch (NSException *e) {
             NSLog(@"[KD] Exception when sending signal: error=%@", [e description]);
             _privatePtr->disconnectRemote();
@@ -334,9 +333,9 @@ uint64_t KDC::GuiCommChannel::writeData(const KDC::CommChar *data, uint64_t len)
     return len;
 }
 
-void KDC::GuiCommChannel::runSendQuery(const CommString &query,
-                                       const std::function<void(std::shared_ptr<AbstractCommChannel>)> &readyReadCbk,
-                                       const std::function<void(const CommString &answer)> &answerCbk) {
+void KDC::GuiCommChannel::runProcessQuery(const CommString &query,
+                                          const std::function<void(std::shared_ptr<AbstractCommChannel>)> &readyReadCbk,
+                                          const std::function<void(const CommString &answer)> &answerCbk) {
     GuiCommChannelPrivate *channelPrivate = new GuiCommChannelPrivate(nullptr);
     auto channel = std::make_shared<KDC::GuiCommChannel>(channelPrivate);
     channel->setReadyReadCbk(readyReadCbk);
@@ -346,14 +345,14 @@ void KDC::GuiCommChannel::runSendQuery(const CommString &query,
 
     [(GuiLocalEnd *) channelPrivate->localEnd setCurrentRequestId:@(0)];
 
-    [(GuiLocalEnd *) channelPrivate->localEnd sendQuery:queryData
-                                               callback:^(NSData *_Nonnull answerData) {
-                                                 NSString *answerStr = [[NSString alloc] initWithData:answerData
-                                                                                             encoding:NSUTF8StringEncoding];
-                                                 std::string answer([answerStr UTF8String]);
+    [(GuiLocalEnd *) channelPrivate->localEnd processQuery:queryData
+                                                  callback:^(NSData *_Nonnull answerData) {
+                                                    NSString *answerStr = [[NSString alloc] initWithData:answerData
+                                                                                                encoding:NSUTF8StringEncoding];
+                                                    std::string answer([answerStr UTF8String]);
 
-                                                 answerCbk(answer);
-                                               }];
+                                                    answerCbk(answer);
+                                                  }];
 }
 
 // GuiCommServer implementation
