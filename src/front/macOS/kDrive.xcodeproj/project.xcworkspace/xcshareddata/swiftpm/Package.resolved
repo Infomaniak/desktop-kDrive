@@ -1,0 +1,33 @@
+{
+  "originHash" : "41ea040fe35a69686cee9eb846233e149c6f9e53c3a3a975d2dbe9a7e1f02bde",
+  "pins" : [
+    {
+      "identity" : "ios-dependency-injection",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Infomaniak/ios-dependency-injection.git",
+      "state" : {
+        "revision" : "f6aa8ebc6fe1311deb5eb5ec09ccc695ba84a265",
+        "version" : "2.0.5"
+      }
+    },
+    {
+      "identity" : "ios-login",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Infomaniak/ios-login.git",
+      "state" : {
+        "branch" : "chore/swift-5.10",
+        "revision" : "e8001a1bcb7d4267eb5db106ee97ed10c5047317"
+      }
+    },
+    {
+      "identity" : "lottie-spm",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/airbnb/lottie-spm.git",
+      "state" : {
+        "revision" : "04f2fd18cc9404a0a0917265a449002674f24ec9",
+        "version" : "4.5.2"
+      }
+    }
+  ],
+  "version" : 3
+}

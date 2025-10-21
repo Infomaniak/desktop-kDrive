@@ -42,6 +42,15 @@ import Foundation
         }
     }
 
+    func scheduleRetryToConnectToServer() {
+        DispatchQueue.main.async {
+            IKLogger.xpc.log("[KD] Set timer to retry to connect to server")
+            Timer.scheduledTimer(withTimeInterval: 10, repeats: false) { [weak self] _ in
+                self?.fetchServerEndpointFromLoginItemAgentAndConnect()
+            }
+        }
+    }
+
     func connectToLoginAgent() {
         guard loginItemAgentConnection == nil else {
             IKLogger.xpc.log("[KD] Already connected to item agent")
@@ -78,8 +87,18 @@ import Foundation
         IKLogger.xpc.log("[KD] Resume connection with login item agent")
         connection.resume()
 
+        fetchServerEndpointFromLoginItemAgentAndConnect()
+    }
+
+    func fetchServerEndpointFromLoginItemAgentAndConnect() {
+        guard let loginItemAgentConnection,
+              let loginItemProxy = loginItemAgentConnection.remoteObjectProxy as? XPCLoginItemProtocol else {
+            return
+        }
+
+        // Get server endpoint from login item agent
         IKLogger.xpc.log("[KD] Get server gui endpoint from login item agent")
-        (connection.remoteObjectProxy as? XPCLoginItemProtocol)?.serverGuiEndpoint { [weak self] endpoint in
+        loginItemProxy.serverGuiEndpoint { [weak self] endpoint in
             IKLogger.xpc.log("[KD] Server gui endpoint received \(String(describing: endpoint))")
             guard let endpoint else {
                 IKLogger.xpc.error("[KD] endpoint nil")
@@ -110,12 +129,14 @@ import Foundation
             IKLogger.xpc.error("[KD] Connection with app interrupted (server crash)")
             guard let self else { return }
             self.appConnection = nil
+            self.scheduleRetryToConnectToServer()
         }
 
         appConnection?.invalidationHandler = { [weak self] in
             IKLogger.xpc.error("[KD] Connection with app invalidated (no server running)")
             guard let self else { return }
             self.appConnection = nil
+            self.scheduleRetryToConnectToServer()
         }
 
         appConnection?.resume()
