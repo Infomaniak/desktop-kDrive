@@ -23,7 +23,7 @@
 #include "jobs/syncjobmanager.h"
 #include "io/iohelper.h"
 #include "libcommonserver/utility/utility.h" // Path2WStr
-#include "utility/windowspackagesignaturechecker.h"
+#include "utility/digitalsignaturechecker_win.h"
 
 namespace KDC {
 
@@ -47,7 +47,7 @@ void WindowsUpdater::onUpdateFound() {
         LOGW_INFO(Log::instance()->getLogger(), L"Installer already downloaded at " << Utility::formatSyncPath(filepath)
                                                                                     << L". Update is ready to be installed.");
 
-        if (!WindowsPackageSignatureChecker(filepath).isSignatureValid()) {
+        if (!DigitalSignatureChecker_win(filepath).isSignatureValid()) {
             LOGW_WARN(Log::instance()->getLogger(), L"The digital signature of installer " << Utility::formatSyncPath(filepath)
                                                                                            << L" is invalid. Aborting update.");
             (void) IoHelper::deleteItem(filepath, ioError);
@@ -129,7 +129,7 @@ void WindowsUpdater::downloadFinished(const UniqueId jobId) {
         return;
     }
 
-    if (!WindowsPackageSignatureChecker(filepath).isSignatureValid()) {
+    if (!DigitalSignatureChecker_win(filepath).isSignatureValid()) {
         LOGW_INFO(Log::instance()->getLogger(), L"The digital signature of installer " << Utility::formatSyncPath(filepath)
                                                                                        << L" is invalid. Aborting update.");
         auto ioError = IoError::Success;

@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "windowspackagesignaturechecker.h"
+#include "digitalsignaturechecker_win.h"
 
 #include <windows.h>
 #include <wincrypt.h>
@@ -33,7 +33,7 @@
 
 namespace KDC {
 
-WindowsPackageSignatureChecker::WindowsPackageSignatureChecker(const SyncPath &packageAbsolutePath) :
+DigitalSignatureChecker_win::DigitalSignatureChecker_win(const SyncPath &packageAbsolutePath) :
     _packageAbsolutePath(packageAbsolutePath) {
     std::wstring errorMsg;
     _signatureIsValid = extractSignatureInfo(_signatureInfo, errorMsg);
@@ -52,7 +52,7 @@ using PSPROG_PUBLISHERINFO = SPROG_PUBLISHERINFO *;
 BOOL GetProgAndPublisherInfo(PCMSG_SIGNER_INFO pSignerInfo, PSPROG_PUBLISHERINFO info);
 BOOL extractCertificateInfo(PCCERT_CONTEXT pCertContext, DigitalSignatureInfo &signatureInfo);
 
-bool WindowsPackageSignatureChecker::extractSignatureInfo(DigitalSignatureInfo &signatureInfo, std::wstring &errorMsg) {
+bool DigitalSignatureChecker_win::extractSignatureInfo(DigitalSignatureInfo &signatureInfo, std::wstring &errorMsg) {
     WCHAR szFileName[MAX_PATH];
     HCERTSTORE hStore = nullptr;
     HCRYPTMSG hMsg = nullptr;

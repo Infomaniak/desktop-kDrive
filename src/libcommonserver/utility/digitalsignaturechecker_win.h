@@ -29,9 +29,9 @@ struct DigitalSignatureInfo {
         SyncName _subject;
 };
 
-class WindowsPackageSignatureChecker {
+class DigitalSignatureChecker_win {
     public:
-        explicit WindowsPackageSignatureChecker(const SyncPath &packageAbsolutePath);
+        explicit DigitalSignatureChecker_win(const SyncPath &packageAbsolutePath);
 
         bool isSignatureValid() const {
             return _signatureIsValid && CommonUtility::containsInsensitive(_signatureInfo._subject, Str("Infomaniak"));
