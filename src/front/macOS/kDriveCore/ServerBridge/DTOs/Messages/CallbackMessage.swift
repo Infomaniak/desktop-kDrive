@@ -1,4 +1,3 @@
-//
 /*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2025 Infomaniak Network SA
@@ -19,8 +18,7 @@
 
 import Foundation
 
-/// Basic structure of an XPC exchange message , bidirectional.
-public struct CallbackMessage<Body: Codable>: Codable {
+public struct CallbackMessage<Body: Codable>: Codable, CustomStringConvertible {
     public let cause: KDC.ExitCause
     public let code: KDC.ExitCode
     public let id: Int32
@@ -38,5 +36,9 @@ public struct CallbackMessage<Body: Codable>: Codable {
         case code
         case id
         case body = "params"
+    }
+
+    public var description: String {
+        "CallbackMessage(cause: \(cause.rawValue), code: \(code.rawValue), id: \(id), body: \(body))"
     }
 }
