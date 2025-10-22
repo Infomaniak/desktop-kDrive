@@ -35,7 +35,11 @@ namespace KDC {
 
 WindowsPackageSignatureChecker::WindowsPackageSignatureChecker(const SyncPath &packageAbsolutePath) :
     _packageAbsolutePath(packageAbsolutePath) {
-    extractSignatureInfo(_signatureInfo);
+    std::wstring errorMsg;
+    _signatureIsValid = extractSignatureInfo(_signatureInfo, errorMsg);
+    if (!_signatureIsValid && !errorMsg.empty()) {
+        LOGW_WARN(Log::instance()->getLogger(), errorMsg);
+    }
 }
 
 using SPROG_PUBLISHERINFO = struct {
@@ -48,7 +52,7 @@ using PSPROG_PUBLISHERINFO = SPROG_PUBLISHERINFO *;
 BOOL GetProgAndPublisherInfo(PCMSG_SIGNER_INFO pSignerInfo, PSPROG_PUBLISHERINFO info);
 BOOL extractCertificateInfo(PCCERT_CONTEXT pCertContext, DigitalSignatureInfo &signatureInfo);
 
-bool WindowsPackageSignatureChecker::extractSignatureInfo(DigitalSignatureInfo &signatureInfo) {
+bool WindowsPackageSignatureChecker::extractSignatureInfo(DigitalSignatureInfo &signatureInfo, std::wstring &errorMsg) {
     WCHAR szFileName[MAX_PATH];
     HCERTSTORE hStore = nullptr;
     HCRYPTMSG hMsg = nullptr;
@@ -68,7 +72,7 @@ bool WindowsPackageSignatureChecker::extractSignatureInfo(DigitalSignatureInfo &
         (void) lstrcpynW(szFileName, _packageAbsolutePath.c_str(), MAX_PATH);
 #else
         if (mbstowcs(szFileName, argv[1], MAX_PATH) == -1) {
-            printf("Unable to convert to unicode.\n");
+            errorMsg = L"Unable to convert to unicode.";
             __leave;
         }
 #endif
@@ -78,28 +82,28 @@ bool WindowsPackageSignatureChecker::extractSignatureInfo(DigitalSignatureInfo &
                                    CERT_QUERY_FORMAT_FLAG_BINARY, 0, &dwEncoding, &dwContentType, &dwFormatType, &hStore, &hMsg,
                                    nullptr);
         if (!fResult) {
-            // LOGW_WARN(Log::instance()->getLogger(), L"CryptQueryObject failed with " << GetLastError());
+            errorMsg = L"CryptQueryObject failed with " + GetLastError();
             __leave;
         }
 
         // Get signer information size.
         fResult = CryptMsgGetParam(hMsg, CMSG_SIGNER_INFO_PARAM, 0, nullptr, &dwSignerInfo);
         if (!fResult) {
-            // LOGW_WARN(Log::instance()->getLogger(), L"CryptMsgGetParam failed with " << GetLastError());
+            errorMsg = L"CryptMsgGetParam failed with " + GetLastError();
             __leave;
         }
 
         // Allocate memory for signer information.
         pSignerInfo = (PCMSG_SIGNER_INFO) LocalAlloc(LPTR, dwSignerInfo);
         if (!pSignerInfo) {
-            // LOGW_WARN(Log::instance()->getLogger(), L"Unable to allocate memory for Signer Info.");
+            errorMsg = L"Unable to allocate memory for Signer Info.";
             __leave;
         }
 
         // Get Signer Information.
         fResult = CryptMsgGetParam(hMsg, CMSG_SIGNER_INFO_PARAM, 0, (PVOID) pSignerInfo, &dwSignerInfo);
         if (!fResult) {
-            // LOGW_WARN(Log::instance()->getLogger(), L"CryptMsgGetParam failed with " << GetLastError());
+            errorMsg = L"CryptMsgGetParam failed with " + GetLastError();
             __leave;
         }
 
@@ -113,7 +117,7 @@ bool WindowsPackageSignatureChecker::extractSignatureInfo(DigitalSignatureInfo &
         CertInfo.SerialNumber = pSignerInfo->SerialNumber;
         pCertContext = CertFindCertificateInStore(hStore, ENCODING, 0, CERT_FIND_SUBJECT_CERT, (PVOID) &CertInfo, nullptr);
         if (!pCertContext) {
-            // LOGW_WARN(Log::instance()->getLogger(), L"CertFindCertificateInStore failed with " << GetLastError());
+            errorMsg = L"CertFindCertificateInStore failed with " + GetLastError();
             __leave;
         }
 
@@ -121,13 +125,9 @@ bool WindowsPackageSignatureChecker::extractSignatureInfo(DigitalSignatureInfo &
         if (!extractCertificateInfo(pCertContext, _signatureInfo)) {
             __leave;
         }
-
-        std::wcout << "Program name: " << _signatureInfo._programName << std::endl;
-        std::wcout << "Serial number: " << _signatureInfo._serialNumber << std::endl;
-        std::wcout << "Issuer name: " << _signatureInfo._issuerName << std::endl;
-        std::wcout << "Subject: " << _signatureInfo._subject << std::endl;
-
         fResult = TRUE;
+        errorMsg = L"test";
+        fResult = FALSE;
     } __finally {
         // Clean up.
         if (ProgPubInfo.lpszProgramName != nullptr) (void) LocalFree(ProgPubInfo.lpszProgramName);
@@ -139,6 +139,7 @@ bool WindowsPackageSignatureChecker::extractSignatureInfo(DigitalSignatureInfo &
         if (hStore != nullptr) (void) CertCloseStore(hStore, 0);
         if (hMsg != nullptr) (void) CryptMsgClose(hMsg);
     }
+
     return fResult;
 }
 
@@ -215,6 +216,7 @@ BOOL GetProgAndPublisherInfo(const PCMSG_SIGNER_INFO pSignerInfo, PSPROG_PUBLISH
     PSPC_SP_OPUS_INFO opusInfo = nullptr;
     DWORD dwData = 0;
     BOOL fResult = FALSE;
+    // std::wstring errorMsg;
 
     __try {
         // Loop through authenticated attributes and find
@@ -225,14 +227,14 @@ BOOL GetProgAndPublisherInfo(const PCMSG_SIGNER_INFO pSignerInfo, PSPROG_PUBLISH
                 fResult = CryptDecodeObject(ENCODING, SPC_SP_OPUS_INFO_OBJID, pSignerInfo->AuthAttrs.rgAttr[n].rgValue[0].pbData,
                                             pSignerInfo->AuthAttrs.rgAttr[n].rgValue[0].cbData, 0, nullptr, &dwData);
                 if (!fResult) {
-                    // LOGW_WARN(Log::instance()->getLogger(), L"CryptDecodeObject failed with " << GetLastError());
+                    // errorMsg = L"CryptDecodeObject failed with " + GetLastError();
                     __leave;
                 }
 
                 // Allocate memory for SPC_SP_OPUS_INFO structure.
                 opusInfo = (PSPC_SP_OPUS_INFO) LocalAlloc(LPTR, dwData);
                 if (!opusInfo) {
-                    // LOGW_WARN(Log::instance()->getLogger(), L"Unable to allocate memory for Publisher Info.");
+                    // errorMsg = L"Unable to allocate memory for Publisher Info.";
                     __leave;
                 }
 
@@ -240,7 +242,7 @@ BOOL GetProgAndPublisherInfo(const PCMSG_SIGNER_INFO pSignerInfo, PSPROG_PUBLISH
                 fResult = CryptDecodeObject(ENCODING, SPC_SP_OPUS_INFO_OBJID, pSignerInfo->AuthAttrs.rgAttr[n].rgValue[0].pbData,
                                             pSignerInfo->AuthAttrs.rgAttr[n].rgValue[0].cbData, 0, opusInfo, &dwData);
                 if (!fResult) {
-                    // LOGW_WARN(Log::instance()->getLogger(), L"CryptDecodeObject failed with " << GetLastError());
+                    // errorMsg = L"CryptDecodeObject failed with " + GetLastError();
                     __leave;
                 }
 
@@ -298,6 +300,7 @@ BOOL GetProgAndPublisherInfo(const PCMSG_SIGNER_INFO pSignerInfo, PSPROG_PUBLISH
         if (opusInfo != nullptr) (void) LocalFree(opusInfo);
     }
 
+    // if (!errorMsg.empty()) LOGW_WARN(Log::instance()->getLogger(), errorMsg);
     return fReturn;
 }
 
