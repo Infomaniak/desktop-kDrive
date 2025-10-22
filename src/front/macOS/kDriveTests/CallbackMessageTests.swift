@@ -19,38 +19,44 @@
 import kDriveCore
 import Testing
 
-struct MessageTests {
-    @Test func testDecodingMessageWithUser() async throws {
+struct CallbackMessageTests {
+    @Test func testDecodingCallbackMessageWithUser() async throws {
         // GIVEN
         let sourceJson = #"{"cause":0,"code":0,"id":1,"params":{"name":"QmFzZTY0"}}"# // "QmFzZTY0" is "Base64"
 
         // WHEN
         let data = Data(sourceJson.utf8)
-        let message = try JSONDecoder().decode(Message<TestUser>.self, from: data)
+        let message = try JSONDecoder().decode(CallbackMessage<TestUser>.self, from: data)
 
         // THEN
         #expect(message.body.name == "Base64")
     }
 
-    @Test func testEncodingMessageWithUser() async throws {
+    @Test func testEncodingCallbackMessageWithUser() async throws {
         // GIVEN
-        let expectedCause = MsgType.REPLY
+        let expectedCause = KDC.ExitCause.ApiErr
+        let expectedCode = KDC.ExitCode.DbError
+        let expectedId = Int32(69)
+
         let user = TestUser(name: "Base64")
-        let message = Message<TestUser>(cause: expectedCause, code: 0, id: 0, body: user)
+        let message = CallbackMessage<TestUser>(cause: expectedCause,
+                                                code: expectedCode,
+                                                id: expectedId,
+                                                body: user)
 
         // WHEN
         let data = try JSONEncoder().encode(message)
         guard let jsonString = String(data: data, encoding: .utf8) else {
-            #expect(false, "we should be able to read a jsonString")
+            #expect(Bool(false), "we should be able to read a jsonString")
             return
         }
         let jsonData = Data(jsonString.utf8)
-        let decodedMessage = try JSONDecoder().decode(Message<TestUser>.self, from: jsonData)
+        let decodedMessage = try JSONDecoder().decode(CallbackMessage<TestUser>.self, from: jsonData)
 
         // THEN
         #expect(decodedMessage.cause == expectedCause)
-        #expect(decodedMessage.code == 0)
-        #expect(decodedMessage.id == 0)
+        #expect(decodedMessage.code == expectedCode)
+        #expect(decodedMessage.id == expectedId)
         #expect(decodedMessage.body.name == "Base64")
     }
 }

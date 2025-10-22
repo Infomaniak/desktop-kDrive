@@ -1,4 +1,3 @@
-//
 /*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2025 Infomaniak Network SA
@@ -20,25 +19,7 @@
 import Foundation
 
 extension MsgType: Codable {}
+extension KDC.ExitCause: Codable {}
+extension KDC.ExitCode: Codable {}
+extension SignalNum: Codable {}
 
-/// Basic structure of an XPC exchange message , bidirectional.
-public struct Message<Body: Codable>: Codable {
-    public let cause: MsgType
-    public let code: Int32
-    public let id: Int32
-    public let body: Body
-
-    public init(cause: MsgType, code: Int32, id: Int32, body: Body) {
-        self.cause = cause
-        self.code = code
-        self.id = id
-        self.body = body
-    }
-    
-    enum CodingKeys: String, CodingKey {
-        case cause
-        case code
-        case id
-        case body = "params"
-    }
-}
