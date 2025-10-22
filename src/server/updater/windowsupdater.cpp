@@ -46,11 +46,16 @@ void WindowsUpdater::onUpdateFound() {
     if (ioError == IoError::Success && localSize == static_cast<uint64_t>(expectedSize)) {
         LOGW_INFO(Log::instance()->getLogger(), L"Installer already downloaded at " << Utility::formatSyncPath(filepath)
                                                                                     << L". Update is ready to be installed.");
+
+        if (!WindowsPackageSignatureChecker(filepath).isSignatureValid()) {
+            LOGW_WARN(Log::instance()->getLogger(), L"The digital signature of installer " << Utility::formatSyncPath(filepath)
+                                                                                           << L" is invalid. Aborting update.");
+            (void) IoHelper::deleteItem(filepath, ioError);
+            setState(UpdateState::UpdateError);
+            return;
+        }
+
         setState(UpdateState::Ready);
-
-        WindowsPackageSignatureChecker signatureChecker(filepath);
-        auto ok = signatureChecker.isSignatureValid();
-
         return;
     }
 
@@ -124,8 +129,14 @@ void WindowsUpdater::downloadFinished(const UniqueId jobId) {
         return;
     }
 
-    WindowsPackageSignatureChecker signatureChecker(filepath);
-    auto ok = signatureChecker.isSignatureValid();
+    if (!WindowsPackageSignatureChecker(filepath).isSignatureValid()) {
+        LOGW_INFO(Log::instance()->getLogger(), L"The digital signature of installer " << Utility::formatSyncPath(filepath)
+                                                                                       << L" is invalid. Aborting update.");
+        auto ioError = IoError::Success;
+        (void) IoHelper::deleteItem(filepath, ioError);
+        setState(UpdateState::UpdateError);
+        return;
+    }
 
     LOGW_INFO(Log::instance()->getLogger(),
               L"Installer downloaded at: " << Utility::formatSyncPath(filepath) << L". Update is ready to be installed.");
