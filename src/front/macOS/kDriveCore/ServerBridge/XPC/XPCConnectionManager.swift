@@ -168,25 +168,21 @@ import Foundation
         IKLogger.xpc.log("[KD] Start communication with app server")
         let remoteObject = try await appConnection.asyncProxy(from: appConnection, type: XPCGuiProtocol.self)
 
-        let json = """
-        { "num": 1,
-            "params": {
-            "code": "YWJhYQ==",
-            "codeVerifier": "abFmJiYg==" } }
-        """
-        let dummyData = json.data(using: .utf8)!
-        IKLogger.xpc.error("[KD] sending bytes: \(dummyData.count)")
+        let userQuery = LoginQuery(code: "123", codeVerifier: "456")
+        let request = await RequestMessage<LoginQuery>(num: RequestNum.LOGIN_REQUESTTOKEN, body: userQuery)
+        let requestData = try JSONEncoder().encode(request)
 
-        remoteObject.sendQuery(dummyData) { data in
-            guard let data else {
-                IKLogger.xpc.log("[KD] recv answer NIL")
-                return
-            }
-
-            IKLogger.xpc.log("[KD] recv answer of length: \(data.count)")
-            let recv = String(data: data, encoding: .utf8)!
-            IKLogger.xpc.log("[KD] recv: \(recv)")
+        guard let replyData = await remoteObject.sendQueryAsync(requestData) else {
+            IKLogger.xpc.log("[KD] recv answer NIL")
+            return
         }
+
+        IKLogger.xpc.log("[KD] recv answer of length: \(replyData.count)")
+        let recv = String(data: replyData, encoding: .utf8)!
+        IKLogger.xpc.log("[KD] recv RAW json: \(recv)")
+
+        let decodedMessage = try? JSONDecoder().decode(CallbackMessage<LoginResponse>.self, from: replyData)
+        IKLogger.xpc.log("[KD] recv decodedMessage: \(String(describing: decodedMessage))")
     }
 }
 
