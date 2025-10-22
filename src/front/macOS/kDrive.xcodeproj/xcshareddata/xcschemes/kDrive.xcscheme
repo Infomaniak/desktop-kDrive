@@ -35,7 +35,7 @@
             parallelizable = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "7A46E1CC2EA7AC1B00880412"
+               BlueprintIdentifier = "7A4DFBB02EA91F9D00B138B8"
                BuildableName = "kDriveTests.xctest"
                BlueprintName = "kDriveTests"
                ReferencedContainer = "container:kDrive.xcodeproj">

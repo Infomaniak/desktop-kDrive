@@ -36,7 +36,7 @@
 			remoteGlobalIDString = 37A1C4592E546CB600596DBB;
 			remoteInfo = kDriveCore;
 		};
-		7A46E1D12EA7AC1B00880412 /* PBXContainerItemProxy */ = {
+		7A4DFBB52EA91F9D00B138B8 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 37A1C41E2E546A5200596DBB /* Project object */;
 			proxyType = 1;
@@ -86,7 +86,7 @@
 		37A1C4262E546A5200596DBB /* kDrive.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = kDrive.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		37A1C43F2E546A9600596DBB /* kDriveCoreUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = kDriveCoreUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		37A1C45A2E546CB600596DBB /* kDriveCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = kDriveCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		7A46E1CD2EA7AC1B00880412 /* kDriveTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = kDriveTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		7A4DFBB12EA91F9D00B138B8 /* kDriveTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = kDriveTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F967009E2E95352C00EDD4D7 /* kDriveResources.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = kDriveResources.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9ACC5372E5DF50B0081E80B /* swiftgen.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = swiftgen.yml; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -149,6 +149,11 @@
 			path = kDriveTests;
 			sourceTree = "<group>";
 		};
+		7A4DFBB22EA91F9D00B138B8 /* kDriveTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = kDriveTests;
+			sourceTree = "<group>";
+		};
 		F967009F2E95352C00EDD4D7 /* kDriveResources */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = kDriveResources;
@@ -186,7 +191,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		7A46E1CA2EA7AC1B00880412 /* Frameworks */ = {
+		7A4DFBAE2EA91F9D00B138B8 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -212,6 +217,7 @@
 				F967009F2E95352C00EDD4D7 /* kDriveResources */,
 				F9ACC5372E5DF50B0081E80B /* swiftgen.yml */,
 				7A46E1CE2EA7AC1B00880412 /* kDriveTests */,
+				7A4DFBB22EA91F9D00B138B8 /* kDriveTests */,
 				37A1C4272E546A5200596DBB /* Products */,
 				F967014F2E953CF600EDD4D7 /* Frameworks */,
 			);
@@ -224,7 +230,7 @@
 				37A1C43F2E546A9600596DBB /* kDriveCoreUI.framework */,
 				37A1C45A2E546CB600596DBB /* kDriveCore.framework */,
 				F967009E2E95352C00EDD4D7 /* kDriveResources.framework */,
-				7A46E1CD2EA7AC1B00880412 /* kDriveTests.xctest */,
+				7A4DFBB12EA91F9D00B138B8 /* kDriveTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -342,27 +348,27 @@
 			productReference = 37A1C45A2E546CB600596DBB /* kDriveCore.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		7A46E1CC2EA7AC1B00880412 /* kDriveTests */ = {
+		7A4DFBB02EA91F9D00B138B8 /* kDriveTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 7A46E1D32EA7AC1B00880412 /* Build configuration list for PBXNativeTarget "kDriveTests" */;
+			buildConfigurationList = 7A4DFBB72EA91F9D00B138B8 /* Build configuration list for PBXNativeTarget "kDriveTests" */;
 			buildPhases = (
-				7A46E1C92EA7AC1B00880412 /* Sources */,
-				7A46E1CA2EA7AC1B00880412 /* Frameworks */,
-				7A46E1CB2EA7AC1B00880412 /* Resources */,
+				7A4DFBAD2EA91F9D00B138B8 /* Sources */,
+				7A4DFBAE2EA91F9D00B138B8 /* Frameworks */,
+				7A4DFBAF2EA91F9D00B138B8 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				7A46E1D22EA7AC1B00880412 /* PBXTargetDependency */,
+				7A4DFBB62EA91F9D00B138B8 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				7A46E1CE2EA7AC1B00880412 /* kDriveTests */,
+				7A4DFBB22EA91F9D00B138B8 /* kDriveTests */,
 			);
 			name = kDriveTests;
 			packageProductDependencies = (
 			);
 			productName = kDriveTests;
-			productReference = 7A46E1CD2EA7AC1B00880412 /* kDriveTests.xctest */;
+			productReference = 7A4DFBB12EA91F9D00B138B8 /* kDriveTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		F967009D2E95352C00EDD4D7 /* kDriveResources */ = {
@@ -410,7 +416,7 @@
 						CreatedOnToolsVersion = 26.0;
 						LastSwiftMigration = 2600;
 					};
-					7A46E1CC2EA7AC1B00880412 = {
+					7A4DFBB02EA91F9D00B138B8 = {
 						CreatedOnToolsVersion = 26.0.1;
 						TestTargetID = 37A1C4252E546A5200596DBB;
 					};
@@ -446,7 +452,7 @@
 				37A1C4592E546CB600596DBB /* kDriveCore */,
 				37A1C43E2E546A9600596DBB /* kDriveCoreUI */,
 				F967009D2E95352C00EDD4D7 /* kDriveResources */,
-				7A46E1CC2EA7AC1B00880412 /* kDriveTests */,
+				7A4DFBB02EA91F9D00B138B8 /* kDriveTests */,
 			);
 		};
 /* End PBXProject section */
@@ -474,7 +480,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		7A46E1CB2EA7AC1B00880412 /* Resources */ = {
+		7A4DFBAF2EA91F9D00B138B8 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -534,7 +540,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		7A46E1C92EA7AC1B00880412 /* Sources */ = {
+		7A4DFBAD2EA91F9D00B138B8 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -561,10 +567,10 @@
 			target = 37A1C4592E546CB600596DBB /* kDriveCore */;
 			targetProxy = 37A1C45E2E546CB700596DBB /* PBXContainerItemProxy */;
 		};
-		7A46E1D22EA7AC1B00880412 /* PBXTargetDependency */ = {
+		7A4DFBB62EA91F9D00B138B8 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 37A1C4252E546A5200596DBB /* kDrive */;
-			targetProxy = 7A46E1D12EA7AC1B00880412 /* PBXContainerItemProxy */;
+			targetProxy = 7A4DFBB52EA91F9D00B138B8 /* PBXContainerItemProxy */;
 		};
 		F96700A32E95352C00EDD4D7 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -714,6 +720,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = kDrive/kDrive.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -751,6 +758,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = kDrive/kDrive.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -946,7 +954,7 @@
 			};
 			name = Release;
 		};
-		7A46E1D42EA7AC1B00880412 /* Debug */ = {
+		7A4DFBB82EA91F9D00B138B8 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -966,7 +974,7 @@
 			};
 			name = Debug;
 		};
-		7A46E1D52EA7AC1B00880412 /* Release */ = {
+		7A4DFBB92EA91F9D00B138B8 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -1103,11 +1111,11 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		7A46E1D32EA7AC1B00880412 /* Build configuration list for PBXNativeTarget "kDriveTests" */ = {
+		7A4DFBB72EA91F9D00B138B8 /* Build configuration list for PBXNativeTarget "kDriveTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				7A46E1D42EA7AC1B00880412 /* Debug */,
-				7A46E1D52EA7AC1B00880412 /* Release */,
+				7A4DFBB82EA91F9D00B138B8 /* Debug */,
+				7A4DFBB92EA91F9D00B138B8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
