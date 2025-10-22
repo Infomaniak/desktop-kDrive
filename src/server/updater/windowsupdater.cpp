@@ -49,7 +49,7 @@ void WindowsUpdater::onUpdateFound() {
         setState(UpdateState::Ready);
 
         WindowsPackageSignatureChecker signatureChecker(filepath);
-        auto signatureInfo = signatureChecker.getSignatureInfo();
+        auto ok = signatureChecker.isSignatureValid();
 
         return;
     }
@@ -125,7 +125,7 @@ void WindowsUpdater::downloadFinished(const UniqueId jobId) {
     }
 
     WindowsPackageSignatureChecker signatureChecker(filepath);
-    auto signatureInfo = signatureChecker.getSignatureInfo();
+    auto ok = signatureChecker.isSignatureValid();
 
     LOGW_INFO(Log::instance()->getLogger(),
               L"Installer downloaded at: " << Utility::formatSyncPath(filepath) << L". Update is ready to be installed.");

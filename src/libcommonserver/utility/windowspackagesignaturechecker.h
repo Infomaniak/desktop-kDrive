@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include "utility.h"
+
 namespace KDC {
 
 struct DigitalSignatureInfo {
@@ -31,7 +33,7 @@ class WindowsPackageSignatureChecker {
     public:
         explicit WindowsPackageSignatureChecker(const SyncPath &packageAbsolutePath);
 
-        DigitalSignatureInfo getSignatureInfo() const { return _signatureInfo; }
+        bool isSignatureValid() const { return CommonUtility::containsInsensitive(_signatureInfo._subject, Str("Infomaniak")); }
 
     private:
         bool extractSignatureInfo(DigitalSignatureInfo &signatureInfo);
