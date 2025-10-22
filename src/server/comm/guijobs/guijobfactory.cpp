@@ -31,6 +31,7 @@
 #include "syncinfolistjob.h"
 #include "syncstartjob.h"
 #include "syncstopjob.h"
+#include "syncstatusjob.h"
 
 namespace KDC {
 
@@ -47,7 +48,8 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::DRIVE_SEARCH, makeShared<DriveSearchJob>},
                 {RequestNum::SYNC_INFOLIST, makeShared<SyncInfoListJob>},
                 {RequestNum::SYNC_START, makeShared<SyncStartJob>},
-                {RequestNum::SYNC_STOP, makeShared<SyncStopJob>}};
+                {RequestNum::SYNC_STOP, makeShared<SyncStopJob>},
+                {RequestNum::SYNC_STATUS, makeShared<SyncStatusJob>}};
 }
 
 std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::shared_ptr<CommManager> commManager,

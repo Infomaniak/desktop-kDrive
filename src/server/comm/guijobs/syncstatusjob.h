@@ -20,14 +20,17 @@
 
 namespace KDC {
 
-class SyncStartJob : public AbstractGuiJob {
+class SyncStatusJob : public AbstractGuiJob {
     public:
-        SyncStartJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                     std::shared_ptr<AbstractCommChannel> channel);
+        SyncStatusJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                      std::shared_ptr<AbstractCommChannel> channel);
 
     private:
         // Input parameters
         int _syncDbId = 0;
+
+        // Output parameters
+        SyncStatus _syncStatus = SyncStatus::Undefined;
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;

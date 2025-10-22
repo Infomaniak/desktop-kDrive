@@ -27,7 +27,7 @@ class SyncStopJob : public AbstractGuiJob {
 
     private:
         // Input parameters
-        int _syncDbId;
+        int _syncDbId = 0;
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;
