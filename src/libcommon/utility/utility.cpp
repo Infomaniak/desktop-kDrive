@@ -313,26 +313,38 @@ void CommonUtility::resetTranslations() {
 }
 
 bool CommonUtility::startsWith(const std::string &str, const std::string &prefix) {
+    if (prefix.empty()) return false;
     return str.size() >= prefix.size() &&
            std::equal(prefix.begin(), prefix.end(), str.begin(), [](char c1, char c2) { return c1 == c2; });
 }
 
 bool CommonUtility::startsWithInsensitive(const std::string &str, const std::string &prefix) {
+    if (prefix.empty()) return false;
     return str.size() >= prefix.size() && std::equal(prefix.begin(), prefix.end(), str.begin(), [](char c1, char c2) {
                return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale());
            });
 }
 
+bool CommonUtility::endsWithInsensitive(const std::string &str, const std::string &suffix) {
+    if (suffix.empty()) return false;
+    return str.size() >= suffix.size() &&
+           std::equal(str.begin() + static_cast<long>(str.length() - suffix.length()), str.end(), suffix.begin(),
+                      [](char c1, char c2) { return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale()); });
+}
+
 bool CommonUtility::endsWith(const std::string &str, const std::string &suffix) {
+    if (suffix.empty()) return false;
     return str.size() >= suffix.size() && std::equal(str.begin() + static_cast<long>(str.length() - suffix.length()), str.end(),
                                                      suffix.begin(), [](const char c1, const char c2) { return c1 == c2; });
 }
 
 bool CommonUtility::contains(const std::string &str, const std::string &substr) {
+    if (substr.empty()) return false;
     return str.find(substr) != std::string::npos;
 }
 
 bool CommonUtility::containsInsensitive(const std::string &str, const std::string &substr) {
+    if (substr.empty()) return false;
     if (str.size() < substr.size()) return false;
     const auto it = std::search(str.begin(), str.end(), substr.begin(), substr.end(), [](const char c1, const char c2) {
         return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale());
@@ -340,40 +352,40 @@ bool CommonUtility::containsInsensitive(const std::string &str, const std::strin
     return it != str.end();
 }
 
-bool CommonUtility::endsWithInsensitive(const std::string &str, const std::string &suffix) {
-    return str.size() >= suffix.size() &&
-           std::equal(str.begin() + static_cast<long>(str.length() - suffix.length()), str.end(), suffix.begin(),
-                      [](char c1, char c2) { return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale()); });
-}
-
 #if defined(KD_WINDOWS)
 bool CommonUtility::startsWithInsensitive(const SyncName &str, const SyncName &prefix) {
+    if (prefix.empty()) return false;
     return str.size() >= prefix.size() && std::equal(prefix.begin(), prefix.end(), str.begin(), [](SyncChar c1, SyncChar c2) {
                return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale());
            });
 }
 
 bool CommonUtility::startsWith(const SyncName &str, const SyncName &prefix) {
+    if (prefix.empty()) return false;
     return str.size() >= prefix.size() &&
            std::equal(prefix.begin(), prefix.end(), str.begin(), [](SyncChar c1, SyncChar c2) { return c1 == c2; });
 }
 
 bool CommonUtility::endsWith(const SyncName &str, const SyncName &suffix) {
+    if (suffix.empty()) return false;
     return str.size() >= suffix.size() && std::equal(str.begin() + str.length() - suffix.length(), str.end(), suffix.begin(),
                                                      [](char c1, char c2) { return c1 == c2; });
 }
 
 bool CommonUtility::endsWithInsensitive(const SyncName &str, const SyncName &suffix) {
+    if (suffix.empty()) return false;
     return str.size() >= suffix.size() &&
            std::equal(str.begin() + str.length() - suffix.length(), str.end(), suffix.begin(),
                       [](char c1, char c2) { return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale()); });
 }
 
 bool CommonUtility::contains(const SyncName &str, const SyncName &substr) {
+    if (substr.empty()) return false;
     return str.find(substr) != std::string::npos;
 }
 
 bool CommonUtility::containsInsensitive(const SyncName &str, const SyncName &substr) {
+    if (substr.empty()) return false;
     if (str.size() < substr.size()) return false;
     const auto it = std::search(str.begin(), str.end(), substr.begin(), substr.end(), [](const char c1, const char c2) {
         return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale());
