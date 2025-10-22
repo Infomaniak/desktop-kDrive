@@ -18,7 +18,6 @@
 
 import Foundation
 
-/// Basic structure of an XPC exchange message , bidirectional.
 public struct SignalMessage<Body: Codable>: Codable {
     public let cause: KDC.ExitCause
     public let code: KDC.ExitCode
