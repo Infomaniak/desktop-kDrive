@@ -23,6 +23,7 @@
 #include "jobs/syncjobmanager.h"
 #include "io/iohelper.h"
 #include "libcommonserver/utility/utility.h" // Path2WStr
+#include "utility/windowspackagesignaturechecker.h"
 
 namespace KDC {
 
@@ -46,6 +47,10 @@ void WindowsUpdater::onUpdateFound() {
         LOGW_INFO(Log::instance()->getLogger(), L"Installer already downloaded at " << Utility::formatSyncPath(filepath)
                                                                                     << L". Update is ready to be installed.");
         setState(UpdateState::Ready);
+
+        WindowsPackageSignatureChecker signatureChecker(filepath);
+        auto signatureInfo = signatureChecker.getSignatureInfo();
+
         return;
     }
 
@@ -118,6 +123,9 @@ void WindowsUpdater::downloadFinished(const UniqueId jobId) {
         setState(UpdateState::DownloadError);
         return;
     }
+
+    WindowsPackageSignatureChecker signatureChecker(filepath);
+    auto signatureInfo = signatureChecker.getSignatureInfo();
 
     LOGW_INFO(Log::instance()->getLogger(),
               L"Installer downloaded at: " << Utility::formatSyncPath(filepath) << L". Update is ready to be installed.");
