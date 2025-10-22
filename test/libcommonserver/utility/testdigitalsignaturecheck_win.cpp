@@ -16,33 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "testdigitalsignaturecheck_win.h"
 
-#include "utility.h"
+#include "test_utility/localtemporarydirectory.h"
+#include "test_utility/testhelpers.h"
+#include "utility/digitalsignaturechecker_win.h"
 
 namespace KDC {
 
-struct DigitalSignatureInfo {
-        SyncName _programName;
-        SyncName _serialNumber;
-        SyncName _issuerName;
-        SyncName _subject;
-};
-
-class DigitalSignatureChecker_win {
-    public:
-        explicit DigitalSignatureChecker_win(const SyncPath &packageAbsolutePath);
-
-        bool isSignatureValid() const {
-            return _signatureIsValid && CommonUtility::containsInsensitive(_signatureInfo._subject, Str("Infomaniak"));
-        }
-
-    private:
-        bool extractSignatureInfo(DigitalSignatureInfo &signatureInfo, SourceLocation &location);
-
-        SyncPath _packageAbsolutePath;
-        DigitalSignatureInfo _signatureInfo;
-        bool _signatureIsValid{false};
-};
+void TestDigitalSignatureCheck_win::testIsSignatureValid() {
+    // Empty path.
+    CPPUNIT_ASSERT(!DigitalSignatureChecker_win({}).isSignatureValid());
+    // Path to non existing file.
+    CPPUNIT_ASSERT(!DigitalSignatureChecker_win(SyncPath("A/B/C")).isSignatureValid());
+    // Path to existing file but not signed.
+    LocalTemporaryDirectory tmpDir;
+    const auto testPath = tmpDir.path() / "testSignature.txt";
+    testhelpers::generateOrEditTestFile(testPath);
+    CPPUNIT_ASSERT(!DigitalSignatureChecker_win(SyncPath(testPath)).isSignatureValid());
+}
 
 } // namespace KDC

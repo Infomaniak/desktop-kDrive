@@ -1,8 +1,7 @@
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2025 Infomaniak Network SA
- *
- * This program is free software: you can redistribute it and/or modify
+ ** This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
@@ -16,26 +15,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testincludes.h"
+#pragma once
 
-#include "utility/testutility.h"
-#if defined(KD_WINDOWS)
-#include "utility/testdigitalsignaturecheck_win.h"
-#endif
-#include "log/testlog.h"
-#include "db/testdb.h"
-#include "io/testio.h"
+#include <cppunit/TestFixture.h>
+#include <cppunit/extensions/HelperMacros.h>
+#include "test_utility/testbase.h"
+#include "libcommon/utility/types.h"
 
 namespace KDC {
-CPPUNIT_TEST_SUITE_REGISTRATION(TestUtility);
-#if defined(KD_WINDOWS)
-CPPUNIT_TEST_SUITE_REGISTRATION(TestDigitalSignatureCheck_win);
-#endif
-CPPUNIT_TEST_SUITE_REGISTRATION(TestLog);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestDb);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestIo);
-} // namespace KDC
 
-int main(int, char **) {
-    return runTestSuite("_kDriveTestCommonServer.log");
-}
+class TestDigitalSignatureCheck_win : public CppUnit::TestFixture, public TestBase {
+        CPPUNIT_TEST_SUITE(TestDigitalSignatureCheck_win);
+        CPPUNIT_TEST(testIsSignatureValid);
+        CPPUNIT_TEST_SUITE_END();
+
+    public:
+        void setUp(void) override { TestBase::start(); }
+        void tearDown(void) override { TestBase::stop(); }
+
+    protected:
+        void testIsSignatureValid();
+};
+
+} // namespace KDC
