@@ -325,7 +325,19 @@ bool CommonUtility::startsWithInsensitive(const std::string &str, const std::str
 
 bool CommonUtility::endsWith(const std::string &str, const std::string &suffix) {
     return str.size() >= suffix.size() && std::equal(str.begin() + static_cast<long>(str.length() - suffix.length()), str.end(),
-                                                     suffix.begin(), [](char c1, char c2) { return c1 == c2; });
+                                                     suffix.begin(), [](const char c1, const char c2) { return c1 == c2; });
+}
+
+bool CommonUtility::contains(const std::string &str, const std::string &substr) {
+    return str.find(substr) != std::string::npos;
+}
+
+bool CommonUtility::containsInsensitive(const std::string &str, const std::string &substr) {
+    if (str.size() < substr.size()) return false;
+    const auto it = std::search(str.begin(), str.end(), substr.begin(), substr.end(), [](const char c1, const char c2) {
+        return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale());
+    });
+    return it != str.end();
 }
 
 bool CommonUtility::endsWithInsensitive(const std::string &str, const std::string &suffix) {
@@ -356,11 +368,19 @@ bool CommonUtility::endsWithInsensitive(const SyncName &str, const SyncName &suf
            std::equal(str.begin() + str.length() - suffix.length(), str.end(), suffix.begin(),
                       [](char c1, char c2) { return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale()); });
 }
-#endif
 
-bool CommonUtility::contains(const std::string &str, const std::string &substr) {
+bool CommonUtility::contains(const SyncName &str, const SyncName &substr) {
     return str.find(substr) != std::string::npos;
 }
+
+bool CommonUtility::containsInsensitive(const SyncName &str, const SyncName &substr) {
+    if (str.size() < substr.size()) return false;
+    const auto it = std::search(str.begin(), str.end(), substr.begin(), substr.end(), [](const char c1, const char c2) {
+        return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale());
+    });
+    return it != str.end();
+}
+#endif
 
 std::string CommonUtility::toUpper(const std::string &str) {
     std::string upperStr(str);
