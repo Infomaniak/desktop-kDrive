@@ -50,6 +50,13 @@ class WindowsUpdater : public AbstractUpdater {
          * @return The expected size of the installer file to be downloaded.
          */
         virtual std::streamsize getExpectedInstallerSize(const std::string &downloadUrl);
+
+        /**
+         * Check the digital signature of the downloaded installer. Delete the file if the signature is not valid.
+         * @param filepath Path to the downloaded installer.
+         * @return true if the signature is valid.
+         */
+        virtual bool verifyDigitalSignature(const SyncPath &filepath);
 };
 
 } // namespace KDC

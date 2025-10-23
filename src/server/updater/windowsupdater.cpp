@@ -47,10 +47,7 @@ void WindowsUpdater::onUpdateFound() {
         LOGW_INFO(Log::instance()->getLogger(), L"Installer already downloaded at " << Utility::formatSyncPath(filepath)
                                                                                     << L". Update is ready to be installed.");
 
-        if (!DigitalSignatureChecker_win(filepath).isSignatureValid()) {
-            LOGW_WARN(Log::instance()->getLogger(), L"The digital signature of installer " << Utility::formatSyncPath(filepath)
-                                                                                           << L" is invalid. Aborting update.");
-            (void) IoHelper::deleteItem(filepath, ioError);
+        if (!verifyDigitalSignature(filepath)) {
             setState(UpdateState::UpdateError);
             return;
         }
@@ -129,11 +126,7 @@ void WindowsUpdater::downloadFinished(const UniqueId jobId) {
         return;
     }
 
-    if (!DigitalSignatureChecker_win(filepath).isSignatureValid()) {
-        LOGW_INFO(Log::instance()->getLogger(), L"The digital signature of installer " << Utility::formatSyncPath(filepath)
-                                                                                       << L" is invalid. Aborting update.");
-        auto ioError = IoError::Success;
-        (void) IoHelper::deleteItem(filepath, ioError);
+    if (!verifyDigitalSignature(filepath)) {
         setState(UpdateState::UpdateError);
         return;
     }
@@ -162,6 +155,17 @@ std::streamsize WindowsUpdater::getExpectedInstallerSize(const std::string &down
     DirectDownloadJob job(downloadUrl);
     (void) job.runSynchronously();
     return job.httpResponse().getContentLength();
+}
+
+bool WindowsUpdater::verifyDigitalSignature(const SyncPath &filepath) {
+    if (!DigitalSignatureChecker_win(filepath).isSignatureValid()) {
+        LOGW_INFO(Log::instance()->getLogger(), L"The digital signature of installer " << Utility::formatSyncPath(filepath)
+                                                                                       << L" is invalid. Aborting update.");
+        auto ioError = IoError::Success;
+        (void) IoHelper::deleteItem(filepath, ioError);
+        return false;
+    }
+    return true;
 }
 
 } // namespace KDC

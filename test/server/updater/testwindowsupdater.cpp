@@ -64,6 +64,8 @@ void TestWindowsUpdater::testOnUpdateFound() {
 
             std::streamsize getExpectedInstallerSize([[maybe_unused]] const std::string &downloadUrl) override { return 10; }
 
+            bool verifyDigitalSignature(const SyncPath &filepath) override { return true; }
+
             SyncPath _installerPath;
     };
 
