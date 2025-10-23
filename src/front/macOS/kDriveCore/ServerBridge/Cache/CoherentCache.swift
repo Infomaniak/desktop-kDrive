@@ -82,10 +82,10 @@ actor CoherentCache: CoherentCacheProtocol {
 
     func getUser(_ id: Int) -> User? {
         guard let user = users[id] else {
-            IKLogger.cache.log("user miss")
+            IKLogger.cache.info("user miss")
             return nil
         }
-        IKLogger.cache.log("user hit")
+        IKLogger.cache.info("user hit")
         return user
     }
 
