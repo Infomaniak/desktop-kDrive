@@ -99,7 +99,7 @@ void increaseFileSystemCapacity() {
     coreLimit.rlim_cur = RLIM_INFINITY;
     coreLimit.rlim_max = RLIM_INFINITY;
     if (setrlimit(RLIMIT_CORE, &coreLimit) < 0) {
-        LOG_WARN(KDC::Log::instance()->getLogger(), "Unable to set RLIMIT_CORE");
+        std::cout << "Unable to set RLIMIT_CORE" << std::endl;
     }
 
     // Increase the limit of simultaneously open files
@@ -107,10 +107,10 @@ void increaseFileSystemCapacity() {
     if (getrlimit(RLIMIT_NOFILE, &numFiles) == 0 && numFiles.rlim_cur < APP_RLIMIT_NOFILE) {
         numFiles.rlim_cur = qMin(rlim_t(APP_RLIMIT_NOFILE), numFiles.rlim_max);
         if (setrlimit(RLIMIT_NOFILE, &numFiles) < 0) {
-            LOG_WARN(KDC::Log::instance()->getLogger(), "Unable to set RLIMIT_NOFILE - err =" << errno);
+            std::cout << "Unable to set RLIMIT_NOFILE - err =" << errno << std::endl;
         }
     } else {
-        LOG_WARN(KDC::Log::instance()->getLogger(), "Unable to get RLIMIT_NOFILE - err=" << errno);
+        std::cout << "Unable to set RLIMIT_NOFILE - err =" << errno << std::endl;
     }
 
     // Increase the limit of stack size
@@ -118,10 +118,10 @@ void increaseFileSystemCapacity() {
     if (getrlimit(RLIMIT_STACK, &stackSize) == 0 && numFiles.rlim_cur < APP_RLIMIT_STACK) {
         stackSize.rlim_cur = qMin(rlim_t(APP_RLIMIT_STACK), numFiles.rlim_max);
         if (setrlimit(RLIMIT_STACK, &stackSize) < 0) {
-            LOG_WARN(KDC::Log::instance()->getLogger(), "Unable to set RLIMIT_STACK - err =" << errno);
+            std::cout << "Unable to set RLIMIT_STACK - err =" << errno << std::endl;
         }
     } else {
-        LOG_WARN(KDC::Log::instance()->getLogger(), "Unable to get RLIMIT_STACK - err=" << errno);
+        std::cout << "Unable to get RLIMIT_STACK - err=" << errno << std::endl;
     }
 }
 #endif
