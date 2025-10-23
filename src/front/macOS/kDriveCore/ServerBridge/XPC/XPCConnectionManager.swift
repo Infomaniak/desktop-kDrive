@@ -18,7 +18,7 @@
 
 import Foundation
 
-@objc final class XPCConnectionManager: NSObject {
+@objc final class XPCConnectionManager: NSObject, @unchecked Sendable {
     let machServiceName: String
 
     var loginItemAgentConnection: NSXPCConnection?
