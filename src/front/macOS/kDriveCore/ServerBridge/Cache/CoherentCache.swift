@@ -74,7 +74,7 @@ public protocol CoherentCacheProtocol: Sendable {
 }
 
 /// This cache must track 1:1 the server, can only be purged on server restart
-actor CoherentCache {
+actor CoherentCache: CoherentCacheProtocol {
     private var users: [Int: User] = [:]
 
     // MARK: - USER
