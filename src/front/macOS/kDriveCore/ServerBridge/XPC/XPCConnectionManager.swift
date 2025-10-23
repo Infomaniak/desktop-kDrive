@@ -168,33 +168,6 @@ import Foundation
 
         appConnection?.resume()
     }
-
-    // TODO: Remove
-    func dummyServerQuery() async throws {
-        guard let appConnection else {
-            IKLogger.xpc.error("[KD] no connection")
-            return
-        }
-
-        IKLogger.xpc.log("[KD] Start communication with app server")
-        let remoteObject = try await appConnection.asyncProxy(from: appConnection, type: XPCGuiProtocol.self)
-
-        let userQuery = LoginQuery(code: "123", codeVerifier: "456")
-        let request = await RequestMessage<LoginQuery>(num: RequestNum.LOGIN_REQUESTTOKEN, body: userQuery)
-        let requestData = try JSONEncoder().encode(request)
-
-        guard let replyData = await remoteObject.sendQueryAsync(requestData) else {
-            IKLogger.xpc.log("[KD] recv answer NIL")
-            return
-        }
-
-        IKLogger.xpc.log("[KD] recv answer of length: \(replyData.count)")
-        let recv = String(data: replyData, encoding: .utf8)!
-        IKLogger.xpc.log("[KD] recv RAW json: \(recv)")
-
-        let decodedMessage = try? JSONDecoder().decode(CallbackMessage<LoginResponse>.self, from: replyData)
-        IKLogger.xpc.log("[KD] recv decodedMessage: \(String(describing: decodedMessage))")
-    }
 }
 
 extension XPCConnectionManager: XPCLoginItemRemoteProtocol {
