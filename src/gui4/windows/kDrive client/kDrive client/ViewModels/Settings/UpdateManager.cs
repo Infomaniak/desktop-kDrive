@@ -1,17 +1,17 @@
-﻿namespace Infomaniak.kDrive.ViewModels
+﻿using CommunityToolkit.Mvvm.Input;
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
+using Infomaniak.kDrive.Types;
+using Microsoft.Extensions.DependencyInjection;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Infomaniak.kDrive.ViewModels
 {
     public class UpdateManager : UISafeObservableObject
     {
-        public enum ReleaseChannel
-        {
-            Production,
-            Beta,
-            Internal
-        }
-
         private bool _autoUpdateEnabled = true;
-        private ReleaseChannel _currentChannel = ReleaseChannel.Production;
-        private UpdateData? _updateData;
+        private VersionChannel _currentChannel = VersionChannel.Beta;
+        private AppVersion? _updateData;
 
         public bool AutoUpdateEnabled
         {
@@ -19,21 +19,31 @@
             set => SetPropertyInUIThread(ref _autoUpdateEnabled, value);
         }
 
-        public ReleaseChannel CurrentChannel
+        public VersionChannel CurrentChannel
         {
             get => _currentChannel;
             set => SetPropertyInUIThread(ref _currentChannel, value);
         }
-        public UpdateData? AvailableUpdate
+        public AppVersion? AvailableUpdate
         {
             get => _updateData;
             set => SetPropertyInUIThread(ref _updateData, value);
         }
 
-       public UpdateManager()
+        public UpdateManager()
         {
-            AvailableUpdate = new UpdateData { Tag  ="4.0.0", BuildVersion="20251020"};
+            StartUpdateCommand = new AsyncRelayCommand(StartUpdate);
+        }
+        public IAsyncRelayCommand StartUpdateCommand { get; }
+        public async Task<bool> StartUpdate()
+        {
+            await App.ServiceProvider.GetRequiredService<IServerCommService>().StartUpdate(default);
+            return true;
         }
 
+        public async Task ChangeChannel(VersionChannel newChannel)
+        {
+            await App.ServiceProvider.GetRequiredService<IServerCommService>().ChangeUpdaterChannel(newChannel, default);
+        }
     }
 }

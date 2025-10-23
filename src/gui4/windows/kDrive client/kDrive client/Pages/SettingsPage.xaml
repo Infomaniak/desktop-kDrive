@@ -58,59 +58,15 @@
                                Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
 
                     <!-- General - Update -->
-                    <toolKit:SettingsExpander x:Uid="Page_SettingsPage_UpdateCard"
-                                              Header="Mise à jour"
-                                              Visibility="{x:Bind ViewModel.Settings.UpdateManager.AvailableUpdate, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
-                        <toolKit:SettingsExpander.HeaderIcon>
-                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Arrows.arrow-loop}"
-                                              Height="32"
-                                              Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                        </toolKit:SettingsExpander.HeaderIcon>
-                        <toolKit:SettingsExpander.Description>
-                            <TextBlock  Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
-                                        Foreground="{ThemeResource TextFillColorDisabled}">
-                                <Run Text="kDrive build" />
-                                <Run Text="{x:Bind ViewModel.Settings.UpdateManager.AvailableUpdate.Tag , Mode=OneWay}" />
-                                <Run Text="disponible" />
-                            </TextBlock>
-                        </toolKit:SettingsExpander.Description>
-                        <Button Content="Mettre à jour"
-                                Style="{ThemeResource AccentButtonStyle}" />
-
-                        <toolKit:SettingsExpander.Items>
-                            <toolKit:SettingsCard Background="{ThemeResource LayerFillColorDefault}">
-                                <toolKit:SettingsCard.Header>
-                                    <TextBlock  Style="{StaticResource Infomaniak.Style.TextBlock.Body}">
-                                        <Run Text="kDrive" />
-                                        <Run Text="{x:Bind ViewModel.Settings.UpdateManager.AvailableUpdate.Tag , Mode=OneWay}" />
-                                    </TextBlock>
-                                </toolKit:SettingsCard.Header>
-                                <toolKit:SettingsCard.Description>
-                                    <StackPanel>
-                                        <controls:DynamicTextBox x:Uid="TextBlockUpdateInfo"
-                                                                 Arg1="{x:Bind ViewModel.Settings.UpdateManager.AvailableUpdate.Tag, Mode=OneWay}"
-                                                                 Arg2="{x:Bind ViewModel.Settings.UpdateManager.AvailableUpdate.BuildVersion, Mode=OneWay}"
-                                                                 Arg3="{x:Bind ViewModel.Settings.UpdateManager.AvailableUpdate.BuildVersion, Converter={StaticResource DateToStringConverter}, Mode=OneWay}"
-                                                                 Arg4="2025" />
-                                        <TextBlock  Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
-                                                    TextWrapping="WrapWholeWords"
-                                                    x:Uid="TextBlockUpdateInfo"
-                                                    Loaded="TextBlockUpdateInfoLoaded" />
-
-                                        <HyperlinkButton Content="Licence LGPL v3 - Sources Git"
-                                                         NavigateUri="https://github.com/Infomaniak/desktop-kDrive?tab=GPL-3.0-1-ov-file" />
-                                    </StackPanel>
-                                </toolKit:SettingsCard.Description>
-                                <StackPanel Orientation="Horizontal">
-                                    <HyperlinkButton Content="Changelog" />
-                                    <!-- TODO: link to the expected behaviour once ready on the UX side.-->
-                                </StackPanel>
-                            </toolKit:SettingsCard>
-                        </toolKit:SettingsExpander.Items>
-                    </toolKit:SettingsExpander>
+                    <controls:UpdateExpander Settings="{x:Bind ViewModel.Settings, Mode=OneWay}" />
 
                     <toolKit:SettingsCard Header="Mettre à jour kDrive automatiquement">
-                        <ToggleSwitch />
+                        <toolKit:SettingsCard.HeaderIcon>
+                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Arrows.arrows-loop-automatic}"
+                                              Height="32"
+                                              Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                        </toolKit:SettingsCard.HeaderIcon>
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.Settings.UpdateManager.AutoUpdateEnabled, Mode=TwoWay}" />
                     </toolKit:SettingsCard>
 
                     <!-- General - Beta -->
@@ -121,10 +77,10 @@
                                               Height="32"
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                         </toolKit:SettingsCard.HeaderIcon>
-                        <ComboBox SelectedIndex="0">
-                            <ComboBoxItem>Stable</ComboBoxItem>
-                            <ComboBoxItem IsEnabled="False">Beta</ComboBoxItem>
-                            <ComboBoxItem IsEnabled="False">Alpha</ComboBoxItem>
+                        <ComboBox x:Name="UpdateChannel" SelectionChanged="UpdateChannel_SelectionChanged">
+                            <ComboBoxItem Tag="Prod">Stable</ComboBoxItem>
+                            <ComboBoxItem Tag="Beta">Beta</ComboBoxItem>
+                            <ComboBoxItem Tag="Internal">Internal</ComboBoxItem>
                         </ComboBox>
                     </toolKit:SettingsCard>
 
@@ -171,8 +127,7 @@
                     </Grid>
                     <!-- Account - List -->
                     <ListView ItemsSource="{x:Bind ViewModel.Users}"
-                              SelectionMode="None"
-                              IsEnabled="False">
+                              SelectionMode="None">
                         <ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">
                                 <Setter Property="Padding"

@@ -1,4 +1,5 @@
-﻿using Infomaniak.kDrive.ViewModels;
+﻿using Infomaniak.kDrive.Types;
+using Infomaniak.kDrive.ViewModels;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -48,8 +49,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task RefreshSyncs(CancellationToken cancellationToken);
 
 
-        // Event handlers for user-related signals
-        void HandleUserUpdatedOrAddedAsync(object? sender, SignalEventArgs args);
+        // Update-related requests
+        Task StartUpdate(CancellationToken cancellationToken);
+        Task RefreshUpdaterVersionInfo(CancellationToken cancellationToken);
+        Task ChangeUpdaterChannel(VersionChannel newChannel, CancellationToken cancellationToken);
 
+        // Event handlers for user-related signals
+        void HandleUserUpdatedOrAdded(object? sender, SignalEventArgs args);
+        void HandleUpdaterStateChanged(object? sender, SignalEventArgs args);
     }
 }

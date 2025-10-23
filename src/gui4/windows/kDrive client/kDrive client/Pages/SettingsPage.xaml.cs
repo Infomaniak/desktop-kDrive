@@ -16,28 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using Infomaniak.kDrive.Converters;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using Microsoft.VisualBasic.Devices;
 using System;
-using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.Networking.Connectivity;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Threading;
 
 namespace Infomaniak.kDrive.Pages
 {
@@ -49,56 +36,72 @@ namespace Infomaniak.kDrive.Pages
         {
             Logger.Log(Logger.Level.Info, "Navigated to SettingsPage - Initializing SettingsPage components");
             InitializeComponent();
+            SetSelectedChannel(ViewModel.Settings.UpdateManager.CurrentChannel);
+            RegisterPropertyChangedHandlers();
             Logger.Log(Logger.Level.Debug, "SettingsPage components initialized");
         }
-
-        private void SyncUpToDateHyperlinkButton_Click(object sender, RoutedEventArgs e)
+        ~SettingsPage()
         {
-            ((App)Application.Current).CurrentWindow?.AppWindow.Hide();
+            UnregisterPropertyChangedHandlers();
         }
 
-        private void SyncInProgressHyperlinkButton_Click(object sender, RoutedEventArgs e)
+        private void RegisterPropertyChangedHandlers()
         {
-            Frame.Navigate(typeof(ActivityPage));
+            ViewModel.Settings.UpdateManager.PropertyChanged += UpdateManager_PropertyChanged;
         }
 
-        private void SyncInPauseHyperlinkButton_Click(object sender, RoutedEventArgs e)
+        private void UpdateManager_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if(ViewModel.SelectedSync == null)
+            if (e.PropertyName == nameof(ViewModel.Settings.UpdateManager.CurrentChannel))
             {
-                Logger.Log(Logger.Level.Warning, "No sync is selected, cannot resume sync.");
-                return;
+                SetSelectedChannel(ViewModel.Settings.UpdateManager.CurrentChannel);
             }
-            ViewModel.SelectedSync.SyncStatus = SyncStatus.Running; // Todo: Replace with actual resume logic
         }
+
+        private void UnregisterPropertyChangedHandlers()
+        {
+            ViewModel.Settings.UpdateManager.PropertyChanged -= UpdateManager_PropertyChanged;
+        }
+
+
         private void CreateAccountButton_Click(object sender, RoutedEventArgs e)
         {
             (App.Current as App)?.StartOnboarding();
         }
 
-        private void TextBlockUpdateInfoLoaded(object sender, RoutedEventArgs e)
+        private CancellationTokenSource? _updateChannelcancellationTokenSource = null;
+        private async void UpdateChannel_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if(sender is TextBlock textBlock)
+            if (sender is ComboBox comboBox && comboBox.SelectedItem is ComboBoxItem selectedItem)
             {
-                var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
-                var updateData = ViewModel.Settings.UpdateManager.AvailableUpdate;
-                if( updateData == null )
+                string? channelString = selectedItem.Tag as string;
+                if (Enum.TryParse<VersionChannel>(channelString, out VersionChannel selectedChannel))
                 {
-                    textBlock.Text = string.Format(resourceLoader.GetString("Page_SettingsPage_UpdateDetails/Text"), "?", "?", "?", "?");
-                    return;
-                }
-                DateTime date;
-                if(DateTime.TryParseExact(updateData.BuildVersion, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedDate))
-                {
-                    date = parsedDate;
+                    await ViewModel.Settings.UpdateManager.ChangeChannel(selectedChannel);
+                    Logger.Log(Logger.Level.Info, $"Update channel changed to {selectedChannel}");
                 }
                 else
                 {
-                    Logger.Log(Logger.Level.Warning, "DateToStringConverter: string value is not in the expected format 'yyyyMMdd'.");
-                    date = DateTime.MinValue;
+                    Logger.Log(Logger.Level.Warning, $"Invalid update channel selected: {channelString}");
                 }
-                textBlock.Text = string.Format(resourceLoader.GetString("Page_SettingsPage_UpdateDetails/Text"), updateData.Tag, updateData.BuildVersion, date.ToString("D", CultureInfo.CurrentCulture), date.Year);
+            }
+        }
 
+        private void SetSelectedChannel(VersionChannel channel)
+        {
+            foreach (var item in UpdateChannel.Items)
+            {
+                if (item is ComboBoxItem comboBoxItem && comboBoxItem.Tag is string tagString)
+                {
+                    if (Enum.TryParse<VersionChannel>(tagString, out VersionChannel itemChannel))
+                    {
+                        if (itemChannel == channel)
+                        {
+                            UpdateChannel.SelectedItem = comboBoxItem;
+                            return;
+                        }
+                    }
+                }
             }
         }
     }

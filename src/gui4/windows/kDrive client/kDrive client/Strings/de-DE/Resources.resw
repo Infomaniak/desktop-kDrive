@@ -465,10 +465,19 @@
   <data name="Global_LanguageCode" xml:space="preserve">
     <value>de</value>
   </data>
-  <data name="Page_SettingsPage_UpdateCard.Header" xml:space="preserve">
+  <data name="CC_UpdateExpander_Header.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="Page_SettingsPage_UpdateDetails.TextTemplate" xml:space="preserve">
+  <data name="CC_UpdateExpander_UpdateAvailable_Description.TextTemplate" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_UpdateExpander_UpToDate_Description.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_UpdateExpander_UpdateAvailable_UpdateDetails.TextTemplate" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_UpdateExpander_UpToDate_UpdateDetails.TextTemplate" xml:space="preserve">
     <value />
   </data>
 </root>

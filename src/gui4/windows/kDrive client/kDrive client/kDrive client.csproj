@@ -74,6 +74,9 @@
     <AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
   </PropertyGroup>
   <ItemGroup>
+    <Page Update="CustomControls\DynamicTextBlock.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="CustomControls\LottiePlayer.xaml">
       <SubType>Designer</SubType>
     </Page>

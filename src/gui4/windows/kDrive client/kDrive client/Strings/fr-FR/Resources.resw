@@ -497,11 +497,24 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
     <value>fr</value>
     <comment>This value shouldn't be change, it is used to generate URL.</comment>
   </data>
-  <data name="Page_SettingsPage_UpdateCard.Header" xml:space="preserve">
+  <data name="CC_UpdateExpander_Header.Text" xml:space="preserve">
     <value>Mise à jour</value>
   </data>
-  <data name="Page_SettingsPage_UpdateDetails.TextTemplate" xml:space="preserve">
-    <value>Cette mise à jour apporte des correctifs importants et des améliorations liées à la sécurité, et est recommandée à tous les utilisateurs. Version {0} (build {1}), compilée le {2}
+  <data name="CC_UpdateExpander_UpdateAvailable_Description.TextTemplate" xml:space="preserve">
+    <value>kDrive build {0} disponible</value>
+    <comment>{0} version tag (ie 3.7.6)</comment>
+  </data>
+  <data name="CC_UpdateExpander_UpToDate_Description.Text" xml:space="preserve">
+    <value>L’application est à jour</value>
+  </data>
+  <data name="CC_UpdateExpander_UpdateAvailable_UpdateDetails.TextTemplate" xml:space="preserve">
+    <value>Cette mise à jour apporte des correctifs importants et des améliorations liées à  la sécurité, et est recommandée à tous les utilisateurs. 
+Version {0} (build {1}), compilée le {2}
+© 2019–{3} Infomaniak Network SA</value>
+    <comment>{0}: version tag ie 4.0.0; {1} version build ie 20252010; {2}: pretty date ie nov 28, 2025, {3}: current year: 2025</comment>
+  </data>
+  <data name="CC_UpdateExpander_UpToDate_UpdateDetails.TextTemplate" xml:space="preserve">
+    <value>Version {0} (build {1}), compilée le {2}
 © 2019–{3} Infomaniak Network SA</value>
     <comment>{0}: version tag ie 4.0.0; {1} version build ie 20252010; {2}: pretty date ie nov 28, 2025, {3}: current year: 2025</comment>
   </data>

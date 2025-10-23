@@ -9,7 +9,5 @@ namespace Infomaniak.kDrive.ViewModels
         public VersionChannel Channel { get; set; } = VersionChannel.Unknown;
         public string Tag { get; set; } = string.Empty; // Version number. Example: 3.6.4
         public Int64 buildVersion = 0; // Example: 20240816
-
-        private string ChangeLogUrl = string.Empty;
     }
 }

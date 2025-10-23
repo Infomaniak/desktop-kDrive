@@ -4,50 +4,55 @@ using System;
 
 namespace Infomaniak.kDrive.CustomControls
 {
-    public partial class DynamicTextBox : TextBox
+    public sealed partial class DynamicTextBlock : UserControl
     {
+        public DynamicTextBlock()
+        {
+            this.InitializeComponent();
+        }
+
         public static readonly DependencyProperty TextTemplateProperty =
             DependencyProperty.Register(
                 nameof(TextTemplate),
                 typeof(string),
-                typeof(DynamicTextBox),
+                typeof(DynamicTextBlock),
                 new PropertyMetadata(null, OnArgChanged));
-
 
         public static readonly DependencyProperty Arg1Property =
             DependencyProperty.Register(
                 nameof(Arg1),
                 typeof(object),
-                typeof(DynamicTextBox),
+                typeof(DynamicTextBlock),
                 new PropertyMetadata(null, OnArgChanged));
 
         public static readonly DependencyProperty Arg2Property =
             DependencyProperty.Register(
                 nameof(Arg2),
                 typeof(object),
-                typeof(DynamicTextBox),
+                typeof(DynamicTextBlock),
                 new PropertyMetadata(null, OnArgChanged));
 
         public static readonly DependencyProperty Arg3Property =
             DependencyProperty.Register(
                 nameof(Arg3),
                 typeof(object),
-                typeof(DynamicTextBox),
+                typeof(DynamicTextBlock),
                 new PropertyMetadata(null, OnArgChanged));
 
         public static readonly DependencyProperty Arg4Property =
             DependencyProperty.Register(
                 nameof(Arg4),
                 typeof(object),
-                typeof(DynamicTextBox),
+                typeof(DynamicTextBlock),
                 new PropertyMetadata(null, OnArgChanged));
 
         public static readonly DependencyProperty Arg5Property =
             DependencyProperty.Register(
                 nameof(Arg5),
                 typeof(object),
-                typeof(DynamicTextBox),
+                typeof(DynamicTextBlock),
                 new PropertyMetadata(null, OnArgChanged));
+
 
         public string TextTemplate
         {
@@ -66,6 +71,7 @@ namespace Infomaniak.kDrive.CustomControls
             get => GetValue(Arg2Property);
             set => SetValue(Arg2Property, value);
         }
+
         public object Arg3
         {
             get => GetValue(Arg3Property);
@@ -83,47 +89,28 @@ namespace Infomaniak.kDrive.CustomControls
             get => GetValue(Arg5Property);
             set => SetValue(Arg5Property, value);
         }
+
         private static void OnArgChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is DynamicTextBox dynamicTextBox)
-            {
-                dynamicTextBox.RefreshText();
-            }
+            if (d is DynamicTextBlock dtb)
+                dtb.RefreshText();
         }
 
         private void RefreshText()
         {
             try
             {
-                if (Arg1 is null)
-                {
-                    Text = string.Format(TextTemplate ?? string.Empty);
-                }
-                else if (Arg2 is null)
-                {
-                    Text = string.Format(TextTemplate ?? string.Empty, Arg1);
-                }
-                else if (Arg3 is null)
-                {
-                    Text = string.Format(TextTemplate ?? string.Empty, Arg1, Arg2);
-                }
-                else if (Arg4 is null)
-                {
-                    Text = string.Format(TextTemplate ?? string.Empty, Arg1, Arg2, Arg3);
-                }
-                else if (Arg5 is null)
-                {
-                    Text = string.Format(TextTemplate ?? string.Empty, Arg1, Arg2, Arg3, Arg4);
-                }
-                else
-                {
-                    Text = string.Format(TextTemplate ?? string.Empty, Arg1, Arg2, Arg3, Arg4, Arg5);
+                string formatted = TextTemplate ?? string.Empty;
 
-                }
+                object[] args = new[] { Arg1, Arg2, Arg3, Arg4, Arg5 };
+                int validArgs = Array.FindLastIndex(args, a => a != null) + 1;
+
+                TextBlock.Text = validArgs > 0
+                    ? string.Format(formatted, args[..validArgs])
+                    : formatted;
             }
             catch (FormatException ex)
             {
-                // Log or handle the exception as needed
                 System.Diagnostics.Debug.WriteLine($"FormatException in DynamicTextBox: {ex.Message}");
             }
         }

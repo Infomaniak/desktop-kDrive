@@ -16,11 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -44,6 +46,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public event EventHandler<SignalEventArgs>? SignalReceived;
         private Queue<KeyValuePair<SignalNum, JsonObject>> PendingSignals { get; } = new Queue<KeyValuePair<SignalNum, JsonObject>>();
         private Task? _signalHandler;
+        private Task _customSignalsHandler;
         public MockServerCommProtocol()
         {
             _ = Initialize();
@@ -65,6 +68,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     return await DriveInfoListRequest(parameters);
                 case RequestNum.SyncInfoList:
                     return await SyncInfoListRequest(parameters);
+                case RequestNum.UPDATER_START_INSTALLER:
+                    return await UpdateStartInstaller(parameters);
+                case RequestNum.UPDATER_VERSION_INFO:
+                    return await UpdaterVersionInfo(parameters);
+                case RequestNum.UPDATER_CHANGE_CHANNEL:
+                    return await UpdaterChangeChannel(parameters);
+
                 default:
                     throw new NotImplementedException($"RequestNum {requestNum} not implemented in MockServerCommProtocol.");
             }
@@ -253,6 +263,70 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             });
         }
 
+        private async Task<CommData> UpdateStartInstaller(JsonObject parameters)
+        {
+            Logger.Log(Logger.Level.Debug, "Received UpdateStartInstaller request.");
+            await Task.Delay(2000);
+            return new CommData
+            {
+                Type = CommMessageType.Request,
+                Id = (int)NextId,
+                RequestNum = RequestNum.UPDATER_START_INSTALLER,
+                Params = new JsonObject()
+            };
+        }
+
+        private async Task<CommData> UpdaterVersionInfo(JsonObject parameters)
+        {
+            Logger.Log(Logger.Level.Debug, "Received UpdateVersionInfo request.");
+            VersionChannel channel = _mockData.CurrentChannel;
+            if (parameters.ContainsKey("channel") && parameters["channel"] != null)
+            {
+                channel = (VersionChannel)parameters["channel"]!.GetValue<int>();
+            }
+
+            AppVersion update = _mockData.VersionsByChannel[channel] ?? _mockData.CurrentVersion;
+            var versionInfo = new JsonObject
+            {
+                { "channel", (int)update.Channel },
+                { "tag", Convert.ToBase64String(Encoding.UTF8.GetBytes(update.Tag)) },
+                { "buildVersion", Convert.ToBase64String(Encoding.UTF8.GetBytes(update.BuildVersion)) },
+                { "buildMinOsVersion","" }, // Not used
+                { "downloadUrl", "" }, // Not used
+            };
+
+            return new CommData
+            {
+                Type = CommMessageType.Request,
+                Id = (int)NextId,
+                RequestNum = RequestNum.UPDATER_VERSION_INFO,
+                Params = new JsonObject() { { "versionInfo", versionInfo } }
+            };
+        }
+        private async Task<CommData> UpdaterChangeChannel(JsonObject parameters)
+        {
+            Logger.Log(Logger.Level.Debug, "Received UpdaterChangeChannel request.");
+            VersionChannel channel = _mockData.CurrentChannel;
+            if (parameters.ContainsKey("channel") && parameters["channel"] != null)
+            {
+                channel = (VersionChannel)parameters["channel"]!.GetValue<int>();
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Warning, "No channel specified in UpdaterChangeChannel request, using current channel.");
+                
+            }
+            _mockData.CurrentChannel = channel;
+            EnqueueSignal(SignalNum.UPDATER_STATE_CHANGED, new JsonObject());
+            return new CommData
+            {
+                Type = CommMessageType.Request,
+                Id = (int)NextId,
+                RequestNum = RequestNum.UPDATER_CHANGE_CHANNEL,
+                Params = new JsonObject()
+            };
+        }
+
         private void EnqueueSignal(SignalNum signalNum, JsonObject parameters)
         {
             PendingSignals.Enqueue(new KeyValuePair<SignalNum, JsonObject>(signalNum, parameters));
@@ -277,7 +351,23 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     await Task.Delay(100);
                 }
             });
+            _customSignalsHandler = SimulateSignals();
             return Task.CompletedTask;
+        }
+
+        public async Task SimulateSignals()
+        {
+            long updaterStateChangeCounter = 0;
+            while (true)
+            {
+                updaterStateChangeCounter++;
+                await Task.Delay(100);
+                if (updaterStateChangeCounter % 50 == 0)
+                {
+                    _mockData.VersionsByChannel[VersionChannel.Internal].Tag = "3.7.9" + ((updaterStateChangeCounter / 50)).ToString();
+                    EnqueueSignal(SignalNum.UPDATER_STATE_CHANGED, new JsonObject());
+                }
+            }
         }
     }
 
@@ -288,6 +378,16 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public List<Drive> Drives { get; } = new List<Drive>();
         public List<Sync> Syncs { get; } = new List<Sync>();
 
+        public AppVersion CurrentVersion { get; } = new AppVersion() { BuildVersion = "20250908", Tag = "3.7.6" };
+
+        public Dictionary<VersionChannel, AppVersion?> VersionsByChannel { get; } = new Dictionary<VersionChannel, AppVersion?>()
+        {
+            {VersionChannel.Prod, new AppVersion() { BuildVersion = "20250908", Tag = "3.7.6" } },
+            {VersionChannel.Beta, new AppVersion() { BuildVersion = "20251020", Tag = "3.7.7" } },
+            {VersionChannel.Internal, new AppVersion() { BuildVersion = "20251022", Tag = "3.7.8" }},
+        };
+
+        public VersionChannel CurrentChannel = VersionChannel.Prod;
         public MockServerData()
         {
             // Create mock users

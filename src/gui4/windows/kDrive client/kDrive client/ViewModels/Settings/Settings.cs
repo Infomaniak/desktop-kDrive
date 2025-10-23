@@ -1,12 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using Infomaniak.kDrive;
-using Infomaniak.kDrive.Types;
-using System;
-using System.Collections.Generic;
+﻿using Infomaniak.kDrive.Types;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.ViewModels
 {
@@ -23,8 +16,11 @@ namespace Infomaniak.kDrive.ViewModels
         private bool _matomoEnabled = false;
         private Logger.Level _logLevel = Logger.Level.Extended;
         private bool _autoFlushLogs = true;
-
-        public Settings() { }
+        private AppVersion? _appVersion;
+        public Settings()
+        {
+            AppVersion = new AppVersion { Tag = "3.7.6", BuildVersion = "20250908" };
+        }
 
         public UpdateManager UpdateManager { get; } = new UpdateManager();
         public NetworkSettings NetworkSettings { get; } = new NetworkSettings();
@@ -84,6 +80,11 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _autoFlushLogs;
             set => SetPropertyInUIThread(ref _autoFlushLogs, value);
+        }
+        public AppVersion? AppVersion
+        {
+            get => _appVersion;
+            set => SetPropertyInUIThread(ref _appVersion, value);
         }
     }
 }

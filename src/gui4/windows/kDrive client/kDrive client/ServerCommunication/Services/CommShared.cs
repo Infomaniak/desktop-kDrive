@@ -16,6 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Infomaniak.kDrive.Types;
+using Microsoft.Extensions.Logging;
+using static Infomaniak.kDrive.ViewModels.NetworkSettings;
+
 namespace Infomaniak.kDrive.ServerCommunication
 {
     public struct CommShared
@@ -96,10 +100,63 @@ namespace Infomaniak.kDrive.ServerCommunication
         public enum SignalNum
         {
             Unknown = 0,
+            // User
             UserAdded,
             UserUpdated,
+            USER_STATUSCHANGED,
+            USER_REMOVED,
+            // Account
+            ACCOUNT_ADDED,
+            ACCOUNT_UPDATED,
+            ACCOUNT_REMOVED,
+            // Drive
+            DRIVE_ADDED,
+            DRIVE_UPDATED,
+            DRIVE_QUOTAUPDATED,
+            DRIVE_REMOVED,
+            DRIVE_DELETE_FAILED,
+            // Sync
+            SYNC_ADDED,
+            SYNC_UPDATED,
+            SYNC_REMOVED,
+            SYNC_PROGRESSINFO,
+            SYNC_COMPLETEDITEM,
+            SYNC_VFS_CONVERSION_COMPLETED,
+            SYNC_DELETE_FAILED,
+            // Node
+            NODE_FOLDER_SIZE_COMPLETED,
+            NODE_FIX_CONFLICTED_FILES_COMPLETED,
+            // Updater
+            UPDATER_SHOW_DIALOG,
+            UPDATER_STATE_CHANGED,
+            // Utility
+            UTILITY_SHOW_NOTIFICATION,
+            UTILITY_NEW_BIG_FOLDER,
+            UTILITY_ERROR_ADDED,
+            UTILITY_ERRORS_CLEARED,
+            UTILITY_SHOW_SETTINGS,
+            UTILITY_SHOW_SYNTHESIS,
+            UTILITY_LOG_UPLOAD_STATUS_UPDATED,
+            UTILITY_QUIT
+        }
+
+        public enum NotificationsDisabled
+        {
+            Never,
+            OneHour,
+            UntilTomorrow,
+            ThreeDays,
+            OneWeek,
+            Always
         };
 
+        public enum ProxyType
+        {
+            Undefined,
+            None,
+            System,
+            HTTP
+        };
         public enum CommMessageType
         {
             Unknown = 0,
@@ -146,6 +203,34 @@ namespace Infomaniak.kDrive.ServerCommunication
             public string? TargetNodeId { get; set; }
             public bool? SupportOnlineMode { get; set; }
             public bool? OnlineMode { get; set; }
+        }
+
+        public struct ProxyConfigInfo
+        {
+            public ProxyType? Type;
+            public string? HostName;
+            public int? Port;
+            public bool? NeedsAuth;
+            public string? User;
+            public string? Pwd;
+        }
+
+        public struct ParmsInfo
+        {
+            public Language? Language;
+            public bool? MonoIcons;
+            public bool? AutoStart;
+            public bool? MoveToTrash;
+            public NotificationsDisabled? NotificationsDisabled;
+            public bool? UseLog;
+            public LogLevel? LogLevel;
+            public bool? ExtendedLog;
+            public bool? PurgeOldLogs;
+            public ProxyConfigInfo? ProxyConfigInfo;
+            public bool? UseBigFolderSizeLimit;
+            public long? BigFolderSizeLimit;
+            public bool? ShowShortcuts;
+            public VersionChannel? DistributionChannel;
         }
     }
 }

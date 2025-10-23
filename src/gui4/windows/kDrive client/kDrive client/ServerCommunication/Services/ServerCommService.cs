@@ -1,7 +1,6 @@
-﻿using CommunityToolkit.WinUI;
-using DynamicData;
-using Infomaniak.kDrive.ServerCommunication.Interfaces;
+﻿using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.JsonConverters;
+using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -266,6 +265,44 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             });
         }
 
+        public async Task StartUpdate(CancellationToken cancellationToken)
+        {
+            await _commClient.SendRequestAsync(CommShared.RequestNum.UPDATER_START_INSTALLER, new JsonObject(), cancellationToken);
+        }
+        public async Task RefreshUpdaterVersionInfo(CancellationToken cancellationToken)
+        {
+            var channel = _viewModel.Settings.UpdateManager.CurrentChannel;
+            var parms = new JsonObject
+            {
+                ["channel"] = (int)channel
+            };
+            CommData data = await _commClient.SendRequestAsync(CommShared.RequestNum.UPDATER_VERSION_INFO, parms, cancellationToken);
+            if (data.Params == null || !data.Params.ContainsKey("versionInfo"))
+            {
+                Logger.Log(Logger.Level.Error, "versionInfo not found in response.");
+                return;
+            }
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            options.Converters.Add(new Base64StringJsonConverter());
+            AppVersion? versionInfo = data.Params["versionInfo"].Deserialize<AppVersion>(options);
+            if (versionInfo?.Tag == _viewModel.Settings.AppVersion?.Tag && versionInfo?.BuildVersion == _viewModel.Settings.AppVersion?.BuildVersion)
+            {
+                _viewModel.Settings.UpdateManager.AvailableUpdate = null;
+                return;
+            }
+            _viewModel.Settings.UpdateManager.AvailableUpdate = versionInfo;
+        }
+        public async Task ChangeUpdaterChannel(VersionChannel newChannel, CancellationToken cancellationToken)
+        {
+            _viewModel.Settings.UpdateManager.AvailableUpdate = null;
+            await _commClient.SendRequestAsync(CommShared.RequestNum.UPDATER_CHANGE_CHANNEL, new JsonObject { ["channel"] = (int)newChannel }, cancellationToken);
+            _viewModel.Settings.UpdateManager.CurrentChannel = newChannel;
+        }
+
         // Signals
         public void OnSignalReceived(object? sender, SignalEventArgs args)
         {
@@ -273,7 +310,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 case SignalNum.UserUpdated:
                 case SignalNum.UserAdded:
-                    HandleUserUpdatedOrAddedAsync(sender, args);
+                    HandleUserUpdatedOrAdded(sender, args);
+                    break;
+                case SignalNum.UPDATER_STATE_CHANGED:
+                    HandleUpdaterStateChanged(sender, args);
                     break;
                 default:
                     Logger.Log(Logger.Level.Warning, $"Unhandled signal received: {args.SignalNum}");
@@ -281,7 +321,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
         }
 
-        public void HandleUserUpdatedOrAddedAsync(object? sender, SignalEventArgs args)
+        public void HandleUserUpdatedOrAdded(object? sender, SignalEventArgs args)
         {
             var signalData = args.SignalData;
 
@@ -305,6 +345,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             AddOrUpdateUserInModel(newUserInfo).GetAwaiter().GetResult();
         }
 
+        public void HandleUpdaterStateChanged(object? sender, SignalEventArgs args)
+        {
+            RefreshUpdaterVersionInfo(new CancellationToken()).GetAwaiter().GetResult();
+        }
 
         // Helpers
         static void CopyProperties<T, V>(T target, V source, HashSet<string>? excludedProperties = null, Dictionary<string /*sourceName*/ , string /*TargetName*/ >? propertyMappings = null)
