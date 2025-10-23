@@ -47,6 +47,7 @@ public protocol CoherentCacheProtocol: Sendable {
     // MARK: - User
 
     func getUser(_ id: Int) async -> User?
+    func getFirstAvailableUser() async -> User?
     func addUser(_ user: User) async
     func removeUser(_ id: Int) async
 
@@ -86,6 +87,10 @@ actor CoherentCache: CoherentCacheProtocol {
         }
         IKLogger.cache.log("user hit")
         return user
+    }
+
+    func getFirstAvailableUser() -> User? {
+        users.first?.value
     }
 
     func addUser(_ user: User) {
