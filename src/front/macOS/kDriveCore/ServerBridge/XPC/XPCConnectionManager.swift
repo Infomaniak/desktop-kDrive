@@ -31,6 +31,17 @@ import Foundation
 
         IKLogger.xpc.log("[KD] mach name: \(loginItemAgentMachName)")
         machServiceName = loginItemAgentMachName
+
+        super.init()
+
+        Task {
+            IKLogger.xpc.log("[KD] initial connection to login item agent")
+            do {
+                try await connectToLoginAgent()
+            } catch {
+                IKLogger.xpc.error("[KD] initial connectToLoginAgent FAILED \(error)")
+            }
+        }
     }
 
     func scheduleRetryToConnectToLoginAgent() {
