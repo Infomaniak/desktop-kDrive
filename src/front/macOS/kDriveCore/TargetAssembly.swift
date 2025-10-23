@@ -53,5 +53,8 @@ open class TargetAssembly {
 
     public static func setupDI() {
         (getCommonServices() + getTargetServices()).registerFactoriesInDI()
+
+        // Startup XPC connection
+        @InjectService var xpc: XPCConnectionProvider
     }
 }
