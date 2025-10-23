@@ -1,4 +1,5 @@
-﻿using Infomaniak.kDrive.ServerCommunication.Interfaces;
+﻿using Infomaniak.kDrive.ServerCommunication.CommStruct;
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.JsonConverters;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
@@ -10,7 +11,6 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using static Infomaniak.kDrive.ServerCommunication.CommShared;
 using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommProtocol;
 
 namespace Infomaniak.kDrive.ServerCommunication.Services
@@ -30,7 +30,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         // Requests
         public async Task<List<DbId>?> GetUserDbIds(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(CommShared.RequestNum.UserDbIds, new JsonObject(), cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UserDbIds, new JsonObject(), cancellationToken);
             if (data.Params == null || !data.Params.ContainsKey("userDbIds"))
             {
                 Logger.Log(Logger.Level.Error, "userDbIds not found in response.");
@@ -41,7 +41,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task<User?> AddOrRelogUser(string oAuthCode, string oAuthCodeVerifier, CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(CommShared.RequestNum.LoginRequestToken, new JsonObject
+            CommData data = await _commClient.SendRequestAsync(RequestNum.LoginRequestToken, new JsonObject
             {
                 ["code"] = Convert.ToBase64String(Encoding.UTF8.GetBytes(oAuthCode)),
                 ["codeVerifier"] = Convert.ToBase64String(Encoding.UTF8.GetBytes(oAuthCodeVerifier))
@@ -73,7 +73,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task RefreshUsers(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(CommShared.RequestNum.UserInfoList, new JsonObject(), cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UserInfoList, new JsonObject(), cancellationToken);
             if (data.Params == null || !data.Params.ContainsKey("userInfoList"))
             {
                 Logger.Log(Logger.Level.Error, "userInfo not found in response.");
@@ -112,7 +112,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task RefreshAccounts(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(CommShared.RequestNum.AccountInfoList, new JsonObject(), cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.AccountInfoList, new JsonObject(), cancellationToken);
             if (data.Params == null || !data.Params.ContainsKey("accountInfoList"))
             {
                 Logger.Log(Logger.Level.Error, "accountInfo not found in response.");
@@ -163,7 +163,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task RefreshDrives(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(CommShared.RequestNum.DriveInfoList, new JsonObject(), cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.DriveInfoList, new JsonObject(), cancellationToken);
             if (data.Params == null || !data.Params.ContainsKey("driveInfoList"))
             {
                 Logger.Log(Logger.Level.Error, "driveInfoList not found in response.");
@@ -215,7 +215,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task RefreshSyncs(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(CommShared.RequestNum.SyncInfoList, new JsonObject(), cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.SyncInfoList, new JsonObject(), cancellationToken);
             if (data.Params == null || !data.Params.ContainsKey("syncInfoList"))
             {
                 Logger.Log(Logger.Level.Error, "syncInfoList not found in response.");
@@ -265,9 +265,26 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             });
         }
 
+        public async Task RefreshSettings(CancellationToken cancellationToken)
+        {
+            CommData data = await _commClient.SendRequestAsync(RequestNum.PARAMETERS_INFO, new JsonObject(), cancellationToken);
+            if (data.Params == null || !data.Params.ContainsKey("parmsInfo"))
+            {
+                Logger.Log(Logger.Level.Error, "parmsInfo not found in response.");
+                return;
+            }
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            options.Converters.Add(new Base64StringJsonConverter());
+            ParmsInfo parametersInfo = data.Params["parmsInfo"].Deserialize<ParmsInfo>(options);
+            CommStruct.ConversionHelper.copyToSettings(parametersInfo, _viewModel.Settings);
+        }
+
         public async Task StartUpdate(CancellationToken cancellationToken)
         {
-            await _commClient.SendRequestAsync(CommShared.RequestNum.UPDATER_START_INSTALLER, new JsonObject(), cancellationToken);
+            await _commClient.SendRequestAsync(RequestNum.UPDATER_START_INSTALLER, new JsonObject(), cancellationToken);
         }
         public async Task RefreshUpdaterVersionInfo(CancellationToken cancellationToken)
         {
@@ -276,7 +293,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 ["channel"] = (int)channel
             };
-            CommData data = await _commClient.SendRequestAsync(CommShared.RequestNum.UPDATER_VERSION_INFO, parms, cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UPDATER_VERSION_INFO, parms, cancellationToken);
             if (data.Params == null || !data.Params.ContainsKey("versionInfo"))
             {
                 Logger.Log(Logger.Level.Error, "versionInfo not found in response.");
@@ -299,7 +316,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public async Task ChangeUpdaterChannel(VersionChannel newChannel, CancellationToken cancellationToken)
         {
             _viewModel.Settings.UpdateManager.AvailableUpdate = null;
-            await _commClient.SendRequestAsync(CommShared.RequestNum.UPDATER_CHANGE_CHANNEL, new JsonObject { ["channel"] = (int)newChannel }, cancellationToken);
+            await _commClient.SendRequestAsync(RequestNum.UPDATER_CHANGE_CHANNEL, new JsonObject { ["channel"] = (int)newChannel }, cancellationToken);
             _viewModel.Settings.UpdateManager.CurrentChannel = newChannel;
         }
 
@@ -351,91 +368,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         }
 
         // Helpers
-        static void CopyProperties<T, V>(T target, V source, HashSet<string>? excludedProperties = null, Dictionary<string /*sourceName*/ , string /*TargetName*/ >? propertyMappings = null)
-        {
-            // Converters
-            Dictionary<Type, Dictionary<Type, Func<object, object>>> converters = new Dictionary<Type, Dictionary<Type, Func<object, object>>>
-            {
-                { typeof(Int32), new Dictionary<Type, Func<object, object>>
-                    {
-                        { typeof(System.Drawing.Color), (obj) => System.Drawing.Color.FromArgb(System.Convert.ToInt32(obj)) }
-                    }
-                }
-            };
-
-            var sourceProperties = typeof(V).GetProperties().Where(p => p.CanRead && (excludedProperties == null || !excludedProperties.Contains(p.Name)));
-            foreach (var sourceProp in sourceProperties)
-            {
-                var sourceValue = sourceProp.GetValue(source);
-                if (sourceValue == null)
-                    continue;
-
-                string targetPropName = "";
-                if (propertyMappings is not null && propertyMappings.ContainsKey(sourceProp.Name))
-                {
-                    targetPropName = propertyMappings[sourceProp.Name];
-                    Logger.Log(Logger.Level.Extended, $"Mapping property {sourceProp.Name} from {typeof(V).Name} to {targetPropName} in {typeof(T).Name}");
-                }
-                else
-                {
-                    targetPropName = sourceProp.Name;
-                }
-                var targetProp = typeof(T).GetProperty(targetPropName);
-                if (targetProp != null && targetProp.CanWrite)
-                {
-                    var targetValueType = Nullable.GetUnderlyingType(targetProp.PropertyType) ?? targetProp.PropertyType;
-                    var sourceValueType = Nullable.GetUnderlyingType(sourceProp.PropertyType) ?? sourceProp.PropertyType;
-                    if (targetValueType != sourceValueType)
-                    {
-                        if (converters.ContainsKey(sourceValueType) && converters[sourceValueType].ContainsKey(targetValueType))
-                        {
-                            sourceValue = converters[sourceValueType][targetValueType](sourceValue);
-                        }
-                        else
-                        {
-                            Logger.Log(Logger.Level.Warning, $"No converter found for property {sourceProp.Name} from type {sourceValueType.Name} to {targetValueType.Name}");
-                            continue;
-                        }
-                    }
-
-                    var targetValue = targetProp.GetValue(target);
-                    if (!Equals(sourceValue, targetValue))
-                        targetProp.SetValue(target, sourceValue);
-                }
-                else
-                {
-                    Logger.Log(Logger.Level.Warning, $"Property {sourceProp.Name} from source type {typeof(V).Name} not found or not writable in target type {typeof(T).Name}");
-                }
-            }
-        }
-
-        static void CopyUserProperties(User target, UserInfo source)
-        {
-            CopyProperties(target, source, null);
-        }
-
-        static void CopyAccountProperties(Account target, AccountInfo source)
-        {
-            var excludedProperties = new HashSet<string> { "UserDbId" };
-            CopyProperties(target, source, excludedProperties);
-        }
-
-        static void CopyDriveProperties(Drive target, DriveInfo source)
-        {
-            var excludedProperties = new HashSet<string> { "AccountDbId", "Notification", "Maintenance", "Locked", "AccessDenied" };
-            CopyProperties(target, source, excludedProperties);
-        }
-
-        static void CopySyncProperties(Sync target, SyncInfo source)
-        {
-            var excludedProperties = new HashSet<string> { "DriveDbId", "TargetNodeId", "SupportOnlineMode", "OnlineMode" };
-            var propertyMappings = new Dictionary<string, string>
-            {
-                { "TargetPath", "RemotePath" }
-            };
-            CopyProperties(target, source, excludedProperties, propertyMappings);
-        }
-
         private async Task AddOrUpdateUserInModel(UserInfo userInfo)
         {
             if (_viewModel.Users.Any(u => u.DbId == userInfo.DbId))
@@ -447,13 +379,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     Logger.Log(Logger.Level.Error, $"Unexpected error, user with DbId {userInfo.DbId} not found after existence check.");
                     return;
                 }
-                CopyUserProperties(user, userInfo);
+                ConversionHelper.copyToUser(userInfo, user);
                 Logger.Log(Logger.Level.Info, $"User with DbId {userInfo.DbId} updated.");
             }
             else
             {
                 User newUser = new User(userInfo.DbId ?? throw new InvalidOperationException("DbId should not be null here."));
-                CopyUserProperties(newUser, userInfo);
+                ConversionHelper.copyToUser(userInfo, newUser);
                 await Utility.RunOnUIThread(() =>
                 {
                     _viewModel.Users.Add(newUser);
@@ -476,7 +408,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                         Logger.Log(Logger.Level.Error, $"Unexpected error, account with DbId {accountInfo.DbId} not found after existence check.");
                         return;
                     }
-                    CopyAccountProperties(account, accountInfo);
+                    ConversionHelper.copyToAccount(accountInfo, account);
                     Logger.Log(Logger.Level.Info, $"Account with DbId {accountInfo.DbId} updated.");
                     return;
                 }
@@ -494,7 +426,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             await Utility.RunOnUIThread(() =>
             {
                 var newAccount = new Account(accountInfo.DbId ?? throw new InvalidOperationException("DbId should not be null here."), parentUser);
-                CopyAccountProperties(newAccount, accountInfo);
+                ConversionHelper.copyToAccount(accountInfo, newAccount);
                 parentUser.Accounts.Add(newAccount);
             });
             Logger.Log(Logger.Level.Info, $"New account added to user with DbId {userDbId}.");
@@ -510,7 +442,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 {
                     continue;
                 }
-                CopyDriveProperties(drive, driveInfo);
+                ConversionHelper.copyToDrive(driveInfo, drive);
                 Logger.Log(Logger.Level.Info, $"Drive with DbId {driveInfo.DbId} updated.");
                 return;
             }
@@ -531,7 +463,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             await Utility.RunOnUIThread(() =>
             {
                 Drive newDrive = new Drive(driveInfo.DbId ?? throw new InvalidOperationException("DbId should not be null here."), parentAccount);
-                CopyDriveProperties(newDrive, driveInfo);
+                ConversionHelper.copyToDrive(driveInfo, newDrive);
                 parentAccount.Drives.Add(newDrive);
 
             });
@@ -553,7 +485,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 {
                     continue;
                 }
-                CopySyncProperties(sync, syncInfo);
+                ConversionHelper.copyToSync(syncInfo, sync);
                 Logger.Log(Logger.Level.Info, $"Sync with DbId {syncInfo.DbId} updated.");
                 return;
             }
@@ -568,7 +500,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             await Utility.RunOnUIThread(() =>
             {
                 Sync newSync = new Sync(syncInfo.DbId ?? throw new InvalidOperationException("DbId should not be null here."), parentDrive);
-                CopySyncProperties(newSync, syncInfo);
+                ConversionHelper.copyToSync(syncInfo, newSync);
                 parentDrive.Syncs.Add(newSync);
             });
             Logger.Log(Logger.Level.Info, $"New sync added to drive with DbId {driveDbId}.");

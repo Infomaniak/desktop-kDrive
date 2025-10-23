@@ -249,6 +249,7 @@ namespace Infomaniak.kDrive.ViewModels
             await serverCommService.RefreshAccounts(new CancellationToken());
             await serverCommService.RefreshDrives(new CancellationToken());
             await serverCommService.RefreshSyncs(new CancellationToken());
+            await serverCommService.RefreshSettings(new CancellationToken());
             Logger.Log(Logger.Level.Info, "All user data loaded successfully.");
             IsInitialized = true;
         }

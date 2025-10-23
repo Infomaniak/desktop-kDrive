@@ -51,7 +51,7 @@ namespace Infomaniak.kDrive.ViewModels
         private ImageSource? _avatarImageSource = null;
         private bool _isConnected = false;
         private bool _isStaff = false;
-        private readonly ObservableCollection<Account> _accounts = new ObservableCollection<Account>();
+        private ObservableCollection<Account> _accounts = new ObservableCollection<Account>();
         private readonly IDisposable _allDriveSubscribtion;
         public User(DbId dbId)
         {
@@ -129,6 +129,7 @@ namespace Infomaniak.kDrive.ViewModels
         public ObservableCollection<Account> Accounts
         {
             get => _accounts;
+            set => SetPropertyInUIThread(ref _accounts, value);
         }
 
         public ReadOnlyObservableCollection<Drive> Drives

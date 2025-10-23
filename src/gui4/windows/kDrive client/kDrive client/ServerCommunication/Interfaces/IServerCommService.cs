@@ -48,6 +48,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         // Sync-related requests
         Task RefreshSyncs(CancellationToken cancellationToken);
 
+        // Setting-related requests
+        Task RefreshSettings(CancellationToken cancellationToken);
 
         // Update-related requests
         Task StartUpdate(CancellationToken cancellationToken);

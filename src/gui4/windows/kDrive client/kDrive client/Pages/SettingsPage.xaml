@@ -112,7 +112,7 @@
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
 
                         </toolKit:SettingsCard.HeaderIcon>
-                        <ToggleSwitch />
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.Settings.AutoStart, Mode=OneWay}" />
 
                     </toolKit:SettingsCard>
                 </StackPanel>

@@ -17,6 +17,7 @@
  */
 
 using Infomaniak.kDrive.ServerCommunication.JsonConverters;
+using Infomaniak.kDrive.Types;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -29,7 +30,6 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using static Infomaniak.kDrive.ServerCommunication.CommShared;
 using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommProtocol;
 
 
