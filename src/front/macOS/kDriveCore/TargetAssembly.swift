@@ -36,6 +36,12 @@ open class TargetAssembly {
         return [
             Factory(type: ServerBridgeable.self) { _, _ in
                 ServerBridge()
+            },
+            Factory(type: CoherentCacheProtocol.self) { _, _ in
+                CoherentCache()
+            },
+            Factory(type: XPCConnectionProvider.self) { _, _ in
+                XPCConnectionManager()
             }
         ]
     }
