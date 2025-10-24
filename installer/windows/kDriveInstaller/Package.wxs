@@ -33,9 +33,9 @@
                       Return="ignore" />
         <CustomAction Id="InstallExplorerExtension"
 					  Directory="APPXFOLDER"
-					  ExeCommand="powershell.exe -WindowStyle hidden -ExecutionPolicy Bypass -Command &quot;Add-AppxPackage FileExplorerExtensionPackage_$(shortVersion).0_x64_arm64.msixbundle -ForceApplicationShutdown -ForceUpdateFromAnyVersion&quot;"
+					  ExeCommand="powershell.exe -WindowStyle hidden -ExecutionPolicy Bypass -Command &quot;Add-AppxProvisionedPackage -Online -PackagePath .\FileExplorerExtensionPackage_$(shortVersion).0_x64_arm64.msixbundle -SkipLicense&quot;"
 					  Execute="deferred"
-					  Impersonate="yes"
+					  Impersonate="no"
 					  Return="check" />
         <CustomAction Id="CleanUpAppData"
 					  Directory="APPXFOLDER"
@@ -47,7 +47,7 @@
 					  Directory="APPXFOLDER"
 					  ExeCommand="powershell.exe -WindowStyle hidden -ExecutionPolicy Bypass -File &quot;[APPXFOLDER]UninstallExtension.ps1&quot;"
 					  Execute="deferred"
-					  Impersonate="yes"
+					  Impersonate="no"
 					  Return="check" />
         <CustomAction Id="RunApp"
 				    Execute="immediate"

@@ -19,7 +19,7 @@ $package | Format-List Name, PackageFullName, InstallLocation
 foreach ($pkg in $package) {
     try {
         Write-Output "Removing package: $($pkg.PackageFullName)" -ForegroundColor Yellow
-        Remove-AppxPackage -Package $pkg.PackageFullName -ErrorAction Stop
+        Remove-AppxPackage -AllUsers -Package $pkg.PackageFullName -ErrorAction Stop
         Write-Output "Successfully removed: $($pkg.PackageFullName)" -ForegroundColor Green
     }
     catch {
