@@ -1,29 +1,29 @@
 # Requires administrative privileges to remove AppX packages
 
 # Step 1: Find the full package name(s) containing "Infomaniak.kDrive.Extension"
-Write-Output "Searching for packages containing 'Infomaniak.kDrive.Extension'..." -ForegroundColor Yellow
+Write-Output "Searching for packages containing 'Infomaniak.kDrive.Extension'..." 
 
 $packageNamePattern = "Infomaniak.kDrive.Extension*"
-$package = Get-AppxPackage -Name $packageNamePattern
+$provisionedPackage = Get-AppxProvisionedPackage -Online | Where-Object {$_.PackageName -like $packageNamePattern}
 
-if (-not $package) {
-    Write-Output "No package found matching: $packageNamePattern" -ForegroundColor Red
+if (-not $provisionedPackage) {
+    Write-Output "No package found matching: $packageNamePattern" 
     exit 0
 }
 
 # Step 2: Display found package(s)
-Write-Output "Found the following package(s):" -ForegroundColor Green
-$package | Format-List Name, PackageFullName, InstallLocation
+Write-Output "Found the following package(s):" 
+$provisionedPackage | Format-List PackageName, InstallLocation
 
 # Step 3: Remove each matching package
-foreach ($pkg in $package) {
+foreach ($pkg in $provisionedPackage) {
     try {
-        Write-Output "Removing package: $($pkg.PackageFullName)" -ForegroundColor Yellow
-        Remove-AppxPackage -AllUsers -Package $pkg.PackageFullName -ErrorAction Stop
-        Write-Output "Successfully removed: $($pkg.PackageFullName)" -ForegroundColor Green
+        Write-Output "Removing package: $($pkg.PackageName)" 
+        Remove-AppxPackage -AllUsers -Package $pkg.PackageName -ErrorAction Stop
+        Write-Output "Successfully removed: $($pkg.PackageName)"
     }
     catch {
-        Write-Output "Failed to remove package '$($pkg.PackageFullName)': $_"
+        Write-Output "Failed to remove package '$($pkg.PackageName)': $_"
 		exit 1
     }
 }
