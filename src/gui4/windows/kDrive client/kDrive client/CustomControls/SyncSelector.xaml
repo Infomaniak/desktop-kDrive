@@ -6,7 +6,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:viewModel="using:Infomaniak.kDrive.ViewModels"
-             xmlns:customControls="using:Infomaniak.kDrive.CustomControls"
+             xmlns:controls="using:Infomaniak.kDrive.CustomControls"
              xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
              xmlns:converters="using:Infomaniak.kDrive.Converters"
              mc:Ignorable="d">
@@ -16,7 +16,7 @@
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:IsGreaterConverter x:Key="IsGreaterConverter" />
         <converters:DriveToHasErrorConverter x:Key="DriveToHasErrorConverter" />
-
+        <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />
         <!-- Drive template when multiple syncs -->
         <DataTemplate x:Key="MultiSyncDrive"
                       x:DataType="viewModel:Drive">
@@ -126,8 +126,9 @@
                 <StackPanel Grid.Column="0"
                             Orientation="Horizontal"
                             Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                    <customControls:DriveIcon IconColor="{x:Bind Color, Mode=OneWay}"
-                                              Height="16" />
+                    <controls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom}"
+                                            Foreground="{x:Bind Color, Mode=OneWay, Converter={StaticResource ColorToBrushConverter}}"
+                                            Height="16" />
 
                     <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                                Text="{x:Bind Name, Mode=OneWay}" />
@@ -227,8 +228,9 @@
             <StackPanel Grid.Column="0"
                         Orientation="Horizontal"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                <customControls:DriveIcon IconColor="{x:Bind ViewModel.SelectedSync.Drive.Color, Mode=OneWay}"
-                                          Height="16" />
+                <controls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom}"
+                                        Foreground="{x:Bind ViewModel.SelectedSync.Drive.Color, Mode=OneWay, Converter={StaticResource ColorToBrushConverter}}"
+                                        Height="16" />
 
                 <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                            Text="{x:Bind ViewModel.SelectedSync.Drive.Name, Mode=OneWay}" />
@@ -252,8 +254,9 @@
             <StackPanel Orientation="Horizontal"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
                         Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.S}">
-                <customControls:DriveIcon IconColor="{x:Bind ViewModel.SelectedSync.Drive.Color, Mode=OneWay}"
-                                          Height="14" />
+                <controls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom}"
+                                        Foreground="{x:Bind ViewModel.SelectedSync.Drive.Color, Mode=OneWay, Converter={StaticResource ColorToBrushConverter}}"
+                                        Height="14" />
 
                 <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                            Text="{x:Bind ViewModel.SelectedSync.Drive.Name, Mode=OneWay}" />
@@ -264,7 +267,7 @@
                       HorizontalAlignment="Stretch"
                       HorizontalContentAlignment="Stretch" />
         </StackPanel>
-        
+
         <!-- No Sync configured TODO: Edit once the UI is implemented -->
         <TextBlock x:Name="NoSyncConfigured"
                    Style="{StaticResource Infomaniak.Style.TextBlock.BodyStrong}"

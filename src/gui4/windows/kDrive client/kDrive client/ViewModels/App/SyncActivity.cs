@@ -14,7 +14,7 @@ namespace Infomaniak.kDrive.ViewModels
         private NodeId remoteId = -1;
         private DateTime _activityTime;
         private Timer? _activityTimeUpdateTimer;
-        private SyncDirection _direction;
+        private SyncActivityDirection _direction;
         private Int64 _size;
         private NodeType _nodeType;
         private SyncActivityState _state = SyncActivityState.InProgress;
@@ -48,7 +48,7 @@ namespace Infomaniak.kDrive.ViewModels
                 }, null, TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(30));
             }
         }
-        public SyncDirection Direction { get => _direction; set => SetPropertyInUIThread(ref _direction, value); }
+        public SyncActivityDirection Direction { get => _direction; set => SetPropertyInUIThread(ref _direction, value); }
         public Int64 Size { get => _size; set => SetPropertyInUIThread(ref _size, value); }
         public NodeType NodeType
         {

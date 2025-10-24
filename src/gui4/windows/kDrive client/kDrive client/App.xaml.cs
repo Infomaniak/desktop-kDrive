@@ -56,12 +56,6 @@ namespace Infomaniak.kDrive
             //_services.AddSingleton<IServerCommProtocol, MockServerCommProtocol>();
             _services.AddSingleton<IServerCommService, ServerCommService>();
             _serviceProvider = _services.BuildServiceProvider();
-            foreach (var serviceDescriptor in _services.Where(sd => sd.Lifetime == ServiceLifetime.Singleton))
-            {
-                // Force the initialization of singleton services
-                _serviceProvider.GetRequiredService(serviceDescriptor.ServiceType);
-            }
-
             Logger.Log(Logger.Level.Info, "Application started");
         }
 
@@ -87,7 +81,13 @@ namespace Infomaniak.kDrive
                 }
             }
 
-            Logger.Log(Logger.Level.Info, $"App launched with kind: {args.UWPLaunchActivatedEventArgs.Kind}, arguments: {args.Arguments}");
+            // Start all singleton services
+            foreach (var serviceDescriptor in _services.Where(sd => sd.Lifetime == ServiceLifetime.Singleton))
+            {
+                // Force the initialization of singleton services
+                ServiceProvider.GetRequiredService(serviceDescriptor.ServiceType);
+            }
+
             CurrentWindow = new MainWindow();
             TrayIcoManager.Initialize();
             AppModel appModel = ServiceProvider.GetRequiredService<AppModel>();

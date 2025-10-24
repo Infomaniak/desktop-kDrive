@@ -72,7 +72,7 @@ namespace Infomaniak.kDrive.CustomControls
             _outGoingActivities.Clear();
             _activitySubscription = sync.SyncActivities
                 .ToObservableChangeSet()
-                .Filter(a => a.Direction == SyncDirection.Outgoing)
+                .Filter(a => a.Direction == SyncActivityDirection.Outgoing)
                 .OnItemAdded(a => _outGoingActivities.Insert(0, a))
                 .Subscribe();
         }

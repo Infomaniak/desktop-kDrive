@@ -34,67 +34,26 @@
 
         <!-- SyncStatus Text templates -->
         <DataTemplate x:Key="SyncUpToDateTemplate">
-            <StackPanel Orientation="Horizontal"
-                        Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}">
+            <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}">
                     <Run x:Uid="Page_HomePage_Status_SyncUpToDate" />
-                </TextBlock>
-
-                <ImageIcon Height="16"
-                           Width="16">
-                    <ImageIcon.Source>
-                        <SvgImageSource UriSource="ms-appx:///Assets/Icons/circle-check-plain.svg" />
-                    </ImageIcon.Source>
-                </ImageIcon>
-            </StackPanel>
+            </TextBlock>
         </DataTemplate>
 
         <DataTemplate x:Key="SyncInProgressTemplate">
-            <StackPanel Orientation="Horizontal"
-                        Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}">
+            <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}">
                     <Run x:Uid="Page_HomePage_Status_SyncInProgress" />
-                </TextBlock>
-
-                <ImageIcon Height="16"
-                           Width="16">
-                    <ImageIcon.Source>
-                        <SvgImageSource UriSource="ms-appx:///Assets/Icons/arrows-loop.svg" />
-                    </ImageIcon.Source>
-                </ImageIcon>
-            </StackPanel>
+            </TextBlock>
         </DataTemplate>
 
         <DataTemplate x:Key="SyncInPauseTemplate">
-            <StackPanel Orientation="Horizontal"
-                        Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}">
-            <Run x:Uid="Page_HomePage_Status_SyncInPause" />
-                </TextBlock>
-                <ImageIcon Height="16"
-                           Width="16">
-                    <ImageIcon.Source>
-                        <SvgImageSource UriSource="ms-appx:///Assets/Icons/pause-orange.svg" />
-                    </ImageIcon.Source>
-                </ImageIcon>
-            </StackPanel>
+            <TextBlock x:Uid="Page_HomePage_Status_SyncInPause"
+                       Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
         </DataTemplate>
 
         <DataTemplate x:Key="SyncOfflineTemplate"
                       x:DataType="viewmodel:Sync">
-            <StackPanel Orientation="Horizontal"
-                        Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}">
-                    <Run x:Uid="Page_HomePage_Status_SyncOffline" />
-                </TextBlock>
-
-                <ImageIcon Height="16"
-                           Width="16">
-                    <ImageIcon.Source>
-                        <SvgImageSource UriSource="ms-appx:///Assets/Icons/cloud-offline.svg" />
-                    </ImageIcon.Source>
-                </ImageIcon>
-            </StackPanel>
+            <TextBlock x:Uid="Page_HomePage_Status_SyncOffline"
+                       Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
         </DataTemplate>
 
         <DataTemplate x:Key="SyncLoadingTemplate">
@@ -102,11 +61,11 @@
         </DataTemplate>
 
         <templateSelectors:SyncStatusTemplateSelector x:Key="SyncStatusMessageTemplateSelector"
-                                          SyncUpToDateTemplate="{StaticResource SyncUpToDateTemplate}"
-                                          SyncInProgressTemplate="{StaticResource SyncInProgressTemplate}"
-                                          SyncInPauseTemplate="{StaticResource SyncInPauseTemplate}"
-                                          SyncOfflineTemplate="{StaticResource SyncOfflineTemplate}"
-                                          SyncLoadingTemplate="{StaticResource SyncLoadingTemplate}" />
+                                                      SyncUpToDateTemplate="{StaticResource SyncUpToDateTemplate}"
+                                                      SyncInProgressTemplate="{StaticResource SyncInProgressTemplate}"
+                                                      SyncInPauseTemplate="{StaticResource SyncInPauseTemplate}"
+                                                      SyncOfflineTemplate="{StaticResource SyncOfflineTemplate}"
+                                                      SyncLoadingTemplate="{StaticResource SyncLoadingTemplate}" />
 
         <!-- SyncStatus main template-->
         <DataTemplate x:Key="SyncUpToDateMainTemplate">
@@ -119,7 +78,7 @@
                 </Grid.RowDefinitions>
 
                 <controls:LottiePlayer Grid.Row="0"
-                                       UriSource="ms-appx:///Assets/Animations/kDrive-LoaderStroke.json"
+                                       UriSource="{ThemeResource Infomaniak.Custom.Animations.check}"
                                        MaxWidth="230" />
 
                 <StackPanel Grid.Row="1"
@@ -153,7 +112,7 @@
                 </Grid.RowDefinitions>
 
                 <controls:LottiePlayer Grid.Row="0"
-                                       UriSource="ms-appx:///Assets/Animations/kDrive-Sync-LIGHT.json"
+                                       UriSource="{ThemeResource Infomaniak.Custom.Animations.sync}"
                                        MaxWidth="230" />
 
                 <StackPanel Grid.Row="1"
@@ -187,7 +146,7 @@
                 </Grid.RowDefinitions>
 
                 <controls:LottiePlayer Grid.Row="0"
-                                       UriSource="ms-appx:///Assets/Animations/kDrive-Pause-LIGHT.json"
+                                       UriSource="{ThemeResource Infomaniak.Custom.Animations.pause}"
                                        MaxWidth="230" />
 
                 <StackPanel Grid.Row="1"
@@ -221,7 +180,7 @@
                 </Grid.RowDefinitions>
 
                 <controls:LottiePlayer Grid.Row="0"
-                                       UriSource="ms-appx:///Assets/Animations/kDrive-Offline-LIGHT.json"
+                                       UriSource="{ThemeResource Infomaniak.Custom.Animations.offline}"
                                        MaxWidth="230" />
 
                 <StackPanel Grid.Row="1"
@@ -288,11 +247,11 @@
         </DataTemplate>
 
         <templateSelectors:SyncStatusTemplateSelector x:Key="SyncStatusMainTemplateSelector"
-                                          SyncUpToDateTemplate="{StaticResource SyncUpToDateMainTemplate}"
-                                          SyncInProgressTemplate="{StaticResource SyncInProgressMainTemplate}"
-                                          SyncInPauseTemplate="{StaticResource SyncInPauseMainTemplate}"
-                                          SyncOfflineTemplate="{StaticResource SyncOfflineMainTemplate}"
-                                          SyncLoadingTemplate="{StaticResource SyncLoadingMainTemplate}" />
+                                                      SyncUpToDateTemplate="{StaticResource SyncUpToDateMainTemplate}"
+                                                      SyncInProgressTemplate="{StaticResource SyncInProgressMainTemplate}"
+                                                      SyncInPauseTemplate="{StaticResource SyncInPauseMainTemplate}"
+                                                      SyncOfflineTemplate="{StaticResource SyncOfflineMainTemplate}"
+                                                      SyncLoadingTemplate="{StaticResource SyncLoadingMainTemplate}" />
     </Page.Resources>
     <Grid Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.L}">
         <Grid.RowDefinitions>

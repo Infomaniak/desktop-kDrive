@@ -47,9 +47,9 @@ namespace Infomaniak.kDrive
             {
                 return false;
             }
-            OnPropertyChangedInUIThread(propertyName);
-            field = newValue;
             OnPropertyChangingInUIThread(propertyName);
+            field = newValue;
+            OnPropertyChangedInUIThread(propertyName);
             return true;
 
         }
