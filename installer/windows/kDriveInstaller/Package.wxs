@@ -49,6 +49,12 @@
 					  Execute="deferred"
 					  Impersonate="no"
 					  Return="check" />
+		<CustomAction Id="UninstallExplorerExtensionOnUpdate"
+					  Directory="APPXFOLDER"
+					  ExeCommand="powershell.exe -WindowStyle hidden -ExecutionPolicy Bypass -File &quot;[APPXFOLDER]UninstallExtension.ps1&quot;"
+					  Execute="deferred"
+					  Impersonate="no"
+					  Return="check" />
         <CustomAction Id="RunApp"
 				    Execute="immediate"
 				    Impersonate="no"
@@ -57,7 +63,7 @@
 				    ExeCommand="--noUpdate" />
         <InstallExecuteSequence>
             <Custom Action="TaskKill" Before="InstallValidate" />
-			<Custom Action="UninstallExplorerExtension" After="InstallFinalize" Condition="NOT REMOVE=&quot;ALL&quot;"  />
+			<Custom Action="UninstallExplorerExtensionOnUpdate" After="InstallFinalize" Condition="NOT REMOVE=&quot;ALL&quot;"  />
 			<Custom Action="InstallExplorerExtension" Before="InstallFinalize" Condition="NOT REMOVE=&quot;ALL&quot;" />
             <Custom Action="RunApp" After="InstallFinalize" Condition="NOT REMOVE=&quot;ALL&quot;" />
 
