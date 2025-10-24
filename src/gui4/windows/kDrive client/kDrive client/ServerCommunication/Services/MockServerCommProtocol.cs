@@ -333,7 +333,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 WriteIndented = true,
             };
-            string paramatersInfo = JsonSerializer.Serialize(_mockData.Settings, options);
+            string parametersInfo = JsonSerializer.Serialize(_mockData.Settings, options);
 
             return new CommData
             {
@@ -342,7 +342,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 RequestNum = RequestNum.UPDATER_CHANGE_CHANNEL,
                 Params = new JsonObject
                 {
-                    ["parmsInfo"] = JsonNode.Parse(paramatersInfo)
+                    ["parmsInfo"] = JsonNode.Parse(parametersInfo)
                 }
             };
         }

@@ -76,7 +76,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             CommData data = await _commClient.SendRequestAsync(RequestNum.UserInfoList, new JsonObject(), cancellationToken);
             if (data.Params == null || !data.Params.ContainsKey("userInfoList"))
             {
-                Logger.Log(Logger.Level.Error, "userInfo not found in response.");
+                Logger.Log(Logger.Level.Error, "userInfoList not found in response.");
                 return;
             }
             var options = new JsonSerializerOptions
@@ -115,7 +115,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             CommData data = await _commClient.SendRequestAsync(RequestNum.AccountInfoList, new JsonObject(), cancellationToken);
             if (data.Params == null || !data.Params.ContainsKey("accountInfoList"))
             {
-                Logger.Log(Logger.Level.Error, "accountInfo not found in response.");
+                Logger.Log(Logger.Level.Error, "accountInfoList not found in response.");
                 return;
             }
             var options = new JsonSerializerOptions
@@ -321,7 +321,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         }
 
         // Signals
-        public void OnSignalReceived(object? sender, SignalEventArgs args)
+        public async void OnSignalReceived(object? sender, SignalEventArgs args)
         {
             switch (args.SignalNum)
             {
@@ -330,7 +330,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     HandleUserUpdatedOrAdded(sender, args);
                     break;
                 case SignalNum.UPDATER_STATE_CHANGED:
-                    HandleUpdaterStateChanged(sender, args);
+                    await HandleUpdaterStateChanged(sender, args);
                     break;
                 default:
                     Logger.Log(Logger.Level.Warning, $"Unhandled signal received: {args.SignalNum}");
@@ -338,7 +338,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
         }
 
-        public void HandleUserUpdatedOrAdded(object? sender, SignalEventArgs args)
+        public async Task HandleUserUpdatedOrAdded(object? sender, SignalEventArgs args)
         {
             var signalData = args.SignalData;
 
@@ -359,12 +359,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Logger.Log(Logger.Level.Error, "userInfo.DbId is null.");
                 return;
             }
-            AddOrUpdateUserInModel(newUserInfo).GetAwaiter().GetResult();
+            await AddOrUpdateUserInModel(newUserInfo);
         }
 
-        public void HandleUpdaterStateChanged(object? sender, SignalEventArgs args)
+        public async Task HandleUpdaterStateChanged(object? sender, SignalEventArgs args)
         {
-            RefreshUpdaterVersionInfo(new CancellationToken()).GetAwaiter().GetResult();
+            await RefreshUpdaterVersionInfo(new CancellationToken());
         }
 
         // Helpers
