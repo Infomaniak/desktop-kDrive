@@ -384,7 +384,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 await Task.Delay(100);
                 if (updaterStateChangeCounter % 50 == 0)
                 {
-                    _mockData.VersionsByChannel[VersionChannel.Internal].Tag = "3.7.9" + ((updaterStateChangeCounter / 50)).ToString();
+                    if (!_mockData.VersionsByChannel.ContainsKey(VersionChannel.Internal)) continue;
+                    string oldTag = _mockData.VersionsByChannel[VersionChannel.Internal]?.Tag ?? "0.0.0";
+                    _mockData.VersionsByChannel[VersionChannel.Internal]!.Tag = "3.7.9" + ((updaterStateChangeCounter / 50)).ToString();
                     EnqueueSignal(SignalNum.UPDATER_STATE_CHANGED, new JsonObject());
                 }
             }

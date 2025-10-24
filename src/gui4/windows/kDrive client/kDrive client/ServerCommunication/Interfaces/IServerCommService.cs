@@ -57,7 +57,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task ChangeUpdaterChannel(VersionChannel newChannel, CancellationToken cancellationToken);
 
         // Event handlers for user-related signals
-        void HandleUserUpdatedOrAdded(object? sender, SignalEventArgs args);
-        void HandleUpdaterStateChanged(object? sender, SignalEventArgs args);
+        Task HandleUserUpdatedOrAdded(object? sender, SignalEventArgs args);
+
+        // Event handlers for Update-related signals
+        Task HandleUpdaterStateChanged(object? sender, SignalEventArgs args);
     }
 }

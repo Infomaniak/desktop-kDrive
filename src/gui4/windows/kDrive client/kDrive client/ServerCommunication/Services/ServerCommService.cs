@@ -327,7 +327,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 case SignalNum.UserUpdated:
                 case SignalNum.UserAdded:
-                    HandleUserUpdatedOrAdded(sender, args);
+                    await HandleUserUpdatedOrAdded(sender, args);
                     break;
                 case SignalNum.UPDATER_STATE_CHANGED:
                     await HandleUpdaterStateChanged(sender, args);
