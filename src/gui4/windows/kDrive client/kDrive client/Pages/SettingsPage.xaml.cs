@@ -70,6 +70,20 @@ namespace Infomaniak.kDrive.Pages
             (App.Current as App)?.StartOnboarding();
         }
 
+        
+
+        private void SetSelectedChannel(VersionChannel channel)
+        {
+            foreach (var item in UpdateChannel.Items)
+            {
+                if (item is ComboBoxItem comboBoxItem && comboBoxItem.Tag is string tagString && Enum.TryParse<VersionChannel>(tagString, out VersionChannel itemChannel) && itemChannel == channel)
+                {
+                    UpdateChannel.SelectedItem = comboBoxItem;
+                    return;
+                }
+            }
+        }
+
         private async void UpdateChannel_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (sender is ComboBox comboBox && comboBox.SelectedItem is ComboBoxItem selectedItem)
@@ -87,15 +101,11 @@ namespace Infomaniak.kDrive.Pages
             }
         }
 
-        private void SetSelectedChannel(VersionChannel channel)
+        private async void AutoUpdateToggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
-            foreach (var item in UpdateChannel.Items)
+            if (sender is ToggleSwitch toggleSwitch)
             {
-                if (item is ComboBoxItem comboBoxItem && comboBoxItem.Tag is string tagString && Enum.TryParse<VersionChannel>(tagString, out VersionChannel itemChannel) && itemChannel == channel)
-                {
-                    UpdateChannel.SelectedItem = comboBoxItem;
-                    return;
-                }
+                await ViewModel.Settings.UpdateManager.ChangeAutoUpdate(toggleSwitch.IsOn);
             }
         }
     }

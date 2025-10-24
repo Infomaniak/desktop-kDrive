@@ -56,17 +56,20 @@
                 <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                     <TextBlock x:Uid="Page_SettingsPage_Global"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
-
                     <!-- General - Update -->
                     <controls:UpdateExpander Settings="{x:Bind ViewModel.Settings, Mode=OneWay}" />
 
-                    <toolKit:SettingsCard x:Uid="Page_SettingsPage_AutoUpdate">
+                    <!-- General - Auto Update -->
+                    <toolKit:SettingsCard x:Uid="Page_SettingsPage_AutoUpdate"
+                                          Visibility="Visible">
+                        <!-- TODO: Make it visible once auto-update is implemented on the server side (see: UpdateManager.ChangeAutoUpdate) -->
                         <toolKit:SettingsCard.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Arrows.arrows-loop-automatic}"
                                               Height="32"
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                         </toolKit:SettingsCard.HeaderIcon>
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.Settings.UpdateManager.AutoUpdateEnabled, Mode=TwoWay}" />
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.Settings.UpdateManager.AutoUpdateEnabled, Mode=OneWay}"
+                                      Toggled="AutoUpdateToggleSwitch_Toggled" />
                     </toolKit:SettingsCard>
 
                     <!-- General - Beta -->
