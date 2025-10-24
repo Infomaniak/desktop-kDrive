@@ -61,8 +61,8 @@
 
                     <!-- General - Auto Update -->
                     <toolKit:SettingsCard x:Uid="Page_SettingsPage_AutoUpdate"
-                                          Visibility="Visible">
-                        <!-- TODO: Make it visible once auto-update is implemented on the server side (see: UpdateManager.ChangeAutoUpdate) -->
+                                          IsEnabled="False">
+                        <!-- TODO: Make it enabled once auto-update is implemented on the server side (see: UpdateManager.ChangeAutoUpdate) -->
                         <toolKit:SettingsCard.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Arrows.arrows-loop-automatic}"
                                               Height="32"
@@ -72,6 +72,20 @@
                                       Toggled="AutoUpdateToggleSwitch_Toggled" />
                     </toolKit:SettingsCard>
 
+                    <!-- General - Language -->
+                    <toolKit:SettingsCard x:Uid="Page_SettingsPage_Language"
+                                          IsEnabled="False">
+                        <toolKit:SettingsCard.HeaderIcon>
+                            <controls:SvgIcon  UriString="{StaticResource Infomaniak.DS.Icons.Communication.translate}"
+                                               Height="32"
+                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                        </toolKit:SettingsCard.HeaderIcon>
+                        <ComboBox SelectedIndex="0">
+                            <ComboBoxItem x:Uid="Page_SettingsPage_Language_ComboBox_Default" />
+                            <!-- TODO: Add language options here (Not needed for beta release)-->
+                        </ComboBox>
+                    </toolKit:SettingsCard>
+                    
                     <!-- General - Beta -->
                     <toolKit:SettingsCard Description="kDrive Beta est disponible."
                                           Header="Version Beta">
@@ -88,21 +102,7 @@
                         </ComboBox>
                     </toolKit:SettingsCard>
 
-                    <!-- General - Language -->
-                    <toolKit:SettingsCard Header="Langue">
-                        <toolKit:SettingsCard.HeaderIcon>
-                            <controls:SvgIcon  UriString="{StaticResource Infomaniak.DS.Icons.Communication.translate}"
-                                               Height="32"
-                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                        </toolKit:SettingsCard.HeaderIcon>
-                        <ComboBox SelectedIndex="0">
-                            <ComboBoxItem>Français</ComboBoxItem>
-                            <ComboBoxItem>Anglais</ComboBoxItem>
-                            <ComboBoxItem>Allemand</ComboBoxItem>
-                            <ComboBoxItem>Espagnol</ComboBoxItem>
-                            <ComboBoxItem>Italien</ComboBoxItem>
-                        </ComboBox>
-                    </toolKit:SettingsCard>
+                   
 
                     <!-- General - Auto start -->
                     <toolKit:SettingsCard Header="Ouvrir kDrive au démarrage de l’ordinateur">

@@ -533,4 +533,10 @@ Version {0} (build {1}), compilée le {2}
   <data name="CC_UpdateExpander_ChangeLogHyperLink.Content" xml:space="preserve">
     <value>Notes de mise à jour</value>
   </data>
+  <data name="Page_SettingsPage_Language.Header" xml:space="preserve">
+    <value>Langue</value>
+  </data>
+  <data name="Page_SettingsPage_Language_ComboBox_default.Content" xml:space="preserve">
+    <value>Default</value>
+  </data>
 </root>
