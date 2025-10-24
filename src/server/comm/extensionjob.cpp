@@ -220,7 +220,7 @@ void ExtensionJob::commandGetMenuItems(const CommString &argument, std::shared_p
 
 void ExtensionJob::commandCopyPublicLink(const CommString &argument, std::shared_ptr<AbstractCommChannel>) {
     const auto fileData = FileData::get(argument);
-    if (!fileData.syncDbId) return;
+    if (!fileData.isValid()) return;
 
     const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
     if (syncPalMapIt == _commManager->syncPalMap().end()) return;
@@ -275,7 +275,7 @@ void ExtensionJob::commandMakeAvailableLocallyDirect(const CommString &argument,
         SyncPath filePath(filePathStr);
 #endif
         auto fileData = FileData::get(filePath);
-        if (!fileData.syncDbId) {
+        if (!fileData.isValid()) {
             LOGW_WARN(Log::instance()->getLogger(), L"No file data - " << Utility::formatSyncPath(filePath));
             continue;
         }
@@ -470,6 +470,11 @@ void ExtensionJob::commandGetAllMenuItems(const CommString &argument, std::share
     // Some options only show for single files
     if (argumentList.size() == 1) {
         FileData fileData = FileData::get(argumentList[0]);
+        if (!fileData.isValid()) {
+            (void) channel->sendMessage(response);
+            return;
+        }
+
         NodeId nodeId;
         ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(fileData.relativePath, nodeId);
         if (exitCode != ExitCode::Ok) {
@@ -501,6 +506,7 @@ void ExtensionJob::commandGetAllMenuItems(const CommString &argument, std::share
         for (const auto &filePathStr: argumentList) {
             SyncPath filePath(filePathStr);
             auto fileData = FileData::get(filePath);
+            if (!fileData.isValid()) break;
             if (syncPalMapIt->second->isDownloadOngoing(fileData.relativePath)) {
                 canCancelHydration = true;
                 break;
@@ -553,7 +559,7 @@ void ExtensionJob::commandGetThumbnail(const CommString &argument, std::shared_p
     }
 
     FileData fileData = FileData::get(filePath);
-    if (!fileData.syncDbId) {
+    if (!fileData.isValid()) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"The file is not in a synchonized folder - " << Utility::formatSyncPath(filePath));
         return;
@@ -768,6 +774,10 @@ void ExtensionJob::executeCommand(const CommString &commandLineStr, std::shared_
 void ExtensionJob::manageActionsOnSingleFile(std::shared_ptr<AbstractCommChannel> channel, const std::vector<CommString> &files,
                                              SyncPalMap::const_iterator syncPalMapIt, VfsMap::const_iterator vfsMapIt,
                                              const Sync &sync) {
+    if (files.size() != 1) {
+        return;
+    }
+
     bool exists = false;
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(files[0], exists, ioError) || !exists) {
@@ -775,7 +785,7 @@ void ExtensionJob::manageActionsOnSingleFile(std::shared_ptr<AbstractCommChannel
     }
 
     FileData fileData = FileData::get(files[0]);
-    if (fileData.localPath.empty()) {
+    if (!fileData.isValid()) {
         return;
     }
     bool isExcluded = vfsMapIt->second->isExcluded(fileData.localPath);
@@ -832,7 +842,9 @@ void ExtensionJob::fetchPrivateLinkUrlHelper(const SyncPath &localFile,
 
     if (syncPalMapIt == _commManager->syncPalMap().end()) return;
 
-    FileData fileData = FileData::get(localFile);
+    const FileData fileData = FileData::get(localFile);
+    if (!fileData.isValid()) return;
+
     NodeId itemId;
     if (syncPalMapIt->second->fileRemoteIdFromLocalPath(fileData.relativePath, itemId) != ExitCode::Ok) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in SyncPal::itemId - " << Utility::formatSyncPath(localFile));
@@ -848,7 +860,7 @@ bool ExtensionJob::syncFileStatus(const FileData &fileData, SyncFileStatus &stat
     vfsStatus.isPlaceholder = false;
     vfsStatus.isHydrated = false;
 
-    if (!fileData.syncDbId) return false;
+    if (!fileData.isValid()) return false;
 
     const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
     if (syncPalMapIt == _commManager->syncPalMap().end()) return false;
@@ -1120,16 +1132,17 @@ void ExtensionJob::buildAndSendMenuItemMessage(std::shared_ptr<AbstractCommChann
 void ExtensionJob::processFileList(const std::vector<CommString> &inFileList, std::vector<SyncPath> &outFileList) {
     // Process all files
     for (const auto &path: inFileList) {
-        FileData fileData = FileData::get(path);
-        if (fileData.virtualFileMode == VirtualFileMode::Mac) {
-            QFileInfo info(CommonUtility::commString2QStr(path));
+        const FileData fileData = FileData::get(path);
+        if (fileData.isValid() && fileData.virtualFileMode == VirtualFileMode::Mac) {
+            const QFileInfo info(CommonUtility::commString2QStr(path));
             if (info.isDir()) {
                 const QFileInfoList infoList =
                         QDir(CommonUtility::commString2QStr(path)).entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
                 std::vector<CommString> fileList;
                 for (const auto &tmpInfo: qAsConst(infoList)) {
-                    SyncPath tmpPath(QStr2Path(tmpInfo.filePath()));
+                    const SyncPath tmpPath(QStr2Path(tmpInfo.filePath()));
                     FileData tmpFileData = FileData::get(tmpPath);
+                    if (!tmpFileData.isValid()) continue;
 
                     auto status = SyncFileStatus::Unknown;
                     if (VfsStatus vfsStatus; !syncFileStatus(tmpFileData, status, vfsStatus)) {
@@ -1231,7 +1244,7 @@ FileData FileData::get(const SyncPath &path) {
         } else {
             LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::longpath - " << Utility::formatSyncPath(path));
         }
-        return FileData();
+        return {};
     }
 #else
     SyncPath tmpPath(path);
