@@ -21,7 +21,7 @@ using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.Logging;
 
 // These structs are used for communication between the client and server
-// they should only be user in the ServerCommunication layer
+// they should only be used in the ServerCommunication layer
 namespace Infomaniak.kDrive.ServerCommunication.CommStruct
 {
     public static partial class ConversionHelper
