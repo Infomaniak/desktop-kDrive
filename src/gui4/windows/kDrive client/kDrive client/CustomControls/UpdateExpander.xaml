@@ -25,10 +25,10 @@
                        Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
     </toolKit:SettingsExpander.HeaderIcon>
 
-    <Button Content="Mettre à jour"
+    <Button x:Uid="CC_UpdateExpander_UpdateButton"
             Style="{ThemeResource AccentButtonStyle}"
-            Visibility="{x:Bind Settings.UpdateManager.AvailableUpdate, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}" 
-            Click="UpdateButton_Click"/>
+            Visibility="{x:Bind Settings.UpdateManager.AvailableUpdate, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
+            Click="UpdateButton_Click" />
 
     <toolKit:SettingsExpander.Items>
         <toolKit:SettingsCard Background="{ThemeResource LayerFillColorDefault}">
@@ -41,12 +41,12 @@
             <toolKit:SettingsCard.Description>
                 <StackPanel>
                     <TextBlock x:Name="ExpandedTextBox" />
-                    <HyperlinkButton Content="Licence LGPL v3 - Sources Git"
+                    <HyperlinkButton x:Uid="CC_UpdateExpander_LicensesHyperLink"
                                      NavigateUri="https://github.com/Infomaniak/desktop-kDrive?tab=GPL-3.0-1-ov-file" />
                 </StackPanel>
             </toolKit:SettingsCard.Description>
             <StackPanel Orientation="Horizontal">
-                <HyperlinkButton Content="Changelog"
+                <HyperlinkButton x:Uid="CC_UpdateExpander_ChangeLogHyperLink"
                                  NavigateUri="{x:Bind DisplayedVersion.ChangeLogUrl, Mode=OneWay}" />
             </StackPanel>
         </toolKit:SettingsCard>

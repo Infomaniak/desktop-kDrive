@@ -70,7 +70,6 @@ namespace Infomaniak.kDrive.Pages
             (App.Current as App)?.StartOnboarding();
         }
 
-        private CancellationTokenSource? _updateChannelcancellationTokenSource = null;
         private async void UpdateChannel_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (sender is ComboBox comboBox && comboBox.SelectedItem is ComboBoxItem selectedItem)

@@ -54,13 +54,13 @@
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.L}">
                 <!-- General -->
                 <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                    <TextBlock Text="Général"
+                    <TextBlock x:Uid="Page_SettingsPage_Global"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
 
                     <!-- General - Update -->
                     <controls:UpdateExpander Settings="{x:Bind ViewModel.Settings, Mode=OneWay}" />
 
-                    <toolKit:SettingsCard Header="Mettre à jour kDrive automatiquement">
+                    <toolKit:SettingsCard x:Uid="Page_SettingsPage_AutoUpdate">
                         <toolKit:SettingsCard.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Arrows.arrows-loop-automatic}"
                                               Height="32"
@@ -68,11 +68,6 @@
                         </toolKit:SettingsCard.HeaderIcon>
                         <ToggleSwitch IsOn="{x:Bind ViewModel.Settings.UpdateManager.AutoUpdateEnabled, Mode=TwoWay}" />
                     </toolKit:SettingsCard>
-
-                    <toolKit:SettingsCard Header="Mettre à jour kDrive automatiquement">
-                        <ToggleSwitch />
-                    </toolKit:SettingsCard>
-
 
                     <!-- General - Beta -->
                     <toolKit:SettingsCard Description="kDrive Beta est disponible."
@@ -82,7 +77,8 @@
                                               Height="32"
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                         </toolKit:SettingsCard.HeaderIcon>
-                        <ComboBox x:Name="UpdateChannel" SelectionChanged="UpdateChannel_SelectionChanged">
+                        <ComboBox x:Name="UpdateChannel"
+                                  SelectionChanged="UpdateChannel_SelectionChanged">
                             <ComboBoxItem Tag="Prod">Stable</ComboBoxItem>
                             <ComboBoxItem Tag="Beta">Beta</ComboBoxItem>
                             <ComboBoxItem Tag="Internal">Internal</ComboBoxItem>

@@ -117,7 +117,6 @@ namespace Infomaniak.kDrive.ViewModels
         public ObservableCollection<Account> Accounts
         {
             get => _accounts;
-            set => SetPropertyInUIThread(ref _accounts, value);
         }
 
         public ReadOnlyObservableCollection<Drive> Drives
