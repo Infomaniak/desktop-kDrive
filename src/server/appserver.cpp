@@ -291,22 +291,6 @@ void AppServer::init() {
         throw std::runtime_error("Unable to initialize proxy.");
     }
 
-    // Init JobManager(s)
-    if (!GuiJobManagerSingleton::instance()) {
-        LOG_WARN(_logger, "Error in GuiJobManager::instance");
-        throw std::runtime_error("Unable to initialize GUI job manager.");
-    }
-    if (!SyncJobManagerSingleton::instance()) {
-        LOG_WARN(_logger, "Error in SyncJobManager::instance");
-        throw std::runtime_error("Unable to initialize Sync job manager.");
-    }
-#if defined(KD_MACOS) || defined(KD_WINDOWS)
-    if (!ExtJobManagerSingleton::instance()) {
-        LOG_WARN(_logger, "Error in ExtJobManager::instance");
-        throw std::runtime_error("Unable to initialize Ext job manager.");
-    }
-#endif
-
     // Setup auto start
 #ifdef NDEBUG
 #if defined(KD_LINUX)
@@ -413,6 +397,22 @@ void AppServer::init() {
 
     // Start syncs
     QTimer::singleShot(0, [=, this]() { startSyncsAndRetryOnError(); });
+
+    // Init JobManager(s)
+    if (!GuiJobManagerSingleton::instance()) {
+        LOG_WARN(_logger, "Error in GuiJobManager::instance");
+        throw std::runtime_error("Unable to initialize GUI job manager.");
+    }
+    if (!SyncJobManagerSingleton::instance()) {
+        LOG_WARN(_logger, "Error in SyncJobManager::instance");
+        throw std::runtime_error("Unable to initialize Sync job manager.");
+    }
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+    if (!ExtJobManagerSingleton::instance()) {
+        LOG_WARN(_logger, "Error in ExtJobManager::instance");
+        throw std::runtime_error("Unable to initialize Ext job manager.");
+    }
+#endif
 
     // Process possible interrupted logs upload
     processInterruptedLogsUpload();
