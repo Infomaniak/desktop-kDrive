@@ -60,7 +60,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public SocketServerCommProtocol()
         {
-            base.SignalReceived += (s, e) => SignalReceived?.Invoke(s, e); // Forward signals from mock class - TODO: remove when all methods are implemented
+            base.SignalReceived += (s, e) => SignalReceived?.Invoke(s, e); // Forward signals from base class - TODO: remove when all methods are implemented
             Initialize();
         }
 
