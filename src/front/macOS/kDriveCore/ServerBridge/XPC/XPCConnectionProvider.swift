@@ -39,7 +39,7 @@ extension XPCConnectionManager: XPCConnectionProvider {
     public var guiConnection: XPCGuiProtocol {
         get async throws {
             let connection = try self.connection
-            return try await connection.asyncProxy(from: connection, type: XPCGuiProtocol.self)
+            return try connection.proxy(from: connection, type: XPCGuiProtocol.self)
         }
     }
 }
