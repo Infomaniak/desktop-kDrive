@@ -73,6 +73,7 @@
                         <ToggleSwitch />
                     </toolKit:SettingsCard>
 
+
                     <!-- General - Beta -->
                     <toolKit:SettingsCard Description="kDrive Beta est disponible."
                                           Header="Version Beta">
