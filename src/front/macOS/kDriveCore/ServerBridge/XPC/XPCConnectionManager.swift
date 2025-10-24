@@ -18,7 +18,7 @@
 
 import Foundation
 
-@preconcurrency @objc open class XPCConnectionManager: NSObject, @unchecked Sendable {
+@objc final class XPCConnectionManager: NSObject {
     let machServiceName: String
 
     var loginItemAgentConnection: NSXPCConnection?
@@ -34,18 +34,27 @@ import Foundation
     }
 
     func scheduleRetryToConnectToLoginAgent() {
-        DispatchQueue.main.async {
+        Task {
             IKLogger.xpc.log("[KD] Set timer to retry to connect to login agent")
-            Timer.scheduledTimer(withTimeInterval: 10, repeats: false) { [weak self] _ in
-                self?.connectToLoginAgent()
-            }
+            try? await Task.sleep(nanoseconds: 10_000_000_000)
+            try? await connectToLoginAgent()
         }
     }
 
-    func connectToLoginAgent() {
+    func scheduleRetryToConnectToServer() {
+        Task {
+            IKLogger.xpc.log("[KD] Set timer to retry to connect to server")
+            try? await Task.sleep(nanoseconds: 10_000_000_000)
+            try? await fetchServerEndpointFromLoginItemAgentAndConnect()
+        }
+    }
+
+    func connectToLoginAgent() async throws {
         guard loginItemAgentConnection == nil else {
             IKLogger.xpc.log("[KD] Already connected to item agent")
-            return
+            throw NSError(domain: "XPC",
+                          code: -1,
+                          userInfo: [NSLocalizedDescriptionKey: "missing login item agent connection"])
         }
 
         IKLogger.xpc.log("[KD] Initialize connection with login item agent")
@@ -78,21 +87,47 @@ import Foundation
         IKLogger.xpc.log("[KD] Resume connection with login item agent")
         connection.resume()
 
+        try await fetchServerEndpointFromLoginItemAgentAndConnect()
+    }
+
+    func fetchServerEndpointFromLoginItemAgentAndConnect() async throws {
+        let endpoint = try await getServerEndpoint()
+        try connectToServer(endpoint: endpoint)
+    }
+
+    func getServerEndpoint() async throws -> NSXPCListenerEndpoint {
+        guard let loginItemAgentConnection,
+              let loginItemProxy = loginItemAgentConnection.remoteObjectProxy as? XPCLoginItemProtocol else {
+            throw NSError(domain: "XPC",
+                          code: -1,
+                          userInfo: [NSLocalizedDescriptionKey: "missing login item agent connection"])
+        }
+
         IKLogger.xpc.log("[KD] Get server gui endpoint from login item agent")
-        (connection.remoteObjectProxy as? XPCLoginItemProtocol)?.serverGuiEndpoint { [weak self] endpoint in
-            IKLogger.xpc.log("[KD] Server gui endpoint received \(String(describing: endpoint))")
-            guard let endpoint else {
-                IKLogger.xpc.error("[KD] endpoint nil")
-                return
+
+        return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<NSXPCListenerEndpoint, Error>) in
+            loginItemProxy.serverGuiEndpoint { endpoint in
+                IKLogger.xpc.log("[KD] Server gui endpoint received \(String(describing: endpoint))")
+                if let endpoint = endpoint {
+                    continuation.resume(returning: endpoint)
+                } else {
+                    IKLogger.xpc.error("[KD] endpoint nil")
+                    continuation.resume(throwing: NSError(
+                        domain: "XPC",
+                        code: -1,
+                        userInfo: [NSLocalizedDescriptionKey: "Endpoint was nil"]
+                    ))
+                }
             }
-            self?.connectToServer(endpoint: endpoint)
         }
     }
 
-    func connectToServer(endpoint: NSXPCListenerEndpoint) {
+    func connectToServer(endpoint: NSXPCListenerEndpoint) throws {
         guard appConnection == nil else {
             IKLogger.xpc.log("[KD] Already connected to app")
-            return
+            throw NSError(domain: "XPC",
+                          code: -1,
+                          userInfo: [NSLocalizedDescriptionKey: "missing login item agent connection"])
         }
 
         IKLogger.xpc.log("[KD] Setup connection with app")
@@ -110,34 +145,28 @@ import Foundation
             IKLogger.xpc.error("[KD] Connection with app interrupted (server crash)")
             guard let self else { return }
             self.appConnection = nil
+            self.scheduleRetryToConnectToServer()
         }
 
         appConnection?.invalidationHandler = { [weak self] in
             IKLogger.xpc.error("[KD] Connection with app invalidated (no server running)")
             guard let self else { return }
             self.appConnection = nil
+            self.scheduleRetryToConnectToServer()
         }
 
         appConnection?.resume()
     }
 
     // TODO: Remove
-    func dummyServerQuery() {
+    func dummyServerQuery() async throws {
         guard let appConnection else {
             IKLogger.xpc.error("[KD] no connection")
             return
         }
 
         IKLogger.xpc.log("[KD] Start communication with app server")
-
-        let remoteObject = appConnection.remoteObjectProxyWithErrorHandler { error in
-            IKLogger.xpc.error("[KD] Error during remote object proxy call: \(error)")
-        } as? XPCGuiProtocol
-
-        guard let remoteObject else {
-            IKLogger.xpc.log("[KD] remote object nil")
-            return
-        }
+        let remoteObject = try await appConnection.asyncProxy(from: appConnection, type: XPCGuiProtocol.self)
 
         let json = """
         { "num": 1,
@@ -173,7 +202,7 @@ extension XPCConnectionManager: XPCLoginItemRemoteProtocol {
             IKLogger.xpc.error("[KD] server sent a nil endpoint")
             return
         }
-        connectToServer(endpoint: endPoint)
+        try? connectToServer(endpoint: endPoint)
     }
 }
 

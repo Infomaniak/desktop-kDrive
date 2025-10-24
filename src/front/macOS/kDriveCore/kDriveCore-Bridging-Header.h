@@ -19,3 +19,5 @@
 // Bridging-Header.h
 #import "ServerBridge/XPC/xpcGuiProtocol.h"
 #import "ServerBridge/XPC/xpcLoginItemProtocol.h"
+#import "ServerBridge/XPC/cstypes.h"
+#import "ServerBridge/XPC/comm.h"
