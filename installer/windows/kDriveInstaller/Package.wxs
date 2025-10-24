@@ -57,8 +57,8 @@
 				    ExeCommand="--noUpdate" />
         <InstallExecuteSequence>
             <Custom Action="TaskKill" Before="InstallValidate" />
-            
-            <Custom Action="InstallExplorerExtension" Before="InstallFinalize" Condition="NOT REMOVE=&quot;ALL&quot;" />
+			<Custom Action="UninstallExplorerExtension" After="InstallFinalize" Condition="NOT REMOVE=&quot;ALL&quot;"  />
+			<Custom Action="InstallExplorerExtension" Before="InstallFinalize" Condition="NOT REMOVE=&quot;ALL&quot;" />
             <Custom Action="RunApp" After="InstallFinalize" Condition="NOT REMOVE=&quot;ALL&quot;" />
 
             <!-- Do not clean data on update -->
