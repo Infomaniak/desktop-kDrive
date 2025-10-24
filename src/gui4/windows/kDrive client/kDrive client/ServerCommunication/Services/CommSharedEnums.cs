@@ -16,9 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using Infomaniak.kDrive.Types;
-using Microsoft.Extensions.Logging;
-
 namespace Infomaniak.kDrive.Types
 {
     public enum RequestNum
@@ -154,6 +151,7 @@ namespace Infomaniak.kDrive.Types
         System,
         HTTP
     };
+
     public enum CommMessageType
     {
         Unknown = 0,

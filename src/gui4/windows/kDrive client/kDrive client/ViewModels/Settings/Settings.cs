@@ -4,51 +4,11 @@ using System.Collections.ObjectModel;
 
 namespace Infomaniak.kDrive.ViewModels
 {
-    public class ProxyConfig : UISafeObservableObject
-    {
-        private ProxyType _type = ProxyType.None;
-        private string _hostName = "";
-        private int _port = 0;
-        private bool _needsAuth = false;
-        private string _user = "";
-        private string _pwd = "";
-        public ProxyType Type
-        {
-            get => _type;
-            set => SetPropertyInUIThread(ref _type, value);
-        }
-        public string HostName
-        {
-            get => _hostName;
-            set => SetPropertyInUIThread(ref _hostName, value);
-        }
-        public int Port
-        {
-            get => _port;
-            set => SetPropertyInUIThread(ref _port, value);
-        }
-        public bool NeedsAuth
-        {
-            get => _needsAuth;
-            set => SetPropertyInUIThread(ref _needsAuth, value);
-        }
-        public string User
-        {
-            get => _user;
-            set => SetPropertyInUIThread(ref _user, value);
-        }
-        public string Pwd
-        {
-            get => _pwd;
-            set => SetPropertyInUIThread(ref _pwd, value);
-        }
-    }
-
     public class Settings : UISafeObservableObject
     {
         public Settings()
         {
-            AppVersion = new AppVersion { Tag = "3.7.6", BuildVersion = "20250908" };
+            AppVersion = new AppVersion { Tag = "3.7.6", BuildVersion = "20250908" }; // TODO: Remove hardcoded version once loaded from the app.
         }
         private Language _language = Language.SystemDefault;
         private bool _autoStart = false;
@@ -57,8 +17,7 @@ namespace Infomaniak.kDrive.ViewModels
         private Logger.Level _logLevel = Logger.Level.Extended;
         private bool _purgeOldLogs = true;
         private ProxyConfig _proxyConfig = new ProxyConfig();
-        public long? _bigFolderSizeLimit;
-        public bool? _showShortcuts;
+        private bool? _showShortcuts;
 
         private AppVersion? _appVersion;
         public UpdateManager UpdateManager { get; } = new UpdateManager();

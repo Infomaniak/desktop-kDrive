@@ -1,12 +1,7 @@
 using CommunityToolkit.WinUI.Controls;
-using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using System;
-using System.Globalization;
-using Windows.Services.Store;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace Infomaniak.kDrive.CustomControls
 {
     public sealed partial class UpdateExpander : SettingsExpander
@@ -26,10 +21,7 @@ namespace Infomaniak.kDrive.CustomControls
         public Settings? Settings
         {
             get => (Settings?)GetValue(SettingsProperty);
-            set
-            {
-                SetValue(SettingsProperty, value);
-            }
+            set => SetValue(SettingsProperty, value);
         }
 
         // The version to display in the expander either the current app version or the available update version
@@ -43,12 +35,9 @@ namespace Infomaniak.kDrive.CustomControls
         public AppVersion? DisplayedVersion
         {
             get => (AppVersion?)GetValue(DisplayedVersionProperty);
-            set
-            {
-                SetValue(DisplayedVersionProperty, value);
-            }
-        }
+            set => SetValue(DisplayedVersionProperty, value);
 
+        }
 
         private static void OnSettingsPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {

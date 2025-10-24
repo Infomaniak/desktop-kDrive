@@ -30,20 +30,15 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _updateData, value);
         }
 
-        public UpdateManager()
-        {
-            StartUpdateCommand = new AsyncRelayCommand(StartUpdate);
-        }
-        public IAsyncRelayCommand StartUpdateCommand { get; }
         public async Task<bool> StartUpdate()
         {
-            await App.ServiceProvider.GetRequiredService<IServerCommService>().StartUpdate(default);
+            await App.ServiceProvider.GetRequiredService<IServerCommService>().StartUpdate(CancellationToken.None);
             return true;
         }
 
         public async Task ChangeChannel(VersionChannel newChannel)
         {
-            await App.ServiceProvider.GetRequiredService<IServerCommService>().ChangeUpdaterChannel(newChannel, default);
+            await App.ServiceProvider.GetRequiredService<IServerCommService>().ChangeUpdaterChannel(newChannel, CancellationToken.None);
         }
     }
 }

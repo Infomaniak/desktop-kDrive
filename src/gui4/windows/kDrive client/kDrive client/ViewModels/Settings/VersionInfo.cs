@@ -1,6 +1,5 @@
 ﻿using Infomaniak.kDrive.Types;
 using System;
-using System.Windows.Media.Animation;
 
 namespace Infomaniak.kDrive.ViewModels
 {

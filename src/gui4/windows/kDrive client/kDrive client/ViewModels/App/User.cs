@@ -16,26 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using CommunityToolkit.Mvvm.ComponentModel;
 using DynamicData;
 using DynamicData.Binding;
-using Infomaniak.kDrive.ServerCommunication;
-using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
-using System.Buffers.Binary;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.Drawing;
-using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage.Streams;
 
@@ -51,7 +39,7 @@ namespace Infomaniak.kDrive.ViewModels
         private ImageSource? _avatarImageSource = null;
         private bool _isConnected = false;
         private bool _isStaff = false;
-        private ObservableCollection<Account> _accounts = new ObservableCollection<Account>();
+        private readonly ObservableCollection<Account> _accounts = new ObservableCollection<Account>();
         private readonly IDisposable _allDriveSubscribtion;
         public User(DbId dbId)
         {

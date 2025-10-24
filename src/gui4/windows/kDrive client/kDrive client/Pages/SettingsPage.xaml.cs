@@ -92,16 +92,10 @@ namespace Infomaniak.kDrive.Pages
         {
             foreach (var item in UpdateChannel.Items)
             {
-                if (item is ComboBoxItem comboBoxItem && comboBoxItem.Tag is string tagString)
+                if (item is ComboBoxItem comboBoxItem && comboBoxItem.Tag is string tagString && Enum.TryParse<VersionChannel>(tagString, out VersionChannel itemChannel) && itemChannel == channel)
                 {
-                    if (Enum.TryParse<VersionChannel>(tagString, out VersionChannel itemChannel))
-                    {
-                        if (itemChannel == channel)
-                        {
-                            UpdateChannel.SelectedItem = comboBoxItem;
-                            return;
-                        }
-                    }
+                    UpdateChannel.SelectedItem = comboBoxItem;
+                    return;
                 }
             }
         }
