@@ -1,1 +1,5 @@
-MainPackage=F:\Projects\desktop-kDrive\extensions\windows\cfapi\FileExplorerExtensionPackage\bin\ARM64\Release\FileExplorerExtensionPackage_3.6.3.0_ARM64.msix
+MainPackage=C:\Projects\desktop-kDrive\extensions\windows\cfapi\FileExplorerExtensionPackage\bin\ARM64\Release\FileExplorerExtensionPackage_3.7.7.3_ARM64.msix
+ResourcePack=C:\Projects\desktop-kDrive\extensions\windows\cfapi\FileExplorerExtensionPackage\bin\ARM64\Release\FileExplorerExtensionPackage_3.7.7.3_scale-100.msix
+ResourcePack=C:\Projects\desktop-kDrive\extensions\windows\cfapi\FileExplorerExtensionPackage\bin\ARM64\Release\FileExplorerExtensionPackage_3.7.7.3_scale-125.msix
+ResourcePack=C:\Projects\desktop-kDrive\extensions\windows\cfapi\FileExplorerExtensionPackage\bin\ARM64\Release\FileExplorerExtensionPackage_3.7.7.3_scale-150.msix
+ResourcePack=C:\Projects\desktop-kDrive\extensions\windows\cfapi\FileExplorerExtensionPackage\bin\ARM64\Release\FileExplorerExtensionPackage_3.7.7.3_scale-400.msix

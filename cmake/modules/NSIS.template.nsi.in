@@ -49,7 +49,7 @@
 !define VERSION "@KDRIVE_VERSION@"
 
 !define VFS_APPX_DIRECTORY "@{vfs_appx_directory}"
-!define VFS_APPX_BUNDLE "FileExplorerExtensionPackage_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.0_x64_arm64.msixbundle"
+!define VFS_APPX_BUNDLE "FileExplorerExtensionPackage_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.${VER_BUILD}_x64_arm64.msixbundle"
 !define VFS_PACKAGE_NAME "Infomaniak.kDrive.Extension"
 !define EXTENSION_NAME "FileExplorerExtension.exe"
 
@@ -755,7 +755,7 @@ Function un.UninstallFct
    ${IfNot} ${Silent}
        ;Uninstall extension
        ;${If} ${RunningX64}
-          !define PackageFullName_x64 "${VFS_PACKAGE_NAME}_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.0_x64__@{AUMID}"
+          !define PackageFullName_x64 "${VFS_PACKAGE_NAME}_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.${VER_BUILD}_x64__@{AUMID}"
           IfFileExists "C:\Program Files\WindowsApps\${PackageFullName_x64}\*.*" uninstall_x64 uninstall_kdrive_ext_x64_done
              uninstall_x64:
              DetailPrint $UNINSTALL_EXTENSION
@@ -763,7 +763,7 @@ Function un.UninstallFct
           !undef PackageFullName_x64
           uninstall_kdrive_ext_x64_done:
        ;${ElseIf} ${IsNativeARM64}
-          !define PackageFullName_arm64 "${VFS_PACKAGE_NAME}_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.0_arm64__@{AUMID}"
+          !define PackageFullName_arm64 "${VFS_PACKAGE_NAME}_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.${VER_BUILD}_arm64__@{AUMID}"
           IfFileExists "C:\Program Files\WindowsApps\${PackageFullName_arm64}\*.*" uninstall_arm64 uninstall_kdrive_ext_arm64_done
              uninstall_arm64:
              DetailPrint $UNINSTALL_EXTENSION
