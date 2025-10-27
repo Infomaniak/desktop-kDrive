@@ -51,6 +51,7 @@
 #include <QFileInfo>
 #include <QIODevice>
 #include <QStandardPaths>
+
 #include <Poco/JSON/Parser.h>
 
 #include <log4cplus/loggingmacros.h>

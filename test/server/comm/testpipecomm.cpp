@@ -35,6 +35,21 @@ bool PipeCommChannelTest::sendMessage(const CommString &message) {
 // TestPipeComm implementation
 void TestPipeComm::setUp() {
     TestBase::start();
+
+#if defined(KD_WINDOWS)
+    // Start the server
+    _pipeCommServer = std::make_unique<PipeCommServerTest>("TestPipeComm::testServerListen");
+
+    _pipeCommServer->setNewConnectionCbk([&]() {
+        auto channel = _pipeCommServer->nextPendingConnection();
+        if (channel) {
+            channel->setReadyReadCbk([&](std::shared_ptr<AbstractCommChannel> channel) { _lastReadyReadChannel = channel; });
+        }
+    });
+
+    _pipeCommServer->setLostConnectionCbk(
+            [&](std::shared_ptr<AbstractCommChannel> channel) { _lastLostConnectionChannel = channel; });
+#endif
 }
 
 void TestPipeComm::tearDown() {
@@ -43,25 +58,15 @@ void TestPipeComm::tearDown() {
 
 void TestPipeComm::testServer() {
 #if defined(KD_WINDOWS)
-    // Start the server
-    auto pipeCommServer = std::make_unique<PipeCommServerTest>("TestPipeComm::testServerListen");
+    // Run server
+    CPPUNIT_ASSERT(_pipeCommServer->listen());
 
-    bool newConnectionCalled = false;
-    bool lostConnectionCalled = false;
-    std::shared_ptr<AbstractCommChannel> lostChannel = nullptr;
-    pipeCommServer->setNewConnectionCbk([&newConnectionCalled]() { newConnectionCalled = true; });
-    pipeCommServer->setLostConnectionCbk([&lostConnectionCalled, &lostChannel](std::shared_ptr<AbstractCommChannel> channel) {
-        lostConnectionCalled = true;
-        lostChannel = channel;
-    });
-
-    CPPUNIT_ASSERT(pipeCommServer->listen());
     // Wait for the server initialization
     int waitCount = 100; // wait max 1 second
-    while (!pipeCommServer->isListening() && waitCount-- > 0) {
+    while (!_pipeCommServer->isListening() && waitCount-- > 0) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    CPPUNIT_ASSERT(pipeCommServer->isListening());
+    CPPUNIT_ASSERT(_pipeCommServer->isListening());
 
     // Connect a client to the server and exchange some messages
     // Repeat N times (with N > PIPE_INSTANCES) to check connection reuse
@@ -79,27 +84,9 @@ void TestPipeComm::testServer() {
 
         CPPUNIT_ASSERT(hPipe != INVALID_HANDLE_VALUE);
 
-        // Wait for the server to process the connection
-        waitCount = 100; // wait max 1 second
-        while (pipeCommServer->connections().size() == 0 && waitCount-- > 0) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        }
-        CPPUNIT_ASSERT(newConnectionCalled);
-
-        // Get the server side connected channel list
-        auto channelList = pipeCommServer->connections();
-        CPPUNIT_ASSERT(channelList.size() > 0);
-
-        bool readyReadCalled = false;
-        std::shared_ptr<AbstractCommChannel> readyReadChannel = nullptr;
-        for (auto &channel: channelList) {
-            channel->setReadyReadCbk([&readyReadCalled, &readyReadChannel](std::shared_ptr<AbstractCommChannel> channel) {
-                readyReadCalled = true;
-                readyReadChannel = channel;
-            });
-        }
-
         // Send a message from the client to the server
+        _lastReadyReadChannel = nullptr;
+
         CommString msgClient = Str(R"(Hello word)");
         DWORD cbToWrite = (msgClient.size() + 1) * sizeof(TCHAR);
         DWORD cbWritten = 0;
@@ -115,19 +102,19 @@ void TestPipeComm::testServer() {
 
         // Wait for the server to receive the message
         waitCount = 100; // wait max 1 second
-        while (!readyReadCalled && waitCount-- > 0) {
+        while (!_lastReadyReadChannel && waitCount-- > 0) {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
-        CPPUNIT_ASSERT(readyReadCalled);
-        CPPUNIT_ASSERT(readyReadChannel->bytesAvailable() > 0);
+        CPPUNIT_ASSERT(_lastReadyReadChannel);
+        CPPUNIT_ASSERT(_lastReadyReadChannel->bytesAvailable() > 0);
 
         // Read the message on the server side
-        auto msgReceived = readyReadChannel->readMessage();
+        auto msgReceived = _lastReadyReadChannel->readMessage();
         CPPUNIT_ASSERT(msgReceived == msgClient);
 
         // Send a message from the server to the client
         CommString msgServer = Str(R"(😅🍃😎🫥😶‍🌫️😰🤑🦞éè$²@à*-+/\;,:!!<>)");
-        CPPUNIT_ASSERT(readyReadChannel->sendMessage(msgServer));
+        CPPUNIT_ASSERT(_lastReadyReadChannel->sendMessage(msgServer));
 
         // Read the message on the client side
         TCHAR chBuf[1024] = {0};
@@ -145,15 +132,23 @@ void TestPipeComm::testServer() {
         CPPUNIT_ASSERT(msgReceived == msgServer);
 
         // Close client connection
+        _lastLostConnectionChannel = nullptr;
+
         CloseHandle(hPipe);
 
         // Wait for the server to process disconnection
         waitCount = 100; // wait max 1 second
-        while (!lostConnectionCalled && waitCount-- > 0) {
+        while (!_lastLostConnectionChannel && waitCount-- > 0) {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
-        CPPUNIT_ASSERT(lostConnectionCalled);
+        CPPUNIT_ASSERT(_lastLostConnectionChannel);
+        CPPUNIT_ASSERT(_lastLostConnectionChannel->id() == _lastReadyReadChannel->id());
     }
+
+    // Stop server
+    _pipeCommServer->close();
+    CPPUNIT_ASSERT(!_pipeCommServer->isListening());
+    CPPUNIT_ASSERT(!_pipeCommServer->isRunning());
 #endif
 }
 

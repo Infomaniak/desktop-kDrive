@@ -51,5 +51,10 @@ class TestPipeComm : public CppUnit::TestFixture, public TestBase {
         void tearDown() override;
 
         void testServer();
+
+    private:
+        std::unique_ptr<PipeCommServerTest> _pipeCommServer = nullptr;
+        std::shared_ptr<AbstractCommChannel> _lastReadyReadChannel = nullptr;
+        std::shared_ptr<AbstractCommChannel> _lastLostConnectionChannel = nullptr;
 };
 } // namespace KDC

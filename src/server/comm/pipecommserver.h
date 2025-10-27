@@ -81,6 +81,7 @@ class PipeCommServer : public AbstractCommServer {
         static void disconnectAndReconnect(std::shared_ptr<PipeCommChannel> channel);
 #endif
         bool isListening() const { return _isListening; }
+        bool isRunning() const { return _isRunning; }
 
     protected:
         virtual std::shared_ptr<PipeCommChannel> makeCommChannel() const = 0;
@@ -89,7 +90,7 @@ class PipeCommServer : public AbstractCommServer {
         SyncPath _pipePath;
         std::unique_ptr<std::thread> _thread;
         bool _isRunning{false};
-        bool _isListening{false};
+        bool _isListening{false}; // The server is ready to process messages
         bool _stopAsked{false};
         ExitInfo _exitInfo;
 
