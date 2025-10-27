@@ -35,7 +35,6 @@ namespace KDC {
 
 DigitalSignatureChecker_win::DigitalSignatureChecker_win(const SyncPath &packageAbsolutePath) :
     _packageAbsolutePath(packageAbsolutePath) {
-    // std::wstring errorMsg;
     SourceLocation srcLoc;
     _signatureIsValid = extractSignatureInfo(_signatureInfo, srcLoc);
     if (!_signatureIsValid) {
