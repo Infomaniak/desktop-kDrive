@@ -15,14 +15,13 @@
  # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Requires administrative privileges to remove AppX packages
-Write-Output "Searching for provisioned packages containing 'Infomaniak.kDrive.Extension'..." 
-
 $packageNamePattern = "Infomaniak.kDrive.Extension*"
+
+Write-Output "Searching for provisioned packages containing 'Infomaniak.kDrive.Extension'..." 
 $provisionedPackage = Get-AppxProvisionedPackage -Online | Where-Object {$_.PackageName -like $packageNamePattern}
 
 if (-not $provisionedPackage) {
     Write-Output "No provisioned package found matching: $packageNamePattern" 
-    exit 0
 }
 else {
     Write-Output "Found the following package(s):" 
@@ -31,6 +30,7 @@ else {
     foreach ($pkg in $provisionedPackage) {
         try {
             Write-Output "Removing package: $($pkg.PackageName)" 
+            Remove-AppxProvisionedPackage -Online  -AllUsers -PackageName $pkg.PackageName -ErrorAction Stop
             Remove-AppxPackage -AllUsers -Package $pkg.PackageName -ErrorAction Stop
             Write-Output "Successfully removed: $($pkg.PackageName)"
         }
@@ -41,24 +41,22 @@ else {
     }
 }
 
-Write-Output "Searching for local packages containing 'Infomaniak.kDrive.Extension'..." -ForegroundColor Yellow
-
-$packageNamePattern = "Infomaniak.kDrive.Extension*"
-$package = Get-AppxPackage -Name $packageNamePattern
+Write-Output "Searching for local packages containing 'Infomaniak.kDrive.Extension'..."
+$package = Get-AppxPackage -AllUsers -Name $packageNamePattern
 
 if (-not $package) {
-    Write-Output "No package found matching: $packageNamePattern" -ForegroundColor Red
+    Write-Output "No package found matching: $packageNamePattern"
     exit 0
 }
 
-Write-Output "Found the following package(s):" -ForegroundColor Green
+Write-Output "Found the following package(s):"
 $package | Format-List Name, PackageFullName, InstallLocation
 
 foreach ($pkg in $package) {
     try {
-        Write-Output "Removing package: $($pkg.PackageFullName)" -ForegroundColor Yellow
-        Remove-AppxPackage -Package $pkg.PackageFullName -ErrorAction SilentlyContinue
-        Write-Output "Successfully removed: $($pkg.PackageFullName)" -ForegroundColor Green
+        Write-Output "Removing package: $($pkg.PackageFullName)"
+        Remove-AppxPackage -AllUsers -Package $pkg.PackageFullName -ErrorAction SilentlyContinue
+        Write-Output "Successfully removed: $($pkg.PackageFullName)" 
     }
     catch {
         Write-Output "Failed to remove package '$($pkg.PackageFullName)': $_"
