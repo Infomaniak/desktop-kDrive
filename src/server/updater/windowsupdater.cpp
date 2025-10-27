@@ -159,8 +159,10 @@ std::streamsize WindowsUpdater::getExpectedInstallerSize(const std::string &down
 
 bool WindowsUpdater::verifyDigitalSignature(const SyncPath &filepath) {
     if (!DigitalSignatureChecker_win(filepath).isSignatureValid()) {
-        LOGW_INFO(Log::instance()->getLogger(), L"The digital signature of installer " << Utility::formatSyncPath(filepath)
-                                                                                       << L" is invalid. Aborting update.");
+        const auto error =
+                L"The digital signature of installer " + Utility::formatSyncPath(filepath) + L" is invalid. Aborting update.";
+        sentry::Handler::captureMessage(sentry::Level::Error, "Invalid signature", CommonUtility::ws2s(error));
+        LOGW_ERROR(Log::instance()->getLogger(), error);
         auto ioError = IoError::Success;
         (void) IoHelper::deleteItem(filepath, ioError);
         return false;
