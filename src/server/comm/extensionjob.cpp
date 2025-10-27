@@ -971,7 +971,24 @@ bool ExtensionJob::cancelDownloadJobs(int syncDbId, const std::vector<CommString
 }
 
 void ExtensionJob::copyUrlToClipboard(const std::string &link) {
+#if defined(KD_WINDOWS)
+    const size_t len = link.size() + 1;
+    HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, len);
+    memcpy(GlobalLock(hMem), link.c_str(), len);
+    GlobalUnlock(hMem);
+    if (!OpenClipboard(NULL)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in OpenClipboard: err=" << GetLastError());
+        return;
+    }
+    EmptyClipboard();
+    if (!SetClipboardData(CF_TEXT, hMem)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in SetClipboardData: err=" << GetLastError());
+        return;
+    }
+    CloseClipboard();
+#else
     QApplication::clipboard()->setText(QString::fromStdString(link));
+#endif
 }
 
 std::string ExtensionJob::statusString(SyncFileStatus status, const VfsStatus &vfsStatus) const {

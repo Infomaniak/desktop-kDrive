@@ -19,6 +19,7 @@
 #pragma once
 
 #include "utility/types.h"
+
 #include <Poco/Runnable.h>
 
 #include <log4cplus/logger.h>
