@@ -38,6 +38,11 @@
 
 namespace KDC {
 
+#if defined(KD_WINDOWS)
+constexpr auto connectIndex = toInt(PipeCommChannel::Action::Connect);
+constexpr auto readIndex = toInt(PipeCommChannel::Action::Read);
+#endif
+
 uint64_t PipeCommChannel::readData(CommChar *data, uint64_t maxSize) {
     if (!_connected) return 0;
 
@@ -196,7 +201,6 @@ void PipeCommServer::execute() {
         if (ParametersCache::isExtendedLogEnabled()) {
             LOG_DEBUG(Log::instance()->getLogger(), "Try to connect on inst:" << inst);
         }
-        auto connectIndex = toInt(PipeCommChannel::Action::Connect);
         channel->_pendingIO[connectIndex] = connectToPipe(channel->_pipeInst, &channel->_overlap[connectIndex]);
         if (ParametersCache::isExtendedLogEnabled()) {
             if (channel->_pendingIO[connectIndex]) {
@@ -210,9 +214,9 @@ void PipeCommServer::execute() {
 
     while (!_stopAsked) {
         // Wait for the event object to be signaled, indicating completion of an overlapped read, write, or connect operation
-        auto eventCount = PIPE_INSTANCES * toInt(PipeCommChannel::Action::EnumEnd);
-        DWORD dwWait = WaitForMultipleObjects(eventCount, events, FALSE,
-                                              EVENT_WAIT_TIMEOUT); // wait time (ms)
+        const auto eventCount = PIPE_INSTANCES * toInt(PipeCommChannel::Action::EnumEnd);
+        const DWORD dwWait = WaitForMultipleObjects(eventCount, events, FALSE,
+                                                    EVENT_WAIT_TIMEOUT); // wait time (ms)
 
         DWORD index = 0;
         if (dwWait == WAIT_TIMEOUT) {
@@ -228,8 +232,8 @@ void PipeCommServer::execute() {
 
         ResetEvent(events[index]);
 
-        DWORD inst = index / toInt(PipeCommChannel::Action::EnumEnd);
-        auto action = index % toInt(PipeCommChannel::Action::EnumEnd);
+        const DWORD inst = index / toInt(PipeCommChannel::Action::EnumEnd);
+        const auto action = index % toInt(PipeCommChannel::Action::EnumEnd);
         if (ParametersCache::isExtendedLogEnabled()) {
             LOG_DEBUG(Log::instance()->getLogger(), "Event received for inst:" << inst << " action:" << action);
         }
@@ -242,7 +246,12 @@ void PipeCommServer::execute() {
                                                 FALSE); // do not wait
 
             if (!fSuccess) {
-                LOG_WARN(Log::instance()->getLogger(), "Error in GetOverlappedResult: err=" << GetLastError());
+                const auto err = GetLastError();
+                if (err == ERROR_BROKEN_PIPE) {
+                    LOG_DEBUG(Log::instance()->getLogger(), "Connexion closed for inst:" << inst);
+                } else {
+                    LOG_WARN(Log::instance()->getLogger(), "Error in GetOverlappedResult: err=" << err);
+                }
                 disconnectAndReconnect(_channels[inst]);
                 continue;
             }
@@ -258,6 +267,7 @@ void PipeCommServer::execute() {
                     LOG_DEBUG(Log::instance()->getLogger(), "Pending connect done for inst:" << inst << " action:" << action);
                 }
                 _channels[inst]->_connected = TRUE;
+                _channels[inst]->_pendingIO[readIndex] = FALSE;
             } else if (action == toInt(PipeCommChannel::Action::Read)) {
                 if (size == 0) {
                     LOG_WARN(Log::instance()->getLogger(), "Pending read error for inst:" << inst << " action:" << action);
@@ -284,7 +294,6 @@ void PipeCommServer::execute() {
             }
         }
 
-        auto readIndex = toInt(PipeCommChannel::Action::Read);
         if (!_channels[inst]->_pendingIO[readIndex] && _channels[inst]->_connected) {
             // Read
             if (ParametersCache::isExtendedLogEnabled()) {
@@ -333,13 +342,23 @@ void PipeCommServer::execute() {
 // Disconnect from this client, then call ConnectNamedPipe to wait for another client to connect
 void PipeCommServer::disconnectAndReconnect(std::shared_ptr<PipeCommChannel> channel) {
     // Disconnect the pipe instance.
+    if (ParametersCache::isExtendedLogEnabled()) {
+        LOG_DEBUG(Log::instance()->getLogger(), "Disconnect pipe inst:" << channel->_instance);
+    }
     if (!DisconnectNamedPipe(channel->_pipeInst)) {
         LOG_WARN(Log::instance()->getLogger(), "DisconnectNamedPipe failed: err=" << GetLastError());
     }
 
-    // Call a subroutine to connect to the pipe
-    auto connectIndex = toInt(PipeCommChannel::Action::Connect);
+    // Connect to the pipe
+    if (ParametersCache::isExtendedLogEnabled()) {
+        LOG_DEBUG(Log::instance()->getLogger(), "Try to connect on inst:" << channel->_instance);
+    }
     channel->_pendingIO[connectIndex] = connectToPipe(channel->_pipeInst, &channel->_overlap[connectIndex]);
+    if (ParametersCache::isExtendedLogEnabled()) {
+        if (channel->_pendingIO[connectIndex]) {
+            LOG_DEBUG(Log::instance()->getLogger(), "Connect pending on inst:" << channel->_instance);
+        }
+    }
 
     channel->_connected = channel->_pendingIO[connectIndex] ? FALSE // still connecting
                                                             : TRUE; // ready to read
