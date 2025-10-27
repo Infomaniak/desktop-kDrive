@@ -72,7 +72,7 @@ uint64_t PipeCommChannel::writeData(const CommChar *data, uint64_t size) {
     }
 
     // The write operation is still pending
-    DWORD dwErr = GetLastError();
+    const auto dwErr = GetLastError();
     if (!fSuccess && (dwErr == ERROR_IO_PENDING)) {
         if (ParametersCache::isExtendedLogEnabled()) {
             LOG_DEBUG(Log::instance()->getLogger(), "Write pending on inst:" << _instance);
@@ -83,7 +83,12 @@ uint64_t PipeCommChannel::writeData(const CommChar *data, uint64_t size) {
     }
 
     // An error occurred; disconnect from the client.
-    LOG_WARN(Log::instance()->getLogger(), "Write error on inst:" << _instance);
+    if (dwErr == ERROR_BROKEN_PIPE) {
+        LOG_DEBUG(Log::instance()->getLogger(), "Connexion closed for inst:" << _instance);
+    } else {
+        LOG_WARN(Log::instance()->getLogger(), "Write error on inst:" << _instance << " err=" << dwErr);
+    }
+
     PipeCommServer::disconnectAndReconnect(std::static_pointer_cast<PipeCommChannel>(shared_from_this()));
     return 0;
 #endif
@@ -159,7 +164,7 @@ void PipeCommServer::execute() {
 
         for (auto action = 0; action < toInt(PipeCommChannel::Action::EnumEnd); action++) {
             // Create an event object
-            auto index = inst * toInt(PipeCommChannel::Action::EnumEnd) + action;
+            const auto index = inst * toInt(PipeCommChannel::Action::EnumEnd) + action;
             events[index] = CreateEvent(NULL, // default security attribute
                                         TRUE, // manual-reset event
                                         FALSE, // initial state = not signaled
@@ -215,8 +220,8 @@ void PipeCommServer::execute() {
     while (!_stopAsked) {
         // Wait for the event object to be signaled, indicating completion of an overlapped read, write, or connect operation
         const auto eventCount = PIPE_INSTANCES * toInt(PipeCommChannel::Action::EnumEnd);
-        const DWORD dwWait = WaitForMultipleObjects(eventCount, events, FALSE,
-                                                    EVENT_WAIT_TIMEOUT); // wait time (ms)
+        const auto dwWait = WaitForMultipleObjects(eventCount, events, FALSE,
+                                                   EVENT_WAIT_TIMEOUT); // wait time (ms)
 
         DWORD index = 0;
         if (dwWait == WAIT_TIMEOUT) {
@@ -240,18 +245,19 @@ void PipeCommServer::execute() {
 
         if (_channels[inst]->_pendingIO[action]) {
             DWORD size;
-            BOOL fSuccess = GetOverlappedResult(_channels[inst]->_pipeInst, // handle to pipe
-                                                &_channels[inst]->_overlap[action], // OVERLAPPED structure
-                                                &size, // bytes transferred
-                                                FALSE); // do not wait
+            const auto fSuccess = GetOverlappedResult(_channels[inst]->_pipeInst, // handle to pipe
+                                                      &_channels[inst]->_overlap[action], // OVERLAPPED structure
+                                                      &size, // bytes transferred
+                                                      FALSE); // do not wait
 
             if (!fSuccess) {
-                const auto err = GetLastError();
-                if (err == ERROR_BROKEN_PIPE) {
+                const auto dwErr = GetLastError();
+                if (dwErr == ERROR_BROKEN_PIPE) {
                     LOG_DEBUG(Log::instance()->getLogger(), "Connexion closed for inst:" << inst);
                 } else {
-                    LOG_WARN(Log::instance()->getLogger(), "Error in GetOverlappedResult: err=" << err);
+                    LOG_WARN(Log::instance()->getLogger(), "Error in GetOverlappedResult on inst:" << inst << " err=" << dwErr);
                 }
+
                 disconnectAndReconnect(_channels[inst]);
                 continue;
             }
@@ -300,8 +306,8 @@ void PipeCommServer::execute() {
                 LOG_DEBUG(Log::instance()->getLogger(), "Try to read on inst:" << inst);
             }
             memset(&_channels[inst]->_readData[0], 0, sizeof(_channels[inst]->_readData));
-            BOOL fSuccess = ReadFile(_channels[inst]->_pipeInst, _channels[inst]->_readData, BUFSIZE * sizeof(TCHAR),
-                                     &_channels[inst]->_size[readIndex], &_channels[inst]->_overlap[readIndex]);
+            const auto fSuccess = ReadFile(_channels[inst]->_pipeInst, _channels[inst]->_readData, BUFSIZE * sizeof(TCHAR),
+                                           &_channels[inst]->_size[readIndex], &_channels[inst]->_overlap[readIndex]);
 
             if (fSuccess && _channels[inst]->_size[readIndex] != 0) {
                 // The read operation completed successfully
@@ -316,7 +322,7 @@ void PipeCommServer::execute() {
                 continue;
             }
 
-            DWORD dwErr = GetLastError();
+            const auto dwErr = GetLastError();
             if (!fSuccess && (dwErr == ERROR_IO_PENDING)) {
                 // The read operation is still pending
                 if (ParametersCache::isExtendedLogEnabled()) {
@@ -327,9 +333,13 @@ void PipeCommServer::execute() {
             }
 
             // An error occurred, disconnect from the client
-            LOG_WARN(Log::instance()->getLogger(), "Read error on inst:" << inst);
+            if (dwErr == ERROR_BROKEN_PIPE) {
+                LOG_DEBUG(Log::instance()->getLogger(), "Connexion closed for inst:" << inst);
+            } else {
+                LOG_WARN(Log::instance()->getLogger(), "Read error on inst:" << inst << " err=" << dwErr);
+            }
+
             disconnectAndReconnect(_channels[inst]);
-            break;
         }
     }
 
