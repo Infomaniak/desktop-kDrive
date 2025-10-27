@@ -36,6 +36,7 @@ ExitInfo AbstractListingJob::setData() {
         Poco::JSON::Object json;
         Poco::JSON::Array withoutIdsArray;
         for (const auto &id: _blacklist) {
+            if (id.empty()) continue;
             (void) withoutIdsArray.add(id);
         }
         (void) json.set("without_ids", withoutIdsArray);
