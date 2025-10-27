@@ -52,9 +52,6 @@ using SPROG_PUBLISHERINFO = struct {
 using PSPROG_PUBLISHERINFO = SPROG_PUBLISHERINFO *;
 
 BOOL extractCertificateInfo(const PCCERT_CONTEXT pCertContext, DigitalSignatureInfo &signatureInfo, SourceLocation &srcLoc) {
-    LPTSTR szName = nullptr;
-    DWORD dwData = 0;
-
     // Get Serial Number.
     std::wstringstream ss;
     for (DWORD i = 0; i < pCertContext->pCertInfo->SerialNumber.cbData; i++) {
@@ -63,13 +60,13 @@ BOOL extractCertificateInfo(const PCCERT_CONTEXT pCertContext, DigitalSignatureI
     signatureInfo._serialNumber = ss.str();
 
     // Get Issuer name size.
+    DWORD dwData = 0;
     if (!(dwData = CertGetNameString(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, CERT_NAME_ISSUER_FLAG, nullptr, nullptr, 0))) {
-        if (szName != nullptr) (void) LocalFree(szName);
         return FALSE;
     }
 
     // Allocate memory for Issuer name.
-    szName = (LPTSTR) LocalAlloc(LPTR, dwData * sizeof(TCHAR));
+    auto szName = (LPTSTR) LocalAlloc(LPTR, dwData * sizeof(TCHAR));
     if (!szName) {
         if (szName != nullptr) (void) LocalFree(szName);
         return FALSE;
@@ -86,7 +83,6 @@ BOOL extractCertificateInfo(const PCCERT_CONTEXT pCertContext, DigitalSignatureI
 
     // Get Subject name size.
     if (!(dwData = CertGetNameString(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, nullptr, nullptr, 0))) {
-        if (szName != nullptr) (void) LocalFree(szName);
         return FALSE;
     }
 
@@ -110,9 +106,7 @@ BOOL extractCertificateInfo(const PCCERT_CONTEXT pCertContext, DigitalSignatureI
 }
 
 LPWSTR allocateAndCopyWideString(const LPCWSTR inputString) {
-    LPWSTR outputString = nullptr;
-
-    outputString = (LPWSTR) LocalAlloc(LPTR, (wcslen(inputString) + 1) * sizeof(WCHAR));
+    LPWSTR outputString = (LPWSTR) LocalAlloc(LPTR, (wcslen(inputString) + 1) * sizeof(WCHAR));
     if (outputString != nullptr) {
         (void) lstrcpyW(outputString, inputString);
     }
@@ -141,7 +135,7 @@ BOOL getProgAndPublisherInfo(const PCMSG_SIGNER_INFO pSignerInfo, PSPROG_PUBLISH
                 // Allocate memory for SPC_SP_OPUS_INFO structure.
                 opusInfo = (PSPC_SP_OPUS_INFO) LocalAlloc(LPTR, dwData);
                 if (!opusInfo) {
-                    // errorMsg = L"Unable to allocate memory for Publisher Info.";
+                    srcLoc = SourceLocation::currentLoc();
                     __leave;
                 }
 
