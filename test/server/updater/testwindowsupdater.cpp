@@ -138,7 +138,7 @@ void TestWindowsUpdater::testIsSignatureValid() {
     // Path to an existing signed file.
     {
         const testhelpers::TestVariables testVariables;
-        static const NodeId signedFileId = "5301396";
+        static const NodeId signedFileId = "5304421";
         const auto signedFilePath = tmpDir.path() / "testfile.exe";
         DownloadJob job(nullptr, _driveDbId, signedFileId, signedFilePath, 0);
         (void) job.runSynchronously();
