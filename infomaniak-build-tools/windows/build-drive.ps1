@@ -593,12 +593,49 @@ function Create-Archive {
     Write-Host "Archive created."
 }
 
+function Get-Overlay-Guid {
+    param (
+        [string] $path,
+        [string] $keyType
+    )
+
+
+    $guid = (Select-String -Path "$path\extensions\windows\standard\KDOverlays\OverlayConstants.h" $keyType)
+    $guid = $guid.Substring(1) # Trim the initial 'L' character.
+
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+    return $guid
+}
+
 function Create-MSI-Package {
+    param (
+        [string] $path,
+        [string] $buildPath
+    )
+
     Write-Host "Creating MSI package ..."
 
-	$appName = Get-Package-Name $buildPath
+    $guid = Get-Overlay-Guid -Path $path -KeyType "OVERLAY_GUID_OK"
+    $definedConstants = "regKeyOkGUID=$guid;"
+
+    $guid = Get-Overlay-Guid -Path $path -KeyType "OVERLAY_GUID_ERROR"
+    $definedConstants += "regKeyErrorGUID=$guid;"
+
+    $guid = Get-Overlay-Guid -Path $path -KeyType "OVERLAY_GUID_SYNC"
+    $definedConstants += "regKeySyncGUID=$guid;"
+
+    $guid = Get-Overlay-Guid -Path $path -KeyType "OVERLAY_GUID_WARNING"
+    $definedConstants += "regKeyWarningGUID=$guid;"
+    
+    $definedConstants += "desktop-kDriveDir=" + "$path;"
+
+    $version = Get-Version -IncludeBuildVersion true
+    $definedConstants += "version=" + "$version;"
+
+    $appName = Get-Package-Name $buildPath
 	
-	dotnet build "$msiInstallerFolderPath/kDriveInstaller.sln" /p:Configuration="Release" /p:Platform="x64" /p:OutputName=$appName
+	dotnet build "$msiInstallerFolderPath/kDriveInstaller.sln" /p:Configuration="Release" /p:Platform="x64" /p:OutputName=$appName /p:DefineConstants=$definedConstants
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 	Move-Item -Path "$msiPackageFolderPath/$appName.msi" -Destination "$contentPath"
@@ -832,7 +869,7 @@ if (!$ci) {
 #################################################################################################
 
 if ($msi) {
-    Create-MSI-Package
+    Create-MSI-Package -Path $path -BuildPath $buildPath
     if ($LASTEXITCODE -ne 0) {
         Write-Host "MSI package creation failed ($LASTEXITCODE) . Aborting." -f Red
         exit $LASTEXITCODE
