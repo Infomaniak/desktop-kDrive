@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Infomaniak.kDrive.Types;
+using System;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using static Infomaniak.kDrive.ServerCommunication.CommShared;
 
 namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 {

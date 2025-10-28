@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Infomaniak.kDrive.ServerCommunication.CommStruct;
+using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -26,7 +28,6 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using static Infomaniak.kDrive.ServerCommunication.CommShared;
 using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommProtocol;
 
 namespace Infomaniak.kDrive.ServerCommunication.Services
@@ -44,6 +45,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public event EventHandler<SignalEventArgs>? SignalReceived;
         private Queue<KeyValuePair<SignalNum, JsonObject>> PendingSignals { get; } = new Queue<KeyValuePair<SignalNum, JsonObject>>();
         private Task? _signalHandler;
+        private Task? _customSignalsHandler;
         public MockServerCommProtocol()
         {
             _ = Initialize();
@@ -59,12 +61,20 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     return await UserDbIdsRequest(parameters);
                 case RequestNum.UserInfoList:
                     return await UserInfoListRequest(parameters);
-                case CommShared.RequestNum.AccountInfoList:
+                case RequestNum.AccountInfoList:
                     return await AccountInfoListRequest(parameters);
                 case RequestNum.DriveInfoList:
                     return await DriveInfoListRequest(parameters);
                 case RequestNum.SyncInfoList:
                     return await SyncInfoListRequest(parameters);
+                case RequestNum.UPDATER_START_INSTALLER:
+                    return await UpdateStartInstaller(parameters);
+                case RequestNum.UPDATER_VERSION_INFO:
+                    return await UpdaterVersionInfo(parameters);
+                case RequestNum.UPDATER_CHANGE_CHANNEL:
+                    return await UpdaterChangeChannel(parameters);
+                case RequestNum.PARAMETERS_INFO:
+                    return await ParametersInfo(parameters);
                 default:
                     throw new NotImplementedException($"RequestNum {requestNum} not implemented in MockServerCommProtocol.");
             }
@@ -138,11 +148,11 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     { "isConnected", user.IsConnected },
                     { "isStaff", user.IsStaff }
                 };
-                if (!result.ContainsKey("userInfo"))
+                if (!result.ContainsKey("userInfoList"))
                 {
-                    result["userInfo"] = new JsonArray();
+                    result["userInfoList"] = new JsonArray();
                 }
-                ((JsonArray)result["userInfo"]!).Add(userData);
+                ((JsonArray)result["userInfoList"]!).Add(userData);
 
             }
 
@@ -157,7 +167,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         private Task<CommData> AccountInfoListRequest(JsonObject parameters)
         {
-            var accounts = _mockData.Accounts;
+            var accounts = _mockData.Users.SelectMany(u => u.Accounts).ToList();
 
             JsonObject result = new JsonObject();
             foreach (var account in accounts)
@@ -167,11 +177,11 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     { "dbId", account.DbId },
                     { "UserDbId", account.User.DbId },
                                     };
-                if (!result.ContainsKey("accountInfo"))
+                if (!result.ContainsKey("accountInfoList"))
                 {
-                    result["accountInfo"] = new JsonArray();
+                    result["accountInfoList"] = new JsonArray();
                 }
-                ((JsonArray)result["accountInfo"]!).Add(accountData);
+                ((JsonArray)result["accountInfoList"]!).Add(accountData);
 
             }
 
@@ -186,7 +196,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         private Task<CommData> DriveInfoListRequest(JsonObject parameters)
         {
-            var drives = _mockData.Drives;
+            var drives = _mockData.Users.SelectMany(u => u.Accounts).SelectMany(a => a.Drives).ToList();
 
             JsonObject result = new JsonObject();
             foreach (var drive in drives)
@@ -197,17 +207,17 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     { "driveId", drive.DriveId },
                     { "accountDbId", drive.Account.DbId },
                     { "name", Convert.ToBase64String(Encoding.UTF8.GetBytes(drive.Name)) },
-                    { "color", drive.Color.ToArgb() },
+                    { "color", Convert.ToBase64String(Encoding.UTF8.GetBytes(System.Drawing.ColorTranslator.ToHtml(drive.Color))) },
                     { "notifications", true },
                     { "maintenance", false },
                     { "locked", false },
                     { "accessDenied", false }
                 };
-                if (!result.ContainsKey("driveInfo"))
+                if (!result.ContainsKey("driveInfoList"))
                 {
-                    result["driveInfo"] = new JsonArray();
+                    result["driveInfoList"] = new JsonArray();
                 }
-                ((JsonArray)result["driveInfo"]!).Add(driveData);
+                ((JsonArray)result["driveInfoList"]!).Add(driveData);
             }
 
             return Task.FromResult(new CommData
@@ -221,8 +231,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         private Task<CommData> SyncInfoListRequest(JsonObject parameters)
         {
-            var syncs = _mockData.Syncs;
-
+            var syncs = _mockData.Users.SelectMany(u => u.Accounts).SelectMany(a => a.Drives).SelectMany(d => d.Syncs).ToList();
             JsonObject result = new JsonObject();
             foreach (var sync in syncs)
             {
@@ -236,11 +245,11 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     { "supportOnlineMode", sync.SupportOnlineMode },
                     { "syncType", (int)sync.SyncType }
                 };
-                if (!result.ContainsKey("syncInfo"))
+                if (!result.ContainsKey("syncInfoList"))
                 {
-                    result["syncInfo"] = new JsonArray();
+                    result["syncInfoList"] = new JsonArray();
                 }
-                ((JsonArray)result["syncInfo"]!).Add(syncData);
+                ((JsonArray)result["syncInfoList"]!).Add(syncData);
 
             }
 
@@ -251,6 +260,91 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 RequestNum = RequestNum.SyncInfoList,
                 Params = result
             });
+        }
+
+        private async Task<CommData> UpdateStartInstaller(JsonObject parameters)
+        {
+            Logger.Log(Logger.Level.Debug, "Received UpdateStartInstaller request.");
+            await Task.Delay(2000);
+            return new CommData
+            {
+                Type = CommMessageType.Request,
+                Id = (int)NextId,
+                RequestNum = RequestNum.UPDATER_START_INSTALLER,
+                Params = new JsonObject()
+            };
+        }
+
+        private async Task<CommData> UpdaterVersionInfo(JsonObject parameters)
+        {
+            Logger.Log(Logger.Level.Debug, "Received UpdateVersionInfo request.");
+            VersionChannel channel = _mockData.CurrentChannel;
+            if (parameters.ContainsKey("channel") && parameters["channel"] != null)
+            {
+                channel = (VersionChannel)parameters["channel"]!.GetValue<int>();
+            }
+
+            AppVersion update = _mockData.VersionsByChannel[channel] ?? _mockData.CurrentVersion;
+            var versionInfo = new JsonObject
+            {
+                { "channel", (int)update.Channel },
+                { "tag", Convert.ToBase64String(Encoding.UTF8.GetBytes(update.Tag)) },
+                { "buildVersion", Convert.ToBase64String(Encoding.UTF8.GetBytes(update.BuildVersion)) },
+                { "buildMinOsVersion","" }, // Not used
+                { "downloadUrl", "" }, // Not used
+            };
+
+            return new CommData
+            {
+                Type = CommMessageType.Request,
+                Id = (int)NextId,
+                RequestNum = RequestNum.UPDATER_VERSION_INFO,
+                Params = new JsonObject() { { "versionInfo", versionInfo } }
+            };
+        }
+        private async Task<CommData> UpdaterChangeChannel(JsonObject parameters)
+        {
+            Logger.Log(Logger.Level.Debug, "Received UpdaterChangeChannel request.");
+            VersionChannel channel = _mockData.CurrentChannel;
+            if (parameters.ContainsKey("channel") && parameters["channel"] != null)
+            {
+                channel = (VersionChannel)parameters["channel"]!.GetValue<int>();
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Warning, "No channel specified in UpdaterChangeChannel request, using current channel.");
+
+            }
+            _mockData.CurrentChannel = channel;
+            EnqueueSignal(SignalNum.UPDATER_STATE_CHANGED, new JsonObject());
+            return new CommData
+            {
+                Type = CommMessageType.Request,
+                Id = (int)NextId,
+                RequestNum = RequestNum.UPDATER_CHANGE_CHANNEL,
+                Params = new JsonObject()
+            };
+        }
+
+        private async Task<CommData> ParametersInfo(JsonObject parameters)
+        {
+            Logger.Log(Logger.Level.Debug, "Received ParametersInfo request.");
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+            };
+            string parametersInfo = JsonSerializer.Serialize(_mockData.Settings, options);
+
+            return new CommData
+            {
+                Type = CommMessageType.Request,
+                Id = (int)NextId,
+                RequestNum = RequestNum.UPDATER_CHANGE_CHANNEL,
+                Params = new JsonObject
+                {
+                    ["parmsInfo"] = JsonNode.Parse(parametersInfo)
+                }
+            };
         }
 
         private void EnqueueSignal(SignalNum signalNum, JsonObject parameters)
@@ -277,93 +371,165 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     await Task.Delay(100);
                 }
             });
+            _customSignalsHandler = SimulateSignals();
             return Task.CompletedTask;
+        }
+
+        public async Task SimulateSignals()
+        {
+            long updaterStateChangeCounter = 0;
+            while (true)
+            {
+                updaterStateChangeCounter++;
+                await Task.Delay(100);
+                if (updaterStateChangeCounter % 50 == 0)
+                {
+                    if (!_mockData.VersionsByChannel.ContainsKey(VersionChannel.Internal)) continue;
+                    string oldTag = _mockData.VersionsByChannel[VersionChannel.Internal]?.Tag ?? "0.0.0";
+                    _mockData.VersionsByChannel[VersionChannel.Internal]!.Tag = "3.7.9" + ((updaterStateChangeCounter / 50)).ToString();
+                    EnqueueSignal(SignalNum.UPDATER_STATE_CHANGED, new JsonObject());
+                }
+            }
         }
     }
 
     public struct MockServerData
     {
-        public List<User> Users { get; } = new List<User>();
-        public List<Account> Accounts { get; } = new List<Account>();
-        public List<Drive> Drives { get; } = new List<Drive>();
-        public List<Sync> Syncs { get; } = new List<Sync>();
+        // Save the structure to a JSON file
+        public void save(string path)
+        {
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve
+            };
+            var json = JsonSerializer.Serialize(this, options);
+            System.IO.File.WriteAllText(path, json);
+        }
 
+        public List<User> Users { get; set; } = new List<User>();
+        public AppVersion CurrentVersion { get; set; } = new AppVersion() { BuildVersion = "20250908", Tag = "3.7.6" };
+        public ParmsInfo Settings { get; set; }
+
+        public Dictionary<VersionChannel, AppVersion?> VersionsByChannel { get; set; } = new Dictionary<VersionChannel, AppVersion?>()
+        {
+            {VersionChannel.Prod, new AppVersion() { BuildVersion = "20250908", Tag = "3.7.6" } },
+            {VersionChannel.Beta, new AppVersion() { BuildVersion = "20251020", Tag = "3.7.7" } },
+            {VersionChannel.Internal, new AppVersion() { BuildVersion = "20251022", Tag = "3.7.8" }},
+        };
+
+        public VersionChannel CurrentChannel = VersionChannel.Prod;
         public MockServerData()
+        {
+            InitializeMockData();
+        }
+
+        public void InitializeMockData()
         {
             // Create mock users
             Users.Add(new User(1) { UserId = 10, Name = "John", Email = "John.doe@infomaniak.com", IsConnected = true, IsStaff = false });
             Users.Add(new User(2) { UserId = 11, Name = "Alice", Email = "Alice.doe@infomaniak.com", IsConnected = false, IsStaff = false });
 
             // Create mock accounts
-            Accounts.Add(new Account(1, Users[0]));
-            Accounts.Add(new Account(2, Users[1]));
-            Users[0].Accounts.Add(Accounts[0]);
-            Users[1].Accounts.Add(Accounts[1]);
+            List<Account> accounts = new List<Account>();
+            accounts.Add(new Account(1, Users[0]));
+            accounts.Add(new Account(2, Users[1]));
+
+            Users[0].Accounts.Add(accounts[0]);
+            Users[1].Accounts.Add(accounts[1]);
 
             // Create mock drives
-            Drives.Add(new Drive(1, Accounts[0]) { DriveId = 140946, Name = "Infomaniak", Color = Color.FromArgb(255, 0, 150, 136), Size = 1000000000, UsedSize = 250000000, IsActive = true, IsPaidOffer = true });
-            Drives.Add(new Drive(2, Accounts[0]) { DriveId = 101, Name = "Etik corp", Color = Color.FromArgb(255, 156, 38, 176), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = true });
-            Drives.Add(new Drive(3, Accounts[0]) { DriveId = 102, Name = "CH corp", Color = Color.FromArgb(255, 110, 168, 44), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
-            Drives.Add(new Drive(4, Accounts[0]) { DriveId = 103, Name = "The cloud", Color = Color.FromArgb(255, 255, 168, 110), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
-            Drives.Add(new Drive(5, Accounts[0]) { DriveId = 104, Name = "SwissCloud", Color = Color.FromArgb(255, 160, 168, 213), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
-            Drives.Add(new Drive(6, Accounts[0]) { DriveId = 105, Name = "FrenchCloud", Color = Color.FromArgb(255, 123, 179, 12), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
-            Drives.Add(new Drive(7, Accounts[1]) { DriveId = 106, Name = "EuropaCloud", Color = Color.FromArgb(255, 160, 12, 213), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
-            Drives.Add(new Drive(8, Accounts[1]) { DriveId = 107, Name = "WinUI cloud", Color = Color.FromArgb(255, 12, 168, 179), Size = 2000000000, UsedSize = 150000000, IsActive = true, IsPaidOffer = false });
+            List<Drive> drives = new List<Drive>();
+            drives.Add(new Drive(1, accounts[0]) { DriveId = 140946, Name = "Infomaniak", Color = Color.FromArgb(255, 0, 150, 136), IsPaidOffer = true });
+            drives.Add(new Drive(2, accounts[0]) { DriveId = 101, Name = "Etik corp", Color = Color.FromArgb(255, 156, 38, 176), IsPaidOffer = true });
+            drives.Add(new Drive(3, accounts[0]) { DriveId = 102, Name = "CH corp", Color = Color.FromArgb(255, 110, 168, 44), IsPaidOffer = false });
+            drives.Add(new Drive(4, accounts[0]) { DriveId = 103, Name = "The cloud", Color = Color.FromArgb(255, 255, 168, 110), IsPaidOffer = false });
+            drives.Add(new Drive(5, accounts[0]) { DriveId = 104, Name = "SwissCloud", Color = Color.FromArgb(255, 160, 168, 213), IsPaidOffer = false });
+            drives.Add(new Drive(6, accounts[0]) { DriveId = 105, Name = "FrenchCloud", Color = Color.FromArgb(255, 123, 179, 12), IsPaidOffer = false });
+            drives.Add(new Drive(7, accounts[1]) { DriveId = 106, Name = "EuropaCloud", Color = Color.FromArgb(255, 160, 12, 213), IsPaidOffer = false });
+            drives.Add(new Drive(8, accounts[1]) { DriveId = 107, Name = "WinUI cloud", Color = Color.FromArgb(255, 12, 168, 179), IsPaidOffer = false });
 
-            Accounts[0].Drives.Add(Drives[0]);
-            Accounts[0].Drives.Add(Drives[1]);
-            Accounts[0].Drives.Add(Drives[2]);
-            Accounts[0].Drives.Add(Drives[3]);
-            Accounts[0].Drives.Add(Drives[4]);
-            Accounts[0].Drives.Add(Drives[5]);
-            Accounts[1].Drives.Add(Drives[6]);
-            Accounts[1].Drives.Add(Drives[7]);
+            Users[0].Accounts[0].Drives.Add(drives[0]);
+            Users[0].Accounts[0].Drives.Add(drives[1]);
+            Users[0].Accounts[0].Drives.Add(drives[2]);
+            Users[0].Accounts[0].Drives.Add(drives[3]);
+            Users[0].Accounts[0].Drives.Add(drives[4]);
+            Users[0].Accounts[0].Drives.Add(drives[5]);
+            Users[1].Accounts[0].Drives.Add(drives[6]);
+            Users[1].Accounts[0].Drives.Add(drives[7]);
 
 
             // Create mock syncs
-            Syncs.Add(new Sync(1, Drives[0]) { Id = 1000, LocalPath = "C:\\Users\\John\\Etik corp sync1", RemotePath = "", SupportOnlineMode = false });
-            Drives[0].Syncs.Add(Syncs[0]);
+            List<Sync> syncs = new List<Sync>();
 
-            Syncs.Add(new Sync(2, Drives[1]) { Id = 1001, LocalPath = "D:\\Users\\John\\CH corp\\kDrive Metier", RemotePath = "", SupportOnlineMode = false });
-            Drives[1].Syncs.Add(Syncs[1]);
+            syncs.Add(new Sync(1, drives[0]) { Id = 1000, LocalPath = "C:\\Users\\John\\Etik corp sync1", RemotePath = "", SupportOnlineMode = false });
+            drives[0].Syncs.Add(syncs[0]);
 
-            Syncs.Add(new Sync(3, Drives[2]) { Id = 1002, LocalPath = "F:\\Users\\John\\CH corp\\kDrive Adminstration", RemotePath = "", SupportOnlineMode = false });
-            Syncs.Add(new Sync(4, Drives[2]) { Id = 1003, LocalPath = "F:\\Users\\John\\Music", RemotePath = "", SupportOnlineMode = false });
-            Drives[2].Syncs.Add(Syncs[2]);
-            Drives[2].Syncs.Add(Syncs[3]);
+            syncs.Add(new Sync(2, drives[1]) { Id = 1001, LocalPath = "D:\\Users\\John\\CH corp\\kDrive Metier", RemotePath = "", SupportOnlineMode = false });
+            drives[1].Syncs.Add(syncs[1]);
 
-            Syncs.Add(new Sync(5, Drives[3]) { Id = 1004, LocalPath = "F:\\Users\\John\\Photos", RemotePath = "", SupportOnlineMode = false });
-            Syncs.Add(new Sync(6, Drives[3]) { Id = 1005, LocalPath = "F:\\Users\\John\\Famille\\Photos", RemotePath = "", SupportOnlineMode = false });
-            Syncs.Add(new Sync(7, Drives[3]) { Id = 1006, LocalPath = "F:\\Users\\John\\vidéo", RemotePath = "", SupportOnlineMode = false });
-            Drives[3].Syncs.Add(Syncs[4]);
-            Drives[3].Syncs.Add(Syncs[5]);
-            Drives[3].Syncs.Add(Syncs[6]);
+            syncs.Add(new Sync(3, drives[2]) { Id = 1002, LocalPath = "F:\\Users\\John\\CH corp\\kDrive Adminstration", RemotePath = "", SupportOnlineMode = false });
+            syncs.Add(new Sync(4, drives[2]) { Id = 1003, LocalPath = "F:\\Users\\John\\Music", RemotePath = "", SupportOnlineMode = false });
+            drives[2].Syncs.Add(syncs[2]);
+            drives[2].Syncs.Add(syncs[3]);
 
-
-            Syncs.Add(new Sync(8, Drives[4]) { Id = 1007, LocalPath = "F:\\Users\\John\\Film", RemotePath = "", SupportOnlineMode = false });
-            Syncs.Add(new Sync(9, Drives[5]) { Id = 1008, LocalPath = "F:\\Users\\John\\Pro\\Comptabilité", RemotePath = "", SupportOnlineMode = false });
-            Syncs.Add(new Sync(10, Drives[6]) { Id = 1009, LocalPath = "F:\\Users\\John\\Pro\\Rh", RemotePath = "", SupportOnlineMode = false });
-            Syncs.Add(new Sync(11, Drives[7]) { Id = 1010, LocalPath = "F:\\Users\\John\\The cloud sync8", RemotePath = "", SupportOnlineMode = false });
-            Drives[4].Syncs.Add(Syncs[7]);
-            Drives[5].Syncs.Add(Syncs[8]);
-            Drives[6].Syncs.Add(Syncs[9]);
-            Drives[7].Syncs.Add(Syncs[10]);
+            syncs.Add(new Sync(5, drives[3]) { Id = 1004, LocalPath = "F:\\Users\\John\\Photos", RemotePath = "", SupportOnlineMode = false });
+            syncs.Add(new Sync(6, drives[3]) { Id = 1005, LocalPath = "F:\\Users\\John\\Famille\\Photos", RemotePath = "", SupportOnlineMode = false });
+            syncs.Add(new Sync(7, drives[3]) { Id = 1006, LocalPath = "F:\\Users\\John\\vidéo", RemotePath = "", SupportOnlineMode = false });
+            drives[3].Syncs.Add(syncs[4]);
+            drives[3].Syncs.Add(syncs[5]);
+            drives[3].Syncs.Add(syncs[6]);
 
 
-            Syncs.Add(new Sync(13, Drives[4]) { Id = 1013, LocalPath = "F:\\Users\\John\\SwissCloud 1", RemotePath = "", SupportOnlineMode = false });
-            Syncs.Add(new Sync(14, Drives[4]) { Id = 1014, LocalPath = "F:\\Users\\John\\SwissCloud 2", RemotePath = "", SupportOnlineMode = false });
-            Syncs.Add(new Sync(15, Drives[4]) { Id = 1015, LocalPath = "F:\\Users\\John\\SwissCloud 3", RemotePath = "", SupportOnlineMode = false });
-            Syncs.Add(new Sync(16, Drives[4]) { Id = 1016, LocalPath = "F:\\Users\\John\\SwissCloud 4", RemotePath = "", SupportOnlineMode = false });
-            Syncs.Add(new Sync(17, Drives[4]) { Id = 1017, LocalPath = "F:\\Users\\John\\SwissCloud 5", RemotePath = "", SupportOnlineMode = false });
-            Syncs.Add(new Sync(18, Drives[4]) { Id = 1018, LocalPath = "F:\\Users\\John\\SwissCloud 6", RemotePath = "", SupportOnlineMode = false });
-            Syncs.Add(new Sync(19, Drives[4]) { Id = 1018, LocalPath = "F:\\Users\\John\\SwissCloud 7", RemotePath = "", SupportOnlineMode = false });
-            Drives[4].Syncs.Add(Syncs[11]);
-            Drives[4].Syncs.Add(Syncs[12]);
-            Drives[4].Syncs.Add(Syncs[13]);
-            Drives[4].Syncs.Add(Syncs[14]);
-            Drives[4].Syncs.Add(Syncs[15]);
-            Drives[4].Syncs.Add(Syncs[16]);
-            Drives[4].Syncs.Add(Syncs[17]);
+            syncs.Add(new Sync(8, drives[4]) { Id = 1007, LocalPath = "F:\\Users\\John\\Film", RemotePath = "", SupportOnlineMode = false });
+            syncs.Add(new Sync(9, drives[5]) { Id = 1008, LocalPath = "F:\\Users\\John\\Pro\\Comptabilité", RemotePath = "", SupportOnlineMode = false });
+            syncs.Add(new Sync(10, drives[6]) { Id = 1009, LocalPath = "F:\\Users\\John\\Pro\\Rh", RemotePath = "", SupportOnlineMode = false });
+            syncs.Add(new Sync(11, drives[7]) { Id = 1010, LocalPath = "F:\\Users\\John\\The cloud sync8", RemotePath = "", SupportOnlineMode = false });
+            drives[4].Syncs.Add(syncs[7]);
+            drives[5].Syncs.Add(syncs[8]);
+            drives[6].Syncs.Add(syncs[9]);
+            drives[7].Syncs.Add(syncs[10]);
+
+
+            syncs.Add(new Sync(13, drives[4]) { Id = 1013, LocalPath = "F:\\Users\\John\\SwissCloud 1", RemotePath = "", SupportOnlineMode = false });
+            syncs.Add(new Sync(14, drives[4]) { Id = 1014, LocalPath = "F:\\Users\\John\\SwissCloud 2", RemotePath = "", SupportOnlineMode = false });
+            syncs.Add(new Sync(15, drives[4]) { Id = 1015, LocalPath = "F:\\Users\\John\\SwissCloud 3", RemotePath = "", SupportOnlineMode = false });
+            syncs.Add(new Sync(16, drives[4]) { Id = 1016, LocalPath = "F:\\Users\\John\\SwissCloud 4", RemotePath = "", SupportOnlineMode = false });
+            syncs.Add(new Sync(17, drives[4]) { Id = 1017, LocalPath = "F:\\Users\\John\\SwissCloud 5", RemotePath = "", SupportOnlineMode = false });
+            syncs.Add(new Sync(18, drives[4]) { Id = 1018, LocalPath = "F:\\Users\\John\\SwissCloud 6", RemotePath = "", SupportOnlineMode = false });
+            syncs.Add(new Sync(19, drives[4]) { Id = 1018, LocalPath = "F:\\Users\\John\\SwissCloud 7", RemotePath = "", SupportOnlineMode = false });
+            drives[4].Syncs.Add(syncs[11]);
+            drives[4].Syncs.Add(syncs[12]);
+            drives[4].Syncs.Add(syncs[13]);
+            drives[4].Syncs.Add(syncs[14]);
+            drives[4].Syncs.Add(syncs[15]);
+            drives[4].Syncs.Add(syncs[16]);
+            drives[4].Syncs.Add(syncs[17]);
+
+            // Create mock ParmsInfo
+            ParmsInfo parmsInfo = new ParmsInfo()
+            {
+                Language = Language.SystemDefault,
+                AutoStart = true,
+                MoveToTrash = true,
+                NotificationsDisabled = NotificationsDisabled.Never,
+                UseLog = false,
+                LogLevel = Logger.Level.Debug,
+                ExtendedLog = false,
+                PurgeOldLogs = true,
+                ShowShortcuts = true,
+                ProxyConfigInfo = new ProxyConfigInfo()
+                {
+                    Type = ProxyType.None,
+                    HostName = "",
+                    Port = 0,
+                    NeedsAuth = false,
+                    User = "",
+                    Pwd = ""
+                }
+            };
+
+            Settings = parmsInfo;
         }
     }
 }

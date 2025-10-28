@@ -462,4 +462,38 @@
   <data name="Page_HomePage_Main_SyncOffline_Description_Line2.Text" xml:space="preserve">
     <value />
   </data>
+  <data name="Global_LanguageCode" xml:space="preserve">
+    <value>it</value>
+  </data>
+  <data name="CC_UpdateExpander_Header.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_UpdateExpander_UpdateButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_UpdateExpander_UpdateAvailable_Description.TextTemplate" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_UpdateExpander_UpToDate_Description.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_UpdateExpander_UpdateAvailable_UpdateDetails.TextTemplate" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_UpdateExpander_UpToDate_UpdateDetails.TextTemplate" xml:space="preserve">
+    <value />
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="Page_SettingsPage_Global.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_AutoUpdate.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="CC_UpdateExpander_LicensesHyperLink.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_UpdateExpander_ChangeLogHyperLink.Content" xml:space="preserve">
+    <value />
+  </data>
 </root>

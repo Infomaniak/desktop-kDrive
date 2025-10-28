@@ -493,4 +493,44 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
   <data name="Page_HomePage_Main_SyncOffline_Description_Line2.Text" xml:space="preserve">
     <value>La synchronisation reprendra automatiquement dès que vous serez reconnecté.</value>
   </data>
+  <data name="Global_LanguageCode" xml:space="preserve">
+    <value>fr</value>
+    <comment>This value shouldn't be change, it is used to generate URL.</comment>
+  </data>
+  <data name="CC_UpdateExpander_Header.Text" xml:space="preserve">
+    <value>Mise à jour</value>
+  </data>
+  <data name="CC_UpdateExpander_UpdateButton.Content" xml:space="preserve">
+    <value>Mettre à jour</value>
+  </data>
+  <data name="CC_UpdateExpander_UpdateAvailable_Description.TextTemplate" xml:space="preserve">
+    <value>kDrive build {0} disponible</value>
+    <comment>{0} version tag (ie 3.7.6)</comment>
+  </data>
+  <data name="CC_UpdateExpander_UpToDate_Description.Text" xml:space="preserve">
+    <value>L’application est à jour</value>
+  </data>
+  <data name="CC_UpdateExpander_UpdateAvailable_UpdateDetails.TextTemplate" xml:space="preserve">
+    <value>Cette mise à jour apporte des correctifs importants et des améliorations liées à  la sécurité, et est recommandée à tous les utilisateurs. 
+Version {0} (build {1}), compilée le {2}
+© 2019–{3} Infomaniak Network SA</value>
+    <comment>{0}: version tag ie 4.0.0; {1} version build ie 20252010; {2}: pretty date ie nov 28, 2025, {3}: current year: 2025</comment>
+  </data>
+  <data name="CC_UpdateExpander_UpToDate_UpdateDetails.TextTemplate" xml:space="preserve">
+    <value>Version {0} (build {1}), compilée le {2}
+© 2019–{3} Infomaniak Network SA</value>
+    <comment>{0}: version tag ie 4.0.0; {1} version build ie 20252010; {2}: pretty date ie nov 28, 2025, {3}: current year: 2025</comment>
+  </data>
+  <data name="Page_SettingsPage_Global.Text" xml:space="preserve">
+    <value>Général</value>
+  </data>
+  <data name="Page_SettingsPage_AutoUpdate.Header" xml:space="preserve">
+    <value>Mettre à jour kDrive automatiquement</value>
+  </data>
+  <data name="CC_UpdateExpander_LicensesHyperLink.Content" xml:space="preserve">
+    <value>Licence LGPL v3 - Sources Git</value>
+  </data>
+  <data name="CC_UpdateExpander_ChangeLogHyperLink.Content" xml:space="preserve">
+    <value>Notes de mise à jour</value>
+  </data>
 </root>

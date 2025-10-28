@@ -34,6 +34,7 @@
         <converters:BooleanToInvertedVisibilityConverter  x:Key="BooleanToInvertedVisibilityConverter" />
         <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
         <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />
+        <converters:DateToStringConverter x:Key="DateToStringConverter" />
     </Page.Resources>
     <Grid Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.L}"
           RowSpacing="{StaticResource Infomaniak.Style.Spacing.L}">
@@ -53,47 +54,34 @@
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.L}">
                 <!-- General -->
                 <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                    <TextBlock Text="Général"
+                    <TextBlock x:Uid="Page_SettingsPage_Global"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
 
                     <!-- General - Update -->
-                    <toolKit:SettingsExpander Header="Mise à jour">
-                        <TextBlock Text="kDrive build 3.7.3 disponible"
-                                   Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
-                                   Foreground="{ThemeResource TextFillColorDisabled}" />
-                        <toolKit:SettingsExpander.HeaderIcon>
-                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Arrows.arrow-loop}"
-                                              Height="16"
+                    <controls:UpdateExpander Settings="{x:Bind ViewModel.Settings, Mode=OneWay}" />
+
+                    <toolKit:SettingsCard x:Uid="Page_SettingsPage_AutoUpdate">
+                        <toolKit:SettingsCard.HeaderIcon>
+                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Arrows.arrows-loop-automatic}"
+                                              Height="32"
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                        </toolKit:SettingsExpander.HeaderIcon>
-                        <toolKit:SettingsExpander.Items>
-                            <toolKit:SettingsCard Header="Mise à jour disponible"
-                                                  Background="{ThemeResource LayerFillColorDefault}">
-                                <StackPanel Orientation="Horizontal">
-                                    <HyperlinkButton Content="Afficher le changelog" />
-                                    <Button Content="Mettre à jour"
-                                            Style="{ThemeResource AccentButtonStyle}" />
-                                </StackPanel>
-                            </toolKit:SettingsCard>
-                            <toolKit:SettingsCard Header="Mettre à jour kDrive automatiquement"
-                                                  Background="{ThemeResource LayerFillColorDefault}">
-                                <ToggleSwitch />
-                            </toolKit:SettingsCard>
-                        </toolKit:SettingsExpander.Items>
-                    </toolKit:SettingsExpander>
+                        </toolKit:SettingsCard.HeaderIcon>
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.Settings.UpdateManager.AutoUpdateEnabled, Mode=TwoWay}" />
+                    </toolKit:SettingsCard>
 
                     <!-- General - Beta -->
                     <toolKit:SettingsCard Description="kDrive Beta est disponible."
                                           Header="Version Beta">
                         <toolKit:SettingsCard.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.lab-flask}"
-                                              Height="16"
+                                              Height="32"
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                         </toolKit:SettingsCard.HeaderIcon>
-                        <ComboBox SelectedIndex="0">
-                            <ComboBoxItem>Stable</ComboBoxItem>
-                            <ComboBoxItem IsEnabled="False">Beta</ComboBoxItem>
-                            <ComboBoxItem IsEnabled="False">Alpha</ComboBoxItem>
+                        <ComboBox x:Name="UpdateChannel"
+                                  SelectionChanged="UpdateChannel_SelectionChanged">
+                            <ComboBoxItem Tag="Prod">Stable</ComboBoxItem>
+                            <ComboBoxItem Tag="Beta">Beta</ComboBoxItem>
+                            <ComboBoxItem Tag="Internal">Internal</ComboBoxItem>
                         </ComboBox>
                     </toolKit:SettingsCard>
 
@@ -101,7 +89,7 @@
                     <toolKit:SettingsCard Header="Langue">
                         <toolKit:SettingsCard.HeaderIcon>
                             <controls:SvgIcon  UriString="{StaticResource Infomaniak.DS.Icons.Communication.translate}"
-                                               Height="16"
+                                               Height="32"
                                                Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                         </toolKit:SettingsCard.HeaderIcon>
                         <ComboBox SelectedIndex="0">
@@ -117,11 +105,11 @@
                     <toolKit:SettingsCard Header="Ouvrir kDrive au démarrage de l’ordinateur">
                         <toolKit:SettingsCard.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.power}"
-                                              Height="16"
+                                              Height="32"
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
 
                         </toolKit:SettingsCard.HeaderIcon>
-                        <ToggleSwitch />
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.Settings.AutoStart, Mode=OneWay}" />
 
                     </toolKit:SettingsCard>
                 </StackPanel>
@@ -140,7 +128,8 @@
                     </Grid>
                     <!-- Account - List -->
                     <ListView ItemsSource="{x:Bind ViewModel.Users}"
-                              SelectionMode="None">
+                              SelectionMode="None"
+                              IsEnabled="False">
                         <ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">
                                 <Setter Property="Padding"
@@ -219,7 +208,7 @@
                                           IsClickEnabled="True">
                         <toolKit:SettingsCard.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Edition.list-bullets}"
-                                              Height="16"
+                                              Height="32"
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                         </toolKit:SettingsCard.HeaderIcon>
                     </toolKit:SettingsCard>
@@ -228,7 +217,7 @@
                     <toolKit:SettingsExpander Header="Gestion des données">
                         <toolKit:SettingsExpander.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Security.lock}"
-                                              Height="16"
+                                              Height="32"
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
 
                         </toolKit:SettingsExpander.HeaderIcon>
@@ -301,7 +290,7 @@
                                               Header="Réseau Proxy">
                         <toolKit:SettingsExpander.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Network.globe}"
-                                              Height="16"
+                                              Height="32"
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                         </toolKit:SettingsExpander.HeaderIcon>
                         <ComboBox SelectedIndex="0">
@@ -335,7 +324,7 @@
                                               Header="Journal de débogage">
                         <toolKit:SettingsExpander.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Security.bug}"
-                                              Height="16"
+                                              Height="32"
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                         </toolKit:SettingsExpander.HeaderIcon>
                         <ToggleSwitch />
@@ -379,7 +368,7 @@
                     <toolKit:SettingsExpander Header="Version et informations légales">
                         <toolKit:SettingsExpander.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Books.book}"
-                                              Height="16"
+                                              Height="32"
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                         </toolKit:SettingsExpander.HeaderIcon>
                         <toolKit:SettingsExpander.Items>
@@ -398,7 +387,7 @@
                                                   Foreground="{ThemeResource TextFillColorDisabled}">
                                 <toolKit:SettingsCard.HeaderIcon>
                                     <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Arrows.arrow-loop}"
-                                                      Height="16"
+                                                      Height="32"
                                                       Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                                 </toolKit:SettingsCard.HeaderIcon>
 

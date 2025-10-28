@@ -37,9 +37,6 @@ namespace Infomaniak.kDrive.ViewModels
         private DriveId _driveId = -1;
         private string _name = "";
         private Color _color = Color.Blue;
-        private long _size = 0;
-        private long _usedSize = 0;
-        private bool _isActive = false; // Indicates if the user configured this drive on the current device.
         private bool _isPaidOffer = false; // Indicates if the drive is a paid offer (i.e. myKsuite+/pro +, ...)
         private ObservableCollection<Sync> _syncs = new ObservableCollection<Sync>();
         private Account _account;
@@ -71,26 +68,6 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _color;
             set => SetPropertyInUIThread(ref _color, value);
-        }
-        public long Size
-        {
-            get => _size;
-            set => SetPropertyInUIThread(ref _size, value);
-        }
-
-        public long UsedSize
-        {
-            get => _usedSize;
-            set => SetPropertyInUIThread(ref _usedSize, value);
-        }
-
-        public bool IsActive
-        {
-            get => _isActive;
-            set
-            {
-                SetPropertyInUIThread(ref _isActive, value);
-            }
         }
 
         public bool IsPaidOffer

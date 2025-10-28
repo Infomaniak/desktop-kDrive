@@ -16,26 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using CommunityToolkit.Mvvm.ComponentModel;
 using DynamicData;
 using DynamicData.Binding;
-using Infomaniak.kDrive.ServerCommunication;
-using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
-using System.Buffers.Binary;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.Drawing;
-using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage.Streams;
 
