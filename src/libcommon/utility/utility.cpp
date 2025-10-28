@@ -952,10 +952,11 @@ void CommonUtility::extractIntFromStrVersion(const std::string &version, std::ve
 
     std::string versionDigits = version;
 
-    std::regex versionDigitsRegex(R"(^([0-9]+\.[0-9]+\.[0-9]+)\s\(build\s([0-9]{8})\)$)"); // Example: "3.6.9 (build 20250220)"
-    std::smatch words;
-    std::regex_match(versionDigits, words, versionDigitsRegex);
+    std::regex versionDigitsRegex(R"(^([0-9]+\.[0-9]+\.[0-9]+)(?:\s*\(build\s*([0-9]+)\))?$)");
 
+    std::smatch words;
+    std::regex_match(versionDigits, words, versionDigitsRegex); 
+      
     if (!words.empty()) {
         assert(words.size() == 3 && "Wrong version format.");
         if (words.size() != 3) return;
