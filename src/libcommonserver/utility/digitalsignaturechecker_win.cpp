@@ -106,6 +106,7 @@ BOOL extractCertificateInfo(const PCCERT_CONTEXT pCertContext, DigitalSignatureI
 }
 
 LPWSTR allocateAndCopyWideString(const LPCWSTR inputString) {
+    if (inputString == nullptr) return {};
     LPWSTR outputString = (LPWSTR) LocalAlloc(LPTR, (wcslen(inputString) + 1) * sizeof(WCHAR));
     if (outputString != nullptr) {
         (void) lstrcpyW(outputString, inputString);
