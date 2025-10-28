@@ -36,7 +36,13 @@ ExitInfo AbstractListingJob::setData() {
         Poco::JSON::Object json;
         Poco::JSON::Array withoutIdsArray;
         for (const auto &id: _blacklist) {
-            if (id.empty()) continue;
+            if (id.empty()) {
+                assert(false);
+                sentry::Handler::captureMessage(sentry::Level::Warning, "ID should not be NULL",
+                                                "The IDs in `without_ids` should never be NULL.");
+                LOG_WARN(_logger, "ID should not be NULL");
+                continue;
+            }
             (void) withoutIdsArray.add(id);
         }
         (void) json.set("without_ids", withoutIdsArray);
