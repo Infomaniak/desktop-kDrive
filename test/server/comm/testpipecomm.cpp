@@ -50,8 +50,12 @@ void TestPipeComm::testServer() {
 
     bool newConnectionCalled = false;
     bool lostConnectionCalled = false;
+    std::shared_ptr<AbstractCommChannel> lostChannel = nullptr;
     pipeCommServerTest->setNewConnectionCbk([&newConnectionCalled]() { newConnectionCalled = true; });
-    pipeCommServerTest->setLostConnectionCbk([&lostConnectionCalled]() { lostConnectionCalled = true; });
+    pipeCommServerTest->setLostConnectionCbk([&lostConnectionCalled, &lostChannel](std::shared_ptr<AbstractCommChannel> channel) {
+        lostConnectionCalled = true;
+        lostChannel = channel;
+    });
 
     // Connect a client to the server and exchange some messages
     // Repeat N times (with N > PIPE_INSTANCES) to check connection reuse
@@ -77,7 +81,11 @@ void TestPipeComm::testServer() {
         CPPUNIT_ASSERT(serverSidechannel != nullptr);
 
         bool readyReadCalled = false;
-        serverSidechannel->setReadyReadCbk([&readyReadCalled]() { readyReadCalled = true; });
+        std::shared_ptr<AbstractCommChannel> readyReadChannel = nullptr;
+        serverSidechannel->setReadyReadCbk([&readyReadCalled, &readyReadChannel](std::shared_ptr<AbstractCommChannel> channel) {
+            readyReadCalled = true;
+            readyReadChannel = channel;
+        });
 
         // Send some messages from the client to the server
         std::array<CommString, 3> messages = {Str("Hello word"),
@@ -98,11 +106,11 @@ void TestPipeComm::testServer() {
         }
 
         // Wait for the server to receive the messages
-        remainWait = 100; // wait max 1 second
+        int remainWait = 100; // wait max 1 second
         while (serverSidechannel->bytesAvailable() == 0 && remainWait-- > 0) {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
-        CPPUNIT_ASSERT_MESSAGE(serverSidechannel->bytesAvailable() > 0);
+        CPPUNIT_ASSERT(serverSidechannel->bytesAvailable() > 0);
         CPPUNIT_ASSERT(readyReadCalled);
 
         // Read the messages on the server side
