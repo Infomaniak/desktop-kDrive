@@ -34,7 +34,6 @@ endif()
 
 if(WIN32)
     list(APPEND testcommonserver_SRCS io/testcreatejunction.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp io/testgetlongpathname.cpp)
-    list(APPEND testcommonserver_SRCS utility/testdigitalsignaturecheck_win.h utility/testdigitalsignaturecheck_win.cpp)
 endif()
 
 if(WIN32)

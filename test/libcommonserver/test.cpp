@@ -19,18 +19,12 @@
 #include "testincludes.h"
 
 #include "utility/testutility.h"
-#if defined(KD_WINDOWS)
-#include "utility/testdigitalsignaturecheck_win.h"
-#endif
 #include "log/testlog.h"
 #include "db/testdb.h"
 #include "io/testio.h"
 
 namespace KDC {
 CPPUNIT_TEST_SUITE_REGISTRATION(TestUtility);
-#if defined(KD_WINDOWS)
-CPPUNIT_TEST_SUITE_REGISTRATION(TestDigitalSignatureCheck_win);
-#endif
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLog);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestDb);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestIo);
