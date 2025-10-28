@@ -55,6 +55,7 @@ bool hasFileType(const std::filesystem::directory_entry &entry) {
 
 bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPath) {
     const SyncName rootPathStr = _rootPath.native();
+    bool directoryIteratorCorruption = false;
     try {
         std::filesystem::recursive_directory_iterator dirIt;
         if (!recursiveDirectoryIterator(parentPath, dirIt)) {
@@ -156,13 +157,18 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
     } catch (std::filesystem::filesystem_error &e) {
         LOG_WARN(_logger, "Error caught in VirtualFilesCleaner::removePlaceholdersRecursively: code=" << e.code()
                                                                                                       << " error=" << e.what());
-        return false;
+        directoryIteratorCorruption = true;
     } catch (...) {
         LOG_WARN(_logger, "Error caught in VirtualFilesCleaner::removePlaceholdersRecursively");
-        return false;
+        directoryIteratorCorruption = true;
     }
 
-    return true;
+    if (directoryIteratorCorruption) {
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::FileOrDirectoryCorrupted;
+    }
+
+    return !directoryIteratorCorruption;
 }
 
 bool VirtualFilesCleaner::folderCanBeProcessed(std::filesystem::recursive_directory_iterator &dirIt) {
