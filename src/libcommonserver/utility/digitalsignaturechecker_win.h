@@ -18,25 +18,31 @@
 
 #pragma once
 
-#include "testincludes.h"
+#include "utility.h"
 
 namespace KDC {
 
-class TestWindowsUpdater final : public CppUnit::TestFixture, public TestBase {
-        CPPUNIT_TEST_SUITE(TestWindowsUpdater);
-        CPPUNIT_TEST(testOnUpdateFound);
-        CPPUNIT_TEST(testIsSignatureValid);
-        CPPUNIT_TEST_SUITE_END();
+struct DigitalSignatureInfo {
+        SyncName _programName;
+        SyncName _serialNumber;
+        SyncName _issuerName;
+        SyncName _subject;
+};
 
+class DigitalSignatureChecker_win {
     public:
-        void setUp() override;
-        void tearDown() override;
+        explicit DigitalSignatureChecker_win(const SyncPath &packageAbsolutePath);
+
+        bool isSignatureValid() const {
+            return _signatureIsValid && CommonUtility::containsInsensitive(_signatureInfo._subject, Str("Infomaniak"));
+        }
 
     private:
-        void testOnUpdateFound();
-        void testIsSignatureValid();
+        bool extractSignatureInfo(DigitalSignatureInfo &signatureInfo, SourceLocation &location);
 
-        int _driveDbId{0};
+        SyncPath _packageAbsolutePath;
+        DigitalSignatureInfo _signatureInfo;
+        bool _signatureIsValid{false};
 };
 
 } // namespace KDC

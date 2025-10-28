@@ -21,10 +21,13 @@
 #include "db/parmsdb.h"
 #include "requests/parameterscache.h"
 #include "io/iohelper.h"
+#include "jobs/network/kDrive_API/downloadjob.h"
+#include "keychainmanager/keychainmanager.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/testhelpers.h"
 #include "updater/windowsupdater.h"
+#include "utility/digitalsignaturechecker_win.h"
 
 namespace KDC {
 
@@ -32,14 +35,36 @@ void TestWindowsUpdater::setUp() {
     TestBase::start();
 
     testhelpers::setupLogging();
+    const testhelpers::TestVariables testVariables;
 
-    // Init parmsDb
+    // Insert api token into keystore
+    ApiToken apiToken;
+    apiToken.setAccessToken(testVariables.apiToken);
+
+    const std::string keychainKey("123");
+    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    // Create parmsDb
     bool alreadyExists = false;
-    const std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
-    (void) ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
+    (void) ParmsDb::instance(MockDb::makeDbName(alreadyExists), KDRIVE_VERSION_STRING, true, true);
+    ParametersCache::instance()->parameters().setExtendedLog(true);
+
+    // Insert user, account & drive
+    const int userId(atoi(testVariables.userId.c_str()));
+    const User user(1, userId, keychainKey);
+    (void) ParmsDb::instance()->insertUser(user);
+
+    const int accountId(atoi(testVariables.accountId.c_str()));
+    const Account account(1, accountId, user.dbId());
+    (void) ParmsDb::instance()->insertAccount(account);
+
+    _driveDbId = 1;
+    const int driveId = atoi(testVariables.driveId.c_str());
+    const Drive drive(_driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
+    (void) ParmsDb::instance()->insertDrive(drive);
 
     // Setup parameters cache in test mode
-    ParametersCache::instance(true);
+    (void) ParametersCache::instance(true);
 }
 
 void TestWindowsUpdater::tearDown() {
@@ -63,6 +88,8 @@ void TestWindowsUpdater::testOnUpdateFound() {
             void downloadUpdate() noexcept override { setState(UpdateState::Downloading); }
 
             std::streamsize getExpectedInstallerSize([[maybe_unused]] const std::string &downloadUrl) override { return 10; }
+
+            bool verifyDigitalSignature(const SyncPath &filepath) override { return true; }
 
             SyncPath _installerPath;
     };
@@ -96,6 +123,27 @@ void TestWindowsUpdater::testOnUpdateFound() {
     testObj.onUpdateFound();
     CPPUNIT_ASSERT_EQUAL(UpdateState::Ready, testObj.state());
     CPPUNIT_ASSERT(std::filesystem::exists(dummyInstallerPath));
+}
+
+void TestWindowsUpdater::testIsSignatureValid() {
+    // Empty path.
+    CPPUNIT_ASSERT(!DigitalSignatureChecker_win({}).isSignatureValid());
+    // Path to non-existing file.
+    CPPUNIT_ASSERT(!DigitalSignatureChecker_win(SyncPath("A/B/C")).isSignatureValid());
+    // Path to existing file but not signed.
+    const LocalTemporaryDirectory tmpDir;
+    const auto testPath = tmpDir.path() / "testSignature.txt";
+    testhelpers::generateOrEditTestFile(testPath);
+    CPPUNIT_ASSERT(!DigitalSignatureChecker_win(SyncPath(testPath)).isSignatureValid());
+    // Path to an existing signed file.
+    {
+        const testhelpers::TestVariables testVariables;
+        static const NodeId signedFileId = "5304421";
+        const auto signedFilePath = tmpDir.path() / "testfile.exe";
+        DownloadJob job(nullptr, _driveDbId, signedFileId, signedFilePath, 0);
+        (void) job.runSynchronously();
+        CPPUNIT_ASSERT(DigitalSignatureChecker_win(SyncPath(signedFilePath)).isSignatureValid());
+    }
 }
 
 } // namespace KDC
