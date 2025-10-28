@@ -90,7 +90,7 @@ uint64_t PipeCommChannel::bytesAvailable() const {
 
 PipeCommServer::PipeCommServer(const std::string &name) :
     AbstractCommServer(name) {
-    _pipePath = createPipe();
+    _pipePath = pipePath();
 }
 
 PipeCommServer::~PipeCommServer() = default;
@@ -403,7 +403,7 @@ void PipeCommServer::waitForExit() {
     }
 }
 
-SyncPath PipeCommServer::createPipe() {
+SyncPath PipeCommServer::pipePath() {
     // Get pipe file path
     std::string name(Theme::instance()->appName());
     name.append("-");
@@ -413,4 +413,5 @@ SyncPath PipeCommServer::createPipe() {
 
     return pipePath;
 }
+
 } // namespace KDC

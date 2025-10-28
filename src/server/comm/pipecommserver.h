@@ -45,7 +45,7 @@ class PipeCommChannel : public AbstractCommChannel {
         ~PipeCommChannel() = default;
 
         uint64_t bytesAvailable() const override;
-        void close() override {};
+        void close() override {}
 
     protected:
         uint64_t readData(CommChar *data, uint64_t maxSize) final;
@@ -63,7 +63,6 @@ class PipeCommChannel : public AbstractCommChannel {
         BOOL _pendingIO[toInt(Action::EnumEnd)];
         TCHAR _readData[BUFSIZE];
 #endif
-
 
         friend class PipeCommServer;
 };
@@ -97,12 +96,14 @@ class PipeCommServer : public AbstractCommServer {
         void waitForExit();
 
         static void executeFunc(PipeCommServer *server);
-        SyncPath createPipe();
+        static SyncPath pipePath();
 #if defined(KD_WINDOWS)
         std::vector<std::shared_ptr<PipeCommChannel>> _channels;
 
         static bool connectToPipe(HANDLE hPipe, LPOVERLAPPED lpo);
 #endif
+
+        friend class TestPipeComm;
 };
 
 } // namespace KDC
