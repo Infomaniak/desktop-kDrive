@@ -93,7 +93,13 @@ PipeCommServer::PipeCommServer(const std::string &name) :
     _pipePath = pipePath();
 }
 
-PipeCommServer::~PipeCommServer() = default;
+PipeCommServer::~PipeCommServer() {
+    for (auto &channel: _channels) {
+        (void) DisconnectNamedPipe(channel->_pipeInst);
+        (void) CloseHandle(channel->_pipeInst);
+    }
+    _channels.clear();
+}
 
 void PipeCommServer::close() {
     if (_isRunning) {
@@ -208,6 +214,7 @@ void PipeCommServer::execute() {
                                                                 : TRUE; // ready to read
     }
 
+    _isListening = true;
     while (!_stopAsked) {
         // Wait for the event object to be signaled, indicating completion of an overlapped read, write, or connect operation
         auto eventCount = PIPE_INSTANCES * toInt(PipeCommChannel::Action::EnumEnd);
@@ -223,7 +230,7 @@ void PipeCommServer::execute() {
         } else {
             LOG_WARN(Log::instance()->getLogger(), "Error in WaitForSingleObject: err=" << GetLastError());
             _exitInfo = ExitInfo(ExitCode::SystemError, ExitCause::Unknown);
-            return;
+            break;
         }
 
         ResetEvent(events[index]);
@@ -323,7 +330,7 @@ void PipeCommServer::execute() {
             break;
         }
     }
-
+    _isListening = false;
     _exitInfo = ExitInfo(ExitCode::Ok, ExitCause::Unknown);
 #endif
 }
@@ -332,6 +339,8 @@ void PipeCommServer::execute() {
 // This function is called when an error occurs or when the client closes its handle to the pipe
 // Disconnect from this client, then call ConnectNamedPipe to wait for another client to connect
 void PipeCommServer::disconnectAndReconnect(std::shared_ptr<PipeCommChannel> channel) {
+    channel->lostConnectionCbk();
+
     // Disconnect the pipe instance.
     if (!DisconnectNamedPipe(channel->_pipeInst)) {
         LOG_WARN(Log::instance()->getLogger(), "DisconnectNamedPipe failed: err=" << GetLastError());

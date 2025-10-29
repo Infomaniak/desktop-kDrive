@@ -17,7 +17,6 @@
  */
 
 #include "testsocketcomm.h"
-#include "log/log.h"
 
 namespace KDC {
 

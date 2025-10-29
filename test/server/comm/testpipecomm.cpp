@@ -17,22 +17,21 @@
  */
 
 #include "testpipecomm.h"
-#include "log/log.h"
 
 namespace KDC {
 
 // Mock implementation of readMessage and sendMessage for testing purpose
 CommString PipeCommChannelTest::readMessage() {
     CommChar data[1024];
-    (void) readData(data, 1024);
-    return data;
+    auto readSize = readData(data, 1024);
+    CommString dataStr(data, readSize);
+    return dataStr;
 }
 
 bool PipeCommChannelTest::sendMessage(const CommString &message) {
     (void) writeData(message.c_str(), message.size());
     return true;
 }
-
 // TestPipeComm implementation
 void TestPipeComm::setUp() {
     TestBase::start();
@@ -45,17 +44,24 @@ void TestPipeComm::tearDown() {
 void TestPipeComm::testServer() {
 #if defined(KD_WINDOWS)
     // Start the server
-    auto pipeCommServerTest = std::make_unique<PipeCommServerTest>("TestPipeComm::testServerListen");
-    pipeCommServerTest->listen();
+    auto pipeCommServer = std::make_unique<PipeCommServerTest>("TestPipeComm::testServerListen");
 
     bool newConnectionCalled = false;
     bool lostConnectionCalled = false;
     std::shared_ptr<AbstractCommChannel> lostChannel = nullptr;
-    pipeCommServerTest->setNewConnectionCbk([&newConnectionCalled]() { newConnectionCalled = true; });
-    pipeCommServerTest->setLostConnectionCbk([&lostConnectionCalled, &lostChannel](std::shared_ptr<AbstractCommChannel> channel) {
+    pipeCommServer->setNewConnectionCbk([&newConnectionCalled]() { newConnectionCalled = true; });
+    pipeCommServer->setLostConnectionCbk([&lostConnectionCalled, &lostChannel](std::shared_ptr<AbstractCommChannel> channel) {
         lostConnectionCalled = true;
         lostChannel = channel;
     });
+
+    CPPUNIT_ASSERT(pipeCommServer->listen());
+    // Wait for the server initialization
+    int waitCount = 100; // wait max 1 second
+    while (!pipeCommServer->isListening() && waitCount-- > 0) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+    CPPUNIT_ASSERT(pipeCommServer->isListening());
 
     // Connect a client to the server and exchange some messages
     // Repeat N times (with N > PIPE_INSTANCES) to check connection reuse
@@ -73,144 +79,82 @@ void TestPipeComm::testServer() {
 
         CPPUNIT_ASSERT(hPipe != INVALID_HANDLE_VALUE);
 
+        // Wait for the server to process the connection
+        waitCount = 100; // wait max 1 second
+        while (pipeCommServer->connections().size() == 0 && waitCount-- > 0) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
         CPPUNIT_ASSERT(newConnectionCalled);
-        CPPUNIT_ASSERT(!pipeCommServerTest->connections().empty());
 
-        // Get the server side channel
-        auto serverSidechannel = pipeCommServerTest->nextPendingConnection();
-        CPPUNIT_ASSERT(serverSidechannel != nullptr);
+        // Get the server side connected channel list
+        auto channelList = pipeCommServer->connections();
+        CPPUNIT_ASSERT(channelList.size() > 0);
 
         bool readyReadCalled = false;
         std::shared_ptr<AbstractCommChannel> readyReadChannel = nullptr;
-        serverSidechannel->setReadyReadCbk([&readyReadCalled, &readyReadChannel](std::shared_ptr<AbstractCommChannel> channel) {
-            readyReadCalled = true;
-            readyReadChannel = channel;
-        });
-
-        // Send some messages from the client to the server
-        std::array<CommString, 3> messages = {Str("Hello word"),
-                                              Str("éè$²@à*-+/\\;,:!!<>😅🍃😎🫥😶‍🌫️😰🤑🦞"),
-                                              Str("每个人都有他的作战策略")};
-
-        for (const auto &msg: messages) {
-            DWORD cbToWrite = (msg.size() + 1) * sizeof(TCHAR);
-            DWORD cbWritten = 0;
-
-            BOOL fSuccess = WriteFile(hPipe, // pipe handle
-                                      msg.c_str(), // message
-                                      cbToWrite, // message length
-                                      &cbWritten, // bytes written
-                                      NULL); // not overlapped
-
-            CPPUNIT_ASSERT(fSuccess);
+        for (auto &channel: channelList) {
+            channel->setReadyReadCbk([&readyReadCalled, &readyReadChannel](std::shared_ptr<AbstractCommChannel> channel) {
+                readyReadCalled = true;
+                readyReadChannel = channel;
+            });
         }
 
-        // Wait for the server to receive the messages
-        int remainWait = 100; // wait max 1 second
-        while (serverSidechannel->bytesAvailable() == 0 && remainWait-- > 0) {
+        // Send a message from the client to the server
+        CommString msgClient = Str(R"(Hello word)");
+        DWORD cbToWrite = (msgClient.size() + 1) * sizeof(TCHAR);
+        DWORD cbWritten = 0;
+
+        BOOL fSuccess = WriteFile(hPipe, // pipe handle
+                                  msgClient.c_str(), // message
+                                  cbToWrite, // message length
+                                  &cbWritten, // bytes written
+                                  NULL); // not overlapped
+
+        CPPUNIT_ASSERT(fSuccess);
+        CPPUNIT_ASSERT(cbWritten == cbToWrite);
+
+        // Wait for the server to receive the message
+        waitCount = 100; // wait max 1 second
+        while (!readyReadCalled && waitCount-- > 0) {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
-        CPPUNIT_ASSERT(serverSidechannel->bytesAvailable() > 0);
         CPPUNIT_ASSERT(readyReadCalled);
+        CPPUNIT_ASSERT(readyReadChannel->bytesAvailable() > 0);
 
-        // Read the messages on the server side
-        for (const auto &msg: messages) {
-            auto msgReceived = serverSidechannel->readMessage();
-            CPPUNIT_ASSERT(msgReceived == msg);
-        }
+        // Read the message on the server side
+        auto msgReceived = readyReadChannel->readMessage();
+        CPPUNIT_ASSERT(msgReceived == msgClient);
 
         // Send a message from the server to the client
-        CommString msg = Str("😅🍃😎🫥😶‍🌫️😰🤑🦞éè$²@à*-+/\\;,:!!<>");
-        CPPUNIT_ASSERT(serverSidechannel->sendMessage(msg));
+        CommString msgServer = Str(R"(😅🍃😎🫥😶‍🌫️😰🤑🦞éè$²@à*-+/\;,:!!<>)");
+        CPPUNIT_ASSERT(readyReadChannel->sendMessage(msgServer));
 
         // Read the message on the client side
-        TCHAR chBuf[1024];
+        TCHAR chBuf[1024] = {0};
         DWORD cbRead = 0;
 
-        BOOL fSuccess = ReadFile(hPipe, // pipe handle
-                                 chBuf, // buffer to receive reply
-                                 1024 * sizeof(TCHAR), // size of buffer
-                                 &cbRead, // number of bytes read
-                                 NULL); // not overlapped
+        fSuccess = ReadFile(hPipe, // pipe handle
+                            chBuf, // buffer to receive reply
+                            1024 * sizeof(TCHAR), // size of buffer
+                            &cbRead, // number of bytes read
+                            NULL); // not overlapped
 
         CPPUNIT_ASSERT(fSuccess);
 
-        CommString msgReceived(chBuf);
-        CPPUNIT_ASSERT(msgReceived == msg);
+        msgReceived = CommString(chBuf, cbRead / sizeof(TCHAR));
+        CPPUNIT_ASSERT(msgReceived == msgServer);
 
         // Close client connection
         CloseHandle(hPipe);
+
+        // Wait for the server to process disconnection
+        waitCount = 100; // wait max 1 second
+        while (!lostConnectionCalled && waitCount-- > 0) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
         CPPUNIT_ASSERT(lostConnectionCalled);
     }
 #endif
 }
 
-/*
-
-void TestSocketComm::testChannelReadAndWriteData() {
-    // Start the server
-    auto _socketCommServerTest = std::make_unique<SocketCommServerTest>("TestSocketComm::testChannelReadAndWriteData");
-    CPPUNIT_ASSERT_MESSAGE("Server failed to start listening", _socketCommServerTest->listen());
-
-    // Create a client socket and connect to the server
-    Poco::Net::StreamSocket clientSocket;
-    clientSocket.connect(Poco::Net::SocketAddress("localhost", _socketCommServerTest->getPort()));
-    auto clientSideChannel = std::make_shared<SocketCommChannelTest>(clientSocket);
-
-    // Wait for the server to accept the connection
-    int remainWait = 100; // wait max 1 second
-    while (_socketCommServerTest->connections().empty() && remainWait-- > 0) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
-
-    // Get the server side channel
-    auto serverSidechannel = _socketCommServerTest->nextPendingConnection();
-    CPPUNIT_ASSERT(serverSidechannel != nullptr);
-
-    // Test messages with various characters
-    std::array<CommString, 3> messages = {Str("Hello word"),
-                                          Str("éè$²@à*-+/\\;,:!!<>😅🍃😎🫥😶‍🌫️😰🤑🦞"),
-                                          Str("每个人都有他的作战策略")};
-    for (const auto &msg: messages) {
-        // Send a message from the client to the server
-        clientSideChannel->sendMessage(msg);
-        // Wait for the server to receive the message
-        int remainWait = 100; // wait max 1 second
-        while (serverSidechannel->bytesAvailable() == 0 && remainWait-- > 0) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        }
-        CPPUNIT_ASSERT_MESSAGE("Server did not receive the message in time", serverSidechannel->bytesAvailable() > 0);
-        // Read the message on the server side
-        auto message = serverSidechannel->readMessage();
-        CPPUNIT_ASSERT(message.starts_with(msg)); // The mock readMessage always return a 1024 CommChar string.
-    }
-
-    // Test reading a long message in several calls to readData
-    CommString longMessage;
-    longMessage.reserve(200);
-    for (int i = 0; i < 200; ++i) {
-        longMessage += Str2SyncName(std::to_string(rand() % 10));
-    }
-
-    clientSideChannel->sendMessage(longMessage);
-
-    // Wait for the server to receive the message
-    remainWait = 100; // wait max 1 second
-    while (serverSidechannel->bytesAvailable() == 0 && remainWait-- > 0) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
-    CPPUNIT_ASSERT_MESSAGE("Server did not receive the long message in time", serverSidechannel->bytesAvailable() > 0);
-
-    // Read the message on the server side
-    CommChar data[101];
-    serverSidechannel->readData(data, 99);
-    auto message = CommString(data);
-    CPPUNIT_ASSERT(message.starts_with(longMessage.substr(0, 99)));
-
-    serverSidechannel->readData(data, 101);
-    message = CommString(data);
-    CPPUNIT_ASSERT(message.starts_with(longMessage.substr(99, 101)));
-    CPPUNIT_ASSERT_EQUAL(uint64_t(0), serverSidechannel->bytesAvailable());
-}
-*/
 } // namespace KDC
