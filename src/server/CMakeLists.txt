@@ -48,11 +48,24 @@ set(server_SRCS
     comm/abstractcommserver.h
     comm/commmanager.h comm/commmanager.cpp
     comm/guicommserver.h comm/guicommserver.cpp
+    comm/guijobmanager.h comm/guijobmanager.cpp
     comm/guijobs/abstractguijob.h comm/guijobs/abstractguijob.cpp
     comm/guijobs/guijobfactory.h comm/guijobs/guijobfactory.cpp
     comm/guijobs/loginrequesttokenjob.h comm/guijobs/loginrequesttokenjob.cpp
+    comm/guijobs/unknownrequestjob.h comm/guijobs/unknownrequestjob.cpp
+    comm/guijobs/userdbidlistjob.h comm/guijobs/userdbidlistjob.cpp
+    comm/guijobs/userinfolistjob.h comm/guijobs/userinfolistjob.cpp
+    comm/guijobs/userdeletejob.h comm/guijobs/userdeletejob.cpp
+    comm/guijobs/useravailabledrivesjob.h comm/guijobs/useravailabledrivesjob.cpp
+    comm/guijobs/accountinfolistjob.h comm/guijobs/accountinfolistjob.cpp
+    comm/guijobs/driveinfolistjob.h comm/guijobs/driveinfolistjob.cpp
+    comm/guijobs/driveupdatejob.h comm/guijobs/driveupdatejob.cpp
+    comm/guijobs/drivedeletejob.h comm/guijobs/drivedeletejob.cpp
+    comm/guijobs/drivesearchjob.h comm/guijobs/drivesearchjob.cpp
+    comm/guijobs/syncinfolistjob.h comm/guijobs/syncinfolistjob.cpp
     comm/guijobs/signaluseraddedjob.h comm/guijobs/signaluseraddedjob.cpp
     comm/guijobs/signaluserupdatedjob.h comm/guijobs/signaluserupdatedjob.cpp
+    comm/guijobs/signaluserremovedjob.h comm/guijobs/signaluserremovedjob.cpp
     migration/migrationparams.h migration/migrationparams.cpp
     requests/serverrequests.h requests/serverrequests.cpp
     requests/offlinefilessizeestimator.h requests/offlinefilessizeestimator.cpp
@@ -65,11 +78,15 @@ set(updater_SRCS
     updater/updatechecker.h updater/updatechecker.cpp
 )
 
+if(APPLE OR WIN32)
+    list(APPEND server_SRCS comm/extcommserver.h comm/extcommserver.cpp)
+    list(APPEND server_SRCS comm/extjobmanager.h comm/extjobmanager.cpp)
+    list(APPEND server_SRCS comm/extensionjob.h comm/extensionjob.cpp)
+endif()
+
 if(APPLE)
     list(APPEND server_SRCS ../common/utility_mac.cpp)
-    list(APPEND server_SRCS comm/extensionjob.h comm/extensionjob.cpp)
     list(APPEND server_SRCS comm/abstractcommserver_mac.h comm/abstractcommserver_mac.mm)
-    list(APPEND server_SRCS comm/extcommserver.h comm/extcommserver.cpp)
     list(APPEND server_SRCS comm/xpccommserver_mac.h comm/xpccommserver_mac.mm)
     list(APPEND server_SRCS comm/extcommserver_mac.mm)
     list(APPEND server_SRCS comm/guicommserver_mac.mm)
@@ -96,16 +113,12 @@ if(APPLE)
     endif()
 elseif(WIN32)
     list(APPEND server_SRCS ../common/utility_win.cpp)
-    list(APPEND server_SRCS comm/extensionjob.h comm/extensionjob.cpp)
     list(APPEND server_SRCS comm/socketcommserver.h comm/socketcommserver.cpp)
     list(APPEND server_SRCS comm/pipecommserver.h comm/pipecommserver.cpp)
-    list(APPEND server_SRCS comm/extcommserver.h comm/extcommserver.cpp)
-    list(APPEND server_SRCS comm/guicommserver.h comm/guicommserver.cpp)
     list(APPEND updater_SRCS updater/windowsupdater.h updater/windowsupdater.cpp)
 else()
     list(APPEND server_SRCS ../common/utility_linux.cpp)
     list(APPEND server_SRCS comm/socketcommserver.h comm/socketcommserver.cpp)
-    list(APPEND server_SRCS comm/guicommserver.h comm/guicommserver.cpp)
     list(APPEND updater_SRCS updater/linuxupdater.h updater/linuxupdater.cpp)
 endif()
 

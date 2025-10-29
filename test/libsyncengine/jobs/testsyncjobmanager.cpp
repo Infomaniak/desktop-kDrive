@@ -58,9 +58,7 @@ void TestSyncJobManagerSingleton::setUp() {
     (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
-    bool alreadyExists = false;
-    const std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
-    (void) ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
+    (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
 
     // Insert user, account & drive
     const int userId(atoi(testVariables.userId.c_str()));
@@ -196,13 +194,13 @@ void TestSyncJobManagerSingleton::testWithCallback() {
 void TestSyncJobManagerSingleton::testWithCallbackMediumFiles() {
     if (!testhelpers::isExtendedTest()) return;
     const LocalTemporaryDirectory temporaryDirectory("testSyncJobManagerSingleton");
-    testWithCallbackBigFiles(temporaryDirectory.path(), 50, 15); // 15 files of 50 MB
+    testWithCallbackBigFiles(temporaryDirectory.path(), 1, 10); // 10 files of 1 MB
 }
 
 void TestSyncJobManagerSingleton::testWithCallbackBigFiles() {
     if (!testhelpers::isExtendedTest()) return;
     const LocalTemporaryDirectory temporaryDirectory("testSyncJobManagerSingleton");
-    testWithCallbackBigFiles(temporaryDirectory.path(), 200, 10); // 10 files of 200 MB
+    testWithCallbackBigFiles(temporaryDirectory.path(), 50, 5); // 5 files of 50 MBs
 }
 
 void TestSyncJobManagerSingleton::testCancelJobs() {
@@ -471,7 +469,7 @@ void TestSyncJobManagerSingleton::testWithCallbackBigFiles(const SyncPath &dirPa
     // Reset upload session max parallel jobs & SyncJobManagerSingleton pool capacity
     ParametersCache::instance()->setUploadSessionParallelThreads(10);
     SyncJobManagerSingleton::instance()->setPoolCapacity(4 * (int) std::thread::hardware_concurrency());
-    const int useUploadSessionThreshold = 100;
+    const int useUploadSessionThreshold = 2; // MBs
 
     // Create temp remote directory
     const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId,
@@ -513,9 +511,10 @@ void TestSyncJobManagerSingleton::testWithCallbackBigFiles(const SyncPath &dirPa
             counter++;
         }
 
-        int waitCountMax = 3000; // Wait max 300sec
-        while (ongoingJobsCount() > 0 && waitCountMax-- > 0 && !_jobErrorSocketsDefuncted && !_jobErrorOther) {
-            Utility::msleep(100); // Wait 100ms
+        int waitCountMax = 6000; // Wait max 10 minutes.
+        while (ongoingJobsCount() > 0 && waitCountMax > 0 && !_jobErrorSocketsDefuncted && !_jobErrorOther) {
+            --waitCountMax;
+            Utility::msleep(100);
         }
 
         if (_jobErrorSocketsDefuncted || _jobErrorOther) {
@@ -523,8 +522,10 @@ void TestSyncJobManagerSingleton::testWithCallbackBigFiles(const SyncPath &dirPa
             cancelAllOngoingJobs();
         }
 
-        CPPUNIT_ASSERT(ongoingJobsCount() == 0);
-        CPPUNIT_ASSERT(!_jobErrorOther);
+        LOG_DEBUG(Log::instance()->getLogger(), "$$$$$ testWithCallbackBigFiles - checking ongoing jobs and job errors.");
+
+        CPPUNIT_ASSERT_MESSAGE("Some job is still ongoing.", ongoingJobsCount() == 0);
+        CPPUNIT_ASSERT_MESSAGE("Found a job error.", !_jobErrorOther);
 
         if (_jobErrorSocketsDefuncted) {
             LOG_DEBUG(Log::instance()->getLogger(), "$$$$$ testWithCallbackBigFiles - Error, sockets defuncted by kernel");

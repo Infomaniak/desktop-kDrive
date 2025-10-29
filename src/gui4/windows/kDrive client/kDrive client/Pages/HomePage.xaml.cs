@@ -16,6 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Infomaniak.kDrive.Types;
+using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -23,6 +26,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using Microsoft.VisualBasic.Devices;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -30,19 +34,39 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-using Infomaniak.kDrive.ViewModels;
+using Windows.Networking.Connectivity;
 
 namespace Infomaniak.kDrive.Pages
 {
     public sealed partial class HomePage : Page
     {
-        private AppModel _viewModel = ((App)Application.Current).Data;
+        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel => _viewModel;
         public HomePage()
         {
             Logger.Log(Logger.Level.Info, "Navigated to HomePage - Initializing HomePage components");
             InitializeComponent();
             Logger.Log(Logger.Level.Debug, "HomePage components initialized");
+        }
+
+        private void SyncUpToDateHyperlinkButton_Click(object sender, RoutedEventArgs e)
+        {
+            ((App)Application.Current).CurrentWindow?.AppWindow.Hide();
+        }
+
+        private void SyncInProgressHyperlinkButton_Click(object sender, RoutedEventArgs e)
+        {
+            Frame.Navigate(typeof(ActivityPage));
+        }
+
+        private void SyncInPauseHyperlinkButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (ViewModel.SelectedSync == null)
+            {
+                Logger.Log(Logger.Level.Warning, "No sync is selected, cannot resume sync.");
+                return;
+            }
+            ViewModel.SelectedSync.SyncStatus = SyncStatus.Running; // Todo: Replace with actual resume logic
         }
     }
 }

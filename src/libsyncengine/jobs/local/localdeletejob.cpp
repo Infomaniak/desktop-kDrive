@@ -17,7 +17,9 @@
  */
 
 #include "localdeletejob.h"
+
 #include "jobs/network/kDrive_API/getfileinfojob.h"
+#include "libcommonserver/io/permissionsholder.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
@@ -96,9 +98,9 @@ bool LocalDeleteJob::findRemoteItem(SyncPath &remoteItemPath) const {
     return found;
 }
 
-bool LocalDeleteJob::canRun() {
+ExitInfo LocalDeleteJob::canRun() {
     if (bypassCheck()) {
-        return true;
+        return ExitCode::Ok;
     }
 
     // The item must exist locally for the job to run
@@ -106,32 +108,30 @@ bool LocalDeleteJob::canRun() {
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_absolutePath, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_absolutePath, ioError));
-        _exitInfo = ExitCode::SystemError;
-        return false;
+        return ExitCode::SystemError;
+        ;
     }
     if (ioError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_absolutePath));
-        _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
-        return false;
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
+        ;
     }
 
     if (!exists) {
         LOGW_DEBUG(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_absolutePath));
-        _exitInfo = {ExitCode::DataError, ExitCause::NotFound};
-        return false;
+        return {ExitCode::DataError, ExitCause::NotFound};
     }
 
     if (_remoteNodeId.empty()) {
         LOG_WARN(_logger, "Remote node ID is empty");
-        _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
-        return false;
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     // Check if the item we want to delete locally has a remote counterpart.
 
     SyncPath remoteRelativePath;
     const bool remoteItemIsFound = findRemoteItem(remoteRelativePath);
-    if (!remoteItemIsFound) return true; // Safe deletion.
+    if (!remoteItemIsFound) return ExitCode::Ok; // Safe deletion.
 
     // Check whether the remote item has been moved.
     // If the remote item has been moved into a blacklisted folder, then this Delete job is created and
@@ -141,19 +141,17 @@ bool LocalDeleteJob::canRun() {
     SyncPath normalizedPath;
     if (!Utility::normalizedSyncPath(_relativePath, normalizedPath)) {
         LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(_relativePath));
-        _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
-        return false;
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     if (matchRelativePaths(syncInfo().targetPath, normalizedPath, remoteRelativePath)) {
         // Item is found at the same path on remote
         LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(_absolutePath).c_str()
                                           << L" still exists on remote replica. Aborting current sync and restarting.");
-        _exitInfo = {ExitCode::DataError, ExitCause::InvalidSnapshot}; // We need to rebuild the remote snapshot from scratch
-        return false;
+        return {ExitCode::DataError, ExitCause::InvalidSnapshot}; // We need to rebuild the remote snapshot from scratch
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
 void LocalDeleteJob::handleTrashMoveOutcome(const bool success, const SyncPath &path) {

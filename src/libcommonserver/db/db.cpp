@@ -150,13 +150,13 @@ std::filesystem::path Db::makeDbName(int userId, int accountId, int driveId, int
     if (!IoHelper::checkIfPathExists(dbPath, exists, ioError)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dbPath, ioError));
-        return std::filesystem::path();
+        return {};
     }
 
     if (!exists) {
         if (!IoHelper::createDirectory(dbPath, false, ioError)) {
             LOGW_WARN(Log::instance()->getLogger(), L"Failed to create directory: " << Utility::formatIoError(dbPath, ioError));
-            return std::filesystem::path();
+            return {};
         }
     }
 
@@ -171,7 +171,7 @@ std::filesystem::path Db::makeDbName(int userId, int accountId, int driveId, int
     if (!IoHelper::checkIfPathExists(dbPath, exists, ioError)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dbPath, ioError));
-        return std::filesystem::path();
+        return {};
     }
 
     if (!exists) {
@@ -190,7 +190,7 @@ std::filesystem::path Db::makeDbName(int userId, int accountId, int driveId, int
         return dbPath;
     }
 
-    return std::filesystem::path();
+    return {};
 }
 
 bool Db::exists() {

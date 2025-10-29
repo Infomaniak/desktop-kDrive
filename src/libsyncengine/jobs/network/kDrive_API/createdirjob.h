@@ -36,7 +36,7 @@ class CreateDirJob : public AbstractTokenNetworkJob {
         [[nodiscard]] inline SyncTime modtime() const { return _modtime; }
 
     protected:
-        bool handleResponse(std::istream &is) override;
+        ExitInfo handleResponse(std::istream &is) override;
 
     private:
         std::string getSpecificUrl() override;

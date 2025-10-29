@@ -19,6 +19,8 @@
 #pragma once
 
 #include "testincludes.h"
+#include "test_utility/localtemporarydirectory.h"
+
 #include "utility/types.h"
 #include "libcommonserver/io/iohelper.h"
 using namespace CppUnit;
@@ -60,6 +62,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testDirectDownload);
         CPPUNIT_TEST(testDownloadHasEnoughSpace);
         CPPUNIT_TEST(testSearch);
+        CPPUNIT_TEST(testGetInfoUserTrialsOn401Error);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -100,6 +103,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         void testDirectDownload();
         void testDownloadHasEnoughSpace();
         void testSearch();
+        void testGetInfoUserTrialsOn401Error();
 
     private:
         bool createTestFiles();
@@ -117,5 +121,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         NodeId _dummyRemoteFileId;
 
         static uint64_t _nbParallelThreads;
+
+        LocalTemporaryDirectory _localParmsDbTempDir{"testNetworkJobs"};
 };
 } // namespace KDC

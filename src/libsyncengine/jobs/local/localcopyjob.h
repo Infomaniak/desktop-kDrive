@@ -27,10 +27,10 @@ class LocalCopyJob : public SyncJob {
         LocalCopyJob(const SyncPath &source, const SyncPath &dest);
 
     protected:
-        bool canRun() override;
+        ExitInfo canRun() override;
 
     private:
-        void runJob() override;
+        ExitInfo runJob() override;
 
         SyncPath _source;
         SyncPath _dest;

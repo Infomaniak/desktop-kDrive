@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<toolKit:SettingsExpander x:Class="Infomaniak.kDrive.CustomControls.UpdateExpander"
+                          xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                          xmlns:local="using:Infomaniak.kDrive.CustomControls"
+                          xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                          xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                          xmlns:toolKit="using:CommunityToolkit.WinUI.Controls"
+                          xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
+                          xmlns:converters="using:Infomaniak.kDrive.Converters"
+                          mc:Ignorable="d">
+    <toolKit:SettingsExpander.Resources>
+        <!-- Converters -->
+        <converters:DateToStringConverter x:Key="DateToStringConverter" />
+        <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
+    </toolKit:SettingsExpander.Resources>
+
+    <toolKit:SettingsExpander.Header>
+        <TextBlock x:Uid="CC_UpdateExpander_Header" />
+    </toolKit:SettingsExpander.Header>
+
+    <toolKit:SettingsExpander.HeaderIcon>
+        <local:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Arrows.arrow-loop}"
+                       Height="32"
+                       Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+    </toolKit:SettingsExpander.HeaderIcon>
+
+    <Button x:Uid="CC_UpdateExpander_UpdateButton"
+            Style="{ThemeResource AccentButtonStyle}"
+            Visibility="{x:Bind Settings.UpdateManager.AvailableUpdate, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
+            Click="UpdateButton_Click" />
+
+    <toolKit:SettingsExpander.Items>
+        <toolKit:SettingsCard Background="{ThemeResource LayerFillColorDefault}">
+            <toolKit:SettingsCard.Header>
+                <TextBlock  Style="{StaticResource Infomaniak.Style.TextBlock.Body}">
+                        <Run Text="kDrive" />
+                        <Run Text="{x:Bind DisplayedVersion.Tag , Mode=OneWay}" />
+                </TextBlock>
+            </toolKit:SettingsCard.Header>
+            <toolKit:SettingsCard.Description>
+                <StackPanel>
+                    <TextBlock x:Name="ExpandedTextBox" />
+                    <HyperlinkButton x:Uid="CC_UpdateExpander_LicensesHyperLink"
+                                     NavigateUri="https://github.com/Infomaniak/desktop-kDrive?tab=GPL-3.0-1-ov-file" />
+                </StackPanel>
+            </toolKit:SettingsCard.Description>
+            <StackPanel Orientation="Horizontal">
+                <HyperlinkButton x:Uid="CC_UpdateExpander_ChangeLogHyperLink"
+                                 NavigateUri="{x:Bind DisplayedVersion.ChangeLogUrl, Mode=OneWay}" />
+            </StackPanel>
+        </toolKit:SettingsCard>
+    </toolKit:SettingsExpander.Items>
+</toolKit:SettingsExpander>

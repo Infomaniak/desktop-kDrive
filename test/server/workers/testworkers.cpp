@@ -58,18 +58,13 @@ void TestWorkers::setUp() {
 
     const testhelpers::TestVariables testVariables;
 
-    const std::string localPathStr = _localTempDir.path().string();
-
     // Insert api token into keystore
     std::string keychainKey("123");
     (void) KeyChainManager::instance(true);
     KeyChainManager::instance()->writeToken(keychainKey, testVariables.apiToken);
 
     // Create parmsDb
-    bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
-    (void) std::filesystem::remove(parmsDbPath);
-    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
+    (void) ParmsDb::instance(_localParmsDbTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
 
     // Insert user, account, drive & sync
     int userId(12321);
@@ -85,6 +80,7 @@ void TestWorkers::setUp() {
     Drive drive(driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
 
+    const std::string localPathStr = _localTempDir.path().string();
     _sync = Sync(1, drive.dbId(), localPathStr, "", testVariables.remotePath);
 #if defined(KD_MACOS)
     _sync.setVirtualFileMode(VirtualFileMode::Mac);
@@ -134,18 +130,16 @@ void TestWorkers::setUp() {
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createProgressInfo();
 
-    // Setup CommManager
+    // Setup and start CommManager
     std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> syncPalMap;
     syncPalMap[_sync.dbId()] = _syncPal;
     std::unordered_map<int, std::shared_ptr<KDC::Vfs>> vfsMap;
     vfsMap[_sync.dbId()] = _vfsPtr;
-    _commManager = std::make_unique<CommManager>(syncPalMap, vfsMap);
 
 #if defined(KD_WINDOWS)
     // Initializes the COM library
     CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 #endif
-
     // Start Vfs
 #if defined(KD_MACOS)
     if (connectorsAreAlreadyInstalled) {
@@ -262,7 +256,7 @@ void TestWorkers::testCreatePlaceholder() {
 
         // Remove placeholder
         std::error_code ec;
-        std::filesystem::remove(_syncPal->localPath() / relativeFilePath);
+        std::filesystem::remove(_syncPal->localPath() / relativeFilePath, ec);
         if (ec) {
             // Cannot remove file
             CPPUNIT_ASSERT(false);

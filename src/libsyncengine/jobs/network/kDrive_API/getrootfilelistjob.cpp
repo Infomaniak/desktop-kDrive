@@ -63,11 +63,11 @@ void GetRootFileListJob::setQueryParameters(Poco::URI &uri) {
     }
 }
 
-bool GetRootFileListJob::handleResponse(std::istream &is) {
-    if (!AbstractTokenNetworkJob::handleResponse(is)) return false;
-    if (!jsonRes()) return false;
-    if (!JsonParserUtility::extractValue(jsonRes(), pagesKey, _totalPages)) return false;
-    return true;
+ExitInfo GetRootFileListJob::handleResponse(std::istream &is) {
+    if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) return exitInfo;
+    if (!jsonRes()) return {};
+    if (!JsonParserUtility::extractValue(jsonRes(), pagesKey, _totalPages)) return {};
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

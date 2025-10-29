@@ -17,6 +17,7 @@
  */
 
 #include "testincludes.h"
+#include "test_utility/localtemporarydirectory.h"
 
 namespace KDC {
 
@@ -35,6 +36,7 @@ class TestServerRequests : public CppUnit::TestFixture, public TestBase {
 
     private:
         int _driveDbId{0};
+        LocalTemporaryDirectory _localTempDir{"testServerRequests"};
 };
 
 } // namespace KDC

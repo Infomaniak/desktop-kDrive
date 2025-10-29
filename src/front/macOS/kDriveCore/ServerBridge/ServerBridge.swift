@@ -18,6 +18,18 @@
 
 import Foundation
 
-protocol ServerBridgeable: Sendable {}
+public protocol ServerBridgeable: Sendable {
+    func getConnectedUser() async -> Bool
+}
 
-final class ServerBridge: ServerBridgeable {}
+@preconcurrency public final class ServerBridge: ServerBridgeable {
+    let connectionManager = XPCConnectionManager()
+
+    public func getConnectedUser() async -> Bool {
+        try? await connectionManager.connectToLoginAgent()
+        try? await Task.sleep(nanoseconds: 2 * 1_000_000_000)
+        try? await connectionManager.dummyServerQuery()
+
+        return false
+    }
+}

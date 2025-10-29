@@ -31,15 +31,14 @@ namespace KDC {
 void TestUpdateTreeWorker::setUp() {
     TestBase::start();
     // Create parmsDb
-    bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
-    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
+    (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
     // Create DB
-    const std::filesystem::path syncDbPath = MockDb::makeDbName(1, 1, 1, 1, alreadyExists);
-    _syncDb = std::make_shared<SyncDb>(syncDbPath.string(), "3.6.1");
-    _syncDb->init("3.6.1");
+    bool alreadyExists = false;
+    const SyncPath syncDbPath = MockDb::makeDbName(1, 1, 1, 1, alreadyExists);
+    _syncDb = std::make_shared<SyncDb>(syncDbPath.string(), KDRIVE_VERSION_STRING);
+    _syncDb->init(KDRIVE_VERSION_STRING);
     _syncDb->setAutoDelete(true);
     _operationSet = std::make_shared<FSOperationSet>(ReplicaSide::Unknown);
 
@@ -1188,6 +1187,28 @@ void TestUpdateTreeWorker::testIntegrityCheck() {
 
     newNode->setId(NodeId{"123"});
     CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
+
+    newNode->setChangeEvents(OperationType::Create);
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
+    newNode->setChangeEvents(OperationType::Edit);
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
+    newNode->setMoveOriginInfos(Node::MoveOriginInfos("/dummy", "1"));
+    newNode->setChangeEvents(OperationType::Move);
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
+    newNode->setChangeEvents(OperationType::Delete);
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
+    newNode->setChangeEvents(OperationType::Edit | OperationType::Move);
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
+    newNode->setChangeEvents(OperationType::Create | OperationType::Move);
+    CPPUNIT_ASSERT(!_localUpdateTreeWorker->integrityCheck());
+    newNode->setChangeEvents(OperationType::Create | OperationType::Edit);
+    CPPUNIT_ASSERT(!_localUpdateTreeWorker->integrityCheck());
+    newNode->setChangeEvents(OperationType::Delete | OperationType::Move);
+    CPPUNIT_ASSERT(!_localUpdateTreeWorker->integrityCheck());
+    newNode->setChangeEvents(OperationType::Delete | OperationType::Edit);
+    CPPUNIT_ASSERT(!_localUpdateTreeWorker->integrityCheck());
+    newNode->setChangeEvents(OperationType::Delete | OperationType::Create);
+    CPPUNIT_ASSERT(!_localUpdateTreeWorker->integrityCheck());
 }
 
 } // namespace KDC

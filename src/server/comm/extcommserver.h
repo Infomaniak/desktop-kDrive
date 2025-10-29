@@ -26,7 +26,7 @@
 
 namespace KDC {
 static const auto finderExtLineSeparator = Str("\n");
-static const auto finderExtQuerySeparator = Str("\\/");
+static const auto finderExtQuerySeparator = Str("\\/\n");
 
 #if defined(KD_MACOS)
 class ExtCommChannel : public XPCCommChannel {

@@ -161,6 +161,10 @@ void TestIntegration::testAll() {
     testParentRename();
     testNegativeModificationTime();
     testDeleteAndRecreateBranch();
+    testDeleteAndMoveCase();
+    testSymLinkWithTooManySymbolicLevels();
+    testDirSymLinkWithTooManySymbolicLevels();
+    testSynchronizationOfSymLinks();
 }
 
 void TestIntegration::inconsistencyTests() {
@@ -237,6 +241,7 @@ void TestIntegration::inconsistencyTests() {
 void TestIntegration::testBreakCycle() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
+    // Setup initial situation
     _syncPal->pause(); // We need to pause the sync because the back might take some time to notify all the events.
     const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
     NodeId nodeIdAA;
@@ -255,6 +260,7 @@ void TestIntegration::testBreakCycle() {
     _syncPal->unpause();
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
+    // Generate cycle
     _syncPal->pause(); // We need to pause the sync because the back might take some time to notify all the events.
     const auto pathAA = _syncPal->localPath() / tmpRemoteDir.name() / "A" / "AA";
     // Rename A/AA/AAA to A/AA/AAA2 on remote replica.
@@ -326,9 +332,9 @@ void TestIntegration::testBlacklist() {
     CPPUNIT_ASSERT(std::filesystem::exists(dirpath));
 
     // Add lots of folders in the blacklist (but not too many).
-    const auto idInt = std::stoll(_remoteSyncDir.id());
+    const auto idInt = static_cast<uint64_t>(std::stoll(_remoteSyncDir.id()));
     NodeSet blacklist;
-    for (uint64_t i = idInt - 499; i < idInt + 499; i++) {
+    for (auto i = idInt + 1; i < idInt + 1000; i++) {
         (void) blacklist.emplace(std::to_string(i));
     }
     (void) SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, blacklist);
@@ -341,8 +347,8 @@ void TestIntegration::testBlacklist() {
     CPPUNIT_ASSERT(!std::filesystem::exists(dirpath));
 
     // Add too many folders in the blacklist.
-    (void) blacklist.emplace(std::to_string(idInt + 500));
-    (void) blacklist.emplace(std::to_string(idInt + 501));
+    (void) blacklist.emplace(std::to_string(idInt + 1001));
+    (void) blacklist.emplace(std::to_string(idInt + 1002));
     (void) SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, blacklist);
     // Apply new blacklist.
     _syncPal->stop();
@@ -355,6 +361,13 @@ void TestIntegration::testBlacklist() {
         Utility::msleep(100);
     }
     CPPUNIT_ASSERT(_syncPal->isPaused());
+
+    // Clean up blacklist.
+    (void) SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, {});
+    // Apply new blacklist.
+    _syncPal->stop();
+    (void) BlacklistPropagator(_syncPal).runSynchronously();
+    _syncPal->start();
 
     logStep("testBlacklist");
 }
@@ -652,7 +665,7 @@ void TestIntegration::testDeleteAndRecreateBranch() {
         moveRemoteFile(_driveDbId, nodeIdAAAA, tmpRemoteDir.id());
 
         // Delete A/AA
-        deleteRemoteFile(_driveDbId, nodeIdAA);
+        deleteRemoteItem(_driveDbId, nodeIdAA);
 
         // Create A/AA/AAA1
         CreateDirJob jobAA(nullptr, _driveDbId, nodeIdA, Str("AA"));
@@ -676,6 +689,82 @@ void TestIntegration::testDeleteAndRecreateBranch() {
 #endif
 
     logStep("testDeleteAndRecreateBranch");
+}
+
+void TestIntegration::testDeleteAndMoveCase() {
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    // Setup initial situation:
+    // .
+    // └── testDeleteAndMoveCase(m)
+    //     ├── A(a)
+    //     │   └── test(aa)
+    //     │       └── test.txt(aaa)
+    //     └── B(b)
+    //         └── test(bb)
+    //             └── test.txt(bbb)
+
+    _syncPal->pause(); // We need to pause the sync because the back might take some time to notify all the events.
+    const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id(), "testDeleteAndMoveCase");
+    NodeId nodeIdA;
+    NodeId nodeIdAA;
+    NodeId nodeIdAAA;
+    NodeId nodeIdB;
+    NodeId nodeIdBB;
+    NodeId nodeIdBBB;
+    {
+        CreateDirJob jobA(nullptr, _driveDbId, tmpRemoteDir.id(), Str("A"));
+        (void) jobA.runSynchronously();
+        nodeIdA = jobA.nodeId();
+        CreateDirJob jobAA(nullptr, _driveDbId, jobA.nodeId(), Str("test"));
+        (void) jobAA.runSynchronously();
+        nodeIdAA = jobAA.nodeId();
+        CreateDirJob jobB(nullptr, _driveDbId, tmpRemoteDir.id(), Str("B"));
+        (void) jobB.runSynchronously();
+        nodeIdB = jobB.nodeId();
+        CreateDirJob jobBB(nullptr, _driveDbId, jobB.nodeId(), Str("test"));
+        (void) jobBB.runSynchronously();
+        nodeIdBB = jobBB.nodeId();
+
+        const auto filename = Str("test.txt");
+        nodeIdAAA = duplicateRemoteFile(_driveDbId, _testFileRemoteId, filename);
+        moveRemoteFile(_driveDbId, nodeIdAAA, nodeIdAA);
+        nodeIdBBB = duplicateRemoteFile(_driveDbId, _testFileRemoteId, filename);
+        moveRemoteFile(_driveDbId, nodeIdBBB, nodeIdBB);
+    }
+    _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
+    _syncPal->unpause();
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    _syncPal->pause();
+
+    // Generate final situation:
+    // .
+    // └── main_folder(m)
+    //     └── A2(a)
+    //         └── test(bb)
+    //             └── test.txt(bbb)
+
+    // Delete aa
+    deleteRemoteItem(_driveDbId, nodeIdAA);
+    // Rename a
+    (void) RenameJob(nullptr, _driveDbId, nodeIdA, Str("A2")).runSynchronously();
+    // Move bb
+    moveRemoteFile(_driveDbId, nodeIdBB, nodeIdA);
+    // Delete b
+    deleteRemoteItem(_driveDbId, nodeIdB);
+
+    _syncPal->unpause();
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->exists(nodeIdA));
+    CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Remote)->exists(nodeIdAA));
+    CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Remote)->exists(nodeIdAAA));
+    CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Remote)->exists(nodeIdB));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->exists(nodeIdBB));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->exists(nodeIdBBB));
+
+    logStep("testDeleteAndMoveCase");
 }
 
 #if defined(KD_LINUX)
@@ -953,7 +1042,7 @@ NodeId TestIntegration::duplicateRemoteFile(const int driveDbId, const NodeId &i
     return job.nodeId();
 }
 
-void TestIntegration::deleteRemoteFile(const int driveDbId, const NodeId &id) const {
+void TestIntegration::deleteRemoteItem(const int driveDbId, const NodeId &id) const {
     DeleteJob job(driveDbId, id);
     job.setBypassCheck(true);
     (void) job.runSynchronously();
@@ -967,7 +1056,83 @@ SyncPath TestIntegration::findLocalFileByNamePrefix(const SyncPath &parentAbsolu
     while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
         if (CommonUtility::startsWith(entry.path().filename(), namePrefix)) return entry.path();
     }
-    return SyncPath();
+    return {};
 }
+
+void TestIntegration::testSynchronizationOfSymLinks() {
+    RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id(), "test_sym_link_sync");
+
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    testhelpers::generateOrEditTestFile(_syncPal->localPath() / tmpRemoteDir.name() / "file.txt");
+    std::filesystem::create_symlink(_syncPal->localPath() / tmpRemoteDir.name() / "file.txt",
+                                    _syncPal->localPath() / tmpRemoteDir.name() / "file_symlink");
+    std::filesystem::create_symlink(_syncPal->localPath() / tmpRemoteDir.name() / "non_existing_file.txt",
+                                    _syncPal->localPath() / tmpRemoteDir.name() / "dangling_symlink");
+
+    (void) std::filesystem::create_directories(_syncPal->localPath() / tmpRemoteDir.name() / "directory");
+    std::filesystem::create_directory_symlink(_syncPal->localPath() / tmpRemoteDir.name() / "directory",
+                                              _syncPal->localPath() / tmpRemoteDir.name() / "directory_symlink");
+    std::filesystem::create_directory_symlink(_syncPal->localPath() / tmpRemoteDir.name() / "non_existing_directory",
+                                              _syncPal->localPath() / tmpRemoteDir.name() / "dangling_directory_symlink");
+
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    const auto remoteTestFileInfo1 = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("file_symlink"));
+    const auto remoteTestFileInfo2 = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("directory_symlink"));
+    const auto remoteTestFileInfo3 = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("dangling_symlink"));
+    const auto remoteTestFileInfo4 = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("dangling_directory_symlink"));
+
+    CPPUNIT_ASSERT(remoteTestFileInfo1.isValid());
+    CPPUNIT_ASSERT(remoteTestFileInfo2.isValid());
+    CPPUNIT_ASSERT(remoteTestFileInfo3.isValid());
+    CPPUNIT_ASSERT(remoteTestFileInfo4.isValid());
+
+    CPPUNIT_ASSERT_EQUAL(int64_t{6}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
+
+    logStep("testSynchronizationOfSymLinks");
+}
+
+void TestIntegration::testSymLinkWithTooManySymbolicLevels() {
+    RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
+
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    testhelpers::createSymLinkLoop(_syncPal->localPath() / tmpRemoteDir.name() / "file_symlink_1.txt",
+                                   _syncPal->localPath() / tmpRemoteDir.name() / "file_symlink_2.txt", NodeType::File);
+
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    const auto remoteTestFileInfo1 = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("file_symlink_1.txt"));
+    const auto remoteTestFileInfo2 = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("file_symlink_2.txt"));
+
+    CPPUNIT_ASSERT(remoteTestFileInfo1.isValid());
+    CPPUNIT_ASSERT(remoteTestFileInfo2.isValid());
+    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(2), countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
+
+    logStep("testSymLinkWithTooManySymbolicLevels");
+}
+
+void TestIntegration::testDirSymLinkWithTooManySymbolicLevels() {
+    RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
+
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    testhelpers::createSymLinkLoop(_syncPal->localPath() / tmpRemoteDir.name() / "folder_symlink_1",
+                                   _syncPal->localPath() / tmpRemoteDir.name() / "folder_symlink_2", NodeType::Directory);
+
+
+    waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+    const auto remoteTestFileInfo1 = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("folder_symlink_1"));
+    const auto remoteTestFileInfo2 = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("folder_symlink_2"));
+
+    CPPUNIT_ASSERT(remoteTestFileInfo1.isValid());
+    CPPUNIT_ASSERT(remoteTestFileInfo2.isValid());
+    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(2), countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
+
+    logStep("testDirSymLinkWithTooManySymbolicLevels");
+}
+
 
 } // namespace KDC

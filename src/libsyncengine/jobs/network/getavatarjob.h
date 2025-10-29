@@ -32,8 +32,8 @@ class GetAvatarJob : public AbstractNetworkJob {
     private:
         std::string getSpecificUrl() override { return {}; }
         ExitInfo setData() override { return ExitCode::Ok; }
-        bool handleError(const std::string &replyBody, const Poco::URI &uri) override;
-        bool handleResponse(std::istream &is) override;
+        ExitInfo handleError(const std::string &replyBody, const Poco::URI &uri) override;
+        ExitInfo handleResponse(std::istream &is) override;
 
         std::string _avatarUrl;
         std::shared_ptr<std::vector<char>> _avatar;

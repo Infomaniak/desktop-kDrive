@@ -16,6 +16,7 @@
         <converters:BooleanToInvertedVisibilityConverter  x:Key="BooleanToInvertedVisibilityConverter" />
         <converters:BooleanToInvertedBooleanConverter  x:Key="BooleanToInvertedBooleanConverter" />
         <converters:IntegerToBooleanConverter  x:Key="IntegerToBooleanConverter" />
+        <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />
     </Page.Resources>
 
     <Grid HorizontalAlignment="Center"
@@ -43,7 +44,7 @@
                 <StackPanel Orientation="Horizontal"
                             Spacing="12"
                             VerticalAlignment="Center">
-                    <PersonPicture ProfilePicture="https://learn.microsoft.com/windows/uwp/contacts-and-calendar/images/shoulder-tap-static-payload.png"
+                    <PersonPicture ProfilePicture="{x:Bind ObViewModel.SelectedUser.AvatarImageSource, Mode=OneWay}"
                                    Height="24"
                                    Width="24" />
                     <TextBlock Text="{x:Bind ObViewModel.SelectedUser.Name}"
@@ -114,9 +115,10 @@
                                               IsChecked="{x:Bind Syncs.Count, Converter={StaticResource IntegerToBooleanConverter}}"
                                               IsEnabled="{x:Bind Syncs.Count, Converter={StaticResource BooleanToInvertedBooleanConverter}}">
                                         <StackPanel Orientation="Horizontal">
-                                            <controls:DriveIcon IconColor="{x:Bind Color}"
-                                                                Height="14"
-                                                                Margin="0,0,8,0" />
+                                            <controls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom}"
+                                                              Foreground="{x:Bind Color, Converter={StaticResource ColorToBrushConverter}}"
+                                                              Height="14"
+                                                              Margin="0,0,8,0" />
                                             <TextBlock Text="{x:Bind Name}"
                                                        Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                                         </StackPanel>
@@ -159,8 +161,7 @@
                     Style="{StaticResource Infomaniak.Style.Button.WithBackground}"
                     Click="StartFree_Click" />
 
-            <Button 
-                    x:Uid="Page_Onboarding_DriveSelectionPage_OffersButton"
+            <Button x:Uid="Page_Onboarding_DriveSelectionPage_OffersButton"
                     HorizontalAlignment="Left"
                     Style="{StaticResource Infomaniak.Style.Button.WithoutBackground}"
                     Click="OffersButton_Click" />
@@ -209,11 +210,12 @@
                                         <ColumnDefinition Width="auto" />
                                     </Grid.ColumnDefinitions>
 
-                                    <controls:DriveIcon Grid.Column="0"
-                                                        Grid.Row="0"
-                                                        Height="16"
-                                                        VerticalAlignment="Center"
-                                                        IconColor="{x:Bind Drive.Color}" />
+                                    <controls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom}"
+                                                      Grid.Column="0"
+                                                      Grid.Row="0"
+                                                      Height="16"
+                                                      VerticalAlignment="Center"
+                                                      Foreground="{x:Bind Drive.Color, Converter={StaticResource ColorToBrushConverter}}" />
 
                                     <TextBlock Grid.Column="1"
                                                Grid.Row="0"

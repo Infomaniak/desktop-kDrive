@@ -119,6 +119,8 @@ class TestSituationGenerator {
             return side == ReplicaSide::Local ? _localUpdateTree : _remoteUpdateTree;
         }
 
+        LocalTemporaryDirectory _temporaryDirectory = LocalTemporaryDirectory("testSituationGenerator");
+
         std::shared_ptr<SyncDb> _syncDb;
         std::optional<std::reference_wrapper<LiveSnapshot>> _localLiveSnapshot;
         std::optional<std::reference_wrapper<LiveSnapshot>> _remoteLiveSnapshot;

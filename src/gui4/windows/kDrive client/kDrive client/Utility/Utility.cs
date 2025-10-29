@@ -1,23 +1,52 @@
-﻿using Infomaniak.kDrive.OnBoarding;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.WinUI;
 using Infomaniak.kDrive.Types;
+using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using System;
-using System.Collections.Generic;
-using System.Data.Common;
+
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security;
-using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Linq;
+using Windows.Graphics;
 
 namespace Infomaniak.kDrive
 {
     public static class Utility
     {
+        public static async Task RunOnUIThread(Action action)
+        {
+            var dispatcher = AppModel.UIThreadDispatcher;
+            if (dispatcher.HasThreadAccess)
+            {
+                action();
+            }
+            else
+            {
+                TaskCompletionSource taskCompletionSource = new TaskCompletionSource();
+                await dispatcher.EnqueueAsync(() =>
+                {
+                    try
+                    {
+                        action();
+                        taskCompletionSource.SetResult();
+                    }
+                    catch (Exception ex)
+                    {
+                        taskCompletionSource.SetException(ex);
+                    }
+                });
+                await taskCompletionSource.Task;
+            }
+        }
+
         public static NodeType DeduceNodeTypeFromFilePath(string filePath)
         {
             string fileName = System.IO.Path.GetFileName(filePath);
@@ -237,6 +266,18 @@ namespace Infomaniak.kDrive
             }
         }
 
+
+        public static class DpiHelper
+        {
+            [DllImport("User32.dll")]
+            private static extern uint GetDpiForWindow(IntPtr hWnd);
+
+            public static double GetScaleForWindow(IntPtr hWnd)
+            {
+                uint dpi = GetDpiForWindow(hWnd);
+                return dpi / 96.0; // 96 DPI = 100%
+            }
+        }
         public static void SetWindowProperties(Window window, int width, int height, bool resizable)
         {
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
@@ -247,8 +288,21 @@ namespace Infomaniak.kDrive
                 presenter.IsMaximizable = false;
                 presenter.IsMinimizable = true;
                 presenter.IsResizable = resizable;
-                appWindow.Resize(new Windows.Graphics.SizeInt32(width, height));
+
+                // Use the RasterizationScale to scale the desired size
+                double scale = DpiHelper.GetScaleForWindow(hWnd);
+
+                int scaledWidth = (int)(width * scale);
+                int scaledHeight = (int)(height * scale);
+                presenter.PreferredMinimumWidth = scaledWidth;
+                presenter.PreferredMinimumHeight = scaledHeight;
+                appWindow.Resize(new SizeInt32(scaledWidth, scaledHeight));
             }
         }
     }
 }
+
+
+
+
+

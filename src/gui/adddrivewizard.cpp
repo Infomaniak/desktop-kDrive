@@ -260,9 +260,8 @@ void AddDriveWizard::onStepTerminated(bool next) {
         bool stayCurrentStep = false;
         if (next) {
             for (auto &sync: _gui->syncInfoMap()) {
-                int driveId = 0;
-                GuiRequests::getDriveIdFromSyncDbId(sync.first, driveId);
-                if (driveId == _driveInfo.driveId()) {
+                const auto &driveInfoMapIt = _gui->driveInfoMap().find(sync.second.driveDbId());
+                if (driveInfoMapIt != _gui->driveInfoMap().end() && _driveInfo.driveId() == driveInfoMapIt->second.id()) {
                     found = true;
                     break;
                 }

@@ -24,7 +24,7 @@ namespace KDC {
 
 class LocalCreateDirJob : public SyncJob {
     public:
-        LocalCreateDirJob(const SyncPath &destFilepath);
+        LocalCreateDirJob(const SyncPath &destFilepath, bool readOnly = false);
 
         SyncPath destFilePath() const { return _destFilePath; }
 
@@ -33,12 +33,13 @@ class LocalCreateDirJob : public SyncJob {
         SyncTime creationTime() const { return _creationTime; }
 
     protected:
-        virtual bool canRun() override;
+        ExitInfo canRun() override;
 
     private:
-        virtual void runJob() override;
+        ExitInfo runJob() override;
 
         SyncPath _destFilePath;
+        bool _readOnly{false};
 
         NodeId _nodeId;
         SyncTime _modtime = 0;

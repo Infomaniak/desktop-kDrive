@@ -45,8 +45,7 @@ CommString ExtCommChannel::readMessage() {
     forever {
         if (auto sepPos = _readBuffer.find(finderExtQuerySeparator); sepPos != std::string::npos) {
             query = _readBuffer.substr(0, sepPos);
-            _readBuffer.erase(0, sepPos + 1);
-            query.erase(sepPos);
+            _readBuffer.erase(0, sepPos + CommonUtility::strLen(finderExtQuerySeparator));
             return query;
         }
         if (auto readSize = readData(data, maxLineLength); readSize > 0) {

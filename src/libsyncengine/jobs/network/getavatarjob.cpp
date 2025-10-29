@@ -37,7 +37,7 @@ std::string GetAvatarJob::getUrl() {
     return _avatarUrl;
 }
 
-bool GetAvatarJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
+ExitInfo GetAvatarJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
     Poco::XML::DOMParser parser;
     Poco::AutoPtr<Poco::XML::Document> pDoc = parser.parseString(replyBody);
     Poco::XML::Node *pNode = pDoc->getNodeByPath(errorCodePathKey);
@@ -48,14 +48,12 @@ bool GetAvatarJob::handleError(const std::string &replyBody, const Poco::URI &ur
         LOG_WARN(_logger, "Unknown error in request: " << uri.toString());
     }
 
-    _exitInfo = {ExitCode::BackError, ExitCause::ApiErr};
-
-    return false;
+    return {ExitCode::BackError, ExitCause::ApiErr};
 }
 
-bool GetAvatarJob::handleResponse(std::istream &is) {
+ExitInfo GetAvatarJob::handleResponse(std::istream &is) {
     _avatar = std::make_shared<std::vector<char>>(std::istreambuf_iterator(is), (std::istreambuf_iterator<char>()));
-    return true;
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

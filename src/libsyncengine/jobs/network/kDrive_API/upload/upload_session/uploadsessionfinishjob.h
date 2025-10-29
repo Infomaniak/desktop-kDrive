@@ -42,7 +42,7 @@ class UploadSessionFinishJob : public AbstractUploadSessionJob {
         int64_t size() const { return _sizeOut; }
 
     protected:
-        bool handleResponse(std::istream &is) override;
+        ExitInfo handleResponse(std::istream &is) override;
 
     private:
         std::string getSpecificUrl() override;

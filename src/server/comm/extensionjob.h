@@ -53,7 +53,7 @@ class ExtensionJob : public AbstractJob {
                      const std::list<std::shared_ptr<AbstractCommChannel>> &channels);
         ~ExtensionJob() {}
 
-        void runJob() override;
+        ExitInfo runJob() override;
 
     private:
         std::shared_ptr<CommManager> _commManager;

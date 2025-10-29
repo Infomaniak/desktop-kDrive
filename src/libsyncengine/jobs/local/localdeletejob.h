@@ -48,7 +48,7 @@ class LocalDeleteJob : public SyncJob {
         SyncPath _absolutePath;
         bool _liteSyncIsEnabled = false;
 
-        virtual bool canRun() override;
+        virtual ExitInfo canRun() override;
         virtual bool findRemoteItem(SyncPath &remoteItemPath) const;
         virtual bool moveToTrash();
         void handleTrashMoveOutcome(const bool success, const SyncPath &path);

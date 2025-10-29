@@ -33,17 +33,16 @@ ExcludeListPropagator::~ExcludeListPropagator() {
     LOG_DEBUG(Log::instance()->getLogger(), "ExcludeListPropagator destroyed " << jobId());
 }
 
-void ExcludeListPropagator::runJob() {
+ExitInfo ExcludeListPropagator::runJob() {
     LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(), "ExcludeListPropagator started " << jobId());
 
-    ExitCode exitCode = checkItems();
-    if (exitCode != ExitCode::Ok) {
+    if (ExitCode exitCode = checkItems(); exitCode != ExitCode::Ok) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in ExcludeListPropagator::checkItems");
-        _exitInfo = exitCode;
+        return exitCode;
     }
 
     LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(), "ExcludeListPropagator ended");
-    _exitInfo = ExitCode::Ok;
+    return ExitCode::Ok;
 }
 
 int ExcludeListPropagator::syncDbId() const {

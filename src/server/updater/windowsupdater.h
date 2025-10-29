@@ -22,7 +22,7 @@
 
 namespace KDC {
 
-class WindowsUpdater final : public AbstractUpdater {
+class WindowsUpdater : public AbstractUpdater {
     public:
         void onUpdateFound() override;
         void startInstaller() override;
@@ -42,7 +42,21 @@ class WindowsUpdater final : public AbstractUpdater {
          * Build the destination path where the installer should be downloaded.
          * @return the absolute path to the installer file.
          */
-        [[nodiscard]] bool getInstallerPath(SyncPath &path) const;
+        [[nodiscard]] virtual bool getInstallerPath(SyncPath &path) const;
+
+        /**
+         * @brief Retrieve the size of a file from the content length header.
+         * @param downloadUrl The URL of the file to be downloaded.
+         * @return The expected size of the installer file to be downloaded.
+         */
+        virtual std::streamsize getExpectedInstallerSize(const std::string &downloadUrl);
+
+        /**
+         * Check the digital signature of the downloaded installer. Delete the file if the signature is not valid.
+         * @param filepath Path to the downloaded installer.
+         * @return true if the signature is valid.
+         */
+        virtual bool verifyDigitalSignature(const SyncPath &filepath);
 };
 
 } // namespace KDC

@@ -17,6 +17,8 @@
  */
 
 #include "testhelpers.h"
+#include "localtemporarydirectory.h"
+#include "io/iohelper.h"
 
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
@@ -53,10 +55,26 @@ SyncName makeNfcSyncName() {
     return nfcNormalized;
 }
 
+void generateTestFile(const SyncPath &path, const uint64_t size /*= 0*/) {
+    std::ofstream testFile(path, std::ios_base::in | std::ios_base::trunc);
+    if (size) {
+        setTestFileSize(path, size);
+    }
+    testFile.close();
+}
+
 void generateOrEditTestFile(const SyncPath &path) {
     std::ofstream testFile(path, std::ios::app);
     testFile << "test" << std::endl;
     testFile.close();
+}
+
+void setTestFileSize(const SyncPath &path, uint64_t size) {
+    const std::string str{"0123456789"};
+    std::ofstream ofs(path, std::ios_base::in | std::ios_base::trunc);
+    for (uint64_t i = 0; i < static_cast<uint64_t>(round(static_cast<double>(size) / static_cast<double>(str.length()))); i++) {
+        ofs << str;
+    }
 }
 
 void generateBigFiles(const SyncPath &dirPath, const uint16_t size, const uint16_t count) {
@@ -303,5 +321,51 @@ bool isInTrash(const SyncPath &relativePath) {
     return found;
 }
 #endif
+void createSymLinkLoop(const SyncPath &filepath1, const SyncPath &filepath2, const NodeType nodeType) {
+    const LocalTemporaryDirectory tempDir;
+    const auto currentPath = std::filesystem::current_path();
+    std::filesystem::current_path(tempDir.path());
+
+    switch (nodeType) {
+        case NodeType::File: {
+            const std::ofstream ofs("filepath1");
+            break;
+        }
+        case NodeType::Directory: {
+            (void) std::filesystem::create_directories("filepath1");
+            break;
+        }
+        default:
+            throw std::invalid_argument(
+                    "Invalid argument NodeType argument in createSymLinkLoop. Expected: either NodeType::File or "
+                    "NodeType::Directory.");
+    }
+
+    std::filesystem::create_symlink(filepath1.filename(), filepath2.filename()); // filepath2 -> filepath1
+
+    std::filesystem::current_path(currentPath);
+    std::filesystem::rename(tempDir.path() / filepath2.filename(), filepath2);
+
+    std::filesystem::current_path(tempDir.path());
+    (void) std::filesystem::remove_all(filepath1.filename());
+    (void) std::filesystem::remove_all(filepath2.filename());
+    std::error_code ec;
+    std::filesystem::create_symlink(filepath2.filename(), filepath1.filename(), ec); // filepath1 -> filepath2
+
+    std::filesystem::current_path(currentPath);
+    std::filesystem::rename(tempDir.path() / filepath1.filename(), filepath1);
+}
+
+void setupLogging() {
+    IoError ioError = IoError::Success;
+    SyncPath logDirPath;
+    if (!IoHelper::logDirectoryPath(logDirPath, ioError)) {}
+
+    // Setup log4cplus
+    const std::filesystem::path logFilePath = logDirPath / Utility::logFileNameWithTime();
+    if (!Log::instance(Path2WStr(logFilePath))) {
+        assert(false);
+    }
+}
 
 } // namespace KDC::testhelpers

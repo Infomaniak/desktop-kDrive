@@ -52,9 +52,9 @@ MoveJob::~MoveJob() {
     }
 }
 
-bool MoveJob::canRun() {
+ExitInfo MoveJob::canRun() {
     if (bypassCheck()) {
-        return true;
+        return ExitCode::Ok;
     }
 
     // Check that we still have to move the folder
@@ -62,23 +62,20 @@ bool MoveJob::canRun() {
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_destFilepath, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_destFilepath, ioError));
-        _exitInfo = ExitCode::SystemError;
-        return false;
+        return ExitCode::SystemError;
     }
     if (ioError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_destFilepath));
-        _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
-        return false;
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     if (!exists) {
         LOGW_DEBUG(_logger, L"File " << Path2WStr(_destFilepath).c_str()
                                      << L" is not in its destination folder. Aborting current sync and restart.");
-        _exitInfo = {ExitCode::DataError, ExitCause::InvalidDestination};
-        return false;
+        return {ExitCode::DataError, ExitCause::InvalidDestination};
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
 std::string MoveJob::getSpecificUrl() {

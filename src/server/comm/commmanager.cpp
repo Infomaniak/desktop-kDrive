@@ -17,7 +17,12 @@
  */
 
 #include "commmanager.h"
+#include "appserver.h"
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+#include "extjobmanager.h"
 #include "extensionjob.h"
+#endif
+#include "guijobmanager.h"
 #include "guijobs/guijobfactory.h"
 #include "config.h"
 #include "libcommon/utility/logiffail.h"
@@ -51,9 +56,8 @@
 #include <log4cplus/loggingmacros.h>
 
 namespace KDC {
-CommManager::CommManager(const SyncPalMap &syncPalMap, const VfsMap &vfsMap) :
-    _syncPalMap(syncPalMap),
-    _vfsMap(vfsMap) {
+CommManager::CommManager(AppServer &appServer) :
+    _appServer(appServer) {
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
     _extCommServer = std::make_shared<ExtCommServer>("Extension Comm Server");
 #endif
@@ -105,7 +109,7 @@ void CommManager::start() {
     LOGW_INFO(Log::instance()->getLogger(), L"Starting " << CommonUtility::s2ws(_guiCommServer->name()));
     if (!_guiCommServer->listen()) {
         LOGW_WARN(Log::instance()->getLogger(), L"Can't start " << CommonUtility::s2ws(_guiCommServer->name()));
-        _addErrorCbk(Error(ERR_ID, ExitCode::SystemError, ExitCause::Unknown));
+        AppServer::addError(Error(ERR_ID, ExitCode::SystemError, ExitCause::Unknown));
     } else {
         LOGW_INFO(Log::instance()->getLogger(), CommonUtility::s2ws(_guiCommServer->name()) << L" started");
     }
@@ -115,7 +119,7 @@ void CommManager::start() {
     LOGW_INFO(Log::instance()->getLogger(), L"Starting " << CommonUtility::s2ws(_extCommServer->name()));
     if (!_extCommServer->listen()) {
         LOGW_WARN(Log::instance()->getLogger(), L"Can't start " << CommonUtility::s2ws(_extCommServer->name()));
-        _addErrorCbk(Error(ERR_ID, ExitCode::SystemError, ExitCause::Unknown));
+        AppServer::addError(Error(ERR_ID, ExitCode::SystemError, ExitCause::Unknown));
     } else {
         LOGW_INFO(Log::instance()->getLogger(), CommonUtility::s2ws(_extCommServer->name()) << L" started");
     }
@@ -157,10 +161,9 @@ void CommManager::executeExtCommand(const CommString &commandLineStr) {
 
     auto job =
             std::make_shared<ExtensionJob>(shared_from_this(), commandLineStr, std::list<std::shared_ptr<AbstractCommChannel>>());
-    if (ExitInfo exitInfo = job->runSynchronously(); !exitInfo) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in ExtensionJob::runSynchronously - cmd=" << CommonUtility::commString2WStr(commandLineStr));
-    }
+
+    // Add job to JobManager pool
+    ExtJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
 }
 
 void CommManager::executeExtCommand(const CommString &commandLineStr, std::shared_ptr<AbstractCommChannel> channel) {
@@ -169,10 +172,9 @@ void CommManager::executeExtCommand(const CommString &commandLineStr, std::share
     if (channel) {
         auto job = std::make_shared<ExtensionJob>(shared_from_this(), commandLineStr,
                                                   std::list<std::shared_ptr<AbstractCommChannel>>({channel}));
-        if (ExitInfo exitInfo = job->runSynchronously(); !exitInfo) {
-            LOGW_WARN(Log::instance()->getLogger(),
-                      L"Error in ExtensionJob::runSynchronously - cmd=" << CommonUtility::commString2WStr(commandLineStr));
-        }
+
+        // Add job to JobManager pool
+        ExtJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
     }
 }
 
@@ -181,10 +183,9 @@ void CommManager::broadcastExtCommand(const CommString &commandLineStr) {
 
     if (!_extCommServer->connections().empty()) {
         auto job = std::make_shared<ExtensionJob>(shared_from_this(), commandLineStr, _extCommServer->connections());
-        if (ExitInfo exitInfo = job->runSynchronously(); !exitInfo) {
-            LOGW_WARN(Log::instance()->getLogger(),
-                      L"Error in ExtensionJob::runSynchronously - cmd=" << CommonUtility::commString2WStr(commandLineStr));
-        }
+
+        // Add job to JobManager pool
+        ExtJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
     }
 }
 
@@ -199,7 +200,7 @@ void CommManager::onNewExtConnection() {
     std::vector<Sync> syncList;
     if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
-        _addErrorCbk(Error(ERR_ID, ExitCode::DbError, ExitCause::Unknown));
+        AppServer::addError(Error(ERR_ID, ExitCode::DbError, ExitCause::Unknown));
         return;
     }
 
@@ -250,10 +251,8 @@ void CommManager::executeGuiQuery(const CommString &commandLineStr, std::shared_
         return;
     }
 
-    // TODO: Add job to JobManager pool
-    if (!job->runSynchronously()) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in AbstractGuiJob::runSynchronously: num=" << requestNum);
-    }
+    // Add job to JobManager pool
+    GuiJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
 }
 
 void CommManager::onNewGuiConnection() {

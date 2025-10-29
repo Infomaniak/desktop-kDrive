@@ -32,7 +32,7 @@ class UploadSessionCancelJob : public AbstractUploadSessionJob {
         std::string getSpecificUrl() override;
         ExitInfo setData() override { return ExitCode::Ok; }
 
-        bool handleError(const std::string &replyBody, const Poco::URI &uri) override;
+        ExitInfo handleError(const std::string &replyBody, const Poco::URI &uri) override;
 };
 
 } // namespace KDC

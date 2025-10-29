@@ -97,7 +97,7 @@ class DrivePreferencesWidget : public LargeWidgetWithCustomToolTip {
         QLineEdit *_searchBox{nullptr};
         QPushButton *_searchButton{nullptr};
         QLabel *_searchProgressLabel{nullptr};
-        QListView *_searchResultView;
+        QListView *_searchResultView{nullptr};
         class SearchItemListModel : public QStringListModel {
             public:
                 void setSearchItems(const QList<SearchInfo> &data) {
@@ -108,7 +108,7 @@ class DrivePreferencesWidget : public LargeWidgetWithCustomToolTip {
                     }
                     setStringList(list);
                 };
-                NodeId id(int row) const {
+                [[nodiscard]] NodeId id(int row) const {
                     if (row > _data.count() - 1) return "0";
                     return _data[row].id();
                 }
@@ -133,12 +133,12 @@ class DrivePreferencesWidget : public LargeWidgetWithCustomToolTip {
         void resetFoldersBlocs();
         void updateFoldersBlocs();
         void refreshFoldersBlocs() const;
-        FolderTreeItemWidget *blocTreeItemWidget(PreferencesBlocWidget *folderBloc);
-        FolderItemWidget *blocItemWidget(PreferencesBlocWidget *folderBloc);
-        QFrame *blocSeparatorFrame(PreferencesBlocWidget *folderBloc);
+        static FolderTreeItemWidget *blocTreeItemWidget(PreferencesBlocWidget *folderBloc);
+        static FolderItemWidget *blocItemWidget(PreferencesBlocWidget const *folderBloc);
+        static QFrame *blocSeparatorFrame(PreferencesBlocWidget const *folderBloc);
         bool addSync(const QString &localFolderPath, bool liteSync, const QString &serverFolderPath,
-                     const QString &serverFolderNodeId, QSet<QString> blackSet, QSet<QString> whiteSet);
-        bool updateSelectiveSyncList(const QHash<int, QHash<const QString, bool>> &mapUndefinedFolders);
+                     const QString &serverFolderNodeId, const QSet<QString> &blackSet, const QSet<QString> &whiteSet);
+        static bool updateSelectiveSyncList(const QHash<int, QHash<const QString, bool>> &mapUndefinedFolders);
         void updateGuardedFoldersBlocs();
 
         void initializeSearchBloc();
@@ -155,8 +155,8 @@ class DrivePreferencesWidget : public LargeWidgetWithCustomToolTip {
         void onDisplayFolderDetail(int syncDbId, bool display);
         void onOpenFolder(const QString &filePath);
         void onSubfoldersLoaded(bool error, ExitCause exitCause, bool empty);
-        void onNeedToSave(bool isFolderItemBlackListed);
-        void onCancelUpdate(int syncDbId);
+        void onNeedToSave(bool isFolderItemBlackListed) const;
+        void onCancelUpdate(int syncDbId) const;
         void onValidateUpdate(int syncDbId);
         void onNewBigFolderDiscovered(int syncDbId, const QString &path);
         void onUndecidedListsCleared();

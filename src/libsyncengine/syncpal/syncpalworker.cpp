@@ -33,7 +33,6 @@
 #include <log4cplus/loggingmacros.h>
 
 #define UPDATE_PROGRESS_DELAY 1
-
 namespace KDC {
 
 SyncPalWorker::SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
@@ -56,7 +55,9 @@ bool shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr
     const auto syncDirNotAccessible =
             (w1 && w1->exitCode() == ExitCode::SystemError && w1->exitCause() == ExitCause::SyncDirAccessError) ||
             (w2 && w2->exitCode() == ExitCode::SystemError && w2->exitCause() == ExitCause::SyncDirAccessError);
-    return networkIssue || httpBlockingError || syncDirNotAccessible;
+    const auto invalidOperation =
+            (w1 && w1->exitCode() == ExitCode::InvalidOperation) || (w2 && w2->exitCode() == ExitCode::InvalidOperation);
+    return networkIssue || httpBlockingError || syncDirNotAccessible || invalidOperation;
 }
 
 bool shouldBeStoppedAndRestarted(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr) {
@@ -588,7 +589,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
             }
             SyncPath absolutePath;
             try {
-                if (dirIt->is_directory() && !dirIt->is_symlink()) {
+                if (!dirIt->is_symlink() && dirIt->is_directory()) {
                     continue;
                 }
                 absolutePath = dirIt->path();
@@ -674,10 +675,10 @@ void SyncPalWorker::resetVfsFilesStatus() {
         }
     } catch (std::filesystem::filesystem_error &e) {
         LOG_SYNCPAL_WARN(_logger,
-                         "Error caught in SyncPalWorker::resetVfsFilesStatus: code=" << e.code() << " error=" << e.what());
+                         "Exception caught in SyncPalWorker::resetVfsFilesStatus: code=" << e.code() << " error=" << e.what());
         ok = false;
     } catch (...) {
-        LOG_SYNCPAL_WARN(_logger, "Error caught in SyncPalWorker::resetVfsFilesStatus");
+        LOG_SYNCPAL_WARN(_logger, "Exception caught in SyncPalWorker::resetVfsFilesStatus");
         ok = false;
     }
 

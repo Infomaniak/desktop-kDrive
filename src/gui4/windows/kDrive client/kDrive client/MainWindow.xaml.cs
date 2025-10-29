@@ -17,23 +17,10 @@
  */
 
 using Infomaniak.kDrive.ViewModels;
-using Infomaniak.kDrive.ServerCommunication;
-using Microsoft.UI.Input;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -42,7 +29,7 @@ namespace Infomaniak.kDrive
 {
     public sealed partial class MainWindow : Window
     {
-        public readonly AppModel _viewModel = ((App)Application.Current).Data;
+        public readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel { get { return _viewModel; } }
         public MainWindow()
         {
@@ -67,7 +54,8 @@ namespace Infomaniak.kDrive
                         contentFrame.Navigate(typeof(Pages.ActivityPage));
                         break;
                     case "Settings":
-                        ((App)Application.Current).StartOnboarding();
+                        //((App)Application.Current).StartOnboarding();
+                        contentFrame.Navigate(typeof(Pages.SettingsPage));
                         break;
                     case "StoragePage":
                         contentFrame.Navigate(typeof(Pages.StoragePage));

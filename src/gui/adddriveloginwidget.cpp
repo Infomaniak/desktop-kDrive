@@ -50,20 +50,13 @@ const int stateStringLength = 8;
 
 Q_LOGGING_CATEGORY(lcAddDriveLoginWidget, "gui.adddriveloginwidget", QtInfoMsg)
 
+
 AddDriveLoginWidget::AddDriveLoginWidget(QWidget *parent) :
-    QWidget(parent),
-    _codeVerifier(QString()),
-    _userDbId(0),
-    _webView(nullptr) {
-    QVBoxLayout *mainLayout = new QVBoxLayout();
+    QWidget(parent) {
+    auto *const mainLayout = new QVBoxLayout();
     mainLayout->setContentsMargins(0, 0, 0, 0);
     setLayout(mainLayout);
-
-    _webView = new WebView(this);
-    mainLayout->addWidget(_webView);
-
-    connect(_webView, &WebView::authorizationCodeUrlCatched, this, &AddDriveLoginWidget::onAuthorizationCodeReceived);
-    connect(_webView, &WebView::errorCatched, this, &AddDriveLoginWidget::onErrorReceived);
+    refreshPage();
 }
 
 void AddDriveLoginWidget::init(const QString &serverUrl) {
@@ -89,21 +82,21 @@ void AddDriveLoginWidget::onAuthorizationCodeReceived(const QString code, const 
     if (exitCode != ExitCode::Ok) {
         qCWarning(lcAddDriveLoginWidget()) << "Error in Requests::requestToken: code=" << exitCode;
 
-        CustomMessageBox msgBox(QMessageBox::Warning, tr("Token request failed: %1 - %2").arg(error, errorDescr), QMessageBox::Ok,
-                                this);
+        CustomMessageBox msgBox(QMessageBox::Warning, tr("Token request failed: %1 - %2").arg(error, errorDescr),
+                                QMessageBox::Ok);
         msgBox.exec();
 
         emit terminated(false);
+    } else {
+        emit terminated();
     }
-
-    emit terminated();
 }
 
 void AddDriveLoginWidget::onErrorReceived(const QString error, const QString errorDescr) {
     qCWarning(lcAddDriveLoginWidget) << "Login failed : " << error.toStdString().c_str() << " - "
                                      << errorDescr.toStdString().c_str();
 
-    CustomMessageBox msgBox(QMessageBox::Warning, tr("Login failed: %1 - %2").arg(error, errorDescr), QMessageBox::Ok, this);
+    CustomMessageBox msgBox(QMessageBox::Warning, tr("Login failed: %1 - %2").arg(error, errorDescr), QMessageBox::Ok);
     msgBox.exec();
 
     emit terminated(false);
@@ -143,9 +136,10 @@ const QString AddDriveLoginWidget::generateCodeChallenge(const QString &codeVeri
 
 void AddDriveLoginWidget::refreshPage() {
     delete _webView;
-    _webView = new WebView();
+    _webView = new WebView(this);
     layout()->addWidget(_webView);
     connect(_webView, &WebView::authorizationCodeUrlCatched, this, &AddDriveLoginWidget::onAuthorizationCodeReceived);
+    connect(_webView, &WebView::errorCatched, this, &AddDriveLoginWidget::onErrorReceived);
 }
 
 } // namespace KDC

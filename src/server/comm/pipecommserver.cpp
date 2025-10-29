@@ -411,18 +411,6 @@ SyncPath PipeCommServer::createPipe() {
 
     const SyncPath pipePath = SyncPath(R"(\\.\pipe\)") / Str2SyncName(name);
 
-    // Delete/create pipe file
-    std::errc ec;
-    std::filesystem::remove(pipePath);
-    if (const QFileInfo info(Path2QStr(pipePath)); !info.dir().exists()) {
-        if (info.dir().mkpath(".")) {
-            QFile::setPermissions(Path2QStr(pipePath),
-                                  QFile::Permissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner));
-            LOGW_DEBUG(Log::instance()->getLogger(), L"Pipe created: " << Utility::formatSyncPath(pipePath));
-        } else {
-            LOGW_WARN(Log::instance()->getLogger(), L"Failed to create pipe: " << Utility::formatSyncPath(pipePath));
-        }
-    }
     return pipePath;
 }
 } // namespace KDC

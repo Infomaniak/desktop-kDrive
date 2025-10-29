@@ -57,12 +57,12 @@ class VersionInfoCmp {
         }
 };
 
-const VersionInfo &UpdateChecker::versionInfo(const VersionChannel choosedChannel) {
+const VersionInfo &UpdateChecker::versionInfo(const VersionChannel chosenChannel) {
     if (!_isVersionReceived) return _defaultVersionInfo;
     const VersionInfo &prodVersion = prodVersionInfo();
 
     // If the user wants only `Production` versions, just return the current `Production` version.
-    if (choosedChannel == VersionChannel::Prod) return prodVersion;
+    if (chosenChannel == VersionChannel::Prod) return prodVersion;
 
     // Otherwise, we need to check if there is not a newer version in other channels.
     const VersionInfo &betaVersion =
@@ -74,7 +74,7 @@ const VersionInfo &UpdateChecker::versionInfo(const VersionChannel choosedChanne
     sortedVersionList.insert(betaVersion);
     sortedVersionList.insert(internalVersion);
     for (const auto &versionInfo: sortedVersionList) {
-        if (versionInfo.get().channel <= choosedChannel) return versionInfo;
+        if (versionInfo.get().channel <= chosenChannel) return versionInfo;
     }
 
     return _defaultVersionInfo;

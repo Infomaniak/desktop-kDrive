@@ -38,31 +38,27 @@ BlacklistPropagator::~BlacklistPropagator() {
     LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(), "BlacklistPropagator destroyed");
 }
 
-void BlacklistPropagator::runJob() {
+ExitInfo BlacklistPropagator::runJob() {
     LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(), "BlacklistPropagator started");
 
     // Select sync
     bool found = true;
     if (!ParmsDb::instance()->selectSync(_syncPal->syncDbId(), _sync, found)) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectSync");
-        _exitInfo = ExitCode::DbError;
-        return;
+        return ExitCode::DbError;
     }
     if (!found) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Sync not found");
-        _exitInfo = ExitCode::DataError;
-        return;
+        return ExitCode::DataError;
     }
 
-    ExitCode exitCode = checkNodes();
-    if (exitCode != ExitCode::Ok) {
+    if (const auto exitCode = checkNodes(); exitCode != ExitCode::Ok) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in BlacklistPropagator::checkNodes");
-        _exitInfo = exitCode;
-        return;
+        return exitCode;
     }
 
     LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(), "BlacklistPropagator ended");
-    _exitInfo = ExitCode::Ok;
+    return ExitCode::Ok;
 }
 
 ExitCode BlacklistPropagator::checkNodes() {
@@ -223,7 +219,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(absoluteLocalPath, exists, ioError)) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in IoHelper::checkIfPathExists for path=" << Utility::formatIoError(absoluteLocalPath, ioError));
+                  L"Error in IoHelper::checkIfPathExists for " << Utility::formatIoError(absoluteLocalPath, ioError));
         return ExitCode::SystemError;
     }
 

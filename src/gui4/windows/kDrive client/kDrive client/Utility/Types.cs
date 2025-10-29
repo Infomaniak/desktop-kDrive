@@ -1,4 +1,5 @@
 ﻿global using UserId = System.Int64;
+global using AccountId = System.Int64;
 global using DriveId = System.Int64;
 global using SyncId = System.Int64;
 global using NodeId = System.Int64;
@@ -29,16 +30,25 @@ namespace Infomaniak.kDrive.Types
         Unknown,
         Starting,
         Running,
+        Idle,
         Pausing,
-        Pause
+        Pause,
+        Offline
     }
 
-    public enum SyncDirection
+    public enum SyncActivityDirection
     {
         Unknown = 0,
         Outgoing,
-        Incoming,
-        EnumEnd
+        Incoming
+    };
+
+    public enum SyncActivityState
+    {
+        Unknown = 0,
+        Successful,
+        Failed,
+        InProgress
     };
 
     public enum SyncType
@@ -46,6 +56,16 @@ namespace Infomaniak.kDrive.Types
         Unknown,
         Offline,
         Online // (Ex liteSync)
+    };
+
+    public enum VersionChannel
+    {
+        Prod,
+        Next,
+        Beta,
+        Internal,
+        Legacy,
+        Unknown
     };
 
     public enum Language
@@ -57,7 +77,6 @@ namespace Infomaniak.kDrive.Types
         ES,
         EN
     };
-
     public enum OAuth2State
     {
         None,

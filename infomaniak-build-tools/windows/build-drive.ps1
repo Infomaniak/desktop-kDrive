@@ -46,7 +46,7 @@ Param(
     # Coverage: Flag to enable or disable the code coverage computation
     [switch] $coverage,
 
-    # Coverage: Flag to enable or disable the build of unit tests
+    # Unit tests: Flag to enable or disable the build of unit tests
     [switch] $unitTests,
 
     # Help: Displays the help message and exits
