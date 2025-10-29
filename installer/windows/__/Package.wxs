@@ -1,3 +1,0 @@
-﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
-  <Package Id="TODO_Manufacturer.__" Name="__" Manufacturer="TODO Manufacturer" Version="1.0.0.0"/>
-</Wix>

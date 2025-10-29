@@ -8,7 +8,7 @@ Project("{B7DD6F7E-DEF8-4E67-B5B7-07EF123DB6F0}") = "kDriveInstaller", "kDriveIn
 		{ABA9C1A0-38BC-4632-AE02-890AB325D687} = {ABA9C1A0-38BC-4632-AE02-890AB325D687}
 	EndProjectSection
 EndProject
-Project("{B7DD6F7E-DEF8-4E67-B5B7-07EF123DB6F0}") = "__", "..\__\__.wixproj", "{ABA9C1A0-38BC-4632-AE02-890AB325D687}"
+Project("{B7DD6F7E-DEF8-4E67-B5B7-07EF123DB6F0}") = "Bootstraper", "..\Bootstraper\Bootstraper.wixproj", "{ABA9C1A0-38BC-4632-AE02-890AB325D687}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

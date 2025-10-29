@@ -1,9 +1,9 @@
 {
-  "NextVersion": {
+  "Version": {
     "major": 3,
     "minor": 7,
     "patch": 8,
-    "build": 1,
+    "build": 2,
     "year": 2025
   }
 }

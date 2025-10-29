@@ -35,16 +35,16 @@ function Get-VersionFromJson {
     }
 
     $versionData = Get-Content $VersionJsonPath -Raw | ConvertFrom-Json
-    $nextVersion = $versionData.NextVersion
+    $version = $versionData.Version
 
-    if (-not $nextVersion) {
-        throw "NextVersion object not found in JSON"
+    if (-not $version) {
+        throw "Version object not found in JSON"
     }
 
     # --- Step 2: Build version string ---
-    $versionString = "$($nextVersion.major).$($nextVersion.minor).$($nextVersion.patch)"
+    $versionString = "$($version.major).$($version.minor).$($version.patch)"
     if ($IncludeBuildVersion) {
-        $versionString += ".$($nextVersion.build)"
+        $versionString += ".$($version.build)"
     }
 
     return $versionString
