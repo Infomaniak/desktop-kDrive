@@ -321,13 +321,11 @@ function CMake-Build-And-Install {
         "'-DQT_QMAKE_EXECUTABLE:STRING=C:\Qt\Tools\CMake_64\bin\cmake.exe'",
         "'-DCMAKE_C_COMPILER:STRING=$compiler'",
         "'-DCMAKE_CXX_COMPILER:STRING=$compiler'",
-        "'-DAPPLICATION_VIRTUALFILE_SUFFIX:STRING=kdrive'",
         "'-DBIN_INSTALL_DIR:PATH=$path'",
         "'-DVFS_DIRECTORY:PATH=$vfsDir'",
         "'-DKDRIVE_THEME_DIR:STRING=$path/infomaniak'",
         "'-DPLUGINDIR:STRING=C:/Program Files (x86)/kDrive/lib/kDrive/plugins'",
         "'-DZLIB_INCLUDE_DIR:PATH=C:/Program Files (x86)/zlib-1.2.11/include'",
-        "'-DZLIB_LIBRARY_RELEASE:FILEPATH=C:/Program Files (x86)/zlib-1.2.11/lib/zlib.lib'",
         "'-DAPPLICATION_NAME:STRING=kDrive'"
     )
 
