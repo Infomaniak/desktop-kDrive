@@ -113,15 +113,15 @@ IoError IoHelper::setFileDates(const SyncPath &filePath, const SyncTime /*creati
     return IoError::Success;
 }
 
-IoError IoHelper::lock(const SyncPath &path) noexcept {
+IoError IoHelper::lock(const SyncPath &) noexcept {
     return IoError::Success; // Only on macOS
 }
 
-IoError IoHelper::unlock(const SyncPath &path) noexcept {
+IoError IoHelper::unlock(const SyncPath &) noexcept {
     return IoError::Success; // Only on macOS
 }
 
-IoError IoHelper::isLocked(const SyncPath &path, bool &locked) noexcept {
+IoError IoHelper::isLocked(const SyncPath &, bool &locked) noexcept {
     locked = false;
     return IoError::Success; // Only on macOS
 }
