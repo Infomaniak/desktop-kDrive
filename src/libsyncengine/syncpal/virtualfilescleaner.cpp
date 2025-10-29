@@ -157,8 +157,8 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
             _vfs->clearFileAttributes(absolutePath);
         }
     } catch (std::filesystem::filesystem_error &e) {
-        LOG_WARN(_logger, "Exception caught in VirtualFilesCleaner::removePlaceholdersRecursively: code=" << e.code() << " error="
-                                                                                                          << e.what());
+        LOGW_WARN(_logger,
+                  L"Exception caught in VirtualFilesCleaner::removePlaceholdersRecursively: " << Utility::formatSystemError(e));
         directoryIterationException = true;
     } catch (...) {
         LOG_WARN(_logger, "Exception caught in VirtualFilesCleaner::removePlaceholdersRecursively");
@@ -253,8 +253,8 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
             }
         }
     } catch (std::filesystem::filesystem_error &e) {
-        LOG_WARN(_logger, "Exception caught in VirtualFilesCleaner::removeDehydratedPlaceholders: code=" << e.code() << " error="
-                                                                                                         << e.what());
+        LOGW_WARN(_logger,
+                  L"Exception caught in VirtualFilesCleaner::removeDehydratedPlaceholders: " << Utility::formatSystemError(e));
         directoryIterationException = true;
     } catch (...) {
         LOG_WARN(_logger, "Exception caught in VirtualFilesCleaner::removeDehydratedPlaceholders");
