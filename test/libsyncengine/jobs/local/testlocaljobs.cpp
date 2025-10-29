@@ -40,11 +40,11 @@ class LocalDeleteJobMockingTrash : public LocalDeleteJob {
         void setMockMoveToTrash(const bool mocked) { _moveToTrashIsMocked = mocked; }
 
     protected:
-        bool moveToTrash() final {
+        ExitInfo moveToTrash() final {
             if (_moveToTrashIsMocked) {
                 std::filesystem::remove_all(_absolutePath);
                 handleTrashMoveOutcome(_moveToTrashFailed, _absolutePath);
-                return !_moveToTrashFailed;
+                return _moveToTrashFailed ? ExitCode::SystemError : ExitCode::Ok;
             }
 
             return LocalDeleteJob::moveToTrash();

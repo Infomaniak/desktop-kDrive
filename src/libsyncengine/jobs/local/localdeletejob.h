@@ -48,16 +48,16 @@ class LocalDeleteJob : public SyncJob {
         SyncPath _absolutePath;
         bool _liteSyncIsEnabled = false;
 
-        virtual ExitInfo canRun() override;
+        ExitInfo canRun() override;
         virtual bool findRemoteItem(SyncPath &remoteItemPath) const;
-        virtual bool moveToTrash();
-        void handleTrashMoveOutcome(const bool success, const SyncPath &path);
+        virtual ExitInfo moveToTrash();
+        ExitInfo handleTrashMoveOutcome(bool success, const SyncPath &path);
 
     private:
-        virtual void runJob() override;
-        void hardDelete(const SyncPath &path);
-        void hardDeleteDehydratedPlaceholders();
-        void handleLiteSyncFile(const SyncPath &path, bool &moveToTrashOutcome);
+        ExitInfo runJob() override;
+        ExitInfo hardDelete(const SyncPath &path);
+        ExitInfo hardDeleteDehydratedPlaceholders();
+        ExitInfo handleLiteSyncFile(const SyncPath &path);
 
         SyncPalInfo _syncInfo;
         SyncPath _relativePath;
