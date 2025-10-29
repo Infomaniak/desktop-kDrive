@@ -496,4 +496,10 @@
   <data name="CC_UpdateExpander_ChangeLogHyperLink.Content" xml:space="preserve">
     <value />
   </data>
+  <data name="Page_SettingsPage_Language.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Language_ComboBox_default.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
 </root>
