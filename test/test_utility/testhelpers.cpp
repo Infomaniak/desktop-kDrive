@@ -24,6 +24,7 @@
 #include "libcommonserver/io/iohelper.h"
 
 #include <fstream>
+#include <regex>
 #include <Poco/JSON/Object.h>
 
 
@@ -169,8 +170,8 @@ SyncPath removeNumericSuffix(const SyncPath &relativePath) {
     return SyncPath{ss.str()};
 }
 
-void testhelpers::eraseFromTrash(const KDC::SyncPath &relativePath) {
-    const auto trashPath = getTrashPath();
+void eraseFromTrash(const KDC::SyncPath &relativePath) {
+    const auto trashPath = Utility::getTrashPath();
     std::error_code ec;
 
     auto dirIt = std::filesystem::recursive_directory_iterator(trashPath,
@@ -191,8 +192,8 @@ void testhelpers::eraseFromTrash(const KDC::SyncPath &relativePath) {
     for (const auto &pathToErase: itemsToErase) (void) std::filesystem::remove_all(pathToErase);
 }
 
-bool testhelpers::isInTrash(const SyncPath &relativePath) {
-    const auto trashPath = getTrashPath();
+bool isInTrash(const SyncPath &relativePath) {
+    const auto trashPath = Utility::getTrashPath();
     std::error_code ec;
 
     auto dirIt = std::filesystem::recursive_directory_iterator(trashPath,
@@ -204,7 +205,7 @@ bool testhelpers::isInTrash(const SyncPath &relativePath) {
 
     for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
         const auto dirItemRelativePath = std::filesystem::relative(dirIt->path(), trashPath);
-        // Filter out the numerical suffix of the root directory name, e.g: `dirname.15` is replaced with `dirname`.
+        // Filter out the numerical suffix of the root directory name, e.g.: `dirname.15` is replaced with `dirname`.
         const auto suffixFreedirectorEntryPath = removeNumericSuffix(dirItemRelativePath);
         if (relativePath == suffixFreedirectorEntryPath) return true;
     }
