@@ -22,9 +22,9 @@ namespace KDC {
 
 // Mock implementation of readMessage and sendMessage for testing purpose
 CommString PipeCommChannelTest::readMessage() {
-    CommChar data[1024];
-    auto readSize = readData(data, 1024);
-    CommString dataStr(data, readSize);
+    CommChar data[1024] = {0};
+    const auto readSize = readData(data, 1024);
+    const CommString dataStr(data, readSize);
     return dataStr;
 }
 
@@ -41,9 +41,9 @@ void TestPipeComm::setUp() {
     _pipeCommServer = std::make_unique<PipeCommServerTest>("TestPipeComm::testServerListen");
 
     _pipeCommServer->setNewConnectionCbk([&]() {
-        auto channel = _pipeCommServer->nextPendingConnection();
+        const auto channel = _pipeCommServer->nextPendingConnection();
         if (channel) {
-            channel->setReadyReadCbk([&](std::shared_ptr<AbstractCommChannel> channel) { _lastReadyReadChannel = channel; });
+            channel->setReadyReadCbk([&](std::shared_ptr<AbstractCommChannel> ch) { _lastReadyReadChannel = ch; });
         }
     });
 
@@ -70,10 +70,9 @@ void TestPipeComm::testServer() {
 
     // Connect a client to the server and exchange some messages
     // Repeat N times (with N > PIPE_INSTANCES) to check connection reuse
+    const SyncPath pipePath = PipeCommServer::pipePath();
     for (int i = 0; i < 20; i++) {
         // Connect a client to the server
-        SyncPath pipePath = PipeCommServer::pipePath();
-
         HANDLE hPipe = CreateFile(pipePath.native().c_str(), // pipe name
                                   GENERIC_READ | GENERIC_WRITE,
                                   0, // no sharing
@@ -87,8 +86,8 @@ void TestPipeComm::testServer() {
         // Send a message from the client to the server
         _lastReadyReadChannel = nullptr;
 
-        CommString msgClient = Str(R"(Hello word)");
-        DWORD cbToWrite = (msgClient.size() + 1) * sizeof(TCHAR);
+        const CommString msgClient = Str(R"(Hello word)");
+        const DWORD cbToWrite = (msgClient.size() + 1) * sizeof(TCHAR);
         DWORD cbWritten = 0;
 
         BOOL fSuccess = WriteFile(hPipe, // pipe handle
@@ -113,7 +112,7 @@ void TestPipeComm::testServer() {
         CPPUNIT_ASSERT(msgReceived == msgClient);
 
         // Send a message from the server to the client
-        CommString msgServer = Str(R"(😅🍃😎🫥😶‍🌫️😰🤑🦞éè$²@à*-+/\;,:!!<>)");
+        const CommString msgServer = Str(R"(😅🍃😎🫥😶‍🌫️😰🤑🦞éè$²@à*-+/\;,:!!<>)");
         CPPUNIT_ASSERT(_lastReadyReadChannel->sendMessage(msgServer));
 
         // Read the message on the client side
@@ -134,7 +133,7 @@ void TestPipeComm::testServer() {
         // Close client connection
         _lastLostConnectionChannel = nullptr;
 
-        CloseHandle(hPipe);
+        CPPUNIT_ASSERT(CloseHandle(hPipe));
 
         // Wait for the server to process disconnection
         waitCount = 100; // wait max 1 second

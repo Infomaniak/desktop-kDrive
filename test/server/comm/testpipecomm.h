@@ -25,10 +25,9 @@ namespace KDC {
 
 class PipeCommChannelTest : public PipeCommChannel {
     public:
-        PipeCommChannelTest() :
-            PipeCommChannel() {}
+        using PipeCommChannel::PipeCommChannel;
 
-        ~PipeCommChannelTest() {}
+        ~PipeCommChannelTest() = default;
         bool canReadMessage() override { return true; }
         CommString readMessage() override;
         bool sendMessage(const CommString &message) override;
@@ -36,8 +35,8 @@ class PipeCommChannelTest : public PipeCommChannel {
 
 class PipeCommServerTest : public PipeCommServer {
     public:
-        PipeCommServerTest(const std::string &name) :
-            PipeCommServer(name) {}
+        using PipeCommServer::PipeCommServer;
+
         std::shared_ptr<PipeCommChannel> makeCommChannel() const override { return std::make_shared<PipeCommChannelTest>(); }
 };
 

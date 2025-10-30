@@ -41,12 +41,13 @@ namespace KDC {
 #if defined(KD_WINDOWS)
 constexpr auto connectIndex = toInt(PipeCommChannel::Action::Connect);
 constexpr auto readIndex = toInt(PipeCommChannel::Action::Read);
+constexpr auto writeIndex = toInt(PipeCommChannel::Action::Write);
 #endif
 
 uint64_t PipeCommChannel::readData(CommChar *data, uint64_t maxSize) {
     if (!_connected) return 0;
 
-    auto size = _inBuffer.copy(data, maxSize);
+    const auto size = _inBuffer.copy(data, maxSize);
     _inBuffer.erase(0, size);
     return size;
 }
@@ -59,15 +60,14 @@ uint64_t PipeCommChannel::writeData(const CommChar *data, uint64_t size) {
         LOG_DEBUG(Log::instance()->getLogger(), "Try to write on inst:" << _instance);
     }
     DWORD bytesWritten = 0;
-    auto index = toInt(Action::Write);
-    BOOL fSuccess = WriteFile(_pipeInst, data, size * sizeof(TCHAR), &bytesWritten, &_overlap[index]);
+    const BOOL fSuccess = WriteFile(_pipeInst, data, size * sizeof(TCHAR), &bytesWritten, &_overlap[writeIndex]);
 
     // The write operation completed successfully
     if (fSuccess && bytesWritten == size * sizeof(TCHAR)) {
         if (ParametersCache::isExtendedLogEnabled()) {
             LOG_DEBUG(Log::instance()->getLogger(), "Write done on inst:" << _instance);
         }
-        _pendingIO[index] = FALSE;
+        _pendingIO[writeIndex] = FALSE;
         return size;
     }
 
@@ -77,8 +77,8 @@ uint64_t PipeCommChannel::writeData(const CommChar *data, uint64_t size) {
         if (ParametersCache::isExtendedLogEnabled()) {
             LOG_DEBUG(Log::instance()->getLogger(), "Write pending on inst:" << _instance);
         }
-        _size[index] = size * sizeof(TCHAR);
-        _pendingIO[index] = TRUE;
+        _size[writeIndex] = size * sizeof(TCHAR);
+        _pendingIO[writeIndex] = TRUE;
         return size;
     }
 
@@ -222,7 +222,7 @@ void PipeCommServer::execute() {
         channel->_connected = channel->_pendingIO[connectIndex] ? FALSE // still connecting
                                                                 : TRUE; // ready to read
 
-        channel->setLostConnectionCbk([this](std::shared_ptr<AbstractCommChannel> channel) { lostConnectionCbk(channel); });
+        channel->setLostConnectionCbk([this](std::shared_ptr<AbstractCommChannel> ch) { lostConnectionCbk(ch); });
         newConnectionCbk();
     }
 
@@ -356,7 +356,7 @@ void PipeCommServer::execute() {
 
     for (auto &channel: _channels) {
         (void) DisconnectNamedPipe(channel->_pipeInst);
-        (void) CloseHandle(channel->_pipeInst);
+        (void) CloseHandle(channel->_pipeInst); // Needed to be able to reuse the pipe (avoid ERROR_PIPE_BUSY)
     }
     _channels.clear();
 
@@ -399,7 +399,7 @@ bool PipeCommServer::connectToPipe(HANDLE hPipe, LPOVERLAPPED lpo) {
     bool fPendingIO = false;
 
     // Start an overlapped connection for this pipe instance
-    BOOL fConnected = ConnectNamedPipe(hPipe, lpo);
+    const BOOL fConnected = ConnectNamedPipe(hPipe, lpo);
 
     // Overlapped ConnectNamedPipe should return zero
     if (fConnected) {
