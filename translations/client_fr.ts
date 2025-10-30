@@ -208,12 +208,12 @@ Veuillez sélectionner un autre dossier. Si vous continuez, Lite Sync sera désa
 <context>
     <name>KDC::AddDriveLoginWidget</name>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="92"/>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="85"/>
         <source>Token request failed: %1 - %2</source>
         <translation>Échec de la demande de jeton&#xa0;: %1 - %2</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="106"/>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="99"/>
         <source>Login failed: %1 - %2</source>
         <translation>La connexion a échoué&#xa0;: %1 - %2</translation>
     </message>
@@ -284,8 +284,13 @@ Veuillez sélectionner un autre dossier. Si vous continuez, Lite Sync sera désa
 </context>
 <context>
     <name>KDC::AppServer</name>
+    <message>
+        <location filename="../src/server/appserver.cpp" line="1497"/>
+        <source>Share link copied to clipboard</source>
+        <translation>Lien partagé copié dans le presse-papiers</translation>
+    </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3328"/>
+        <location filename="../src/server/appserver.cpp" line="3445"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 a été supprimé.</numerusform>
@@ -293,13 +298,13 @@ Veuillez sélectionner un autre dossier. Si vous continuez, Lite Sync sera désa
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3330"/>
+        <location filename="../src/server/appserver.cpp" line="3447"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 a été supprimé.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3335"/>
+        <location filename="../src/server/appserver.cpp" line="3452"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 et %n autre(s) fichier(s) ont été ajouté(s).</numerusform>
@@ -307,13 +312,13 @@ Veuillez sélectionner un autre dossier. Si vous continuez, Lite Sync sera désa
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3337"/>
+        <location filename="../src/server/appserver.cpp" line="3454"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 a été ajouté.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3342"/>
+        <location filename="../src/server/appserver.cpp" line="3459"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 a été mis à jour.</numerusform>
@@ -321,13 +326,13 @@ Veuillez sélectionner un autre dossier. Si vous continuez, Lite Sync sera désa
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3344"/>
+        <location filename="../src/server/appserver.cpp" line="3461"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 a été mis à jour.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3349"/>
+        <location filename="../src/server/appserver.cpp" line="3466"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>%1 a été déplacé vers %2.</numerusform>
@@ -335,17 +340,17 @@ Veuillez sélectionner un autre dossier. Si vous continuez, Lite Sync sera désa
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3352"/>
+        <location filename="../src/server/appserver.cpp" line="3469"/>
         <source>%1 has been moved to %2.</source>
         <translation>%1 a été déplacé vers %2.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3360"/>
+        <location filename="../src/server/appserver.cpp" line="3477"/>
         <source>Sync Activity</source>
         <translation>Activité de synchronisation</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="4266"/>
+        <location filename="../src/server/appserver.cpp" line="4379"/>
         <source>A new folder larger than %1 MB has been added in the drive %2, you must validate its synchronization: %3.
 </source>
         <translation>Un nouveau dossier supérieur à %1 Mo a été ajouté dans le lecteur %2, vous devez valider sa synchronisation: %3.</translation>
@@ -475,18 +480,18 @@ Sélectionnez ceux que vous souhaitez synchroniser:</translation>
         <translation>Aucun dossier à synchroniser n&apos;est configuré.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1428"/>
+        <location filename="../src/gui/clientgui.cpp" line="1417"/>
         <source>Synthesis</source>
         <translation>Synthèse</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1429"/>
+        <location filename="../src/gui/clientgui.cpp" line="1418"/>
         <source>Preferences</source>
         <translatorcomment>Préférences</translatorcomment>
         <translation>Préférences</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1430"/>
+        <location filename="../src/gui/clientgui.cpp" line="1419"/>
         <source>Quit</source>
         <translation>Quitter</translation>
     </message>
@@ -531,22 +536,22 @@ Sélectionnez ceux que vous souhaitez synchroniser:</translation>
         <translation>%1 (Synchronisation en pause)</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1263"/>
+        <location filename="../src/gui/clientgui.cpp" line="1252"/>
         <source>Do you really want to remove the synchronizations of the account &lt;i&gt;%1&lt;/i&gt; ?&lt;br&gt;&lt;b&gt;Note:&lt;/b&gt; This will &lt;b&gt;not&lt;/b&gt; delete any files.</source>
         <translation>Voulez-vous vraiment supprimer les synchronisations du compte &lt;i&gt;%1&lt;/i&gt; ?&lt;br&gt;&lt;b&gt;Remarque&#xa0;:&lt;/b&gt; Cela &lt;b&gt;ne&lt;/b&gt; supprimera aucun fichier.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1267"/>
+        <location filename="../src/gui/clientgui.cpp" line="1256"/>
         <source>REMOVE ALL SYNCHRONIZATIONS</source>
         <translation>SUPPRIMER TOUTES LES SYNC</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1268"/>
+        <location filename="../src/gui/clientgui.cpp" line="1257"/>
         <source>CANCEL</source>
         <translation>ANNULER</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1596"/>
+        <location filename="../src/gui/clientgui.cpp" line="1585"/>
         <source>Failed to start synchronizations!</source>
         <translation>Échec du démarrage des synchronisations&#xa0;!</translation>
     </message>
@@ -564,12 +569,6 @@ Sélectionnez ceux que vous souhaitez synchroniser:</translation>
         <location filename="../src/gui/clientgui.cpp" line="255"/>
         <source>Synchronization is paused</source>
         <translation>La synchronisation est en pause</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/clientgui.cpp" line="876"/>
-        <location filename="../src/gui/clientgui.cpp" line="924"/>
-        <source>The shared link has been copied to the clipboard.</source>
-        <translation>Le lien partagé a été copié dans le presse-papier.</translation>
     </message>
 </context>
 <context>
@@ -943,145 +942,160 @@ Sélectionnez ceux que vous souhaitez synchroniser:</translation>
 <context>
     <name>KDC::DrivePreferencesWidget</name>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1258"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1310"/>
         <source>Folders</source>
         <translation>Dossiers</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1260"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1312"/>
         <source>Notifications</source>
         <translation>Notifications</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1263"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1315"/>
         <source>A notification will be displayed as soon as a new folder has been synchronized or modified</source>
         <translation>Une notification sera affichée dès qu’un nouveau dossier aura été synchronisé ou modifié</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1264"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1316"/>
         <source>Connected with</source>
         <translation>Connecté avec</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1070"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1133"/>
         <source>Do you really want to stop syncing the folder &lt;i&gt;%1&lt;/i&gt; ?&lt;br&gt;&lt;b&gt;Note:&lt;/b&gt; This will &lt;b&gt;not&lt;/b&gt; delete any files.</source>
         <translation>Voulez-vous vraiment arrêter de synchroniser le dossier &lt;i&gt;%1&lt;/i&gt; ?&lt;br&gt;&lt;b&gt;Note :&lt;/b&gt; &lt;/b&gt;Aucun&lt;/b&gt; fichier ne sera supprimé.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="128"/>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1257"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="129"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1309"/>
         <source>Some folders were not synchronized because they are too large.</source>
         <translation>Certains dossiers n&apos;ont pas été synchronisés parce qu’ils sont trop volumineux.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="400"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="397"/>
         <source>This operation may take from a few seconds to a few minutes depending on the size of the folder.</source>
         <translation>Cette opération peut prendre de quelques secondes à quelques minutes en fonction de la taille du dossier.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="404"/>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="436"/>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1075"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="401"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="432"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1138"/>
         <source>CANCEL</source>
         <translation>ANNULER</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="803"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="802"/>
         <source>New local folder synchronization failed!</source>
         <translation>La synchronisation du nouveau dossier local a échoué!</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="979"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="977"/>
         <source>Lite Sync activation failed.</source>
         <translation>L&apos;activation de la Lite Sync a échoué.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="997"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="995"/>
         <source>Lite Sync deactivation failed.</source>
         <translation>La désactivation de la Lite Sync a échoué.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1074"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1137"/>
         <source>REMOVE FOLDER SYNC CONNECTION</source>
         <translation>SUPPRIMER LA SYNC. DU DOSSIER</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1142"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1200"/>
         <source>An error occurred while loading the list of subfolders.</source>
         <translation>Une erreur s&apos;est produite lors du chargement de la liste des sous-dossiers.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1261"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1313"/>
         <source>Enable the notifications for this kDrive</source>
         <translation>Activer les notifications pour ce kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="403"/>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="435"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="400"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="431"/>
         <source>CONFIRM</source>
         <translation>CONFIRMER</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="118"/>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1256"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="119"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1308"/>
         <source>Synchronization errors and information.</source>
         <translation>Erreurs et informations de synchronisation.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="147"/>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1259"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="153"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1311"/>
         <source>Synchronize a local folder</source>
         <translation>Synchroniser un dossier local</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="399"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="396"/>
         <source>Do you really want to turn on Lite Sync?</source>
         <translation>Voulez-vous vraiment activer la Lite Sync?</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="427"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="423"/>
         <source>Do you really want to turn off Lite Sync?</source>
         <translation>Voulez vous vraiment désactiver la Lite Sync?</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="429"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="425"/>
         <source>You don&apos;t have enough space to sync all the files on your kDrive (%1 missing). If you turn off Lite Sync, you need to select which folders to sync on your computer. In the meantime, the synchronization of your kDrive will be paused.</source>
         <translation>Vous n&apos;avez pas assez de place pour synchroniser tous les fichiers sur votre kDrive (manque %1). Si vous désactivez la Lite Sync, vous devrez sélectionner les dossiers à synchroniser sur votre ordinateur. Dans un premier temps, la synchronisation de votre kDrive sera mise en pause.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="433"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="429"/>
         <source>If you turn off Lite Sync, all files will be downloaded to your computer.</source>
         <translation>Si vous désactivez la Lite Sync, tous les fichiers seront téléchargés sur votre ordinateur.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="666"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="680"/>
         <source>Failed to create new synchronization</source>
         <translation>Impossible de créer une nouvelle synchronisation</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="975"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="973"/>
         <source>Lite Sync activated.</source>
         <translation>Lite Sync activée.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="993"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="991"/>
         <source>Lite Sync deactivated.</source>
         <translation>Lite Sync désactivée.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1056"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1053"/>
         <source>This drive is being deleted.</source>
         <translation>Ce lecteur est en cours de suppression.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1097"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1114"/>
+        <source>Impossible to open item %1</source>
+        <translation>Impossible d&apos;ouvrir l&apos;élément %1</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1159"/>
         <source>Failed to stop syncing the folder &lt;i&gt;%1&lt;/i&gt;.</source>
         <translation>Échec de l&apos;arrêt de la synchronisation du dossier &lt;i&gt;%1&lt;/i&gt;.</translation>
     </message>
     <message>
-        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1265"/>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1317"/>
         <source>Remove all synchronizations</source>
         <translation>Supprimer toutes les synchronisations</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1318"/>
+        <source>Search in your kDrive</source>
+        <translation>Rechercher dans votre kDrive</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/drivepreferenceswidget.cpp" line="1319"/>
+        <source>Search</source>
+        <translation>Rechercher</translation>
     </message>
 </context>
 <context>
@@ -1607,7 +1621,7 @@ Veuillez utiliser le lien suivant pour envoyer les logs au support: &lt;a style=
         <location filename="../src/gui/parametersdialog.cpp" line="428"/>
         <location filename="../src/gui/parametersdialog.cpp" line="488"/>
         <location filename="../src/gui/parametersdialog.cpp" line="528"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="541"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="542"/>
         <source>A technical error has occurred (error %1).&lt;br&gt;Please empty the history and if the error persists, contact our support team.</source>
         <translation>Une erreur technique s&apos;est produite (erreur %1).&lt;br&gt;Veuillez vider l&apos;historique et si l&apos;erreur persiste, contactez notre équipe d&apos;assistance.</translation>
     </message>
@@ -1753,22 +1767,22 @@ Veuillez utiliser le lien suivant pour envoyer les logs au support: &lt;a style=
         <translation>Une erreur d&apos;accès à la base de données de synchronisation s&apos;est produite (erreur %1).&lt;br&gt;La synchronisation a été arrêtée.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="545"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="546"/>
         <source>A login problem has occurred (error %1).&lt;br&gt;Token invalid or revoked.</source>
         <translation>Un problème de connexion est survenu (erreur %1).&lt;br&gt;Jeton invalide ou révoqué.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="550"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="551"/>
         <source>Nested synchronizations are prohibited (error %1).&lt;br&gt;You should only keep synchronizations whose folders are not nested.</source>
         <translation>Les synchronisations imbriquées sont interdites (erreur %1).&lt;br&gt;Vous ne devez conserver que les synchronisations dont les dossiers ne sont pas imbriqués.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="554"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="555"/>
         <source>The sync folder on the remote kDrive no longer exists or is no longer accessible (error %1).&lt;br&gt;You need to restore it or give it back access rights or delete/recreate the synchronization.</source>
         <translation>Le dossier de synchronisation sur le kDrive distant n&apos;existe plus ou n&apos;est plus accessible (erreur %1).&lt;br&gt;Vous devez le restaurer ou lui redonner des droits d&apos;accès ou supprimer/recréer la synchronisation.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="561"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="562"/>
         <source>File name parsing error (error %1).&lt;br&gt;Special characters such as double quotes, backslashes or line returns can cause parsing failures.</source>
         <translation>Erreur d&apos;analyse du nom de fichier (erreur %1).&lt;br&gt;Les caractères spéciaux tels que les guillemets doubles, les barres obliques inverses ou les retours de ligne peuvent provoquer des échecs d&apos;analyse.</translation>
     </message>
@@ -2307,42 +2321,6 @@ Veuillez utiliser le lien suivant pour envoyer les logs au support: &lt;a style=
     </message>
 </context>
 <context>
-    <name>KDC::SocketApi</name>
-    <message>
-        <location filename="../src/server/socketapi.cpp" line="815"/>
-        <location filename="../src/server/socketapi.cpp" line="1022"/>
-        <location filename="../src/server/socketapi.cpp" line="1074"/>
-        <source>Copy private share link</source>
-        <translation>Copier le lien de partage privé</translation>
-    </message>
-    <message>
-        <location filename="../src/server/socketapi.cpp" line="1001"/>
-        <location filename="../src/server/socketapi.cpp" line="1058"/>
-        <source>Resharing this file is not allowed</source>
-        <translation>Le partage de ce fichier n&apos;est pas autorisé</translation>
-    </message>
-    <message>
-        <location filename="../src/server/socketapi.cpp" line="1002"/>
-        <location filename="../src/server/socketapi.cpp" line="1059"/>
-        <source>Resharing this folder is not allowed</source>
-        <translation>Le partage de ce dossier n&apos;est pas autorisé</translation>
-    </message>
-    <message>
-        <location filename="../src/server/socketapi.cpp" line="1013"/>
-        <location filename="../src/server/socketapi.cpp" line="1017"/>
-        <location filename="../src/server/socketapi.cpp" line="1068"/>
-        <location filename="../src/server/socketapi.cpp" line="1070"/>
-        <source>Copy public share link</source>
-        <translation>Copier le lien de partage public</translation>
-    </message>
-    <message>
-        <location filename="../src/server/socketapi.cpp" line="1211"/>
-        <location filename="../src/server/socketapi.cpp" line="1279"/>
-        <source>Open in browser</source>
-        <translation>Ouvrir dans le navigateur web</translation>
-    </message>
-</context>
-<context>
     <name>KDC::StatusBarWidget</name>
     <message>
         <location filename="../src/gui/statusbarwidget.cpp" line="178"/>
@@ -2380,6 +2358,11 @@ Veuillez utiliser le lien suivant pour envoyer les logs au support: &lt;a style=
 <context>
     <name>KDC::SynchronizedItemWidget</name>
     <message>
+        <location filename="../src/gui/synchronizeditemwidget.cpp" line="333"/>
+        <source>Copy share link</source>
+        <translation>Copier le lien de partage</translation>
+    </message>
+    <message>
         <location filename="../src/gui/synchronizeditemwidget.cpp" line="342"/>
         <source>Display on kdrive.infomaniak.com</source>
         <translation>Afficher sur kdrive.infomaniak.com</translation>
@@ -2403,11 +2386,6 @@ Veuillez utiliser le lien suivant pour envoyer les logs au support: &lt;a style=
         <location filename="../src/gui/synchronizeditemwidget.cpp" line="325"/>
         <source>Add to favorites</source>
         <translation>Ajouter aux favoris</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/synchronizeditemwidget.cpp" line="333"/>
-        <source>Copy sharing link</source>
-        <translation>Copier le lien de partage</translation>
     </message>
 </context>
 <context>
@@ -2534,23 +2512,23 @@ Veuillez utiliser le lien suivant pour envoyer les logs au support: &lt;a style=
 <context>
     <name>KDC::SynthesisPopover</name>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1176"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1171"/>
         <source>Update kDrive App</source>
         <translation>Mettre à jour l&apos;application kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1177"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1172"/>
         <source>This kDrive app version is not supported anymore. To access the latest features and enhancements, please update.</source>
         <translation>Cette version de l&apos;application kDrive n&apos;est plus prise en charge. Pour accéder aux dernières fonctionnalités et améliorations, veuillez mettre à jour.</translation>
     </message>
     <message>
         <location filename="../src/gui/synthesispopover.cpp" line="966"/>
-        <location filename="../src/gui/synthesispopover.cpp" line="1179"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1174"/>
         <source>Update</source>
         <translation>Mise à jour</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1181"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1176"/>
         <source>Please download the latest version on the website.</source>
         <translation>Veuillez télécharger la dernière version sur le site Web.</translation>
     </message>
@@ -2575,7 +2553,7 @@ Veuillez utiliser le lien suivant pour envoyer les logs au support: &lt;a style=
         <translation>Indisponible</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1194"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1189"/>
         <source>You can synchronize files &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;from your computer&lt;/a&gt; or on &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;kdrive.infomaniak.com&lt;/a&gt;.</source>
         <translation>Vous pouvez synchroniser les fichiers &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;depuis votre ordinateur&lt;/a&gt; ou sur &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;kdrive.infomaniak.com&lt;/ un&gt;.</translation>
     </message>
@@ -2596,27 +2574,27 @@ Veuillez utiliser le lien suivant pour envoyer les logs au support: &lt;a style=
     </message>
     <message>
         <location filename="../src/gui/synthesispopover.cpp" line="1123"/>
-        <location filename="../src/gui/synthesispopover.cpp" line="1175"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1170"/>
         <source>Not implemented!</source>
         <translation>Non implémenté&#xa0;!</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1187"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1182"/>
         <source>No synchronized folder for this Drive!</source>
         <translation>Aucun fichier synchronisé pour ce kDrive&#xa0;!</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1190"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1185"/>
         <source>No kDrive configured!</source>
         <translation>Aucun kDrive configuré !</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1156"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1151"/>
         <source>Unable to open link %1.</source>
         <translation>Impossible d’ouvrir le lien %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1168"/>
+        <location filename="../src/gui/synthesispopover.cpp" line="1163"/>
         <source>Invalid link %1.</source>
         <translation>Lien %1 invalide.</translation>
     </message>
@@ -2673,87 +2651,92 @@ Veuillez utiliser le lien suivant pour envoyer les logs au support: &lt;a style=
 <context>
     <name>KDC::VersionWidget</name>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="270"/>
+        <location filename="../src/gui/versionwidget.cpp" line="295"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%3&lt;/a&gt;</source>
         <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%3&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="157"/>
+        <location filename="../src/gui/versionwidget.cpp" line="169"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Show release note&lt;/a&gt;</source>
         <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Afficher la note de version&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="160"/>
+        <location filename="../src/gui/versionwidget.cpp" line="172"/>
         <source>Version</source>
         <translation>Version</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="161"/>
+        <location filename="../src/gui/versionwidget.cpp" line="173"/>
         <source>UPDATE</source>
         <translation>METTRE A JOUR</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="176"/>
+        <location filename="../src/gui/versionwidget.cpp" line="197"/>
         <source>%1 is up to date!</source>
         <translation>%1 est à jour !</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="180"/>
+        <location filename="../src/gui/versionwidget.cpp" line="201"/>
         <source>Checking update on server...</source>
         <translation>Vérification de la mise à jour sur le serveur...</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="184"/>
+        <location filename="../src/gui/versionwidget.cpp" line="205"/>
         <source>An update is available: %1.&lt;br&gt;Please download it from &lt;a style=&quot;%2&quot; href=&quot;%3&quot;&gt;here&lt;/a&gt;.</source>
         <translation>Une mise à jour est disponible&#xa0;: %1.&lt;br&gt;Veuillez la télécharger depuis &lt;a style=&quot;%2&quot; href=&quot;%3&quot;&gt;ici&lt;/a&gt;.</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="191"/>
+        <location filename="../src/gui/versionwidget.cpp" line="212"/>
         <source>An update is available: %1</source>
         <translation>Une mise à jour est disponible: %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="197"/>
+        <location filename="../src/gui/versionwidget.cpp" line="218"/>
         <source>Downloading %1. Please wait...</source>
         <translation>Téléchargement %1 en cours. Veuillez patienter…</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="202"/>
+        <location filename="../src/gui/versionwidget.cpp" line="223"/>
         <source>Could not check for new updates.</source>
         <translation>Impossible de vérifier la présence de nouvelles mises à jour.</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="206"/>
+        <location filename="../src/gui/versionwidget.cpp" line="227"/>
         <source>An error occurred during update.</source>
         <translation>Une erreur s&apos;est produite lors de la mise à jour.</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="210"/>
+        <location filename="../src/gui/versionwidget.cpp" line="231"/>
         <source>Could not download update.</source>
         <translation>Impossible de télécharger la mise à jour.</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="226"/>
+        <location filename="../src/gui/versionwidget.cpp" line="235"/>
+        <source>Update disabled.</source>
+        <translation>Mise à jour désactivée.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/versionwidget.cpp" line="251"/>
         <source>Beta program</source>
         <translation>Programme bêta</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="227"/>
+        <location filename="../src/gui/versionwidget.cpp" line="252"/>
         <source>Get early access to new versions of the application</source>
         <translation>Bénéficier d&apos;un accès anticipé aux nouvelles versions de l&apos;application</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="231"/>
+        <location filename="../src/gui/versionwidget.cpp" line="256"/>
         <source>Join</source>
         <translation>Rejoindre</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="234"/>
+        <location filename="../src/gui/versionwidget.cpp" line="259"/>
         <source>Modify</source>
         <translation>Modifier</translation>
     </message>
     <message>
-        <location filename="../src/gui/versionwidget.cpp" line="234"/>
+        <location filename="../src/gui/versionwidget.cpp" line="259"/>
         <source>Quit</source>
         <translation>Quitter</translation>
     </message>
@@ -2771,47 +2754,47 @@ Veuillez utiliser le lien suivant pour envoyer les logs au support: &lt;a style=
         <translation>Impossible d&apos;enregistrer les paramètres&#xa0;!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="340"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="355"/>
         <source>The parent folder is a sync folder or contained in one</source>
         <translation>Le dossier parent est un dossier de synchronisation ou contenu dans un</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="361"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="376"/>
         <source>Can&apos;t find a valid path</source>
         <translation>Impossible de trouver un chemin valide</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="1839"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="1862"/>
         <source>No valid folder selected!</source>
         <translation>Aucun dossier valable sélectionné!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="1850"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="1873"/>
         <source>The selected path does not exist!</source>
         <translation>Le chemin sélectionné n’existe pas!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="1855"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="1878"/>
         <source>The selected path is not a folder!</source>
         <translation>Le chemin sélectionné n&apos;est pas un dossier!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="1860"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="1883"/>
         <source>You have no permission to write to the selected folder!</source>
         <translation>Vous n&apos;avez pas la permission d&apos;écrire dans le dossier sélectionné!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="1890"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="1913"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>Le dossier local %1 contient un dossier déjà synchronisé. Veuillez en choisir un autre&#xa0;!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="1898"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="1921"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>Le dossier local %1 est contenu dans un dossier déjà synchronisé. Veuillez en choisir un autre&#xa0;!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="1908"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="1931"/>
         <source>The local folder %1 is already synced on the same drive. Please pick another one!</source>
         <translation>Le dossier local %1 est déjà synchronisé sur le même lecteur. Veuillez en choisir un autre&#xa0;!</translation>
     </message>
@@ -2835,11 +2818,56 @@ Veuillez utiliser le lien suivant pour envoyer les logs au support: &lt;a style=
         <source>Lite sync is disabled. The kDrive files use the storage space of your computer.</source>
         <translation>La Lite sync est désactivée. Les fichiers kDrive utilisent l&apos;espace de stockage de votre ordinateur.</translation>
     </message>
+    <message>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1167"/>
+        <source>Make available locally</source>
+        <translation>Rendre disponible localement</translation>
+    </message>
+    <message>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1171"/>
+        <source>Free up local space</source>
+        <translation>Libérer de l’espace local</translation>
+    </message>
+    <message>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1175"/>
+        <source>Cancel free up local space</source>
+        <translation>Annuler libérer l&apos;espace local</translation>
+    </message>
+    <message>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1179"/>
+        <source>Cancel make available locally</source>
+        <translation>Annuler rendre disponible localement</translation>
+    </message>
+    <message>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1183"/>
+        <source>Resharing this file is not allowed</source>
+        <translation>Le partage de ce fichier n&apos;est pas autorisé</translation>
+    </message>
+    <message>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1184"/>
+        <source>Resharing this folder is not allowed</source>
+        <translation>Le partage de ce dossier n&apos;est pas autorisé</translation>
+    </message>
+    <message>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1188"/>
+        <source>Copy public share link</source>
+        <translation>Copier le lien de partage public</translation>
+    </message>
+    <message>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1192"/>
+        <source>Copy private share link</source>
+        <translation>Copier le lien de partage privé</translation>
+    </message>
+    <message>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1196"/>
+        <source>Open in browser</source>
+        <translation>Ouvrir dans le navigateur web</translation>
+    </message>
 </context>
 <context>
     <name>SharedTools::QtSingleApplication</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="102"/>
+        <location filename="../src/server/appserver.cpp" line="106"/>
         <source>kDrive application will close due to a fatal error.</source>
         <translation>L&apos;application kDrive se fermera en raison d&apos;une erreur fatale.</translation>
     </message>
@@ -3001,30 +3029,14 @@ Veuillez utiliser le lien suivant pour envoyer les logs au support: &lt;a style=
         <translation>Le dossier &lt;b&gt;%1&lt;/b&gt; ne peut pas être sélectionné comme dossier de synchronisation. Veuillez sélectionner un autre dossier. Dossier suggéré : &lt;b&gt;%2&lt;/b&gt;</translation>
     </message>
     <message>
+        <location filename="../src/gui/guiutility.cpp" line="638"/>
+        <source>You cannot exclude more than 1000 folders. Please uncheck higher-level folders.</source>
+        <translation>Vous ne pouvez pas exclure plus de 1000 dossiers. Veuillez décocher des dossiers de niveau supérieur.</translation>
+    </message>
+    <message>
         <location filename="../src/gui/guiutility.cpp" line="347"/>
         <source>Synchronization starting</source>
         <translation>Démarrage de la synchronisation</translation>
-    </message>
-    <message>
-        <location filename="../src/server/socketapi.cpp" line="1362"/>
-        <source>Make available locally</source>
-        <translation>Rendre disponible localement</translation>
-    </message>
-    <message>
-        <location filename="../src/server/socketapi.cpp" line="1366"/>
-        <source>Free up local space</source>
-        <translation>Libérer de l’espace local</translation>
-    </message>
-    <message>
-        <location filename="../src/server/socketapi.cpp" line="1370"/>
-        <source>Cancel free up local space</source>
-        <translation>Annuler libérer l&apos;espace local</translation>
-    </message>
-    <message>
-        <location filename="../src/server/socketapi.cpp" line="1375"/>
-        <location filename="../src/server/socketapi.cpp" line="1377"/>
-        <source>Cancel make available locally</source>
-        <translation>Annuler rendre disponible localement</translation>
     </message>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="371"/>
