@@ -23,6 +23,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.ComponentModel;
+using System.Linq;
 
 namespace Infomaniak.kDrive.Pages
 {
@@ -35,11 +36,21 @@ namespace Infomaniak.kDrive.Pages
             Logger.Log(Logger.Level.Info, "Navigated to SettingsPage - Initializing SettingsPage components");
             InitializeComponent();
             RegisterPropertyChangedHandlers();
+            Loaded += onPageLoaded;
+            
+
             Logger.Log(Logger.Level.Debug, "SettingsPage components initialized");
         }
         ~SettingsPage()
         {
             UnregisterPropertyChangedHandlers();
+        }
+
+        void onPageLoaded(object sender, RoutedEventArgs e)
+        {
+            // check if any of the users is staff to show the internal update channel combobox
+            bool staffUserExists = ViewModel.Users.Any(user => user.IsStaff && user.IsConnected);
+            UpdateChannelComboBox_Internal.Visibility = staffUserExists ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void RegisterPropertyChangedHandlers()
@@ -67,7 +78,6 @@ namespace Infomaniak.kDrive.Pages
         {
             ViewModel.Settings.UpdateManager.PropertyChanged -= UpdateManager_PropertyChanged;
         }
-
 
         private void CreateAccountButton_Click(object sender, RoutedEventArgs e)
         {

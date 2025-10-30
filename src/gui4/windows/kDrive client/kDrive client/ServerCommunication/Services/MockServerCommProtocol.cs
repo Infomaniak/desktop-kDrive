@@ -281,7 +281,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         private async Task<CommData> UpdaterVersionInfo(JsonObject parameters)
         {
             Logger.Log(Logger.Level.Debug, "Received UpdateVersionInfo request.");
-            VersionChannel channel = _mockData.CurrentChannel;
+            VersionChannel channel = _mockData.Settings.DistributionChannel ?? throw new InvalidOperationException("Distribution channel is not set in mocked settings.");
             if (parameters.ContainsKey("channel") && parameters["channel"] != null)
             {
                 channel = (VersionChannel)parameters["channel"]!.GetValue<int>();
@@ -308,17 +308,15 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         private async Task<CommData> UpdaterChangeChannel(JsonObject parameters)
         {
             Logger.Log(Logger.Level.Debug, "Received UpdaterChangeChannel request.");
-            VersionChannel channel = _mockData.CurrentChannel;
             if (parameters.ContainsKey("channel") && parameters["channel"] != null)
             {
-                channel = (VersionChannel)parameters["channel"]!.GetValue<int>();
+                _mockData.Settings.DistributionChannel = (VersionChannel)parameters["channel"]!.GetValue<int>();
             }
             else
             {
                 Logger.Log(Logger.Level.Warning, "No channel specified in UpdaterChangeChannel request, using current channel.");
 
             }
-            _mockData.CurrentChannel = channel;
             EnqueueSignal(SignalNum.UPDATER_STATE_CHANGED, new JsonObject());
             return new CommData
             {
@@ -459,7 +457,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {VersionChannel.Internal, new AppVersion() { BuildVersion = "20251022", Tag = "3.7.8" }},
         };
 
-        public VersionChannel CurrentChannel = VersionChannel.Prod;
         public MockServerData()
         {
             InitializeMockData();
@@ -554,6 +551,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 AutoStart = true,
                 MoveToTrash = true,
                 NotificationsDisabled = NotificationsDisabled.Always,
+                DistributionChannel = VersionChannel.Prod,
                 UseLog = false,
                 LogLevel = Logger.Level.Debug,
                 ExtendedLog = false,
