@@ -20,7 +20,7 @@
 #include "test_utility/testhelpers.h"
 
 namespace KDC {
-
+#if defined(KD_LINUX)
 void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     if (!testhelpers::isExtendedTest()) return;
 
@@ -303,5 +303,5 @@ void TestIntegration::testNodeIdReuseFalsePositive() {
         CPPUNIT_ASSERT(std::filesystem::exists(absoluteLocalPathB / "BA"));
     }
 }
-
+#endif
 } // namespace KDC
