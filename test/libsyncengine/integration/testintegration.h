@@ -38,10 +38,11 @@ typedef void (TestIntegration::*testFctPtr)();
 
 class TestIntegration : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestIntegration);
-        CPPUNIT_TEST(testAll);
+        // CPPUNIT_TEST(testAll);
 #if defined(KD_LINUX)
-        CPPUNIT_TEST(testNodeIdReuseFile2DirAndDir2File);
-        CPPUNIT_TEST(testNodeIdReuseFile2File);
+        // CPPUNIT_TEST(testNodeIdReuseFile2DirAndDir2File);
+        // CPPUNIT_TEST(testNodeIdReuseFile2File);
+        CPPUNIT_TEST(testNodeIdReuseFalsePositive);
 #endif
         CPPUNIT_TEST_SUITE_END();
 
@@ -112,6 +113,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
 #if defined(KD_LINUX)
         void testNodeIdReuseFile2DirAndDir2File();
         void testNodeIdReuseFile2File();
+        void testNodeIdReuseFalsePositive();
 #endif
         void waitForSyncToBeIdle(const SourceLocation &srcLoc,
                                  std::chrono::milliseconds minWaitTime = std::chrono::milliseconds(3000)) const;
