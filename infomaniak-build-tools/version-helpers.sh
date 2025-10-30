@@ -22,12 +22,12 @@ GetVersionFromJson() {
         return 1
     fi
 
-    # Extract version fields using grep + sed
+    # Extract version fields
     local major minor patch build
-    major=$(grep -Po '"major"\s*:\s*\K\d+' "$version_json_path")
-    minor=$(grep -Po '"minor"\s*:\s*\K\d+' "$version_json_path")
-    patch=$(grep -Po '"patch"\s*:\s*\K\d+' "$version_json_path")
-    build=$(grep -Po '"build"\s*:\s*\K\d+' "$version_json_path")
+    major=$(sed -n 's/.*"major"[[:space:]]*:[[:space:]]*\([0-9]*\).*/\1/p' "$version_json_path")
+    minor=$(sed -n 's/.*"minor"[[:space:]]*:[[:space:]]*\([0-9]*\).*/\1/p' "$version_json_path")
+    patch=$(sed -n 's/.*"patch"[[:space:]]*:[[:space:]]*\([0-9]*\).*/\1/p' "$version_json_path")
+    build=$(sed -n 's/.*"build"[[:space:]]*:[[:space:]]*\([0-9]*\).*/\1/p' "$version_json_path")
 
     if [[ -z "$major" || -z "$minor" || -z "$patch" ]]; then
         echo "Error: Missing version fields in $version_json_path" >&2
