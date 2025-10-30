@@ -17,6 +17,7 @@
  */
 
 using Infomaniak.kDrive.ServerCommunication.CommStruct;
+using Infomaniak.kDrive.ServerCommunication.JsonConverters;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using System;
@@ -75,6 +76,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     return await UpdaterChangeChannel(parameters);
                 case RequestNum.PARAMETERS_INFO:
                     return await ParametersInfo(parameters);
+                case RequestNum.PARAMETERS_UPDATE:
+                    return await ParametersUpdate(parameters);
                 default:
                     throw new NotImplementedException($"RequestNum {requestNum} not implemented in MockServerCommProtocol.");
             }
@@ -344,6 +347,37 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 {
                     ["parmsInfo"] = JsonNode.Parse(parametersInfo)
                 }
+            };
+        }
+
+        private async Task<CommData> ParametersUpdate(JsonObject parameters)
+        {
+            Logger.Log(Logger.Level.Debug, "Received ParametersUpdate request.");
+            if (!parameters.ContainsKey("parmsInfos") || parameters["parmsInfos"] == null)
+            {
+                Logger.Log(Logger.Level.Warning, "No parmsInfo specified in ParametersUpdate request, using existing settings.");
+
+                return new CommData
+                {
+                    Type = CommMessageType.Request,
+                    Id = (int)NextId,
+                    RequestNum = RequestNum.PARAMETERS_UPDATE,
+                    Params = new JsonObject()
+                };
+            }
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            options.Converters.Add(new Base64StringJsonConverter());
+            _mockData.Settings = parameters["parmsInfos"].Deserialize<ParmsInfo>(options);
+            return new CommData
+            {
+                Type = CommMessageType.Request,
+                Id = (int)NextId,
+                RequestNum = RequestNum.PARAMETERS_UPDATE,
+                Params = new JsonObject()
             };
         }
 

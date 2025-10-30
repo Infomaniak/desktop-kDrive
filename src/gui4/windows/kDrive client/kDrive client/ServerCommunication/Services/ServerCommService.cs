@@ -320,6 +320,20 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             _viewModel.Settings.UpdateManager.CurrentChannel = newChannel;
         }
 
+        public async Task SaveSettings(CancellationToken cancellationToken)
+        {
+            ParmsInfo ParmsInfo = new();
+            CommStruct.ConversionHelper.copyToParmsInfo(_viewModel.Settings, ParmsInfo);
+            JsonObject parms = new()
+            {
+                ["parmsInfos"] = new JsonObject()
+            };
+
+            string ParmsInfoJson = JsonSerializer.Serialize(ParmsInfo);
+            parms["parmsInfos"] = JsonNode.Parse(ParmsInfoJson) ?? new JsonObject();
+            await _commClient.SendRequestAsync(RequestNum.PARAMETERS_UPDATE, parms, cancellationToken);
+        }
+
         // Signals
         public async void OnSignalReceived(object? sender, SignalEventArgs args)
         {
@@ -354,7 +368,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             };
             options.Converters.Add(new Base64StringJsonConverter());
             UserInfo newUserInfo = signalData["userInfo"].Deserialize<UserInfo>(options);
-            if (newUserInfo.DbId is null)
+            if (newUserInfo?.DbId is null)
             {
                 Logger.Log(Logger.Level.Error, "userInfo.DbId is null.");
                 return;
@@ -391,7 +405,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     _viewModel.Users.Add(newUser);
                 });
                 Logger.Log(Logger.Level.Info, $"New user added with DbId {newUser.DbId}.");
-
             }
         }
 

@@ -1,6 +1,10 @@
 ﻿using Infomaniak.kDrive.ServerCommunication;
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.ViewModels
 {
@@ -17,7 +21,7 @@ namespace Infomaniak.kDrive.ViewModels
         private Logger.Level _logLevel = Logger.Level.Extended;
         private bool _purgeOldLogs = true;
         private ProxyConfig _proxyConfig = new ProxyConfig();
-        private bool? _showShortcuts;
+        private bool _showShortcuts;
 
         private AppVersion? _appVersion;
         public UpdateManager UpdateManager { get; } = new UpdateManager();
@@ -58,7 +62,7 @@ namespace Infomaniak.kDrive.ViewModels
             get => _proxyConfig;
             set => SetPropertyInUIThread(ref _proxyConfig, value);
         }
-        public bool? ShowShortcuts
+        public bool ShowShortcuts
         {
             get => _showShortcuts;
             set => SetPropertyInUIThread(ref _showShortcuts, value);
@@ -67,6 +71,12 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _appVersion;
             set => SetPropertyInUIThread(ref _appVersion, value);
+        }
+
+        public async Task ChangeAutoStart(bool activated)
+        {
+            AutoStart = activated; // TODO: Replace with server logic once auto-update is supported by the server
+            await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None);
         }
     }
 }
