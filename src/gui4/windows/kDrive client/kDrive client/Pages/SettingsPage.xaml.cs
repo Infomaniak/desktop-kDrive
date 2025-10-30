@@ -34,7 +34,6 @@ namespace Infomaniak.kDrive.Pages
         {
             Logger.Log(Logger.Level.Info, "Navigated to SettingsPage - Initializing SettingsPage components");
             InitializeComponent();
-            SetSelectedChannel(ViewModel.Settings.UpdateManager.CurrentChannel);
             RegisterPropertyChangedHandlers();
             Logger.Log(Logger.Level.Debug, "SettingsPage components initialized");
         }
@@ -45,17 +44,25 @@ namespace Infomaniak.kDrive.Pages
 
         private void RegisterPropertyChangedHandlers()
         {
+            ViewModel.Settings.PropertyChanged += Settings_PropertyChanged;
+            SetEnumComboBoxSelection(NotificationsComboBox, ViewModel.Settings.NotificationsDisabled);
+
             ViewModel.Settings.UpdateManager.PropertyChanged += UpdateManager_PropertyChanged;
+            SetEnumComboBoxSelection(UpdateChannelComboBox, ViewModel.Settings.UpdateManager.CurrentChannel);
+        }
+
+        private void Settings_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(ViewModel.Settings.NotificationsDisabled))
+                SetEnumComboBoxSelection(NotificationsComboBox, ViewModel.Settings.NotificationsDisabled);
         }
 
         private void UpdateManager_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(ViewModel.Settings.UpdateManager.CurrentChannel))
-            {
-                SetSelectedChannel(ViewModel.Settings.UpdateManager.CurrentChannel);
-            }
-        }
+                SetEnumComboBoxSelection(UpdateChannelComboBox, ViewModel.Settings.UpdateManager.CurrentChannel);
 
+        }
         private void UnregisterPropertyChangedHandlers()
         {
             ViewModel.Settings.UpdateManager.PropertyChanged -= UpdateManager_PropertyChanged;
@@ -67,22 +74,9 @@ namespace Infomaniak.kDrive.Pages
             (App.Current as App)?.StartOnboarding();
         }
 
-        
-
-        private void SetSelectedChannel(VersionChannel channel)
-        {
-            foreach (var item in UpdateChannel.Items)
-            {
-                if (item is ComboBoxItem comboBoxItem && comboBoxItem.Tag is string tagString && Enum.TryParse<VersionChannel>(tagString, out VersionChannel itemChannel) && itemChannel == channel)
-                {
-                    UpdateChannel.SelectedItem = comboBoxItem;
-                    return;
-                }
-            }
-        }
-
         private async void UpdateChannel_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (!IsLoaded) return;
             if (sender is ComboBox comboBox && comboBox.SelectedItem is ComboBoxItem selectedItem)
             {
                 string? channelString = selectedItem.Tag as string;
@@ -93,7 +87,7 @@ namespace Infomaniak.kDrive.Pages
                 }
                 else
                 {
-                    Logger.Log(Logger.Level.Warning, $"Invalid update channel selected: {channelString}");
+                    Logger.Log(Logger.Level.Error, $"Invalid update channel selected: {channelString}");
                 }
             }
         }
@@ -117,6 +111,35 @@ namespace Infomaniak.kDrive.Pages
                 toggleSwitch.IsEnabled = false;
                 await ViewModel.Settings.ChangeAutoStart(toggleSwitch.IsOn);
                 toggleSwitch.IsEnabled = true;
+            }
+        }
+
+        private void SetEnumComboBoxSelection<TEnum>(ComboBox comboBox, TEnum value) where TEnum : struct, Enum
+        {
+            foreach (var item in comboBox.Items)
+            {
+                if (item is ComboBoxItem comboBoxItem && comboBoxItem.Tag is string tagString && Enum.TryParse<TEnum>(tagString, out TEnum itemValue) && itemValue.Equals(value))
+                {
+                    comboBox.SelectedItem = comboBoxItem;
+                    return;
+                }
+            }
+        }
+        private async void NotificationsCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            if (sender is ComboBox comboBox && comboBox.SelectedItem is ComboBoxItem selectedItem)
+            {
+                string? selection = selectedItem.Tag as string;
+                if (Enum.TryParse<NotificationsDisabled>(selection, out NotificationsDisabled selectedNotificationsDisabled))
+                {
+                    await ViewModel.Settings.ChangeNotificationsDisabled(selectedNotificationsDisabled);
+                    Logger.Log(Logger.Level.Info, $"Update notifications disabled changed to {selectedNotificationsDisabled}");
+                }
+                else
+                {
+                    Logger.Log(Logger.Level.Error, $"Update notifications disabled changed to  {selectedNotificationsDisabled}");
+                }
             }
         }
     }
