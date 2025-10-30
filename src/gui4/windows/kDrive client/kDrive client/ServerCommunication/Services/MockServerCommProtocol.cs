@@ -371,7 +371,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
-            _mockData.Settings = parameters["parmsInfos"].Deserialize<ParmsInfo>(options);
+            var updatedSettings = parameters["parmsInfos"]!.Deserialize<ParmsInfo>(options);
+            if (updatedSettings is null)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to deserialize parmsInfo from ${parameters["parmsInfos"]}");
+                throw new InvalidOperationException("Failed to deserialize parmsInfo in ParametersUpdate request.");
+            }
             return new CommData
             {
                 Type = CommMessageType.Request,
@@ -443,7 +448,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public List<User> Users { get; set; } = new List<User>();
         public AppVersion CurrentVersion { get; set; } = new AppVersion() { BuildVersion = "20250908", Tag = "3.7.6" };
-        public ParmsInfo Settings { get; set; }
+        public ParmsInfo Settings { get; set; } = new ParmsInfo();
 
         public Dictionary<VersionChannel, AppVersion?> VersionsByChannel { get; set; } = new Dictionary<VersionChannel, AppVersion?>()
         {

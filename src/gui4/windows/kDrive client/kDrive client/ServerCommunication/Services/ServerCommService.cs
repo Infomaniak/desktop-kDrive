@@ -278,7 +278,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
-            ParmsInfo parametersInfo = data.Params["parmsInfo"].Deserialize<ParmsInfo>(options);
+            ParmsInfo? parametersInfo = data.Params["parmsInfo"].Deserialize<ParmsInfo>(options);
+            if(parametersInfo == null)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to deserialize parmsInfo from ${data.Params["parmsInfo"]}.");
+                return;
+            }
             CommStruct.ConversionHelper.copyToSettings(parametersInfo, _viewModel.Settings);
         }
 
@@ -367,7 +372,11 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
-            UserInfo newUserInfo = signalData["userInfo"].Deserialize<UserInfo>(options);
+            UserInfo? newUserInfo = signalData["userInfo"].Deserialize<UserInfo>(options);
+            if (newUserInfo == null) {
+                Logger.Log(Logger.Level.Error, $"Failed to deserialize userInfo from ${signalData["userInfo"]}.");
+                return;
+            }
             if (newUserInfo?.DbId is null)
             {
                 Logger.Log(Logger.Level.Error, "userInfo.DbId is null.");
