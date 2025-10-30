@@ -199,7 +199,7 @@ target_precompile_headers(${libsyncengine_NAME} PRIVATE ${PC_HEADER_FILES})
 
 set_target_properties(${libsyncengine_NAME} PROPERTIES
         VERSION ${KDRIVE_VERSION}
-        SOVERSION ${KDRIVE_SOVERSION}
+        SOVERSION ${KDRIVE_VERSION_BUILD}
         RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY}
 )
 

@@ -193,3 +193,5 @@ cmake-build-debug*
 # Python virtual environment folder, used by the installation of conan.
 .venv/
 /infomaniak-build-tools/windows/ksigntool/.vs/ksigntool
+**/BundleArtifactss
+/*build*

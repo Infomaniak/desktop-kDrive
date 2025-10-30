@@ -57,10 +57,6 @@ function build_client_via_cmake() {
   	CMAKE_PARAMS+=(-DAPPLICATION_SERVER_URL="$APPLICATION_SERVER_URL")
   fi
 
-  if [ -n "$KDRIVE_VERSION_BUILD" ]; then
-  	CMAKE_PARAMS+=(-DKDRIVE_VERSION_BUILD="$KDRIVE_VERSION_BUILD")
-  fi
-
   export KDRIVE_DEBUG=0
 
   build_folder=$PWD

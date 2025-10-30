@@ -137,6 +137,10 @@ void TestUtility::testIsVersionLower() {
     // With a build version
     CPPUNIT_ASSERT(CommonUtility::isVersionLower("155.75.0 (build 20250221)", "155.75.0 (build 20250222)"));
     CPPUNIT_ASSERT(CommonUtility::isVersionLower("255.85.0 (build 20240221)", "255.85.0 (build 20250222)"));
+    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("255.85.0 (build 20240221)", "255.85.0 (build 1)"));
+    CPPUNIT_ASSERT(CommonUtility::isVersionLower("255.85.0 (build 1)", "255.85.0 (build 20250222)"));
+    CPPUNIT_ASSERT(CommonUtility::isVersionLower("255.85.0 (build 1)", "255.85.0 (build 2)"));
+    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("255.85.0 (build 2)", "255.85.0 (build 1)"));
 
     // With an invalid version
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower(".155.75.0", "156.75.0"));

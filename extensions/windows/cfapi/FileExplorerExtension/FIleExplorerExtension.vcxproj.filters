@@ -90,4 +90,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="..\..\..\..\version.json" />
+  </ItemGroup>
 </Project>
