@@ -64,29 +64,27 @@ $languages = @(
     "it"
 )
 
-if ($os -ne "linux-arm") {  # Do not upload linux release notes twice
-    foreach ($lang in $languages)
-    {
-        $fileName = "kDrive-$versionNumber-$os-$lang.html"
-        $filePath = ".\release_notes\kDrive-$versionNumber\$fileName"
-        if (-not (Test-Path $filePath)) {
-            Write-Host "❌ File $filePath does not exist, aborting upload." -f Red
-            exit 1
-        }
-
-        $size = (Get-ChildItem $filePath | % {[int]($_.length)})
-        if ($size -eq 0) {
-            Write-Host "Unable to get file size for $filePath, aborting upload." -f Red
-            Pop-Location
-            exit 1
-        }
-
-        $uri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/upload?directory_id=$env:KDRIVE_DIR_ID&total_size=$size&file_name=$fileName&directory_path=$versionNumber/$date/release-notes&conflict=version"
-        Write-Host "uploading $filePath to kDrive at $uri"
-        $result = Invoke-RestMethod -Method "POST" -Uri $uri -Header $headers -ContentType 'application/octet-stream' -InFile $filePath
-        Write-Host "Uploaded $filePath to kDrive successfully. $result" -f Green
-        Sleep(5)
+foreach ($lang in $languages)
+{
+    $fileName = "kDrive-$versionNumber-$os-$lang.html"
+    $filePath = ".\release_notes\kDrive-$versionNumber\$fileName"
+    if (-not (Test-Path $filePath)) {
+        Write-Host "❌ File $filePath does not exist, aborting upload." -f Red
+        exit 1
     }
+
+    $size = (Get-ChildItem $filePath | % {[int]($_.length)})
+    if ($size -eq 0) {
+        Write-Host "Unable to get file size for $filePath, aborting upload." -f Red
+        Pop-Location
+        exit 1
+    }
+
+    $uri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/upload?directory_id=$env:KDRIVE_DIR_ID&total_size=$size&file_name=$fileName&directory_path=$versionNumber/$date/release-notes&conflict=version"
+    Write-Host "uploading $filePath to kDrive at $uri"
+    $result = Invoke-RestMethod -Method "POST" -Uri $uri -Header $headers -ContentType 'application/octet-stream' -InFile $filePath
+    Write-Host "Uploaded $filePath to kDrive successfully. $result" -f Green
+    Sleep(5)
 }
 
 function Upload-FilesToKDrive {
