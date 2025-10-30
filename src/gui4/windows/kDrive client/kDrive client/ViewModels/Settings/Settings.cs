@@ -81,5 +81,10 @@ namespace Infomaniak.kDrive.ViewModels
             NotificationsDisabled = notificationsDisabled;
             await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None);
         }
+        public async Task ChangeMoveToTrash(bool activated)
+        {
+            MoveToTrash = activated;
+            await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None);
+        }
     }
 }

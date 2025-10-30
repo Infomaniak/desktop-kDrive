@@ -526,4 +526,10 @@
   <data name="Page_SettingsPage_Notifications_ComboBox_Always.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
+  <data name="Page_SettingsPage_MoveToTrash_Description.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_MoveToTrash.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
 </root>

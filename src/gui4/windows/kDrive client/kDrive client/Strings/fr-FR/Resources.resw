@@ -563,4 +563,10 @@ Version {0} (build {1}), compilée le {2}
   <data name="Page_SettingsPage_Notifications_ComboBox_Always.Content" xml:space="preserve">
     <value>Toujours</value>
   </data>
+  <data name="Page_SettingsPage_MoveToTrash_Description.Text" xml:space="preserve">
+    <value>Certains éléments ne pourront pas être déplacés.</value>
+  </data>
+  <data name="Page_SettingsPage_MoveToTrash.Header" xml:space="preserve">
+    <value>Déplacer les fichiers supprimés dans la corbeille de l’ordinateur</value>
+  </data>
 </root>
