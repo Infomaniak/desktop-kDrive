@@ -121,7 +121,7 @@
                             <Button x:Uid="Page_ErrorPage_Application_SolveButton"
                                     VerticalAlignment="Center"
                                     Click="SupportButton_Click" />
-                            <HyperlinkButton x:Uid="Page_ErrorPage_Application_LearnMoreButton"
+                            <HyperlinkButton x:Uid="Global_LearnMoreButton"
                                              VerticalAlignment="Center"
                                              Click="LearnMoreButton_Click" />
                         </StackPanel>

@@ -234,7 +234,7 @@
   <data name="Global_UpgradeOfferProUrl" xml:space="preserve">
     <value />
   </data>
-  <data name="Page_ErrorPage_Application_LearnMoreButton.Content" xml:space="preserve">
+  <data name="Global_LearnMoreButton.Content" xml:space="preserve">
     <value />
   </data>
   <data name="Page_ErrorPage_Application_SolveButton.Content" xml:space="preserve">

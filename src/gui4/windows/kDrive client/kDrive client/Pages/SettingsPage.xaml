@@ -140,11 +140,10 @@
                             <StackPanel Orientation="Horizontal"
                                         Visibility="{Binding IsOn, ElementName=MoveToTrashToggleSwitch, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <TextBlock x:Uid="Page_SettingsPage_MoveToTrash_Description"
-                                           TextWrapping="WrapWholeWords"
-                                           Text="Certains éléments ne pourront pas être déplacés." />
-                                <HyperlinkButton x:Uid="Page_SettingsPage_MoveToTrash_LearnMore"
-                                                 Content="En savoir plus" 
-                                                 NavigateUri="https://faq.infomaniak.com/2383#desktop"/>
+                                           TextWrapping="WrapWholeWords" />
+                                <HyperlinkButton x:Uid="Global_LearnMoreButton"
+                                                 Content="En savoir plus"
+                                                 NavigateUri="https://faq.infomaniak.com/2383#desktop" />
                             </StackPanel>
                         </toolKit:SettingsCard.Description>
 

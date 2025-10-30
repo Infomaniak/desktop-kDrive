@@ -241,7 +241,7 @@
   <data name="Global_UpgradeOfferProUrl" xml:space="preserve">
     <value>https://www.infomaniak.com/fr/ksuite/ksuite-pro/tarifs</value>
   </data>
-  <data name="Page_ErrorPage_Application_LearnMoreButton.Content" xml:space="preserve">
+  <data name="Global_LearnMoreButton.Content" xml:space="preserve">
     <value>En savoir plus</value>
   </data>
   <data name="Page_ErrorPage_Application_SolveButton.Content" xml:space="preserve">
