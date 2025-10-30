@@ -80,6 +80,7 @@ class PipeCommServer : public AbstractCommServer {
 #if defined(KD_WINDOWS)
         static void disconnectAndReconnect(std::shared_ptr<PipeCommChannel> channel);
 #endif
+
         bool isListening() const { return _isListening; }
         bool isRunning() const { return _isRunning; }
 
@@ -100,10 +101,12 @@ class PipeCommServer : public AbstractCommServer {
 
         static void executeFunc(PipeCommServer *server);
         static SyncPath pipePath();
+
 #if defined(KD_WINDOWS)
         std::vector<std::shared_ptr<PipeCommChannel>> _channels;
 
         static bool connectToPipe(HANDLE hPipe, LPOVERLAPPED lpo);
+        static const int pipeInstances();
 #endif
 
         friend class TestPipeComm;

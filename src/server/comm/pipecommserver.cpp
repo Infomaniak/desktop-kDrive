@@ -28,20 +28,22 @@
 #include <stdio.h>
 #include <tchar.h>
 #include <strsafe.h>
-#include <QFileInfo>
-#include <QDir>
-
-#define PIPE_INSTANCES 10
-#define PIPE_TIMEOUT 5000
-#define EVENT_WAIT_TIMEOUT 100
 #endif
 
 namespace KDC {
 
 #if defined(KD_WINDOWS)
+constexpr int pipInstances = 10;
+constexpr int pipeTimeOut = 5000; // ms
+constexpr int eventWaitTimeout = 100; // ms
+
 constexpr auto connectIndex = toInt(PipeCommChannel::Action::Connect);
 constexpr auto readIndex = toInt(PipeCommChannel::Action::Read);
 constexpr auto writeIndex = toInt(PipeCommChannel::Action::Write);
+
+const int PipeCommServer::pipeInstances() {
+    return pipInstances;
+}
 #endif
 
 uint64_t PipeCommChannel::readData(CommChar *data, uint64_t maxSize) {
@@ -161,9 +163,9 @@ void PipeCommServer::executeFunc(PipeCommServer *server) {
 
 void PipeCommServer::execute() {
 #if defined(KD_WINDOWS)
-    HANDLE events[PIPE_INSTANCES * toInt(PipeCommChannel::Action::EnumEnd)];
+    HANDLE events[pipInstances * toInt(PipeCommChannel::Action::EnumEnd)];
 
-    for (DWORD inst = 0; inst < PIPE_INSTANCES; inst++) {
+    for (DWORD inst = 0; inst < pipInstances; inst++) {
         // Creates an instance of a named pipe
         auto channel = makeCommChannel();
         _channels.push_back(channel);
@@ -196,10 +198,10 @@ void PipeCommServer::execute() {
                                              PIPE_TYPE_BYTE | // message-type pipe
                                                      PIPE_READMODE_BYTE | // message-read mode
                                                      PIPE_WAIT, // blocking mode
-                                             PIPE_INSTANCES, // number of instances
+                                             pipInstances, // number of instances
                                              BUFSIZE * sizeof(TCHAR), // output buffer size
                                              BUFSIZE * sizeof(TCHAR), // input buffer size
-                                             PIPE_TIMEOUT, // client time-out (ms)
+                                             pipeTimeOut, // client time-out (ms)
                                              NULL); // default security attributes
 
         if (channel->_pipeInst == INVALID_HANDLE_VALUE) {
@@ -229,9 +231,9 @@ void PipeCommServer::execute() {
     _isListening = true;
     while (!_stopAsked) {
         // Wait for the event object to be signaled, indicating completion of an overlapped read, write, or connect operation
-        const auto eventCount = PIPE_INSTANCES * toInt(PipeCommChannel::Action::EnumEnd);
+        const auto eventCount = pipInstances * toInt(PipeCommChannel::Action::EnumEnd);
         const auto dwWait = WaitForMultipleObjects(eventCount, events, FALSE,
-                                                   EVENT_WAIT_TIMEOUT); // wait time (ms)
+                                                   eventWaitTimeout); // wait time (ms)
 
         DWORD index = 0;
         if (dwWait == WAIT_TIMEOUT) {

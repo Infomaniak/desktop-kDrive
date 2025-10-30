@@ -32,11 +32,11 @@ bool PipeCommChannelTest::sendMessage(const CommString &message) {
     (void) writeData(message.c_str(), message.size());
     return true;
 }
+
 // TestPipeComm implementation
 void TestPipeComm::setUp() {
     TestBase::start();
 
-#if defined(KD_WINDOWS)
     // Start the server
     _pipeCommServer = std::make_unique<PipeCommServerTest>("TestPipeComm::testServerListen");
 
@@ -49,7 +49,6 @@ void TestPipeComm::setUp() {
 
     _pipeCommServer->setLostConnectionCbk(
             [&](std::shared_ptr<AbstractCommChannel> channel) { _lastLostConnectionChannel = channel; });
-#endif
 }
 
 void TestPipeComm::tearDown() {
@@ -69,9 +68,9 @@ void TestPipeComm::testServer() {
     CPPUNIT_ASSERT(_pipeCommServer->isListening());
 
     // Connect a client to the server and exchange some messages
-    // Repeat N times (with N > PIPE_INSTANCES) to check connection reuse
+    // Repeat N times (with N > PipeCommServer::pipeInstances()) to check connection reuse
     const SyncPath pipePath = PipeCommServer::pipePath();
-    for (int i = 0; i < 20; i++) {
+    for (int i = 0; i < 2 * PipeCommServer::pipeInstances(); i++) {
         // Connect a client to the server
         HANDLE hPipe = CreateFile(pipePath.native().c_str(), // pipe name
                                   GENERIC_READ | GENERIC_WRITE,
