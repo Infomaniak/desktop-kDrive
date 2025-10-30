@@ -184,11 +184,7 @@ void TestIntegration::testNodeIdReuseFile2File() {
                          _syncPal->liveSnapshot(ReplicaSide::Local).size("2"));
 }
 
-void TestIntegration::testNodeIdReuseFalsePositive() {
-    if (!testhelpers::isExtendedTest()) return;
-
-    LOGW_DEBUG(_logger, L"$$$$$ testNodeIdReuseFalsePositive");
-
+void TestIntegration::nodeIdReuseFalsePositiveInitialSituation(const LocalTemporaryDirectory &localTmpDir) {
     // Initial situation
     // .
     // └── testNodeIdReuseFalsePositive
@@ -196,44 +192,116 @@ void TestIntegration::testNodeIdReuseFalsePositive() {
     //     │   └── AA
     //     └── B
     //         └── BA
-    const LocalTemporaryDirectory localTmpDir("testNodeIdReuseFalsePositive", _syncPal->localPath());
-
-    const SyncPath absoluteLocalPathA = localTmpDir.path() / "A";
-    std::filesystem::create_directory(absoluteLocalPathA);
-    testhelpers::generateOrEditTestFile(absoluteLocalPathA / "AA");
+    std::filesystem::create_directory(localTmpDir.path() / "A");
+    testhelpers::generateOrEditTestFile(localTmpDir.path() / "A" / "AA");
     std::filesystem::create_directory(localTmpDir.path() / "B");
-    const SyncPath absoluteLocalPathB = localTmpDir.path() / "B";
-    testhelpers::generateOrEditTestFile(absoluteLocalPathB / "BA");
+    testhelpers::generateOrEditTestFile(localTmpDir.path() / "B" / "BA");
 
     _syncPal->start();
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     _syncPal->pause();
+}
 
-    // Set the creation date of A in DB to 0.
-    IoError ioError = IoError::Unknown;
-    FileStat filestatA;
-    IoHelper::getFileStat(absoluteLocalPathA, &filestatA, ioError);
-    DbNode dbNode;
-    bool found = false;
-    CPPUNIT_ASSERT(_syncPal->syncDb()->node(ReplicaSide::Local, std::to_string(filestatA.inode), dbNode, found) && found);
-    dbNode.setCreated(0);
-    CPPUNIT_ASSERT(_syncPal->syncDb()->updateNode(dbNode, found) && found);
+void TestIntegration::testNodeIdReuseFalsePositive() {
+    if (!testhelpers::isExtendedTest()) return;
 
-    // Move B/BA to A/BA on local side
-    IoHelper::moveItem(absoluteLocalPathB / "BA", absoluteLocalPathA / "BA", ioError);
+    LOGW_DEBUG(_logger, L"$$$$$ testNodeIdReuseFalsePositive");
 
-    // Rename A
-    const SyncPath newAbsoluteLocalPathA = localTmpDir.path() / "A2";
-    IoHelper::renameItem(absoluteLocalPathA, newAbsoluteLocalPathA, ioError);
+    {
+        const LocalTemporaryDirectory localTmpDir("testNodeIdReuseFalsePositive", _syncPal->localPath());
+        nodeIdReuseFalsePositiveInitialSituation(localTmpDir);
 
-    _syncPal->unpause();
-    waitForSyncToBeIdle(SourceLocation::currentLoc());
+        // Set the creation date of A in DB to 0.
+        IoError ioError = IoError::Unknown;
+        FileStat filestatA;
+        const SyncPath absoluteLocalPathA = localTmpDir.path() / "A";
+        IoHelper::getFileStat(absoluteLocalPathA, &filestatA, ioError);
+        DbNode dbNode;
+        bool found = false;
+        CPPUNIT_ASSERT(_syncPal->syncDb()->node(ReplicaSide::Local, std::to_string(filestatA.inode), dbNode, found) && found);
+        dbNode.setCreated(0);
+        CPPUNIT_ASSERT(_syncPal->syncDb()->updateNode(dbNode, found) && found);
 
-    CPPUNIT_ASSERT(std::filesystem::exists(newAbsoluteLocalPathA));
-    CPPUNIT_ASSERT(std::filesystem::exists(newAbsoluteLocalPathA / "AA"));
-    CPPUNIT_ASSERT(std::filesystem::exists(newAbsoluteLocalPathA / "BA"));
-    CPPUNIT_ASSERT(std::filesystem::exists(absoluteLocalPathB));
+        // Move B/BA to A/BA on local side
+        const SyncPath absoluteLocalPathB = localTmpDir.path() / "B";
+        IoHelper::moveItem(absoluteLocalPathB / "BA", absoluteLocalPathA / "BA", ioError);
+
+        // Rename A
+        const SyncPath newAbsoluteLocalPathA = localTmpDir.path() / "A2";
+        IoHelper::renameItem(absoluteLocalPathA, newAbsoluteLocalPathA, ioError);
+
+        _syncPal->unpause();
+        waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+        CPPUNIT_ASSERT(std::filesystem::exists(newAbsoluteLocalPathA));
+        CPPUNIT_ASSERT(std::filesystem::exists(newAbsoluteLocalPathA / "AA"));
+        CPPUNIT_ASSERT(std::filesystem::exists(newAbsoluteLocalPathA / "BA"));
+        CPPUNIT_ASSERT(std::filesystem::exists(absoluteLocalPathB));
+    }
+    {
+        const LocalTemporaryDirectory localTmpDir("testNodeIdReuseFalsePositive", _syncPal->localPath());
+        nodeIdReuseFalsePositiveInitialSituation(localTmpDir);
+
+        // Set the creation date of A in DB to 0.
+        IoError ioError = IoError::Unknown;
+        FileStat filestatA;
+        const SyncPath absoluteLocalPathA = localTmpDir.path() / "A";
+        IoHelper::getFileStat(absoluteLocalPathA, &filestatA, ioError);
+        DbNode dbNode;
+        bool found = false;
+        CPPUNIT_ASSERT(_syncPal->syncDb()->node(ReplicaSide::Local, std::to_string(filestatA.inode), dbNode, found) && found);
+        dbNode.setCreated(0);
+        CPPUNIT_ASSERT(_syncPal->syncDb()->updateNode(dbNode, found) && found);
+
+        // Move A/AA to B/AA on local side
+        const SyncPath absoluteLocalPathB = localTmpDir.path() / "B";
+        IoHelper::moveItem(absoluteLocalPathA / "AA", absoluteLocalPathB / "AA", ioError);
+
+        // Rename A
+        const SyncPath newAbsoluteLocalPathA = localTmpDir.path() / "A2";
+        IoHelper::renameItem(absoluteLocalPathA, newAbsoluteLocalPathA, ioError);
+
+        _syncPal->unpause();
+        waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+        CPPUNIT_ASSERT(std::filesystem::exists(newAbsoluteLocalPathA));
+        CPPUNIT_ASSERT(std::filesystem::exists(absoluteLocalPathB / "AA"));
+        CPPUNIT_ASSERT(std::filesystem::exists(absoluteLocalPathB / "BA"));
+        CPPUNIT_ASSERT(std::filesystem::exists(absoluteLocalPathB));
+    }
+    {
+        const LocalTemporaryDirectory localTmpDir("testNodeIdReuseFalsePositive", _syncPal->localPath());
+        nodeIdReuseFalsePositiveInitialSituation(localTmpDir);
+
+        // Set the creation date of A in DB to 0.
+        IoError ioError = IoError::Unknown;
+        FileStat filestatA;
+        const SyncPath absoluteLocalPathA = localTmpDir.path() / "A";
+        IoHelper::getFileStat(absoluteLocalPathA, &filestatA, ioError);
+        DbNode dbNode;
+        bool found = false;
+        CPPUNIT_ASSERT(_syncPal->syncDb()->node(ReplicaSide::Local, std::to_string(filestatA.inode), dbNode, found) && found);
+        dbNode.setCreated(0);
+        CPPUNIT_ASSERT(_syncPal->syncDb()->updateNode(dbNode, found) && found);
+
+        // Edit A/AA and B/BA
+        testhelpers::generateOrEditTestFile(absoluteLocalPathA / "AA");
+        const SyncPath absoluteLocalPathB = localTmpDir.path() / "B";
+        testhelpers::generateOrEditTestFile(absoluteLocalPathB / "BA");
+
+        // Rename A
+        const SyncPath newAbsoluteLocalPathA = localTmpDir.path() / "A2";
+        IoHelper::renameItem(absoluteLocalPathA, newAbsoluteLocalPathA, ioError);
+
+        _syncPal->unpause();
+        waitForSyncToBeIdle(SourceLocation::currentLoc());
+
+        CPPUNIT_ASSERT(std::filesystem::exists(newAbsoluteLocalPathA));
+        CPPUNIT_ASSERT(std::filesystem::exists(newAbsoluteLocalPathA / "AA"));
+        CPPUNIT_ASSERT(std::filesystem::exists(absoluteLocalPathB));
+        CPPUNIT_ASSERT(std::filesystem::exists(absoluteLocalPathB / "BA"));
+    }
 }
 
 } // namespace KDC
