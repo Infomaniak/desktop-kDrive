@@ -84,6 +84,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         inline bool settingsAsked() { return _settingsAsked; }
         inline bool synthesisAsked() { return _synthesisAsked; }
         inline bool clearKeychainKeysAsked() { return _clearKeychainKeysAsked; }
+
         void showHelp();
         void showVersion();
         void clearSyncNodes();
@@ -95,8 +96,9 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         void showHint(std::string errorHint);
 
-        const SyncPalMap &syncPalMap() const { return _syncPalMap; }
-        const VfsMap &vfsMap() const { return _vfsMap; }
+        auto &syncPalMap() const { return _syncPalMap; }
+        auto &vfsMap() const { return _vfsMap; }
+        auto &navigationPaneHelper() const { return _navigationPaneHelper; }
 
         void stopAllSyncsTask(const std::vector<int> &syncDbIdList);
 
@@ -113,6 +115,7 @@ class AppServer : public SharedTools::QtSingleApplication {
                                            const std::chrono::seconds &startDelay = std::chrono::seconds(0),
                                            bool resumedByUser = false, bool firstInit = false);
         [[nodiscard]] ExitInfo stopSyncPal(int syncDbId, bool pausedByUser = false, bool quit = false, bool clear = false);
+        [[nodiscard]] ExitInfo stopVfs(int syncDbId, bool unregister);
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         static ExitCode getThumbnail(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) {
@@ -179,9 +182,6 @@ class AppServer : public SharedTools::QtSingleApplication {
                                            bool resumedByUser = false, bool firstInit = false);
 
         [[nodiscard]] ExitInfo createAndStartVfs(const Sync &sync) noexcept;
-        // Call createAndStartVfs. Issue warnings, errors and pause the synchronization `sync` if needed.
-        [[nodiscard]] ExitInfo stopVfs(int syncDbId, bool unregister);
-
         [[nodiscard]] ExitInfo setSupportsVirtualFiles(int syncDbId, bool value);
 
         void startSyncsAndRetryOnError();

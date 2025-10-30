@@ -16,33 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "unknownrequestjob.h"
-#include "requests/serverrequests.h"
-#include "signaluseraddedjob.h"
-#include "signaluserupdatedjob.h"
-#include "libcommon/info/userinfo.h"
+#include "signalaccountaddedjob.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
-#include "libcommonserver/log/log.h"
+
+// Output parameters keys
+static const auto outParamsAccountInfo = "accountInfo";
 
 namespace KDC {
 
-UnknownRequestJob::UnknownRequestJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                                     const std::shared_ptr<AbstractCommChannel> channel) :
-    AbstractGuiJob(commManager, requestId, inParams, channel) {
-    _requestNum = RequestNum::Unknown;
+SignalAccountAddedJob::SignalAccountAddedJob(std::shared_ptr<CommManager> commManager,
+                                             std::shared_ptr<AbstractCommChannel> channel, const AccountInfo &accountInfo) :
+    AbstractGuiJob(commManager, channel),
+    _accountInfo(accountInfo) {
+    _signalNum = SignalNum::ACCOUNT_ADDED;
 }
 
-ExitInfo UnknownRequestJob::deserializeInputParms() {
+ExitInfo SignalAccountAddedJob::serializeOutputParms() {
+    // Output parameters serialization
+    writeParamValue(outParamsAccountInfo, _accountInfo, info2DynamicVar<AccountInfo>);
     return ExitCode::Ok;
-}
-
-ExitInfo UnknownRequestJob::serializeOutputParms() {
-    return ExitCode::Ok;
-}
-
-ExitInfo UnknownRequestJob::process() {
-    return ExitCode::LogicError;
 }
 
 } // namespace KDC

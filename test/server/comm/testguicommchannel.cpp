@@ -772,6 +772,42 @@ void TestGuiCommChannel::testSyncStatusJob() {
 #endif
 }
 
+void TestGuiCommChannel::testSyncStartJob() {
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    const auto queryStr{Str(R"({ "id": 1,)"
+                            R"( "num": 14,)" // RequestNum::SYNC_STATUS
+                            R"( "params": { "syncDbId": 1 } })")};
+#else
+    // There is no need to pass a request id as the response is via a callback.
+    const auto queryStr{Str(R"({ "num": 14,)" // RequestNum::SYNC_STATUS
+                            R"( "params": { "syncDbId": 1 } })")};
+
+    // Callback expected answer
+    const auto cbkAnswerStr{Str(R"({"cause":0,"code":0,"id":1,"params":{"syncStatus":3}})")};
+#endif
+
+    // Job expected answer
+    const auto answerStr{
+            Str(R"({ "cause": 0,)"
+                R"( "code": 0,)"
+                R"( "id": 1,)"
+                R"( "num": 14,)" // RequestNum::SYNC_STATUS
+                R"( "params": { "syncStatus": 3 },)" // SyncStatus::Idle
+                R"( "type": 1 })") // GuiJobType::Query
+    };
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto syncStatusJob = std::dynamic_pointer_cast<SyncStatusJob>(job);
+        syncStatusJob->_syncStatus = SyncStatus::Idle;
+    };
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(queryStr, answerStr, {}, processFct);
+#else
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
 void TestGuiCommChannel::testGenericJob(const CommString &query, const CommString &answer, const CommString &cbkAnswer,
                                         const std::function<void(std::shared_ptr<AbstractGuiJob>)> &processFct) {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)

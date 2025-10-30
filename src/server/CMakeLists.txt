@@ -66,9 +66,14 @@ set(server_SRCS
     comm/guijobs/syncstartjob.h comm/guijobs/syncstartjob.cpp
     comm/guijobs/syncstopjob.h comm/guijobs/syncstopjob.cpp
     comm/guijobs/syncstatusjob.h comm/guijobs/syncstatusjob.cpp
+    comm/guijobs/syncaddjob.h comm/guijobs/syncaddjob.cpp
     comm/guijobs/signaluseraddedjob.h comm/guijobs/signaluseraddedjob.cpp
     comm/guijobs/signaluserupdatedjob.h comm/guijobs/signaluserupdatedjob.cpp
     comm/guijobs/signaluserremovedjob.h comm/guijobs/signaluserremovedjob.cpp
+    comm/guijobs/signalaccountaddedjob.h comm/guijobs/signalaccountaddedjob.cpp
+    comm/guijobs/signaldriveaddedjob.h comm/guijobs/signaldriveaddedjob.cpp
+    comm/guijobs/signalsyncaddedjob.h comm/guijobs/signalsyncaddedjob.cpp
+    comm/guijobs/signalsyncremovedjob.h comm/guijobs/signalsyncremovedjob.cpp
     migration/migrationparams.h migration/migrationparams.cpp
     requests/serverrequests.h requests/serverrequests.cpp
     requests/offlinefilessizeestimator.h requests/offlinefilessizeestimator.cpp

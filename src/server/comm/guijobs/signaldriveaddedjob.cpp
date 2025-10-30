@@ -16,33 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "unknownrequestjob.h"
-#include "requests/serverrequests.h"
-#include "signaluseraddedjob.h"
-#include "signaluserupdatedjob.h"
-#include "libcommon/info/userinfo.h"
+#include "signaldriveaddedjob.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
-#include "libcommonserver/log/log.h"
+
+// Output parameters keys
+static const auto outParamsDriveInfo = "driveInfo";
 
 namespace KDC {
 
-UnknownRequestJob::UnknownRequestJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                                     const std::shared_ptr<AbstractCommChannel> channel) :
-    AbstractGuiJob(commManager, requestId, inParams, channel) {
-    _requestNum = RequestNum::Unknown;
+SignalDriveAddedJob::SignalDriveAddedJob(std::shared_ptr<CommManager> commManager, std::shared_ptr<AbstractCommChannel> channel,
+                                         const DriveInfo &driveInfo) :
+    AbstractGuiJob(commManager, channel),
+    _driveInfo(driveInfo) {
+    _signalNum = SignalNum::DRIVE_ADDED;
 }
 
-ExitInfo UnknownRequestJob::deserializeInputParms() {
+ExitInfo SignalDriveAddedJob::serializeOutputParms() {
+    // Output parameters serialization
+    writeParamValue(outParamsDriveInfo, _driveInfo, info2DynamicVar<DriveInfo>);
     return ExitCode::Ok;
-}
-
-ExitInfo UnknownRequestJob::serializeOutputParms() {
-    return ExitCode::Ok;
-}
-
-ExitInfo UnknownRequestJob::process() {
-    return ExitCode::LogicError;
 }
 
 } // namespace KDC

@@ -46,9 +46,14 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/syncstartjob.h ${server_srcs_path}/comm/guijobs/syncstartjob.cpp
     ${server_srcs_path}/comm/guijobs/syncstopjob.h ${server_srcs_path}/comm/guijobs/syncstopjob.cpp
     ${server_srcs_path}/comm/guijobs/syncstatusjob.h ${server_srcs_path}/comm/guijobs/syncstatusjob.cpp
+    ${server_srcs_path}/comm/guijobs/syncaddjob.h ${server_srcs_path}/comm/guijobs/syncaddjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluseraddedjob.h ${server_srcs_path}/comm/guijobs/signaluseraddedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.h ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserremovedjob.h ${server_srcs_path}/comm/guijobs/signaluserremovedjob.cpp
+    ${server_srcs_path}/comm/guijobs/signalaccountaddedjob.h ${server_srcs_path}/comm/guijobs/signalaccountaddedjob.cpp
+    ${server_srcs_path}/comm/guijobs/signaldriveaddedjob.h ${server_srcs_path}/comm/guijobs/signaldriveaddedjob.cpp
+    ${server_srcs_path}/comm/guijobs/signalsyncaddedjob.h ${server_srcs_path}/comm/guijobs/signalsyncaddedjob.cpp
+    ${server_srcs_path}/comm/guijobs/signalsyncremovedjob.h ${server_srcs_path}/comm/guijobs/signalsyncremovedjob.cpp
     ${server_srcs_path}/migration/migrationparams.h ${server_srcs_path}/migration/migrationparams.cpp
     ${server_srcs_path}/requests/serverrequests.h ${server_srcs_path}/requests/serverrequests.cpp
     ${server_srcs_path}/updater/abstractupdater.h ${server_srcs_path}/updater/abstractupdater.cpp

@@ -626,6 +626,170 @@ ExitCode ServerRequests::getUserAvailableDrives(int userDbId, std::vector<DriveA
     return ExitCode::Ok;
 }
 
+ExitCode ServerRequests::addSync(int userDbId, int accountId, int driveId, const SyncPath &localFolderPath,
+                                 const SyncPath &serverFolderPath, const NodeId &serverFolderNodeId, bool liteSync,
+                                 bool showInNavigationPane, AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo) {
+    LOGW_INFO(Log::instance()->getLogger(), L"Adding new sync - userDbId="
+                                                    << userDbId << L" accountId=" << accountId << L" driveId=" << driveId
+                                                    << L" localFolderPath=" << Path2WStr(localFolderPath).c_str()
+                                                    << L" serverFolderPath=" << Path2WStr(serverFolderPath).c_str()
+                                                    << L" liteSync=" << liteSync);
+
+#ifndef Q_OS_WIN
+    Q_UNUSED(showInNavigationPane)
+#endif
+
+    ExitCode exitCode;
+
+    // Create Account in DB if needed
+    int accountDbId;
+    if (!ParmsDb::instance()->accountDbId(userDbId, accountId, accountDbId)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::accountDbId");
+        return ExitCode::DbError;
+    }
+
+    if (!accountDbId) {
+        if (!ParmsDb::instance()->getNewAccountDbId(accountDbId)) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::getNewAccountDbId");
+            return ExitCode::DbError;
+        }
+
+        Account account;
+        account.setDbId(accountDbId);
+        account.setAccountId(accountId);
+        account.setUserDbId(userDbId);
+        exitCode = createAccount(account, accountInfo);
+        if (exitCode != ExitCode::Ok) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in createAccount");
+            return exitCode;
+        }
+
+        LOG_INFO(Log::instance()->getLogger(), "New account created in DB - accountDbId=" << accountDbId
+                                                                                          << " accountId= " << accountId
+                                                                                          << " userDbId= " << userDbId);
+    }
+
+    // Create Drive in DB if needed
+    int driveDbId;
+    if (!ParmsDb::instance()->driveDbId(accountDbId, driveId, driveDbId)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::driveDbId");
+        return ExitCode::DbError;
+    }
+
+    if (!driveDbId) {
+        if (!ParmsDb::instance()->getNewDriveDbId(driveDbId)) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::getNewDriveDbId");
+            return ExitCode::DbError;
+        }
+
+        Drive drive;
+        drive.setDbId(driveDbId);
+        drive.setDriveId(driveId);
+        drive.setAccountDbId(accountDbId);
+        exitCode = createDrive(drive, driveInfo);
+        if (exitCode != ExitCode::Ok) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in createDrive");
+            return exitCode;
+        }
+
+        LOGW_INFO(Log::instance()->getLogger(), L"New drive created in DB - driveDbId=" << driveDbId << L" driveId=" << driveId
+                                                                                        << L" accountDbId=" << accountDbId);
+    }
+
+    return addSync(driveDbId, localFolderPath, serverFolderPath, serverFolderNodeId, liteSync, showInNavigationPane, syncInfo);
+}
+
+ExitCode ServerRequests::addSync(int userDbId, int accountId, int driveId, const QString &localFolderPath,
+                                 const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
+                                 bool showInNavigationPane, AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo) {
+    return addSync(userDbId, accountId, driveId, QStr2Path(localFolderPath), QStr2Path(serverFolderPath),
+                   serverFolderNodeId.toStdString(), liteSync, showInNavigationPane, accountInfo, driveInfo, syncInfo);
+}
+
+ExitCode ServerRequests::addSync(int driveDbId, const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
+                                 const NodeId &serverFolderNodeId, bool liteSync, bool showInNavigationPane, SyncInfo &syncInfo) {
+    LOGW_INFO(Log::instance()->getLogger(), L"Adding new sync - driveDbId=" << driveDbId << L" localFolderPath="
+                                                                            << Path2WStr(localFolderPath) << L" serverFolderPath="
+                                                                            << Path2WStr(serverFolderPath) << L" liteSync="
+                                                                            << liteSync);
+
+#ifndef Q_OS_WIN
+    Q_UNUSED(showInNavigationPane)
+#endif
+
+#if !defined(Q_OS_MAC) && !defined(Q_OS_WIN)
+    Q_UNUSED(liteSync)
+#endif
+
+    ExitCode exitCode;
+
+    // Create Sync in DB
+    int syncDbId;
+    if (!ParmsDb::instance()->getNewSyncDbId(syncDbId)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::getNewSyncDbId");
+        return ExitCode::DbError;
+    }
+
+    LOGW_INFO(Log::instance()->getLogger(), L"New sync DB ID retrieved - syncDbId=" << syncDbId);
+
+    QUuid navigationPaneClsid;
+#ifdef Q_OS_WIN
+    if (showInNavigationPane) {
+        navigationPaneClsid = QUuid::createUuid();
+    }
+#endif
+
+    Sync sync;
+    sync.setDbId(syncDbId);
+    sync.setDriveDbId(driveDbId);
+    auto localPath(localFolderPath);
+#if defined(KD_MACOS)
+    // On macOS, the special characters in file names are NFD encoded. However, we use QFileDialog::getExistingDirectory to
+    // retrieve the selected sync path which return a NFC encoded path.
+    (void) Utility::normalizedSyncPath(localFolderPath, localPath, UnicodeNormalization::NFD);
+#endif
+    sync.setLocalPath(localPath);
+    sync.setTargetPath(serverFolderPath);
+    sync.setTargetNodeId(serverFolderNodeId);
+    sync.setPaused(false);
+
+    // Check vfs support
+    const bool supportVfs = CommonUtility::isNTFS(sync.localPath()) || CommonUtility::isAPFS(sync.localPath());
+    sync.setSupportVfs(supportVfs);
+
+#if defined(KD_MACOS)
+    sync.setVirtualFileMode(liteSync ? VirtualFileMode::Mac : VirtualFileMode::Off);
+#elif defined(KD_WINDOWS)
+    sync.setVirtualFileMode(liteSync ? VirtualFileMode::Win : VirtualFileMode::Off);
+#else
+    sync.setVirtualFileMode(VirtualFileMode::Off);
+#endif
+
+    sync.setNotificationsDisabled(false);
+    sync.setDbPath(std::filesystem::path());
+    sync.setHasFullyCompleted(false);
+    sync.setNavigationPaneClsid(navigationPaneClsid.toString().toStdString());
+    exitCode = createSync(sync, syncInfo);
+    if (exitCode != ExitCode::Ok) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in createSync");
+        return exitCode;
+    }
+
+    LOGW_INFO(Log::instance()->getLogger(), L"New sync created in DB - syncDbId="
+                                                    << syncDbId << L" driveDbId=" << driveDbId << L" localFolderPath="
+                                                    << Path2WStr(sync.localPath()) << L" serverFolderPath="
+                                                    << Path2WStr(sync.targetPath()) << L" dbPath=" << Path2WStr(sync.dbPath()));
+
+    return ExitCode::Ok;
+}
+
+ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
+                                 const QString &serverFolderNodeId, bool liteSync, bool showInNavigationPane,
+                                 SyncInfo &syncInfo) {
+    return addSync(driveDbId, QStr2Path(localFolderPath), QStr2Path(serverFolderPath), serverFolderNodeId.toStdString(), liteSync,
+                   showInNavigationPane, syncInfo);
+}
+
 ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, const QString &nodeId, QList<NodeInfo> &list,
                                        const bool withPath /*= false*/) {
     list.clear();
@@ -1481,157 +1645,6 @@ ExitCode ServerRequests::deleteLiteSyncNotAllowedErrors() {
     return ExitCode::Ok;
 }
 #endif
-
-ExitCode ServerRequests::addSync(int userDbId, int accountId, int driveId, const QString &localFolderPath,
-                                 const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
-                                 bool showInNavigationPane, AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo) {
-    LOGW_INFO(Log::instance()->getLogger(), L"Adding new sync - userDbId="
-                                                    << userDbId << L" accountId=" << accountId << L" driveId=" << driveId
-                                                    << L" localFolderPath=" << Path2WStr(QStr2Path(localFolderPath)).c_str()
-                                                    << L" serverFolderPath=" << Path2WStr(QStr2Path(serverFolderPath)).c_str()
-                                                    << L" liteSync=" << liteSync);
-
-#ifndef Q_OS_WIN
-    Q_UNUSED(showInNavigationPane)
-#endif
-
-    ExitCode exitCode;
-
-    // Create Account in DB if needed
-    int accountDbId;
-    if (!ParmsDb::instance()->accountDbId(userDbId, accountId, accountDbId)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::accountDbId");
-        return ExitCode::DbError;
-    }
-
-    if (!accountDbId) {
-        if (!ParmsDb::instance()->getNewAccountDbId(accountDbId)) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::getNewAccountDbId");
-            return ExitCode::DbError;
-        }
-
-        Account account;
-        account.setDbId(accountDbId);
-        account.setAccountId(accountId);
-        account.setUserDbId(userDbId);
-        exitCode = createAccount(account, accountInfo);
-        if (exitCode != ExitCode::Ok) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in createAccount");
-            return exitCode;
-        }
-
-        LOG_INFO(Log::instance()->getLogger(), "New account created in DB - accountDbId=" << accountDbId
-                                                                                          << " accountId= " << accountId
-                                                                                          << " userDbId= " << userDbId);
-    }
-
-    // Create Drive in DB if needed
-    int driveDbId;
-    if (!ParmsDb::instance()->driveDbId(accountDbId, driveId, driveDbId)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::driveDbId");
-        return ExitCode::DbError;
-    }
-
-    if (!driveDbId) {
-        if (!ParmsDb::instance()->getNewDriveDbId(driveDbId)) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::getNewDriveDbId");
-            return ExitCode::DbError;
-        }
-
-        Drive drive;
-        drive.setDbId(driveDbId);
-        drive.setDriveId(driveId);
-        drive.setAccountDbId(accountDbId);
-        exitCode = createDrive(drive, driveInfo);
-        if (exitCode != ExitCode::Ok) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in createDrive");
-            return exitCode;
-        }
-
-        LOGW_INFO(Log::instance()->getLogger(), L"New drive created in DB - driveDbId=" << driveDbId << L" driveId=" << driveId
-                                                                                        << L" accountDbId=" << accountDbId);
-    }
-
-    return addSync(driveDbId, localFolderPath, serverFolderPath, serverFolderNodeId, liteSync, showInNavigationPane, syncInfo);
-}
-
-ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
-                                 const QString &serverFolderNodeId, bool liteSync, bool showInNavigationPane,
-                                 SyncInfo &syncInfo) {
-    LOGW_INFO(Log::instance()->getLogger(), L"Adding new sync - driveDbId="
-                                                    << driveDbId << L" localFolderPath=" << Path2WStr(QStr2Path(localFolderPath))
-                                                    << L" serverFolderPath=" << Path2WStr(QStr2Path(serverFolderPath))
-                                                    << L" liteSync=" << liteSync);
-
-#ifndef Q_OS_WIN
-    Q_UNUSED(showInNavigationPane)
-#endif
-
-#if !defined(Q_OS_MAC) && !defined(Q_OS_WIN)
-    Q_UNUSED(liteSync)
-#endif
-
-    ExitCode exitCode;
-
-    // Create Sync in DB
-    int syncDbId;
-    if (!ParmsDb::instance()->getNewSyncDbId(syncDbId)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::getNewSyncDbId");
-        return ExitCode::DbError;
-    }
-
-    LOGW_INFO(Log::instance()->getLogger(), L"New sync DB ID retrieved - syncDbId=" << syncDbId);
-
-    QUuid navigationPaneClsid;
-#ifdef Q_OS_WIN
-    if (showInNavigationPane) {
-        navigationPaneClsid = QUuid::createUuid();
-    }
-#endif
-
-    Sync sync;
-    sync.setDbId(syncDbId);
-    sync.setDriveDbId(driveDbId);
-    auto localPath = QStr2Path(localFolderPath);
-#if defined(KD_MACOS)
-    // On macOS, the special characters in file names are NFD encoded. However, we use QFileDialog::getExistingDirectory to
-    // retrieve the selected sync path which return a NFC encoded path.
-    (void) Utility::normalizedSyncPath(localFolderPath.toStdString(), localPath, UnicodeNormalization::NFD);
-#endif
-    sync.setLocalPath(localPath);
-    sync.setTargetPath(QStr2Path(serverFolderPath));
-    sync.setTargetNodeId(serverFolderNodeId.toStdString());
-    sync.setPaused(false);
-
-    // Check vfs support
-    const bool supportVfs = CommonUtility::isNTFS(sync.localPath()) || CommonUtility::isAPFS(sync.localPath());
-    sync.setSupportVfs(supportVfs);
-
-#if defined(KD_MACOS)
-    sync.setVirtualFileMode(liteSync ? VirtualFileMode::Mac : VirtualFileMode::Off);
-#elif defined(KD_WINDOWS)
-    sync.setVirtualFileMode(liteSync ? VirtualFileMode::Win : VirtualFileMode::Off);
-#else
-    sync.setVirtualFileMode(VirtualFileMode::Off);
-#endif
-
-    sync.setNotificationsDisabled(false);
-    sync.setDbPath(std::filesystem::path());
-    sync.setHasFullyCompleted(false);
-    sync.setNavigationPaneClsid(navigationPaneClsid.toString().toStdString());
-    exitCode = createSync(sync, syncInfo);
-    if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in createSync");
-        return exitCode;
-    }
-
-    LOGW_INFO(Log::instance()->getLogger(), L"New sync created in DB - syncDbId="
-                                                    << syncDbId << L" driveDbId=" << driveDbId << L" localFolderPath="
-                                                    << Path2WStr(sync.localPath()) << L" serverFolderPath="
-                                                    << Path2WStr(sync.targetPath()) << L" dbPath=" << Path2WStr(sync.dbPath()));
-
-    return ExitCode::Ok;
-}
 
 ExitInfo ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &updated, bool &quotaUpdated, bool &accountUpdated) {
     updated = false;

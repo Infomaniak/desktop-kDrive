@@ -51,7 +51,6 @@ struct GuiRequests {
         static ExitCode updateDrive(const DriveInfo &driveInfo);
         static ExitCode getSyncInfoList(QList<SyncInfo> &list);
         static ExitCode getSyncStatus(int syncDbId, SyncStatus &status);
-        static ExitCode getSyncIsRunning(int syncDbId, bool &running);
         static ExitCode getSyncIdSet(int syncDbId, SyncNodeType type, QSet<QString> &syncIdSet);
         static ExitCode setSyncIdSet(int syncDbId, SyncNodeType type, const QSet<QString> &syncIdSet);
         static ExitCode getParameters(ParametersInfo &parametersInfo);

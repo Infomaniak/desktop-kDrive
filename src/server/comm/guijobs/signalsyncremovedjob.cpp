@@ -16,33 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "unknownrequestjob.h"
-#include "requests/serverrequests.h"
-#include "signaluseraddedjob.h"
-#include "signaluserupdatedjob.h"
-#include "libcommon/info/userinfo.h"
+#include "signalsyncremovedjob.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
-#include "libcommonserver/log/log.h"
+
+// Output parameters keys
+static const auto outParamsSyncDbId = "syncDbId";
 
 namespace KDC {
 
-UnknownRequestJob::UnknownRequestJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                                     const std::shared_ptr<AbstractCommChannel> channel) :
-    AbstractGuiJob(commManager, requestId, inParams, channel) {
-    _requestNum = RequestNum::Unknown;
+SignalSyncRemovedJob::SignalSyncRemovedJob(std::shared_ptr<CommManager> commManager, std::shared_ptr<AbstractCommChannel> channel,
+                                           int syncDbId) :
+    AbstractGuiJob(commManager, channel),
+    _syncDbId(syncDbId) {
+    _signalNum = SignalNum::SYNC_REMOVED;
 }
 
-ExitInfo UnknownRequestJob::deserializeInputParms() {
+ExitInfo SignalSyncRemovedJob::serializeOutputParms() {
+    // Output parameters serialization
+    writeParamValue(outParamsSyncDbId, _syncDbId);
     return ExitCode::Ok;
-}
-
-ExitInfo UnknownRequestJob::serializeOutputParms() {
-    return ExitCode::Ok;
-}
-
-ExitInfo UnknownRequestJob::process() {
-    return ExitCode::LogicError;
 }
 
 } // namespace KDC

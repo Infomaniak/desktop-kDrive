@@ -1183,24 +1183,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << status;
             break;
         }
-        case RequestNum::SYNC_ISRUNNING: {
-            int syncDbId;
-            QDataStream paramsStream(params);
-            paramsStream >> syncDbId;
-
-            if (_syncPalMap.find(syncDbId) == _syncPalMap.end()) {
-                LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << syncDbId);
-                resultStream << ExitCode::DataError;
-                resultStream << false;
-                break;
-            }
-
-            bool isRunning = _syncPalMap[syncDbId]->isRunning();
-
-            resultStream << ExitCode::Ok;
-            resultStream << isRunning;
-            break;
-        }
         case RequestNum::SYNC_ADD:
         case RequestNum::SYNC_ADD2: {
             int userDbId = 0;
