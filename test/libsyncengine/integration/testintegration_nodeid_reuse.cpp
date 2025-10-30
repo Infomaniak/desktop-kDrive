@@ -53,10 +53,10 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
         Utility::msleep(100);
     }
     IoError ioError = IoError::Success;
-    IoHelper::deleteItem(absoluteLocalWorkingDir / "testNodeIdReuseFile", ioError);
+    (void) IoHelper::deleteItem(absoluteLocalWorkingDir / "testNodeIdReuseFile", ioError);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseDir", 2);
-    IoHelper::createDirectory(absoluteLocalWorkingDir / "testNodeIdReuseDir", false, ioError);
+    (void) IoHelper::createDirectory(absoluteLocalWorkingDir / "testNodeIdReuseDir", false, ioError);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     // Create a child file within "testNodeIdReuseDir".
@@ -84,7 +84,7 @@ void TestIntegration::testNodeIdReuseFile2DirAndDir2File() {
     while (!_syncPal->isPaused()) {
         Utility::msleep(100);
     }
-    IoHelper::deleteItem(absoluteLocalWorkingDir / "testNodeIdReuseDir", ioError);
+    (void) IoHelper::deleteItem(absoluteLocalWorkingDir / "testNodeIdReuseDir", ioError);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     { const std::ofstream file(absoluteLocalWorkingDir / "testNodeIdReuseFile"); }
@@ -146,7 +146,7 @@ void TestIntegration::testNodeIdReuseFile2File() {
     }
 
     IoError ioError = IoError::Success;
-    IoHelper::deleteItem(absoluteLocalWorkingDir / "testNodeIdReuseFile", ioError);
+    (void) IoHelper::deleteItem(absoluteLocalWorkingDir / "testNodeIdReuseFile", ioError);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseFile2", 2);
     { std::ofstream((absoluteLocalWorkingDir / "testNodeIdReuseFile2").string()) << "New content"; }
@@ -169,8 +169,8 @@ void TestIntegration::testNodeIdReuseFile2File() {
         file.close();
     }
     mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseFile3", 2);
-    IoHelper::moveItem(absoluteLocalWorkingDir / "testNodeIdReuseFile2", absoluteLocalWorkingDir / "testNodeIdReuseFile3",
-                       ioError);
+    (void) IoHelper::moveItem(absoluteLocalWorkingDir / "testNodeIdReuseFile2", absoluteLocalWorkingDir / "testNodeIdReuseFile3",
+                              ioError);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     _syncPal->unpause();
@@ -184,7 +184,7 @@ void TestIntegration::testNodeIdReuseFile2File() {
                          _syncPal->liveSnapshot(ReplicaSide::Local).size("2"));
 }
 
-void TestIntegration::nodeIdReuseFalsePositiveInitialSituation(const LocalTemporaryDirectory &localTmpDir) {
+void TestIntegration::nodeIdReuseFalsePositiveInitialSituation(const LocalTemporaryDirectory &localTmpDir) const {
     // Initial situation
     // .
     // └── testNodeIdReuseFalsePositive
@@ -192,9 +192,9 @@ void TestIntegration::nodeIdReuseFalsePositiveInitialSituation(const LocalTempor
     //     │   └── AA
     //     └── B
     //         └── BA
-    std::filesystem::create_directory(localTmpDir.path() / "A");
+    (void) std::filesystem::create_directory(localTmpDir.path() / "A");
     testhelpers::generateOrEditTestFile(localTmpDir.path() / "A" / "AA");
-    std::filesystem::create_directory(localTmpDir.path() / "B");
+    (void) std::filesystem::create_directory(localTmpDir.path() / "B");
     testhelpers::generateOrEditTestFile(localTmpDir.path() / "B" / "BA");
 
     _syncPal->start();
@@ -216,7 +216,7 @@ void TestIntegration::testNodeIdReuseFalsePositive() {
         IoError ioError = IoError::Unknown;
         FileStat filestatA;
         const SyncPath absoluteLocalPathA = localTmpDir.path() / "A";
-        IoHelper::getFileStat(absoluteLocalPathA, &filestatA, ioError);
+        (void) IoHelper::getFileStat(absoluteLocalPathA, &filestatA, ioError);
         DbNode dbNode;
         bool found = false;
         CPPUNIT_ASSERT(_syncPal->syncDb()->node(ReplicaSide::Local, std::to_string(filestatA.inode), dbNode, found) && found);
@@ -225,11 +225,11 @@ void TestIntegration::testNodeIdReuseFalsePositive() {
 
         // Move B/BA to A/BA on local side
         const SyncPath absoluteLocalPathB = localTmpDir.path() / "B";
-        IoHelper::moveItem(absoluteLocalPathB / "BA", absoluteLocalPathA / "BA", ioError);
+        (void) IoHelper::moveItem(absoluteLocalPathB / "BA", absoluteLocalPathA / "BA", ioError);
 
         // Rename A
         const SyncPath newAbsoluteLocalPathA = localTmpDir.path() / "A2";
-        IoHelper::renameItem(absoluteLocalPathA, newAbsoluteLocalPathA, ioError);
+        (void) IoHelper::renameItem(absoluteLocalPathA, newAbsoluteLocalPathA, ioError);
 
         _syncPal->unpause();
         waitForSyncToBeIdle(SourceLocation::currentLoc());
@@ -247,7 +247,7 @@ void TestIntegration::testNodeIdReuseFalsePositive() {
         IoError ioError = IoError::Unknown;
         FileStat filestatA;
         const SyncPath absoluteLocalPathA = localTmpDir.path() / "A";
-        IoHelper::getFileStat(absoluteLocalPathA, &filestatA, ioError);
+        (void) IoHelper::getFileStat(absoluteLocalPathA, &filestatA, ioError);
         DbNode dbNode;
         bool found = false;
         CPPUNIT_ASSERT(_syncPal->syncDb()->node(ReplicaSide::Local, std::to_string(filestatA.inode), dbNode, found) && found);
@@ -256,11 +256,11 @@ void TestIntegration::testNodeIdReuseFalsePositive() {
 
         // Move A/AA to B/AA on local side
         const SyncPath absoluteLocalPathB = localTmpDir.path() / "B";
-        IoHelper::moveItem(absoluteLocalPathA / "AA", absoluteLocalPathB / "AA", ioError);
+        (void) IoHelper::moveItem(absoluteLocalPathA / "AA", absoluteLocalPathB / "AA", ioError);
 
         // Rename A
         const SyncPath newAbsoluteLocalPathA = localTmpDir.path() / "A2";
-        IoHelper::renameItem(absoluteLocalPathA, newAbsoluteLocalPathA, ioError);
+        (void) IoHelper::renameItem(absoluteLocalPathA, newAbsoluteLocalPathA, ioError);
 
         _syncPal->unpause();
         waitForSyncToBeIdle(SourceLocation::currentLoc());
@@ -278,7 +278,7 @@ void TestIntegration::testNodeIdReuseFalsePositive() {
         IoError ioError = IoError::Unknown;
         FileStat filestatA;
         const SyncPath absoluteLocalPathA = localTmpDir.path() / "A";
-        IoHelper::getFileStat(absoluteLocalPathA, &filestatA, ioError);
+        (void) IoHelper::getFileStat(absoluteLocalPathA, &filestatA, ioError);
         DbNode dbNode;
         bool found = false;
         CPPUNIT_ASSERT(_syncPal->syncDb()->node(ReplicaSide::Local, std::to_string(filestatA.inode), dbNode, found) && found);
@@ -292,7 +292,7 @@ void TestIntegration::testNodeIdReuseFalsePositive() {
 
         // Rename A
         const SyncPath newAbsoluteLocalPathA = localTmpDir.path() / "A2";
-        IoHelper::renameItem(absoluteLocalPathA, newAbsoluteLocalPathA, ioError);
+        (void) IoHelper::renameItem(absoluteLocalPathA, newAbsoluteLocalPathA, ioError);
 
         _syncPal->unpause();
         waitForSyncToBeIdle(SourceLocation::currentLoc());

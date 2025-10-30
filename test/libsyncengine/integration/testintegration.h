@@ -114,7 +114,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testNodeIdReuseFile2DirAndDir2File();
         void testNodeIdReuseFile2File();
         void testNodeIdReuseFalsePositive();
-        void nodeIdReuseFalsePositiveInitialSituation(const LocalTemporaryDirectory &localTmpDir);
+        void nodeIdReuseFalsePositiveInitialSituation(const LocalTemporaryDirectory &localTmpDir) const;
 #endif
         void waitForSyncToBeIdle(const SourceLocation &srcLoc,
                                  std::chrono::milliseconds minWaitTime = std::chrono::milliseconds(3000)) const;
