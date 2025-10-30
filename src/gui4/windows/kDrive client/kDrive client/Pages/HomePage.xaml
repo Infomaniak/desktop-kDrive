@@ -30,7 +30,7 @@
       mc:Ignorable="d">
     <Page.Resources>
         <!-- Converters -->
-        <converters:BooleanToInvertedVisibilityConverter  x:Key="BooleanToInvertedVisibilityConverter" />
+        <converters:BooleanToVisibilityConverter  x:Key="BooleanToVisibilityConverter" />
 
         <!-- SyncStatus Text templates -->
         <DataTemplate x:Key="SyncUpToDateTemplate">
@@ -327,7 +327,7 @@
         </Grid>
         <controls:KSuiteUpgradeBar Grid.Row="2"
                                    Grid.ColumnSpan="2"
-                                   Visibility="{x:Bind ViewModel.SelectedSync.Drive.IsPaidOffer, Mode=OneWay, Converter={StaticResource BooleanToInvertedVisibilityConverter }}"
+                                   Visibility="{x:Bind ViewModel.SelectedSync.Drive.IsPaidOffer, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True'}"
                                    Margin="{StaticResource Infomaniak.Style.Thickness.Top.M}" />
     </Grid>
 </Page>

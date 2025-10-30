@@ -12,7 +12,6 @@
       mc:Ignorable="d">
     <Page.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        <converters:BooleanToInvertedVisibilityConverter  x:Key="BooleanToInvertedVisibilityConverter" />
         <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
     </Page.Resources>
 
@@ -190,7 +189,7 @@
         <!-- Empty list-->
         <Grid CornerRadius="8"
               Grid.Row="3"
-              Visibility="{x:Bind ViewModel.HasErrors, Converter={StaticResource BooleanToInvertedVisibilityConverter}, Mode=OneWay}">
+              Visibility="{x:Bind ViewModel.HasErrors, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True',Mode=OneWay}">
             <Border CornerRadius="8">
                 <Border.Background>
                     <AcrylicBrush TintColor="White"

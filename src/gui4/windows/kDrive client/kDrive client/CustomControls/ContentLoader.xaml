@@ -10,8 +10,6 @@
 
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        <converters:BooleanToInvertedVisibilityConverter x:Key="BooleanToInvertedVisibilityConverter" />
-
     </UserControl.Resources>
     <Grid>
         <Grid Visibility="{x:Bind IsLoading, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
@@ -20,8 +18,8 @@
                          CornerRadius="{x:Bind CornerRadius, Mode=OneWay}" />
             <Border CornerRadius="{x:Bind CornerRadius, Mode=OneWay}">
                 <Border.Background>
-                    <AcrylicBrush TintColor="{ThemeResource SystemAccentColor}" 
-                        TintOpacity="0.3" />
+                    <AcrylicBrush TintColor="{ThemeResource SystemAccentColor}"
+                                  TintOpacity="0.3" />
                 </Border.Background>
             </Border>
         </Grid>
@@ -29,6 +27,6 @@
         <ContentPresenter Content="{x:Bind LoaderContent, Mode=OneWay}"
                           HorizontalAlignment="Stretch"
                           VerticalAlignment="Stretch"
-                          Visibility="{x:Bind IsLoading, Converter={StaticResource BooleanToInvertedVisibilityConverter}, Mode=OneWay}" />
+                          Visibility="{x:Bind IsLoading, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}" />
     </Grid>
 </UserControl>
