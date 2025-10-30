@@ -207,7 +207,7 @@ jobs:
 
   upload-to-kDrive-and-sentry-Linux-amd:
     needs: [build-Linux-amd]
-    runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be runing on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
+    runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be running on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
     env:
         KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
         KDRIVE_ID: ${{ secrets.KDRIVE_ID }}
@@ -248,7 +248,7 @@ jobs:
 
   upload-to-kDrive-and-sentry-Linux-arm:
     needs: [build-Linux-arm]
-    runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be runing on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
+    runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be running on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
     env:
         KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
         KDRIVE_ID: ${{ secrets.KDRIVE_ID }}
@@ -289,7 +289,7 @@ jobs:
 
   upload-to-kDrive-and-sentry-macOS:
     needs: [build-MacOS]
-    runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be runing on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
+    runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be running on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
     env:
         KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
         KDRIVE_ID: ${{ secrets.KDRIVE_ID }}
