@@ -4,5 +4,7 @@
 <dict>
 	<key>UIDesignRequiresCompatibility</key>
 	<false/>
+	<key>LoginItemAgentMachName</key>
+	<string>864VDCS2QY.com.infomaniak.drive.desktopclient.LoginItemAgent</string>
 </dict>
 </plist>

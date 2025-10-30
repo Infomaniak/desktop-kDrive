@@ -30,7 +30,7 @@
             <Image Height="24"
                    Grid.Column="0">
                 <Image.Source>
-                    <SvgImageSource UriSource="ms-appx:///Assets/Icons/forward.svg" />
+                    <SvgImageSource UriSource="ms-appx:///Assets/Icons/forward.svg" /> <!-- TODO: Move to svg icon once the final update bar is ready. -->
                 </Image.Source>
             </Image>
 

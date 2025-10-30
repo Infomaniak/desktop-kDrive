@@ -54,7 +54,7 @@ namespace Infomaniak.kDrive.ViewModels.Errors
 
         public override sealed Uri IconUri()
         {
-            Converters.NodeTypeToIconConverter converter = new();
+            Converters.NodeTypeToIconUriConverter converter = new();
             return (Uri)converter.Convert(NodeType, typeof(Uri), null!, "");
         }
     }

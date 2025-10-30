@@ -25,6 +25,7 @@ namespace KDC {
 class TestWindowsUpdater final : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestWindowsUpdater);
         CPPUNIT_TEST(testOnUpdateFound);
+        CPPUNIT_TEST(testIsSignatureValid);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -33,6 +34,9 @@ class TestWindowsUpdater final : public CppUnit::TestFixture, public TestBase {
 
     private:
         void testOnUpdateFound();
+        void testIsSignatureValid();
+
+        int _driveDbId{0};
 };
 
 } // namespace KDC

@@ -36,7 +36,7 @@ namespace Infomaniak.kDrive.Types
         Offline
     }
 
-    public enum SyncDirection
+    public enum SyncActivityDirection
     {
         Unknown = 0,
         Outgoing,
@@ -56,6 +56,16 @@ namespace Infomaniak.kDrive.Types
         Unknown,
         Offline,
         Online // (Ex liteSync)
+    };
+
+    public enum VersionChannel
+    {
+        Prod,
+        Next,
+        Beta,
+        Internal,
+        Legacy,
+        Unknown
     };
 
     public enum Language

@@ -33,6 +33,7 @@
                            TextWrapping="WrapWholeWords"
                            Foreground="{ThemeResource TextFillColorSecondary}"
                            MaxWidth="311" />
+
             </StackPanel>
             <!-- Boutons -->
             <StackPanel Orientation="Horizontal"

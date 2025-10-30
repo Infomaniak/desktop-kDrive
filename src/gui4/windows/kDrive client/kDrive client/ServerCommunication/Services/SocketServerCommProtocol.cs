@@ -17,7 +17,7 @@
  */
 
 using Infomaniak.kDrive.ServerCommunication.JsonConverters;
-using Infomaniak.kDrive.ViewModels;
+using Infomaniak.kDrive.Types;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -30,7 +30,6 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using static Infomaniak.kDrive.ServerCommunication.CommShared;
 using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommProtocol;
 
 
@@ -46,22 +45,28 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         private readonly ConcurrentDictionary<long, CommData?> _pendingRequests = new ConcurrentDictionary<long, CommData?>();
         private long NextId
         {
-            get => ++_requestIdCounter;
+            get
+            {
+                if (_requestIdCounter >= long.MaxValue - 1)
+                {
+                    Logger.Log(Logger.Level.Info, "Request ID counter overflow, resetting to 0.");
+                    _requestIdCounter = 0;
+                }
+                return ++_requestIdCounter;
+            }
         }
 
         public new event EventHandler<SignalEventArgs>? SignalReceived;
 
         public SocketServerCommProtocol()
         {
-            base.SignalReceived += (s, e) => SignalReceived?.Invoke(s, e); // Forward signals from base class
-
+            base.SignalReceived += (s, e) => SignalReceived?.Invoke(s, e); // Forward signals from base class - TODO: remove when all methods are implemented
             Initialize();
         }
 
         public new void Initialize()
         {
-            // Fetch the port from the .comm4 file
-            // TODO: Decide where to store this file on Windows
+            // Fetch the port from the .comm file
             string homePath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + Path.DirectorySeparatorChar + "kDrive" + Path.DirectorySeparatorChar + ".comm";
             int port = int.Parse((File.ReadAllText(homePath)).Trim());
 
@@ -132,7 +137,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 // Create the JSON object
                 var requestObj = new JsonObject
                 {
-                    ["type"] = 0,
+                    ["type"] = (int)CommMessageType.Request,
                     ["id"] = requestId,
                     ["num"] = (int)requestNum,
                     ["params"] = parameters

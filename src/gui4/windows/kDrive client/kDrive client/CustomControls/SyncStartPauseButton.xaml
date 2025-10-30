@@ -10,18 +10,12 @@
 
         <!-- Data templates for different button states -->
         <DataTemplate x:Key="PauseButtonTemplate">
-            <Image>
-                <Image.Source>
-                    <SvgImageSource UriSource="ms-appx:///Assets/Icons/pause.svg" />
-                </Image.Source>
-            </Image>
+            <local:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Media.pause}"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
         </DataTemplate>
         <DataTemplate x:Key="StartButtonTemplate">
-            <Image>
-                <Image.Source>
-                    <SvgImageSource UriSource="ms-appx:///Assets/Icons/play.svg" />
-                </Image.Source>
-            </Image>
+            <local:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Media.play}"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
         </DataTemplate>
         <DataTemplate x:Key="LoadingButtonTemplate">
             <Viewbox Stretch="Uniform">

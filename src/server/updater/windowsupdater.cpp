@@ -23,6 +23,7 @@
 #include "jobs/syncjobmanager.h"
 #include "io/iohelper.h"
 #include "libcommonserver/utility/utility.h" // Path2WStr
+#include "utility/digitalsignaturechecker_win.h"
 
 namespace KDC {
 
@@ -45,6 +46,12 @@ void WindowsUpdater::onUpdateFound() {
     if (ioError == IoError::Success && localSize == static_cast<uint64_t>(expectedSize)) {
         LOGW_INFO(Log::instance()->getLogger(), L"Installer already downloaded at " << Utility::formatSyncPath(filepath)
                                                                                     << L". Update is ready to be installed.");
+
+        if (!verifyDigitalSignature(filepath)) {
+            setState(UpdateState::UpdateError);
+            return;
+        }
+
         setState(UpdateState::Ready);
         return;
     }
@@ -119,6 +126,11 @@ void WindowsUpdater::downloadFinished(const UniqueId jobId) {
         return;
     }
 
+    if (!verifyDigitalSignature(filepath)) {
+        setState(UpdateState::UpdateError);
+        return;
+    }
+
     LOGW_INFO(Log::instance()->getLogger(),
               L"Installer downloaded at: " << Utility::formatSyncPath(filepath) << L". Update is ready to be installed.");
     setState(UpdateState::Ready);
@@ -143,6 +155,19 @@ std::streamsize WindowsUpdater::getExpectedInstallerSize(const std::string &down
     DirectDownloadJob job(downloadUrl);
     (void) job.runSynchronously();
     return job.httpResponse().getContentLength();
+}
+
+bool WindowsUpdater::verifyDigitalSignature(const SyncPath &filepath) {
+    if (!DigitalSignatureChecker_win(filepath).isSignatureValid()) {
+        const auto error =
+                L"The digital signature of installer " + Utility::formatSyncPath(filepath) + L" is invalid. Aborting update.";
+        sentry::Handler::captureMessage(sentry::Level::Error, "Invalid signature", CommonUtility::ws2s(error));
+        LOGW_ERROR(Log::instance()->getLogger(), error);
+        auto ioError = IoError::Success;
+        (void) IoHelper::deleteItem(filepath, ioError);
+        return false;
+    }
+    return true;
 }
 
 } // namespace KDC

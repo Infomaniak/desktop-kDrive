@@ -5,6 +5,7 @@
              xmlns:local="using:Infomaniak.kDrive.CustomControls"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="using:Infomaniak.kDrive.CustomControls"
              mc:Ignorable="d">
     <Grid Height="58"
           HorizontalAlignment="Stretch">
@@ -58,12 +59,9 @@
                     <ColumnDefinition Width="auto" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Image Height="{StaticResource Infomaniak.Style.Spacing.L}"
-                       Grid.Column="0">
-                    <Image.Source>
-                        <SvgImageSource UriSource="ms-appx:///Assets/Logo/logoKsuite.svg" />
-                    </Image.Source>
-                </Image>
+                <controls:SvgIcon Height="16"
+                                  Grid.Column="0"
+                                  UriString="{StaticResource Infomaniak.Custom.Icons.logo-myksuiteplus}" />
 
                 <!-- kSuite icon / message -->
                 <TextBlock x:Uid="CC_KSuiteUpgradeBar_message"
