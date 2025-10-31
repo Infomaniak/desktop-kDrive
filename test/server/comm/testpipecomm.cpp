@@ -40,15 +40,15 @@ void TestPipeComm::setUp() {
     // Start the server
     _pipeCommServer = std::make_unique<PipeCommServerTest>("TestPipeComm::testServerListen");
 
-    _pipeCommServer->setNewConnectionCbk([&]() {
+    _pipeCommServer->setNewConnectionCbk([this]() {
         const auto channel = _pipeCommServer->nextPendingConnection();
         if (channel) {
-            channel->setReadyReadCbk([&](std::shared_ptr<AbstractCommChannel> ch) { _lastReadyReadChannel = ch; });
+            channel->setReadyReadCbk([this](std::shared_ptr<AbstractCommChannel> ch) { _lastReadyReadChannel = ch; });
         }
     });
 
     _pipeCommServer->setLostConnectionCbk(
-            [&](std::shared_ptr<AbstractCommChannel> channel) { _lastLostConnectionChannel = channel; });
+            [this](std::shared_ptr<AbstractCommChannel> channel) { _lastLostConnectionChannel = channel; });
 }
 
 void TestPipeComm::tearDown() {
@@ -68,17 +68,17 @@ void TestPipeComm::testServer() {
     CPPUNIT_ASSERT(_pipeCommServer->isListening());
 
     // Connect a client to the server and exchange some messages
-    // Repeat N times (with N > PipeCommServer::pipeInstances()) to check connection reuse
+    // Repeat N times (with N > PipeCommServer::nbrOfpipeInstances()) to check connection reuse
     const SyncPath pipePath = PipeCommServer::pipePath();
-    for (int i = 0; i < 2 * PipeCommServer::pipeInstances(); i++) {
+    for (int i = 0; i < 2 * PipeCommServer::nbrOfpipeInstances(); i++) {
         // Connect a client to the server
         HANDLE hPipe = CreateFile(pipePath.native().c_str(), // pipe name
                                   GENERIC_READ | GENERIC_WRITE,
                                   0, // no sharing
-                                  NULL, // default security attributes
+                                  nullptr, // default security attributes
                                   OPEN_EXISTING, // opens existing pipe
                                   0, // default attributes
-                                  NULL); // no template file
+                                  nullptr); // no template file
 
         CPPUNIT_ASSERT(hPipe != INVALID_HANDLE_VALUE);
 
@@ -93,7 +93,7 @@ void TestPipeComm::testServer() {
                                   msgClient.c_str(), // message
                                   cbToWrite, // message length
                                   &cbWritten, // bytes written
-                                  NULL); // not overlapped
+                                  nullptr); // not overlapped
 
         CPPUNIT_ASSERT(fSuccess);
         CPPUNIT_ASSERT(cbWritten == cbToWrite);
@@ -122,7 +122,7 @@ void TestPipeComm::testServer() {
                             chBuf, // buffer to receive reply
                             1024 * sizeof(TCHAR), // size of buffer
                             &cbRead, // number of bytes read
-                            NULL); // not overlapped
+                            nullptr); // not overlapped
 
         CPPUNIT_ASSERT(fSuccess);
 

@@ -106,7 +106,7 @@ class PipeCommServer : public AbstractCommServer {
         std::vector<std::shared_ptr<PipeCommChannel>> _channels;
 
         static bool connectToPipe(HANDLE hPipe, LPOVERLAPPED lpo);
-        static const int pipeInstances();
+        static int nbrOfpipeInstances();
 #endif
 
         friend class TestPipeComm;

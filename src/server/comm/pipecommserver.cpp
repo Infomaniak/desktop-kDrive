@@ -33,7 +33,7 @@
 namespace KDC {
 
 #if defined(KD_WINDOWS)
-constexpr int pipInstances = 10;
+constexpr int pipeInstances = 10;
 constexpr int pipeTimeOut = 5000; // ms
 constexpr int eventWaitTimeout = 100; // ms
 
@@ -41,8 +41,8 @@ constexpr auto connectIndex = toInt(PipeCommChannel::Action::Connect);
 constexpr auto readIndex = toInt(PipeCommChannel::Action::Read);
 constexpr auto writeIndex = toInt(PipeCommChannel::Action::Write);
 
-const int PipeCommServer::pipeInstances() {
-    return pipInstances;
+int PipeCommServer::nbrOfpipeInstances() {
+    return pipeInstances;
 }
 #endif
 
@@ -163,9 +163,9 @@ void PipeCommServer::executeFunc(PipeCommServer *server) {
 
 void PipeCommServer::execute() {
 #if defined(KD_WINDOWS)
-    HANDLE events[pipInstances * toInt(PipeCommChannel::Action::EnumEnd)];
+    HANDLE events[pipeInstances * toInt(PipeCommChannel::Action::EnumEnd)] = {nullptr};
 
-    for (DWORD inst = 0; inst < pipInstances; inst++) {
+    for (DWORD inst = 0; inst < pipeInstances; inst++) {
         // Creates an instance of a named pipe
         auto channel = makeCommChannel();
         _channels.push_back(channel);
@@ -174,12 +174,12 @@ void PipeCommServer::execute() {
         for (auto action = 0; action < toInt(PipeCommChannel::Action::EnumEnd); action++) {
             // Create an event object
             const auto index = inst * toInt(PipeCommChannel::Action::EnumEnd) + action;
-            events[index] = CreateEvent(NULL, // default security attribute
+            events[index] = CreateEvent(nullptr, // default security attribute
                                         TRUE, // manual-reset event
                                         FALSE, // initial state = not signaled
-                                        NULL); // unnamed event object
+                                        nullptr); // unnamed event object
 
-            if (events[index] == NULL) {
+            if (events[index] == nullptr) {
                 LOG_WARN(Log::instance()->getLogger(), "Error in CreateEvent: err=" << GetLastError());
                 _exitInfo = ExitInfo(ExitCode::SystemError, ExitCause::Unknown);
                 return;
@@ -198,11 +198,11 @@ void PipeCommServer::execute() {
                                              PIPE_TYPE_BYTE | // message-type pipe
                                                      PIPE_READMODE_BYTE | // message-read mode
                                                      PIPE_WAIT, // blocking mode
-                                             pipInstances, // number of instances
+                                             pipeInstances, // number of instances
                                              BUFSIZE * sizeof(TCHAR), // output buffer size
                                              BUFSIZE * sizeof(TCHAR), // input buffer size
                                              pipeTimeOut, // client time-out (ms)
-                                             NULL); // default security attributes
+                                             nullptr); // default security attributes
 
         if (channel->_pipeInst == INVALID_HANDLE_VALUE) {
             LOG_WARN(Log::instance()->getLogger(), "Error in CreateNamedPipe: err=" << GetLastError());
@@ -231,7 +231,7 @@ void PipeCommServer::execute() {
     _isListening = true;
     while (!_stopAsked) {
         // Wait for the event object to be signaled, indicating completion of an overlapped read, write, or connect operation
-        const auto eventCount = pipInstances * toInt(PipeCommChannel::Action::EnumEnd);
+        const auto eventCount = pipeInstances * toInt(PipeCommChannel::Action::EnumEnd);
         const auto dwWait = WaitForMultipleObjects(eventCount, events, FALSE,
                                                    eventWaitTimeout); // wait time (ms)
 

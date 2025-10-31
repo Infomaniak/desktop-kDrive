@@ -27,7 +27,6 @@ class PipeCommChannelTest : public PipeCommChannel {
     public:
         using PipeCommChannel::PipeCommChannel;
 
-        ~PipeCommChannelTest() = default;
         bool canReadMessage() override { return true; }
         CommString readMessage() override;
         bool sendMessage(const CommString &message) override;

@@ -971,7 +971,7 @@ void ExtensionJob::copyUrlToClipboard(const std::string &link) {
     HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, len);
     (void) memcpy(GlobalLock(hMem), link.c_str(), len);
     (void) GlobalUnlock(hMem);
-    if (!OpenClipboard(NULL)) {
+    if (!OpenClipboard(nullptr)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in OpenClipboard: err=" << GetLastError());
         return;
     }
