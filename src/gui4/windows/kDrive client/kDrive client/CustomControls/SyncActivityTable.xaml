@@ -11,7 +11,6 @@
              mc:Ignorable="d">
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        <converters:BooleanToInvertedVisibilityConverter  x:Key="BooleanToInvertedVisibilityConverter" />
         <converters:NodeTypeToIconUriConverter x:Key="NodeTypeToSvgUriConverter" />
         <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
         <converters:DateTimeToTimeAgoConverter x:Key="DateTimeToTimeAgoConverter" />
@@ -23,7 +22,7 @@
     <Grid>
         <!-- Empty list-->
         <Grid RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}"
-              Visibility="{x:Bind ViewModel.SelectedSync.SyncActivities.Count, Converter={StaticResource BooleanToInvertedVisibilityConverter }, Mode=OneWay}"
+              Visibility="{x:Bind ViewModel.SelectedSync.SyncActivities.Count, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
               VerticalAlignment="Center"
               HorizontalAlignment="Center">
 

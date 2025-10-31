@@ -142,5 +142,16 @@ namespace Infomaniak.kDrive.Pages
                 }
             }
         }
+
+        private async void MoveToTrashToggleSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            if (sender is ToggleSwitch toggleSwitch)
+            {
+                toggleSwitch.IsEnabled = false;
+                await ViewModel.Settings.ChangeMoveToTrash(toggleSwitch.IsOn);
+                toggleSwitch.IsEnabled = true;
+            }
+        }
     }
 }

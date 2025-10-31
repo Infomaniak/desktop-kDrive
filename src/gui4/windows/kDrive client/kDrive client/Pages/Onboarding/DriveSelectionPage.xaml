@@ -13,7 +13,6 @@
 
     <Page.Resources>
         <converters:BooleanToVisibilityConverter  x:Key="BooleanToVisibilityConverter" />
-        <converters:BooleanToInvertedVisibilityConverter  x:Key="BooleanToInvertedVisibilityConverter" />
         <converters:BooleanToInvertedBooleanConverter  x:Key="BooleanToInvertedBooleanConverter" />
         <converters:IntegerToBooleanConverter  x:Key="IntegerToBooleanConverter" />
         <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />
@@ -55,7 +54,7 @@
             <!-- No drive available -->
             <Grid Grid.Row="1"
                   RowSpacing="{StaticResource Infomaniak.Style.Spacing.M}"
-                  Visibility="{x:Bind _onBoardingViewModel.SelectedUser.Drives.Count, Converter={StaticResource BooleanToInvertedVisibilityConverter}, Mode=OneWay}">
+                  Visibility="{x:Bind _onBoardingViewModel.SelectedUser.Drives.Count, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto" />
                     <RowDefinition Height="auto" />
@@ -155,7 +154,7 @@
         <StackPanel Grid.Row="1"
                     Orientation="Horizontal"
                     Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
-                    Visibility="{x:Bind _onBoardingViewModel.SelectedUser.Drives.Count, Converter={StaticResource BooleanToInvertedVisibilityConverter}, Mode=OneWay}">
+                    Visibility="{x:Bind _onBoardingViewModel.SelectedUser.Drives.Count, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
             <Button x:Uid="Page_Onboarding_DriveSelectionPage_StartFreeButton"
                     HorizontalAlignment="Left"
                     Style="{StaticResource Infomaniak.Style.Button.WithBackground}"
