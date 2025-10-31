@@ -25,13 +25,11 @@ namespace Infomaniak.kDrive.ViewModels
 
         private AppVersion? _appVersion;
         public UpdateManager UpdateManager { get; } = new UpdateManager();
-
         public Language Language
         {
             get => _language;
             set => SetPropertyInUIThread(ref _language, value);
         }
-
         public bool AutoStart
         {
             get => _autoStart;
@@ -75,7 +73,12 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task ChangeAutoStart(bool activated)
         {
-            AutoStart = activated; // TODO: Replace with server logic once auto-update is supported by the server
+            AutoStart = activated;
+            await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None);
+        }
+        public async Task ChangeNotificationsDisabled(NotificationsDisabled notificationsDisabled)
+        {
+            NotificationsDisabled = notificationsDisabled;
             await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None);
         }
     }

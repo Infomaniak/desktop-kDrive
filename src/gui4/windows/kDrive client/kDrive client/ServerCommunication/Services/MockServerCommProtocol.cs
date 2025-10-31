@@ -377,6 +377,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Logger.Log(Logger.Level.Error, $"Failed to deserialize parmsInfo from ${parameters["parmsInfos"]}");
                 throw new InvalidOperationException("Failed to deserialize parmsInfo in ParametersUpdate request.");
             }
+            _mockData.Settings = updatedSettings;
+
             return new CommData
             {
                 Type = CommMessageType.Request,
@@ -551,7 +553,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Language = Language.SystemDefault,
                 AutoStart = true,
                 MoveToTrash = true,
-                NotificationsDisabled = NotificationsDisabled.Never,
+                NotificationsDisabled = NotificationsDisabled.Always,
                 UseLog = false,
                 LogLevel = Logger.Level.Debug,
                 ExtendedLog = false,

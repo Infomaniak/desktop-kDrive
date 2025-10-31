@@ -95,6 +95,36 @@
                                       Toggled="AutoStartToggleSwitch_Toggled" />
                     </toolKit:SettingsCard>
 
+                    <!-- General - Notifications -->
+                    <toolKit:SettingsCard x:Uid="Page_SettingsPage_Notifications">
+                        <toolKit:SettingsCard.HeaderIcon>
+                            <controls:SvgIcon  UriString="{StaticResource Infomaniak.DS.Icons.Essentials.bell}"
+                                               Height="32"
+                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                        </toolKit:SettingsCard.HeaderIcon>
+                        <ComboBox SelectedIndex="0"
+                                  SelectionChanged="NotificationsCombobox_SelectionChanged"
+                                  x:Name="NotificationsComboBox">
+                            <ComboBoxItem x:Uid="Page_SettingsPage_Notifications_ComboBox_Never"
+                                          Tag="Never" />
+                            <ComboBoxItem x:Uid="Page_SettingsPage_Notifications_ComboBox_Always"
+                                          Tag="Always" />
+                            <!-- These options are disabled until the notification snooze feature is fixed (see card 1172-Fix NotificationsDisabled ) -->
+                            <ComboBoxItem x:Uid="Page_SettingsPage_Notifications_ComboBox_OneHour"
+                                          Tag="OneHour"
+                                          IsEnabled="False" />
+                            <ComboBoxItem x:Uid="Page_SettingsPage_Notifications_ComboBox_UntilTomorrow"
+                                          Tag="UntilTomorrow"
+                                          IsEnabled="False" />
+                            <ComboBoxItem x:Uid="Page_SettingsPage_Notifications_ComboBox_ThreeDays"
+                                          Tag="ThreeDays"
+                                          IsEnabled="False" />
+                            <ComboBoxItem x:Uid="Page_SettingsPage_Notifications_ComboBox_OneWeek"
+                                          Tag="OneWeek"
+                                          IsEnabled="False" />
+                        </ComboBox>
+                    </toolKit:SettingsCard>
+
                     <!-- General - Beta -->
                     <toolKit:SettingsCard Description="kDrive Beta est disponible."
                                           Header="Version Beta">
@@ -103,7 +133,7 @@
                                               Height="32"
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                         </toolKit:SettingsCard.HeaderIcon>
-                        <ComboBox x:Name="UpdateChannel"
+                        <ComboBox x:Name="UpdateChannelComboBox"
                                   SelectionChanged="UpdateChannel_SelectionChanged">
                             <ComboBoxItem Tag="Prod">Stable</ComboBoxItem>
                             <ComboBoxItem Tag="Beta">Beta</ComboBoxItem>
