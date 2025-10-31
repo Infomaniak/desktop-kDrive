@@ -869,7 +869,7 @@ void TestGuiCommChannel::testSyncAddJob() {
                         R"( "serverFolderPath": "dGVzdA==",)"
                         R"( "serverFolderNodeId": "OTk5",)"
                         R"( "liteSync": 1,)"
-                        R"( "blackList": [ "MTExMQ==", "MjIyMg==" ])"
+                        R"( "blackList": [ "MTExMQ==", "MjIyMg==" ],)"
                         R"( "whiteList": [  ] } })"};
 #else
     // There is no need to pass a request id as the response is via a callback.
@@ -957,7 +957,7 @@ void TestGuiCommChannel::testGenericJob(const CommString &query, const CommStrin
             CPPUNIT_ASSERT(false);
         }
 
-        if (!(testhelpers::isRunningOnCI() && requestNum == RequestNum::USER_INFOLIST)) {
+        if (requestNum != RequestNum::USER_INFOLIST) {
             // TODO: Remove this exception when UserInfo._avatar will be a CommBLOB instead of a QImage
             // (QImage.save() gives different results depending on the machine)
             CommString s{answer};
