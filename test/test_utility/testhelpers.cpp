@@ -24,13 +24,13 @@
 #include "libcommonserver/io/iohelper.h"
 
 #include <fstream>
-#include <regex>
 #include <Poco/JSON/Object.h>
 
 
 #if defined(KD_WINDOWS)
-#include "libcommonserver/io/filestat.h"
-#include "libcommonserver/io/iohelper.h"
+#include <shlobj_core.h> // SHCreateItemFromIDList
+#include <atlbase.h> // CComPtr
+
 #include <sys/utime.h>
 #include <sys/types.h>
 #else
