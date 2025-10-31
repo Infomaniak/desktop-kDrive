@@ -18,6 +18,7 @@
 
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using System;
 
 // These structs are used for communication between the client and server
 // they should only be used in the ServerCommunication layer
@@ -25,15 +26,36 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
 {
     public static partial class ConversionHelper
     {
-        static void copyProperty(object source, object target, string sourcepropertyName, string targetpropertyName)
+        static void copyProperty(object source, object target, string sourcepropertyName, string targetpropertyName, bool skipNullTargetProperty = true)
         {
             var sourceProp = source.GetType().GetProperty(sourcepropertyName);
             var targetProp = target.GetType().GetProperty(targetpropertyName);
             if (sourceProp is not null && targetProp is not null)
             {
-                var value = sourceProp.GetValue(source);
-                if (value is not null)
-                    targetProp.SetValue(target, value);
+                var sourceValue = sourceProp.GetValue(source);
+                if (sourceValue is null)
+                    return;
+
+                var targetValue = targetProp.GetValue(target);
+                if (targetValue is null)
+                {
+                    if (!skipNullTargetProperty)
+                    {
+                        var targetPropType = targetProp.PropertyType;
+                        if (targetPropType.IsGenericType && targetPropType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                        {
+                            targetPropType = Nullable.GetUnderlyingType(targetPropType)!;
+                        }
+                        var newObj = Activator.CreateInstance(targetPropType);
+                        targetProp.SetValue(target, newObj);
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
+
+                targetProp.SetValue(target, sourceValue);
             }
             else
             {
@@ -42,7 +64,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         }
     }
 
-    public struct UserInfo
+    public class UserInfo
     {
         public DbId? DbId { get; set; }
         public UserId? UserId { get; set; }
@@ -68,7 +90,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
     }
 
 
-    public struct AccountInfo
+    public class AccountInfo
     {
         public DbId? DbId { get; set; }
         public DbId? UserDbId { get; set; }
@@ -83,7 +105,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
     }
 
 
-    public struct DriveInfo
+    public class DriveInfo
     {
         public DbId? DbId { get; set; }
         public DbId? AccountDbId { get; set; }
@@ -102,7 +124,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         }
     }
 
-    public struct SyncInfo
+    public class SyncInfo
     {
         public DbId? DbId { get; set; }
         public DbId? DriveDbId { get; set; }
@@ -122,7 +144,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         }
     }
 
-    public struct ProxyConfigInfo
+    public class ProxyConfigInfo
     {
         public ProxyType? Type { get; set; }
         public string? HostName { get; set; }
@@ -142,9 +164,18 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             copyProperty(source, target, nameof(source.User), nameof(target.User));
             copyProperty(source, target, nameof(source.Pwd), nameof(target.Pwd));
         }
+        static public void copyToProxyConfigInfo(ProxyConfig source, ProxyConfigInfo target)
+        {
+            copyProperty(source, target, nameof(source.Type), nameof(target.Type), false);
+            copyProperty(source, target, nameof(source.HostName), nameof(target.HostName), false);
+            copyProperty(source, target, nameof(source.Port), nameof(target.Port), false);
+            copyProperty(source, target, nameof(source.NeedsAuth), nameof(target.NeedsAuth), false);
+            copyProperty(source, target, nameof(source.User), nameof(target.User), false);
+            copyProperty(source, target, nameof(source.Pwd), nameof(target.Pwd), false);
+        }
     }
 
-    public struct ParmsInfo
+    public class ParmsInfo
     {
         public Language? Language { get; set; }
         public bool? MonoIcons { get; set; }
@@ -171,7 +202,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             copyProperty(source, target, nameof(source.MoveToTrash), nameof(target.MoveToTrash));
             copyProperty(source, target, nameof(source.NotificationsDisabled), nameof(target.NotificationsDisabled));
             copyProperty(source, target, nameof(source.ShowShortcuts), nameof(target.ShowShortcuts));
-            copyProperty(source, target, nameof(source.DistributionChannel), nameof(target.UpdateManager.CurrentChannel));
+            copyProperty(source, target.UpdateManager, nameof(source.DistributionChannel), nameof(target.UpdateManager.CurrentChannel));
             copyProperty(source, target, nameof(source.PurgeOldLogs), nameof(target.PurgeOldLogs));
 
             if (source.ProxyConfigInfo is ProxyConfigInfo proxyConfigInfo)
@@ -186,6 +217,39 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
                 target.LogLevel = Logger.Level.Extended;
             else
                 copyProperty(source, target, nameof(source.LogLevel), nameof(target.LogLevel));
+        }
+        static public void copyToParmsInfo(Settings source, ParmsInfo target)
+        {
+            copyProperty(source, target, nameof(source.Language), nameof(target.Language), false);
+            // copyProperty(source, target, nameof(source.MonoIcons), nameof(target.MonoIcons)); -> Not implemented
+            copyProperty(source, target, nameof(source.AutoStart), nameof(target.AutoStart), false);
+            copyProperty(source, target, nameof(source.MoveToTrash), nameof(target.MoveToTrash), false);
+            copyProperty(source, target, nameof(source.NotificationsDisabled), nameof(target.NotificationsDisabled), false);
+            copyProperty(source, target, nameof(source.ShowShortcuts), nameof(target.ShowShortcuts), false);
+            copyProperty(source.UpdateManager, target, nameof(source.UpdateManager.CurrentChannel), nameof(target.DistributionChannel), false);
+            copyProperty(source, target, nameof(source.PurgeOldLogs), nameof(target.PurgeOldLogs), false);
+
+            if (source.ProxyConfig is ProxyConfig proxyConfig && target.ProxyConfigInfo is ProxyConfigInfo proxyConfigInfo)
+                copyToProxyConfigInfo(proxyConfig, proxyConfigInfo);
+
+            if (source.LogLevel == Logger.Level.None)
+            {
+                target.UseLog = false;
+                target.ExtendedLog = false;
+                target.LogLevel = Logger.Level.Info;
+            }
+            else if (source.LogLevel == Logger.Level.Extended)
+            {
+                target.UseLog = true;
+                target.ExtendedLog = true;
+                target.LogLevel = Logger.Level.Info;
+            }
+            else
+            {
+                target.UseLog = true;
+                target.ExtendedLog = false;
+                target.LogLevel = source.LogLevel;
+            }
         }
     }
 }

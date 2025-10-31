@@ -19,15 +19,13 @@
 
 <Page x:Class="Infomaniak.kDrive.Pages.SettingsPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:local="using:Infomaniak.kDrive.Pages"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      xmlns:controls="using:Infomaniak.kDrive.CustomControls"
-      xmlns:converters="using:Infomaniak.kDrive.Converters"
-      xmlns:viewmodel="using:Infomaniak.kDrive.ViewModels"
-      xmlns:templateSelectors="using:Infomaniak.kDrive.TemplateSelectors"
       xmlns:toolKit="using:CommunityToolkit.WinUI.Controls"
+      xmlns:converters="using:Infomaniak.kDrive.Converters"
+      xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+      xmlns:viewmodel="using:Infomaniak.kDrive.ViewModels"
       mc:Ignorable="d">
     <Page.Resources>
         <!-- Converters -->
@@ -85,7 +83,18 @@
                             <!-- TODO: Add language options here (Not needed for beta release)-->
                         </ComboBox>
                     </toolKit:SettingsCard>
-                    
+
+                    <!-- General - Auto start -->
+                    <toolKit:SettingsCard x:Uid="Page_SettingsPage_AutoStart">
+                        <toolKit:SettingsCard.HeaderIcon>
+                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.power}"
+                                              Height="32"
+                                              Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                        </toolKit:SettingsCard.HeaderIcon>
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.Settings.AutoStart, Mode=OneWay}"
+                                      Toggled="AutoStartToggleSwitch_Toggled" />
+                    </toolKit:SettingsCard>
+
                     <!-- General - Beta -->
                     <toolKit:SettingsCard Description="kDrive Beta est disponible."
                                           Header="Version Beta">
@@ -100,20 +109,6 @@
                             <ComboBoxItem Tag="Beta">Beta</ComboBoxItem>
                             <ComboBoxItem Tag="Internal">Internal</ComboBoxItem>
                         </ComboBox>
-                    </toolKit:SettingsCard>
-
-                   
-
-                    <!-- General - Auto start -->
-                    <toolKit:SettingsCard Header="Ouvrir kDrive au démarrage de l’ordinateur">
-                        <toolKit:SettingsCard.HeaderIcon>
-                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.power}"
-                                              Height="32"
-                                              Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-
-                        </toolKit:SettingsCard.HeaderIcon>
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.Settings.AutoStart, Mode=OneWay}" />
-
                     </toolKit:SettingsCard>
                 </StackPanel>
 

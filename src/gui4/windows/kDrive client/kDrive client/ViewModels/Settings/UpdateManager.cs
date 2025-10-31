@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Mvvm.Input;
-using Infomaniak.kDrive.ServerCommunication.Interfaces;
+﻿using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Microsoft.Extensions.DependencyInjection;
 using System.Threading;
@@ -43,8 +42,8 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task ChangeAutoUpdate(bool activated)
         {
-            AutoUpdateEnabled = activated; // TODO: Replace with server logic once auto-update is supported by the server
-            await Task.CompletedTask;
+            AutoUpdateEnabled = activated;
+            await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None);
         }
     }
 }

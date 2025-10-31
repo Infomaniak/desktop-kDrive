@@ -51,6 +51,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         // Setting-related requests
         Task RefreshSettings(CancellationToken cancellationToken);
 
+        // Saves the settings provided in the Settings view model to the server.
+        Task SaveSettings(CancellationToken cancellationToken);
+
         // Update-related requests
         Task StartUpdate(CancellationToken cancellationToken);
         Task RefreshUpdaterVersionInfo(CancellationToken cancellationToken);

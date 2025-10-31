@@ -278,7 +278,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
-            ParmsInfo parametersInfo = data.Params["parmsInfo"].Deserialize<ParmsInfo>(options);
+            ParmsInfo? parametersInfo = data.Params["parmsInfo"].Deserialize<ParmsInfo>(options);
+            if(parametersInfo == null)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to deserialize parmsInfo from ${data.Params["parmsInfo"]}.");
+                return;
+            }
             CommStruct.ConversionHelper.copyToSettings(parametersInfo, _viewModel.Settings);
         }
 
@@ -320,6 +325,20 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             _viewModel.Settings.UpdateManager.CurrentChannel = newChannel;
         }
 
+        public async Task SaveSettings(CancellationToken cancellationToken)
+        {
+            ParmsInfo ParmsInfo = new();
+            CommStruct.ConversionHelper.copyToParmsInfo(_viewModel.Settings, ParmsInfo);
+            JsonObject parms = new()
+            {
+                ["parmsInfos"] = new JsonObject()
+            };
+
+            string ParmsInfoJson = JsonSerializer.Serialize(ParmsInfo);
+            parms["parmsInfos"] = JsonNode.Parse(ParmsInfoJson) ?? new JsonObject();
+            await _commClient.SendRequestAsync(RequestNum.PARAMETERS_UPDATE, parms, cancellationToken);
+        }
+
         // Signals
         public async void OnSignalReceived(object? sender, SignalEventArgs args)
         {
@@ -353,8 +372,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
-            UserInfo newUserInfo = signalData["userInfo"].Deserialize<UserInfo>(options);
-            if (newUserInfo.DbId is null)
+            UserInfo? newUserInfo = signalData["userInfo"].Deserialize<UserInfo>(options);
+            if (newUserInfo == null) {
+                Logger.Log(Logger.Level.Error, $"Failed to deserialize userInfo from ${signalData["userInfo"]}.");
+                return;
+            }
+            if (newUserInfo?.DbId is null)
             {
                 Logger.Log(Logger.Level.Error, "userInfo.DbId is null.");
                 return;
@@ -391,7 +414,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     _viewModel.Users.Add(newUser);
                 });
                 Logger.Log(Logger.Level.Info, $"New user added with DbId {newUser.DbId}.");
-
             }
         }
 

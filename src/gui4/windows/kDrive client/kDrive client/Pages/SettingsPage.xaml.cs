@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using Infomaniak.kDrive.Converters;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,8 +23,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.ComponentModel;
-using System.Globalization;
-using System.Threading;
 
 namespace Infomaniak.kDrive.Pages
 {
@@ -103,9 +100,23 @@ namespace Infomaniak.kDrive.Pages
 
         private async void AutoUpdateToggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
+            if (!IsLoaded) return;
             if (sender is ToggleSwitch toggleSwitch)
             {
+                toggleSwitch.IsEnabled = false;
                 await ViewModel.Settings.UpdateManager.ChangeAutoUpdate(toggleSwitch.IsOn);
+                toggleSwitch.IsEnabled = true;
+            }
+        }
+
+        private async void AutoStartToggleSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            if (sender is ToggleSwitch toggleSwitch)
+            {
+                toggleSwitch.IsEnabled = false;
+                await ViewModel.Settings.ChangeAutoStart(toggleSwitch.IsOn);
+                toggleSwitch.IsEnabled = true;
             }
         }
     }

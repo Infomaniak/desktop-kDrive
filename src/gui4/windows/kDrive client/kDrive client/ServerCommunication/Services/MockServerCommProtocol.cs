@@ -17,6 +17,7 @@
  */
 
 using Infomaniak.kDrive.ServerCommunication.CommStruct;
+using Infomaniak.kDrive.ServerCommunication.JsonConverters;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using System;
@@ -75,6 +76,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     return await UpdaterChangeChannel(parameters);
                 case RequestNum.PARAMETERS_INFO:
                     return await ParametersInfo(parameters);
+                case RequestNum.PARAMETERS_UPDATE:
+                    return await ParametersUpdate(parameters);
                 default:
                     throw new NotImplementedException($"RequestNum {requestNum} not implemented in MockServerCommProtocol.");
             }
@@ -347,6 +350,42 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             };
         }
 
+        private async Task<CommData> ParametersUpdate(JsonObject parameters)
+        {
+            Logger.Log(Logger.Level.Debug, "Received ParametersUpdate request.");
+            if (!parameters.ContainsKey("parmsInfos") || parameters["parmsInfos"] == null)
+            {
+                Logger.Log(Logger.Level.Warning, "No parmsInfo specified in ParametersUpdate request, using existing settings.");
+
+                return new CommData
+                {
+                    Type = CommMessageType.Request,
+                    Id = (int)NextId,
+                    RequestNum = RequestNum.PARAMETERS_UPDATE,
+                    Params = new JsonObject()
+                };
+            }
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            options.Converters.Add(new Base64StringJsonConverter());
+            var updatedSettings = parameters["parmsInfos"]!.Deserialize<ParmsInfo>(options);
+            if (updatedSettings is null)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to deserialize parmsInfo from ${parameters["parmsInfos"]}");
+                throw new InvalidOperationException("Failed to deserialize parmsInfo in ParametersUpdate request.");
+            }
+            return new CommData
+            {
+                Type = CommMessageType.Request,
+                Id = (int)NextId,
+                RequestNum = RequestNum.PARAMETERS_UPDATE,
+                Params = new JsonObject()
+            };
+        }
+
         private void EnqueueSignal(SignalNum signalNum, JsonObject parameters)
         {
             PendingSignals.Enqueue(new KeyValuePair<SignalNum, JsonObject>(signalNum, parameters));
@@ -409,7 +448,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public List<User> Users { get; set; } = new List<User>();
         public AppVersion CurrentVersion { get; set; } = new AppVersion() { BuildVersion = "20250908", Tag = "3.7.6" };
-        public ParmsInfo Settings { get; set; }
+        public ParmsInfo Settings { get; set; } = new ParmsInfo();
 
         public Dictionary<VersionChannel, AppVersion?> VersionsByChannel { get; set; } = new Dictionary<VersionChannel, AppVersion?>()
         {
