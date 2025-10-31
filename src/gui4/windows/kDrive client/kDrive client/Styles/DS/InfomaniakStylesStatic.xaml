@@ -31,12 +31,15 @@
 
     <!-- Communication -->
     <x:String x:Key="Infomaniak.DS.Icons.Communication.translate">ms-appx:///Assets/DS/Icons/Communication/translate.svg</x:String>
-    
+
     <!-- Edition -->
     <x:String x:Key="Infomaniak.DS.Icons.Edition.list-bullets">ms-appx:///Assets/DS/Icons/Edition/list-bullets.svg</x:String>
 
     <!-- Essentials -->
     <x:String x:Key="Infomaniak.DS.Icons.Essentials.bell">ms-appx:///Assets/DS/Icons/Essentials/bell.svg</x:String>
+
+    <!-- Miscellaneous -->
+    <x:String x:Key="Infomaniak.DS.Icons.Miscellaneous.rocket">ms-appx:///Assets/DS/Icons/Miscellaneous/rocket.svg</x:String>
 
     <!-- Network -->
     <x:String x:Key="Infomaniak.DS.Icons.Network.globe">ms-appx:///Assets/DS/Icons/Network/globe.svg</x:String>
@@ -45,7 +48,7 @@
     <!-- Security -->
     <x:String x:Key="Infomaniak.DS.Icons.Security.lock">ms-appx:///Assets/DS/Icons/Security/lock.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Security.bug">ms-appx:///Assets/DS/Icons/Security/bug.svg</x:String>
-    
+
     <!-- Arrows -->
     <x:String x:Key="Infomaniak.DS.Icons.Arrows.arrow-loop">ms-appx:///Assets/DS/Icons/Arrows/arrows-loop.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Arrows.square-arrow-diagonal-up">ms-appx:///Assets/DS/Icons/Arrows/square-arrow-diagonal-up.svg</x:String>

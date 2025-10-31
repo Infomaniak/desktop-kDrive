@@ -523,6 +523,15 @@
   <data name="Page_SettingsPage_Notifications_ComboBox_OneWeek.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
+  <data name="Page_SettingsPage_Beta_ComboBox_Stable.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Beta_ComboBox_Beta.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Beta_ComboBox_Internal.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
   <data name="Page_SettingsPage_Notifications_ComboBox_Always.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
@@ -530,6 +539,15 @@
     <value />
   </data>
   <data name="Page_SettingsPage_MoveToTrash.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Beta.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Beta_Expander.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Beta_Expander.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
 </root>

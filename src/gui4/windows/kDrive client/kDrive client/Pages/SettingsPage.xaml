@@ -150,20 +150,30 @@
                     </toolKit:SettingsCard>
 
                     <!-- General - Beta -->
-                    <toolKit:SettingsCard Description="kDrive Beta est disponible."
-                                          Header="Version Beta">
-                        <toolKit:SettingsCard.HeaderIcon>
-                            <controls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.lab-flask}"
+                    <toolKit:SettingsExpander x:Uid="Page_SettingsPage_Beta">
+                        <toolKit:SettingsExpander.HeaderIcon>
+                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Miscellaneous.rocket}"
                                               Height="32"
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                        </toolKit:SettingsCard.HeaderIcon>
-                        <ComboBox x:Name="UpdateChannelComboBox"
-                                  SelectionChanged="UpdateChannel_SelectionChanged">
-                            <ComboBoxItem Tag="Prod">Stable</ComboBoxItem>
-                            <ComboBoxItem Tag="Beta">Beta</ComboBoxItem>
-                            <ComboBoxItem Tag="Internal">Internal</ComboBoxItem>
-                        </ComboBox>
-                    </toolKit:SettingsCard>
+                        </toolKit:SettingsExpander.HeaderIcon>
+
+                        <toolKit:SettingsExpander.Items>
+                            <toolKit:SettingsCard x:Uid="Page_SettingsPage_Beta_Expander">
+                                <ComboBox x:Name="UpdateChannelComboBox"
+                                          SelectionChanged="UpdateChannel_SelectionChanged">
+                                    <ComboBoxItem Tag="Prod"
+                                                  x:Uid="Page_SettingsPage_Beta_ComboBox_Stable" />
+                                    <ComboBoxItem Tag="Beta"
+                                                  x:Uid="Page_SettingsPage_Beta_ComboBox_Beta" />
+                                    <ComboBoxItem Tag="Internal"
+                                                  x:Name="UpdateChannelComboBox_Internal"
+                                                  x:Uid="Page_SettingsPage_Beta_ComboBox_Internal" 
+                                                  Foreground="{ThemeResource SystemErrorTextColor}"
+                                                  Visibility="Collapsed"/>
+                                </ComboBox>
+                            </toolKit:SettingsCard>
+                        </toolKit:SettingsExpander.Items>
+                    </toolKit:SettingsExpander>
                 </StackPanel>
 
                 <!-- Account -->
