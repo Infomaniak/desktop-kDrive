@@ -24,8 +24,12 @@
 #include "libcommonserver/io/iohelper.h"
 
 #include <fstream>
-#include <Poco/JSON/Object.h>
 
+#if defined(KD_LINUX)
+#include <regex>
+#endif
+
+#include <Poco/JSON/Object.h>
 
 #if defined(KD_WINDOWS)
 #include <shlobj_core.h> // SHCreateItemFromIDList
@@ -127,7 +131,7 @@ void createFileWithDehydratedStatus(const SyncPath &filePath) {
 
 #if defined(KD_MACOS)
 void eraseFromTrash(const KDC::SyncPath &relativePath) {
-    (void) std::filesystem::remove_all(Utility::getTrashPath() / relativePath);
+    std::error_code ec(void) std::filesystem::remove_all(Utility::getTrashPath() / relativePath, ec);
 }
 bool isInTrash(const SyncPath &path) {
     if (std::error_code ec; !std::filesystem::exists(Utility::getTrashPath() / path, ec) || ec) {
@@ -183,13 +187,13 @@ void eraseFromTrash(const KDC::SyncPath &relativePath) {
 
     std::vector<SyncPath> itemsToErase;
     for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
-        const auto dirItemRelativePath = std::filesystem::relative(dirIt->path(), trashPath);
+        const auto dirItemRelativePath = std::filesystem::relative(dirIt->path(), trashPath, ec);
         // Filter out the numerical suffix of the root directory name, e.g: `dirname.15` is replaced with `dirname`.
         const auto suffixFreedirectorEntryPath = removeNumericSuffix(dirItemRelativePath);
         if (relativePath == suffixFreedirectorEntryPath) itemsToErase.push_back(dirIt->path());
     }
 
-    for (const auto &pathToErase: itemsToErase) (void) std::filesystem::remove_all(pathToErase);
+    for (const auto &pathToErase: itemsToErase) (void) std::filesystem::remove_all(pathToErase, ec);
 }
 
 bool isInTrash(const SyncPath &relativePath) {
@@ -204,7 +208,7 @@ bool isInTrash(const SyncPath &relativePath) {
     }
 
     for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
-        const auto dirItemRelativePath = std::filesystem::relative(dirIt->path(), trashPath);
+        const auto dirItemRelativePath = std::filesystem::relative(dirIt->path(), trashPath, ec);
         // Filter out the numerical suffix of the root directory name, e.g.: `dirname.15` is replaced with `dirname`.
         const auto suffixFreedirectorEntryPath = removeNumericSuffix(dirItemRelativePath);
         if (relativePath == suffixFreedirectorEntryPath) return true;
