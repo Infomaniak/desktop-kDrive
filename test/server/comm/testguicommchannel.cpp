@@ -1027,6 +1027,45 @@ void TestGuiCommChannel::testSyncStartAfterLoginJob() {
 #endif
 }
 
+void TestGuiCommChannel::testSyncDeleteJob() {
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    const auto queryStr{R"({ "id": 1,)"
+                        R"( "num": )" +
+                        std::to_string(toInt(RequestNum::SYNC_DELETE)) +
+                        R"(,)"
+                        R"( "params": { "syncDbId": 1 } })"};
+#else
+    // There is no need to pass a request id as the response is via a callback.
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::SYNC_DELETE)) +
+                        R"(,)"
+                        R"( "params": { "syncDbId": 1 } })"};
+
+    // Callback expected answer
+    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{}})"};
+#endif
+
+    // Job expected answer
+    const auto answerStr{R"({ "cause": 0,)"
+                         R"( "code": 0,)"
+                         R"( "id": 1,)"
+                         R"( "num": )" +
+                         std::to_string(toInt(RequestNum::SYNC_DELETE)) +
+                         R"(,)"
+                         R"( "params": {  },)"
+                         R"( "type": )" +
+                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob>) {
+        // No output parameters
+    };
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+#else
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
 void TestGuiCommChannel::testGenericJob(const CommString &query, const CommString &answer, const CommString &cbkAnswer,
                                         const std::function<void(std::shared_ptr<AbstractGuiJob>)> &processFct) {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
