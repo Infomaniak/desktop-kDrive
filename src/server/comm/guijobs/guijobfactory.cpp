@@ -36,6 +36,7 @@
 #include "syncadd2job.h"
 #include "syncstartafterloginjob.h"
 #include "syncdeletejob.h"
+#include "syncgetpubliclinkurljob.h"
 
 namespace KDC {
 
@@ -57,7 +58,8 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::SYNC_ADD, makeShared<SyncAddJob>},
                 {RequestNum::SYNC_ADD2, makeShared<SyncAdd2Job>},
                 {RequestNum::SYNC_START_AFTER_LOGIN, makeShared<SyncStartAfterLoginJob>},
-                {RequestNum::SYNC_DELETE, makeShared<SyncDeleteJob>}};
+                {RequestNum::SYNC_DELETE, makeShared<SyncDeleteJob>},
+                {RequestNum::SYNC_GETPUBLICLINKURL, makeShared<SyncGetPublicLinkUrlJob>}};
 }
 
 std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::shared_ptr<CommManager> commManager,
