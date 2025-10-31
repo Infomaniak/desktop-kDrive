@@ -133,6 +133,10 @@ elseif(WIN32)
 endif()
 
 if(WIN32)
+    list(APPEND testserver_SRCS comm/testpipecomm.h comm/testpipecomm.cpp)
+endif()
+
+if(WIN32)
     include_directories("C:/Program Files (x86)/cppunit/include")
     include_directories("C:/Program Files (x86)/Sentry-Native/include")
     include_directories("C:/Program Files (x86)/libzip/include")
