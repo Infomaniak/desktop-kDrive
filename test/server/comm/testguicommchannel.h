@@ -64,6 +64,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSyncStatusJob);
         CPPUNIT_TEST(testSyncAddJob);
         CPPUNIT_TEST(testSyncAdd2Job);
+        CPPUNIT_TEST(testSyncStartAfterLoginJob);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -89,6 +90,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testSyncStatusJob();
         void testSyncAddJob();
         void testSyncAdd2Job();
+        void testSyncStartAfterLoginJob();
 
     private:
         GuiJobFactory _guiJobFactory;

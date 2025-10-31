@@ -116,6 +116,7 @@ class AppServer : public SharedTools::QtSingleApplication {
                                            bool resumedByUser = false, bool firstInit = false);
         [[nodiscard]] ExitInfo stopSyncPal(int syncDbId, bool pausedByUser = false, bool quit = false, bool clear = false);
         [[nodiscard]] ExitInfo stopVfs(int syncDbId, bool unregister);
+        [[nodiscard]] ExitInfo startSyncs(User &user);
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         static ExitCode getThumbnail(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) {
@@ -186,7 +187,6 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         void startSyncsAndRetryOnError();
         [[nodiscard]] ExitInfo startSyncs();
-        [[nodiscard]] ExitInfo startSyncs(User &user);
         [[nodiscard]] ExitInfo processMigratedSyncOnceConnected(int userDbId, int driveId, Sync &sync, QSet<QString> &blackList,
                                                                 QSet<QString> &undecidedList, bool &syncUpdated);
 
