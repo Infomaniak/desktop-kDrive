@@ -67,6 +67,7 @@ set(server_SRCS
     comm/guijobs/syncstopjob.h comm/guijobs/syncstopjob.cpp
     comm/guijobs/syncstatusjob.h comm/guijobs/syncstatusjob.cpp
     comm/guijobs/syncaddjob.h comm/guijobs/syncaddjob.cpp
+    comm/guijobs/syncadd2job.h comm/guijobs/syncadd2job.cpp
     comm/guijobs/signaluseraddedjob.h comm/guijobs/signaluseraddedjob.cpp
     comm/guijobs/signaluserupdatedjob.h comm/guijobs/signaluserupdatedjob.cpp
     comm/guijobs/signaluserremovedjob.h comm/guijobs/signaluserremovedjob.cpp

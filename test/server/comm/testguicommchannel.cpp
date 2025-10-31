@@ -28,6 +28,7 @@
 #include "comm/guijobs/syncinfolistjob.h"
 #include "comm/guijobs/syncstatusjob.h"
 #include "comm/guijobs/syncaddjob.h"
+#include "comm/guijobs/syncadd2job.h"
 #include "libcommon/comm.h"
 #include "log/log.h"
 
@@ -910,6 +911,74 @@ void TestGuiCommChannel::testSyncAddJob() {
                           "{645FF040-5081-101B-9F08-00AA002F954E}");
 
         syncAddJob->_syncInfo = si;
+    };
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+#else
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
+void TestGuiCommChannel::testSyncAdd2Job() {
+    // Base64 conversions
+    // "/Users/test/kDrive1" <=> "L1VzZXJzL3Rlc3Qva0RyaXZlMQ=="
+    // "test" <=> "dGVzdA=="
+    // "999" <=> "OTk5"
+    // "1111" <=> "MTExMQ=="
+    // "2222" <=> "MjIyMg=="
+    // "{645FF040-5081-101B-9F08-00AA002F954E}" <=> "ezY0NUZGMDQwLTUwODEtMTAxQi05RjA4LTAwQUEwMDJGOTU0RX0="
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    const auto queryStr{R"({ "id": 1,)"
+                        R"( "num": )" +
+                        std::to_string(toInt(RequestNum::SYNC_ADD2)) +
+                        R"(,)"
+                        R"( "params": {)"
+                        R"( "driveDbId": 1,)"
+                        R"( "localFolderPath": "L1VzZXJzL3Rlc3Qva0RyaXZlMQ==",)"
+                        R"( "serverFolderPath": "dGVzdA==",)"
+                        R"( "serverFolderNodeId": "OTk5",)"
+                        R"( "liteSync": 1,)"
+                        R"( "blackList": [ "MTExMQ==", "MjIyMg==" ],)"
+                        R"( "whiteList": [  ] } })"};
+#else
+    // There is no need to pass a request id as the response is via a callback.
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::SYNC_ADD2)) +
+                        R"(,)"
+                        R"( "params": {)"
+                        R"( "driveDbId": 1,)"
+                        R"( "localFolderPath": "L1VzZXJzL3Rlc3Qva0RyaXZlMQ==",)"
+                        R"( "serverFolderPath": "dGVzdA==",)"
+                        R"( "serverFolderNodeId": "OTk5",)"
+                        R"( "liteSync": 1,)"
+                        R"( "blackList": [ "MTExMQ==", "MjIyMg==" ],)"
+                        R"( "whiteList": [  ] } })"};
+
+    // Callback expected answer
+    const auto cbkAnswerStr{
+            R"({"cause":0,"code":0,"id":1,"params":{"syncInfo":{"dbId":1,"driveDbId":1,"localPath":"L1VzZXJzL3Rlc3Qva0RyaXZlMQ==","navigationPaneClsid":"ezY0NUZGMDQwLTUwODEtMTAxQi05RjA4LTAwQUEwMDJGOTU0RX0=","supportVfs":true,"targetNodeId":"OTk5","targetPath":"dGVzdA==","virtualFileMode":1}}})"};
+#endif
+
+    // Job expected answer
+    const auto answerStr{
+            R"({ "cause": 0,)"
+            R"( "code": 0,)"
+            R"( "id": 1,)"
+            R"( "num": )" +
+            std::to_string(toInt(RequestNum::SYNC_ADD2)) +
+            R"(,)"
+            R"( "params": { "syncInfo": { "dbId": 1, "driveDbId": 1, "localPath": "L1VzZXJzL3Rlc3Qva0RyaXZlMQ==", "navigationPaneClsid": "ezY0NUZGMDQwLTUwODEtMTAxQi05RjA4LTAwQUEwMDJGOTU0RX0=", "supportVfs": true, "targetNodeId": "OTk5", "targetPath": "dGVzdA==", "virtualFileMode": 1 } },)"
+            R"( "type": )" +
+            std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto syncAdd2Job = std::dynamic_pointer_cast<SyncAdd2Job>(job);
+
+        const SyncInfo si(1, 1, "/Users/test/kDrive1", "test", "999", true, VirtualFileMode::Win,
+                          "{645FF040-5081-101B-9F08-00AA002F954E}");
+
+        syncAdd2Job->_syncInfo = si;
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
