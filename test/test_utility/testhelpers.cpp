@@ -131,7 +131,8 @@ void createFileWithDehydratedStatus(const SyncPath &filePath) {
 
 #if defined(KD_MACOS)
 void eraseFromTrash(const KDC::SyncPath &relativePath) {
-    std::error_code ec(void) std::filesystem::remove_all(Utility::getTrashPath() / relativePath, ec);
+    std::error_code ec;
+    (void) std::filesystem::remove_all(Utility::getTrashPath() / relativePath, ec);
 }
 bool isInTrash(const SyncPath &path) {
     if (std::error_code ec; !std::filesystem::exists(Utility::getTrashPath() / path, ec) || ec) {
