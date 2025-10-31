@@ -144,37 +144,37 @@ void TestGuiCommChannel::testLoginRequestTokenJob() {
     // "bbbb" <=> "YmJiYg=="
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{Str(R"({ "id": 1,)"
-                            R"( "num": )" +
-                            std::to_string(toInt(RequestNum::LOGIN_REQUESTTOKEN)) +
-                            R"(,)"
-                            R"( "params": {)"
-                            R"( "code": "YWFhYQ==",)"
-                            R"( "codeVerifier": "YmJiYg==" } })")};
+    const auto queryStr{R"({ "id": 1,)"
+                        R"( "num": )" +
+                        std::to_string(toInt(RequestNum::LOGIN_REQUESTTOKEN)) +
+                        R"(,)"
+                        R"( "params": {)"
+                        R"( "code": "YWFhYQ==",)"
+                        R"( "codeVerifier": "YmJiYg==" } })"};
 
 #else
     // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{Str(R"({ "num": )" + std::to_string(toInt(RequestNum::LOGIN_REQUESTTOKEN)) +
-                            R"(,)"
-                            R"( "params": {)"
-                            R"( "code": "YWFhYQ==",)"
-                            R"( "codeVerifier": "YmJiYg==" } })")};
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::LOGIN_REQUESTTOKEN)) +
+                        R"(,)"
+                        R"( "params": {)"
+                        R"( "code": "YWFhYQ==",)"
+                        R"( "codeVerifier": "YmJiYg==" } })"};
 
     // Callback expected answer
-    const auto cbkAnswerStr{Str(R"({"cause":0,"code":0,"id":1,"params":{"userDbId":1}})")};
+    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"userDbId":1}})"};
 #endif
 
     // Job expected answer
-    const auto answerStr{Str(R"({ "cause": 0,)"
-                             R"( "code": 0,)"
-                             R"( "id": 1,)"
-                             R"( "num": )" +
-                             std::to_string(toInt(RequestNum::LOGIN_REQUESTTOKEN)) +
-                             R"(,)"
-                             R"( "params": {)"
-                             R"( "userDbId": 1 },)"
-                             R"( "type": )" +
-                             std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })")};
+    const auto answerStr{R"({ "cause": 0,)"
+                         R"( "code": 0,)"
+                         R"( "id": 1,)"
+                         R"( "num": )" +
+                         std::to_string(toInt(RequestNum::LOGIN_REQUESTTOKEN)) +
+                         R"(,)"
+                         R"( "params": {)"
+                         R"( "userDbId": 1 },)"
+                         R"( "type": )" +
+                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto loginRequestTokenJob = std::dynamic_pointer_cast<LoginRequestTokenJob>(job);
@@ -186,7 +186,7 @@ void TestGuiCommChannel::testLoginRequestTokenJob() {
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(queryStr, answerStr, {}, processFct);
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
@@ -194,32 +194,32 @@ void TestGuiCommChannel::testLoginRequestTokenJob() {
 
 void TestGuiCommChannel::testUserDbIdListJob() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{Str(R"({ "id": 1,)"
-                            R"( "num": )" +
-                            std::to_string(toInt(RequestNum::USER_DBIDLIST)) +
-                            R"(,)"
-                            R"( "params": { } })")};
+    const auto queryStr{R"({ "id": 1,)"
+                        R"( "num": )" +
+                        std::to_string(toInt(RequestNum::USER_DBIDLIST)) +
+                        R"(,)"
+                        R"( "params": { } })"};
 #else
     // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{Str(R"({ "num": )" + std::to_string(toInt(RequestNum::USER_DBIDLIST)) +
-                            R"(,)"
-                            R"( "params": { } })")};
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::USER_DBIDLIST)) +
+                        R"(,)"
+                        R"( "params": { } })"};
 
     // Callback expected answer
-    const auto cbkAnswerStr{Str(R"({"cause":0,"code":0,"id":1,"params":{"userDbIdList":[1,2,3]}})")};
+    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"userDbIdList":[1,2,3]}})"};
 #endif
 
     // Job expected answer
-    const auto answerStr{Str(R"({ "cause": 0,)"
-                             R"( "code": 0,)"
-                             R"( "id": 1,)"
-                             R"( "num": )" +
-                             std::to_string(toInt(RequestNum::USER_DBIDLIST)) +
-                             R"(,)"
-                             R"( "params": {)"
-                             R"( "userDbIdList": [ 1, 2, 3 ] },)"
-                             R"( "type": )" +
-                             std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })")};
+    const auto answerStr{R"({ "cause": 0,)"
+                         R"( "code": 0,)"
+                         R"( "id": 1,)"
+                         R"( "num": )" +
+                         std::to_string(toInt(RequestNum::USER_DBIDLIST)) +
+                         R"(,)"
+                         R"( "params": {)"
+                         R"( "userDbIdList": [ 1, 2, 3 ] },)"
+                         R"( "type": )" +
+                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto userDbIdListJob = std::dynamic_pointer_cast<UserDbIdListJob>(job);
@@ -228,7 +228,7 @@ void TestGuiCommChannel::testUserDbIdListJob() {
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(queryStr, answerStr, {}, processFct);
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
@@ -242,26 +242,26 @@ void TestGuiCommChannel::testUserInfoListJob() {
     // "bbbbb@xxx.com" <=> "YmJiYmJAeHh4LmNvbQ=="
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{Str(R"({ "id": 1,)"
-                            R"( "num": )" +
-                            std::to_string(toInt(RequestNum::USER_INFOLIST)) +
-                            R"(,)"
-                            R"( "params": { } })")};
+    const auto queryStr{R"({ "id": 1,)"
+                        R"( "num": )" +
+                        std::to_string(toInt(RequestNum::USER_INFOLIST)) +
+                        R"(,)"
+                        R"( "params": { } })"};
 #else
     // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{Str(R"({ "num": )" + std::to_string(toInt(RequestNum::USER_INFOLIST)) +
-                            R"(,)"
-                            R"( "params": { } })")};
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::USER_INFOLIST)) +
+                        R"(,)"
+                        R"( "params": { } })"};
 
     // Callback expected answer
-    const auto cbkAnswerStr{Str(
+    const auto cbkAnswerStr{
             R"({"cause":0,"code":0,"id":1,"params":{"userInfoList":[)"
             R"({"avatar":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=","dbId":1,"email":"YWFhYWFAeHh4LmNvbQ==","isConnected":true,"isStaff":false,"name":"YWFhYWE=","userId":1001},)"
-            R"({"avatar":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=","dbId":2,"email":"YmJiYmJAeHh4LmNvbQ==","isConnected":false,"isStaff":false,"name":"YmJiYmI=","userId":1002}]}})")};
+            R"({"avatar":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=","dbId":2,"email":"YmJiYmJAeHh4LmNvbQ==","isConnected":false,"isStaff":false,"name":"YmJiYmI=","userId":1002}]}})"};
 #endif
 
     // Job expected answer
-    const auto answerStr{Str(
+    const auto answerStr{
             R"({ "cause": 0,)"
             R"( "code": 0,)"
             R"( "id": 1,)"
@@ -273,7 +273,7 @@ void TestGuiCommChannel::testUserInfoListJob() {
             R"( { "avatar": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=", "dbId": 1, "email": "YWFhYWFAeHh4LmNvbQ==", "isConnected": true, "isStaff": false, "name": "YWFhYWE=", "userId": 1001 },)"
             R"( { "avatar": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=", "dbId": 2, "email": "YmJiYmJAeHh4LmNvbQ==", "isConnected": false, "isStaff": false, "name": "YmJiYmI=", "userId": 1002 } ] },)"
             R"( "type": )" +
-            std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })")};
+            std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto userInfoListJob = std::dynamic_pointer_cast<UserInfoListJob>(job);
@@ -293,7 +293,7 @@ void TestGuiCommChannel::testUserInfoListJob() {
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(queryStr, answerStr, {}, processFct);
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
@@ -301,38 +301,38 @@ void TestGuiCommChannel::testUserInfoListJob() {
 
 void TestGuiCommChannel::testUserDeleteJob() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{Str(R"({ "id": 1,)"
-                            R"( "num": )" +
-                            std::to_string(toInt(RequestNum::USER_DELETE)) +
-                            R"(,)"
-                            R"( "params": { "userDbId": 1 } })")};
+    const auto queryStr{R"({ "id": 1,)"
+                        R"( "num": )" +
+                        std::to_string(toInt(RequestNum::USER_DELETE)) +
+                        R"(,)"
+                        R"( "params": { "userDbId": 1 } })"};
 #else
     // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{Str(R"({ "num": )" + std::to_string(toInt(RequestNum::USER_DELETE)) +
-                            R"(,)"
-                            R"( "params": { "userDbId": 1 } })")};
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::USER_DELETE)) +
+                        R"(,)"
+                        R"( "params": { "userDbId": 1 } })"};
 
     // Callback expected answer
-    const auto cbkAnswerStr{Str(R"({"cause":0,"code":0,"id":1,"params":{}})")};
+    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{}})"};
 #endif
 
     // Job expected answer
-    const auto answerStr{Str(R"({ "cause": 0,)"
-                             R"( "code": 0,)"
-                             R"( "id": 1,)"
-                             R"( "num": )" +
-                             std::to_string(toInt(RequestNum::USER_DELETE)) +
-                             R"(,)"
-                             R"( "params": {  },)"
-                             R"( "type": )" +
-                             std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })")};
+    const auto answerStr{R"({ "cause": 0,)"
+                         R"( "code": 0,)"
+                         R"( "id": 1,)"
+                         R"( "num": )" +
+                         std::to_string(toInt(RequestNum::USER_DELETE)) +
+                         R"(,)"
+                         R"( "params": {  },)"
+                         R"( "type": )" +
+                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob>) {
         // No output parameters
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(queryStr, answerStr, {}, processFct);
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
@@ -346,26 +346,26 @@ void TestGuiCommChannel::testUserAvailableDrivesJob() {
     // "drive2222" <=> "ZHJpdmUyMjIy"
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{Str(R"({ "id": 1,)"
-                            R"( "num": )" +
-                            std::to_string(toInt(RequestNum::USER_AVAILABLEDRIVES)) +
-                            R"(,)"
-                            R"( "params": { "userDbId": 1 } })")};
+    const auto queryStr{R"({ "id": 1,)"
+                        R"( "num": )" +
+                        std::to_string(toInt(RequestNum::USER_AVAILABLEDRIVES)) +
+                        R"(,)"
+                        R"( "params": { "userDbId": 1 } })"};
 #else
     // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{Str(R"({ "num": )" + std::to_string(toInt(RequestNum::USER_AVAILABLEDRIVES)) +
-                            R"(,)"
-                            R"( "params": { "userDbId": 1 } })")};
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::USER_AVAILABLEDRIVES)) +
+                        R"(,)"
+                        R"( "params": { "userDbId": 1 } })"};
 
     // Callback expected answer
     const auto cbkAnswerStr{
-            Str(R"({"cause":0,"code":0,"id":1,"params":{"driveAvailableInfoList":[)"
-                R"({"accountId":11,"color":"I2FhYmJjYw==","driveId":1111,"name":"ZHJpdmUxMTEx","userDbId":1,"userId":111},)"
-                R"({"accountId":22,"color":"I2RkZWVmZg==","driveId":2222,"name":"ZHJpdmUyMjIy","userDbId":2,"userId":222}]}})")};
+            R"({"cause":0,"code":0,"id":1,"params":{"driveAvailableInfoList":[)"
+            R"({"accountId":11,"color":"I2FhYmJjYw==","driveId":1111,"name":"ZHJpdmUxMTEx","userDbId":1,"userId":111},)"
+            R"({"accountId":22,"color":"I2RkZWVmZg==","driveId":2222,"name":"ZHJpdmUyMjIy","userDbId":2,"userId":222}]}})"};
 #endif
 
     // Job expected answer
-    const auto answerStr{Str(
+    const auto answerStr{
             R"({ "cause": 0,)"
             R"( "code": 0,)"
             R"( "id": 1,)"
@@ -376,7 +376,7 @@ void TestGuiCommChannel::testUserAvailableDrivesJob() {
             R"( { "accountId": 11, "color": "I2FhYmJjYw==", "driveId": 1111, "name": "ZHJpdmUxMTEx", "userDbId": 1, "userId": 111 },)"
             R"( { "accountId": 22, "color": "I2RkZWVmZg==", "driveId": 2222, "name": "ZHJpdmUyMjIy", "userDbId": 2, "userId": 222 } ] },)"
             R"( "type": )" +
-            std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })")};
+            std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto userAvailableDrivesJob = std::dynamic_pointer_cast<UserAvailableDrivesJob>(job);
@@ -390,7 +390,7 @@ void TestGuiCommChannel::testUserAvailableDrivesJob() {
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(queryStr, answerStr, {}, processFct);
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
@@ -398,36 +398,36 @@ void TestGuiCommChannel::testUserAvailableDrivesJob() {
 
 void TestGuiCommChannel::testAccountInfoListJob() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{Str(R"({ "id": 1,)"
-                            R"( "num": )" +
-                            std::to_string(toInt(RequestNum::ACCOUNT_INFOLIST)) +
-                            R"(,)"
-                            R"( "params": { } })")};
+    const auto queryStr{R"({ "id": 1,)"
+                        R"( "num": )" +
+                        std::to_string(toInt(RequestNum::ACCOUNT_INFOLIST)) +
+                        R"(,)"
+                        R"( "params": { } })"};
 #else
     // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{Str(R"({ "num": )" + std::to_string(toInt(RequestNum::ACCOUNT_INFOLIST)) +
-                            R"(,)"
-                            R"( "params": { } })")};
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::ACCOUNT_INFOLIST)) +
+                        R"(,)"
+                        R"( "params": { } })"};
 
     // Callback expected answer
-    const auto cbkAnswerStr{Str(R"({"cause":0,"code":0,"id":1,"params":{"accountInfoList":[)"
-                                R"({"dbId":1,"userDbId":1},)"
-                                R"({"dbId":2,"userDbId":1}]}})")};
+    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"accountInfoList":[)"
+                            R"({"dbId":1,"userDbId":1},)"
+                            R"({"dbId":2,"userDbId":1}]}})"};
 #endif
 
     // Job expected answer
-    const auto answerStr{Str(R"({ "cause": 0,)"
-                             R"( "code": 0,)"
-                             R"( "id": 1,)"
-                             R"( "num": )" +
-                             std::to_string(toInt(RequestNum::ACCOUNT_INFOLIST)) +
-                             R"(,)"
-                             R"( "params": {)"
-                             R"( "accountInfoList": [)"
-                             R"( { "dbId": 1, "userDbId": 1 },)"
-                             R"( { "dbId": 2, "userDbId": 1 } ] },)"
-                             R"( "type": )" +
-                             std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })")};
+    const auto answerStr{R"({ "cause": 0,)"
+                         R"( "code": 0,)"
+                         R"( "id": 1,)"
+                         R"( "num": )" +
+                         std::to_string(toInt(RequestNum::ACCOUNT_INFOLIST)) +
+                         R"(,)"
+                         R"( "params": {)"
+                         R"( "accountInfoList": [)"
+                         R"( { "dbId": 1, "userDbId": 1 },)"
+                         R"( { "dbId": 2, "userDbId": 1 } ] },)"
+                         R"( "type": )" +
+                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto accountInfoListJob = std::dynamic_pointer_cast<AccountInfoListJob>(job);
@@ -439,7 +439,7 @@ void TestGuiCommChannel::testAccountInfoListJob() {
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(queryStr, answerStr, {}, processFct);
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
@@ -453,26 +453,26 @@ void TestGuiCommChannel::testDriveInfoListJob() {
     // "drive2222" <=> "ZHJpdmUyMjIy"
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{Str(R"({ "id": 1,)"
-                            R"( "num": )" +
-                            std::to_string(toInt(RequestNum::DRIVE_INFOLIST)) +
-                            R"(,)"
-                            R"( "params": { } })")};
+    const auto queryStr{R"({ "id": 1,)"
+                        R"( "num": )" +
+                        std::to_string(toInt(RequestNum::DRIVE_INFOLIST)) +
+                        R"(,)"
+                        R"( "params": { } })"};
 #else
     // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{Str(R"({ "num": )" + std::to_string(toInt(RequestNum::DRIVE_INFOLIST)) +
-                            R"(,)"
-                            R"( "params": { } })")};
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::DRIVE_INFOLIST)) +
+                        R"(,)"
+                        R"( "params": { } })"};
 
     // Callback expected answer
-    const auto cbkAnswerStr{Str(
+    const auto cbkAnswerStr{
             R"({"cause":0,"code":0,"id":1,"params":{"driveInfoList":[)"
             R"({"accessDenied":false,"accountDbId":1,"admin":true,"color":"I2FhYmJjYw==","dbId":1,"id":1111,"locked":false,"maintenance":false,"name":"ZHJpdmUxMTEx","notifications":true},)"
-            R"({"accessDenied":true,"accountDbId":1,"admin":false,"color":"I2RkZWVmZg==","dbId":2,"id":2222,"locked":true,"maintenance":true,"name":"ZHJpdmUyMjIy","notifications":false}]}})")};
+            R"({"accessDenied":true,"accountDbId":1,"admin":false,"color":"I2RkZWVmZg==","dbId":2,"id":2222,"locked":true,"maintenance":true,"name":"ZHJpdmUyMjIy","notifications":false}]}})"};
 #endif
 
     // Job expected answer
-    const auto answerStr{Str(
+    const auto answerStr{
             R"({ "cause": 0,)"
             R"( "code": 0,)"
             R"( "id": 1,)"
@@ -484,7 +484,7 @@ void TestGuiCommChannel::testDriveInfoListJob() {
             R"( { "accessDenied": false, "accountDbId": 1, "admin": true, "color": "I2FhYmJjYw==", "dbId": 1, "id": 1111, "locked": false, "maintenance": false, "name": "ZHJpdmUxMTEx", "notifications": true },)"
             R"( { "accessDenied": true, "accountDbId": 1, "admin": false, "color": "I2RkZWVmZg==", "dbId": 2, "id": 2222, "locked": true, "maintenance": true, "name": "ZHJpdmUyMjIy", "notifications": false } ] },)"
             R"( "type": )" +
-            std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })")};
+            std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto driveInfoListJob = std::dynamic_pointer_cast<DriveInfoListJob>(job);
@@ -517,7 +517,7 @@ void TestGuiCommChannel::testDriveInfoListJob() {
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(queryStr, answerStr, {}, processFct);
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
@@ -531,42 +531,42 @@ void TestGuiCommChannel::testDriveUpdateJob() {
     // "drive2222" <=> "ZHJpdmUyMjIy"
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{Str(
+    const auto queryStr{
             R"({ "id": 1,)"
             R"( "num": )" +
             std::to_string(toInt(RequestNum::DRIVE_UPDATE)) +
             R"(,)"
             R"( "params": {)"
-            R"( "driveInfo": { "accessDenied": false, "accountDbId": 1, "admin": true, "color": "I2FhYmJjYw==", "dbId": 1, "id": 1111, "locked": false, "maintenance": false, "name": "ZHJpdmUxMTEx", "notifications": true } } })")};
+            R"( "driveInfo": { "accessDenied": false, "accountDbId": 1, "admin": true, "color": "I2FhYmJjYw==", "dbId": 1, "id": 1111, "locked": false, "maintenance": false, "name": "ZHJpdmUxMTEx", "notifications": true } } })"};
 #else
     // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{Str(
+    const auto queryStr{
             R"({ "num": )" + std::to_string(toInt(RequestNum::DRIVE_UPDATE)) +
             R"(,)"
             R"( "params": {)"
-            R"( "driveInfo": { "accessDenied": false, "accountDbId": 1, "admin": true, "color": "I2FhYmJjYw==", "dbId": 1, "id": 1111, "locked": false, "maintenance": false, "name": "ZHJpdmUxMTEx", "notifications": true } } })")};
+            R"( "driveInfo": { "accessDenied": false, "accountDbId": 1, "admin": true, "color": "I2FhYmJjYw==", "dbId": 1, "id": 1111, "locked": false, "maintenance": false, "name": "ZHJpdmUxMTEx", "notifications": true } } })"};
 
     // Callback expected answer
-    const auto cbkAnswerStr{Str(R"({"cause":0,"code":0,"id":1,"params":{}})")};
+    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{}})"};
 #endif
 
     // Job expected answer
-    const auto answerStr{Str(R"({ "cause": 0,)"
-                             R"( "code": 0,)"
-                             R"( "id": 1,)"
-                             R"( "num": )" +
-                             std::to_string(toInt(RequestNum::DRIVE_UPDATE)) +
-                             R"(,)"
-                             R"( "params": {  },)"
-                             R"( "type": )" +
-                             std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })")};
+    const auto answerStr{R"({ "cause": 0,)"
+                         R"( "code": 0,)"
+                         R"( "id": 1,)"
+                         R"( "num": )" +
+                         std::to_string(toInt(RequestNum::DRIVE_UPDATE)) +
+                         R"(,)"
+                         R"( "params": {  },)"
+                         R"( "type": )" +
+                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob>) {
         // No output parameters
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(queryStr, answerStr, {}, processFct);
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
@@ -574,38 +574,38 @@ void TestGuiCommChannel::testDriveUpdateJob() {
 
 void TestGuiCommChannel::testDriveDeleteJob() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{Str(R"({ "id": 1,)"
-                            R"( "num": )" +
-                            std::to_string(toInt(RequestNum::DRIVE_DELETE)) +
-                            R"(,)"
-                            R"( "params": { "driveDbId": 1 } })")};
+    const auto queryStr{R"({ "id": 1,)"
+                        R"( "num": )" +
+                        std::to_string(toInt(RequestNum::DRIVE_DELETE)) +
+                        R"(,)"
+                        R"( "params": { "driveDbId": 1 } })"};
 #else
     // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{Str(R"({ "num": )" + std::to_string(toInt(RequestNum::DRIVE_DELETE)) +
-                            R"(,)"
-                            R"( "params": { "driveDbId": 1 } })")};
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::DRIVE_DELETE)) +
+                        R"(,)"
+                        R"( "params": { "driveDbId": 1 } })"};
 
     // Callback expected answer
-    const auto cbkAnswerStr{Str(R"({"cause":0,"code":0,"id":1,"params":{}})")};
+    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{}})"};
 #endif
 
     // Job expected answer
-    const auto answerStr{Str(R"({ "cause": 0,)"
-                             R"( "code": 0,)"
-                             R"( "id": 1,)"
-                             R"( "num": )" +
-                             std::to_string(toInt(RequestNum::DRIVE_DELETE)) +
-                             R"(,)"
-                             R"( "params": {  },)"
-                             R"( "type": )" +
-                             std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })")};
+    const auto answerStr{R"({ "cause": 0,)"
+                         R"( "code": 0,)"
+                         R"( "id": 1,)"
+                         R"( "num": )" +
+                         std::to_string(toInt(RequestNum::DRIVE_DELETE)) +
+                         R"(,)"
+                         R"( "params": {  },)"
+                         R"( "type": )" +
+                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob>) {
         // No output parameters
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(queryStr, answerStr, {}, processFct);
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
@@ -620,36 +620,36 @@ void TestGuiCommChannel::testDriveSearchJob() {
     // "titi" <=> "dGl0aQ=="
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{Str(R"({ "id": 1,)"
-                            R"( "num": )" +
-                            std::to_string(toInt(RequestNum::DRIVE_SEARCH)) +
-                            R"(,)"
-                            R"( "params": { "driveDbId": 1, "searchString": "aW5mbyo=" } })")};
+    const auto queryStr{R"({ "id": 1,)"
+                        R"( "num": )" +
+                        std::to_string(toInt(RequestNum::DRIVE_SEARCH)) +
+                        R"(,)"
+                        R"( "params": { "driveDbId": 1, "searchString": "aW5mbyo=" } })"};
 #else
     // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{Str(R"({ "num": )" + std::to_string(toInt(RequestNum::DRIVE_SEARCH)) +
-                            R"(,)"
-                            R"( "params": { "driveDbId": 1, "searchString": "aW5mbyo=" } })")};
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::DRIVE_SEARCH)) +
+                        R"(,)"
+                        R"( "params": { "driveDbId": 1, "searchString": "aW5mbyo=" } })"};
 
     // Callback expected answer
-    const auto cbkAnswerStr{Str(
-            R"({"cause":0,"code":0,"id":1,"params":{"hasMore":false,"searchInfoList":[{"id":"MTAwMA==","name":"dG90bw==","type":1},{"id":"MjAwMA==","name":"dGl0aQ==","type":2}]}})")};
+    const auto cbkAnswerStr{
+            R"({"cause":0,"code":0,"id":1,"params":{"hasMore":false,"searchInfoList":[{"id":"MTAwMA==","name":"dG90bw==","type":1},{"id":"MjAwMA==","name":"dGl0aQ==","type":2}]}})"};
 #endif
 
     // Job expected answer
-    const auto answerStr{Str(R"({ "cause": 0,)"
-                             R"( "code": 0,)"
-                             R"( "id": 1,)"
-                             R"( "num": )" +
-                             std::to_string(toInt(RequestNum::DRIVE_SEARCH)) +
-                             R"(,)"
-                             R"( "params": {)"
-                             R"( "hasMore": false,)"
-                             R"( "searchInfoList": [)"
-                             R"( { "id": "MTAwMA==", "name": "dG90bw==", "type": 1 },)"
-                             R"( { "id": "MjAwMA==", "name": "dGl0aQ==", "type": 2 } ] },)"
-                             R"( "type": )" +
-                             std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })")};
+    const auto answerStr{R"({ "cause": 0,)"
+                         R"( "code": 0,)"
+                         R"( "id": 1,)"
+                         R"( "num": )" +
+                         std::to_string(toInt(RequestNum::DRIVE_SEARCH)) +
+                         R"(,)"
+                         R"( "params": {)"
+                         R"( "hasMore": false,)"
+                         R"( "searchInfoList": [)"
+                         R"( { "id": "MTAwMA==", "name": "dG90bw==", "type": 1 },)"
+                         R"( { "id": "MjAwMA==", "name": "dGl0aQ==", "type": 2 } ] },)"
+                         R"( "type": )" +
+                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto driveSearchJob = std::dynamic_pointer_cast<DriveSearchJob>(job);
@@ -663,7 +663,7 @@ void TestGuiCommChannel::testDriveSearchJob() {
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(queryStr, answerStr, {}, processFct);
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
@@ -678,26 +678,26 @@ void TestGuiCommChannel::testSyncInfoListJob() {
     // "{645FF040-5081-101B-9F08-00AA002F954E}" <=> "ezY0NUZGMDQwLTUwODEtMTAxQi05RjA4LTAwQUEwMDJGOTU0RX0="
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{Str(R"({ "id": 1,)"
-                            R"( "num": )" +
-                            std::to_string(toInt(RequestNum::SYNC_INFOLIST)) +
-                            R"(,)"
-                            R"( "params": { } })")};
+    const auto queryStr{R"({ "id": 1,)"
+                        R"( "num": )" +
+                        std::to_string(toInt(RequestNum::SYNC_INFOLIST)) +
+                        R"(,)"
+                        R"( "params": { } })"};
 #else
     // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{Str(R"({ "num": )" + std::to_string(toInt(RequestNum::SYNC_INFOLIST)) +
-                            R"(,)"
-                            R"( "params": { } })")};
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::SYNC_INFOLIST)) +
+                        R"(,)"
+                        R"( "params": { } })"};
 
     // Callback expected answer
-    const auto cbkAnswerStr{Str(
+    const auto cbkAnswerStr{
             R"({"cause":0,"code":0,"id":1,"params":{"syncInfoList":[)"
             R"({"dbId":1,"driveDbId":1,"localPath":"L1VzZXJzL3Rlc3Qva0RyaXZlMQ==","navigationPaneClsid":"","supportVfs":true,"targetNodeId":"","targetPath":"","virtualFileMode":1},)"
-            R"({"dbId":2,"driveDbId":1,"localPath":"L1VzZXJzL3Rlc3Qva0RyaXZlMg==","navigationPaneClsid":"ezY0NUZGMDQwLTUwODEtMTAxQi05RjA4LTAwQUEwMDJGOTU0RX0=","supportVfs":false,"targetNodeId":"OTk5","targetPath":"Zm9sZGVyMQ==","virtualFileMode":0}]}})")};
+            R"({"dbId":2,"driveDbId":1,"localPath":"L1VzZXJzL3Rlc3Qva0RyaXZlMg==","navigationPaneClsid":"ezY0NUZGMDQwLTUwODEtMTAxQi05RjA4LTAwQUEwMDJGOTU0RX0=","supportVfs":false,"targetNodeId":"OTk5","targetPath":"Zm9sZGVyMQ==","virtualFileMode":0}]}})"};
 #endif
 
     // Job expected answer
-    const auto answerStr{Str(
+    const auto answerStr{
             R"({ "cause": 0,)"
             R"( "code": 0,)"
             R"( "id": 1,)"
@@ -709,7 +709,7 @@ void TestGuiCommChannel::testSyncInfoListJob() {
             R"( { "dbId": 1, "driveDbId": 1, "localPath": "L1VzZXJzL3Rlc3Qva0RyaXZlMQ==", "navigationPaneClsid": "", "supportVfs": true, "targetNodeId": "", "targetPath": "", "virtualFileMode": 1 },)"
             R"( { "dbId": 2, "driveDbId": 1, "localPath": "L1VzZXJzL3Rlc3Qva0RyaXZlMg==", "navigationPaneClsid": "ezY0NUZGMDQwLTUwODEtMTAxQi05RjA4LTAwQUEwMDJGOTU0RX0=", "supportVfs": false, "targetNodeId": "OTk5", "targetPath": "Zm9sZGVyMQ==", "virtualFileMode": 0 } ] },)"
             R"( "type": )" +
-            std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })")};
+            std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto syncInfoListJob = std::dynamic_pointer_cast<SyncInfoListJob>(job);
@@ -722,7 +722,7 @@ void TestGuiCommChannel::testSyncInfoListJob() {
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(queryStr, answerStr, {}, processFct);
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
@@ -730,38 +730,38 @@ void TestGuiCommChannel::testSyncInfoListJob() {
 
 void TestGuiCommChannel::testStartSyncJob() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{Str(R"({ "id": 1,)"
-                            R"( "num": )" +
-                            std::to_string(toInt(RequestNum::SYNC_START)) +
-                            R"(,)"
-                            R"( "params": { "syncDbId": 1 } })")};
+    const auto queryStr{R"({ "id": 1,)"
+                        R"( "num": )" +
+                        std::to_string(toInt(RequestNum::SYNC_START)) +
+                        R"(,)"
+                        R"( "params": { "syncDbId": 1 } })"};
 #else
     // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{Str(R"({ "num": )" + std::to_string(toInt(RequestNum::SYNC_START)) +
-                            R"(,)"
-                            R"( "params": { "syncDbId": 1 } })")};
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::SYNC_START)) +
+                        R"(,)"
+                        R"( "params": { "syncDbId": 1 } })"};
 
     // Callback expected answer
-    const auto cbkAnswerStr{Str(R"({"cause":0,"code":0,"id":1,"params":{}})")};
+    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{}})"};
 #endif
 
     // Job expected answer
-    const auto answerStr{Str(R"({ "cause": 0,)"
-                             R"( "code": 0,)"
-                             R"( "id": 1,)"
-                             R"( "num": )" +
-                             std::to_string(toInt(RequestNum::SYNC_START)) +
-                             R"(,)"
-                             R"( "params": {  },)"
-                             R"( "type": )" +
-                             std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })")};
+    const auto answerStr{R"({ "cause": 0,)"
+                         R"( "code": 0,)"
+                         R"( "id": 1,)"
+                         R"( "num": )" +
+                         std::to_string(toInt(RequestNum::SYNC_START)) +
+                         R"(,)"
+                         R"( "params": {  },)"
+                         R"( "type": )" +
+                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob>) {
         // No output parameters
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(queryStr, answerStr, {}, processFct);
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
@@ -769,38 +769,38 @@ void TestGuiCommChannel::testStartSyncJob() {
 
 void TestGuiCommChannel::testStopSyncJob() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{Str(R"({ "id": 1,)"
-                            R"( "num": )" +
-                            std::to_string(toInt(RequestNum::SYNC_STOP)) +
-                            R"(,)"
-                            R"( "params": { "syncDbId": 1 } })")};
+    const auto queryStr{R"({ "id": 1,)"
+                        R"( "num": )" +
+                        std::to_string(toInt(RequestNum::SYNC_STOP)) +
+                        R"(,)"
+                        R"( "params": { "syncDbId": 1 } })"};
 #else
     // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{Str(R"({ "num": )" + std::to_string(toInt(RequestNum::SYNC_STOP)) +
-                            R"(,)"
-                            R"( "params": { "syncDbId": 1 } })")};
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::SYNC_STOP)) +
+                        R"(,)"
+                        R"( "params": { "syncDbId": 1 } })"};
 
     // Callback expected answer
-    const auto cbkAnswerStr{Str(R"({"cause":0,"code":0,"id":1,"params":{}})")};
+    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{}})"};
 #endif
 
     // Job expected answer
-    const auto answerStr{Str(R"({ "cause": 0,)"
-                             R"( "code": 0,)"
-                             R"( "id": 1,)"
-                             R"( "num": )" +
-                             std::to_string(toInt(RequestNum::SYNC_STOP)) +
-                             R"(,)"
-                             R"( "params": {  },)"
-                             R"( "type": )" +
-                             std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })")};
+    const auto answerStr{R"({ "cause": 0,)"
+                         R"( "code": 0,)"
+                         R"( "id": 1,)"
+                         R"( "num": )" +
+                         std::to_string(toInt(RequestNum::SYNC_STOP)) +
+                         R"(,)"
+                         R"( "params": {  },)"
+                         R"( "type": )" +
+                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob>) {
         // No output parameters
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(queryStr, answerStr, {}, processFct);
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
@@ -808,31 +808,31 @@ void TestGuiCommChannel::testStopSyncJob() {
 
 void TestGuiCommChannel::testSyncStatusJob() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{Str(R"({ "id": 1,)"
-                            R"( "num": )" +
-                            std::to_string(toInt(RequestNum::SYNC_STATUS)) +
-                            R"(,)"
-                            R"( "params": { "syncDbId": 1 } })")};
+    const auto queryStr{R"({ "id": 1,)"
+                        R"( "num": )" +
+                        std::to_string(toInt(RequestNum::SYNC_STATUS)) +
+                        R"(,)"
+                        R"( "params": { "syncDbId": 1 } })"};
 #else
     // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{Str(R"({ "num": )" + std::to_string(toInt(RequestNum::SYNC_STATUS)) +
-                            R"(,)"
-                            R"( "params": { "syncDbId": 1 } })")};
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::SYNC_STATUS)) +
+                        R"(,)"
+                        R"( "params": { "syncDbId": 1 } })"};
 
     // Callback expected answer
-    const auto cbkAnswerStr{Str(R"({"cause":0,"code":0,"id":1,"params":{"syncStatus":3}})")};
+    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"syncStatus":3}})"};
 #endif
 
     // Job expected answer
-    const auto answerStr{Str(R"({ "cause": 0,)"
-                             R"( "code": 0,)"
-                             R"( "id": 1,)"
-                             R"( "num": )" +
-                             std::to_string(toInt(RequestNum::SYNC_STATUS)) +
-                             R"(,)"
-                             R"( "params": { "syncStatus": 3 },)" // SyncStatus::Idle
-                             R"( "type": )" +
-                             std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })")};
+    const auto answerStr{R"({ "cause": 0,)"
+                         R"( "code": 0,)"
+                         R"( "id": 1,)"
+                         R"( "num": )" +
+                         std::to_string(toInt(RequestNum::SYNC_STATUS)) +
+                         R"(,)"
+                         R"( "params": { "syncStatus": 3 },)" // SyncStatus::Idle
+                         R"( "type": )" +
+                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto syncStatusJob = std::dynamic_pointer_cast<SyncStatusJob>(job);
@@ -841,7 +841,7 @@ void TestGuiCommChannel::testSyncStatusJob() {
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(queryStr, answerStr, {}, processFct);
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
@@ -857,42 +857,42 @@ void TestGuiCommChannel::testSyncAddJob() {
     // "{645FF040-5081-101B-9F08-00AA002F954E}" <=> "ezY0NUZGMDQwLTUwODEtMTAxQi05RjA4LTAwQUEwMDJGOTU0RX0="
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{Str(R"({ "id": 1,)"
-                            R"( "num": )" +
-                            std::to_string(toInt(RequestNum::SYNC_ADD)) +
-                            R"(,)"
-                            R"( "params": {)"
-                            R"( "userDbId": 1,)"
-                            R"( "accountId": 1,)"
-                            R"( "driveId": 1,)"
-                            R"( "localFolderPath": "L1VzZXJzL3Rlc3Qva0RyaXZlMQ==",)"
-                            R"( "serverFolderPath": "dGVzdA==",)"
-                            R"( "serverFolderNodeId": "OTk5",)"
-                            R"( "liteSync": 1,)"
-                            R"( "blackList": [ "MTExMQ==", "MjIyMg==" ])"
-                            R"( "whiteList": [  ] } })")};
+    const auto queryStr{R"({ "id": 1,)"
+                        R"( "num": )" +
+                        std::to_string(toInt(RequestNum::SYNC_ADD)) +
+                        R"(,)"
+                        R"( "params": {)"
+                        R"( "userDbId": 1,)"
+                        R"( "accountId": 1,)"
+                        R"( "driveId": 1,)"
+                        R"( "localFolderPath": "L1VzZXJzL3Rlc3Qva0RyaXZlMQ==",)"
+                        R"( "serverFolderPath": "dGVzdA==",)"
+                        R"( "serverFolderNodeId": "OTk5",)"
+                        R"( "liteSync": 1,)"
+                        R"( "blackList": [ "MTExMQ==", "MjIyMg==" ])"
+                        R"( "whiteList": [  ] } })"};
 #else
     // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{Str(R"({ "num": )" + std::to_string(toInt(RequestNum::SYNC_ADD)) +
-                            R"(,)"
-                            R"( "params": {)"
-                            R"( "userDbId": 1,)"
-                            R"( "accountId": 1,)"
-                            R"( "driveId": 1,)"
-                            R"( "localFolderPath": "L1VzZXJzL3Rlc3Qva0RyaXZlMQ==",)"
-                            R"( "serverFolderPath": "dGVzdA==",)"
-                            R"( "serverFolderNodeId": "OTk5",)"
-                            R"( "liteSync": 1,)"
-                            R"( "blackList": [ "MTExMQ==", "MjIyMg==" ],)"
-                            R"( "whiteList": [  ] } })")};
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::SYNC_ADD)) +
+                        R"(,)"
+                        R"( "params": {)"
+                        R"( "userDbId": 1,)"
+                        R"( "accountId": 1,)"
+                        R"( "driveId": 1,)"
+                        R"( "localFolderPath": "L1VzZXJzL3Rlc3Qva0RyaXZlMQ==",)"
+                        R"( "serverFolderPath": "dGVzdA==",)"
+                        R"( "serverFolderNodeId": "OTk5",)"
+                        R"( "liteSync": 1,)"
+                        R"( "blackList": [ "MTExMQ==", "MjIyMg==" ],)"
+                        R"( "whiteList": [  ] } })"};
 
     // Callback expected answer
-    const auto cbkAnswerStr{Str(
-            R"({"cause":0,"code":0,"id":1,"params":{"syncInfo":{"dbId":1,"driveDbId":1,"localPath":"L1VzZXJzL3Rlc3Qva0RyaXZlMQ==","navigationPaneClsid":"ezY0NUZGMDQwLTUwODEtMTAxQi05RjA4LTAwQUEwMDJGOTU0RX0=","supportVfs":true,"targetNodeId":"OTk5","targetPath":"dGVzdA==","virtualFileMode":1}}})")};
+    const auto cbkAnswerStr{
+            R"({"cause":0,"code":0,"id":1,"params":{"syncInfo":{"dbId":1,"driveDbId":1,"localPath":"L1VzZXJzL3Rlc3Qva0RyaXZlMQ==","navigationPaneClsid":"ezY0NUZGMDQwLTUwODEtMTAxQi05RjA4LTAwQUEwMDJGOTU0RX0=","supportVfs":true,"targetNodeId":"OTk5","targetPath":"dGVzdA==","virtualFileMode":1}}})"};
 #endif
 
     // Job expected answer
-    const auto answerStr{Str(
+    const auto answerStr{
             R"({ "cause": 0,)"
             R"( "code": 0,)"
             R"( "id": 1,)"
@@ -901,7 +901,7 @@ void TestGuiCommChannel::testSyncAddJob() {
             R"(,)"
             R"( "params": { "syncInfo": { "dbId": 1, "driveDbId": 1, "localPath": "L1VzZXJzL3Rlc3Qva0RyaXZlMQ==", "navigationPaneClsid": "ezY0NUZGMDQwLTUwODEtMTAxQi05RjA4LTAwQUEwMDJGOTU0RX0=", "supportVfs": true, "targetNodeId": "OTk5", "targetPath": "dGVzdA==", "virtualFileMode": 1 } },)"
             R"( "type": )" +
-            std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })")};
+            std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto syncAddJob = std::dynamic_pointer_cast<SyncAddJob>(job);
@@ -913,7 +913,7 @@ void TestGuiCommChannel::testSyncAddJob() {
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(queryStr, answerStr, {}, processFct);
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
