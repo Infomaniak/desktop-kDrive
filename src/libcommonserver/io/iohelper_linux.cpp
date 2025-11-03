@@ -68,13 +68,13 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
      * If the file system does not support extended attributes, a warning will be logged and the creation time will be set to the
      * ctime of the file.
      */
+    buf->creationTime = sb.stx_ctime.tv_sec;
     if (sb.stx_mask & STATX_BTIME) {
         buf->creationTime = sb.stx_btime.tv_sec; // The file system supports creation time
-    } else if (static const std::string btimeXattrName = "user.kDrive.birthtime";
-               lgetxattr(path.string().c_str(), btimeXattrName.c_str(), &buf->creationTime, sizeof(buf->creationTime)) < 0) {
-        buf->creationTime = sb.stx_ctime.tv_sec;
+    } else if (static const auto btimeXattrName = "user.kDrive.birthtime";
+               lgetxattr(path.string().c_str(), btimeXattrName, &buf->creationTime, sizeof(buf->creationTime)) < 0) {
         if (const auto err = errno; err == ENODATA) {
-            if (lsetxattr(path.string().c_str(), btimeXattrName.c_str(), &buf->creationTime, sizeof(buf->creationTime), 0) < 0) {
+            if (lsetxattr(path.string().c_str(), btimeXattrName, &buf->creationTime, sizeof(buf->creationTime), 0) < 0) {
                 LOG_ERROR(logger(), "Failed to set user.kDrive.birthtime extended attribute: " << strerror(errno));
             }
         } else if (err == ENOTSUP) {
