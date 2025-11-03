@@ -81,7 +81,8 @@ void KDC::TestLocalJobs::testLocalJobs() {
     std::filesystem::copy(picturesPath / "picture-1.jpg", localDirPath / "tmp_picture.jpg");
 
     // Copy
-    const SyncPath copyDirPath = temporaryDirectory.path() / (_localTempDirName + "_copy");
+    const auto suffix = CommonUtility::generateRandomStringAlphaNum(10);
+    const SyncPath copyDirPath = temporaryDirectory.path() / (_localTempDirName + "_copy_" + suffix);
     LocalCopyJob copyJob(localDirPath, copyDirPath);
     copyJob.runSynchronously();
 
