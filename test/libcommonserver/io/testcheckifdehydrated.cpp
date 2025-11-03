@@ -86,7 +86,7 @@ void TestIo::testCheckIfFileIsDehydrated() {
         { std::ofstream ofs(path); }
 
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::setDehydratedPlaceholderStatus(path, ioError));
+        CPPUNIT_ASSERT(testhelpers::setDehydratedPlaceholderStatus(path, ioError));
         bool isDehydrated = false;
         CPPUNIT_ASSERT(IoHelper::checkIfFileIsDehydrated(path, isDehydrated, ioError));
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
