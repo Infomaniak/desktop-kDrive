@@ -288,29 +288,35 @@ Var kill_counter
   InitPluginsDir
   ifErrors 0 +3
   DetailPrint "Failed to initialize plugin directory. PLUGINSDIR value: ${$PLUGINSDIR}"
-  Goto endMacroExec
+  Goto errorMacroExec
   
   ;Save command in a temp file.
   Push $R1
   FileOpen $R1 $PLUGINSDIR\tempfile.ps1 w
   ifErrors 0 +3
   DetailPrint "Failed to open file in writting mode: $PLUGINSDIR\tempfile.ps1"
-  Goto endMacroExec
+  Goto errorMacroExec
   
   FileWrite $R1 "${PSCommand}"
   ifErrors 0 +3
   DetailPrint "Failed to write to file: $PLUGINSDIR\tempfile.ps1"
-  Goto endMacroExec
+  Goto errorMacroExec
   
   FileClose $R1
   ifErrors 0 +3
   DetailPrint "Failed to close file: $PLUGINSDIR\tempfile.ps1"
-  Goto endMacroExec
+  Goto errorMacroExec
   
-  !insertmacro PowerShellExecFileMacro "$PLUGINSDIR\tempfile.ps1"
+  Goto runMacro
+  
+  errorMacroExec:
+   Pop $R1
+   Goto endMacroExec
+  
+  runMacro:
+	!insertmacro PowerShellExecFileMacro "$PLUGINSDIR\tempfile.ps1"
   
   endMacroExec:
-    Pop $R1
 	SetDetailsPrint listonly
 !macroend
  
