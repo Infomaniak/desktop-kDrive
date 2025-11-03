@@ -37,7 +37,7 @@ namespace KDC {
 
 SyncAddJob::SyncAddJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
                        std::shared_ptr<AbstractCommChannel> channel) :
-    SyncAddAbstractJob(commManager, requestId, inParams, channel) {
+    AbstractSyncAddJob(commManager, requestId, inParams, channel) {
     _requestNum = RequestNum::SYNC_ADD;
 }
 
@@ -51,7 +51,7 @@ ExitInfo SyncAddJob::deserializeInputParms() {
         return ExitCode::LogicError;
     }
 
-    return SyncAddAbstractJob::deserializeInputParms();
+    return AbstractSyncAddJob::deserializeInputParms();
 }
 
 ExitInfo SyncAddJob::process() {
@@ -89,7 +89,7 @@ ExitInfo SyncAddJob::process() {
         _commManager->sendGuiSignal(signalDriveAddedJob);
     }
 
-    return SyncAddAbstractJob::process(syncInfo);
+    return AbstractSyncAddJob::process(syncInfo);
 }
 
 } // namespace KDC

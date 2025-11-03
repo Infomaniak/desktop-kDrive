@@ -18,12 +18,12 @@
 
 #pragma once
 
-#include "server/comm/guijobs/syncaddabstractjob.h"
+#include "server/comm/guijobs/abstractsyncaddjob.h"
 #include "libcommon/info/syncinfo.h"
 
 namespace KDC {
 
-class SyncAddJob : public SyncAddAbstractJob {
+class SyncAddJob : public AbstractSyncAddJob {
     public:
         SyncAddJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
                    std::shared_ptr<AbstractCommChannel> channel);

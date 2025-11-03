@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "syncaddabstractjob.h"
+#include "abstractsyncaddjob.h"
 #include "appserver.h"
 #include "requests/serverrequests.h"
 #include "signalaccountaddedjob.h"
@@ -41,11 +41,11 @@ static const auto outParamsSyncInfo = "syncInfo";
 
 namespace KDC {
 
-SyncAddAbstractJob::SyncAddAbstractJob(std::shared_ptr<CommManager> commManager, int requestId,
+AbstractSyncAddJob::AbstractSyncAddJob(std::shared_ptr<CommManager> commManager, int requestId,
                                        const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {}
 
-ExitInfo SyncAddAbstractJob::deserializeInputParms() {
+ExitInfo AbstractSyncAddJob::deserializeInputParms() {
     try {
         CommString localFolderPath;
         readParamValue(inParamsLocalFolderPath, localFolderPath);
@@ -67,14 +67,14 @@ ExitInfo SyncAddAbstractJob::deserializeInputParms() {
     return ExitCode::Ok;
 }
 
-ExitInfo SyncAddAbstractJob::serializeOutputParms() {
+ExitInfo AbstractSyncAddJob::serializeOutputParms() {
     // Output parameters serialization
     writeParamValue(outParamsSyncInfo, _syncInfo, info2DynamicVar<SyncInfo>);
 
     return ExitCode::Ok;
 }
 
-ExitInfo SyncAddAbstractJob::process(SyncInfo &syncInfo) {
+ExitInfo AbstractSyncAddJob::process(SyncInfo &syncInfo) {
     // Check if sync is valid
     Sync sync;
     ServerRequests::syncInfoToSync(syncInfo, sync);

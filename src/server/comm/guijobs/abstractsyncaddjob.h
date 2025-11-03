@@ -23,9 +23,9 @@
 
 namespace KDC {
 
-class SyncAddAbstractJob : public AbstractGuiJob {
+class AbstractSyncAddJob : public AbstractGuiJob {
     public:
-        SyncAddAbstractJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+        AbstractSyncAddJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
                            std::shared_ptr<AbstractCommChannel> channel);
 
     protected:
