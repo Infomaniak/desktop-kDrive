@@ -16,12 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "server/comm/guijobs/abstractguijob.h"
+#pragma once
+
+#include "server/comm/guijobs/syncaddabstractjob.h"
 #include "libcommon/info/syncinfo.h"
 
 namespace KDC {
 
-class SyncAddJob : public AbstractGuiJob {
+class SyncAddJob : public SyncAddAbstractJob {
     public:
         SyncAddJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
                    std::shared_ptr<AbstractCommChannel> channel);
@@ -31,18 +33,11 @@ class SyncAddJob : public AbstractGuiJob {
         int _userDbId = 0;
         int _accountId = 0;
         int _driveId = 0;
-        SyncPath _localFolderPath;
-        SyncPath _serverFolderPath;
-        NodeId _serverFolderNodeId;
-        bool _liteSync = false;
-        std::vector<NodeId> _blackList;
-        std::vector<NodeId> _whiteList;
 
         // Output parameters
         SyncInfo _syncInfo;
 
         ExitInfo deserializeInputParms() override;
-        ExitInfo serializeOutputParms() override;
         ExitInfo process() override;
 
         friend class TestGuiCommChannel;

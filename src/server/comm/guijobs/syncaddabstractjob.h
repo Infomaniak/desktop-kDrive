@@ -19,23 +19,32 @@
 #pragma once
 
 #include "server/comm/guijobs/abstractguijob.h"
+#include "libcommon/info/syncinfo.h"
 
 namespace KDC {
 
-class SyncStartJob : public AbstractGuiJob {
+class SyncAddAbstractJob : public AbstractGuiJob {
     public:
-        SyncStartJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                     std::shared_ptr<AbstractCommChannel> channel);
+        SyncAddAbstractJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                           std::shared_ptr<AbstractCommChannel> channel);
 
-    private:
+    protected:
         // Input parameters
-        int _syncDbId = 0;
+        SyncPath _localFolderPath;
+        SyncPath _serverFolderPath;
+        NodeId _serverFolderNodeId;
+        bool _liteSync = false;
+        std::vector<NodeId> _blackList;
+        std::vector<NodeId> _whiteList;
+
+        // Output parameters
+        SyncInfo _syncInfo;
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;
-        ExitInfo process() override;
+        ExitInfo process() override { return ExitCode::Ok; }
 
-        friend class TestGuiCommChannel;
+        ExitInfo process(SyncInfo &syncInfo);
 };
 
 } // namespace KDC

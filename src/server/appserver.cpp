@@ -1285,24 +1285,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 if (const auto exitInfo =
                             initSyncPal(sync, blackList, QSet<QString>(), whiteList, start, std::chrono::seconds(0), false, true);
                     !exitInfo) {
-                    LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << syncInfo.dbId() << " : " << exitInfo);
-                    addError(Error(ERR_ID, exitInfo));
-
-                    // Stop sync and remove it from syncPalMap
-                    if (const auto exitInfo2 = stopSyncPal(syncInfo.dbId(), false, true, true); !exitInfo2) {
-                        LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncInfo.dbId() << " : " << exitInfo2);
-                    }
-
-                    // Stop Vfs
-                    if (const auto exitInfo2 = stopVfs(syncInfo.dbId(), true); !exitInfo2) {
-                        LOG_WARN(_logger, "Error in stopVfs for syncDbId=" << syncInfo.dbId() << " : " << exitInfo2);
-                    }
-
-                    LOG_IF_FAIL(!_syncPalMap[syncInfo.dbId()] || _syncPalMap[syncInfo.dbId()].use_count() == 1)
-                    _syncPalMap.erase(syncInfo.dbId());
-
-                    LOG_IF_FAIL(!_vfsMap[syncInfo.dbId()] || _vfsMap[syncInfo.dbId()].use_count() == 1)
-                    _vfsMap.erase(syncInfo.dbId());
+                    stopSyncTask(syncInfo.dbId());
 
                     // Delete sync from DB
                     if (const ExitInfo exitInfo2 = ServerRequests::deleteSync(syncInfo.dbId()); !exitInfo2) {

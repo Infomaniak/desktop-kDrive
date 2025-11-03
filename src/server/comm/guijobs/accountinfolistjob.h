@@ -19,6 +19,8 @@
 #include "server/comm/guijobs/abstractguijob.h"
 #include "libcommon/info/accountinfo.h"
 
+#pragma once
+
 namespace KDC {
 
 class AccountInfoListJob : public AbstractGuiJob {

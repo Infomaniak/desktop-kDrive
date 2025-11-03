@@ -46,6 +46,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/syncstartjob.h ${server_srcs_path}/comm/guijobs/syncstartjob.cpp
     ${server_srcs_path}/comm/guijobs/syncstopjob.h ${server_srcs_path}/comm/guijobs/syncstopjob.cpp
     ${server_srcs_path}/comm/guijobs/syncstatusjob.h ${server_srcs_path}/comm/guijobs/syncstatusjob.cpp
+    ${server_srcs_path}/comm/guijobs/syncaddabstractjob.h ${server_srcs_path}/comm/guijobs/syncaddabstractjob.cpp
     ${server_srcs_path}/comm/guijobs/syncaddjob.h ${server_srcs_path}/comm/guijobs/syncaddjob.cpp
     ${server_srcs_path}/comm/guijobs/syncadd2job.h ${server_srcs_path}/comm/guijobs/syncadd2job.cpp
     ${server_srcs_path}/comm/guijobs/syncstartafterloginjob.h ${server_srcs_path}/comm/guijobs/syncstartafterloginjob.cpp
