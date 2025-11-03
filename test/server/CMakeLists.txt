@@ -128,8 +128,13 @@ set(testserver_SRCS
 if(APPLE)
     list(APPEND testserver_SRCS vfs/mac/testlitesynccommclient.h vfs/mac/testlitesynccommclient.cpp)
     list(APPEND testserver_SRCS vfs/mac/testvfsmac.h vfs/mac/testvfsmac.cpp)
+    list(APPEND testserver_SRCS ../test_utility/testhelpers_mac.cpp)
+elseif(UNIX)
+    list(APPEND testserver_SRCS updater/testwindowsupdater.h updater/testwindowsupdater.cpp)
+    list(APPEND testserver_SRCS ../test_utility/testhelpers_linux.cpp)
 elseif(WIN32)
     list(APPEND testserver_SRCS updater/testwindowsupdater.h updater/testwindowsupdater.cpp)
+    list(APPEND testserver_SRCS ../test_utility/testhelpers_win.cpp)
 endif()
 
 if(WIN32)

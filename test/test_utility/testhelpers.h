@@ -89,11 +89,11 @@ struct RightsSet {
         RightsSet(int rights) :
             read(rights & 4),
             write(rights & 2),
-            execute(rights & 1) {};
+            execute(rights & 1){};
         RightsSet(bool read, bool write, bool execute) :
             read(read),
             write(write),
-            execute(execute) {};
+            execute(execute){};
         bool read;
         bool write;
         bool execute;
@@ -140,5 +140,18 @@ bool isInTrash(const SyncPath &relativePath);
 void createSymLinkLoop(const SyncPath &filepath1, const SyncPath &filepath2, const NodeType nodeType = NodeType::File);
 
 void setupLogging();
+
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+//! Sets the extended attribute corresponding to a dehydrated placeholder (LiteSync).
+//! Note: Dehydrated placeholders are characterized by the `O` (online) status attribute on Mac and
+//! the attribute `FILE_ATTRIBUTE_OFFLINE` on Windows.
+//! Note: should be used for testing only.
+/*!
+ \param path is the file system path of the item.
+ \param ioError holds the error returned when an underlying OS API call fails.
+ \return true if no unexpected error occurred, false otherwise.
+ */
+bool setDehydratedPlaceholderStatus(const SyncPath &path, IoError &ioError) noexcept;
+#endif
 
 } // namespace KDC::testhelpers

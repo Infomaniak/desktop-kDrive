@@ -1032,8 +1032,4 @@ bool IoHelper::getShortPathName(const SyncPath &path, SyncPath &shortPathName, I
     return true;
 }
 
-bool IoHelper::setDehydratedPlaceholderStatus(const KDC::SyncPath &path, KDC::IoError &ioError) noexcept {
-    return setXAttrValue(path, FILE_ATTRIBUTE_OFFLINE, ioError);
-}
-
 } // namespace KDC

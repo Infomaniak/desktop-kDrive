@@ -47,4 +47,8 @@ bool isInTrash(const SyncPath &path) {
     return true;
 }
 
+bool setDehydratedPlaceholderStatus(const KDC::SyncPath &path, KDC::IoError &ioError) noexcept {
+    return IoHelper::setXAttrValue(path, "com.infomaniak.drive.desktopclient.litesync.status", "O", ioError);
+}
+
 } // namespace KDC::testhelpers

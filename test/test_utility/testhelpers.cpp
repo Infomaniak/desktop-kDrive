@@ -119,8 +119,8 @@ void createFileWithDehydratedStatus(const SyncPath &filePath) {
     generateOrEditTestFile(filePath);
 
     auto ioError = IoError::Unknown;
-    (void) IoHelper::setDehydratedPlaceholderStatus(filePath, ioError);
-    assert(IoHelper::setDehydratedPlaceholderStatus(filePath, ioError) && ioError == IoError::Success &&
+    (void) setDehydratedPlaceholderStatus(filePath, ioError);
+    assert(setDehydratedPlaceholderStatus(filePath, ioError) && ioError == IoError::Success &&
            "Unexpected failure of IoHelper::setXAttrValue.");
 }
 #endif

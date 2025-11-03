@@ -145,4 +145,8 @@ bool isInTrash(const SyncPath &relativePath) {
     return found;
 }
 
+bool setDehydratedPlaceholderStatus(const KDC::SyncPath &path, KDC::IoError &ioError) noexcept {
+    return IoHelper::setXAttrValue(path, FILE_ATTRIBUTE_OFFLINE, ioError);
+}
+
 } // namespace KDC::testhelpers
