@@ -280,15 +280,38 @@ Var kill_counter
 ##############################################################################
 
 !macro PowerShellExecMacro PSCommand
+  SetDetailsPrint both
+  
+  DetailPrint "Executing PowerShell command: ${PSCommand}"
+  ClearErrors
+  
   InitPluginsDir
-  ;Save command in a temp file
+  ifErrors 0 +3
+  DetailPrint "Failed to initialize plugin directory. PLUGINSDIR value: ${$PLUGINSDIR}"
+  Goto endMacroExec
+  
+  ;Save command in a temp file.
   Push $R1
   FileOpen $R1 $PLUGINSDIR\tempfile.ps1 w
+  ifErrors 0 +3
+  DetailPrint "Failed to open file in writting mode: $PLUGINSDIR\tempfile.ps1"
+  Goto endMacroExec
+  
   FileWrite $R1 "${PSCommand}"
+  ifErrors 0 +3
+  DetailPrint "Failed to write to file: $PLUGINSDIR\tempfile.ps1"
+  Goto endMacroExec
+  
   FileClose $R1
-  Pop $R1
- 
+  ifErrors 0 +3
+  DetailPrint "Failed to close file: $PLUGINSDIR\tempfile.ps1"
+  Goto endMacroExec
+  
   !insertmacro PowerShellExecFileMacro "$PLUGINSDIR\tempfile.ps1"
+  
+  endMacroExec:
+    Pop $R1
+	SetDetailsPrint listonly
 !macroend
  
 !macro PowerShellExecLogMacro PSCommand
@@ -304,20 +327,30 @@ Var kill_counter
 !macroend
  
 !macro PowerShellExecFileMacro PSFile
+  SetDetailsPrint both
+  
   !define PSExecID ${__LINE__}
   Push $R0
+  
+  DetailPrint "Executing PowerShell script: ${PSFile}"
  
   nsExec::ExecToStack 'powershell -inputformat none -ExecutionPolicy RemoteSigned -File "${PSFile}"  '
- 
-  Pop $R0 ;return value is first on stack
-  ;script output is second on stack, leave on top of it
+  ;return value is first on stack.
+  ;script output is second on stack.
+  Pop $R0 
+  DetailPrint "Return value: $R0"
+  
+  ;script output is now on top of the stack.
   IntCmp $R0 0 finish_${PSExecID}
   SetErrorLevel 2
  
-finish_${PSExecID}:
-  Exch ;now $R0 on top of stack, followed by script output
-  Pop $R0
-  !undef PSExecID
+  finish_${PSExecID}:
+    Exch
+	;now the initial value of $R0 is on top of stack, followed by script output.
+    Pop $R0
+	;script output is now on top of the stack. $R0 is set to its initial value.
+	!undef PSExecID
+	SetDetailsPrint listonly
 !macroend
  
 !macro PowerShellExecFileLogMacro PSFile
@@ -329,9 +362,9 @@ finish_${PSExecID}:
   IntCmp $R0 0 finish_${PSExecID}
   SetErrorLevel 2
  
-finish_${PSExecID}:
-  Pop $R0
-  !undef PSExecID
+  finish_${PSExecID}:
+    Pop $R0
+    !undef PSExecID
 !macroend
  
 !define PowerShellExec '!insertmacro PowerShellExecMacro'
@@ -480,8 +513,9 @@ SectionEnd
       Pop $R0
       IntCmp $R0 1 install_lite_sync_extension
       MessageBox MB_ICONSTOP|MB_TOPMOST|MB_SETFOREGROUND $InstallMsiexec_MESSAGEBOX_TEXT
-      Goto end_install_lite_sync_extension
-      
+	  IntCmp $R0 0 end_install_lite_sync_extension
+      ; If output value is different than 0, try to install the extension anyway.
+	  
       install_lite_sync_extension:
       CreateDirectory "$INSTDIR\shellext\AppX"
       SetOutPath "$INSTDIR\shellext\AppX"
@@ -491,7 +525,6 @@ SectionEnd
       !insertmacro CheckAndConfirmEndProcesse1 "${EXTENSION_NAME}"
       ${PowerShellExecLog} "Add-AppxPackage -Path '$INSTDIR\shellext\AppX\${VFS_APPX_BUNDLE}' -ForceApplicationShutdown -ForceUpdateFromAnyVersion"
       end_install_lite_sync_extension:
-      
    ${MementoSectionEnd}
 !endif
 
