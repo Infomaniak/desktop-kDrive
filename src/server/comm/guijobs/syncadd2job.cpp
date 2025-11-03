@@ -126,26 +126,7 @@ ExitInfo SyncAdd2Job::process() {
     if (const auto exitInfo = _commManager->appServer().initSyncPal(sync, blackList, {}, whiteList, start,
                                                                     std::chrono::seconds(0), false, true);
         !exitInfo) {
-        LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << syncInfo.dbId() << " : " << exitInfo);
-        AppServer::addError(Error(ERR_ID, exitInfo));
-
-        // Stop SyncPal
-        if (const auto exitInfo2 = _commManager->appServer().stopSyncPal(syncInfo.dbId(), false, true, true); !exitInfo2) {
-            LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncInfo.dbId() << " : " << exitInfo2);
-        }
-
-        // Stop Vfs
-        if (const auto exitInfo2 = _commManager->appServer().stopVfs(syncInfo.dbId(), true); !exitInfo2) {
-            LOG_WARN(_logger, "Error in stopVfs for syncDbId=" << syncInfo.dbId() << " : " << exitInfo2);
-        }
-
-        SyncPalMap &syncPalMap = _commManager->appServer().syncPalMap();
-        LOG_IF_FAIL(!syncPalMap[syncInfo.dbId()] || syncPalMap[syncInfo.dbId()].use_count() == 1)
-        syncPalMap.erase(syncInfo.dbId());
-
-        VfsMap &vfsMap = _commManager->appServer().vfsMap();
-        LOG_IF_FAIL(!vfsMap[syncInfo.dbId()] || vfsMap[syncInfo.dbId()].use_count() == 1)
-        vfsMap.erase(syncInfo.dbId());
+        _commManager->appServer().stopSyncTask(syncInfo.dbId());
 
         // Delete sync from DB
         if (const ExitInfo exitInfo2 = ServerRequests::deleteSync(syncInfo.dbId()); !exitInfo2) {
