@@ -211,13 +211,17 @@ if ($LASTEXITCODE -ne 0) {
 
 Log "Conan dependencies successfully installed in: $OutputDir"
 
+#clear old conan PATH entries
+Log "Removing previous conan path in user Path environment variable..."
+$currentUserPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
+$newUserPath = ($currentUserPath -split ';' | Where-Object { $_ -notlike "*\.conan2\*" }) -join ';'
+[System.Environment]::SetEnvironmentVariable("Path", $newUserPath, "User")
+Log "previous conan path entries removed."
+
 # Update user environment variables if requested (programs will need to be restarted to see the changes)
 if ($UpdateEnvironment) {
-    Log "Removing previous conan path in user Path environment variable..."
-    $currentUserPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
-    $newUserPath = ($currentUserPath -split ';' | Where-Object { $_ -notlike "*\.conan2\*" }) -join ';'
-
     Log "Adding new conan path to user Path environment variable..."
+    $currentUserPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
     $allowedNames = @("build", "bin")
 
     $conanRoot = Join-Path $env:USERPROFILE ".conan2\p"
