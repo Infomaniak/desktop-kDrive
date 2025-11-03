@@ -241,7 +241,7 @@
   <data name="Global_UpgradeOfferProUrl" xml:space="preserve">
     <value>https://www.infomaniak.com/fr/ksuite/ksuite-pro/tarifs</value>
   </data>
-  <data name="Page_ErrorPage_Application_LearnMoreButton.Content" xml:space="preserve">
+  <data name="Global_LearnMoreButton.Content" xml:space="preserve">
     <value>En savoir plus</value>
   </data>
   <data name="Page_ErrorPage_Application_SolveButton.Content" xml:space="preserve">
@@ -527,6 +527,12 @@ Version {0} (build {1}), compilée le {2}
   <data name="Page_SettingsPage_AutoUpdate.Header" xml:space="preserve">
     <value>Mettre à jour kDrive automatiquement</value>
   </data>
+  <data name="Page_SettingsPage_AutoStart.Header" xml:space="preserve">
+    <value>Ouvrir kDrive au démarrage de l’ordinateur</value>
+  </data>
+  <data name="Page_SettingsPage_Notifications.Header" xml:space="preserve">
+    <value>Désactiver les notifications</value>
+  </data>
   <data name="CC_UpdateExpander_LicensesHyperLink.Content" xml:space="preserve">
     <value>Licence LGPL v3 - Sources Git</value>
   </data>
@@ -536,7 +542,49 @@ Version {0} (build {1}), compilée le {2}
   <data name="Page_SettingsPage_Language.Header" xml:space="preserve">
     <value>Langue</value>
   </data>
-  <data name="Page_SettingsPage_Language_ComboBox_default.Content" xml:space="preserve">
+  <data name="Page_SettingsPage_Language_ComboBox_Default.Content" xml:space="preserve">
     <value>Default</value>
+  </data>
+  <data name="Page_SettingsPage_Notifications_ComboBox_Never.Content" xml:space="preserve">
+    <value>Jamais</value>
+  </data>
+  <data name="Page_SettingsPage_Notifications_ComboBox_OneHour.Content" xml:space="preserve">
+    <value>Pendant 1h</value>
+  </data>
+  <data name="Page_SettingsPage_Notifications_ComboBox_UntilTomorrow.Content" xml:space="preserve">
+    <value>Jusqu’à demain</value>
+  </data>
+  <data name="Page_SettingsPage_Notifications_ComboBox_ThreeDays.Content" xml:space="preserve">
+    <value>Pendant une semaine</value>
+  </data>
+  <data name="Page_SettingsPage_Notifications_ComboBox_OneWeek.Content" xml:space="preserve">
+    <value>Pendant trois jours</value>
+  </data>
+  <data name="Page_SettingsPage_Beta_ComboBox_Stable.Content" xml:space="preserve">
+    <value>Ne pas rejoindre</value>
+  </data>
+  <data name="Page_SettingsPage_Beta_ComboBox_Beta.Content" xml:space="preserve">
+    <value>Bêta</value>
+  </data>
+  <data name="Page_SettingsPage_Beta_ComboBox_Internal.Content" xml:space="preserve">
+    <value>Interne</value>
+  </data>
+  <data name="Page_SettingsPage_Notifications_ComboBox_Always.Content" xml:space="preserve">
+    <value>Toujours</value>
+  </data>
+  <data name="Page_SettingsPage_MoveToTrash_Description.Text" xml:space="preserve">
+    <value>Certains éléments ne pourront pas être déplacés.</value>
+  </data>
+  <data name="Page_SettingsPage_MoveToTrash.Header" xml:space="preserve">
+    <value>Déplacer les fichiers supprimés dans la corbeille de l’ordinateur</value>
+  </data>
+  <data name="Page_SettingsPage_Beta.Header" xml:space="preserve">
+    <value>Programme bêta</value>
+  </data>
+  <data name="Page_SettingsPage_Beta_Expander.Description" xml:space="preserve">
+    <value>Bénéficiez d’un accès anticipé aux nouvelles versions de l’application avant qu’elles ne soient diffusées au grand public et participez à l’amélioration de l’application en nous partageant vos idées d’améliorations.</value>
+  </data>
+  <data name="Page_SettingsPage_Beta_Expander.Header" xml:space="preserve">
+    <value>Rejoindre le programme bêta</value>
   </data>
 </root>

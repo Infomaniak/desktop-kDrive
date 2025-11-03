@@ -17,6 +17,7 @@
  */
 
 using Infomaniak.kDrive.ServerCommunication.CommStruct;
+using Infomaniak.kDrive.ServerCommunication.JsonConverters;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using System;
@@ -75,6 +76,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     return await UpdaterChangeChannel(parameters);
                 case RequestNum.PARAMETERS_INFO:
                     return await ParametersInfo(parameters);
+                case RequestNum.PARAMETERS_UPDATE:
+                    return await ParametersUpdate(parameters);
                 default:
                     throw new NotImplementedException($"RequestNum {requestNum} not implemented in MockServerCommProtocol.");
             }
@@ -278,7 +281,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         private async Task<CommData> UpdaterVersionInfo(JsonObject parameters)
         {
             Logger.Log(Logger.Level.Debug, "Received UpdateVersionInfo request.");
-            VersionChannel channel = _mockData.CurrentChannel;
+            VersionChannel channel = _mockData.Settings.DistributionChannel ?? throw new InvalidOperationException("Distribution channel is not set in mocked settings.");
             if (parameters.ContainsKey("channel") && parameters["channel"] != null)
             {
                 channel = (VersionChannel)parameters["channel"]!.GetValue<int>();
@@ -305,17 +308,15 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         private async Task<CommData> UpdaterChangeChannel(JsonObject parameters)
         {
             Logger.Log(Logger.Level.Debug, "Received UpdaterChangeChannel request.");
-            VersionChannel channel = _mockData.CurrentChannel;
             if (parameters.ContainsKey("channel") && parameters["channel"] != null)
             {
-                channel = (VersionChannel)parameters["channel"]!.GetValue<int>();
+                _mockData.Settings.DistributionChannel = (VersionChannel)parameters["channel"]!.GetValue<int>();
             }
             else
             {
                 Logger.Log(Logger.Level.Warning, "No channel specified in UpdaterChangeChannel request, using current channel.");
 
             }
-            _mockData.CurrentChannel = channel;
             EnqueueSignal(SignalNum.UPDATER_STATE_CHANGED, new JsonObject());
             return new CommData
             {
@@ -344,6 +345,44 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 {
                     ["parmsInfo"] = JsonNode.Parse(parametersInfo)
                 }
+            };
+        }
+
+        private async Task<CommData> ParametersUpdate(JsonObject parameters)
+        {
+            Logger.Log(Logger.Level.Debug, "Received ParametersUpdate request.");
+            if (!parameters.ContainsKey("parmsInfos") || parameters["parmsInfos"] == null)
+            {
+                Logger.Log(Logger.Level.Warning, "No parmsInfo specified in ParametersUpdate request, using existing settings.");
+
+                return new CommData
+                {
+                    Type = CommMessageType.Request,
+                    Id = (int)NextId,
+                    RequestNum = RequestNum.PARAMETERS_UPDATE,
+                    Params = new JsonObject()
+                };
+            }
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            options.Converters.Add(new Base64StringJsonConverter());
+            var updatedSettings = parameters["parmsInfos"]!.Deserialize<ParmsInfo>(options);
+            if (updatedSettings is null)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to deserialize parmsInfo from ${parameters["parmsInfos"]}");
+                throw new InvalidOperationException("Failed to deserialize parmsInfo in ParametersUpdate request.");
+            }
+            _mockData.Settings = updatedSettings;
+
+            return new CommData
+            {
+                Type = CommMessageType.Request,
+                Id = (int)NextId,
+                RequestNum = RequestNum.PARAMETERS_UPDATE,
+                Params = new JsonObject()
             };
         }
 
@@ -409,7 +448,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public List<User> Users { get; set; } = new List<User>();
         public AppVersion CurrentVersion { get; set; } = new AppVersion() { BuildVersion = "20250908", Tag = "3.7.6" };
-        public ParmsInfo Settings { get; set; }
+        public ParmsInfo Settings { get; set; } = new ParmsInfo();
 
         public Dictionary<VersionChannel, AppVersion?> VersionsByChannel { get; set; } = new Dictionary<VersionChannel, AppVersion?>()
         {
@@ -418,7 +457,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {VersionChannel.Internal, new AppVersion() { BuildVersion = "20251022", Tag = "3.7.8" }},
         };
 
-        public VersionChannel CurrentChannel = VersionChannel.Prod;
         public MockServerData()
         {
             InitializeMockData();
@@ -512,7 +550,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Language = Language.SystemDefault,
                 AutoStart = true,
                 MoveToTrash = true,
-                NotificationsDisabled = NotificationsDisabled.Never,
+                NotificationsDisabled = NotificationsDisabled.Always,
+                DistributionChannel = VersionChannel.Prod,
                 UseLog = false,
                 LogLevel = Logger.Level.Debug,
                 ExtendedLog = false,

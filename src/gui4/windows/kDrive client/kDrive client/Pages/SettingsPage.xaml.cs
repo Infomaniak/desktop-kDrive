@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using Infomaniak.kDrive.Converters;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,8 +23,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.ComponentModel;
-using System.Globalization;
-using System.Threading;
+using System.Linq;
 
 namespace Infomaniak.kDrive.Pages
 {
@@ -37,8 +35,10 @@ namespace Infomaniak.kDrive.Pages
         {
             Logger.Log(Logger.Level.Info, "Navigated to SettingsPage - Initializing SettingsPage components");
             InitializeComponent();
-            SetSelectedChannel(ViewModel.Settings.UpdateManager.CurrentChannel);
             RegisterPropertyChangedHandlers();
+            Loaded += onPageLoaded;
+            
+
             Logger.Log(Logger.Level.Debug, "SettingsPage components initialized");
         }
         ~SettingsPage()
@@ -46,46 +46,47 @@ namespace Infomaniak.kDrive.Pages
             UnregisterPropertyChangedHandlers();
         }
 
+        void onPageLoaded(object sender, RoutedEventArgs e)
+        {
+            // check if any of the users is staff to show the internal update channel combobox
+            bool staffUserExists = ViewModel.Users.Any(user => user.IsStaff && user.IsConnected);
+            UpdateChannelComboBox_Internal.Visibility = staffUserExists ? Visibility.Visible : Visibility.Collapsed;
+        }
+
         private void RegisterPropertyChangedHandlers()
         {
+            ViewModel.Settings.PropertyChanged += Settings_PropertyChanged;
+            SetEnumComboBoxSelection(NotificationsComboBox, ViewModel.Settings.NotificationsDisabled);
+
             ViewModel.Settings.UpdateManager.PropertyChanged += UpdateManager_PropertyChanged;
+            SetEnumComboBoxSelection(UpdateChannelComboBox, ViewModel.Settings.UpdateManager.CurrentChannel);
+        }
+
+        private void Settings_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(ViewModel.Settings.NotificationsDisabled))
+                SetEnumComboBoxSelection(NotificationsComboBox, ViewModel.Settings.NotificationsDisabled);
         }
 
         private void UpdateManager_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(ViewModel.Settings.UpdateManager.CurrentChannel))
-            {
-                SetSelectedChannel(ViewModel.Settings.UpdateManager.CurrentChannel);
-            }
-        }
+                SetEnumComboBoxSelection(UpdateChannelComboBox, ViewModel.Settings.UpdateManager.CurrentChannel);
 
+        }
         private void UnregisterPropertyChangedHandlers()
         {
             ViewModel.Settings.UpdateManager.PropertyChanged -= UpdateManager_PropertyChanged;
         }
-
 
         private void CreateAccountButton_Click(object sender, RoutedEventArgs e)
         {
             (App.Current as App)?.StartOnboarding();
         }
 
-        
-
-        private void SetSelectedChannel(VersionChannel channel)
-        {
-            foreach (var item in UpdateChannel.Items)
-            {
-                if (item is ComboBoxItem comboBoxItem && comboBoxItem.Tag is string tagString && Enum.TryParse<VersionChannel>(tagString, out VersionChannel itemChannel) && itemChannel == channel)
-                {
-                    UpdateChannel.SelectedItem = comboBoxItem;
-                    return;
-                }
-            }
-        }
-
         private async void UpdateChannel_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (!IsLoaded) return;
             if (sender is ComboBox comboBox && comboBox.SelectedItem is ComboBoxItem selectedItem)
             {
                 string? channelString = selectedItem.Tag as string;
@@ -96,16 +97,70 @@ namespace Infomaniak.kDrive.Pages
                 }
                 else
                 {
-                    Logger.Log(Logger.Level.Warning, $"Invalid update channel selected: {channelString}");
+                    Logger.Log(Logger.Level.Error, $"Invalid update channel selected: {channelString}");
                 }
             }
         }
 
         private async void AutoUpdateToggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
+            if (!IsLoaded) return;
             if (sender is ToggleSwitch toggleSwitch)
             {
+                toggleSwitch.IsEnabled = false;
                 await ViewModel.Settings.UpdateManager.ChangeAutoUpdate(toggleSwitch.IsOn);
+                toggleSwitch.IsEnabled = true;
+            }
+        }
+
+        private async void AutoStartToggleSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            if (sender is ToggleSwitch toggleSwitch)
+            {
+                toggleSwitch.IsEnabled = false;
+                await ViewModel.Settings.ChangeAutoStart(toggleSwitch.IsOn);
+                toggleSwitch.IsEnabled = true;
+            }
+        }
+
+        private void SetEnumComboBoxSelection<TEnum>(ComboBox comboBox, TEnum value) where TEnum : struct, Enum
+        {
+            foreach (var item in comboBox.Items)
+            {
+                if (item is ComboBoxItem comboBoxItem && comboBoxItem.Tag is string tagString && Enum.TryParse<TEnum>(tagString, out TEnum itemValue) && itemValue.Equals(value))
+                {
+                    comboBox.SelectedItem = comboBoxItem;
+                    return;
+                }
+            }
+        }
+        private async void NotificationsCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            if (sender is ComboBox comboBox && comboBox.SelectedItem is ComboBoxItem selectedItem)
+            {
+                string? selection = selectedItem.Tag as string;
+                if (Enum.TryParse<NotificationsDisabled>(selection, out NotificationsDisabled selectedNotificationsDisabled))
+                {
+                    await ViewModel.Settings.ChangeNotificationsDisabled(selectedNotificationsDisabled);
+                    Logger.Log(Logger.Level.Info, $"Update notifications disabled changed to {selectedNotificationsDisabled}");
+                }
+                else
+                {
+                    Logger.Log(Logger.Level.Error, $"Update notifications disabled changed to  {selectedNotificationsDisabled}");
+                }
+            }
+        }
+
+        private async void MoveToTrashToggleSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            if (sender is ToggleSwitch toggleSwitch)
+            {
+                toggleSwitch.IsEnabled = false;
+                await ViewModel.Settings.ChangeMoveToTrash(toggleSwitch.IsOn);
+                toggleSwitch.IsEnabled = true;
             }
         }
     }

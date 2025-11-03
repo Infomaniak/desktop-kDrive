@@ -10,7 +10,6 @@
       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
       mc:Ignorable="d">
     <Page.Resources>
-        <converters:BooleanToInvertedVisibilityConverter  x:Key="BooleanToInvertedVisibilityConverter" />
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:BooleanToInvertedBooleanConverter x:Key="BooleanToInvertedBooleanConverter" />
     </Page.Resources>

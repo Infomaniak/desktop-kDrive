@@ -11,7 +11,6 @@
       xmlns:templateSelectors="using:Infomaniak.kDrive.TemplateSelectors"
       mc:Ignorable="d">
     <Page.Resources>
-        <converters:BooleanToInvertedVisibilityConverter  x:Key="BooleanToInvertedVisibilityConverter" />
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:BooleanToInvertedBooleanConverter x:Key="BooleanToInvertedBooleanConverter" />
         <converters:BooleanToIntegerConverter x:Key="BooleanToIntegerConverter" />

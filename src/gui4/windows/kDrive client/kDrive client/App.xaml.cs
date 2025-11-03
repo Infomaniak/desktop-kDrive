@@ -53,7 +53,6 @@ namespace Infomaniak.kDrive
             TrayIcoManager = new TrayIcon.TrayIconManager();
             _services.AddSingleton<AppModel>();
             //_services.AddSingleton<IServerCommProtocol, SocketServerCommProtocol>()
-
             _services.AddSingleton<IServerCommProtocol, MockServerCommProtocol>();
             _services.AddSingleton<IServerCommService, ServerCommService>();
             _serviceProvider = _services.BuildServiceProvider();

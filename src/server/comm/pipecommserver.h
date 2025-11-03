@@ -45,7 +45,7 @@ class PipeCommChannel : public AbstractCommChannel {
         ~PipeCommChannel() = default;
 
         uint64_t bytesAvailable() const override;
-        void close() override {};
+        void close() override {}
 
     protected:
         uint64_t readData(CommChar *data, uint64_t maxSize) final;
@@ -64,7 +64,6 @@ class PipeCommChannel : public AbstractCommChannel {
         TCHAR _readData[BUFSIZE];
 #endif
 
-
         friend class PipeCommServer;
 };
 
@@ -82,6 +81,9 @@ class PipeCommServer : public AbstractCommServer {
         static void disconnectAndReconnect(std::shared_ptr<PipeCommChannel> channel);
 #endif
 
+        bool isListening() const { return _isListening; }
+        bool isRunning() const { return _isRunning; }
+
     protected:
         virtual std::shared_ptr<PipeCommChannel> makeCommChannel() const = 0;
 
@@ -89,6 +91,7 @@ class PipeCommServer : public AbstractCommServer {
         SyncPath _pipePath;
         std::unique_ptr<std::thread> _thread;
         bool _isRunning{false};
+        bool _isListening{false}; // The server is ready to process messages
         bool _stopAsked{false};
         ExitInfo _exitInfo;
 
@@ -97,13 +100,17 @@ class PipeCommServer : public AbstractCommServer {
         void waitForExit();
 
         static void executeFunc(PipeCommServer *server);
-        SyncPath createPipe();
+        static SyncPath pipePath();
+
 #if defined(KD_WINDOWS)
         std::recursive_mutex _channelsMutex;
         std::vector<std::shared_ptr<PipeCommChannel>> _channels;
 
         static bool connectToPipe(HANDLE hPipe, LPOVERLAPPED lpo);
+        static int nbrOfpipeInstances();
 #endif
+
+        friend class TestPipeComm;
 };
 
 } // namespace KDC

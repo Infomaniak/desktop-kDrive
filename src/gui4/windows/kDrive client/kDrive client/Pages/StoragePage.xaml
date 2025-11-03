@@ -28,7 +28,6 @@
       mc:Ignorable="d">
     <Page.Resources>
         <converters:BooleanToVisibilityConverter  x:Key="BooleanToVisibilityConverter" />
-        <converters:BooleanToInvertedVisibilityConverter  x:Key="BooleanToInvertedVisibilityConverter" />
         <converters:BytesToHumanReadableStringConverter x:Key="BytesToHumanReadableStringConverter" />
         <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
     </Page.Resources>
@@ -55,7 +54,7 @@
                  IsOpen="True"
                  IsClosable="False"
                  Message="{x:Bind PageViewModel.DiskRoot, Mode=OneWay}"
-                 Visibility="{x:Bind PageViewModel.IsDiskConnected, Mode=OneWay, Converter={StaticResource BooleanToInvertedVisibilityConverter}}">
+                 Visibility="{x:Bind PageViewModel.IsDiskConnected, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True'}">
             <!-- TODO: Replace this infobar once the page is ready on the UI/UX side-->
             <InfoBar.ActionButton>
                 <Button Content="Réessayer"
