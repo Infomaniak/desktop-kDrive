@@ -25,9 +25,8 @@ static const auto outParamsSyncDbId = "syncDbId";
 
 namespace KDC {
 
-SignalSyncRemovedJob::SignalSyncRemovedJob(std::shared_ptr<CommManager> commManager, std::shared_ptr<AbstractCommChannel> channel,
-                                           int syncDbId) :
-    AbstractGuiJob(commManager, channel),
+SignalSyncRemovedJob::SignalSyncRemovedJob(std::shared_ptr<CommManager> commManager, int syncDbId) :
+    AbstractGuiJob(commManager),
     _syncDbId(syncDbId) {
     _signalNum = SignalNum::SYNC_REMOVED;
 }

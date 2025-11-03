@@ -124,12 +124,14 @@ bool PipeCommServer::listen() {
 }
 
 std::shared_ptr<AbstractCommChannel> PipeCommServer::nextPendingConnection() {
+    const std::scoped_lock lock(_channelsMutex);
     return _channels.back();
 }
 
 std::list<std::shared_ptr<AbstractCommChannel>> PipeCommServer::connections() {
+    const std::scoped_lock lock(_channelsMutex);
     std::list<std::shared_ptr<AbstractCommChannel>> channelList;
-    for (auto &channel: _channels) {
+    for (auto channel: _channels) {
         if (channel->_connected) {
             channelList.push_back(channel);
         }
@@ -148,6 +150,7 @@ void PipeCommServer::execute() {
 
     for (DWORD inst = 0; inst < PIPE_INSTANCES; inst++) {
         // Creates an instance of a named pipe
+        const std::scoped_lock lock(_channelsMutex);
         auto channel = makeCommChannel();
         _channels.push_back(channel);
         newConnectionCbk();
@@ -234,6 +237,7 @@ void PipeCommServer::execute() {
             LOG_DEBUG(Log::instance()->getLogger(), "Event received for inst:" << inst << " action:" << action);
         }
 
+        const std::scoped_lock lock(_channelsMutex);
         if (_channels[inst]->_pendingIO[action]) {
             DWORD size;
             BOOL fSuccess = GetOverlappedResult(_channels[inst]->_pipeInst, // handle to pipe

@@ -156,9 +156,8 @@ ExitInfo SyncAdd2Job::process() {
         return exitInfo;
     }
 
-    auto signalSyncAddedJob = std::make_shared<SignalSyncAddedJob>(_commManager, _channel, syncInfo);
-    // Add job to JobManager pool
-    GuiJobManagerSingleton::instance()->queueAsyncJob(signalSyncAddedJob, Poco::Thread::PRIO_NORMAL);
+    auto signalSyncAddedJob = std::make_shared<SignalSyncAddedJob>(_commManager, syncInfo);
+    _commManager->sendGuiSignal(signalSyncAddedJob);
 
 #if defined(KD_MACOS)
     Utility::restartFinderExtension();

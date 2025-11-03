@@ -67,9 +67,8 @@ ExitInfo UserDeleteJob::process() {
     // Delete user from DB
     const ExitCode exitCode = ServerRequests::deleteUser(_userDbId);
     if (exitCode == ExitCode::Ok) {
-        auto signalUserRemovedJob = std::make_shared<SignalUserRemovedJob>(_commManager, _channel, _userDbId);
-        // Add job to JobManager pool
-        GuiJobManagerSingleton::instance()->queueAsyncJob(signalUserRemovedJob, Poco::Thread::PRIO_NORMAL);
+        auto signalUserRemovedJob = std::make_shared<SignalUserRemovedJob>(_commManager, _userDbId);
+        _commManager->sendGuiSignal(signalUserRemovedJob);
     } else {
         LOG_WARN(_logger, "Error in ServerRequests::deleteUser: code=" << exitCode);
         AppServer::addError(Error(ERR_ID, exitCode, ExitCause::Unknown));

@@ -23,8 +23,7 @@ namespace KDC {
 
 class SignalDriveAddedJob : public AbstractGuiJob {
     public:
-        SignalDriveAddedJob(std::shared_ptr<CommManager> commManager, std::shared_ptr<AbstractCommChannel> channel,
-                            const DriveInfo &driveInfo);
+        SignalDriveAddedJob(std::shared_ptr<CommManager> commManager, const DriveInfo &driveInfo);
 
     private:
         // Output parameters

@@ -25,9 +25,8 @@ static const auto outParamsSyncInfo = "syncInfo";
 
 namespace KDC {
 
-SignalSyncAddedJob::SignalSyncAddedJob(std::shared_ptr<CommManager> commManager, std::shared_ptr<AbstractCommChannel> channel,
-                                       const SyncInfo &syncInfo) :
-    AbstractGuiJob(commManager, channel),
+SignalSyncAddedJob::SignalSyncAddedJob(std::shared_ptr<CommManager> commManager, const SyncInfo &syncInfo) :
+    AbstractGuiJob(commManager),
     _syncInfo(syncInfo) {
     _signalNum = SignalNum::SYNC_ADDED;
 }

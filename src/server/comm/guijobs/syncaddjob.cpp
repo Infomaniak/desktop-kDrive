@@ -109,15 +109,13 @@ ExitInfo SyncAddJob::process() {
     }
 
     if (accountInfo.dbId() != 0) {
-        auto signalAccountAddedJob = std::make_shared<SignalAccountAddedJob>(_commManager, _channel, accountInfo);
-        // Add job to JobManager pool
-        GuiJobManagerSingleton::instance()->queueAsyncJob(signalAccountAddedJob, Poco::Thread::PRIO_NORMAL);
+        auto signalAccountAddedJob = std::make_shared<SignalAccountAddedJob>(_commManager, accountInfo);
+        _commManager->sendGuiSignal(signalAccountAddedJob);
     }
 
     if (driveInfo.dbId() != 0) {
-        auto signalDriveAddedJob = std::make_shared<SignalDriveAddedJob>(_commManager, _channel, driveInfo);
-        // Add job to JobManager pool
-        GuiJobManagerSingleton::instance()->queueAsyncJob(signalDriveAddedJob, Poco::Thread::PRIO_NORMAL);
+        auto signalDriveAddedJob = std::make_shared<SignalDriveAddedJob>(_commManager, driveInfo);
+        _commManager->sendGuiSignal(signalDriveAddedJob);
     }
 
     // Check if sync is valid
@@ -176,9 +174,8 @@ ExitInfo SyncAddJob::process() {
         return exitInfo;
     }
 
-    auto signalSyncAddedJob = std::make_shared<SignalSyncAddedJob>(_commManager, _channel, syncInfo);
-    // Add job to JobManager pool
-    GuiJobManagerSingleton::instance()->queueAsyncJob(signalSyncAddedJob, Poco::Thread::PRIO_NORMAL);
+    auto signalSyncAddedJob = std::make_shared<SignalSyncAddedJob>(_commManager, syncInfo);
+    _commManager->sendGuiSignal(signalSyncAddedJob);
 
 #if defined(KD_MACOS)
     Utility::restartFinderExtension();
