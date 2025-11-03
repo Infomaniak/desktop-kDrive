@@ -33,35 +33,6 @@
 
 namespace KDC {
 
-bool Utility::moveItemToTrash(const SyncPath &itemPath) {
-    if (itemPath.empty()) {
-        LOG_WARN(Log::instance()->getLogger(), "Path is empty");
-        return false;
-    }
-
-    NSString *filePath = [NSString stringWithCString:itemPath.c_str() encoding:NSUTF8StringEncoding];
-
-    if (filePath == nullptr) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in stringWithCString. Failed to cast std filepath to NSString." << Utility::formatSyncPath(itemPath));
-        return false;
-    }
-    NSURL *fileURL = [NSURL fileURLWithPath:filePath];
-
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-
-    NSError *error = nil;
-    BOOL success = [fileManager trashItemAtURL:fileURL resultingItemURL:nil error:&error];
-
-    if (error != nil) {
-        const auto wcharError = reinterpret_cast<const wchar_t *>(
-                [error.localizedDescription cStringUsingEncoding:NSUTF32LittleEndianStringEncoding]);
-        LOGW_WARN(Log::instance()->getLogger(), std::wstring(wcharError) << Utility::formatSyncPath(itemPath));
-    }
-
-    return success;
-}
-
 bool Utility::preventSleeping(bool enable) {
     static IOPMAssertionID assertionID;
 

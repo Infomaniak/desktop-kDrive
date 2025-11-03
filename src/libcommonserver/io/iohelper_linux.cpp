@@ -126,4 +126,43 @@ IoError IoHelper::isLocked(const SyncPath &, bool &locked) noexcept {
     return IoError::Success; // Only on macOS
 }
 
+bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
+    std::string desktopType;
+    if (!Utility::getLinuxDesktopType(desktopType)) {
+        desktopType = "GNOME";
+    }
+
+    std::string command;
+    if (desktopType == "GNOME") {
+        command = "gio trash \"" + itemPath.string() + "\"";
+    } else if (desktopType == "KDE") {
+        command = "kioclient move \"" + itemPath.string() + "\" trash:/files/";
+    } else {
+        // Not implemented for the others distros
+        return true;
+    }
+
+    const SyncPath trashPath = getTrashPath();
+
+    // Check if the trash/files & trash/info path exists and create it if needed
+    if (std::error_code ec; !std::filesystem::exists(trashPath, ec)) {
+        if (ec) {
+            LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::exists - " << Utility::formatStdError(ec));
+            return false;
+        }
+
+        if (!std::filesystem::create_directories(trashPath)) {
+            LOGW_WARN(Log::instance()->getLogger(), L"Failed to create directory - " << Utility::formatSyncPath(trashPath));
+            return false;
+        }
+    }
+
+    if (const auto result = system(command.c_str()); result) {
+        LOG_WARN(Log::instance()->getLogger(), "Failed to move item to trash - err=" << std::to_string(result));
+        return false;
+    }
+
+    return true;
+}
+
 } // namespace KDC

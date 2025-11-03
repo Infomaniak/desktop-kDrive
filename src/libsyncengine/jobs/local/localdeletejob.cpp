@@ -219,7 +219,7 @@ ExitInfo LocalDeleteJob::hardDeleteDehydratedPlaceholders() {
 }
 
 ExitInfo LocalDeleteJob::moveToTrashOrHardDeleteIfNeeded(const SyncPath &path) {
-    if (const bool moveToTrashSuccess = Utility::moveItemToTrash(path); !moveToTrashSuccess) {
+    if (const bool moveToTrashSuccess = IoHelper::moveItemToTrash(path); !moveToTrashSuccess) {
         LOGW_WARN(_logger, L"Failed to move item: " << Utility::formatSyncPath(path) << L" to trash. Trying hard delete.");
         return hardDelete(path);
     }
