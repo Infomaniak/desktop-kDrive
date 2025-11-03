@@ -18,6 +18,7 @@
 
 using DynamicData;
 using DynamicData.Binding;
+using Infomaniak.kDrive.Types;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -40,6 +41,7 @@ namespace Infomaniak.kDrive.ViewModels
         private bool _isConnected = false;
         private bool _isStaff = false;
         private readonly ObservableCollection<Account> _accounts = new ObservableCollection<Account>();
+        private ObservableCollection<DriveAvailable> _drivesAvailable = new ObservableCollection<DriveAvailable>();
         private readonly IDisposable _allDriveSubscribtion;
         public User(DbId dbId)
         {
@@ -117,6 +119,11 @@ namespace Infomaniak.kDrive.ViewModels
         public ObservableCollection<Account> Accounts
         {
             get => _accounts;
+        }
+
+        public ObservableCollection<DriveAvailable> DrivesAvailable
+        {
+            get => _drivesAvailable;
         }
 
         public ReadOnlyObservableCollection<Drive> Drives

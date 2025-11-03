@@ -124,6 +124,27 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         }
     }
 
+    public class DriveAvailableInfo
+    {
+        public DriveId? DriveId { get; set; }
+        public UserId? UserId { get; set; }
+        public DbId? UserDbId { get; set; }
+        public AccountId? AccountId { get; set; }
+        public string? Name { get; set; }
+        public System.Drawing.Color? Color { get; set; }
+    }
+    public static partial class ConversionHelper
+    {
+        static public void copyToDriveAvailable(DriveAvailableInfo source, DriveAvailable target)
+        {
+            copyProperty(source, target, nameof(source.DriveId), nameof(target.DriveId));
+            copyProperty(source, target, nameof(source.UserId), nameof(target.UserId));
+            copyProperty(source, target, nameof(source.AccountId), nameof(target.AccountId));
+            copyProperty(source, target, nameof(source.Name), nameof(target.Name));
+            copyProperty(source, target, nameof(source.Color), nameof(target.Color));
+        }
+    }
+
     public class SyncInfo
     {
         public DbId? DbId { get; set; }

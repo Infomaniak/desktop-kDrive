@@ -85,5 +85,15 @@ namespace Infomaniak.kDrive.Types
         Success,
         Error
     }
+
+    public class DriveAvailable
+    {
+        public DriveId DriveId { get; set; }
+        public UserId UserId { get; set; }
+        public DbId UserDbId { get; set; }
+        public AccountId AccountId { get; set; }
+        public string Name { get; set; }
+        public System.Drawing.Color Color { get; set; }
+    }
 }
 

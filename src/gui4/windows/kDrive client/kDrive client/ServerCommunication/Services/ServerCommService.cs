@@ -95,6 +95,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     continue;
                 }
                 await AddOrUpdateUserInModel(userInfo);
+                await RefreshUserDrivesAvailable(userInfo.DbId.Value, cancellationToken);
             }
 
             // Remove users that are no longer present
@@ -213,6 +214,41 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             });
         }
 
+        public async Task RefreshUserDrivesAvailable(DbId userDbId, CancellationToken cancellationToken)
+        {
+            JsonObject parms = new()
+            {
+                ["userDbId"] = userDbId
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.USER_AVAILABLEDRIVES, parms, cancellationToken);
+            if (data.Params == null || !data.Params.ContainsKey("driveAvailableInfoList"))
+            {
+                Logger.Log(Logger.Level.Error, "driveAvailableInfoList not found in response.");
+                return;
+            }
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            options.Converters.Add(new Base64StringJsonConverter());
+            options.Converters.Add(new ColorJsonConverter());
+            List<DriveAvailableInfo> driveAvailableInfoList = data.Params["driveAvailableInfoList"].Deserialize<List<DriveAvailableInfo>>(options) ?? new List<DriveAvailableInfo>();
+            User? user = _viewModel.Users.FirstOrDefault<User>(u => u.DbId == userDbId);
+            if (user is null)
+            {
+                Logger.Log(Logger.Level.Error, $"User not found for DriveAvailable with dbID {userDbId}.");
+                return;
+            }
+            user.DrivesAvailable.Clear();
+            foreach (var driveAvailableInfos in driveAvailableInfoList)
+            {
+                DriveAvailable driveAvailable = new DriveAvailable();
+                CommStruct.ConversionHelper.copyToDriveAvailable(driveAvailableInfos, driveAvailable);               
+                user.DrivesAvailable.Add(driveAvailable);
+            }
+        }
+
+
         public async Task RefreshSyncs(CancellationToken cancellationToken)
         {
             CommData data = await _commClient.SendRequestAsync(RequestNum.SyncInfoList, new JsonObject(), cancellationToken);
@@ -279,7 +315,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             };
             options.Converters.Add(new Base64StringJsonConverter());
             ParmsInfo? parametersInfo = data.Params["parmsInfo"].Deserialize<ParmsInfo>(options);
-            if(parametersInfo == null)
+            if (parametersInfo == null)
             {
                 Logger.Log(Logger.Level.Error, $"Failed to deserialize parmsInfo from ${data.Params["parmsInfo"]}.");
                 return;
@@ -373,7 +409,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             };
             options.Converters.Add(new Base64StringJsonConverter());
             UserInfo? newUserInfo = signalData["userInfo"].Deserialize<UserInfo>(options);
-            if (newUserInfo == null) {
+            if (newUserInfo == null)
+            {
                 Logger.Log(Logger.Level.Error, $"Failed to deserialize userInfo from ${signalData["userInfo"]}.");
                 return;
             }
