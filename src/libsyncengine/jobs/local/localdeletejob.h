@@ -51,7 +51,7 @@ class LocalDeleteJob : public SyncJob {
         ExitInfo canRun() override;
         virtual bool findRemoteItem(SyncPath &remoteItemPath) const;
         virtual ExitInfo moveToTrash();
-        ExitInfo handleTrashMoveOutcome(bool success, const SyncPath &path);
+        ExitInfo moveToTrashOrHardDeleteIfNeeded(const SyncPath &path);
 
     private:
         ExitInfo runJob() override;

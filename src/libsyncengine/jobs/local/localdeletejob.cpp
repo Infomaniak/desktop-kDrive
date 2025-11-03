@@ -152,19 +152,6 @@ ExitInfo LocalDeleteJob::canRun() {
     return ExitCode::Ok;
 }
 
-ExitInfo LocalDeleteJob::handleTrashMoveOutcome(const bool success, const SyncPath &path) {
-    if (!success) {
-        LOGW_WARN(_logger, L"Failed to move item: " << Utility::formatSyncPath(path) << L" to trash. Trying hard delete.");
-        return hardDelete(path);
-    }
-
-    if (ParametersCache::isExtendedLogEnabled()) {
-        LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(path) << L" was moved to trash.");
-    }
-
-    return ExitCode::Ok;
-}
-
 ExitInfo LocalDeleteJob::hardDelete(const SyncPath &path) {
     LOGW_DEBUG(_logger, L"Try to hard delete item with " << Utility::formatSyncPath(path));
 
@@ -203,9 +190,7 @@ bool isFileDehydrated(const SyncPath &localPath, log4cplus::Logger logger) {
 ExitInfo LocalDeleteJob::handleLiteSyncFile(const SyncPath &path) {
     if (isFileDehydrated(path, _logger)) return hardDelete(path);
 
-    const bool outcome = Utility::moveItemToTrash(path);
-
-    return handleTrashMoveOutcome(outcome, path);
+    return moveToTrashOrHardDeleteIfNeeded(path);
 }
 
 ExitInfo LocalDeleteJob::hardDeleteDehydratedPlaceholders() {
@@ -233,11 +218,21 @@ ExitInfo LocalDeleteJob::hardDeleteDehydratedPlaceholders() {
     return ExitCode::Ok;
 }
 
-ExitInfo LocalDeleteJob::moveToTrash() {
-    if (!_liteSyncIsEnabled) {
-        const bool moveToTrashSuccess = Utility::moveItemToTrash(_absolutePath);
-        return handleTrashMoveOutcome(moveToTrashSuccess, _absolutePath);
+ExitInfo LocalDeleteJob::moveToTrashOrHardDeleteIfNeeded(const SyncPath &path) {
+    if (const bool moveToTrashSuccess = Utility::moveItemToTrash(path); !moveToTrashSuccess) {
+        LOGW_WARN(_logger, L"Failed to move item: " << Utility::formatSyncPath(path) << L" to trash. Trying hard delete.");
+        return hardDelete(path);
     }
+
+    if (ParametersCache::isExtendedLogEnabled()) {
+        LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(path) << L" was moved to trash.");
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitInfo LocalDeleteJob::moveToTrash() {
+    if (!_liteSyncIsEnabled) return moveToTrashOrHardDeleteIfNeeded(_absolutePath);
 
     bool isDirectory = false;
     auto ioErrorCheckIfIsDirectory = IoError::Success;
@@ -252,9 +247,7 @@ ExitInfo LocalDeleteJob::moveToTrash() {
 
     if (const auto exitInfo = hardDeleteDehydratedPlaceholders(); !exitInfo) return exitInfo;
 
-    const bool moveToTrashOutcome = Utility::moveItemToTrash(_absolutePath);
-
-    return handleTrashMoveOutcome(moveToTrashOutcome, _absolutePath);
+    return moveToTrashOrHardDeleteIfNeeded(_absolutePath);
 }
 
 ExitInfo LocalDeleteJob::runJob() {
