@@ -34,9 +34,6 @@ class SyncAddJob : public SyncAddAbstractJob {
         int _accountId = 0;
         int _driveId = 0;
 
-        // Output parameters
-        SyncInfo _syncInfo;
-
         ExitInfo deserializeInputParms() override;
         ExitInfo process() override;
 
