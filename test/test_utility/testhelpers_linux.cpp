@@ -74,6 +74,7 @@ void eraseFromTrash(const KDC::SyncPath &relativePath) {
 
     std::vector<SyncPath> itemsToErase;
     for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
+        const auto p = dirIt->path();
         const auto dirItemRelativePath = std::filesystem::relative(dirIt->path(), trashPath, ec);
         // Filter out the numerical suffix of the root directory name, e.g: `dirname.15` is replaced with `dirname`.
         const auto suffixFreedirectorEntryPath = removeNumericSuffix(dirItemRelativePath);
