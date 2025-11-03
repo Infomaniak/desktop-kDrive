@@ -63,8 +63,8 @@ ExitInfo SyncStartJob::process() {
     }
 
     // Clear old errors for this sync
-    _commManager->appServer().clearErrors(sync.dbId(), false);
-    _commManager->appServer().clearErrors(sync.dbId(), true);
+    (void) _commManager->appServer().clearErrors(sync.dbId(), false);
+    (void) _commManager->appServer().clearErrors(sync.dbId(), true);
 
     if (const auto exitInfo = _commManager->appServer().checkIfSyncIsValid(sync); !exitInfo) {
         LOG_WARN(_logger, "Error in checkIfSyncIsValid for syncDbId=" << sync.dbId() << " : " << exitInfo);

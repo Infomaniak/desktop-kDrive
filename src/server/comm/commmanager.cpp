@@ -262,7 +262,8 @@ void CommManager::sendGuiSignal(std::shared_ptr<AbstractGuiJob> signal) {
 
     LOG_DEBUG(Log::instance()->getLogger(), "Send signal: id=" << signal->id() << " num=" << signal->signalNum());
 
-    signal->setChannels(_guiCommServer->connections());
+    auto channels = _guiCommServer->connections();
+    signal->setChannels(channels);
 
     // Add job to JobManager pool
     GuiJobManagerSingleton::instance()->queueAsyncJob(signal, Poco::Thread::PRIO_NORMAL);
