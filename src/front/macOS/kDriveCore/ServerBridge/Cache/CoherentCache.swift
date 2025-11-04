@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Combine
 import Foundation
 
 public struct User: Identifiable, Hashable, Sendable {
@@ -109,6 +110,14 @@ public typealias IndexedUsers = [Int32: User]
 public actor CoherentCache: CoherentCacheProtocol {
     private var users: IndexedUsers = [:]
 
+    private nonisolated let usersSubject = PassthroughSubject<IndexedUsers, Never>()
+
+    nonisolated var usersPublisher: AnyPublisher<IndexedUsers, Never> {
+        usersSubject
+            .receive(on: RunLoop.main)
+            .eraseToAnyPublisher()
+    }
+
     public init() {}
 
     // MARK: - USER
@@ -128,16 +137,19 @@ public actor CoherentCache: CoherentCacheProtocol {
 
     public func addUser(_ user: User) {
         users[user.id] = user
+        usersSubject.send(users)
     }
 
     public func removeUser(_ id: Int32) {
         users.removeValue(forKey: id)
+        usersSubject.send(users)
     }
 
     public func updateUser(_ user: User) {
         IKLogger.cache.info("updateUser \(user)")
         // TODO: Diff merge, not swap
         users[user.dbId] = user
+        usersSubject.send(users)
     }
 
     // MARK: - ACCOUNT
