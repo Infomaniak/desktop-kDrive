@@ -20,6 +20,7 @@ using CommunityToolkit.Mvvm.Collections;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Infomaniak.kDrive.ServerCommunication;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
+using Infomaniak.kDrive.Types;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -31,7 +32,7 @@ using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.ViewModels
 {
-    public class Drive : UISafeObservableObject
+    public class Drive : UISafeObservableObject, IDrive
     {
         private DbId _dbId = -1;
         private DriveId _driveId = -1;

@@ -95,7 +95,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     continue;
                 }
                 await AddOrUpdateUserInModel(userInfo);
-                await RefreshUserDrivesAvailable(userInfo.DbId.Value, cancellationToken);
             }
 
             // Remove users that are no longer present
@@ -239,13 +238,19 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Logger.Log(Logger.Level.Error, $"User not found for DriveAvailable with dbID {userDbId}.");
                 return;
             }
-            user.DrivesAvailable.Clear();
-            foreach (var driveAvailableInfos in driveAvailableInfoList)
+            await Utility.RunOnUIThread(() =>
             {
-                DriveAvailable driveAvailable = new DriveAvailable();
-                CommStruct.ConversionHelper.copyToDriveAvailable(driveAvailableInfos, driveAvailable);               
-                user.DrivesAvailable.Add(driveAvailable);
-            }
+                user.DrivesAvailable.Clear();
+                foreach (var driveAvailableInfos in driveAvailableInfoList)
+                {
+                    DriveAvailable driveAvailable = new DriveAvailable();
+                    CommStruct.ConversionHelper.copyToDriveAvailable(driveAvailableInfos, driveAvailable);
+                    // Only add drives that are not already present in one of the user's accounts
+                    if (user.Drives.Any(d => d.DriveId == driveAvailable.DriveId))
+                        continue;
+                    user.DrivesAvailable.Add(driveAvailable);
+                }
+            });
         }
 
 

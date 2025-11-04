@@ -18,13 +18,16 @@
 
 using DynamicData;
 using DynamicData.Binding;
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage.Streams;
 
@@ -131,6 +134,11 @@ namespace Infomaniak.kDrive.ViewModels
             get;
         }
 
+        // Combined collection of all drives (configured in db and available)
+        public ObservableCollection<IDrive> AllDrives { get; } = new();
+
+       
+
         public static async Task<ImageSource?> ByteArrayToImageSource(byte[]? imageData)
         {
             if (imageData == null || imageData.Length == 0)
@@ -143,6 +151,20 @@ namespace Infomaniak.kDrive.ViewModels
             var bitmap = new BitmapImage();
             await bitmap.SetSourceAsync(stream);
             return bitmap;
+        }
+
+        public async Task RefreshAvailableDrives()
+        {
+            await App.ServiceProvider.GetRequiredService<IServerCommService>().RefreshUserDrivesAvailable(this.DbId, CancellationToken.None);
+            MergeDrives();
+        }
+        private void MergeDrives()
+        {
+            AllDrives.Clear();
+            foreach (var d in Drives.Cast<IDrive>())
+                AllDrives.Add(d);
+            foreach (var d in DrivesAvailable.Cast<IDrive>())
+                AllDrives.Add(d);
         }
     }
 }

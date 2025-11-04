@@ -22,8 +22,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.Pages
 {
@@ -31,6 +33,7 @@ namespace Infomaniak.kDrive.Pages
     {
         private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel => _viewModel;
+
         public SettingsPage()
         {
             Logger.Log(Logger.Level.Info, "Navigated to SettingsPage - Initializing SettingsPage components");
@@ -163,5 +166,35 @@ namespace Infomaniak.kDrive.Pages
                 toggleSwitch.IsEnabled = true;
             }
         }
+
+        private async void UserSettingsExpander_Expanded(object sender, EventArgs e)
+        {
+            List<Task> loadAvailableDrivesTasks = new List<Task>();
+            foreach (var user in ViewModel.Users)
+            {
+                loadAvailableDrivesTasks.Add(user.RefreshAvailableDrives());
+            }
+            await Task.WhenAll(loadAvailableDrivesTasks);
+        }
+    }
+
+    // templateSelector for the drives listview
+    public class DriveDataTemplateSelector : DataTemplateSelector
+    {
+        public DataTemplate? ConfiguredTemplate { get; set; }
+        public DataTemplate? UnconfiguredTemplate { get; set; }
+        protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container)
+        {
+            if (item is DriveAvailable)
+                return UnconfiguredTemplate;
+            else if(item is Drive)
+                return ConfiguredTemplate;
+            else
+                Logger.Log(Logger.Level.Error, "Unknown item type in SelectTemplateCore");
+
+            return base.SelectTemplateCore(item);
+        }
+
+
     }
 }
