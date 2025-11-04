@@ -21,9 +21,9 @@ import Foundation
 struct UserInfoSignal: Codable {
     let dbId: Int32
     let userId: Int32
-    @Base64Coded var name: String
-    @Base64Coded var email: String
-    let avatar: Data // TODO: deserialize base64 encoded
+    @Base64CodedString var name: String
+    @Base64CodedString var email: String
+    @Base64CodedData var avatar: Data
     let isConnected: Bool
     let isStaff: Bool
 }
