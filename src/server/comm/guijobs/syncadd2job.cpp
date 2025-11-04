@@ -59,14 +59,14 @@ ExitInfo SyncAdd2Job::process() {
 #endif
 
     SyncInfo syncInfo;
-    if (const auto exitCode = ServerRequests::addSync(_driveDbId, _localFolderPath, _serverFolderPath, _serverFolderNodeId,
-                                                      _liteSync, showInNavigationPane, syncInfo);
+    if (const auto exitCode = ServerRequests::addSync(_driveDbId, localFolderPath(), serverFolderPath(), serverFolderNodeId(),
+                                                      liteSync(), showInNavigationPane, syncInfo);
         exitCode != ExitCode::Ok) {
         LOGW_WARN(_logger, L"Error in Requests::addSync - driveDbId="
-                                   << _driveDbId << L" localFolderPath=" << Utility::formatSyncPath(_localFolderPath)
-                                   << L" serverFolderPath=" << Utility::formatSyncPath(_serverFolderPath)
-                                   << L" serverFolderNodeId=" << Utility::v2ws(_serverFolderNodeId) << L" liteSync=" << _liteSync
-                                   << L" showInNavigationPane=" << showInNavigationPane);
+                                   << _driveDbId << L" localFolderPath=" << Utility::formatSyncPath(localFolderPath())
+                                   << L" serverFolderPath=" << Utility::formatSyncPath(serverFolderPath())
+                                   << L" serverFolderNodeId=" << Utility::v2ws(serverFolderNodeId()) << L" liteSync="
+                                   << liteSync() << L" showInNavigationPane=" << showInNavigationPane);
         AppServer::addError(Error(ERR_ID, exitCode));
         return exitCode;
     }

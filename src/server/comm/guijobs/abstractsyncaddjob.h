@@ -29,6 +29,22 @@ class AbstractSyncAddJob : public AbstractGuiJob {
                            std::shared_ptr<AbstractCommChannel> channel);
 
     protected:
+        ExitInfo deserializeInputParms() override;
+        ExitInfo serializeOutputParms() override;
+        ExitInfo process() override { return ExitCode::Ok; }
+
+        ExitInfo process(SyncInfo &syncInfo);
+
+        auto localFolderPath() const { return _localFolderPath; }
+        auto serverFolderPath() const { return _serverFolderPath; }
+        auto serverFolderNodeId() const { return _serverFolderNodeId; }
+        auto liteSync() const { return _liteSync; }
+        auto blackList() const { return _blackList; }
+        auto whiteList() const { return _whiteList; }
+
+        auto &syncInfo() { return _syncInfo; }
+
+    private:
         // Input parameters
         SyncPath _localFolderPath;
         SyncPath _serverFolderPath;
@@ -39,12 +55,6 @@ class AbstractSyncAddJob : public AbstractGuiJob {
 
         // Output parameters
         SyncInfo _syncInfo;
-
-        ExitInfo deserializeInputParms() override;
-        ExitInfo serializeOutputParms() override;
-        ExitInfo process() override { return ExitCode::Ok; }
-
-        ExitInfo process(SyncInfo &syncInfo);
 };
 
 } // namespace KDC

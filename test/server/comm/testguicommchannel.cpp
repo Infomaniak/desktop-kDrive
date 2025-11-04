@@ -908,8 +908,8 @@ void TestGuiCommChannel::testSyncAddJob() {
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto syncAddJob = std::dynamic_pointer_cast<SyncAddJob>(job);
 
-        syncAddJob->_syncInfo = SyncInfo(1, 1, "/Users/test/kDrive1", "test", "999", true, VirtualFileMode::Win,
-                                         "{645FF040-5081-101B-9F08-00AA002F954E}");
+        syncAddJob->syncInfo() = SyncInfo(1, 1, "/Users/test/kDrive1", "test", "999", true, VirtualFileMode::Win,
+                                          "{645FF040-5081-101B-9F08-00AA002F954E}");
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
@@ -974,8 +974,8 @@ void TestGuiCommChannel::testSyncAdd2Job() {
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto syncAdd2Job = std::dynamic_pointer_cast<SyncAdd2Job>(job);
 
-        syncAdd2Job->_syncInfo = SyncInfo(1, 1, "/Users/test/kDrive1", "test", "999", true, VirtualFileMode::Win,
-                                          "{645FF040-5081-101B-9F08-00AA002F954E}");
+        syncAdd2Job->syncInfo() = SyncInfo(1, 1, "/Users/test/kDrive1", "test", "999", true, VirtualFileMode::Win,
+                                           "{645FF040-5081-101B-9F08-00AA002F954E}");
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
