@@ -17,8 +17,11 @@
  */
 
 import Foundation
+import InfomaniakDI
 
 @objc final class XPCConnectionManager: NSObject, @unchecked Sendable {
+    @InjectService var signalHandler: XPCSignalHandlerProtocol
+
     let machServiceName: String
 
     var loginItemAgentConnection: NSXPCConnection?
@@ -187,7 +190,8 @@ extension XPCConnectionManager: XPCLoginItemRemoteProtocol {
 }
 
 extension XPCConnectionManager: XPCGuiRemoteProtocol {
-    public func processSignal(_ msg: Data) {
+    public func sendSignal(_ msg: Data) {
         IKLogger.xpc.log("[KD] recv signal \(String(data: msg, encoding: .utf8))")
+        signalHandler.handleServerSignal(msg)
     }
 }
