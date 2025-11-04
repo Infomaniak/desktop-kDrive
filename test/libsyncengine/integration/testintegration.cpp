@@ -644,8 +644,6 @@ void TestIntegration::testDeleteAndRecreateBranch() {
     NodeId nodeIdAA;
     NodeId nodeIdAAA;
     NodeId nodeIdAAAA;
-    const SyncPath filename = "AAAA";
-    const auto filepath = _syncPal->localPath() / tmpRemoteDir.name() / filename;
     {
         CreateDirJob jobA(nullptr, _driveDbId, tmpRemoteDir.id(), Str("A"));
         (void) jobA.runSynchronously();
@@ -657,7 +655,7 @@ void TestIntegration::testDeleteAndRecreateBranch() {
         (void) jobAAA.runSynchronously();
         nodeIdAAA = jobAAA.nodeId();
 
-        nodeIdAAAA = duplicateRemoteFile(_driveDbId, _testFileRemoteId, filename);
+        nodeIdAAAA = duplicateRemoteFile(_driveDbId, _testFileRemoteId, Str("AAAA"));
         moveRemoteFile(_driveDbId, nodeIdAAAA, nodeIdAAA);
     }
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
@@ -667,7 +665,7 @@ void TestIntegration::testDeleteAndRecreateBranch() {
     _syncPal->pause();
 
     {
-        // Move test file outside deleted directory
+        // Move test file outside the directory that we will delete
         moveRemoteFile(_driveDbId, nodeIdAAAA, tmpRemoteDir.id());
 
         // Delete A/AA
@@ -677,11 +675,11 @@ void TestIntegration::testDeleteAndRecreateBranch() {
         CreateDirJob jobAA(nullptr, _driveDbId, nodeIdA, Str("AA"));
         (void) jobAA.runSynchronously();
         nodeIdAA = jobAA.nodeId();
-        CreateDirJob jobAAA(nullptr, _driveDbId, nodeIdAA, Str("AAA1"));
-        (void) jobAAA.runSynchronously();
+        CreateDirJob jobAAA1(nullptr, _driveDbId, nodeIdAA, Str("AAA1"));
+        (void) jobAAA1.runSynchronously();
 
-        // Move back test file
-        moveRemoteFile(_driveDbId, nodeIdAAAA, jobAAA.nodeId());
+        // Move back test file into AAA1
+        moveRemoteFile(_driveDbId, nodeIdAAAA, jobAAA1.nodeId());
     }
 
     _syncPal->unpause();
