@@ -142,7 +142,7 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
         return true;
     }
 
-    const SyncPath trashPath = getTrashPath();
+    const SyncPath trashPath = Utility::getTrashPath();
 
     // Check if the trash/files & trash/info path exists and create it if needed
     if (std::error_code ec; !std::filesystem::exists(trashPath, ec)) {
