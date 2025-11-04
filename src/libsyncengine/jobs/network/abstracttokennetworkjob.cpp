@@ -130,7 +130,7 @@ ExitInfo AbstractTokenNetworkJob::handleUnauthorizedResponse() {
         return ExitCode::TokenRefreshed;
     }
 
-    if (!_accessTokenAlreadyRefreshed || tokenUpdateDurationFromNow() > TOKEN_LIFETIME) {
+    if (!_apiToken.refreshToken().empty() && (!_accessTokenAlreadyRefreshed || tokenUpdateDurationFromNow() > TOKEN_LIFETIME)) {
         // The token has not already been refreshed or was refreshed more than its lifetime ago
         if (const auto exitInfo = refreshToken(); !exitInfo) {
             LOG_WARN(_logger, "Refresh token failed");
@@ -141,8 +141,6 @@ ExitInfo AbstractTokenNetworkJob::handleUnauthorizedResponse() {
         LOG_DEBUG(_logger, "Refresh token succeeded");
         return ExitCode::TokenRefreshed;
     }
-
-    LOG_WARN(_logger, "Token already refreshed once");
 
     if (_trials > 2) {
         disableRetry();
