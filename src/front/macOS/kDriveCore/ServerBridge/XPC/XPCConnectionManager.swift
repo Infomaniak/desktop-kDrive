@@ -190,7 +190,7 @@ extension XPCConnectionManager: XPCLoginItemRemoteProtocol {
 }
 
 extension XPCConnectionManager: XPCGuiRemoteProtocol {
-    public func sendSignal(_ msg: Data) {
+    public func processSignal(_ msg: Data) {
         IKLogger.xpc.log("[KD] recv signal \(String(data: msg, encoding: .utf8))")
         signalHandler.handleServerSignal(msg)
     }

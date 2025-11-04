@@ -25,7 +25,7 @@ public struct SignalMetadata: Decodable {
     public let num: SignalNum
 }
 
-public struct SignalMessage<Body: Codable>: Decodable {
+public struct SignalMessage<Body: Codable>: Codable {
     public enum SignalMessageError: Error {
         case signalNotSupported(SignalNum)
     }
@@ -34,9 +34,21 @@ public struct SignalMessage<Body: Codable>: Decodable {
     public let code: KDC.ExitCode?
     public let id: Int32
     public let num: SignalNum
-    private let params: SignalParams<Body>
-    public var body: Body {
-        return params.userInfo
+    private let params: SignalParams<Body>?
+    public var body: Body? {
+        return params?.userInfo
+    }
+    
+    public init(cause: KDC.ExitCause?,
+                code: KDC.ExitCode?,
+                id: Int32,
+                num: SignalNum,
+                params: SignalParams<Body>?) {
+        self.cause = cause
+        self.code = code
+        self.id = id
+        self.num = num
+        self.params = params
     }
 }
 
