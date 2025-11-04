@@ -36,7 +36,8 @@
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "test_utility/testhelpers.h"
 
-#include <format>
+#include <qbytearray.h>
+#include <qbuffer.h>
 
 namespace KDC {
 
@@ -155,11 +156,11 @@ void TestGuiCommChannel::testLoginRequestTokenJob() {
 
 #else
     // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr = std::format(R"({{ "num": {},)"
-                                      R"( "params": {{)"
-                                      R"( "code": "YWFhYQ==",)"
-                                      R"( "codeVerifier": "YmJiYg==" }} }})",
-                                      toInt(RequestNum::LOGIN_REQUESTTOKEN));
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::LOGIN_REQUESTTOKEN)) +
+                        R"(,)"
+                        R"( "params": {)"
+                        R"( "code": "YWFhYQ==",)"
+                        R"( "codeVerifier": "YmJiYg==" } })"};
 
     // Callback expected answer
     const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"userDbId":1}})"};
