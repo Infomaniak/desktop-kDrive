@@ -1,4 +1,5 @@
-﻿using Infomaniak.kDrive.ServerCommunication.CommStruct;
+﻿using DynamicData;
+using Infomaniak.kDrive.ServerCommunication.CommStruct;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.JsonConverters;
 using Infomaniak.kDrive.Types;
@@ -240,15 +241,33 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             await Utility.RunOnUIThread(() =>
             {
-                user.DrivesAvailable.Clear();
-                foreach (var driveAvailableInfos in driveAvailableInfoList)
+                // We don't clear and re-add all items to avoid UI flickering
+                // Build sets for fast lookup
+                var newIds = driveAvailableInfoList.Select(d => d.DriveId).ToHashSet();
+                var existingIds = user.DrivesAvailable.Select(d => d.DriveId).ToHashSet();
+
+                // Add new drives
+                foreach (var info in driveAvailableInfoList)
                 {
-                    DriveAvailable driveAvailable = new DriveAvailable();
-                    CommStruct.ConversionHelper.copyToDriveAvailable(driveAvailableInfos, driveAvailable);
-                    // Only add drives that are not already present in one of the user's accounts
-                    if (user.Drives.Any(d => d.DriveId == driveAvailable.DriveId))
-                        continue;
-                    user.DrivesAvailable.Add(driveAvailable);
+                    if (!existingIds.Contains(info.DriveId ?? -1))
+                    {
+                        var drive = new DriveAvailable();
+                        CommStruct.ConversionHelper.copyToDriveAvailable(info, drive);
+                        user.DrivesAvailable.Add(drive);
+                    }
+                }
+
+                // Remove drives no longer available
+                foreach (var existingId in existingIds)
+                {
+                    if (!newIds.Contains(existingId))
+                    {
+                        var driveToRemove = user.DrivesAvailable.FirstOrDefault(d => d.DriveId == existingId);
+                        if (driveToRemove != null)
+                        {
+                            user.DrivesAvailable.Remove(driveToRemove);
+                        }
+                    }
                 }
             });
         }

@@ -45,7 +45,9 @@
                            Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                            Foreground="{ThemeResource TextFillColorDisabled}" />
                 <Button VerticalAlignment="Center"
-                        Content="Gérer" />
+                        Content="Gérer" 
+                        Click="ManageDriveButton_Click"
+                        Tag="{x:Bind}"/>
             </StackPanel>
         </DataTemplate>
         <DataTemplate x:Key="UnconfiguredDriveTemplate"
@@ -57,7 +59,9 @@
                            Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                            Foreground="{ThemeResource TextFillColorDisabled}" />
                 <Button Content="Activer"
-                        HorizontalAlignment="Left" />
+                        HorizontalAlignment="Left"
+                        Click="ConfigureDriveButton_Click"
+                        Tag="{x:Bind}" />
             </StackPanel>
         </DataTemplate>
         <local:DriveDataTemplateSelector x:Key="DriveDataTemplateSelector"
@@ -226,7 +230,7 @@
                                 <Setter Property="Padding"
                                         Value="0" />
                                 <Setter Property="Margin"
-                                        Value="0" />
+                                        Value="{StaticResource Infomaniak.Style.Thickness.Top.XXS}" />
                                 <Setter Property="HorizontalContentAlignment"
                                         Value="Stretch" />
                             </Style>
@@ -276,6 +280,15 @@
                                             </toolKit:SettingsCard>
                                         </DataTemplate>
                                     </toolKit:SettingsExpander.ItemTemplate>
+
+                                    <toolKit:SettingsExpander.ItemsFooter>
+                                        <toolKit:SettingsCard Header="Deconnecter ce compte"
+                                                              Style="{StaticResource DefaultSettingsExpanderItemStyle}"
+                                                              Foreground="{ThemeResource SystemErrorTextColor}"
+                                                              IsClickEnabled="True"
+                                                              Click="DisconectUser_Click" />
+
+                                    </toolKit:SettingsExpander.ItemsFooter>
                                 </toolKit:SettingsExpander>
                             </DataTemplate>
                         </ListView.ItemTemplate>

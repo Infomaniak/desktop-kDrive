@@ -24,11 +24,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Documents;
 using Windows.Storage.Streams;
 
 namespace Infomaniak.kDrive.ViewModels
@@ -137,7 +139,7 @@ namespace Infomaniak.kDrive.ViewModels
         // Combined collection of all drives (configured in db and available)
         public ObservableCollection<IDrive> AllDrives { get; } = new();
 
-       
+
 
         public static async Task<ImageSource?> ByteArrayToImageSource(byte[]? imageData)
         {
@@ -160,11 +162,31 @@ namespace Infomaniak.kDrive.ViewModels
         }
         private void MergeDrives()
         {
-            AllDrives.Clear();
-            foreach (var d in Drives.Cast<IDrive>())
-                AllDrives.Add(d);
-            foreach (var d in DrivesAvailable.Cast<IDrive>())
-                AllDrives.Add(d);
+            // Define drive Equal action based on DriveId and type
+            Func<IDrive, IDrive, bool> driveEqualAction = (d1, d2) =>
+            {
+                return d1.DriveId == d2.DriveId && d1.GetType() == d2.GetType();
+            };
+
+
+            List<IDrive> drives = new();
+            foreach (var drive in Drives)
+                drives.Add(drive);
+
+            foreach (var drive in DrivesAvailable)
+                if (drives.FirstOrDefault(d => d.DriveId == drive.DriveId) is null)
+                    drives.Add(drive);
+
+            for (int i = AllDrives.Count - 1; i >= 0; i--)
+            {
+                var drive = AllDrives[i];
+                if (drives.FirstOrDefault(d => driveEqualAction(d, drive)) is null)
+                    AllDrives.RemoveAt(i);
+            }
+
+            foreach (var drive in drives)
+                if (AllDrives.FirstOrDefault(d => driveEqualAction(d, drive)) is null)
+                    AllDrives.Add(drive);
         }
     }
 }

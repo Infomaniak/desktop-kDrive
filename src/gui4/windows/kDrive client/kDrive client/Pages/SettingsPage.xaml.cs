@@ -40,7 +40,7 @@ namespace Infomaniak.kDrive.Pages
             InitializeComponent();
             RegisterPropertyChangedHandlers();
             Loaded += onPageLoaded;
-            
+
 
             Logger.Log(Logger.Level.Debug, "SettingsPage components initialized");
         }
@@ -176,6 +176,53 @@ namespace Infomaniak.kDrive.Pages
             }
             await Task.WhenAll(loadAvailableDrivesTasks);
         }
+
+        private void SettingsCard_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private async void DisconectUser_Click(object sender, RoutedEventArgs e)
+        {
+
+            User? user = sender is FrameworkElement fe && fe.DataContext is User u ? u : null;
+            if(user is null)
+            {
+                Logger.Log(Logger.Level.Error, "Unable to disconnect user: DataContext is not a User");
+
+            }
+            ContentDialog dialog = new ContentDialog();
+
+            // XamlRoot must be set in the case of a ContentDialog running in a Desktop app
+            dialog.XamlRoot = this.XamlRoot;
+            dialog.Title = "Déconnecter ce compte ?";
+            dialog.PrimaryButtonText = "Garder le compte";
+            dialog.SecondaryButtonText = "Deconnecter";
+            dialog.DefaultButton = ContentDialogButton.Primary;
+
+            dialog.Content = $"Vous allez déconnecter {user?.Name ?? "l'utilisateur"} de l’application.\r\nLes fichiers synchronisés depuis l’ensemble des kDrives de ce compte seront retirés de votre ordinateur.\r\n\r\nToutes vos données resteront accessibles en ligne sur kDrive.";
+
+            
+            var result = await dialog.ShowAsync();
+            if(result == ContentDialogResult.Secondary)
+            {
+                if(user is not null)
+                {
+                    await _viewModel.DisconnectUserAsync(user.DbId);
+                }
+            }
+        }
+
+        private void ManageDriveButton_Click(object sender, RoutedEventArgs e)
+        {
+            Logger.Log(Logger.Level.Info, $"ManageDriveButton clicked for drive {((sender as FrameworkElement)?.Tag as IDrive)?.Name}");
+        }
+
+        private void ConfigureDriveButton_Click(object sender, RoutedEventArgs e)
+        {
+            Logger.Log(Logger.Level.Info, $"ConfigureDrive clicked for available drive {((sender as FrameworkElement)?.Tag as IDrive)?.Name}");
+
+        }
     }
 
     // templateSelector for the drives listview
@@ -187,7 +234,7 @@ namespace Infomaniak.kDrive.Pages
         {
             if (item is DriveAvailable)
                 return UnconfiguredTemplate;
-            else if(item is Drive)
+            else if (item is Drive)
                 return ConfiguredTemplate;
             else
                 Logger.Log(Logger.Level.Error, "Unknown item type in SelectTemplateCore");

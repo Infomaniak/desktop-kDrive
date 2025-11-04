@@ -25,6 +25,7 @@ using Microsoft.VisualBasic.Devices;
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -252,6 +253,14 @@ namespace Infomaniak.kDrive.ViewModels
         private void SyncErrors_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             OnPropertyChanged(nameof(HasErrors));
+        }
+
+        public Task DisconnectUserAsync(DbId userDbId)
+        {
+            IServerCommService serverCommService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            // TODO: implement disconnect user in server comm service
+            Users.Remove(Users.FirstOrDefault(u => u.DbId == userDbId)!);
+            return Task.CompletedTask;
         }
     }
 }

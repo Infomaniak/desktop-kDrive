@@ -89,6 +89,7 @@ namespace Infomaniak.kDrive.Types
     {
         public string Name { get; }
         public System.Drawing.Color Color { get; }
+        public DriveId DriveId { get; set; }
     }
 
     public class DriveAvailable : IDrive
