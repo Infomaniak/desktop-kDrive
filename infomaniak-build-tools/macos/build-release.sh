@@ -26,7 +26,6 @@ export TEAM_IDENTIFIER="864VDCS2QY"
 export APP_DOMAIN="com.infomaniak.drive.desktopclient"
 export SIGN_IDENTITY="Developer ID Application: Infomaniak Network SA (864VDCS2QY)"
 export INSTALLER_SIGN_IDENTITY="Developer ID Installer: Infomaniak Network SA (864VDCS2QY)"
-export QTDIR="$HOME/Qt/6.2.3/macos"
 
 # Uncomment to build for testing
 # export KDRIVE_DEBUG=1
@@ -37,7 +36,6 @@ src_dir="${1-$PWD}"
 app_name="kDrive"
 
 # define Qt6 directory
-QT_DIR="${QT_DIR-$HOME/Qt/6.2.3/macos}"
 export PATH="$QT_DIR/bin:$PATH"
 
 # Set Infomaniak Theme
