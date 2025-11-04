@@ -37,7 +37,7 @@ public struct LoginJob: Sendable {
     /// - Returns: A user to the current state know by the client
     public func loginAndFetchUser(code: String, verifier: String) async -> User? {
         do {
-            let userDbId = try await Int(loginUserQuery(code: code, verifier: verifier))
+            let userDbId = try await loginUserQuery(code: code, verifier: verifier)
             if let user = await coherentCache.getUser(userDbId) {
                 return user
             }
