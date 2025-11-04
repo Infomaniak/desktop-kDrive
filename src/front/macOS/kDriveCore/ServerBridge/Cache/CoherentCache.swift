@@ -112,7 +112,7 @@ public actor CoherentCache: CoherentCacheProtocol {
 
     private nonisolated let usersSubject = PassthroughSubject<IndexedUsers, Never>()
 
-    nonisolated var usersPublisher: AnyPublisher<IndexedUsers, Never> {
+    nonisolated public var usersPublisher: AnyPublisher<IndexedUsers, Never> {
         usersSubject
             .receive(on: RunLoop.main)
             .eraseToAnyPublisher()
