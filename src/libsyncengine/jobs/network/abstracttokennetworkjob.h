@@ -98,11 +98,11 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         int _driveDbId;
         int _driveId;
         bool _returnJson;
-        std::string _token;
+        ApiToken _apiToken;
 
         bool _accessTokenAlreadyRefreshed = false;
 
-        std::string loadToken();
+        ApiToken loadApiToken();
 
         std::string getUrl() override;
         ExitInfo handleUnauthorizedResponse();
