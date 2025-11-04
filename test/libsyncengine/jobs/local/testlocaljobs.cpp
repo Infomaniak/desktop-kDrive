@@ -43,7 +43,7 @@ class LocalDeleteJobMockingTrash : public LocalDeleteJob {
         ExitInfo moveToTrash() final {
             if (_moveToTrashIsMocked) {
                 std::filesystem::remove_all(_absolutePath);
-                handleTrashMoveOutcome(_moveToTrashFailed, _absolutePath);
+                moveToTrashOrHardDeleteIfNeeded(_absolutePath);
                 return _moveToTrashFailed ? ExitCode::SystemError : ExitCode::Ok;
             }
 
