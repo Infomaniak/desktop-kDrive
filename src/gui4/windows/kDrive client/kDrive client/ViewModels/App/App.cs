@@ -122,6 +122,7 @@ namespace Infomaniak.kDrive.ViewModels
                 .TransformMany(a => a.Drives)
                 .AutoRefresh(d => d.Syncs.Count)
                 .TransformMany(d => d.Syncs)
+                .Sort(SortExpressionComparer<Sync>.Ascending(s => s.Drive.DbId))
                 .Bind(out var allSyncs)
                 .Subscribe();
             AllSyncs = allSyncs;
@@ -137,7 +138,7 @@ namespace Infomaniak.kDrive.ViewModels
 
             // Observe changes to ActiveDrives list and ensure SelectedSync is valid
             AllSyncs.ToObservableChangeSet()
-                       .Subscribe(_ => EnsureValidSelectedSync());
+                                       .Subscribe(_ => UIThreadDispatcher.TryEnqueue(EnsureValidSelectedSync));
 
             // Observe changes to AppErrors and SelectedSync.SyncErrors to update HasNoErrors property
             AppErrors.CollectionChanged += (_, __) => OnPropertyChanged(nameof(HasErrors));

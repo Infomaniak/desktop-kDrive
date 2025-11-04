@@ -96,11 +96,13 @@
                         OpenPaneLength="280">
             <NavigationView.Resources>
                 <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
+                <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
             </NavigationView.Resources>
 
             <NavigationView.PaneCustomContent>
                 <controls:SyncSelector HorizontalAlignment="Stretch"
-                                             Margin="0,9,4,20" />
+                                       Margin="4,9,4,20"
+                                       Visibility="{Binding ElementName=navView, Path=IsPaneOpen, Converter={StaticResource BooleanToVisibilityConverter}}" />
             </NavigationView.PaneCustomContent>
 
             <NavigationView.MenuItems>
