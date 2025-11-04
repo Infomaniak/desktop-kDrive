@@ -123,7 +123,7 @@ std::string AbstractTokenNetworkJob::getSpecificUrl() {
 ExitInfo AbstractTokenNetworkJob::handleUnauthorizedResponse() {
     // There is no longer any refresh of the token since v3.5.6
     // This code is only used when updating from a version < v3.5.6
-    if (std::string token = loadToken(); token != _token) {
+    if (const auto token = loadToken(); token != _token) {
         LOG_DEBUG(_logger, "Token refreshed by another request");
         _accessTokenAlreadyRefreshed = false;
         _token = token;
@@ -137,7 +137,6 @@ ExitInfo AbstractTokenNetworkJob::handleUnauthorizedResponse() {
             LOG_WARN(_logger, "Refresh token failed");
             disableRetry();
             return {ExitCode::InvalidToken, ExitCause::LoginError};
-            ;
         }
 
         LOG_DEBUG(_logger, "Refresh token succeeded");
@@ -324,14 +323,14 @@ std::string AbstractTokenNetworkJob::loadToken() {
         std::vector<Sync> syncList;
         if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
             assert(false);
-            std::string err{"Error in ParmsDb::selectAllSyncs"};
+            const std::string err{"Error in ParmsDb::selectAllSyncs"};
             LOG_WARN(_logger, err);
             throw DbError(err);
         }
 
         if (syncList.empty()) {
             assert(false);
-            std::string err{"No sync found"};
+            const std::string err{"No sync found"};
             LOG_WARN(_logger, err);
             throw DataError(err);
         }
@@ -344,24 +343,23 @@ std::string AbstractTokenNetworkJob::loadToken() {
         case ApiType::Desktop:
         case ApiType::NotifyDrive: {
             if (_driveDbId) {
-                auto it = _driveToApiKeyMap.find(_driveDbId);
-                if (it != _driveToApiKeyMap.end()) {
+                if (const auto it = _driveToApiKeyMap.find(_driveDbId); it != _driveToApiKeyMap.end()) {
                     // driveDbId found in Drive cache
                     _userDbId = it->second.first;
                     _driveId = it->second.second;
                 } else {
                     // Get drive
                     Drive drive;
-                    bool found;
+                    bool found = false;
                     if (!ParmsDb::instance()->selectDrive(_driveDbId, drive, found)) {
                         assert(false);
-                        std::string err{"Error in ParmsDb::selectDrive"};
+                        const std::string err{"Error in ParmsDb::selectDrive"};
                         LOG_WARN(_logger, err);
                         throw DbError(err);
                     }
                     if (!found) {
                         assert(false);
-                        std::string err{"Drive not found for driveDbId=" + std::to_string(_driveDbId)};
+                        const std::string err{"Drive not found for driveDbId=" + std::to_string(_driveDbId)};
                         LOG_WARN(_logger, err);
                         throw DataError(err);
                     }
@@ -372,45 +370,45 @@ std::string AbstractTokenNetworkJob::loadToken() {
                     Account account;
                     if (!ParmsDb::instance()->selectAccount(drive.accountDbId(), account, found)) {
                         assert(false);
-                        std::string err{"Error in ParmsDb::selectAccount"};
+                        const std::string err{"Error in ParmsDb::selectAccount"};
                         LOG_WARN(_logger, err);
                         throw DbError(err);
                     }
                     if (!found) {
                         assert(false);
-                        std::string err{"Account not found for accountDbId=" + std::to_string(drive.accountDbId())};
+                        const std::string err{"Account not found for accountDbId=" + std::to_string(drive.accountDbId())};
                         LOG_WARN(_logger, err);
                         throw DataError(err);
                     }
 
                     _userDbId = account.userDbId();
 
-                    if (_userToApiKeyMap.find(_userDbId) == _userToApiKeyMap.end()) {
+                    if (!_userToApiKeyMap.contains(_userDbId)) {
                         // Get user
                         User user;
                         if (!ParmsDb::instance()->selectUser(_userDbId, user, found)) {
                             assert(false);
-                            std::string err{"Error in ParmsDb::selectUser"};
+                            const std::string err{"Error in ParmsDb::selectUser"};
                             LOG_WARN(_logger, err);
                             throw DbError(err);
                         }
                         if (!found) {
                             assert(false);
-                            std::string err{"User not found for userDbId=" + std::to_string(_userDbId)};
+                            const std::string err{"User not found for userDbId=" + std::to_string(_userDbId)};
                             LOG_WARN(_logger, err);
                             throw DataError(err);
                         }
 
                         if (user.keychainKey().empty()) {
-                            std::string err{"Access token is empty"};
+                            const std::string err{"Access token is empty"};
                             LOG_DEBUG(_logger, err);
                             throw TokenError(err);
                         }
 
                         // Read token form keystore
-                        std::shared_ptr<Login> login = std::shared_ptr<Login>(new Login(user.keychainKey()));
+                        auto login = std::make_shared<Login>(user.keychainKey());
                         if (!login->hasToken()) {
-                            std::string err{"Failed to retrieve access token"};
+                            const std::string err{"Failed to retrieve access token"};
                             LOG_WARN(_logger, err);
                             throw TokenError(err);
                         }
@@ -422,14 +420,13 @@ std::string AbstractTokenNetworkJob::loadToken() {
                 }
             }
 
-            auto it = _userToApiKeyMap.find(_userDbId);
-            if (it != _userToApiKeyMap.end()) {
+            if (const auto it = _userToApiKeyMap.find(_userDbId); it != _userToApiKeyMap.end()) {
                 // userDbId found in User cache
                 _userId = it->second.second;
                 token = it->second.first->apiToken().accessToken();
             } else {
                 assert(false);
-                std::string err{"User cache not set for userDbId=" + std::to_string(_userDbId)};
+                const std::string err{"User cache not set for userDbId=" + std::to_string(_userDbId)};
                 LOG_WARN(_logger, err);
                 throw std::runtime_error(err);
             }
@@ -437,8 +434,7 @@ std::string AbstractTokenNetworkJob::loadToken() {
         }
         case ApiType::Profile:
         case ApiType::DriveByUser: {
-            auto it = _userToApiKeyMap.find(_userDbId);
-            if (it != _userToApiKeyMap.end()) {
+            if (const auto it = _userToApiKeyMap.find(_userDbId); it != _userToApiKeyMap.end()) {
                 // userDbId found in User cache
                 _userId = it->second.second;
                 token = it->second.first->apiToken().accessToken();
@@ -448,27 +444,27 @@ std::string AbstractTokenNetworkJob::loadToken() {
                 bool found = false;
                 if (!ParmsDb::instance()->selectUser(_userDbId, user, found)) {
                     assert(false);
-                    std::string err{"Error in ParmsDb::selectUser"};
+                    const std::string err{"Error in ParmsDb::selectUser"};
                     LOG_WARN(_logger, err);
                     throw DbError(err);
                 }
                 if (!found) {
                     assert(false);
-                    std::string err{"User not found for userDbId=" + std::to_string(_userDbId)};
+                    const std::string err{"User not found for userDbId=" + std::to_string(_userDbId)};
                     LOG_WARN(_logger, err);
                     throw DataError(err);
                 }
 
                 if (user.keychainKey().empty()) {
-                    std::string err{"Access token is empty"};
+                    const std::string err{"Access token is empty"};
                     LOG_DEBUG(_logger, err);
                     throw TokenError(err);
                 }
 
                 // Read token form keystore
-                std::shared_ptr<Login> login = std::shared_ptr<Login>(new Login(user.keychainKey()));
+                auto login = std::make_shared<Login>(user.keychainKey());
                 if (!login->hasToken()) {
-                    std::string err{"Failed to retrieve access token"};
+                    const std::string err{"Failed to retrieve access token"};
                     LOG_WARN(_logger, err);
                     throw TokenError(err);
                 }
@@ -493,49 +489,45 @@ std::string AbstractTokenNetworkJob::getContentType() {
 
 ExitInfo AbstractTokenNetworkJob::refreshToken() {
     _accessTokenAlreadyRefreshed = true;
-
-    auto it = _userToApiKeyMap.find(_userDbId);
-    if (it != _userToApiKeyMap.end()) {
-        // userDbId found in User cache
-        std::shared_ptr<Login> login = it->second.first;
-        ExitInfo exitInfo = login->refreshToken();
-        if (!exitInfo) {
-            LOG_WARN(_logger, "Failed to refresh token: code=" << exitInfo << " login error=" << login->error()
-                                                               << " login error descr=" << login->errorDescr());
-            exitInfo.setCause(ExitCause::LoginError);
-
-            // Clear the keychain key
-            User user;
-            bool found = false;
-            if (!ParmsDb::instance()->selectUser(_userDbId, user, found)) {
-                LOG_WARN(_logger, "Error in ParmsDb::selectUser");
-                return ExitCode::DbError;
-            }
-            if (!found) {
-                LOG_WARN(_logger, "User not found for userDbId=" << _userDbId);
-                return {ExitCode::DataError, ExitCause::DbEntryNotFound};
-            }
-
-            KeyChainManager::instance()->deleteToken(user.keychainKey());
-
-            user.setKeychainKey(""); // Clear the keychainKey
-            ParmsDb::instance()->updateUser(user, found);
-            if (!found) {
-                LOG_WARN(_logger, "User not found for userDbId=" << _userDbId);
-                return {ExitCode::DataError, ExitCause::DbEntryNotFound};
-            }
-
-            return exitInfo;
-        }
-
-        _token = login->apiToken().accessToken();
-        addRawHeader("Authorization", "Bearer " + _token);
-        return ExitCode::Ok;
-    } else {
+    const auto it = _userToApiKeyMap.find(_userDbId);
+    if (it == _userToApiKeyMap.end()) {
         LOG_WARN(_logger, "User cache not set for userDbId=" << _userDbId);
         return {ExitCode::DataError, ExitCause::LoginError};
     }
 
+    // userDbId found in User cache
+    const std::shared_ptr<Login> login = it->second.first;
+    if (auto exitInfo = login->refreshToken(); !exitInfo) {
+        LOG_WARN(_logger, "Failed to refresh token: code=" << exitInfo << " login error=" << login->error()
+                                                           << " login error descr=" << login->errorDescr());
+        exitInfo.setCause(ExitCause::LoginError);
+
+        // Clear the keychain key
+        User user;
+        bool found = false;
+        if (!ParmsDb::instance()->selectUser(_userDbId, user, found)) {
+            LOG_WARN(_logger, "Error in ParmsDb::selectUser");
+            return ExitCode::DbError;
+        }
+        if (!found) {
+            LOG_WARN(_logger, "User not found for userDbId=" << _userDbId);
+            return {ExitCode::DataError, ExitCause::DbEntryNotFound};
+        }
+
+        (void) KeyChainManager::instance()->deleteToken(user.keychainKey());
+
+        user.setKeychainKey(""); // Clear the keychainKey
+        (void) ParmsDb::instance()->updateUser(user, found);
+        if (!found) {
+            LOG_WARN(_logger, "User not found for userDbId=" << _userDbId);
+            return {ExitCode::DataError, ExitCause::DbEntryNotFound};
+        }
+
+        return exitInfo;
+    }
+
+    _token = login->apiToken().accessToken();
+    addRawHeader("Authorization", "Bearer " + _token);
     return ExitCode::Ok;
 }
 

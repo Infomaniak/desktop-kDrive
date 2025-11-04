@@ -29,8 +29,6 @@ class AbstractLoginJob : public AbstractNetworkJob {
 
         inline const ApiToken &apiToken() const { return _apiToken; }
 
-        bool hasErrorApi(std::string *errorCode = nullptr, std::string *errorDescr = nullptr);
-
     protected:
         ApiToken _apiToken;
 
@@ -41,9 +39,6 @@ class AbstractLoginJob : public AbstractNetworkJob {
 
         ExitInfo handleResponse(std::istream &inputStream) override;
         ExitInfo handleError(const std::string &replyBody, const Poco::URI &uri) override;
-
-        std::string _errorCode;
-        std::string _errorDescr;
 };
 
 } // namespace KDC

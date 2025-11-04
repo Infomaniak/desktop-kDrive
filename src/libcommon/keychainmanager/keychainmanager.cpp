@@ -114,7 +114,7 @@ bool KeyChainManager::readApiToken(const std::string &keychainKey, ApiToken &api
     }
 
     std::string token;
-    bool returnValue = readDataFromKeystore(keychainKey, token, found);
+    const bool returnValue = readDataFromKeystore(keychainKey, token, found);
     if (returnValue && found) {
         apiToken = ApiToken(token);
     }
@@ -122,7 +122,7 @@ bool KeyChainManager::readApiToken(const std::string &keychainKey, ApiToken &api
     return returnValue;
 }
 
-bool KeyChainManager::deleteToken(const std::string &keychainKey) {
+bool KeyChainManager::deleteToken(const std::string &keychainKey) const {
     keychain::Error error{};
     keychain::deletePassword(PACKAGE, SERVICE, keychainKey, error);
     if (error) {

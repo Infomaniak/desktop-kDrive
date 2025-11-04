@@ -38,9 +38,9 @@ class ApiToken {
         inline const std::string &tokenType() const { return _tokenType; }
         inline void setTokenType(const std::string &newTokenType) { _tokenType = newTokenType; }
         inline uint64_t expiresIn() const { return _expiresIn; }
-        inline void setExpiresIn(uint64_t newExpiresIn) { _expiresIn = newExpiresIn; }
+        inline void setExpiresIn(const uint64_t newExpiresIn) { _expiresIn = newExpiresIn; }
         inline int userId() const { return _userId; }
-        inline void setUserId(int newUserId) { _userId = newUserId; }
+        inline void setUserId(const int newUserId) { _userId = newUserId; }
         inline const std::string &scope() const { return _scope; }
         inline void setScope(const std::string &newScope) { _scope = newScope; }
 

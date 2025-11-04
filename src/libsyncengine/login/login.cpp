@@ -46,15 +46,12 @@ Login::Login(const std::string &keychainKey) :
     _info[_apiToken.userId()] = LoginInfo();
 }
 
-Login::~Login() {}
-
 ExitInfo Login::requestToken(const std::string &authorizationCode, const std::string &codeVerifier /*= ""*/) {
     LOG_DEBUG(_logger, "Start token request");
 
     try {
         GetTokenJob job(authorizationCode, codeVerifier);
-        const ExitCode exitCode = job.runSynchronously();
-        if (exitCode != ExitCode::Ok) {
+        if (const ExitCode exitCode = job.runSynchronously(); exitCode != ExitCode::Ok) {
             LOG_WARN(_logger, "Error in GetTokenJob::runSynchronously: code=" << exitCode);
             _error = std::string();
             _errorDescr = std::string();
@@ -62,13 +59,12 @@ ExitInfo Login::requestToken(const std::string &authorizationCode, const std::st
         }
 
         LOG_DEBUG(_logger, "job.runSynchronously() done");
-        std::string errorCode;
-        std::string errorDescr;
-        if (job.hasErrorApi(&errorCode, &errorDescr)) {
+        if (job.hasErrorApi()) {
             LOGW_WARN(_logger, L"Failed to retrieve authentification token. Error : "
-                                       << KDC::CommonUtility::s2ws(errorCode) << L" - " << KDC::CommonUtility::s2ws(errorDescr));
-            _error = errorCode;
-            _errorDescr = errorDescr;
+                                       << KDC::CommonUtility::s2ws(job.errorCode()) << L" - "
+                                       << KDC::CommonUtility::s2ws(job.errorDescr()));
+            _error = job.errorCode();
+            _errorDescr = job.errorDescr();
             return ExitCode::BackError;
         }
 
@@ -96,15 +92,13 @@ ExitInfo Login::refreshToken() {
 }
 
 long Login::tokenUpdateDurationFromNow() const {
-    auto it = _info.find(_apiToken.userId());
-    if (it != _info.end()) {
-        auto tokenLastUpdate = it->second._lastTokenUpdateTime;
-        auto now = std::chrono::steady_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::seconds>(now - tokenLastUpdate);
-        return duration.count();
-    } else {
-        return 0;
-    }
+    const auto it = _info.find(_apiToken.userId());
+    if (it == _info.end()) return 0;
+
+    const auto tokenLastUpdate = it->second._lastTokenUpdateTime;
+    const auto now = std::chrono::steady_clock::now();
+    const auto duration = std::chrono::duration_cast<std::chrono::seconds>(now - tokenLastUpdate);
+    return duration.count();
 }
 
 ExitCode Login::refreshToken(const std::string &keychainKey, ApiToken &apiToken, std::string &error, std::string &errorDescr) {
@@ -135,14 +129,16 @@ ExitCode Login::refreshToken(const std::string &keychainKey, ApiToken &apiToken,
 
     try {
         RefreshTokenJob job(apiToken);
-        const ExitCode exitCode = job.runSynchronously();
-        if (exitCode != ExitCode::Ok) {
+        if (const ExitCode exitCode = job.runSynchronously(); exitCode != ExitCode::Ok) {
             LOG_WARN(Log::instance()->getLogger(), "Error in RefreshTokenJob::runSynchronously: code=" << exitCode);
-            job.hasErrorApi(&error, &errorDescr);
+            error = job.errorCode();
+            errorDescr = job.errorDescr();
             return exitCode;
         }
 
-        if (job.hasErrorApi(&error, &errorDescr)) {
+        if (job.hasErrorApi()) {
+            error = job.errorCode();
+            errorDescr = job.errorDescr();
             LOG_WARN(Log::instance()->getLogger(),
                      "Failed to retrieve authentication token. Error : " << error << " - " << errorDescr);
             return ExitCode::NetworkError;
