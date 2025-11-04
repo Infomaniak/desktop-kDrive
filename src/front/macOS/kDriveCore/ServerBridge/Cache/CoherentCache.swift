@@ -19,58 +19,6 @@
 import Combine
 import Foundation
 
-public struct User: Identifiable, Hashable, Sendable {
-    public var id: Int32 {
-        dbId
-    }
-
-    public var dbId: Int32
-    public var userId: Int32
-    public var name: String
-    public var email: String
-    public var accounts: [Int32: Account]
-    public var avatar: Data?
-    public var isConnected: Bool
-    public var isStaff: Bool
-
-    public init(
-        dbId: Int32,
-        userId: Int32,
-        name: String,
-        email: String,
-        accounts: [Int32: Account],
-        avatar: Data? = nil,
-        isConnected: Bool,
-        isStaff: Bool
-    ) {
-        self.dbId = dbId
-        self.userId = userId
-        self.name = name
-        self.email = email
-        self.accounts = accounts
-        self.avatar = avatar
-        self.isConnected = isConnected
-        self.isStaff = isStaff
-    }
-}
-
-public struct Account: Identifiable, Hashable, Sendable {
-    public let id: Int32
-    public var name: String
-    public var drives: [Int32: Drive]
-}
-
-public struct Drive: Identifiable, Hashable, Sendable {
-    public let id: Int32
-    public var name: String
-    public var syncros: [Int32: Syncro]
-}
-
-public struct Syncro: Identifiable, Hashable, Sendable {
-    public let id: Int32
-    public var name: String
-}
-
 /// Structure always follow this nested model: User → Account → Drive → Synchro
 public protocol CoherentCacheProtocol: Sendable {
     // MARK: - User
