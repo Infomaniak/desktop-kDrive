@@ -71,7 +71,7 @@ public struct Syncro: Identifiable, Hashable, Sendable {
     public var name: String
 }
 
-/// Structure always follow this nested model: User → Account → Drive → Syncro
+/// Structure always follow this nested model: User → Account → Drive → Synchro
 public protocol CoherentCacheProtocol: Sendable {
     // MARK: - User
 
@@ -93,11 +93,11 @@ public protocol CoherentCacheProtocol: Sendable {
     func addDrive(_ drive: Drive, toAccount accountId: Int32, userId: Int32) async
     func removeDrive(_ driveId: Int32, fromAccount accountId: Int32, userId: Int32) async
 
-    // MARK: - Syncro
+    // MARK: - Synchro
 
-    func getSyncro(_ syncroId: Int32, driveId: Int32, accountId: Int32, userId: Int32) async -> Syncro?
-    func addSyncro(_ syncro: Syncro, toDrive driveId: Int32, accountId: Int32, userId: Int32) async
-    func removeSyncro(_ syncroId: Int32, fromDrive driveId: Int32, accountId: Int32, userId: Int32) async
+    func getSynchro(_ syncroId: Int32, driveId: Int32, accountId: Int32, userId: Int32) async -> Synchro?
+    func addSynchro(_ syncro: Synchro, toDrive driveId: Int32, accountId: Int32, userId: Int32) async
+    func removeSynchro(_ syncroId: Int32, fromDrive driveId: Int32, accountId: Int32, userId: Int32) async
 
     // MARK: - Cleanup
 
@@ -112,7 +112,7 @@ public actor CoherentCache: CoherentCacheProtocol {
 
     private nonisolated let usersSubject = PassthroughSubject<IndexedUsers, Never>()
 
-    nonisolated public var usersPublisher: AnyPublisher<IndexedUsers, Never> {
+    public nonisolated var usersPublisher: AnyPublisher<IndexedUsers, Never> {
         usersSubject
             .receive(on: RunLoop.main)
             .eraseToAnyPublisher()
@@ -198,14 +198,14 @@ public actor CoherentCache: CoherentCacheProtocol {
 
     // MARK: - SYNCRO
 
-    public func getSyncro(_ syncroId: Int32, driveId: Int32, accountId: Int32, userId: Int32) -> Syncro? {
+    public func getSynchro(_ syncroId: Int32, driveId: Int32, accountId: Int32, userId: Int32) -> Synchro? {
         users[userId]?
             .accounts[accountId]?
             .drives[driveId]?
             .syncros[syncroId]
     }
 
-    public func addSyncro(_ syncro: Syncro, toDrive driveId: Int32, accountId: Int32, userId: Int32) {
+    public func addSynchro(_ syncro: Synchro, toDrive driveId: Int32, accountId: Int32, userId: Int32) {
         guard var user = users[userId],
               var account = user.accounts[accountId],
               var drive = account.drives[driveId]
@@ -217,7 +217,7 @@ public actor CoherentCache: CoherentCacheProtocol {
         users[userId] = user
     }
 
-    public func removeSyncro(_ syncroId: Int32, fromDrive driveId: Int32, accountId: Int32, userId: Int32) {
+    public func removeSynchro(_ syncroId: Int32, fromDrive driveId: Int32, accountId: Int32, userId: Int32) {
         guard var user = users[userId],
               var account = user.accounts[accountId],
               var drive = account.drives[driveId]
