@@ -111,6 +111,7 @@ actor CoherentCache: CoherentCacheProtocol {
     }
 
     func updateUser(_ user: User) {
+        IKLogger.cache.info("updateUser \(user)")
         // TODO: Diff merge, not swap
         users[user.dbId] = user
     }
