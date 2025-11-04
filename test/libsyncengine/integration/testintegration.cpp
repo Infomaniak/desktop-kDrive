@@ -151,7 +151,6 @@ void TestIntegration::testAll() {
     logStep("initialization");
 
     // Run test cases
-    /*
     basicTests();
     inconsistencyTests();
     conflictTests();
@@ -161,16 +160,11 @@ void TestIntegration::testAll() {
     testEncoding();
     testParentRename();
     testNegativeModificationTime();
-    */
-
     testDeleteAndRecreateBranch();
-
-    /*
     testDeleteAndMoveCase();
     testSymLinkWithTooManySymbolicLevels();
     testDirSymLinkWithTooManySymbolicLevels();
     testSynchronizationOfSymLinks();
-    */
 }
 
 void TestIntegration::inconsistencyTests() {
@@ -686,16 +680,6 @@ void TestIntegration::testDeleteAndRecreateBranch() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() / "A" / "AA" / "AAA1"));
-
-#if defined(KD_WINDOWS) || defined(KD_MACOS)
-    // The function testhelpers::isInTrash is not reliable on Linux
-    // if the trash has been polluted by previous failed tests.
-    CPPUNIT_ASSERT(testhelpers::isInTrash(SyncPath{"AA/AAA"}));
-#endif
-
-#if defined(KD_MACOS) || defined(KD_LINUX)
-    testhelpers::eraseFromTrash(SyncPath{"AA/AAA"});
-#endif
 
     logStep("testDeleteAndRecreateBranch");
 }
