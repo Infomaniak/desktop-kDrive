@@ -102,7 +102,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
 
         bool _accessTokenAlreadyRefreshed = false;
 
-        ApiToken loadApiToken();
+        virtual ApiToken loadApiToken();
 
         std::string getUrl() override;
         ExitInfo handleUnauthorizedResponse();
