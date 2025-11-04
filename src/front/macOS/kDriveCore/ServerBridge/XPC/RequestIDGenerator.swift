@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/// Mimic the server using an autoincrement id to debug async comms. This is used when we send something to the server on our side.
 actor RequestIDGenerator {
     private var counter: Int32 = 0
 
