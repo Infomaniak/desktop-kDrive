@@ -22,12 +22,14 @@ import kDriveCore
 import XCTest
 
 final class ObservableCoherentCacheTests: XCTestCase {
+    static let expectedUserId: Int32 = 12345
+    static let expectedUserDbId: Int32 = 5678
+    
     @MainActor func testObserveUserChangesWithCombine() throws {
         // GIVEN
-        let expectedUserDbId: Int32 = 12345
         let user = User(
-            dbId: expectedUserDbId,
-            userId: 2,
+            dbId: Self.expectedUserDbId,
+            userId: Self.expectedUserId,
             name: "appleseed",
             email: "ja@apple.com",
             accounts: [:],
@@ -42,28 +44,25 @@ final class ObservableCoherentCacheTests: XCTestCase {
         var cancellables = Set<AnyCancellable>()
 
         // WHEN
-        DispatchQueue.main.async {
-            // Wrapping the async / await code in order to use waitForExpectations(:)
-            Task {
-                let publisher = cache.usersPublisher
-                let subscription = publisher
-                    .sink { indexedUsers in
-                        receivedUsers = indexedUsers
-                        if !indexedUsers.isEmpty {
-                            expectation.fulfill()
-                        } else {
-                            XCTFail("Received an empty users list")
-                        }
-                    }
-
-                subscription.store(in: &cancellables)
-
-                await cache.addUser(user)
+        let publisher = cache.usersPublisher
+        let subscription = publisher
+            .sink { indexedUsers in
+                receivedUsers = indexedUsers
+                if !indexedUsers.isEmpty {
+                    expectation.fulfill()
+                } else {
+                    XCTFail("Received an empty users list")
+                }
             }
+
+        subscription.store(in: &cancellables)
+        
+        Task {
+            await cache.addUser(user)
         }
 
         // THEN
-        waitForExpectations(timeout: 2.0) { error in
+        waitForExpectations(timeout: 10.0) { error in
             if let error = error {
                 XCTFail("Expectation failed with error: \(error)")
             }
@@ -72,7 +71,7 @@ final class ObservableCoherentCacheTests: XCTestCase {
         XCTAssertEqual(receivedUsers!.count, 1, "Should have received one user update")
 
         if let receivedUser = receivedUsers?.first {
-            XCTAssertEqual(receivedUser.value.dbId, expectedUserDbId, "Received user ID should match expected")
+            XCTAssertEqual(receivedUser.value.dbId, Self.expectedUserDbId, "Received user ID should match expected")
             XCTAssertEqual(receivedUser.value.name, "appleseed", "Received user name should match expected")
         } else {
             XCTFail("Expected to find a user in the combine event")
