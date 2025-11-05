@@ -6,7 +6,11 @@ import sys
 from bs4 import BeautifulSoup as Soup
 
 filename, appname  = sys.argv[1:3]
-semantic_version = appname[:-9] # Example: "kDrive-3.6.10".
+version = appname.split("-")[-1]                                # 3.7.8.2
+short_version = ".".join(version.split(".")[:-1])               # 3.7.8
+semantic_version = f"{appname.split("-")[0]}-{short_version}"   # kDrive-3.7.8
+
+print(f"Processing {filename} for {appname} (semantic version: {semantic_version})")
 
 soup = Soup(open(filename),"xml")
 element = soup.find("sparkle:minimumSystemVersion")
