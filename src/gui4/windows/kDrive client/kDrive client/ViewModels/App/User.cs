@@ -56,6 +56,7 @@ namespace Infomaniak.kDrive.ViewModels
                      .Bind(out var allDrives)
                      .Subscribe();
             Drives = allDrives;
+            Drives.AsObservableChangeSet().Subscribe(_ => MergeDrives());
         }
 
         public void Dispose()
@@ -157,6 +158,11 @@ namespace Infomaniak.kDrive.ViewModels
             await App.ServiceProvider.GetRequiredService<IServerCommService>().RefreshUserDrivesAvailable(this.DbId, CancellationToken.None);
             MergeDrives();
         }
+
+        /* Merges the Drives and DrivesAvailable collections into the AllDrives collection,
+         * ensuring no duplicates based on DriveId.
+         * If a drive id exists in Drives and DrivesAvailable, the one from Drives is kept.
+         */
         private void MergeDrives()
         {
             // Define drive Equal action based on DriveId and type
