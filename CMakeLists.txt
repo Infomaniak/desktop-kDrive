@@ -139,12 +139,6 @@ option(BUILD_EXTENSIONS_ICONS "BUILD_EXTENSIONS_ICONS" ON)
 # this option builds the client
 option(BUILD_CLIENT "BUILD_CLIENT" ON)
 
-# this option builds the client documentation
-option(BUILD_DOCS "BUILD_DOCS" OFF)
-
-# this option needs to be refactored out BUILD_CLIENT needs to be ON.
-option(BUILD_LIBRARIES_ONLY "BUILD_LIBRARIES_ONLY" OFF)
-
 # this option adds src/gui to the subdirectories when building the src folder 
 option(BUILD_GUI "BUILD_GUI" ON)
 
@@ -210,10 +204,6 @@ if(BUILD_CLIENT)
             add_subdirectory(admin)
         endif(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/admin)
     endif(NOT BUILD_LIBRARIES_ONLY)
-endif()
-
-if(BUILD_DOCS)
-    add_subdirectory(docs)
 endif()
 
 if(BUILD_EXTENSIONS)

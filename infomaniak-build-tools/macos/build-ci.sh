@@ -33,7 +33,7 @@ src_dir="${1-$PWD}"
 app_name="kDrive"
 
 # define Qt6 directory
-export PATH=/usr/local/bin:"$QTDIR/bin:$PATH"
+export PATH=/usr/local/bin:"${QTDIR}/bin:$PATH"
 
 # Set Infomaniak Theme
 kdrive_dir="$src_dir/infomaniak"
