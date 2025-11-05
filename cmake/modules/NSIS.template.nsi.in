@@ -518,9 +518,8 @@ SectionEnd
       ${PowerShellExec} "Get-AppxPackage -Name Microsoft.DesktopAppInstaller | Measure-Object | Select-Object -expand Count"
       Pop $R0
       IntCmp $R0 1 install_lite_sync_extension
+	  ; If output value is different than 1, show warning message but try to install the extension anyway.
       MessageBox MB_ICONSTOP|MB_TOPMOST|MB_SETFOREGROUND $InstallMsiexec_MESSAGEBOX_TEXT
-	  IntCmp $R0 0 end_install_lite_sync_extension
-      ; If output value is different than 0, try to install the extension anyway.
 	  
       install_lite_sync_extension:
       CreateDirectory "$INSTDIR\shellext\AppX"
@@ -530,7 +529,6 @@ SectionEnd
 
       !insertmacro CheckAndConfirmEndProcesse1 "${EXTENSION_NAME}"
       ${PowerShellExecLog} "Add-AppxPackage -Path '$INSTDIR\shellext\AppX\${VFS_APPX_BUNDLE}' -ForceApplicationShutdown -ForceUpdateFromAnyVersion"
-      end_install_lite_sync_extension:
    ${MementoSectionEnd}
 !endif
 
