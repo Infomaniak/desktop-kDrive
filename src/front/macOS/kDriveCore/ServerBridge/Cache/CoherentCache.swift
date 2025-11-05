@@ -19,7 +19,7 @@
 import Combine
 import Foundation
 
-public protocol CoherentCacheObservation {
+public protocol CoherentCacheObservation: Sendable {
     var usersPublisher: AnyPublisher<IndexedUsers, Never> { get }
 }
 
@@ -27,7 +27,8 @@ public protocol CoherentCacheObservation {
 public protocol CoherentCacheProtocol: Sendable {
     // MARK: - User
 
-    func getUser(_ id: Int32) async -> User?
+    func getUser(id: Int32) async -> User?
+    func getUser(dbId: Int32) async -> User?
     func getFirstAvailableUser() async -> User?
     func addUser(_ user: User) async
     func removeUser(_ id: Int32) async
@@ -74,7 +75,11 @@ public actor CoherentCache: CoherentCacheProtocol, CoherentCacheObservation {
 
     // MARK: - USER
 
-    public func getUser(_ id: Int32) -> User? {
+    public func getUser(dbId: Int32) -> User? {
+        users.values.first { $0.dbId == dbId }
+    }
+
+    public func getUser(id: Int32) -> User? {
         guard let user = users[id] else {
             IKLogger.cache.info("user miss")
             return nil
@@ -100,7 +105,7 @@ public actor CoherentCache: CoherentCacheProtocol, CoherentCacheObservation {
     public func updateUser(_ user: User) {
         IKLogger.cache.info("updateUser \(user)")
         // TODO: Diff merge, not swap
-        users[user.dbId] = user
+        users[user.id] = user
         usersSubject.send(users)
     }
 

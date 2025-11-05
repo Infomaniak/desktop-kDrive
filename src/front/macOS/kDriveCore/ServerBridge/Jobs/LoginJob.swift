@@ -38,7 +38,7 @@ public struct LoginJob: Sendable {
     public func loginAndFetchUser(code: String, verifier: String) async -> User? {
         do {
             let userDbId = try await loginUserQuery(code: code, verifier: verifier)
-            if let user = await coherentCache.getUser(userDbId) {
+            if let user = await coherentCache.getUser(dbId: userDbId) {
                 return user
             }
 

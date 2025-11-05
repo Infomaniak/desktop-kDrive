@@ -20,7 +20,7 @@ import Foundation
 
 public struct User: Identifiable, Hashable, Sendable {
     public var id: Int32 {
-        dbId
+        userId
     }
 
     public var dbId: Int32
