@@ -25,8 +25,7 @@ static const auto outParamsUserDbId = "userDbId";
 
 namespace KDC {
 
-SignalUserRemovedJob::SignalUserRemovedJob(std::shared_ptr<CommManager> commManager, int userDbId) :
-    AbstractGuiJob(commManager),
+SignalUserRemovedJob::SignalUserRemovedJob(int userDbId) :
     _userDbId(userDbId) {
     _signalNum = SignalNum::USER_REMOVED;
 }

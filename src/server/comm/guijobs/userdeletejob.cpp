@@ -39,7 +39,7 @@ UserDeleteJob::UserDeleteJob(std::shared_ptr<CommManager> commManager, int reque
 ExitInfo UserDeleteJob::deserializeInputParms() {
     try {
         readParamValue(inParamsUserDbId, _userDbId);
-    } catch (std::exception &e) {
+    } catch (const std::exception &e) {
         LOG_WARN(_logger, "Exception in AbstractGuiJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
     }
@@ -67,7 +67,7 @@ ExitInfo UserDeleteJob::process() {
     // Delete user from DB
     const ExitCode exitCode = ServerRequests::deleteUser(_userDbId);
     if (exitCode == ExitCode::Ok) {
-        auto signalUserRemovedJob = std::make_shared<SignalUserRemovedJob>(_commManager, _userDbId);
+        auto signalUserRemovedJob = std::make_shared<SignalUserRemovedJob>(_userDbId);
         _commManager->sendGuiSignal(signalUserRemovedJob);
     } else {
         LOG_WARN(_logger, "Error in ServerRequests::deleteUser: code=" << exitCode);

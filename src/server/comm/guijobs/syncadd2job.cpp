@@ -42,7 +42,7 @@ SyncAdd2Job::SyncAdd2Job(std::shared_ptr<CommManager> commManager, int requestId
 ExitInfo SyncAdd2Job::deserializeInputParms() {
     try {
         readParamValue(inParamsDriveDbId, _driveDbId);
-    } catch (std::exception &e) {
+    } catch (const std::exception &e) {
         LOG_WARN(_logger, "Exception in AbstractGuiJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
     }
@@ -63,10 +63,10 @@ ExitInfo SyncAdd2Job::process() {
                                                       liteSync(), showInNavigationPane, syncInfo);
         exitCode != ExitCode::Ok) {
         LOGW_WARN(_logger, L"Error in Requests::addSync - driveDbId="
-                                   << _driveDbId << L" localFolderPath=" << Utility::formatSyncPath(localFolderPath())
-                                   << L" serverFolderPath=" << Utility::formatSyncPath(serverFolderPath())
-                                   << L" serverFolderNodeId=" << Utility::v2ws(serverFolderNodeId()) << L" liteSync="
-                                   << liteSync() << L" showInNavigationPane=" << showInNavigationPane);
+                                   << _driveDbId << L" local " << Utility::formatSyncPath(localFolderPath()) << L" server "
+                                   << Utility::formatSyncPath(serverFolderPath()) << L" serverFolderNodeId="
+                                   << Utility::v2ws(serverFolderNodeId()) << L" liteSync=" << liteSync()
+                                   << L" showInNavigationPane=" << showInNavigationPane);
         AppServer::addError(Error(ERR_ID, exitCode));
         return exitCode;
     }

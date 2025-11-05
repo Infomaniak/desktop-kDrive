@@ -16,10 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
+
 #include "server/comm/guijobs/abstractguijob.h"
 #include "libcommon/info/accountinfo.h"
-
-#pragma once
 
 namespace KDC {
 

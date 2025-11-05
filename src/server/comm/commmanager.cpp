@@ -262,6 +262,7 @@ void CommManager::sendGuiSignal(std::shared_ptr<AbstractGuiJob> signal) {
 
     LOG_DEBUG(Log::instance()->getLogger(), "Send signal: id=" << signal->id() << " num=" << signal->signalNum());
 
+    signal->setCommManager(shared_from_this());
     signal->setChannels(_guiCommServer->connections());
 
     // Add job to JobManager pool

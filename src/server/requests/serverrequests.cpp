@@ -365,15 +365,12 @@ ExitCode ServerRequests::findGoodPathForNewSync(int driveDbId, const QString &ba
 
 ExitCode ServerRequests::requestToken(const std::string &code, const std::string &codeVerifier, UserInfo &userInfo,
                                       bool &userCreated, std::string &error, std::string &errorDescr) {
-    ExitCode exitCode;
-
     // Generate keychainKey
     std::string keychainKey(Utility::computeMd5Hash(std::to_string(std::time(nullptr))));
 
     // Create Login instance and request token
     Login login(keychainKey);
-    exitCode = login.requestToken(code, codeVerifier);
-    if (exitCode != ExitCode::Ok) {
+    if (ExitCode exitCode = login.requestToken(code, codeVerifier); exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in Login::requestToken: code=" << exitCode);
         error = login.error();
         errorDescr = login.errorDescr();
@@ -381,13 +378,12 @@ ExitCode ServerRequests::requestToken(const std::string &code, const std::string
     }
 
     // Create or update user
-    exitCode = processRequestTokenFinished(login, userInfo, userCreated);
-    if (exitCode != ExitCode::Ok) {
+    if (ExitCode exitCode = processRequestTokenFinished(login, userInfo, userCreated); exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in processRequestTokenFinished: code=" << exitCode);
         return exitCode;
     }
 
-    return exitCode;
+    return ExitCode::Ok;
 }
 
 ExitCode ServerRequests::requestToken(const QString &code, const QString &codeVerifier, UserInfo &userInfo, bool &userCreated,
@@ -639,8 +635,6 @@ ExitCode ServerRequests::addSync(int userDbId, int accountId, int driveId, const
     Q_UNUSED(showInNavigationPane)
 #endif
 
-    ExitCode exitCode;
-
     // Create Account in DB if needed
     int accountDbId;
     if (!ParmsDb::instance()->accountDbId(userDbId, accountId, accountDbId)) {
@@ -658,8 +652,7 @@ ExitCode ServerRequests::addSync(int userDbId, int accountId, int driveId, const
         account.setDbId(accountDbId);
         account.setAccountId(accountId);
         account.setUserDbId(userDbId);
-        exitCode = createAccount(account, accountInfo);
-        if (exitCode != ExitCode::Ok) {
+        if (ExitCode exitCode = createAccount(account, accountInfo); exitCode != ExitCode::Ok) {
             LOG_WARN(Log::instance()->getLogger(), "Error in createAccount");
             return exitCode;
         }
@@ -686,8 +679,7 @@ ExitCode ServerRequests::addSync(int userDbId, int accountId, int driveId, const
         drive.setDbId(driveDbId);
         drive.setDriveId(driveId);
         drive.setAccountDbId(accountDbId);
-        exitCode = createDrive(drive, driveInfo);
-        if (exitCode != ExitCode::Ok) {
+        if (ExitCode exitCode = createDrive(drive, driveInfo); exitCode != ExitCode::Ok) {
             LOG_WARN(Log::instance()->getLogger(), "Error in createDrive");
             return exitCode;
         }
@@ -720,8 +712,6 @@ ExitCode ServerRequests::addSync(int driveDbId, const SyncPath &localFolderPath,
 #if !defined(Q_OS_MAC) && !defined(Q_OS_WIN)
     Q_UNUSED(liteSync)
 #endif
-
-    ExitCode exitCode;
 
     // Create Sync in DB
     int syncDbId;
@@ -769,8 +759,7 @@ ExitCode ServerRequests::addSync(int driveDbId, const SyncPath &localFolderPath,
     sync.setDbPath(std::filesystem::path());
     sync.setHasFullyCompleted(false);
     sync.setNavigationPaneClsid(navigationPaneClsid.toString().toStdString());
-    exitCode = createSync(sync, syncInfo);
-    if (exitCode != ExitCode::Ok) {
+    if (ExitCode exitCode = createSync(sync, syncInfo); exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in createSync");
         return exitCode;
     }

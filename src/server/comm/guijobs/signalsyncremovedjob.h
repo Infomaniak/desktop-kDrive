@@ -24,7 +24,7 @@ namespace KDC {
 
 class SignalSyncRemovedJob : public AbstractGuiJob {
     public:
-        SignalSyncRemovedJob(std::shared_ptr<CommManager> commManager, int syncDbId);
+        SignalSyncRemovedJob(int syncDbId);
 
     private:
         // Output parameters

@@ -25,7 +25,7 @@ namespace KDC {
 
 class SignalUserUpdatedJob : public AbstractGuiJob {
     public:
-        SignalUserUpdatedJob(std::shared_ptr<CommManager> commManager, const UserInfo &userInfo);
+        SignalUserUpdatedJob(const UserInfo &userInfo);
 
     private:
         // Output parameters

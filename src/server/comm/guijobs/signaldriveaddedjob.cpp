@@ -25,8 +25,7 @@ static const auto outParamsDriveInfo = "driveInfo";
 
 namespace KDC {
 
-SignalDriveAddedJob::SignalDriveAddedJob(std::shared_ptr<CommManager> commManager, const DriveInfo &driveInfo) :
-    AbstractGuiJob(commManager),
+SignalDriveAddedJob::SignalDriveAddedJob(const DriveInfo &driveInfo) :
     _driveInfo(driveInfo) {
     _signalNum = SignalNum::DRIVE_ADDED;
 }

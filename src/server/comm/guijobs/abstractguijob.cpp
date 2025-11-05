@@ -48,8 +48,7 @@ AbstractGuiJob::AbstractGuiJob(std::shared_ptr<CommManager> commManager, int req
     _type = GuiJobType::Query;
 }
 
-AbstractGuiJob::AbstractGuiJob(std::shared_ptr<CommManager> commManager) :
-    _commManager(commManager) {
+AbstractGuiJob::AbstractGuiJob() {
     _type = GuiJobType::Signal;
     _signalId = _lastSignalId++;
 }
@@ -102,7 +101,7 @@ bool AbstractGuiJob::deserializeGenericInputParms(const CommString &inputParamsS
 
         assert(paramsStruct[inRequestParams].isStruct());
         inParams = paramsStruct[inRequestParams].extract<Poco::DynamicStruct>();
-    } catch (std::exception &e) {
+    } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(), "Error in CommonUtility::readValueFromStruct: error=" << e.what());
         return false;
     }

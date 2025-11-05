@@ -37,7 +37,7 @@ SyncDeleteJob::SyncDeleteJob(std::shared_ptr<CommManager> commManager, int reque
 ExitInfo SyncDeleteJob::deserializeInputParms() {
     try {
         readParamValue(inParamsSyncDbId, _syncDbId);
-    } catch (std::exception &e) {
+    } catch (const std::exception &e) {
         LOG_WARN(_logger, "Exception in AbstractGuiJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
     }

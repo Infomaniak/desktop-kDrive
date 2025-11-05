@@ -25,8 +25,7 @@ static const auto outParamsUserInfo = "userInfo";
 
 namespace KDC {
 
-SignalUserAddedJob::SignalUserAddedJob(std::shared_ptr<CommManager> commManager, const UserInfo &userInfo) :
-    AbstractGuiJob(commManager),
+SignalUserAddedJob::SignalUserAddedJob(const UserInfo &userInfo) :
     _userInfo(userInfo) {
     _signalNum = SignalNum::USER_ADDED;
 }

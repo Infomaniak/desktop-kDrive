@@ -46,7 +46,7 @@ ExitInfo SyncAddJob::deserializeInputParms() {
         readParamValue(inParamsUserDbId, _userDbId);
         readParamValue(inParamsAccountId, _accountId);
         readParamValue(inParamsDriveId, _driveId);
-    } catch (std::exception &e) {
+    } catch (const std::exception &e) {
         LOG_WARN(_logger, "Exception in AbstractGuiJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
     }
@@ -70,8 +70,8 @@ ExitInfo SyncAddJob::process() {
                                         serverFolderNodeId(), liteSync(), showInNavigationPane, accountInfo, driveInfo, syncInfo);
         exitCode != ExitCode::Ok) {
         LOGW_WARN(_logger, L"Error in Requests::addSync - userDbId="
-                                   << _userDbId << L" accountId=" << _accountId << L" driveId=" << _driveId
-                                   << L" localFolderPath=" << Utility::formatSyncPath(localFolderPath()) << L" serverFolderPath="
+                                   << _userDbId << L" accountId=" << _accountId << L" driveId=" << _driveId << L" local "
+                                   << Utility::formatSyncPath(localFolderPath()) << L" server "
                                    << Utility::formatSyncPath(serverFolderPath()) << L" serverFolderNodeId="
                                    << Utility::v2ws(serverFolderNodeId()) << L" liteSync=" << liteSync()
                                    << L" showInNavigationPane=" << showInNavigationPane);
@@ -80,12 +80,12 @@ ExitInfo SyncAddJob::process() {
     }
 
     if (accountInfo.dbId() != 0) {
-        auto signalAccountAddedJob = std::make_shared<SignalAccountAddedJob>(_commManager, accountInfo);
+        auto signalAccountAddedJob = std::make_shared<SignalAccountAddedJob>(accountInfo);
         _commManager->sendGuiSignal(signalAccountAddedJob);
     }
 
     if (driveInfo.dbId() != 0) {
-        auto signalDriveAddedJob = std::make_shared<SignalDriveAddedJob>(_commManager, driveInfo);
+        auto signalDriveAddedJob = std::make_shared<SignalDriveAddedJob>(driveInfo);
         _commManager->sendGuiSignal(signalDriveAddedJob);
     }
 
