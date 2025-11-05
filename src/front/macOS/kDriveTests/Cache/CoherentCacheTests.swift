@@ -21,12 +21,14 @@ import kDriveCore
 import Testing
 
 struct CoherentCacheTests {
-    @Test func testSetGetUserInCache() async throws {
+    static let expectedUserId: Int32 = 56789
+    static let expectedUserDbId: Int32 = 12345
+
+    @Test func testSetGetUserInCacheFromPrimaryKey() async throws {
         // GIVEN
-        let expectedUserDbId: Int32 = 12345
         let user = User(
-            dbId: expectedUserDbId,
-            userId: 2,
+            dbId: Self.expectedUserDbId,
+            userId: Self.expectedUserId,
             name: "appleseed",
             email: "ja@apple.com",
             accounts: [:],
@@ -35,12 +37,35 @@ struct CoherentCacheTests {
             isStaff: true
         )
         let cache = CoherentCache()
-        #expect(await cache.getUser(expectedUserDbId) == nil)
+        #expect(await cache.getUser(id: Self.expectedUserId) == nil)
 
         // WHEN
         await cache.addUser(user)
 
         // THEN
-        #expect(await cache.getUser(expectedUserDbId) == user)
+        #expect(await cache.getUser(id: Self.expectedUserId) == user)
+    }
+
+    @Test func testSetGetUserInCacheFromDbId() async throws {
+        // GIVEN
+
+        let user = User(
+            dbId: Self.expectedUserDbId,
+            userId: Self.expectedUserId,
+            name: "appleseed",
+            email: "ja@apple.com",
+            accounts: [:],
+            avatar: Data(),
+            isConnected: true,
+            isStaff: true
+        )
+        let cache = CoherentCache()
+        #expect(await cache.getUser(dbId: Self.expectedUserDbId) == nil)
+
+        // WHEN
+        await cache.addUser(user)
+
+        // THEN
+        #expect(await cache.getUser(dbId: Self.expectedUserDbId) == user)
     }
 }
