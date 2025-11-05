@@ -111,6 +111,15 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             });
         }
 
+        public async Task RemoveUser(DbId userDbId, CancellationToken cancellationToken)
+        {
+            JsonObject parms = new()
+            {
+                ["userDbId"] = userDbId
+            };
+            var commData = await _commClient.SendRequestAsync(RequestNum.USER_DELETE, parms, cancellationToken);
+        }
+
         public async Task RefreshAccounts(CancellationToken cancellationToken)
         {
             CommData data = await _commClient.SendRequestAsync(RequestNum.AccountInfoList, new JsonObject(), cancellationToken);
@@ -406,10 +415,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 case SignalNum.UserUpdated:
                 case SignalNum.UserAdded:
-                    await HandleUserUpdatedOrAdded(sender, args);
+                    await HandleUserUpdatedOrAddedAsync(sender, args);
                     break;
                 case SignalNum.UPDATER_STATE_CHANGED:
-                    await HandleUpdaterStateChanged(sender, args);
+                    await HandleUpdaterStateChangedAsync(sender, args);
+                    break;
+                case SignalNum.USER_REMOVED:
+                    await HandleUserRemovedAsync(sender, args);
                     break;
                 default:
                     Logger.Log(Logger.Level.Warning, $"Unhandled signal received: {args.SignalNum}");
@@ -417,7 +429,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
         }
 
-        public async Task HandleUserUpdatedOrAdded(object? sender, SignalEventArgs args)
+        public async Task HandleUserUpdatedOrAddedAsync(object? sender, SignalEventArgs args)
         {
             var signalData = args.SignalData;
 
@@ -446,9 +458,33 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             await AddOrUpdateUserInModel(newUserInfo);
         }
 
-        public async Task HandleUpdaterStateChanged(object? sender, SignalEventArgs args)
+        public async Task HandleUpdaterStateChangedAsync(object? sender, SignalEventArgs args)
         {
             await RefreshUpdaterVersionInfo(new CancellationToken());
+        }
+
+        public async Task HandleUserRemovedAsync(object? sender, SignalEventArgs args)
+        {
+            var signalData = args.SignalData;
+
+            if (signalData == null || !signalData.ContainsKey("userDbId"))
+            {
+                Logger.Log(Logger.Level.Error, "userDbId not found in parameters.");
+                return;
+            }
+            DbId dbId = signalData["userDbId"]?.GetValue<DbId>() ?? -1;
+
+            User? user = _viewModel.Users.FirstOrDefault(u => u.DbId == dbId);
+            if (user == null)
+            {
+                Logger.Log(Logger.Level.Error, $"User with dbId {dbId} not found");
+                return;
+            }
+            await Utility.RunOnUIThread(() =>
+            {
+                _viewModel.Users.Remove(user);
+            });
+            return;
         }
 
         // Helpers

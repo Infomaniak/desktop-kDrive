@@ -228,7 +228,17 @@ namespace Infomaniak.kDrive.Pages
             {
                 if (user is not null)
                 {
+                    var control = sender as Control;
+                    if (control is not null)
+                    {
+                        control.IsEnabled = false;
+                    }
                     await _viewModel.DisconnectUserAsync(user.DbId);
+                    await Task.Delay(5000);
+                    if (control is not null)
+                    {
+                        control.IsEnabled = true;
+                    }
                 }
             }
         }

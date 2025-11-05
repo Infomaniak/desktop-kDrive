@@ -255,12 +255,10 @@ namespace Infomaniak.kDrive.ViewModels
             OnPropertyChanged(nameof(HasErrors));
         }
 
-        public Task DisconnectUserAsync(DbId userDbId)
+        public async Task DisconnectUserAsync(DbId userDbId)
         {
             IServerCommService serverCommService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            // TODO: implement disconnect user in server comm service
-            Users.Remove(Users.FirstOrDefault(u => u.DbId == userDbId)!);
-            return Task.CompletedTask;
+            await serverCommService.RemoveUser(userDbId, CancellationToken.None);
         }
     }
 }
