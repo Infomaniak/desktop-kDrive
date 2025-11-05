@@ -289,12 +289,13 @@
 
                 <!-- Advanced -->
                 <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                    <TextBlock Text="Avancé"
+                    <TextBlock x:Uid="Page_SettingsPage_Advanced"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
 
                     <!-- Advanced - Sync rules -->
-                    <toolKit:SettingsCard Header="Règles de synchronisation"
-                                          IsClickEnabled="True">
+                    <toolKit:SettingsCard x:Uid="Page_SettingsPage_SyncRules"
+                                          IsClickEnabled="True"
+                                          Click="SyncRulesCard_Clicked">
                         <toolKit:SettingsCard.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Edition.list-bullets}"
                                               Height="32"

@@ -545,6 +545,9 @@ Version {0} (build {1}), compilée le {2}
   <data name="Page_SettingsPage_Accounts.Text" xml:space="preserve">
     <value>Comptes</value>
   </data>
+  <data name="Page_SettingsPage_Advanced.Text" xml:space="preserve">
+    <value>Avancé</value>
+  </data>
   <data name="Page_SettingsPage_RemoveAccount_Dialog.Title" xml:space="preserve">
     <value>Déconnecter ce compte ?</value>
   </data>
@@ -554,6 +557,12 @@ Version {0} (build {1}), compilée le {2}
   </data>
   <data name="Page_SettingsPage_RemoveAccount.Header" xml:space="preserve">
     <value>Deconnecter ce compte</value>
+  </data>
+  <data name="Page_SettingsPage_SyncRules.Header" xml:space="preserve">
+    <value>Règles de synchronisation</value>
+  </data>
+  <data name="Page_SettingsPage_SyncRules.Description" xml:space="preserve">
+    <value>Évitez que certains fichiers soient copiés dans kDrive.</value>
   </data>
   <data name="Page_SettingsPage_RemoveAccount_Dialog.SecondaryButtonText" xml:space="preserve">
     <value>Deconnecter</value>
