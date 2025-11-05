@@ -247,37 +247,61 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Logger.Log(Logger.Level.Error, $"User not found for DriveAvailable with dbID {userDbId}.");
                 return;
             }
-            await Utility.RunOnUIThread(() =>
+
+            // We don't clear and re-add all items to avoid UI flickering
+            // Build sets for fast lookup
+            var newIds = driveAvailableInfoList.Select(d => d.DriveId).ToHashSet();
+            var existingIds = user.DrivesAvailable.Select(d => d.DriveId).ToHashSet();
+
+            // Add new drives
+            foreach (var info in driveAvailableInfoList)
             {
-                // We don't clear and re-add all items to avoid UI flickering
-                // Build sets for fast lookup
-                var newIds = driveAvailableInfoList.Select(d => d.DriveId).ToHashSet();
-                var existingIds = user.DrivesAvailable.Select(d => d.DriveId).ToHashSet();
-
-                // Add new drives
-                foreach (var info in driveAvailableInfoList)
+                if (!existingIds.Contains(info.DriveId ?? -1))
                 {
-                    if (!existingIds.Contains(info.DriveId ?? -1))
-                    {
-                        var drive = new DriveAvailable();
-                        CommStruct.ConversionHelper.copyToDriveAvailable(info, drive);
-                        user.DrivesAvailable.Add(drive);
-                    }
+                    var drive = new DriveAvailable();
+                    CommStruct.ConversionHelper.copyToDriveAvailable(info, drive);
+                    await Utility.RunOnUIThread(() => { user.DrivesAvailable.Add(drive); });
                 }
-
-                // Remove drives no longer available
-                foreach (var existingId in existingIds)
+                else
                 {
-                    if (!newIds.Contains(existingId))
+                    // Check if any of the properties have changed, if yes remove and re-add to trigger UI update
+                    var existingDrive = user.DrivesAvailable.FirstOrDefault(d => d.DriveId == info.DriveId);
+                    if (existingDrive != null)
                     {
-                        var driveToRemove = user.DrivesAvailable.FirstOrDefault(d => d.DriveId == existingId);
-                        if (driveToRemove != null)
+                        var tempDrive = new DriveAvailable();
+                        CommStruct.ConversionHelper.copyToDriveAvailable(info, tempDrive);
+                        // compare properties individually
+                        foreach (var prop in typeof(DriveAvailable).GetProperties())
                         {
-                            user.DrivesAvailable.Remove(driveToRemove);
+                            var existingValue = prop.GetValue(existingDrive);
+                            var newValue = prop.GetValue(tempDrive);
+                            if (!Equals(existingValue, newValue))
+                            {
+                                await Utility.RunOnUIThread(() => {
+                                    user.DrivesAvailable.Remove(existingDrive);
+                                    user.DrivesAvailable.Add(tempDrive); 
+                                });
+                                break;
+                            }
                         }
                     }
                 }
-            });
+            }
+
+
+            // Remove drives no longer available
+            foreach (var existingId in existingIds)
+            {
+                if (!newIds.Contains(existingId))
+                {
+                    var driveToRemove = user.DrivesAvailable.FirstOrDefault(d => d.DriveId == existingId);
+                    if (driveToRemove != null)
+                    {
+                        await Utility.RunOnUIThread(() => { user.DrivesAvailable.Remove(driveToRemove); });
+                    }
+                }
+            }
+
         }
 
 

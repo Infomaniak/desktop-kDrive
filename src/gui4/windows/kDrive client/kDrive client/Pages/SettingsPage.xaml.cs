@@ -40,80 +40,25 @@ namespace Infomaniak.kDrive.Pages
             Logger.Log(Logger.Level.Info, "Navigated to SettingsPage - Initializing SettingsPage components");
             InitializeComponent();
             RegisterPropertyChangedHandlers();
-            Loaded += onPageLoaded;
 
             Logger.Log(Logger.Level.Debug, "SettingsPage components initialized");
-        }
-        ~SettingsPage()
-        {
-            UnregisterPropertyChangedHandlers();
-        }
-
-        void onPageLoaded(object sender, RoutedEventArgs e)
-        {
-            // check if any of the users is staff to show the internal update channel combobox
-            bool staffUserExists = ViewModel.Users.Any(user => user.IsStaff && user.IsConnected);
-            UpdateChannelComboBox_Internal.Visibility = staffUserExists ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void RegisterPropertyChangedHandlers()
         {
             ViewModel.Settings.PropertyChanged += Settings_PropertyChanged;
-            SetEnumComboBoxSelection(NotificationsComboBox, ViewModel.Settings.NotificationsDisabled);
-
-            ViewModel.Settings.UpdateManager.PropertyChanged += UpdateManager_PropertyChanged;
-            SetEnumComboBoxSelection(UpdateChannelComboBox, ViewModel.Settings.UpdateManager.CurrentChannel);
+            Utility.SetEnumComboBoxSelection(NotificationsComboBox, ViewModel.Settings.NotificationsDisabled);
         }
 
         private void Settings_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(ViewModel.Settings.NotificationsDisabled))
-                SetEnumComboBoxSelection(NotificationsComboBox, ViewModel.Settings.NotificationsDisabled);
-        }
-
-        private void UpdateManager_PropertyChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(ViewModel.Settings.UpdateManager.CurrentChannel))
-                SetEnumComboBoxSelection(UpdateChannelComboBox, ViewModel.Settings.UpdateManager.CurrentChannel);
-
-        }
-        private void UnregisterPropertyChangedHandlers()
-        {
-            ViewModel.Settings.UpdateManager.PropertyChanged -= UpdateManager_PropertyChanged;
+                Utility.SetEnumComboBoxSelection(NotificationsComboBox, ViewModel.Settings.NotificationsDisabled);
         }
 
         private void CreateAccountButton_Click(object sender, RoutedEventArgs e)
         {
             (App.Current as App)?.StartOnboarding();
-        }
-
-        private async void UpdateChannel_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (!IsLoaded) return;
-            if (sender is ComboBox comboBox && comboBox.SelectedItem is ComboBoxItem selectedItem)
-            {
-                string? channelString = selectedItem.Tag as string;
-                if (Enum.TryParse<VersionChannel>(channelString, out VersionChannel selectedChannel))
-                {
-                    await ViewModel.Settings.UpdateManager.ChangeChannel(selectedChannel);
-                    Logger.Log(Logger.Level.Info, $"Update channel changed to {selectedChannel}");
-                }
-                else
-                {
-                    Logger.Log(Logger.Level.Error, $"Invalid update channel selected: {channelString}");
-                }
-            }
-        }
-
-        private async void AutoUpdateToggleSwitch_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (!IsLoaded) return;
-            if (sender is ToggleSwitch toggleSwitch)
-            {
-                toggleSwitch.IsEnabled = false;
-                await ViewModel.Settings.UpdateManager.ChangeAutoUpdate(toggleSwitch.IsOn);
-                toggleSwitch.IsEnabled = true;
-            }
         }
 
         private async void AutoStartToggleSwitch_Toggled(object sender, RoutedEventArgs e)
@@ -127,17 +72,6 @@ namespace Infomaniak.kDrive.Pages
             }
         }
 
-        private void SetEnumComboBoxSelection<TEnum>(ComboBox comboBox, TEnum value) where TEnum : struct, Enum
-        {
-            foreach (var item in comboBox.Items)
-            {
-                if (item is ComboBoxItem comboBoxItem && comboBoxItem.Tag is string tagString && Enum.TryParse<TEnum>(tagString, out TEnum itemValue) && itemValue.Equals(value))
-                {
-                    comboBox.SelectedItem = comboBoxItem;
-                    return;
-                }
-            }
-        }
         private async void NotificationsCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!IsLoaded) return;

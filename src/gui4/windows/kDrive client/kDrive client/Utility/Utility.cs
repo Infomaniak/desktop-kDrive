@@ -4,6 +4,7 @@ using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using System;
 
 using System.Diagnostics;
@@ -312,6 +313,18 @@ namespace Infomaniak.kDrive
             }
 
             return localizedString;
+        }
+
+        public static void SetEnumComboBoxSelection<TEnum>(ComboBox comboBox, TEnum value) where TEnum : struct, Enum
+        {
+            foreach (var item in comboBox.Items)
+            {
+                if (item is ComboBoxItem comboBoxItem && comboBoxItem.Tag is string tagString && Enum.TryParse<TEnum>(tagString, out TEnum itemValue) && itemValue.Equals(value))
+                {
+                    comboBox.SelectedItem = comboBoxItem;
+                    return;
+                }
+            }
         }
     }
 }
