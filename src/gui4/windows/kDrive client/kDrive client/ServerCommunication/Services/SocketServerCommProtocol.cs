@@ -170,7 +170,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return new CommData();
             }
         }
-
         private async Task<CommData> WaitForReplyAsync(long requestId, CancellationToken cancellationToken = default)
         {
             var time = DateTime.UtcNow;

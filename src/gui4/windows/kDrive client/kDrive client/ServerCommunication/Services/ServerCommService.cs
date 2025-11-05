@@ -1,5 +1,4 @@
-﻿using DynamicData;
-using Infomaniak.kDrive.ServerCommunication.CommStruct;
+﻿using Infomaniak.kDrive.ServerCommunication.CommStruct;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.JsonConverters;
 using Infomaniak.kDrive.Types;
@@ -32,29 +31,29 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public async Task<List<DbId>?> GetUserDbIds(CancellationToken cancellationToken)
         {
             CommData data = await _commClient.SendRequestAsync(RequestNum.UserDbIds, new JsonObject(), cancellationToken);
-            if (data.Params == null || !data.Params.ContainsKey("userDbIds"))
+            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.UserDbIds))
             {
-                Logger.Log(Logger.Level.Error, "userDbIds not found in response.");
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.UserDbIds} not found in response.");
                 return null;
             }
-            return data.Params["userDbIds"].Deserialize<List<DbId>>();
+            return data.Params[JsonKeys.UserDbIds].Deserialize<List<DbId>>();
         }
 
         public async Task<User?> AddOrRelogUser(string oAuthCode, string oAuthCodeVerifier, CancellationToken cancellationToken)
         {
             CommData data = await _commClient.SendRequestAsync(RequestNum.LoginRequestToken, new JsonObject
             {
-                ["code"] = Convert.ToBase64String(Encoding.UTF8.GetBytes(oAuthCode)),
-                ["codeVerifier"] = Convert.ToBase64String(Encoding.UTF8.GetBytes(oAuthCodeVerifier))
+                [JsonKeys.OAuthCode] = Convert.ToBase64String(Encoding.UTF8.GetBytes(oAuthCode)),
+                [JsonKeys.OAuthCodeVerifier] = Convert.ToBase64String(Encoding.UTF8.GetBytes(oAuthCodeVerifier))
             }, cancellationToken);
 
-            if (data.Params == null || !data.Params.ContainsKey("userDbId") || data.Params["userDbId"] == null)
+            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.UserDbId) || data.Params[JsonKeys.UserDbId] == null)
             {
-                Logger.Log(Logger.Level.Error, "userDbId not found in response.");
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.UserDbId} not found in response.");
                 return null;
             }
 
-            DbId userDbId = data.Params["userDbId"]?.GetValue<DbId>() ?? -1;
+            DbId userDbId = data.Params[JsonKeys.UserDbId]?.GetValue<DbId>() ?? -1;
 
             await Utility.RunOnUIThread(() =>
             {
@@ -75,9 +74,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public async Task RefreshUsers(CancellationToken cancellationToken)
         {
             CommData data = await _commClient.SendRequestAsync(RequestNum.UserInfoList, new JsonObject(), cancellationToken);
-            if (data.Params == null || !data.Params.ContainsKey("userInfoList"))
+            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.UserInfoList))
             {
-                Logger.Log(Logger.Level.Error, "userInfoList not found in response.");
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.UserInfoList} not found in response.");
                 return;
             }
             var options = new JsonSerializerOptions
@@ -85,7 +84,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
-            List<UserInfo> userInfos = data.Params["userInfoList"].Deserialize<List<UserInfo>>(options) ?? new List<UserInfo>();
+            List<UserInfo> userInfos = data.Params[JsonKeys.UserInfoList].Deserialize<List<UserInfo>>(options) ?? new List<UserInfo>();
 
             // Add/update users
             foreach (var userInfo in userInfos)
@@ -115,7 +114,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         {
             JsonObject parms = new()
             {
-                ["userDbId"] = userDbId
+                [JsonKeys.UserDbId] = userDbId
             };
             var commData = await _commClient.SendRequestAsync(RequestNum.USER_DELETE, parms, cancellationToken);
         }
@@ -123,9 +122,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public async Task RefreshAccounts(CancellationToken cancellationToken)
         {
             CommData data = await _commClient.SendRequestAsync(RequestNum.AccountInfoList, new JsonObject(), cancellationToken);
-            if (data.Params == null || !data.Params.ContainsKey("accountInfoList"))
+            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.AccountInfoList))
             {
-                Logger.Log(Logger.Level.Error, "accountInfoList not found in response.");
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.AccountInfoList} not found in response.");
                 return;
             }
             var options = new JsonSerializerOptions
@@ -133,7 +132,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
-            List<AccountInfo> accountInfos = data.Params["accountInfoList"].Deserialize<List<AccountInfo>>(options) ?? new List<AccountInfo>();
+            List<AccountInfo> accountInfos = data.Params[JsonKeys.AccountInfoList].Deserialize<List<AccountInfo>>(options) ?? new List<AccountInfo>();
 
             // Add/update accounts
             foreach (var accountInfo in accountInfos)
@@ -174,9 +173,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public async Task RefreshDrives(CancellationToken cancellationToken)
         {
             CommData data = await _commClient.SendRequestAsync(RequestNum.DriveInfoList, new JsonObject(), cancellationToken);
-            if (data.Params == null || !data.Params.ContainsKey("driveInfoList"))
+            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.DriveInfoList))
             {
-                Logger.Log(Logger.Level.Error, "driveInfoList not found in response.");
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.DriveInfoList} not found in response.");
                 return;
             }
             var options = new JsonSerializerOptions
@@ -185,7 +184,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             };
             options.Converters.Add(new Base64StringJsonConverter());
             options.Converters.Add(new ColorJsonConverter());
-            List<DriveInfo> driveInfos = data.Params["driveInfoList"].Deserialize<List<DriveInfo>>(options) ?? new List<DriveInfo>();
+            List<DriveInfo> driveInfos = data.Params[JsonKeys.DriveInfoList].Deserialize<List<DriveInfo>>(options) ?? new List<DriveInfo>();
 
             // Add/update drives
             foreach (var driveInfo in driveInfos)
@@ -227,12 +226,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         {
             JsonObject parms = new()
             {
-                ["userDbId"] = userDbId
+                [JsonKeys.UserDbId] = userDbId
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.USER_AVAILABLEDRIVES, parms, cancellationToken);
-            if (data.Params == null || !data.Params.ContainsKey("driveAvailableInfoList"))
+            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.DriveAvailableInfoList))
             {
-                Logger.Log(Logger.Level.Error, "driveAvailableInfoList not found in response.");
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.DriveAvailableInfoList} not found in response.");
                 return;
             }
             var options = new JsonSerializerOptions
@@ -241,7 +240,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             };
             options.Converters.Add(new Base64StringJsonConverter());
             options.Converters.Add(new ColorJsonConverter());
-            List<DriveAvailableInfo> driveAvailableInfoList = data.Params["driveAvailableInfoList"].Deserialize<List<DriveAvailableInfo>>(options) ?? new List<DriveAvailableInfo>();
+            List<DriveAvailableInfo> driveAvailableInfoList = data.Params[JsonKeys.DriveAvailableInfoList].Deserialize<List<DriveAvailableInfo>>(options) ?? new List<DriveAvailableInfo>();
             User? user = _viewModel.Users.FirstOrDefault<User>(u => u.DbId == userDbId);
             if (user is null)
             {
@@ -285,9 +284,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public async Task RefreshSyncs(CancellationToken cancellationToken)
         {
             CommData data = await _commClient.SendRequestAsync(RequestNum.SyncInfoList, new JsonObject(), cancellationToken);
-            if (data.Params == null || !data.Params.ContainsKey("syncInfoList"))
+            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.SyncInfoList))
             {
-                Logger.Log(Logger.Level.Error, "syncInfoList not found in response.");
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.DriveInfoList} not found in response.");
                 return;
             }
             var options = new JsonSerializerOptions
@@ -295,7 +294,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
-            List<SyncInfo> syncInfos = data.Params["syncInfoList"].Deserialize<List<SyncInfo>>(options) ?? new List<SyncInfo>();
+            List<SyncInfo> syncInfos = data.Params[JsonKeys.SyncInfoList].Deserialize<List<SyncInfo>>(options) ?? new List<SyncInfo>();
 
             // Add/update drives
             foreach (var syncInfo in syncInfos)
@@ -337,9 +336,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public async Task RefreshSettings(CancellationToken cancellationToken)
         {
             CommData data = await _commClient.SendRequestAsync(RequestNum.PARAMETERS_INFO, new JsonObject(), cancellationToken);
-            if (data.Params == null || !data.Params.ContainsKey("parmsInfo"))
+            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.ParmsInfo))
             {
-                Logger.Log(Logger.Level.Error, "parmsInfo not found in response.");
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.ParmsInfo} not found in response.");
                 return;
             }
             var options = new JsonSerializerOptions
@@ -347,7 +346,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
-            ParmsInfo? parametersInfo = data.Params["parmsInfo"].Deserialize<ParmsInfo>(options);
+            ParmsInfo? parametersInfo = data.Params[JsonKeys.ParmsInfo].Deserialize<ParmsInfo>(options);
             if (parametersInfo == null)
             {
                 Logger.Log(Logger.Level.Error, $"Failed to deserialize parmsInfo from ${data.Params["parmsInfo"]}.");
@@ -365,12 +364,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             var channel = _viewModel.Settings.UpdateManager.CurrentChannel;
             var parms = new JsonObject
             {
-                ["channel"] = (int)channel
+                [JsonKeys.UpdateChannel] = (int)channel
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.UPDATER_VERSION_INFO, parms, cancellationToken);
-            if (data.Params == null || !data.Params.ContainsKey("versionInfo"))
+            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.VersionInfo))
             {
-                Logger.Log(Logger.Level.Error, "versionInfo not found in response.");
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.VersionInfo} not found in response.");
                 return;
             }
 
@@ -379,7 +378,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
-            AppVersion? versionInfo = data.Params["versionInfo"].Deserialize<AppVersion>(options);
+            AppVersion? versionInfo = data.Params[JsonKeys.VersionInfo].Deserialize<AppVersion>(options);
             if (versionInfo?.Tag == _viewModel.Settings.AppVersion?.Tag && versionInfo?.BuildVersion == _viewModel.Settings.AppVersion?.BuildVersion)
             {
                 _viewModel.Settings.UpdateManager.AvailableUpdate = null;
@@ -390,7 +389,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public async Task ChangeUpdaterChannel(VersionChannel newChannel, CancellationToken cancellationToken)
         {
             _viewModel.Settings.UpdateManager.AvailableUpdate = null;
-            await _commClient.SendRequestAsync(RequestNum.UPDATER_CHANGE_CHANNEL, new JsonObject { ["channel"] = (int)newChannel }, cancellationToken);
+            await _commClient.SendRequestAsync(RequestNum.UPDATER_CHANGE_CHANNEL, new JsonObject { [JsonKeys.UpdateChannel] = (int)newChannel }, cancellationToken);
             _viewModel.Settings.UpdateManager.CurrentChannel = newChannel;
         }
 
@@ -400,11 +399,11 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             CommStruct.ConversionHelper.copyToParmsInfo(_viewModel.Settings, ParmsInfo);
             JsonObject parms = new()
             {
-                ["parmsInfos"] = new JsonObject()
+                [JsonKeys.ParmsInfo] = new JsonObject()
             };
 
             string ParmsInfoJson = JsonSerializer.Serialize(ParmsInfo);
-            parms["parmsInfos"] = JsonNode.Parse(ParmsInfoJson) ?? new JsonObject();
+            parms[JsonKeys.ParmsInfo] = JsonNode.Parse(ParmsInfoJson) ?? new JsonObject();
             await _commClient.SendRequestAsync(RequestNum.PARAMETERS_UPDATE, parms, cancellationToken);
         }
 
@@ -433,9 +432,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         {
             var signalData = args.SignalData;
 
-            if (signalData == null || !signalData.ContainsKey("userInfo"))
+            if (signalData == null || !signalData.ContainsKey(JsonKeys.UserInfo))
             {
-                Logger.Log(Logger.Level.Error, "userInfo not found in parameters.");
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.UserInfo} not found in parameters.");
                 return;
             }
 
@@ -444,7 +443,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
-            UserInfo? newUserInfo = signalData["userInfo"].Deserialize<UserInfo>(options);
+            UserInfo? newUserInfo = signalData[JsonKeys.UserInfo].Deserialize<UserInfo>(options);
             if (newUserInfo == null)
             {
                 Logger.Log(Logger.Level.Error, $"Failed to deserialize userInfo from ${signalData["userInfo"]}.");
@@ -467,12 +466,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         {
             var signalData = args.SignalData;
 
-            if (signalData == null || !signalData.ContainsKey("userDbId"))
+            if (signalData == null || !signalData.ContainsKey(JsonKeys.UserDbId))
             {
-                Logger.Log(Logger.Level.Error, "userDbId not found in parameters.");
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.UserDbId} not found in parameters.");
                 return;
             }
-            DbId dbId = signalData["userDbId"]?.GetValue<DbId>() ?? -1;
+            DbId dbId = signalData[JsonKeys.UserDbId]?.GetValue<DbId>() ?? -1;
 
             User? user = _viewModel.Users.FirstOrDefault(u => u.DbId == dbId);
             if (user == null)
