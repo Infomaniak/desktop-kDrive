@@ -21,6 +21,7 @@ using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -169,44 +170,65 @@ namespace Infomaniak.kDrive.Pages
 
         private async void UserSettingsExpander_Expanded(object sender, EventArgs e)
         {
+            ProgressRing? progressRing = FindChildProgressRing(sender as DependencyObject);
+            if (progressRing is not null)
+                progressRing.Visibility = Visibility.Visible;
+
             List<Task> loadAvailableDrivesTasks = new List<Task>();
             foreach (var user in ViewModel.Users)
             {
                 loadAvailableDrivesTasks.Add(user.RefreshAvailableDrives());
             }
             await Task.WhenAll(loadAvailableDrivesTasks);
+
+            if (progressRing is not null)
+                progressRing.Visibility = Visibility.Collapsed;
         }
 
-        private void SettingsCard_Click(object sender, RoutedEventArgs e)
+        private ProgressRing? FindChildProgressRing(DependencyObject? dependencyObject)
         {
-
+            if (dependencyObject == null)
+                return null;
+            int childCount = VisualTreeHelper.GetChildrenCount(dependencyObject);
+            for (int i = 0; i < childCount; i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(dependencyObject, i);
+                if (child is ProgressRing progressRing)
+                {
+                    return progressRing;
+                }
+                ProgressRing? result = FindChildProgressRing(child);
+                if (result != null)
+                {
+                    return result;
+                }
+            }
+            return null;
         }
 
         private async void DisconectUser_Click(object sender, RoutedEventArgs e)
         {
 
             User? user = sender is FrameworkElement fe && fe.DataContext is User u ? u : null;
-            if(user is null)
+            if (user is null)
             {
                 Logger.Log(Logger.Level.Error, "Unable to disconnect user: DataContext is not a User");
-
+                return;
             }
             ContentDialog dialog = new ContentDialog();
 
             // XamlRoot must be set in the case of a ContentDialog running in a Desktop app
             dialog.XamlRoot = this.XamlRoot;
-            dialog.Title = "Déconnecter ce compte ?";
-            dialog.PrimaryButtonText = "Garder le compte";
-            dialog.SecondaryButtonText = "Deconnecter";
+            dialog.Title = Utility.GetLocalizedString("Page_SettingsPage_RemoveAccount/Title");
+            dialog.PrimaryButtonText = Utility.GetLocalizedString("Page_SettingsPage_RemoveAccount/PrimaryButtonText");
+            dialog.SecondaryButtonText = Utility.GetLocalizedString("Page_SettingsPage_RemoveAccount/SecondaryButtonText");
             dialog.DefaultButton = ContentDialogButton.Primary;
+            dialog.Content = Utility.GetLocalizedString("Page_SettingsPage_RemoveAccount/Content", user.Name);
 
-            dialog.Content = $"Vous allez déconnecter {user?.Name ?? "l'utilisateur"} de l’application.\r\nLes fichiers synchronisés depuis l’ensemble des kDrives de ce compte seront retirés de votre ordinateur.\r\n\r\nToutes vos données resteront accessibles en ligne sur kDrive.";
-
-            
             var result = await dialog.ShowAsync();
-            if(result == ContentDialogResult.Secondary)
+            if (result == ContentDialogResult.Secondary)
             {
-                if(user is not null)
+                if (user is not null)
                 {
                     await _viewModel.DisconnectUserAsync(user.DbId);
                 }
@@ -215,13 +237,19 @@ namespace Infomaniak.kDrive.Pages
 
         private void ManageDriveButton_Click(object sender, RoutedEventArgs e)
         {
-            Logger.Log(Logger.Level.Info, $"ManageDriveButton clicked for drive {((sender as FrameworkElement)?.Tag as IDrive)?.Name}");
-        }
-
-        private void ConfigureDriveButton_Click(object sender, RoutedEventArgs e)
-        {
-            Logger.Log(Logger.Level.Info, $"ConfigureDrive clicked for available drive {((sender as FrameworkElement)?.Tag as IDrive)?.Name}");
-
+            IDrive? drive = (sender as FrameworkElement)?.Tag as IDrive;
+            if (drive is Drive)
+            {
+                Logger.Log(Logger.Level.Info, $"ManageDriveButton clicked for configured drive {drive.Name}, going to mange page");
+            }
+            else if (drive is DriveAvailable)
+            {
+                Logger.Log(Logger.Level.Info, $"ManageDriveButton clicked for unconfigured drive {drive.Name}, going to onboarding page");
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Error, "ManageDriveButton clicked but Tag is not a valid IDrive");
+            }
         }
     }
 

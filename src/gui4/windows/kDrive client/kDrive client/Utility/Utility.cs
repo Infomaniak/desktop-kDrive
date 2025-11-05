@@ -11,9 +11,11 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Reactive.Joins;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.Graphics;
 
@@ -298,6 +300,23 @@ namespace Infomaniak.kDrive
                 presenter.PreferredMinimumHeight = scaledHeight;
                 appWindow.Resize(new SizeInt32(scaledWidth, scaledHeight));
             }
+        }
+
+        public static string GetLocalizedString(string key, params object?[] args)
+        {
+            var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
+            string localizedString = resourceLoader.GetString(key) ?? string.Empty;
+
+            // Replace literal \r\n with real newlines
+            localizedString = localizedString.Replace("\\r\\n", Environment.NewLine);
+
+            // Format the string if arguments are provided
+            if (args != null && args.Length > 0)
+            {
+                localizedString = string.Format(localizedString, args);
+            }
+
+            return localizedString;
         }
     }
 }

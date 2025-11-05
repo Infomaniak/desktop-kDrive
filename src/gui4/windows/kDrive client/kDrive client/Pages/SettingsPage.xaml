@@ -38,31 +38,18 @@
 
         <DataTemplate x:Key="ConfiguredDriveTemplate"
                       x:DataType="types:IDrive">
-            <StackPanel Orientation="Horizontal"
-                        Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                <TextBlock Text="Synchronisé"
-                           VerticalAlignment="Center"
-                           Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
-                           Foreground="{ThemeResource TextFillColorDisabled}" />
-                <Button VerticalAlignment="Center"
-                        Content="Gérer" 
-                        Click="ManageDriveButton_Click"
-                        Tag="{x:Bind}"/>
-            </StackPanel>
+            <TextBlock x:Uid="Page_SettingsPage_Drive_Configured"
+                       VerticalAlignment="Center"
+                       Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
+                       Foreground="{ThemeResource TextFillColorDisabled}" />
+
         </DataTemplate>
         <DataTemplate x:Key="UnconfiguredDriveTemplate"
                       x:DataType="types:IDrive">
-            <StackPanel Orientation="Horizontal"
-                        Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                <TextBlock Text="Non synchronisé"
-                           VerticalAlignment="Center"
-                           Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
-                           Foreground="{ThemeResource TextFillColorDisabled}" />
-                <Button Content="Activer"
-                        HorizontalAlignment="Left"
-                        Click="ConfigureDriveButton_Click"
-                        Tag="{x:Bind}" />
-            </StackPanel>
+            <TextBlock x:Uid="Page_SettingsPage_Drive_Unconfigured"
+                       VerticalAlignment="Center"
+                       Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
+                       Foreground="{ThemeResource TextFillColorDisabled}" />
         </DataTemplate>
         <local:DriveDataTemplateSelector x:Key="DriveDataTemplateSelector"
                                          ConfiguredTemplate="{StaticResource ConfiguredDriveTemplate}"
@@ -214,12 +201,12 @@
                 <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
 
                     <Grid>
-                        <TextBlock HorizontalAlignment="Left"
-                                   Text="Comptes"
+                        <TextBlock x:Uid="Page_SettingsPage_Accounts"
+                                   HorizontalAlignment="Left"
                                    Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
 
-                        <HyperlinkButton HorizontalAlignment="Right"
-                                         Content="Connecter un compte"
+                        <HyperlinkButton x:Uid="Page_SettingsPage_AddAccounts"
+                                         HorizontalAlignment="Right"
                                          Click="CreateAccountButton_Click" />
                     </Grid>
                     <!-- Account - List -->
@@ -240,8 +227,10 @@
                             <DataTemplate x:DataType="viewmodel:User">
                                 <toolKit:SettingsExpander ItemsSource="{x:Bind AllDrives, Mode=OneWay}"
                                                           Expanded="UserSettingsExpander_Expanded">
-                                    <HyperlinkButton Content="Déconnecter ce compte"
-                                                     Foreground="#F44336" />
+                                    <ProgressRing Height="6"
+                                                  Width="auto"
+                                                  Visibility="Collapsed" />
+
                                     <toolKit:SettingsExpander.Header>
                                         <StackPanel Orientation="Horizontal"
                                                     Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
@@ -270,13 +259,16 @@
                                     <toolKit:SettingsExpander.ItemTemplate>
                                         <DataTemplate x:DataType="types:IDrive">
                                             <toolKit:SettingsCard Header="{x:Bind Name, Mode=OneWay}"
-                                                                  Background="{ThemeResource LayerFillColorDefault}">
+                                                                  Background="{ThemeResource LayerFillColorDefault}"
+                                                                  IsClickEnabled="True"
+                                                                  Click="ManageDriveButton_Click"
+                                                                  Tag="{x:Bind}">
                                                 <toolKit:SettingsCard.HeaderIcon>
                                                     <controls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom }"
                                                                       Foreground="{x:Bind Color, Converter={StaticResource ColorToBrushConverter}}" />
                                                 </toolKit:SettingsCard.HeaderIcon>
-                                                <ContentControl  Content="{x:Bind}"
-                                                                 ContentTemplateSelector="{StaticResource DriveDataTemplateSelector}" />
+                                                <ContentControl Content="{x:Bind}"
+                                                                ContentTemplateSelector="{StaticResource DriveDataTemplateSelector}" />
                                             </toolKit:SettingsCard>
                                         </DataTemplate>
                                     </toolKit:SettingsExpander.ItemTemplate>
@@ -284,7 +276,6 @@
                                     <toolKit:SettingsExpander.ItemsFooter>
                                         <toolKit:SettingsCard Header="Deconnecter ce compte"
                                                               Style="{StaticResource DefaultSettingsExpanderItemStyle}"
-                                                              Foreground="{ThemeResource SystemErrorTextColor}"
                                                               IsClickEnabled="True"
                                                               Click="DisconectUser_Click" />
 

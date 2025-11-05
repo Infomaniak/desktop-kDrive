@@ -127,7 +127,7 @@ namespace Infomaniak.kDrive.ViewModels.Errors
         abstract public string CauseStr();
         abstract public Uri IconUri();
 
-        protected static string GetLocalizedString(string key)
+        protected static string GetLocalizedSyncErrorString(string key)
         {
             var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse("SyncErrors");
             return resourceLoader.GetString(key);

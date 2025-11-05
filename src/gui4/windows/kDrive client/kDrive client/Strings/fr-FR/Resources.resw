@@ -542,6 +542,31 @@ Version {0} (build {1}), compilée le {2}
   <data name="Page_SettingsPage_Language.Header" xml:space="preserve">
     <value>Langue</value>
   </data>
+  <data name="Page_SettingsPage_Accounts.Text" xml:space="preserve">
+    <value>Comptes</value>
+  </data>
+  <data name="Page_SettingsPage_RemoveAccount.Title" xml:space="preserve">
+    <value>Comptes</value>
+  </data>
+  <data name="Page_SettingsPage_RemoveAccount.Content" xml:space="preserve">
+    <value>Vous allez déconnecter {0} de l’application.\r\nLes fichiers synchronisés depuis l’ensemble des kDrives de ce compte seront retirés de votre ordinateur.\r\n\r\nToutes vos données resteront accessibles en ligne sur kDrive.</value>
+    <comment>{0} = Nom de l'utilisateur ie (John Doe)</comment>
+  </data>
+  <data name="Page_SettingsPage_RemoveAccount.SecondaryButtonText" xml:space="preserve">
+    <value>Deconnecter</value>
+  </data>
+  <data name="Page_SettingsPage_RemoveAccount.PrimaryButtonText" xml:space="preserve">
+    <value>Garder le compte</value>
+  </data>
+  <data name="Page_SettingsPage_AddAccounts.Content" xml:space="preserve">
+    <value>Connecter un compte</value>
+  </data>
+  <data name="Page_SettingsPage_Drive_Configured.Text" xml:space="preserve">
+    <value>Synchronisé</value>
+  </data>
+  <data name="Page_SettingsPage_Drive_Unconfigured.Text" xml:space="preserve">
+    <value>Non synchronisé</value>
+  </data>
   <data name="Page_SettingsPage_Language_ComboBox_Default.Content" xml:space="preserve">
     <value>Default</value>
   </data>
