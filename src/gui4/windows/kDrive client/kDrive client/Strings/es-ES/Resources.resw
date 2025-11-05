@@ -508,16 +508,19 @@
   <data name="Page_SettingsPage_Accounts.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
-  <data name="Page_SettingsPage_RemoveAccount.Title" type="System.Resources.ResXNullRef, System.Windows.Forms">
+  <data name="Page_SettingsPage_RemoveAccount_Dialog.Title" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
-  <data name="Page_SettingsPage_RemoveAccount.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+  <data name="Page_SettingsPage_RemoveAccount_Dialog.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
-  <data name="Page_SettingsPage_RemoveAccount.SecondaryButtonText" type="System.Resources.ResXNullRef, System.Windows.Forms">
+  <data name="Page_SettingsPage_RemoveAccount.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
-  <data name="Page_SettingsPage_RemoveAccount.PrimaryButtonText" type="System.Resources.ResXNullRef, System.Windows.Forms">
+  <data name="Page_SettingsPage_RemoveAccount_Dialog.SecondaryButtonText" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_RemoveAccount_Dialog.PrimaryButtonText" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
   <data name="Page_SettingsPage_AddAccounts.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">

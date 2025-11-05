@@ -13,7 +13,6 @@ namespace Infomaniak.kDrive.Converters
         public object Convert(object value, Type targetType, object parameter, string language)
         {
             ParameterParser parser = new(parameter);
-            var resourceLoader = new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader();
 
             string format;
             if (!parser.IsValid)
@@ -22,11 +21,11 @@ namespace Infomaniak.kDrive.Converters
             }
             else if (parser.KeyEquals("Format", "Since"))
             {
-                format = resourceLoader.GetString("Converter_DateTimeToTimeAgoConverter_Since");
+                format = Utility.GetLocalizedString("Converter_DateTimeToTimeAgoConverter_Since");
             }
             else if (parser.KeyEquals("Format", "Ago"))
             {
-                format = resourceLoader.GetString("Converter_DateTimeToTimeAgoConverter_Ago");
+                format = Utility.GetLocalizedString("Converter_DateTimeToTimeAgoConverter_Ago");
             }
             else
             {
@@ -40,21 +39,21 @@ namespace Infomaniak.kDrive.Converters
 
                 if (timeSpan.TotalSeconds < 30)
                 {
-                    return resourceLoader.GetString("Global_JustNow");
+                    return Utility.GetLocalizedString("Global_JustNow");
                 }
                 if (timeSpan.TotalSeconds < 60)
                 {
-                    return String.Format(format, $"{Math.Floor(timeSpan.TotalSeconds)} {resourceLoader.GetString("Global_Second")}");
+                    return String.Format(format, $"{Math.Floor(timeSpan.TotalSeconds)} {Utility.GetLocalizedString("Global_Second")}");
                 }
                 if (timeSpan.TotalMinutes < 60)
                 {
-                    return String.Format(format, $"{Math.Floor(timeSpan.TotalMinutes)} {resourceLoader.GetString("Global_Minute")}");
+                    return String.Format(format, $"{Math.Floor(timeSpan.TotalMinutes)} {Utility.GetLocalizedString("Global_Minute")}");
                 }
                 if (timeSpan.TotalHours < 24)
                 {
-                    return String.Format(format, $"{Math.Floor(timeSpan.TotalHours)} {resourceLoader.GetString("Global_Hour")}");
+                    return String.Format(format, $"{Math.Floor(timeSpan.TotalHours)} {Utility.GetLocalizedString("Global_Hour")}");
                 }
-                return String.Format(format, $"{Math.Floor(timeSpan.TotalDays)} {resourceLoader.GetString("Global_Day")}")  ;
+                return String.Format(format, $"{Math.Floor(timeSpan.TotalDays)} {Utility.GetLocalizedString("Global_Day")}")  ;
             }
             Logger.Log(Logger.Level.Fatal, $"Unexpected value type is not a {nameof(DateTime)}.");
             throw new ArgumentException("Invalid value type", nameof(value));

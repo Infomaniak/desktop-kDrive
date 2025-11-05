@@ -208,14 +208,12 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
         private async void StartFree_Click(object sender, RoutedEventArgs e)
         {
-            var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
-            await Windows.System.Launcher.LaunchUriAsync(new Uri(resourceLoader.GetString("Global_kDriveOffersUrl")));
+            await Windows.System.Launcher.LaunchUriAsync(new Uri(Utility.GetLocalizedString("Global_kDriveOffersUrl")));
         }
 
         private async void OffersButton_Click(object sender, RoutedEventArgs e)
         {
-            var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
-            await Windows.System.Launcher.LaunchUriAsync(new Uri(resourceLoader.GetString("Global_kDriveOffersUrl")));
+            await Windows.System.Launcher.LaunchUriAsync(new Uri(Utility.GetLocalizedString("Global_kDriveOffersUrl")));
         }
     }
 }

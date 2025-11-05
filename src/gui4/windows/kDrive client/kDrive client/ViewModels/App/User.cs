@@ -30,7 +30,6 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Documents;
 using Windows.Storage.Streams;
 
 namespace Infomaniak.kDrive.ViewModels
@@ -139,8 +138,6 @@ namespace Infomaniak.kDrive.ViewModels
         // Combined collection of all drives (configured in db and available)
         public ObservableCollection<IDrive> AllDrives { get; } = new();
 
-
-
         public static async Task<ImageSource?> ByteArrayToImageSource(byte[]? imageData)
         {
             if (imageData == null || imageData.Length == 0)
@@ -167,7 +164,6 @@ namespace Infomaniak.kDrive.ViewModels
             {
                 return d1.DriveId == d2.DriveId && d1.GetType() == d2.GetType();
             };
-
 
             List<IDrive> drives = new();
             foreach (var drive in Drives)

@@ -16,15 +16,13 @@ namespace Infomaniak.kDrive.ViewModels.Errors
                 , async (sender) =>
             {
                 Logger.Log(Logger.Level.Info, "Support button clicked, opening support URL");
-                var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
-                await Windows.System.Launcher.LaunchUriAsync(new Uri(resourceLoader.GetString("Global_ContactSupport")));
+                await Windows.System.Launcher.LaunchUriAsync(new Uri(Utility.GetLocalizedString("Global_ContactSupport")));
             });
 
             InfoHyperLink = new ButtonData(GetLocalizedSyncErrorString("Global_MoreInfo"), async (sender) =>
             {
                 Logger.Log(Logger.Level.Info, "More info button clicked, opening kDrive FAQ URL");
-                var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
-                await Windows.System.Launcher.LaunchUriAsync(new Uri(resourceLoader.GetString("Global_FAQUrl")));
+                await Windows.System.Launcher.LaunchUriAsync(new Uri(Utility.GetLocalizedString("Global_FAQUrl")));
             });
         }
         public override sealed string TitleStr()

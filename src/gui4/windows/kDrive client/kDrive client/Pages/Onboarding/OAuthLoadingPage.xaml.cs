@@ -73,7 +73,6 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
         private async void HandleOAuth2StateChanged(OAuth2State state)
         {
-            var ressourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
             switch (state)
             {
                 case OAuth2State.None:
@@ -85,8 +84,8 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     LoadingProgressBar.ShowError = false;
                     LoadingProgressBar.IsIndeterminate = true;
                     LoadingProgressBar.Foreground = new SolidColorBrush(Colors.Blue);
-                    TitleTextBlock.Text = ressourceLoader.GetString("Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Title/Text");
-                    SubtitleTextBlock.Text = ressourceLoader.GetString("Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Subtitle/Text");
+                    TitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Title/Text");
+                    SubtitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Subtitle/Text");
                     RestartOAuthButton.Visibility = Visibility.Visible;
                     break;
 
@@ -94,8 +93,8 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     LoadingProgressBar.ShowError = false;
                     LoadingProgressBar.IsIndeterminate = true;
                     LoadingProgressBar.Foreground = new SolidColorBrush(Colors.Blue);
-                    TitleTextBlock.Text = ressourceLoader.GetString("Page_Onboarding_OAuthLoadingPage_Processing_Title/Text");
-                    SubtitleTextBlock.Text = ressourceLoader.GetString("Page_Onboarding_OAuthLoadingPage_Processing_Subtitle/Text");
+                    TitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_Processing_Title/Text");
+                    SubtitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_Processing_Subtitle/Text");
                     RestartOAuthButton.Visibility = Visibility.Collapsed;
                     break;
 
@@ -104,8 +103,8 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     LoadingProgressBar.Value = 100;
                     LoadingProgressBar.IsIndeterminate = false;
                     LoadingProgressBar.Foreground = new SolidColorBrush(Colors.LimeGreen);
-                    TitleTextBlock.Text = ressourceLoader.GetString("Page_Onboarding_OAuthLoadingPage_Success_Title/Text");
-                    SubtitleTextBlock.Text = ressourceLoader.GetString("Page_Onboarding_OAuthLoadingPage_Success_Subtitle/Text");
+                    TitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_Success_Title/Text");
+                    SubtitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_Success_Subtitle/Text");
                     RestartOAuthButton.Visibility = Visibility.Collapsed;
 
                     AppModel.UIThreadDispatcher.TryEnqueue(() =>

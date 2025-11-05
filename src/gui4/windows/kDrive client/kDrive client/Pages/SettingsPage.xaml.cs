@@ -42,7 +42,6 @@ namespace Infomaniak.kDrive.Pages
             RegisterPropertyChangedHandlers();
             Loaded += onPageLoaded;
 
-
             Logger.Log(Logger.Level.Debug, "SettingsPage components initialized");
         }
         ~SettingsPage()
@@ -208,7 +207,6 @@ namespace Infomaniak.kDrive.Pages
 
         private async void DisconectUser_Click(object sender, RoutedEventArgs e)
         {
-
             User? user = sender is FrameworkElement fe && fe.DataContext is User u ? u : null;
             if (user is null)
             {
@@ -219,11 +217,11 @@ namespace Infomaniak.kDrive.Pages
 
             // XamlRoot must be set in the case of a ContentDialog running in a Desktop app
             dialog.XamlRoot = this.XamlRoot;
-            dialog.Title = Utility.GetLocalizedString("Page_SettingsPage_RemoveAccount/Title");
-            dialog.PrimaryButtonText = Utility.GetLocalizedString("Page_SettingsPage_RemoveAccount/PrimaryButtonText");
-            dialog.SecondaryButtonText = Utility.GetLocalizedString("Page_SettingsPage_RemoveAccount/SecondaryButtonText");
+            dialog.Title = Utility.GetLocalizedString("Page_SettingsPage_RemoveAccount_Dialog/Title");
+            dialog.PrimaryButtonText = Utility.GetLocalizedString("Page_SettingsPage_RemoveAccount_Dialog/PrimaryButtonText");
+            dialog.SecondaryButtonText = Utility.GetLocalizedString("Page_SettingsPage_RemoveAccount_Dialog/SecondaryButtonText");
             dialog.DefaultButton = ContentDialogButton.Primary;
-            dialog.Content = Utility.GetLocalizedString("Page_SettingsPage_RemoveAccount/Content", user.Name);
+            dialog.Content = Utility.GetLocalizedString("Page_SettingsPage_RemoveAccount_Dialog/Content", user.Name);
 
             var result = await dialog.ShowAsync();
             if (result == ContentDialogResult.Secondary)

@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.WinUI;
+﻿using CommunityToolkit.WinUI;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI;
@@ -8,14 +7,10 @@ using Microsoft.UI.Xaml;
 using System;
 
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Reactive.Joins;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.Graphics;
 
