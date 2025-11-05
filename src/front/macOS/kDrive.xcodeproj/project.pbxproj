@@ -95,7 +95,7 @@
 		7A03B6FD2EBA59F40020A47B /* Exceptions for "kDriveTests" folder in "kDriveTests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				CoherentCacheTests.swift,
+				Cache/CoherentCacheTests.swift,
 			);
 			target = 7A4DFBB02EA91F9D00B138B8 /* kDriveTests */;
 		};
