@@ -67,7 +67,7 @@ public actor CoherentCache: CoherentCacheProtocol, CoherentCacheObservation {
 
     public nonisolated var usersPublisher: AnyPublisher<IndexedUsers, Never> {
         usersSubject
-            .subscribe(on: DispatchQueue.global(qos: .background))
+            .subscribe(on: DispatchQueue.global(qos: .userInitiated))
             .eraseToAnyPublisher()
     }
 
