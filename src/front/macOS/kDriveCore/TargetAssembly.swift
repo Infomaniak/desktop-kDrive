@@ -40,6 +40,12 @@ open class TargetAssembly {
             Factory(type: CoherentCacheProtocol.self) { _, _ in
                 CoherentCache()
             },
+            Factory(type: CoherentCacheObservation.self) { _, resolver in
+                try resolver.resolve(type: CoherentCacheProtocol.self,
+                                     forCustomTypeIdentifier: nil,
+                                     factoryParameters: nil,
+                                     resolver: resolver)
+            },
             Factory(type: XPCConnectionProvider.self) { _, _ in
                 XPCConnectionManager()
             }
