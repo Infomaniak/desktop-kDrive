@@ -53,6 +53,12 @@ class AppServer : public SharedTools::QtSingleApplication {
         Q_OBJECT
 
     public:
+        static SyncPalMap _syncPalMap;
+        static std::recursive_mutex _syncPalMapMutex;
+
+        static VfsMap _vfsMap;
+        static std::recursive_mutex _vfsMapMutex;
+
         struct SyncCache {
                 SyncStatus _status;
                 SyncStep _step;
@@ -95,9 +101,6 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         void showHint(std::string errorHint);
 
-        const SyncPalMap &syncPalMap() const { return _syncPalMap; }
-        const VfsMap &vfsMap() const { return _vfsMap; }
-
         void stopAllSyncsTask(const std::vector<int> &syncDbIdList);
 
         static void addError(const Error &error);
@@ -116,8 +119,6 @@ class AppServer : public SharedTools::QtSingleApplication {
     private:
         QStringList _arguments;
         log4cplus::Logger _logger;
-        static SyncPalMap _syncPalMap;
-        static VfsMap _vfsMap;
         static std::vector<Notification> _notifications;
 
         std::unique_ptr<NavigationPaneHelper> _navigationPaneHelper;

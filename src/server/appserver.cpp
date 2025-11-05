@@ -83,7 +83,9 @@
 namespace KDC {
 
 SyncPalMap AppServer::_syncPalMap;
+std::recursive_mutex AppServer::_syncPalMapMutex;
 VfsMap AppServer::_vfsMap;
+std::recursive_mutex AppServer::_vfsMapMutex;
 std::vector<AppServer::Notification> AppServer::_notifications;
 
 std::unique_ptr<UpdateManager> AppServer::_updateManager;
@@ -455,17 +457,23 @@ void AppServer::cleanup() {
 #endif
 
     // Stop SyncPals
-    for (const auto &syncPalMapElt: _syncPalMap) {
-        if (const auto exitInfo = stopSyncPal(syncPalMapElt.first, false, true); !exitInfo) {
-            LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncPalMapElt.first << exitInfo);
+    {
+        const std::scoped_lock lock(_syncPalMapMutex);
+        for (const auto &syncPalMapElt: _syncPalMap) {
+            if (const auto exitInfo = stopSyncPal(syncPalMapElt.first, false, true); !exitInfo) {
+                LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncPalMapElt.first << exitInfo);
+            }
         }
     }
     LOG_DEBUG(_logger, "Syncpal(s) stopped");
 
     // Stop Vfs
-    for (const auto &vfsMapElt: _vfsMap) {
-        if (const auto exitInfo = stopVfs(vfsMapElt.first, false); !exitInfo) {
-            LOG_WARN(_logger, "Error in stopVfs for syncDbId=" << vfsMapElt.first << exitInfo);
+    {
+        const std::scoped_lock lock(_vfsMapMutex);
+        for (const auto &vfsMapElt: _vfsMap) {
+            if (const auto exitInfo = stopVfs(vfsMapElt.first, false); !exitInfo) {
+                LOG_WARN(_logger, "Error in stopVfs for syncDbId=" << vfsMapElt.first << exitInfo);
+            }
         }
     }
     LOG_DEBUG(_logger, "Vfs(s) stopped");
@@ -486,8 +494,14 @@ void AppServer::cleanup() {
 #endif
 
     // Clear maps
-    _syncPalMap.clear();
-    _vfsMap.clear();
+    {
+        const std::scoped_lock lock(_syncPalMapMutex);
+        _syncPalMap.clear();
+    }
+    {
+        const std::scoped_lock lock(_vfsMapMutex);
+        _vfsMap.clear();
+    }
 
     // Close ParmsDb
     ParmsDb::instance()->close();
@@ -510,12 +524,18 @@ void AppServer::stopSyncTask(int syncDbId) {
         LOG_WARN(_logger, "Error in stopVfs for syncDbId=" << syncDbId << " : " << exitInfo);
     }
 
-    LOG_IF_FAIL(!_syncPalMap[syncDbId] || _syncPalMap[syncDbId].use_count() == 1)
-    _syncPalMap.erase(syncDbId);
+    {
+        const std::scoped_lock lock(_syncPalMapMutex);
+        LOG_IF_FAIL(!_syncPalMap[syncDbId] || _syncPalMap[syncDbId].use_count() == 1)
+        _syncPalMap.erase(syncDbId);
+    }
 
-    LOG_IF_FAIL(!_vfsMap[syncDbId] ||
-                _vfsMap[syncDbId].use_count() <= 1) // `use_count` can be zero when the local drive has been removed.
-    _vfsMap.erase(syncDbId);
+    {
+        const std::scoped_lock lock(_vfsMapMutex);
+        LOG_IF_FAIL(!_vfsMap[syncDbId] ||
+                    _vfsMap[syncDbId].use_count() <= 1) // `use_count` can be zero when the local drive has been removed.
+        _vfsMap.erase(syncDbId);
+    }
 }
 
 void AppServer::stopAllSyncsTask(const std::vector<int> &syncDbIdList) {
@@ -700,6 +720,7 @@ void AppServer::unregisterSync(std::shared_ptr<SyncPal> syncPal) {
 
 #if defined(KD_MACOS)
 bool AppServer::noMacVfsSync() const {
+    const std::scoped_lock lock(_vfsMapMutex);
     for (const auto &[_, vfsMapElt]: _vfsMap) {
         if (vfsMapElt->mode() == VirtualFileMode::Mac) {
             return false;
@@ -1316,11 +1337,17 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                         LOG_WARN(_logger, "Error in stopVfs for syncDbId=" << syncInfo.dbId() << " : " << exitInfo2);
                     }
 
-                    LOG_IF_FAIL(!_syncPalMap[syncInfo.dbId()] || _syncPalMap[syncInfo.dbId()].use_count() == 1)
-                    _syncPalMap.erase(syncInfo.dbId());
+                    {
+                        const std::scoped_lock lock(_syncPalMapMutex);
+                        LOG_IF_FAIL(!_syncPalMap[syncInfo.dbId()] || _syncPalMap[syncInfo.dbId()].use_count() == 1)
+                        _syncPalMap.erase(syncInfo.dbId());
+                    }
 
-                    LOG_IF_FAIL(!_vfsMap[syncInfo.dbId()] || _vfsMap[syncInfo.dbId()].use_count() == 1)
-                    _vfsMap.erase(syncInfo.dbId());
+                    {
+                        const std::scoped_lock lock(_vfsMapMutex);
+                        LOG_IF_FAIL(!_vfsMap[syncInfo.dbId()] || _vfsMap[syncInfo.dbId()].use_count() == 1)
+                        _vfsMap.erase(syncInfo.dbId());
+                    }
 
                     // Delete sync from DB
                     if (const ExitInfo exitInfo2 = ServerRequests::deleteSync(syncInfo.dbId()); !exitInfo2) {
@@ -2406,6 +2433,7 @@ void AppServer::sendSignal(SignalNum sigNum, int syncDbId, const SigValueType &v
 }
 
 ExitInfo AppServer::getVfsPtr(int syncDbId, std::shared_ptr<Vfs> &vfs) {
+    const std::scoped_lock lock(_vfsMapMutex);
     auto vfsMapIt = _vfsMap.find(syncDbId);
     if (vfsMapIt == _vfsMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
@@ -2420,6 +2448,7 @@ ExitInfo AppServer::getVfsPtr(int syncDbId, std::shared_ptr<Vfs> &vfs) {
 }
 
 void AppServer::syncFileStatus(int syncDbId, const SyncPath &path, SyncFileStatus &status) {
+    const std::scoped_lock lock(_syncPalMapMutex);
     auto syncPalMapIt = _syncPalMap.find(syncDbId);
     if (syncPalMapIt == _syncPalMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "SyncPal not found in SyncPalMap for syncDbId=" << syncDbId);
@@ -2435,6 +2464,7 @@ void AppServer::syncFileStatus(int syncDbId, const SyncPath &path, SyncFileStatu
 }
 
 void AppServer::syncFileSyncing(int syncDbId, const SyncPath &path, bool &syncing) {
+    const std::scoped_lock lock(_syncPalMapMutex);
     auto syncPalMapIt = _syncPalMap.find(syncDbId);
     if (syncPalMapIt == _syncPalMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "SyncPal not found in SyncPalMap for syncDbId=" << syncDbId);
@@ -2450,6 +2480,7 @@ void AppServer::syncFileSyncing(int syncDbId, const SyncPath &path, bool &syncin
 }
 
 void AppServer::setSyncFileSyncing(int syncDbId, const SyncPath &path, bool syncing) {
+    const std::scoped_lock lock(_syncPalMapMutex);
     auto syncPalMapIt = _syncPalMap.find(syncDbId);
     if (syncPalMapIt == _syncPalMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "SyncPal not found in SyncPalMap for syncDbId=" << syncDbId);
@@ -3476,6 +3507,7 @@ ExitCode AppServer::updateAllUsersInfo() {
 ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, const NodeSet &undecidedList,
                                 const NodeSet &whiteList, bool start, const std::chrono::seconds &startDelay, bool resumedByUser,
                                 bool firstInit) {
+    const std::scoped_lock lock(_syncPalMapMutex);
     if (_syncPalMap.find(sync.dbId()) == _syncPalMap.end()) {
         std::shared_ptr<Vfs> vfsPtr;
         if (ExitInfo exitInfo = getVfsPtr(sync.dbId(), vfsPtr); !exitInfo) {
@@ -3681,6 +3713,7 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
                      "Error in Vfs::createVfsFromPlugin for mode " << sync.virtualFileMode() << " : " << error.toStdString());
             return {ExitCode::SystemError, ExitCause::UnableToCreateVfs};
         }
+        const std::scoped_lock lock(_vfsMapMutex);
         _vfsMap[sync.dbId()] = vfsPtr;
         _vfsMap[sync.dbId()]->setExtendedLog(ParametersCache::isExtendedLogEnabled());
 
@@ -3743,6 +3776,7 @@ ExitInfo AppServer::stopVfs(int syncDbId, bool unregister) {
     LOG_DEBUG(_logger, "Stop VFS for syncDbId=" << syncDbId);
 
     // Stop Vfs
+    const std::scoped_lock lock(_vfsMapMutex);
     if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
         LOG_WARN(_logger, "Vfs not found in vfsMap for syncDbId=" << syncDbId);
         return {ExitCode::DataError, ExitCause::DbEntryNotFound};
@@ -3758,6 +3792,7 @@ ExitInfo AppServer::stopVfs(int syncDbId, bool unregister) {
 }
 
 ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
+    const std::scoped_lock lock(_syncPalMapMutex);
     if (!_syncPalMap.contains(syncDbId)) {
         std::stringstream msg;
         msg << "SyncPal not found in syncPalMap for syncDbId=" << syncDbId;
@@ -3838,6 +3873,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
         }
 
         // Delete/create Vfs
+        const std::scoped_lock lock(_vfsMapMutex);
         _vfsMap.erase(syncDbId);
 
         ExitInfo mainExitInfo = ExitCode::Ok;
@@ -4224,6 +4260,7 @@ void AppServer::onUpdateSyncsProgress() {
     }
 
     for (const auto &sync: syncList) {
+        const std::scoped_lock lock(_syncPalMapMutex);
         if (const auto syncPalIt = _syncPalMap.find(sync.dbId()); syncPalIt == _syncPalMap.end()) {
             // No SyncPal for this sync
             sendSyncProgressInfo(sync.dbId(), sync.paused() ? SyncStatus::Paused : SyncStatus::Error, SyncStep::None,
@@ -4327,7 +4364,9 @@ void AppServer::onRestartSyncs() {
                          "Error in ServerRequests::deleteLiteSyncNotAllowedErrors: " << toInt(exitCode));
             }
 
+            const std::scoped_lock lock(_syncPalMapMutex);
             for (const auto &syncPalMapElt: _syncPalMap) {
+                const std::scoped_lock lock(_vfsMapMutex);
                 if (_vfsMap[syncPalMapElt.first]->mode() == VirtualFileMode::Mac) {
                     // Ask client to refresh SyncPal error list
                     sendErrorsCleared(syncPalMapElt.first);
@@ -4364,6 +4403,7 @@ void AppServer::onRestartSyncs() {
     }
 #endif
 
+    const std::scoped_lock lock(_syncPalMapMutex);
     for (const auto &[syncId, syncPtr]: _syncPalMap) {
         if (!syncPtr) continue;
         if ((syncPtr->isPaused() || syncPtr->pauseAsked()) &&
