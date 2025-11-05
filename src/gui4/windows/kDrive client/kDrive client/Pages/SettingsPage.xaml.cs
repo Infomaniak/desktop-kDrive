@@ -268,6 +268,7 @@ namespace Infomaniak.kDrive.Pages
         public DataTemplate? UnconfiguredTemplate { get; set; }
         protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container)
         {
+            if (item is null) return base.SelectTemplateCore(item);
             if (item is DriveAvailable)
                 return UnconfiguredTemplate;
             else if (item is Drive)
