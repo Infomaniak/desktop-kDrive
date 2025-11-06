@@ -137,6 +137,12 @@
   <data name="W_MainWindow_NavBar_Folder.Content" xml:space="preserve">
     <value>Ouvrir l'explorateur</value>
   </data>
+  <data name="W_MainWindow_PaneFooter_Folder.Content" xml:space="preserve">
+    <value>Ouvrir l'explorateur</value>
+  </data>
+  <data name="CC_OpenFileExplorer.Text" xml:space="preserve">
+    <value>Ouvrir l'explorateur</value>
+  </data>
   <data name="W_MainWindow_TitleBar_SearchBox.PlaceholderText" xml:space="preserve">
     <value>Rechercher dans {{ TODO }}</value>
   </data>

@@ -100,9 +100,30 @@
             </NavigationView.Resources>
 
             <NavigationView.PaneCustomContent>
-                <controls:SyncSelector HorizontalAlignment="Stretch"
-                                       Margin="4,9,4,20"
-                                       Visibility="{Binding ElementName=navView, Path=IsPaneOpen, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                <Grid>
+                    <StackPanel Orientation="Vertical"
+                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                        <controls:SyncSelector HorizontalAlignment="Stretch"
+                                               Margin="4,9,4,20"
+                                               Visibility="{Binding ElementName=navView, Path=IsPaneOpen, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                        <!--<Button HorizontalAlignment="Center"
+                                MinHeight="50"
+                                MinWidth="250"
+                                Click="OpenFileExplorerButton_Click">
+                            <Grid>
+                                <StackPanel Orientation="Horizontal"
+                                            Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                                    <controls:SvgIcon Height="12"
+                                      VerticalAlignment="Center"
+                                      HorizontalAlignment="Right"
+                                      UriString="{StaticResource Infomaniak.Custom.Icons.folder-star}" />
+                                    <TextBlock x:Uid="CC_OpenFileExplorer"
+                                        Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
+                                </StackPanel>
+                            </Grid>
+                        </Button>-->
+                    </StackPanel>
+                </Grid>
             </NavigationView.PaneCustomContent>
 
             <NavigationView.MenuItems>
@@ -141,6 +162,19 @@
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
             </NavigationView.MenuItems>
+
+            <!--<NavigationView.PaneFooter>
+                <StackPanel x:Name="FooterStackPanel" Orientation="Vertical" Visibility="Visible">
+                    <NavigationViewItem x:Uid="W_MainWindow_PaneFooter_Folder"
+                                        Tapped="NavigationViewItem_Tapped"
+                                        MinHeight="30"
+                                        IsEnabled="True">
+                        <NavigationViewItem.Icon>
+                            <SymbolIcon Symbol="Folder" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                </StackPanel>
+            </NavigationView.PaneFooter>-->
 
             <Frame x:Name="contentFrame" />
         </NavigationView>

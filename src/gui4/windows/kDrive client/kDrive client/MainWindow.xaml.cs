@@ -20,6 +20,7 @@ using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using System;
 using System.Linq;
 
@@ -80,6 +81,16 @@ namespace Infomaniak.kDrive
                 contentFrame.GoBack();
                 navView.SelectedItem = navView.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item => item.Tag.ToString() == ((Frame)contentFrame).Content.GetType().Name);
             }
+        }
+        private void NavigationViewItem_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            SyncPath? targetPath = ViewModel.SelectedSync?.LocalPath;
+            Utility.OpenFolderSecurely(/*targetPath*/@"C:\Users");  // TODO : add back targetPath when real sync are functionnal
+        }
+        private  void OpenFileExplorerButton_Click(object sender, RoutedEventArgs e)
+        {
+            SyncPath? targetPath = ViewModel.SelectedSync?.LocalPath;
+            Utility.OpenFolderSecurely(/*targetPath*/@"C:\Users");  // TODO : add back targetPath when real sync are functionnal
         }
     }
 }
