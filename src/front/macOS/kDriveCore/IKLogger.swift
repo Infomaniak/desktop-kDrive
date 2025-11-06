@@ -24,6 +24,8 @@ public extension IKLogger {
 
     static let view = IKLogger(subsystem: subsystem, category: "view")
     static let xpc = IKLogger(subsystem: subsystem, category: "XPC")
+    static let data = IKLogger(subsystem: subsystem, category: "data")
+    static let cache = IKLogger(subsystem: subsystem, category: "cache")
     static let general = IKLogger(subsystem: subsystem, category: "general")
     static let debug = IKLogger(subsystem: subsystem, category: "debug")
 }
@@ -42,6 +44,14 @@ public struct IKLogger: Sendable {
             logger.log("\(message)")
         } else {
             os_log(.default, "%@", message)
+        }
+    }
+    
+    public func info(_ message: String) {
+        if #available(macOS 11.0, *) {
+            logger.log("\(message)")
+        } else {
+            os_log(.info, "%@", message)
         }
     }
 
