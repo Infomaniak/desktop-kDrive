@@ -218,7 +218,7 @@ inline std::string toString(RequestNum e) {
         case RequestNum::EXCLAPP_SETLIST:
             return "EXCLAPP_SETLIST";
         case RequestNum::EXCLAPP_GET_FETCHING_APP_LIST:
-            return "GET_FETCHING_APP_LIST";
+            return "EXCLAPP_GET_FETCHING_APP_LIST";
 #endif
         case RequestNum::PARAMETERS_INFO:
             return "PARAMETERS_INFO";
