@@ -170,7 +170,6 @@ void ExtensionJob::commandGetMenuItems(const CommString &argument, std::shared_p
     if (sync.dbId()) {
         // Find SyncPal and Vfs associated to sync
         const std::scoped_lock lock(AppServer::_syncPalMapMutex, AppServer::_vfsMapMutex);
-
         const auto syncPalMapIt = retrieveSyncPalMapIt(sync.dbId());
         const auto vfsMapIt = retrieveVfsMapIt(sync.dbId());
 
@@ -476,7 +475,6 @@ void ExtensionJob::commandGetAllMenuItems(const CommString &argument, std::share
 
     if (sync.dbId()) {
         const std::scoped_lock lock(AppServer::_syncPalMapMutex, AppServer::_vfsMapMutex);
-
         const auto syncPalMapIt = retrieveSyncPalMapIt(sync.dbId());
         const auto vfsMapIt = retrieveVfsMapIt(sync.dbId());
 
@@ -716,7 +714,6 @@ void ExtensionJob::commandSetThumbnail(const CommString &argument, std::shared_p
 
     // Find SyncPal and Vfs associated to sync
     const std::scoped_lock lock(AppServer::_syncPalMapMutex, AppServer::_vfsMapMutex);
-
     const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
     if (syncPalMapIt == AppServer::_syncPalMap.end() || !syncPalMapIt->second) return;
 

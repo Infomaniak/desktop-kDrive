@@ -459,9 +459,9 @@ void AppServer::cleanup() {
     // Stop SyncPals
     {
         const std::scoped_lock lock(_syncPalMapMutex);
-        for (const auto &syncPalMapElt: _syncPalMap) {
-            if (const auto exitInfo = stopSyncPal(syncPalMapElt.first, false, true); !exitInfo) {
-                LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncPalMapElt.first << exitInfo);
+        for (const auto &[syncDbId, _]: _syncPalMap) {
+            if (const auto exitInfo = stopSyncPal(syncDbId, false, true); !exitInfo) {
+                LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncDbId << exitInfo);
             }
         }
     }
@@ -470,9 +470,9 @@ void AppServer::cleanup() {
     // Stop Vfs
     {
         const std::scoped_lock lock(_vfsMapMutex);
-        for (const auto &vfsMapElt: _vfsMap) {
-            if (const auto exitInfo = stopVfs(vfsMapElt.first, false); !exitInfo) {
-                LOG_WARN(_logger, "Error in stopVfs for syncDbId=" << vfsMapElt.first << exitInfo);
+        for (const auto &[syncDbId, _]: _vfsMap) {
+            if (const auto exitInfo = stopVfs(syncDbId, false); !exitInfo) {
+                LOG_WARN(_logger, "Error in stopVfs for syncDbId=" << syncDbId << exitInfo);
             }
         }
     }
@@ -721,8 +721,8 @@ void AppServer::unregisterSync(std::shared_ptr<SyncPal> syncPal) {
 #if defined(KD_MACOS)
 bool AppServer::noMacVfsSync() const {
     const std::scoped_lock lock(_vfsMapMutex);
-    for (const auto &[_, vfsMapElt]: _vfsMap) {
-        if (vfsMapElt->mode() == VirtualFileMode::Mac) {
+    for (const auto &[_, vfs]: _vfsMap) {
+        if (vfs->mode() == VirtualFileMode::Mac) {
             return false;
         }
     }
@@ -826,10 +826,10 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             // Get syncs do delete
             std::vector<int> syncDbIdList;
             const std::scoped_lock lock(_syncPalMapMutex);
-            for (const auto &syncPalMapElt: _syncPalMap) {
-                if (!syncPalMapElt.second) continue;
-                if (syncPalMapElt.second->userDbId() == userDbId) {
-                    syncDbIdList.push_back(syncPalMapElt.first);
+            for (const auto &[syncPalId, syncPal]: _syncPalMap) {
+                if (!syncPal) continue;
+                if (syncPal->userDbId() == userDbId) {
+                    syncDbIdList.push_back(syncPalId);
                 }
             }
 
@@ -958,9 +958,15 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             ExitCode exitCode = ExitCode::Ok;
             for (auto &sync: syncs) {
                 const std::scoped_lock lock(_syncPalMapMutex);
-                if (_syncPalMap.find(sync.dbId()) == _syncPalMap.end()) {
+                auto syncPalMapIt = _syncPalMap.find(sync.dbId());
+                if (syncPalMapIt == _syncPalMap.end()) {
                     LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << sync.dbId());
                     exitCode = ExitCode::DataError;
+                    break;
+                }
+                if (!syncPalMapIt->second) {
+                    LOG_WARN(_logger, "SyncPal not set in syncPalMap for syncDbId=" << sync.dbId());
+                    resultStream << ExitCode::DataError;
                     break;
                 }
 
@@ -968,7 +974,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 ServerRequests::getConflictList(sync.dbId(), conflictsWithLocalRename, errorList);
 
                 if (!errorList.empty()) {
-                    _syncPalMap[sync.dbId()]->fixConflictingFiles(keepLocalVersion, errorList);
+                    syncPalMapIt->second->fixConflictingFiles(keepLocalVersion, errorList);
                 }
             }
 
@@ -1053,10 +1059,10 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             // Get syncs to delete
             std::vector<int> syncDbIdList;
             const std::scoped_lock lock(_syncPalMapMutex);
-            for (const auto &syncPalMapElt: _syncPalMap) {
-                if (!syncPalMapElt.second) continue;
-                if (syncPalMapElt.second->driveDbId() == driveDbId) {
-                    syncDbIdList.push_back(syncPalMapElt.first);
+            for (const auto &[syncPalId, syncPal]: _syncPalMap) {
+                if (!syncPal) continue;
+                if (syncPal->driveDbId() == driveDbId) {
+                    syncDbIdList.push_back(syncPalId);
                 }
             }
 
@@ -1195,14 +1201,21 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> syncDbId;
 
             const std::scoped_lock lock(_syncPalMapMutex);
-            if (_syncPalMap.find(syncDbId) == _syncPalMap.end()) {
+            auto syncPalMapIt = _syncPalMap.find(syncDbId);
+            if (syncPalMapIt == _syncPalMap.end()) {
                 LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << syncDbId);
                 resultStream << ExitCode::DataError;
                 resultStream << SyncStatus::Undefined;
                 break;
             }
+            if (!syncPalMapIt->second) {
+                LOG_WARN(_logger, "SyncPal not set in syncPalMap for syncDbId=" << syncDbId);
+                resultStream << ExitCode::DataError;
+                resultStream << SyncStatus::Undefined;
+                break;
+            }
 
-            SyncStatus status = _syncPalMap[syncDbId]->status();
+            SyncStatus status = syncPalMapIt->second->status();
 
             resultStream << ExitCode::Ok;
             resultStream << status;
@@ -1214,14 +1227,21 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> syncDbId;
 
             const std::scoped_lock lock(_syncPalMapMutex);
-            if (_syncPalMap.find(syncDbId) == _syncPalMap.end()) {
+            auto syncPalMapIt = _syncPalMap.find(syncDbId);
+            if (syncPalMapIt == _syncPalMap.end()) {
                 LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << syncDbId);
                 resultStream << ExitCode::DataError;
                 resultStream << false;
                 break;
             }
+            if (!syncPalMapIt->second) {
+                LOG_WARN(_logger, "SyncPal not set in syncPalMap for syncDbId=" << syncDbId);
+                resultStream << ExitCode::DataError;
+                resultStream << false;
+                break;
+            }
 
-            bool isRunning = _syncPalMap[syncDbId]->isRunning();
+            bool isRunning = syncPalMapIt->second->isRunning();
 
             resultStream << ExitCode::Ok;
             resultStream << isRunning;
@@ -1469,15 +1489,22 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> type;
 
             const std::scoped_lock lock(_syncPalMapMutex);
-            if (_syncPalMap.find(syncDbId) == _syncPalMap.end()) {
+            auto syncPalMapIt = _syncPalMap.find(syncDbId);
+            if (syncPalMapIt == _syncPalMap.end()) {
                 LOG_DEBUG(_logger, "SyncPal not found in syncPalMap for syncDbId=" << syncDbId);
+                resultStream << ExitCode::DataError;
+                resultStream << QSet<QString>();
+                break;
+            }
+            if (!syncPalMapIt->second) {
+                LOG_WARN(_logger, "SyncPal not set in syncPalMap for syncDbId=" << syncDbId);
                 resultStream << ExitCode::DataError;
                 resultStream << QSet<QString>();
                 break;
             }
 
             NodeSet nodeIdSet;
-            ExitCode exitCode = _syncPalMap[syncDbId]->syncIdSet(type, nodeIdSet);
+            ExitCode exitCode = syncPalMapIt->second->syncIdSet(type, nodeIdSet);
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in SyncPal::getSyncIdSet: code=" << exitCode);
                 addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
@@ -1502,8 +1529,14 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> nodeIdSet;
 
             const std::scoped_lock lock(_syncPalMapMutex);
-            if (_syncPalMap.find(syncDbId) == _syncPalMap.end()) {
+            auto syncPalMapIt = _syncPalMap.find(syncDbId);
+            if (syncPalMapIt == _syncPalMap.end()) {
                 LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << syncDbId);
+                resultStream << ExitCode::DataError;
+                break;
+            }
+            if (!syncPalMapIt->second) {
+                LOG_WARN(_logger, "SyncPal not set in syncPalMap for syncDbId=" << syncDbId);
                 resultStream << ExitCode::DataError;
                 break;
             }
@@ -1513,7 +1546,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 nodeIdSet2.insert(nodeId.toStdString());
             }
 
-            ExitCode exitCode = _syncPalMap[syncDbId]->setSyncIdSet(type, nodeIdSet2);
+            ExitCode exitCode = syncPalMapIt->second->setSyncIdSet(type, nodeIdSet2);
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in SyncPal::setSyncIdSet: code=" << exitCode);
                 addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
@@ -1530,16 +1563,23 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> nodeId;
 
             const std::scoped_lock lock(_syncPalMapMutex);
-            if (_syncPalMap.find(syncDbId) == _syncPalMap.end()) {
+            auto syncPalMapIt = _syncPalMap.find(syncDbId);
+            if (syncPalMapIt == _syncPalMap.end()) {
                 LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << syncDbId);
+                resultStream << ExitCode::DataError;
+                resultStream << "";
+                break;
+            }
+            if (!syncPalMapIt->second) {
+                LOG_WARN(_logger, "SyncPal not set in syncPalMap for syncDbId=" << syncDbId);
                 resultStream << ExitCode::DataError;
                 resultStream << "";
                 break;
             }
 
             QString path;
-            ExitInfo exitInfo = ServerRequests::getPathByNodeId(_syncPalMap[syncDbId]->userDbId(),
-                                                                _syncPalMap[syncDbId]->driveId(), nodeId, path);
+            ExitInfo exitInfo = ServerRequests::getPathByNodeId(syncPalMapIt->second->userDbId(), syncPalMapIt->second->driveId(),
+                                                                nodeId, path);
             if (!exitInfo) {
                 if (exitInfo.cause() == ExitCause::NotFound) {
                     (void) SyncNodeCache::instance()->deleteSyncNode(syncDbId, QStr2Str(nodeId));
@@ -1644,11 +1684,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             // Pause all syncs of the drive
             QList<int> pausedSyncs;
             const std::scoped_lock lock(_syncPalMapMutex);
-            for (auto &syncPalMapElt: _syncPalMap) {
-                if (!syncPalMapElt.second) continue;
-                if (syncPalMapElt.second->driveDbId() == driveDbId && !syncPalMapElt.second->isPaused()) {
-                    syncPalMapElt.second->pause();
-                    pausedSyncs.push_back(syncPalMapElt.first);
+            for (auto &[syncPalId, syncPal]: _syncPalMap) {
+                if (!syncPal) continue;
+                if (syncPal->driveDbId() == driveDbId && !syncPal->isPaused()) {
+                    syncPal->pause();
+                    pausedSyncs.push_back(syncPalId);
                 }
             }
 
@@ -1663,7 +1703,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                                                                                         << parentNodeId.toStdString());
                         addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
                         resultStream << toInt(exitCode);
-                        resultStream << QString();
+                        resultStream << "";
                         break;
                     }
                     if (firstCreatedNodeId.isEmpty()) {
@@ -1675,28 +1715,28 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
 
             // Add first created node to blacklist of all syncs
-            for (auto &syncPalMapElt: _syncPalMap) {
-                if (!syncPalMapElt.second) continue;
-                if (syncPalMapElt.second->driveDbId() == driveDbId) {
+            for (auto &[syncPalId, syncPal]: _syncPalMap) {
+                if (!syncPal) continue;
+                if (syncPal->driveDbId() == driveDbId) {
                     // Get blacklist
                     NodeSet nodeIdSet;
-                    ExitCode exitCode = syncPalMapElt.second->syncIdSet(SyncNodeType::BlackList, nodeIdSet);
+                    ExitCode exitCode = syncPal->syncIdSet(SyncNodeType::BlackList, nodeIdSet);
                     if (exitCode != ExitCode::Ok) {
-                        LOG_WARN(_logger, "Error in SyncPal::syncIdSet for syncDbId=" << syncPalMapElt.first);
+                        LOG_WARN(_logger, "Error in SyncPal::syncIdSet for syncDbId=" << syncPalId);
                         addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
                         resultStream << toInt(exitCode);
-                        resultStream << QString();
+                        resultStream << "";
                         break;
                     }
 
                     // Set blacklist
                     nodeIdSet.insert(firstCreatedNodeId.toStdString());
-                    exitCode = syncPalMapElt.second->setSyncIdSet(SyncNodeType::BlackList, nodeIdSet);
+                    exitCode = syncPal->setSyncIdSet(SyncNodeType::BlackList, nodeIdSet);
                     if (exitCode != ExitCode::Ok) {
-                        LOG_WARN(_logger, "Error in SyncPal::setSyncIdSet for syncDbId=" << syncPalMapElt.first);
+                        LOG_WARN(_logger, "Error in SyncPal::setSyncIdSet for syncDbId=" << syncPalId);
                         addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
                         resultStream << toInt(exitCode);
-                        resultStream << QString();
+                        resultStream << "";
                         break;
                     }
                 }
@@ -1704,7 +1744,9 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             // Resume all paused syncs
             for (int syncDbId: pausedSyncs) {
-                _syncPalMap[syncDbId]->unpause();
+                if (_syncPalMap.contains(syncDbId)) {
+                    _syncPalMap[syncDbId]->unpause();
+                }
             }
 
             resultStream << ExitCode::Ok;
@@ -1761,11 +1803,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             QTimer::singleShot(100, [=, this]() {
                 const std::scoped_lock lock(_syncPalMapMutex);
-                for (auto &syncPalMapElt: _syncPalMap) {
-                    if (!syncPalMapElt.second) continue;
-                    unregisterSync(syncPalMapElt.second);
-                    _syncPalMap[syncPalMapElt.first]->excludeListUpdated();
-                    registerSync(syncPalMapElt.second);
+                for (auto &[syncPalId, syncPal]: _syncPalMap) {
+                    if (!syncPal) continue;
+                    unregisterSync(syncPal);
+                    syncPal->excludeListUpdated();
+                    registerSync(syncPal);
                 }
             });
 
@@ -1803,9 +1845,9 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             if (exitCode == ExitCode::Ok) {
                 const std::scoped_lock lock(_vfsMapMutex);
-                for (const auto &vfsMapElt: _vfsMap) {
-                    if (vfsMapElt.second->mode() == VirtualFileMode::Mac) {
-                        if (!vfsMapElt.second->setAppExcludeList()) {
+                for (const auto &[_, vfs]: _vfsMap) {
+                    if (vfs->mode() == VirtualFileMode::Mac) {
+                        if (!vfs->setAppExcludeList()) {
                             exitCode = ExitCode::SystemError;
                             LOG_WARN(_logger, "Error in Vfs::setAppExcludeList!");
                             addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
@@ -1822,9 +1864,9 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             ExitCode exitCode = ExitCode::Ok;
             QHash<QString, QString> appTable;
             const std::scoped_lock lock(_vfsMapMutex);
-            for (const auto &vfsMapElt: _vfsMap) {
-                if (vfsMapElt.second->mode() == VirtualFileMode::Mac) {
-                    if (!vfsMapElt.second->getFetchingAppList(appTable)) {
+            for (const auto &[_, vfs]: _vfsMap) {
+                if (vfs->mode() == VirtualFileMode::Mac) {
+                    if (!vfs->getFetchingAppList(appTable)) {
                         exitCode = ExitCode::SystemError;
                         LOG_WARN(_logger, "Error in Vfs::getFetchingAppList!");
                         addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
@@ -1880,8 +1922,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             if (parameters.extendedLog() != parametersInfo.extendedLog()) {
                 logExtendedLogActivationMessage(parametersInfo.extendedLog());
                 const std::scoped_lock lock(_vfsMapMutex);
-                for (const auto &[_, vfsMapElt]: _vfsMap) {
-                    vfsMapElt->setExtendedLog(parametersInfo.extendedLog());
+                for (const auto &[_, vfs]: _vfsMap) {
+                    vfs->setExtendedLog(parametersInfo.extendedLog());
                 }
             }
 
@@ -2133,13 +2175,19 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> restartSync;
 
             const std::scoped_lock lock(_syncPalMapMutex);
-            if (_syncPalMap.find(syncDbId) == _syncPalMap.end()) {
+            auto syncPalMapIt = _syncPalMap.find(syncDbId);
+            if (syncPalMapIt == _syncPalMap.end()) {
                 LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << syncDbId);
                 resultStream << ExitCode::DataError;
                 break;
             }
+            if (!syncPalMapIt->second) {
+                LOG_WARN(_logger, "SyncPal not set in syncPalMap for syncDbId=" << syncDbId);
+                resultStream << ExitCode::DataError;
+                break;
+            }
 
-            _syncPalMap[syncDbId]->syncListUpdated(restartSync);
+            syncPalMapIt->second->syncListUpdated(restartSync);
 
             resultStream << ExitCode::Ok;
             break;
@@ -2469,6 +2517,11 @@ void AppServer::syncFileStatus(int syncDbId, const SyncPath &path, SyncFileStatu
         addError(Error(ERR_ID, ExitCode::DataError, ExitCause::Unknown));
         return;
     }
+    if (!syncPalMapIt->second) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncPal not set in syncPalMap for syncDbId=" << syncDbId);
+        addError(Error(ERR_ID, ExitCode::DataError, ExitCause::Unknown));
+        return;
+    }
 
     ExitCode exitCode = syncPalMapIt->second->fileStatus(ReplicaSide::Local, path, status);
     if (exitCode != ExitCode::Ok) {
@@ -2485,6 +2538,11 @@ void AppServer::syncFileSyncing(int syncDbId, const SyncPath &path, bool &syncin
         addError(Error(ERR_ID, ExitCode::DataError, ExitCause::Unknown));
         return;
     }
+    if (!syncPalMapIt->second) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncPal not set in syncPalMap for syncDbId=" << syncDbId);
+        addError(Error(ERR_ID, ExitCode::DataError, ExitCause::Unknown));
+        return;
+    }
 
     ExitCode exitCode = syncPalMapIt->second->fileSyncing(ReplicaSide::Local, path, syncing);
     if (exitCode != ExitCode::Ok) {
@@ -2498,6 +2556,11 @@ void AppServer::setSyncFileSyncing(int syncDbId, const SyncPath &path, bool sync
     auto syncPalMapIt = _syncPalMap.find(syncDbId);
     if (syncPalMapIt == _syncPalMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "SyncPal not found in SyncPalMap for syncDbId=" << syncDbId);
+        addError(Error(ERR_ID, ExitCode::DataError, ExitCause::Unknown));
+        return;
+    }
+    if (!syncPalMapIt->second) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncPal not set in syncPalMap for syncDbId=" << syncDbId);
         addError(Error(ERR_ID, ExitCode::DataError, ExitCause::Unknown));
         return;
     }
@@ -3522,7 +3585,8 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, cons
                                 const NodeSet &whiteList, bool start, const std::chrono::seconds &startDelay, bool resumedByUser,
                                 bool firstInit) {
     const std::scoped_lock lock(_syncPalMapMutex);
-    if (_syncPalMap.find(sync.dbId()) == _syncPalMap.end()) {
+    auto syncPalMapIt = _syncPalMap.find(sync.dbId());
+    if (syncPalMapIt == _syncPalMap.end()) {
         std::shared_ptr<Vfs> vfsPtr;
         const std::scoped_lock lock2(_vfsMapMutex);
         if (ExitInfo exitInfo = getVfsPtr(sync.dbId(), vfsPtr); !exitInfo) {
@@ -3539,13 +3603,14 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, cons
         }
 
         // Set callbacks
-        _syncPalMap[sync.dbId()]->setAddErrorCallback(&addError);
-        _syncPalMap[sync.dbId()]->setAddCompletedItemCallback(&addCompletedItem);
-        _syncPalMap[sync.dbId()]->setSendSignalCallback(&sendSignal);
+        syncPalMapIt = _syncPalMap.find(sync.dbId());
+        syncPalMapIt->second->setAddErrorCallback(&addError);
+        syncPalMapIt->second->setAddCompletedItemCallback(&addCompletedItem);
+        syncPalMapIt->second->setSendSignalCallback(&sendSignal);
 
         if (!blackList.empty()) {
             // Set blackList (create or overwrite the possible existing list in DB)
-            if (const ExitInfo exitInfo = _syncPalMap[sync.dbId()]->setSyncIdSet(SyncNodeType::BlackList, blackList); !exitInfo) {
+            if (const ExitInfo exitInfo = syncPalMapIt->second->setSyncIdSet(SyncNodeType::BlackList, blackList); !exitInfo) {
                 LOG_WARN(_logger, "Error in SyncPal::setSyncIdSet for syncDbId=" << sync.dbId() << " : " << exitInfo);
                 return exitInfo;
             }
@@ -3553,7 +3618,7 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, cons
 
         if (!undecidedList.empty()) {
             // Set undecidedList (create or overwrite the possible existing list in DB)
-            if (const ExitInfo exitInfo = _syncPalMap[sync.dbId()]->setSyncIdSet(SyncNodeType::UndecidedList, undecidedList);
+            if (const ExitInfo exitInfo = syncPalMapIt->second->setSyncIdSet(SyncNodeType::UndecidedList, undecidedList);
                 !exitInfo) {
                 LOG_WARN(_logger, "Error in SyncPal::setSyncIdSet for syncDbId=" << sync.dbId() << " : " << exitInfo);
                 return exitInfo;
@@ -3562,7 +3627,7 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, cons
 
         if (!whiteList.empty()) {
             // Set whiteList (create or overwrite the possible existing list in DB)
-            if (const ExitInfo exitInfo = _syncPalMap[sync.dbId()]->setSyncIdSet(SyncNodeType::WhiteList, whiteList); !exitInfo) {
+            if (const ExitInfo exitInfo = syncPalMapIt->second->setSyncIdSet(SyncNodeType::WhiteList, whiteList); !exitInfo) {
                 LOG_WARN(_logger, "Error in SyncPal::setSyncIdSet for syncDbId=" << sync.dbId() << " : " << exitInfo);
                 return exitInfo;
             }
@@ -3571,7 +3636,7 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, cons
 
 #if defined(KD_WINDOWS) || defined(KD_MACOS)
     if (firstInit) {
-        if (!_syncPalMap[sync.dbId()]->wipeOldPlaceholders()) {
+        if (!syncPalMapIt->second->wipeOldPlaceholders()) {
             LOG_WARN(_logger, "Error in SyncPal::wipeOldPlaceholders");
         }
     }
@@ -3580,16 +3645,16 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, cons
 #endif
 
     if (start && (resumedByUser || !sync.paused())) {
-        if (_syncPalMap[sync.dbId()]->isPaused()) {
+        if (syncPalMapIt->second->isPaused()) {
             // Unpause SyncPal
-            _syncPalMap[sync.dbId()]->unpause();
-        } else if (!_syncPalMap[sync.dbId()]->isRunning()) {
+            syncPalMapIt->second->unpause();
+        } else if (!syncPalMapIt->second->isRunning()) {
             // Start SyncPal
-            _syncPalMap[sync.dbId()]->start(startDelay);
+            syncPalMapIt->second->start(startDelay);
         }
     }
 
-    registerSync(_syncPalMap[sync.dbId()]);
+    registerSync(syncPalMapIt->second);
 
     return ExitCode::Ok;
 }
@@ -3627,15 +3692,19 @@ ExitInfo AppServer::stopSyncPal(int syncDbId, bool pausedByUser, bool quit, bool
 
     // Stop SyncPal
     const std::scoped_lock lock(_syncPalMapMutex);
-    if (_syncPalMap.find(syncDbId) == _syncPalMap.end()) {
+    auto syncPalMapIt = _syncPalMap.find(syncDbId);
+    if (syncPalMapIt == _syncPalMap.end()) {
         LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << syncDbId);
-        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
+        return {ExitCode::DataError, ExitCause::Unknown};
     }
 
-    if (_syncPalMap[syncDbId]) {
-        unregisterSync(_syncPalMap[syncDbId]);
-        _syncPalMap[syncDbId]->stop(pausedByUser, quit, clear);
+    if (!syncPalMapIt->second) {
+        LOG_WARN(_logger, "SyncPal not set in syncPalMap for syncDbId=" << syncDbId);
+        return {ExitCode::DataError, ExitCause::Unknown};
     }
+
+    unregisterSync(syncPalMapIt->second);
+    syncPalMapIt->second->stop(pausedByUser, quit, clear);
 
     LOG_DEBUG(_logger, "Stop SyncPal for syncDbId=" << syncDbId << " done");
 
@@ -3673,7 +3742,8 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
 #endif
 
     const std::scoped_lock lock(_vfsMapMutex);
-    if (_vfsMap.find(sync.dbId()) == _vfsMap.end()) {
+    auto vfsMapIt = _vfsMap.find(sync.dbId());
+    if (vfsMapIt == _vfsMap.end()) {
 #if defined(KD_WINDOWS)
         Drive drive;
         bool found;
@@ -3731,20 +3801,20 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
             return {ExitCode::SystemError, ExitCause::UnableToCreateVfs};
         }
         _vfsMap[sync.dbId()] = vfsPtr;
-        _vfsMap[sync.dbId()]->setExtendedLog(ParametersCache::isExtendedLogEnabled());
+        vfsMapIt = _vfsMap.find(sync.dbId());
+        vfsMapIt->second->setExtendedLog(ParametersCache::isExtendedLogEnabled());
 
         // Set callbacks
-        _vfsMap[sync.dbId()]->setSyncFileStatusCallback(&syncFileStatus);
-        _vfsMap[sync.dbId()]->setSyncFileSyncingCallback(&syncFileSyncing);
-        _vfsMap[sync.dbId()]->setSetSyncFileSyncingCallback(&setSyncFileSyncing);
+        vfsMapIt->second->setSyncFileStatusCallback(&syncFileStatus);
+        vfsMapIt->second->setSyncFileSyncingCallback(&syncFileSyncing);
+        vfsMapIt->second->setSetSyncFileSyncingCallback(&setSyncFileSyncing);
 #if defined(KD_MACOS)
-        _vfsMap[sync.dbId()]->setExclusionAppListCallback(&exclusionAppList);
+        vfsMapIt->second->setExclusionAppListCallback(&exclusionAppList);
 #endif
     }
 
     // Start VFS
-    if (ExitInfo exitInfo = _vfsMap[sync.dbId()]->start(_vfsInstallationDone, _vfsActivationDone, _vfsConnectionDone);
-        !exitInfo) {
+    if (ExitInfo exitInfo = vfsMapIt->second->start(_vfsInstallationDone, _vfsActivationDone, _vfsConnectionDone); !exitInfo) {
 #if defined(KD_MACOS)
         if (sync.virtualFileMode() == VirtualFileMode::Mac && _vfsInstallationDone && !_vfsActivationDone) {
             // Check LiteSync ext authorizations
@@ -3761,7 +3831,7 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
 #if defined(KD_WINDOWS)
     // Save sync
     Sync tmpSync(sync);
-    tmpSync.setNavigationPaneClsid(_vfsMap[sync.dbId()]->namespaceCLSID());
+    tmpSync.setNavigationPaneClsid(vfsMapIt->second->namespaceCLSID());
 
     if (tmpSync.virtualFileMode() == KDC::VirtualFileMode::Win) {
         Utility::setFolderPinState(CommonUtility::s2ws(tmpSync.navigationPaneClsid()),
@@ -3769,7 +3839,7 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
     } else {
         if (tmpSync.navigationPaneClsid().empty()) {
             tmpSync.setNavigationPaneClsid(QUuid::createUuid().toString().toStdString());
-            _vfsMap[sync.dbId()]->setNamespaceCLSID(tmpSync.navigationPaneClsid());
+            vfsMapIt->second->setNamespaceCLSID(tmpSync.navigationPaneClsid());
         }
         Utility::addLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()), sync.localPath(),
                                        _navigationPaneHelper->showInExplorerNavigationPane());
@@ -3793,14 +3863,18 @@ ExitInfo AppServer::stopVfs(int syncDbId, bool unregister) {
 
     // Stop Vfs
     const std::scoped_lock lock(_vfsMapMutex);
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
+    auto vfsMapIt = _vfsMap.find(syncDbId);
+    if (vfsMapIt == _vfsMap.end()) {
         LOG_WARN(_logger, "Vfs not found in vfsMap for syncDbId=" << syncDbId);
-        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
+        return {ExitCode::DataError, ExitCause::Unknown};
     }
 
-    if (_vfsMap[syncDbId]) {
-        _vfsMap[syncDbId]->stop(unregister);
+    if (!vfsMapIt->second) {
+        LOG_WARN(_logger, "Vfs not set in vfsMap for syncDbId=" << syncDbId);
+        return {ExitCode::DataError, ExitCause::Unknown};
     }
+
+    vfsMapIt->second->stop(unregister);
 
     LOG_DEBUG(_logger, "Stop VFS for syncDbId=" << syncDbId << " done");
 
@@ -3809,7 +3883,8 @@ ExitInfo AppServer::stopVfs(int syncDbId, bool unregister) {
 
 ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
     const std::scoped_lock lock(_syncPalMapMutex);
-    if (!_syncPalMap.contains(syncDbId)) {
+    auto syncPalMapIt = _syncPalMap.find(syncDbId);
+    if (syncPalMapIt == _syncPalMap.end()) {
         std::stringstream msg;
         msg << "SyncPal not found in syncPalMap for syncDbId=" << syncDbId;
         LOG_WARN(_logger, msg.str());
@@ -3844,7 +3919,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
 
     if (newMode != sync.virtualFileMode()) {
         // Stop sync
-        _syncPalMap[syncDbId]->stop();
+        syncPalMapIt->second->stop();
 
         // Stop Vfs
         if (const auto exitInfo = stopVfs(syncDbId, true); !exitInfo) {
@@ -3855,10 +3930,10 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
         if (newMode == VirtualFileMode::Off) {
 #if defined(KD_WINDOWS)
             LOG_INFO(_logger, "Clearing node DB");
-            _syncPalMap[syncDbId]->clearNodes();
+            syncPalMapIt->second->clearNodes();
 #else
             // Clear file system
-            _syncPalMap[sync.dbId()]->wipeVirtualFiles();
+            syncPalMapIt->second->wipeVirtualFiles();
 #endif
         }
 
@@ -3906,17 +3981,20 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
 
         // Update SyncPal
         std::shared_ptr<Vfs> vfsPtr;
-        if (const auto exitInfo = getVfsPtr(sync.dbId(), vfsPtr); !exitInfo) {
-            LOG_WARN(_logger, "Error in getVfsPtr for syncDbId=" << sync.dbId() << " : " << exitInfo);
+        if (const auto exitInfo = getVfsPtr(syncDbId, vfsPtr); !exitInfo) {
+            LOG_WARN(_logger, "Error in getVfsPtr for syncDbId=" << syncDbId << " : " << exitInfo);
             return exitInfo;
         }
-        _syncPalMap[sync.dbId()]->setVfs(vfsPtr);
+        syncPalMapIt->second->setVfs(vfsPtr);
 
         QTimer::singleShot(100, this, [=, this]() {
             if (newMode != VirtualFileMode::Off) {
                 // Clear file system
                 const std::scoped_lock lock3(_vfsMapMutex);
-                _vfsMap[sync.dbId()]->convertDirContentToPlaceholder(SyncName2QStr(sync.localPath()), true);
+                auto vfsMapIt = _vfsMap.find(syncDbId);
+                if (vfsMapIt != _vfsMap.end()) {
+                    vfsMapIt->second->convertDirContentToPlaceholder(SyncName2QStr(sync.localPath()), true);
+                }
             }
 
             // Update sync info on client side
@@ -3930,7 +4008,10 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
             if (start) {
                 // Re-start sync
                 const std::scoped_lock lock3(_syncPalMapMutex);
-                _syncPalMap[syncDbId]->start();
+                auto syncPalMapIt = _syncPalMap.find(syncDbId);
+                if (syncPalMapIt != _syncPalMap.end()) {
+                    syncPalMapIt->second->start();
+                }
             }
         });
 
@@ -4279,17 +4360,17 @@ void AppServer::onUpdateSyncsProgress() {
 
     for (const auto &sync: syncList) {
         const std::scoped_lock lock(_syncPalMapMutex);
-        if (const auto syncPalIt = _syncPalMap.find(sync.dbId()); syncPalIt == _syncPalMap.end()) {
+        if (const auto syncPalMapIt = _syncPalMap.find(sync.dbId()); syncPalMapIt == _syncPalMap.end()) {
             // No SyncPal for this sync
             sendSyncProgressInfo(sync.dbId(), sync.paused() ? SyncStatus::Paused : SyncStatus::Error, SyncStep::None,
                                  SyncProgress());
         } else {
-            if (!syncPalIt->second) {
+            if (!syncPalMapIt->second) {
                 assert(false);
                 continue;
             }
 
-            const auto syncPal = syncPalIt->second;
+            const auto syncPal = syncPalMapIt->second;
 
             // Get progress
             SyncProgress progress;
@@ -4383,15 +4464,16 @@ void AppServer::onRestartSyncs() {
             }
 
             const std::scoped_lock lock(_syncPalMapMutex);
-            for (const auto &syncPalMapElt: _syncPalMap) {
+            for (const auto &[syncDbId, syncPal]: _syncPalMap) {
                 const std::scoped_lock lock2(_vfsMapMutex);
-                if (_vfsMap[syncPalMapElt.first]->mode() == VirtualFileMode::Mac) {
+                auto vfsMapIt = _vfsMap.find(syncDbId);
+                if (vfsMapIt == _vfsMap.end()) continue;
+                if (vfsMapIt->second->mode() == VirtualFileMode::Mac) {
                     // Ask client to refresh SyncPal error list
-                    sendErrorsCleared(syncPalMapElt.first);
+                    sendErrorsCleared(syncDbId);
 
                     // Start VFS
-                    if (ExitInfo exitInfo =
-                                _vfsMap[syncPalMapElt.first]->start(_vfsInstallationDone, _vfsActivationDone, _vfsConnectionDone);
+                    if (ExitInfo exitInfo = vfsMapIt->second->start(_vfsInstallationDone, _vfsActivationDone, _vfsConnectionDone);
                         !exitInfo) {
                         LOG_WARN(Log::instance()->getLogger(), "Error in Vfs::start: " << exitInfo);
                         continue;
@@ -4400,20 +4482,19 @@ void AppServer::onRestartSyncs() {
                     // Start SyncPal if not paused
                     Sync sync;
                     bool found = false;
-                    if (!ParmsDb::instance()->selectSync(syncPalMapElt.first, sync, found)) {
+                    if (!ParmsDb::instance()->selectSync(syncDbId, sync, found)) {
                         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectSync");
                         continue;
                     }
 
                     if (!found) {
-                        LOG_WARN(Log::instance()->getLogger(),
-                                 "Sync not found in sync table for syncDbId=" << syncPalMapElt.first);
+                        LOG_WARN(Log::instance()->getLogger(), "Sync not found in sync table for syncDbId=" << syncDbId);
                         continue;
                     }
 
                     if (!sync.paused()) {
                         // Start sync
-                        syncPalMapElt.second->start();
+                        syncPal->start();
                     }
                 }
             }
@@ -4422,11 +4503,11 @@ void AppServer::onRestartSyncs() {
 #endif
 
     const std::scoped_lock lock(_syncPalMapMutex);
-    for (const auto &[syncId, syncPtr]: _syncPalMap) {
-        if (!syncPtr) continue;
-        if ((syncPtr->isPaused() || syncPtr->pauseAsked()) &&
-            syncPtr->pauseTime() + std::chrono::minutes(1) < std::chrono::steady_clock::now()) {
-            syncPtr->unpause();
+    for (const auto &[_, syncPal]: _syncPalMap) {
+        if (!syncPal) continue;
+        if ((syncPal->isPaused() || syncPal->pauseAsked()) &&
+            syncPal->pauseTime() + std::chrono::minutes(1) < std::chrono::steady_clock::now()) {
+            syncPal->unpause();
 #if defined(__APPLE__)
             Utility::restartFinderExtension();
 #endif
