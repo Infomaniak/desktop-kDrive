@@ -27,9 +27,7 @@ extension XPCConnectionManager: XPCConnectionProvider {
     public var connection: NSXPCConnection {
         get throws {
             guard let appConnection else {
-                throw NSError(domain: "XPCError", code: -1, userInfo: [
-                    NSLocalizedDescriptionKey: "No app connection available"
-                ])
+                throw XPCError.noAppConnectionAvailable
             }
 
             return appConnection

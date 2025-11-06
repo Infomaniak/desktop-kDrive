@@ -18,6 +18,10 @@
 
 import Foundation
 
+enum NSXPCConnectionError: Error {
+    case failedToCastProxy(_: String)
+}
+
 public extension NSXPCConnection {
     func proxy<Interface>(
         from connection: NSXPCConnection,
@@ -25,9 +29,7 @@ public extension NSXPCConnection {
     ) throws -> Interface where Interface: AnyObject {
         let proxy = connection.remoteObjectProxy
         guard let typedProxy = proxy as? Interface else {
-            throw NSError(domain: "XPCError", code: -1, userInfo: [
-                NSLocalizedDescriptionKey: "Failed to cast proxy to \(Interface.self)"
-            ])
+            throw NSXPCConnectionError.failedToCastProxy(String(describing: Interface.self))
         }
 
         return typedProxy
