@@ -80,12 +80,7 @@ public actor CoherentCache: CoherentCacheProtocol, CoherentCacheObservation {
     }
 
     public func getUser(id: Int32) -> User? {
-        guard let user = users[id] else {
-            IKLogger.cache.info("user miss")
-            return nil
-        }
-        IKLogger.cache.info("user hit")
-        return user
+        users[id]
     }
 
     public func getFirstAvailableUser() -> User? {
@@ -103,7 +98,6 @@ public actor CoherentCache: CoherentCacheProtocol, CoherentCacheObservation {
     }
 
     public func updateUser(_ user: User) {
-        IKLogger.cache.info("updateUser \(user)")
         // TODO: Diff merge, not swap
         users[user.id] = user
         usersSubject.send(users)
