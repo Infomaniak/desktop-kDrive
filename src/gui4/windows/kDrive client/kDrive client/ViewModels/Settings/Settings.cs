@@ -22,6 +22,8 @@ namespace Infomaniak.kDrive.ViewModels
         private bool _purgeOldLogs = true;
         private ProxyConfig _proxyConfig = new ProxyConfig();
         private bool _showShortcuts;
+        private bool _matomoEnabled;
+        private bool _sentryEnabled;
 
         private AppVersion? _appVersion;
         public UpdateManager UpdateManager { get; } = new UpdateManager();
@@ -70,6 +72,17 @@ namespace Infomaniak.kDrive.ViewModels
             get => _appVersion;
             set => SetPropertyInUIThread(ref _appVersion, value);
         }
+        public bool MatomoEnabled
+        {
+            get => _matomoEnabled;
+            set => SetPropertyInUIThread(ref _matomoEnabled, value);
+        }
+
+        public bool SentryEnabled
+        {
+            get => _sentryEnabled;
+            set => SetPropertyInUIThread(ref _sentryEnabled, value);
+        }
 
         public async Task ChangeAutoStart(bool activated)
         {
@@ -84,6 +97,17 @@ namespace Infomaniak.kDrive.ViewModels
         public async Task ChangeMoveToTrash(bool activated)
         {
             MoveToTrash = activated;
+            await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None);
+        }
+
+        public async Task ChangeMatomoEnabled(bool enabled)
+        {
+            MatomoEnabled = enabled;
+            await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None);
+        }
+        public async Task ChangeSentryEnabled(bool enabled)
+        {
+            SentryEnabled = enabled;
             await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None);
         }
     }

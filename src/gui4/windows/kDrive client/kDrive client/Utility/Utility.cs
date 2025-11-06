@@ -297,8 +297,12 @@ namespace Infomaniak.kDrive
                 appWindow.Resize(new SizeInt32(scaledWidth, scaledHeight));
             }
         }
+        public static string GetLocalizedString(string key)
+        {
+            return GetLocalizedString(key, null);
+        }
 
-        public static string GetLocalizedString(string key, params object?[] args)
+        public static string GetLocalizedString(string key, params object?[]? args)
         {
             var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
             string localizedString = resourceLoader.GetString(key) ?? string.Empty;

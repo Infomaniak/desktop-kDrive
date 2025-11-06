@@ -265,74 +265,39 @@
                     </toolKit:SettingsCard>
 
                     <!-- Advanced - Privacy -->
-                    <toolKit:SettingsExpander Header="Gestion des données">
+                    <toolKit:SettingsExpander x:Uid="Page_SettingsPage_Privacy">
                         <toolKit:SettingsExpander.HeaderIcon>
-                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Security.lock}"
+                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Users.user-cog}"
                                               Height="32"
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
 
                         </toolKit:SettingsExpander.HeaderIcon>
                         <toolKit:SettingsExpander.Items>
-                            <!-- General -->
-                            <toolKit:SettingsCard ContentAlignment="Left"
-                                                  Background="{ThemeResource LayerFillColorDefault}"
-                                                  Foreground="{ThemeResource TextFillColorDisabled}">
-                                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.M}"
-                                            Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.M}">
-                                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
-                                               TextWrapping="WrapWholeWords"
-                                               Text="Vous pouvez personnaliser les données d'utilisation et opérationnelles qui sont récupérées par Infomaniak pour corriger des bugs et faire évoluer l'application. Les deux outils utilisés sont hébergés et gérés exclusivement chez nous." />
-                                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
-                                               TextWrapping="WrapWholeWords"
-                                               Text="Infomaniak respecte votre vie privée : le code source de cette application peut être vérifié, les informations récoltées sont anonymes et vos informations personnelles restent strictement confidentielles et ne sont jamais partagées avec des tiers." />
-                                    <HyperlinkButton Content="Voir le code source"
-                                                     Margin="-12,0,0,0" />
-                                </StackPanel>
+                            <!-- Presentation -->
+                            <toolKit:SettingsCard x:Uid="Page_SettingsPage_Privacy_Presentation"
+                                                  Background="{ThemeResource LayerFillColorDefault}">
+                                <HyperlinkButton x:Uid="Page_SettingsPage_Privacy_Sources" />
                             </toolKit:SettingsCard>
                             <!-- Matomo -->
-                            <toolKit:SettingsCard ContentAlignment="Left"
+                            <toolKit:SettingsCard x:Uid="Page_SettingsPage_Privacy_Matomo"
                                                   Background="{ThemeResource LayerFillColorDefault}"
-                                                  Foreground="{ThemeResource TextFillColorDisabled}">
-                                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.M}"
-                                            Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.M}">
-                                    <Grid>
-                                        <TextBlock HorizontalAlignment="Left"
-                                                   Text="Matomo" />
-                                        <ToggleSwitch OnContent="Autoriser le suivi"
-                                                      OffContent="Refuser le suivi"
-                                                      HorizontalAlignment="Right" />
-                                    </Grid>
+                                                  IsClickEnabled="True"
+                                                  Click="MatomoButton_Click" />
+                            <controls:ConsentDialog x:Name="MatomoContentDialog"
+                                                    x:Uid="Page_SettingsPage_Privacy_Matomo_ConsentDialog"
+                                                    LogoUriStr="{StaticResource Infomaniak.Custom.Icons.logo-matomo}"
+                                                    CurrentValue="{x:Bind  ViewModel.Settings.MatomoEnabled, Mode=OneWay}" />
 
-                                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
-                                               TextWrapping="WrapWholeWords"
-                                               Text="Matomo est un outil d'analyse hébergé et géré exclusivement par Infomaniak pour comprendre comment l’application est utilisée." />
-                                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
-                                               TextWrapping="WrapWholeWords"
-                                               Text="L’étude de ces données permet à notre équipe d’améliorer en continue l’interface de l’application." />
-                                </StackPanel>
-                            </toolKit:SettingsCard>
-
-                            <toolKit:SettingsCard ContentAlignment="Left"
+                            <!-- Sentry -->
+                            <toolKit:SettingsCard x:Uid="Page_SettingsPage_Privacy_Sentry"
                                                   Background="{ThemeResource LayerFillColorDefault}"
-                                                  Foreground="{ThemeResource TextFillColorDisabled}">
-                                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.M}"
-                                            Margin="{StaticResource Infomaniak.Style.Thickness.Top.M}">
-                                    <Grid>
-                                        <TextBlock HorizontalAlignment="Left"
-                                                   Text="Sentry" />
-                                        <ToggleSwitch OnContent="Autoriser le suivi"
-                                                      OffContent="Refuser le suivi"
-                                                      HorizontalAlignment="Right" />
-                                    </Grid>
+                                                  IsClickEnabled="True"
+                                                  Click="SentryButton_Click" />
+                            <controls:ConsentDialog x:Name="SentryContentDialog"
+                                                    x:Uid="Page_SettingsPage_Privacy_Sentry_ConsentDialog"
+                                                    LogoUriStr="{StaticResource Infomaniak.Custom.Icons.logo-sentry}"
+                                                    CurrentValue="{x:Bind  ViewModel.Settings.SentryEnabled, Mode=OneWay}" />
 
-                                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
-                                               TextWrapping="WrapWholeWords"
-                                               Text="Sentry est un outil hébergé et géré exclusivement par Infomaniak pour surveiller en temps réel la stabilité de l'application et signaler automatiquement d’éventuelles erreurs techniques à nos développeurs." />
-                                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
-                                               TextWrapping="WrapWholeWords"
-                                               Text="Ces données permettent à notre équipe de rapidement corriger et optimiser l’application, ce qui se traduit par une meilleure expérience d’utilisation pour vous" />
-                                </StackPanel>
-                            </toolKit:SettingsCard>
                         </toolKit:SettingsExpander.Items>
                     </toolKit:SettingsExpander>
 
@@ -424,16 +389,14 @@
                         </toolKit:SettingsExpander.HeaderIcon>
                         <toolKit:SettingsExpander.Items>
                             <!-- General -->
-                            <toolKit:SettingsCard ContentAlignment="Left"
-                                                  Header="kDrive"
+                            <toolKit:SettingsCard Header="kDrive"
                                                   Background="{ThemeResource LayerFillColorDefault}"
                                                   Foreground="{ThemeResource TextFillColorDisabled}">
                                 <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                                            TextWrapping="WrapWholeWords"
                                            Text="Swiss Made cloud, open source et hébergé exclusivement en Suisse dans nos datacenters certifiés ISO (sécurité et environnement). kDrive allie transparence, souveraineté et respect de la vie privée." />
                             </toolKit:SettingsCard>
-                            <toolKit:SettingsCard ContentAlignment="Left"
-                                                  Header="kDrive"
+                            <toolKit:SettingsCard Header="kDrive"
                                                   Background="{ThemeResource LayerFillColorDefault}"
                                                   Foreground="{ThemeResource TextFillColorDisabled}">
                                 <toolKit:SettingsCard.HeaderIcon>

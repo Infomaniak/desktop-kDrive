@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -200,6 +201,53 @@ namespace Infomaniak.kDrive.Pages
         {
             Logger.Log(Logger.Level.Info, "Navigating to Sync Rules Page from Settings Page");
             // TODO: Implement navigation to Sync Rules Page
+        }
+
+        private async void MatomoButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            ConsentResult result = await MatomoContentDialog.ShowAsync(this.XamlRoot);
+            if (result == ConsentResult.Cancelled) return;
+            await ViewModel.Settings.ChangeMatomoEnabled(result == ConsentResult.Allowed);
+        }
+
+        private async void SentryButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            ConsentResult result = await SentryContentDialog.ShowAsync(this.XamlRoot);
+            if (result == ConsentResult.Cancelled) return;
+            await ViewModel.Settings.ChangeSentryEnabled(result == ConsentResult.Allowed);
+        }
+
+        private async void MatomoToogleSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            if (sender is ToggleSwitch toggleSwitch)
+            {
+                toggleSwitch.IsEnabled = false;
+                await ViewModel.Settings.ChangeMatomoEnabled(toggleSwitch.IsOn);
+                toggleSwitch.IsEnabled = true;
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Error, "MatomoToogleSwitch_Toggled: sender is not a ToggleSwitch");
+            }
+        }
+
+        private async void SentryeSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            if (sender is ToggleSwitch toggleSwitch)
+            {
+                toggleSwitch.IsEnabled = false;
+                await ViewModel.Settings.ChangeSentryEnabled(toggleSwitch.IsOn);
+                toggleSwitch.IsEnabled = true;
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Error, "SentryeSwitch_Toggled: sender is not a ToggleSwitch");
+            }
+
         }
     }
 
