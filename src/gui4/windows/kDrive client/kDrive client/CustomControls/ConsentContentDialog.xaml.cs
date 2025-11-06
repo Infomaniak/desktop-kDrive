@@ -71,7 +71,7 @@ namespace Infomaniak.kDrive.CustomControls
         public async Task<ConsentResult> ShowAsync(XamlRoot xamlRoot)
         {
             Dialog.XamlRoot = xamlRoot;
-
+            Toggle.IsOn = CurrentValue;
             var result = await Dialog.ShowAsync();
 
             if (result == ContentDialogResult.Primary)

@@ -275,9 +275,8 @@
                         <toolKit:SettingsExpander.Items>
                             <!-- Presentation -->
                             <toolKit:SettingsCard x:Uid="Page_SettingsPage_Privacy_Presentation"
-                                                  Background="{ThemeResource LayerFillColorDefault}">
-                                <HyperlinkButton x:Uid="Page_SettingsPage_Privacy_Sources" />
-                            </toolKit:SettingsCard>
+                                                  Background="{ThemeResource LayerFillColorDefault}" />
+
                             <!-- Matomo -->
                             <toolKit:SettingsCard x:Uid="Page_SettingsPage_Privacy_Matomo"
                                                   Background="{ThemeResource LayerFillColorDefault}"
@@ -298,6 +297,16 @@
                                                     LogoUriStr="{StaticResource Infomaniak.Custom.Icons.logo-sentry}"
                                                     CurrentValue="{x:Bind  ViewModel.Settings.SentryEnabled, Mode=OneWay}" />
 
+                            <!-- Sources -->
+                            <toolKit:SettingsCard x:Uid="Page_SettingsPage_Privacy_Sources"
+                                                  Background="{ThemeResource LayerFillColorDefault}"
+                                                  IsClickEnabled="True"
+                                                  Click="PrivacySeeSourcesButton_Click">
+                                <toolKit:SettingsCard.ActionIcon>
+                                    <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Arrows.square-arrow-diagonal-up}"
+                                                      Foreground="{ThemeResource TextFillColorPrimary}" />
+                                </toolKit:SettingsCard.ActionIcon>
+                            </toolKit:SettingsCard>
                         </toolKit:SettingsExpander.Items>
                     </toolKit:SettingsExpander>
 

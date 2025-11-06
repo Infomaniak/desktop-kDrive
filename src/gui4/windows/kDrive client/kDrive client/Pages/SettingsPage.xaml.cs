@@ -249,6 +249,20 @@ namespace Infomaniak.kDrive.Pages
             }
 
         }
+
+        private async void PrivacySeeSourcesButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!IsLoaded) return;
+
+            var control = sender as Control;
+            if (control is not null)
+                control.IsEnabled = false;
+
+            await Windows.System.Launcher.LaunchUriAsync(App.Constants.GitHubRepoUrl);
+
+            if (control is not null)
+                control.IsEnabled = true;
+        }
     }
 
     // templateSelector for the drives listview

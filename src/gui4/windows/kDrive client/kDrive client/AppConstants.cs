@@ -3,13 +3,19 @@ using System;
 
 namespace Infomaniak.kDrive
 {
-    interface IAppConstants
+    internal interface IAppConstants
     {
-        static abstract Uri StorageUrl { get; }
+        public abstract Uri StorageUrl { get; }
+        public abstract Uri GitHubRepoUrl { get; }
+        public abstract Uri GitHubLicenseUrl { get; }
+
     }
 
     class ProductionConstants : IAppConstants
     {
-        public static Uri StorageUrl { get; } = new Uri("https://download.storage.infomaniak.com/drive/desktopclient/kDrive");
+        public Uri StorageUrl { get; } = new Uri("https://download.storage.infomaniak.com/drive/desktopclient");
+        public Uri GitHubRepoUrl { get; } = new Uri("https://github.com/Infomaniak/desktop-kDrive");
+        public Uri GitHubLicenseUrl { get; } = new Uri("https://github.com/Infomaniak/desktop-kDrive?tab=GPL-3.0-1-ov-file");
+
     }
 }

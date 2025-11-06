@@ -568,7 +568,7 @@ Ces données permettent à notre équipe de rapidement corriger et optimiser l�
   <data name="Page_SettingsPage_Privacy.Header" xml:space="preserve">
     <value>Gestion des données</value>
   </data>
-  <data name="Page_SettingsPage_Privacy_Sources.Content" xml:space="preserve">
+  <data name="Page_SettingsPage_Privacy_Sources.Header" xml:space="preserve">
     <value>Voir le code source</value>
   </data>
   <data name="Page_SettingsPage_SyncRules.Description" xml:space="preserve">
