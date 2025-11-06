@@ -38,7 +38,7 @@ public struct SignalMessage<Body: Codable>: Codable {
     public var body: Body? {
         return params?.userInfo
     }
-    
+
     public init(cause: KDC.ExitCause?,
                 code: KDC.ExitCode?,
                 id: Int32,

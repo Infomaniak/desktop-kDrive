@@ -20,8 +20,8 @@ import Foundation
 import InfomaniakDI
 
 public struct LoginJob: Sendable {
-    @LazyInjectService var xpcConnectionProvider: XPCConnectionProvider
-    @LazyInjectService var coherentCache: CoherentCacheProtocol
+    @LazyInjectService private var coherentCache: CoherentCacheProtocol
+    @LazyInjectService private var queryFetcher: XPCQueryFetcherProtocol
 
     public enum LoginJobError: Error {
         case userNotFound
@@ -38,30 +38,27 @@ public struct LoginJob: Sendable {
         try await loginUserQuery(code: code, verifier: verifier)
     }
 
-    /// Login query, wraps XPC queries and Cache calls
+    /// Login _query_ only
     /// - Parameters:
     ///   - code: auth code
     ///   - verifier: auth verifier
-    /// - Returns: userDbId that can be used to fetch a user
+    /// - Returns: userDbId
     @discardableResult
     private func loginUserQuery(code: String, verifier: String) async throws -> Int32 {
         IKLogger.data.log("Query for login token")
-        let guiConnection = try await xpcConnectionProvider.guiConnection
         let userQuery = LoginQuery(code: code, codeVerifier: verifier)
         let request = await RequestMessage<LoginQuery>(num: RequestNum.LOGIN_REQUESTTOKEN, body: userQuery)
 
-        let requestData = try JSONEncoder().encode(request)
-        guard let replyData = await guiConnection.sendQueryAsync(requestData) else {
+        do {
+            let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<LoginResponse>.self)
+
+            guard let userDbId = decodedMessage?.body.userDbId else {
+                throw LoginJobError.userDbIdNotFound
+            }
+
+            return userDbId
+        } catch XPCQueryFetcher.QueryError.noReplyData {
             throw LoginJobError.userNotFound
         }
-
-        let decodedMessage = try? JSONDecoder().decode(CallbackMessage<LoginResponse>.self, from: replyData)
-        IKLogger.data.log("recv decodedMessage: \(String(describing: decodedMessage))")
-
-        guard let userDbId = decodedMessage?.body.userDbId else {
-            throw LoginJobError.userDbIdNotFound
-        }
-
-        return userDbId
     }
 }

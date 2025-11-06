@@ -45,7 +45,7 @@ public struct IKLogger: Sendable {
             os_log(.default, "%@", message)
         }
     }
-    
+
     public func info(_ message: String) {
         if #available(macOS 11.0, *) {
             logger.log("\(message)")

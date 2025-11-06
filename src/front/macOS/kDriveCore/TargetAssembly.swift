@@ -48,6 +48,9 @@ open class TargetAssembly {
             },
             Factory(type: XPCConnectionProvider.self) { _, _ in
                 XPCConnectionManager()
+            },
+            Factory(type: XPCQueryFetcherProtocol.self) { _, _ in
+                XPCQueryFetcher()
             }
         ]
     }
