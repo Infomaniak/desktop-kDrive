@@ -520,7 +520,7 @@
   <data name="Page_SettingsPage_Privacy.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
-  <data name="Page_SettingsPage_Privacy_Sources.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+  <data name="Page_SettingsPage_Privacy_Sources.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
   <data name="Page_SettingsPage_SyncRules.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
