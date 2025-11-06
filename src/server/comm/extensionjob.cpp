@@ -889,7 +889,7 @@ bool ExtensionJob::syncFileStatus(const FileData &fileData, SyncFileStatus &stat
     return true;
 }
 
-SyncPalMap::const_iterator ExtensionJob::retrieveSyncPalMapIt(const int syncDbId) const {
+SyncPalMap::iterator ExtensionJob::retrieveSyncPalMapIt(const int syncDbId) const {
     const auto result = _commManager->appServer().syncPalMap().find(syncDbId);
 
     if (result == _commManager->appServer().syncPalMap().end()) {
@@ -900,11 +900,11 @@ SyncPalMap::const_iterator ExtensionJob::retrieveSyncPalMapIt(const int syncDbId
     return result;
 }
 
-VfsMap::const_iterator ExtensionJob::retrieveVfsMapIt(const int syncDbId) const {
+VfsMap::iterator ExtensionJob::retrieveVfsMapIt(const int syncDbId) const {
     const auto result = _commManager->appServer().vfsMap().find(syncDbId);
-    if (result == _commManager->appServer().vfsMap().cend()) {
+    if (result == _commManager->appServer().vfsMap().end()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in VfsMap - syncDbId=" << syncDbId);
-        return _commManager->appServer().vfsMap().cend();
+        return _commManager->appServer().vfsMap().end();
     }
 
     return result;

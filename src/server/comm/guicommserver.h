@@ -43,9 +43,9 @@ class GuiCommChannel : public SocketCommChannel {
 
 #if defined(KD_MACOS)
         // Run sendQuery xpc method - For tests only
-        static void runSendQuery(const CommString &query,
-                                 const std::function<void(std::shared_ptr<AbstractCommChannel>)> &readyReadCbk,
-                                 const std::function<void(const CommString &answer)> &answerCbk);
+        static void runProcessQuery(const CommString &query,
+                                    const std::function<void(std::shared_ptr<AbstractCommChannel>)> &readyReadCbk,
+                                    const std::function<void(const CommString &answer)> &answerCbk);
 #endif
 
     private:

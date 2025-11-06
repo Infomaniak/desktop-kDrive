@@ -1122,20 +1122,18 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
 
             ExitInfo mainExitInfo = ExitCode::Ok;
-            bool start = true;
-            if (const auto exitInfo = tryCreateAndStartVfs(sync); !exitInfo) {
+            bool startPostponed = false;
+            if (const auto exitInfo = tryCreateAndStartVfs(sync, startPostponed); !exitInfo) {
                 LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " : " << exitInfo);
                 if (!(exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::LiteSyncNotAllowed)) {
                     resultStream << toInt(exitInfo.code());
                     break;
                 }
-                // Continue (ie. Init SyncPal but don't start it)
                 mainExitInfo = exitInfo;
-                start = false;
             }
 
             if (const auto exitInfo =
-                        initSyncPal(sync, NodeSet(), NodeSet(), NodeSet(), start, std::chrono::seconds(0), true, false);
+                        initSyncPal(sync, NodeSet(), NodeSet(), NodeSet(), !startPostponed, std::chrono::seconds(0), true, false);
                 !exitInfo) {
                 LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " : " << exitInfo);
                 addError(Error(ERR_ID, exitInfo));
@@ -1181,24 +1179,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             resultStream << ExitCode::Ok;
             resultStream << status;
-            break;
-        }
-        case RequestNum::SYNC_ISRUNNING: {
-            int syncDbId;
-            QDataStream paramsStream(params);
-            paramsStream >> syncDbId;
-
-            if (_syncPalMap.find(syncDbId) == _syncPalMap.end()) {
-                LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << syncDbId);
-                resultStream << ExitCode::DataError;
-                resultStream << false;
-                break;
-            }
-
-            bool isRunning = _syncPalMap[syncDbId]->isRunning();
-
-            resultStream << ExitCode::Ok;
-            resultStream << isRunning;
             break;
         }
         case RequestNum::SYNC_ADD:
@@ -1289,38 +1269,19 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     return;
                 }
 
-                bool start = true;
-                if (const auto exitInfo = tryCreateAndStartVfs(sync); !exitInfo) {
+                bool startPostponed = false;
+                if (const auto exitInfo = tryCreateAndStartVfs(sync, startPostponed); !exitInfo) {
                     LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " : " << exitInfo);
                     if (!(exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::LiteSyncNotAllowed)) {
                         return;
                     }
-                    // Continue (ie. Init SyncPal but don't start it)
-                    start = false;
                 }
 
                 // Create and start SyncPal
-                if (const auto exitInfo =
-                            initSyncPal(sync, blackList, QSet<QString>(), whiteList, start, std::chrono::seconds(0), false, true);
+                if (const auto exitInfo = initSyncPal(sync, blackList, QSet<QString>(), whiteList, !startPostponed,
+                                                      std::chrono::seconds(0), false, true);
                     !exitInfo) {
-                    LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << syncInfo.dbId() << " : " << exitInfo);
-                    addError(Error(ERR_ID, exitInfo));
-
-                    // Stop sync and remove it from syncPalMap
-                    if (const auto exitInfo2 = stopSyncPal(syncInfo.dbId(), false, true, true); !exitInfo2) {
-                        LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncInfo.dbId() << " : " << exitInfo2);
-                    }
-
-                    // Stop Vfs
-                    if (const auto exitInfo2 = stopVfs(syncInfo.dbId(), true); !exitInfo2) {
-                        LOG_WARN(_logger, "Error in stopVfs for syncDbId=" << syncInfo.dbId() << " : " << exitInfo2);
-                    }
-
-                    LOG_IF_FAIL(!_syncPalMap[syncInfo.dbId()] || _syncPalMap[syncInfo.dbId()].use_count() == 1)
-                    _syncPalMap.erase(syncInfo.dbId());
-
-                    LOG_IF_FAIL(!_vfsMap[syncInfo.dbId()] || _vfsMap[syncInfo.dbId()].use_count() == 1)
-                    _vfsMap.erase(syncInfo.dbId());
+                    stopSyncTask(syncInfo.dbId());
 
                     // Delete sync from DB
                     if (const ExitInfo exitInfo2 = ServerRequests::deleteSync(syncInfo.dbId()); !exitInfo2) {
@@ -2724,7 +2685,8 @@ std::string liteSyncActivationLogMessage(bool enabled, int syncDbId) {
 }
 
 // This function will pause the synchronization in case of errors.
-ExitInfo AppServer::tryCreateAndStartVfs(const Sync &sync) noexcept {
+ExitInfo AppServer::tryCreateAndStartVfs(const Sync &sync, bool &startPostponed) noexcept {
+    startPostponed = false;
     const std::string liteSyncMsg = liteSyncActivationLogMessage(sync.virtualFileMode() != VirtualFileMode::Off, sync.dbId());
     LOG_INFO(_logger, liteSyncMsg);
     if (const auto exitInfo = createAndStartVfs(sync); !exitInfo) {
@@ -2732,6 +2694,9 @@ ExitInfo AppServer::tryCreateAndStartVfs(const Sync &sync) noexcept {
             LOG_WARN(_logger, "Error in createAndStartVfs for syncDbId=" << sync.dbId() << " : " << exitInfo << ", pausing.");
             addError(Error(sync.dbId(), ERR_ID, exitInfo));
         }
+        // Continue. The sync will be initialized but paused.
+        // The sync will start when the VFS plugin will be ready (sync folder accessible and permissions granted by the user).
+        startPostponed = true;
         return exitInfo;
     }
 
@@ -2814,22 +2779,21 @@ ExitInfo AppServer::startSyncs(User &user) {
                     continue;
                 }
 
-                bool start = !user.keychainKey().empty();
-
-                if (const auto exitInfo = tryCreateAndStartVfs(sync); !exitInfo) {
+                bool startPostponed = false;
+                if (const auto exitInfo = tryCreateAndStartVfs(sync, startPostponed); !exitInfo) {
                     LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " : " << exitInfo);
                     mainExitInfo.merge(exitInfo, {ExitCode::SystemError});
                     if (!(exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::LiteSyncNotAllowed)) {
                         continue;
                     }
-                    // Continue (i.e. Init SyncPal but don't start it)
-                    start = false;
                 }
+
+                startPostponed |= user.keychainKey().empty();
 
                 // Create and start SyncPal
                 startDelay += std::chrono::seconds(START_SYNCPALS_TIME_GAP);
-                if (const auto exitInfo =
-                            initSyncPal(sync, blackList, undecidedList, QSet<QString>(), start, startDelay, false, false);
+                if (const auto exitInfo = initSyncPal(sync, blackList, undecidedList, QSet<QString>(), !startPostponed,
+                                                      startDelay, false, false);
                     !exitInfo) {
                     LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " : " << exitInfo);
                     addError(Error(sync.dbId(), ERR_ID, exitInfo));
@@ -3841,15 +3805,13 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
         _vfsMap.erase(syncDbId);
 
         ExitInfo mainExitInfo = ExitCode::Ok;
-        bool start = true;
-        if (const auto exitInfo = tryCreateAndStartVfs(sync); !exitInfo) {
+        bool startPostponed = false;
+        if (const auto exitInfo = tryCreateAndStartVfs(sync, startPostponed); !exitInfo) {
             LOG_WARN(_logger, "Error in tryCreateAndStartVfs: " << exitInfo);
             if (!(exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::LiteSyncNotAllowed)) {
                 return exitInfo;
             }
-            // Continue (ie. Update SyncPal and convert the sync dir but don't start SyncPal)
             mainExitInfo = exitInfo;
-            start = false;
         }
 
         // Update SyncPal
@@ -3874,7 +3836,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
             // Notify conversion completed
             sendVfsConversionCompleted(sync.dbId());
 
-            if (start) {
+            if (!startPostponed) {
                 // Re-start sync
                 _syncPalMap[syncDbId]->start();
             }

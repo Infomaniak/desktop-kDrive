@@ -44,7 +44,7 @@ ExitInfo DriveSearchJob::deserializeInputParms() {
     try {
         readParamValue(inParamsDriveDbId, _driveDbId);
         readParamValue(inParamsSearchString, _searchString);
-    } catch (std::exception &e) {
+    } catch (const std::exception &e) {
         LOG_WARN(_logger, "Exception in AbstractGuiJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
     }

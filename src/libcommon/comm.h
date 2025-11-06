@@ -60,7 +60,6 @@ enum class RequestNum {
     SYNC_START,
     SYNC_STOP,
     SYNC_STATUS,
-    SYNC_ISRUNNING,
     SYNC_ADD,
     SYNC_ADD2,
     SYNC_START_AFTER_LOGIN,
@@ -152,8 +151,6 @@ inline std::string toString(RequestNum e) {
             return "SYNC_STOP";
         case RequestNum::SYNC_STATUS:
             return "SYNC_STATUS";
-        case RequestNum::SYNC_ISRUNNING:
-            return "SYNC_ISRUNNING";
         case RequestNum::SYNC_ADD:
             return "SYNC_ADD";
         case RequestNum::SYNC_ADD2:

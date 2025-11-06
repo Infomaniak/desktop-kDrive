@@ -763,7 +763,7 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
     ExitCode exitCode = ExitCode::Unknown;
     try {
         exitCode = updateNodeWithDb(_updateTree->rootNode());
-    } catch (std::exception &e) {
+    } catch (const std::exception &e) {
         LOG_WARN(_logger, "updateNodeWithDb failed: error=" << e.what());
         return ExitCode::DataError;
     }

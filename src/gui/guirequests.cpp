@@ -377,24 +377,6 @@ ExitCode GuiRequests::getSyncStatus(const int syncDbId, SyncStatus &status) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getSyncIsRunning(const int syncDbId, bool &running) {
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << syncDbId;
-
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::SYNC_ISRUNNING, params, results)) {
-        return ExitCode::SystemError;
-    }
-
-    auto exitCode = ExitCode::Unknown;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
-    resultStream >> running;
-
-    return exitCode;
-}
-
 ExitCode GuiRequests::getSyncIdSet(const int syncDbId, const SyncNodeType type, QSet<QString> &syncIdSet) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);

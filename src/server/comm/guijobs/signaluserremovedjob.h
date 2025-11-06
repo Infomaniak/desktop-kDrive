@@ -16,14 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
+
 #include "server/comm/guijobs/abstractguijob.h"
 
 namespace KDC {
 
 class SignalUserRemovedJob : public AbstractGuiJob {
     public:
-        SignalUserRemovedJob(std::shared_ptr<CommManager> commManager, std::shared_ptr<AbstractCommChannel> channel,
-                             int userDbId);
+        explicit SignalUserRemovedJob(int userDbId);
 
     private:
         // Output parameters

@@ -48,7 +48,7 @@ ExitInfo LoginRequestTokenJob::deserializeInputParms() {
     try {
         readParamValue(inParamsCode, _code);
         readParamValue(inParamsCodeVerifier, _codeVerifier);
-    } catch (std::exception &e) {
+    } catch (const std::exception &e) {
         LOG_WARN(_logger, "Exception in AbstractGuiJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
     }
@@ -82,13 +82,11 @@ ExitInfo LoginRequestTokenJob::process() {
     _userDbId = userInfo.dbId();
     AppServer::updateSentryUser();
     if (userCreated) {
-        auto signalUserAddedJob = std::make_shared<SignalUserAddedJob>(_commManager, _channel, userInfo);
-        // Add job to JobManager pool
-        GuiJobManagerSingleton::instance()->queueAsyncJob(signalUserAddedJob, Poco::Thread::PRIO_NORMAL);
+        auto signalUserAddedJob = std::make_shared<SignalUserAddedJob>(userInfo);
+        _commManager->sendGuiSignal(signalUserAddedJob);
     } else {
-        auto signalUserUpdatedJob = std::make_shared<SignalUserUpdatedJob>(_commManager, _channel, userInfo);
-        // Add job to JobManager pool
-        GuiJobManagerSingleton::instance()->queueAsyncJob(signalUserUpdatedJob, Poco::Thread::PRIO_NORMAL);
+        auto signalUserUpdatedJob = std::make_shared<SignalUserUpdatedJob>(userInfo);
+        _commManager->sendGuiSignal(signalUserUpdatedJob);
     }
 
     return ExitCode::Ok;
