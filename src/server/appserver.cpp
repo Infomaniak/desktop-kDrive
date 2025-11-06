@@ -270,7 +270,7 @@ void AppServer::init() {
 
 #if defined(KD_WINDOWS)
     // Update shortcuts
-    _navigationPaneHelper = std::unique_ptr<NavigationPaneHelper>(new NavigationPaneHelper());
+    _navigationPaneHelper = std::make_unique<NavigationPaneHelper>();
     _navigationPaneHelper->setShowInExplorerNavigationPane(false);
     if (ParametersCache::instance()->parameters().showShortcuts()) {
         _navigationPaneHelper->setShowInExplorerNavigationPane(true);
@@ -3889,7 +3889,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
         }
 
         // Delete/create Vfs
-        const std::scoped_lock lock(_vfsMapMutex);
+        const std::scoped_lock lock2(_vfsMapMutex);
         _vfsMap.erase(syncDbId);
 
         ExitInfo mainExitInfo = ExitCode::Ok;
@@ -3915,7 +3915,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
         QTimer::singleShot(100, this, [=, this]() {
             if (newMode != VirtualFileMode::Off) {
                 // Clear file system
-                const std::scoped_lock lock(_vfsMapMutex);
+                const std::scoped_lock lock3(_vfsMapMutex);
                 _vfsMap[sync.dbId()]->convertDirContentToPlaceholder(SyncName2QStr(sync.localPath()), true);
             }
 
@@ -3929,7 +3929,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
 
             if (start) {
                 // Re-start sync
-                const std::scoped_lock lock(_syncPalMapMutex);
+                const std::scoped_lock lock3(_syncPalMapMutex);
                 _syncPalMap[syncDbId]->start();
             }
         });
@@ -4384,7 +4384,7 @@ void AppServer::onRestartSyncs() {
 
             const std::scoped_lock lock(_syncPalMapMutex);
             for (const auto &syncPalMapElt: _syncPalMap) {
-                const std::scoped_lock lock(_vfsMapMutex);
+                const std::scoped_lock lock2(_vfsMapMutex);
                 if (_vfsMap[syncPalMapElt.first]->mode() == VirtualFileMode::Mac) {
                     // Ask client to refresh SyncPal error list
                     sendErrorsCleared(syncPalMapElt.first);
