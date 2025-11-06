@@ -54,6 +54,9 @@ open class TargetAssembly {
             },
             Factory(type: XPCSignalHandlerProtocol.self) { _, _ in
                 XPCSignalHandler()
+            },
+            Factory(type: XPCRequestIDGenerator.self) { _, _ in
+                XPCRequestIDGenerator()
             }
         ]
     }

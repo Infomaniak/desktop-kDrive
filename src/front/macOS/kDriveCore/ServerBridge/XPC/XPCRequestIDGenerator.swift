@@ -16,11 +16,12 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// Mimic the server using an autoincrement id to debug async comms. This is used when we send something to the server on our side.
-actor RequestIDGenerator {
+/// Mimic the server using an auto-increment id to debug async comms.
+/// This is used when we send something to the server on our side.
+actor XPCRequestIDGenerator {
     private var counter: Int32 = 0
 
-    func nextID() -> Int32 {
+    var nextID: Int32 {
         if counter == Int32.max {
             counter = 0
         } else {
@@ -29,13 +30,11 @@ actor RequestIDGenerator {
         return counter
     }
 
-    func reset() {
-        counter = 0
-    }
-
-    func currentID() -> Int32 {
+    var currentID: Int32 {
         return counter
     }
 
-    static let shared = RequestIDGenerator()
+    func reset() {
+        counter = 0
+    }
 }
