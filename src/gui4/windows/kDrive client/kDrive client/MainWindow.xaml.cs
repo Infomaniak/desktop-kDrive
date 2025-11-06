@@ -20,6 +20,7 @@ using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using System;
 using System.Linq;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -60,6 +61,10 @@ namespace Infomaniak.kDrive
                     case "StoragePage":
                         contentFrame.Navigate(typeof(Pages.StoragePage));
                         break;
+                    case "OpenFileExplorer":
+                        SyncPath? targetPath = ViewModel.SelectedSync?.LocalPath;
+                        Utility.OpenFolderSecurely(/*targetPath*/@"C:\Users");  // TODO : add back targetPath when real sync are functionnal
+                        break;
                     default:
                         Logger.Log(Logger.Level.Warning, $"Unknown navigation tag: {selectedItem.Tag}... Going to HomePage");
                         contentFrame.Navigate(typeof(Pages.HomePage));
@@ -74,7 +79,6 @@ namespace Infomaniak.kDrive
             {
                 contentFrame.GoBack();
                 navView.SelectedItem = navView.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item => item.Tag.ToString() == ((Frame)contentFrame).Content.GetType().Name);
-
             }
         }
     }

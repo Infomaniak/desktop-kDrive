@@ -133,9 +133,9 @@
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
                 <NavigationViewItem x:Uid="W_MainWindow_NavBar_Folder"
-                                    Tag="SamplePage4"
+                                    Tag="OpenFileExplorer"
                                     MinHeight="30"
-                                    IsEnabled="False">
+                                    IsEnabled="True">
                     <NavigationViewItem.Icon>
                         <SymbolIcon Symbol="Folder" />
                     </NavigationViewItem.Icon>

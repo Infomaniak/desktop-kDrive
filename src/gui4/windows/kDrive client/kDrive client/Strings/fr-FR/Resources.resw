@@ -135,7 +135,7 @@
     <value>Stockage</value>
   </data>
   <data name="W_MainWindow_NavBar_Folder.Content" xml:space="preserve">
-    <value>Dossier kDrive</value>
+    <value>Ouvrir l'explorateur</value>
   </data>
   <data name="W_MainWindow_TitleBar_SearchBox.PlaceholderText" xml:space="preserve">
     <value>Rechercher dans {{ TODO }}</value>
