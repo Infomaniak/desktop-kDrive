@@ -51,6 +51,9 @@ open class TargetAssembly {
             },
             Factory(type: XPCQueryFetcherProtocol.self) { _, _ in
                 XPCQueryFetcher()
+            },
+            Factory(type: XPCSignalHandlerProtocol.self) { _, _ in
+                XPCSignalHandler()
             }
         ]
     }
