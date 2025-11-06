@@ -34,21 +34,8 @@ public struct LoginJob: Sendable {
     /// - Parameters:
     ///   - code: auth code
     ///   - verifier: auth verifier
-    /// - Returns: A user to the current state know by the client
-    public func loginAndFetchUser(code: String, verifier: String) async -> User? {
-        do {
-            let userDbId = try await loginUserQuery(code: code, verifier: verifier)
-            if let user = await coherentCache.getUser(dbId: userDbId) {
-                return user
-            }
-
-            // TODO:  Fetch user info from the server and store in cache
-            return nil
-        } catch {
-            // TODO: Specific error handling for comms layer
-            IKLogger.data.error("login comm error \(error)")
-            return nil
-        }
+    public func login(code: String, verifier: String) async throws {
+        try await loginUserQuery(code: code, verifier: verifier)
     }
 
     /// Login query, wraps XPC queries and Cache calls
@@ -56,6 +43,7 @@ public struct LoginJob: Sendable {
     ///   - code: auth code
     ///   - verifier: auth verifier
     /// - Returns: userDbId that can be used to fetch a user
+    @discardableResult
     private func loginUserQuery(code: String, verifier: String) async throws -> Int32 {
         IKLogger.data.log("Query for login token")
         let guiConnection = try await xpcConnectionProvider.guiConnection

@@ -61,11 +61,8 @@ extension OnboardingViewModel: InfomaniakLoginDelegate {
         isShowingAuthenticationWindow = false
 
         Task {
-            let user = try await LoginJob().loginAndFetchUser(code: code, verifier: verifier)
-            IKLogger.general.log("Login successful for user: \(user)")
-
-            // TODO: Get user + drives
-            // might not be useful here, there is a signal post login to fill user data
+            try await LoginJob().login(code: code, verifier: verifier)
+            IKLogger.general.log("Login successful")
 
             // TODO: remove
             Task { @MainActor in
