@@ -41,13 +41,7 @@
 
 namespace KDC {
 
-bool syncForPath(const std::filesystem::path &path, Sync &sync) {
-    std::vector<Sync> syncList;
-    if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
-        return false;
-    }
-
+bool syncForPath(const std::vector<Sync> &syncList, const SyncPath &path, Sync &sync) {
     for (const Sync &tmpSync: syncList) {
         if (CommonUtility::isSubDir(tmpSync.localPath(), path)) {
             sync = tmpSync;
@@ -56,6 +50,41 @@ bool syncForPath(const std::filesystem::path &path, Sync &sync) {
     }
 
     return false;
+}
+
+bool syncForPath(const SyncPath &path, Sync &sync) {
+    std::vector<Sync> syncList;
+    if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
+        return false;
+    }
+
+    return syncForPath(syncList, path, sync);
+}
+
+bool syncForPaths(const std::vector<SyncPath> &paths, Sync &sync) {
+    std::vector<Sync> syncList;
+    if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
+        return false;
+    }
+
+    for (const auto &path: paths) {
+        Sync tmpSync;
+        if (!syncForPath(syncList, path, tmpSync)) {
+            return false;
+        }
+        if (tmpSync.dbId() != sync.dbId()) {
+            if (!sync.dbId()) {
+                sync = tmpSync;
+            } else {
+                sync.setDbId(0);
+                break;
+            }
+        }
+    }
+
+    return true;
 }
 
 bool ExtensionJob::_dehydrationCanceled = false;
@@ -117,6 +146,13 @@ ExitInfo ExtensionJob::runJob() {
 }
 
 void ExtensionJob::commandGetMenuItems(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
+    const auto argumentList = CommonUtility::splitCommString(argument, messageArgSeparator);
+
+    if (argumentList.size() == 0) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Invalid argument - arg=" << CommonUtility::commString2WStr(argument));
+        return;
+    }
+
     {
         CommString response(Str("GET_MENU_ITEMS"));
         response.append(responseToFinderArgSeparator);
@@ -124,31 +160,18 @@ void ExtensionJob::commandGetMenuItems(const CommString &argument, std::shared_p
         channel->sendMessage(response);
     }
 
-    const auto files = CommonUtility::splitCommString(argument, messageArgSeparator);
-
     // Find the common sync
+    std::vector<SyncPath> paths;
+    std::copy(argumentList.begin(), argumentList.end(), std::back_inserter(paths));
+
     Sync sync;
-    for (const auto &file: files) {
-        Sync tmpSync;
-        if (!syncForPath(file, tmpSync)) {
-            return;
-        }
-        if (tmpSync.dbId() != sync.dbId()) {
-            if (!sync.dbId()) {
-                sync = tmpSync;
-            } else {
-                sync.setDbId(0);
-                break;
-            }
-        }
-    }
+    if (!syncForPaths(paths, sync)) return;
 
     if (sync.dbId()) {
         // Find SyncPal and Vfs associated to sync
-        const std::scoped_lock lock(AppServer::_syncPalMapMutex);
-        const auto syncPalMapIt = retrieveSyncPalMapIt(sync.dbId());
+        const std::scoped_lock lock(AppServer::_syncPalMapMutex, AppServer::_vfsMapMutex);
 
-        const std::scoped_lock lock2(AppServer::_vfsMapMutex);
+        const auto syncPalMapIt = retrieveSyncPalMapIt(sync.dbId());
         const auto vfsMapIt = retrieveVfsMapIt(sync.dbId());
 
         if (syncPalMapIt != AppServer::_syncPalMap.end() && vfsMapIt != AppServer::_vfsMap.end()) {
@@ -164,24 +187,22 @@ void ExtensionJob::commandGetMenuItems(const CommString &argument, std::shared_p
             }
 
             // File availability actions
-            if (sync.dbId() && sync.virtualFileMode() != VirtualFileMode::Off && vfsMapIt->second->showPinStateActions()) {
-                LOG_IF_FAIL(Log::instance()->getLogger(), !files.empty());
-
+            if (sync.virtualFileMode() != VirtualFileMode::Off && vfsMapIt->second->showPinStateActions()) {
                 // Some options only show for single files
                 bool isSingleFile = false;
-                if (files.size() == 1) {
-                    manageActionsOnSingleFile(channel, files, syncPalMapIt, vfsMapIt, sync);
+                if (paths.size() == 1) {
+                    manageActionsOnSingleFile(channel, paths[0], syncPalMapIt, vfsMapIt, sync);
 
-                    isSingleFile = QFileInfo(CommonUtility::commString2QStr(files[0])).isFile();
+                    isSingleFile = QFileInfo(CommonUtility::commString2QStr(paths[0])).isFile();
                 }
 
                 bool canHydrate = true;
                 bool canDehydrate = true;
                 bool canCancelHydration = false;
-                for (const auto &file: files) {
+                for (const auto &path: paths) {
                     VfsStatus vfsStatus;
-                    if (!canCancelHydration && vfsMapIt->second->status(file, vfsStatus) && vfsStatus.isSyncing) {
-                        canCancelHydration = syncPalMapIt->second->isDownloadOngoing(file);
+                    if (!canCancelHydration && vfsMapIt->second->status(path, vfsStatus) && vfsStatus.isSyncing) {
+                        canCancelHydration = syncPalMapIt->second->isDownloadOngoing(path);
                     }
 
                     if (isSingleFile) {
@@ -191,8 +212,8 @@ void ExtensionJob::commandGetMenuItems(const CommString &argument, std::shared_p
                 }
 
                 // TODO: Should be a submenu, should use icons
-                auto makePinContextMenu = [&](bool makeAvailableLocally, bool freeSpace, bool cancelDehydration,
-                                              bool cancelHydration) {
+                auto makePinContextMenu = [this, channel](bool makeAvailableLocally, bool freeSpace, bool cancelDehydration,
+                                                          bool cancelHydration) {
                     buildAndSendMenuItemMessage(channel, Str("MAKE_AVAILABLE_LOCALLY_DIRECT"), makeAvailableLocally,
                                                 vfsPinActionText());
 
@@ -211,9 +232,8 @@ void ExtensionJob::commandGetMenuItems(const CommString &argument, std::shared_p
             }
 #elif defined(KD_WINDOWS)
             // Some options only show for single files
-            bool isSingleFile = false;
             if (files.size() == 1) {
-                manageActionsOnSingleFile(channel, files, syncPalMapIt, vfsMapIt, sync);
+                manageActionsOnSingleFile(channel, paths[0], syncPalMapIt, vfsMapIt, sync);
             }
 #endif
         }
@@ -430,113 +450,84 @@ void ExtensionJob::commandRetrieveFileStatus(const CommString &argument, std::sh
 
 #if defined(KD_WINDOWS)
 void ExtensionJob::commandGetAllMenuItems(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
-    auto argumentList = CommonUtility::splitCommString(argument, messageArgSeparator);
+    const auto argumentList = CommonUtility::splitCommString(argument, messageArgSeparator);
+
+    if (argumentList.size() < 2) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Invalid argument - arg=" << CommonUtility::commString2WStr(argument));
+        return;
+    }
 
     CommString msgId = argumentList[0];
-    argumentList.erase(argumentList.begin());
 
-    CommString response(msgId);
-    response.append(responseToFinderArgSeparator);
-    response.append(CommonUtility::str2CommString(Theme::instance()->appName()));
+    {
+        CommString response(msgId);
+        response.append(responseToFinderArgSeparator);
+        response.append(CommonUtility::str2CommString(Theme::instance()->appName()));
+        channel->sendMessage(response);
+    }
 
     // Find the common sync
+    std::vector<SyncPath> paths;
+    std::copy(argumentList.begin() + 1, argumentList.end(), std::back_inserter(paths));
+
     Sync sync;
-    for (const auto &filePathStr: argumentList) {
-        Sync tmpSync;
-        if (!syncForPath(filePathStr, tmpSync)) {
-            channel->sendMessage(response);
-            return;
-        }
+    if (!syncForPaths(paths, sync)) return;
 
-        if (tmpSync.dbId() != sync.dbId()) {
-            if (!sync.dbId()) {
-                sync = tmpSync;
-            } else {
-                sync.setDbId(0);
-                break;
-            }
-        }
-    }
-
-    const std::scoped_lock lock(AppServer::_syncPalMapMutex);
-    std::unordered_map<int, std::shared_ptr<SyncPal>>::const_iterator syncPalMapIt;
-    const std::scoped_lock lock2(AppServer::_vfsMapMutex);
-    std::unordered_map<int, std::shared_ptr<Vfs>>::const_iterator vfsMapIt;
     if (sync.dbId()) {
-        syncPalMapIt = retrieveSyncPalMapIt(sync.dbId());
-        if (syncPalMapIt == AppServer::_syncPalMap.end()) {
-            channel->sendMessage(response);
-            return;
-        }
+        const std::scoped_lock lock(AppServer::_syncPalMapMutex, AppServer::_vfsMapMutex);
 
-        vfsMapIt = retrieveVfsMapIt(sync.dbId());
-        if (vfsMapIt == AppServer::_vfsMap.end()) {
-            channel->sendMessage(response);
-            return;
-        }
-    }
+        const auto syncPalMapIt = retrieveSyncPalMapIt(sync.dbId());
+        const auto vfsMapIt = retrieveVfsMapIt(sync.dbId());
 
-    response.append(responseToFinderArgSeparator);
-    response.append(sync.dbId() ? Vfs::modeToString(vfsMapIt->second->mode()) : Str(""));
-
-    // Some options only show for single files
-    if (argumentList.size() == 1) {
-        FileData fileData = FileData::get(argumentList[0]);
-        NodeId nodeId;
-        ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(fileData.relativePath, nodeId);
-        if (exitCode != ExitCode::Ok) {
-            LOGW_WARN(Log::instance()->getLogger(),
-                      L"Error in SyncPal::itemId - " << Utility::formatSyncPath(fileData.relativePath));
-            channel->sendMessage(response);
-            return;
-        }
-        bool isOnTheServer = !nodeId.empty();
-
-        if (sync.dbId()) {
-            addSharingContextMenuOptions(fileData, response);
+        if (syncPalMapIt != AppServer::_syncPalMap.end() && vfsMapIt != AppServer::_vfsMap.end()) {
+            CommString response;
             response.append(responseToFinderArgSeparator);
-            response.append(Str("OPEN_PRIVATE_LINK"));
-            response.append(responseToFinderArgSeparator);
-            response.append(isOnTheServer ? Str("") : Str("d"));
-            response.append(responseToFinderArgSeparator);
-            response.append(openInBrowserText());
-        }
-    }
+            response.append(sync.dbId() ? Vfs::modeToString(vfsMapIt->second->mode()) : Str(""));
 
-    bool canCancelHydration = false;
-    bool canCancelDehydration = false;
+            // Some options only show for single files
+            if (paths.size() == 1) {
+                FileData fileData = FileData::get(paths[0]);
+                NodeId nodeId;
+                ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(fileData.relativePath, nodeId);
+                if (exitCode != ExitCode::Ok) {
+                    LOGW_WARN(Log::instance()->getLogger(),
+                              L"Error in SyncPal::itemId - " << Utility::formatSyncPath(fileData.relativePath));
+                    return;
+                }
+                bool isOnTheServer = !nodeId.empty();
 
-    // File availability actions
-    if (sync.dbId() && sync.virtualFileMode() != VirtualFileMode::Off) {
-        LOG_IF_FAIL(Log::instance()->getLogger(), !argumentList.empty());
-
-        for (const auto &filePathStr: argumentList) {
-            SyncPath filePath(filePathStr);
-            auto fileData = FileData::get(filePath);
-            if (syncPalMapIt->second->isDownloadOngoing(fileData.relativePath)) {
-                canCancelHydration = true;
-                break;
+                addSharingContextMenuOptions(fileData, response);
+                response.append(responseToFinderArgSeparator);
+                response.append(Str("OPEN_PRIVATE_LINK"));
+                response.append(responseToFinderArgSeparator);
+                response.append(isOnTheServer ? Str("") : Str("d"));
+                response.append(responseToFinderArgSeparator);
+                response.append(openInBrowserText());
             }
+
+            // File availability actions
+            bool canCancelHydration = false;
+            if (sync.virtualFileMode() != VirtualFileMode::Off) {
+                for (const auto &path: paths) {
+                    auto fileData = FileData::get(path);
+                    if (syncPalMapIt->second->isDownloadOngoing(fileData.relativePath)) {
+                        canCancelHydration = true;
+                        break;
+                    }
+                }
+            }
+
+            if (canCancelHydration) {
+                response.append(responseToFinderArgSeparator);
+                response.append(Str("CANCEL_HYDRATION_DIRECT"));
+                response.append(responseToFinderArgSeparator);
+                response.append(responseToFinderArgSeparator);
+                response.append(cancelHydrationText());
+            }
+
+            channel->sendMessage(response);
         }
     }
-
-    if (canCancelDehydration) {
-        response.append(responseToFinderArgSeparator);
-        response.append(Str("CANCEL_DEHYDRATION_DIRECT"));
-        response.append(responseToFinderArgSeparator);
-        response.append(responseToFinderArgSeparator);
-        response.append(cancelDehydrationText());
-    }
-
-    if (canCancelHydration) {
-        response.append(responseToFinderArgSeparator);
-        response.append(Str("CANCEL_HYDRATION_DIRECT"));
-        response.append(responseToFinderArgSeparator);
-        response.append(responseToFinderArgSeparator);
-        response.append(cancelHydrationText());
-    }
-
-    channel->sendMessage(response);
 }
 
 void ExtensionJob::commandGetThumbnail(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
@@ -722,11 +713,11 @@ void ExtensionJob::commandSetThumbnail(const CommString &argument, std::shared_p
     }
 
     // Find SyncPal and Vfs associated to sync
-    const std::scoped_lock lock(AppServer::_syncPalMapMutex);
+    const std::scoped_lock lock(AppServer::_syncPalMapMutex, AppServer::_vfsMapMutex);
+
     const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
     if (syncPalMapIt == AppServer::_syncPalMap.end()) return;
 
-    const std::scoped_lock lock2(AppServer::_vfsMapMutex);
     const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
     if (vfsMapIt == AppServer::_vfsMap.end()) return;
 
@@ -780,16 +771,16 @@ void ExtensionJob::executeCommand(const CommString &commandLineStr, std::shared_
     _commands[command](argument, channel);
 }
 
-void ExtensionJob::manageActionsOnSingleFile(std::shared_ptr<AbstractCommChannel> channel, const std::vector<CommString> &files,
+void ExtensionJob::manageActionsOnSingleFile(std::shared_ptr<AbstractCommChannel> channel, const SyncPath &path,
                                              SyncPalMap::const_iterator syncPalMapIt, VfsMap::const_iterator vfsMapIt,
                                              const Sync &sync) {
     bool exists = false;
     IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(files[0], exists, ioError) || !exists) {
+    if (!IoHelper::checkIfPathExists(path, exists, ioError) || !exists) {
         return;
     }
 
-    FileData fileData = FileData::get(files[0]);
+    FileData fileData = FileData::get(path);
     if (fileData.localPath.empty()) {
         return;
     }
@@ -862,7 +853,8 @@ bool ExtensionJob::syncFileStatus(const FileData &fileData, SyncFileStatus &stat
 
     if (!fileData.syncDbId) return false;
 
-    const std::scoped_lock lock(AppServer::_syncPalMapMutex);
+    const std::scoped_lock lock(AppServer::_syncPalMapMutex, AppServer::_vfsMapMutex);
+
     const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
     if (syncPalMapIt == AppServer::_syncPalMap.end()) return false;
 
@@ -878,7 +870,6 @@ bool ExtensionJob::syncFileStatus(const FileData &fileData, SyncFileStatus &stat
         status = SyncFileStatus::Success;
     }
 
-    const std::scoped_lock lock2(AppServer::_vfsMapMutex);
     const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
     if (vfsMapIt == AppServer::_vfsMap.end()) return false;
 
@@ -955,11 +946,11 @@ bool ExtensionJob::addDownloadJob(const FileData &fileData, const SyncPath &pare
 }
 
 bool ExtensionJob::cancelDownloadJobs(int syncDbId, const std::vector<CommString> &fileList) {
-    const std::scoped_lock lock(AppServer::_syncPalMapMutex);
+    const std::scoped_lock lock(AppServer::_syncPalMapMutex, AppServer::_vfsMapMutex);
+
     const auto syncPalMapIt = retrieveSyncPalMapIt(syncDbId);
     if (syncPalMapIt == AppServer::_syncPalMap.end()) return false;
 
-    const std::scoped_lock lock2(AppServer::_vfsMapMutex);
     const auto vfsMapIt = retrieveVfsMapIt(syncDbId);
     if (vfsMapIt == AppServer::_vfsMap.end()) return false;
 
