@@ -141,6 +141,11 @@ void AppServer::init() {
     setWindowIcon(_theme->applicationIcon());
     setApplicationVersion(QString::fromStdString(_theme->version()));
 
+    // Setup logging with default parameters
+    if (!initLogging()) {
+        throw std::runtime_error("Unable to init logging.");
+    }
+
     parseOptions(_arguments);
     if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked) {
         std::cout << "Command line options processed" << std::endl;
@@ -150,11 +155,6 @@ void AppServer::init() {
     if (isRunning()) {
         std::cout << "AppServer already running" << std::endl;
         return;
-    }
-
-    // Setup logging with default parameters
-    if (!initLogging()) {
-        throw std::runtime_error("Unable to init logging.");
     }
 
     // Cleanup at quit
