@@ -249,15 +249,23 @@ namespace Infomaniak.kDrive.Pages
             if (drive is Drive)
             {
                 Logger.Log(Logger.Level.Info, $"ManageDriveButton clicked for configured drive {drive.Name}, going to mange page");
+                // TODO: Implement navigation to Manage Drive Page
             }
             else if (drive is DriveAvailable)
             {
                 Logger.Log(Logger.Level.Info, $"ManageDriveButton clicked for unconfigured drive {drive.Name}, going to onboarding page");
+                // TODO: Implement navigation to Onboarding Page
             }
             else
             {
                 Logger.Log(Logger.Level.Error, "ManageDriveButton clicked but Tag is not a valid IDrive");
             }
+        }
+
+        private void SyncRulesCard_Clicked(object sender, RoutedEventArgs e)
+        {
+            Logger.Log(Logger.Level.Info, "Navigating to Sync Rules Page from Settings Page");
+            // TODO: Implement navigation to Sync Rules Page
         }
     }
 
