@@ -25,7 +25,7 @@ namespace KDC {
 
 class SignalSyncAddedJob : public AbstractGuiJob {
     public:
-        SignalSyncAddedJob(const SyncInfo &syncInfo);
+        explicit SignalSyncAddedJob(const SyncInfo &syncInfo);
 
     private:
         // Output parameters

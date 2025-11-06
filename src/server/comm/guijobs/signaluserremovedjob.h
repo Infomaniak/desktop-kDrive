@@ -24,7 +24,7 @@ namespace KDC {
 
 class SignalUserRemovedJob : public AbstractGuiJob {
     public:
-        SignalUserRemovedJob(int userDbId);
+        explicit SignalUserRemovedJob(int userDbId);
 
     private:
         // Output parameters

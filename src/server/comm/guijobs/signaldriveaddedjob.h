@@ -25,7 +25,7 @@ namespace KDC {
 
 class SignalDriveAddedJob : public AbstractGuiJob {
     public:
-        SignalDriveAddedJob(const DriveInfo &driveInfo);
+        explicit SignalDriveAddedJob(const DriveInfo &driveInfo);
 
     private:
         // Output parameters
