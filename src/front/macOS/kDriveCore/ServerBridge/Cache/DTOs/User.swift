@@ -52,3 +52,22 @@ public struct User: Identifiable, Hashable, Sendable {
         self.isStaff = isStaff
     }
 }
+
+public extension User {
+    func updated(with other: User) -> User? {
+        guard other.id == id else {
+            return nil
+        }
+
+        return User(
+            dbId: dbId,
+            userId: userId,
+            name: other.name.isEmpty ? name : other.name,
+            email: other.email.isEmpty ? email : other.email,
+            accounts: other.accounts,
+            avatar: other.avatar,
+            isConnected: other.isConnected,
+            isStaff: other.isStaff
+        )
+    }
+}

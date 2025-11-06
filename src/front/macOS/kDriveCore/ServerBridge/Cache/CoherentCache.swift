@@ -98,8 +98,13 @@ public actor CoherentCache: CoherentCacheProtocol, CoherentCacheObservation {
     }
 
     public func updateUser(_ user: User) {
-        // TODO: Diff merge, not swap
-        users[user.id] = user
+        if let existingUser = users[user.id],
+           let updatedUser = existingUser.updated(with: user) {
+            users[user.id] = updatedUser
+        } else {
+            users[user.id] = user
+        }
+
         usersSubject.send(users)
     }
 
