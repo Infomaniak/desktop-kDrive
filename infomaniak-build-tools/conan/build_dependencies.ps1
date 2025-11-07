@@ -37,10 +37,13 @@
     Switch indicating that the script is running on a CI service.
 
 .PARAMETER OutputDir
-    Custom output directory for Conan installation. If not provided, defaults to ./build-windows\build in the repo root.
+    Custom output directory for Conan installation. If not provided, defaults to .\build-windows\build in the repo root.
 
 .PARAMETER MakeRelease
     Use the 'infomaniak_release' Conan profile.
+
+.PARAMETER UpdateEnvironment
+    Update environment variables after installation.
 #>
 
 param(

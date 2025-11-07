@@ -2,7 +2,7 @@
 
 - [kDrive files](#kdrive-files)
 - [Installation Requirements](#installation-requirements)
-    - [Qt 6.2.3](#qt-623)
+    - [Qt 6.10.0](#qt-610)
     - [Sentry](#sentry)
     - [Poco](#poco)
     - [CPPUnit](#cppunit)
@@ -59,16 +59,17 @@ When installing `Visual Studio 2019`, select the following components:
 - Windows 11 SDK (10.0.22000.0)
 - Windows 10 SDK (10.0.17763.0)
 - Windows 10 SDK (10.0.20348.0)
-## Qt 6.2.3
+
+## Qt 6.10.0
 
 From the [Qt Installer](https://www.qt.io/download-qt-installer-oss?hsCtaTracking=99d9dd4f-5681-48d2-b096-470725510d34%7C074ddad0-fdef-4e53-8aa8-5e8a876d6ab4), 
 tick the **Archive** box and then press the `Refresh` button to see earlier `Qt` versions.  
-In `Qt 6.2.3`, select:
+In `Qt 6.10.0`, select:
 - MSVC 2019 64-bit
 - Sources
 - Qt 5 Compatibility Module
 
-In `Qt 6.2.3 Additional Libraries`, select :
+In `Qt 6.10.0 Additional Libraries`, select :
 - Qt WebEngine
 - Qt Positioning
 - Qt WebChannel
@@ -79,9 +80,9 @@ In `Developer and Designer Tools` (should be selected by default):
 - CMake
 - Ninja
 
-Add an environment variable named `QTDIR`, set with the path of your Qt msvc folder (which defaults to `C:\Qt\6.2.3\msvc2019_64`).
+Add an environment variable named `QTDIR`, set with the path of your Qt msvc folder (which defaults to `C:\Qt\6.10.0\msvc2022_64`).
 Add to the following paths to your `PATH` or adapt them to the actual location of your Qt folder if needed:
-- `C:\Qt\6.2.3\msvc2019_64\bin`
+- `C:\Qt\6.10.0\msvc2022_64\bin`
 - `C:\Qt\Tools\CMake_64\bin`
 
 ## Sentry
@@ -296,7 +297,7 @@ The project requires additional CMake variables for a correct build. To inject t
    set(APPLICATION_CLIENT_EXECUTABLE "kdrive_client")
    set(KDRIVE_THEME_DIR "F:/Projects/desktop-kDrive/infomaniak")
    set(BUILD_UNIT_TESTS "ON")      # Set to "OFF" to skip tests
-   set(CMAKE_PREFIX_PATH "C:/Qt/6.2.3/msvc2019_64")
+   set(CMAKE_PREFIX_PATH "C:/Qt/6.10.0/msvc2022_64")
    set(CMAKE_INSTALL_PREFIX "F:/Projects/cmake-build-release_CLion")
    set(ZLIB_INCLUDE_DIR "C:/Program Files (x86)/zlib-1.2.11/include")
    set(ZLIB_LIBRARY_RELEASE "C:/Program Files (x86)/zlib-1.2.11/lib/zlib.lib")
@@ -307,6 +308,7 @@ The project requires additional CMake variables for a correct build. To inject t
 2. In your profile (`%USERPROFILE%/.conan2/profiles/default`), add under a new `[conf]` section:
    ```ini
    [conf]
+   tools.cmake.cmaketoolchain:generator=Ninja
    tools.cmake.cmaketoolchain:user_toolchain+={{profile_dir}}/debug_vars.cmake
    ```
 
@@ -360,7 +362,7 @@ You can disable QML debugger from the settings to avoid some error pop-ups.
 
 ### Additionnal Requirements
 
-To be able to properly debug, you will need to install the `Qt Debug Information Files` from the [`Qt 6.2.3` Section](#qt-623).
+To be able to properly debug, you will need to install the `Qt Debug Information Files` from the [`Qt 6.10.0` Section](#qt-610).
 If you cannot see it, you need to tick the **Archive** box and filter again.
 
 ### CMake Parameters
