@@ -306,7 +306,6 @@ namespace Infomaniak.kDrive.Pages
             if (!IsLoaded) return;
             ProxySaveProgressRing.Visibility = Visibility.Visible;
             ProxySettingsExpander.IsEnabled = false;
-            await Task.Delay(3000);
             await ViewModel.Settings.ChangeProxyConfiguration(ProxyHostTextBox.Text, int.Parse(ProxyPortTextBox.Text), ProxyNeedsAuthToggleSwitch.IsOn, ProxyUserTextBox.Text, ProxyPwdPasswordBox.Password);
             ProxySettingsExpander.IsEnabled = true;
             SaveProxySettingsCard.Visibility = Visibility.Collapsed;
