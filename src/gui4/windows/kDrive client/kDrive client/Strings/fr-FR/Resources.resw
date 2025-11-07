@@ -568,6 +568,42 @@ Ces données permettent à notre équipe de rapidement corriger et optimiser l�
   <data name="Page_SettingsPage_Privacy.Header" xml:space="preserve">
     <value>Gestion des données</value>
   </data>
+  <data name="Page_SettingsPage_Proxy.Header" xml:space="preserve">
+    <value>Paramètres Proxy</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_Type.Header" xml:space="preserve">
+    <value>Type de proxy</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_SaveButton.Content" xml:space="preserve">
+    <value>Sauvegarder</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_CancelButton.Content" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_Host.Header" xml:space="preserve">
+    <value>Serveur</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_Port.Header" xml:space="preserve">
+    <value>Port</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_NeedAuth.Header" xml:space="preserve">
+    <value>Authentification requise</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_User.Header" xml:space="preserve">
+    <value>Nom d'utilisateur</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_Password.Header" xml:space="preserve">
+    <value>Mot de passe</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_Password_PasswordBox.PlaceholderText" xml:space="preserve">
+    <value>Entrez votre mot de passe</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_ComoBox_SYSTEM.Content" xml:space="preserve">
+    <value>Identique au système</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy.Description" xml:space="preserve">
+    <value>Définissez comment kDrive se connecte à Internet.</value>
+  </data>
   <data name="Page_SettingsPage_Privacy_Sources.Header" xml:space="preserve">
     <value>Voir le code source</value>
   </data>
@@ -665,5 +701,11 @@ Le code source de cette application peut être vérifié, les informations réco
   </data>
   <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.CloseButtonText" xml:space="preserve">
     <value>Annuler</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_ComoBox_HTTP.Content" xml:space="preserve">
+    <value>Configuration manuelle</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_ComoBox_NONE.Content" xml:space="preserve">
+    <value>Desactivé</value>
   </data>
 </root>

@@ -304,12 +304,14 @@ namespace Infomaniak.kDrive.Pages
         private async void SaveProxySettingsButton_Click(object sender, RoutedEventArgs e)
         {
             if (!IsLoaded) return;
-
+            ProxySaveProgressRing.Visibility = Visibility.Visible;
             ProxySettingsExpander.IsEnabled = false;
             await Task.Delay(3000);
             await ViewModel.Settings.ChangeProxyConfiguration(ProxyHostTextBox.Text, int.Parse(ProxyPortTextBox.Text), ProxyNeedsAuthToggleSwitch.IsOn, ProxyUserTextBox.Text, ProxyPwdPasswordBox.Password);
             ProxySettingsExpander.IsEnabled = true;
             SaveProxySettingsCard.Visibility = Visibility.Collapsed;
+            ProxySaveProgressRing.Visibility = Visibility.Collapsed;
+
         }
 
         private void CancelProxySettingsButton_Click(object sender, RoutedEventArgs e)

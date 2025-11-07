@@ -314,8 +314,7 @@
 
                     <!-- Advanced - Proxy -->
                     <toolKit:SettingsExpander x:Name="ProxySettingsExpander"
-                                              Description="Définissez comment kDrive se connecte à Internet."
-                                              Header="Paramètres Proxy">
+                                              x:Uid="Page_SettingsPage_Proxy">
                         <toolKit:SettingsExpander.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Network.globe}"
                                               Height="32"
@@ -324,19 +323,22 @@
                         <ComboBox SelectedValuePath="Tag"
                                   SelectedValue="{x:Bind ViewModel.Settings.ProxyConfig.Type, Converter={StaticResource ToStringConverter}, Mode=OneWay}"
                                   SelectionChanged="ProxyTypeComboBox_Changed">
-                            <ComboBoxItem Tag="HTTP">Configuration manuelle</ComboBoxItem>
-                            <ComboBoxItem Tag="None">Desactivé</ComboBoxItem>
-                            <ComboBoxItem Tag="System">Identique au système</ComboBoxItem>
+                            <ComboBoxItem x:Uid="Page_SettingsPage_Proxy_ComoBox_HTTP"
+                                          Tag="HTTP">Configuration manuelle</ComboBoxItem>
+                            <ComboBoxItem x:Uid="Page_SettingsPage_Proxy_ComoBox_None"
+                                          Tag="None">Desactivé</ComboBoxItem>
+                            <ComboBoxItem x:Uid="Page_SettingsPage_Proxy_ComoBox_System"
+                                          Tag="System">Identique au système</ComboBoxItem>
                         </ComboBox>
 
                         <toolKit:SettingsExpander.Items>
-                            <toolKit:SettingsCard Header="Type de proxy"
+                            <toolKit:SettingsCard x:Uid="Page_SettingsPage_Proxy_Type"
                                                   IsEnabled="False">
                                 <TextBox PlaceholderText="HTTP(S)"
                                          IsEnabled="False"
                                          Width="200" />
                             </toolKit:SettingsCard>
-                            <toolKit:SettingsCard Header="Serveur"
+                            <toolKit:SettingsCard x:Uid="Page_SettingsPage_Proxy_Host"
                                                   IsEnabled="{x:Bind ViewModel.Settings.ProxyConfig.ManualConfigrationRequired, Mode=OneWay}">
                                 <TextBox x:Name="ProxyHostTextBox"
                                          PlaceholderText="0.0.0.0"
@@ -344,7 +346,7 @@
                                          Text="{x:Bind ViewModel.Settings.ProxyConfig.HostName}"
                                          Width="200" />
                             </toolKit:SettingsCard>
-                            <toolKit:SettingsCard Header="Port"
+                            <toolKit:SettingsCard x:Uid="Page_SettingsPage_Proxy_Port"
                                                   IsEnabled="{x:Bind ViewModel.Settings.ProxyConfig.ManualConfigrationRequired, Mode=OneWay}">
                                 <TextBox x:Name="ProxyPortTextBox"
                                          PlaceholderText="443"
@@ -352,14 +354,14 @@
                                          TextChanged="ProxyConfig_Changed"
                                          Width="200" />
                             </toolKit:SettingsCard >
-                            <toolKit:SettingsCard Header="Authentification requise"
+                            <toolKit:SettingsCard x:Uid="Page_SettingsPage_Proxy_NeedAuth"
                                                   IsEnabled="{x:Bind ViewModel.Settings.ProxyConfig.ManualConfigrationRequired, Mode=OneWay}">
                                 <ToggleSwitch x:Name="ProxyNeedsAuthToggleSwitch"
                                               IsOn="{x:Bind ViewModel.Settings.ProxyConfig.NeedsAuth, Mode=OneWay}"
                                               Toggled="ProxyConfig_Changed" />
                             </toolKit:SettingsCard>
 
-                            <toolKit:SettingsCard Header="Nom d'utilisateur"
+                            <toolKit:SettingsCard x:Uid="Page_SettingsPage_Proxy_User"
                                                   Visibility="{x:Bind ProxyNeedsAuthToggleSwitch.IsOn, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                   IsEnabled="{x:Bind ViewModel.Settings.ProxyConfig.ManualConfigrationRequired, Mode=OneWay}">
                                 <TextBox x:Name="ProxyUserTextBox"
@@ -369,23 +371,27 @@
                                          Width="200" />
                             </toolKit:SettingsCard >
 
-                            <toolKit:SettingsCard Header="Mot de passe"
+                            <toolKit:SettingsCard x:Uid="Page_SettingsPage_Proxy_Password"
                                                   Visibility="{x:Bind ProxyNeedsAuthToggleSwitch.IsOn, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                   IsEnabled="{x:Bind ViewModel.Settings.ProxyConfig.ManualConfigrationRequired, Mode=OneWay}">
                                 <PasswordBox x:Name="ProxyPwdPasswordBox"
-                                             PlaceholderText="Entrez votre mot de passe"
+                                             x:Uid="Page_SettingsPage_Proxy_Password_PasswordBox"
                                              PasswordChanged="ProxyConfig_Changed"
                                              Width="200" />
                             </toolKit:SettingsCard >
-                            <toolKit:SettingsCard x:Name="SaveProxySettingsCard">
+                            <toolKit:SettingsCard x:Name="SaveProxySettingsCard"
+                                                  Visibility="Collapsed">
                                 <StackPanel Orientation="Horizontal"
                                             Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                                    <Button Content="Save"
+                                    <ProgressRing x:Name="ProxySaveProgressRing"
+                                                  Height="16"
+                                                  Visibility="Collapsed" />
+                                    <Button x:Uid="Page_SettingsPage_Proxy_SaveButton"
                                             Style="{StaticResource AccentButtonStyle}"
                                             IsEnabled="{x:Bind ViewModel.Settings.ProxyConfig.ManualConfigrationRequired, Mode=OneWay}"
                                             Click="SaveProxySettingsButton_Click" />
 
-                                    <Button Content="Cancel"
+                                    <Button x:Uid="Page_SettingsPage_Proxy_CancelButton"
                                             IsEnabled="{x:Bind ViewModel.Settings.ProxyConfig.ManualConfigrationRequired, Mode=OneWay}"
                                             Click="CancelProxySettingsButton_Click" />
                                 </StackPanel>
