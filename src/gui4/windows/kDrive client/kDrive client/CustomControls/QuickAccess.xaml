@@ -15,7 +15,7 @@
     <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
             CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"
             Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.M}">
-        <Grid>
+        <Grid MinWidth="180">
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.L}">
                 <Canvas HorizontalAlignment="Center"
                         Width="46"
