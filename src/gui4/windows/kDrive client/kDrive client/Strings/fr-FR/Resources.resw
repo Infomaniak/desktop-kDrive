@@ -134,15 +134,6 @@
   <data name="W_MainWindow_NavBar_Storage.Content" xml:space="preserve">
     <value>Stockage</value>
   </data>
-  <data name="W_MainWindow_NavBar_Folder.Content" xml:space="preserve">
-    <value>Ouvrir l'explorateur</value>
-  </data>
-  <data name="W_MainWindow_PaneFooter_Folder.Content" xml:space="preserve">
-    <value>Ouvrir l'explorateur</value>
-  </data>
-  <data name="CC_OpenFileExplorer.Text" xml:space="preserve">
-    <value>Ouvrir l'explorateur</value>
-  </data>
   <data name="W_MainWindow_TitleBar_SearchBox.PlaceholderText" xml:space="preserve">
     <value>Rechercher dans {{ TODO }}</value>
   </data>
@@ -281,10 +272,6 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
   <data name="CC_QuickAccess_shared.Text" xml:space="preserve">
     <value>Partages</value>
     <comment>Redirect to the favorite folder (in browser)</comment>
-  </data>
-  <data name="CC_QuickAccess_onlineDrive.Text" xml:space="preserve">
-    <value>kDrive en ligne</value>
-    <comment>Redirect to the kDrive main page (in browser)</comment>
   </data>
   <data name="CC_KSuiteUpgradeBar_link.Content" xml:space="preserve">
     <value>Faire évoluer</value>
@@ -430,9 +417,6 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
   </data>
   <data name="Page_StoragePage_OtherFiles.Text" xml:space="preserve">
     <value>Autres fichiers de l’ordinateur</value>
-  </data>
-  <data name="Page_StoragePage_FreeSpace.Text" xml:space="preserve">
-    <value>Espace libre</value>
   </data>
   <data name="Converter_SyncDirectionToToolTipConverter_Incoming" xml:space="preserve">
     <value>Synchronisé depuis kDrive web</value>
@@ -596,5 +580,13 @@ Version {0} (build {1}), compilée le {2}
   </data>
   <data name="Page_SettingsPage_Beta_Expander.Header" xml:space="preserve">
     <value>Rejoindre le programme bêta</value>
+  </data>
+  <data name="W_MainWindow_PaneFooter_Folder" xml:space="preserve">
+    <value>Ouvrir l'explorateur</value>
+    <comment>Open the file explorer</comment>
+  </data>
+  <data name="CC_QuickAccess_onlineDrive.Text" xml:space="preserve">
+    <value>kDrive en ligne</value>
+    <comment>Redirect to the kDrive main page (in browser)</comment>
   </data>
 </root>
