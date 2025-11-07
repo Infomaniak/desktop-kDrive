@@ -113,7 +113,8 @@
                                                Height="32"
                                                Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                         </toolKit:SettingsCard.HeaderIcon>
-                        <ComboBox SelectedIndex="0"
+                        <ComboBox SelectedValuePath="Tag"
+                                  SelectedValue="{x:Bind ViewModel.Settings.NotificationsDisabled, Converter={StaticResource ToStringConverter}, Mode=OneWay}"
                                   SelectionChanged="NotificationsCombobox_SelectionChanged"
                                   x:Name="NotificationsComboBox">
                             <ComboBoxItem x:Uid="Page_SettingsPage_Notifications_ComboBox_Never"
