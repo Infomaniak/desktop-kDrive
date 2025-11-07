@@ -18,7 +18,7 @@
 
 import Foundation
 
-struct LoginQuery: Codable {
+struct LoginQuery: Codable, Sendable {
     @Base64CodedString var code: String
     @Base64CodedString var codeVerifier: String
 }
