@@ -83,19 +83,17 @@ namespace Infomaniak.kDrive.CustomControls
                 Logger.Log(Logger.Level.Warning, "Settings is null, this is unexpected.");
                 return;
             }
-            var ressourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
-
 
             if (Settings.UpdateManager.AvailableUpdate is AppVersion updateVersion)
             {
-                this.Description = System.String.Format(ressourceLoader.GetString("CC_UpdateExpander_UpdateAvailable_Description/TextTemplate"), updateVersion.Tag);
-                ExpandedTextBox.Text = System.String.Format(ressourceLoader.GetString("CC_UpdateExpander_UpdateAvailable_UpdateDetails/TextTemplate"), updateVersion.Tag, updateVersion.BuildVersion, updateVersion.PrettyBuildDate, updateVersion.BuildDate.Year);
+                this.Description = Utility.GetLocalizedString("CC_UpdateExpander_UpdateAvailable_Description/TextTemplate", updateVersion.Tag);
+                ExpandedTextBox.Text = Utility.GetLocalizedString("CC_UpdateExpander_UpdateAvailable_UpdateDetails/TextTemplate", updateVersion.Tag, updateVersion.BuildVersion, updateVersion.PrettyBuildDate, updateVersion.BuildDate.Year);
                 DisplayedVersion = updateVersion;
             }
             else if (Settings.AppVersion is AppVersion AppVersionInfo)
             {
-                this.Description = ressourceLoader.GetString("CC_UpdateExpander_UpToDate_Description/Text");
-                ExpandedTextBox.Text = System.String.Format(ressourceLoader.GetString("CC_UpdateExpander_UpToDate_UpdateDetails/TextTemplate"), AppVersionInfo.Tag, AppVersionInfo.BuildVersion, AppVersionInfo.PrettyBuildDate, AppVersionInfo.BuildDate.Year);
+                this.Description = Utility.GetLocalizedString("CC_UpdateExpander_UpToDate_Description/Text");
+                ExpandedTextBox.Text = Utility.GetLocalizedString("CC_UpdateExpander_UpToDate_UpdateDetails/TextTemplate", AppVersionInfo.Tag, AppVersionInfo.BuildVersion, AppVersionInfo.PrettyBuildDate, AppVersionInfo.BuildDate.Year);
                 DisplayedVersion = AppVersionInfo;
             }
         }

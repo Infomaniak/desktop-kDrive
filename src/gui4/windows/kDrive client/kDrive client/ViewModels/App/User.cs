@@ -18,12 +18,17 @@
 
 using DynamicData;
 using DynamicData.Binding;
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
+using Infomaniak.kDrive.Types;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage.Streams;
 
@@ -40,6 +45,7 @@ namespace Infomaniak.kDrive.ViewModels
         private bool _isConnected = false;
         private bool _isStaff = false;
         private readonly ObservableCollection<Account> _accounts = new ObservableCollection<Account>();
+        private ObservableCollection<DriveAvailable> _drivesAvailable = new ObservableCollection<DriveAvailable>();
         private readonly IDisposable _allDriveSubscribtion;
         public User(DbId dbId)
         {
@@ -50,6 +56,7 @@ namespace Infomaniak.kDrive.ViewModels
                      .Bind(out var allDrives)
                      .Subscribe();
             Drives = allDrives;
+            Drives.AsObservableChangeSet().Subscribe(_ => MergeDrives());
         }
 
         public void Dispose()
@@ -119,10 +126,18 @@ namespace Infomaniak.kDrive.ViewModels
             get => _accounts;
         }
 
+        public ObservableCollection<DriveAvailable> DrivesAvailable
+        {
+            get => _drivesAvailable;
+        }
+
         public ReadOnlyObservableCollection<Drive> Drives
         {
             get;
         }
+
+        // Combined collection of all drives (configured in db and available)
+        public ObservableCollection<IDrive> AllDrives { get; } = new();
 
         public static async Task<ImageSource?> ByteArrayToImageSource(byte[]? imageData)
         {
@@ -136,6 +151,44 @@ namespace Infomaniak.kDrive.ViewModels
             var bitmap = new BitmapImage();
             await bitmap.SetSourceAsync(stream);
             return bitmap;
+        }
+
+        public async Task RefreshAvailableDrives()
+        {
+            await App.ServiceProvider.GetRequiredService<IServerCommService>().RefreshUserDrivesAvailable(this.DbId, CancellationToken.None);
+            MergeDrives();
+        }
+
+        /* Merges the Drives and DrivesAvailable collections into the AllDrives collection,
+         * ensuring no duplicates based on DriveId.
+         * If a drive id exists in Drives and DrivesAvailable, the one from Drives is kept.
+         */
+        private void MergeDrives()
+        {
+            // Define drive Equal action based on DriveId and type
+            Func<IDrive, IDrive, bool> driveEqualAction = (d1, d2) =>
+            {
+                return d1.DriveId == d2.DriveId && d1.GetType() == d2.GetType();
+            };
+
+            List<IDrive> drives = new();
+            foreach (var drive in Drives)
+                drives.Add(drive);
+
+            foreach (var drive in DrivesAvailable)
+                if (drives.FirstOrDefault(d => d.DriveId == drive.DriveId) is null)
+                    drives.Add(drive);
+
+            for (int i = AllDrives.Count - 1; i >= 0; i--)
+            {
+                var drive = AllDrives[i];
+                if (drives.FirstOrDefault(d => driveEqualAction(d, drive)) is null)
+                    AllDrives.RemoveAt(i);
+            }
+
+            foreach (var drive in drives)
+                if (AllDrives.FirstOrDefault(d => driveEqualAction(d, drive)) is null)
+                    AllDrives.Add(drive);
         }
     }
 }

@@ -49,8 +49,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             {
                 btn.IsEnabled = false;
 
-                var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
-                await Windows.System.Launcher.LaunchUriAsync(new System.Uri(resourceLoader.GetString("Global_SignUpUrl")));
+                await Windows.System.Launcher.LaunchUriAsync(new System.Uri(Utility.GetLocalizedString("Global_SignUpUrl")));
                 Logger.Log(Logger.Level.Debug, "Create account URL opened");
 
                 await Task.Delay(2000);

@@ -24,16 +24,15 @@ namespace Infomaniak.kDrive.CustomControls
         public KSuiteUpgradeBar()
         {
             InitializeComponent();
-            var resourceLoader = new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader();
 
             // TODO: Fetch the type of the kSuite the user is using (my or pro)
             if (true /* Selected kSuite is "my"*/)
             {
-                UpgradeHyperLinkButton.NavigateUri = new Uri(resourceLoader.GetString("Global_UpgradeOfferMy_Url"));
+                UpgradeHyperLinkButton.NavigateUri = new Uri(Utility.GetLocalizedString("Global_UpgradeOfferMy_Url"));
             }
             else
             {
-               UpgradeHyperLinkButton.NavigateUri = new Uri(resourceLoader.GetString("Global_UpgradeOfferProUrl"));
+               UpgradeHyperLinkButton.NavigateUri = new Uri(Utility.GetLocalizedString("Global_UpgradeOfferProUrl"));
             }
         }
     }

@@ -23,9 +23,11 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:toolKit="using:CommunityToolkit.WinUI.Controls"
+      xmlns:local="using:Infomaniak.kDrive.Pages"
       xmlns:converters="using:Infomaniak.kDrive.Converters"
       xmlns:controls="using:Infomaniak.kDrive.CustomControls"
       xmlns:viewmodel="using:Infomaniak.kDrive.ViewModels"
+      xmlns:types="using:Infomaniak.kDrive.Types"
       mc:Ignorable="d">
     <Page.Resources>
         <!-- Converters -->
@@ -33,6 +35,26 @@
         <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
         <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />
         <converters:DateToStringConverter x:Key="DateToStringConverter" />
+
+        <!-- DataTemplates -->
+        <DataTemplate x:Key="ConfiguredDriveTemplate"
+                      x:DataType="types:IDrive">
+            <TextBlock x:Uid="Page_SettingsPage_Drive_Configured"
+                       VerticalAlignment="Center"
+                       Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
+                       Foreground="{ThemeResource TextFillColorDisabled}" />
+
+        </DataTemplate>
+        <DataTemplate x:Key="UnconfiguredDriveTemplate"
+                      x:DataType="types:IDrive">
+            <TextBlock x:Uid="Page_SettingsPage_Drive_Unconfigured"
+                       VerticalAlignment="Center"
+                       Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
+                       Foreground="{ThemeResource TextFillColorDisabled}" />
+        </DataTemplate>
+        <local:DriveDataTemplateSelector x:Key="DriveDataTemplateSelector"
+                                         ConfiguredTemplate="{StaticResource ConfiguredDriveTemplate}"
+                                         UnconfiguredTemplate="{StaticResource UnconfiguredDriveTemplate}" />
     </Page.Resources>
     <Grid Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.L}"
           RowSpacing="{StaticResource Infomaniak.Style.Spacing.L}">
@@ -167,9 +189,9 @@
                                                   x:Uid="Page_SettingsPage_Beta_ComboBox_Beta" />
                                     <ComboBoxItem Tag="Internal"
                                                   x:Name="UpdateChannelComboBox_Internal"
-                                                  x:Uid="Page_SettingsPage_Beta_ComboBox_Internal" 
+                                                  x:Uid="Page_SettingsPage_Beta_ComboBox_Internal"
                                                   Foreground="{ThemeResource SystemErrorTextColor}"
-                                                  Visibility="Collapsed"/>
+                                                  Visibility="Collapsed" />
                                 </ComboBox>
                             </toolKit:SettingsCard>
                         </toolKit:SettingsExpander.Items>
@@ -180,24 +202,23 @@
                 <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
 
                     <Grid>
-                        <TextBlock HorizontalAlignment="Left"
-                                   Text="Comptes"
+                        <TextBlock x:Uid="Page_SettingsPage_Accounts"
+                                   HorizontalAlignment="Left"
                                    Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
 
-                        <HyperlinkButton HorizontalAlignment="Right"
-                                         Content="Connecter un compte"
+                        <HyperlinkButton x:Uid="Page_SettingsPage_AddAccounts"
+                                         HorizontalAlignment="Right"
                                          Click="CreateAccountButton_Click" />
                     </Grid>
                     <!-- Account - List -->
                     <ListView ItemsSource="{x:Bind ViewModel.Users}"
-                              SelectionMode="None"
-                              IsEnabled="False">
+                              SelectionMode="None">
                         <ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">
                                 <Setter Property="Padding"
                                         Value="0" />
                                 <Setter Property="Margin"
-                                        Value="0" />
+                                        Value="{StaticResource Infomaniak.Style.Thickness.Top.XXS}" />
                                 <Setter Property="HorizontalContentAlignment"
                                         Value="Stretch" />
                             </Style>
@@ -205,9 +226,12 @@
 
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="viewmodel:User">
-                                <toolKit:SettingsExpander ItemsSource="{x:Bind Drives, Mode=OneWay}">
-                                    <HyperlinkButton Content="Déconnecter ce compte"
-                                                     Foreground="#F44336" />
+                                <toolKit:SettingsExpander ItemsSource="{x:Bind AllDrives, Mode=OneWay}"
+                                                          Expanded="UserSettingsExpander_Expanded">
+                                    <ProgressRing Height="6"
+                                                  Width="auto"
+                                                  Visibility="Collapsed" />
+
                                     <toolKit:SettingsExpander.Header>
                                         <StackPanel Orientation="Horizontal"
                                                     Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
@@ -234,26 +258,29 @@
                                     </toolKit:SettingsExpander.Header>
 
                                     <toolKit:SettingsExpander.ItemTemplate>
-                                        <DataTemplate x:DataType="viewmodel:Drive">
+                                        <DataTemplate x:DataType="types:IDrive">
                                             <toolKit:SettingsCard Header="{x:Bind Name, Mode=OneWay}"
-                                                                  Background="{ThemeResource LayerFillColorDefault}">
+                                                                  Background="{ThemeResource LayerFillColorDefault}"
+                                                                  IsClickEnabled="True"
+                                                                  Click="ManageDriveButton_Click"
+                                                                  Tag="{x:Bind}">
                                                 <toolKit:SettingsCard.HeaderIcon>
                                                     <controls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom }"
                                                                       Foreground="{x:Bind Color, Converter={StaticResource ColorToBrushConverter}}" />
                                                 </toolKit:SettingsCard.HeaderIcon>
-                                                <StackPanel Orientation="Horizontal"
-                                                            Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                                                    <TextBlock Text="Synchronisé"
-                                                               VerticalAlignment="Center"
-                                                               Style="{StaticResource CaptionTextBlockStyle}"
-                                                               Foreground="{ThemeResource TextFillColorDisabled}" />
-                                                    <Button VerticalAlignment="Center"
-                                                            Style="{ThemeResource AccentButtonStyle}"
-                                                            Content="Gérer" />
-                                                </StackPanel>
+                                                <ContentControl Content="{x:Bind}"
+                                                                ContentTemplateSelector="{StaticResource DriveDataTemplateSelector}" />
                                             </toolKit:SettingsCard>
                                         </DataTemplate>
                                     </toolKit:SettingsExpander.ItemTemplate>
+
+                                    <toolKit:SettingsExpander.ItemsFooter>
+                                        <toolKit:SettingsCard x:Uid="Page_SettingsPage_RemoveAccount"
+                                                              Style="{StaticResource DefaultSettingsExpanderItemStyle}"
+                                                              IsClickEnabled="True"
+                                                              Click="DisconectUser_Click" />
+
+                                    </toolKit:SettingsExpander.ItemsFooter>
                                 </toolKit:SettingsExpander>
                             </DataTemplate>
                         </ListView.ItemTemplate>
@@ -262,12 +289,13 @@
 
                 <!-- Advanced -->
                 <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                    <TextBlock Text="Avancé"
+                    <TextBlock x:Uid="Page_SettingsPage_Advanced"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
 
                     <!-- Advanced - Sync rules -->
-                    <toolKit:SettingsCard Header="Règles de synchronisation"
-                                          IsClickEnabled="True">
+                    <toolKit:SettingsCard x:Uid="Page_SettingsPage_SyncRules"
+                                          IsClickEnabled="True"
+                                          Click="SyncRulesCard_Clicked">
                         <toolKit:SettingsCard.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Edition.list-bullets}"
                                               Height="32"

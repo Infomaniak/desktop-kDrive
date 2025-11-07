@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.WinUI;
+﻿using CommunityToolkit.WinUI;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI;
@@ -8,10 +7,8 @@ using Microsoft.UI.Xaml;
 using System;
 
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Threading.Tasks;
@@ -298,6 +295,23 @@ namespace Infomaniak.kDrive
                 presenter.PreferredMinimumHeight = scaledHeight;
                 appWindow.Resize(new SizeInt32(scaledWidth, scaledHeight));
             }
+        }
+
+        public static string GetLocalizedString(string key, params object?[] args)
+        {
+            var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
+            string localizedString = resourceLoader.GetString(key) ?? string.Empty;
+
+            // Replace literal \r\n with real newlines
+            localizedString = localizedString.Replace("\\r\\n", Environment.NewLine);
+
+            // Format the string if arguments are provided
+            if (args != null && args.Length > 0)
+            {
+                localizedString = string.Format(localizedString, args);
+            }
+
+            return localizedString;
         }
     }
 }

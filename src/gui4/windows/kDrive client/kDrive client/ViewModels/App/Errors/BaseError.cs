@@ -16,16 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using CommunityToolkit.Mvvm.Collections;
-using CommunityToolkit.Mvvm.ComponentModel;
-using Infomaniak.kDrive.ServerCommunication;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Drawing;
-using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.ViewModels.Errors
@@ -127,7 +118,7 @@ namespace Infomaniak.kDrive.ViewModels.Errors
         abstract public string CauseStr();
         abstract public Uri IconUri();
 
-        protected static string GetLocalizedString(string key)
+        protected static string GetLocalizedSyncErrorString(string key)
         {
             var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse("SyncErrors");
             return resourceLoader.GetString(key);
