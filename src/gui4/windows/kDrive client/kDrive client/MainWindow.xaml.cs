@@ -62,10 +62,6 @@ namespace Infomaniak.kDrive
                     case "StoragePage":
                         contentFrame.Navigate(typeof(Pages.StoragePage));
                         break;
-                    case "OpenFileExplorer":
-                        SyncPath? targetPath = ViewModel.SelectedSync?.LocalPath;
-                        Utility.OpenFolderSecurely(/*targetPath*/@"C:\Users");  // TODO : add back targetPath when real sync are functionnal
-                        break;
                     default:
                         Logger.Log(Logger.Level.Warning, $"Unknown navigation tag: {selectedItem.Tag}... Going to HomePage");
                         contentFrame.Navigate(typeof(Pages.HomePage));
@@ -83,11 +79,6 @@ namespace Infomaniak.kDrive
             }
         }
         private void NavigationViewItem_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            SyncPath? targetPath = ViewModel.SelectedSync?.LocalPath;
-            Utility.OpenFolderSecurely(/*targetPath*/@"C:\Users");  // TODO : add back targetPath when real sync are functionnal
-        }
-        private  void OpenFileExplorerButton_Click(object sender, RoutedEventArgs e)
         {
             SyncPath? targetPath = ViewModel.SelectedSync?.LocalPath;
             Utility.OpenFolderSecurely(/*targetPath*/@"C:\Users");  // TODO : add back targetPath when real sync are functionnal
