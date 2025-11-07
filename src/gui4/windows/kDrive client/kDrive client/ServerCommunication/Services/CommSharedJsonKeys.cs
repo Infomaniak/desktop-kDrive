@@ -21,6 +21,9 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
     // Shared JSON keys used in server communication
     public struct JsonKeys
     {
+        static public string ExitCode = "code";
+        static public string ExitCause= "cause";
+
         static public string OAuthCode = "code";
         static public string OAuthCodeVerifier = "codeVerifier";
 
@@ -30,6 +33,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string AccountInfoList = "accountInfoList";
         static public string DriveInfoList = "driveInfoList";
         static public string SyncInfoList = "syncInfoList";
+        static public string SyncDbId = "syncDbId";
         static public string ParmsInfo = "parmsInfo";
         static public string UserInfo = "userInfo";
         static public string VersionInfo = "versionInfo";

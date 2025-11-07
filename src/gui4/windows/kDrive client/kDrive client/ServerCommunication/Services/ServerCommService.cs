@@ -304,7 +304,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         }
 
-
         public async Task RefreshSyncs(CancellationToken cancellationToken)
         {
             CommData data = await _commClient.SendRequestAsync(RequestNum.SyncInfoList, new JsonObject(), cancellationToken);
@@ -355,6 +354,37 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     }
                 }
             });
+        }
+
+        public async Task StartSync(DbId syncDbId, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.SyncDbId] = syncDbId
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_START, parms, cancellationToken);
+            if(data.Params?.ContainsKey(JsonKeys.ExitCode) ?? false && data.Params?[JsonKeys.ExitCode]?.GetValue<int>() != 0)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to start sync with DbId {syncDbId}, exit code: {data.Params[JsonKeys.ExitCode]?.GetValue<int>()}");
+                return;
+            }
+
+            _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == syncDbId).SyncStatus = SyncStatus.Running; // TODO: Remove once SYNC_PROGRESSINFO is implemented
+        }
+
+        public async Task PauseSync(DbId syncDbId, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.SyncDbId] = syncDbId
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_STOP, parms, cancellationToken);
+            if (data.Params?.ContainsKey(JsonKeys.ExitCode) ?? false && data.Params?[JsonKeys.ExitCode]?.GetValue<int>() != 0)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to pause sync with DbId {syncDbId}, exit code: {data.Params[JsonKeys.ExitCode]?.GetValue<int>()}");
+                return;
+            }
+            _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == syncDbId).SyncStatus = SyncStatus.Pause; // TODO: Remove once SYNC_PROGRESSINFO is implemented
         }
 
         public async Task RefreshSettings(CancellationToken cancellationToken)

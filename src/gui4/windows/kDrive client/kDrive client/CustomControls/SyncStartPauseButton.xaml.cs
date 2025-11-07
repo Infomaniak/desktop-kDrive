@@ -43,16 +43,12 @@ public sealed partial class SyncStartPauseButton : UserControl
         if (ViewModel.SelectedSync?.SyncStatus == SyncStatus.Pause)
         {
             Logger.Log(Logger.Level.Info, "Starting sync...");
-            ViewModel.SelectedSync.SyncStatus = SyncStatus.Starting;
-            await Task.Delay(1000); // Simulate some delay for pausing
-            ViewModel.SelectedSync.SyncStatus = SyncStatus.Running;
+            await ViewModel.SelectedSync.Start();
         }
         else if (ViewModel.SelectedSync?.SyncStatus == SyncStatus.Running || ViewModel.SelectedSync?.SyncStatus == SyncStatus.Idle)
         {
             Logger.Log(Logger.Level.Info, "Pausing sync...");
-            ViewModel.SelectedSync.SyncStatus = SyncStatus.Pausing;
-            await Task.Delay(1000); // Simulate some delay for pausing
-            ViewModel.SelectedSync.SyncStatus = SyncStatus.Pause;
+            await ViewModel.SelectedSync.Pause();
         }
     }
 }

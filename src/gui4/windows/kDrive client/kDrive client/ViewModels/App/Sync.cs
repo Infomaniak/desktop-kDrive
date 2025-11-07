@@ -31,6 +31,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.Foundation;
 
@@ -292,6 +293,18 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _showIncomingActivity;
             set => SetPropertyInUIThread(ref _showIncomingActivity, value);
+        }
+
+        public async Task Start()
+        {
+            var serverComm = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            await serverComm.StartSync(DbId, CancellationToken.None);
+        }
+
+        public async Task Pause()
+        {
+            var serverComm = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            await serverComm.PauseSync(DbId, CancellationToken.None);
         }
     }
 }
