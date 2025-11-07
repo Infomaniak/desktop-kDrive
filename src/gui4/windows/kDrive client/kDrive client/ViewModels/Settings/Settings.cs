@@ -110,5 +110,21 @@ namespace Infomaniak.kDrive.ViewModels
             SentryEnabled = enabled;
             await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None);
         }
+
+        public async Task ChangeProxyType(ProxyType newType)
+        {
+            ProxyConfig.Type = newType;
+            await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None);
+        }
+
+        public async Task ChangeProxyConfiguration(string hostName, int port, bool needsAuth, string user, string pwd)
+        {
+            ProxyConfig.HostName = hostName;
+            ProxyConfig.Port = port;
+            ProxyConfig.NeedsAuth = needsAuth;
+            ProxyConfig.User = user;
+            ProxyConfig.Pwd = pwd;
+            await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None);
+        }
     }
 }

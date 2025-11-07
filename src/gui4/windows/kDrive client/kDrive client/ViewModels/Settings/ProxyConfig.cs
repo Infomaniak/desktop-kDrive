@@ -1,4 +1,6 @@
-﻿using Infomaniak.kDrive.Types;
+﻿using DynamicData;
+using Infomaniak.kDrive.Types;
+using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.ViewModels
 {
@@ -10,10 +12,21 @@ namespace Infomaniak.kDrive.ViewModels
         private bool _needsAuth = false;
         private string _user = "";
         private string _pwd = "";
+        public bool _manualConfigurationRequired = false;
+        public bool ManualConfigrationRequired
+        {
+            get => _manualConfigurationRequired;
+            set => SetPropertyInUIThread(ref _manualConfigurationRequired, value);
+        }
+
         public ProxyType Type
         {
             get => _type;
-            set => SetPropertyInUIThread(ref _type, value);
+            set
+            {
+                SetPropertyInUIThread(ref _type, value);
+                UpdateManualConfigurationRequired();
+            }
         }
         public string HostName
         {
@@ -39,6 +52,11 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _pwd;
             set => SetPropertyInUIThread(ref _pwd, value);
+        }
+
+        private void UpdateManualConfigurationRequired()
+        {
+            ManualConfigrationRequired = Type == ProxyType.HTTP;
         }
     }
 }

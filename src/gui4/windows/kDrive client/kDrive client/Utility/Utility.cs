@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.WinUI;
+using Infomaniak.kDrive.Converters;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI;
@@ -283,7 +284,7 @@ namespace Infomaniak.kDrive
             var appWindow = AppWindow.GetFromWindowId(windowId);
             if (appWindow != null && appWindow.Presenter is OverlappedPresenter presenter)
             {
-                presenter.IsMaximizable = false;
+                presenter.IsMaximizable = true;
                 presenter.IsMinimizable = true;
                 presenter.IsResizable = resizable;
 
@@ -317,6 +318,12 @@ namespace Infomaniak.kDrive
             }
 
             return localizedString;
+        }
+
+        // Convert any enum value to a string
+        public static string ToString(Enum value)
+        {
+            return value.ToString();
         }
 
         public static void SetEnumComboBoxSelection<TEnum>(ComboBox comboBox, TEnum value) where TEnum : struct, Enum
