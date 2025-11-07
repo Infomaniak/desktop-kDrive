@@ -67,6 +67,8 @@ namespace Infomaniak.kDrive
             }
         }
 
+        static public string LogFilePath => _logFilePath;
+        static public string LogFolder => Path.GetDirectoryName(_logFilePath) ?? "";
         static public Level LogLevel
         {
             get => App.ServiceProvider.GetService<AppModel>()?.Settings.LogLevel ?? Level.Extended;
