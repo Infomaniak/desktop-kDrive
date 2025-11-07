@@ -77,20 +77,7 @@
                     <TextBlock x:Uid="Page_SettingsPage_Global"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
                     <!-- General - Update -->
-                    <controls:UpdateExpander Settings="{x:Bind ViewModel.Settings, Mode=OneWay}" />
-
-                    <!-- General - Auto Update -->
-                    <toolKit:SettingsCard x:Uid="Page_SettingsPage_AutoUpdate"
-                                          IsEnabled="False">
-                        <!-- TODO: Make it enabled once auto-update is implemented on the server side (see: UpdateManager.ChangeAutoUpdate) -->
-                        <toolKit:SettingsCard.HeaderIcon>
-                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Arrows.arrows-loop-automatic}"
-                                              Height="32"
-                                              Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                        </toolKit:SettingsCard.HeaderIcon>
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.Settings.UpdateManager.AutoUpdateEnabled, Mode=OneWay}"
-                                      Toggled="AutoUpdateToggleSwitch_Toggled" />
-                    </toolKit:SettingsCard>
+                    <controls:UpdateExpander />
 
                     <!-- General - Language -->
                     <toolKit:SettingsCard x:Uid="Page_SettingsPage_Language"
@@ -170,32 +157,6 @@
                         </toolKit:SettingsCard.Description>
 
                     </toolKit:SettingsCard>
-
-                    <!-- General - Beta -->
-                    <toolKit:SettingsExpander x:Uid="Page_SettingsPage_Beta">
-                        <toolKit:SettingsExpander.HeaderIcon>
-                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Miscellaneous.rocket}"
-                                              Height="32"
-                                              Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                        </toolKit:SettingsExpander.HeaderIcon>
-
-                        <toolKit:SettingsExpander.Items>
-                            <toolKit:SettingsCard x:Uid="Page_SettingsPage_Beta_Expander">
-                                <ComboBox x:Name="UpdateChannelComboBox"
-                                          SelectionChanged="UpdateChannel_SelectionChanged">
-                                    <ComboBoxItem Tag="Prod"
-                                                  x:Uid="Page_SettingsPage_Beta_ComboBox_Stable" />
-                                    <ComboBoxItem Tag="Beta"
-                                                  x:Uid="Page_SettingsPage_Beta_ComboBox_Beta" />
-                                    <ComboBoxItem Tag="Internal"
-                                                  x:Name="UpdateChannelComboBox_Internal"
-                                                  x:Uid="Page_SettingsPage_Beta_ComboBox_Internal"
-                                                  Foreground="{ThemeResource SystemErrorTextColor}"
-                                                  Visibility="Collapsed" />
-                                </ComboBox>
-                            </toolKit:SettingsCard>
-                        </toolKit:SettingsExpander.Items>
-                    </toolKit:SettingsExpander>
                 </StackPanel>
 
                 <!-- Account -->

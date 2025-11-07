@@ -165,12 +165,6 @@ namespace Infomaniak.kDrive.ViewModels
          */
         private void MergeDrives()
         {
-            // Define drive Equal action based on DriveId and type
-            Func<IDrive, IDrive, bool> driveEqualAction = (d1, d2) =>
-            {
-                return d1.DriveId == d2.DriveId && d1.GetType() == d2.GetType();
-            };
-
             List<IDrive> drives = new();
             foreach (var drive in Drives)
                 drives.Add(drive);
@@ -182,12 +176,12 @@ namespace Infomaniak.kDrive.ViewModels
             for (int i = AllDrives.Count - 1; i >= 0; i--)
             {
                 var drive = AllDrives[i];
-                if (drives.FirstOrDefault(d => driveEqualAction(d, drive)) is null)
+                if (drives.FirstOrDefault(d => d == drive) is null)
                     AllDrives.RemoveAt(i);
             }
 
             foreach (var drive in drives)
-                if (AllDrives.FirstOrDefault(d => driveEqualAction(d, drive)) is null)
+                if (AllDrives.FirstOrDefault(d =>  d == drive) is null)
                     AllDrives.Add(drive);
         }
     }

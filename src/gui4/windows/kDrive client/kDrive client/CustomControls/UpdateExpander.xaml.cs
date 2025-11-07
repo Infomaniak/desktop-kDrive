@@ -1,27 +1,50 @@
 using CommunityToolkit.WinUI.Controls;
+using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using System;
+using System.ComponentModel;
+using System.Linq;
 namespace Infomaniak.kDrive.CustomControls
 {
     public sealed partial class UpdateExpander : SettingsExpander
     {
+        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+        public AppModel ViewModel => _viewModel;
+
         public UpdateExpander()
         {
             InitializeComponent();
+            RegisterPropertyChangedHandlers();
         }
 
-        public static readonly DependencyProperty SettingsProperty =
-         DependencyProperty.Register(
-             nameof(Settings),
-             typeof(Settings),
-             typeof(UpdateExpander),
-             new PropertyMetadata(null, OnSettingsPropertyChanged));
-
-        public Settings? Settings
+        ~UpdateExpander()
         {
-            get => (Settings?)GetValue(SettingsProperty);
-            set => SetValue(SettingsProperty, value);
+            UnregisterPropertyChangedHandlers();
+        }
+
+        private void RegisterPropertyChangedHandlers()
+        {
+            ViewModel.Settings.UpdateManager.PropertyChanged += OnSettingsPropertyChanged;
+            ViewModel.Settings.PropertyChanged += OnSettingsPropertyChanged;
+            OnSettingsPropertyChanged(null, null);
+        }
+
+        private void UnregisterPropertyChangedHandlers()
+        {
+            ViewModel.Settings.UpdateManager.PropertyChanged -= OnSettingsPropertyChanged;
+            ViewModel.Settings.PropertyChanged -= OnSettingsPropertyChanged;
+        }
+
+        private void OnSettingsPropertyChanged(object? sender, PropertyChangedEventArgs? e)
+        {
+            if (e is null || e.PropertyName == nameof(ViewModel.Settings.UpdateManager.CurrentChannel))
+                Utility.SetEnumComboBoxSelection(UpdateChannelComboBox, ViewModel.Settings.UpdateManager.CurrentChannel);
+
+            if (e is null || e.PropertyName == nameof(UpdateManager.AvailableUpdate) || e.PropertyName == nameof(Settings.AppVersion))
+                Refresh();
         }
 
         // The version to display in the expander either the current app version or the available update version
@@ -30,7 +53,7 @@ namespace Infomaniak.kDrive.CustomControls
              nameof(DisplayedVersion),
              typeof(AppVersion),
              typeof(UpdateExpander),
-             new PropertyMetadata(null, OnSettingsPropertyChanged));
+             new PropertyMetadata(null));
 
         public AppVersion? DisplayedVersion
         {
@@ -39,68 +62,52 @@ namespace Infomaniak.kDrive.CustomControls
 
         }
 
-        private static void OnSettingsPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (d is UpdateExpander updateExpander)
-            {
-                if (e.OldValue is Settings oldSettings)
-                {
-                    updateExpander.UnregisterSettingsEventsHandlers(oldSettings);
-                }
-
-                if (e.NewValue is Settings newSettings)
-                {
-                    updateExpander.RegisterSettingsEventsHandlers(newSettings);
-                }
-                updateExpander.Refresh();
-            }
-        }
-
-        private void RegisterSettingsEventsHandlers(Settings settings)
-        {
-            settings.UpdateManager.PropertyChanged += OnSettingsPropertyChanged;
-            settings.PropertyChanged += OnSettingsPropertyChanged;
-        }
-
-        private void UnregisterSettingsEventsHandlers(Settings settings)
-        {
-            settings.UpdateManager.PropertyChanged -= OnSettingsPropertyChanged;
-            settings.PropertyChanged -= OnSettingsPropertyChanged;
-        }
-
-        private void OnSettingsPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(UpdateManager.AvailableUpdate) || e.PropertyName == nameof(Settings.AppVersion))
-            {
-                Refresh();
-            }
-        }
-
         public void Refresh()
         {
-            if (Settings is null)
+            if (ViewModel.Settings is null)
             {
                 Logger.Log(Logger.Level.Warning, "Settings is null, this is unexpected.");
                 return;
             }
 
-            if (Settings.UpdateManager.AvailableUpdate is AppVersion updateVersion)
+            if (ViewModel.Settings.UpdateManager.AvailableUpdate is AppVersion updateVersion)
             {
                 this.Description = Utility.GetLocalizedString("CC_UpdateExpander_UpdateAvailable_Description/TextTemplate", updateVersion.Tag);
                 ExpandedTextBox.Text = Utility.GetLocalizedString("CC_UpdateExpander_UpdateAvailable_UpdateDetails/TextTemplate", updateVersion.Tag, updateVersion.BuildVersion, updateVersion.PrettyBuildDate, updateVersion.BuildDate.Year);
                 DisplayedVersion = updateVersion;
             }
-            else if (Settings.AppVersion is AppVersion AppVersionInfo)
+            else if (ViewModel.Settings.AppVersion is AppVersion AppVersionInfo)
             {
                 this.Description = Utility.GetLocalizedString("CC_UpdateExpander_UpToDate_Description/Text");
                 ExpandedTextBox.Text = Utility.GetLocalizedString("CC_UpdateExpander_UpToDate_UpdateDetails/TextTemplate", AppVersionInfo.Tag, AppVersionInfo.BuildVersion, AppVersionInfo.PrettyBuildDate, AppVersionInfo.BuildDate.Year);
                 DisplayedVersion = AppVersionInfo;
             }
+            // check if any of the users is staff to show the internal update channel combobox
+            bool staffUserExists = App.ServiceProvider.GetRequiredService<AppModel>().Users.Any(user => user.IsStaff && user.IsConnected);
+            UpdateChannelComboBox_Internal.Visibility = staffUserExists ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private async void UpdateChannel_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            if (sender is ComboBox comboBox && comboBox.SelectedItem is ComboBoxItem selectedItem)
+            {
+                string? channelString = selectedItem.Tag as string;
+                if (Enum.TryParse<VersionChannel>(channelString, out VersionChannel selectedChannel))
+                {
+                    await ViewModel.Settings.UpdateManager.ChangeChannel(selectedChannel);
+                    Logger.Log(Logger.Level.Info, $"Update channel changed to {selectedChannel}");
+                }
+                else
+                {
+                    Logger.Log(Logger.Level.Error, $"Invalid update channel selected: {channelString}");
+                }
+            }
         }
 
         private async void UpdateButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Settings is null)
+            if (ViewModel.Settings is null)
             {
                 Logger.Log(Logger.Level.Error, "Settings is null, cannot start update process.");
                 return;
@@ -113,7 +120,7 @@ namespace Infomaniak.kDrive.CustomControls
                 Logger.Log(Logger.Level.Info, "User clicked on Update button, starting update process.");
             }
 
-            if (!await Settings.UpdateManager.StartUpdate())
+            if (!await ViewModel.Settings.UpdateManager.StartUpdate())
             {
                 Logger.Log(Logger.Level.Error, "Update process failed to start.");
             }
@@ -121,6 +128,23 @@ namespace Infomaniak.kDrive.CustomControls
             if (btn is not null)
             {
                 btn.IsEnabled = true;
+            }
+        }
+
+        private async void AutoUpdateToggleSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            if (sender is ToggleSwitch toggleSwitch)
+            {
+                toggleSwitch.IsEnabled = false;
+                if (ViewModel.Settings is null || ViewModel.Settings.UpdateManager is null)
+                {
+                    Logger.Log(Logger.Level.Error, "Settings or UpdateManager is null, cannot change auto-update setting.");
+                    toggleSwitch.IsEnabled = true;
+                    return;
+                }
+                await ViewModel.Settings.UpdateManager.ChangeAutoUpdate(toggleSwitch.IsOn);
+                toggleSwitch.IsEnabled = true;
             }
         }
     }
