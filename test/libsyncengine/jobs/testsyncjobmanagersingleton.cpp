@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testsyncjobmanager.h"
+#include "testsyncjobmanagersingleton.h"
 
 #include "config.h"
 #include "db/parmsdb.h"
@@ -383,9 +383,9 @@ void TestSyncJobManagerSingleton::testCanRunjob() {
         const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId, "testCanRunjob");
 
         const LocalTemporaryDirectory localTmpDir("testCanRunjob");
-        const auto filepath = testhelpers::generateBigFile(localTmpDir.path(), 1); // Generate 1 file of 1 MB
 
         bool noMoreRun = false;
+        uint64_t counter = 0;
         const NodeId testBigFileRemoteId = "97601"; // test_ci/big_file_dir/big_text_file.txt
         for (auto i = 0; i < 20; i++) {
             const auto job =
@@ -396,9 +396,11 @@ void TestSyncJobManagerSingleton::testCanRunjob() {
                 break;
             }
             SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
+            counter++;
             Utility::msleep(100);
         }
         CPPUNIT_ASSERT_EQUAL(true, noMoreRun);
+        CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(3), counter);
 
         while (!SyncJobManagerSingleton::instance()->_data._managedJobs.empty()) {
             Utility::msleep(100);
