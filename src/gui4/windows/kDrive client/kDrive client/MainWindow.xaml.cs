@@ -80,8 +80,8 @@ namespace Infomaniak.kDrive
         }
         private void NavigationViewItem_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            SyncPath? targetPath = ViewModel.SelectedSync?.LocalPath;
-            Utility.OpenFolderSecurely(/*targetPath*/@"C:\Users");  // TODO : add back targetPath when real sync are functionnal
+            SyncPath? localPath = ViewModel.SelectedSync?.LocalPath;
+            Utility.OpenFolderSecurely(localPath);
         }
     }
 }
