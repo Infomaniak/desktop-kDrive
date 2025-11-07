@@ -22,7 +22,7 @@ extension XPCGuiProtocol {
     /// Async/Await wrapping of sendQuery(data:)
     func sendQueryAsync(_ requestData: Data) async -> Data? {
         await withCheckedContinuation { continuation in
-            self.sendQuery(requestData) { data in
+            self.processQuery(requestData) { data in
                 continuation.resume(returning: data)
             }
         }

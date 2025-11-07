@@ -187,11 +187,7 @@ extension XPCConnectionManager: XPCLoginItemRemoteProtocol {
 }
 
 extension XPCConnectionManager: XPCGuiRemoteProtocol {
-    public func sendSignal(_ msg: Data?) {
-        guard let msg else {
-            IKLogger.xpc.error("[KD] recv sendSignal with nil data")
-            return
-        }
+    public func processSignal(_ msg: Data) {
         IKLogger.xpc.log("[KD] recv signal \(String(data: msg, encoding: .utf8))")
     }
 }
