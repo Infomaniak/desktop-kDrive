@@ -23,8 +23,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="using:Infomaniak.kDrive.CustomControls">
     <ContentDialog x:Name="Dialog"
-                   PrimaryButtonText="Enregistrer"
-                   CloseButtonText="Annuler"
+                   x:Uid="CC_ConsentDialog"
                    DefaultButton="Primary">
 
         <ContentDialog.TitleTemplate>
@@ -38,8 +37,7 @@
             <StackPanel Spacing="12">
                 <TextBlock Text="{x:Bind Description, Mode=OneWay}"
                            TextWrapping="WrapWholeWords"
-                           TextAlignment="Justify"
-                           Margin="0,0,0,8" />
+                           TextAlignment="Justify" />
                 <ToggleSwitch x:Name="Toggle"
                               x:Uid="CC_ConsentDialog_Toggle"
                               IsOn="{x:Bind CurrentValue, Mode=OneWay}" />
