@@ -19,8 +19,8 @@
 import Foundation
 
 @propertyWrapper
-public struct Base64CodedData: Codable {
-    public var wrappedValue: Data
+public struct Base64CodedData: Codable, Sendable {
+    public let wrappedValue: Data
 
     // Decode: base64 string → regular Data
     public init(from decoder: Decoder) throws {
