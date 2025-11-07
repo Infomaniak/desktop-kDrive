@@ -185,7 +185,7 @@ public actor CoherentCache: CoherentCacheProtocol, CoherentCacheObservation {
         users[userId] = user
     }
 
-    // MARK: - Clenup
+    // MARK: - Cleanup
 
     public func clearOnServerRestart() {
         users = [:]
