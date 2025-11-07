@@ -100,14 +100,9 @@
             </NavigationView.Resources>
 
             <NavigationView.PaneCustomContent>
-                <Grid>
-                    <StackPanel Orientation="Vertical"
-                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                        <controls:SyncSelector HorizontalAlignment="Stretch"
-                                               Margin="4,9,4,20"
-                                               Visibility="{Binding ElementName=navView, Path=IsPaneOpen, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                    </StackPanel>
-                </Grid>
+                <controls:SyncSelector HorizontalAlignment="Stretch"
+                                       Margin="4,9,4,20"
+                                       Visibility="{Binding ElementName=navView, Path=IsPaneOpen, Converter={StaticResource BooleanToVisibilityConverter}}" />
             </NavigationView.PaneCustomContent>
 
             <NavigationView.MenuItems>
