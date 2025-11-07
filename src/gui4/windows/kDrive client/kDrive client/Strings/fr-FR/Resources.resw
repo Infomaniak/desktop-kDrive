@@ -282,6 +282,10 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
     <value>Partages</value>
     <comment>Redirect to the favorite folder (in browser)</comment>
   </data>
+  <data name="CC_QuickAccess_onlineDrive.Text" xml:space="preserve">
+    <value>kDrive en ligne</value>
+    <comment>Redirect to the kDrive main page (in browser)</comment>
+  </data>
   <data name="CC_KSuiteUpgradeBar_link.Content" xml:space="preserve">
     <value>Faire évoluer</value>
     <comment>Text of the button to be redirected to the shop</comment>
