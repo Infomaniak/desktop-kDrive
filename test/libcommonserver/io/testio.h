@@ -72,6 +72,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testOpenLockedFileRemovedBeforeTimedOut);
         CPPUNIT_TEST(testSetFileDates);
         CPPUNIT_TEST(testGetDirectorySize);
+        CPPUNIT_TEST(testMoveItemToTrash);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -144,6 +145,8 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
 
         void testSetFileDates();
         void testGetDirectorySize();
+
+        void testMoveItemToTrash();
 
     private:
         IoHelperTestUtilities *_testObj;
