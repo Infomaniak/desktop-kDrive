@@ -430,7 +430,7 @@ Open `Visual Studio 2019` and select `Open local folder`. Then choose `F:\Projec
     -DAPPLICATION_CLIENT_EXECUTABLE=kdrive_client 
     -DKDRIVE_THEME_DIR=F:/Projects/desktop-kDrive/infomaniak 
     -DBUILD_UNIT_TESTS:BOOL=ON 
-    -DCMAKE_PREFIX_PATH:STRING=C:/Qt/6.2.3/msvc2019_64 
+    -DCMAKE_PREFIX_PATH:STRING=C:/Qt/6.10.0/msvc2022_64 
     -DZLIB_INCLUDE_DIR:PATH="C:/Program Files (x86)/zlib-1.2.11/include" 
     -DZLIB_LIBRARY_RELEASE:FILEPATH="C:/Program Files (x86)/zlib-1.2.11/lib/zlib.lib" 
     -DVFS_STATIC_LIBRARY:FILEPATH=F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug/Vfs.lib 
