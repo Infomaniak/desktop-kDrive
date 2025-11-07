@@ -403,8 +403,7 @@
 
                     <!-- Advanced - Log -->
                     <toolKit:SettingsExpander x:Name="LogSettingsExpander"
-                                              Description="Permettent au support infomaniak d’identifier l’origine d’un incident."
-                                              Header="Journaux de débogage">
+                                              x:Uid="Page_SettingsPage_Logs">
                         <toolKit:SettingsExpander.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Users.users-circle-question-mark}"
                                               Height="32"
@@ -412,50 +411,53 @@
                         </toolKit:SettingsExpander.HeaderIcon>
 
                         <toolKit:SettingsExpander.Items>
-                            <toolKit:SettingsCard Header="Activer l’enregistrement des informations de débogage"
-                                                  Description="Enregistrer les informations de diagnostic sur mon ordinateur."
+                            <toolKit:SettingsCard x:Uid="Page_SettingsPage_Logs_Enabled"
                                                   Background="{ThemeResource LayerFillColorDefault}">
                                 <ToggleSwitch x:Name="EnableDebugLogsToggleSwitch"
                                               IsOn="{x:Bind ViewModel.Settings.LogEnabled, Mode=OneWay}"
                                               Toggled="EnableDebugLogsToggleSwitch_Toggled" />
                             </toolKit:SettingsCard>
 
-                            <toolKit:SettingsCard Header="Nettoyage automatique"
-                                                  Description="Supprime les journaux datant de plus 7 jours pour économiser de l’espace."
+                            <toolKit:SettingsCard x:Uid="Page_SettingsPage_Logs_Purge"
                                                   Background="{ThemeResource LayerFillColorDefault}"
                                                   Visibility="{x:Bind EnableDebugLogsToggleSwitch.IsOn, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
                                 <ToggleSwitch Toggled="PurgeOldLogsToggleSwitch_Toggled"
                                               IsOn="{x:Bind ViewModel.Settings.PurgeOldLogs, Mode=OneWay}" />
                             </toolKit:SettingsCard>
-                            <toolKit:SettingsCard Header="Journal détaillé étendu"
-                                                  Description="Active la collecte d’informations supplémentaires utile au support"
+                            <toolKit:SettingsCard x:Uid="Page_SettingsPage_Logs_Extended"
                                                   Background="{ThemeResource LayerFillColorDefault}"
                                                   Visibility="{x:Bind EnableDebugLogsToggleSwitch.IsOn, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
                                 <ToolTipService.ToolTip>
-                                    <ToolTip Content="Cette option peut ralentir kDrive." />
+                                    <ToolTip x:Uid="Page_SettingsPage_Logs_Extended_Tooltip" />
                                 </ToolTipService.ToolTip>
                                 <ToggleSwitch x:Name="ExtendedLogToggleSwitch"
                                               Toggled="ExtendedLogToggleSwitch_Toggled"
                                               IsOn="{x:Bind ViewModel.Settings.ExtendedLogEnbaled, Mode=OneWay}" />
                             </toolKit:SettingsCard>
-                            <toolKit:SettingsCard Header="Niveau de débogage"
-                                                  Description="Sélectionner la quantité d’informations enregistrées."
+                            <toolKit:SettingsCard x:Uid="Page_SettingsPage_Logs_DebugLevel"
                                                   Background="{ThemeResource LayerFillColorDefault}"
                                                   Visibility="{x:Bind EnableDebugLogsToggleSwitch.IsOn, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
                                                   IsEnabled="{x:Bind ExtendedLogToggleSwitch.IsOn, Converter={StaticResource BooleanToInvertedBooleanConverter}, Mode=OneWay}">
                                 <ComboBox SelectedValue="{x:Bind ViewModel.Settings.LogLevel, Converter={StaticResource ToStringConverter}, Mode=OneWay}"
                                           SelectedValuePath="Tag"
                                           SelectionChanged="LogLevelComboBox_SelectionChanged">
-                                    <ComboBoxItem Tag="Extended">Extended</ComboBoxItem>
-                                    <ComboBoxItem Tag="Debug" >Debug</ComboBoxItem>
-                                    <ComboBoxItem Tag="Info">Info</ComboBoxItem>
-                                    <ComboBoxItem Tag="Warning">Warning</ComboBoxItem>
-                                    <ComboBoxItem Tag="Error">Error</ComboBoxItem>
-                                    <ComboBoxItem Tag="Fatal">Fatal</ComboBoxItem>
-                                    <ComboBoxItem Tag="None">Aucun</ComboBoxItem>
+                                    <ComboBoxItem Tag="Extended"
+                                                  x:Uid="Page_SettingsPage_Logs_DebugLevel_ComboBox_Extended" />
+                                    <ComboBoxItem Tag="Debug"
+                                                  x:Uid="Page_SettingsPage_Logs_DebugLevel_ComboBox_Debug" />
+                                    <ComboBoxItem Tag="Info"
+                                                  x:Uid="Page_SettingsPage_Logs_DebugLevel_ComboBox_Info" />
+                                    <ComboBoxItem Tag="Warning"
+                                                  x:Uid="Page_SettingsPage_Logs_DebugLevel_ComboBox_Warning" />
+                                    <ComboBoxItem Tag="Error"
+                                                  x:Uid="Page_SettingsPage_Logs_DebugLevel_ComboBox_Error" />
+                                    <ComboBoxItem Tag="Fatal"
+                                                  x:Uid="Page_SettingsPage_Logs_DebugLevel_ComboBox_Fatal" />
+                                    <ComboBoxItem Tag="None"
+                                                  x:Uid="Page_SettingsPage_Logs_DebugLevel_ComboBox_None" />
                                 </ComboBox>
                             </toolKit:SettingsCard>
-                            <toolKit:SettingsCard Header="Ouvrir le dossier de debogage"
+                            <toolKit:SettingsCard x:Uid="Page_SettingsPage_Logs_DebugFolder"
                                                   Background="{ThemeResource LayerFillColorDefault}"
                                                   IsClickEnabled="True"
                                                   Click="OpenDebugFolderButton_Click"
