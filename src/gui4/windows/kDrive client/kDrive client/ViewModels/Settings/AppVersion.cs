@@ -14,7 +14,7 @@ namespace Infomaniak.kDrive.ViewModels
             get
             {
                 string languageCode = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
-                string res = String.Format("https://download.storage.infomaniak.com/drive/desktopclient/kDrive-{0}-win-{1}.html",
+                string res = String.Format(App.Constants.StorageUrl.ToString() + "/ kDrive-{0}-win-{1}.html",
                     Tag,
                     languageCode);
 

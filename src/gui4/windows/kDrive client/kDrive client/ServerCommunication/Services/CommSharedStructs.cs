@@ -216,6 +216,8 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         public bool? UseBigFolderSizeLimit { get; set; } // Not implemented
         public long? BigFolderSizeLimit { get; set; } // Not implemented
         public bool? ShowShortcuts { get; set; }
+        public bool MatomoEnabled { get; set; }
+        public bool SentryEnabled { get; set; }
         public VersionChannel? DistributionChannel { get; set; }
     }
     public static partial class ConversionHelper
@@ -230,6 +232,8 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             copyProperty(source, target, nameof(source.ShowShortcuts), nameof(target.ShowShortcuts));
             copyProperty(source, target.UpdateManager, nameof(source.DistributionChannel), nameof(target.UpdateManager.CurrentChannel));
             copyProperty(source, target, nameof(source.PurgeOldLogs), nameof(target.PurgeOldLogs));
+            copyProperty(source, target, nameof(source.MatomoEnabled), nameof(target.MatomoEnabled));
+            copyProperty(source, target, nameof(source.SentryEnabled), nameof(target.SentryEnabled));
 
             if (source.ProxyConfigInfo is ProxyConfigInfo proxyConfigInfo)
                 copyToProxyConfig(proxyConfigInfo, target.ProxyConfig);
@@ -254,6 +258,8 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             copyProperty(source, target, nameof(source.ShowShortcuts), nameof(target.ShowShortcuts));
             copyProperty(source.UpdateManager, target, nameof(source.UpdateManager.CurrentChannel), nameof(target.DistributionChannel));
             copyProperty(source, target, nameof(source.PurgeOldLogs), nameof(target.PurgeOldLogs));
+            copyProperty(source, target, nameof(source.MatomoEnabled), nameof(target.MatomoEnabled));
+            copyProperty(source, target, nameof(source.SentryEnabled), nameof(target.SentryEnabled));
 
             if (source.ProxyConfig is ProxyConfig proxyConfig && target.ProxyConfigInfo is ProxyConfigInfo proxyConfigInfo)
                 copyToProxyConfigInfo(proxyConfig, proxyConfigInfo);

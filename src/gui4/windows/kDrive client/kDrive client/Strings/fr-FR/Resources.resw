@@ -277,6 +277,18 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
     <value>Faire évoluer</value>
     <comment>Text of the button to be redirected to the shop</comment>
   </data>
+  <data name="CC_ConsentDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Enregistrer</value>
+  </data>
+  <data name="CC_ConsentDialog_Toggle.OnContent" xml:space="preserve">
+    <value>Autoriser le suivi</value>
+  </data>
+  <data name="CC_ConsentDialog_Toggle.OffContent" xml:space="preserve">
+    <value>Refuser le suivi</value>
+  </data>
+  <data name="CC_ConsentDialog.CloseButtonText" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
   <data name="CC_KSuiteUpgradeBar_message.Text" xml:space="preserve">
     <value>Débloquez plus de fonctionnalités et stockage</value>
     <comment>A message prompting the user to upgrade his offer</comment>
@@ -340,30 +352,6 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
   </data>
   <data name="Page_Onboarding_DriveSelectionPage_AdvancedButton.Content" xml:space="preserve">
     <value>Paramètres avancés</value>
-  </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.PrimaryButtonText" xml:space="preserve">
-    <value>Confirmer</value>
-  </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.CloseButtonText" xml:space="preserve">
-    <value>Annuler</value>
-  </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Title.Text" xml:space="preserve">
-    <value>Paramètres avancés</value>
-  </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Description.Text" xml:space="preserve">
-    <value>Personnalisez l’emplacement de vos dossiers kDrive</value>
-  </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_InfoBar.Message" xml:space="preserve">
-    <value>Sélectionnez un dossier vide pour chaque kDrive.</value>
-  </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_CustomizeButton.Content" xml:space="preserve">
-    <value>Personnaliser</value>
-  </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Title" xml:space="preserve">
-    <value>Ce dossier ne peut pas être sélectionné</value>
-  </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Subtitle" xml:space="preserve">
-    <value>Veuillez choisir un dossier vide qui ne se trouve pas a la racine d'un lecteur.</value>
   </data>
   <data name="Page_Onboarding_FinishPage_Title.Text" xml:space="preserve">
     <value>Tout est prêt !</value>
@@ -494,9 +482,6 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
   <data name="CC_UpdateExpander_Header.Text" xml:space="preserve">
     <value>Mise à jour</value>
   </data>
-  <data name="CC_UpdateExpander_UpdateButton.Content" xml:space="preserve">
-    <value>Mettre à jour</value>
-  </data>
   <data name="CC_UpdateExpander_UpdateAvailable_Description.TextTemplate" xml:space="preserve">
     <value>kDrive build {0} disponible</value>
     <comment>{0} version tag (ie 3.7.6)</comment>
@@ -554,6 +539,31 @@ Version {0} (build {1}), compilée le {2}
   </data>
   <data name="Page_SettingsPage_SyncRules.Header" xml:space="preserve">
     <value>Règles de synchronisation</value>
+  </data>
+  <data name="Page_SettingsPage_Privacy_Presentation.Header" xml:space="preserve">
+    <value>Infomaniak respecte votre vie privée</value>
+  </data>
+  <data name="Page_SettingsPage_Privacy_Matomo.Header" xml:space="preserve">
+    <value>Matomo</value>
+  </data>
+  <data name="Page_SettingsPage_Privacy_Matomo_ConsentDialog.Description" xml:space="preserve">
+    <value>Matomo est un outil d'analyse hébergé et géré exclusivement par Infomaniak pour comprendre comment l’application est utilisée.
+
+L’étude de ces données permet à notre équipe d’améliorer en continue l’interface de l’application.</value>
+  </data>
+  <data name="Page_SettingsPage_Privacy_Sentry_ConsentDialog.Description" xml:space="preserve">
+    <value>Sentry est un outil hébergé et géré exclusivement par Infomaniak pour surveiller en temps réel la stabilité de l'application et signaler automatiquement d’éventuelles erreurs techniques à nos développeurs.
+
+Ces données permettent à notre équipe de rapidement corriger et optimiser l’application, ce qui se traduit par une meilleure expérience d’utilisation pour vous.</value>
+  </data>
+  <data name="Page_SettingsPage_Privacy_Sentry.Header" xml:space="preserve">
+    <value>Sentry</value>
+  </data>
+  <data name="Page_SettingsPage_Privacy.Header" xml:space="preserve">
+    <value>Gestion des données</value>
+  </data>
+  <data name="Page_SettingsPage_Privacy_Sources.Header" xml:space="preserve">
+    <value>Voir le code source</value>
   </data>
   <data name="Page_SettingsPage_SyncRules.Description" xml:space="preserve">
     <value>Évitez que certains fichiers soient copiés dans kDrive.</value>
@@ -625,5 +635,37 @@ Version {0} (build {1}), compilée le {2}
   <data name="CC_QuickAccess_onlineDrive.Text" xml:space="preserve">
     <value>kDrive en ligne</value>
     <comment>Redirect to the kDrive main page (in browser)</comment>
+  </data>
+  <data name="Page_SettingsPage_Privacy_Presentation.Description" xml:space="preserve">
+    <value>Vous pouvez personnaliser les données d'utilisation et opérationnelles qui sont récupérées par Infomaniak pour corriger des bugs et faire évoluer l'application. Les deux outils utilisés sont hébergés et gérés exclusivement chez nous.
+
+Le code source de cette application peut être vérifié, les informations récoltées sont anonymes et vos informations personnelles restent strictement confidentielles et ne sont jamais partagées avec des tiers.</value>
+  </data>
+  <data name="CC_UpdateExpander_UpdateButton.Content" xml:space="preserve">
+    <value>Mettre à jour</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Confirmer</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Title.Text" xml:space="preserve">
+    <value>Paramètres avancés</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Description.Text" xml:space="preserve">
+    <value>Personnalisez l’emplacement de vos dossiers kDrive</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_InfoBar.Message" xml:space="preserve">
+    <value>Sélectionnez un dossier vide pour chaque kDrive.</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_CustomizeButton.Content" xml:space="preserve">
+    <value>Personnaliser</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Title" xml:space="preserve">
+    <value>Ce dossier ne peut pas être sélectionné</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Subtitle" xml:space="preserve">
+    <value>Veuillez choisir un dossier vide qui ne se trouve pas a la racine d'un lecteur.</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.CloseButtonText" xml:space="preserve">
+    <value>Annuler</value>
   </data>
 </root>
