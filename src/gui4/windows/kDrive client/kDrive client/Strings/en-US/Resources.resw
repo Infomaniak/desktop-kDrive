@@ -490,6 +490,9 @@
   <data name="Page_SettingsPage_Language.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
+  <data name="Page_SettingsPage_Title.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
   <data name="Page_SettingsPage_Accounts.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>

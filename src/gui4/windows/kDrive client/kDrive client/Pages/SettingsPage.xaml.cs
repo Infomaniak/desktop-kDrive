@@ -324,7 +324,7 @@ namespace Infomaniak.kDrive.Pages
             bool toggleIsOn = toggleSwitch?.IsOn ?? false;
 
             if (ViewModel.Settings.LogLevel == Logger.Level.None && !toggleIsOn) return; // No change needed
-            if(ViewModel.Settings.LogLevel != Logger.Level.None && toggleIsOn) return; // No change needed
+            if (ViewModel.Settings.LogLevel != Logger.Level.None && toggleIsOn) return; // No change needed
 
             LogSettingsExpander.IsEnabled = false;
             await ViewModel.Settings.ChangeLogLevel(toggleIsOn ? Logger.Level.Debug : Logger.Level.None);
@@ -338,7 +338,7 @@ namespace Infomaniak.kDrive.Pages
             if (toggleSwitch is null)
                 Logger.Log(Logger.Level.Error, "sender is not a ToggleSwitch");
 
-            if(ViewModel.Settings.PurgeOldLogs == toggleSwitch?.IsOn) return; // No change needed
+            if (ViewModel.Settings.PurgeOldLogs == toggleSwitch?.IsOn) return; // No change needed
             LogSettingsExpander.IsEnabled = false;
             await ViewModel.Settings.ChangePurgeOldLog(toggleSwitch?.IsOn ?? false);
             LogSettingsExpander.IsEnabled = true;
@@ -377,6 +377,38 @@ namespace Infomaniak.kDrive.Pages
             }
             if (control is not null)
                 control.IsEnabled = true;
+        }
+
+        bool _logUploadCancelled = false;
+        private async void SendLogButton_Click(object sender, RoutedEventArgs e)
+        {
+            var result = await SendLogDialog.ShowAsync();
+            if (result != ContentDialogResult.Primary) return;
+
+            // !!! Simulate log upload progress
+            // TODO: Implement actual log upload once linked with the server side
+
+            _logUploadCancelled = false;
+            SendLogsProgressRing.Value = 0;
+            SendLogsProgressRing.Visibility = Visibility.Visible;
+            SendLogButton.IsEnabled = false;
+            CancelSendLogButton.Visibility = Visibility.Visible;
+            while (SendLogsProgressRing.Value < 100 && !_logUploadCancelled)
+            {
+                await Task.Delay(Random.Shared.Next(200, 800));
+                SendLogsProgressRing.Value += Random.Shared.Next(1, 20);
+            }
+            SendLogsProgressRing.Value = 100;
+            await Task.Delay(500);
+            SendLogsProgressRing.Visibility = Visibility.Collapsed;
+            SendLogButton.IsEnabled = true;
+            CancelSendLogButton.Visibility = Visibility.Collapsed;
+            _logUploadCancelled = false;
+        }
+
+        private void CancelSendLogButton_Click(object sender, RoutedEventArgs e)
+        {
+            _logUploadCancelled = true;
         }
     }
 
