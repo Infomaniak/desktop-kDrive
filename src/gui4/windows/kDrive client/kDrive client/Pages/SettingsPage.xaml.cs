@@ -263,6 +263,65 @@ namespace Infomaniak.kDrive.Pages
             if (control is not null)
                 control.IsEnabled = true;
         }
+
+        private async void ProxyTypeComboBox_Changed(object sender, SelectionChangedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            var control = sender as Control;
+            if (control is not null)
+                control.IsEnabled = false;
+
+            var selectedItem = e.AddedItems.OfType<ComboBoxItem>().FirstOrDefault();
+            if (selectedItem is not null && Enum.TryParse<ProxyType>(selectedItem.Tag as string, out ProxyType selectedProxyType))
+            {
+                await ViewModel.Settings.ChangeProxyType(selectedProxyType);
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Error, "ProxyTypeComboBox_Changed: selected item is null or invalid");
+            }
+            if (control is not null)
+                control.IsEnabled = true;
+        }
+
+        private void ProxyConfig_Changed(object sender, RoutedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            if (ProxyHostTextBox.Text != ViewModel.Settings.ProxyConfig.HostName ||
+               ProxyPortTextBox.Text != ViewModel.Settings.ProxyConfig.Port.ToString() ||
+               ProxyNeedsAuthToggleSwitch.IsOn != ViewModel.Settings.ProxyConfig.NeedsAuth ||
+               ProxyUserTextBox.Text != ViewModel.Settings.ProxyConfig.User ||
+               ProxyPwdPasswordBox.Password.Length > 0)
+            {
+                SaveProxySettingsCard.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                SaveProxySettingsCard.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private async void SaveProxySettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            ProxySaveProgressRing.Visibility = Visibility.Visible;
+            ProxySettingsExpander.IsEnabled = false;
+            await ViewModel.Settings.ChangeProxyConfiguration(ProxyHostTextBox.Text, int.Parse(ProxyPortTextBox.Text), ProxyNeedsAuthToggleSwitch.IsOn, ProxyUserTextBox.Text, ProxyPwdPasswordBox.Password);
+            ProxySettingsExpander.IsEnabled = true;
+            SaveProxySettingsCard.Visibility = Visibility.Collapsed;
+            ProxySaveProgressRing.Visibility = Visibility.Collapsed;
+
+        }
+
+        private void CancelProxySettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            ProxyHostTextBox.Text = ViewModel.Settings.ProxyConfig.HostName;
+            ProxyPortTextBox.Text = ViewModel.Settings.ProxyConfig.Port.ToString();
+            ProxyNeedsAuthToggleSwitch.IsOn = ViewModel.Settings.ProxyConfig.NeedsAuth;
+            ProxyUserTextBox.Text = ViewModel.Settings.ProxyConfig.User;
+            ProxyPwdPasswordBox.Password = string.Empty;
+            SaveProxySettingsCard.Visibility = Visibility.Collapsed;
+        }
     }
 
     // templateSelector for the drives listview
@@ -285,4 +344,5 @@ namespace Infomaniak.kDrive.Pages
 
 
     }
+
 }
