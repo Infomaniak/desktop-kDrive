@@ -621,7 +621,7 @@ void ExtensionJob::commandRetrieveFolderStatus(const CommString &argument, std::
 }
 
 void ExtensionJob::commandMakeOnlineOnlyDirect(const CommString &argument, std::shared_ptr<AbstractCommChannel>) {
-    const auto fileList = CommonUtility::splitCommString(argument, messageCdeSeparator);
+    const auto fileList = CommonUtility::splitCommString(argument, messageArgSeparator);
 
     {
         const std::lock_guard lock(_dehydrationMutex);
