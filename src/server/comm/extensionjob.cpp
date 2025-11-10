@@ -768,10 +768,6 @@ void ExtensionJob::executeCommand(const CommString &commandLineStr, std::shared_
 void ExtensionJob::manageActionsOnSingleFile(std::shared_ptr<AbstractCommChannel> channel, const SyncPath &path,
                                              SyncPalMap::const_iterator syncPalMapIt, VfsMap::const_iterator vfsMapIt,
                                              const Sync &sync) {
-    if (files.size() != 1) {
-        return;
-    }
-
     bool exists = false;
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(path, exists, ioError) || !exists) {
