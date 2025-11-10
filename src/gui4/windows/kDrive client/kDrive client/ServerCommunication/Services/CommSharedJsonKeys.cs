@@ -43,6 +43,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string SyncProgress = "syncProgress";
         static public string SyncStep = "syncStep";
         static public string SyncStatus = "syncStatus";
+        static public string SyncFileItemInfo = "itemInfo";
 
         static public string ParmsInfo = "parmsInfo";
 

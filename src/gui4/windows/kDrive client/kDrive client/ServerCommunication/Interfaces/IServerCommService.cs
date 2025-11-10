@@ -82,7 +82,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 
         Task HandleSyncRemovedAsync(object? sender, SignalEventArgs args);
         Task HandleSyncProgressInfo(object? sender, SignalEventArgs args);
-
+        Task HandleSyncCompletedItem(object? sender, SignalEventArgs args);
 
         // Event handlers for Update-related signals
         Task HandleUpdaterStateChangedAsync(object? sender, SignalEventArgs args);

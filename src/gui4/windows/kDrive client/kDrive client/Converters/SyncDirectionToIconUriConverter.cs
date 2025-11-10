@@ -9,7 +9,7 @@ namespace Infomaniak.kDrive.Converters
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            if (value is SyncActivityDirection direction)
+            if (value is SyncDirection direction)
             {
                 // load icons from app resources
                 string result = "";
@@ -17,8 +17,8 @@ namespace Infomaniak.kDrive.Converters
                 {
                     string resourceKey = direction switch
                     {
-                        SyncActivityDirection.Outgoing => "Infomaniak.DS.Icons.Devices.computer",
-                        SyncActivityDirection.Incoming => "Infomaniak.DS.Icons.Network.globe",
+                        SyncDirection.Up => "Infomaniak.DS.Icons.Devices.computer",
+                        SyncDirection.Down => "Infomaniak.DS.Icons.Network.globe",
                         _ => "Infomaniak.DS.Icons.Devices.computer",
                     };
                     if (Application.Current.Resources[resourceKey] is string iconUriStr)

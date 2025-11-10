@@ -16,24 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using CommunityToolkit.Mvvm.ComponentModel;
 using DynamicData.Binding;
-using Infomaniak.kDrive.ServerCommunication;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
-using Infomaniak.kDrive.ViewModels.Errors;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.UI.Xaml;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.Foundation;
 
 namespace Infomaniak.kDrive.ViewModels
 {
@@ -46,11 +37,11 @@ namespace Infomaniak.kDrive.ViewModels
         private SyncPath _localPath = "";
         private SyncPath _remotePath = "";
         private bool _supportOnlineMode = false;
-        private readonly ObservableCollection<SyncActivity> _syncActivities = new();
+        private readonly ObservableCollection<SyncFileItem> _syncActivities = new();
         private SyncStatus _syncStatus = SyncStatus.Paused;
         private SyncType _syncType = SyncType.Unknown;
         private ObservableCollection<Errors.BaseError> _syncErrors = new();
-        private SyncActivity? _lastActivity;
+        private SyncFileItem? _lastActivity;
 
         // Sync UI properties
         private bool _showIncomingActivity = true;
@@ -141,7 +132,7 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _syncType, value);
         }
 
-        public ObservableCollection<SyncActivity> SyncActivities
+        public ObservableCollection<SyncFileItem> SyncActivities
         {
             get => _syncActivities;
         }
@@ -157,7 +148,7 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _syncErrors, value);
         }
 
-        public SyncActivity? LastActivity
+        public SyncFileItem? LastActivity
         {
             get => _lastActivity;
             set => SetPropertyInUIThread(ref _lastActivity, value);

@@ -371,7 +371,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 [JsonKeys.SyncDbId] = syncDbId
             };
-            
+
             CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_START, parms, cancellationToken);
             if (data.Params?.ContainsKey(JsonKeys.ExitCode) ?? false && data.Params?[JsonKeys.ExitCode]?.GetValue<int>() != 0)
             {
@@ -509,6 +509,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 case SignalNum.SYNC_PROGRESSINFO:
                     await HandleSyncProgressInfo(sender, args);
                     break;
+                case SignalNum.SYNC_COMPLETEDITEM:
+                    await HandleSyncCompletedItem(sender, args);
+                    break;
                 default:
                     Logger.Log(Logger.Level.Warning, $"Unhandled signal received: {args.SignalNum}");
                     break;
@@ -584,6 +587,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
+            options.Converters.Add(new ColorJsonConverter());
             DriveInfo driveInfo = signalData[JsonKeys.DriveInfo].Deserialize<DriveInfo>(options) ?? new DriveInfo();
 
             if (driveInfo.DbId is null)
@@ -681,6 +685,51 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return;
             }
             updatedSync.SyncStatus = syncStatus ?? SyncStatus.Undefined;
+        }
+
+        public async Task HandleSyncCompletedItem(object? sender, SignalEventArgs args)
+        {
+            var signalData = args.SignalData;
+
+            if (signalData == null || !signalData.ContainsKey(JsonKeys.SyncDbId))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.SyncDbId} not found in parameters.");
+                return;
+            }
+            if (signalData == null || !signalData.ContainsKey(JsonKeys.SyncFileItemInfo))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.SyncFileItemInfo} not found in parameters.");
+                return;
+            }
+
+            DbId? syncDbID = signalData[JsonKeys.SyncDbId]?.AsValue().GetValue<DbId>();
+            if (syncDbID is null)
+            {
+                Logger.Log(Logger.Level.Error, "syncDbID is null.");
+                return;
+            }
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            options.Converters.Add(new Base64StringJsonConverter());
+            SyncFileItemInfo? fileItemInfo = signalData[JsonKeys.SyncFileItemInfo]?.Deserialize<SyncFileItemInfo>(options);
+            if (fileItemInfo is null)
+            {
+                Logger.Log(Logger.Level.Error, "fileItemInfo is null.");
+                return;
+            }
+
+            Sync? sync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == syncDbID);
+            if (sync == null)
+            {
+                Logger.Log(Logger.Level.Error, $"Sync with dbID {syncDbID} not found in the model.");
+                return;
+            }
+
+            SyncFileItem syncFileItem = new SyncFileItem(sync);
+            CommStruct.ConversionHelper.copyToSyncFileItem(fileItemInfo, syncFileItem);
+            await Utility.RunOnUIThread(() => { sync.SyncActivities.Insert(0, syncFileItem); });
         }
 
         public async Task HandleUpdaterStateChangedAsync(object? sender, SignalEventArgs args)
