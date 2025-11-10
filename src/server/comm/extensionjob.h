@@ -31,6 +31,8 @@ struct FileData {
         static FileData get(const SyncPath &path);
         FileData parentFolder() const;
 
+        bool isValid() const { return syncDbId != 0; }
+
         // Absolute path of the file locally
         SyncPath localPath;
 

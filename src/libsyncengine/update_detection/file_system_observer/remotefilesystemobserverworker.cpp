@@ -341,7 +341,10 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         }
 
         // Check unsupported characters
-        if (hasUnsupportedCharacters(item.name(), item.id(), item.type())) {
+        if (const auto exitInfo = checkForUnsupportedCharacters(item.name(), item.id(), item.type()); !exitInfo) {
+            if (exitInfo.cause() == ExitCause::TmpDirAccessError) {
+                return exitInfo;
+            }
             continue;
         }
 
@@ -480,8 +483,12 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
         }
 
         // Check unsupported characters
-        if (hasUnsupportedCharacters(actionInfo.snapshotItem.name(), actionInfo.snapshotItem.id(),
-                                     actionInfo.snapshotItem.type())) {
+        if (const auto exitInfo = checkForUnsupportedCharacters(actionInfo.snapshotItem.name(), actionInfo.snapshotItem.id(),
+                                                                actionInfo.snapshotItem.type());
+            !exitInfo) {
+            if (exitInfo.cause() == ExitCause::TmpDirAccessError) {
+                return exitInfo;
+            }
             continue;
         }
 
@@ -733,30 +740,35 @@ ExitInfo RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &
     return ExitCode::Ok;
 }
 
-bool RemoteFileSystemObserverWorker::hasUnsupportedCharacters(const SyncName &name, const NodeId &nodeId, NodeType type) {
+ExitInfo RemoteFileSystemObserverWorker::checkForUnsupportedCharacters(const SyncName &name, const NodeId &nodeId,
+                                                                       NodeType type) {
+    ExitInfo exitInfo = ExitCode::Ok;
 #if defined(KD_MACOS)
     // Check that the name doesn't contain a character not yet supported by the filesystem (ex: U+1FA77 on pre macOS 13.4)
-    bool valid = false;
+    auto ioError = IoError::Unknown;
     if (type == NodeType::File) {
-        valid = CommonUtility::fileNameIsValid(name);
+        ioError = Utility::tryCreateTmpFile(name);
     } else if (type == NodeType::Directory) {
-        valid = CommonUtility::dirNameIsValid(name);
+        ioError = Utility::tryCreateTmpDir(name);
     }
 
-    if (!valid) {
+    if (ioError == IoError::AccessDenied) {
+        LOGW_SYNCPAL_ERROR(_logger, L"Can't access tmp directory.");
+        exitInfo = {ExitCode::SystemError, ExitCause::TmpDirAccessError};
+        _syncPal->addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
+    } else if (ioError != IoError::Success) {
         LOGW_SYNCPAL_DEBUG(_logger, L"The file/directory name contains a character not yet supported by the filesystem "
                                             << SyncName2WStr(name) << L". Item is ignored.");
-
-        Error err(_syncPal->syncDbId(), "", nodeId, type, name, ConflictType::None, InconsistencyType::NotYetSupportedChar);
-        _syncPal->addError(err);
-        return true;
+        _syncPal->addError(
+                Error(_syncPal->syncDbId(), "", nodeId, type, name, ConflictType::None, InconsistencyType::NotYetSupportedChar));
+        exitInfo = {ExitCode::SystemError, ExitCause::InvalidName};
     }
 #else
     (void) name;
     (void) nodeId;
     (void) type;
 #endif
-    return false;
+    return exitInfo;
 }
 
 void RemoteFileSystemObserverWorker::countListingRequests() {

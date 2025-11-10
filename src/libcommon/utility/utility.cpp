@@ -985,7 +985,8 @@ void CommonUtility::extractIntFromStrVersion(const std::string &version, std::ve
 
     std::string versionDigits = version;
 
-    std::regex versionDigitsRegex(R"(^([0-9]+\.[0-9]+\.[0-9]+)\s\(build\s([0-9]{8})\)$)"); // Example: "3.6.9 (build 20250220)"
+    std::regex versionDigitsRegex(R"(^([0-9]+\.[0-9]+\.[0-9]+)(?:\s*\(build\s*([0-9]+)\))?$)");
+
     std::smatch words;
     std::regex_match(versionDigits, words, versionDigitsRegex);
 
@@ -1033,58 +1034,6 @@ bool CommonUtility::isVersionLower(const std::string &currentVersion, const std:
 
     return std::lexicographical_compare(currTabVersion.begin(), currTabVersion.end(), targetTabVersion.begin(),
                                         targetTabVersion.end());
-}
-
-static std::string tmpDirName = "kdrive_" + CommonUtility::generateRandomStringAlphaNum();
-
-// Check if dir name is valid by trying to create a tmp dir
-bool CommonUtility::dirNameIsValid(const SyncName &name) {
-#if defined(KD_MACOS)
-    std::error_code ec;
-
-    SyncPath tmpDirPath = std::filesystem::temp_directory_path() / tmpDirName;
-    if (!std::filesystem::exists(tmpDirPath, ec)) {
-        std::filesystem::create_directory(tmpDirPath, ec);
-        if (ec.value()) {
-            return false;
-        }
-    }
-
-    SyncPath tmpPath = tmpDirPath / name;
-    std::filesystem::create_directory(tmpPath, ec);
-    bool illegalByteSequence;
-    illegalByteSequence = (ec.value() == static_cast<int>(std::errc::illegal_byte_sequence));
-    if (illegalByteSequence) {
-        return false;
-    }
-
-    std::filesystem::remove_all(tmpPath, ec);
-#else
-    (void) name;
-#endif
-    return true;
-}
-
-// Check if dir name is valid by trying to create a tmp file
-bool CommonUtility::fileNameIsValid(const SyncName &name) {
-    std::error_code ec;
-    if (!std::filesystem::exists(std::filesystem::temp_directory_path() / tmpDirName, ec)) {
-        std::filesystem::create_directory(std::filesystem::temp_directory_path() / tmpDirName, ec);
-        if (ec.value()) {
-            return false;
-        }
-    }
-    SyncPath tmpPath = std::filesystem::temp_directory_path() / tmpDirName / name;
-
-    std::ofstream output(tmpPath.native().c_str(), std::ios::binary);
-    if (!output) {
-        return false;
-    }
-
-    output.close();
-
-    std::filesystem::remove_all(tmpPath, ec);
-    return true;
 }
 
 #if defined(KD_MACOS)

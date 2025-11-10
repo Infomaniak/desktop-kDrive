@@ -306,8 +306,7 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
 
             LOGW_SYNCPAL_WARN(_logger, _side << L" update tree: Operation Create already exists on item with "
                                              << Utility::formatSyncPath(createOp->path()) << L", ID: "
-                                             << CommonUtility::s2ws(createOp->nodeId()) << L", type "
-                                             << createOp->objectType()
+                                             << CommonUtility::s2ws(createOp->nodeId()) << L", type " << createOp->objectType()
                                              << L", destination path: " << Utility::formatSyncPath(createOp->destinationPath()));
 
             sentry::Handler::captureMessage(sentry::Level::Warning, "UpdateTreeWorker::step4",

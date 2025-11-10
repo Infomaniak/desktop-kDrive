@@ -136,6 +136,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>crypt32.lib;shlwapi.lib;urlmon.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Command>powershell -ExecutionPolicy RemoteSigned -File "$(SolutionDir)fetchVersion.ps1" -ManifestPath "$(SolutionDir)FileExplorerExtensionPackage\Package.appxmanifest" -RepositoryRootPath "$(SolutionDir)..\..\..\"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -159,6 +162,9 @@
       <AdditionalDependencies>crypt32.lib;shlwapi.lib;urlmon.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EnableUAC>false</EnableUAC>
     </Link>
+    <PreBuildEvent>
+      <Command>powershell -ExecutionPolicy RemoteSigned -File "$(SolutionDir)fetchVersion.ps1" -ManifestPath "$(SolutionDir)FileExplorerExtensionPackage\Package.appxmanifest" -RepositoryRootPath "$(SolutionDir)..\..\..\"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\Common\pipeclient.cpp" />
@@ -192,6 +198,9 @@
     <ResourceCompile Include="FileExplorerExtension.rc" />
   </ItemGroup>
   <ItemGroup>
+    <CopyFileToFolders Include="..\..\..\..\version.json">
+      <FileType>Document</FileType>
+    </CopyFileToFolders>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

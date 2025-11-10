@@ -114,6 +114,7 @@ struct COMMONSERVER_EXPORT Utility {
 #if defined(KD_MACOS)
         static bool preventSleeping(bool enable);
         static void restartFinderExtension();
+        static void restartLoginItemAgent();
 #endif
         static bool getLinuxDesktopType(std::string &currentDesktop);
 
@@ -196,6 +197,19 @@ struct COMMONSERVER_EXPORT Utility {
         static void unixTimeToFiletime(time_t t, FILETIME *filetime);
 #endif
         static bool isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode);
+
+        /**
+         * @brief Check if a directory can be created in the temp directory.
+         * @param name the name of the directory to create.
+         * @return IoError
+         */
+        static IoError tryCreateTmpDir(const SyncName &name = Str("testDir"));
+        /**
+         * @brief Check if a file can be created in the temp directory.
+         * @param name the name of the file to create.
+         * @return IoError
+         */
+        static IoError tryCreateTmpFile(const SyncName &name = Str("testFile"));
 
     private:
         static log4cplus::Logger _logger;

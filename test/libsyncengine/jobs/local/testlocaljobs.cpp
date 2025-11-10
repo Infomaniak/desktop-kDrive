@@ -34,7 +34,7 @@ namespace KDC {
 class LocalDeleteJobMockingTrash : public LocalDeleteJob {
     public:
         explicit LocalDeleteJobMockingTrash(const SyncPath &absolutePath) :
-            LocalDeleteJob(absolutePath){};
+            LocalDeleteJob(absolutePath) {};
         void setMoveToTrashFailed(const bool failed) { _moveToTrashFailed = failed; };
         void setLiteSyncEnabled(const bool enabled) { _liteSyncIsEnabled = enabled; };
         void setMockMoveToTrash(const bool mocked) { _moveToTrashIsMocked = mocked; }
@@ -198,7 +198,7 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
         public:
             LocalDeleteJobMock(const SyncPalInfo &syncInfo, const SyncPath &relativePath, bool isDehydratedPlaceholder,
                                NodeId remoteId, bool forceToTrash = false) :
-                LocalDeleteJob(syncInfo, relativePath, isDehydratedPlaceholder, remoteId, forceToTrash){};
+                LocalDeleteJob(syncInfo, relativePath, isDehydratedPlaceholder, remoteId, forceToTrash) {};
             void setReturnedItemPath(const SyncPath &remoteItemPath) { _remoteItemPath = remoteItemPath; }
 
         protected:

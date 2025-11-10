@@ -105,7 +105,7 @@ target_precompile_headers(${libcommonserver_NAME} PRIVATE ${PC_HEADER_FILES})
 
 set_target_properties(${libcommonserver_NAME} PROPERTIES
     VERSION ${KDRIVE_VERSION}
-    SOVERSION ${KDRIVE_SOVERSION}
+    SOVERSION ${KDRIVE_VERSION_BUILD}
     RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY}
 )
 

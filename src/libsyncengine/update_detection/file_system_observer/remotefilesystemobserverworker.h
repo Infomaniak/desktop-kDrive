@@ -57,7 +57,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
         ExitInfo checkRightsAndUpdateItem(const NodeId &nodeId, bool &hasRights, SnapshotItem &snapshotItem);
 
-        bool hasUnsupportedCharacters(const SyncName &name, const NodeId &nodeId, NodeType type);
+        ExitInfo checkForUnsupportedCharacters(const SyncName &name, const NodeId &nodeId, NodeType type);
 
         void countListingRequests();
 
