@@ -289,7 +289,6 @@ namespace Infomaniak.kDrive.Pages
 
         private async void SaveProxySettingsButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded) return;
             ProxySaveProgressRing.Visibility = Visibility.Visible;
             ProxySettingsExpander.IsEnabled = false;
             await ViewModel.Settings.ChangeProxyConfiguration(ProxyHostTextBox.Text, int.Parse(ProxyPortTextBox.Text), ProxyNeedsAuthToggleSwitch.IsOn, ProxyUserTextBox.Text, ProxyPwdPasswordBox.Password);
@@ -307,6 +306,77 @@ namespace Infomaniak.kDrive.Pages
             ProxyUserTextBox.Text = ViewModel.Settings.ProxyConfig.User;
             ProxyPwdPasswordBox.Password = string.Empty;
             SaveProxySettingsCard.Visibility = Visibility.Collapsed;
+        }
+
+        private void OpenDebugFolderButton_Click(object sender, RoutedEventArgs e)
+        {
+            Utility.OpenFolderSecurely(Logger.LogFolder);
+        }
+
+        private async void EnableDebugLogsToggleSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            ToggleSwitch? toggleSwitch = sender as ToggleSwitch;
+
+            if (toggleSwitch is null)
+                Logger.Log(Logger.Level.Error, "sender is not a ToggleSwitch");
+
+            bool toggleIsOn = toggleSwitch?.IsOn ?? false;
+
+            if (ViewModel.Settings.LogLevel == Logger.Level.None && !toggleIsOn) return; // No change needed
+            if(ViewModel.Settings.LogLevel != Logger.Level.None && toggleIsOn) return; // No change needed
+
+            LogSettingsExpander.IsEnabled = false;
+            await ViewModel.Settings.ChangeLogLevel(toggleIsOn ? Logger.Level.Debug : Logger.Level.None);
+            LogSettingsExpander.IsEnabled = true;
+        }
+
+        private async void PurgeOldLogsToggleSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            ToggleSwitch? toggleSwitch = sender as ToggleSwitch;
+            if (toggleSwitch is null)
+                Logger.Log(Logger.Level.Error, "sender is not a ToggleSwitch");
+
+            if(ViewModel.Settings.PurgeOldLogs == toggleSwitch?.IsOn) return; // No change needed
+            LogSettingsExpander.IsEnabled = false;
+            await ViewModel.Settings.ChangePurgeOldLog(toggleSwitch?.IsOn ?? false);
+            LogSettingsExpander.IsEnabled = true;
+        }
+
+        private async void ExtendedLogToggleSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            ToggleSwitch? toggleSwitch = sender as ToggleSwitch;
+            if (toggleSwitch is null)
+                Logger.Log(Logger.Level.Error, "sender is not a ToggleSwitch");
+
+            bool toggleIsOn = toggleSwitch?.IsOn ?? false;
+            if (ViewModel.Settings.LogLevel == Logger.Level.Extended && toggleIsOn) return; // No change needed
+            if (ViewModel.Settings.LogLevel != Logger.Level.Extended && !toggleIsOn) return; // No change needed
+            LogSettingsExpander.IsEnabled = false;
+            await ViewModel.Settings.ChangeLogLevel(toggleSwitch?.IsOn ?? false ? Logger.Level.Extended : Logger.Level.Debug);
+            LogSettingsExpander.IsEnabled = true;
+        }
+
+        private async void LogLevelComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            var control = sender as Control;
+            if (control is not null)
+                control.IsEnabled = false;
+
+            var selectedItem = e.AddedItems.OfType<ComboBoxItem>().FirstOrDefault();
+            if (selectedItem is not null && Enum.TryParse<Logger.Level>(selectedItem.Tag as string, out Logger.Level selectedLevel))
+            {
+                await ViewModel.Settings.ChangeLogLevel(selectedLevel);
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Error, "Selected item is null or invalid");
+            }
+            if (control is not null)
+                control.IsEnabled = true;
         }
     }
 
