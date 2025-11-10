@@ -19,6 +19,10 @@
 import kDriveCore
 import Testing
 
+struct TestUser: Codable {
+    @Base64CodedString var name: String
+}
+
 struct CallbackMessageTests {
     @Test func testDecodingCallbackMessageWithUser() async throws {
         // GIVEN

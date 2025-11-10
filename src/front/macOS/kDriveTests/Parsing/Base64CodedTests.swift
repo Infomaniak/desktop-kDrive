@@ -19,32 +19,112 @@
 import kDriveCore
 import Testing
 
-struct TestUser: Codable {
-    @Base64CodedString var name: String
+struct TestStringCoding: Codable {
+    @Base64CodedString var string: String
 }
 
-struct Base64CodedTests {
-    @Test func testDecodingUserWithBase64Name() async throws {
+struct TestDataCoding: Codable {
+    @Base64CodedData var data: Data
+}
+
+struct TestColorCoding: Codable {
+    @Base64CodedColor var color: HexColor?
+
+    public init(color: HexColor?) {
+        _color = Base64CodedColor(wrappedValue: color)
+    }
+}
+
+struct Base64CodedStringPropertyWrapperTests {
+    @Test func testDecodingStringWithBase64Coding() async throws {
         // GIVEN
-        let sourceJson = #"{"name":"QmFzZTY0"}"# // "QmFzZTY0" is "Base64"
+        let sourceJson = #"{"string":"QmFzZTY0"}"# // "QmFzZTY0" is "Base64"
+        let data = Data(sourceJson.utf8)
 
         // WHEN
-        let data = Data(sourceJson.utf8)
-        let user = try JSONDecoder().decode(TestUser.self, from: data)
+        let parsed = try JSONDecoder().decode(TestStringCoding.self, from: data)
 
         // THEN
-        #expect(user.name == "Base64")
+        #expect(parsed.string == "Base64")
     }
 
-    @Test func testEncodingUserWithBase64Name() async throws {
+    @Test func testEncodingStringWithBase64Coding() async throws {
         // GIVEN
-        let user = TestUser(name: "Base64")
+        let testStringCoding = TestStringCoding(string: "Base64")
 
         // WHEN
-        let data = try JSONEncoder().encode(user)
+        let data = try JSONEncoder().encode(testStringCoding)
         let jsonString = String(data: data, encoding: .utf8)
 
         // THEN
-        #expect(jsonString == #"{"name":"QmFzZTY0"}"#)
+        #expect(jsonString == #"{"string":"QmFzZTY0"}"#)
+    }
+}
+
+struct Base64CodedDataPropertyWrapperTests {
+    @Test func testDecodingDataWithBase64Coding() async throws {
+        // GIVEN
+        let sourceJson = #"{"data":"QmFzZTY0"}"# // "QmFzZTY0" is "Base64"
+        let sourceData = Data(sourceJson.utf8)
+
+        // WHEN
+        let parsed = try JSONDecoder().decode(TestDataCoding.self, from: sourceData)
+
+        // THEN
+        #expect(parsed.data == Data("Base64".utf8))
+    }
+
+    @Test func testEncodingDataWithBase64Coding() async throws {
+        // GIVEN
+        let sourceData = Data("Base64".utf8)
+        let testDataCoding = TestDataCoding(data: sourceData)
+
+        // WHEN
+        let encodedData = try JSONEncoder().encode(testDataCoding)
+        let jsonString = String(data: encodedData, encoding: .utf8)
+
+        // THEN
+        #expect(jsonString == #"{"data":"QmFzZTY0"}"#)
+    }
+}
+
+struct Base64CodedColorPropertyWrapperTests {
+    static let testCases = [("#aabbcc", "I2FhYmJjYw=="),
+                            ("#AABBCC", "I2FhYmJjYw=="),
+                            ("#FFFFFF", "I2ZmZmZmZg=="),
+                            ("#000000", "IzAwMDAwMA==")]
+    
+    @Test(arguments: testCases)
+    func testDecodingColorWithBase64Coding(hexColorExpected: String, base64Input: String) async throws {
+        // GIVEN
+        guard let expectedColor = HexColor(hex: hexColorExpected) else {
+            Issue.record("failed to parse \(hexColorExpected) as a color")
+            return
+        }
+        let sourceJson = #"{"color":"\#(base64Input)"}"#
+        let sourceData = Data(sourceJson.utf8)
+
+        // WHEN
+        let parsed = try JSONDecoder().decode(TestColorCoding.self, from: sourceData)
+
+        // THEN
+        #expect(parsed.color == expectedColor)
+    }
+
+    @Test(arguments: testCases)
+    func testEncodingColorWithBase64Coding(hexColorInput: String, base64Expected: String) async throws {
+        // GIVEN
+        guard let sourceColor = HexColor(hex: hexColorInput) else {
+            Issue.record("failed to parse #aabbcc as a color")
+            return
+        }
+        let testColorCoding = TestColorCoding(color: sourceColor)
+
+        // WHEN
+        let encodedData = try JSONEncoder().encode(testColorCoding)
+        let jsonString = String(data: encodedData, encoding: .utf8)
+
+        // THEN
+        #expect(jsonString == #"{"color":"\#(base64Expected)"}"#)
     }
 }
