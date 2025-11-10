@@ -298,6 +298,10 @@ void TestIntegration::testBlacklist() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     CPPUNIT_ASSERT(!std::filesystem::exists(dirpath));
+    CPPUNIT_ASSERT(testhelpers::isInTrash(dirpath.filename()));
+#if defined(KD_MACOS) || defined(KD_LINUX)
+    testhelpers::eraseFromTrash(dirpath.filename());
+#endif
 
     // Move a file inside a blacklisted directory.
     moveRemoteFile(_driveDbId, fileId, tmpRemoteDir.id());
@@ -305,6 +309,10 @@ void TestIntegration::testBlacklist() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     CPPUNIT_ASSERT(!std::filesystem::exists(dirpath / filename));
+    CPPUNIT_ASSERT(testhelpers::isInTrash(filename));
+#if defined(KD_MACOS) || defined(KD_LINUX)
+    testhelpers::eraseFromTrash(filename);
+#endif
 
     // Move a file from inside a blacklisted directory to a synchronized directory.
     moveRemoteFile(_driveDbId, fileId, _remoteSyncDir.id());
@@ -451,8 +459,14 @@ void TestIntegration::testExclusionTemplates() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(fileRemoteId));
-    CPPUNIT_ASSERT(
-            !std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() / filename)); // The local file has been deleted.
+    CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / tmpRemoteDir.name() /
+                                            filename)); // The local file has been moved to trash.
+
+    CPPUNIT_ASSERT(!std::filesystem::exists(filename));
+    CPPUNIT_ASSERT(testhelpers::isInTrash(filename));
+#if defined(KD_MACOS) || defined(KD_LINUX)
+    testhelpers::eraseFromTrash(filename);
+#endif
 
     // Remove the exclusion template.
     (void) templateList.pop_back();
@@ -467,6 +481,7 @@ void TestIntegration::testExclusionTemplates() {
     IoHelper::getFileStat(_syncPal->localPath() / tmpRemoteDir.name() / testName, &filestat, found);
     fileLocalId = std::to_string(filestat.inode);
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
+
     logStep("testExclusionTemplates");
 }
 
@@ -623,8 +638,6 @@ void TestIntegration::testDeleteAndRecreateBranch() {
     NodeId nodeIdAA;
     NodeId nodeIdAAA;
     NodeId nodeIdAAAA;
-    const SyncPath filename = "AAAA";
-    const auto filepath = _syncPal->localPath() / tmpRemoteDir.name() / filename;
     {
         CreateDirJob jobA(nullptr, _driveDbId, tmpRemoteDir.id(), Str("A"));
         (void) jobA.runSynchronously();
@@ -636,7 +649,7 @@ void TestIntegration::testDeleteAndRecreateBranch() {
         (void) jobAAA.runSynchronously();
         nodeIdAAA = jobAAA.nodeId();
 
-        nodeIdAAAA = duplicateRemoteFile(_driveDbId, _testFileRemoteId, filename);
+        nodeIdAAAA = duplicateRemoteFile(_driveDbId, _testFileRemoteId, Str("AAAA"));
         moveRemoteFile(_driveDbId, nodeIdAAAA, nodeIdAAA);
     }
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
@@ -646,7 +659,7 @@ void TestIntegration::testDeleteAndRecreateBranch() {
     _syncPal->pause();
 
     {
-        // Move test file outside deleted directory
+        // Move test file outside the directory that we will delete
         moveRemoteFile(_driveDbId, nodeIdAAAA, tmpRemoteDir.id());
 
         // Delete A/AA
@@ -656,11 +669,11 @@ void TestIntegration::testDeleteAndRecreateBranch() {
         CreateDirJob jobAA(nullptr, _driveDbId, nodeIdA, Str("AA"));
         (void) jobAA.runSynchronously();
         nodeIdAA = jobAA.nodeId();
-        CreateDirJob jobAAA(nullptr, _driveDbId, nodeIdAA, Str("AAA1"));
-        (void) jobAAA.runSynchronously();
+        CreateDirJob jobAAA1(nullptr, _driveDbId, nodeIdAA, Str("AAA1"));
+        (void) jobAAA1.runSynchronously();
 
-        // Move back test file
-        moveRemoteFile(_driveDbId, nodeIdAAAA, jobAAA.nodeId());
+        // Move back test file into AAA1
+        moveRemoteFile(_driveDbId, nodeIdAAAA, jobAAA1.nodeId());
     }
 
     _syncPal->unpause();

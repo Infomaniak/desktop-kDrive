@@ -29,6 +29,14 @@
 #include "drivedeletejob.h"
 #include "drivesearchjob.h"
 #include "syncinfolistjob.h"
+#include "syncstartjob.h"
+#include "syncstopjob.h"
+#include "syncstatusjob.h"
+#include "syncaddjob.h"
+#include "syncadd2job.h"
+#include "syncstartafterloginjob.h"
+#include "syncdeletejob.h"
+#include "syncgetpubliclinkurljob.h"
 
 namespace KDC {
 
@@ -43,7 +51,15 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::DRIVE_UPDATE, makeShared<DriveUpdateJob>},
                 {RequestNum::DRIVE_DELETE, makeShared<DriveDeleteJob>},
                 {RequestNum::DRIVE_SEARCH, makeShared<DriveSearchJob>},
-                {RequestNum::SYNC_INFOLIST, makeShared<SyncInfoListJob>}};
+                {RequestNum::SYNC_INFOLIST, makeShared<SyncInfoListJob>},
+                {RequestNum::SYNC_START, makeShared<SyncStartJob>},
+                {RequestNum::SYNC_STOP, makeShared<SyncStopJob>},
+                {RequestNum::SYNC_STATUS, makeShared<SyncStatusJob>},
+                {RequestNum::SYNC_ADD, makeShared<SyncAddJob>},
+                {RequestNum::SYNC_ADD2, makeShared<SyncAdd2Job>},
+                {RequestNum::SYNC_START_AFTER_LOGIN, makeShared<SyncStartAfterLoginJob>},
+                {RequestNum::SYNC_DELETE, makeShared<SyncDeleteJob>},
+                {RequestNum::SYNC_GETPUBLICLINKURL, makeShared<SyncGetPublicLinkUrlJob>}};
 }
 
 std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::shared_ptr<CommManager> commManager,

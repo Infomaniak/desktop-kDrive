@@ -69,7 +69,7 @@ AbstractNetworkJob::AbstractNetworkJob() {
                     LOG_INFO(_logger, "Error in Poco::Net::Context constructor: " << errorText(e));
                     throw std::runtime_error(errorText(e).c_str());
                 }
-            } catch (std::exception &e) {
+            } catch (const std::exception &e) {
                 if (trials < _trials) {
                     LOG_INFO(_logger, "Unknown error in Poco::Net::Context constructor: " << errorText(e) << ", retrying...");
                 } else {
@@ -150,7 +150,7 @@ ExitInfo AbstractNetworkJob::runJob() noexcept {
         auto sendChrono = std::chrono::steady_clock::now();
         try {
             outputExitInfo = sendRequest(uri);
-        } catch (std::exception &e) {
+        } catch (const std::exception &e) {
             LOG_WARN(_logger, "Error in sendRequest " << jobId() << " : " << errorText(e));
             outputExitInfo = ExitCode::NetworkError;
         }
@@ -178,7 +178,7 @@ ExitInfo AbstractNetworkJob::runJob() noexcept {
         // Receive response
         try {
             outputExitInfo = receiveResponse(uri);
-        } catch (std::exception &e) {
+        } catch (const std::exception &e) {
             LOG_WARN(_logger, "Error in receiveResponse " << jobId() << " : " << errorText(e));
             outputExitInfo = ExitCode::NetworkError;
         }
@@ -343,7 +343,7 @@ ExitInfo AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
         }
     } catch (Poco::Exception &e) {
         return processSocketError("sendRequest exception", jobId(), e);
-    } catch (std::exception &e) {
+    } catch (const std::exception &e) {
         return processSocketError("sendRequest exception", jobId(), e);
     }
 
@@ -364,7 +364,7 @@ ExitInfo AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
             }
         } catch (Poco::Exception &e) {
             return processSocketError("send data exception", jobId(), e);
-        } catch (std::exception &e) {
+        } catch (const std::exception &e) {
             return processSocketError("send data exception", jobId(), e);
         }
 
@@ -421,7 +421,7 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
             try {
                 const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
                 return handleResponse(stream[0].get());
-            } catch (std::exception &e) {
+            } catch (const std::exception &e) {
                 LOG_WARN(_logger, "handleResponse exception: " << errorText(e));
                 return {};
             }
@@ -461,7 +461,7 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
                 ExitInfo exitInfo;
                 try {
                     exitInfo = handleError(stream[0].get(), uri);
-                } catch (std::exception &e) {
+                } catch (const std::exception &e) {
                     LOG_WARN(_logger, "handleError failed: " << errorText(e));
                     return {};
                 }

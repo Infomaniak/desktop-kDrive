@@ -16,14 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.Pages
 {
@@ -31,86 +35,31 @@ namespace Infomaniak.kDrive.Pages
     {
         private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel => _viewModel;
+
         public SettingsPage()
         {
             Logger.Log(Logger.Level.Info, "Navigated to SettingsPage - Initializing SettingsPage components");
             InitializeComponent();
             RegisterPropertyChangedHandlers();
-            Loaded += onPageLoaded;
-            
 
             Logger.Log(Logger.Level.Debug, "SettingsPage components initialized");
-        }
-        ~SettingsPage()
-        {
-            UnregisterPropertyChangedHandlers();
-        }
-
-        void onPageLoaded(object sender, RoutedEventArgs e)
-        {
-            // check if any of the users is staff to show the internal update channel combobox
-            bool staffUserExists = ViewModel.Users.Any(user => user.IsStaff && user.IsConnected);
-            UpdateChannelComboBox_Internal.Visibility = staffUserExists ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void RegisterPropertyChangedHandlers()
         {
             ViewModel.Settings.PropertyChanged += Settings_PropertyChanged;
-            SetEnumComboBoxSelection(NotificationsComboBox, ViewModel.Settings.NotificationsDisabled);
-
-            ViewModel.Settings.UpdateManager.PropertyChanged += UpdateManager_PropertyChanged;
-            SetEnumComboBoxSelection(UpdateChannelComboBox, ViewModel.Settings.UpdateManager.CurrentChannel);
+            Utility.SetEnumComboBoxSelection(NotificationsComboBox, ViewModel.Settings.NotificationsDisabled);
         }
 
         private void Settings_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(ViewModel.Settings.NotificationsDisabled))
-                SetEnumComboBoxSelection(NotificationsComboBox, ViewModel.Settings.NotificationsDisabled);
-        }
-
-        private void UpdateManager_PropertyChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(ViewModel.Settings.UpdateManager.CurrentChannel))
-                SetEnumComboBoxSelection(UpdateChannelComboBox, ViewModel.Settings.UpdateManager.CurrentChannel);
-
-        }
-        private void UnregisterPropertyChangedHandlers()
-        {
-            ViewModel.Settings.UpdateManager.PropertyChanged -= UpdateManager_PropertyChanged;
+                Utility.SetEnumComboBoxSelection(NotificationsComboBox, ViewModel.Settings.NotificationsDisabled);
         }
 
         private void CreateAccountButton_Click(object sender, RoutedEventArgs e)
         {
             (App.Current as App)?.StartOnboarding();
-        }
-
-        private async void UpdateChannel_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (!IsLoaded) return;
-            if (sender is ComboBox comboBox && comboBox.SelectedItem is ComboBoxItem selectedItem)
-            {
-                string? channelString = selectedItem.Tag as string;
-                if (Enum.TryParse<VersionChannel>(channelString, out VersionChannel selectedChannel))
-                {
-                    await ViewModel.Settings.UpdateManager.ChangeChannel(selectedChannel);
-                    Logger.Log(Logger.Level.Info, $"Update channel changed to {selectedChannel}");
-                }
-                else
-                {
-                    Logger.Log(Logger.Level.Error, $"Invalid update channel selected: {channelString}");
-                }
-            }
-        }
-
-        private async void AutoUpdateToggleSwitch_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (!IsLoaded) return;
-            if (sender is ToggleSwitch toggleSwitch)
-            {
-                toggleSwitch.IsEnabled = false;
-                await ViewModel.Settings.UpdateManager.ChangeAutoUpdate(toggleSwitch.IsOn);
-                toggleSwitch.IsEnabled = true;
-            }
         }
 
         private async void AutoStartToggleSwitch_Toggled(object sender, RoutedEventArgs e)
@@ -124,17 +73,6 @@ namespace Infomaniak.kDrive.Pages
             }
         }
 
-        private void SetEnumComboBoxSelection<TEnum>(ComboBox comboBox, TEnum value) where TEnum : struct, Enum
-        {
-            foreach (var item in comboBox.Items)
-            {
-                if (item is ComboBoxItem comboBoxItem && comboBoxItem.Tag is string tagString && Enum.TryParse<TEnum>(tagString, out TEnum itemValue) && itemValue.Equals(value))
-                {
-                    comboBox.SelectedItem = comboBoxItem;
-                    return;
-                }
-            }
-        }
         private async void NotificationsCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!IsLoaded) return;
@@ -163,5 +101,188 @@ namespace Infomaniak.kDrive.Pages
                 toggleSwitch.IsEnabled = true;
             }
         }
+
+        private async void UserSettingsExpander_Expanded(object sender, EventArgs e)
+        {
+            ProgressRing? progressRing = FindChildProgressRing(sender as DependencyObject);
+            if (progressRing is not null)
+                progressRing.Visibility = Visibility.Visible;
+
+            List<Task> loadAvailableDrivesTasks = new List<Task>();
+            foreach (var user in ViewModel.Users)
+            {
+                loadAvailableDrivesTasks.Add(user.RefreshAvailableDrives());
+            }
+            await Task.WhenAll(loadAvailableDrivesTasks);
+
+            if (progressRing is not null)
+                progressRing.Visibility = Visibility.Collapsed;
+        }
+
+        private ProgressRing? FindChildProgressRing(DependencyObject? dependencyObject)
+        {
+            if (dependencyObject == null)
+                return null;
+            int childCount = VisualTreeHelper.GetChildrenCount(dependencyObject);
+            for (int i = 0; i < childCount; i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(dependencyObject, i);
+                if (child is ProgressRing progressRing)
+                {
+                    return progressRing;
+                }
+                ProgressRing? result = FindChildProgressRing(child);
+                if (result != null)
+                {
+                    return result;
+                }
+            }
+            return null;
+        }
+
+        private async void DisconectUser_Click(object sender, RoutedEventArgs e)
+        {
+            User? user = sender is FrameworkElement fe && fe.DataContext is User u ? u : null;
+            if (user is null)
+            {
+                Logger.Log(Logger.Level.Error, "Unable to disconnect user: DataContext is not a User");
+                return;
+            }
+            ContentDialog dialog = new ContentDialog();
+
+            // XamlRoot must be set in the case of a ContentDialog running in a Desktop app
+            dialog.XamlRoot = this.XamlRoot;
+            dialog.Title = Utility.GetLocalizedString("Page_SettingsPage_RemoveAccount_Dialog/Title");
+            dialog.PrimaryButtonText = Utility.GetLocalizedString("Page_SettingsPage_RemoveAccount_Dialog/PrimaryButtonText");
+            dialog.SecondaryButtonText = Utility.GetLocalizedString("Page_SettingsPage_RemoveAccount_Dialog/SecondaryButtonText");
+            dialog.DefaultButton = ContentDialogButton.Primary;
+            dialog.Content = Utility.GetLocalizedString("Page_SettingsPage_RemoveAccount_Dialog/Content", user.Name);
+
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Secondary)
+            {
+                if (user is not null)
+                {
+                    var control = sender as Control;
+                    if (control is not null)
+                    {
+                        control.IsEnabled = false;
+                    }
+                    await _viewModel.DisconnectUserAsync(user.DbId);
+                    await Task.Delay(5000);
+                    if (control is not null)
+                    {
+                        control.IsEnabled = true;
+                    }
+                }
+            }
+        }
+
+        private void ManageDriveButton_Click(object sender, RoutedEventArgs e)
+        {
+            IDrive? drive = (sender as FrameworkElement)?.Tag as IDrive;
+            if (drive is Drive)
+            {
+                Logger.Log(Logger.Level.Info, $"ManageDriveButton clicked for configured drive {drive.Name}, going to mange page");
+                // TODO: Implement navigation to Manage Drive Page
+            }
+            else if (drive is DriveAvailable)
+            {
+                Logger.Log(Logger.Level.Info, $"ManageDriveButton clicked for unconfigured drive {drive.Name}, going to onboarding page");
+                // TODO: Implement navigation to Onboarding Page
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Error, "ManageDriveButton clicked but Tag is not a valid IDrive");
+            }
+        }
+
+        private void SyncRulesCard_Clicked(object sender, RoutedEventArgs e)
+        {
+            Logger.Log(Logger.Level.Info, "Navigating to Sync Rules Page from Settings Page");
+            // TODO: Implement navigation to Sync Rules Page
+        }
+
+        private async void MatomoButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            ConsentResult result = await MatomoContentDialog.ShowAsync(this.XamlRoot);
+            if (result == ConsentResult.Cancelled) return;
+            await ViewModel.Settings.ChangeMatomoEnabled(result == ConsentResult.Allowed);
+        }
+
+        private async void SentryButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            ConsentResult result = await SentryContentDialog.ShowAsync(this.XamlRoot);
+            if (result == ConsentResult.Cancelled) return;
+            await ViewModel.Settings.ChangeSentryEnabled(result == ConsentResult.Allowed);
+        }
+
+        private async void MatomoToogleSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            if (sender is ToggleSwitch toggleSwitch)
+            {
+                toggleSwitch.IsEnabled = false;
+                await ViewModel.Settings.ChangeMatomoEnabled(toggleSwitch.IsOn);
+                toggleSwitch.IsEnabled = true;
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Error, "MatomoToogleSwitch_Toggled: sender is not a ToggleSwitch");
+            }
+        }
+
+        private async void SentryeSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            if (sender is ToggleSwitch toggleSwitch)
+            {
+                toggleSwitch.IsEnabled = false;
+                await ViewModel.Settings.ChangeSentryEnabled(toggleSwitch.IsOn);
+                toggleSwitch.IsEnabled = true;
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Error, "SentryeSwitch_Toggled: sender is not a ToggleSwitch");
+            }
+
+        }
+
+        private async void PrivacySeeSourcesButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!IsLoaded) return;
+
+            var control = sender as Control;
+            if (control is not null)
+                control.IsEnabled = false;
+
+            await Windows.System.Launcher.LaunchUriAsync(App.Constants.GitHubRepoUrl);
+
+            if (control is not null)
+                control.IsEnabled = true;
+        }
+    }
+
+    // templateSelector for the drives listview
+    public class DriveDataTemplateSelector : DataTemplateSelector
+    {
+        public DataTemplate? ConfiguredTemplate { get; set; }
+        public DataTemplate? UnconfiguredTemplate { get; set; }
+        protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container)
+        {
+            if (item is null) return base.SelectTemplateCore(item);
+            if (item is DriveAvailable)
+                return UnconfiguredTemplate;
+            else if (item is Drive)
+                return ConfiguredTemplate;
+            else
+                Logger.Log(Logger.Level.Error, "Unknown item type in SelectTemplateCore");
+
+            return base.SelectTemplateCore(item);
+        }
+
+
     }
 }

@@ -37,7 +37,7 @@ DriveDeleteJob::DriveDeleteJob(std::shared_ptr<CommManager> commManager, int req
 ExitInfo DriveDeleteJob::deserializeInputParms() {
     try {
         readParamValue(inParamsDriveDbId, _driveDbId);
-    } catch (std::exception &e) {
+    } catch (const std::exception &e) {
         LOG_WARN(_logger, "Exception in AbstractGuiJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
     }

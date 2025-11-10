@@ -19,26 +19,17 @@
 import Foundation
 
 public extension NSXPCConnection {
-    /// Async/Await wrapping of remoteObjectProxyWithErrorHandler
-    func asyncProxy<Interface>(
+    func proxy<Interface>(
         from connection: NSXPCConnection,
         type: Interface.Type
-    ) async throws -> Interface where Interface: AnyObject {
-        try await withCheckedThrowingContinuation { continuation in
-            let proxy = connection.remoteObjectProxyWithErrorHandler { error in
-                continuation.resume(throwing: error)
-            }
-
-            guard let typedProxy = proxy as? Interface else {
-                continuation.resume(
-                    throwing: NSError(domain: "XPCError", code: -1, userInfo: [
-                        NSLocalizedDescriptionKey: "Failed to cast proxy to \(Interface.self)"
-                    ])
-                )
-                return
-            }
-
-            continuation.resume(returning: typedProxy)
+    ) throws -> Interface where Interface: AnyObject {
+        let proxy = connection.remoteObjectProxy
+        guard let typedProxy = proxy as? Interface else {
+            throw NSError(domain: "XPCError", code: -1, userInfo: [
+                NSLocalizedDescriptionKey: "Failed to cast proxy to \(Interface.self)"
+            ])
         }
+
+        return typedProxy
     }
 }

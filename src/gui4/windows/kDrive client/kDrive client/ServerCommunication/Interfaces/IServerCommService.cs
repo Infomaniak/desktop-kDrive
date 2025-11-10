@@ -31,6 +31,11 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
          */
         Task RefreshUsers(CancellationToken cancellationToken);
 
+        /* Removes the user with the specified DbId from the server and local storage.
+         * The view model's Users collection is updated accordingly.
+         * Returns true on success, false on failure.
+         */
+        Task RemoveUser(DbId userDbId, CancellationToken cancellationToken);
 
         // Account-related requests
         /* Refreshes the list of accounts for all users from the server.
@@ -43,7 +48,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 
         // Drive-related requests
         Task RefreshDrives(CancellationToken cancellationToken);
-
+        Task RefreshUserDrivesAvailable(DbId userDbId, CancellationToken cancellationToken);
 
         // Sync-related requests
         Task RefreshSyncs(CancellationToken cancellationToken);
@@ -60,9 +65,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task ChangeUpdaterChannel(VersionChannel newChannel, CancellationToken cancellationToken);
 
         // Event handlers for user-related signals
-        Task HandleUserUpdatedOrAdded(object? sender, SignalEventArgs args);
+        Task HandleUserUpdatedOrAddedAsync(object? sender, SignalEventArgs args);
 
         // Event handlers for Update-related signals
-        Task HandleUpdaterStateChanged(object? sender, SignalEventArgs args);
+        Task HandleUpdaterStateChangedAsync(object? sender, SignalEventArgs args);
     }
 }

@@ -152,7 +152,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Logger.Log(Logger.Level.Info, $"Sent request: {jsonString}");
                 cancellationToken.ThrowIfCancellationRequested();
                 CommData reply = await WaitForReplyAsync(requestId, cancellationToken).ConfigureAwait(false);
-                if(reply.RequestNum == RequestNum.Unknown)
+                if (reply.RequestNum == RequestNum.Unknown)
                 {
                     Logger.Log(Logger.Level.Debug, "Request not implemented in the server, trying the mock implementation.");
                     reply = await base.SendRequestAsync(requestNum, parameters, cancellationToken).ConfigureAwait(false);
@@ -170,9 +170,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return new CommData();
             }
         }
-       
         private async Task<CommData> WaitForReplyAsync(long requestId, CancellationToken cancellationToken = default)
         {
+            var time = DateTime.UtcNow;
             // Ensure the slot exists
             _pendingRequests[requestId] = null;
 
@@ -183,21 +183,21 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     if (reply != null)
                     {
                         _pendingRequests.Remove(requestId, out _);
+                        var elapsed = DateTime.UtcNow - time;
+                        Logger.Log(Logger.Level.Extended, $"Respons for request (Id) {requestId} received after {elapsed.TotalMilliseconds} ms");
                         return reply;
-                    }
-                    else
-                    {
-                        Logger.Log(Logger.Level.Debug, $"Found request(Id) {requestId}, but the response is not available yet null");
                     }
                 }
                 else
                 {
-                    Logger.Log(Logger.Level.Debug, $"No request(Id) found for {requestId}");
+                    Logger.Log(Logger.Level.Error, $"No request(Id) found for {requestId}");
+                    return new CommData();
                 }
                 await Task.Delay(10).ConfigureAwait(false);
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    Logger.Log(Logger.Level.Info, $"Request(Id) {requestId} canceled before completion.");
+                    var elapsed = DateTime.UtcNow - time;
+                    Logger.Log(Logger.Level.Info, $"Request(Id) {requestId} canceled before completion after {elapsed.TotalMilliseconds} ms");
                     _pendingRequests.Remove(requestId, out _);
                     cancellationToken.ThrowIfCancellationRequested();
                 }

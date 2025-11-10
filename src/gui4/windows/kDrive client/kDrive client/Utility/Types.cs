@@ -85,5 +85,21 @@ namespace Infomaniak.kDrive.Types
         Success,
         Error
     }
+    public interface IDrive
+    {
+        public string Name { get; }
+        public System.Drawing.Color Color { get; }
+        public DriveId DriveId { get; set; }
+    }
+
+    public class DriveAvailable : IDrive
+    {
+        public DriveId DriveId { get; set; } = 0;
+        public UserId UserId { get; set; } = 0;
+        public DbId UserDbId { get; set; } = 0;
+        public AccountId AccountId { get; set; } = 0;
+        public string Name { get; set; } = "";
+        public System.Drawing.Color Color { get; set; } = System.Drawing.Color.White;
+    }
 }
 

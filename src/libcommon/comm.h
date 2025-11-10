@@ -60,7 +60,6 @@ enum class RequestNum {
     SYNC_START,
     SYNC_STOP,
     SYNC_STATUS,
-    SYNC_ISRUNNING,
     SYNC_ADD,
     SYNC_ADD2,
     SYNC_START_AFTER_LOGIN,
@@ -152,8 +151,6 @@ inline std::string toString(RequestNum e) {
             return "SYNC_STOP";
         case RequestNum::SYNC_STATUS:
             return "SYNC_STATUS";
-        case RequestNum::SYNC_ISRUNNING:
-            return "SYNC_ISRUNNING";
         case RequestNum::SYNC_ADD:
             return "SYNC_ADD";
         case RequestNum::SYNC_ADD2:
@@ -218,7 +215,7 @@ inline std::string toString(RequestNum e) {
         case RequestNum::EXCLAPP_SETLIST:
             return "EXCLAPP_SETLIST";
         case RequestNum::EXCLAPP_GET_FETCHING_APP_LIST:
-            return "GET_FETCHING_APP_LIST";
+            return "EXCLAPP_GET_FETCHING_APP_LIST";
 #endif
         case RequestNum::PARAMETERS_INFO:
             return "PARAMETERS_INFO";

@@ -159,19 +159,18 @@
 }
 
 // XPCGuiProtocol protocol implementation
-- (void)sendQuery:(NSData*)msg
-{
-    NSString *answer = [[NSString alloc] initWithData:msg encoding:NSUTF8StringEncoding];
+- (void)processQuery:(NSData * _Nonnull)query callback:(void (^ _Nonnull)(NSData * _Nonnull))callback {
+    NSString *answer = [[NSString alloc] initWithData:query encoding:NSUTF8StringEncoding];
     NSLog(@"[KD] Query received %@", answer);
 
     NSArray *answerArr = [answer componentsSeparatedByString:@";"];
     
     // Send ack
-    NSString *query = [NSString stringWithFormat:@"%@", answerArr[0]];
-    NSLog(@"[KD] Send ack signal %@", query);
+    NSString *ack = [NSString stringWithFormat:@"%@", answerArr[0]];
+    NSLog(@"[KD] Send ack signal %@", ack);
 
     @try {
-        [[_guiConnection remoteObjectProxy] sendSignal:[query dataUsingEncoding:NSUTF8StringEncoding]];
+        [[_guiConnection remoteObjectProxy] processSignal:[ack dataUsingEncoding:NSUTF8StringEncoding]];
     } @catch(NSException* e) {
         // Do nothing and wait for invalidationHandler
         NSLog(@"[KD] Error sending ack signal: %@", e.name);
@@ -222,6 +221,5 @@
     
     // Add your test here
 }
-
 
 @end

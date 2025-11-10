@@ -47,13 +47,15 @@ namespace Infomaniak.kDrive
         private readonly IServiceCollection _services = new ServiceCollection();
         private static IServiceProvider? _serviceProvider = null;
         internal static IServiceProvider ServiceProvider => _serviceProvider ?? throw new InvalidOperationException("Service provider is not initialized.");
+
+        internal static IAppConstants Constants => new ProductionConstants();
         internal App()
         {
             InitializeComponent();
             TrayIcoManager = new TrayIcon.TrayIconManager();
             _services.AddSingleton<AppModel>();
-            //_services.AddSingleton<IServerCommProtocol, SocketServerCommProtocol>()
-            _services.AddSingleton<IServerCommProtocol, MockServerCommProtocol>();
+            _services.AddSingleton<IServerCommProtocol, SocketServerCommProtocol>();
+            //_services.AddSingleton<IServerCommProtocol, MockServerCommProtocol>();
             _services.AddSingleton<IServerCommService, ServerCommService>();
             _serviceProvider = _services.BuildServiceProvider();
             Logger.Log(Logger.Level.Info, "Application started");

@@ -666,5 +666,4 @@ bool Utility::isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode
             return false;
     }
 }
-
 } // namespace KDC

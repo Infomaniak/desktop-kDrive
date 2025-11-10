@@ -888,7 +888,6 @@ bool ExtensionJob::syncFileStatus(const FileData &fileData, SyncFileStatus &stat
 
 SyncPalMap::const_iterator ExtensionJob::retrieveSyncPalMapIt(const int syncDbId) const {
     const auto result = AppServer::syncPalMap.find(syncDbId);
-
     if (result == AppServer::syncPalMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "SyncPal not found in SyncPalMap - syncDbId=" << syncDbId);
         return AppServer::syncPalMap.end();

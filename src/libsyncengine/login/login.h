@@ -38,8 +38,7 @@ class Login {
         };
 
         Login();
-        Login(const std::string &keychainKey);
-        virtual ~Login();
+        explicit Login(const std::string &keychainKey);
 
         /*
          * Retrieve the API tokens
@@ -51,9 +50,9 @@ class Login {
         long tokenUpdateDurationFromNow() const;
 
         inline const ApiToken &apiToken() const { return _apiToken; }
-        inline void setApiToken(ApiToken &apiToken) { _apiToken = apiToken; }
+        inline void setApiToken(const ApiToken &apiToken) { _apiToken = apiToken; }
         inline const std::string &keychainKey() const { return _keychainKey; }
-        inline void setKeychainKey(std::string &keychain) { _keychainKey = keychain; }
+        inline void setKeychainKey(const std::string &keychain) { _keychainKey = keychain; }
         inline bool hasError() const { return !_error.empty(); }
         inline void setError(const std::string &error) { _error = error; }
         inline std::string error() const { return _error; }

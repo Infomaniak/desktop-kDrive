@@ -18,16 +18,16 @@
 
 #import <Foundation/Foundation.h>
 
-// Server protocol
+// Server protocol (GUI => Server)
 @protocol XPCGuiProtocol
 
-- (void)sendQuery:(NSData *)query callback:(void (^)(NSData *answer))callback;
+- (void)processQuery:(NSData *_Nonnull)query callback:(void (^_Nonnull)(NSData *_Nonnull answer))callback;
 
 @end
 
-// Client protocol
+// Client protocol (Server => GUI)
 @protocol XPCGuiRemoteProtocol
 
-- (void)sendSignal:(NSData *)msg;
+- (void)processSignal:(NSData *_Nonnull)msg;
 
 @end

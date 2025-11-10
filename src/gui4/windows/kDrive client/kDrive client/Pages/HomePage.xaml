@@ -273,8 +273,8 @@
               RowSpacing="{StaticResource Infomaniak.Style.Spacing.L}"
               ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.M}">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2.3*" />
-                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="auto"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <!-- Sync status bar -->

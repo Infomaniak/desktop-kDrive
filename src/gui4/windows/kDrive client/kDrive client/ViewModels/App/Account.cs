@@ -16,23 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using CommunityToolkit.Mvvm.Collections;
-using CommunityToolkit.Mvvm.ComponentModel;
-using Infomaniak.kDrive.ServerCommunication;
-using Infomaniak.kDrive.ServerCommunication.Interfaces;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Drawing;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.ViewModels
 {
     public class Account : UISafeObservableObject
     {
+        private string _name;
         private DbId _dbId = -1;
         private ObservableCollection<Drive> _drives = new ObservableCollection<Drive>();
         private User _user;
@@ -59,5 +49,10 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _drives, value);
         }
 
+        public string Name
+        {
+            get => string.IsNullOrEmpty(_name) ? $"Account {_dbId}" : _name;
+            set => SetPropertyInUIThread(ref _name, value);
+        }
     }
 }

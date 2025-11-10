@@ -16,18 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using CommunityToolkit.Mvvm.ComponentModel;
 using DynamicData;
 using DynamicData.Binding;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
-using Infomaniak.kDrive.ServerCommunication.Services;
-using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Xaml;
 using Microsoft.VisualBasic.Devices;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
@@ -122,6 +117,7 @@ namespace Infomaniak.kDrive.ViewModels
                 .TransformMany(a => a.Drives)
                 .AutoRefresh(d => d.Syncs.Count)
                 .TransformMany(d => d.Syncs)
+                .Sort(SortExpressionComparer<Sync>.Ascending(s => s.Drive.DbId))
                 .Bind(out var allSyncs)
                 .Subscribe();
             AllSyncs = allSyncs;
@@ -137,7 +133,7 @@ namespace Infomaniak.kDrive.ViewModels
 
             // Observe changes to ActiveDrives list and ensure SelectedSync is valid
             AllSyncs.ToObservableChangeSet()
-                       .Subscribe(_ => EnsureValidSelectedSync());
+                                       .Subscribe(_ => UIThreadDispatcher.TryEnqueue(EnsureValidSelectedSync));
 
             // Observe changes to AppErrors and SelectedSync.SyncErrors to update HasNoErrors property
             AppErrors.CollectionChanged += (_, __) => OnPropertyChanged(nameof(HasErrors));
@@ -257,6 +253,12 @@ namespace Infomaniak.kDrive.ViewModels
         private void SyncErrors_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             OnPropertyChanged(nameof(HasErrors));
+        }
+
+        public async Task DisconnectUserAsync(DbId userDbId)
+        {
+            IServerCommService serverCommService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            await serverCommService.RemoveUser(userDbId, CancellationToken.None);
         }
     }
 }

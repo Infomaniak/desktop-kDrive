@@ -132,9 +132,6 @@
   <data name="W_MainWindow_NavBar_Storage.Content" xml:space="preserve">
     <value />
   </data>
-  <data name="W_MainWindow_NavBar_Folder.Content" xml:space="preserve">
-    <value />
-  </data>
   <data name="W_MainWindow_TitleBar_SearchBox.PlaceholderText" xml:space="preserve">
     <value />
   </data>
@@ -255,6 +252,18 @@
   <data name="CC_KSuiteUpgradeBar_link.Content" xml:space="preserve">
     <value />
   </data>
+  <data name="CC_ConsentDialog.PrimaryButtonText" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_ConsentDialog_Toggle.OnContent" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_ConsentDialog_Toggle.OffContent" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_ConsentDialog.CloseButtonText" xml:space="preserve">
+    <value />
+  </data>
   <data name="CC_KSuiteUpgradeBar_message.Text" xml:space="preserve">
     <value />
   </data>
@@ -315,30 +324,6 @@
   <data name="Page_Onboarding_DriveSelectionPage_AdvancedButton.Content" xml:space="preserve">
     <value />
   </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.PrimaryButtonText" xml:space="preserve">
-    <value />
-  </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.CloseButtonText" xml:space="preserve">
-    <value />
-  </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Title.Text" xml:space="preserve">
-    <value />
-  </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Description.Text" xml:space="preserve">
-    <value />
-  </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_InfoBar.Message" xml:space="preserve">
-    <value />
-  </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_CustomizeButton.Content" xml:space="preserve">
-    <value />
-  </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Title" xml:space="preserve">
-    <value />
-  </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Subtitle" xml:space="preserve">
-    <value />
-  </data>
   <data name="Page_Onboarding_FinishPage_Title.Text" xml:space="preserve">
     <value />
   </data>
@@ -388,9 +373,6 @@
     <value />
   </data>
   <data name="Page_StoragePage_OtherFiles.Text" xml:space="preserve">
-    <value />
-  </data>
-  <data name="Page_StoragePage_FreeSpace.Text" xml:space="preserve">
     <value />
   </data>
   <data name="Converter_SyncDirectionToToolTipConverter_Incoming" xml:space="preserve">
@@ -468,9 +450,6 @@
   <data name="CC_UpdateExpander_Header.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="CC_UpdateExpander_UpdateButton.Content" xml:space="preserve">
-    <value />
-  </data>
   <data name="CC_UpdateExpander_UpdateAvailable_Description.TextTemplate" xml:space="preserve">
     <value />
   </data>
@@ -503,6 +482,63 @@
     <value />
   </data>
   <data name="Page_SettingsPage_Language.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Accounts.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Advanced.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_RemoveAccount_Dialog.Title" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_RemoveAccount_Dialog.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_RemoveAccount.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_SyncRules.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Privacy_Presentation.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Privacy_Matomo.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Privacy_Matomo_ConsentDialog.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Privacy_Sentry_ConsentDialog.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Privacy_Sentry.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Privacy.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Privacy_Sources.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_SyncRules.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_RemoveAccount_Dialog.SecondaryButtonText" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_RemoveAccount_Dialog.PrimaryButtonText" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_AddAccounts.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Drive_Configured.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Drive_Unconfigured.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
   <data name="Page_SettingsPage_Language_ComboBox_Default.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
@@ -548,6 +584,42 @@
     <value />
   </data>
   <data name="Page_SettingsPage_Beta_Expander.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="W_MainWindow_PaneFooter_Folder" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="CC_QuickAccess_onlineDrive.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
+      <value />
+  </data>
+  <data name="Page_SettingsPage_Privacy_Presentation.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="CC_UpdateExpander_UpdateButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.PrimaryButtonText" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Description.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_InfoBar.Message" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_CustomizeButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Title" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Subtitle" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.CloseButtonText" xml:space="preserve">
     <value />
   </data>
 </root>

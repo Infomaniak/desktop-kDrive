@@ -1041,7 +1041,7 @@ void TestUtility::testReadValueFromStruct() {
         CPPUNIT_ASSERT(dummyValues[0].strValue == "qwertz");
         CPPUNIT_ASSERT(dummyValues[1].intValue == 67890);
         CPPUNIT_ASSERT(dummyValues[1].strValue == "ztrewq");
-    } catch (std::exception &e) {
+    } catch (const std::exception &e) {
         CPPUNIT_ASSERT(false);
     }
 }

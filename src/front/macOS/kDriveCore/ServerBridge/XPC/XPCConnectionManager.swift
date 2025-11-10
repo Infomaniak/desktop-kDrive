@@ -18,7 +18,7 @@
 
 import Foundation
 
-@objc final class XPCConnectionManager: NSObject {
+@objc final class XPCConnectionManager: NSObject, @unchecked Sendable {
     let machServiceName: String
 
     var loginItemAgentConnection: NSXPCConnection?
@@ -31,6 +31,17 @@ import Foundation
 
         IKLogger.xpc.log("[KD] mach name: \(loginItemAgentMachName)")
         machServiceName = loginItemAgentMachName
+
+        super.init()
+
+        Task {
+            IKLogger.xpc.log("[KD] initial connection to login item agent")
+            do {
+                try await connectToLoginAgent()
+            } catch {
+                IKLogger.xpc.error("[KD] initial connectToLoginAgent FAILED \(error)")
+            }
+        }
     }
 
     func scheduleRetryToConnectToLoginAgent() {
@@ -157,37 +168,6 @@ import Foundation
 
         appConnection?.resume()
     }
-
-    // TODO: Remove
-    func dummyServerQuery() async throws {
-        guard let appConnection else {
-            IKLogger.xpc.error("[KD] no connection")
-            return
-        }
-
-        IKLogger.xpc.log("[KD] Start communication with app server")
-        let remoteObject = try await appConnection.asyncProxy(from: appConnection, type: XPCGuiProtocol.self)
-
-        let json = """
-        { "num": 1,
-            "params": {
-            "code": "YWJhYQ==",
-            "codeVerifier": "abFmJiYg==" } }
-        """
-        let dummyData = json.data(using: .utf8)!
-        IKLogger.xpc.error("[KD] sending bytes: \(dummyData.count)")
-
-        remoteObject.sendQuery(dummyData) { data in
-            guard let data else {
-                IKLogger.xpc.log("[KD] recv answer NIL")
-                return
-            }
-
-            IKLogger.xpc.log("[KD] recv answer of length: \(data.count)")
-            let recv = String(data: data, encoding: .utf8)!
-            IKLogger.xpc.log("[KD] recv: \(recv)")
-        }
-    }
 }
 
 extension XPCConnectionManager: XPCLoginItemRemoteProtocol {
@@ -207,11 +187,7 @@ extension XPCConnectionManager: XPCLoginItemRemoteProtocol {
 }
 
 extension XPCConnectionManager: XPCGuiRemoteProtocol {
-    public func sendSignal(_ msg: Data?) {
-        guard let msg else {
-            IKLogger.xpc.error("[KD] recv sendSignal with nil data")
-            return
-        }
+    public func processSignal(_ msg: Data) {
         IKLogger.xpc.log("[KD] recv signal \(String(data: msg, encoding: .utf8))")
     }
 }

@@ -29,6 +29,7 @@
 namespace KDC {
 
 class AppServer;
+class AbstractGuiJob;
 class GuiJobFactory;
 
 class CommManager : public std::enable_shared_from_this<CommManager> {
@@ -53,6 +54,9 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
         void executeCommandDirect(const CommString &commandLineStr, bool broadcast);
 #endif
 
+        // Broadcast a signal to all the gui channels
+        void sendGuiSignal(std::shared_ptr<AbstractGuiJob> signal);
+
     private:
         // AppServer maps
         AppServer &_appServer;
@@ -70,7 +74,7 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
         void executeExtCommand(const CommString &commandLineStr);
         // Execute a command received from an extension and responds on the provided channel
         void executeExtCommand(const CommString &commandLineStr, std::shared_ptr<AbstractCommChannel> channel);
-        // Broadcast a command to all the server channels
+        // Broadcast a command to all the extension channels
         void broadcastExtCommand(const CommString &commandLineStr);
 
         // Finder callbacks

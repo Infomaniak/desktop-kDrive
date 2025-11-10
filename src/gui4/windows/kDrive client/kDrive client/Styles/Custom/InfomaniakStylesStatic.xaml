@@ -25,4 +25,6 @@
     <x:String x:Key="Infomaniak.Custom.Icons.folder-share">ms-appx:///Assets/Custom/Icons/folder-share.svg</x:String>
     <x:String x:Key="Infomaniak.Custom.Icons.drive-custom">ms-appx:///Assets/Custom/Icons/drive-custom.svg</x:String>
     <x:String x:Key="Infomaniak.Custom.Icons.logo-myksuiteplus">ms-appx:///Assets/Custom/Icons/logo-myksuiteplus.svg</x:String>
+    <x:String x:Key="Infomaniak.Custom.Icons.logo-matomo">ms-appx:///Assets/Custom/Icons/logo-matomo.svg</x:String>
+    <x:String x:Key="Infomaniak.Custom.Icons.logo-sentry">ms-appx:///Assets/Custom/Icons/logo-sentry.svg</x:String>
 </ResourceDictionary>

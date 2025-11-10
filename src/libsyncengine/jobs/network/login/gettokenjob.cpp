@@ -24,7 +24,6 @@
 namespace KDC {
 
 GetTokenJob::GetTokenJob(const std::string &authorizationCode, const std::string &codeVerifier) :
-    AbstractLoginJob(),
     _authorizationCode(authorizationCode),
     _codeVerifier(codeVerifier) {
 #if defined(KD_MACOS)

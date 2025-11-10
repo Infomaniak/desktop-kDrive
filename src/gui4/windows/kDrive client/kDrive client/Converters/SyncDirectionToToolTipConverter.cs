@@ -16,11 +16,10 @@ namespace Infomaniak.kDrive.Converters
         {
             if (value is SyncActivityDirection syncDirection)
             {
-                var ressourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
                 return syncDirection switch
                 {
-                    SyncActivityDirection.Outgoing => ressourceLoader.GetString("Converter_SyncDirectionToToolTipConverter_Outgoing"),
-                    SyncActivityDirection.Incoming => ressourceLoader.GetString("Converter_SyncDirectionToToolTipConverter_Incoming"),
+                    SyncActivityDirection.Outgoing => Utility.GetLocalizedString("Converter_SyncDirectionToToolTipConverter_Outgoing"),
+                    SyncActivityDirection.Incoming => Utility.GetLocalizedString("Converter_SyncDirectionToToolTipConverter_Incoming"),
                     _ => ""
                 };
             }

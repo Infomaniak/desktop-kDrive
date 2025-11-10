@@ -525,6 +525,8 @@ struct IoHelper {
         static bool getShortPathName(const SyncPath &path, SyncPath &shortPathName, IoError &ioError);
 #endif
 
+        static bool moveItemToTrash(const SyncPath &itemPath);
+
     protected:
         friend class DirectoryIterator;
         friend class TestIo;
