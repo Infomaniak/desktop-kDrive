@@ -21,6 +21,7 @@ import Combine
 import Foundation
 import InfomaniakDI
 import InfomaniakLogin
+import kDriveCore
 
 enum OnboardingStep: Sendable {
     case login(LoginStep = .initial)
@@ -59,10 +60,22 @@ extension OnboardingViewModel: InfomaniakLoginDelegate {
     func didCompleteLoginWith(code: String, verifier: String) {
         isShowingAuthenticationWindow = false
 
-        // TODO: Server should code & verifier into a token
-        // TODO: Get user + drives
+        Task {
+            let user = try await LoginJob().loginAndFetchUser(code: code, verifier: verifier)
+            IKLogger.general.log("Login successful for user: \(user)")
 
-        currentStep = .driveSelection
+            // TODO: Get user + drives
+            // might not be useful here, there is a signal post login to fill user data
+
+            // TODO: remove
+            Task { @MainActor in
+                @InjectService var windowRouter: WindowRouter
+                windowRouter.navigate(to: .splitView)
+            }
+
+            // TODO: change to correct step when screen available
+            // currentStep = .driveSelection
+        }
     }
 
     func didFailLoginWith(error: any Error) {

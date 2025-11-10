@@ -21,14 +21,16 @@
 #include "io/iohelper.h"
 
 #include "libcommon/utility/utility.h"
+#include "libcommonserver/io/iohelper.h"
 
 #include <fstream>
+
 #include <Poco/JSON/Object.h>
 
-
 #if defined(KD_WINDOWS)
-#include "libcommonserver/io/filestat.h"
-#include "libcommonserver/io/iohelper.h"
+#include <shlobj_core.h> // SHCreateItemFromIDList
+#include <atlbase.h> // CComPtr
+
 #include <sys/utime.h>
 #include <sys/types.h>
 #else
@@ -111,6 +113,18 @@ std::string loadEnvVariable(const std::string &key, const bool mandatory) {
     }
     return val;
 }
+
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+void createFileWithDehydratedStatus(const SyncPath &filePath) {
+    generateOrEditTestFile(filePath);
+
+    auto ioError = IoError::Unknown;
+    (void) setDehydratedPlaceholderStatus(filePath, ioError);
+    assert(setDehydratedPlaceholderStatus(filePath, ioError) && ioError == IoError::Success &&
+           "Unexpected failure of IoHelper::setXAttrValue.");
+}
+#endif
+
 
 void createSymLinkLoop(const SyncPath &filepath1, const SyncPath &filepath2, const NodeType nodeType) {
     const LocalTemporaryDirectory tempDir;

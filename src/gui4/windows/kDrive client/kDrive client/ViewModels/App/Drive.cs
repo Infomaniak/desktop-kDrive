@@ -74,6 +74,11 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _syncs, value);
         }
 
+        public Uri GetWebUri()
+        {
+            return new Uri($"https://ksuite.infomaniak.com/kdrive/app/drive/{DriveId}");
+        }
+
         public Uri GetWebTrashUri()
         {
             return new Uri($"https://ksuite.infomaniak.com/kdrive/app/drive/{DriveId}/trash");

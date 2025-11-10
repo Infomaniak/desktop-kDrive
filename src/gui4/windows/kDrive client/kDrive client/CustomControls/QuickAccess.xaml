@@ -15,11 +15,15 @@
     <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
             CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"
             Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.M}">
-        <Grid>
+        <Grid MinWidth="180">
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.L}">
                 <Canvas HorizontalAlignment="Center"
                         Width="46"
                         Height="46">
+
+                    <ToolTipService.ToolTip>
+                        <ToolTip Content="{x:Bind ViewModel.SelectedSync.Drive.Account.User.Name, Mode=OneWay}" Placement="Right"/>
+                    </ToolTipService.ToolTip>
 
                     <Border BorderBrush="{StaticResource Infomaniak.Style.Color.Brand.Default}"
                             BorderThickness="2"
@@ -77,6 +81,27 @@
                                 <controls:SvgIcon Height="16"
                                                   UriString="{StaticResource Infomaniak.Custom.Icons.folder-share}" />
                                 <TextBlock x:Uid="CC_QuickAccess_shared"
+                                           Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
+                            </StackPanel>
+
+                            <controls:SvgIcon Height="12"
+                                              VerticalAlignment="Center"
+                                              HorizontalAlignment="Right"
+                                              UriString="{StaticResource Infomaniak.DS.Icons.Arrows.square-arrow-diagonal-up}" />
+                        </Grid>
+                    </Button>
+
+                    <Button HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch"
+                            Click="OpenDriveOnlineButton_Click">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                                <controls:SvgIcon Height="16"
+                                                  UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom}"
+                                                  Foreground="#446FDD" />
+                                <!--TODO: Color to be updated once DS completed-->
+                                <TextBlock x:Uid="CC_QuickAccess_onlineDrive"
                                            Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                             </StackPanel>
 

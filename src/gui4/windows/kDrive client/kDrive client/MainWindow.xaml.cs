@@ -20,6 +20,8 @@ using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using System;
 using System.Linq;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -74,8 +76,11 @@ namespace Infomaniak.kDrive
             {
                 contentFrame.GoBack();
                 navView.SelectedItem = navView.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item => item.Tag.ToString() == ((Frame)contentFrame).Content.GetType().Name);
-
             }
+        }
+        private void NavigationViewItem_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            Utility.OpenFolderSecurely(ViewModel.SelectedSync?.LocalPath);
         }
     }
 }

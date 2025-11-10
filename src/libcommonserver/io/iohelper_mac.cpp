@@ -190,7 +190,7 @@ IoError IoHelper::unlock(const SyncPath &path) noexcept {
 
     // Unset uchg flag to unlock the item.
     u_int flags = filestat._flags;
-    flags &= ~UF_IMMUTABLE;
+    flags &= static_cast<u_int>(~UF_IMMUTABLE);
     if (chflags(path.string().c_str(), flags)) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to unset uchg flag for " << Utility::formatSyncPath(path));
         return IoError::Unknown;

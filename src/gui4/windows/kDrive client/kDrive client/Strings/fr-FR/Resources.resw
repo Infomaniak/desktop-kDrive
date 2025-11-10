@@ -134,9 +134,6 @@
   <data name="W_MainWindow_NavBar_Storage.Content" xml:space="preserve">
     <value>Stockage</value>
   </data>
-  <data name="W_MainWindow_NavBar_Folder.Content" xml:space="preserve">
-    <value>Dossier kDrive</value>
-  </data>
   <data name="W_MainWindow_TitleBar_SearchBox.PlaceholderText" xml:space="preserve">
     <value>Rechercher dans {{ TODO }}</value>
   </data>
@@ -409,9 +406,6 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
   <data name="Page_StoragePage_OtherFiles.Text" xml:space="preserve">
     <value>Autres fichiers de l’ordinateur</value>
   </data>
-  <data name="Page_StoragePage_FreeSpace.Text" xml:space="preserve">
-    <value>Espace libre</value>
-  </data>
   <data name="Converter_SyncDirectionToToolTipConverter_Incoming" xml:space="preserve">
     <value>Synchronisé depuis kDrive web</value>
   </data>
@@ -669,6 +663,14 @@ Ces données permettent à notre équipe de rapidement corriger et optimiser l�
   </data>
   <data name="Page_SettingsPage_Beta_Expander.Header" xml:space="preserve">
     <value>Rejoindre le programme bêta</value>
+  </data>
+  <data name="W_MainWindow_PaneFooter_Folder" xml:space="preserve">
+    <value>Ouvrir l'explorateur</value>
+    <comment>Open the file explorer</comment>
+  </data>
+  <data name="CC_QuickAccess_onlineDrive.Text" xml:space="preserve">
+    <value>kDrive en ligne</value>
+    <comment>Redirect to the kDrive main page (in browser)</comment>
   </data>
   <data name="Page_SettingsPage_Privacy_Presentation.Description" xml:space="preserve">
     <value>Vous pouvez personnaliser les données d'utilisation et opérationnelles qui sont récupérées par Infomaniak pour corriger des bugs et faire évoluer l'application. Les deux outils utilisés sont hébergés et gérés exclusivement chez nous.

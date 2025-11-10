@@ -61,5 +61,19 @@ namespace Infomaniak.kDrive.CustomControls
                 Logger.Log(Logger.Level.Error, "No sync selected or unable to get shared URL.");
             }
         }
+
+        private async void OpenDriveOnlineButton_Click(object sender, RoutedEventArgs e)
+        {
+            Uri? onlineDriveUrl = ViewModel.SelectedSync?.Drive.GetWebUri();
+            if (onlineDriveUrl != null)
+            {
+                Logger.Log(Logger.Level.Debug, $"Launching URL: {onlineDriveUrl}");
+                await Windows.System.Launcher.LaunchUriAsync(onlineDriveUrl);
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Error, "No sync selected or unable to get URL.");
+            }
+        }
     }
 }

@@ -110,7 +110,7 @@ struct COMMONSERVER_EXPORT Utility {
         static bool checkIfSameNormalization(const SyncPath &a, const SyncPath &b, bool &areSame);
 
 
-        static bool moveItemToTrash(const SyncPath &itemPath);
+        static SyncPath getTrashPath();
 #if defined(KD_MACOS)
         static bool preventSleeping(bool enable);
         static void restartFinderExtension();

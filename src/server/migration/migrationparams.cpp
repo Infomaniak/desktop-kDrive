@@ -762,21 +762,17 @@ ExitCode MigrationParams::getOldAppPwd(const std::string &keychainKey, std::stri
 
 ExitCode MigrationParams::getTokenFromAppPassword(const std::string &email, const std::string &appPassword, ApiToken &apiToken) {
     try {
-        std::string errorDescr, errorCode;
         GetTokenFromAppPasswordJob job(email, appPassword);
-        const ExitCode exitCode = job.runSynchronously();
-        if (exitCode != ExitCode::Ok) {
+        if (const ExitCode exitCode = job.runSynchronously(); exitCode != ExitCode::Ok) {
             LOG_WARN(_logger, "Error in GetTokenFromAppPasswordJob::runSynchronously: code=" << exitCode);
-            errorCode = std::string();
-            errorDescr = std::string();
             return exitCode;
         }
 
         LOG_DEBUG(_logger, "job.runSynchronously() done");
-        if (job.hasErrorApi(&errorCode, &errorDescr)) {
-            LOGW_WARN(_logger, L"Failed to retrieve authentification token. code=" << KDC::CommonUtility::s2ws(errorCode)
+        if (job.hasErrorApi()) {
+            LOGW_WARN(_logger, L"Failed to retrieve authentification token. code=" << KDC::CommonUtility::s2ws(job.errorCode())
                                                                                    << L" descr="
-                                                                                   << KDC::CommonUtility::s2ws(errorDescr));
+                                                                                   << KDC::CommonUtility::s2ws(job.errorDescr()));
             return ExitCode::BackError;
         }
 

@@ -31,20 +31,6 @@ AbstractLoginJob::AbstractLoginJob() {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 
-bool AbstractLoginJob::hasErrorApi(std::string *errorCode, std::string *errorDescr) {
-    if (getStatusCode() == Poco::Net::HTTPResponse::HTTP_OK) {
-        return false;
-    }
-
-    if (errorCode) {
-        *errorCode = _errorCode;
-        if (errorDescr) {
-            *errorDescr = _errorDescr;
-        }
-    }
-    return true;
-}
-
 std::string AbstractLoginJob::getSpecificUrl() {
     return "/token";
 }
@@ -81,8 +67,7 @@ ExitInfo AbstractLoginJob::handleError(const std::string &replyBody, const Poco:
     }
 
     ExitInfo exitInfo;
-    Poco::JSON::Object::Ptr errorObj = jsonError->getObject(errorKey);
-    if (errorObj) {
+    if (Poco::JSON::Object::Ptr errorObj = jsonError->getObject(errorKey); errorObj) {
         if (!JsonParserUtility::extractValue(errorObj, codeKey, _errorCode)) {
             return {};
         }

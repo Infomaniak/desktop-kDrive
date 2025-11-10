@@ -44,13 +44,12 @@ AbstractGuiJob::AbstractGuiJob(std::shared_ptr<CommManager> commManager, int req
     _commManager(commManager),
     _requestId(requestId),
     _inParams(inParams),
-    _channel(channel),
-    _type(GuiJobType::Query) {}
+    _channels({channel}) {
+    _type = GuiJobType::Query;
+}
 
-AbstractGuiJob::AbstractGuiJob(std::shared_ptr<CommManager> commManager, std::shared_ptr<AbstractCommChannel> channel) :
-    _commManager(commManager),
-    _channel(channel),
-    _type(GuiJobType::Signal) {
+AbstractGuiJob::AbstractGuiJob() {
+    _type = GuiJobType::Signal;
     _signalId = _lastSignalId++;
 }
 
@@ -81,8 +80,10 @@ ExitInfo AbstractGuiJob::runJob() {
         LOG_WARN(_logger, "Error in serializeGenericOutputParms for job=" << jobId());
     }
 
-    if (!_channel->sendMessage(_outputParamsStr)) {
-        LOG_WARN(_logger, "Error in AbstractCommChannel::sendMessage for job=" << jobId());
+    for (auto &channel: _channels) {
+        if (!channel->sendMessage(_outputParamsStr)) {
+            LOG_WARN(_logger, "Error in AbstractCommChannel::sendMessage for job=" << jobId());
+        }
     }
     return exitInfo;
 }
@@ -100,7 +101,7 @@ bool AbstractGuiJob::deserializeGenericInputParms(const CommString &inputParamsS
 
         assert(paramsStruct[inRequestParams].isStruct());
         inParams = paramsStruct[inRequestParams].extract<Poco::DynamicStruct>();
-    } catch (std::exception &e) {
+    } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(), "Error in CommonUtility::readValueFromStruct: error=" << e.what());
         return false;
     }

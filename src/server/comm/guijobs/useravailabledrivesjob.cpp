@@ -41,7 +41,7 @@ UserAvailableDrivesJob::UserAvailableDrivesJob(std::shared_ptr<CommManager> comm
 ExitInfo UserAvailableDrivesJob::deserializeInputParms() {
     try {
         readParamValue(inParamsUserDbId, _userDbId);
-    } catch (std::exception &e) {
+    } catch (const std::exception &e) {
         LOG_WARN(_logger, "Exception in AbstractGuiJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
     }

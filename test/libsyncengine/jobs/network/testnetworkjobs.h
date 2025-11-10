@@ -19,6 +19,7 @@
 #pragma once
 
 #include "testincludes.h"
+#include "keychainmanager/apitoken.h"
 #include "test_utility/localtemporarydirectory.h"
 
 #include "utility/types.h"
@@ -114,6 +115,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         int _driveDbId = 0;
         int _userDbId = 0;
         NodeId _remoteDirId;
+        ApiToken _apiToken;
 
         SyncName _dummyFileName;
         SyncPath _dummyLocalFilePath;

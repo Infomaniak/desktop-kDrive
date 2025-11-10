@@ -59,6 +59,7 @@
                                   @"com.apple.quicklook.satellite", // Quicklook
                                   @"com.apple.quicklook.thumbnail.ImageExtension", // Quicklook Thumbnail
                                   @"com.apple.quicklook.thumbnail.AudiovisualExtension", // Quicklook Thumbnail
+                                  @"com.apple.quicklook.ThumbnailsAgent", // Quicklook
                                   nil];
 }
 
@@ -77,7 +78,6 @@
                                   @"com.apple.mds", // Spotlight
                                   @"com.apple.mdsync", // Spotlight
                                   @"com.apple.Spotlight", // Spotlight
-                                  @"com.apple.quicklook.ThumbnailsAgent", // Quicklook
                                   @"com.apple.quicklook.externalSatellite.arm64", // Quicklook satellite
                                   @"com.apple.quicklook.externalSatellite.x86_64", // Quicklook satellite
                                   @"com.apple.iconservicesagent", // iconservicesagent

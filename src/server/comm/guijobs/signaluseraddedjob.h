@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
+
 #include "server/comm/guijobs/abstractguijob.h"
 #include "libcommon/info/userinfo.h"
 
@@ -23,8 +25,7 @@ namespace KDC {
 
 class SignalUserAddedJob : public AbstractGuiJob {
     public:
-        SignalUserAddedJob(std::shared_ptr<CommManager> commManager, std::shared_ptr<AbstractCommChannel> channel,
-                           const UserInfo &userInfo);
+        explicit SignalUserAddedJob(const UserInfo &userInfo);
 
     private:
         // Output parameters

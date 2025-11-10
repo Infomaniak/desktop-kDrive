@@ -17,19 +17,23 @@
  */
 
 import Foundation
+import InfomaniakDI
 
 public protocol ServerBridgeable: Sendable {
     func getConnectedUser() async -> Bool
 }
 
-@preconcurrency public final class ServerBridge: ServerBridgeable {
-    let connectionManager = XPCConnectionManager()
+public struct ServerBridge: ServerBridgeable {
+    @LazyInjectService var coherentCache: CoherentCacheProtocol
+
+    public init() {}
 
     public func getConnectedUser() async -> Bool {
-        try? await connectionManager.connectToLoginAgent()
-        try? await Task.sleep(nanoseconds: 2 * 1_000_000_000)
-        try? await connectionManager.dummyServerQuery()
+        // TODO: fetch user form server as well, cache only for now
+        guard await coherentCache.getFirstAvailableUser() != nil else {
+            return false
+        }
 
-        return false
+        return true
     }
 }

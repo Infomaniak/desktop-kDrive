@@ -132,9 +132,6 @@
   <data name="W_MainWindow_NavBar_Storage.Content" xml:space="preserve">
     <value />
   </data>
-  <data name="W_MainWindow_NavBar_Folder.Content" xml:space="preserve">
-    <value />
-  </data>
   <data name="W_MainWindow_TitleBar_SearchBox.PlaceholderText" xml:space="preserve">
     <value />
   </data>
@@ -376,9 +373,6 @@
     <value />
   </data>
   <data name="Page_StoragePage_OtherFiles.Text" xml:space="preserve">
-    <value />
-  </data>
-  <data name="Page_StoragePage_FreeSpace.Text" xml:space="preserve">
     <value />
   </data>
   <data name="Converter_SyncDirectionToToolTipConverter_Incoming" xml:space="preserve">
@@ -628,6 +622,12 @@
   <data name="Page_SettingsPage_Beta_Expander.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
+  <data name="W_MainWindow_PaneFooter_Folder" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="CC_QuickAccess_onlineDrive.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
+      <value />
+  </data>
   <data name="Page_SettingsPage_Privacy_Presentation.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
@@ -656,12 +656,6 @@
     <value />
   </data>
   <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.CloseButtonText" xml:space="preserve">
-    <value />
-  </data>
-  <data name="Page_SettingsPage_Proxy_ComoBox_HTTP.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
-    <value />
-  </data>
-  <data name="Page_SettingsPage_Proxy_ComoBox_NONE.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
 </root>

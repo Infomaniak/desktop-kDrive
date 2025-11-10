@@ -103,6 +103,7 @@ class PipeCommServer : public AbstractCommServer {
         static SyncPath pipePath();
 
 #if defined(KD_WINDOWS)
+        std::recursive_mutex _channelsMutex;
         std::vector<std::shared_ptr<PipeCommChannel>> _channels;
 
         static bool connectToPipe(HANDLE hPipe, LPOVERLAPPED lpo);

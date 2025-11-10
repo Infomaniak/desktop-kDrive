@@ -26,8 +26,8 @@ namespace KDC {
 
 class LocalDeleteJob : public SyncJob {
     public:
-        LocalDeleteJob(const SyncPalInfo &syncInfo, const SyncPath &relativePath, bool isDehydratedPlaceholder, NodeId remoteId,
-                       bool forceToTrash = false); // Check existence of remote counter part and abort if needed.
+        LocalDeleteJob(const SyncPalInfo &syncInfo, const SyncPath &relativePath, bool liteSyncIsEnabled, const NodeId &remoteId,
+                       bool forceToTrash = false); // Check existence of remote counterpart and abort if needed.
         LocalDeleteJob(const SyncPath &absolutePath); // Delete without checks
         ~LocalDeleteJob();
 
@@ -46,18 +46,21 @@ class LocalDeleteJob : public SyncJob {
 
     protected:
         SyncPath _absolutePath;
+        bool _liteSyncIsEnabled = false;
 
-        virtual ExitInfo canRun() override;
+        ExitInfo canRun() override;
         virtual bool findRemoteItem(SyncPath &remoteItemPath) const;
-        virtual bool moveToTrash();
-        void handleTrashMoveOutcome(const bool success);
+        virtual ExitInfo moveToTrash();
+        ExitInfo moveToTrashOrHardDeleteIfNeeded(const SyncPath &path);
 
     private:
         ExitInfo runJob() override;
+        ExitInfo hardDelete(const SyncPath &path);
+        ExitInfo hardDeleteDehydratedPlaceholders();
+        ExitInfo handleLiteSyncFile(const SyncPath &path);
 
         SyncPalInfo _syncInfo;
         SyncPath _relativePath;
-        bool _isDehydratedPlaceholder = false;
         NodeId _remoteNodeId;
         bool _forceToTrash = false;
 

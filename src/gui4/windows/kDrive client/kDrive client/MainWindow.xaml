@@ -132,15 +132,20 @@
                         <SymbolIcon Symbol="MapDrive" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem x:Uid="W_MainWindow_NavBar_Folder"
-                                    Tag="SamplePage4"
-                                    MinHeight="30"
-                                    IsEnabled="False">
-                    <NavigationViewItem.Icon>
-                        <SymbolIcon Symbol="Folder" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
             </NavigationView.MenuItems>
+
+            <NavigationView.PaneFooter>
+                <StackPanel x:Name="FooterStackPanel" Orientation="Vertical" Visibility="Visible">
+                    <NavigationViewItem x:Uid="W_MainWindow_PaneFooter_Folder"
+                                        Tapped="NavigationViewItem_Tapped"
+                                        MinHeight="30"
+                                        IsEnabled="True">
+                        <NavigationViewItem.Icon>
+                            <SymbolIcon Symbol="Folder" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                </StackPanel>
+            </NavigationView.PaneFooter>
 
             <Frame x:Name="contentFrame" />
         </NavigationView>

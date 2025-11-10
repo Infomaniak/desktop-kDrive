@@ -94,9 +94,14 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode getUserAvailableDrives(
                 int userDbId, QHash<int, DriveAvailableInfo> &list); // TODO: Delete after switching to the new comm layer
         static ExitCode getUserAvailableDrives(int userDbId, std::vector<DriveAvailableInfo> &list);
+        static ExitCode addSync(int userDbId, int accountId, int driveId, const SyncPath &localFolderPath,
+                                const SyncPath &serverFolderPath, const NodeId &serverFolderNodeId, bool liteSync,
+                                bool showInNavigationPane, AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo);
         static ExitCode addSync(int userDbId, int accountId, int driveId, const QString &localFolderPath,
                                 const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
                                 bool showInNavigationPane, AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo);
+        static ExitCode addSync(int driveDbId, const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
+                                const NodeId &serverFolderNodeId, bool liteSync, bool showInNavigationPane, SyncInfo &syncInfo);
         static ExitCode addSync(int driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
                                 const QString &serverFolderNodeId, bool liteSync, bool showInNavigationPane, SyncInfo &syncInfo);
         static ExitInfo getNodeInfo(int userDbId, int driveId, const QString &nodeId, NodeInfo &nodeInfo, bool withPath = false);

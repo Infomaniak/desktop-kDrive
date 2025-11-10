@@ -44,6 +44,7 @@ class TestLocalJobs : public CppUnit::TestFixture, public TestBase {
 
     private:
         std::shared_ptr<SyncPal> _syncPal = nullptr;
+        const std::string _localTempDirName = "test_local_jobs_tmp_dir";
 };
 
 } // namespace KDC
