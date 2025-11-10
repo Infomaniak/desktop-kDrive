@@ -145,24 +145,24 @@ void TestAppServer::testStartAndStopSync() {
     // Start syncs (ie. Vfs & SyncPal) for a user
     ExitInfo exitInfo = _appPtr->startSyncs(user);
     CPPUNIT_ASSERT(exitInfo);
-    CPPUNIT_ASSERT(AppServer::_syncPalMap[syncDbId]->isRunning());
+    CPPUNIT_ASSERT(AppServer::syncPalMap[syncDbId]->isRunning());
     CPPUNIT_ASSERT(syncIsActive(syncDbId));
 
     // Stop sync & clear maps
     _appPtr->stopSyncTask(syncDbId);
-    CPPUNIT_ASSERT(AppServer::_syncPalMap.empty());
-    CPPUNIT_ASSERT(AppServer::_vfsMap.empty());
+    CPPUNIT_ASSERT(AppServer::syncPalMap.empty());
+    CPPUNIT_ASSERT(AppServer::vfsMap.empty());
 
     // Start syncs for all users
     exitInfo = _appPtr->startSyncs();
     CPPUNIT_ASSERT(exitInfo);
-    CPPUNIT_ASSERT(AppServer::_syncPalMap[syncDbId]->isRunning());
+    CPPUNIT_ASSERT(AppServer::syncPalMap[syncDbId]->isRunning());
     CPPUNIT_ASSERT(syncIsActive(syncDbId));
 
     // Stop syncs & clear maps for all users
     _appPtr->stopAllSyncsTask({syncDbId});
-    CPPUNIT_ASSERT(AppServer::_syncPalMap.empty());
-    CPPUNIT_ASSERT(AppServer::_vfsMap.empty());
+    CPPUNIT_ASSERT(AppServer::syncPalMap.empty());
+    CPPUNIT_ASSERT(AppServer::vfsMap.empty());
 
     // Update sync local folder with a dummy value
     Sync sync;
@@ -191,14 +191,14 @@ void TestAppServer::testCleanup() {
 bool TestAppServer::waitForSyncStatus(int syncDbId, SyncStatus targetStatus) const {
     int count = 0;
     while (count++ < 100) {
-        if (auto status = AppServer::_syncPalMap[syncDbId]->status(); status == targetStatus) return true;
+        if (auto status = AppServer::syncPalMap[syncDbId]->status(); status == targetStatus) return true;
         Utility::msleep(100);
     }
     return false;
 }
 
 bool TestAppServer::syncIsActive(int syncDbId) const {
-    SyncStatus status = AppServer::_syncPalMap[syncDbId]->status();
+    SyncStatus status = AppServer::syncPalMap[syncDbId]->status();
     return status == SyncStatus::Starting || status == SyncStatus::Running || status == SyncStatus::Idle;
 }
 

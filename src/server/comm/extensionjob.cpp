@@ -169,11 +169,11 @@ void ExtensionJob::commandGetMenuItems(const CommString &argument, std::shared_p
 
     if (sync.dbId()) {
         // Find SyncPal and Vfs associated to sync
-        const std::scoped_lock lock(AppServer::_syncPalMapMutex, AppServer::_vfsMapMutex);
+        const std::scoped_lock lock(AppServer::syncPalMapMutex, AppServer::vfsMapMutex);
         const auto syncPalMapIt = retrieveSyncPalMapIt(sync.dbId());
         const auto vfsMapIt = retrieveVfsMapIt(sync.dbId());
 
-        if (syncPalMapIt != AppServer::_syncPalMap.end() && syncPalMapIt->second && vfsMapIt != AppServer::_vfsMap.end() &&
+        if (syncPalMapIt != AppServer::syncPalMap.end() && syncPalMapIt->second && vfsMapIt != AppServer::vfsMap.end() &&
             vfsMapIt->second) {
 #if defined(KD_MACOS)
             // Manage dehydration cancellation
@@ -251,9 +251,9 @@ void ExtensionJob::commandCopyPublicLink(const CommString &argument, std::shared
     const auto fileData = FileData::get(argument);
     if (!fileData.syncDbId) return;
 
-    const std::scoped_lock lock(AppServer::_syncPalMapMutex);
+    const std::scoped_lock lock(AppServer::syncPalMapMutex);
     const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
-    if (syncPalMapIt == AppServer::_syncPalMap.end()) return;
+    if (syncPalMapIt == AppServer::syncPalMap.end()) return;
 
     // Get NodeId
     NodeId nodeId;
@@ -474,11 +474,11 @@ void ExtensionJob::commandGetAllMenuItems(const CommString &argument, std::share
     if (!syncForPaths(paths, sync)) return;
 
     if (sync.dbId()) {
-        const std::scoped_lock lock(AppServer::_syncPalMapMutex, AppServer::_vfsMapMutex);
+        const std::scoped_lock lock(AppServer::syncPalMapMutex, AppServer::vfsMapMutex);
         const auto syncPalMapIt = retrieveSyncPalMapIt(sync.dbId());
         const auto vfsMapIt = retrieveVfsMapIt(sync.dbId());
 
-        if (syncPalMapIt != AppServer::_syncPalMap.end() && syncPalMapIt->second && vfsMapIt != AppServer::_vfsMap.end() &&
+        if (syncPalMapIt != AppServer::syncPalMap.end() && syncPalMapIt->second && vfsMapIt != AppServer::vfsMap.end() &&
             vfsMapIt->second) {
             CommString response;
             response.append(responseToFinderArgSeparator);
@@ -562,9 +562,9 @@ void ExtensionJob::commandGetThumbnail(const CommString &argument, std::shared_p
         return;
     }
 
-    const std::scoped_lock lock(AppServer::_syncPalMapMutex);
+    const std::scoped_lock lock(AppServer::syncPalMapMutex);
     const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
-    if (syncPalMapIt == AppServer::_syncPalMap.end() || !syncPalMapIt->second) return;
+    if (syncPalMapIt == AppServer::syncPalMap.end() || !syncPalMapIt->second) return;
 
     // Get NodeId
     NodeId nodeId;
@@ -713,12 +713,12 @@ void ExtensionJob::commandSetThumbnail(const CommString &argument, std::shared_p
     }
 
     // Find SyncPal and Vfs associated to sync
-    const std::scoped_lock lock(AppServer::_syncPalMapMutex, AppServer::_vfsMapMutex);
+    const std::scoped_lock lock(AppServer::syncPalMapMutex, AppServer::vfsMapMutex);
     const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
-    if (syncPalMapIt == AppServer::_syncPalMap.end() || !syncPalMapIt->second) return;
+    if (syncPalMapIt == AppServer::syncPalMap.end() || !syncPalMapIt->second) return;
 
     const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
-    if (vfsMapIt == AppServer::_vfsMap.end() || !vfsMapIt->second) return;
+    if (vfsMapIt == AppServer::vfsMap.end() || !vfsMapIt->second) return;
 
     // Get NodeId
     NodeId nodeId;
@@ -830,9 +830,9 @@ void ExtensionJob::fetchPrivateLinkUrlHelper(const SyncPath &localFile,
     }
 
     // Find the syncpal associated to sync
-    const std::scoped_lock lock(AppServer::_syncPalMapMutex);
+    const std::scoped_lock lock(AppServer::syncPalMapMutex);
     const auto syncPalMapIt = retrieveSyncPalMapIt(sync.dbId());
-    if (syncPalMapIt == AppServer::_syncPalMap.end() || !syncPalMapIt->second) return;
+    if (syncPalMapIt == AppServer::syncPalMap.end() || !syncPalMapIt->second) return;
 
     FileData fileData = FileData::get(localFile);
     NodeId itemId;
@@ -852,10 +852,10 @@ bool ExtensionJob::syncFileStatus(const FileData &fileData, SyncFileStatus &stat
 
     if (!fileData.syncDbId) return false;
 
-    const std::scoped_lock lock(AppServer::_syncPalMapMutex, AppServer::_vfsMapMutex);
+    const std::scoped_lock lock(AppServer::syncPalMapMutex, AppServer::vfsMapMutex);
 
     const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
-    if (syncPalMapIt == AppServer::_syncPalMap.end() || !syncPalMapIt->second) return false;
+    if (syncPalMapIt == AppServer::syncPalMap.end() || !syncPalMapIt->second) return false;
 
     bool exists = false;
     if (!syncPalMapIt->second->checkIfExistsOnServer(fileData.relativePath, exists)) {
@@ -870,7 +870,7 @@ bool ExtensionJob::syncFileStatus(const FileData &fileData, SyncFileStatus &stat
     }
 
     const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
-    if (vfsMapIt == AppServer::_vfsMap.end() || !vfsMapIt->second) return false;
+    if (vfsMapIt == AppServer::vfsMap.end() || !vfsMapIt->second) return false;
 
     if (vfsMapIt->second->mode() == VirtualFileMode::Mac || vfsMapIt->second->mode() == VirtualFileMode::Win) {
         if (!vfsMapIt->second->status(fileData.localPath, vfsStatus)) {
@@ -887,21 +887,21 @@ bool ExtensionJob::syncFileStatus(const FileData &fileData, SyncFileStatus &stat
 }
 
 SyncPalMap::const_iterator ExtensionJob::retrieveSyncPalMapIt(const int syncDbId) const {
-    const auto result = AppServer::_syncPalMap.find(syncDbId);
+    const auto result = AppServer::syncPalMap.find(syncDbId);
 
-    if (result == AppServer::_syncPalMap.end()) {
+    if (result == AppServer::syncPalMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "SyncPal not found in SyncPalMap - syncDbId=" << syncDbId);
-        return AppServer::_syncPalMap.end();
+        return AppServer::syncPalMap.end();
     }
 
     return result;
 }
 
 VfsMap::const_iterator ExtensionJob::retrieveVfsMapIt(const int syncDbId) const {
-    const auto result = AppServer::_vfsMap.find(syncDbId);
-    if (result == AppServer::_vfsMap.cend()) {
+    const auto result = AppServer::vfsMap.find(syncDbId);
+    if (result == AppServer::vfsMap.cend()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in VfsMap - syncDbId=" << syncDbId);
-        return AppServer::_vfsMap.cend();
+        return AppServer::vfsMap.cend();
     }
 
     return result;
@@ -910,9 +910,9 @@ VfsMap::const_iterator ExtensionJob::retrieveVfsMapIt(const int syncDbId) const 
 ExitInfo ExtensionJob::setPinState(const FileData &fileData, PinState pinState) {
     if (!fileData.syncDbId) return {ExitCode::LogicError, ExitCause::InvalidArgument};
 
-    const std::scoped_lock lock(AppServer::_vfsMapMutex);
+    const std::scoped_lock lock(AppServer::vfsMapMutex);
     const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
-    if (vfsMapIt == AppServer::_vfsMap.cend() || !vfsMapIt->second) return {ExitCode::LogicError};
+    if (vfsMapIt == AppServer::vfsMap.cend() || !vfsMapIt->second) return {ExitCode::LogicError};
 
     return vfsMapIt->second->setPinState(fileData.relativePath, pinState);
 }
@@ -920,9 +920,9 @@ ExitInfo ExtensionJob::setPinState(const FileData &fileData, PinState pinState) 
 ExitInfo ExtensionJob::dehydratePlaceholder(const FileData &fileData) {
     if (!fileData.syncDbId) return {ExitCode::LogicError, ExitCause::InvalidArgument};
 
-    const std::scoped_lock lock(AppServer::_vfsMapMutex);
+    const std::scoped_lock lock(AppServer::vfsMapMutex);
     const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
-    if (vfsMapIt == AppServer::_vfsMap.cend() || !vfsMapIt->second) return {ExitCode::LogicError};
+    if (vfsMapIt == AppServer::vfsMap.cend() || !vfsMapIt->second) return {ExitCode::LogicError};
 
     return vfsMapIt->second->dehydratePlaceholder(fileData.relativePath);
 }
@@ -931,7 +931,7 @@ bool ExtensionJob::addDownloadJob(const FileData &fileData, const SyncPath &pare
     if (!fileData.syncDbId) return false;
 
     const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
-    if (syncPalMapIt == AppServer::_syncPalMap.end() || !syncPalMapIt->second) return false;
+    if (syncPalMapIt == AppServer::syncPalMap.end() || !syncPalMapIt->second) return false;
 
     // Create download job
     const ExitCode exitCode = syncPalMapIt->second->addDlDirectJob(fileData.relativePath, fileData.localPath, parentFolderPath);
@@ -945,10 +945,10 @@ bool ExtensionJob::addDownloadJob(const FileData &fileData, const SyncPath &pare
 }
 
 bool ExtensionJob::cancelDownloadJobs(int syncDbId, const std::vector<CommString> &fileList) {
-    const std::scoped_lock lock(AppServer::_syncPalMapMutex);
+    const std::scoped_lock lock(AppServer::syncPalMapMutex);
 
     const auto syncPalMapIt = retrieveSyncPalMapIt(syncDbId);
-    if (syncPalMapIt == AppServer::_syncPalMap.end() || !syncPalMapIt->second) return false;
+    if (syncPalMapIt == AppServer::syncPalMap.end() || !syncPalMapIt->second) return false;
 
     std::vector<SyncPath> syncPathList;
     processFileList(fileList, syncPathList);
@@ -1027,9 +1027,9 @@ void ExtensionJob::sendSharingContextMenuOptions(const FileData &fileData, std::
     if (!fileData.syncDbId) return;
 
     // Find SyncPal associated to sync
-    const std::scoped_lock lock(AppServer::_syncPalMapMutex);
+    const std::scoped_lock lock(AppServer::syncPalMapMutex);
     const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
-    if (syncPalMapIt == AppServer::_syncPalMap.end() || !syncPalMapIt->second) return;
+    if (syncPalMapIt == AppServer::syncPalMap.end() || !syncPalMapIt->second) return;
 
     bool isOnTheServer = false;
     if (!syncPalMapIt->second->checkIfExistsOnServer(fileData.relativePath, isOnTheServer)) {
@@ -1074,9 +1074,9 @@ void ExtensionJob::addSharingContextMenuOptions(const FileData &fileData, CommSt
     if (!fileData.syncDbId) return;
 
     // Find SyncPal associated to sync
-    const std::scoped_lock lock(AppServer::_syncPalMapMutex);
+    const std::scoped_lock lock(AppServer::syncPalMapMutex);
     const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
-    if (syncPalMapIt == AppServer::_syncPalMap.end() || !syncPalMapIt->second) return;
+    if (syncPalMapIt == AppServer::syncPalMap.end() || !syncPalMapIt->second) return;
 
     bool isOnTheServer = false;
     if (!syncPalMapIt->second->checkIfExistsOnServer(fileData.relativePath, isOnTheServer)) {
@@ -1237,9 +1237,9 @@ CommString ExtensionJob::buildMessage(const std::string &verb, const SyncPath &p
 void ExtensionJob::monitorFolderHydration(const FileData &fileData) const {
     if (!fileData.syncDbId) return;
 
-    const std::scoped_lock lock(AppServer::_syncPalMapMutex);
+    const std::scoped_lock lock(AppServer::syncPalMapMutex);
     const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
-    if (syncPalMapIt == AppServer::_syncPalMap.end() || !syncPalMapIt->second) return;
+    if (syncPalMapIt == AppServer::syncPalMap.end() || !syncPalMapIt->second) return;
 
     syncPalMapIt->second->monitorFolderHydration(fileData.localPath);
 }

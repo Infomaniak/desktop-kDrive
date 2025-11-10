@@ -53,11 +53,11 @@ class AppServer : public SharedTools::QtSingleApplication {
         Q_OBJECT
 
     public:
-        static SyncPalMap _syncPalMap;
-        static std::recursive_mutex _syncPalMapMutex;
+        static SyncPalMap syncPalMap;
+        static std::recursive_mutex syncPalMapMutex;
 
-        static VfsMap _vfsMap;
-        static std::recursive_mutex _vfsMapMutex;
+        static VfsMap vfsMap;
+        static std::recursive_mutex vfsMapMutex;
 
         struct SyncCache {
                 SyncStatus _status;
@@ -224,7 +224,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         static void addCompletedItem(int syncDbId, const SyncFileItem &item, bool notify);
         static void sendSignal(SignalNum sigNum, int syncDbId, const SigValueType &val);
 
-        static ExitInfo getVfsPtr(int syncDbId, std::shared_ptr<Vfs> &vfs);
+        static ExitInfo getVfs(int syncDbId, std::shared_ptr<Vfs> &vfs);
 
         static void syncFileStatus(int syncDbId, const KDC::SyncPath &path, KDC::SyncFileStatus &status);
         static void syncFileSyncing(int syncDbId, const KDC::SyncPath &path, bool &syncing);
