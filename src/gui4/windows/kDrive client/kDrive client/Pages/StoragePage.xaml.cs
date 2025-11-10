@@ -19,6 +19,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Infomaniak.kDrive.Pages.Onboarding;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -74,9 +75,9 @@ namespace Infomaniak.kDrive.Pages
         }
     }
 
-    public class StoragePageViewModel : ObservableObject
+    public class StoragePageViewModel : UISafeObservableObject
     {
-        private readonly AppModel _viewModel = ((App)Application.Current).Data;
+        private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel AppViewModel => _viewModel;
 
         private long? _diskSize;
@@ -117,49 +118,49 @@ namespace Infomaniak.kDrive.Pages
         public long? DiskSize
         {
             get => _diskSize;
-            set => SetProperty(ref _diskSize, value);
+            set => SetPropertyInUIThread(ref _diskSize, value);
         }
 
         public long? DiskUsedSize
         {
             get => _diskUsedSize;
-            set => SetProperty(ref _diskUsedSize, value);
+            set => SetPropertyInUIThread(ref _diskUsedSize, value);
         }
 
         public long? DiskFreeSize
         {
             get => _diskFreeSize;
-            set => SetProperty(ref _diskFreeSize, value);
+            set => SetPropertyInUIThread(ref _diskFreeSize, value);
         }
 
         public long? HydratedFileSize
         {
             get => _hydratedFileSize;
-            set => SetProperty(ref _hydratedFileSize, value);
+            set => SetPropertyInUIThread(ref _hydratedFileSize, value);
         }
 
         public long? OtherFileSize
         {
             get => _otherFileSize;
-            set => SetProperty(ref _otherFileSize, value);
+            set => SetPropertyInUIThread(ref _otherFileSize, value);
         }
 
         public bool Loading
         {
             get => _loading;
-            set => SetProperty(ref _loading, value);
+            set => SetPropertyInUIThread(ref _loading, value);
         }
 
         public string DiskRoot
         {
             get => _diskRoot;
-            set => SetProperty(ref _diskRoot, value);
+            set => SetPropertyInUIThread(ref _diskRoot, value);
         }
 
         public bool IsDiskConnected
         {
             get => _isDiskConnected;
-            set => SetProperty(ref _isDiskConnected, value);
+            set => SetPropertyInUIThread(ref _isDiskConnected, value);
         }
 
         public async Task UpdateDiskSizeAsync()

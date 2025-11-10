@@ -28,6 +28,7 @@
 #include <unistd.h>
 #endif
 
+#include "libcommonserver/io/permissionsholder.h"
 #include "utility/timerutility.h"
 
 
@@ -181,7 +182,7 @@ ExitInfo DownloadJob::runJob() noexcept {
 ExitInfo DownloadJob::handleResponse(std::istream &is) {
     // Get Mime type
     std::string contentType;
-    contentType = _resHttp.get("Content-Type", "");
+    contentType = httpResponse().get("Content-Type", "");
 
     std::string mimeType;
     if (!contentType.empty()) {
@@ -256,9 +257,9 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
                 // Download issue
                 return {ExitCode::BackError, ExitCause::InvalidSize};
             } else if (const std::streamsize neededPlace =
-                               _resHttp.getContentLength() == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH
+                               httpResponse().getContentLength() == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH
                                        ? BUF_SIZE
-                                       : (_resHttp.getContentLength() - getProgress());
+                                       : (httpResponse().getContentLength() - getProgress());
                        !hasEnoughPlace(_tmpPath, _localpath, neededPlace, _logger)) {
                 return {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
             } else {
@@ -456,6 +457,9 @@ ExitInfo DownloadJob::moveTmpFile() {
 #endif
         static const bool forceCopy = CommonUtility::envVarValue("KDRIVE_PRESERVE_PERMISSIONS_ON_CREATE") == "1";
         if (_isCreate && !forceCopy) {
+            // Make sure we are allowed to propagate the change
+            PermissionsHolder _(_localpath.parent_path(), _logger);
+
             // Move file
             IoError ioError = IoError::Success;
             IoHelper::moveItem(_tmpPath, _localpath, ioError);
@@ -471,6 +475,9 @@ ExitInfo DownloadJob::moveTmpFile() {
         }
 
         if (!_isCreate || crossDeviceLinkError || forceCopy) {
+            // Make sure we are allowed to propagate the change
+            PermissionsHolder _(_localpath.parent_path(), _logger);
+
             // Copy file content (i.e. when the target exists, do not change its node id).
             std::error_code ec;
             std::filesystem::copy(_tmpPath, _localpath, std::filesystem::copy_options::overwrite_existing, ec);
@@ -577,9 +584,10 @@ ExitInfo DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::is
 
         output.open(_tmpPath.native().c_str(), std::ofstream::out | std::ofstream::binary);
         if (!output.is_open()) {
-            LOGW_WARN(_logger, L"Failed to open tmp file: " << Utility::formatSyncPath(_tmpPath));
-            return {ExitCode::SystemError,
-                    Utility::enoughSpace(_tmpPath) ? ExitCause::FileAccessError : ExitCause::NotEnoughDiskSpace};
+            const bool enoughSpace = Utility::enoughSpace(_tmpPath);
+            LOGW_WARN(_logger, L"Failed to open tmp file: " << Utility::formatSyncPath(_tmpPath) << L". Reason: "
+                                                            << (enoughSpace ? L"not enough space." : L"file access error."));
+            return {ExitCode::SystemError, enoughSpace ? ExitCause::FileAccessError : ExitCause::NotEnoughDiskSpace};
         }
 
         output.seekp(0, std::ios_base::end);
@@ -587,7 +595,7 @@ ExitInfo DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::is
 
     std::streamsize expectedSize = 0;
     if (istr) {
-        expectedSize = _resHttp.getContentLength();
+        expectedSize = httpResponse().getContentLength();
         setProgress(0);
         if (expectedSize != Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH) {
             if (!hasEnoughPlace(_tmpPath, _localpath, expectedSize, _logger)) {

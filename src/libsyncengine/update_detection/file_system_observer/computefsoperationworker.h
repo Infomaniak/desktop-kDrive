@@ -93,7 +93,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
 
         void deleteChildOpRecursively(const std::shared_ptr<const Snapshot> remoteSnapshot, const NodeId &remoteNodeId,
                                       NodeSet &tmpTooBigList);
-        void deleteLocalDescendantCreateOps(const NodeId &localNodeId);
+        void deleteLocalDescendantOps(const NodeId &localNodeId);
 
         void updateUnsyncedList();
         ExitCode updateSyncNode(SyncNodeType syncNodeType);
@@ -104,7 +104,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
 
         // The remote propagation of the creation of local items that reuse identifiers of deleted items is postponed to the next
         // synchronization. So is the propagation of the creation of the descendants of those local items.
-        void postponeCreateOperationsOnReusedIds();
+        void postponeOperationsOnReusedIds();
 
         SyncDbReadOnlyCache &_syncDbReadOnlyCache;
         Sync _sync;

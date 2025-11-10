@@ -18,24 +18,57 @@
 
 #include "guijobfactory.h"
 #include "loginrequesttokenjob.h"
+#include "unknownrequestjob.h"
+#include "userdbidlistjob.h"
+#include "userinfolistjob.h"
+#include "userdeletejob.h"
+#include "useravailabledrivesjob.h"
+#include "accountinfolistjob.h"
+#include "driveinfolistjob.h"
+#include "driveupdatejob.h"
+#include "drivedeletejob.h"
+#include "drivesearchjob.h"
+#include "syncinfolistjob.h"
+#include "syncstartjob.h"
+#include "syncstopjob.h"
+#include "syncstatusjob.h"
+#include "syncaddjob.h"
+#include "syncadd2job.h"
+#include "syncstartafterloginjob.h"
+#include "syncdeletejob.h"
+#include "syncgetpubliclinkurljob.h"
 
 namespace KDC {
 
 GuiJobFactory::GuiJobFactory() {
-    _makeMap = {{RequestNum::LOGIN_REQUESTTOKEN,
-                 [](std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                    const std::shared_ptr<AbstractCommChannel> channel) {
-                     return std::make_shared<LoginRequestTokenJob>(commManager, requestId, inParams, channel);
-                 }}};
+    _makeMap = {{RequestNum::LOGIN_REQUESTTOKEN, makeShared<LoginRequestTokenJob>},
+                {RequestNum::USER_DBIDLIST, makeShared<UserDbIdListJob>},
+                {RequestNum::USER_INFOLIST, makeShared<UserInfoListJob>},
+                {RequestNum::USER_DELETE, makeShared<UserDeleteJob>},
+                {RequestNum::USER_AVAILABLEDRIVES, makeShared<UserAvailableDrivesJob>},
+                {RequestNum::ACCOUNT_INFOLIST, makeShared<AccountInfoListJob>},
+                {RequestNum::DRIVE_INFOLIST, makeShared<DriveInfoListJob>},
+                {RequestNum::DRIVE_UPDATE, makeShared<DriveUpdateJob>},
+                {RequestNum::DRIVE_DELETE, makeShared<DriveDeleteJob>},
+                {RequestNum::DRIVE_SEARCH, makeShared<DriveSearchJob>},
+                {RequestNum::SYNC_INFOLIST, makeShared<SyncInfoListJob>},
+                {RequestNum::SYNC_START, makeShared<SyncStartJob>},
+                {RequestNum::SYNC_STOP, makeShared<SyncStopJob>},
+                {RequestNum::SYNC_STATUS, makeShared<SyncStatusJob>},
+                {RequestNum::SYNC_ADD, makeShared<SyncAddJob>},
+                {RequestNum::SYNC_ADD2, makeShared<SyncAdd2Job>},
+                {RequestNum::SYNC_START_AFTER_LOGIN, makeShared<SyncStartAfterLoginJob>},
+                {RequestNum::SYNC_DELETE, makeShared<SyncDeleteJob>},
+                {RequestNum::SYNC_GETPUBLICLINKURL, makeShared<SyncGetPublicLinkUrlJob>}};
 }
 
 std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::shared_ptr<CommManager> commManager,
                                                     int requestId, const Poco::DynamicStruct &inParams,
-                                                    const std::shared_ptr<AbstractCommChannel> channel) {
+                                                    std::shared_ptr<AbstractCommChannel> channel) {
     if (const auto makeElt = _makeMap.find(requestNum); makeElt != _makeMap.end())
         return makeElt->second(commManager, requestId, inParams, channel);
     else
-        return nullptr;
+        return std::make_shared<UnknownRequestJob>(commManager, requestId, inParams, channel);
 }
 
 } // namespace KDC

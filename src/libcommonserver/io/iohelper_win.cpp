@@ -675,6 +675,12 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
     return true;
 }
 
+IoError IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &exec) noexcept {
+    IoError ioError = IoError::Unknown;
+    (void) IoHelper::getRights(path, read, write, exec, ioError);
+    return ioError;
+}
+
 bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept {
     if (_getAndSetRightsMethod == -1) initRightsWindowsApi();
     // Preferred method
@@ -722,6 +728,25 @@ bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec,
         _getAndSetRightsMethod = 1;
     }
     return _setRightsStd(path, read, write, exec, ioError);
+}
+
+IoError IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec) noexcept {
+    IoError ioError = IoError::Unknown;
+    (void) IoHelper::setRights(path, read, write, exec, ioError);
+    return ioError;
+}
+
+IoError IoHelper::lock(const SyncPath &path) noexcept {
+    return IoError::Success;
+}
+
+IoError IoHelper::unlock(const SyncPath &path) noexcept {
+    return IoError::Success;
+}
+
+IoError IoHelper::isLocked(const SyncPath &path, bool &locked) noexcept {
+    locked = false;
+    return IoError::Success;
 }
 
 bool IoHelper::checkIfIsJunction(const SyncPath &path, bool &isJunction, IoError &ioError) noexcept {
@@ -1005,6 +1030,136 @@ bool IoHelper::getShortPathName(const SyncPath &path, SyncPath &shortPathName, I
     shortPathName = SyncPath(output);
 
     return true;
+}
+
+bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
+    if (CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED) != S_OK) {
+        LOGW_INFO(Log::instance()->getLogger(),
+                  L"Error in CoInitializeEx in moveItemToTrash. Might be already initialized. Check if next call to "
+                  L"CoCreateInstance is failing.");
+    }
+
+    // Create the IFileOperation object
+    IFileOperation *fileOperation = nullptr;
+    HRESULT hr = CoCreateInstance(__uuidof(FileOperation), nullptr, CLSCTX_ALL, IID_PPV_ARGS(&fileOperation));
+    if (FAILED(hr)) {
+        // Couldn't CoCreateInstance - clean up and return
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in CoCreateInstance - path="
+                                                        << Path2WStr(itemPath) << L" err="
+                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
+
+        std::wstringstream errorStream;
+        errorStream << L"Move to trash failed for item with " << Utility::formatSyncPath(itemPath)
+                    << L" - CoCreateInstance failed with error: " << CommonUtility::s2ws(std::system_category().message(hr));
+        std::wstring errorStr = errorStream.str();
+        LOGW_WARN(Log::instance()->getLogger(), errorStr);
+        sentry::Handler::captureMessage(sentry::Level::Error, "IoHelper::moveItemToTrash", "CoCreateInstance failed");
+        CoUninitialize();
+        return false;
+    }
+
+    hr = fileOperation->SetOperationFlags(FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT);
+    if (FAILED(hr)) {
+        // Couldn't add flags - clean up and return
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in SetOperationFlags path="
+                                                        << Path2WStr(itemPath) << L" err="
+                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
+
+        std::wstringstream errorStream;
+        errorStream << L"Move to trash failed for item " << Path2WStr(itemPath) << L" - SetOperationFlags failed with error: "
+                    << CommonUtility::s2ws(std::system_category().message(hr));
+        std::wstring errorStr = errorStream.str();
+        LOGW_WARN(Log::instance()->getLogger(), errorStr);
+
+        sentry::Handler::captureMessage(sentry::Level::Error, "IoHelper::moveItemToTrash", "SetOperationFlags failed");
+        fileOperation->Release();
+        CoUninitialize();
+        return false;
+    }
+
+    SyncPath itemPathPreferred(itemPath);
+    IShellItem *fileOrFolderItem = nullptr;
+    hr = SHCreateItemFromParsingName(itemPathPreferred.make_preferred().native().c_str(), nullptr,
+                                     IID_PPV_ARGS(&fileOrFolderItem));
+    if (FAILED(hr)) {
+        // Couldn't get file into an item - cleanup and return (maybe the file doesn't exist?)
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in SHCreateItemFromParsingName - path="
+                                                        << Path2WStr(itemPath) << L" err="
+                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
+
+        std::wstringstream errorStream;
+        errorStream << L"Move to trash failed for item " << Path2WStr(itemPath)
+                    << L" - SHCreateItemFromParsingName failed with error: "
+                    << CommonUtility::s2ws(std::system_category().message(hr));
+        std::wstring errorStr = errorStream.str();
+        LOGW_WARN(Log::instance()->getLogger(), errorStr);
+
+        sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "SHCreateItemFromParsingName failed");
+        fileOperation->Release();
+        CoUninitialize();
+        return false;
+    }
+
+    hr = fileOperation->DeleteItem(fileOrFolderItem, nullptr);
+    if (FAILED(hr)) {
+        // Failed to mark file/folder item for deletion - cleanup and return
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in DeleteItem - path="
+                                                        << Path2WStr(itemPath) << L" err="
+                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
+
+        std::wstringstream errorStream;
+        errorStream << L"Move to trash failed for item " << Path2WStr(itemPath) << L" - DeleteItem failed with error: "
+                    << CommonUtility::s2ws(std::system_category().message(hr));
+        std::wstring errorStr = errorStream.str();
+        LOGW_WARN(Log::instance()->getLogger(), errorStr);
+        sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "DeleteItem failed");
+
+        fileOrFolderItem->Release();
+        fileOperation->Release();
+        CoUninitialize();
+        return false;
+    }
+
+    hr = fileOperation->PerformOperations();
+    if (FAILED(hr)) {
+        // failed to carry out delete - return
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in PerformOperations - path="
+                                                        << Path2WStr(itemPath) << L" err="
+                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
+
+        std::wstringstream errorStream;
+        errorStream << L"Move to trash failed for item " << Path2WStr(itemPath) << L" - PerformOperations failed with error: "
+                    << CommonUtility::s2ws(std::system_category().message(hr));
+        std::wstring errorStr = errorStream.str();
+        LOGW_WARN(Log::instance()->getLogger(), errorStr);
+
+        sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "PerformOperations failed");
+        fileOrFolderItem->Release();
+        fileOperation->Release();
+        CoUninitialize();
+        return false;
+    }
+
+    BOOL aborted = false;
+    BOOL result = true;
+    hr = fileOperation->GetAnyOperationsAborted(&aborted);
+    if (FAILED(hr)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in GetAnyOperationsAborted - "
+                                                        << Utility::formatSyncPath(itemPath) << L" err="
+                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
+        result = false;
+    } else if (aborted) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Move to trash aborted for item with " << Utility::formatSyncPath(itemPath));
+        result = false;
+    } else {
+        // MISRA Coding Guideline
+    }
+
+    fileOrFolderItem->Release();
+    fileOperation->Release();
+    CoUninitialize();
+
+    return result;
 }
 
 } // namespace KDC

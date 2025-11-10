@@ -180,8 +180,8 @@ class ExtensionJob : public AbstractJob {
 
         // Retrieve map iterators.
         // Returns the end() iterator on failure but also add an error and log a message in this case.
-        VfsMap::const_iterator retrieveVfsMapIt(const int syncDbId) const;
-        SyncPalMap::const_iterator retrieveSyncPalMapIt(const int syncDbId) const;
+        VfsMap::iterator retrieveVfsMapIt(const int syncDbId) const;
+        SyncPalMap::iterator retrieveSyncPalMapIt(const int syncDbId) const;
 
         static void copyUrlToClipboard(const std::string &link);
         static void openPrivateLink(const std::string &link);

@@ -54,7 +54,7 @@ ExitInfo GetSizeJob::handleResponse(std::istream &is) {
 }
 
 ExitInfo GetSizeJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
-    if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN) {
+    if (httpResponse().getStatus() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN) {
         // Access to the directory is forbidden
         return ExitCode::Ok;
     }

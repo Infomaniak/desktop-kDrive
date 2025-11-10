@@ -18,42 +18,16 @@
 
 #import <Foundation/Foundation.h>
 
-// Objects shared betwin client & server
-// TODO: Provisional code
-@interface UserInfo: NSObject {
-@public
-    int dbId;
-    int userId;
-    NSString *_Nonnull name;
-    NSString *_Nonnull email;
-    NSData *_Nonnull avatar;
-    bool connected;
-    bool credentialsAsked;
-    bool isStaff;
-}
-@end
-
-@implementation UserInfo
-@end
-
-// Server protocol
+// Server protocol (GUI => Server)
 @protocol XPCGuiProtocol
 
-// TODO: Test query method to remove later
-- (void)sendQuery:(NSData *_Nonnull)msg;
-
-typedef void (^_Nonnull loginRequestTokenCbk)(int userDbId, NSString *_Nullable error, NSString *_Nullable errorDescr);
-- (void)loginRequestToken:(NSString *_Nonnull)code codeVerifier:(NSString *_Nonnull)codeVerifier callback:(loginRequestTokenCbk)callback;
+- (void)processQuery:(NSData *_Nonnull)query callback:(void (^_Nonnull)(NSData *_Nonnull answer))callback;
 
 @end
 
-// Client protocol
+// Client protocol (Server => GUI)
 @protocol XPCGuiRemoteProtocol
 
-// TODO: Test signal method to remove later
-- (void)sendSignal:(NSData *_Nonnull)msg;
-
-- (void)signalUserCreate:(UserInfo *_Nonnull)userInfo;
-- (void)signalUserUpdate:(UserInfo *_Nonnull)userInfo;
+- (void)processSignal:(NSData *_Nonnull)msg;
 
 @end

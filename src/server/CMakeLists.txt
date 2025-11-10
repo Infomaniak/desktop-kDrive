@@ -52,8 +52,33 @@ set(server_SRCS
     comm/guijobs/abstractguijob.h comm/guijobs/abstractguijob.cpp
     comm/guijobs/guijobfactory.h comm/guijobs/guijobfactory.cpp
     comm/guijobs/loginrequesttokenjob.h comm/guijobs/loginrequesttokenjob.cpp
+    comm/guijobs/unknownrequestjob.h comm/guijobs/unknownrequestjob.cpp
+    comm/guijobs/userdbidlistjob.h comm/guijobs/userdbidlistjob.cpp
+    comm/guijobs/userinfolistjob.h comm/guijobs/userinfolistjob.cpp
+    comm/guijobs/userdeletejob.h comm/guijobs/userdeletejob.cpp
+    comm/guijobs/useravailabledrivesjob.h comm/guijobs/useravailabledrivesjob.cpp
+    comm/guijobs/accountinfolistjob.h comm/guijobs/accountinfolistjob.cpp
+    comm/guijobs/driveinfolistjob.h comm/guijobs/driveinfolistjob.cpp
+    comm/guijobs/driveupdatejob.h comm/guijobs/driveupdatejob.cpp
+    comm/guijobs/drivedeletejob.h comm/guijobs/drivedeletejob.cpp
+    comm/guijobs/drivesearchjob.h comm/guijobs/drivesearchjob.cpp
+    comm/guijobs/syncinfolistjob.h comm/guijobs/syncinfolistjob.cpp
+    comm/guijobs/syncstartjob.h comm/guijobs/syncstartjob.cpp
+    comm/guijobs/syncstopjob.h comm/guijobs/syncstopjob.cpp
+    comm/guijobs/syncstatusjob.h comm/guijobs/syncstatusjob.cpp
+    comm/guijobs/abstractsyncaddjob.h comm/guijobs/abstractsyncaddjob.cpp
+    comm/guijobs/syncaddjob.h comm/guijobs/syncaddjob.cpp
+    comm/guijobs/syncadd2job.h comm/guijobs/syncadd2job.cpp
+    comm/guijobs/syncstartafterloginjob.h comm/guijobs/syncstartafterloginjob.cpp
+    comm/guijobs/syncdeletejob.h comm/guijobs/syncdeletejob.cpp
+    comm/guijobs/syncgetpubliclinkurljob.h comm/guijobs/syncgetpubliclinkurljob.cpp
     comm/guijobs/signaluseraddedjob.h comm/guijobs/signaluseraddedjob.cpp
     comm/guijobs/signaluserupdatedjob.h comm/guijobs/signaluserupdatedjob.cpp
+    comm/guijobs/signaluserremovedjob.h comm/guijobs/signaluserremovedjob.cpp
+    comm/guijobs/signalaccountaddedjob.h comm/guijobs/signalaccountaddedjob.cpp
+    comm/guijobs/signaldriveaddedjob.h comm/guijobs/signaldriveaddedjob.cpp
+    comm/guijobs/signalsyncaddedjob.h comm/guijobs/signalsyncaddedjob.cpp
+    comm/guijobs/signalsyncremovedjob.h comm/guijobs/signalsyncremovedjob.cpp
     migration/migrationparams.h migration/migrationparams.cpp
     requests/serverrequests.h requests/serverrequests.cpp
     requests/offlinefilessizeestimator.h requests/offlinefilessizeestimator.cpp

@@ -17,6 +17,8 @@
  */
 
 #include "testincludes.h"
+#include "test_utility/localtemporarydirectory.h"
+
 #include "libcommon/comm.h"
 #include "server/comm/guicommserver.h"
 #include "server/comm/guijobs/abstractguijob.h"
@@ -57,7 +59,7 @@ class GuiJobTest : public AbstractGuiJob {
         };
 
         GuiJobTest(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                   const std::shared_ptr<AbstractCommChannel> channel) :
+                   std::shared_ptr<AbstractCommChannel> channel) :
             AbstractGuiJob(commManager, requestId, inParams, channel) {
             _requestNum = RequestNum::Unknown;
         }
@@ -78,7 +80,7 @@ class GuiJobTest : public AbstractGuiJob {
         std::vector<Dummy> _dummyValues;
 
         ExitInfo deserializeInputParms() override;
-        ExitInfo serializeOutputParms(bool hasError = false) override;
+        ExitInfo serializeOutputParms() override;
         ExitInfo process() override;
 
         friend class TestAbstractGuiJob;
@@ -98,6 +100,8 @@ class TestAbstractGuiJob : public CppUnit::TestFixture, public TestBase {
     private:
         log4cplus::Logger _logger;
         std::shared_ptr<GuiCommChannelTest2> _channel;
+
+        LocalTemporaryDirectory _localParmsDbTempDir{"testAbstractGuiJob"};
 };
 
 } // namespace KDC

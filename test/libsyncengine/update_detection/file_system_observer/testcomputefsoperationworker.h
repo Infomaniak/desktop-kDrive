@@ -113,7 +113,8 @@ class TestComputeFSOperationWorker : public CppUnit::TestFixture, public TestBas
         void testIsInUnsyncedList(bool expectedResult, const NodeId &nodeId, ReplicaSide side) const;
 
         std::shared_ptr<SyncPal> _syncPal;
-        LocalTemporaryDirectory _localTempDir{"TestSyncPal"};
+        LocalTemporaryDirectory _localTempDir{"TestComputeFSOperationWorker"};
+        LocalTemporaryDirectory _localParmsTempDir{"TestComputeFSOperationWorker_parmsDb"};
         TestSituationGenerator _situationGenerator;
 };
 

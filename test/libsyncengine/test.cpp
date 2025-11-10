@@ -43,7 +43,7 @@
 #include "jobs/network/kDrive_API/testloguploadjob.h"
 #include "jobs/network/testsnapshotitemhandler.h"
 #include "jobs/local/testlocaljobs.h"
-#include "jobs/testsyncjobmanager.h"
+#include "jobs/testsyncjobmanagersingleton.h"
 #include "propagation/executor/testfilerescuer.h"
 #include "requests/testexclusiontemplatecache.h"
 #include "requests/testsyncnodecache.h"

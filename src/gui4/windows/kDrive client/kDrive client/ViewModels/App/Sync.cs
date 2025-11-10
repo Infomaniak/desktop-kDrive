@@ -17,22 +17,26 @@
  */
 
 using CommunityToolkit.Mvvm.ComponentModel;
+using DynamicData.Binding;
 using Infomaniak.kDrive.ServerCommunication;
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
+using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels.Errors;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
-using Infomaniak.kDrive.Types;
 
 namespace Infomaniak.kDrive.ViewModels
 {
-    public class Sync : ObservableObject
+    public class Sync : UISafeObservableObject
     {
         // Sync properties
         private DbId _dbId;
@@ -45,14 +49,22 @@ namespace Infomaniak.kDrive.ViewModels
         private SyncStatus _syncStatus = SyncStatus.Pause;
         private SyncType _syncType = SyncType.Unknown;
         private ObservableCollection<Errors.BaseError> _syncErrors = new();
+        private SyncActivity? _lastActivity;
 
         // Sync UI properties
         private bool _showIncomingActivity = true;
 
         public SyncStatus SyncStatus
         {
-            get => _syncStatus;
-            set => SetProperty(ref _syncStatus, value);
+            get
+            {
+                if (_syncStatus == SyncStatus.Pause && !App.ServiceProvider.GetRequiredService<AppModel>().NetworkAvailable)
+                {
+                    return SyncStatus.Offline;
+                }
+                return _syncStatus;
+            }
+            set => SetPropertyInUIThread(ref _syncStatus, value);
         }
 
         //TODO: Remove this test function
@@ -111,7 +123,7 @@ namespace Infomaniak.kDrive.ViewModels
             {
                 sb.Append(sampleFileNames[rand.Next(sampleFileNames.Length)]);
             }
-            SyncDirection direction = (SyncDirection)rand.Next(2); // Randomly choose direction
+            SyncActivityDirection direction = (SyncActivityDirection)rand.Next(1, 3); // Randomly choose direction
             NodeType nodeType = isFile ? NodeType.File : NodeType.Directory;
             long size = isFile ? rand.Next(0, 5000000) : 0; // Random size for files, 0 for directories
             DateTime activityTime = DateTime.Now;
@@ -143,41 +155,88 @@ namespace Infomaniak.kDrive.ViewModels
 
                 while (true)
                 {
-                    await Task.Delay(random.Next(1, 5000)); // Wait between 0 to 5 seconds
-                    if (SyncStatus != SyncStatus.Running)
+                    if (SyncStatus != SyncStatus.Running && SyncStatus != SyncStatus.Idle)
                     {
+                        await Task.Delay(500).ConfigureAwait(false);
                         continue;
                     }
-                    var newActivity = GenerateTestActivity();
 
-                    AppModel.UIThreadDispatcher.TryEnqueue(() =>
+                    if (SyncStatus == SyncStatus.Running)
                     {
-                        _syncActivities.Insert(0, newActivity);
-                        if (_syncActivities.Count > 100)
+                        if (random.Next(10) == 1)
                         {
-                            _syncActivities.RemoveAt(_syncActivities.Count - 1);
+                            SyncStatus = SyncStatus.Idle;
+                            continue;
                         }
-                    });
+                        else
+                        {
+                            var newActivity = GenerateTestActivity();
+
+                            await Utility.RunOnUIThread(() =>
+                            {
+                                _syncActivities.Insert(0, newActivity);
+                                if (_syncActivities.Count > 500)
+                                {
+                                    _syncActivities.RemoveAt(_syncActivities.Count - 1);
+                                }
+                            });
+                            await Task.Delay(random.Next(0, 10)).ConfigureAwait(false);
+                            await Task.Delay(100).ConfigureAwait(false);
+
+                        }
+                    }
+                    else if (SyncStatus == SyncStatus.Idle)
+                    {
+                        if (random.Next(10) == 1)
+                        {
+                            SyncStatus = SyncStatus.Running;
+                        }
+                        await Task.Delay(random.Next(2000)).ConfigureAwait(false);
+                    }
+
+
                 }
             });
+
+            App.ServiceProvider.GetRequiredService<AppModel>().WhenAnyPropertyChanged("NetworkAvailable").Subscribe(appModel =>
+            {
+                if (SyncStatus == SyncStatus.Pause || SyncStatus == SyncStatus.Offline)
+                {
+                    bool networkAvailable = appModel?.NetworkAvailable ?? true;
+                    SyncStatus = networkAvailable ? SyncStatus.Pause : SyncStatus.Offline;
+                }
+            });
+
+            SyncActivities.CollectionChanged += (s, args) =>
+            {
+                try
+                {
+                    LastActivity = SyncActivities[0];
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    LastActivity = null;
+                }
+
+            };
         }
 
         public DbId DbId
         {
             get => _dbId;
-            set => SetProperty(ref _dbId, value);
+            set => SetPropertyInUIThread(ref _dbId, value);
         }
 
         public SyncId Id
         {
             get => _id;
-            set => SetProperty(ref _id, value);
+            set => SetPropertyInUIThread(ref _id, value);
         }
 
         public SyncPath LocalPath
         {
             get => _localPath;
-            set => SetProperty(ref _localPath, value);
+            set => SetPropertyInUIThread(ref _localPath, value);
 
         }
 
@@ -191,20 +250,20 @@ namespace Infomaniak.kDrive.ViewModels
                 {
                     _remotePath += Path.DirectorySeparatorChar;
                 }
-                SetProperty(ref _remotePath, value);
+                SetPropertyInUIThread(ref _remotePath, value);
             }
         }
 
         public bool SupportOnlineMode
         {
             get => _supportOnlineMode;
-            set => SetProperty(ref _supportOnlineMode, value);
+            set => SetPropertyInUIThread(ref _supportOnlineMode, value);
         }
 
         public SyncType SyncType
         {
             get => _syncType;
-            set => SetProperty(ref _syncType, value);
+            set => SetPropertyInUIThread(ref _syncType, value);
         }
 
         public ObservableCollection<SyncActivity> SyncActivities
@@ -220,28 +279,19 @@ namespace Infomaniak.kDrive.ViewModels
         public ObservableCollection<Errors.BaseError> SyncErrors
         {
             get => _syncErrors;
-            set => SetProperty(ref _syncErrors, value);
+            set => SetPropertyInUIThread(ref _syncErrors, value);
         }
 
-        public async Task Reload()
+        public SyncActivity? LastActivity
         {
-            Logger.Log(Logger.Level.Info, $"Reloading sync properties for DbId {DbId}...");
-            Task[] tasks = new Task[]
-            {
-               CommRequests.GetSyncId(DbId).ContinueWith(t => { if (t.Result != null) Id = t.Result.Value; }, TaskScheduler.FromCurrentSynchronizationContext()),
-               CommRequests.GetSyncLocalPath(DbId).ContinueWith(t => { if (t.Result != null) LocalPath = t.Result; }, TaskScheduler.FromCurrentSynchronizationContext()),
-               CommRequests.GetSyncRemotePath(DbId).ContinueWith(t => { if (t.Result != null) RemotePath = t.Result; }, TaskScheduler.FromCurrentSynchronizationContext()),
-               CommRequests.GetSyncSupportOfflineMode(DbId).ContinueWith(t => { if (t.Result != null) SupportOnlineMode = t.Result.Value; }, TaskScheduler.FromCurrentSynchronizationContext()),
-               CommRequests.GetSyncType(DbId).ContinueWith(t => { if (t.Result != null) SyncType = t.Result.Value; }, TaskScheduler.FromCurrentSynchronizationContext())
-            };
-            await Task.WhenAll(tasks);
-            Logger.Log(Logger.Level.Info, $"Finished reloading sync properties for DbId {DbId}.");
+            get => _lastActivity;
+            set => SetPropertyInUIThread(ref _lastActivity, value);
         }
 
         public bool ShowIncomingActivity
         {
             get => _showIncomingActivity;
-            set => SetProperty(ref _showIncomingActivity, value);
+            set => SetPropertyInUIThread(ref _showIncomingActivity, value);
         }
     }
 }

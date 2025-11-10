@@ -16,56 +16,29 @@
  */
 
 #pragma once
+
 #include "utility/types.h"
+
+#include <Poco/Dynamic/Struct.h>
 
 namespace KDC {
 
 class SearchInfo {
     public:
         SearchInfo() = default;
-        SearchInfo(const NodeId &id, const SyncName &name, const NodeType type) :
-            _id(id),
-            _name(name),
-            _type(type) {}
-
+        SearchInfo(const NodeId &id, const SyncName &name, const NodeType type);
 
         [[nodiscard]] const NodeId &id() const { return _id; }
         [[nodiscard]] const SyncName &name() const { return _name; }
         [[nodiscard]] NodeType type() const { return _type; }
 
-        friend QDataStream &operator>>(QDataStream &in, SearchInfo &info) {
-            QString tmpId;
-            QString tmpName;
-            int tmpType = 0;
-            in >> tmpId >> tmpName >> tmpType;
-            info._id = QStr2Str(tmpId);
-            info._name = QStr2SyncName(tmpName);
-            info._type = static_cast<NodeType>(tmpType);
-            return in;
-        }
-        friend QDataStream &operator<<(QDataStream &out, const SearchInfo &info) {
-            out << QString::fromStdString(info._id) << SyncName2QStr(info._name) << static_cast<int>(info._type);
-            return out;
-        }
-        friend QDataStream &operator>>(QDataStream &in, QList<SearchInfo> &list) {
-            auto count = 0;
-            in >> count;
-            for (auto i = 0; i < count; i++) {
-                SearchInfo info;
-                in >> info;
-                list.push_back(info);
-            }
-            return in;
-        }
-        friend QDataStream &operator<<(QDataStream &out, const QList<SearchInfo> &list) {
-            const auto count = list.size();
-            out << count;
-            for (auto i = 0; i < count; i++) {
-                const SearchInfo &info = list[i];
-                out << info;
-            }
-            return out;
-        }
+        void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
+        void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
+
+        friend QDataStream &operator>>(QDataStream &in, SearchInfo &info);
+        friend QDataStream &operator<<(QDataStream &out, const SearchInfo &info);
+        friend QDataStream &operator>>(QDataStream &in, QList<SearchInfo> &list);
+        friend QDataStream &operator<<(QDataStream &out, const QList<SearchInfo> &list);
 
     private:
         NodeId _id;

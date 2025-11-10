@@ -19,6 +19,9 @@
 #pragma once
 
 #include "testincludes.h"
+#include "keychainmanager/apitoken.h"
+#include "test_utility/localtemporarydirectory.h"
+
 #include "utility/types.h"
 #include "libcommonserver/io/iohelper.h"
 using namespace CppUnit;
@@ -112,6 +115,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         int _driveDbId = 0;
         int _userDbId = 0;
         NodeId _remoteDirId;
+        ApiToken _apiToken;
 
         SyncName _dummyFileName;
         SyncPath _dummyLocalFilePath;
@@ -119,5 +123,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         NodeId _dummyRemoteFileId;
 
         static uint64_t _nbParallelThreads;
+
+        LocalTemporaryDirectory _localParmsDbTempDir{"testNetworkJobs"};
 };
 } // namespace KDC

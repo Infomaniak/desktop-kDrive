@@ -25,6 +25,8 @@
 #include <QList>
 #include <QColor>
 
+#include <Poco/Dynamic/Struct.h>
+
 namespace KDC {
 
 class SyncInfo {
@@ -49,6 +51,9 @@ class SyncInfo {
         inline VirtualFileMode virtualFileMode() const { return _virtualFileMode; }
         inline void setNavigationPaneClsid(QString navigationPaneClsid) { _navigationPaneClsid = navigationPaneClsid; }
         inline QString navigationPaneClsid() const { return _navigationPaneClsid; }
+
+        void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
+        void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
 
         friend QDataStream &operator>>(QDataStream &in, SyncInfo &info);
         friend QDataStream &operator<<(QDataStream &out, const SyncInfo &info);

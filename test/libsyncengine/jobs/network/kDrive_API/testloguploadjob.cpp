@@ -34,18 +34,7 @@ void TestLogUploadJob::setUp() {
     TestBase::start();
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Set Up TestLogUploadJob");
     deleteFakeFiles();
-
-    bool parmsDbExist = std::filesystem::exists(CommonUtility::getAppSupportDir() / ".parms.db");
-
-    // Create parmsDb
-    bool alreadyExists = false;
-    std::filesystem::path parmsDbPath;
-    if (parmsDbExist) {
-        parmsDbPath = Db::makeDbName(alreadyExists);
-    } else {
-        parmsDbPath = MockDb::makeDbName(alreadyExists);
-    }
-    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
+    (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
 }
 
 void TestLogUploadJob::tearDown() {

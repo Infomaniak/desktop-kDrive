@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.UI.Xaml;
+using System;
 
 namespace Infomaniak.kDrive.ViewModels.Errors
 {
@@ -14,22 +11,28 @@ namespace Infomaniak.kDrive.ViewModels.Errors
 
         public override sealed string TitleStr()
         {
-            return GetLocalizedString("AppError_Title");
+            return GetLocalizedSyncErrorString("AppError_Title");
         }
 
         public override sealed string HowToSolveStr()
         {
-            return GetLocalizedString("AppError_HowToSolve");
+            return GetLocalizedSyncErrorString("AppError_HowToSolve");
         }
 
         public override string CauseStr()
         {
-            return string.Format(GetLocalizedString("AppError_Cause"), ExitCode, ExitCause);
+            return string.Format(GetLocalizedSyncErrorString("AppError_Cause"), ExitCode, ExitCause);
         }
 
         public override Uri IconUri()
         {
-            return AssetLoader.GetAssetUri(AssetLoader.AssetType.Icon, "headphones");
+            const string resourceKey = "Infomaniak.DS.Icons.Devices.headphones";
+            if (Application.Current.Resources[resourceKey] is string iconUriStr)
+            {
+                return new Uri(iconUriStr);
+            }
+            Logger.Log(Logger.Level.Error, $"Resource for AppError icon should be {resourceKey} but was not found or is not a string.");
+            return new Uri("");
         }
     }
 }

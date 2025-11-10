@@ -493,11 +493,6 @@ function Prepare-Archive {
 
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-    if (!$upload) {
-        Write-Host "Archive prepared. Skipping binaries required for upload only."
-        exit 0
-    }
-
     $iconPath = Get-Icon-Path $buildpath
     if (Test-Path -Path $iconPath) {
         Copy-Item -Path "$iconPath" -Destination $archivePath

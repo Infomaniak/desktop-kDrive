@@ -37,7 +37,6 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testFormatSyncPath);
         CPPUNIT_TEST(testFormatRequest);
         CPPUNIT_TEST(testIsEqualUpToCaseAndEnc);
-        CPPUNIT_TEST(testMoveItemToTrash);
         CPPUNIT_TEST(testStr2HexStr);
         CPPUNIT_TEST(testStrHex2Str);
         CPPUNIT_TEST(testSplitStr);
@@ -72,7 +71,6 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testFormatSyncPath();
         void testFormatRequest();
         void testIsEqualUpToCaseAndEnc();
-        void testMoveItemToTrash();
         void testGetLinuxDesktopType();
         void testGetAppSupportDir();
         void testStr2HexStr();

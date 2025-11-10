@@ -18,6 +18,7 @@
 
 #include "extensionjob.h"
 #include "commmanager.h"
+#include "appserver.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility_base.h"
 #include "libcommon/utility/utility.h"
@@ -143,14 +144,14 @@ void ExtensionJob::commandGetMenuItems(const CommString &argument, std::shared_p
     }
 
     // Find SyncPal and Vfs associated to sync
-    SyncPalMap::const_iterator syncPalMapIt = _commManager->syncPalMap().end();
-    VfsMap::const_iterator vfsMapIt = _commManager->vfsMap().end();
+    auto syncPalMapIt = _commManager->appServer().syncPalMap().end();
+    auto vfsMapIt = _commManager->appServer().vfsMap().end();
     if (sync.dbId()) {
         syncPalMapIt = retrieveSyncPalMapIt(sync.dbId());
-        if (syncPalMapIt == _commManager->syncPalMap().end()) return;
+        if (syncPalMapIt == _commManager->appServer().syncPalMap().end()) return;
 
         vfsMapIt = retrieveVfsMapIt(sync.dbId());
-        if (vfsMapIt == _commManager->vfsMap().end()) return;
+        if (vfsMapIt == _commManager->appServer().vfsMap().end()) return;
     }
 
     if (files.size() == 1) {
@@ -223,7 +224,7 @@ void ExtensionJob::commandCopyPublicLink(const CommString &argument, std::shared
     if (!fileData.isValid()) return;
 
     const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
-    if (syncPalMapIt == _commManager->syncPalMap().end()) return;
+    if (syncPalMapIt == _commManager->appServer().syncPalMap().end()) return;
 
     // Get NodeId
     NodeId nodeId;
@@ -235,7 +236,7 @@ void ExtensionJob::commandCopyPublicLink(const CommString &argument, std::shared
 
     // Get public link URL
     std::string linkUrl;
-    exitCode = _commManager->getPublicLinkUrlCbk(fileData.driveDbId, nodeId, linkUrl);
+    exitCode = AppServer::getPublicLinkUrl(fileData.driveDbId, nodeId, linkUrl);
     if (exitCode != ExitCode::Ok) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in getPublicLinkUrl - " << Utility::formatSyncPath(fileData.relativePath));
@@ -452,13 +453,13 @@ void ExtensionJob::commandGetAllMenuItems(const CommString &argument, std::share
     std::unordered_map<int, std::shared_ptr<Vfs>>::const_iterator vfsMapIt;
     if (sync.dbId()) {
         syncPalMapIt = retrieveSyncPalMapIt(sync.dbId());
-        if (syncPalMapIt == _commManager->syncPalMap().end()) {
+        if (syncPalMapIt == _commManager->appServer().syncPalMap().end()) {
             channel->sendMessage(response);
             return;
         }
 
         vfsMapIt = retrieveVfsMapIt(sync.dbId());
-        if (vfsMapIt == _commManager->vfsMap().end()) {
+        if (vfsMapIt == _commManager->appServer().vfsMap().end()) {
             channel->sendMessage(response);
             return;
         }
@@ -566,7 +567,7 @@ void ExtensionJob::commandGetThumbnail(const CommString &argument, std::shared_p
     }
 
     auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
-    if (syncPalMapIt == _commManager->syncPalMap().end()) return;
+    if (syncPalMapIt == _commManager->appServer().syncPalMap().end()) return;
 
     // Get NodeId
     NodeId nodeId;
@@ -578,7 +579,7 @@ void ExtensionJob::commandGetThumbnail(const CommString &argument, std::shared_p
 
     // Get thumbnail
     std::string thumbnail;
-    exitCode = _commManager->getThumbnailCbk(fileData.driveDbId, nodeId, 256, thumbnail);
+    exitCode = AppServer::getThumbnail(fileData.driveDbId, nodeId, 256, thumbnail);
     if (exitCode != ExitCode::Ok) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in getThumbnail - " << Utility::formatSyncPath(filePath));
         return;
@@ -716,10 +717,10 @@ void ExtensionJob::commandSetThumbnail(const CommString &argument, std::shared_p
 
     // Find SyncPal and Vfs associated to sync
     auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
-    if (syncPalMapIt == _commManager->syncPalMap().end()) return;
+    if (syncPalMapIt == _commManager->appServer().syncPalMap().end()) return;
 
     auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
-    if (vfsMapIt == _commManager->vfsMap().end()) return;
+    if (vfsMapIt == _commManager->appServer().vfsMap().end()) return;
 
     // Get NodeId
     NodeId nodeId;
@@ -731,7 +732,7 @@ void ExtensionJob::commandSetThumbnail(const CommString &argument, std::shared_p
 
     // Get thumbnail
     std::string thumbnail;
-    exitCode = _commManager->getThumbnailCbk(fileData.driveDbId, nodeId, 256, thumbnail);
+    exitCode = AppServer::getThumbnail(fileData.driveDbId, nodeId, 256, thumbnail);
     if (exitCode != ExitCode::Ok) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in getThumbnail - " << Utility::formatSyncPath(argument));
         return;
@@ -835,12 +836,12 @@ void ExtensionJob::fetchPrivateLinkUrlHelper(const SyncPath &localFile,
     }
 
     // Find the syncpal associated to sync
-    SyncPalMap::const_iterator syncPalMapIt = _commManager->syncPalMap().end();
+    auto syncPalMapIt = _commManager->appServer().syncPalMap().end();
     if (sync.dbId()) {
         syncPalMapIt = retrieveSyncPalMapIt(sync.dbId());
     }
 
-    if (syncPalMapIt == _commManager->syncPalMap().end()) return;
+    if (syncPalMapIt == _commManager->appServer().syncPalMap().end()) return;
 
     const FileData fileData = FileData::get(localFile);
     if (!fileData.isValid()) return;
@@ -863,7 +864,7 @@ bool ExtensionJob::syncFileStatus(const FileData &fileData, SyncFileStatus &stat
     if (!fileData.isValid()) return false;
 
     const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
-    if (syncPalMapIt == _commManager->syncPalMap().end()) return false;
+    if (syncPalMapIt == _commManager->appServer().syncPalMap().end()) return false;
 
     bool exists = false;
     if (!syncPalMapIt->second->checkIfExistsOnServer(fileData.relativePath, exists)) {
@@ -878,7 +879,7 @@ bool ExtensionJob::syncFileStatus(const FileData &fileData, SyncFileStatus &stat
     }
 
     const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
-    if (vfsMapIt == _commManager->vfsMap().end()) return false;
+    if (vfsMapIt == _commManager->appServer().vfsMap().end()) return false;
 
     if (vfsMapIt->second->mode() == VirtualFileMode::Mac || vfsMapIt->second->mode() == VirtualFileMode::Win) {
         if (!vfsMapIt->second->status(fileData.localPath, vfsStatus)) {
@@ -894,22 +895,22 @@ bool ExtensionJob::syncFileStatus(const FileData &fileData, SyncFileStatus &stat
     return true;
 }
 
-SyncPalMap::const_iterator ExtensionJob::retrieveSyncPalMapIt(const int syncDbId) const {
-    const auto result = _commManager->syncPalMap().find(syncDbId);
+SyncPalMap::iterator ExtensionJob::retrieveSyncPalMapIt(const int syncDbId) const {
+    const auto result = _commManager->appServer().syncPalMap().find(syncDbId);
 
-    if (result == _commManager->syncPalMap().end()) {
+    if (result == _commManager->appServer().syncPalMap().end()) {
         LOG_WARN(Log::instance()->getLogger(), "SyncPal not found in SyncPalMap - syncDbId=" << syncDbId);
-        return _commManager->syncPalMap().end();
+        return _commManager->appServer().syncPalMap().end();
     }
 
     return result;
 }
 
-VfsMap::const_iterator ExtensionJob::retrieveVfsMapIt(const int syncDbId) const {
-    const auto result = _commManager->vfsMap().find(syncDbId);
-    if (result == _commManager->vfsMap().cend()) {
+VfsMap::iterator ExtensionJob::retrieveVfsMapIt(const int syncDbId) const {
+    const auto result = _commManager->appServer().vfsMap().find(syncDbId);
+    if (result == _commManager->appServer().vfsMap().end()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in VfsMap - syncDbId=" << syncDbId);
-        return _commManager->vfsMap().cend();
+        return _commManager->appServer().vfsMap().end();
     }
 
     return result;
@@ -919,7 +920,7 @@ ExitInfo ExtensionJob::setPinState(const FileData &fileData, PinState pinState) 
     if (!fileData.syncDbId) return {ExitCode::LogicError, ExitCause::InvalidArgument};
 
     const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
-    if (vfsMapIt == _commManager->vfsMap().cend()) return {ExitCode::LogicError};
+    if (vfsMapIt == _commManager->appServer().vfsMap().cend()) return {ExitCode::LogicError};
 
     return vfsMapIt->second->setPinState(fileData.relativePath, pinState);
 }
@@ -928,7 +929,7 @@ ExitInfo ExtensionJob::dehydratePlaceholder(const FileData &fileData) {
     if (!fileData.syncDbId) return {ExitCode::LogicError, ExitCause::InvalidArgument};
 
     const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
-    if (vfsMapIt == _commManager->vfsMap().cend()) return {ExitCode::LogicError};
+    if (vfsMapIt == _commManager->appServer().vfsMap().cend()) return {ExitCode::LogicError};
 
     return vfsMapIt->second->dehydratePlaceholder(fileData.relativePath);
 }
@@ -937,7 +938,7 @@ bool ExtensionJob::addDownloadJob(const FileData &fileData, const SyncPath &pare
     if (!fileData.syncDbId) return false;
 
     const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
-    if (syncPalMapIt == _commManager->syncPalMap().end()) return false;
+    if (syncPalMapIt == _commManager->appServer().syncPalMap().end()) return false;
 
     // Create download job
     const ExitCode exitCode = syncPalMapIt->second->addDlDirectJob(fileData.relativePath, fileData.localPath, parentFolderPath);
@@ -952,10 +953,10 @@ bool ExtensionJob::addDownloadJob(const FileData &fileData, const SyncPath &pare
 
 bool ExtensionJob::cancelDownloadJobs(int syncDbId, const std::vector<CommString> &fileList) {
     const auto syncPalMapIt = retrieveSyncPalMapIt(syncDbId);
-    if (syncPalMapIt == _commManager->syncPalMap().end()) return false;
+    if (syncPalMapIt == _commManager->appServer().syncPalMap().end()) return false;
 
     const auto vfsMapIt = retrieveVfsMapIt(syncDbId);
-    if (vfsMapIt == _commManager->vfsMap().end()) return false;
+    if (vfsMapIt == _commManager->appServer().vfsMap().end()) return false;
 
     std::vector<SyncPath> syncPathList;
     processFileList(fileList, syncPathList);
@@ -974,18 +975,18 @@ void ExtensionJob::copyUrlToClipboard(const std::string &link) {
 #if defined(KD_WINDOWS)
     const size_t len = link.size() + 1;
     HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, len);
-    memcpy(GlobalLock(hMem), link.c_str(), len);
-    GlobalUnlock(hMem);
-    if (!OpenClipboard(NULL)) {
+    (void) memcpy(GlobalLock(hMem), link.c_str(), len);
+    (void) GlobalUnlock(hMem);
+    if (!OpenClipboard(nullptr)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in OpenClipboard: err=" << GetLastError());
         return;
     }
-    EmptyClipboard();
+    (void) EmptyClipboard();
     if (!SetClipboardData(CF_TEXT, hMem)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in SetClipboardData: err=" << GetLastError());
         return;
     }
-    CloseClipboard();
+    (void) CloseClipboard();
 #else
     QApplication::clipboard()->setText(QString::fromStdString(link));
 #endif
@@ -1033,7 +1034,7 @@ void ExtensionJob::sendSharingContextMenuOptions(const FileData &fileData, std::
     if (!(theme->userGroupSharing() || theme->linkSharing())) return;
 
     // Find SyncPal associated to sync
-    auto syncPalMapIt = _commManager->syncPalMap().end();
+    auto syncPalMapIt = _commManager->appServer().syncPalMap().end();
     if (fileData.syncDbId) {
         syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
     }
@@ -1080,7 +1081,7 @@ void ExtensionJob::addSharingContextMenuOptions(const FileData &fileData, CommSt
     if (!(theme->userGroupSharing() || theme->linkSharing())) return;
 
     // Find SyncPal associated to sync
-    auto syncPalMapIt = _commManager->syncPalMap().end();
+    auto syncPalMapIt = _commManager->appServer().syncPalMap().end();
     if (fileData.syncDbId) {
         syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
     }
@@ -1246,7 +1247,7 @@ void ExtensionJob::monitorFolderHydration(const FileData &fileData) const {
     if (!fileData.syncDbId) return;
 
     const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
-    if (syncPalMapIt == _commManager->syncPalMap().end()) return;
+    if (syncPalMapIt == _commManager->appServer().syncPalMap().end()) return;
 
     syncPalMapIt->second->monitorFolderHydration(fileData.localPath);
 }

@@ -16,132 +16,173 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using CommunityToolkit.Mvvm.ComponentModel;
-using Infomaniak.kDrive.ServerCommunication;
+using DynamicData;
+using DynamicData.Binding;
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
+using Infomaniak.kDrive.Types;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
-using System.Buffers.Binary;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Collections.ObjectModel;
-using System.Drawing;
-using System.IO;
 using System.Linq;
-using System.Text;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading;
 using System.Threading.Tasks;
+using Windows.Storage.Streams;
 
 namespace Infomaniak.kDrive.ViewModels
 {
-    public class User : ObservableObject
+    public class User : UISafeObservableObject, IDisposable
     {
         private DbId _dbId = -1;
-        private UserId _id = -1;
+        private UserId _userId = -1;
         private string _name = "";
         private string _email = "";
-        private Image? _avatar;
+        private byte[]? _avatar;
+        private ImageSource? _avatarImageSource = null;
         private bool _isConnected = false;
         private bool _isStaff = false;
-        private ObservableCollection<Drive> _drives = new ObservableCollection<Drive>();
-
+        private readonly ObservableCollection<Account> _accounts = new ObservableCollection<Account>();
+        private ObservableCollection<DriveAvailable> _drivesAvailable = new ObservableCollection<DriveAvailable>();
+        private readonly IDisposable _allDriveSubscribtion;
         public User(DbId dbId)
         {
             DbId = dbId;
+            // Listen to changes in the accounts collection to update the drives collection
+            _allDriveSubscribtion = _accounts.ToObservableChangeSet()
+                     .TransformMany(a => a.Drives)
+                     .Bind(out var allDrives)
+                     .Subscribe();
+            Drives = allDrives;
+            Drives.AsObservableChangeSet().Subscribe(_ => MergeDrives());
         }
 
-        // Parses a User from a stream, should be removed/replaced when the new communication protocol is done
-        public static User ReadFrom(BinaryReader reader)
+        public void Dispose()
         {
-            int dbId = reader.ReadInt32();
-            var user = new User(dbId);
-            user.Id = reader.ReadInt32();
-            user.Name = reader.ReadString();
-            user.Email = reader.ReadString();
-            user.Avatar = reader.ReadPNG();
-            user.IsConnected = reader.ReadBoolean();
-            user.IsStaff = reader.ReadBoolean();
-            return user;
-        }
-
-        // Force a reload of all properties from the server
-        public async Task Reload()
-        {
-            Logger.Log(Logger.Level.Info, $"Reloading user properties for DbId {DbId}...");
-            Task[] tasks = new Task[]
-            {
-               CommRequests.GetUserId(DbId).ContinueWith(t => {
-                   if (t.Result != null) Id = t.Result.Value;
-               }, TaskScheduler.FromCurrentSynchronizationContext()),
-               CommRequests.GetUserName(DbId).ContinueWith(t => { if (t.Result != null) Name = t.Result; }, TaskScheduler.FromCurrentSynchronizationContext()),
-               CommRequests.GetUserEmail(DbId).ContinueWith(t => { if (t.Result != null) Email = t.Result; }, TaskScheduler.FromCurrentSynchronizationContext()),
-               CommRequests.GetUserAvatar(DbId).ContinueWith(t => { if (t.Result != null) Avatar = t.Result; }, TaskScheduler.FromCurrentSynchronizationContext()),
-               CommRequests.GetUserIsConnected(DbId).ContinueWith(t => { if (t.Result != null) IsConnected = t.Result.Value; }, TaskScheduler.FromCurrentSynchronizationContext()),
-               CommRequests.GetUserIsStaff(DbId).ContinueWith(t => { if (t.Result != null) IsStaff = t.Result.Value; }, TaskScheduler.FromCurrentSynchronizationContext()),
-               CommRequests.GetUserDrivesDbIds(DbId).ContinueWith(async t =>
-                {
-                     if (t.Result != null)
-                     {
-                          Logger.Log(Logger.Level.Debug, $"User (DbId: {DbId}) has {t.Result.Count} drives. Reloading drive data...");
-                          List<Task> driveTasks = new List<Task>();
-                          foreach (var driveDbId in t.Result)
-                          {
-                            Drive drive = new Drive(driveDbId);
-                            Drives.Add(drive);
-                            driveTasks.Add(drive.Reload());
-                          }
-                          await Task.WhenAll(driveTasks).ConfigureAwait(false);
-                     }
-                }, TaskScheduler.FromCurrentSynchronizationContext()).Unwrap()
-            };
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-            Logger.Log(Logger.Level.Info, $"User properties for DbId {DbId} reloaded.");
+            _allDriveSubscribtion.Dispose();
         }
 
         public DbId DbId
         {
             get => _dbId;
-            set => SetProperty(ref _dbId, value);
+            set => SetPropertyInUIThread(ref _dbId, value);
         }
 
-        public UserId Id
+        public UserId UserId
         {
-            get => _id;
-            set => SetProperty(ref _id, value);
+            get => _userId;
+            set => SetPropertyInUIThread(ref _userId, value);
         }
 
         public string Name
         {
             get => _name;
-            set => SetProperty(ref _name, value);
+            set => SetPropertyInUIThread(ref _name, value);
         }
 
         public string Email
         {
             get => _email;
-            set => SetProperty(ref _email, value);
+            set => SetPropertyInUIThread(ref _email, value);
         }
 
-        public Image? Avatar
+        public byte[]? Avatar
         {
             get => _avatar;
-            set => SetProperty(ref _avatar, value);
+            set
+            {
+                if (SetPropertyInUIThread(ref _avatar, value))
+                {
+                    AppModel.UIThreadDispatcher.TryEnqueue(async () =>
+                    {
+                        _avatarImageSource = await ByteArrayToImageSource(_avatar); // ByteArrayToImageSource need to be run in the UI thread
+                        OnPropertyChanged(nameof(AvatarImageSource));
+                    });
+                }
+            }
+        }
+
+        public ImageSource? AvatarImageSource
+        {
+            get => _avatarImageSource;
         }
 
         public bool IsConnected
         {
             get => _isConnected;
-            set => SetProperty(ref _isConnected, value);
+            set => SetPropertyInUIThread(ref _isConnected, value);
         }
 
         public bool IsStaff
         {
             get => _isStaff;
-            set => SetProperty(ref _isStaff, value);
+            set => SetPropertyInUIThread(ref _isStaff, value);
         }
 
-        public ObservableCollection<Drive> Drives
+        public ObservableCollection<Account> Accounts
         {
-            get { return _drives; }
-            set => SetProperty(ref _drives, value);
+            get => _accounts;
+        }
+
+        public ObservableCollection<DriveAvailable> DrivesAvailable
+        {
+            get => _drivesAvailable;
+        }
+
+        public ReadOnlyObservableCollection<Drive> Drives
+        {
+            get;
+        }
+
+        // Combined collection of all drives (configured in db and available)
+        public ObservableCollection<IDrive> AllDrives { get; } = new();
+
+        public static async Task<ImageSource?> ByteArrayToImageSource(byte[]? imageData)
+        {
+            if (imageData == null || imageData.Length == 0)
+                return null;
+
+            using var stream = new InMemoryRandomAccessStream();
+            await stream.WriteAsync(imageData.AsBuffer());
+            stream.Seek(0);
+
+            var bitmap = new BitmapImage();
+            await bitmap.SetSourceAsync(stream);
+            return bitmap;
+        }
+
+        public async Task RefreshAvailableDrives()
+        {
+            await App.ServiceProvider.GetRequiredService<IServerCommService>().RefreshUserDrivesAvailable(this.DbId, CancellationToken.None);
+            MergeDrives();
+        }
+
+        /* Merges the Drives and DrivesAvailable collections into the AllDrives collection,
+         * ensuring no duplicates based on DriveId.
+         * If a drive id exists in Drives and DrivesAvailable, the one from Drives is kept.
+         */
+        private void MergeDrives()
+        {
+            List<IDrive> drives = new();
+            foreach (var drive in Drives)
+                drives.Add(drive);
+
+            foreach (var drive in DrivesAvailable)
+                if (drives.FirstOrDefault(d => d.DriveId == drive.DriveId) is null)
+                    drives.Add(drive);
+
+            for (int i = AllDrives.Count - 1; i >= 0; i--)
+            {
+                var drive = AllDrives[i];
+                if (drives.FirstOrDefault(d => d == drive) is null)
+                    AllDrives.RemoveAt(i);
+            }
+
+            foreach (var drive in drives)
+                if (AllDrives.FirstOrDefault(d =>  d == drive) is null)
+                    AllDrives.Add(drive);
         }
     }
 }

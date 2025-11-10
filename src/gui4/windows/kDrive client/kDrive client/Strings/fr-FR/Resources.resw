@@ -134,9 +134,6 @@
   <data name="W_MainWindow_NavBar_Storage.Content" xml:space="preserve">
     <value>Stockage</value>
   </data>
-  <data name="W_MainWindow_NavBar_Folder.Content" xml:space="preserve">
-    <value>Dossier kDrive</value>
-  </data>
   <data name="W_MainWindow_TitleBar_SearchBox.PlaceholderText" xml:space="preserve">
     <value>Rechercher dans {{ TODO }}</value>
   </data>
@@ -161,17 +158,38 @@
   <data name="CC_SyncErrorBar_button.Content" xml:space="preserve">
     <value>Vérifier les fichiers</value>
   </data>
-  <data name="CC_ActivityList_Header_Name.Text" xml:space="preserve">
+  <data name="CC_SyncActivityTable_Header_Name.Text" xml:space="preserve">
     <value>Nom</value>
   </data>
-  <data name="CC_ActivityList_Header_State.Text" xml:space="preserve">
-    <value>État</value>
+  <data name="CC_SyncActivityTable_Header_State.Text" xml:space="preserve">
+    <value>Statut</value>
   </data>
-  <data name="CC_ActivityList_Header_Size.Text" xml:space="preserve">
+  <data name="Converter_SyncDirectionToToolTipConverter_Outgoing" xml:space="preserve">
+    <value>Synchronisé depuis votre ordinateur</value>
+  </data>
+  <data name="Converter_DateTimeToTimeAgoConverter_Since" xml:space="preserve">
+    <value>Depuis {0}</value>
+  </data>
+  <data name="Converter_DateTimeToTimeAgoConverter_Ago" xml:space="preserve">
+    <value>Il y a {0}</value>
+  </data>
+  <data name="CC_SyncActivityTable_Header_Size.Text" xml:space="preserve">
     <value>Taille</value>
   </data>
-  <data name="CC_ActivityList_Header_LastLocation.Text" xml:space="preserve">
+  <data name="CC_SyncActivityTable_Header_LastLocation.Text" xml:space="preserve">
     <value>Dernier emplacement</value>
+    <comment>The parent folder of the synchronized item</comment>
+  </data>
+  <data name="CC_SyncActivityTable_Empty_Title.Text" xml:space="preserve">
+    <value>Aucun changement récent</value>
+    <comment>The parent folder of the synchronized item</comment>
+  </data>
+  <data name="CC_SyncActivityTable_Empty_Link.Content" xml:space="preserve">
+    <value>Fermer kDrive</value>
+    <comment>The parent folder of the synchronized item</comment>
+  </data>
+  <data name="CC_SyncActivityTable_Empty_Description.Text" xml:space="preserve">
+    <value>Revenez ici pour suivre vos prochaines synchronisations</value>
     <comment>The parent folder of the synchronized item</comment>
   </data>
   <data name="Global_Second" xml:space="preserve">
@@ -220,7 +238,7 @@
   <data name="Global_UpgradeOfferProUrl" xml:space="preserve">
     <value>https://www.infomaniak.com/fr/ksuite/ksuite-pro/tarifs</value>
   </data>
-  <data name="Page_ErrorPage_Application_LearnMoreButton.Content" xml:space="preserve">
+  <data name="Global_LearnMoreButton.Content" xml:space="preserve">
     <value>En savoir plus</value>
   </data>
   <data name="Page_ErrorPage_Application_SolveButton.Content" xml:space="preserve">
@@ -258,6 +276,18 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
   <data name="CC_KSuiteUpgradeBar_link.Content" xml:space="preserve">
     <value>Faire évoluer</value>
     <comment>Text of the button to be redirected to the shop</comment>
+  </data>
+  <data name="CC_ConsentDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Enregistrer</value>
+  </data>
+  <data name="CC_ConsentDialog_Toggle.OnContent" xml:space="preserve">
+    <value>Autoriser le suivi</value>
+  </data>
+  <data name="CC_ConsentDialog_Toggle.OffContent" xml:space="preserve">
+    <value>Refuser le suivi</value>
+  </data>
+  <data name="CC_ConsentDialog.CloseButtonText" xml:space="preserve">
+    <value>Annuler</value>
   </data>
   <data name="CC_KSuiteUpgradeBar_message.Text" xml:space="preserve">
     <value>Débloquez plus de fonctionnalités et stockage</value>
@@ -323,30 +353,6 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
   <data name="Page_Onboarding_DriveSelectionPage_AdvancedButton.Content" xml:space="preserve">
     <value>Paramètres avancés</value>
   </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.PrimaryButtonText" xml:space="preserve">
-    <value>Confirmer</value>
-  </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.CloseButtonText" xml:space="preserve">
-    <value>Annuler</value>
-  </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Title.Text" xml:space="preserve">
-    <value>Paramètres avancés</value>
-  </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Description.Text" xml:space="preserve">
-    <value>Personnalisez l’emplacement de vos dossiers kDrive</value>
-  </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_InfoBar.Message" xml:space="preserve">
-    <value>Sélectionnez un dossier vide pour chaque kDrive.</value>
-  </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_CustomizeButton.Content" xml:space="preserve">
-    <value>Personnaliser</value>
-  </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Title" xml:space="preserve">
-    <value>Ce dossier ne peut pas être sélectionné</value>
-  </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Subtitle" xml:space="preserve">
-    <value>Veuillez choisir un dossier vide qui ne se trouve pas a la racine d'un lecteur.</value>
-  </data>
   <data name="Page_Onboarding_FinishPage_Title.Text" xml:space="preserve">
     <value>Tout est prêt !</value>
   </data>
@@ -400,11 +406,11 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
   <data name="Page_StoragePage_OtherFiles.Text" xml:space="preserve">
     <value>Autres fichiers de l’ordinateur</value>
   </data>
-  <data name="Page_StoragePage_FreeSpace.Text" xml:space="preserve">
-    <value>Espace libre</value>
+  <data name="Converter_SyncDirectionToToolTipConverter_Incoming" xml:space="preserve">
+    <value>Synchronisé depuis kDrive web</value>
   </data>
-  <data name="Global_Bytes" xml:space="preserve">
-    <value>octets</value>
+  <data name="Page_HomePage_Hello.Text" xml:space="preserve">
+    <value>Bonjour</value>
   </data>
   <data name="Global_TeraBytes" xml:space="preserve">
     <value>To</value>
@@ -420,5 +426,288 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
   </data>
   <data name="Page_StoragePage_DiskUnavailable.Message" xml:space="preserve">
     <value>Disque indisponible</value>
+  </data>
+  <data name="Page_HomePage_Status_SyncUpToDate.Text" xml:space="preserve">
+    <value>, vos fichiers sont à jour</value>
+  </data>
+  <data name="Page_HomePage_Main_SyncUpToDate_Title.Text" xml:space="preserve">
+    <value>Pas d’activité en cours</value>
+  </data>
+  <data name="Page_HomePage_Main_SyncInPause_Title.Text" xml:space="preserve">
+    <value>Synchronisation en pause</value>
+  </data>
+  <data name="Page_HomePage_Main_SyncInProgress_Title.Text" xml:space="preserve">
+    <value>Synchronisation en cours</value>
+  </data>
+  <data name="Page_HomePage_Main_SyncUpToDate_HyperLink.Content" xml:space="preserve">
+    <value>Fermer kDrive</value>
+  </data>
+  <data name="Page_HomePage_Main_SyncInPause_HyperLink.Content" xml:space="preserve">
+    <value>Réactiver la synchronisation</value>
+  </data>
+  <data name="Page_HomePage_Main_SyncInProgress_HyperLink.Content" xml:space="preserve">
+    <value>Voir les activités</value>
+  </data>
+  <data name="Page_HomePage_Main_SyncUpToDate_Description.Text" xml:space="preserve">
+    <value>Vos fichiers sont accessibles et synchronisés.</value>
+  </data>
+  <data name="Page_HomePage_Main_SyncInProgress_Description.Text" xml:space="preserve">
+    <value>Vos fichiers récents sont en train d'être mis à jour.</value>
+  </data>
+  <data name="Page_HomePage_Status_SyncOffline.Text" xml:space="preserve">
+    <value>, la synchronisation est en pause</value>
+  </data>
+  <data name="Page_HomePage_Status_SyncInPause.Text" xml:space="preserve">
+    <value>, la synchronisation est en pause</value>
+  </data>
+  <data name="Page_HomePage_Status_SyncInProgress.Text" xml:space="preserve">
+    <value>, vos fichiers se synchronisent</value>
+  </data>
+  <data name="Page_HomePage_Main_SyncInPause_Description.Text" xml:space="preserve">
+    <value>La synchronisation est temporairement arrêtée.</value>
+  </data>
+  <data name="Page_HomePage_Main_SyncOffline_Title.Text" xml:space="preserve">
+    <value>Hors ligne</value>
+  </data>
+  <data name="Page_HomePage_Main_SyncOffline_Description_Line1.Text" xml:space="preserve">
+    <value>Vos fichiers locaux restent accessibles.</value>
+  </data>
+  <data name="Page_HomePage_Main_SyncOffline_Description_Line2.Text" xml:space="preserve">
+    <value>La synchronisation reprendra automatiquement dès que vous serez reconnecté.</value>
+  </data>
+  <data name="Global_LanguageCode" xml:space="preserve">
+    <value>fr</value>
+    <comment>This value shouldn't be change, it is used to generate URL.</comment>
+  </data>
+  <data name="CC_UpdateExpander_Header.Text" xml:space="preserve">
+    <value>Mise à jour</value>
+  </data>
+  <data name="CC_UpdateExpander_UpdateAvailable_Description.TextTemplate" xml:space="preserve">
+    <value>kDrive build {0} disponible</value>
+    <comment>{0} version tag (ie 3.7.6)</comment>
+  </data>
+  <data name="CC_UpdateExpander_UpToDate_Description.Text" xml:space="preserve">
+    <value>L’application est à jour</value>
+  </data>
+  <data name="CC_UpdateExpander_UpdateAvailable_UpdateDetails.TextTemplate" xml:space="preserve">
+    <value>Cette mise à jour apporte des correctifs importants et des améliorations liées à  la sécurité, et est recommandée à tous les utilisateurs. 
+Version {0} (build {1}), compilée le {2}
+© 2019–{3} Infomaniak Network SA</value>
+    <comment>{0}: version tag ie 4.0.0; {1} version build ie 20252010; {2}: pretty date ie nov 28, 2025, {3}: current year: 2025</comment>
+  </data>
+  <data name="CC_UpdateExpander_UpToDate_UpdateDetails.TextTemplate" xml:space="preserve">
+    <value>Version {0} (build {1}), compilée le {2}
+© 2019–{3} Infomaniak Network SA</value>
+    <comment>{0}: version tag ie 4.0.0; {1} version build ie 20252010; {2}: pretty date ie nov 28, 2025, {3}: current year: 2025</comment>
+  </data>
+  <data name="Page_SettingsPage_Global.Text" xml:space="preserve">
+    <value>Général</value>
+  </data>
+  <data name="Page_SettingsPage_AutoUpdate.Header" xml:space="preserve">
+    <value>Mettre à jour kDrive automatiquement</value>
+  </data>
+  <data name="Page_SettingsPage_AutoStart.Header" xml:space="preserve">
+    <value>Ouvrir kDrive au démarrage de l’ordinateur</value>
+  </data>
+  <data name="Page_SettingsPage_Notifications.Header" xml:space="preserve">
+    <value>Désactiver les notifications</value>
+  </data>
+  <data name="CC_UpdateExpander_LicensesHyperLink.Content" xml:space="preserve">
+    <value>Licence LGPL v3 - Sources Git</value>
+  </data>
+  <data name="CC_UpdateExpander_ChangeLogHyperLink.Content" xml:space="preserve">
+    <value>Notes de mise à jour</value>
+  </data>
+  <data name="Page_SettingsPage_Language.Header" xml:space="preserve">
+    <value>Langue</value>
+  </data>
+  <data name="Page_SettingsPage_Accounts.Text" xml:space="preserve">
+    <value>Comptes</value>
+  </data>
+  <data name="Page_SettingsPage_Advanced.Text" xml:space="preserve">
+    <value>Avancé</value>
+  </data>
+  <data name="Page_SettingsPage_RemoveAccount_Dialog.Title" xml:space="preserve">
+    <value>Déconnecter ce compte ?</value>
+  </data>
+  <data name="Page_SettingsPage_RemoveAccount_Dialog.Content" xml:space="preserve">
+    <value>Vous allez déconnecter {0} de l’application.\r\nLes fichiers synchronisés depuis l’ensemble des kDrives de ce compte seront retirés de votre ordinateur.\r\n\r\nToutes vos données resteront accessibles en ligne sur kDrive.</value>
+    <comment>{0} = Nom de l'utilisateur ie (John Doe)</comment>
+  </data>
+  <data name="Page_SettingsPage_RemoveAccount.Header" xml:space="preserve">
+    <value>Deconnecter ce compte</value>
+  </data>
+  <data name="Page_SettingsPage_SyncRules.Header" xml:space="preserve">
+    <value>Règles de synchronisation</value>
+  </data>
+  <data name="Page_SettingsPage_Privacy_Presentation.Header" xml:space="preserve">
+    <value>Infomaniak respecte votre vie privée</value>
+  </data>
+  <data name="Page_SettingsPage_Privacy_Matomo.Header" xml:space="preserve">
+    <value>Matomo</value>
+  </data>
+  <data name="Page_SettingsPage_Privacy_Matomo_ConsentDialog.Description" xml:space="preserve">
+    <value>Matomo est un outil d'analyse hébergé et géré exclusivement par Infomaniak pour comprendre comment l’application est utilisée.
+
+L’étude de ces données permet à notre équipe d’améliorer en continue l’interface de l’application.</value>
+  </data>
+  <data name="Page_SettingsPage_Privacy_Sentry_ConsentDialog.Description" xml:space="preserve">
+    <value>Sentry est un outil hébergé et géré exclusivement par Infomaniak pour surveiller en temps réel la stabilité de l'application et signaler automatiquement d’éventuelles erreurs techniques à nos développeurs.
+
+Ces données permettent à notre équipe de rapidement corriger et optimiser l’application, ce qui se traduit par une meilleure expérience d’utilisation pour vous.</value>
+  </data>
+  <data name="Page_SettingsPage_Privacy_Sentry.Header" xml:space="preserve">
+    <value>Sentry</value>
+  </data>
+  <data name="Page_SettingsPage_Privacy.Header" xml:space="preserve">
+    <value>Gestion des données</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy.Header" xml:space="preserve">
+    <value>Paramètres Proxy</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_Type.Header" xml:space="preserve">
+    <value>Type de proxy</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_SaveButton.Content" xml:space="preserve">
+    <value>Sauvegarder</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_CancelButton.Content" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_Host.Header" xml:space="preserve">
+    <value>Serveur</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_Port.Header" xml:space="preserve">
+    <value>Port</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_NeedAuth.Header" xml:space="preserve">
+    <value>Authentification requise</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_User.Header" xml:space="preserve">
+    <value>Nom d'utilisateur</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_Password.Header" xml:space="preserve">
+    <value>Mot de passe</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_Password_PasswordBox.PlaceholderText" xml:space="preserve">
+    <value>Entrez votre mot de passe</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_ComoBox_SYSTEM.Content" xml:space="preserve">
+    <value>Identique au système</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy.Description" xml:space="preserve">
+    <value>Définissez comment kDrive se connecte à Internet.</value>
+  </data>
+  <data name="Page_SettingsPage_Privacy_Sources.Header" xml:space="preserve">
+    <value>Voir le code source</value>
+  </data>
+  <data name="Page_SettingsPage_SyncRules.Description" xml:space="preserve">
+    <value>Évitez que certains fichiers soient copiés dans kDrive.</value>
+  </data>
+  <data name="Page_SettingsPage_RemoveAccount_Dialog.SecondaryButtonText" xml:space="preserve">
+    <value>Deconnecter</value>
+  </data>
+  <data name="Page_SettingsPage_RemoveAccount_Dialog.PrimaryButtonText" xml:space="preserve">
+    <value>Garder le compte</value>
+  </data>
+  <data name="Page_SettingsPage_AddAccounts.Content" xml:space="preserve">
+    <value>Connecter un compte</value>
+  </data>
+  <data name="Page_SettingsPage_Drive_Configured.Text" xml:space="preserve">
+    <value>Synchronisé</value>
+  </data>
+  <data name="Page_SettingsPage_Drive_Unconfigured.Text" xml:space="preserve">
+    <value>Non synchronisé</value>
+  </data>
+  <data name="Page_SettingsPage_Language_ComboBox_Default.Content" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="Page_SettingsPage_Notifications_ComboBox_Never.Content" xml:space="preserve">
+    <value>Jamais</value>
+  </data>
+  <data name="Page_SettingsPage_Notifications_ComboBox_OneHour.Content" xml:space="preserve">
+    <value>Pendant 1h</value>
+  </data>
+  <data name="Page_SettingsPage_Notifications_ComboBox_UntilTomorrow.Content" xml:space="preserve">
+    <value>Jusqu’à demain</value>
+  </data>
+  <data name="Page_SettingsPage_Notifications_ComboBox_ThreeDays.Content" xml:space="preserve">
+    <value>Pendant une semaine</value>
+  </data>
+  <data name="Page_SettingsPage_Notifications_ComboBox_OneWeek.Content" xml:space="preserve">
+    <value>Pendant trois jours</value>
+  </data>
+  <data name="Page_SettingsPage_Beta_ComboBox_Stable.Content" xml:space="preserve">
+    <value>Ne pas rejoindre</value>
+  </data>
+  <data name="Page_SettingsPage_Beta_ComboBox_Beta.Content" xml:space="preserve">
+    <value>Bêta</value>
+  </data>
+  <data name="Page_SettingsPage_Beta_ComboBox_Internal.Content" xml:space="preserve">
+    <value>Interne</value>
+  </data>
+  <data name="Page_SettingsPage_Notifications_ComboBox_Always.Content" xml:space="preserve">
+    <value>Toujours</value>
+  </data>
+  <data name="Page_SettingsPage_MoveToTrash_Description.Text" xml:space="preserve">
+    <value>Certains éléments ne pourront pas être déplacés.</value>
+  </data>
+  <data name="Page_SettingsPage_MoveToTrash.Header" xml:space="preserve">
+    <value>Déplacer les fichiers supprimés dans la corbeille de l’ordinateur</value>
+  </data>
+  <data name="Page_SettingsPage_Beta.Header" xml:space="preserve">
+    <value>Programme bêta</value>
+  </data>
+  <data name="Page_SettingsPage_Beta_Expander.Description" xml:space="preserve">
+    <value>Bénéficiez d’un accès anticipé aux nouvelles versions de l’application avant qu’elles ne soient diffusées au grand public et participez à l’amélioration de l’application en nous partageant vos idées d’améliorations.</value>
+  </data>
+  <data name="Page_SettingsPage_Beta_Expander.Header" xml:space="preserve">
+    <value>Rejoindre le programme bêta</value>
+  </data>
+  <data name="W_MainWindow_PaneFooter_Folder" xml:space="preserve">
+    <value>Ouvrir l'explorateur</value>
+    <comment>Open the file explorer</comment>
+  </data>
+  <data name="CC_QuickAccess_onlineDrive.Text" xml:space="preserve">
+    <value>kDrive en ligne</value>
+    <comment>Redirect to the kDrive main page (in browser)</comment>
+  </data>
+  <data name="Page_SettingsPage_Privacy_Presentation.Description" xml:space="preserve">
+    <value>Vous pouvez personnaliser les données d'utilisation et opérationnelles qui sont récupérées par Infomaniak pour corriger des bugs et faire évoluer l'application. Les deux outils utilisés sont hébergés et gérés exclusivement chez nous.
+
+Le code source de cette application peut être vérifié, les informations récoltées sont anonymes et vos informations personnelles restent strictement confidentielles et ne sont jamais partagées avec des tiers.</value>
+  </data>
+  <data name="CC_UpdateExpander_UpdateButton.Content" xml:space="preserve">
+    <value>Mettre à jour</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Confirmer</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Title.Text" xml:space="preserve">
+    <value>Paramètres avancés</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Description.Text" xml:space="preserve">
+    <value>Personnalisez l’emplacement de vos dossiers kDrive</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_InfoBar.Message" xml:space="preserve">
+    <value>Sélectionnez un dossier vide pour chaque kDrive.</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_CustomizeButton.Content" xml:space="preserve">
+    <value>Personnaliser</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Title" xml:space="preserve">
+    <value>Ce dossier ne peut pas être sélectionné</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Subtitle" xml:space="preserve">
+    <value>Veuillez choisir un dossier vide qui ne se trouve pas a la racine d'un lecteur.</value>
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.CloseButtonText" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_ComoBox_HTTP.Content" xml:space="preserve">
+    <value>Configuration manuelle</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_ComoBox_NONE.Content" xml:space="preserve">
+    <value>Desactivé</value>
   </data>
 </root>

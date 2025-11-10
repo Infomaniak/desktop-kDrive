@@ -31,9 +31,34 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobmanager.h ${server_srcs_path}/comm/guijobmanager.cpp
     ${server_srcs_path}/comm/guijobs/abstractguijob.h ${server_srcs_path}/comm/guijobs/abstractguijob.cpp
     ${server_srcs_path}/comm/guijobs/guijobfactory.h ${server_srcs_path}/comm/guijobs/guijobfactory.cpp
+    ${server_srcs_path}/comm/guijobs/unknownrequestjob.h ${server_srcs_path}/comm/guijobs/unknownrequestjob.cpp
     ${server_srcs_path}/comm/guijobs/loginrequesttokenjob.h ${server_srcs_path}/comm/guijobs/loginrequesttokenjob.cpp
+    ${server_srcs_path}/comm/guijobs/userdbidlistjob.h ${server_srcs_path}/comm/guijobs/userdbidlistjob.cpp
+    ${server_srcs_path}/comm/guijobs/userinfolistjob.h ${server_srcs_path}/comm/guijobs/userinfolistjob.cpp
+    ${server_srcs_path}/comm/guijobs/userdeletejob.h ${server_srcs_path}/comm/guijobs/userdeletejob.cpp
+    ${server_srcs_path}/comm/guijobs/useravailabledrivesjob.h ${server_srcs_path}/comm/guijobs/useravailabledrivesjob.cpp
+    ${server_srcs_path}/comm/guijobs/accountinfolistjob.h ${server_srcs_path}/comm/guijobs/accountinfolistjob.cpp
+    ${server_srcs_path}/comm/guijobs/driveinfolistjob.h ${server_srcs_path}/comm/guijobs/driveinfolistjob.cpp
+    ${server_srcs_path}/comm/guijobs/driveupdatejob.h ${server_srcs_path}/comm/guijobs/driveupdatejob.cpp
+    ${server_srcs_path}/comm/guijobs/drivedeletejob.h ${server_srcs_path}/comm/guijobs/drivedeletejob.cpp
+    ${server_srcs_path}/comm/guijobs/drivesearchjob.h ${server_srcs_path}/comm/guijobs/drivesearchjob.cpp
+    ${server_srcs_path}/comm/guijobs/syncinfolistjob.h ${server_srcs_path}/comm/guijobs/syncinfolistjob.cpp
+    ${server_srcs_path}/comm/guijobs/syncstartjob.h ${server_srcs_path}/comm/guijobs/syncstartjob.cpp
+    ${server_srcs_path}/comm/guijobs/syncstopjob.h ${server_srcs_path}/comm/guijobs/syncstopjob.cpp
+    ${server_srcs_path}/comm/guijobs/syncstatusjob.h ${server_srcs_path}/comm/guijobs/syncstatusjob.cpp
+    ${server_srcs_path}/comm/guijobs/abstractsyncaddjob.h ${server_srcs_path}/comm/guijobs/abstractsyncaddjob.cpp
+    ${server_srcs_path}/comm/guijobs/syncaddjob.h ${server_srcs_path}/comm/guijobs/syncaddjob.cpp
+    ${server_srcs_path}/comm/guijobs/syncadd2job.h ${server_srcs_path}/comm/guijobs/syncadd2job.cpp
+    ${server_srcs_path}/comm/guijobs/syncstartafterloginjob.h ${server_srcs_path}/comm/guijobs/syncstartafterloginjob.cpp
+    ${server_srcs_path}/comm/guijobs/syncdeletejob.h ${server_srcs_path}/comm/guijobs/syncdeletejob.cpp
+    ${server_srcs_path}/comm/guijobs/syncgetpubliclinkurljob.h ${server_srcs_path}/comm/guijobs/syncgetpubliclinkurljob.cpp
     ${server_srcs_path}/comm/guijobs/signaluseraddedjob.h ${server_srcs_path}/comm/guijobs/signaluseraddedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.h ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.cpp
+    ${server_srcs_path}/comm/guijobs/signaluserremovedjob.h ${server_srcs_path}/comm/guijobs/signaluserremovedjob.cpp
+    ${server_srcs_path}/comm/guijobs/signalaccountaddedjob.h ${server_srcs_path}/comm/guijobs/signalaccountaddedjob.cpp
+    ${server_srcs_path}/comm/guijobs/signaldriveaddedjob.h ${server_srcs_path}/comm/guijobs/signaldriveaddedjob.cpp
+    ${server_srcs_path}/comm/guijobs/signalsyncaddedjob.h ${server_srcs_path}/comm/guijobs/signalsyncaddedjob.cpp
+    ${server_srcs_path}/comm/guijobs/signalsyncremovedjob.h ${server_srcs_path}/comm/guijobs/signalsyncremovedjob.cpp
     ${server_srcs_path}/migration/migrationparams.h ${server_srcs_path}/migration/migrationparams.cpp
     ${server_srcs_path}/requests/serverrequests.h ${server_srcs_path}/requests/serverrequests.cpp
     ${server_srcs_path}/updater/abstractupdater.h ${server_srcs_path}/updater/abstractupdater.cpp
@@ -116,6 +141,16 @@ set(testserver_SRCS
 if(APPLE)
     list(APPEND testserver_SRCS vfs/mac/testlitesynccommclient.h vfs/mac/testlitesynccommclient.cpp)
     list(APPEND testserver_SRCS vfs/mac/testvfsmac.h vfs/mac/testvfsmac.cpp)
+    list(APPEND testserver_SRCS ../test_utility/testhelpers_mac.cpp)
+elseif(UNIX)
+    list(APPEND testserver_SRCS ../test_utility/testhelpers_linux.cpp)
+elseif(WIN32)
+    list(APPEND testserver_SRCS updater/testwindowsupdater.h updater/testwindowsupdater.cpp)
+    list(APPEND testserver_SRCS ../test_utility/testhelpers_win.cpp)
+endif()
+
+if(WIN32)
+    list(APPEND testserver_SRCS comm/testpipecomm.h comm/testpipecomm.cpp)
 endif()
 
 if(WIN32)
