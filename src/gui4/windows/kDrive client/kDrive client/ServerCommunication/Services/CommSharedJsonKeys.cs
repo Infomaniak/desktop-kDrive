@@ -35,9 +35,15 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string AccountInfoList = "accountInfoList";
         static public string AccountInfo = "accountInfo";
         static public string DriveInfoList = "driveInfoList";
+        static public string DriveInfo = "driveInfo";
 
         static public string SyncInfoList = "syncInfoList";
         static public string SyncDbId = "syncDbId";
+        static public string SyncInfo = "syncInfo";
+        static public string SyncProgress = "syncProgress";
+        static public string SyncStep = "syncStep";
+        static public string SyncStatus = "syncStatus";
+
         static public string ParmsInfo = "parmsInfo";
 
         static public string VersionInfo = "versionInfo";

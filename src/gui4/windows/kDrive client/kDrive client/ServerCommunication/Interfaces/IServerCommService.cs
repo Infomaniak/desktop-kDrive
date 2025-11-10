@@ -69,6 +69,20 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 
         // Event handlers for user-related signals
         Task HandleUserUpdatedOrAddedAsync(object? sender, SignalEventArgs args);
+        Task HandleUserRemovedAsync(object? sender, SignalEventArgs args);
+
+        // Event handlers for account-related signals
+        Task HandleAccountUpdatedOrAddedAsync(object? sender, SignalEventArgs args);
+
+        // Event handlers for drive-related signals
+        Task HandleDriveUpdatedOrAddedAsync(object? sender, SignalEventArgs args);
+
+        // Event handlers for sync-related signals
+        Task HandleSyncUpdatedOrAddedAsync(object? sender, SignalEventArgs args);
+
+        Task HandleSyncRemovedAsync(object? sender, SignalEventArgs args);
+        Task HandleSyncProgressInfo(object? sender, SignalEventArgs args);
+
 
         // Event handlers for Update-related signals
         Task HandleUpdaterStateChangedAsync(object? sender, SignalEventArgs args);

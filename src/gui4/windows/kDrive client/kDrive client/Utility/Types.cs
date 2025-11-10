@@ -27,14 +27,17 @@ namespace Infomaniak.kDrive.Types
 
     public enum SyncStatus
     {
-        Unknown,
+        Undefined,
         Starting,
         Running,
         Idle,
-        Pausing,
-        Pause,
+        PauseAsked,
+        Paused,
+        StopAsked,
+        Stopped,
+        Error,
         Offline
-    }
+    };
 
     public enum SyncActivityDirection
     {

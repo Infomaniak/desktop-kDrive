@@ -43,7 +43,6 @@
 #include "libsyncengine/requests/parameterscache.h"
 #include "libsyncengine/requests/exclusiontemplatecache.h"
 #include "libsyncengine/jobs/syncjobmanager.h"
-
 #include <iostream>
 #include <fstream>
 #include <filesystem>
@@ -60,6 +59,8 @@
 #include "jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.h"
 #include "requests/offlinefilessizeestimator.h"
 #include "updater/updatemanager.h"
+
+#include "server/comm/guijobs/signalsyncprogressinfo.h"
 
 #include <QDesktopServices>
 #include <QDir>
@@ -4134,8 +4135,9 @@ void AppServer::sendGetFolderSizeCompleted(const QString &nodeId, qint64 size) {
 }
 
 void AppServer::sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep step, const SyncProgress &progress) {
+    
+    // Send to old comm layer (To remove once deprecated).
     int id = 0;
-
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << syncDbId;
@@ -4147,6 +4149,9 @@ void AppServer::sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep s
     paramsStream << static_cast<qint64>(progress._totalSize);
     paramsStream << static_cast<qint64>(progress._estimatedRemainingTime);
     OldCommServer::instance()->sendSignal(SignalNum::SYNC_PROGRESSINFO, params, id);
+
+    // Send to the new comm layer
+   _commManager->sendGuiSignal(std::make_shared<SignalSyncProgressInfo>(syncDbId, status, step, progress));
 }
 
 void AppServer::sendSyncCompletedItem(int syncDbId, const SyncFileItemInfo &itemInfo) {

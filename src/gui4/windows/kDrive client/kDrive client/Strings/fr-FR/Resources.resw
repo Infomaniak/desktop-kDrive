@@ -721,7 +721,7 @@ Ces données permettent à notre équipe de rapidement corriger et optimiser l�
   <data name="Page_SettingsPage_Beta_Expander.Header" xml:space="preserve">
     <value>Rejoindre le programme bêta</value>
   </data>
-  <data name="W_MainWindow_PaneFooter_Folder" xml:space="preserve">
+  <data name="W_MainWindow_PaneFooter_Folder.Content" xml:space="preserve">
     <value>Ouvrir l'explorateur</value>
     <comment>Open the file explorer</comment>
   </data>
