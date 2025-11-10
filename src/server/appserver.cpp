@@ -3891,7 +3891,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
 #if defined(KD_WINDOWS)
             LOG_INFO(_logger, "Clearing node DB");
             if (const auto exitCode = syncPalMapIt->second->clearNodes(); exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in SyncPal::clearNodes for syncDbId=" << sync.dbId() << " : " << exitInfo);
+                LOG_WARN(_logger, "Error in SyncPal::clearNodes for syncDbId=" << sync.dbId() << " : " << exitCode);
             }
 #else
             // Clear file system
