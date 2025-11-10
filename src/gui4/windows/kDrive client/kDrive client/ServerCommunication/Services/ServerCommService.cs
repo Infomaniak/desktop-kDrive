@@ -277,9 +277,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                             var newValue = prop.GetValue(tempDrive);
                             if (!Equals(existingValue, newValue))
                             {
-                                await Utility.RunOnUIThread(() => {
+                                await Utility.RunOnUIThread(() =>
+                                {
                                     user.DrivesAvailable.Remove(existingDrive);
-                                    user.DrivesAvailable.Add(tempDrive); 
+                                    user.DrivesAvailable.Add(tempDrive);
                                 });
                                 break;
                             }
@@ -363,7 +364,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.SyncDbId] = syncDbId
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_START, parms, cancellationToken);
-            if(data.Params?.ContainsKey(JsonKeys.ExitCode) ?? false && data.Params?[JsonKeys.ExitCode]?.GetValue<int>() != 0)
+            if (data.Params?.ContainsKey(JsonKeys.ExitCode) ?? false && data.Params?[JsonKeys.ExitCode]?.GetValue<int>() != 0)
             {
                 Logger.Log(Logger.Level.Error, $"Failed to start sync with DbId {syncDbId}, exit code: {data.Params[JsonKeys.ExitCode]?.GetValue<int>()}");
                 return;
@@ -470,11 +471,15 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 case SignalNum.UserAdded:
                     await HandleUserUpdatedOrAddedAsync(sender, args);
                     break;
-                case SignalNum.UPDATER_STATE_CHANGED:
-                    await HandleUpdaterStateChangedAsync(sender, args);
-                    break;
                 case SignalNum.USER_REMOVED:
                     await HandleUserRemovedAsync(sender, args);
+                    break;
+                case SignalNum.ACCOUNT_ADDED:
+                case SignalNum.ACCOUNT_UPDATED:
+                    await HandleAccountUpdatedOrAddedAsync(sender, args);
+                    break;
+                case SignalNum.UPDATER_STATE_CHANGED:
+                    await HandleUpdaterStateChangedAsync(sender, args);
                     break;
                 default:
                     Logger.Log(Logger.Level.Warning, $"Unhandled signal received: {args.SignalNum}");
@@ -511,6 +516,32 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             await AddOrUpdateUserInModel(newUserInfo);
         }
 
+        public async Task HandleAccountUpdatedOrAddedAsync(object? sender, SignalEventArgs args)
+        {
+            var signalData = args.SignalData;
+
+            if (signalData == null || !signalData.ContainsKey(JsonKeys.AccountInfo))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.AccountInfo} not found in parameters.");
+                return;
+            }
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            options.Converters.Add(new Base64StringJsonConverter());
+            AccountInfo accountInfo = signalData[JsonKeys.AccountInfo].Deserialize<AccountInfo>(options) ?? new AccountInfo();
+
+            if (accountInfo.DbId is null)
+            {
+                Logger.Log(Logger.Level.Error, "accountInfo.DbId is null.");
+                return;
+            }
+            await AddOrUpdateAccountInModel(accountInfo);
+        }
+
+
         public async Task HandleUpdaterStateChangedAsync(object? sender, SignalEventArgs args)
         {
             await RefreshUpdaterVersionInfo(new CancellationToken());
@@ -533,10 +564,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Logger.Log(Logger.Level.Error, $"User with dbId {dbId} not found");
                 return;
             }
-            await Utility.RunOnUIThread(() =>
-            {
-                _viewModel.Users.Remove(user);
-            });
+            await Utility.RunOnUIThread(() => { _viewModel.Users.Remove(user); });
             return;
         }
 
@@ -587,7 +615,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
 
             // Account not found, add it to the correct user
-            DbId? userDbId = accountInfo.UserDbId; // Assuming AccountInfo has a UserDbId property
+            DbId? userDbId = accountInfo.UserDbId;
             var parentUser = _viewModel.Users.FirstOrDefault(u => u.DbId == userDbId);
             if (parentUser == null)
             {
@@ -595,12 +623,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return;
             }
 
-            await Utility.RunOnUIThread(() =>
-            {
-                var newAccount = new Account(accountInfo.DbId ?? throw new InvalidOperationException("DbId should not be null here."), parentUser);
-                ConversionHelper.copyToAccount(accountInfo, newAccount);
-                parentUser.Accounts.Add(newAccount);
-            });
+            var newAccount = new Account(accountInfo.DbId ?? throw new InvalidOperationException("DbId should not be null here."), parentUser);
+            ConversionHelper.copyToAccount(accountInfo, newAccount);
+            await Utility.RunOnUIThread(() => { parentUser.Accounts.Add(newAccount); });
             Logger.Log(Logger.Level.Info, $"New account added to user with DbId {userDbId}.");
         }
 
