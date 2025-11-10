@@ -140,7 +140,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 #endif
 
 #if defined(KD_WINDOWS)
-        auto navigationPaneHelper() { return _navigationPaneHelper; }
+        auto &navigationPaneHelper() { return _navigationPaneHelper; }
 #endif
 
     private:
