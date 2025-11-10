@@ -521,6 +521,9 @@ Version {0} (build {1}), compilée le {2}
   <data name="Page_SettingsPage_Language.Header" xml:space="preserve">
     <value>Langue</value>
   </data>
+  <data name="Page_SettingsPage_Title.Text" xml:space="preserve">
+    <value>Paramètres</value>
+  </data>
   <data name="Page_SettingsPage_Accounts.Text" xml:space="preserve">
     <value>Comptes</value>
   </data>
