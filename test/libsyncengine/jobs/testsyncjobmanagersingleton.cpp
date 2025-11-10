@@ -400,7 +400,7 @@ void TestSyncJobManagerSingleton::testCanRunjob() {
             Utility::msleep(100);
         }
         CPPUNIT_ASSERT_EQUAL(true, noMoreRun);
-        CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(3), counter);
+        CPPUNIT_ASSERT_EQUAL(uint64_t{3}, counter);
 
         while (!SyncJobManagerSingleton::instance()->_data._managedJobs.empty()) {
             Utility::msleep(100);
