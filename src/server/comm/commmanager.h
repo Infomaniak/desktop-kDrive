@@ -68,6 +68,7 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
         std::shared_ptr<AbstractCommServer> _guiCommServer;
 
         std::unique_ptr<GuiJobFactory> _guiJobFactory;
+        std::recursive_mutex _mutex;
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         // Execute a command received from an extension, which does not require an answer
