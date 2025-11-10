@@ -453,8 +453,6 @@
                                                   x:Uid="Page_SettingsPage_Logs_DebugLevel_ComboBox_Error" />
                                     <ComboBoxItem Tag="Fatal"
                                                   x:Uid="Page_SettingsPage_Logs_DebugLevel_ComboBox_Fatal" />
-                                    <ComboBoxItem Tag="None"
-                                                  x:Uid="Page_SettingsPage_Logs_DebugLevel_ComboBox_None" />
                                 </ComboBox>
                             </toolKit:SettingsCard>
                             <toolKit:SettingsCard x:Uid="Page_SettingsPage_Logs_DebugFolder"

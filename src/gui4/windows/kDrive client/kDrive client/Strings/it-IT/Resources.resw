@@ -649,9 +649,6 @@
   <data name="Page_SettingsPage_Logs_DebugLevel_ComboBox_Extended.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
-  <data name="Page_SettingsPage_Logs_DebugLevel_ComboBox_None.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
-    <value />
-  </data>
   <data name="Page_SettingsPage_Logs_DebugLevel_ComboBox_Fatal.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>

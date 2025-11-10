@@ -691,9 +691,6 @@ Ces données permettent à notre équipe de rapidement corriger et optimiser l�
   <data name="Page_SettingsPage_Logs_DebugLevel_ComboBox_Extended.Content" xml:space="preserve">
     <value>Étendu</value>
   </data>
-  <data name="Page_SettingsPage_Logs_DebugLevel_ComboBox_None.Content" xml:space="preserve">
-    <value>Aucune</value>
-  </data>
   <data name="Page_SettingsPage_Logs_DebugLevel_ComboBox_Fatal.Content" xml:space="preserve">
     <value>Fatal</value>
   </data>
