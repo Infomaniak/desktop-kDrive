@@ -237,14 +237,14 @@ void SocketCommServer::execute() {
             return;
         }
 
-        Poco::Net::StreamSocket socket = nullptr;
+        _isListening = true;
+        Poco::Net::StreamSocket socket;
         try {
             socket = _serverSocket.acceptConnection();
         } catch (Poco::IOException &ex) {
             LOG_ERROR(Log::instance()->getLogger(), "Exception in ServerSocket::acceptConnection: " << ex.displayText());
             return;
         }
-        _isListening = true;
 
         if (_stopAsked) break;
 
