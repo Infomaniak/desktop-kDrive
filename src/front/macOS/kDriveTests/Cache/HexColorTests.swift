@@ -49,20 +49,6 @@ struct HexColorTests {
         #expect(colorFromHex == colorFromRGBA)
     }
 
-    // MARK: toHex()
-
-    @Test(arguments: testCases)
-    func testToHexString(red: CGFloat, green: CGFloat, blue: CGFloat, expectedHex: String) {
-        // GIVEN
-        let color = HexColor(red: red, green: green, blue: blue)
-
-        // WHEN
-        let hexColor = color.hexValue
-
-        // THEN
-        #expect(hexColor == expectedHex)
-    }
-
     // MARK: Description
 
     @Test(arguments: testCases)

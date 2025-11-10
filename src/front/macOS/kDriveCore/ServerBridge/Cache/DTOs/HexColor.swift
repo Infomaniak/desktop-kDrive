@@ -27,10 +27,10 @@ public struct HexColor: Sendable, CustomStringConvertible, Equatable, Hashable {
     let green: UInt8
     let blue: UInt8
 
-    var hexValue: String {
+    public var description: String {
         // Server seems to run with lowercase Hex strings
         // Server exchange colors without alpha
-        return String(format: "#%02x%02x%02x", red, green, blue)
+        String(format: "#%02x%02x%02x", red, green, blue)
     }
 
     public init?(hex: String) {
@@ -56,10 +56,6 @@ public struct HexColor: Sendable, CustomStringConvertible, Equatable, Hashable {
         self.red = UInt8(round(red * 255))
         self.green = UInt8(round(green * 255))
         self.blue = UInt8(round(blue * 255))
-    }
-
-    public var description: String {
-        hexValue
     }
 
     #if canImport(CoreGraphics)
