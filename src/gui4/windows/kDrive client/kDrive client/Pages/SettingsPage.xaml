@@ -324,11 +324,11 @@
                                   SelectedValue="{x:Bind ViewModel.Settings.ProxyConfig.Type, Converter={StaticResource ToStringConverter}, Mode=OneWay}"
                                   SelectionChanged="ProxyTypeComboBox_Changed">
                             <ComboBoxItem x:Uid="Page_SettingsPage_Proxy_ComoBox_HTTP"
-                                          Tag="HTTP">Configuration manuelle</ComboBoxItem>
+                                          Tag="HTTP" />
                             <ComboBoxItem x:Uid="Page_SettingsPage_Proxy_ComoBox_None"
-                                          Tag="None">Desactivé</ComboBoxItem>
+                                          Tag="None" />
                             <ComboBoxItem x:Uid="Page_SettingsPage_Proxy_ComoBox_System"
-                                          Tag="System">Identique au système</ComboBoxItem>
+                                          Tag="System" />
                         </ComboBox>
 
                         <toolKit:SettingsExpander.Items>
