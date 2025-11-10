@@ -457,9 +457,8 @@ void ExtensionJob::commandGetAllMenuItems(const CommString &argument, std::share
         return;
     }
 
-    CommString msgId = argumentList[0];
-
     {
+        CommString msgId = argumentList[0];
         CommString response(msgId);
         response.append(responseToFinderArgSeparator);
         response.append(CommonUtility::str2CommString(Theme::instance()->appName()));
