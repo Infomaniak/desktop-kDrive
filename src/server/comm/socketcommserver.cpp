@@ -28,7 +28,12 @@ SocketCommChannel::SocketCommChannel(const Poco::Net::StreamSocket &socket) :
 
 SocketCommChannel::~SocketCommChannel() {
     _isClosing = true;
-    close();
+    try {
+        close();
+    } catch (std::exception &ex) {
+        LOG_ERROR(Log::instance()->getLogger(), "Exception in SocketCommChannel::close: " << ex.what());
+    }
+
     if (_callbackThread.joinable()) {
         _callbackThread.join();
     }
@@ -142,8 +147,6 @@ void SocketCommChannel::close() {
         _socket.shutdown();
     } catch (Poco::Exception &ex) {
         LOG_ERROR(Log::instance()->getLogger(), "Exception in StreamSocket::shutdown: " << ex.displayText());
-    } catch (std::exception &ex) {
-        LOG_ERROR(Log::instance()->getLogger(), "Exception in StreamSocket::shutdown: " << ex.what());
     }
 }
 
@@ -151,7 +154,11 @@ SocketCommServer::SocketCommServer(const std::string &name) :
     AbstractCommServer(name) {}
 
 SocketCommServer::~SocketCommServer() {
-    close();
+    try {
+        close();
+    } catch (std::exception &ex) {
+        LOG_ERROR(Log::instance()->getLogger(), "Exception in SocketCommChannel::close: " << ex.what());
+    }
 }
 
 void SocketCommServer::close() {
@@ -167,8 +174,6 @@ void SocketCommServer::close() {
                 socket.connect(Poco::Net::SocketAddress("localhost", getPort())); // Connect to unblock accept
             } catch (Poco::Exception &ex) {
                 LOG_ERROR(Log::instance()->getLogger(), "Exception in StreamSocket::connect: " << ex.displayText());
-            } catch (std::exception &ex) {
-                LOG_ERROR(Log::instance()->getLogger(), "Exception in StreamSocket::connect: " << ex.what());
             }
         }
 
