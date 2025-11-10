@@ -23,22 +23,24 @@ import CoreGraphics
 #endif
 
 struct HexColorTests {
+    typealias TestCase = (red: CGFloat, green: CGFloat, blue: CGFloat, hex: String)
+    static let testCases: [TestCase] = [(1, 1, 1, "#ffffff"),
+                                        (0, 0, 0, "#000000"),
+                                        (1, 0, 1, "#ff00ff"),
+                                        (0, 1, 0, "#00ff00"),
+                                        (0.5, 0.6, 0.7, "#8099b3")]
+
     // MARK: init
 
-    @Test(arguments: [(1, 1, 1, 1, "#ffffffff"),
-                      (0, 0, 0, 0, "#00000000"),
-                      (1, 0, 1, 0, "#ff00ff00"),
-                      (0, 1, 0, 1, "#00ff00ff"),
-                      (0.5, 0.6, 0.7, 0.8, "#8099b3cc")])
+    @Test(arguments: testCases)
     func testInitWithHex(
         expectedRed: CGFloat,
         expectedGreen: CGFloat,
         expectedBlue: CGFloat,
-        expectedAlpha: CGFloat,
         inputHex: String
     ) {
         // GIVEN
-        let colorFromRGBA = HexColor(red: expectedRed, green: expectedGreen, blue: expectedBlue, alpha: expectedAlpha)
+        let colorFromRGBA = HexColor(red: expectedRed, green: expectedGreen, blue: expectedBlue)
 
         // WHEN
         let colorFromHex = HexColor(hex: inputHex)
@@ -49,33 +51,13 @@ struct HexColorTests {
 
     // MARK: toHex()
 
-    @Test(arguments: [(1, 1, 1, 1, "#ffffff"),
-                      (0, 0, 0, 0, "#000000"),
-                      (1, 0, 1, 0, "#ff00ff"),
-                      (0, 1, 0, 1, "#00ff00"),
-                      (0.5, 0.6, 0.7, 0.8, "#8099b3")])
-    func testToHexStringExcludingAlpha(red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat, expectedHex: String) {
+    @Test(arguments: testCases)
+    func testToHexString(red: CGFloat, green: CGFloat, blue: CGFloat, expectedHex: String) {
         // GIVEN
-        let color = HexColor(red: red, green: green, blue: blue, alpha: alpha)
+        let color = HexColor(red: red, green: green, blue: blue)
 
         // WHEN
-        let hexColor = color.toHex(includeAlpha: false)
-
-        // THEN
-        #expect(hexColor == expectedHex)
-    }
-
-    @Test(arguments: [(1, 1, 1, 1, "#ffffffff"),
-                      (0, 0, 0, 0, "#00000000"),
-                      (1, 0, 1, 0, "#ff00ff00"),
-                      (0, 1, 0, 1, "#00ff00ff"),
-                      (0.5, 0.6, 0.7, 0.8, "#8099b3cc")])
-    func testToHexStringWithAlpha(red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat, expectedHex: String) {
-        // GIVEN
-        let color = HexColor(red: red, green: green, blue: blue, alpha: alpha)
-
-        // WHEN
-        let hexColor = color.toHex(includeAlpha: true)
+        let hexColor = color.hexValue
 
         // THEN
         #expect(hexColor == expectedHex)
@@ -83,14 +65,10 @@ struct HexColorTests {
 
     // MARK: Description
 
-    @Test(arguments: [(1, 1, 1, 1, "#ffffff"),
-                      (0, 0, 0, 0, "#000000"),
-                      (1, 0, 1, 0, "#ff00ff"),
-                      (0, 1, 0, 1, "#00ff00"),
-                      (0.5, 0.6, 0.7, 0.8, "#8099b3")])
-    func testDescriptionString(red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat, expectedHex: String) {
+    @Test(arguments: testCases)
+    func testDescriptionString(red: CGFloat, green: CGFloat, blue: CGFloat, expectedHex: String) {
         // GIVEN
-        let color = HexColor(red: red, green: green, blue: blue, alpha: alpha)
+        let color = HexColor(red: red, green: green, blue: blue)
 
         // WHEN
         let hexColor = color.description
@@ -102,14 +80,14 @@ struct HexColorTests {
     // MARK: CGColor
 
     #if canImport(CoreGraphics)
-    @Test(arguments: [(1, 1, 1, 1),
-                      (0, 0, 0, 0),
-                      (1, 0, 1, 0),
-                      (0, 1, 0, 1)])
-    func testCGColorConversion(red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat) {
+    @Test(arguments: [(1, 1, 1),
+                      (0, 0, 0),
+                      (1, 0, 1),
+                      (0, 1, 0)])
+    func testCGColorConversion(red: CGFloat, green: CGFloat, blue: CGFloat) {
         // GIVEN
-        let expectedCGColor = CGColor(red: red, green: green, blue: blue, alpha: alpha)
-        let color = HexColor(red: red, green: green, blue: blue, alpha: alpha)
+        let expectedCGColor = CGColor(red: red, green: green, blue: blue, alpha: 1.0)
+        let color = HexColor(red: red, green: green, blue: blue)
 
         // WHEN
         let cgColor = color.cgColor
