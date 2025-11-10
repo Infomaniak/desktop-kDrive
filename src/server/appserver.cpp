@@ -983,8 +983,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 ServerRequests::getConflictList(sync.dbId(), conflictsWithLocalRename, errorList);
 
                 if (!errorList.empty()) {
-                    if (exitCode = syncPalMapIt->second->fixConflictingFiles(keepLocalVersion, errorList);
-                        exitCode != ExitCode::Ok) {
+                    exitCode = syncPalMapIt->second->fixConflictingFiles(keepLocalVersion, errorList);
+                    if (exitCode != ExitCode::Ok) {
                         LOG_WARN(_logger, "Error in SyncPal::fixConflictingFiles for syncDbId=" << sync.dbId());
                         break;
                     }
