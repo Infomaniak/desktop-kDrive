@@ -42,7 +42,6 @@ endif()
 
 set(server_SRCS
     appserver.h appserver.cpp
-    navigationpanehelper.h navigationpanehelper.cpp
     comm/oldcommserver.h comm/oldcommserver.cpp
     comm/abstractcommchannel.h comm/abstractcommchannel.cpp
     comm/abstractcommserver.h
@@ -125,6 +124,7 @@ if(APPLE)
                 DESTINATION "${KDRIVE_OSX_BUNDLE}/Contents/Frameworks" USE_SOURCE_PERMISSIONS)
     endif()
 elseif(WIN32)
+    list(APPEND server_SRCS navigationpanehelper.h navigationpanehelper.cpp)
     list(APPEND server_SRCS ../common/utility_win.cpp)
     list(APPEND server_SRCS comm/socketcommserver.h comm/socketcommserver.cpp)
     list(APPEND server_SRCS comm/pipecommserver.h comm/pipecommserver.cpp)

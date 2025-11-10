@@ -19,7 +19,9 @@
 #pragma once
 
 #include "qtsingleapplication.h"
+#if defined(KD_WINDOWS)
 #include "navigationpanehelper.h"
+#endif
 #include "config.h"
 #include "requests/serverrequests.h"
 #include "comm/oldcommserver.h"
@@ -137,12 +139,19 @@ class AppServer : public SharedTools::QtSingleApplication {
         }
 #endif
 
+#if defined(KD_WINDOWS)
+        auto navigationPaneHelper() { return _navigationPaneHelper; }
+#endif
+
     private:
         QStringList _arguments;
         log4cplus::Logger _logger;
         static std::vector<Notification> _notifications;
 
+#if defined(KD_WINDOWS)
         std::unique_ptr<NavigationPaneHelper> _navigationPaneHelper;
+#endif
+
         std::shared_ptr<CommManager> _commManager;
         bool _appRestartRequired{false};
         Theme *_theme{nullptr};
