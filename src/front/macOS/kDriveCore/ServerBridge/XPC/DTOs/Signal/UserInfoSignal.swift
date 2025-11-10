@@ -18,20 +18,25 @@
 
 import Foundation
 
-enum NSXPCConnectionError: Error {
-    case failedToCastProxy(_: String)
+struct UserInfoSignal: Codable {
+    let dbId: Int32
+    let userId: Int32
+    @Base64CodedString var name: String
+    @Base64CodedString var email: String
+    @Base64CodedData var avatar: Data
+    let isConnected: Bool
+    let isStaff: Bool
 }
 
-public extension NSXPCConnection {
-    func proxy<Interface>(
-        from connection: NSXPCConnection,
-        type: Interface.Type
-    ) throws -> Interface where Interface: AnyObject {
-        let proxy = connection.remoteObjectProxy
-        guard let typedProxy = proxy as? Interface else {
-            throw NSXPCConnectionError.failedToCastProxy(String(describing: Interface.self))
-        }
-
-        return typedProxy
+extension UserInfoSignal {
+    var asUser: User {
+        User(dbId: dbId,
+             userId: userId,
+             name: name,
+             email: email,
+             accounts: [:],
+             avatar: avatar,
+             isConnected: isConnected,
+             isStaff: isStaff)
     }
 }

@@ -19,7 +19,7 @@
 import Foundation
 
 @propertyWrapper
-public struct Base64Coded: Codable {
+public struct Base64CodedString: Codable {
     public var wrappedValue: String
 
     // Decode: base64 string → regular string

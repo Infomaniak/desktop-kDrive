@@ -17,6 +17,7 @@
  */
 
 import Foundation
+import InfomaniakDI
 
 public struct RequestMessage<Body: Codable>: Codable {
     public let id: Int32
@@ -24,7 +25,8 @@ public struct RequestMessage<Body: Codable>: Codable {
     public let body: Body
 
     public init(num: RequestNum, body: Body) async {
-        self.id = await RequestIDGenerator.shared.nextID()
+        @InjectService var requestIDGenerator: XPCRequestIDGenerator
+        id = await requestIDGenerator.nextID
         self.num = num
         self.body = body
     }

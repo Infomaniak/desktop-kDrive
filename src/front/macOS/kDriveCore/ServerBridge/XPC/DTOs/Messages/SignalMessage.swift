@@ -18,30 +18,44 @@
 
 import Foundation
 
-public struct SignalMessage<Body: Codable>: Codable {
-    public let cause: KDC.ExitCause
-    public let code: KDC.ExitCode
+public struct SignalMetadata: Decodable {
+    public let cause: KDC.ExitCause?
+    public let code: KDC.ExitCode?
     public let id: Int32
     public let num: SignalNum
-    public let body: Body
+}
 
-    public init(cause: KDC.ExitCause,
-                code: KDC.ExitCode,
+public struct SignalMessage<Body: Codable>: Codable {
+    public enum SignalMessageError: Error {
+        case signalNotSupported(SignalNum)
+    }
+
+    public let cause: KDC.ExitCause?
+    public let code: KDC.ExitCode?
+    public let id: Int32
+    public let num: SignalNum
+    private let params: SignalParams<Body>?
+    public var body: Body? {
+        return params?.userInfo
+    }
+
+    public init(cause: KDC.ExitCause?,
+                code: KDC.ExitCode?,
                 id: Int32,
                 num: SignalNum,
-                body: Body) {
+                params: SignalParams<Body>?) {
         self.cause = cause
         self.code = code
         self.id = id
         self.num = num
-        self.body = body
+        self.params = params
     }
+}
 
-    enum CodingKeys: String, CodingKey {
-        case cause
-        case code
-        case id
-        case num
-        case body = "params"
+public struct SignalParams<Body: Codable>: Codable {
+    public let userInfo: Body
+
+    public init(body: Body) {
+        userInfo = body
     }
 }

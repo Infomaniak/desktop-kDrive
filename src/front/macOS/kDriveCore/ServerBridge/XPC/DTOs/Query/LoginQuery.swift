@@ -19,6 +19,6 @@
 import Foundation
 
 struct LoginQuery: Codable {
-    @Base64Coded var code: String
-    @Base64Coded var codeVerifier: String
+    @Base64CodedString var code: String
+    @Base64CodedString var codeVerifier: String
 }

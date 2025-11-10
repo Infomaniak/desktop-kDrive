@@ -40,8 +40,23 @@ open class TargetAssembly {
             Factory(type: CoherentCacheProtocol.self) { _, _ in
                 CoherentCache()
             },
+            Factory(type: CoherentCacheObservation.self) { _, resolver in
+                try resolver.resolve(type: CoherentCacheProtocol.self,
+                                     forCustomTypeIdentifier: nil,
+                                     factoryParameters: nil,
+                                     resolver: resolver)
+            },
             Factory(type: XPCConnectionProvider.self) { _, _ in
                 XPCConnectionManager()
+            },
+            Factory(type: XPCQueryFetcherProtocol.self) { _, _ in
+                XPCQueryFetcher()
+            },
+            Factory(type: XPCSignalHandlerProtocol.self) { _, _ in
+                XPCSignalHandler()
+            },
+            Factory(type: XPCRequestIDGenerator.self) { _, _ in
+                XPCRequestIDGenerator()
             }
         ]
     }

@@ -20,7 +20,7 @@ import kDriveCore
 import Testing
 
 struct TestUser: Codable {
-    @Base64Coded var name: String
+    @Base64CodedString var name: String
 }
 
 struct Base64CodedTests {

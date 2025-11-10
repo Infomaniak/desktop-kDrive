@@ -17,12 +17,21 @@
  */
 
 import Foundation
+import InfomaniakDI
 
 @objc final class XPCConnectionManager: NSObject, @unchecked Sendable {
+    @InjectService var signalHandler: XPCSignalHandlerProtocol
+
     let machServiceName: String
 
     var loginItemAgentConnection: NSXPCConnection?
     var appConnection: NSXPCConnection?
+
+    public enum XPCError: Error {
+        case noAppConnectionAvailable
+        case noLoginItemAgentConnection
+        case serverGUIEndpointWasNil
+    }
 
     override init() {
         guard let loginItemAgentMachName = Bundle.main.object(forInfoDictionaryKey: "LoginItemAgentMachName") as? String else {
@@ -63,9 +72,7 @@ import Foundation
     func connectToLoginAgent() async throws {
         guard loginItemAgentConnection == nil else {
             IKLogger.xpc.log("[KD] Already connected to item agent")
-            throw NSError(domain: "XPC",
-                          code: -1,
-                          userInfo: [NSLocalizedDescriptionKey: "missing login item agent connection"])
+            throw XPCError.noLoginItemAgentConnection
         }
 
         IKLogger.xpc.log("[KD] Initialize connection with login item agent")
@@ -109,9 +116,7 @@ import Foundation
     func getServerEndpoint() async throws -> NSXPCListenerEndpoint {
         guard let loginItemAgentConnection,
               let loginItemProxy = loginItemAgentConnection.remoteObjectProxy as? XPCLoginItemProtocol else {
-            throw NSError(domain: "XPC",
-                          code: -1,
-                          userInfo: [NSLocalizedDescriptionKey: "missing login item agent connection"])
+            throw XPCError.noLoginItemAgentConnection
         }
 
         IKLogger.xpc.log("[KD] Get server gui endpoint from login item agent")
@@ -123,11 +128,7 @@ import Foundation
                     continuation.resume(returning: endpoint)
                 } else {
                     IKLogger.xpc.error("[KD] endpoint nil")
-                    continuation.resume(throwing: NSError(
-                        domain: "XPC",
-                        code: -1,
-                        userInfo: [NSLocalizedDescriptionKey: "Endpoint was nil"]
-                    ))
+                    continuation.resume(throwing: XPCError.serverGUIEndpointWasNil)
                 }
             }
         }
@@ -136,9 +137,7 @@ import Foundation
     func connectToServer(endpoint: NSXPCListenerEndpoint) throws {
         guard appConnection == nil else {
             IKLogger.xpc.log("[KD] Already connected to app")
-            throw NSError(domain: "XPC",
-                          code: -1,
-                          userInfo: [NSLocalizedDescriptionKey: "missing login item agent connection"])
+            throw XPCError.noLoginItemAgentConnection
         }
 
         IKLogger.xpc.log("[KD] Setup connection with app")
@@ -188,6 +187,6 @@ extension XPCConnectionManager: XPCLoginItemRemoteProtocol {
 
 extension XPCConnectionManager: XPCGuiRemoteProtocol {
     public func processSignal(_ msg: Data) {
-        IKLogger.xpc.log("[KD] recv signal \(String(data: msg, encoding: .utf8))")
+        signalHandler.handleServerSignal(msg)
     }
 }

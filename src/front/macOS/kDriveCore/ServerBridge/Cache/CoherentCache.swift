@@ -16,104 +16,111 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Combine
 import Foundation
 
-public struct User: Identifiable, Hashable, Sendable {
-    /// usedDbId
-    public let id: Int
-    public var name: String
-    public var accounts: [Int: Account]
+public protocol CoherentCacheObservation: Sendable {
+    var usersPublisher: AnyPublisher<IndexedUsers, Never> { get }
 }
 
-public struct Account: Identifiable, Hashable, Sendable {
-    public let id: Int
-    public var name: String
-    public var drives: [Int: Drive]
-}
-
-public struct Drive: Identifiable, Hashable, Sendable {
-    public let id: Int
-    public var name: String
-    public var syncros: [Int: Syncro]
-}
-
-public struct Syncro: Identifiable, Hashable, Sendable {
-    public let id: Int
-    public var name: String
-}
-
-/// Structure always follow this nested model: User → Account → Drive → Syncro
+/// Structure always follow this nested model: User → Account → Drive → Synchro
 public protocol CoherentCacheProtocol: Sendable {
     // MARK: - User
 
-    func getUser(_ id: Int) async -> User?
+    func getUser(id: Int32) async -> User?
+    func getUser(dbId: Int32) async -> User?
     func getFirstAvailableUser() async -> User?
     func addUser(_ user: User) async
-    func removeUser(_ id: Int) async
+    func removeUser(_ id: Int32) async
+    func updateUser(_ user: User) async
 
     // MARK: - Account
 
-    func getAccount(_ accountId: Int, forUser userId: Int) async -> Account?
-    func addAccount(_ account: Account, toUser userId: Int) async
-    func removeAccount(_ accountId: Int, fromUser userId: Int) async
+    func getAccount(_ accountId: Int32, forUser userId: Int32) async -> Account?
+    func addAccount(_ account: Account, toUser userId: Int32) async
+    func removeAccount(_ accountId: Int32, fromUser userId: Int32) async
 
     // MARK: - Drive
 
-    func getDrive(_ driveId: Int, accountId: Int, userId: Int) async -> Drive?
-    func addDrive(_ drive: Drive, toAccount accountId: Int, userId: Int) async
-    func removeDrive(_ driveId: Int, fromAccount accountId: Int, userId: Int) async
+    func getDrive(_ driveId: Int32, accountId: Int32, userId: Int32) async -> Drive?
+    func addDrive(_ drive: Drive, toAccount accountId: Int32, userId: Int32) async
+    func removeDrive(_ driveId: Int32, fromAccount accountId: Int32, userId: Int32) async
 
-    // MARK: - Syncro
+    // MARK: - Synchro
 
-    func getSyncro(_ syncroId: Int, driveId: Int, accountId: Int, userId: Int) async -> Syncro?
-    func addSyncro(_ syncro: Syncro, toDrive driveId: Int, accountId: Int, userId: Int) async
-    func removeSyncro(_ syncroId: Int, fromDrive driveId: Int, accountId: Int, userId: Int) async
+    func getSynchro(_ syncroId: Int32, driveId: Int32, accountId: Int32, userId: Int32) async -> Synchro?
+    func addSynchro(_ syncro: Synchro, toDrive driveId: Int32, accountId: Int32, userId: Int32) async
+    func removeSynchro(_ syncroId: Int32, fromDrive driveId: Int32, accountId: Int32, userId: Int32) async
 
     // MARK: - Cleanup
 
     func clearOnServerRestart() async
 }
 
+public typealias IndexedUsers = [Int32: User]
+
 /// This cache must track 1:1 the server, can only be purged on server restart
-actor CoherentCache: CoherentCacheProtocol {
-    private var users: [Int: User] = [:]
+public actor CoherentCache: CoherentCacheProtocol, CoherentCacheObservation {
+    private var users: IndexedUsers = [:]
+
+    private nonisolated let usersSubject = PassthroughSubject<IndexedUsers, Never>()
+
+    public nonisolated var usersPublisher: AnyPublisher<IndexedUsers, Never> {
+        usersSubject
+            .subscribe(on: DispatchQueue.global(qos: .userInitiated))
+            .eraseToAnyPublisher()
+    }
+
+    public init() {}
 
     // MARK: - USER
 
-    func getUser(_ id: Int) -> User? {
-        guard let user = users[id] else {
-            IKLogger.cache.info("user miss")
-            return nil
-        }
-        IKLogger.cache.info("user hit")
-        return user
+    public func getUser(dbId: Int32) -> User? {
+        users.values.first { $0.dbId == dbId }
     }
 
-    func getFirstAvailableUser() -> User? {
+    public func getUser(id: Int32) -> User? {
+        users[id]
+    }
+
+    public func getFirstAvailableUser() -> User? {
         users.first?.value
     }
 
-    func addUser(_ user: User) {
+    public func addUser(_ user: User) {
         users[user.id] = user
+        usersSubject.send(users)
     }
 
-    func removeUser(_ id: Int) {
+    public func removeUser(_ id: Int32) {
         users.removeValue(forKey: id)
+        usersSubject.send(users)
+    }
+
+    public func updateUser(_ user: User) {
+        if let existingUser = users[user.id],
+           let updatedUser = existingUser.updated(with: user) {
+            users[user.id] = updatedUser
+        } else {
+            users[user.id] = user
+        }
+
+        usersSubject.send(users)
     }
 
     // MARK: - ACCOUNT
 
-    func getAccount(_ accountId: Int, forUser userId: Int) -> Account? {
+    public func getAccount(_ accountId: Int32, forUser userId: Int32) -> Account? {
         users[userId]?.accounts[accountId]
     }
 
-    func addAccount(_ account: Account, toUser userId: Int) {
+    public func addAccount(_ account: Account, toUser userId: Int32) {
         guard var user = users[userId] else { return }
         user.accounts[account.id] = account
         users[userId] = user
     }
 
-    func removeAccount(_ accountId: Int, fromUser userId: Int) {
+    public func removeAccount(_ accountId: Int32, fromUser userId: Int32) {
         guard var user = users[userId] else { return }
         user.accounts.removeValue(forKey: accountId)
         users[userId] = user
@@ -121,11 +128,11 @@ actor CoherentCache: CoherentCacheProtocol {
 
     // MARK: - DRIVE
 
-    func getDrive(_ driveId: Int, accountId: Int, userId: Int) -> Drive? {
+    public func getDrive(_ driveId: Int32, accountId: Int32, userId: Int32) -> Drive? {
         users[userId]?.accounts[accountId]?.drives[driveId]
     }
 
-    func addDrive(_ drive: Drive, toAccount accountId: Int, userId: Int) {
+    public func addDrive(_ drive: Drive, toAccount accountId: Int32, userId: Int32) {
         guard var user = users[userId],
               var account = user.accounts[accountId]
         else { return }
@@ -135,7 +142,7 @@ actor CoherentCache: CoherentCacheProtocol {
         users[userId] = user
     }
 
-    func removeDrive(_ driveId: Int, fromAccount accountId: Int, userId: Int) {
+    public func removeDrive(_ driveId: Int32, fromAccount accountId: Int32, userId: Int32) {
         guard var user = users[userId],
               var account = user.accounts[accountId]
         else { return }
@@ -147,14 +154,14 @@ actor CoherentCache: CoherentCacheProtocol {
 
     // MARK: - SYNCRO
 
-    func getSyncro(_ syncroId: Int, driveId: Int, accountId: Int, userId: Int) -> Syncro? {
+    public func getSynchro(_ syncroId: Int32, driveId: Int32, accountId: Int32, userId: Int32) -> Synchro? {
         users[userId]?
             .accounts[accountId]?
             .drives[driveId]?
             .syncros[syncroId]
     }
 
-    func addSyncro(_ syncro: Syncro, toDrive driveId: Int, accountId: Int, userId: Int) {
+    public func addSynchro(_ syncro: Synchro, toDrive driveId: Int32, accountId: Int32, userId: Int32) {
         guard var user = users[userId],
               var account = user.accounts[accountId],
               var drive = account.drives[driveId]
@@ -166,7 +173,7 @@ actor CoherentCache: CoherentCacheProtocol {
         users[userId] = user
     }
 
-    func removeSyncro(_ syncroId: Int, fromDrive driveId: Int, accountId: Int, userId: Int) {
+    public func removeSynchro(_ syncroId: Int32, fromDrive driveId: Int32, accountId: Int32, userId: Int32) {
         guard var user = users[userId],
               var account = user.accounts[accountId],
               var drive = account.drives[driveId]
@@ -180,7 +187,7 @@ actor CoherentCache: CoherentCacheProtocol {
 
     // MARK: - Clenup
 
-    func clearOnServerRestart() {
+    public func clearOnServerRestart() {
         users = [:]
     }
 }

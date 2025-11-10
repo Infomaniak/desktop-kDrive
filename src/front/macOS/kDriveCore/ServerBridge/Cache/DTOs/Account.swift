@@ -16,25 +16,10 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-actor RequestIDGenerator {
-    private var counter: Int32 = 0
+import Foundation
 
-    func nextID() -> Int32 {
-        if counter == Int32.max {
-            counter = 0
-        } else {
-            counter += 1
-        }
-        return counter
-    }
-
-    func reset() {
-        counter = 0
-    }
-
-    func currentID() -> Int32 {
-        return counter
-    }
-
-    static let shared = RequestIDGenerator()
+public struct Account: Identifiable, Hashable, Sendable {
+    public let id: Int32
+    public var name: String
+    public var drives: [Int32: Drive]
 }

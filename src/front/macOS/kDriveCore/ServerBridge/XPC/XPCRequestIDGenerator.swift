@@ -16,22 +16,25 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Foundation
+/// Mimic the server using an auto-increment id to debug async comms.
+/// This is used when we send something to the server on our side.
+actor XPCRequestIDGenerator {
+    private var counter: Int32 = 0
 
-enum NSXPCConnectionError: Error {
-    case failedToCastProxy(_: String)
-}
-
-public extension NSXPCConnection {
-    func proxy<Interface>(
-        from connection: NSXPCConnection,
-        type: Interface.Type
-    ) throws -> Interface where Interface: AnyObject {
-        let proxy = connection.remoteObjectProxy
-        guard let typedProxy = proxy as? Interface else {
-            throw NSXPCConnectionError.failedToCastProxy(String(describing: Interface.self))
+    var nextID: Int32 {
+        if counter == Int32.max {
+            counter = 0
+        } else {
+            counter += 1
         }
+        return counter
+    }
 
-        return typedProxy
+    var currentID: Int32 {
+        return counter
+    }
+
+    func reset() {
+        counter = 0
     }
 }
