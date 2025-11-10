@@ -28,7 +28,7 @@ LocalTemporaryDirectory::LocalTemporaryDirectory(const std::string &testType, co
     const std::time_t now = std::time(nullptr);
     const std::tm tm = *std::localtime(&now);
     std::ostringstream woss;
-    woss << std::put_time(&tm, "%Y%m%d_%H%M");
+    woss << std::put_time(&tm, "%Y%m%d_%H%M%S");
 
     const auto basePath = destinationPath.empty() ? std::filesystem::temp_directory_path() : destinationPath;
     _path = basePath / ("kdrive_" + testType + "_unit_tests_" + woss.str());

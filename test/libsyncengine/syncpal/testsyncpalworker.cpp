@@ -17,12 +17,13 @@
  */
 
 #include "testsyncpalworker.h"
+
+#include "jobs/syncjobmanager.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/network/proxy.h"
 #include "libsyncengine/jobs/network/kDrive_API/movejob.h"
 #include "mocks/libcommonserver/db/mockdb.h"
-#include "jobs/jobmanager.h"
 
 #include "test_utility/testhelpers.h"
 #include "test_utility/timeouthelper.h"
@@ -94,8 +95,8 @@ void TestSyncPalWorker::tearDown() {
             thread->join();
         }
     }
-    JobManager::instance()->stop();
-    JobManager::instance()->clear();
+    SyncJobManagerSingleton::instance()->stop();
+    SyncJobManagerSingleton::clear();
 }
 
 void TestSyncPalWorker::setUpTestInternalPause(const std::chrono::steady_clock::duration &longPollDuration) {

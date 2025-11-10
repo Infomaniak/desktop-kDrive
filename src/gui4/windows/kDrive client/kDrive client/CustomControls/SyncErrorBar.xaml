@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="Infomaniak.kDrive.CustomControls.SyncErrorBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:Infomaniak.kDrive.CustomControls"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+
+    <Grid Height="auto"
+          HorizontalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+        </Grid.RowDefinitions>
+        <InfoBar x:Uid="CC_SyncErrorBar_message"
+                 Grid.Row="1"
+                 IsOpen="True"
+                 Severity="Warning"
+                 Title=""
+                 Message="Essential app message for your"
+                 IsIconVisible="True">
+            <InfoBar.IconSource>
+                <ImageIconSource>
+                    <ImageIconSource.ImageSource>
+                        <SvgImageSource UriSource="ms-appx:///Assets/Icons/file-warning.svg" />
+                    </ImageIconSource.ImageSource>
+                </ImageIconSource>
+            </InfoBar.IconSource>
+            <InfoBar.ActionButton>
+                <HyperlinkButton x:Uid="CC_SyncErrorBar_button"
+                                 Grid.Column="2"
+                                 VerticalAlignment="Center"
+                                 HorizontalAlignment="Right"
+                                 Background="Transparent"
+                                 Click="CheckFileButton_Click"
+                                 Visibility="Collapsed" />
+            </InfoBar.ActionButton>
+        </InfoBar>
+    </Grid>
+</UserControl>

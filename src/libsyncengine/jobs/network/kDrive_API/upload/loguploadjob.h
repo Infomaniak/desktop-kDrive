@@ -18,18 +18,18 @@
 
 #pragma once
 
-#include "jobs/abstractjob.h"
+#include "jobs/syncjob.h"
 
 #include <chrono>
 
 namespace KDC {
 
-class LogUploadJob : public AbstractJob, public std::enable_shared_from_this<LogUploadJob> {
+class LogUploadJob : public SyncJob, public std::enable_shared_from_this<LogUploadJob> {
     public:
         LogUploadJob(bool includeArchivedLog, const std::function<void(LogUploadState, int)> &progressCallback,
                      const std::function<void(const Error &error)> &addErrorCallback);
 
-        void runJob() override;
+        ExitInfo runJob() override;
         void abort() override;
         static void cancelUpload();
         /*! Returns the estimated size of the log files in bytes.
@@ -45,7 +45,7 @@ class LogUploadJob : public AbstractJob, public std::enable_shared_from_this<Log
         virtual ExitInfo archive(SyncPath &generatedArchivePath);
         virtual ExitInfo upload(const SyncPath &archivePath);
         virtual void finalize();
-        bool canRun() override;
+        ExitInfo canRun() override;
 
     private:
         static std::mutex _runningJobMutex;

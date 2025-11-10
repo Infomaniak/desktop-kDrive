@@ -20,7 +20,7 @@
 
 #include "db/parmsdb.h"
 #include "gui/parameterscache.h"
-#include "jobs/jobmanager.h"
+#include "jobs/syncjobmanager.h"
 #include "jobs/network/kDrive_API/downloadjob.h"
 #include "jobs/network/kDrive_API/getfilelistjob.h"
 #include "jobs/network/kDrive_API/upload/uploadjob.h"
@@ -82,8 +82,8 @@ void BenchmarkParallelJobs::setUp() {
 void BenchmarkParallelJobs::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
-    JobManager::instance()->stop();
-    JobManager::instance()->clear();
+    SyncJobManagerSingleton::instance()->stop();
+    SyncJobManagerSingleton::clear();
     TestBase::stop();
 }
 
@@ -136,19 +136,19 @@ void BenchmarkParallelJobs::benchmarkParallelJobs() {
             dataExtractor.addRow(std::to_string(nbThreads));
             for (uint16_t i = 0; i < nbRepetition; i++) {
                 // Generate upload jobs
-                std::list<std::shared_ptr<AbstractJob>> uploadJobs;
+                std::list<std::shared_ptr<SyncJob>> uploadJobs;
                 const LocalTemporaryDirectory localTmpDirUploads(filename);
                 testhelpers::generateBigFiles(localTmpDirUploads.path(), static_cast<uint16_t>(size), nbFiles / 2);
                 const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId, filename);
                 uploadJobs = generateUploadJobs(remoteTmpDir.id(), localTmpDirUploads.path());
                 // Generate download jobs
-                std::list<std::shared_ptr<AbstractJob>> downloadJobs;
+                std::list<std::shared_ptr<SyncJob>> downloadJobs;
                 const LocalTemporaryDirectory localTmpDirDownload(filename);
                 const NodeId remoteDirId = size == 1 ? "3477086" : "3477931";
                 downloadJobs = generateDownloadJobs(remoteDirId, localTmpDirDownload.path(),
                                                     static_cast<uint64_t>(size * 1000 * 1000), nbFiles / 2);
                 // Mix jobs in list
-                std::list<std::shared_ptr<AbstractJob>> jobs;
+                std::list<std::shared_ptr<SyncJob>> jobs;
                 auto it1 = uploadJobs.begin();
                 auto it2 = downloadJobs.begin();
                 for (; it1 != uploadJobs.end() && it2 != downloadJobs.end(); it1++, it2++) {
@@ -186,9 +186,9 @@ void BenchmarkParallelJobs::benchmarkParallelJobs() {
     }
 }
 
-std::list<std::shared_ptr<AbstractJob>> BenchmarkParallelJobs::generateUploadJobs(const NodeId &remoteTmpDirId,
-                                                                                  const SyncPath &localTestFolderPath) const {
-    std::list<std::shared_ptr<AbstractJob>> jobs;
+std::list<std::shared_ptr<SyncJob>> BenchmarkParallelJobs::generateUploadJobs(const NodeId &remoteTmpDirId,
+                                                                              const SyncPath &localTestFolderPath) const {
+    std::list<std::shared_ptr<SyncJob>> jobs;
     for (auto &dirEntry: std::filesystem::directory_iterator(localTestFolderPath)) {
         if (dirEntry.path().filename() == ".DS_Store") {
             continue;
@@ -203,9 +203,10 @@ std::list<std::shared_ptr<AbstractJob>> BenchmarkParallelJobs::generateUploadJob
     return jobs;
 }
 
-std::list<std::shared_ptr<AbstractJob>> BenchmarkParallelJobs::generateUploadSessionJobs(
-        const NodeId &remoteTmpDirId, const SyncPath &localTestFolderPath, const uint16_t nbParallelChunkJobs) const {
-    std::list<std::shared_ptr<AbstractJob>> jobs;
+std::list<std::shared_ptr<SyncJob>> BenchmarkParallelJobs::generateUploadSessionJobs(const NodeId &remoteTmpDirId,
+                                                                                     const SyncPath &localTestFolderPath,
+                                                                                     const uint16_t nbParallelChunkJobs) const {
+    std::list<std::shared_ptr<SyncJob>> jobs;
     for (auto &dirEntry: std::filesystem::directory_iterator(localTestFolderPath)) {
         if (dirEntry.path().filename() == ".DS_Store") {
             continue;
@@ -221,15 +222,15 @@ std::list<std::shared_ptr<AbstractJob>> BenchmarkParallelJobs::generateUploadSes
     return jobs;
 }
 
-std::list<std::shared_ptr<AbstractJob>> BenchmarkParallelJobs::generateDownloadJobs(const NodeId &remoteDirId,
-                                                                                    const SyncPath &localTestFolderPath,
-                                                                                    const uint64_t expectedSize,
-                                                                                    const uint16_t nbMaxJob /*= 0*/) const {
+std::list<std::shared_ptr<SyncJob>> BenchmarkParallelJobs::generateDownloadJobs(const NodeId &remoteDirId,
+                                                                                const SyncPath &localTestFolderPath,
+                                                                                const uint64_t expectedSize,
+                                                                                const uint16_t nbMaxJob /*= 0*/) const {
     std::list<NodeId> remoteFileIds;
     (void) retrieveRemoteFileIds(remoteDirId, remoteFileIds);
 
     uint64_t counter = 0;
-    std::list<std::shared_ptr<AbstractJob>> jobs;
+    std::list<std::shared_ptr<SyncJob>> jobs;
     for (const auto &remoteFileId: remoteFileIds) {
         const auto job = std::make_shared<DownloadJob>(nullptr, driveDbId, remoteFileId, localTestFolderPath, expectedSize);
         (void) jobs.push_back(job);
@@ -242,8 +243,8 @@ std::list<std::shared_ptr<AbstractJob>> BenchmarkParallelJobs::generateDownloadJ
 }
 
 void BenchmarkParallelJobs::runJobs(const uint16_t nbThread, DataExtractor &dataExtractor,
-                                    const std::list<std::shared_ptr<AbstractJob>> &jobs) const {
-    JobManager::instance()->setPoolCapacity(nbThread);
+                                    const std::list<std::shared_ptr<SyncJob>> &jobs) const {
+    SyncJobManagerSingleton::instance()->setPoolCapacity(nbThread);
     std::queue<UniqueId> jobIds;
 
     const std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
@@ -252,7 +253,7 @@ void BenchmarkParallelJobs::runJobs(const uint16_t nbThread, DataExtractor &data
         if (nbThread == 1) {
             (void) job->runSynchronously();
         } else {
-            JobManager::instance()->queueAsyncJob(job);
+            SyncJobManagerSingleton::instance()->queueAsyncJob(job);
             jobIds.push(job->jobId());
         }
     }
@@ -260,7 +261,7 @@ void BenchmarkParallelJobs::runJobs(const uint16_t nbThread, DataExtractor &data
     // Wait for all uploads to finish
     while (!jobIds.empty()) {
         Utility::msleep(10); // Wait 10ms
-        while (!jobIds.empty() && JobManager::instance()->isJobFinished(jobIds.front())) {
+        while (!jobIds.empty() && SyncJobManagerSingleton::instance()->isJobFinished(jobIds.front())) {
             jobIds.pop();
         }
     }

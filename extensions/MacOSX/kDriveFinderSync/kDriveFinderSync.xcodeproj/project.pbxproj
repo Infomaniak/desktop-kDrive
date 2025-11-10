@@ -103,6 +103,7 @@
 		462607DF2620A00E00C29FBA /* NSXPCConnection+LoginItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSXPCConnection+LoginItem.h"; sourceTree = "<group>"; };
 		462607E02620A03D00C29FBA /* NSXPCConnection+LoginItem.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSXPCConnection+LoginItem.m"; sourceTree = "<group>"; };
 		462607E52620A0F100C29FBA /* xpcLoginItemProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = xpcLoginItemProtocol.h; sourceTree = "<group>"; };
+		463A95702DA806DC0031D2CA /* xpcGuiProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xpcGuiProtocol.h; sourceTree = "<group>"; };
 		4679566C262164FB00080183 /* ServiceManagement.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ServiceManagement.framework; path = System/Library/Frameworks/ServiceManagement.framework; sourceTree = SDKROOT; };
 		467956C826217FB000080183 /* kDrive.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = kDrive.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		467956CA26217FB000080183 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -115,7 +116,6 @@
 		4679572F26218B0900080183 /* 864VDCS2QY.com.infomaniak.drive.desktopclient.LoginItemAgent.app */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = 864VDCS2QY.com.infomaniak.drive.desktopclient.LoginItemAgent.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4679573126218B0900080183 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		46993C7F2611D32F00C6F93F /* xpcExtensionProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = xpcExtensionProtocol.h; sourceTree = "<group>"; };
-		46993C892611D7E500C6F93F /* xpcExtensionRemoteProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = xpcExtensionRemoteProtocol.h; sourceTree = "<group>"; };
 		46C9BC8A267A26F300C9616C /* sync_100.iconset */ = {isa = PBXFileReference; lastKnownFileType = folder.iconset; name = sync_100.iconset; path = ../../../icons/nopadding/sync_100.iconset; sourceTree = "<group>"; };
 		46FCF8E62678760C001A8B27 /* sync_35.iconset */ = {isa = PBXFileReference; lastKnownFileType = folder.iconset; name = sync_35.iconset; path = ../../../icons/nopadding/sync_35.iconset; sourceTree = "<group>"; };
 		46FCF8E72678760C001A8B27 /* sync_10.iconset */ = {isa = PBXFileReference; lastKnownFileType = folder.iconset; name = sync_10.iconset; path = ../../../icons/nopadding/sync_10.iconset; sourceTree = "<group>"; };
@@ -188,7 +188,7 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		467956C926217FB000080183 /* kDrive */ = {
+		467956C926217FB000080183 /* kDriveModel */ = {
 			isa = PBXGroup;
 			children = (
 				467956D326217FB100080183 /* main.m */,
@@ -196,13 +196,13 @@
 				467956CB26217FB000080183 /* AppDelegate.m */,
 				462607DF2620A00E00C29FBA /* NSXPCConnection+LoginItem.h */,
 				462607E02620A03D00C29FBA /* NSXPCConnection+LoginItem.m */,
-				46993C892611D7E500C6F93F /* xpcExtensionRemoteProtocol.h */,
+				463A95702DA806DC0031D2CA /* xpcGuiProtocol.h */,
 				467956D226217FB100080183 /* Info.plist */,
 				467956D526217FB100080183 /* kDrive.entitlements */,
 				467956CD26217FB100080183 /* Assets.xcassets */,
 				467956CF26217FB100080183 /* MainMenu.xib */,
 			);
-			path = kDrive;
+			path = kDriveModel;
 			sourceTree = "<group>";
 		};
 		4679573026218B0900080183 /* LoginItemAgent */ = {
@@ -221,7 +221,7 @@
 		C2B573941B1CD88000303B36 = {
 			isa = PBXGroup;
 			children = (
-				467956C926217FB000080183 /* kDrive */,
+				467956C926217FB000080183 /* kDriveModel */,
 				C2B573D81B1CD9CE00303B36 /* Extension */,
 				4679573026218B0900080183 /* LoginItemAgent */,
 				C2B573B21B1CD91E00303B36 /* Products */,
@@ -540,9 +540,9 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_ENTITLEMENTS = kDrive/kDrive.entitlements;
+				CODE_SIGN_ENTITLEMENTS = kDriveModel/kDrive.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Mac Developer";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
@@ -559,7 +559,7 @@
 				);
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-				INFOPLIST_FILE = kDrive/Info.plist;
+				INFOPLIST_FILE = kDriveModel/Info.plist;
 				KD_APPLICATION_DOMAIN = com.infomaniak.drive.desktopclient;
 				KD_APPLICATION_VERSION = 3.2.0;
 				KD_TEAM_IDENTIFIER_PREFIX = 864VDCS2QY.;
@@ -593,7 +593,7 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_ENTITLEMENTS = kDrive/kDrive.entitlements;
+				CODE_SIGN_ENTITLEMENTS = kDriveModel/kDrive.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Developer ID Application";
 				CODE_SIGN_STYLE = Manual;
@@ -607,7 +607,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-				INFOPLIST_FILE = kDrive/Info.plist;
+				INFOPLIST_FILE = kDriveModel/Info.plist;
 				KD_APPLICATION_DOMAIN = com.infomaniak.drive.desktopclient;
 				KD_APPLICATION_VERSION = 3.2.0;
 				KD_TEAM_IDENTIFIER_PREFIX = 864VDCS2QY.;
@@ -808,7 +808,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_ENTITLEMENTS = Extension/Extension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Mac Developer";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;

@@ -1,0 +1,22 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    <Fragment>
+        <ComponentGroup Id="App" Directory="INSTALLFOLDER">
+            <Component Guid="{5B73D754-B0DA-4873-8371-68308DA3C557}">
+                <File Id="kDrive.exe" Source="$(desktop-kDriveDir)/build-windows/install/bin/kDrive.exe" />
+                <Shortcut Id="ApplicationStartMenuShortcut"
+                        Name="kDrive"
+                        Description="kDrive"
+                        Icon="kDrive.ico"
+                        WorkingDirectory="INSTALLFOLDER"
+                        Target="[#kDrive.exe]"
+                        Directory="ProgramMenuFolder"
+                  />
+                <File Id="CleanUpAppData" Source="CleanUpAppData.ps1" />
+                <RegistryValue Root="HKCU" Key="Software\Infomaniak\kDrive" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+            </Component>
+            <Component>
+                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/kDrive_client.exe" Checksum="yes" />
+            </Component>
+        </ComponentGroup>
+    </Fragment>
+</Wix>

@@ -179,7 +179,6 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void onAddDriveAccepted();
         void onAddDriveRejected();
         void onAddDriveFinished();
-        void onCopyUrlToClipboard(const QString &url);
         void onScreenUpdated(QScreen *screen);
         void onRefreshErrorList();
 

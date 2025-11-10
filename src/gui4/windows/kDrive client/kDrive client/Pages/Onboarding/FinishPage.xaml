@@ -1,0 +1,34 @@
+<Page x:Class="Infomaniak.kDrive.Pages.Onboarding.FinishPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:local="using:Infomaniak.kDrive"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+      xmlns:converters="using:Infomaniak.kDrive.Converters"
+      xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
+      mc:Ignorable="d">
+    <StackPanel HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Spacing="{StaticResource Infomaniak.Style.Spacing.XXL}">
+        <StackPanel HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+            <!-- Titre -->
+            <TextBlock x:Uid="Page_Onboarding_FinishPage_Title"
+                       Style="{StaticResource Infomaniak.Style.TextBlock.Title}"
+                       Foreground="{ThemeResource TextFillColorPrimary}" />
+
+            <!-- Sous-titre -->
+            <TextBlock x:Uid="Page_Onboarding_FinishPage_Subtitle"
+                       Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                       MaxWidth="350"
+                       TextWrapping="WrapWholeWords"
+                       Foreground="{ThemeResource TextFillColorSecondary}" />
+        </StackPanel>
+        <!-- Boutons -->
+        <Button x:Uid="Page_Onboarding_FinishPage_OpenButton"
+                Style="{StaticResource Infomaniak.Style.Button.WithBackground}"
+                Click="FinishButton_Click" />
+    </StackPanel>
+</Page>

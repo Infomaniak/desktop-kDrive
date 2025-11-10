@@ -84,6 +84,20 @@ struct TestVariables {
         }
 };
 
+struct RightsSet {
+        RightsSet(int rights) :
+            read(rights & 4),
+            write(rights & 2),
+            execute(rights & 1) {};
+        RightsSet(bool read, bool write, bool execute) :
+            read(read),
+            write(write),
+            execute(execute) {};
+        bool read;
+        bool write;
+        bool execute;
+};
+
 void generateOrEditTestFile(const SyncPath &path);
 /**
  * @brief Generate test files.
@@ -95,5 +109,12 @@ void generateBigFiles(const SyncPath &dirPath, uint16_t size, uint16_t count);
 SyncPath generateBigFile(const SyncPath &dirPath, uint16_t size);
 
 void setModificationDate(const SyncPath &path, const std::chrono::time_point<std::chrono::system_clock> &timePoint);
+
+// Create two symbolic links that refer to each other:
+// filepath1 -> filepath2,
+// filepath2 -> filepath1
+// The created target paths are relative paths. The implementation does not raise an DELETE event in the directories containing
+// `filepath1` and `filepath2`.
+void createSymLinkLoop(const SyncPath &filepath1, const SyncPath &filepath2, const NodeType nodeType = NodeType::File);
 
 } // namespace KDC::testhelpers

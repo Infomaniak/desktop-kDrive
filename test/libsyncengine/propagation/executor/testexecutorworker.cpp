@@ -54,7 +54,7 @@ void TestExecutorWorker::setUp() {
     // Create parmsDb
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
-    std::filesystem::remove(parmsDbPath);
+    (void) std::filesystem::remove(parmsDbPath);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     // Insert user, account, drive & sync

@@ -17,14 +17,14 @@
  */
 
 #include "testincludes.h"
-#include "socketapi.h"
+#include "comm/commmanager.h"
 
-#if defined(KD_MACOS)
-#include "libcommonserver/vfs/mac/vfs_mac.h"
-#elif defined(KD_WINDOWS)
-#include "libcommonserver/vfs/win/vfs_win.h"
+#if defined(__APPLE__)
+#include "vfs/mac/vfs_mac.h"
+#elif defined(_WIN32)
+#include "vfs/win/vfs_win.h"
 #else
-#include "libcommonserver/vfs/vfs.h"
+#include "vfs/vfs.h"
 #endif
 
 #include "libsyncengine/propagation/executor/executorworker.h"
@@ -54,7 +54,7 @@ class TestWorkers : public CppUnit::TestFixture, public TestBase {
         Sync _sync;
         LocalTemporaryDirectory _localTempDir{"TestExecutorWorker"};
 
-        std::unique_ptr<SocketApi> _socketApi;
+        std::unique_ptr<CommManager> _commManager;
 
 #if defined(KD_MACOS)
         static std::shared_ptr<VfsMac> _vfsPtr;

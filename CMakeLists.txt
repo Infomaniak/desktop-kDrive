@@ -157,7 +157,7 @@ if(APPLE)
 endif(APPLE)
 
 if(APPLE)
-    set(SOCKETAPI_TEAM_IDENTIFIER_PREFIX "" CACHE STRING "SocketApi prefix (including a following dot) that must match the codesign key's TeamIdentifier/Organizational Unit")
+    set(TEAM_IDENTIFIER_PREFIX "" CACHE STRING "Team identifier prefix (including a following dot) that must match the codesign key's TeamIdentifier/Organizational Unit")
 endif()
 
 if(BUILD_CLIENT)
@@ -246,6 +246,9 @@ if(BUILD_KDRIVE_OSX_BUNDLE)
 
     # Default Lite Sync app exclude list
     install(FILES litesync-exclude.lst DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Resources/)
+
+    # Assets
+    install(FILES ${KDRIVE_THEME_DIR}/Assets.car DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Resources/)
 
     # Crashpad_handler
     find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)

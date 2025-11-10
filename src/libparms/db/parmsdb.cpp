@@ -1129,12 +1129,13 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string &toVersi
     }
 
     if (CommonUtility::isVersionLower(fromVersion, toVersion)) {
+        _versionUpdated = true;
         LOG_INFO(_logger, "Upgrade " << dbType() << " DB from " << fromVersion << " to " << toVersion);
         if (!insertUserTemplateNormalizations(fromVersion)) {
             LOG_WARN(_logger, "Insertion of the normalizations of user exclusion file patterns has failed.");
             return false;
         }
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         if (!replaceShortDbPathsWithLongPaths()) {
             LOG_WARN(_logger, "Failed to replace short DB paths with long ones.");
         }

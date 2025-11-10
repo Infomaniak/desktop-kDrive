@@ -306,28 +306,27 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         (void) _syncPal->syncOps()->pushOp(opDB);
         (void) _syncPal->syncOps()->pushOp(opD);
 
-        // Test hasParentWithHigherIndex
+        // Test hasAncestorWithHigherIndex
         std::unordered_map<UniqueId, int32_t> opIdToIndexMap;
         _syncPal->syncOps()->getOpIdToIndexMap(opIdToIndexMap, OperationType::Create);
-        SyncOpPtr ancestorOpWithHighestDistance;
-        int32_t relativeDepth = 0;
-        CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasParentWithHigherIndex(
-                                           opIdToIndexMap, opDAA, ancestorOpWithHighestDistance, relativeDepth));
-        CPPUNIT_ASSERT_EQUAL(opD->id(), ancestorOpWithHighestDistance->id());
-        CPPUNIT_ASSERT_EQUAL(2, relativeDepth);
-        CPPUNIT_ASSERT_EQUAL(true, _syncPal->_operationsSorterWorker->hasParentWithHigherIndex(
-                                           opIdToIndexMap, opDA, ancestorOpWithHighestDistance, relativeDepth));
-        CPPUNIT_ASSERT_EQUAL(opD->id(), ancestorOpWithHighestDistance->id());
-        CPPUNIT_ASSERT_EQUAL(1, relativeDepth);
-        CPPUNIT_ASSERT_EQUAL(false, _syncPal->_operationsSorterWorker->hasParentWithHigherIndex(
-                                            opIdToIndexMap, opD, ancestorOpWithHighestDistance, relativeDepth));
-        CPPUNIT_ASSERT(!ancestorOpWithHighestDistance);
-        CPPUNIT_ASSERT_EQUAL(0, relativeDepth);
+        int32_t depth = 0;
+        auto ancestorOpWithHighestIndex =
+                _syncPal->_operationsSorterWorker->getAncestorOpWithHighestIndex(opIdToIndexMap, opDAA, depth);
+        CPPUNIT_ASSERT(ancestorOpWithHighestIndex);
+        CPPUNIT_ASSERT_EQUAL(opD->id(), ancestorOpWithHighestIndex->id());
+        CPPUNIT_ASSERT_EQUAL(3, depth);
 
-        do {
-            _syncPal->_operationsSorterWorker->_hasOrderChanged = false;
-            _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
-        } while (_syncPal->_operationsSorterWorker->_hasOrderChanged);
+        ancestorOpWithHighestIndex =
+                _syncPal->_operationsSorterWorker->getAncestorOpWithHighestIndex(opIdToIndexMap, opDA, depth);
+        CPPUNIT_ASSERT(ancestorOpWithHighestIndex);
+        CPPUNIT_ASSERT_EQUAL(opD->id(), ancestorOpWithHighestIndex->id());
+        CPPUNIT_ASSERT_EQUAL(2, depth);
+
+        ancestorOpWithHighestIndex = _syncPal->_operationsSorterWorker->getAncestorOpWithHighestIndex(opIdToIndexMap, opD, depth);
+        CPPUNIT_ASSERT(!ancestorOpWithHighestIndex);
+        CPPUNIT_ASSERT_EQUAL(1, depth);
+
+        _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
 
         CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opD, opDA));
         CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opD, opDB));
@@ -344,10 +343,7 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         (void) _syncPal->syncOps()->pushOp(opDA);
         (void) _syncPal->syncOps()->pushOp(opDB);
 
-        do {
-            _syncPal->_operationsSorterWorker->_hasOrderChanged = false;
-            _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
-        } while (_syncPal->_operationsSorterWorker->_hasOrderChanged);
+        _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
 
         CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opD, opDA));
         CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opD, opDB));
@@ -364,10 +360,7 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         (void) _syncPal->syncOps()->pushOp(opD);
         (void) _syncPal->syncOps()->pushOp(opDB);
 
-        do {
-            _syncPal->_operationsSorterWorker->_hasOrderChanged = false;
-            _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
-        } while (_syncPal->_operationsSorterWorker->_hasOrderChanged);
+        _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
 
         CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opD, opDA));
         CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opD, opDB));
@@ -384,10 +377,7 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         (void) _syncPal->syncOps()->pushOp(opDAA);
         (void) _syncPal->syncOps()->pushOp(opDAB);
 
-        do {
-            _syncPal->_operationsSorterWorker->_hasOrderChanged = false;
-            _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
-        } while (_syncPal->_operationsSorterWorker->_hasOrderChanged);
+        _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
 
         CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opD, opDA));
         CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opD, opDB));
@@ -395,6 +385,51 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opDA, opDAB));
     }
 }
+
+// create before create, e.g. user creates directory "X" and then creates an object inside it.
+void TestOperationSorterWorker::testFixCreateBeforeCreateComplexOrdering() {
+    /* Insert branch
+        .
+        ├── A
+             └── B
+             └── C
+                 └── D
+                     ├── E
+                     └── F
+    */
+    const auto nodeA = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::Directory, "A", "");
+    const auto opA = generateSyncOperation(OperationType::Create, nodeA);
+    const auto nodeB = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::Directory, "B", nodeA);
+    const auto opB = generateSyncOperation(OperationType::Create, nodeB);
+    const auto nodeC = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::Directory, "C", nodeB);
+    const auto opC = generateSyncOperation(OperationType::Create, nodeC);
+    const auto nodeD = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::File, "D", nodeC);
+    const auto opD = generateSyncOperation(OperationType::Create, nodeD);
+    const auto nodeE = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::File, "E", nodeD);
+    const auto opE = generateSyncOperation(OperationType::Create, nodeE);
+    const auto nodeF = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::File, "F", nodeD);
+    const auto opF = generateSyncOperation(OperationType::Create, nodeF);
+
+    _syncPal->syncOps()->clear();
+    {
+        // Initial ordering: A/B, A/B/C/D, A/B/C/D/E, A/B/C/D/F, A, A/B/C
+        (void) _syncPal->syncOps()->pushOp(opB);
+        (void) _syncPal->syncOps()->pushOp(opD);
+        (void) _syncPal->syncOps()->pushOp(opE);
+        (void) _syncPal->syncOps()->pushOp(opA);
+        (void) _syncPal->syncOps()->pushOp(opC);
+
+        _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
+
+        // Expected fixed re-ordering: A, A/B, A/B/C, A/B/C/D, A/B/C/D/E, A/B/C/D/F
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opA, opB));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opB, opC));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opC, opD));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opD, opE));
+        CPPUNIT_ASSERT(isFirstBeforeSecond(_syncPal->syncOps(), opE, opF));
+    }
+}
+
 
 // edit before move, e.g. user moves an object "a" to "b" and then edit it.
 void TestOperationSorterWorker::testFixEditBeforeMove() {

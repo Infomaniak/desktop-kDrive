@@ -68,7 +68,8 @@ void TestWorkers::setUp() {
     // Create parmsDb
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
-    std::filesystem::remove(parmsDbPath);
+    std::error_code ec;
+    (void) std::filesystem::remove(parmsDbPath, ec);
     ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 
     // Insert user, account, drive & sync
@@ -113,7 +114,7 @@ void TestWorkers::setUp() {
     vfsSetupParams.targetPath = _sync.targetPath();
     vfsSetupParams.logger = _logger;
     vfsSetupParams.sentryHandler = sentry::Handler::instance();
-    vfsSetupParams.executeCommand = [](const char *) {};
+    vfsSetupParams.executeCommand = [](const CommString &, bool) {};
 
 #if defined(KD_MACOS)
     _vfsPtr = std::shared_ptr<VfsMac>(new VfsMac(vfsSetupParams));
@@ -134,18 +135,18 @@ void TestWorkers::setUp() {
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createProgressInfo();
 
-    // Setup SocketApi
+    // Setup and start CommManager
     std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> syncPalMap;
     syncPalMap[_sync.dbId()] = _syncPal;
     std::unordered_map<int, std::shared_ptr<KDC::Vfs>> vfsMap;
     vfsMap[_sync.dbId()] = _vfsPtr;
-    _socketApi = std::make_unique<SocketApi>(syncPalMap, vfsMap);
+    _commManager = std::make_unique<CommManager>(syncPalMap, vfsMap);
+    _commManager->start();
 
 #if defined(KD_WINDOWS)
     // Initializes the COM library
     CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 #endif
-
     // Start Vfs
 #if defined(KD_MACOS)
     if (connectorsAreAlreadyInstalled) {
@@ -170,6 +171,7 @@ void TestWorkers::tearDown() {
         _vfsPtr->stopImpl(true);
         _vfsPtr = nullptr;
     }
+    _commManager->stop();
     TestBase::stop();
 }
 
@@ -262,7 +264,7 @@ void TestWorkers::testCreatePlaceholder() {
 
         // Remove placeholder
         std::error_code ec;
-        std::filesystem::remove(_syncPal->localPath() / relativeFilePath);
+        std::filesystem::remove(_syncPal->localPath() / relativeFilePath, ec);
         if (ec) {
             // Cannot remove file
             CPPUNIT_ASSERT(false);

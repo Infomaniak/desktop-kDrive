@@ -60,9 +60,9 @@ QDataStream &operator>>(QDataStream &in, QList<DriveAvailableInfo> &list) {
     int count = 0;
     in >> count;
     for (int i = 0; i < count; i++) {
-        DriveAvailableInfo *info = new DriveAvailableInfo();
-        in >> *info;
-        list.push_back(*info);
+        DriveAvailableInfo info;
+        in >> info;
+        list.push_back(info);
     }
     return in;
 }

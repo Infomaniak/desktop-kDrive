@@ -18,11 +18,11 @@
 
 #pragma once
 
-#include "jobs/abstractjob.h"
+#include "jobs/syncjob.h"
 
 namespace KDC {
 
-class LocalCreateDirJob : public AbstractJob {
+class LocalCreateDirJob : public SyncJob {
     public:
         LocalCreateDirJob(const SyncPath &destFilepath);
 
@@ -33,10 +33,10 @@ class LocalCreateDirJob : public AbstractJob {
         SyncTime creationTime() const { return _creationTime; }
 
     protected:
-        virtual bool canRun() override;
+        ExitInfo canRun() override;
 
     private:
-        virtual void runJob() override;
+        ExitInfo runJob() override;
 
         SyncPath _destFilePath;
 

@@ -54,7 +54,7 @@ struct JsonParserUtility {
             }
 
             return true;
-        }
+        } // namespace KDC
 
         static Poco::JSON::Object::Ptr extractJsonObject(const Poco::JSON::Object::Ptr parentObj, const std::string &key) {
             if (!parentObj) {

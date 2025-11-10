@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="Infomaniak.kDrive.CustomControls.QuickAccess"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:Infomaniak.kDrive.CustomControls"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+             mc:Ignorable="d">
+
+    <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
+            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"
+            Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.M}">
+        <Grid>
+            <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.L}">
+                <Canvas HorizontalAlignment="Center"
+                        Width="46"
+                        Height="46">
+
+                    <Border BorderBrush="{StaticResource Infomaniak.Style.Color.Brand.Default}"
+                            BorderThickness="2"
+                            CornerRadius="100"
+                            Canvas.ZIndex="0"
+                            Canvas.Left="0"
+                            Canvas.Top="0">
+                        <PersonPicture ProfilePicture="https://learn.microsoft.com/windows/uwp/contacts-and-calendar/images/shoulder-tap-static-payload.png"
+                                       Height="41"
+                                       Width="41">
+                        </PersonPicture>
+                    </Border>
+                    <Border Canvas.ZIndex="2"
+                            Canvas.Left="30"
+                            Canvas.Top="30"
+                            Height="20"
+                            Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
+                            CornerRadius="100"
+                            Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XXS}">
+                        <controls:DriveIcon IconColor="{x:Bind ViewModel.SelectedSync.Drive.Color, Mode=OneWay}" />
+                    </Border>
+
+                </Canvas>
+                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                    <Button HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch"
+                            Click="FavoritesButton_Click">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                                <ImageIcon Height="16"
+                                           VerticalAlignment="Center">
+                                    <ImageIcon.Source>
+                                        <SvgImageSource UriSource="ms-appx:///Assets/Icons/folder-star.svg" />
+                                    </ImageIcon.Source>
+                                </ImageIcon>
+                                <TextBlock x:Uid="CC_QuickAccess_favorites"
+                                           Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
+                            </StackPanel>
+
+                            <ImageIcon Height="12"
+                                       Width="12"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Right">
+                                <ImageIcon.Source>
+                                    <SvgImageSource UriSource="ms-appx:///Assets/Icons/square-arrow-diagonal-up.svg" />
+                                </ImageIcon.Source>
+                            </ImageIcon>
+                        </Grid>
+                    </Button>
+
+                    <Button HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch"
+                            Click="SharedButton_Click">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                                <ImageIcon Height="16"
+                                           VerticalAlignment="Center">
+                                    <ImageIcon.Source>
+                                        <SvgImageSource UriSource="ms-appx:///Assets/Icons/folder-share.svg" />
+                                    </ImageIcon.Source>
+                                </ImageIcon>
+                                <TextBlock x:Uid="CC_QuickAccess_shared"
+                                           Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
+                            </StackPanel>
+
+                            <ImageIcon Height="12"
+                                       Width="12"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Right">
+                                <ImageIcon.Source>
+                                    <SvgImageSource UriSource="ms-appx:///Assets/Icons/square-arrow-diagonal-up.svg" />
+                                </ImageIcon.Source>
+                            </ImageIcon>
+                        </Grid>
+                    </Button>
+                </StackPanel>
+            </StackPanel>
+
+            <Button HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch"
+                    VerticalAlignment="Bottom"
+                    Click="TrashButton_Click">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <!-- Dashed border -->
+                            <Rectangle Stroke="{StaticResource Infomaniak.Style.Color.Product.Default}"
+                                       StrokeThickness="1"
+                                       RadiusX="3"
+                                       RadiusY="3"
+                                       StrokeDashArray="3,3"
+                                       Fill="Transparent" />
+
+                            <!-- Your content -->
+                            <ContentPresenter HorizontalAlignment="Stretch"
+                                              VerticalAlignment="Stretch" />
+                        </Grid>
+                    </ControlTemplate>
+                </Button.Template>
+
+                <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}"
+                      HorizontalAlignment="Center">
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                        <ImageIcon Height="16"
+                                   VerticalAlignment="Center">
+                            <ImageIcon.Source>
+                                <SvgImageSource UriSource="ms-appx:///Assets/Icons/trash.svg" />
+                            </ImageIcon.Source>
+                        </ImageIcon>
+                        <TextBlock x:Uid="CC_QuickAccess_trash"
+                                   Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
+                    </StackPanel>
+                </Grid>
+            </Button>
+
+        </Grid>
+    </Border>
+
+</UserControl>

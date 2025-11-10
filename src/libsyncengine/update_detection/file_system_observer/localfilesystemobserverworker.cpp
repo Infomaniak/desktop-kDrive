@@ -266,7 +266,7 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
             if (opTypeFromOS == OperationType::Delete) {
                 // The node ID of the deleted item is different from `nodeId`. The latter is the identifier of an item with the
                 // same path as the deleted item and that exists on the file system at the time of the last check. This situation
-                // happens for instance if a file is deleted while another file with the same path has is recreated shortly
+                // happens for instance if a file is deleted while another file with the same path is created shortly
                 // afterward. Typically, editors of the MS suite (xlsx, docx) or Adobe suite (pdf) perform a
                 // Delete-followed-by-Create operation during a single edit.
                 NodeId itemId = _liveSnapshot.itemId(relativePath);
@@ -740,15 +740,15 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 }
             } else {
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to insert item: " << Utility::formatSyncPath(absolutePath.filename())
-                                                                      << L" into local snapshot!!!");
+                                                                      << L" into local snapshot.");
             }
         }
     } catch (std::filesystem::filesystem_error &e) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
-                         "Error caught in LocalFileSystemObserverWorker::exploreDir: code=" << e.code() << " error=" << e.what());
+                         "Exception caught in LocalFileSystemObserverWorker::exploreDir: " << e.code() << " error=" << e.what());
         return ExitCode::SystemError;
     } catch (...) {
-        LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error caught in LocalFileSystemObserverWorker::exploreDir");
+        LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Exception caught in LocalFileSystemObserverWorker::exploreDir");
         return ExitCode::SystemError;
     }
 

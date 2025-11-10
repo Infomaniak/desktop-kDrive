@@ -29,7 +29,7 @@ class BlacklistPropagator : public AbstractPropagatorJob {
         BlacklistPropagator(std::shared_ptr<SyncPal> syncPal);
         ~BlacklistPropagator();
 
-        virtual void runJob() override;
+        ExitInfo runJob() override;
 
         inline int syncDbId() const { return _syncPal->syncDbId(); }
 

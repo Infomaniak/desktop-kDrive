@@ -21,8 +21,6 @@ set(CMAKE_AUTOMOC TRUE)
 add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)
 
-add_subdirectory(vfs)
-
 # Sources
 set(libcommonserver_SRCS
     # Utility
@@ -104,7 +102,7 @@ target_precompile_headers(${libcommonserver_NAME} PRIVATE ${PC_HEADER_FILES})
 
 set_target_properties(${libcommonserver_NAME} PROPERTIES
     VERSION ${KDRIVE_VERSION}
-    SOVERSION ${KDRIVE_SOVERSION}
+    SOVERSION ${KDRIVE_VERSION_BUILD}
     RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY}
 )
 

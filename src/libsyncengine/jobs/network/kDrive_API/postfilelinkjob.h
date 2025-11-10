@@ -28,7 +28,7 @@ class PostFileLinkJob : public AbstractTokenNetworkJob {
 
     private:
         virtual std::string getSpecificUrl() override;
-        virtual void setQueryParameters(Poco::URI &uri, bool &canceled) override;
+        virtual void setQueryParameters(Poco::URI &uri) override;
         inline virtual ExitInfo setData() override { return ExitCode::Ok; }
 
         NodeId _nodeId;

@@ -56,14 +56,14 @@ std::string CsvFullFileListWithCursorJob::getSpecificUrl() {
     return str;
 }
 
-void CsvFullFileListWithCursorJob::setSpecificQueryParameters(Poco::URI &uri) {
+void CsvFullFileListWithCursorJob::setQueryParameters(Poco::URI &uri) {
     uri.addQueryParameter("directory_id", _dirId);
     uri.addQueryParameter("recursive", "true");
     uri.addQueryParameter("format", "safe_csv");
     uri.addQueryParameter("with", "files.is_link");
 }
 
-bool CsvFullFileListWithCursorJob::handleResponse(std::istream &is) {
+ExitInfo CsvFullFileListWithCursorJob::handleResponse(std::istream &is) {
     if (_zip) {
         unzip(is, _ss);
     } else {
@@ -75,7 +75,7 @@ bool CsvFullFileListWithCursorJob::handleResponse(std::istream &is) {
     const auto length = _ss.tellg();
     if (length == 0) {
         LOG_ERROR(_logger, "Reply " << jobId() << " received with empty content.");
-        return false;
+        return {};
     }
 
     _ss.seekg(0, std::ios_base::beg);
@@ -83,7 +83,7 @@ bool CsvFullFileListWithCursorJob::handleResponse(std::istream &is) {
         LOGW_DEBUG(_logger,
                    L"Reply " << jobId() << L" received - length=" << length << L" value=" << CommonUtility::s2ws(_ss.str()));
     }
-    return true;
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

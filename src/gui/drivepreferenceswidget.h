@@ -20,11 +20,13 @@
 
 #include "customswitch.h"
 #include "actionwidget.h"
+#include "adddrivelistwidget.h"
 #include "customtoolbutton.h"
 #include "preferencesblocwidget.h"
 #include "folderitemwidget.h"
 #include "foldertreeitemwidget.h"
 #include "widgetwithcustomtooltip.h"
+#include "info/searchinfo.h"
 
 #include <QBoxLayout>
 #include <QColor>
@@ -33,6 +35,7 @@
 #include <QMetaObject>
 #include <QProgressBar>
 #include <QString>
+#include <QStringListModel>
 #include <QMutex>
 
 namespace KDC {
@@ -90,6 +93,35 @@ class DrivePreferencesWidget : public LargeWidgetWithCustomToolTip {
         CustomToolButton *_removeDriveButton{nullptr};
         bool _updatingFoldersBlocs{false};
 
+        QLabel *_searchLabel{nullptr};
+        QLineEdit *_searchBox{nullptr};
+        QPushButton *_searchButton{nullptr};
+        QLabel *_searchProgressLabel{nullptr};
+        QListView *_searchResultView{nullptr};
+        class SearchItemListModel : public QStringListModel {
+            public:
+                void setSearchItems(const QList<SearchInfo> &data) {
+                    _data = data;
+                    QStringList list;
+                    for (const auto &item: _data) {
+                        list << SyncName2QStr(item.name());
+                    }
+                    setStringList(list);
+                };
+                [[nodiscard]] NodeId id(int row) const {
+                    if (row > _data.count() - 1) return "0";
+                    return _data[row].id();
+                }
+                void clear() {
+                    _data.clear();
+                    setStringList({});
+                }
+
+            private:
+                QList<SearchInfo> _data;
+        };
+        SearchItemListModel _searchResultModel;
+
         void showEvent(QShowEvent *event) override;
 
         bool existUndecidedSet();
@@ -101,13 +133,15 @@ class DrivePreferencesWidget : public LargeWidgetWithCustomToolTip {
         void resetFoldersBlocs();
         void updateFoldersBlocs();
         void refreshFoldersBlocs() const;
-        FolderTreeItemWidget *blocTreeItemWidget(PreferencesBlocWidget *folderBloc);
-        FolderItemWidget *blocItemWidget(PreferencesBlocWidget *folderBloc);
-        QFrame *blocSeparatorFrame(PreferencesBlocWidget *folderBloc);
+        static FolderTreeItemWidget *blocTreeItemWidget(PreferencesBlocWidget *folderBloc);
+        static FolderItemWidget *blocItemWidget(PreferencesBlocWidget const *folderBloc);
+        static QFrame *blocSeparatorFrame(PreferencesBlocWidget const *folderBloc);
         bool addSync(const QString &localFolderPath, bool liteSync, const QString &serverFolderPath,
-                     const QString &serverFolderNodeId, QSet<QString> blackSet, QSet<QString> whiteSet);
-        bool updateSelectiveSyncList(const QHash<int, QHash<const QString, bool>> &mapUndefinedFolders);
+                     const QString &serverFolderNodeId, const QSet<QString> &blackSet, const QSet<QString> &whiteSet);
+        static bool updateSelectiveSyncList(const QHash<int, QHash<const QString, bool>> &mapUndefinedFolders);
         void updateGuardedFoldersBlocs();
+
+        void initializeSearchBloc();
 
     private slots:
         void onErrorsWidgetClicked();
@@ -121,14 +155,16 @@ class DrivePreferencesWidget : public LargeWidgetWithCustomToolTip {
         void onDisplayFolderDetail(int syncDbId, bool display);
         void onOpenFolder(const QString &filePath);
         void onSubfoldersLoaded(bool error, ExitCause exitCause, bool empty);
-        void onNeedToSave(bool isFolderItemBlackListed);
-        void onCancelUpdate(int syncDbId);
+        void onNeedToSave(bool isFolderItemBlackListed) const;
+        void onCancelUpdate(int syncDbId) const;
         void onValidateUpdate(int syncDbId);
         void onNewBigFolderDiscovered(int syncDbId, const QString &path);
         void onUndecidedListsCleared();
         void retranslateUi();
         void onVfsConversionCompleted(int syncDbId);
         void onDriveBeingRemoved();
+        void onSearch();
+        void onSearchItemDoubleClicked(const QModelIndex &index);
 };
 
 } // namespace KDC

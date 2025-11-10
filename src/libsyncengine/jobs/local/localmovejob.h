@@ -18,19 +18,19 @@
 
 #pragma once
 
-#include "jobs/abstractjob.h"
+#include "jobs/syncjob.h"
 
 namespace KDC {
 
-class LocalMoveJob : public AbstractJob {
+class LocalMoveJob : public SyncJob {
     public:
         LocalMoveJob(const SyncPath &source, const SyncPath &dest);
 
     protected:
-        bool canRun() override;
+        ExitInfo canRun() override;
 
     private:
-        void runJob() override;
+        ExitInfo runJob() override;
 
         SyncPath _source;
         SyncPath _dest;

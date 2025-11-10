@@ -296,7 +296,6 @@ The project requires additional CMake variables for a correct build. To inject t
    set(APPLICATION_CLIENT_EXECUTABLE "kdrive_client")
    set(KDRIVE_THEME_DIR "F:/Projects/desktop-kDrive/infomaniak")
    set(BUILD_UNIT_TESTS "ON")      # Set to "OFF" to skip tests
-   set(SOCKETAPI_TEAM_IDENTIFIER_PREFIX "864VDCS2QY")
    set(CMAKE_PREFIX_PATH "C:/Qt/6.2.3/msvc2019_64")
    set(CMAKE_INSTALL_PREFIX "F:/Projects/cmake-build-release_CLion")
    set(ZLIB_INCLUDE_DIR "C:/Program Files (x86)/zlib-1.2.11/include")
@@ -430,7 +429,6 @@ Open `Visual Studio 2019` and select `Open local folder`. Then choose `F:\Projec
     -DKDRIVE_THEME_DIR=F:/Projects/desktop-kDrive/infomaniak 
     -DBUILD_UNIT_TESTS:BOOL=ON 
     -DCMAKE_PREFIX_PATH:STRING=C:/Qt/6.2.3/msvc2019_64 
-    -DSOCKETAPI_TEAM_IDENTIFIER_PREFIX:STRING=864VDCS2QY 
     -DZLIB_INCLUDE_DIR:PATH="C:/Program Files (x86)/zlib-1.2.11/include" 
     -DZLIB_LIBRARY_RELEASE:FILEPATH="C:/Program Files (x86)/zlib-1.2.11/lib/zlib.lib" 
     -DVFS_STATIC_LIBRARY:FILEPATH=F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug/Vfs.lib 

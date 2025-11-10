@@ -47,6 +47,17 @@ SyncPath CommonUtility::getGenericAppSupportDir() {
     return [[appSupportDirUrl path] UTF8String];
 }
 
+SyncPath CommonUtility::getExtensionPath() {
+    CFURLRef url = (CFURLRef) CFBundleCopyBundleURL(CFBundleGetMainBundle());
+    CFStringRef urlStr = CFURLCopyFileSystemPath(url, kCFURLPOSIXPathStyle);
+    CFRelease(url);
+    std::string extPath = std::string([(__bridge NSString *) urlStr UTF8String]);
+    CFRelease(urlStr);
+
+    extPath.append("/Contents/PlugIns/Extension.appex/");
+    return extPath;
+}
+
 bool CommonUtility::hasDarkSystray() {
     NSString *appearanceName = NSApp.effectiveAppearance.name;
     if ([appearanceName rangeOfString:@"Dark"].location != NSNotFound) {
@@ -63,6 +74,20 @@ bool CommonUtility::setFolderCustomIcon(const SyncPath &folderPath, const IconTy
 
     NSString *folderPathStr = [NSString stringWithCString:folderPath.c_str() encoding:NSUTF8StringEncoding];
     return [[NSWorkspace sharedWorkspace] setIcon:iconImage forFile:folderPathStr options:0];
+}
+
+void CommonUtility::convertFromBase64Str(NSString *const _Nonnull base64Str, NSString **_Nullable str) {
+    if (base64Str != nil) {
+        NSData *base64Data = [[NSData alloc] initWithBase64EncodedString:base64Str options:0];
+        *str = [[NSString alloc] initWithData:base64Data encoding:NSUTF8StringEncoding];
+    }
+}
+
+void CommonUtility::convertToBase64Str(NSString *const _Nonnull str, NSString **_Nullable base64Str) {
+    if (str != nil) {
+        NSData *strData = [str dataUsingEncoding:NSUTF8StringEncoding];
+        *base64Str = [strData base64EncodedStringWithOptions:0];
+    }
 }
 
 } // namespace KDC

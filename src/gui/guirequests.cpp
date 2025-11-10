@@ -17,6 +17,8 @@
  */
 
 #include "guirequests.h"
+
+#include "info/searchinfo.h"
 #include "libcommongui/commclient.h"
 #include "libcommon/utility/utility.h"
 
@@ -371,6 +373,28 @@ ExitCode GuiRequests::getOfflineFilesTotalSize(const int driveDbId, uint64_t &to
     resultStream >> exitCode;
     resultStream >> tmpSize;
     totalSize = tmpSize;
+
+    return exitCode;
+}
+
+ExitCode GuiRequests::searchItemInDrive(const int driveDbId, const QString &searchString, QList<SearchInfo> &list, bool &hasMore,
+                                        QString &cursor) {
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << driveDbId;
+    paramsStream << searchString;
+
+    QByteArray results;
+    if (!CommClient::instance()->execute(RequestNum::DRIVE_SEARCH, params, results, COMM_LONG_TIMEOUT)) {
+        return ExitCode::SystemError;
+    }
+
+    auto exitCode = ExitCode::Unknown;
+    QDataStream resultStream(&results, QIODevice::ReadOnly);
+    resultStream >> exitCode;
+    resultStream >> list;
+    resultStream >> hasMore;
+    resultStream >> cursor;
 
     return exitCode;
 }
@@ -1242,8 +1266,10 @@ ExitCode GuiRequests::versionInfo(VersionInfo &versionInfo, const VersionChannel
         return ExitCode::SystemError;
     }
 
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> versionInfo;
+    if (!results.isEmpty()) {
+        QDataStream resultStream(&results, QIODevice::ReadOnly);
+        resultStream >> versionInfo;
+    }
     return ExitCode::Ok;
 }
 

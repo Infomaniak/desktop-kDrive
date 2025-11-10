@@ -856,7 +856,7 @@ void ClientGui::onAddDriveAccepted() {
 }
 
 void ClientGui::onAddDriveRejected() {
-    AppClient *app = qobject_cast<AppClient *>(qApp);
+    auto *app = qobject_cast<AppClient *>(qApp);
     app->onWizardDone(QDialog::Rejected);
 }
 
@@ -866,16 +866,12 @@ void ClientGui::onAddDriveFinished() {
 
 void ClientGui::onCopyLinkItem(int driveDbId, const QString &nodeId) {
     QString linkUrl;
-    ExitCode exitCode = GuiRequests::getPublicLinkUrl(driveDbId, nodeId, linkUrl);
-    if (exitCode != ExitCode::Ok) {
+    if (const auto exitCode = GuiRequests::getPublicLinkUrl(driveDbId, nodeId, linkUrl); exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::getPublicLinkUrl";
         return;
     }
 
     QApplication::clipboard()->setText(linkUrl);
-    CustomMessageBox msgBox(QMessageBox::Information, tr("The shared link has been copied to the clipboard."), QMessageBox::Ok,
-                            nullptr);
-    msgBox.exec();
 }
 
 void ClientGui::onOpenWebviewItem(int driveDbId, const QString &nodeId) {
@@ -917,13 +913,6 @@ void ClientGui::resolveUnsupportedCharErrors(int driveDbId) {
         qCWarning(lcClientGui()) << "Error in Requests::resolveUnsupportedCharErrors";
         return;
     }
-}
-
-void ClientGui::onCopyUrlToClipboard(const QString &url) {
-    QApplication::clipboard()->setText(url);
-    CustomMessageBox msgBox(QMessageBox::Information, tr("The shared link has been copied to the clipboard."), QMessageBox::Ok,
-                            nullptr);
-    msgBox.exec();
 }
 
 void ClientGui::onScreenUpdated(QScreen *screen) {

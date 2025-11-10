@@ -215,8 +215,16 @@ void Logger::setLogDebug(bool debug) {
 }
 
 QString Logger::temporaryFolderLogDirPath() const {
-    QString dirName = APPLICATION_NAME + QString("-logdir");
-    return QDir::temp().filePath(dirName);
+    static const QString dirName = APPLICATION_NAME + QString("-logdir");
+
+    QDir kDriveTempDirectory;
+    if (const auto &value = CommonUtility::envVarValue("KDRIVE_TMP_PATH"); !value.empty()) {
+        kDriveTempDirectory = QDir(QString::fromStdString(value));
+    } else {
+        kDriveTempDirectory = QDir::temp();
+    }
+
+    return kDriveTempDirectory.filePath(dirName);
 }
 
 void Logger::setupTemporaryFolderLogDir() {

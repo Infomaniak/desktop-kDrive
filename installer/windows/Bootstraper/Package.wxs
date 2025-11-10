@@ -1,0 +1,10 @@
+﻿<!-- 
+    This project is only used as a pre-build step to generate the MSI installer. 
+    WiX projects' pre-build steps run after constant parsing, so we need to edit constants in a separate project.
+    This project is set as a dependency of the main WiX project (kDriveInstaller).
+    See the pre-build step of this project for details.
+-->
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+	<Package Id="TODO_Manufacturer.__" Name="__" Manufacturer="TODO Manufacturer" Version="1.0.0.0"/>
+</Wix>

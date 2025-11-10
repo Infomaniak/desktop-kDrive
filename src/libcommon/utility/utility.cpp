@@ -34,7 +34,6 @@
 #include <fileapi.h>
 #endif
 
-
 #include <fstream>
 #include <random>
 #include <regex>
@@ -55,7 +54,6 @@
 
 #include "utility_base.h"
 
-
 #include <QDir>
 #include <QTranslator>
 #include <QLibraryInfo>
@@ -66,11 +64,14 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QOperatingSystemVersion>
-#include <Poco/UnicodeConverter.h>
 
 #if defined(Q_OS_MAC)
 #include <mach-o/dyld.h>
 #endif
+
+#include <Poco/UnicodeConverter.h>
+#include <Poco/Base64Decoder.h>
+#include <Poco/Base64Encoder.h>
 
 #define MAX_PATH_LENGTH_WIN_LONG 32767
 #define MAX_PATH_LENGTH_WIN_SHORT 259
@@ -78,8 +79,8 @@
 #define MAX_PATH_LENGTH_LINUX 4096
 
 #if defined(KD_MACOS)
-constexpr char liteSyncExtBundleIdStr[] = "com.infomaniak.drive.desktopclient.LiteSyncExt";
-constexpr char loginItemAgentIdStr[] = "864VDCS2QY.com.infomaniak.drive.desktopclient.LoginItemAgent";
+constexpr std::string_view liteSyncExtBundleIdStr = "com.infomaniak.drive.desktopclient.LiteSyncExt";
+constexpr std::string_view loginItemAgentIdStr = "com.infomaniak.drive.desktopclient.LoginItemAgent";
 #endif
 
 namespace KDC {
@@ -184,6 +185,20 @@ const std::string &CommonUtility::currentVersion() {
         str = ss.str();
     }
     return str;
+}
+
+const std::string &CommonUtility::versionTag() {
+    static std::string str;
+    if (str.empty()) {
+        std::stringstream ss;
+        ss << KDRIVE_VERSION_MAJOR << "." << KDRIVE_VERSION_MINOR << "." << KDRIVE_VERSION_PATCH;
+        str = ss.str();
+    }
+    return str;
+}
+
+uint64_t CommonUtility::versionBuild() {
+    return KDRIVE_VERSION_BUILD;
 }
 
 static std::unordered_map<std::string, std::string> rootFsTypeMap;
@@ -564,6 +579,12 @@ std::string CommonUtility::appStateKeyToString(const AppStateKey &appStateValue)
             return "LogUploadState";
         case AppStateKey::LogUploadPercent:
             return "LogUploadPercent";
+        case AppStateKey::LogUploadToken:
+            return "LogUploadToken";
+        case AppStateKey::AppUid:
+            return "AppUid";
+        case AppStateKey::NoUpdate:
+            return "NoUpdate";
         case AppStateKey::Unknown:
             return "Unknown";
         default:
@@ -747,12 +768,10 @@ SyncPath CommonUtility::getAppSupportDir() {
     SyncPath dirPath(getGenericAppSupportDir());
 
     dirPath.append(APPLICATION_NAME);
-    std::error_code ec;
-    if (!std::filesystem::is_directory(dirPath, ec)) {
-        bool exists = false;
-        exists = !utility_base::isLikeFileNotFoundError(ec);
-        if (exists) return SyncPath();
-        if (!std::filesystem::create_directory(dirPath, ec)) return SyncPath();
+
+    if (std::error_code ec; !std::filesystem::is_directory(dirPath, ec)) {
+        const bool exists = !utility_base::isLikeFileNotFoundError(ec);
+        if (exists || !std::filesystem::create_directory(dirPath, ec)) return {};
     }
 
     return dirPath;
@@ -915,17 +934,33 @@ const std::string CommonUtility::dbVersionNumber(const std::string &dbVersion) {
 #endif
 }
 
-void CommonUtility::extractIntFromStrVersion(const std::string &version, std::vector<int> &tabVersion) {
+namespace {
+bool appendNumberComponent(const size_t pos, const size_t length, const std::string &versionDigits,
+                           std::vector<uint32_t> &tabVersion) {
+    try {
+        const auto numberComponent = static_cast<uint32_t>(std::stoi(versionDigits.substr(pos, length))); // may throw
+        tabVersion.push_back(numberComponent);
+        return true;
+    } catch (const std::invalid_argument &) { // The conversion string-to-int fails.
+        return false;
+    }
+}
+} // namespace
+
+void CommonUtility::extractIntFromStrVersion(const std::string &version, std::vector<uint32_t> &tabVersion) {
     if (version.empty()) return;
 
     std::string versionDigits = version;
 
-    std::regex versionDigitsRegex(R"(^([0-9]+\.[0-9]+\.[0-9]+)\s\(build\s([0-9]{8})\)$)"); // Example: "3.6.9 (build 20250220)"
+    std::regex versionDigitsRegex(R"(^([0-9]+\.[0-9]+\.[0-9]+)(?:\s*\(build\s*([0-9]+)\))?$)");
+
     std::smatch words;
     std::regex_match(versionDigits, words, versionDigitsRegex);
 
     if (!words.empty()) {
         assert(words.size() == 3 && "Wrong version format.");
+        if (words.size() != 3) return;
+
         versionDigits = words[1].str() + "." + words[2].str(); // Example: "3.6.9.20250220"
     }
 
@@ -935,13 +970,12 @@ void CommonUtility::extractIntFromStrVersion(const std::string &version, std::ve
     do {
         pos = versionDigits.find('.', prevPos);
         if (pos == std::string::npos) break;
-
-        tabVersion.push_back(std::stoi(versionDigits.substr(prevPos, pos - prevPos)));
+        if (!appendNumberComponent(prevPos, pos - prevPos, versionDigits, tabVersion)) return;
         prevPos = pos + 1;
     } while (true);
 
     if (prevPos < versionDigits.size()) {
-        tabVersion.push_back(std::stoi(versionDigits.substr(prevPos)));
+        if (!appendNumberComponent(prevPos, std::string::npos, versionDigits, tabVersion)) return;
     }
 }
 
@@ -955,10 +989,10 @@ SyncPath CommonUtility::signalFilePath(AppType appType, SignalCategory signalCat
 }
 
 bool CommonUtility::isVersionLower(const std::string &currentVersion, const std::string &targetVersion) {
-    std::vector<int> currTabVersion;
+    std::vector<uint32_t> currTabVersion;
     extractIntFromStrVersion(currentVersion, currTabVersion);
 
-    std::vector<int> targetTabVersion;
+    std::vector<uint32_t> targetTabVersion;
     extractIntFromStrVersion(targetVersion, targetTabVersion);
 
     if (currTabVersion.size() != targetTabVersion.size()) {
@@ -969,65 +1003,13 @@ bool CommonUtility::isVersionLower(const std::string &currentVersion, const std:
                                         targetTabVersion.end());
 }
 
-static std::string tmpDirName = "kdrive_" + CommonUtility::generateRandomStringAlphaNum();
-
-// Check if dir name is valid by trying to create a tmp dir
-bool CommonUtility::dirNameIsValid(const SyncName &name) {
-#if defined(KD_MACOS)
-    std::error_code ec;
-
-    SyncPath tmpDirPath = std::filesystem::temp_directory_path() / tmpDirName;
-    if (!std::filesystem::exists(tmpDirPath, ec)) {
-        std::filesystem::create_directory(tmpDirPath, ec);
-        if (ec.value()) {
-            return false;
-        }
-    }
-
-    SyncPath tmpPath = tmpDirPath / name;
-    std::filesystem::create_directory(tmpPath, ec);
-    bool illegalByteSequence;
-    illegalByteSequence = (ec.value() == static_cast<int>(std::errc::illegal_byte_sequence));
-    if (illegalByteSequence) {
-        return false;
-    }
-
-    std::filesystem::remove_all(tmpPath, ec);
-#else
-    (void) name;
-#endif
-    return true;
-}
-
-// Check if dir name is valid by trying to create a tmp file
-bool CommonUtility::fileNameIsValid(const SyncName &name) {
-    std::error_code ec;
-    if (!std::filesystem::exists(std::filesystem::temp_directory_path() / tmpDirName, ec)) {
-        std::filesystem::create_directory(std::filesystem::temp_directory_path() / tmpDirName, ec);
-        if (ec.value()) {
-            return false;
-        }
-    }
-    SyncPath tmpPath = std::filesystem::temp_directory_path() / tmpDirName / name;
-
-    std::ofstream output(tmpPath.native().c_str(), std::ios::binary);
-    if (!output) {
-        return false;
-    }
-
-    output.close();
-
-    std::filesystem::remove_all(tmpPath, ec);
-    return true;
-}
-
 #if defined(KD_MACOS)
 const std::string CommonUtility::loginItemAgentId() {
-    return loginItemAgentIdStr;
+    return TEAM_IDENTIFIER_PREFIX + std::string(loginItemAgentIdStr);
 }
 
 const std::string CommonUtility::liteSyncExtBundleId() {
-    return liteSyncExtBundleIdStr;
+    return std::string(liteSyncExtBundleIdStr);
 }
 #endif
 
@@ -1056,6 +1038,21 @@ std::string CommonUtility::envVarValue(const std::string &name, bool &isSet) {
 #endif
 
     return std::string();
+}
+
+int CommonUtility::setenv(const char *const name, const char *const value, const int overwrite) {
+#if defined(KD_WINDOWS)
+    // https://stackoverflow.com/a/23616164/4675396
+    int errcode = 0;
+    if (!overwrite) {
+        size_t envsize = 0;
+        errcode = getenv_s(&envsize, nullptr, 0, name);
+        if (errcode || envsize) return errcode;
+    }
+    return _putenv_s(name, value);
+#else
+    return ::setenv(name, value, overwrite);
+#endif
 }
 
 void CommonUtility::handleSignals(void (*sigHandler)(int)) {
@@ -1116,19 +1113,12 @@ void CommonUtility::clearSignalFile(const AppType appType, const SignalCategory 
     }
 }
 
-#if defined(KD_MACOS) || defined(KD_LINUX)
-bool CommonUtility::isLikeFileNotFoundError(const std::error_code &ec) noexcept {
-    return ec.value() == static_cast<int>(std::errc::no_such_file_or_directory);
-}
-#endif
-
 #ifdef KD_MACOS
 bool CommonUtility::isLiteSyncExtEnabled() {
     QProcess *process = new QProcess();
-    process->start(
-            "bash",
-            QStringList() << "-c"
-                          << QString("systemextensionsctl list | grep %1 | grep enabled | wc -l").arg(liteSyncExtBundleIdStr));
+    process->start("bash", QStringList() << "-c"
+                                         << QString("systemextensionsctl list | grep %1 | grep enabled | wc -l")
+                                                    .arg(liteSyncExtBundleIdStr.data()));
     process->waitForStarted();
     process->waitForFinished();
     QByteArray result = process->readAll();
@@ -1149,14 +1139,14 @@ bool CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr) {
                                   " and client = \"%2\""
                                   " and client_type = 0")
                                   .arg(serviceStr)
-                                  .arg(liteSyncExtBundleIdStr));
+                                  .arg(liteSyncExtBundleIdStr.data()));
         } else {
             query.prepare(QString("SELECT auth_value FROM access"
                                   " WHERE service = \"%1\""
                                   " and client = \"%2\""
                                   " and client_type = 0")
                                   .arg(serviceStr)
-                                  .arg(liteSyncExtBundleIdStr));
+                                  .arg(liteSyncExtBundleIdStr.data()));
         }
 
         query.exec();
@@ -1271,10 +1261,11 @@ std::list<SyncName> CommonUtility::splitSyncPath(const SyncPath &path) {
     return itemNames;
 }
 
-std::vector<SyncName> CommonUtility::splitSyncName(SyncName name, const SyncName &separator) {
-    std::vector<SyncName> tokens;
+template<typename T>
+std::vector<T> CommonUtility::splitString(T name, const T &separator) {
+    std::vector<T> tokens;
     size_t pos = 0;
-    SyncName token;
+    T token;
 
     while ((pos = name.find(separator)) != std::string::npos) {
         token = name.substr(0, pos);
@@ -1284,6 +1275,14 @@ std::vector<SyncName> CommonUtility::splitSyncName(SyncName name, const SyncName
     tokens.push_back(name);
 
     return tokens;
+}
+
+std::vector<SyncName> CommonUtility::splitSyncName(SyncName name, const SyncName &separator) {
+    return CommonUtility::splitString<SyncName>(name, separator);
+}
+
+std::vector<CommString> CommonUtility::splitCommString(CommString str, const CommString &separator) {
+    return CommonUtility::splitString<CommString>(str, separator);
 }
 
 std::vector<SyncName> CommonUtility::splitPath(const SyncName &pathName) {
@@ -1382,6 +1381,45 @@ bool CommonUtility::isLinux() {
 #else
     return false;
 #endif
+}
+
+void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::string &value) {
+    std::istringstream istr(base64Str);
+    Poco::Base64Decoder b64in(istr);
+    b64in >> value;
+}
+
+void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::wstring &value) {
+    std::string strValue;
+    convertFromBase64Str(base64Str, strValue);
+    value = s2ws(strValue);
+}
+
+void CommonUtility::convertFromBase64Str(const std::string &base64Str, CommBLOB &value) {
+    std::istringstream istr(base64Str);
+    Poco::Base64Decoder b64in(istr);
+    (void) std::copy(std::istream_iterator<char>(b64in), std::istream_iterator<char>(), std::back_inserter(value));
+}
+
+void CommonUtility::convertToBase64Str(const std::string &str, std::string &base64Str) {
+    std::ostringstream ostr;
+    Poco::Base64Encoder b64out(ostr);
+    b64out << str;
+    (void) b64out.close();
+    base64Str = ostr.str();
+}
+
+void CommonUtility::convertToBase64Str(const std::wstring &wstr, std::string &base64Str) {
+    const std::string str = ws2s(wstr);
+    convertToBase64Str(str, base64Str);
+}
+
+void CommonUtility::convertToBase64Str(const CommBLOB &blob, std::string &base64Str) {
+    std::ostringstream ostr;
+    Poco::Base64Encoder b64out(ostr);
+    (void) std::copy(blob.begin(), blob.end(), std::ostream_iterator<char>(b64out));
+    (void) b64out.close();
+    base64Str = ostr.str();
 }
 
 } // namespace KDC

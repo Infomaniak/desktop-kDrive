@@ -28,9 +28,9 @@ LocalMoveJob::LocalMoveJob(const SyncPath &source, const SyncPath &dest) :
     _source(source),
     _dest(dest) {}
 
-bool LocalMoveJob::canRun() {
+ExitInfo LocalMoveJob::canRun() {
     if (bypassCheck()) {
-        return true;
+        return ExitCode::Ok;
     }
 
     LOGW_DEBUG(_logger, L"Move from: " << Utility::formatSyncPath(_source) << L" to: " << Utility::formatSyncPath(_dest));
@@ -39,8 +39,7 @@ bool LocalMoveJob::canRun() {
     bool isEqual = false;
     if (!Utility::checkIfEqualUpToCaseAndEncoding(_source, _dest, isEqual)) {
         LOG_WARN(_logger, "Error in Utility::checkIfEqualUpToCaseAndEncoding");
-        _exitInfo = {ExitCode::SystemError, ExitCause::Unknown};
-        return false;
+        return {ExitCode::SystemError, ExitCause::Unknown};
     }
 
     IoError ioError = IoError::Success;
@@ -49,19 +48,16 @@ bool LocalMoveJob::canRun() {
         bool exists = false;
         if (!IoHelper::checkIfPathExists(_dest, exists, ioError)) {
             LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_dest, ioError));
-            _exitInfo = ExitCode::SystemError;
-            return false;
+            return ExitCode::SystemError;
         }
         if (ioError == IoError::AccessDenied) {
             LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_dest));
-            _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
-            return false;
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
 
         if (exists) {
             LOGW_DEBUG(_logger, L"Item already exists: " << Utility::formatSyncPath(_dest));
-            _exitInfo = {ExitCode::DataError, ExitCause::FileExists};
-            return false;
+            return {ExitCode::DataError, ExitCause::FileExists};
         }
     }
 
@@ -69,22 +65,20 @@ bool LocalMoveJob::canRun() {
     bool exists = false;
     if (!IoHelper::checkIfPathExists(_source, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_source, ioError));
-        _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
-        return false;
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     if (!exists) {
         LOGW_DEBUG(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_source));
-        _exitInfo = {ExitCode::DataError, ExitCause::InvalidDestination};
-        return false;
+        return {ExitCode::DataError, ExitCause::InvalidDestination};
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
-void LocalMoveJob::runJob() {
-    if (!canRun()) {
-        return;
+ExitInfo LocalMoveJob::runJob() {
+    if (const auto exitInfo = canRun(); !exitInfo) {
+        return exitInfo;
     }
 
     std::error_code ec;
@@ -93,12 +87,11 @@ void LocalMoveJob::runJob() {
     if (ec.value() != 0) { // We consider this as a permission denied error
         LOGW_WARN(_logger, L"Failed to rename " << Utility::formatSyncPath(_source) << L" to " << Utility::formatSyncPath(_dest)
                                                 << L": " << CommonUtility::s2ws(ec.message()) << L" (" << ec.value() << L")");
-        _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
-        return;
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     LOGW_INFO(_logger, L"Item with " << Utility::formatSyncPath(_source) << L" moved to " << Utility::formatSyncPath(_dest));
-    _exitInfo = ExitCode::Ok;
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

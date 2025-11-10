@@ -47,6 +47,12 @@ bool VirtualFilesCleaner::run() {
     return removePlaceholdersRecursively(_rootPath);
 }
 
+namespace {
+bool hasFileType(const std::filesystem::directory_entry &entry) {
+    return entry.is_symlink() || (!entry.is_directory());
+}
+} // namespace
+
 bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPath) {
     const SyncName rootPathStr = _rootPath.native();
     try {
@@ -83,67 +89,63 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
                 return false;
             }
 
-            if (!dirIt->is_directory() && vfsStatus.isPlaceholder && vfsStatus.isHydrated) {
+            if (const bool dirItemHasFileType = hasFileType(*dirIt);
+                dirItemHasFileType && vfsStatus.isPlaceholder && vfsStatus.isHydrated) {
                 // Keep this file in file system
                 if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_DEBUG(_logger, L"VirtualFilesCleaner: item " << Utility::formatSyncPath(absolutePath)
                                                                       << L" is a hydrated placeholder, keep it");
                 }
-            } else {
-                if (!dirIt->is_directory()) { // Keep folders
-                    // Remove file from file system
-                    if (ParametersCache::isExtendedLogEnabled()) {
-                        LOGW_DEBUG(_logger, L"VirtualFilesCleaner: removing item " << Utility::formatSyncPath(absolutePath)
-                                                                                   << L" from file system");
-                    }
+            } else if (dirItemHasFileType) { // Keep folders
+                // Remove file from file system
+                if (ParametersCache::isExtendedLogEnabled()) {
+                    LOGW_DEBUG(_logger, L"VirtualFilesCleaner: removing item " << Utility::formatSyncPath(absolutePath)
+                                                                               << L" from file system");
+                }
 
-                    std::error_code ec;
-                    if (!std::filesystem::remove(dirIt->path(), ec)) {
-                        if (ec.value() != 0) {
-                            LOGW_WARN(_logger, L"Failed to remove all " << Utility::formatSyncPath(absolutePath) << L": "
-                                                                        << CommonUtility::s2ws(ec.message()) << L" ("
-                                                                        << ec.value() << L")");
-                            _exitCode = ExitCode::SystemError;
-                            _exitCause = ExitCause::FileAccessError;
-                            return false;
-                        }
-
-                        LOGW_WARN(_logger, L"Failed to remove all " << Utility::formatSyncPath(absolutePath));
+                if (std::error_code removeEc; !std::filesystem::remove(dirIt->path(), removeEc)) {
+                    if (removeEc) {
+                        LOGW_WARN(_logger, L"Failed to remove all for " << Utility::formatStdError(absolutePath, removeEc));
                         _exitCode = ExitCode::SystemError;
                         _exitCause = ExitCause::FileAccessError;
                         return false;
                     }
 
-                    // Remove item from db
-                    if (ParametersCache::isExtendedLogEnabled()) {
-                        LOGW_DEBUG(_logger, L"VirtualFilesCleaner: removing item " << Utility::formatSyncPath(absolutePath)
-                                                                                   << L" from DB");
-                    }
+                    LOGW_WARN(_logger, L"Failed to remove all " << Utility::formatSyncPath(absolutePath));
+                    _exitCode = ExitCode::SystemError;
+                    _exitCause = ExitCause::FileAccessError;
+                    return false;
+                }
 
-                    DbNodeId dbId = -1;
-                    bool found = false;
-                    if (!_syncDb->dbId(ReplicaSide::Local, relativePath, dbId, found)) {
-                        LOG_WARN(_logger, "Error in SyncDb::dbId");
-                        _exitCode = ExitCode::DbError;
-                        _exitCause = ExitCause::DbAccessError;
-                        return false;
-                    }
-                    if (!found) {
-                        // We don't care that it is not found, we wanted to delete it anyway
-                        continue;
-                    }
+                // Remove item from db
+                if (ParametersCache::isExtendedLogEnabled()) {
+                    LOGW_DEBUG(_logger,
+                               L"VirtualFilesCleaner: removing item " << Utility::formatSyncPath(absolutePath) << L" from DB");
+                }
 
-                    // Remove node (and childs by cascade) from DB
-                    if (!_syncDb->deleteNode(dbId, found)) {
-                        LOG_WARN(_logger, "Error in SyncDb::deleteNode");
-                        _exitCode = ExitCode::DbError;
-                        _exitCause = ExitCause::DbAccessError;
-                        return false;
-                    }
-                    if (!found) {
-                        // We don't care that it is not found, we wanted to delete it anyway
-                        continue;
-                    }
+                DbNodeId dbId = -1;
+                bool found = false;
+                if (!_syncDb->dbId(ReplicaSide::Local, relativePath, dbId, found)) {
+                    LOG_WARN(_logger, "Error in SyncDb::dbId");
+                    _exitCode = ExitCode::DbError;
+                    _exitCause = ExitCause::DbAccessError;
+                    return false;
+                }
+                if (!found) {
+                    // We don't care that it is not found, we wanted to delete it anyway
+                    continue;
+                }
+
+                // Remove node and its children by cascade from DB
+                if (!_syncDb->deleteNode(dbId, found)) {
+                    LOG_WARN(_logger, "Error in SyncDb::deleteNode");
+                    _exitCode = ExitCode::DbError;
+                    _exitCause = ExitCause::DbAccessError;
+                    return false;
+                }
+                if (!found) {
+                    // We don't care that it is not found, we wanted to delete it anyway
+                    continue;
                 }
             }
 
@@ -210,7 +212,7 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
                 continue;
             }
 
-            if (!dirIt->is_directory()) {
+            if (hasFileType(*dirIt)) {
                 bool isDehydrated = false;
                 IoError ioError = IoError::Success;
                 const bool success = IoHelper::checkIfFileIsDehydrated(dirIt->path(), isDehydrated, ioError);
@@ -221,15 +223,10 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
                 }
 
                 if (isDehydrated) {
-                    SyncPath filePath = dirIt->path();
-                    SyncName filePathStr = dirIt->path().native();
-
-                    std::error_code ec;
-                    if (!std::filesystem::remove(filePath, ec)) {
-                        if (ec.value() != 0) {
-                            LOGW_WARN(_logger, L"Failed to remove " << SyncName2WStr(filePathStr) << L": "
-                                                                    << CommonUtility::s2ws(ec.message()) << L" (" << ec.value()
-                                                                    << L")");
+                    const SyncPath filePath = dirIt->path();
+                    if (std::error_code ec; !std::filesystem::remove(filePath, ec)) {
+                        if (ec) {
+                            LOGW_WARN(_logger, L"Failed to remove " << Utility::formatStdError(filePath, ec));
                             _exitCode = ExitCode::SystemError;
                             _exitCause = ExitCause::FileAccessError;
 
@@ -237,21 +234,22 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
                             ret = false;
                         }
 
-                        LOGW_WARN(_logger, L"File does not exist " << SyncName2WStr(filePathStr));
+                        LOGW_WARN(_logger, L"File does not exist: " << Utility::formatSyncPath(filePath));
                     }
 
                     if (ParametersCache::isExtendedLogEnabled()) {
-                        LOGW_DEBUG(_logger, L"VFC removeDehydratedPlaceholders: removing item " << SyncName2WStr(filePathStr));
+                        LOGW_DEBUG(_logger,
+                                   L"VFC removeDehydratedPlaceholders: removing item with " << Utility::formatSyncPath(filePath));
                     }
                 }
             }
         }
     } catch (std::filesystem::filesystem_error &e) {
-        LOG_WARN(_logger,
-                 "Error caught in VirtualFilesCleaner::removeDehydratedPlaceholders: code=" << e.code() << " error=" << e.what());
+        LOG_WARN(_logger, "Exception caught in VirtualFilesCleaner::removeDehydratedPlaceholders: code=" << e.code() << " error="
+                                                                                                         << e.what());
         ret = false;
     } catch (...) {
-        LOG_WARN(_logger, "Error caught in VirtualFilesCleaner::removeDehydratedPlaceholders");
+        LOG_WARN(_logger, "Exception caught in VirtualFilesCleaner::removeDehydratedPlaceholders");
         ret = false;
     }
 

@@ -39,7 +39,7 @@ StrCpy $UAC_ERROR_LOGON_SERVICE "Il servizio di accesso non è in esecuzione, int
 StrCpy $INIT_UNINSTALLER_RUNNING "Il programma di disinstallazione è già in esecuzione."
 StrCpy $INIT_WRONG_VERSION "Versione di Windows incompatibile. È richiesto Windows 8 o superiore."
 StrCpy $SectionGroup_Shortcuts "Scorciatoie"
-StrCpy $InstallMsiexec_MESSAGEBOX_TEXT "La extensión kDrive Lite Sync no se instalará porque falta el instalador de aplicaciones de Microsoft. Instálelo y luego reinicie la instalación de kDrive para poder usar Lite Sync."
+StrCpy $InstallMsiexec_MESSAGEBOX_TEXT "L'estensione kDrive Lite Sync non si installa perché manca Microsoft App Installer. Installalo e riavvia l'installazione di kDrive per poter utilizzare Lite Sync."
 StrCpy $PageCustomUninstall_NEW_Field_2 "Disinstalla solo l'app ${APPLICATION_NAME}"
 StrCpy $PageCustomUninstall_NEW_Field_3 "Disinstalla l'app ${APPLICATION_NAME} ed elimina tutte le configurazioni"
 StrCpy $PageCustomUninstall_NEW_MUI_HEADER_TEXT_TITLE "Parametri di disinstallazione"

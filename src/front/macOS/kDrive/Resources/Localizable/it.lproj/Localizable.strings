@@ -1,0 +1,25 @@
+/*
+ * Loco ios export: Xcode Strings (legacy)
+ * Project: kDrive Desktop
+ * Locale: it, Italian
+ * Exported by: Valentin Perignon
+ * Exported at: Tue, 26 Aug 2025 16:15:21 +0200
+ */
+
+/* loco:68a7228730d0f594cc03e4b3 */
+"menuItemSearch" = "Ricerca";
+
+/* loco:68a70c92c32749426b06db02 */
+"sidebarItemKDriveTitle" = "Cartella kDrive";
+
+/* loco:68a8031da6bad911b30ec9c2 */
+"sidebarSectionAdvancedSync" = "Sincr. avanzate";
+
+/* loco:68a70be4b749277aa1081dc2 */
+"tabTitleActivity" = "Attività";
+
+/* loco:68a705225b0066f86e001d52 */
+"tabTitleHome" = "Casa";
+
+/* loco:68a70c659c53feed83039c42 */
+"tabTitleStorage" = "Stoccaggio";

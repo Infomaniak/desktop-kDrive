@@ -31,7 +31,6 @@ class RenameJob : public AbstractTokenNetworkJob {
 
     private:
         virtual std::string getSpecificUrl() override;
-        virtual void setQueryParameters(Poco::URI &, bool &canceled) override { canceled = false; }
         virtual ExitInfo setData() override;
 
         std::string _remoteFileId;

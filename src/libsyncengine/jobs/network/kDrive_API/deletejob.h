@@ -28,12 +28,11 @@ class DeleteJob : public AbstractTokenNetworkJob {
         DeleteJob(int driveDbId, const NodeId &remoteItemId, const NodeId &localItemId, const SyncPath &absoluteLocalFilepath,
                   NodeType nodeType);
         DeleteJob(int driveDbId, const NodeId &remoteItemId); // To be used in tests only.
-        virtual bool canRun() override;
+        ExitInfo canRun() override;
 
     private:
-        virtual std::string getSpecificUrl() override;
-        virtual void setQueryParameters(Poco::URI &, bool &) override {}
-        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
+        std::string getSpecificUrl() override;
+        inline ExitInfo setData() override { return ExitCode::Ok; }
 
         const NodeId _remoteItemId;
         const NodeId _localItemId;

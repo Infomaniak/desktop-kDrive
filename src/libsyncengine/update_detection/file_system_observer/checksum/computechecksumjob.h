@@ -18,19 +18,19 @@
 
 #pragma once
 
-#include "jobs/abstractjob.h"
+#include "jobs/syncjob.h"
 #include "update_detection/file_system_observer/snapshot/livesnapshot.h"
 
 #include <log4cplus/logger.h>
 
 namespace KDC {
 
-class ComputeChecksumJob : public AbstractJob {
+class ComputeChecksumJob : public SyncJob {
     public:
         ComputeChecksumJob(const NodeId &nodeId, const SyncPath &filepath, std::shared_ptr<LiveSnapshot> localSnapshot);
 
     protected:
-        virtual void runJob() override;
+        ExitInfo runJob() override;
 
     private:
         log4cplus::Logger _logger;
