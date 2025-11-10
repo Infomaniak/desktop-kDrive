@@ -40,21 +40,7 @@ namespace Infomaniak.kDrive.Pages
         {
             Logger.Log(Logger.Level.Info, "Navigated to SettingsPage - Initializing SettingsPage components");
             InitializeComponent();
-            RegisterPropertyChangedHandlers();
-
             Logger.Log(Logger.Level.Debug, "SettingsPage components initialized");
-        }
-
-        private void RegisterPropertyChangedHandlers()
-        {
-            ViewModel.Settings.PropertyChanged += Settings_PropertyChanged;
-            Utility.SetEnumComboBoxSelection(NotificationsComboBox, ViewModel.Settings.NotificationsDisabled);
-        }
-
-        private void Settings_PropertyChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(ViewModel.Settings.NotificationsDisabled))
-                Utility.SetEnumComboBoxSelection(NotificationsComboBox, ViewModel.Settings.NotificationsDisabled);
         }
 
         private void CreateAccountButton_Click(object sender, RoutedEventArgs e)
