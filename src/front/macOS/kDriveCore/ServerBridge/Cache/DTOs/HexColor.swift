@@ -21,11 +21,12 @@ import Foundation
 import CoreGraphics
 #endif
 
-public struct RGBAColor: Sendable, CustomStringConvertible, Equatable {
-    let red: CGFloat
-    let green: CGFloat
-    let blue: CGFloat
-    let alpha: CGFloat
+/// A lightweight exchange type mapping 1:1 the colors sent by the server (Hex RGB)
+public struct HexColor: Sendable, CustomStringConvertible, Equatable, Hashable {
+    let red: UInt8
+    let green: UInt8
+    let blue: UInt8
+    let alpha: UInt8
 
     public init?(hex: String) {
         var hexString = hex.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -39,45 +40,47 @@ public struct RGBAColor: Sendable, CustomStringConvertible, Equatable {
         }
 
         if hexString.count == 6 {
-            red = CGFloat((hexValue & 0xFF0000) >> 16) / 255.0
-            green = CGFloat((hexValue & 0x00FF00) >> 8) / 255.0
-            blue = CGFloat(hexValue & 0x0000FF) / 255.0
-            alpha = 1.0
+            red = UInt8((hexValue & 0xFF0000) >> 16)
+            green = UInt8((hexValue & 0x00FF00) >> 8)
+            blue = UInt8(hexValue & 0x0000FF)
+            alpha = 255
         } else {
-            red = CGFloat((hexValue & 0xFF00_0000) >> 24) / 255.0
-            green = CGFloat((hexValue & 0x00FF_0000) >> 16) / 255.0
-            blue = CGFloat((hexValue & 0x0000_FF00) >> 8) / 255.0
-            alpha = CGFloat(hexValue & 0x0000_00FF) / 255.0
+            red = UInt8((hexValue & 0xFF00_0000) >> 24)
+            green = UInt8((hexValue & 0x00FF_0000) >> 16)
+            blue = UInt8((hexValue & 0x0000_FF00) >> 8)
+            alpha = UInt8(hexValue & 0x0000_00FF)
         }
     }
 
     public init(red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat = 1) {
-        self.red = red
-        self.green = green
-        self.blue = blue
-        self.alpha = alpha
+        self.red = UInt8(round(red * 255))
+        self.green = UInt8(round(green * 255))
+        self.blue = UInt8(round(blue * 255))
+        self.alpha = UInt8(round(alpha * 255))
     }
 
     func toHex(includeAlpha: Bool = true) -> String {
-        let rInt = Int(round(red * 255))
-        let gInt = Int(round(green * 255))
-        let bInt = Int(round(blue * 255))
-        let aInt = Int(round(alpha * 255))
-
-        if includeAlpha && aInt <= 255 && aInt >= 0 {
-            return String(format: "#%02x%02x%02x%02x", rInt, gInt, bInt, aInt)
+        // Server seems to run with lowercase Hex strings
+        if includeAlpha {
+            return String(format: "#%02x%02x%02x%02x", red, green, blue, alpha)
         } else {
-            return String(format: "#%02x%02x%02x", rInt, gInt, bInt)
+            return String(format: "#%02x%02x%02x", red, green, blue)
         }
     }
 
     public var description: String {
+        // Server exchange colors without alpha
         toHex(includeAlpha: false)
     }
 
     #if canImport(CoreGraphics)
     public var cgColor: CGColor {
-        CGColor(red: red, green: green, blue: blue, alpha: alpha)
+        CGColor(
+            red: CGFloat(red) / 255.0,
+            green: CGFloat(green) / 255.0,
+            blue: CGFloat(blue) / 255.0,
+            alpha: CGFloat(alpha) / 255.0
+        )
     }
     #endif
 }
