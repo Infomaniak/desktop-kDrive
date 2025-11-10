@@ -165,9 +165,7 @@ void ExtensionJob::commandGetMenuItems(const CommString &argument, std::shared_p
     (void) std::copy(argumentList.begin(), argumentList.end(), std::back_inserter(paths));
 
     Sync sync;
-    if (!syncForPaths(paths, sync)) return;
-
-    if (sync.dbId()) {
+    if (syncForPaths(paths, sync) && sync.dbId()) {
         // Find SyncPal and Vfs associated to sync
         const std::scoped_lock lock(AppServer::syncPalMapMutex, AppServer::vfsMapMutex);
         const auto syncPalMapIt = retrieveSyncPalMapIt(sync.dbId());
@@ -176,16 +174,6 @@ void ExtensionJob::commandGetMenuItems(const CommString &argument, std::shared_p
         if (syncPalMapIt != AppServer::syncPalMap.end() && syncPalMapIt->second && vfsMapIt != AppServer::vfsMap.end() &&
             vfsMapIt->second) {
 #if defined(KD_MACOS)
-            // Manage dehydration cancellation
-            bool canCancelDehydration = false;
-
-            {
-                const std::lock_guard lock2(_dehydrationMutex);
-                if (_nbOfOngoingDehydration > 0) {
-                    canCancelDehydration = true;
-                }
-            }
-
             // File availability actions
             if (sync.virtualFileMode() != VirtualFileMode::Off && vfsMapIt->second->showPinStateActions()) {
                 // Some options only show for single files
@@ -194,6 +182,16 @@ void ExtensionJob::commandGetMenuItems(const CommString &argument, std::shared_p
                     manageActionsOnSingleFile(channel, paths[0], syncPalMapIt, vfsMapIt, sync);
 
                     isSingleFile = QFileInfo(CommonUtility::commString2QStr(paths[0])).isFile();
+                }
+
+                // Manage hydration/dehydration
+                bool canCancelDehydration = false;
+
+                {
+                    const std::lock_guard lock2(_dehydrationMutex);
+                    if (_nbOfOngoingDehydration > 0) {
+                        canCancelDehydration = true;
+                    }
                 }
 
                 bool canHydrate = true;
@@ -470,9 +468,7 @@ void ExtensionJob::commandGetAllMenuItems(const CommString &argument, std::share
     (void) std::copy(argumentList.begin() + 1, argumentList.end(), std::back_inserter(paths));
 
     Sync sync;
-    if (!syncForPaths(paths, sync)) return;
-
-    if (sync.dbId()) {
+    if (syncForPaths(paths, sync) && sync.dbId()) {
         const std::scoped_lock lock(AppServer::syncPalMapMutex, AppServer::vfsMapMutex);
         const auto syncPalMapIt = retrieveSyncPalMapIt(sync.dbId());
         const auto vfsMapIt = retrieveVfsMapIt(sync.dbId());
