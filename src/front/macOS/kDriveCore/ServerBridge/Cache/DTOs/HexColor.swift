@@ -26,7 +26,12 @@ public struct HexColor: Sendable, CustomStringConvertible, Equatable, Hashable {
     let red: UInt8
     let green: UInt8
     let blue: UInt8
-    let alpha: UInt8
+
+    var hexValue: String {
+        // Server seems to run with lowercase Hex strings
+        // Server exchange colors without alpha
+        return String(format: "#%02x%02x%02x", red, green, blue)
+    }
 
     public init?(hex: String) {
         var hexString = hex.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -39,38 +44,22 @@ public struct HexColor: Sendable, CustomStringConvertible, Equatable, Hashable {
             return nil
         }
 
-        if hexString.count == 6 {
-            red = UInt8((hexValue & 0xFF0000) >> 16)
-            green = UInt8((hexValue & 0x00FF00) >> 8)
-            blue = UInt8(hexValue & 0x0000FF)
-            alpha = 255
-        } else {
-            red = UInt8((hexValue & 0xFF00_0000) >> 24)
-            green = UInt8((hexValue & 0x00FF_0000) >> 16)
-            blue = UInt8((hexValue & 0x0000_FF00) >> 8)
-            alpha = UInt8(hexValue & 0x0000_00FF)
+        guard hexString.count == 6 else {
+            return nil
         }
+        red = UInt8((hexValue & 0xFF0000) >> 16)
+        green = UInt8((hexValue & 0x00FF00) >> 8)
+        blue = UInt8(hexValue & 0x0000FF)
     }
 
-    public init(red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat = 1) {
+    public init(red: CGFloat, green: CGFloat, blue: CGFloat) {
         self.red = UInt8(round(red * 255))
         self.green = UInt8(round(green * 255))
         self.blue = UInt8(round(blue * 255))
-        self.alpha = UInt8(round(alpha * 255))
-    }
-
-    func toHex(includeAlpha: Bool = true) -> String {
-        // Server seems to run with lowercase Hex strings
-        if includeAlpha {
-            return String(format: "#%02x%02x%02x%02x", red, green, blue, alpha)
-        } else {
-            return String(format: "#%02x%02x%02x", red, green, blue)
-        }
     }
 
     public var description: String {
-        // Server exchange colors without alpha
-        toHex(includeAlpha: false)
+        hexValue
     }
 
     #if canImport(CoreGraphics)
@@ -79,7 +68,7 @@ public struct HexColor: Sendable, CustomStringConvertible, Equatable, Hashable {
             red: CGFloat(red) / 255.0,
             green: CGFloat(green) / 255.0,
             blue: CGFloat(blue) / 255.0,
-            alpha: CGFloat(alpha) / 255.0
+            alpha: 1.0
         )
     }
     #endif
