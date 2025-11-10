@@ -45,20 +45,25 @@ bool isBigFileUploadJob(const std::shared_ptr<AbstractJob> job) {
 
 } // namespace
 
-bool SyncJobManager::canRunJob(std::shared_ptr<AbstractJob> job) const {
-    if (isBigFileUploadJob(job)) {
-        for (const auto &runningJobId: data().runningJobs()) {
-            if (const auto &uploadSession = std::dynamic_pointer_cast<DriveUploadSession>(getJob(runningJobId)); uploadSession) {
-                // An upload session is already running.
+bool SyncJobManager::canRunJob(const std::shared_ptr<AbstractJob> job) const {
+    const bool currentJobIsUploadSession = isBigFileUploadJob(job);
+    const bool currentJobIsBigFileDownloadJob = isBigFileDownloadJob(job);
+    if (!currentJobIsUploadSession && !currentJobIsBigFileDownloadJob) return true;
+
+    uint64_t bigDownloadCounter = 0;
+    for (const auto &runningJobId: data().runningJobs()) {
+        if (currentJobIsUploadSession && isBigFileUploadJob(getJob(runningJobId))) {
+            // An upload session is already running.
+            return false;
+        }
+        if (currentJobIsBigFileDownloadJob && isBigFileDownloadJob(getJob(runningJobId))) {
+            // Another big download job is running.
+            bigDownloadCounter++;
+            if (bigDownloadCounter >= 3) {
+                // Allow max 3 big file download jobs in parallel.
                 return false;
             }
         }
-        return true;
-    }
-
-    if (isBigFileDownloadJob(job) && availableThreadsInPool() < 0.5 * Poco::ThreadPool::defaultPool().capacity()) {
-        // Allow big file download only if there is more than 50% of thread available in the pool.
-        return false;
     }
 
     return true;

@@ -30,7 +30,7 @@ set(testsyncengine_SRCS
         db/testsyncdb.h db/testsyncdb.cpp
         olddb/testoldsyncdb.h olddb/testoldsyncdb.cpp
         # Jobs
-        jobs/testsyncjobmanager.h jobs/testsyncjobmanager.cpp
+        jobs/testsyncjobmanagersingleton.h jobs/testsyncjobmanagersingleton.cpp
         ## Network jobs
         jobs/network/testsnapshotitemhandler.h jobs/network/testsnapshotitemhandler.cpp
         jobs/network/testnetworkjobs.h jobs/network/testnetworkjobs.cpp
