@@ -164,7 +164,6 @@ void TestWorkers::tearDown() {
         _vfsPtr->stopImpl(true);
         _vfsPtr = nullptr;
     }
-    _commManager->stop();
     TestBase::stop();
 }
 

@@ -667,4 +667,59 @@ bool Utility::isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode
             return false;
     }
 }
+
+IoError Utility::tryCreateTmpDir(const SyncName &name /*= Str("testDir")*/) {
+#if defined(KD_MACOS)
+    SyncPath tmpDirPath;
+    if (auto ioError = IoError::Unknown; !IoHelper::tempDirectoryPath(tmpDirPath, ioError)) {
+        return ioError;
+    }
+
+    SyncPath tmpPath = tmpDirPath / name;
+    std::error_code ec;
+    std::filesystem::create_directory(tmpPath, ec);
+    if (ec.value()) {
+        if (ec.value() == static_cast<int>(std::errc::illegal_byte_sequence)) {
+            return IoError::InvalidFileName;
+        }
+        return IoHelper::stdError2ioError(ec);
+    }
+
+    std::filesystem::remove_all(tmpPath, ec);
+#else
+    (void) name;
+#endif
+    return IoError::Success;
+}
+
+IoError Utility::tryCreateTmpFile(const SyncName &name /*= Str("testFile")*/) {
+    SyncPath tmpDirPath;
+    if (auto ioError = IoError::Unknown; !IoHelper::tempDirectoryPath(tmpDirPath, ioError)) {
+        return ioError;
+    }
+
+    const SyncPath tmpPath = tmpDirPath / name;
+    std::ofstream output(tmpPath.native().c_str(), std::ios::binary);
+    if (!output) {
+        bool read = false;
+        bool write = false;
+        bool exec = false;
+        auto ioError = IoError::Unknown;
+        if (!IoHelper::getRights(tmpDirPath, read, write, exec, ioError)) {
+            return ioError;
+        }
+        if (!read || !write) {
+            return IoError::AccessDenied;
+        }
+
+        return IoError::Unknown;
+    }
+
+    output.close();
+
+    std::error_code ec;
+    (void) std::filesystem::remove_all(tmpPath, ec);
+    return IoError::Success;
+}
+
 } // namespace KDC
