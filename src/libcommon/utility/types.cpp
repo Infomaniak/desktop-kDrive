@@ -220,6 +220,8 @@ std::string toString(const ExitCause e) {
             return "NotEnoughINotifyWatches";
         case ExitCause::FileOrDirectoryCorrupted:
             return "FileOrDirectoryCorrupted";
+        case ExitCause::TmpDirAccessError:
+            return "TmpDirAccessError";
         case ExitCause::UpdateTreeIntegrityCheckFailed:
             return "UpdateTreeIntegrityCheckFailed";
         default:

@@ -40,21 +40,7 @@ namespace Infomaniak.kDrive.Pages
         {
             Logger.Log(Logger.Level.Info, "Navigated to SettingsPage - Initializing SettingsPage components");
             InitializeComponent();
-            RegisterPropertyChangedHandlers();
-
             Logger.Log(Logger.Level.Debug, "SettingsPage components initialized");
-        }
-
-        private void RegisterPropertyChangedHandlers()
-        {
-            ViewModel.Settings.PropertyChanged += Settings_PropertyChanged;
-            Utility.SetEnumComboBoxSelection(NotificationsComboBox, ViewModel.Settings.NotificationsDisabled);
-        }
-
-        private void Settings_PropertyChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(ViewModel.Settings.NotificationsDisabled))
-                Utility.SetEnumComboBoxSelection(NotificationsComboBox, ViewModel.Settings.NotificationsDisabled);
         }
 
         private void CreateAccountButton_Click(object sender, RoutedEventArgs e)
@@ -263,6 +249,167 @@ namespace Infomaniak.kDrive.Pages
             if (control is not null)
                 control.IsEnabled = true;
         }
+
+        private async void ProxyTypeComboBox_Changed(object sender, SelectionChangedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            var control = sender as Control;
+            if (control is not null)
+                control.IsEnabled = false;
+
+            var selectedItem = e.AddedItems.OfType<ComboBoxItem>().FirstOrDefault();
+            if (selectedItem is not null && Enum.TryParse<ProxyType>(selectedItem.Tag as string, out ProxyType selectedProxyType))
+            {
+                await ViewModel.Settings.ChangeProxyType(selectedProxyType);
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Error, "ProxyTypeComboBox_Changed: selected item is null or invalid");
+            }
+            if (control is not null)
+                control.IsEnabled = true;
+        }
+
+        private void ProxyConfig_Changed(object sender, RoutedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            if (ProxyHostTextBox.Text != ViewModel.Settings.ProxyConfig.HostName ||
+               ProxyPortTextBox.Text != ViewModel.Settings.ProxyConfig.Port.ToString() ||
+               ProxyNeedsAuthToggleSwitch.IsOn != ViewModel.Settings.ProxyConfig.NeedsAuth ||
+               ProxyUserTextBox.Text != ViewModel.Settings.ProxyConfig.User ||
+               ProxyPwdPasswordBox.Password.Length > 0)
+            {
+                SaveProxySettingsCard.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                SaveProxySettingsCard.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private async void SaveProxySettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            ProxySaveProgressRing.Visibility = Visibility.Visible;
+            ProxySettingsExpander.IsEnabled = false;
+            await ViewModel.Settings.ChangeProxyConfiguration(ProxyHostTextBox.Text, int.Parse(ProxyPortTextBox.Text), ProxyNeedsAuthToggleSwitch.IsOn, ProxyUserTextBox.Text, ProxyPwdPasswordBox.Password);
+            ProxySettingsExpander.IsEnabled = true;
+            SaveProxySettingsCard.Visibility = Visibility.Collapsed;
+            ProxySaveProgressRing.Visibility = Visibility.Collapsed;
+
+        }
+
+        private void CancelProxySettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            ProxyHostTextBox.Text = ViewModel.Settings.ProxyConfig.HostName;
+            ProxyPortTextBox.Text = ViewModel.Settings.ProxyConfig.Port.ToString();
+            ProxyNeedsAuthToggleSwitch.IsOn = ViewModel.Settings.ProxyConfig.NeedsAuth;
+            ProxyUserTextBox.Text = ViewModel.Settings.ProxyConfig.User;
+            ProxyPwdPasswordBox.Password = string.Empty;
+            SaveProxySettingsCard.Visibility = Visibility.Collapsed;
+        }
+
+        private void OpenDebugFolderButton_Click(object sender, RoutedEventArgs e)
+        {
+            Utility.OpenFolderSecurely(Logger.LogFolder);
+        }
+
+        private async void EnableDebugLogsToggleSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            ToggleSwitch? toggleSwitch = sender as ToggleSwitch;
+
+            if (toggleSwitch is null)
+                Logger.Log(Logger.Level.Error, "sender is not a ToggleSwitch");
+
+            bool toggleIsOn = toggleSwitch?.IsOn ?? false;
+
+            if (ViewModel.Settings.LogLevel == Logger.Level.None && !toggleIsOn) return; // No change needed
+            if (ViewModel.Settings.LogLevel != Logger.Level.None && toggleIsOn) return; // No change needed
+
+            LogSettingsExpander.IsEnabled = false;
+            await ViewModel.Settings.ChangeLogLevel(toggleIsOn ? Logger.Level.Debug : Logger.Level.None);
+            LogSettingsExpander.IsEnabled = true;
+        }
+
+        private async void PurgeOldLogsToggleSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            ToggleSwitch? toggleSwitch = sender as ToggleSwitch;
+            if (toggleSwitch is null)
+                Logger.Log(Logger.Level.Error, "sender is not a ToggleSwitch");
+
+            if (ViewModel.Settings.PurgeOldLogs == toggleSwitch?.IsOn) return; // No change needed
+            LogSettingsExpander.IsEnabled = false;
+            await ViewModel.Settings.ChangePurgeOldLog(toggleSwitch?.IsOn ?? false);
+            LogSettingsExpander.IsEnabled = true;
+        }
+
+        private async void ExtendedLogToggleSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            ToggleSwitch? toggleSwitch = sender as ToggleSwitch;
+            if (toggleSwitch is null)
+                Logger.Log(Logger.Level.Error, "sender is not a ToggleSwitch");
+
+            bool toggleIsOn = toggleSwitch?.IsOn ?? false;
+            if (ViewModel.Settings.LogLevel == Logger.Level.Extended && toggleIsOn) return; // No change needed
+            if (ViewModel.Settings.LogLevel != Logger.Level.Extended && !toggleIsOn) return; // No change needed
+            LogSettingsExpander.IsEnabled = false;
+            await ViewModel.Settings.ChangeLogLevel(toggleSwitch?.IsOn ?? false ? Logger.Level.Extended : Logger.Level.Debug);
+            LogSettingsExpander.IsEnabled = true;
+        }
+
+        private async void LogLevelComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!IsLoaded) return;
+            var control = sender as Control;
+            if (control is not null)
+                control.IsEnabled = false;
+
+            var selectedItem = e.AddedItems.OfType<ComboBoxItem>().FirstOrDefault();
+            if (selectedItem is not null && Enum.TryParse<Logger.Level>(selectedItem.Tag as string, out Logger.Level selectedLevel))
+            {
+                await ViewModel.Settings.ChangeLogLevel(selectedLevel);
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Error, "Selected item is null or invalid");
+            }
+            if (control is not null)
+                control.IsEnabled = true;
+        }
+
+        bool _logUploadCancelled = false;
+        private async void SendLogButton_Click(object sender, RoutedEventArgs e)
+        {
+            var result = await SendLogDialog.ShowAsync();
+            if (result != ContentDialogResult.Primary) return;
+
+            // !!! Simulate log upload progress
+            // TODO: Implement actual log upload once linked with the server side
+
+            _logUploadCancelled = false;
+            SendLogsProgressRing.Value = 0;
+            SendLogsProgressRing.Visibility = Visibility.Visible;
+            SendLogButton.IsEnabled = false;
+            CancelSendLogButton.Visibility = Visibility.Visible;
+            while (SendLogsProgressRing.Value < 100 && !_logUploadCancelled)
+            {
+                await Task.Delay(Random.Shared.Next(200, 800));
+                SendLogsProgressRing.Value += Random.Shared.Next(1, 20);
+            }
+            SendLogsProgressRing.Value = 100;
+            await Task.Delay(500);
+            SendLogsProgressRing.Visibility = Visibility.Collapsed;
+            SendLogButton.IsEnabled = true;
+            CancelSendLogButton.Visibility = Visibility.Collapsed;
+            _logUploadCancelled = false;
+        }
+
+        private void CancelSendLogButton_Click(object sender, RoutedEventArgs e)
+        {
+            _logUploadCancelled = true;
+        }
     }
 
     // templateSelector for the drives listview
@@ -285,4 +432,5 @@ namespace Infomaniak.kDrive.Pages
 
 
     }
+
 }

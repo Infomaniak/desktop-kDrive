@@ -92,6 +92,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		7A03B6FD2EBA59F40020A47B /* Exceptions for "kDriveTests" folder in "kDriveTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Cache/CoherentCacheTests.swift,
+			);
+			target = 7A4DFBB02EA91F9D00B138B8 /* kDriveTests */;
+		};
 		F96700B82E953B8300EDD4D7 /* Exceptions for "kDriveCoreUI" folder in "kDrive" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -146,6 +153,9 @@
 		};
 		7A46E1CE2EA7AC1B00880412 /* kDriveTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				7A03B6FD2EBA59F40020A47B /* Exceptions for "kDriveTests" folder in "kDriveTests" target */,
+			);
 			path = kDriveTests;
 			sourceTree = "<group>";
 		};

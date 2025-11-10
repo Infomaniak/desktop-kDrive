@@ -80,6 +80,13 @@ $archiveDataPath = ('{0}\build-windows\{1}' -f $path.Replace('/', '\'), $archive
 
 #################################################################################################
 #                                                                                               #
+#										  	 IMPORT                                             #
+#                                                                                               #
+#################################################################################################
+. "$path\infomaniak-build-tools\version-helpers.ps1"
+
+#################################################################################################
+#                                                                                               #
 #                                           FUNCTIONS                                           #
 #                                                                                               #
 #################################################################################################
@@ -121,6 +128,15 @@ function Clean {
     if (Test-Path -Path $cleanPath) {
         Remove-Item -Path $cleanPath -Recurse
     }
+}
+
+function Get-Version {
+    param(
+        [Parameter(Mandatory = $false)]
+        [bool]$IncludeBuildVersion = $true
+    )
+    Get-VersionFromJson -RepositoryRootPath $path -IncludeBuildVersion $IncludeBuildVersion
+    
 }
 
 function Get-Thumbprint {
@@ -169,7 +185,7 @@ function Get-Package-Name {
     )
 
     $prodName = "kDrive"
-    $version = (Select-String -Path $buildPath\version.h KDRIVE_VERSION_FULL | foreach-object { $data = $_ -split " "; echo $data[3] })
+    $version = Get-Version -IncludeBuildVersion $true
 	if ($msi) {
 		$appName = "$prodName-$version.msi"
 	} ElseIf ($exe) {
@@ -228,26 +244,16 @@ function Build-Extension {
     }
     Write-Host "Publisher set to: $publisher" -ForegroundColor Yellow
 
-        
-    $map = @{}
-    Select-String -Path ".\VERSION.cmake" -Pattern 'set\( *KDRIVE_VERSION_(MAJOR|MINOR|PATCH) *(\d+)' | ForEach-Object {
-        if ($_ -match 'KDRIVE_VERSION_(MAJOR|MINOR|PATCH)\s+(\d+)') {
-            $map[$matches[1]] = [int]$matches[2]
-        }
-    }
-
-    $version = "$($map['MAJOR']).$($map['MINOR']).$($map['PATCH'])"
-    (Get-Content $appxManifestPath -Raw) -replace ' Version="[^"]*" />', " Version=`"$version.0`" />" |
-        Set-Content -Encoding UTF8 -Force $appxManifestPath
+    $version = Get-version -IncludeBuildVersion $true
     Write-Host "Extension version: $version"
 	
-	  $aumid = Get-Aumid $upload
-	  Write-Host "Building extension with AUMID: $aumid"
+	$aumid = Get-Aumid $upload
+	Write-Host "Building extension with AUMID: $aumid"
 	
     msbuild "$extPath\kDriveExt.sln" /p:Configuration=$configuration /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true /p:PackageCertificateThumbprint="$thumbprint" /p:KDC_AUMID="$aumid"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-    $bundlePath = "$extPath/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$version.0_Test/FileExplorerExtensionPackage_$version.0_x64_arm64.msixbundle"
+    $bundlePath = "$extPath/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_${version}_Test/FileExplorerExtensionPackage_${version}_x64_arm64.msixbundle"
     Sign-File -FilePath $bundlePath -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description "FileExplorerExtensionPackage"
 
     $srcVfsPath = "$path/src/libcommonserver/vfs/win/."
@@ -257,7 +263,7 @@ function Build-Extension {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     # Create a copy for NSIS.template.nsi.in where paths are shorter (long paths can cause the NSIS `File` function to fail).
-    Copy-Item -Path "$extPath/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$version.0_Test" -Destination "$contentPath/vfs_appx_directory" -Recurse
+    Copy-Item -Path "$extPath/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_${version}_Test" -Destination "$contentPath/vfs_appx_directory" -Recurse
 
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
@@ -308,8 +314,6 @@ function CMake-Build-And-Install {
         $args += ("'-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'")
     }
 
-    $buildVersion = Get-Date -Format "yyyyMMdd"
-
     $flags = @(
         "'-DCMAKE_TOOLCHAIN_FILE=$conanToolchainFile'",
         "'-DCMAKE_EXPORT_COMPILE_COMMANDS=1'",
@@ -317,15 +321,12 @@ function CMake-Build-And-Install {
         "'-DQT_QMAKE_EXECUTABLE:STRING=C:\Qt\Tools\CMake_64\bin\cmake.exe'",
         "'-DCMAKE_C_COMPILER:STRING=$compiler'",
         "'-DCMAKE_CXX_COMPILER:STRING=$compiler'",
-        "'-DAPPLICATION_VIRTUALFILE_SUFFIX:STRING=kdrive'",
         "'-DBIN_INSTALL_DIR:PATH=$path'",
         "'-DVFS_DIRECTORY:PATH=$vfsDir'",
         "'-DKDRIVE_THEME_DIR:STRING=$path/infomaniak'",
         "'-DPLUGINDIR:STRING=C:/Program Files (x86)/kDrive/lib/kDrive/plugins'",
         "'-DZLIB_INCLUDE_DIR:PATH=C:/Program Files (x86)/zlib-1.2.11/include'",
-        "'-DZLIB_LIBRARY_RELEASE:FILEPATH=C:/Program Files (x86)/zlib-1.2.11/lib/zlib.lib'",
-        "'-DAPPLICATION_NAME:STRING=kDrive'",
-        "'-DKDRIVE_VERSION_BUILD=$buildVersion'"
+        "'-DAPPLICATION_NAME:STRING=kDrive'"
     )
 
     if ($unitTests) {
@@ -392,7 +393,7 @@ function Set-Up-NSIS {
     $aumid = Get-Aumid $upload
     $prodName = "kDrive"
     $compName = "Infomaniak Network SA"
-    $version = (Select-String -Path $buildPath\version.h KDRIVE_VERSION_FULL | foreach-object { $data = $_ -split " "; echo $data[3] })
+    $version = Get-Version -IncludeBuildVersion $true
 
     $scriptContent = Get-Content "$buildPath/NSIS.template.nsi" -Raw
     $scriptContent = $scriptContent -replace "@{icon}", $iconPath
@@ -571,9 +572,12 @@ function Create-Archive {
 }
 
 function Create-MSI-Package {
+    Write-Host "Creating MSI package ..."
+
 	$appName = Get-Package-Name $buildPath
 	
 	dotnet build "$msiInstallerFolderPath/kDriveInstaller.sln" /p:Configuration="Release" /p:Platform="x64" /p:OutputName=$appName
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 	Move-Item -Path "$msiPackageFolderPath/$appName.msi" -Destination "$contentPath"
 	if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -606,6 +610,7 @@ function Create-MSI-Package {
 $msbuildPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" "-version" "[16.0, 17.0]" "-products" "*" "-requires" "Microsoft.Component.MSBuild" "-find" "MSBuild\**\Bin\MSBuild.exe"
 $7zaPath = "${env:ProgramFiles}\7-Zip\7za.exe"
 
+Write-Host "Using MSBuild at: $msbuildPath"
 Set-Alias msbuild $msbuildPath
 Set-Alias 7za $7zaPath
 

@@ -28,14 +28,16 @@
       xmlns:controls="using:Infomaniak.kDrive.CustomControls"
       xmlns:viewmodel="using:Infomaniak.kDrive.ViewModels"
       xmlns:types="using:Infomaniak.kDrive.Types"
+      xmlns:kdrive="using:Infomaniak.kDrive"
       mc:Ignorable="d">
     <Page.Resources>
         <!-- Converters -->
         <converters:BooleanToVisibilityConverter  x:Key="BooleanToVisibilityConverter" />
+        <converters:BooleanToInvertedBooleanConverter  x:Key="BooleanToInvertedBooleanConverter" />
         <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
         <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />
         <converters:DateToStringConverter x:Key="DateToStringConverter" />
-
+        <converters:ToStringConverter x:Key="ToStringConverter" />
         <!-- DataTemplates -->
         <DataTemplate x:Key="ConfiguredDriveTemplate"
                       x:DataType="types:IDrive">
@@ -66,6 +68,7 @@
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0"
+                   x:Uid="Page_SettingsPage_Title"
                    Text="Paramètres"
                    Style="{StaticResource Infomaniak.Style.TextBlock.Title}" />
 
@@ -111,7 +114,8 @@
                                                Height="32"
                                                Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                         </toolKit:SettingsCard.HeaderIcon>
-                        <ComboBox SelectedIndex="0"
+                        <ComboBox SelectedValuePath="Tag"
+                                  SelectedValue="{x:Bind ViewModel.Settings.NotificationsDisabled, Converter={StaticResource ToStringConverter}, Mode=OneWay}"
                                   SelectionChanged="NotificationsCombobox_SelectionChanged"
                                   x:Name="NotificationsComboBox">
                             <ComboBoxItem x:Uid="Page_SettingsPage_Notifications_ComboBox_Never"
@@ -311,77 +315,219 @@
                     </toolKit:SettingsExpander>
 
                     <!-- Advanced - Proxy -->
-                    <toolKit:SettingsExpander Description="Par défaut, kDrive utilise les paramètres système."
-                                              Header="Réseau Proxy">
+                    <toolKit:SettingsExpander x:Name="ProxySettingsExpander"
+                                              x:Uid="Page_SettingsPage_Proxy">
                         <toolKit:SettingsExpander.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Network.globe}"
                                               Height="32"
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                         </toolKit:SettingsExpander.HeaderIcon>
-                        <ComboBox SelectedIndex="0">
-                            <ComboBoxItem>Configuration manuelle</ComboBoxItem>
-                            <ComboBoxItem>Identique au système</ComboBoxItem>
+                        <ComboBox SelectedValuePath="Tag"
+                                  SelectedValue="{x:Bind ViewModel.Settings.ProxyConfig.Type, Converter={StaticResource ToStringConverter}, Mode=OneWay}"
+                                  SelectionChanged="ProxyTypeComboBox_Changed">
+                            <ComboBoxItem x:Uid="Page_SettingsPage_Proxy_ComoBox_HTTP"
+                                          Tag="HTTP" />
+                            <ComboBoxItem x:Uid="Page_SettingsPage_Proxy_ComoBox_None"
+                                          Tag="None" />
+                            <ComboBoxItem x:Uid="Page_SettingsPage_Proxy_ComoBox_System"
+                                          Tag="System" />
                         </ComboBox>
 
                         <toolKit:SettingsExpander.Items>
-                            <toolKit:SettingsCard Header="Type de proxy"
+                            <toolKit:SettingsCard x:Uid="Page_SettingsPage_Proxy_Type"
                                                   IsEnabled="False">
                                 <TextBox PlaceholderText="HTTP(S)"
-                                         IsEnabled="False" />
+                                         IsEnabled="False"
+                                         Width="200" />
                             </toolKit:SettingsCard>
-                            <toolKit:SettingsCard Header="Serveur"
-                                                  IsEnabled="False">
-                                <TextBox PlaceholderText="0.0.0.0" />
+                            <toolKit:SettingsCard x:Uid="Page_SettingsPage_Proxy_Host"
+                                                  IsEnabled="{x:Bind ViewModel.Settings.ProxyConfig.ManualConfigrationRequired, Mode=OneWay}">
+                                <TextBox x:Name="ProxyHostTextBox"
+                                         PlaceholderText="0.0.0.0"
+                                         TextChanged="ProxyConfig_Changed"
+                                         Text="{x:Bind ViewModel.Settings.ProxyConfig.HostName}"
+                                         Width="200" />
                             </toolKit:SettingsCard>
-                            <toolKit:SettingsCard Header="Port"
-                                                  IsEnabled="False">
-                                <TextBox PlaceholderText="8080" />
+                            <toolKit:SettingsCard x:Uid="Page_SettingsPage_Proxy_Port"
+                                                  IsEnabled="{x:Bind ViewModel.Settings.ProxyConfig.ManualConfigrationRequired, Mode=OneWay}">
+                                <TextBox x:Name="ProxyPortTextBox"
+                                         PlaceholderText="443"
+                                         Text="{x:Bind ViewModel.Settings.ProxyConfig.Port}"
+                                         TextChanged="ProxyConfig_Changed"
+                                         Width="200" />
                             </toolKit:SettingsCard >
-                            <toolKit:SettingsCard Header="Authentification requise"
-                                                  IsEnabled="False">
-                                <ToggleSwitch />
+                            <toolKit:SettingsCard x:Uid="Page_SettingsPage_Proxy_NeedAuth"
+                                                  IsEnabled="{x:Bind ViewModel.Settings.ProxyConfig.ManualConfigrationRequired, Mode=OneWay}">
+                                <ToggleSwitch x:Name="ProxyNeedsAuthToggleSwitch"
+                                              IsOn="{x:Bind ViewModel.Settings.ProxyConfig.NeedsAuth, Mode=OneWay}"
+                                              Toggled="ProxyConfig_Changed" />
                             </toolKit:SettingsCard>
+
+                            <toolKit:SettingsCard x:Uid="Page_SettingsPage_Proxy_User"
+                                                  Visibility="{x:Bind ProxyNeedsAuthToggleSwitch.IsOn, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                  IsEnabled="{x:Bind ViewModel.Settings.ProxyConfig.ManualConfigrationRequired, Mode=OneWay}">
+                                <TextBox x:Name="ProxyUserTextBox"
+                                         PlaceholderText="John"
+                                         Text="{x:Bind ViewModel.Settings.ProxyConfig.User}"
+                                         TextChanged="ProxyConfig_Changed"
+                                         Width="200" />
+                            </toolKit:SettingsCard >
+
+                            <toolKit:SettingsCard x:Uid="Page_SettingsPage_Proxy_Password"
+                                                  Visibility="{x:Bind ProxyNeedsAuthToggleSwitch.IsOn, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                  IsEnabled="{x:Bind ViewModel.Settings.ProxyConfig.ManualConfigrationRequired, Mode=OneWay}">
+                                <PasswordBox x:Name="ProxyPwdPasswordBox"
+                                             x:Uid="Page_SettingsPage_Proxy_Password_PasswordBox"
+                                             PasswordChanged="ProxyConfig_Changed"
+                                             Width="200" />
+                            </toolKit:SettingsCard >
+                            <toolKit:SettingsCard x:Name="SaveProxySettingsCard"
+                                                  Visibility="Collapsed">
+                                <StackPanel Orientation="Horizontal"
+                                            Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                                    <ProgressRing x:Name="ProxySaveProgressRing"
+                                                  Height="16"
+                                                  Width="Auto"
+                                                  Visibility="Collapsed" />
+                                    <Button x:Uid="Page_SettingsPage_Proxy_SaveButton"
+                                            Style="{StaticResource AccentButtonStyle}"
+                                            IsEnabled="{x:Bind ViewModel.Settings.ProxyConfig.ManualConfigrationRequired, Mode=OneWay}"
+                                            Click="SaveProxySettingsButton_Click" />
+
+                                    <Button x:Uid="Page_SettingsPage_Proxy_CancelButton"
+                                            IsEnabled="{x:Bind ViewModel.Settings.ProxyConfig.ManualConfigrationRequired, Mode=OneWay}"
+                                            Click="CancelProxySettingsButton_Click" />
+                                </StackPanel>
+                            </toolKit:SettingsCard >
                         </toolKit:SettingsExpander.Items>
                     </toolKit:SettingsExpander>
 
                     <!-- Advanced - Log -->
-                    <toolKit:SettingsExpander Description="Aide le support à identifier l’origine d’un incident"
-                                              Header="Journal de débogage">
+                    <toolKit:SettingsExpander x:Name="LogSettingsExpander"
+                                              x:Uid="Page_SettingsPage_Logs">
                         <toolKit:SettingsExpander.HeaderIcon>
-                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Security.bug}"
+                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Users.users-circle-question-mark}"
                                               Height="32"
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                         </toolKit:SettingsExpander.HeaderIcon>
-                        <ToggleSwitch />
 
                         <toolKit:SettingsExpander.Items>
-                            <toolKit:SettingsCard Header="Niveau des informations enregistrées"
-                                                  Description="Choisir la quantité d’informations techniques enregistrées">
-                                <ComboBox SelectedIndex="0">
-                                    <ComboBoxItem>Debug</ComboBoxItem>
-                                    <ComboBoxItem>Info</ComboBoxItem>
-                                    <ComboBoxItem>Warning</ComboBoxItem>
-                                    <ComboBoxItem>Error</ComboBoxItem>
-                                    <ComboBoxItem>Fatal</ComboBoxItem>
+                            <toolKit:SettingsCard x:Uid="Page_SettingsPage_Logs_Enabled"
+                                                  Background="{ThemeResource LayerFillColorDefault}">
+                                <ToggleSwitch x:Name="EnableDebugLogsToggleSwitch"
+                                              IsOn="{x:Bind ViewModel.Settings.LogEnabled, Mode=OneWay}"
+                                              Toggled="EnableDebugLogsToggleSwitch_Toggled" />
+                            </toolKit:SettingsCard>
+
+                            <toolKit:SettingsCard x:Uid="Page_SettingsPage_Logs_Purge"
+                                                  Background="{ThemeResource LayerFillColorDefault}"
+                                                  Visibility="{x:Bind EnableDebugLogsToggleSwitch.IsOn, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+                                <ToggleSwitch Toggled="PurgeOldLogsToggleSwitch_Toggled"
+                                              IsOn="{x:Bind ViewModel.Settings.PurgeOldLogs, Mode=OneWay}" />
+                            </toolKit:SettingsCard>
+                            <toolKit:SettingsCard x:Uid="Page_SettingsPage_Logs_Extended"
+                                                  Background="{ThemeResource LayerFillColorDefault}"
+                                                  Visibility="{x:Bind EnableDebugLogsToggleSwitch.IsOn, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+                                <ToolTipService.ToolTip>
+                                    <ToolTip x:Uid="Page_SettingsPage_Logs_Extended_Tooltip" />
+                                </ToolTipService.ToolTip>
+                                <ToggleSwitch x:Name="ExtendedLogToggleSwitch"
+                                              Toggled="ExtendedLogToggleSwitch_Toggled"
+                                              IsOn="{x:Bind ViewModel.Settings.ExtendedLogEnbaled, Mode=OneWay}" />
+                            </toolKit:SettingsCard>
+                            <toolKit:SettingsCard x:Uid="Page_SettingsPage_Logs_DebugLevel"
+                                                  Background="{ThemeResource LayerFillColorDefault}"
+                                                  Visibility="{x:Bind EnableDebugLogsToggleSwitch.IsOn, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
+                                                  IsEnabled="{x:Bind ExtendedLogToggleSwitch.IsOn, Converter={StaticResource BooleanToInvertedBooleanConverter}, Mode=OneWay}">
+                                <ComboBox SelectedValue="{x:Bind ViewModel.Settings.LogLevel, Converter={StaticResource ToStringConverter}, Mode=OneWay}"
+                                          SelectedValuePath="Tag"
+                                          SelectionChanged="LogLevelComboBox_SelectionChanged">
+                                    <ComboBoxItem Tag="Extended"
+                                                  x:Uid="Page_SettingsPage_Logs_DebugLevel_ComboBox_Extended" />
+                                    <ComboBoxItem Tag="Debug"
+                                                  x:Uid="Page_SettingsPage_Logs_DebugLevel_ComboBox_Debug" />
+                                    <ComboBoxItem Tag="Info"
+                                                  x:Uid="Page_SettingsPage_Logs_DebugLevel_ComboBox_Info" />
+                                    <ComboBoxItem Tag="Warning"
+                                                  x:Uid="Page_SettingsPage_Logs_DebugLevel_ComboBox_Warning" />
+                                    <ComboBoxItem Tag="Error"
+                                                  x:Uid="Page_SettingsPage_Logs_DebugLevel_ComboBox_Error" />
+                                    <ComboBoxItem Tag="Fatal"
+                                                  x:Uid="Page_SettingsPage_Logs_DebugLevel_ComboBox_Fatal" />
                                 </ComboBox>
                             </toolKit:SettingsCard>
-                            <toolKit:SettingsCard Header="Journal complet étendu"
-                                                  Description="Collecte plus de détails pour le support. Peut ralentir légèrement kDrive">
-                                <ToggleSwitch />
-                            </toolKit:SettingsCard>
-                            <toolKit:SettingsCard Header="Supprimer les journaux datant de plus de 7 jours">
-                                <ToggleSwitch />
-                            </toolKit:SettingsCard>
-                            <toolKit:SettingsCard Header="Envoyer le journal au support"
-                                                  Description="Aide à résoudre un problème plus rapidement">
-                                <Button Content="Envoyer au support"
-                                        Style="{ThemeResource AccentButtonStyle}" />
-                            </toolKit:SettingsCard>
-                            <toolKit:SettingsCard Header="Dossier de débogage">
-                                <Button Content="Ouvrir dans l’explorateur de fichiers" />
+                            <toolKit:SettingsCard x:Uid="Page_SettingsPage_Logs_DebugFolder"
+                                                  Background="{ThemeResource LayerFillColorDefault}"
+                                                  IsClickEnabled="True"
+                                                  Click="OpenDebugFolderButton_Click"
+                                                  Visibility="{x:Bind EnableDebugLogsToggleSwitch.IsOn, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+                                <toolKit:SettingsCard.ActionIcon>
+                                    <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Arrows.square-arrow-diagonal-up}"
+                                                      Foreground="{ThemeResource TextFillColorPrimary}" />
+                                </toolKit:SettingsCard.ActionIcon>
                             </toolKit:SettingsCard>
                         </toolKit:SettingsExpander.Items>
                     </toolKit:SettingsExpander>
+
+                    <!-- Advanced - Send log -->
+                    <toolKit:SettingsCard Header="Support infomaniak">
+                        <toolKit:SettingsCard.HeaderIcon>
+                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Devices.headphones}"
+                                              Height="32"
+                                              Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                        </toolKit:SettingsCard.HeaderIcon>
+                        <StackPanel Orientation="Horizontal"
+                                    Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-check}"
+                                              Height="16"
+                                              Foreground="{ThemeResource SystemFillColorSuccess}">
+                                <ToolTipService.ToolTip>
+                                    <ToolTip Content="Votre dossier de logs a été partagé avec succés le xxxxxx à xxhxx et xxs." />
+                                    <!-- TODO: Replace with actual values once linked to the server -->
+                                </ToolTipService.ToolTip>
+                            </controls:SvgIcon>
+                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.triangle-alert}"
+                                              Height="16"
+                                              Foreground="{ThemeResource SystemErrorTextColor}">
+                                <ToolTipService.ToolTip>
+                                    <ToolTip Content="L'envoi de votre dossier de logs a échoué. Veuillez réessayer." />
+                                </ToolTipService.ToolTip>
+                            </controls:SvgIcon>
+                            <ProgressRing x:Name="SendLogsProgressRing"
+                                          Height="16"
+                                          Width="Auto"
+                                          IsIndeterminate="False"
+                                          Visibility="Collapsed" />
+                            <Button x:Name="SendLogButton"
+                                    Style="{StaticResource AccentButtonStyle}"
+                                    Click="SendLogButton_Click">
+                                <Grid>
+                                    <TextBlock Text="Envoyer le dossier de débogage" />
+                                </Grid>
+                            </Button>
+                            <Button x:Name="CancelSendLogButton"
+                                    Content="Annuler"
+                                    Click="CancelSendLogButton_Click" />
+                            <ContentDialog x:Name="SendLogDialog"
+                                           Title="Envoyer le dossier de débogage au support Infomaniak"
+                                           PrimaryButtonText="Envoyer"
+                                           CloseButtonText="Annuler"
+                                           DefaultButton="Primary">
+
+                                <ContentDialog.Content>
+                                    <StackPanel Spacing="12">
+                                        <TextBlock Text="Le dossier complet est volumineux.Pour accélérer l’envoi, nous vous recommandons de n’envoyer que la dernière session kDrive."
+                                                   TextWrapping="WrapWholeWords"
+                                                   TextAlignment="Justify"
+                                                   Margin="0,0,0,8" />
+                                        <CheckBox Content="Envoyer uniquement la dernière session"
+                                                  IsChecked="True" />
+                                    </StackPanel>
+                                </ContentDialog.Content>
+                            </ContentDialog>
+                        </StackPanel>
+
+                    </toolKit:SettingsCard>
                 </StackPanel>
 
                 <!-- About kDrive -->

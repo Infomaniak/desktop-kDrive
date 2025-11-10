@@ -247,7 +247,7 @@ void ExtensionJob::commandGetMenuItems(const CommString &argument, std::shared_p
 
 void ExtensionJob::commandCopyPublicLink(const CommString &argument, std::shared_ptr<AbstractCommChannel>) {
     const auto fileData = FileData::get(argument);
-    if (!fileData.syncDbId) return;
+    if (!fileData.isValid()) return;
 
     const std::scoped_lock lock(AppServer::syncPalMapMutex);
     const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
@@ -303,7 +303,7 @@ void ExtensionJob::commandMakeAvailableLocallyDirect(const CommString &argument,
         SyncPath filePath(filePathStr);
 #endif
         auto fileData = FileData::get(filePath);
-        if (!fileData.syncDbId) {
+        if (!fileData.isValid()) {
             LOGW_WARN(Log::instance()->getLogger(), L"No file data - " << Utility::formatSyncPath(filePath));
             continue;
         }
@@ -551,7 +551,7 @@ void ExtensionJob::commandGetThumbnail(const CommString &argument, std::shared_p
     }
 
     FileData fileData = FileData::get(filePath);
-    if (!fileData.syncDbId) {
+    if (!fileData.isValid()) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"The file is not in a synchonized folder - " << Utility::formatSyncPath(filePath));
         return;
@@ -613,7 +613,7 @@ void ExtensionJob::commandRetrieveFolderStatus(const CommString &argument, std::
 }
 
 void ExtensionJob::commandMakeOnlineOnlyDirect(const CommString &argument, std::shared_ptr<AbstractCommChannel>) {
-    const auto fileList = CommonUtility::splitCommString(argument, messageCdeSeparator);
+    const auto fileList = CommonUtility::splitCommString(argument, messageArgSeparator);
 
     {
         const std::lock_guard lock(_dehydrationMutex);
@@ -768,6 +768,10 @@ void ExtensionJob::executeCommand(const CommString &commandLineStr, std::shared_
 void ExtensionJob::manageActionsOnSingleFile(std::shared_ptr<AbstractCommChannel> channel, const SyncPath &path,
                                              SyncPalMap::const_iterator syncPalMapIt, VfsMap::const_iterator vfsMapIt,
                                              const Sync &sync) {
+    if (files.size() != 1) {
+        return;
+    }
+
     bool exists = false;
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(path, exists, ioError) || !exists) {
@@ -829,7 +833,9 @@ void ExtensionJob::fetchPrivateLinkUrlHelper(const SyncPath &localFile,
     const auto syncPalMapIt = retrieveSyncPalMapIt(sync.dbId());
     if (syncPalMapIt == AppServer::syncPalMap.end() || !syncPalMapIt->second) return;
 
-    FileData fileData = FileData::get(localFile);
+    const FileData fileData = FileData::get(localFile);
+    if (!fileData.isValid()) return;
+
     NodeId itemId;
     if (syncPalMapIt->second->fileRemoteIdFromLocalPath(fileData.relativePath, itemId) != ExitCode::Ok) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in SyncPal::itemId - " << Utility::formatSyncPath(localFile));
@@ -845,7 +851,7 @@ bool ExtensionJob::syncFileStatus(const FileData &fileData, SyncFileStatus &stat
     vfsStatus.isPlaceholder = false;
     vfsStatus.isHydrated = false;
 
-    if (!fileData.syncDbId) return false;
+    if (!fileData.isValid()) return false;
 
     const std::scoped_lock lock(AppServer::syncPalMapMutex, AppServer::vfsMapMutex);
 
@@ -1136,16 +1142,17 @@ void ExtensionJob::buildAndSendMenuItemMessage(std::shared_ptr<AbstractCommChann
 void ExtensionJob::processFileList(const std::vector<CommString> &inFileList, std::vector<SyncPath> &outFileList) {
     // Process all files
     for (const auto &path: inFileList) {
-        FileData fileData = FileData::get(path);
-        if (fileData.virtualFileMode == VirtualFileMode::Mac) {
-            QFileInfo info(CommonUtility::commString2QStr(path));
+        const FileData fileData = FileData::get(path);
+        if (fileData.isValid() && fileData.virtualFileMode == VirtualFileMode::Mac) {
+            const QFileInfo info(CommonUtility::commString2QStr(path));
             if (info.isDir()) {
                 const QFileInfoList infoList =
                         QDir(CommonUtility::commString2QStr(path)).entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
                 std::vector<CommString> fileList;
                 for (const auto &tmpInfo: qAsConst(infoList)) {
-                    SyncPath tmpPath(QStr2Path(tmpInfo.filePath()));
+                    const SyncPath tmpPath(QStr2Path(tmpInfo.filePath()));
                     FileData tmpFileData = FileData::get(tmpPath);
+                    if (!tmpFileData.isValid()) continue;
 
                     auto status = SyncFileStatus::Unknown;
                     if (VfsStatus vfsStatus; !syncFileStatus(tmpFileData, status, vfsStatus)) {
@@ -1248,7 +1255,7 @@ FileData FileData::get(const SyncPath &path) {
         } else {
             LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::longpath - " << Utility::formatSyncPath(path));
         }
-        return FileData();
+        return {};
     }
 #else
     SyncPath tmpPath(path);

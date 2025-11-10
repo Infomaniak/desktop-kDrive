@@ -559,12 +559,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 ShowShortcuts = true,
                 ProxyConfigInfo = new ProxyConfigInfo()
                 {
-                    Type = ProxyType.None,
-                    HostName = "",
-                    Port = 0,
-                    NeedsAuth = false,
-                    User = "",
-                    Pwd = ""
+                    Type = ProxyType.HTTP,
+                    HostName = "192.168.1.54",
+                    Port = 8080,
+                    NeedsAuth = true,
+                    User = "Alice",
+                    Pwd = "dds"
                 }
             };
 

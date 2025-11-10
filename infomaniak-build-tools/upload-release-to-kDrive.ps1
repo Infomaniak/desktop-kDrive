@@ -38,16 +38,13 @@ if (-not $env:KDRIVE_DIR_ID) {
     exit 1
 }
 
-# version example 3.7.1.20250708
+# version example 3.7.1.0
 $app = "kDrive-$version"
 
-# Extract the date  (after the 3rd .)
+# Extract the build number  (after the 3rd .)
 $versionTab = $version.Split('.')
-$date = $versionTab[3]
-if ($date.Length -ne 8) {
-    Write-Host "Invalid version format, expected x.x.x.yyyymmdd, got $version" -f Red
-    exit 1
-}
+$buildNumber = $versionTab[3]
+
 # version number example: 3.7.1
 $versionNumber = $versionTab[0..2] -join '.'
 
@@ -131,7 +128,7 @@ function Upload-FilesToKDrive {
                 Pop-Location
                 exit 1
             }
-            $uri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/upload?directory_id=$env:KDRIVE_DIR_ID&total_size=$size&file_name=$file&directory_path=$versionNumber/$date/$targetSubDir&conflict=version"
+            $uri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/upload?directory_id=$env:KDRIVE_DIR_ID&total_size=$size&file_name=$file&directory_path=$versionNumber/$buildNumber/$targetSubDir&conflict=version"
             Write-Host "Uploading $file to kDrive at $uri"
             Invoke-RestMethod -Method "POST" -Uri $uri -Header $headers -ContentType 'application/octet-stream' -InFile $file
             Write-Host "\t\t => ✅" -f Green

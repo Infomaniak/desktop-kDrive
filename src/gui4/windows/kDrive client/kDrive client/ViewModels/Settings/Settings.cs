@@ -20,6 +20,8 @@ namespace Infomaniak.kDrive.ViewModels
         private NotificationsDisabled _notificationsDisabled;
         private Logger.Level _logLevel = Logger.Level.Extended;
         private bool _purgeOldLogs = true;
+        private bool _logEnbaled = false;
+        private bool _extendedLogEnabled = false;
         private ProxyConfig _proxyConfig = new ProxyConfig();
         private bool _showShortcuts;
         private bool _matomoEnabled;
@@ -50,8 +52,17 @@ namespace Infomaniak.kDrive.ViewModels
         public Logger.Level LogLevel
         {
             get => _logLevel;
-            set => SetPropertyInUIThread(ref _logLevel, value);
+            set
+            {
+                SetPropertyInUIThread(ref _logLevel, value);
+                SetPropertyInUIThread(ref _logEnbaled, value != Logger.Level.None, nameof(LogEnabled));
+                SetPropertyInUIThread(ref _extendedLogEnabled, value == Logger.Level.Extended, nameof(ExtendedLogEnbaled));
+            }
         }
+
+        public bool LogEnabled => _logEnbaled;
+        public bool ExtendedLogEnbaled => _extendedLogEnabled;
+
         public bool PurgeOldLogs
         {
             get => _purgeOldLogs;
@@ -108,6 +119,33 @@ namespace Infomaniak.kDrive.ViewModels
         public async Task ChangeSentryEnabled(bool enabled)
         {
             SentryEnabled = enabled;
+            await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None);
+        }
+
+        public async Task ChangeProxyType(ProxyType newType)
+        {
+            ProxyConfig.Type = newType;
+            await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None);
+        }
+
+        public async Task ChangeProxyConfiguration(string hostName, int port, bool needsAuth, string user, string pwd)
+        {
+            ProxyConfig.HostName = hostName;
+            ProxyConfig.Port = port;
+            ProxyConfig.NeedsAuth = needsAuth;
+            ProxyConfig.User = user;
+            ProxyConfig.Pwd = pwd;
+            await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None);
+        }
+
+        public async Task ChangeLogLevel(Logger.Level newLevel)
+        {
+            LogLevel = newLevel;
+            await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None);
+        }
+        public async Task ChangePurgeOldLog(bool enabled)
+        {
+            PurgeOldLogs = enabled;
             await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None);
         }
     }

@@ -521,6 +521,9 @@ Version {0} (build {1}), compilée le {2}
   <data name="Page_SettingsPage_Language.Header" xml:space="preserve">
     <value>Langue</value>
   </data>
+  <data name="Page_SettingsPage_Title.Text" xml:space="preserve">
+    <value>Paramètres</value>
+  </data>
   <data name="Page_SettingsPage_Accounts.Text" xml:space="preserve">
     <value>Comptes</value>
   </data>
@@ -561,6 +564,42 @@ Ces données permettent à notre équipe de rapidement corriger et optimiser l�
   </data>
   <data name="Page_SettingsPage_Privacy.Header" xml:space="preserve">
     <value>Gestion des données</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy.Header" xml:space="preserve">
+    <value>Paramètres Proxy</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_Type.Header" xml:space="preserve">
+    <value>Type de proxy</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_SaveButton.Content" xml:space="preserve">
+    <value>Sauvegarder</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_CancelButton.Content" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_Host.Header" xml:space="preserve">
+    <value>Serveur</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_Port.Header" xml:space="preserve">
+    <value>Port</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_NeedAuth.Header" xml:space="preserve">
+    <value>Authentification requise</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_User.Header" xml:space="preserve">
+    <value>Nom d'utilisateur</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_Password.Header" xml:space="preserve">
+    <value>Mot de passe</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_Password_PasswordBox.PlaceholderText" xml:space="preserve">
+    <value>Entrez votre mot de passe</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_ComoBox_SYSTEM.Content" xml:space="preserve">
+    <value>Identique au système</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy.Description" xml:space="preserve">
+    <value>Définissez comment kDrive se connecte à Internet.</value>
   </data>
   <data name="Page_SettingsPage_Privacy_Sources.Header" xml:space="preserve">
     <value>Voir le code source</value>
@@ -622,6 +661,60 @@ Ces données permettent à notre équipe de rapidement corriger et optimiser l�
   <data name="Page_SettingsPage_Beta.Header" xml:space="preserve">
     <value>Programme bêta</value>
   </data>
+  <data name="Page_SettingsPage_Logs.Header" xml:space="preserve">
+    <value>Journaux de débogage</value>
+  </data>
+  <data name="Page_SettingsPage_Logs_Purge.Header" xml:space="preserve">
+    <value>Nettoyage automatique</value>
+  </data>
+  <data name="Page_SettingsPage_Logs_Extended.Header" xml:space="preserve">
+    <value>Journal détaillé étendu</value>
+  </data>
+  <data name="Page_SettingsPage_Logs_Extended.Description" xml:space="preserve">
+    <value>Active la collecte d’informations supplémentaires utile au support</value>
+  </data>
+  <data name="Page_SettingsPage_Logs_Extended_Tooltip.Content" xml:space="preserve">
+    <value>Cette option peut ralentir kDrive.</value>
+  </data>
+  <data name="Page_SettingsPage_Logs_DebugLevel.Header" xml:space="preserve">
+    <value>Niveau de débogage</value>
+  </data>
+  <data name="Page_SettingsPage_Logs_DebugFolder.Header" xml:space="preserve">
+    <value>Ouvrir le dossier de debogage</value>
+  </data>
+  <data name="Page_SettingsPage_Logs_DebugLevel_ComboBox_Warning.Content" xml:space="preserve">
+    <value>Avertissement</value>
+  </data>
+  <data name="Page_SettingsPage_Logs_DebugLevel_ComboBox_Extended.Content" xml:space="preserve">
+    <value>Étendu</value>
+  </data>
+  <data name="Page_SettingsPage_Logs_DebugLevel_ComboBox_Fatal.Content" xml:space="preserve">
+    <value>Fatal</value>
+  </data>
+  <data name="Page_SettingsPage_Logs_DebugLevel_ComboBox_Error.Content" xml:space="preserve">
+    <value>Erreurs</value>
+  </data>
+  <data name="Page_SettingsPage_Logs_DebugLevel_ComboBox_Info.Content" xml:space="preserve">
+    <value>Info</value>
+  </data>
+  <data name="Page_SettingsPage_Logs_DebugLevel_ComboBox_Debug.Content" xml:space="preserve">
+    <value>Debug</value>
+  </data>
+  <data name="Page_SettingsPage_Logs_DebugLevel.Description" xml:space="preserve">
+    <value>Sélectionner la quantité d’informations enregistrées.</value>
+  </data>
+  <data name="Page_SettingsPage_Logs_Purge.Description" xml:space="preserve">
+    <value>Supprime les journaux datant de plus 7 jours pour économiser de l’espace.</value>
+  </data>
+  <data name="Page_SettingsPage_Logs_Enabled.Header" xml:space="preserve">
+    <value>Activer l’enregistrement des informations de débogage</value>
+  </data>
+  <data name="Page_SettingsPage_Logs_Enabled.Description" xml:space="preserve">
+    <value>Enregistrer les informations de diagnostic sur mon ordinateur.</value>
+  </data>
+  <data name="Page_SettingsPage_Logs.Description" xml:space="preserve">
+    <value>Permettent au support infomaniak d’identifier l’origine d’un incident.</value>
+  </data>
   <data name="Page_SettingsPage_Beta_Expander.Description" xml:space="preserve">
     <value>Bénéficiez d’un accès anticipé aux nouvelles versions de l’application avant qu’elles ne soient diffusées au grand public et participez à l’amélioration de l’application en nous partageant vos idées d’améliorations.</value>
   </data>
@@ -667,5 +760,11 @@ Le code source de cette application peut être vérifié, les informations réco
   </data>
   <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.CloseButtonText" xml:space="preserve">
     <value>Annuler</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_ComoBox_HTTP.Content" xml:space="preserve">
+    <value>Configuration manuelle</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_ComoBox_NONE.Content" xml:space="preserve">
+    <value>Desactivé</value>
   </data>
 </root>

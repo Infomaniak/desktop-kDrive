@@ -304,9 +304,10 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
             // The following issue has been identified: the operating system missed a delete operation, in which case a
             // liveSnapshot rebuild is both required and sufficient.
 
-
             LOGW_SYNCPAL_WARN(_logger, _side << L" update tree: Operation Create already exists on item with "
-                                             << Utility::formatSyncPath(createOp->path()));
+                                             << Utility::formatSyncPath(createOp->path()) << L", ID: "
+                                             << CommonUtility::s2ws(createOp->nodeId()) << L", type " << createOp->objectType()
+                                             << L", destination path: " << Utility::formatSyncPath(createOp->destinationPath()));
 
             sentry::Handler::captureMessage(sentry::Level::Warning, "UpdateTreeWorker::step4",
                                             "2 Create operations detected on the same item");

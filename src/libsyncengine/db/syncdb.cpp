@@ -449,6 +449,7 @@ bool SyncDb::prepare() {
 bool SyncDb::upgrade(const std::string &fromVersion, const std::string &toVersion) {
     if (!CommonUtility::isVersionLower(fromVersion, toVersion)) return true;
 
+    _versionUpdated = true;
     LOG_INFO(_logger, "Upgrade " << dbType() << " DB from " << fromVersion << " to " << toVersion);
 
     const std::string dbFromVersionNumber = CommonUtility::dbVersionNumber(fromVersion);
@@ -1791,9 +1792,9 @@ bool SyncDb::deleteSyncNode(const NodeId &nodeId, bool &found) {
     return true;
 }
 
-bool SyncDb::updateAllSyncNodes(SyncNodeType type, const NodeSet &nodeIdSet) {
+bool SyncDb::updateAllSyncNodes(const SyncNodeType type, const NodeSet &nodeIdSet) {
     const std::scoped_lock lock(_mutex);
-    int errId;
+    int errId = 0;
     std::string error;
 
     startTransaction();
@@ -1809,6 +1810,7 @@ bool SyncDb::updateAllSyncNodes(SyncNodeType type, const NodeSet &nodeIdSet) {
 
     // Insert new SyncNodes
     for (const NodeId &nodeId: nodeIdSet) {
+        if (nodeId.empty()) continue;
         LOG_IF_FAIL(queryResetAndClearBindings(INSERT_SYNC_NODE_REQUEST_ID));
         LOG_IF_FAIL(queryBindValue(INSERT_SYNC_NODE_REQUEST_ID, 1, nodeId));
         LOG_IF_FAIL(queryBindValue(INSERT_SYNC_NODE_REQUEST_ID, 2, toInt(type)));
@@ -1824,12 +1826,12 @@ bool SyncDb::updateAllSyncNodes(SyncNodeType type, const NodeSet &nodeIdSet) {
     return true;
 }
 
-bool SyncDb::selectAllSyncNodes(SyncNodeType type, NodeSet &nodeIdSet) {
+bool SyncDb::selectAllSyncNodes(const SyncNodeType type, NodeSet &nodeIdSet) {
     const std::scoped_lock lock(_mutex);
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_SYNC_NODE_REQUEST_ID));
     LOG_IF_FAIL(queryBindValue(SELECT_ALL_SYNC_NODE_REQUEST_ID, 1, toInt(type)));
-    bool found;
+    bool found = false;
     for (;;) {
         if (!queryNext(SELECT_ALL_SYNC_NODE_REQUEST_ID, found)) {
             LOG_WARN(_logger, "Error getting query result: " << SELECT_ALL_SYNC_NODE_REQUEST_ID);
@@ -1841,6 +1843,7 @@ bool SyncDb::selectAllSyncNodes(SyncNodeType type, NodeSet &nodeIdSet) {
 
         NodeId nodeId;
         LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNC_NODE_REQUEST_ID, 0, nodeId));
+        if (nodeId.empty()) continue;
 
         nodeIdSet.insert(nodeId);
     }

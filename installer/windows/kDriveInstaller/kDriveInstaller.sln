@@ -4,6 +4,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.14.36327.8
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{B7DD6F7E-DEF8-4E67-B5B7-07EF123DB6F0}") = "kDriveInstaller", "kDriveInstaller.wixproj", "{A54565F2-4178-478F-9AA0-259DC3906DC8}"
+	ProjectSection(ProjectDependencies) = postProject
+		{ABA9C1A0-38BC-4632-AE02-890AB325D687} = {ABA9C1A0-38BC-4632-AE02-890AB325D687}
+	EndProjectSection
+EndProject
+Project("{B7DD6F7E-DEF8-4E67-B5B7-07EF123DB6F0}") = "Bootstraper", "..\Bootstraper\Bootstraper.wixproj", "{ABA9C1A0-38BC-4632-AE02-890AB325D687}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +32,18 @@ Global
 		{A54565F2-4178-478F-9AA0-259DC3906DC8}.Release|x64.Build.0 = Release|x64
 		{A54565F2-4178-478F-9AA0-259DC3906DC8}.Release|x86.ActiveCfg = Release|x86
 		{A54565F2-4178-478F-9AA0-259DC3906DC8}.Release|x86.Build.0 = Release|x86
+		{ABA9C1A0-38BC-4632-AE02-890AB325D687}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{ABA9C1A0-38BC-4632-AE02-890AB325D687}.Debug|ARM64.Build.0 = Debug|ARM64
+		{ABA9C1A0-38BC-4632-AE02-890AB325D687}.Debug|x64.ActiveCfg = Debug|x64
+		{ABA9C1A0-38BC-4632-AE02-890AB325D687}.Debug|x64.Build.0 = Debug|x64
+		{ABA9C1A0-38BC-4632-AE02-890AB325D687}.Debug|x86.ActiveCfg = Debug|x86
+		{ABA9C1A0-38BC-4632-AE02-890AB325D687}.Debug|x86.Build.0 = Debug|x86
+		{ABA9C1A0-38BC-4632-AE02-890AB325D687}.Release|ARM64.ActiveCfg = Release|ARM64
+		{ABA9C1A0-38BC-4632-AE02-890AB325D687}.Release|ARM64.Build.0 = Release|ARM64
+		{ABA9C1A0-38BC-4632-AE02-890AB325D687}.Release|x64.ActiveCfg = Release|x64
+		{ABA9C1A0-38BC-4632-AE02-890AB325D687}.Release|x64.Build.0 = Release|x64
+		{ABA9C1A0-38BC-4632-AE02-890AB325D687}.Release|x86.ActiveCfg = Release|x86
+		{ABA9C1A0-38BC-4632-AE02-890AB325D687}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

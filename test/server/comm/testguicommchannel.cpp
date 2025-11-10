@@ -43,7 +43,7 @@ namespace KDC {
 
 uint64_t GuiCommChannelTest::readData(CommChar *data, uint64_t maxlen) {
     std::scoped_lock lock(_bufferMutex);
-    uint64_t toRead = (std::min) (maxlen, static_cast<uint64_t>(_buffer.size()));
+    uint64_t toRead = (std::min)(maxlen, static_cast<uint64_t>(_buffer.size()));
     if (toRead > 0) {
         std::memcpy(data, _buffer.data(), toRead * sizeof(CommChar));
         _buffer.erase(0, toRead);
@@ -502,7 +502,7 @@ void TestGuiCommChannel::testDriveInfoListJob() {
         di1.setMaintenance(false);
         di1.setLocked(false);
         di1.setAccessDenied(false);
-        
+
         DriveInfo di2;
         di2.setDbId(2);
         di2.setId(2222);
@@ -838,7 +838,7 @@ void TestGuiCommChannel::testSyncStatusJob() {
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto syncStatusJob = std::dynamic_pointer_cast<SyncStatusJob>(job);
-        
+
         syncStatusJob->_syncStatus = SyncStatus::Idle;
     };
 

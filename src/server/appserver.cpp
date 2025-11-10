@@ -397,8 +397,17 @@ void AppServer::init() {
         return;
     }
 
-    // Start syncs
-    QTimer::singleShot(0, [=, this]() { startSyncsAndRetryOnError(); });
+#if defined(KD_MACOS)
+    if (ParmsDb::instance()->versionUpdated()) Utility::restartLoginItemAgent();
+#endif
+
+    // Check if temp directory is accessible.
+    if (Utility::tryCreateTmpFile() == IoError::Success) {
+        // Start syncs
+        QTimer::singleShot(0, [=, this]() { startSyncsAndRetryOnError(); });
+    } else {
+        addError(Error(ERR_ID, ExitCode::SystemError, ExitCause::TmpDirAccessError));
+    }
 
     // Init JobManager(s)
     if (!GuiJobManagerSingleton::instance()) {

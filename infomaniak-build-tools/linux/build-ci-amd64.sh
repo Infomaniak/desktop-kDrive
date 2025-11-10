@@ -99,7 +99,6 @@ export LD_LIBRARY_PATH="$QTDIR/lib:$LD_LIBRARY_PATH"
 export PKG_CONFIG_PATH="$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 # Set defaults
-export SUFFIX=""
 
 conan_build_folder="$BUILD_DIR/conan"
 conan_dependencies_folder="$BUILD_DIR/conan/dependencies"
@@ -127,9 +126,7 @@ cmake -B"$BUILD_DIR" -H"$BASEPATH" \
     -DCMAKE_PREFIX_PATH="$BASEPATH" \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DBIN_INSTALL_DIR="$BUILD_DIR/bin" \
-    -DKDRIVE_VERSION_SUFFIX="$SUFFIX" \
     -DKDRIVE_THEME_DIR="$BASEPATH/infomaniak" \
-    -DKDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
     -DBUILD_UNIT_TESTS=$unit_tests \
     -DCONAN_DEP_DIR="$conan_dependencies_folder" \
     -DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \

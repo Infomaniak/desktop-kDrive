@@ -20,32 +20,48 @@ import kDriveCore
 import Testing
 
 struct SignalMessageTests {
-    @Test func testDecodingSignalMessageWithUser() async throws {
+    @Test func testDecodingSignalMessageWithUpdateUser() async throws {
         // GIVEN
-        let sourceJson = #"{"cause":0,"code":0,"id":1,"num":1,"params":{"name":"QmFzZTY0"}}"# // "QmFzZTY0" is "Base64"
+        let sourceJson = #"""
+                {
+                  "id": 2,
+                  "num": 2,
+                  "params": {
+                    "userInfo": {
+                      "dbId": 1,
+                      "email": "QmFzZTY0",
+                      "isConnected": true,
+                      "isStaff": true,
+                      "name": "QmFzZTY0",
+                      "userId": 123456
+                    }
+                  }
+                }
+        """# // "QmFzZTY0" is "Base64"
 
         // WHEN
         let data = Data(sourceJson.utf8)
         let message = try JSONDecoder().decode(SignalMessage<TestUser>.self, from: data)
 
         // THEN
-        #expect(message.num == SignalNum.USER_ADDED)
-        #expect(message.body.name == "Base64")
+        #expect(message.num == SignalNum.USER_UPDATED)
+        #expect(message.body?.name == "Base64")
     }
 
-    @Test func testEncodingSignalMessageWithUser() async throws {
+    @Test func testEncodingSignalMessageWithUpdateUserError() async throws {
         // GIVEN
         let expectedCause = KDC.ExitCause.ApiErr
         let expectedCode = KDC.ExitCode.DbError
         let expectedId = Int32(69)
         let expectedNum = SignalNum.ACCOUNT_ADDED
 
-        let user = TestUser(name: "Base64")
-        let message = SignalMessage<TestUser>(cause: expectedCause,
-                                              code: expectedCode,
-                                              id: expectedId,
-                                              num: expectedNum,
-                                              body: user)
+        let message = SignalMessage<TestUser>(
+            cause: expectedCause,
+            code: expectedCode,
+            id: expectedId,
+            num: expectedNum,
+            params: nil
+        )
 
         // WHEN
         let data = try JSONEncoder().encode(message)
@@ -61,6 +77,6 @@ struct SignalMessageTests {
         #expect(decodedMessage.code == expectedCode)
         #expect(decodedMessage.id == expectedId)
         #expect(decodedMessage.num == expectedNum)
-        #expect(decodedMessage.body.name == "Base64")
+        #expect(decodedMessage.body == nil)
     }
 }

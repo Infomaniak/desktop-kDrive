@@ -20,19 +20,9 @@
 
 set -e
 
-
 program_name="$(basename "$0")"
-
-
-function get_default_src_dir() {
-  if [[ -n "$KDRIVE_SRC_DIR" ]]; then
-     echo "$KDRIVE_SRC_DIR"
-  elif [[ -d "$HOME/Projects/desktop-kDrive" ]]; then
-     echo "$HOME/Projects/desktop-kDrive"
-  else
-     echo "$PWD"
-    fi
-}
+script_directory_path="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+source "$script_directory_path/../build-utils.sh"
 
 src_dir="$(get_default_src_dir)"
 
@@ -121,9 +111,6 @@ build_release() {
 
   source "$conan_generator_folder/conanbuild.sh"
 
-  # Set defaults
-  export SUFFIX=""
-
   # Build client
   mkdir -p "$build_dir/client"
   cd "$build_dir/client"
@@ -136,9 +123,7 @@ build_release() {
       -DCMAKE_BUILD_TYPE=$build_type \
       -DCMAKE_INSTALL_PREFIX=/usr \
       -DBIN_INSTALL_DIR="$build_dir/client/bin" \
-      -DKDRIVE_VERSION_SUFFIX="$SUFFIX" \
       -DKDRIVE_THEME_DIR="$src_dir/infomaniak" \
-      -DKDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
       -DCONAN_DEP_DIR="$conan_dependencies_folder" \
       -DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file"
 
