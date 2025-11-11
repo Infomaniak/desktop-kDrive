@@ -10,6 +10,10 @@ inputs:
 runs:
     using: "composite"
     steps:
+      - name: Set QTDIR
+        run: echo "QTDIR=/home/runner/Qt/6.10.0/gcc_64" >> $GITHUB_ENV
+        shell: bash
+
       - name: Clean the log directory
         run : rm -rf /tmp/kDrive-logdir/*
         shell: bash
@@ -83,7 +87,6 @@ runs:
       - name: Fetch dependencies
         run: | 
           mkdir dependencies
-          QTDIR=/home/runner/Qt/6.10.0/gcc_64
           cp $QTDIR/lib/libQt6Widgets.* ./dependencies/ 
           cp $QTDIR/lib/libQt6Gui.* ./dependencies/
           cp $QTDIR/lib/libQt6Network.* ./dependencies/
