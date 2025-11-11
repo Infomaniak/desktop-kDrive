@@ -527,6 +527,56 @@ Version {0} (build {1}), compilée le {2}
   <data name="Page_SettingsPage_Accounts.Text" xml:space="preserve">
     <value>Comptes</value>
   </data>
+  <data name="Page_Settings_DriveManagementPage_Location.Header" xml:space="preserve">
+    <value>Emplacement</value>
+  </data>
+  <data name="Page_Settings_DriveManagementPage_FolderSelection.Header" xml:space="preserve">
+    <value>Synchronisation</value>
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode.Header" xml:space="preserve">
+    <value>Définissez comment vos fichiers sont stockés et accessibles.</value>
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_Offline.Header" xml:space="preserve">
+    <value>Disponibles hors-ligne</value>
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_Online.Header" xml:space="preserve">
+    <value>Stockés en ligne</value>
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.Title" xml:space="preserve">
+    <value>Êtes-vous sûr de vouloir changer le mode de synchronisation ?</value>
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_InProgress.Header" xml:space="preserve">
+    <value>Application du changement</value>
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_InProgress.Description" xml:space="preserve">
+    <value>Votre nouveau mode de synchronisation est en cours d’application...</value>
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.Content" xml:space="preserve">
+    <value>Cette opération peut prendre un certain temps selon la taille de vos données.
+Elle peut également échouer et rendre la synchronisation définitivement indisponible, nécessitant une nouvelle synchronisation complète de votre drive.
+
+Avant de continuer, assurez-vous que tout vos fichiers sont bien à jour et synchronisées.
+
+Ne fermez pas l’application pendant le processus.</value>
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="SecondaryButtonText" xml:space="preserve">
+    <value>Êtes-vous sûr de vouloir changer le mode de synchronisation ?</value>
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Modifier quand même</value>
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_Offline.Description" xml:space="preserve">
+    <value>Vos fichiers sont copiés sur votre ordinateur.  Vous pouvez les ouvrir à tout moment, même sans internet.</value>
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_Online.Description" xml:space="preserve">
+    <value>Vos fichiers restent dans le cloud et n’utilisent pas de place sur votre ordinateur.  Connexion internet requise pour y accéder.</value>
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode.Description" xml:space="preserve">
+    <value>Mode de synchronisation des fichiers</value>
+  </data>
   <data name="Page_SettingsPage_Advanced.Text" xml:space="preserve">
     <value>Avancé</value>
   </data>
@@ -769,5 +819,11 @@ Le code source de cette application peut être vérifié, les informations réco
   </data>
   <data name="Global_Bytes" xml:space="preserve">
     <value>octets</value>
+  </data>
+  <data name="Page_DriveManagement_Title.Text" xml:space="preserve">
+    <value>Gestion du kDrive</value>
+  </data>
+  <data name="Page_Settings_DriveManagementPage_AdvancedSyncs.Header" xml:space="preserve">
+    <value>Synchronisation avancée</value>
   </data>
 </root>

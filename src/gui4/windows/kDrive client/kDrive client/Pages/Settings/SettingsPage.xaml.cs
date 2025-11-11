@@ -25,11 +25,10 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Infomaniak.kDrive.Pages
+namespace Infomaniak.kDrive.Pages.Settings
 {
     public sealed partial class SettingsPage : Page
     {
@@ -169,8 +168,8 @@ namespace Infomaniak.kDrive.Pages
             IDrive? drive = (sender as FrameworkElement)?.Tag as IDrive;
             if (drive is Drive)
             {
-                Logger.Log(Logger.Level.Info, $"ManageDriveButton clicked for configured drive {drive.Name}, going to mange page");
-                // TODO: Implement navigation to Manage Drive Page
+                Logger.Log(Logger.Level.Info, $"ManageDriveButton clicked for configured drive {drive.Name}, going to manage page");
+                Frame.Navigate(typeof(DriveManagementPage), drive);
             }
             else if (drive is DriveAvailable)
             {

@@ -36,10 +36,12 @@ namespace Infomaniak.kDrive.ViewModels
         private SyncId _id = -1;
         private SyncPath _localPath = "";
         private SyncPath _remotePath = "";
-        private bool _supportOnlineMode = false;
+        private bool _supportOnlineMode = true;
         private readonly ObservableCollection<SyncFileItem> _syncActivities = new();
         private SyncStatus _syncStatus = SyncStatus.Paused;
         private SyncType _syncType = SyncType.Unknown;
+        private bool _isTypeOnline = false;
+        private bool _syncTypeMigrationInProgress = false;
         private ObservableCollection<Errors.BaseError> _syncErrors = new();
         private SyncFileItem? _lastActivity;
 
@@ -58,7 +60,7 @@ namespace Infomaniak.kDrive.ViewModels
             }
             set => SetPropertyInUIThread(ref _syncStatus, value);
         }
-   
+
         public Sync(DbId dbId, Drive drive)
         {
             _dbId = dbId;
@@ -129,7 +131,20 @@ namespace Infomaniak.kDrive.ViewModels
         public SyncType SyncType
         {
             get => _syncType;
-            set => SetPropertyInUIThread(ref _syncType, value);
+            set {
+                SetPropertyInUIThread(ref _syncType, value);
+                SetPropertyInUIThread(ref _isTypeOnline, value == SyncType.Online, nameof(IsTypeOnline));
+            }
+        }
+     
+        public bool SyncTypeMigrationInProgress
+        {
+            get => _syncTypeMigrationInProgress;
+        }
+
+        public bool IsTypeOnline
+        {
+            get => _isTypeOnline;
         }
 
         public ObservableCollection<SyncFileItem> SyncActivities
@@ -170,6 +185,15 @@ namespace Infomaniak.kDrive.ViewModels
         {
             var serverComm = App.ServiceProvider.GetRequiredService<IServerCommService>();
             await serverComm.PauseSync(DbId, CancellationToken.None);
+        }
+
+        public async Task ChangeMode(SyncType newType)
+        {
+            SetPropertyInUIThread(ref _syncTypeMigrationInProgress, true, nameof(SyncTypeMigrationInProgress));
+            Logger.Log(Logger.Level.Error, "Changing sync mode is not yet implemented.");
+            await Task.Delay(5000); // TODO: Replace with actual implementation
+            SetPropertyInUIThread(ref _syncTypeMigrationInProgress, false, nameof(SyncTypeMigrationInProgress));
+
         }
     }
 }

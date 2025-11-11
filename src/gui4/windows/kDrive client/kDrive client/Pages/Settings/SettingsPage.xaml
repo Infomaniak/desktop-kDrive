@@ -17,13 +17,13 @@
  * along with this program.  If not, see<http://www.gnu.org/licenses/> .
  -->
 
-<Page x:Class="Infomaniak.kDrive.Pages.SettingsPage"
+<Page x:Class="Infomaniak.kDrive.Pages.Settings.SettingsPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:toolKit="using:CommunityToolkit.WinUI.Controls"
-      xmlns:local="using:Infomaniak.kDrive.Pages"
+      xmlns:local="using:Infomaniak.kDrive.Pages.Settings"
       xmlns:converters="using:Infomaniak.kDrive.Converters"
       xmlns:controls="using:Infomaniak.kDrive.CustomControls"
       xmlns:viewmodel="using:Infomaniak.kDrive.ViewModels"

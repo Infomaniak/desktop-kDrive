@@ -16,10 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using DynamicData;
 using Infomaniak.kDrive.Types;
 using System;
 using System.Collections.ObjectModel;
 using System.Drawing;
+using System.Linq;
 
 namespace Infomaniak.kDrive.ViewModels
 {
@@ -31,11 +33,33 @@ namespace Infomaniak.kDrive.ViewModels
         private Color _color = Color.Blue;
         private bool _isPaidOffer = false; // Indicates if the drive is a paid offer (i.e. myKsuite+/pro +, ...)
         private ObservableCollection<Sync> _syncs = new ObservableCollection<Sync>();
+        private Sync? _mainSync;
+        private ObservableCollection<Sync> _advancedSyncs = new ObservableCollection<Sync>();
+
         private Account _account;
         public Drive(DbId dbId, Account account)
         {
             DbId = dbId;
-            _account = account;
+            Account = account;
+            Syncs.CollectionChanged += (s, e) => RefreshSyncAdvancedSyncMap();
+
+        }
+
+        private void RefreshSyncAdvancedSyncMap()
+        {
+            MainSync = Syncs.FirstOrDefault(s => s.RemotePath == "/" || s.RemotePath == "");
+            var advancedSyncs = Syncs.Where(s => s != MainSync);
+            foreach (var sync in _advancedSyncs)
+                if (!advancedSyncs.Contains(sync))
+                {
+                    _advancedSyncs.Remove(sync);
+                }
+
+            foreach (var sync in advancedSyncs)
+                if (!_advancedSyncs.Contains(sync))
+                {
+                    _advancedSyncs.Add(sync);
+                }
         }
 
         public DbId DbId
@@ -71,7 +95,17 @@ namespace Infomaniak.kDrive.ViewModels
         public ObservableCollection<Sync> Syncs
         {
             get { return _syncs; }
-            set => SetPropertyInUIThread(ref _syncs, value);
+        }
+
+        public Sync? MainSync
+        {
+            get => _mainSync;
+            set => SetPropertyInUIThread(ref _mainSync, value);
+        }
+
+        public ObservableCollection<Sync> AdvancedSyncs
+        {
+            get => _advancedSyncs;
         }
 
         public Uri GetWebUri()
