@@ -20,14 +20,14 @@ import Foundation
 
 public struct User: Identifiable, Hashable, Sendable {
     public var id: Int32 {
-        userId
+        dbId
     }
 
-    public var dbId: Int32
-    public var userId: Int32
+    public let dbId: Int32
+    public let userId: Int32
     public var name: String
     public var email: String
-    public var accounts: [Int32: Account]
+    public var accounts: IndexedAccounts
     public var avatar: Data?
     public var isConnected: Bool
     public var isStaff: Bool

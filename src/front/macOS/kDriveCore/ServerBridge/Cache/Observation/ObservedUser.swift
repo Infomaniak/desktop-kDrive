@@ -26,12 +26,12 @@ public final class ObservedUser: ObservableObject {
 
     private var cancellable: AnyCancellable?
 
-    public init(id: Int32, cacheObservation: CoherentCacheObservation? = nil) {
+    public init(dbId: Int32, cacheObservation: CoherentCacheObservation? = nil) {
         let cacheObservation = cacheObservation ?? InjectService<CoherentCacheObservation>().wrappedValue
         let usersPublisher = cacheObservation.usersPublisher
 
         cancellable = usersPublisher
-            .userPublisher(for: id)
+            .userPublisher(for: dbId)
             .receive(on: DispatchQueue.main)
             .assign(to: \.wrappedValue, onWeak: self)
     }

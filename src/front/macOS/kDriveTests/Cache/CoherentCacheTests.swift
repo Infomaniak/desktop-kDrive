@@ -37,18 +37,18 @@ struct CoherentCacheTests {
             isStaff: true
         )
         let cache = CoherentCache()
-        #expect(await cache.getUser(id: Self.expectedUserId) == nil)
+        #expect(await cache.getUser(apiId: Self.expectedUserId) == nil)
 
         // WHEN
         await cache.addUser(user)
 
         // THEN
-        #expect(await cache.getUser(id: Self.expectedUserId) == user)
+        #expect(await cache.getUser(apiId: Self.expectedUserId) == user)
+        #expect(await cache.getUser(dbId: Self.expectedUserDbId) == user)
     }
 
     @Test func testSetGetUserInCacheFromDbId() async throws {
         // GIVEN
-
         let user = User(
             dbId: Self.expectedUserDbId,
             userId: Self.expectedUserId,

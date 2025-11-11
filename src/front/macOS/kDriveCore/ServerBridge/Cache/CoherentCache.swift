@@ -27,7 +27,7 @@ public protocol CoherentCacheObservation: Sendable {
 public protocol CoherentCacheProtocol: Sendable {
     // MARK: - User
 
-    func getUser(id: Int32) async -> User?
+    func getUser(apiId: Int32) async -> User?
     func getUser(dbId: Int32) async -> User?
     func getFirstAvailableUser() async -> User?
     func addUser(_ user: User) async
@@ -36,9 +36,9 @@ public protocol CoherentCacheProtocol: Sendable {
 
     // MARK: - Account
 
-    func getAccount(_ accountId: Int32, forUser userId: Int32) async -> Account?
-    func addAccount(_ account: Account, toUser userId: Int32) async
-    func removeAccount(_ accountId: Int32, fromUser userId: Int32) async
+    func getAccount(_ accountId: Int32, userDbId: Int32) async -> Account?
+    func addAccount(_ account: Account, userDbId: Int32) async
+    func removeAccount(_ accountId: Int32, userDbId: Int32) async
 
     // MARK: - Drive
 
@@ -58,6 +58,7 @@ public protocol CoherentCacheProtocol: Sendable {
 }
 
 public typealias IndexedUsers = [Int32: User]
+public typealias IndexedAccounts = [Int32: Account]
 
 /// This cache must track 1:1 the server, can only be purged on server restart
 public actor CoherentCache: CoherentCacheProtocol, CoherentCacheObservation {
@@ -76,11 +77,11 @@ public actor CoherentCache: CoherentCacheProtocol, CoherentCacheObservation {
     // MARK: - USER
 
     public func getUser(dbId: Int32) -> User? {
-        users.values.first { $0.dbId == dbId }
+        users[dbId]
     }
 
-    public func getUser(id: Int32) -> User? {
-        users[id]
+    public func getUser(apiId: Int32) -> User? {
+        users.values.first { $0.userId == apiId }
     }
 
     public func getFirstAvailableUser() -> User? {
@@ -110,20 +111,20 @@ public actor CoherentCache: CoherentCacheProtocol, CoherentCacheObservation {
 
     // MARK: - ACCOUNT
 
-    public func getAccount(_ accountId: Int32, forUser userId: Int32) -> Account? {
-        users[userId]?.accounts[accountId]
+    public func getAccount(_ accountId: Int32, userDbId: Int32) -> Account? {
+        users[userDbId]?.accounts[accountId]
     }
 
-    public func addAccount(_ account: Account, toUser userId: Int32) {
-        guard var user = users[userId] else { return }
+    public func addAccount(_ account: Account, userDbId: Int32) {
+        guard var user = users[userDbId] else { return }
         user.accounts[account.id] = account
-        users[userId] = user
+        users[userDbId] = user
     }
 
-    public func removeAccount(_ accountId: Int32, fromUser userId: Int32) {
-        guard var user = users[userId] else { return }
+    public func removeAccount(_ accountId: Int32, userDbId: Int32) {
+        guard var user = users[userDbId] else { return }
         user.accounts.removeValue(forKey: accountId)
-        users[userId] = user
+        users[userDbId] = user
     }
 
     // MARK: - DRIVE
