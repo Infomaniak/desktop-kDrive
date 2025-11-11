@@ -37,7 +37,7 @@ public struct User: Identifiable, Hashable, Sendable {
         userId: Int32,
         name: String,
         email: String,
-        accounts: [Int32: Account],
+        accounts: IndexedAccounts,
         avatar: Data? = nil,
         isConnected: Bool,
         isStaff: Bool

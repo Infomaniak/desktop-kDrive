@@ -67,9 +67,9 @@ public struct UserJobs: Sendable {
         }
     }
 
-    public func userDelete(userDbId: Int32) async throws {
+    public func userDelete(dbId: Int32) async throws {
         IKLogger.data.log("Query for userDelete")
-        let query = UserDeleteQuery(userDbId: userDbId)
+        let query = UserDeleteQuery(userDbId: dbId)
         let request = await RequestMessage<UserDeleteQuery>(num: RequestNum.USER_DELETE, body: query)
 
         do {
@@ -77,7 +77,7 @@ public struct UserJobs: Sendable {
                 throw UserJobError.noReplyData
             }
 
-            await coherentCache.removeUser(userDbId)
+            await coherentCache.removeUser(dbId: dbId)
         } catch XPCQueryFetcher.QueryError.noReplyData {
             throw UserJobError.noReplyData
         }
