@@ -76,7 +76,7 @@ bool SyncOperationList::pushOp(SyncOpPtr op) {
     const auto [it, inserted] = _allOps.try_emplace(op->id(), op);
     if (!inserted) return false;
     _opSortedList.push_back(op->id());
-    _opListByType[op->type()].insert(op->id());
+    (void) _opListByType[op->type()].insert(op->id());
     _node2op[*op->affectedNode()->id()].push_back(op->id());
     return true;
 }

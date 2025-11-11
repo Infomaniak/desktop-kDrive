@@ -158,7 +158,7 @@ class SyncOperationList : public SharedObject {
         std::unordered_map<UniqueId, SyncOpPtr> _allOps;
         std::list<UniqueId> _opSortedList;
         std::unordered_map<OperationType, std::unordered_set<UniqueId>> _opListByType;
-        std::unordered_map<NodeId, std::list<UniqueId>> _node2op;
+        std::unordered_map<NodeId, std::list<UniqueId>, StringHashFunction, std::equal_to<>> _node2op;
 
         friend class TestOperationSorterWorker;
         friend class TestOperationGeneratorWorker;
