@@ -83,18 +83,19 @@ runs:
       - name: Fetch dependencies
         run: | 
           mkdir dependencies
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Widgets.* ./dependencies/ 
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Gui.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Network.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Sql.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Core.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6DBus.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libicui18n.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libicuuc.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libicudata.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Svg.* ./dependencies/
+          QTDIR=/home/runner/Qt/6.10.0/gcc_64
+          cp $QTDIR/lib/libQt6Widgets.* ./dependencies/ 
+          cp $QTDIR/lib/libQt6Gui.* ./dependencies/
+          cp $QTDIR/lib/libQt6Network.* ./dependencies/
+          cp $QTDIR/lib/libQt6Sql.* ./dependencies/
+          cp $QTDIR/lib/libQt6Core.* ./dependencies/
+          cp $QTDIR/lib/libQt6DBus.* ./dependencies/
+          cp $QTDIR/lib/libicui18n.* ./dependencies/
+          cp $QTDIR/lib/libicuuc.* ./dependencies/
+          cp $QTDIR/lib/libicudata.* ./dependencies/
+          cp $QTDIR/lib/libQt6Svg.* ./dependencies/
           mkdir dependencies/platforms
-          cp /home/runner/Qt/6.2.3/gcc_64/plugins/platforms/libqoffscreen.so ./dependencies/platforms/
+          cp $QTDIR/plugins/platforms/libqoffscreen.so ./dependencies/platforms/
           cp /usr/local/lib/libcppunit-1.15.so.2 ./dependencies/ 
           cp /usr/local/lib/libPocoUtil* ./dependencies/
           cp /usr/local/lib/libPocoJSON* ./dependencies/

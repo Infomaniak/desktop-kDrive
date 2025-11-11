@@ -65,7 +65,8 @@ runs:
           cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtDBus.framework ./dependencies/
           cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/Sparkle.framework ./dependencies/
           mkdir dependencies/platforms
-          cp /Users/runner/Qt/6.2.3/macos/plugins/platforms/libqoffscreen.dylib ./dependencies/platforms/
+          QTDIR=/Users/runner/Qt/6.10.0/macos
+          cp $QTDIR/plugins/platforms/libqoffscreen.dylib ./dependencies/platforms/
           cp /usr/local/lib/libPocoNetSSL.103.dylib ./dependencies/
           cp /usr/local/lib/libPocoUtil.103.dylib ./dependencies/
           cp /usr/local/lib/libPocoJSON.103.dylib ./dependencies/

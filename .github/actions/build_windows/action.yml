@@ -82,16 +82,17 @@ runs:
                       $_.Name -ne "Vfs.dll"
               } |
               Copy-Item -Destination ./dependencies/
-          cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Widgets.dll" ./dependencies/
-          cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Gui.dll" ./dependencies/
-          cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Network.dll" ./dependencies/
-          cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Sql.dll" ./dependencies/
-          cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Core.dll" ./dependencies/
-          cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6DBus.dll" ./dependencies/
-          cp "C:\Qt\6.2.3\msvc2019_64\bin\Qt6Svg.dll" ./dependencies/
+          $QTDIR="C:\Qt\6.10.0\msvc2022_64"
+          cp "$QTDIR\bin\Qt6Widgets.dll" ./dependencies/
+          cp "$QTDIR\bin\Qt6Gui.dll" ./dependencies/
+          cp "$QTDIR\bin\Qt6Network.dll" ./dependencies/
+          cp "$QTDIR\bin\Qt6Sql.dll" ./dependencies/
+          cp "$QTDIR\bin\Qt6Core.dll" ./dependencies/
+          cp "$QTDIR\bin\Qt6DBus.dll" ./dependencies/
+          cp "$QTDIR\bin\Qt6Svg.dll" ./dependencies/
           cp "C:\Program Files (x86)\Sentry-Native\bin\crashpad_handler.exe" ./dependencies/
           mkdir .\dependencies\platforms
-          cp "C:\Qt\6.2.3\msvc2019_64\plugins\platforms\qoffscreen.dll" .\dependencies\platforms
+          cp "$QTDIR\plugins\platforms\qoffscreen.dll" .\dependencies\platforms
           cp "C:\Program Files (x86)\cppunit\lib\cppunit_dll.dll" ./dependencies/
         shell: powershell
         if: steps.build.outcome == 'success'

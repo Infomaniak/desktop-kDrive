@@ -137,6 +137,8 @@ jobs:
         
   build-Linux:
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
+    env:
+        QTDIR: "/home/runner/Qt/6.10.0/gcc_64"
 
     steps:
       - name: Checkout the PR
@@ -166,16 +168,16 @@ jobs:
         with:
           name: linux-build-qt-libs
           path: |
-              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Widgets.*
-              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Gui.*
-              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Network.*
-              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Sql.*
-              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Core.*
-              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6DBus.*
-              /home/runner/Qt/6.2.3/gcc_64/lib/libicui18n.*
-              /home/runner/Qt/6.2.3/gcc_64/lib/libicuuc.*
-              /home/runner/Qt/6.2.3/gcc_64/lib/libicudata.*
-              /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Svg.*
+              ${{ env.QTDIR }}/lib/libQt6Widgets.*
+              ${{ env.QTDIR }}/lib/libQt6Gui.*
+              ${{ env.QTDIR }}/lib/libQt6Network.*
+              ${{ env.QTDIR }}/lib/libQt6Sql.*
+              ${{ env.QTDIR }}/lib/libQt6Core.*
+              ${{ env.QTDIR }}/lib/libQt6DBus.*
+              ${{ env.QTDIR }}/lib/libicui18n.*
+              ${{ env.QTDIR }}/lib/libicuuc.*
+              ${{ env.QTDIR }}/lib/libicudata.*
+              ${{ env.QTDIR }}/lib/libQt6Svg.*
           retention-days: 1
         if: always()
 
