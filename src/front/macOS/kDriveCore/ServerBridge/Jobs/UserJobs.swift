@@ -17,6 +17,7 @@
  */
 
 import Foundation
+import InfomaniakConcurrency
 import InfomaniakDI
 
 public struct UserJobs: Sendable {
@@ -57,8 +58,8 @@ public struct UserJobs: Sendable {
             guard let userList = decodedMessage?.body.userInfoList else {
                 throw UserJobError.responseListNotFound
             }
-            
-            // TODO: Bump cache
+
+            await userList.asyncForEach { await coherentCache.updateUser($0.userCache) }
 
             return userList
         } catch XPCQueryFetcher.QueryError.noReplyData {
@@ -75,9 +76,8 @@ public struct UserJobs: Sendable {
             guard try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self) != nil else {
                 throw UserJobError.noReplyData
             }
-            
-            // TODO: Bump cache
 
+            await coherentCache.removeUser(userDbId)
         } catch XPCQueryFetcher.QueryError.noReplyData {
             throw UserJobError.noReplyData
         }
