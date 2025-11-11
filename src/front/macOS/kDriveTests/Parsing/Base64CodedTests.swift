@@ -28,9 +28,9 @@ struct TestDataCoding: Codable {
 }
 
 struct TestColorCoding: Codable {
-    @Base64CodedColor var color: HexColor?
+    @Base64CodedColor var color: HexColor
 
-    public init(color: HexColor?) {
+    public init(color: HexColor) {
         _color = Base64CodedColor(wrappedValue: color)
     }
 }
