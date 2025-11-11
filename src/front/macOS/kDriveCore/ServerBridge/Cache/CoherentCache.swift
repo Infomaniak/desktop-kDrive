@@ -58,10 +58,6 @@ public protocol CoherentCacheProtocol: Sendable {
     func clearOnServerRestart() async
 }
 
-public typealias IndexedUsers = [Int32: User]
-public typealias IndexedAccounts = [Int32: Account]
-public typealias UserAccounts = (userDbId: Int32, indexedAccounts: [Int32: Account])
-
 /// This cache must track 1:1 the server, can only be purged on server restart
 public actor CoherentCache: CoherentCacheProtocol, CoherentCacheObservation {
     private var users: IndexedUsers = [:]

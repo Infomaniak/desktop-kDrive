@@ -18,6 +18,9 @@
 
 import Foundation
 
+public typealias IndexedAccounts = [Int32: Account]
+public typealias UserAccounts = (userDbId: Int32, indexedAccounts: [Int32: Account])
+
 public struct Account: Identifiable, Hashable, Sendable {
     public init(id: Int32, name: String, drives: [Int32: Drive]) {
         self.id = id
