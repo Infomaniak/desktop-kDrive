@@ -36,6 +36,18 @@ public struct UserInfoResponse: Codable, Sendable {
     let isStaff: Bool
 }
 
+extension UserInfoResponse {
+    var userCache: User {
+        User(dbId: dbId,
+             userId: userId,
+             name: name,
+             email: email,
+             accounts: [:],
+             isConnected: isConnected,
+             isStaff: isStaff)
+    }
+}
+
 struct UserInfoListResponse: Codable, Sendable {
     let userInfoList: [UserInfoResponse]
 }
