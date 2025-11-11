@@ -20,7 +20,6 @@ import Foundation
 import InfomaniakDI
 
 public struct LoginJob: Sendable {
-    @LazyInjectService private var coherentCache: CoherentCacheProtocol
     @LazyInjectService private var queryFetcher: XPCQueryFetcherProtocol
 
     public enum LoginJobError: Error {
