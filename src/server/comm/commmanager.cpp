@@ -110,7 +110,7 @@ CommManager::~CommManager() {
 
 void CommManager::start() {
     const std::scoped_lock lock(_mutex);
-    if (!_guiCommServer || !_extCommServer) return;
+    if (!_guiCommServer) return;
 
     // Start Gui CommServer
     LOGW_INFO(Log::instance()->getLogger(), L"Starting " << CommonUtility::s2ws(_guiCommServer->name()));
@@ -123,6 +123,7 @@ void CommManager::start() {
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
     // Start Ext CommServer
+    if (!_extCommServer) return;
     LOGW_INFO(Log::instance()->getLogger(), L"Starting " << CommonUtility::s2ws(_extCommServer->name()));
     if (!_extCommServer->listen()) {
         LOGW_WARN(Log::instance()->getLogger(), L"Can't start " << CommonUtility::s2ws(_extCommServer->name()));
@@ -135,15 +136,18 @@ void CommManager::start() {
 
 void CommManager::stop() {
     const std::scoped_lock lock(_mutex);
-    if (!_guiCommServer || !_extCommServer) return;
+
+    if (!_guiCommServer) return;
+    _guiCommServer->close();
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
+    if (!_extCommServer) return;
     _extCommServer->close();
 #endif
-    _guiCommServer->close();
 }
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
+
 void CommManager::registerSync(const SyncPath &localPath) {
     CommString command(Str("REGISTER_PATH"));
     command.append(messageCdeSeparator);
