@@ -34,7 +34,8 @@ public struct LoginJob: Sendable {
     /// - Parameters:
     ///   - code: auth code
     ///   - verifier: auth verifier
-    public func login(code: String, verifier: String) async throws {
+    @discardableResult
+    public func login(code: String, verifier: String) async throws -> Int32 {
         try await loginUserQuery(code: code, verifier: verifier)
     }
 
