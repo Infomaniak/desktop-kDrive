@@ -21,14 +21,14 @@ import Foundation
 import CoreGraphics
 #endif
 
-/// A lightweight exchange type mapping 1:1 the colors sent by the server (Hex RGB)
+/// A lightweight exchange type mapping 1:1 the colors sent by the server (Hex RGB without alpha channel)
 public struct HexColor: Sendable, CustomStringConvertible, Equatable, Hashable {
     let red: UInt8
     let green: UInt8
     let blue: UInt8
 
     public var description: String {
-        // Server seems to run with lowercase Hex strings
+        // Server runs with lowercase Hex strings
         // Server exchange colors without alpha
         String(format: "#%02x%02x%02x", red, green, blue)
     }
@@ -39,14 +39,10 @@ public struct HexColor: Sendable, CustomStringConvertible, Equatable, Hashable {
             hexString.removeFirst()
         }
 
-        guard hexString.count == 6 || hexString.count == 8,
-              let hexValue = UInt64(hexString, radix: 16) else {
+        guard hexString.count == 6, let hexValue = UInt64(hexString, radix: 16) else {
             return nil
         }
 
-        guard hexString.count == 6 else {
-            return nil
-        }
         red = UInt8((hexValue & 0xFF0000) >> 16)
         green = UInt8((hexValue & 0x00FF00) >> 8)
         blue = UInt8(hexValue & 0x0000FF)
