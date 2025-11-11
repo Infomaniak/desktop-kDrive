@@ -20,7 +20,7 @@ import Foundation
 
 @propertyWrapper
 public struct Base64CodedColor: Codable, Sendable {
-    public let wrappedValue: HexColor?
+    public let wrappedValue: HexColor
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
@@ -29,8 +29,10 @@ public struct Base64CodedColor: Codable, Sendable {
         guard let data = Data(base64Encoded: base64Encoded),
               let decodedString = String(data: data, encoding: .utf8),
               let decodedColor = HexColor(hex: decodedString) else {
-            wrappedValue = nil
-            return
+            throw DecodingError.dataCorruptedError(
+                in: container,
+                debugDescription: "Invalid base64 color"
+            )
         }
 
         wrappedValue = decodedColor
@@ -38,18 +40,12 @@ public struct Base64CodedColor: Codable, Sendable {
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
-        let data: Data
-        if let wrappedValue {
-            data = Data(wrappedValue.description.utf8)
-        } else {
-            data = Data()
-        }
-
+        let data = Data(wrappedValue.description.utf8)
         let base64Encoded = data.base64EncodedString()
         try container.encode(base64Encoded)
     }
 
-    public init(wrappedValue: HexColor? = nil) {
+    public init(wrappedValue: HexColor) {
         self.wrappedValue = wrappedValue
     }
 }
