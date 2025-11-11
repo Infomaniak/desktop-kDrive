@@ -94,6 +94,8 @@ CommManager::CommManager(AppServer &appServer) :
 }
 
 CommManager::~CommManager() {
+    const std::scoped_lock lock(_mutex);
+
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
     _extCommServer.reset();
 #endif
@@ -107,6 +109,9 @@ CommManager::~CommManager() {
 }
 
 void CommManager::start() {
+    const std::scoped_lock lock(_mutex);
+    if (!_guiCommServer) return;
+
     // Start Gui CommServer
     LOGW_INFO(Log::instance()->getLogger(), L"Starting " << CommonUtility::s2ws(_guiCommServer->name()));
     if (!_guiCommServer->listen()) {
@@ -118,6 +123,7 @@ void CommManager::start() {
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
     // Start Ext CommServer
+    if (!_extCommServer) return;
     LOGW_INFO(Log::instance()->getLogger(), L"Starting " << CommonUtility::s2ws(_extCommServer->name()));
     if (!_extCommServer->listen()) {
         LOGW_WARN(Log::instance()->getLogger(), L"Can't start " << CommonUtility::s2ws(_extCommServer->name()));
@@ -129,13 +135,19 @@ void CommManager::start() {
 }
 
 void CommManager::stop() {
+    const std::scoped_lock lock(_mutex);
+
+    if (!_guiCommServer) return;
+    _guiCommServer->close();
+
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
+    if (!_extCommServer) return;
     _extCommServer->close();
 #endif
-    _guiCommServer->close();
 }
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
+
 void CommManager::registerSync(const SyncPath &localPath) {
     CommString command(Str("REGISTER_PATH"));
     command.append(messageCdeSeparator);
@@ -181,6 +193,9 @@ void CommManager::executeExtCommand(const CommString &commandLineStr, std::share
 }
 
 void CommManager::broadcastExtCommand(const CommString &commandLineStr) {
+    const std::scoped_lock lock(_mutex);
+    if (!_extCommServer) return;
+
     LOGW_DEBUG(Log::instance()->getLogger(), L"Broadcast command: cmd=" << CommonUtility::commString2WStr(commandLineStr));
 
     if (!_extCommServer->connections().empty()) {
@@ -192,6 +207,9 @@ void CommManager::broadcastExtCommand(const CommString &commandLineStr) {
 }
 
 void CommManager::onNewExtConnection() {
+    const std::scoped_lock lock(_mutex);
+    if (!_extCommServer) return;
+
     std::shared_ptr<AbstractCommChannel> channel = _extCommServer->nextPendingConnection();
     if (!channel) return;
 
@@ -236,6 +254,9 @@ void CommManager::onLostExtConnection(std::shared_ptr<AbstractCommChannel> chann
 #endif
 
 void CommManager::executeGuiQuery(const CommString &commandLineStr, std::shared_ptr<AbstractCommChannel> channel) {
+    const std::scoped_lock lock(_mutex);
+    if (!_guiJobFactory) return;
+
     // Deserialize generic parameters
     int requestId = 0;
     RequestNum requestNum = RequestNum::Unknown;
@@ -258,6 +279,9 @@ void CommManager::executeGuiQuery(const CommString &commandLineStr, std::shared_
 }
 
 void CommManager::sendGuiSignal(std::shared_ptr<AbstractGuiJob> signal) {
+    const std::scoped_lock lock(_mutex);
+    if (!_guiCommServer) return;
+
     assert(signal->type() == AbstractGuiJob::GuiJobType::Signal);
 
     LOG_DEBUG(Log::instance()->getLogger(), "Send signal: id=" << signal->id() << " num=" << signal->signalNum());
@@ -270,6 +294,9 @@ void CommManager::sendGuiSignal(std::shared_ptr<AbstractGuiJob> signal) {
 }
 
 void CommManager::onNewGuiConnection() {
+    const std::scoped_lock lock(_mutex);
+    if (!_guiCommServer) return;
+
     std::shared_ptr<AbstractCommChannel> channel = _guiCommServer->nextPendingConnection();
     if (!channel) return;
 
