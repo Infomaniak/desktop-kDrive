@@ -452,6 +452,7 @@
 				F967FC8A2E8BC9FE00EDD4D7 /* XCRemoteSwiftPackageReference "lottie-spm" */,
 				F97805BC2E97E3AF00BC146C /* XCRemoteSwiftPackageReference "ios-dependency-injection" */,
 				F97805BF2E97E3C500BC146C /* XCRemoteSwiftPackageReference "ios-login" */,
+				7AFF54E02EC34ACE00904C5C /* XCRemoteSwiftPackageReference "swift-concurrency" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 37A1C4272E546A5200596DBB /* Products */;
@@ -1142,6 +1143,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		7AFF54E02EC34ACE00904C5C /* XCRemoteSwiftPackageReference "swift-concurrency" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Infomaniak/swift-concurrency.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
 		F967FC8A2E8BC9FE00EDD4D7 /* XCRemoteSwiftPackageReference "lottie-spm" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/airbnb/lottie-spm.git";
