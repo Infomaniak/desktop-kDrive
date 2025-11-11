@@ -19,7 +19,15 @@
 import Foundation
 
 public struct Drive: Identifiable, Hashable, Sendable {
-    public let id: Int32
-    public var name: String
+    public var id: Int32 {
+        driveId
+    }
+
+    public let driveId: Int32
+    public let accountId: Int32
+    public let userDbId: Int32
+    public let userId: Int32
+    public let name: String
+    public let color: HexColor?
     public var syncros: [Int32: Synchro]
 }
