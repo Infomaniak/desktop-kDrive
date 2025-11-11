@@ -16,9 +16,11 @@ inputs:
 
 runs:
     using: "composite"
+  
     steps:
-      - env:
-        QTDIR: "/Users/runner/Qt/6.10.0/macos"
+      - name: Set QTDIR
+        run: echo "QTDIR=/Users/runner/Qt/6.10.0/macos" >> $GITHUB_ENV
+        shell: bash
 
       - name: Clean-up XCode DerivedData
         run : rm -rf /Users/runner/Library/Developer/Xcode/DerivedData
