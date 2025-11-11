@@ -17,8 +17,7 @@ namespace Infomaniak.kDrive.Types
     {
         Unknown,
         File, // File or symlink
-        Directory,
-        EnumEnd
+        Directory
     }
 
     public enum SyncStatus
