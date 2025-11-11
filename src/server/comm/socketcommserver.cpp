@@ -29,16 +29,19 @@ SocketCommChannel::SocketCommChannel(const Poco::Net::StreamSocket &socket) :
 SocketCommChannel::~SocketCommChannel() {
     _isClosing = true;
     try {
-        _socket.shutdown();
-    } catch (Poco::IOException &ex) {
-        LOG_DEBUG(Log::instance()->getLogger(), "Socket shutdown error: " << ex.displayText());
+        close();
+    } catch (std::exception &ex) {
+        LOG_ERROR(Log::instance()->getLogger(), "Exception in SocketCommChannel::close: " << ex.what());
     }
+
     if (_callbackThread.joinable()) {
         _callbackThread.join();
     }
 }
 
 uint64_t SocketCommChannel::readData(CommChar *data, uint64_t maxlen) {
+    const int maxSize = (std::min<uint64_t>) (maxlen * sizeof(CommChar), static_cast<uint64_t>(std::numeric_limits<int>::max()));
+    int lenReceived = 0;
     try {
         /* This file is included by some files that also include "windef.h", which defines a macro "max()".
          * This causes std::numeric_limits<int>::max() to be expanded as
@@ -47,51 +50,55 @@ uint64_t SocketCommChannel::readData(CommChar *data, uint64_t maxlen) {
          */
 #pragma push_macro("max")
 #undef max
-        maxlen = (std::min<uint64_t>) (maxlen * sizeof(CommChar), static_cast<uint64_t>(std::numeric_limits<int>::max()));
-        const int lenReceived = _socket.receiveBytes(data, static_cast<int>(maxlen));
+        lenReceived = _socket.receiveBytes(data, maxSize);
 #pragma pop_macro("max")
-
-        if (lenReceived <= 0) {
-            LOG_DEBUG(Log::instance()->getLogger(),
-                      (lenReceived == 0 ? "Socket connection closed by peer" : "Socket connection error"));
-            lostConnectionCbk();
-            close();
-            _pendingRead = false;
-            return 0;
-        }
-        _pendingRead = false;
-        return static_cast<unsigned int>(lenReceived) / sizeof(CommChar);
-    } catch (Poco::IOException &ex) {
-        LOG_ERROR(Log::instance()->getLogger(), "Socket receiveBytes error: " << ex.displayText());
+    } catch (Poco::Exception &ex) {
+        LOG_ERROR(Log::instance()->getLogger(), "Exception in StreamSocket::receiveBytes: " << ex.displayText());
         lostConnectionCbk();
         close();
         _pendingRead = false;
         return 0;
     }
+
+    if (lenReceived <= 0) {
+        LOG_DEBUG(Log::instance()->getLogger(),
+                  (lenReceived == 0 ? "Socket connection closed by peer" : "Socket connection error"));
+        lostConnectionCbk();
+        close();
+        _pendingRead = false;
+        return 0;
+    }
+
+    _pendingRead = false;
+    return static_cast<unsigned int>(lenReceived) / sizeof(CommChar);
 }
 
 uint64_t SocketCommChannel::writeData(const CommChar *data, uint64_t len) {
-    try {
 #pragma push_macro("max")
 #undef max
-        if (len > std::numeric_limits<int>::max() / sizeof(CommChar)) {
+    if (len > std::numeric_limits<int>::max() / sizeof(CommChar)) {
 #pragma pop_macro("max")
-            LOG_ERROR(Log::instance()->getLogger(), "Socket writeData error: data length too large");
-            return 0;
-        }
-        const int commCharSize = sizeof(CommChar);
-        const auto written = _socket.sendBytes(data, static_cast<int>(len) * commCharSize);
-        if (written < 0) {
-            LOG_ERROR(Log::instance()->getLogger(), "Socket connection error on sendBytes");
-            lostConnectionCbk();
-            close();
-            return 0;
-        }
-        return static_cast<uint64_t>(written / commCharSize);
-    } catch (Poco::IOException &ex) {
-        LOG_ERROR(Log::instance()->getLogger(), "Socket sendBytes error: " << ex.displayText());
+        LOG_ERROR(Log::instance()->getLogger(), "Socket writeData error: data length too large");
         return 0;
     }
+
+    const int commCharSize = sizeof(CommChar);
+    int written = 0;
+    try {
+        written = _socket.sendBytes(data, static_cast<int>(len) * commCharSize);
+    } catch (Poco::Exception &ex) {
+        LOG_ERROR(Log::instance()->getLogger(), "Exception in StreamSocket::sendBytes: " << ex.displayText());
+        return 0;
+    }
+
+    if (written < 0) {
+        LOG_ERROR(Log::instance()->getLogger(), "Socket connection error on sendBytes");
+        lostConnectionCbk();
+        close();
+        return 0;
+    }
+
+    return static_cast<uint64_t>(written / commCharSize);
 }
 
 void SocketCommChannel::callbackHandler() {
@@ -100,21 +107,28 @@ void SocketCommChannel::callbackHandler() {
             if (!_socket.poll(Poco::Timespan(1, 0), Poco::Net::Socket::SELECT_READ | Poco::Net::Socket::SELECT_ERROR)) {
                 continue;
             }
+        } catch (Poco::Exception &ex) {
+            LOG_ERROR(Log::instance()->getLogger(), "Exception in StreamSocket::poll: " << ex.displayText());
+            lostConnectionCbk();
+            break;
+        }
 
+        try {
             if (_socket.available() == 0) {
                 LOG_DEBUG(Log::instance()->getLogger(), "Socket connection closed by peer");
                 lostConnectionCbk();
                 break;
             }
-            _pendingRead = true;
-            readyReadCbk();
-            while (!_isClosing && _pendingRead) { // Wait until readData is called before polling again
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            }
-        } catch (Poco::IOException &ex) {
-            LOG_ERROR(Log::instance()->getLogger(), "Socket poll error: " << ex.displayText());
+        } catch (Poco::Exception &ex) {
+            LOG_ERROR(Log::instance()->getLogger(), "Exception in StreamSocket::available: " << ex.displayText());
             lostConnectionCbk();
             break;
+        }
+
+        _pendingRead = true;
+        readyReadCbk();
+        while (!_isClosing && _pendingRead) { // Wait until readData is called before polling again
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
     }
 }
@@ -122,14 +136,18 @@ void SocketCommChannel::callbackHandler() {
 uint64_t SocketCommChannel::bytesAvailable() const {
     try {
         return static_cast<uint64_t>((std::max)(0, _socket.available()));
-    } catch (Poco::IOException &ex) {
-        LOG_ERROR(Log::instance()->getLogger(), "Socket available error: " << ex.displayText());
+    } catch (Poco::Exception &ex) {
+        LOG_ERROR(Log::instance()->getLogger(), "Exception in StreamSocket::available: " << ex.displayText());
         return static_cast<uint64_t>(0);
     }
 }
 
 void SocketCommChannel::close() {
-    _socket.shutdown();
+    try {
+        _socket.shutdown();
+    } catch (Poco::Exception &ex) {
+        LOG_ERROR(Log::instance()->getLogger(), "Exception in StreamSocket::shutdown: " << ex.displayText());
+    }
 }
 
 SocketCommServer::SocketCommServer(const std::string &name) :
@@ -139,8 +157,7 @@ SocketCommServer::~SocketCommServer() {
     try {
         close();
     } catch (std::exception &ex) {
-        // Avoid exceptions in destructor
-        LOG_ERROR(Log::instance()->getLogger(), "Exception in SocketCommServer destructor: " << ex.what());
+        LOG_ERROR(Log::instance()->getLogger(), "Exception in SocketCommChannel::close: " << ex.what());
     }
 }
 
@@ -153,12 +170,17 @@ void SocketCommServer::close() {
         _stopAsked = true;
         if (!_serverSocket.isNull()) {
             Poco::Net::StreamSocket socket;
-            socket.connect(Poco::Net::SocketAddress("localhost", getPort())); // Connect to unblock accept
+            try {
+                socket.connect(Poco::Net::SocketAddress("localhost", getPort())); // Connect to unblock accept
+            } catch (Poco::Exception &ex) {
+                LOG_ERROR(Log::instance()->getLogger(), "Exception in StreamSocket::connect: " << ex.displayText());
+            }
         }
 
         if (_serverSocketThread && _serverSocketThread->joinable()) {
             _serverSocketThread->join();
         }
+
         LOG_DEBUG(Log::instance()->getLogger(), name() << " stopped");
         _isListening = false;
         _stopAsked = false;
@@ -207,14 +229,34 @@ void saveCommPort(unsigned short port) {
 }
 
 void SocketCommServer::execute() {
-    _serverSocket.bind(Poco::Net::SocketAddress("localhost", "0"), true, true);
+    try {
+        _serverSocket.bind(Poco::Net::SocketAddress("localhost", "0"), true, true);
+    } catch (Poco::Exception &ex) {
+        LOG_ERROR(Log::instance()->getLogger(), "Exception in ServerSocket::bind: " << ex.displayText());
+        return;
+    }
+
     LOG_DEBUG(Log::instance()->getLogger(), name() << " listening on port " << getPort());
     saveCommPort(getPort());
     while (!_stopAsked) {
-        _serverSocket.listen();
+        try {
+            _serverSocket.listen();
+        } catch (Poco::Exception &ex) {
+            LOG_ERROR(Log::instance()->getLogger(), "Exception in ServerSocket::listen: " << ex.displayText());
+            return;
+        }
+
         _isListening = true;
-        Poco::Net::StreamSocket socket = _serverSocket.acceptConnection();
+        Poco::Net::StreamSocket socket;
+        try {
+            socket = _serverSocket.acceptConnection();
+        } catch (Poco::Exception &ex) {
+            LOG_ERROR(Log::instance()->getLogger(), "Exception in ServerSocket::acceptConnection: " << ex.displayText());
+            return;
+        }
+
         if (_stopAsked) break;
+
         auto channel = makeCommChannel(socket);
         const std::scoped_lock lock(_channelsMutex);
         channel->setLostConnectionCbk([this](std::shared_ptr<AbstractCommChannel> ch) { lostConnectionCbk(ch); });
