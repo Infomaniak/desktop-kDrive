@@ -36,7 +36,14 @@ jobs:
              cd translations\updateTool
              $result = .\Windows.ps1
              # Ensure that result contains FOUR TIMES the string "0 new"
-             if ($result[2] -notmatch "0 new" -OR $result[5] -notmatch "0 new" -OR $result[8] -notmatch "0 new" -OR $result[11] -notmatch "0 new") {
+             $counter = 0
+             foreach ($str in $result) {
+                 if ($str -match "0 new") {
+                     $counter++
+                 }
+             }
+
+             if ($counter -ne 4) {
                  Write-Host "<h1>:stop_sign: Translation files are not up to date. Please run the update tool. </h1>" -ForegroundColor Red
                  "<h1>:stop_sign: Translation files are not up to date. Please run the update tool. </h1>" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
                  exit 1
