@@ -195,7 +195,7 @@
                                                           Expanded="UserSettingsExpander_Expanded">
                                     <ProgressRing Height="6"
                                                   Width="auto"
-                                                  Visibility="Collapsed" />
+                                                  Visibility="{x:Bind DriveRefreshInProgress, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
 
                                     <toolKit:SettingsExpander.Header>
                                         <StackPanel Orientation="Horizontal"

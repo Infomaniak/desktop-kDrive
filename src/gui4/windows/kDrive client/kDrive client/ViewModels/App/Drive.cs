@@ -17,11 +17,15 @@
  */
 
 using DynamicData;
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.ViewModels
 {
@@ -47,19 +51,19 @@ namespace Infomaniak.kDrive.ViewModels
 
         private void RefreshSyncAdvancedSyncMap()
         {
-            MainSync = Syncs.FirstOrDefault(s => s.RemotePath == "/" || s.RemotePath == "");
             var advancedSyncs = Syncs.Where(s => s != MainSync);
-            foreach (var sync in _advancedSyncs)
+            foreach (int i in Enumerable.Range(0, _advancedSyncs.Count).Reverse())
+            {
+                Sync? sync = _advancedSyncs.ElementAt(i);
                 if (!advancedSyncs.Contains(sync))
-                {
                     _advancedSyncs.Remove(sync);
-                }
+            }
 
             foreach (var sync in advancedSyncs)
                 if (!_advancedSyncs.Contains(sync))
-                {
                     _advancedSyncs.Add(sync);
-                }
+
+            MainSync = Syncs.FirstOrDefault(s => s.RemotePath == "/" || s.RemotePath == "");
         }
 
         public DbId DbId
@@ -133,5 +137,12 @@ namespace Infomaniak.kDrive.ViewModels
             get => _account;
             set => SetPropertyInUIThread(ref _account, value);
         }
+
+        public async Task RemoveSync(Sync sync, CancellationToken cancellationToken)
+        {
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            await commService.RemoveSync(sync.DbId, cancellationToken);
+        }
+
     }
 }

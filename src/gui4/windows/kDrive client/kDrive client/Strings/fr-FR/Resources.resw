@@ -533,6 +533,12 @@ Version {0} (build {1}), compilée le {2}
   <data name="Page_Settings_DriveManagementPage_FolderSelection.Header" xml:space="preserve">
     <value>Synchronisation</value>
   </data>
+  <data name="Page_Settings_DriveManagementPage_FolderSelection_Presentation.Header" xml:space="preserve">
+    <value>Sélectionnez les dossiers à synchroniser sur cet ordinateur.</value>
+  </data>
+  <data name="Page_Settings_DriveManagementPage_FolderSelection_Presentation.Description" xml:space="preserve">
+    <value>Les dossiers non sélectionnés resteront disponibles en ligne, sans utiliser d’espace disque.</value>
+  </data>
   <data name="Page_Settings_DriveManagementPage_SyncMode.Header" xml:space="preserve">
     <value>Définissez comment vos fichiers sont stockés et accessibles.</value>
   </data>
@@ -544,6 +550,9 @@ Version {0} (build {1}), compilée le {2}
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.Title" xml:space="preserve">
     <value>Êtes-vous sûr de vouloir changer le mode de synchronisation ?</value>
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.Title" xml:space="preserve">
+    <value>Supprimer la synchronisation ?</value>
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncMode_InProgress.Header" xml:space="preserve">
     <value>Application du changement</value>
@@ -825,5 +834,18 @@ Le code source de cette application peut être vérifié, les informations réco
   </data>
   <data name="Page_Settings_DriveManagementPage_AdvancedSyncs.Header" xml:space="preserve">
     <value>Synchronisation avancée</value>
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Supprimer la synchronisation</value>
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.Content" xml:space="preserve">
+    <value>Le dossier local restera sur votre ordinateur, mais il ne sera plus synchronisé avec kDrive.
+Cette action est définitive. 
+Pour synchroniser à nouveau votre drive, vous devrez le reconnecter ultérieurement.
+
+Avant de continuer, assurez-vous que tout vos fichiers sont bien à jour et synchronisées.</value>
   </data>
 </root>

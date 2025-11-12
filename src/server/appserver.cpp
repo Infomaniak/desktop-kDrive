@@ -63,8 +63,10 @@
 #include "server/comm/guijobs/signalaccountaddedjob.h"
 #include "server/comm/guijobs/signaluseraddedjob.h"
 #include "server/comm/guijobs/signaluserupdatedjob.h"
-#include "server/comm/guijobs/signaluserremovedjob.h"
+#include "server/comm/guijobs/signaluserremovedjob.h" 
+#include "server/comm/guijobs/signalaccountremovedjob.h"
 #include "server/comm/guijobs/signaldriveaddedjob.h"
+#include "server/comm/guijobs/signaldriveremovedjob.h"
 #include "server/comm/guijobs/signalsyncaddedjob.h"
 #include "server/comm/guijobs/signalsyncremovedjob.h"
 #include "server/comm/guijobs/signalsynccompleteditem.h"
@@ -4058,6 +4060,7 @@ void AppServer::sendAccountRemoved(int accountDbId) {
     paramsStream << accountDbId;
 
     OldCommServer::instance()->sendSignal(SignalNum::ACCOUNT_REMOVED, params, id);
+    _commManager->sendGuiSignal(std::make_shared<SignalAccountRemovedJob>(accountDbId));
 }
 
 void AppServer::sendDriveAdded(const DriveInfo &driveInfo) {
@@ -4101,6 +4104,7 @@ void AppServer::sendDriveRemoved(int driveDbId) {
     paramsStream << driveDbId;
 
     OldCommServer::instance()->sendSignal(SignalNum::DRIVE_REMOVED, params, id);
+    _commManager->sendGuiSignal(std::make_shared<SignalDriveRemovedJob>(driveDbId));
 }
 
 void AppServer::sendSyncUpdated(const SyncInfo &syncInfo) {

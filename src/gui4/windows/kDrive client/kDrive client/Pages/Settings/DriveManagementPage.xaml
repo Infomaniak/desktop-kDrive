@@ -16,6 +16,7 @@
         <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />
         <converters:BooleanToInvertedBooleanConverter x:Key="BooleanToInvertedBooleanConverter" />
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
 
     </Page.Resources>
     <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.L}"
@@ -24,7 +25,7 @@
             <!-- Title & BreadCrumb bar -->
             <RowDefinition Height="Auto" />
             <!-- Drive management -->
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <!-- Title & BreadCrumb bar -->
@@ -41,132 +42,157 @@
         <!-- Drive management -->
         <ScrollView Grid.Row="1">
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                <StackPanel Orientation="Horizontal"
-                            Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                    <controls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom}"
-                                      Foreground="{x:Bind ManagedDrive.Color, Mode=OneWay, Converter={StaticResource ColorToBrushConverter}}" />
-                    <TextBlock Text="{x:Bind ManagedDrive.Name, Mode=OneWay}"
-                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
+                <!-- Main sync is setted -->
+                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                            Visibility="{x:Bind ManagedDrive.MainSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                        <controls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom}"
+                                          Foreground="{x:Bind ManagedDrive.Color, Mode=OneWay, Converter={StaticResource ColorToBrushConverter}}" />
+                        <TextBlock Text="{x:Bind ManagedDrive.Name, Mode=OneWay}"
+                                   Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
+                    </StackPanel>
+
+                    <!-- Location -->
+                    <toolKit:SettingsCard x:Uid="Page_Settings_DriveManagementPage_Location">
+                        <toolKit:SettingsCard.HeaderIcon>
+                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-open}"
+                                              Height="20"
+                                              Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                        </toolKit:SettingsCard.HeaderIcon>
+                        <HyperlinkButton Content="{x:Bind ManagedDrive.MainSync.LocalPath, Mode=OneWay}"
+                                         Click="LocationHyperLinkButton_Clicked" />
+                    </toolKit:SettingsCard>
+
+                    <!-- Folder Selection -->
+                    <toolKit:SettingsExpander x:Uid="Page_Settings_DriveManagementPage_FolderSelection">
+                        <toolKit:SettingsExpander.HeaderIcon>
+                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Arrows.arrow-loop}"
+                                              Height="32"
+                                              Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+
+                        </toolKit:SettingsExpander.HeaderIcon>
+                        <toolKit:SettingsExpander.Items>
+                            <!-- Presentation -->
+                            <toolKit:SettingsCard x:Uid="Page_Settings_DriveManagementPage_FolderSelection_Presentation"
+                                                  Background="{ThemeResource LayerFillColorDefault}">
+                                <TreeView x:Name="sampleTreeView"
+                                          SelectionMode="Multiple" />
+                            </toolKit:SettingsCard>
+                            <!-- TODO -->
+                            <toolKit:SettingsCard Header="Here will be the folder selection custom control wich will be implemented later"
+                                                  Background="{ThemeResource LayerFillColorDefault}" />
+                            <toolKit:SettingsCard Background="{ThemeResource LayerFillColorDefault}">
+                                <Button Content="Sauvegarder mes choix"
+                                        Style="{ThemeResource AccentButtonStyle}" />
+                            </toolKit:SettingsCard>
+                        </toolKit:SettingsExpander.Items>
+                    </toolKit:SettingsExpander>
+
+                    <!-- Lite Sync -->
+                    <toolKit:SettingsExpander x:Name="SyncTypeExpander"
+                                              x:Uid="Page_Settings_DriveManagementPage_SyncMode"
+                                              Visibility="{x:Bind ManagedDrive.MainSync.SupportOnlineMode, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, Mode=OneWay}">
+                        <toolKit:SettingsExpander.HeaderIcon>
+                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Essentials.cog}"
+                                              Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                              Height="32" />
+                        </toolKit:SettingsExpander.HeaderIcon>
+                        <toolKit:SettingsExpander.Items>
+                            <toolKit:SettingsCard Background="{ThemeResource LayerFillColorDefault}"
+                                                  ContentAlignment="Left"
+                                                  Visibility="{x:Bind ManagedDrive.MainSync.SyncTypeMigrationInProgress, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
+                                <Grid HorizontalAlignment="Stretch">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="32" />
+                                        <ColumnDefinition Width="10000" />
+                                        <!-- Make the entire card clickable to select the radio button -->
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Card content -->
+                                    <toolKit:SettingsCard Grid.Column="1"
+                                                          x:Uid="Page_Settings_DriveManagementPage_SyncMode_Online"
+                                                          Background="Transparent"
+                                                          BorderThickness="0"
+                                                          Padding="0" />
+
+                                    <!-- RadioButton -->
+                                    <RadioButton x:Name="OnlineRadioButton"
+                                                 Grid.ColumnSpan="2"
+                                                 GroupName="SyncModeRadioGroup"
+                                                 MinWidth="0"
+                                                 HorizontalAlignment="Stretch"
+                                                 IsChecked="{x:Bind ManagedDrive.MainSync.IsTypeOnline, Mode=OneWay}"
+                                                 Checked="LiteSyncRadioButtonChecked"
+                                                 Unchecked="LiteSyncRadioButtonUnchecked" />
+                                </Grid>
+                            </toolKit:SettingsCard>
+
+                            <toolKit:SettingsCard Background="{ThemeResource LayerFillColorDefault}"
+                                                  ContentAlignment="Left"
+                                                  Visibility="{x:Bind ManagedDrive.MainSync.SyncTypeMigrationInProgress, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
+                                <Grid HorizontalAlignment="Stretch">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="32" />
+                                        <ColumnDefinition Width="10000" />
+                                        <!-- Make the entire card clickable to select the radio button -->
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Card content -->
+                                    <toolKit:SettingsCard Grid.Column="1"
+                                                          x:Uid="Page_Settings_DriveManagementPage_SyncMode_Offline"
+                                                          Background="Transparent"
+                                                          BorderThickness="0"
+                                                          Padding="0" />
+
+                                    <!-- RadioButton -->
+                                    <RadioButton x:Name="OfflineRadioButton"
+                                                 Grid.ColumnSpan="2"
+                                                 GroupName="SyncModeRadioGroup"
+                                                 MinWidth="0"
+                                                 IsChecked="{x:Bind ManagedDrive.MainSync.IsTypeOnline, Converter={StaticResource BooleanToInvertedBooleanConverter}, Mode=OneWay}"
+                                                 HorizontalAlignment="Stretch" />
+                                </Grid>
+                            </toolKit:SettingsCard>
+
+                            <toolKit:SettingsCard x:Uid="Page_Settings_DriveManagementPage_SyncMode_InProgress"
+                                                  Background="{ThemeResource LayerFillColorDefault}"
+                                                  Visibility="{x:Bind ManagedDrive.MainSync.SyncTypeMigrationInProgress, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+                            </toolKit:SettingsCard>
+
+                        </toolKit:SettingsExpander.Items>
+                        <ProgressRing IsActive="True"
+                                      Height="16"
+                                      Width="16"
+                                      Visibility="{x:Bind ManagedDrive.MainSync.SyncTypeMigrationInProgress, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
+                    </toolKit:SettingsExpander>
+
+                    <!-- Remove sync -->
+                    <toolKit:SettingsCard Header="Supprimer la synchronisation"
+                                          IsClickEnabled="True"
+                                          Foreground="{ThemeResource SystemErrorTextColor}"
+                                          PointerExited="FixForegroundOnPointerExited"
+                                          Click="RemoveSyncSettingsCard_Click">
+                    </toolKit:SettingsCard>
                 </StackPanel>
 
-                <!-- Location -->
-                <toolKit:SettingsCard x:Uid="Page_Settings_DriveManagementPage_Location">
+                <!-- Main sync is not setted -->
+                <!-- TODO: Replace with localization once U/UX design is ready-->
+                <toolKit:SettingsCard Header="Configurer la synchronisation principale"
+                                      Visibility="{x:Bind ManagedDrive.MainSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, Mode=OneWay}"
+                                      IsClickEnabled="True"
+                                      IsEnabled="False">
                     <toolKit:SettingsCard.HeaderIcon>
-                        <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-open}"
-                                          Height="32"
+                        <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-circle-plus}"
+                                          Height="20"
                                           Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                     </toolKit:SettingsCard.HeaderIcon>
-                    <HyperlinkButton Content="{x:Bind ManagedDrive.MainSync.LocalPath}"
-                                     Click="LocationHyperLinkButton_Clicked" />
                 </toolKit:SettingsCard>
-
-                <!-- Folder Selection -->
-                <toolKit:SettingsExpander x:Uid="Page_Settings_DriveManagementPage_FolderSelection">
-                    <toolKit:SettingsExpander.HeaderIcon>
-                        <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Arrows.arrow-loop}"
-                                          Height="32"
-                                          Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-
-                    </toolKit:SettingsExpander.HeaderIcon>
-                    <toolKit:SettingsExpander.Items>
-                        <!-- Presentation -->
-                        <toolKit:SettingsCard Header="Sélectionnez les dossiers à synchroniser sur cet ordinateur."
-                                              Description="Les dossiers non sélectionnés resteront disponibles en ligne, sans utiliser d’espace disque."
-                                              Background="{ThemeResource LayerFillColorDefault}">
-                            <TreeView x:Name="sampleTreeView"
-                                      SelectionMode="Multiple" />
-                        </toolKit:SettingsCard>
-                        <!-- TODO -->
-                        <toolKit:SettingsCard Header="Here will be the folder selection custom control wich will be implemented later"
-                                              Background="{ThemeResource LayerFillColorDefault}" />
-                        <toolKit:SettingsCard Background="{ThemeResource LayerFillColorDefault}">
-                            <Button Content="Sauvegarder mes choix"
-                                    Style="{ThemeResource AccentButtonStyle}" />
-                        </toolKit:SettingsCard>
-                    </toolKit:SettingsExpander.Items>
-                </toolKit:SettingsExpander>
-
-                <!-- Lite Sync -->
-                <toolKit:SettingsExpander x:Name="SyncTypeExpander"
-                                          x:Uid="Page_Settings_DriveManagementPage_SyncMode"
-                                          Visibility="{x:Bind ManagedDrive.MainSync.SupportOnlineMode, Converter={StaticResource BooleanToVisibilityConverter},  Mode=OneWay}">
-                    <toolKit:SettingsExpander.HeaderIcon>
-                        <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Essentials.cog}"
-                                          Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                                          Height="32" />
-                    </toolKit:SettingsExpander.HeaderIcon>
-                    <toolKit:SettingsExpander.Items>
-                        <toolKit:SettingsCard Background="{ThemeResource LayerFillColorDefault}"
-                                              ContentAlignment="Left"
-                                              Visibility="{x:Bind ManagedDrive.MainSync.SyncTypeMigrationInProgress, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
-                            <Grid HorizontalAlignment="Stretch">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="32" />
-                                    <ColumnDefinition Width="10000" />
-                                    <!-- Make the entire card clickable to select the radio button -->
-                                </Grid.ColumnDefinitions>
-
-                                <!-- Card content -->
-                                <toolKit:SettingsCard Grid.Column="1"
-                                                      x:Uid="Page_Settings_DriveManagementPage_SyncMode_Online"
-                                                      Background="Transparent"
-                                                      BorderThickness="0"
-                                                      Padding="0" />
-
-                                <!-- RadioButton -->
-                                <RadioButton x:Name="OnlineRadioButton"
-                                             Grid.ColumnSpan="2"
-                                             GroupName="SyncModeRadioGroup"
-                                             MinWidth="0"
-                                             HorizontalAlignment="Stretch"
-                                             IsChecked="{x:Bind ManagedDrive.MainSync.IsTypeOnline, Mode=OneWay}"
-                                             Checked="LiteSyncRadioButtonChecked"
-                                             Unchecked="LiteSyncRadioButtonUnchecked" />
-                            </Grid>
-                        </toolKit:SettingsCard>
-
-                        <toolKit:SettingsCard Background="{ThemeResource LayerFillColorDefault}"
-                                              ContentAlignment="Left"
-                                              Visibility="{x:Bind ManagedDrive.MainSync.SyncTypeMigrationInProgress, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True' ,Mode=OneWay}">
-                            <Grid HorizontalAlignment="Stretch">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="32" />
-                                    <ColumnDefinition Width="10000" />
-                                    <!-- Make the entire card clickable to select the radio button -->
-                                </Grid.ColumnDefinitions>
-
-                                <!-- Card content -->
-                                <toolKit:SettingsCard Grid.Column="1"
-                                                      x:Uid="Page_Settings_DriveManagementPage_SyncMode_Offline"
-                                                      Background="Transparent"
-                                                      BorderThickness="0"
-                                                      Padding="0" />
-
-                                <!-- RadioButton -->
-                                <RadioButton x:Name="OfflineRadioButton"
-                                             Grid.ColumnSpan="2"
-                                             GroupName="SyncModeRadioGroup"
-                                             MinWidth="0"
-                                             IsChecked="{x:Bind ManagedDrive.MainSync.IsTypeOnline, Converter={StaticResource BooleanToInvertedBooleanConverter}, Mode=OneWay}"
-                                             HorizontalAlignment="Stretch" />
-                            </Grid>
-                        </toolKit:SettingsCard>
-
-                        <toolKit:SettingsCard x:Uid="Page_Settings_DriveManagementPage_SyncMode_InProgress"
-                                              Background="{ThemeResource LayerFillColorDefault}"
-                                              Visibility="{x:Bind ManagedDrive.MainSync.SyncTypeMigrationInProgress, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
-                        </toolKit:SettingsCard>
-
-                    </toolKit:SettingsExpander.Items>
-                    <ProgressRing IsActive="True"
-                                  Height="16"
-                                  Width="16"
-                                  Visibility="{x:Bind ManagedDrive.MainSync.SyncTypeMigrationInProgress, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
-                </toolKit:SettingsExpander>
                 
                 <!-- Advanced syncs -->
                 <toolKit:SettingsCard x:Uid="Page_Settings_DriveManagementPage_AdvancedSyncs"
-                                      IsClickEnabled="True">
+                                      IsClickEnabled="True"
+                                      IsEnabled="False">
                     <toolKit:SettingsCard.HeaderIcon>
                         <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-connect}"
                                           Height="32"

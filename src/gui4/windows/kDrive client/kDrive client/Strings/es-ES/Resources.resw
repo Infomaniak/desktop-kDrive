@@ -496,6 +496,12 @@
   <data name="Page_Settings_DriveManagementPage_FolderSelection.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
+  <data name="Page_Settings_DriveManagementPage_FolderSelection_Presentation.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_FolderSelection_Presentation.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
   <data name="Page_Settings_DriveManagementPage_SyncMode.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
@@ -506,6 +512,9 @@
     <value />
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.Title" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.Title" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncMode_InProgress.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
@@ -770,6 +779,15 @@
     <value />
   </data>
   <data name="Page_Settings_DriveManagementPage_AdvancedSyncs.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.PrimaryButtonText" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.SecondaryButtonText" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
 </root>

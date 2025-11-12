@@ -54,7 +54,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task RefreshSyncs(CancellationToken cancellationToken);
         Task StartSync(DbId syncDbId, CancellationToken cancellationToken);
         Task PauseSync(DbId syncDbId, CancellationToken cancellationToken);
-
+        Task RemoveSync(DbId syncDbId, CancellationToken cancellationToken);
 
         // Setting-related requests
         Task RefreshSettings(CancellationToken cancellationToken);
@@ -73,9 +73,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 
         // Event handlers for account-related signals
         Task HandleAccountUpdatedOrAddedAsync(object? sender, SignalEventArgs args);
+        Task HandleAccountRemovedAsync(object? sender, SignalEventArgs args);
+
 
         // Event handlers for drive-related signals
         Task HandleDriveUpdatedOrAddedAsync(object? sender, SignalEventArgs args);
+        Task HandleDriveRemovedAsync(object? sender, SignalEventArgs args);
+
 
         // Event handlers for sync-related signals
         Task HandleSyncUpdatedOrAddedAsync(object? sender, SignalEventArgs args);

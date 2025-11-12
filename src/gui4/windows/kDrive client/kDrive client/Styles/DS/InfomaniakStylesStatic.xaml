@@ -82,6 +82,7 @@
     <x:String x:Key="Infomaniak.DS.Icons.Documents.folder">ms-appx:///Assets/DS/Icons/Documents/folder.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-open">ms-appx:///Assets/DS/Icons/Documents/folder-open.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-connect">ms-appx:///Assets/DS/Icons/Documents/folder-connect.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-circle-plus">ms-appx:///Assets/DS/Icons/Documents/folder-circle-plus.svg</x:String>
 
     <!-- Devices -->
     <x:String x:Key="Infomaniak.DS.Icons.Devices.computer">ms-appx:///Assets/DS/Icons/Devices/computer.svg</x:String>

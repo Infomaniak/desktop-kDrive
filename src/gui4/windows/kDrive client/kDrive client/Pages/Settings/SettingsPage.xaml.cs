@@ -23,6 +23,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,6 +41,11 @@ namespace Infomaniak.kDrive.Pages.Settings
             Logger.Log(Logger.Level.Info, "Navigated to SettingsPage - Initializing SettingsPage components");
             InitializeComponent();
             Logger.Log(Logger.Level.Debug, "SettingsPage components initialized");
+        }
+
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        {
+            await RefreshAvailableDrivesForAllUsers();
         }
 
         private void CreateAccountButton_Click(object sender, RoutedEventArgs e)
@@ -89,40 +95,26 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         private async void UserSettingsExpander_Expanded(object sender, EventArgs e)
         {
-            ProgressRing? progressRing = FindChildProgressRing(sender as DependencyObject);
-            if (progressRing is not null)
-                progressRing.Visibility = Visibility.Visible;
+            User? user = (sender as FrameworkElement)?.DataContext as User;
+            if (user is not null)
+            {
+                await user.RefreshAvailableDrives();
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Warning, "Unable to find the user from DataContext. Refreshing for all users.");
+                await RefreshAvailableDrivesForAllUsers();
+            }
+        }
 
+        private async Task RefreshAvailableDrivesForAllUsers()
+        {
             List<Task> loadAvailableDrivesTasks = new List<Task>();
             foreach (var user in ViewModel.Users)
             {
                 loadAvailableDrivesTasks.Add(user.RefreshAvailableDrives());
             }
             await Task.WhenAll(loadAvailableDrivesTasks);
-
-            if (progressRing is not null)
-                progressRing.Visibility = Visibility.Collapsed;
-        }
-
-        private ProgressRing? FindChildProgressRing(DependencyObject? dependencyObject)
-        {
-            if (dependencyObject == null)
-                return null;
-            int childCount = VisualTreeHelper.GetChildrenCount(dependencyObject);
-            for (int i = 0; i < childCount; i++)
-            {
-                DependencyObject child = VisualTreeHelper.GetChild(dependencyObject, i);
-                if (child is ProgressRing progressRing)
-                {
-                    return progressRing;
-                }
-                ProgressRing? result = FindChildProgressRing(child);
-                if (result != null)
-                {
-                    return result;
-                }
-            }
-            return null;
         }
 
         private async void DisconectUser_Click(object sender, RoutedEventArgs e)
