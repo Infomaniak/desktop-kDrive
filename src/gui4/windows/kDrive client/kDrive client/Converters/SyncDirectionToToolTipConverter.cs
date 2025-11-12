@@ -1,12 +1,6 @@
-﻿using Infomaniak.kDrive.ViewModels;
-using Infomaniak.kDrive.Types;
+﻿using Infomaniak.kDrive.Types;
 using Microsoft.UI.Xaml.Data;
 using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.Converters
 {
@@ -14,12 +8,12 @@ namespace Infomaniak.kDrive.Converters
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            if (value is SyncActivityDirection syncDirection)
+            if (value is SyncDirection syncDirection)
             {
                 return syncDirection switch
                 {
-                    SyncActivityDirection.Outgoing => Utility.GetLocalizedString("Converter_SyncDirectionToToolTipConverter_Outgoing"),
-                    SyncActivityDirection.Incoming => Utility.GetLocalizedString("Converter_SyncDirectionToToolTipConverter_Incoming"),
+                    SyncDirection.Up => Utility.GetLocalizedString("Converter_SyncDirectionToToolTipConverter_Outgoing"),
+                    SyncDirection.Down => Utility.GetLocalizedString("Converter_SyncDirectionToToolTipConverter_Incoming"),
                     _ => ""
                 };
             }

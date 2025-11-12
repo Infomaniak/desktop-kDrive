@@ -5,11 +5,11 @@ using System;
 
 namespace Infomaniak.kDrive.Converters
 {
-    public class SyncActivityStateToIconUriConverter : IValueConverter
+    public class SyncActivityStatusToIconUriConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            if (value is SyncActivityState state)
+            if (value is SyncFileStatus state)
             {
                 // load icons from app resources
                 string result = "";
@@ -17,9 +17,13 @@ namespace Infomaniak.kDrive.Converters
                 {
                     string resourceKey = state switch
                     {
-                        SyncActivityState.Successful => "Infomaniak.DS.Icons.Actions.circle-check",
-                        SyncActivityState.InProgress => "Infomaniak.DS.Icons.Arrows.arrow-loop",
-                        SyncActivityState.Failed => "Infomaniak.DS.Icons.Actions.triangle-alert",
+                        SyncFileStatus.Success => "Infomaniak.DS.Icons.Actions.circle-check",
+                        SyncFileStatus.Ignored => "Infomaniak.DS.Icons.Actions.circle-check",
+                        SyncFileStatus.Syncing => "Infomaniak.DS.Icons.Arrows.arrow-loop",
+                        SyncFileStatus.Inconsistency => "Infomaniak.DS.Icons.Actions.triangle-alert",
+                        SyncFileStatus.Error => "Infomaniak.DS.Icons.Actions.triangle-alert",
+                        SyncFileStatus.Unknown => "Infomaniak.DS.Icons.Actions.triangle-alert",
+                        SyncFileStatus.Conflict => "Infomaniak.DS.Icons.Actions.triangle-alert",
                         _ => "Infomaniak.DS.Icons.Arrows.arrow-loop",
                     };
                     if (Application.Current.Resources[resourceKey] is string iconUriStr)

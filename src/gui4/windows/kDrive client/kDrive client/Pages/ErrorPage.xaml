@@ -210,14 +210,7 @@
                                 Grid.Column="1"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Center">
-                        <Image Width="200"
-                               Stretch="Uniform"
-                               HorizontalAlignment="Center"
-                               Margin="20">
-                            <Image.Source>
-                                <SvgImageSource UriSource="ms-appx:///Assets/Images/no-errors.svg" /> <!-- TODO: Replace by SvgIcon once the error page is ready (UX)-->
-                            </Image.Source>
-                        </Image>
+                       
                         <TextBlock x:Uid="Page_ErrorPage_NoErrors_Line1"
                                    Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                                    Opacity="0.6"
