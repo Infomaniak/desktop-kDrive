@@ -161,9 +161,10 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task RefreshAvailableDrives()
         {
-            if(DriveRefreshInProgress)
+            if (DriveRefreshInProgress)
             {
                 Logger.Log(Logger.Level.Info, $"Drive refresh already in progress for user {Name} ({DbId}), skipping.");
+                return;
             }
             SetPropertyInUIThread(ref _driveRefreshInProgress, true, nameof(DriveRefreshInProgress));
             await App.ServiceProvider.GetRequiredService<IServerCommService>().RefreshUserDrivesAvailable(this.DbId, CancellationToken.None);
@@ -193,7 +194,7 @@ namespace Infomaniak.kDrive.ViewModels
             }
 
             foreach (var drive in drives)
-                if (AllDrives.FirstOrDefault(d =>  d == drive) is null)
+                if (AllDrives.FirstOrDefault(d => d == drive) is null)
                     AllDrives.Add(drive);
         }
     }

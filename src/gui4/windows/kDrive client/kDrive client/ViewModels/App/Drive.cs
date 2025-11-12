@@ -45,11 +45,11 @@ namespace Infomaniak.kDrive.ViewModels
         {
             DbId = dbId;
             Account = account;
-            Syncs.CollectionChanged += (s, e) => RefreshSyncAdvancedSyncMap();
+            Syncs.CollectionChanged += (s, e) => RefreshAdvancedSyncsMap();
 
         }
 
-        private void RefreshSyncAdvancedSyncMap()
+        private void RefreshAdvancedSyncsMap()
         {
             var advancedSyncs = Syncs.Where(s => s != MainSync);
             foreach (int i in Enumerable.Range(0, _advancedSyncs.Count).Reverse())

@@ -89,7 +89,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             if (await Utility.ShowContentDialog(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncMode_WarningDialog") == ContentDialogResult.Primary)
             {
                 Logger.Log(Logger.Level.Info, "User confirmed to change to online Sync mode");
-                await ManagedDrive?.MainSync?.ChangeMode(Types.SyncType.Online);
+                await ManagedDrive?.MainSync?.ChangeSyncType(Types.SyncType.Online);
             }
             else
             {
@@ -109,7 +109,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             if (await Utility.ShowContentDialog(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncMode_WarningDialog") == ContentDialogResult.Primary)
             {
                 Logger.Log(Logger.Level.Info, "User confirmed to change to offline Sync mode");
-                await ManagedDrive?.MainSync?.ChangeMode(Types.SyncType.Offline);
+                await ManagedDrive?.MainSync?.ChangeSyncType(Types.SyncType.Offline);
             }
             else
             {

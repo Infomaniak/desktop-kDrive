@@ -187,10 +187,10 @@ namespace Infomaniak.kDrive.ViewModels
             await serverComm.PauseSync(DbId, CancellationToken.None);
         }
 
-        public async Task ChangeMode(SyncType newType)
+        public async Task ChangeSyncType(SyncType newType)
         {
             SetPropertyInUIThread(ref _syncTypeMigrationInProgress, true, nameof(SyncTypeMigrationInProgress));
-            Logger.Log(Logger.Level.Error, "Changing sync mode is not yet implemented.");
+            Logger.Log(Logger.Level.Error, "Changing sync type is not yet implemented.");
             await Task.Delay(5000); // TODO: Replace with actual implementation
             SetPropertyInUIThread(ref _syncTypeMigrationInProgress, false, nameof(SyncTypeMigrationInProgress));
 
