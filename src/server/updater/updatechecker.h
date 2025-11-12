@@ -85,6 +85,7 @@ class UpdateChecker {
         const VersionInfo _defaultVersionInfo;
         AllVersionsInfo _versionsInfo;
         bool _isVersionReceived{false};
+        std::mutex _mutex;
 
         friend class MockUpdateChecker;
         friend class TestUpdateChecker;

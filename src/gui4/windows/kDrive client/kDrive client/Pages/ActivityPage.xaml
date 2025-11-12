@@ -28,7 +28,7 @@
                     <controls:SvgIcon Height="16"
                                       UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-check}" />
                 </StackPanel>
-                <TextBlock Text="{x:Bind LastActivity.ActivityTime, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Ago', Mode=OneWay}"
+                <TextBlock Text="{x:Bind LastActivity.Timestamp, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Ago', Mode=OneWay}"
                            Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                            Visibility="{x:Bind LastActivity, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}" />
             </StackPanel>
@@ -58,7 +58,7 @@
                                       UriString="{StaticResource Infomaniak.DS.Icons.Media.pause}" 
                                       Foreground="{ThemeResource SystemAccentColor}"/>
                 </StackPanel>
-                <TextBlock Text="{x:Bind LastActivity.ActivityTime, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Since', Mode=OneWay}"
+                <TextBlock Text="{x:Bind LastActivity.Timestamp, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Since', Mode=OneWay}"
                            Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                            Visibility="{x:Bind LastActivity, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}" />
             </StackPanel>

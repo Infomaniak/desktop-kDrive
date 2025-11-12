@@ -79,15 +79,15 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             copyProperty(source, target, nameof(source.IsConnected), nameof(target.IsConnected));
             copyProperty(source, target, nameof(source.IsStaff), nameof(target.IsStaff));
 
-            if(source.Avatar is null)
+            if (source.Avatar is null)
             {
                 target.Avatar = null;
                 return;
             }
 
-            if(target.Avatar is null)
+            if (target.Avatar is null)
             {
-               target.Avatar = new byte[source.Avatar.Length];
+                target.Avatar = new byte[source.Avatar.Length];
             }
             Array.Copy(source.Avatar, target.Avatar, source.Avatar.Length);
 
@@ -112,11 +112,20 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
 
     public class DriveInfo
     {
+        private System.Drawing.Color? _color;
         public DbId? DbId { get; set; }
         public DbId? AccountDbId { get; set; }
         public DriveId? Id { get; set; }
         public string? Name { get; set; }
-        public System.Drawing.Color? Color { get; set; }
+        public System.Drawing.Color? Color
+        {
+            get => _color;
+            set
+            {
+                _color = value;
+                Logger.Log(Logger.Level.Info, $"DriveInfo color for {Name} is {_color}");
+            }
+        }
     }
     public static partial class ConversionHelper
     {
@@ -282,6 +291,42 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
                 target.ExtendedLog = false;
                 target.LogLevel = source.LogLevel;
             }
+        }
+    }
+
+    public class SyncFileItemInfo
+    {
+        public NodeType? Type { get; set; }
+        public string? Path { get; set; }
+        public string? NewPath { get; set; }
+        public string? LocalNodeId { get; set; }
+        public string? RemoteNodeId { get; set; }
+
+        public SyncDirection? Direction { get; set; }
+        public SyncFileInstruction? Instruction { get; set; }
+        public SyncFileStatus? Status { get; set; }
+        public ConflictType? Conflict { get; set; }
+        public InconsistencyType? Inconsistency { get; set; }
+        public CancelType? CancelType { get; set; }
+        public string? Error { get; set; }
+    }
+
+    public static partial class ConversionHelper
+    {
+        static public void copyToSyncFileItem(SyncFileItemInfo source, SyncFileItem target)
+        {
+            copyProperty(source, target, nameof(source.Type), nameof(target.Type));
+            copyProperty(source, target, nameof(source.Path), nameof(target.Path));
+            copyProperty(source, target, nameof(source.NewPath), nameof(target.NewPath));
+            copyProperty(source, target, nameof(source.LocalNodeId), nameof(target.LocalNodeId));
+            copyProperty(source, target, nameof(source.RemoteNodeId), nameof(target.RemoteNodeId));
+            copyProperty(source, target, nameof(source.Direction), nameof(target.Direction));
+            copyProperty(source, target, nameof(source.Instruction), nameof(target.Instruction));
+            copyProperty(source, target, nameof(source.Status), nameof(target.Status));
+            copyProperty(source, target, nameof(source.Conflict), nameof(target.Conflict));
+            copyProperty(source, target, nameof(source.Inconsistency), nameof(target.Inconsistency));
+            copyProperty(source, target, nameof(source.CancelType), nameof(target.CancelType));
+            copyProperty(source, target, nameof(source.Error), nameof(target.Error));
         }
     }
 }

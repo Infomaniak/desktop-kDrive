@@ -66,7 +66,7 @@ namespace Infomaniak.kDrive.Pages
         {
             switch (ViewModel.SelectedSync?.SyncStatus)
             {
-                case SyncStatus.Running:
+                case SyncStatus.Running or SyncStatus.Paused or SyncStatus.PauseAsked: /* Treat Paused & PauseAsked as In Progress because the sync will resume automatically */
                     TitleContentControl.ContentTemplate = (DataTemplate)this.Resources["InProgressTitleTemplate"];
                     break;
                 case SyncStatus.Idle:
@@ -80,7 +80,7 @@ namespace Infomaniak.kDrive.Pages
                 case SyncStatus.Offline:
                     TitleContentControl.ContentTemplate = (DataTemplate)this.Resources["OfflineTitleTemplate"];
                     break;
-                case SyncStatus.Pause:
+                case SyncStatus.Stopped:
                     TitleContentControl.ContentTemplate = (DataTemplate)this.Resources["InPauseTitleTemplate"];
                     break;
                 default:

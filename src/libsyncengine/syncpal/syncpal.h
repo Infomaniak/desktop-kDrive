@@ -120,6 +120,8 @@ struct SyncProgress {
                    _completedSize == other._completedSize && _totalSize == other._totalSize &&
                    _estimatedRemainingTime == other._estimatedRemainingTime;
         }
+
+        void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
 };
 
 

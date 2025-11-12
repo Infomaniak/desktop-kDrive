@@ -43,7 +43,6 @@
 #include "libsyncengine/requests/parameterscache.h"
 #include "libsyncengine/requests/exclusiontemplatecache.h"
 #include "libsyncengine/jobs/syncjobmanager.h"
-
 #include <iostream>
 #include <fstream>
 #include <filesystem>
@@ -60,6 +59,17 @@
 #include "jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.h"
 #include "requests/offlinefilessizeestimator.h"
 #include "updater/updatemanager.h"
+
+#include "server/comm/guijobs/signalaccountaddedjob.h"
+#include "server/comm/guijobs/signaluseraddedjob.h"
+#include "server/comm/guijobs/signaluserupdatedjob.h"
+#include "server/comm/guijobs/signaluserremovedjob.h"
+#include "server/comm/guijobs/signaldriveaddedjob.h"
+#include "server/comm/guijobs/signalsyncaddedjob.h"
+#include "server/comm/guijobs/signalsyncremovedjob.h"
+#include "server/comm/guijobs/signalsynccompleteditem.h"
+
+#include "server/comm/guijobs/signalsyncprogressinfo.h"
 
 #include <QDesktopServices>
 #include <QDir>
@@ -3573,9 +3583,11 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, cons
 
         // Set callbacks
         syncPalMapIt = syncPalMap.find(sync.dbId());
-        syncPalMapIt->second->setAddErrorCallback(&addError);
-        syncPalMapIt->second->setAddCompletedItemCallback(&addCompletedItem);
-        syncPalMapIt->second->setSendSignalCallback(&sendSignal);
+        syncPalMapIt->second->setAddErrorCallback([this](const Error &error) { this->addError(error); });
+        syncPalMapIt->second->setAddCompletedItemCallback(
+                [this](int syncDbId, const SyncFileItem &item, bool notify) { this->addCompletedItem(syncDbId, item, notify); });
+        syncPalMapIt->second->setSendSignalCallback(
+                [this](SignalNum sigNum, int syncDbId, const SigValueType &val) { this->sendSignal(sigNum, syncDbId, val); });
 
         if (!blackList.empty()) {
             // Set blackList (create or overwrite the possible existing list in DB)
@@ -4113,6 +4125,7 @@ void AppServer::sendUserAdded(const UserInfo &userInfo) {
     paramsStream << userInfo;
 
     OldCommServer::instance()->sendSignal(SignalNum::USER_ADDED, params, id);
+    _commManager->sendGuiSignal(std::make_shared<SignalUserAddedJob>(userInfo));
 }
 
 void AppServer::sendUserUpdated(const UserInfo &userInfo) {
@@ -4123,6 +4136,7 @@ void AppServer::sendUserUpdated(const UserInfo &userInfo) {
     paramsStream << userInfo;
 
     OldCommServer::instance()->sendSignal(SignalNum::USER_UPDATED, params, id);
+    // _commManager->sendGuiSignal(std::make_shared<SignalUserUpdatedJob>(userInfo)); -> sendUserUpdated should not be static
 }
 
 void AppServer::sendUserStatusChanged(int userDbId, bool connected, QString connexionError) {
@@ -4145,6 +4159,7 @@ void AppServer::sendUserRemoved(int userDbId) {
     paramsStream << userDbId;
 
     OldCommServer::instance()->sendSignal(SignalNum::USER_REMOVED, params, id);
+    _commManager->sendGuiSignal(std::make_shared<SignalUserRemovedJob>(userDbId));
 }
 
 void AppServer::sendAccountAdded(const AccountInfo &accountInfo) {
@@ -4155,6 +4170,7 @@ void AppServer::sendAccountAdded(const AccountInfo &accountInfo) {
     paramsStream << accountInfo;
 
     OldCommServer::instance()->sendSignal(SignalNum::ACCOUNT_ADDED, params, id);
+    _commManager->sendGuiSignal(std::make_shared<SignalAccountAddedJob>(accountInfo));
 }
 
 void AppServer::sendAccountUpdated(const AccountInfo &accountInfo) {
@@ -4185,6 +4201,7 @@ void AppServer::sendDriveAdded(const DriveInfo &driveInfo) {
     paramsStream << driveInfo;
 
     OldCommServer::instance()->sendSignal(SignalNum::DRIVE_ADDED, params, id);
+    _commManager->sendGuiSignal(std::make_shared<SignalDriveAddedJob>(driveInfo));
 }
 
 void AppServer::sendDriveUpdated(const DriveInfo &driveInfo) {
@@ -4237,6 +4254,7 @@ void AppServer::sendSyncRemoved(int syncDbId) {
     paramsStream << syncDbId;
 
     OldCommServer::instance()->sendSignal(SignalNum::SYNC_REMOVED, params, id);
+    _commManager->sendGuiSignal(std::make_shared<SignalSyncRemovedJob>(syncDbId));
 }
 
 void AppServer::sendSyncDeletionFailed(int syncDbId) {
@@ -4267,8 +4285,8 @@ void AppServer::sendGetFolderSizeCompleted(const QString &nodeId, qint64 size) {
 }
 
 void AppServer::sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep step, const SyncProgress &progress) {
+    // Send to old comm layer (To remove once deprecated).
     int id = 0;
-
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << syncDbId;
@@ -4280,6 +4298,9 @@ void AppServer::sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep s
     paramsStream << static_cast<qint64>(progress._totalSize);
     paramsStream << static_cast<qint64>(progress._estimatedRemainingTime);
     OldCommServer::instance()->sendSignal(SignalNum::SYNC_PROGRESSINFO, params, id);
+
+    // Send to the new comm layer
+    _commManager->sendGuiSignal(std::make_shared<SignalSyncProgressInfo>(syncDbId, status, step, progress));
 }
 
 void AppServer::sendSyncCompletedItem(int syncDbId, const SyncFileItemInfo &itemInfo) {
@@ -4290,6 +4311,7 @@ void AppServer::sendSyncCompletedItem(int syncDbId, const SyncFileItemInfo &item
     paramsStream << syncDbId;
     paramsStream << itemInfo;
     OldCommServer::instance()->sendSignal(SignalNum::SYNC_COMPLETEDITEM, params, id);
+    _commManager->sendGuiSignal(std::make_shared<SignalSyncCompletedItem>(syncDbId, itemInfo));
 }
 
 void AppServer::sendVfsConversionCompleted(int syncDbId) {
@@ -4309,6 +4331,7 @@ void AppServer::sendSyncAdded(const SyncInfo &syncInfo) {
     paramsStream << syncInfo;
 
     OldCommServer::instance()->sendSignal(SignalNum::SYNC_ADDED, params, id);
+    _commManager->sendGuiSignal(std::make_shared<SignalSyncAddedJob>(syncInfo));
 }
 
 void AppServer::onLoadInfo() {

@@ -81,6 +81,8 @@ const VersionInfo &UpdateChecker::versionInfo(const VersionChannel chosenChannel
 }
 
 void UpdateChecker::versionInfoReceived(UniqueId jobId) {
+    // A mutex is needed because this function can be run multiple times simultaneously when the computer wakes from sleep.
+    const std::scoped_lock<std::mutex> lock(_mutex);
     _isVersionReceived = false;
     _versionsInfo.clear();
     LOG_INFO(Log::instance()->getLogger(), "App version info received");
