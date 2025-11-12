@@ -55,6 +55,8 @@
 
 namespace KDC {
 
+std::recursive_mutex SyncPal::updateTreesMutex;
+
 SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const SyncPath &syncDbPath, const std::string &version, const bool hasFullyCompleted) :
     _vfs(vfs),
     _logger(Log::instance()->getLogger()) {
@@ -390,6 +392,7 @@ void SyncPal::loadProgress(SyncProgress &syncProgress) const {
 
 void SyncPal::createSharedObjects() {
     LOG_SYNCPAL_DEBUG(_logger, "Create shared objects");
+    const std::lock_guard<std::recursive_mutex> lock(updateTreesMutex);
     _localOperationSet = std::make_shared<FSOperationSet>(ReplicaSide::Local);
     _remoteOperationSet = std::make_shared<FSOperationSet>(ReplicaSide::Remote);
     _localUpdateTree = std::make_shared<UpdateTree>(ReplicaSide::Local, _syncDb->rootNode());
@@ -403,6 +406,7 @@ void SyncPal::createSharedObjects() {
 
 void SyncPal::freeSharedObjects() {
     LOG_SYNCPAL_DEBUG(_logger, "Free shared objects");
+    const std::lock_guard<std::recursive_mutex> lock(updateTreesMutex);
     _localSnapshot.reset();
     _remoteSnapshot.reset();
     _localOperationSet.reset();
@@ -427,6 +431,7 @@ void SyncPal::freeSharedObjects() {
 
 void SyncPal::initSharedObjects() {
     LOG_SYNCPAL_DEBUG(_logger, "Init shared objects");
+    const std::lock_guard<std::recursive_mutex> lock(updateTreesMutex);
     if (_localUpdateTree) _localUpdateTree->init();
     if (_remoteUpdateTree) _remoteUpdateTree->init();
 
@@ -435,7 +440,7 @@ void SyncPal::initSharedObjects() {
 
 void SyncPal::resetSharedObjects() {
     LOG_SYNCPAL_DEBUG(_logger, "Reset shared objects");
-
+    const std::lock_guard<std::recursive_mutex> lock(updateTreesMutex);
     if (_localOperationSet) _localOperationSet->clear();
     if (_remoteOperationSet) _remoteOperationSet->clear();
     if (_localUpdateTree) _localUpdateTree->clear();
@@ -1406,16 +1411,21 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std:
     }
 
     // Blacklist the item
+    const std::lock_guard<std::recursive_mutex> lock(updateTreesMutex);
+    if (!updateTree(ReplicaSide::Local) || !updateTree(ReplicaSide::Remote)) {
+        return ExitCode::LogicError;
+    }
+
     if (!localNodeId.empty()) {
         _tmpBlacklistManager->blacklistItem(localNodeId, relativeLocalPath, ReplicaSide::Local);
-        if (!updateTree(ReplicaSide::Local)->deleteNode(localNodeId)) {
+        if (updateTree(ReplicaSide::Local) && !updateTree(ReplicaSide::Local)->deleteNode(localNodeId)) {
             // Do nothing: Can happen if the UpdateTreeWorker step has never been launched
         }
     }
 
     if (!remoteNodeId.empty()) {
         _tmpBlacklistManager->blacklistItem(remoteNodeId, relativeLocalPath, ReplicaSide::Remote);
-        if (!updateTree(ReplicaSide::Remote)->deleteNode(remoteNodeId)) {
+        if (updateTree(ReplicaSide::Remote) && !updateTree(ReplicaSide::Remote)->deleteNode(remoteNodeId)) {
             // Do nothing: Can happen if the UpdateTreeWorker step has never been launched
         }
     }

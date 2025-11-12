@@ -41,6 +41,12 @@ void PlatformInconsistencyCheckerWorker::execute() {
     checkTree(ReplicaSide::Remote);
     checkTree(ReplicaSide::Local);
 
+    const std::lock_guard<std::recursive_mutex> lock(SyncPal::updateTreesMutex);
+    if (!_syncPal->updateTree(ReplicaSide::Local) || !_syncPal->updateTree(ReplicaSide::Remote)) {
+        setDone(ExitCode::LogicError);
+        return;
+    }
+
     for (const auto &[remoteId, localId]: _idsToBeRemoved) {
         if (!remoteId.empty() && !_syncPal->updateTree(ReplicaSide::Remote)->deleteNode(remoteId)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node id=" << CommonUtility::s2ws(remoteId));

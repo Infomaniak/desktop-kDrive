@@ -37,15 +37,23 @@ void OperationGeneratorWorker::execute() {
     _syncPal->_syncOps->clear();
     _bytesToDownload = 0;
 
-    // Mark all nodes "Unprocessed"
-    _syncPal->updateTree(ReplicaSide::Local)->markAllNodesUnprocessed();
-    _syncPal->updateTree(ReplicaSide::Remote)->markAllNodesUnprocessed();
+    {
+        const std::lock_guard<std::recursive_mutex> lock(SyncPal::updateTreesMutex);
+        if (!_syncPal->updateTree(ReplicaSide::Local) || !_syncPal->updateTree(ReplicaSide::Remote)) {
+            setDone(ExitCode::LogicError);
+            return;
+        }
 
-    _deletedNodes.clear();
+        // Mark all nodes "Unprocessed"
+        _syncPal->updateTree(ReplicaSide::Local)->markAllNodesUnprocessed();
+        _syncPal->updateTree(ReplicaSide::Remote)->markAllNodesUnprocessed();
 
-    // Initiate breadth-first search with root nodes from both update trees
-    _queuedToExplore.push(_syncPal->updateTree(ReplicaSide::Local)->rootNode());
-    _queuedToExplore.push(_syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+        _deletedNodes.clear();
+
+        // Initiate breadth-first search with root nodes from both update trees
+        _queuedToExplore.push(_syncPal->updateTree(ReplicaSide::Local)->rootNode());
+        _queuedToExplore.push(_syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+    }
 
     // Explore both update trees
     sentry::pTraces::counterScoped::GenerateItemOperations perfMonitor(syncDbId());

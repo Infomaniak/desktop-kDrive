@@ -241,7 +241,7 @@ void TestSyncPal::testBlacklist() {
             nodeFileAA.created().value(), nodeFileAA.lastModifiedRemote().value(), nodeFileAA.type(), 123, false, true, true));
 
     // Make sure the local and remote items are blacklisted
-    _syncPal->handleAccessDeniedItem("A", ExitCause::FileAccessError);
+    CPPUNIT_ASSERT(_syncPal->handleAccessDeniedItem("A", ExitCause::FileAccessError));
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_tmpBlacklistManager->isTmpBlacklisted(SyncPath("A/AA"), ReplicaSide::Local));
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->_tmpBlacklistManager->isTmpBlacklisted(SyncPath("A/AA"), ReplicaSide::Remote));
 
