@@ -712,7 +712,6 @@
   <data name="Page_SettingsPage_Proxy_ComoBox_HTTP.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
-  <data name="Page_SettingsPage_Proxy_ComoBox_NONE.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
   <data name="W_MainWindow_PaneFooter_Folder.Content" xml:space="preserve">
     <value />
   </data>

@@ -36,6 +36,7 @@ namespace Infomaniak.kDrive.ViewModels
             get => _type;
             set => SetPropertyInUIThread(ref _type, value);
         }
+
         public string Path
         {
             get => _path;

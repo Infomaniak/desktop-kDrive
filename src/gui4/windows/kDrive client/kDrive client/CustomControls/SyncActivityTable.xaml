@@ -12,6 +12,7 @@
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
+        <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />
         <converters:DateTimeToTimeAgoConverter x:Key="DateTimeToTimeAgoConverter" />
         <converters:BytesToHumanReadableStringConverter x:Key="BytesToHumanReadableStringConverter" />
         <converters:SyncActivityStatusToIconUriConverter x:Key="SyncActivityStatusToIconConverter" />
@@ -123,7 +124,7 @@
                             <DataTemplate x:Key="FileIconTemplate"
                                           x:DataType="viewmodels:SyncFileItem">
                                 <controls:SvgIcon Height="16"
-                                                  UriString="{StaticResource Infomaniak.DS.Icons.Documents.file-text}" />
+                                                  UriString="{x:Bind Path, Converter={StaticResource FilePathToIconConverter}}" />
                             </DataTemplate>
                             <DataTemplate x:Key="DirectoryIconTemplate"
                                           x:DataType="viewmodels:SyncFileItem">

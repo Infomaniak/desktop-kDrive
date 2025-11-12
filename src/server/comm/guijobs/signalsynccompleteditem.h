@@ -30,7 +30,6 @@ class SignalSyncCompletedItem : public AbstractGuiJob {
     private:
         // Output parameters
         int _syncDbId = -1;
-        
         SyncFileItemInfo _itemInfo;
 
         ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
