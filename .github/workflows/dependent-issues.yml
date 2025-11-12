@@ -23,6 +23,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: depends-on/depends-on-action@0.15.0
-        env:
-          # (Required) The token to use to make API calls to GitHub.
-          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          token: ${{ github.token }}
