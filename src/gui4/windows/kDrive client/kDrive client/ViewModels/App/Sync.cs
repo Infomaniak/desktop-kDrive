@@ -16,23 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using CommunityToolkit.Mvvm.ComponentModel;
 using DynamicData.Binding;
-using Infomaniak.kDrive.ServerCommunication;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
-using Infomaniak.kDrive.ViewModels.Errors;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.UI.Xaml;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.IO;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using Windows.Foundation;
 
 namespace Infomaniak.kDrive.ViewModels
 {
@@ -45,11 +37,11 @@ namespace Infomaniak.kDrive.ViewModels
         private SyncPath _localPath = "";
         private SyncPath _remotePath = "";
         private bool _supportOnlineMode = false;
-        private readonly ObservableCollection<SyncActivity> _syncActivities = new();
-        private SyncStatus _syncStatus = SyncStatus.Pause;
+        private readonly ObservableCollection<SyncFileItem> _syncActivities = new();
+        private SyncStatus _syncStatus = SyncStatus.Paused;
         private SyncType _syncType = SyncType.Unknown;
         private ObservableCollection<Errors.BaseError> _syncErrors = new();
-        private SyncActivity? _lastActivity;
+        private SyncFileItem? _lastActivity;
 
         // Sync UI properties
         private bool _showIncomingActivity = true;
@@ -58,7 +50,7 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get
             {
-                if (_syncStatus == SyncStatus.Pause && !App.ServiceProvider.GetRequiredService<AppModel>().NetworkAvailable)
+                if (_syncStatus == SyncStatus.Paused && !App.ServiceProvider.GetRequiredService<AppModel>().NetworkAvailable)
                 {
                     return SyncStatus.Offline;
                 }
@@ -66,144 +58,18 @@ namespace Infomaniak.kDrive.ViewModels
             }
             set => SetPropertyInUIThread(ref _syncStatus, value);
         }
-
-        //TODO: Remove this test function
-        private SyncActivity GenerateTestActivity()
-        {
-            Random rand = new Random();
-            string[] sampleFileExtension = new string[]
-            {
-                "docx",
-                "doc",
-                "png",
-                "jpg",
-                "xls",
-                "xlsx",
-                "txt",
-            };
-
-            string[] sampleDirectories = new string[]
-            {
-                "Documents",
-                "Photos",
-                "Music",
-                "Videos",
-                "Work",
-                "Personal",
-                "Projects",
-                "Backups"
-            };
-
-            string[] sampleFileNames = new string[]
-            {
-                "Report",
-                "Presentation",
-                "Notes",
-                "Meeting",
-                "Holiday",
-                "Family",
-                "ProjectPlan",
-                "Budget"
-            };
-
-            int randomPathDepth = rand.Next(0, 2); // Random depth between 0 and 1
-
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < randomPathDepth; i++)
-            {
-                sb.Append(sampleDirectories[rand.Next(sampleDirectories.Length)] + "/");
-            }
-
-            bool isFile = rand.Next(2) == 0; // Randomly decide if it's a file or directory
-            if (isFile)
-            {
-                sb.Append(sampleFileNames[rand.Next(sampleFileNames.Length)] + "." + sampleFileExtension[rand.Next(sampleFileExtension.Length)]);
-            }
-            else
-            {
-                sb.Append(sampleFileNames[rand.Next(sampleFileNames.Length)]);
-            }
-            SyncActivityDirection direction = (SyncActivityDirection)rand.Next(1, 3); // Randomly choose direction
-            NodeType nodeType = isFile ? NodeType.File : NodeType.Directory;
-            long size = isFile ? rand.Next(0, 5000000) : 0; // Random size for files, 0 for directories
-            DateTime activityTime = DateTime.Now;
-            return new SyncActivity()
-            {
-                LocalPath = "C:/Users/Herve/kDrive/" + sb.ToString(),
-                Direction = direction,
-                NodeType = nodeType,
-                Size = size,
-                ActivityTime = activityTime,
-                RemoteId = rand.Next(1, 1000)
-            };
-        }
-
+   
         public Sync(DbId dbId, Drive drive)
         {
             _dbId = dbId;
             _drive = drive;
 
-            //For testing purpose only
-            List<DbId> errorsSync = new List<DbId> { 3, 7 };
-            if (errorsSync.Contains(dbId))
-            {
-                SyncErrors.Add(new AppError(0) { });
-            }
-            Task.Run(async () =>
-            {
-                Random random = new Random();
-
-                while (true)
-                {
-                    if (SyncStatus != SyncStatus.Running && SyncStatus != SyncStatus.Idle)
-                    {
-                        await Task.Delay(500).ConfigureAwait(false);
-                        continue;
-                    }
-
-                    if (SyncStatus == SyncStatus.Running)
-                    {
-                        if (random.Next(10) == 1)
-                        {
-                            SyncStatus = SyncStatus.Idle;
-                            continue;
-                        }
-                        else
-                        {
-                            var newActivity = GenerateTestActivity();
-
-                            await Utility.RunOnUIThread(() =>
-                            {
-                                _syncActivities.Insert(0, newActivity);
-                                if (_syncActivities.Count > 500)
-                                {
-                                    _syncActivities.RemoveAt(_syncActivities.Count - 1);
-                                }
-                            });
-                            await Task.Delay(random.Next(0, 10)).ConfigureAwait(false);
-                            await Task.Delay(100).ConfigureAwait(false);
-
-                        }
-                    }
-                    else if (SyncStatus == SyncStatus.Idle)
-                    {
-                        if (random.Next(10) == 1)
-                        {
-                            SyncStatus = SyncStatus.Running;
-                        }
-                        await Task.Delay(random.Next(2000)).ConfigureAwait(false);
-                    }
-
-
-                }
-            });
-
             App.ServiceProvider.GetRequiredService<AppModel>().WhenAnyPropertyChanged("NetworkAvailable").Subscribe(appModel =>
             {
-                if (SyncStatus == SyncStatus.Pause || SyncStatus == SyncStatus.Offline)
+                if (SyncStatus == SyncStatus.Paused || SyncStatus == SyncStatus.Offline)
                 {
                     bool networkAvailable = appModel?.NetworkAvailable ?? true;
-                    SyncStatus = networkAvailable ? SyncStatus.Pause : SyncStatus.Offline;
+                    SyncStatus = networkAvailable ? SyncStatus.Paused : SyncStatus.Offline;
                 }
             });
 
@@ -266,7 +132,7 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _syncType, value);
         }
 
-        public ObservableCollection<SyncActivity> SyncActivities
+        public ObservableCollection<SyncFileItem> SyncActivities
         {
             get => _syncActivities;
         }
@@ -282,7 +148,7 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _syncErrors, value);
         }
 
-        public SyncActivity? LastActivity
+        public SyncFileItem? LastActivity
         {
             get => _lastActivity;
             set => SetPropertyInUIThread(ref _lastActivity, value);
@@ -292,6 +158,18 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _showIncomingActivity;
             set => SetPropertyInUIThread(ref _showIncomingActivity, value);
+        }
+
+        public async Task Start()
+        {
+            var serverComm = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            await serverComm.StartSync(DbId, CancellationToken.None);
+        }
+
+        public async Task Pause()
+        {
+            var serverComm = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            await serverComm.PauseSync(DbId, CancellationToken.None);
         }
     }
 }

@@ -1,12 +1,6 @@
 ﻿using Infomaniak.kDrive.Types;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using WinRT;
 
 namespace Infomaniak.kDrive.TemplateSelectors
 {
@@ -42,12 +36,13 @@ namespace Infomaniak.kDrive.TemplateSelectors
             switch (syncStatus)
             {
                 case SyncStatus.Starting:
-                case SyncStatus.Pausing:
-                case SyncStatus.Unknown:
+                case SyncStatus.PauseAsked:
+                case SyncStatus.Undefined:
                     return SyncLoadingTemplate;
                 case SyncStatus.Running:
                     return SyncInProgressTemplate;
-                case SyncStatus.Pause:
+                case SyncStatus.Paused:
+                case SyncStatus.Stopped:
                     return SyncInPauseTemplate;
                 case SyncStatus.Offline:
                     return SyncOfflineTemplate;

@@ -226,8 +226,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         void deleteAccount(int accountDbId);
 
         static void sendErrorAdded(bool serverLevel, ExitCode exitCode, int syncDbId);
-        static void addCompletedItem(int syncDbId, const SyncFileItem &item, bool notify);
-        static void sendSignal(SignalNum sigNum, int syncDbId, const SigValueType &val);
+        void addCompletedItem(int syncDbId, const SyncFileItem &item, bool notify);
+        void sendSignal(SignalNum sigNum, int syncDbId, const SigValueType &val);
 
         static ExitInfo getVfsPtr(int syncDbId, std::shared_ptr<Vfs> &vfs);
 
@@ -237,7 +237,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 #if defined(KD_MACOS)
         static void exclusionAppList(QString &appList);
 #endif
-        static void sendSyncCompletedItem(int syncDbId, const SyncFileItemInfo &item);
+        void sendSyncCompletedItem(int syncDbId, const SyncFileItemInfo &item);
         static void sendVfsConversionCompleted(int syncDbId);
         static ExitCode sendShowFileNotification(int syncDbId, const QString &filename, const QString &renameTarget,
                                                  SyncFileInstruction status, int count);
