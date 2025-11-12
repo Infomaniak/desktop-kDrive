@@ -293,12 +293,12 @@ Seleziona un&apos;altra cartella. Se continui, Lite Sync verrà disabilitato.&lt
 <context>
     <name>KDC::AppServer</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="1502"/>
+        <location filename="../src/server/appserver.cpp" line="1506"/>
         <source>Share link copied to clipboard</source>
         <translation>Link di condivisione copiato negli appunti</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3450"/>
+        <location filename="../src/server/appserver.cpp" line="3454"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 e %n altri file sono stati rimossi.</numerusform>
@@ -306,13 +306,13 @@ Seleziona un&apos;altra cartella. Se continui, Lite Sync verrà disabilitato.&lt
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3452"/>
+        <location filename="../src/server/appserver.cpp" line="3456"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 è stato rimosso.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3457"/>
+        <location filename="../src/server/appserver.cpp" line="3461"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 e %n altri file sono stati aggiunti.</numerusform>
@@ -320,13 +320,13 @@ Seleziona un&apos;altra cartella. Se continui, Lite Sync verrà disabilitato.&lt
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3459"/>
+        <location filename="../src/server/appserver.cpp" line="3463"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 è stato aggiunto.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3464"/>
+        <location filename="../src/server/appserver.cpp" line="3468"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 e %n altri file sono stati aggiornati.</numerusform>
@@ -334,13 +334,13 @@ Seleziona un&apos;altra cartella. Se continui, Lite Sync verrà disabilitato.&lt
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3466"/>
+        <location filename="../src/server/appserver.cpp" line="3470"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 è stato aggiornato.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3471"/>
+        <location filename="../src/server/appserver.cpp" line="3475"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>%1 è stato spostato in %2 e %n altri file sono stati spostati.</numerusform>
@@ -348,17 +348,17 @@ Seleziona un&apos;altra cartella. Se continui, Lite Sync verrà disabilitato.&lt
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3474"/>
+        <location filename="../src/server/appserver.cpp" line="3478"/>
         <source>%1 has been moved to %2.</source>
         <translation>%1 è stato spostato in %2.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3482"/>
+        <location filename="../src/server/appserver.cpp" line="3486"/>
         <source>Sync Activity</source>
         <translation>Sincronizza attività</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="4384"/>
+        <location filename="../src/server/appserver.cpp" line="4388"/>
         <source>A new folder larger than %1 MB has been added in the drive %2, you must validate its synchronization: %3.
 </source>
         <translation>È stata aggiunta una nuova cartella più grande di %1 MB nell&apos;unità %2, devi convalidarne la sincronizzazione: %3.
@@ -2833,47 +2833,47 @@ Accedi alla versione web per verificare lo stato del tuo kDrive oppure contatta 
         <translation>Lite sync è disabilitato. I file kDrive utilizzano lo spazio di archiviazione del tuo computer.</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1167"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1191"/>
         <source>Make available locally</source>
         <translation>Rendere disponibile localmente</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1171"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1195"/>
         <source>Free up local space</source>
         <translation>Libera spazio locale</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1175"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1199"/>
         <source>Cancel free up local space</source>
         <translation>Annulla liberazione di spazio locale</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1179"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1203"/>
         <source>Cancel make available locally</source>
         <translation>Annulla rendere disponibile localmente</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1183"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1207"/>
         <source>Resharing this file is not allowed</source>
         <translation>Ricondivisione di questo file non consentita</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1184"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1208"/>
         <source>Resharing this folder is not allowed</source>
         <translation>Ricondivisione di questa cartella non consentita</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1188"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1212"/>
         <source>Copy public share link</source>
         <translation>Copia il collegamento di condivisione pubblica</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1192"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1216"/>
         <source>Copy private share link</source>
         <translation>Copia il collegamento di condivisione privata</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1196"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1220"/>
         <source>Open in browser</source>
         <translation>Apri nel browser</translation>
     </message>
@@ -2956,19 +2956,6 @@ Accedi alla versione web per verificare lo stato del tuo kDrive oppure contatta 
             <numerusform>%n secondo/i</numerusform>
             <numerusform>%n secondo/i</numerusform>
         </translation>
-    </message>
-</context>
-<context>
-    <name>main.cpp</name>
-    <message>
-        <location filename="../src/gui/mainclient.cpp" line="47"/>
-        <source>System Tray not available</source>
-        <translation>Area di notifica non disponibile</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/mainclient.cpp" line="48"/>
-        <source>%1 requires on a working system tray. If you are running XFCE, please follow &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;these instructions&lt;/a&gt;. Otherwise, please install a system tray application such as &apos;trayer&apos; and try again.</source>
-        <translation>%1 richiede un’area di notifica funzionante. Se stai usando XFCE, segui &lt;a href=&quot;http://docs.xfce.org/xfce/xfce4-panel/systray&quot;&gt;queste istruzioni&lt;/a&gt;. Altrimenti, installa un&apos;applicazione area di notifica come &apos;trayer&apos; e riprova.</translation>
     </message>
 </context>
 <context>
