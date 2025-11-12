@@ -43,7 +43,6 @@ jobs:
                      $counter++
                  }
              }
-             echo $counter
 
              if ($counter -ne 4) {
                  Write-Host "<h1>:stop_sign: Translation files are not up to date. Please run the update tool. </h1>" -ForegroundColor Red
