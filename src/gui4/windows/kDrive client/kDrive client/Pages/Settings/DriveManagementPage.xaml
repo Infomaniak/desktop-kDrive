@@ -92,7 +92,7 @@
                     <!-- Lite Sync -->
                     <toolKit:SettingsExpander x:Name="SyncTypeExpander"
                                               x:Uid="Page_Settings_DriveManagementPage_SyncMode"
-                                              Visibility="{x:Bind ManagedDrive.MainSync.SupportOnlineMode, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, Mode=OneWay}">
+                                              Visibility="{x:Bind ManagedDrive.MainSync.SupportOnlineMode, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
                         <toolKit:SettingsExpander.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Essentials.cog}"
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}"
