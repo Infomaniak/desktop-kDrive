@@ -35,6 +35,7 @@ jobs:
         run: |
              cd translations\updateTool
              $result = .\Windows.ps1
+             echo $result
              # Ensure that result contains FOUR TIMES the string "0 new"
              $counter = 0
              foreach ($str in $result) {
@@ -42,6 +43,7 @@ jobs:
                      $counter++
                  }
              }
+             echo $counter
 
              if ($counter -ne 4) {
                  Write-Host "<h1>:stop_sign: Translation files are not up to date. Please run the update tool. </h1>" -ForegroundColor Red
