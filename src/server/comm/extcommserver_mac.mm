@@ -100,7 +100,7 @@ class ExtCommServerPrivate : public AbstractCommServerPrivate {
     auto *server = (KDC::ExtCommServer *) self.wrapper->publicPtr;
 
     auto channel = std::make_shared<KDC::ExtCommChannel>(channelPrivate);
-    channel->setLostConnectionCbk(std::bind(&KDC::ExtCommServer::lostConnectionCbk, server, std::placeholders::_1));
+    channel->setLostConnectionCbk(std::bind_front(&KDC::ExtCommServer::lostConnectionCbk, server));
     self.wrapper->pendingChannels.push_back(channel);
 
     // Set exported interface

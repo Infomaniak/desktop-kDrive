@@ -1636,9 +1636,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> driveId;
             paramsStream >> nodeId;
 
-            std::function<void(const QString &, qint64)> callback =
-                    std::bind(&AppServer::sendGetFolderSizeCompleted, this, std::placeholders::_1, std::placeholders::_2);
-            std::thread getFolderSize(ServerRequests::getFolderSize, userDbId, driveId, nodeId.toStdString(), callback);
+            std::thread getFolderSize(ServerRequests::getFolderSize, userDbId, driveId, nodeId.toStdString(),
+                                      std::bind_front(&AppServer::sendGetFolderSizeCompleted, this));
             getFolderSize.detach();
 
             resultStream << ExitCode::Ok;
@@ -3583,11 +3582,9 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, cons
 
         // Set callbacks
         syncPalMapIt = syncPalMap.find(sync.dbId());
-        syncPalMapIt->second->setAddErrorCallback([this](const Error &error) { this->addError(error); });
-        syncPalMapIt->second->setAddCompletedItemCallback(
-                [this](int syncDbId, const SyncFileItem &item, bool notify) { this->addCompletedItem(syncDbId, item, notify); });
-        syncPalMapIt->second->setSendSignalCallback(
-                [this](SignalNum sigNum, int syncDbId, const SigValueType &val) { this->sendSignal(sigNum, syncDbId, val); });
+        syncPalMapIt->second->setAddErrorCallback(std::bind_front(AppServer::addError));
+        syncPalMapIt->second->setAddCompletedItemCallback(std::bind_front(&AppServer::addCompletedItem, this));
+        syncPalMapIt->second->setSendSignalCallback(std::bind_front(&AppServer::sendSignal, this));
 
         if (!blackList.empty()) {
             // Set blackList (create or overwrite the possible existing list in DB)
