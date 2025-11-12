@@ -22,6 +22,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: depends-on/depends-on-action@0.15.0
-        with:
-          token: ${{ secrets.AUTO_UPDATE_BRANCH_TOKEN }}
+      - uses: z0al/dependent-issues@v1.5.2
+        env:
+          # (Required) The token to use to make API calls to GitHub.
+          GITHUB_TOKEN: ${{ github.token }}
