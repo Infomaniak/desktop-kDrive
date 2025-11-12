@@ -185,7 +185,7 @@ ExitCode ConflictResolverWorker::generateLocalRenameOperation(const Conflict &co
     if (!generateConflictedName(conflict.localNode(), newName)) {
         // New path is too long, move file to the root directory
         // TODO : we need to discuss this behavior again!
-        const std::lock_guard<std::recursive_mutex> lock(SyncPal::updateTreesMutex);
+        const std::scoped_lock lock(SyncPal::updateTreesMutex);
         if (!_syncPal->updateTree(ReplicaSide::Local)) return ExitCode::LogicError;
         op->setNewParentNode(_syncPal->updateTree(ReplicaSide::Local)->rootNode());
     }

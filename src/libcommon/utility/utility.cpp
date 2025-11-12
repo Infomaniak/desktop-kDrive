@@ -106,7 +106,7 @@ static std::default_random_engine gen(rd());
 
 std::string CommonUtility::generateRandomString(const char *charArray, std::uniform_int_distribution<int> &distrib,
                                                 const int length /*= 10*/) {
-    const std::lock_guard<std::mutex> lock(_generateRandomStringMutex);
+    const std::scoped_lock lock(_generateRandomStringMutex);
 
     std::string tmp;
     tmp.reserve(static_cast<size_t>(length));

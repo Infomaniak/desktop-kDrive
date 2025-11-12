@@ -258,7 +258,7 @@ void AbstractNetworkJob::unzip(std::istream &is, std::stringstream &ss) {
 }
 
 void AbstractNetworkJob::createSession(const Poco::URI &uri) {
-    const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
+    const std::scoped_lock lock(_mutexSession);
 
     if (_session) {
         // Redirection case
@@ -282,7 +282,7 @@ void AbstractNetworkJob::createSession(const Poco::URI &uri) {
 }
 
 void AbstractNetworkJob::clearSession() {
-    const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
+    const std::scoped_lock lock(_mutexSession);
 
     if (_session) {
         try {
@@ -334,7 +334,7 @@ ExitInfo AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
     // Send request, retrieve an open stream
     std::vector<std::reference_wrapper<std::ostream>> stream;
     try {
-        const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
+        const std::scoped_lock lock(_mutexSession);
         if (_session) {
             stream.push_back(_session->sendRequest(req));
             if (ioOrLogicalErrorOccurred(stream[0].get())) {
@@ -350,7 +350,7 @@ ExitInfo AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
     // Send data
     std::string::const_iterator itBegin = _data.begin();
     while (itBegin != _data.end()) {
-        const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
+        const std::scoped_lock lock(_mutexSession);
         if (isAborted()) {
             LOG_DEBUG(_logger, "Request " << jobId() << ": aborting HTTPS session");
             return {};
@@ -380,7 +380,7 @@ ExitInfo AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
 
 ExitInfo AbstractNetworkJob::receiveResponseFromSession(StreamVector &stream) {
     try {
-        const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
+        const std::scoped_lock lock(_mutexSession);
         if (_session) {
             (void) stream.emplace_back(_session->receiveResponse(_httpResponse));
             if (ioOrLogicalErrorOccurred(stream[0].get())) {
@@ -419,7 +419,7 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
     switch (httpResponse().getStatus()) {
         case Poco::Net::HTTPResponse::HTTP_OK: {
             try {
-                const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
+                const std::scoped_lock lock(_mutexSession);
                 return handleResponse(stream[0].get());
             } catch (const std::exception &e) {
                 LOG_WARN(_logger, "handleResponse exception: " << errorText(e));
@@ -522,7 +522,7 @@ ExitInfo AbstractNetworkJob::followRedirect() {
 }
 
 ExitInfo AbstractNetworkJob::processSocketError(const std::string &msg, const UniqueId jobId) {
-    const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
+    const std::scoped_lock lock(_mutexSession);
     if (_session) {
         int err = _session->socket().getError();
         std::string errMsg = Poco::Error::getMessage(err);

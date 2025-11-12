@@ -163,7 +163,7 @@ void ExtensionJob::commandGetMenuItems(const CommString &argument, std::shared_p
     bool canCancelDehydration = false;
 
     {
-        const std::lock_guard lock(_dehydrationMutex);
+        const std::scoped_lock lock(_dehydrationMutex);
         if (_nbOfOngoingDehydration > 0) {
             canCancelDehydration = true;
         }
@@ -624,7 +624,7 @@ void ExtensionJob::commandMakeOnlineOnlyDirect(const CommString &argument, std::
     const auto fileList = CommonUtility::splitCommString(argument, messageArgSeparator);
 
     {
-        const std::lock_guard lock(_dehydrationMutex);
+        const std::scoped_lock lock(_dehydrationMutex);
         _nbOfOngoingDehydration++;
     }
 
@@ -663,7 +663,7 @@ void ExtensionJob::commandMakeOnlineOnlyDirect(const CommString &argument, std::
     }
 
     {
-        const std::lock_guard lock(_dehydrationMutex);
+        const std::scoped_lock lock(_dehydrationMutex);
         _nbOfOngoingDehydration--;
         if (_nbOfOngoingDehydration == 0) {
             _dehydrationCanceled = false;

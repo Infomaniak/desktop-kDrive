@@ -64,7 +64,7 @@ void LocalFileSystemObserverWorker::stop() {
 
 ExitInfo LocalFileSystemObserverWorker::changesDetected(
         const std::list<std::pair<std::filesystem::path, OperationType>> &changes) {
-    const std::lock_guard lock(_recursiveMutex);
+    const std::scoped_lock lock(_recursiveMutex);
 
     // Warning: OperationType retrieved from FSEvent (macOS) seems to be unreliable in some cases. One event might contain
     // several operations. Only Delete event seems to be 100% reliable Move event from outside the synced dir to inside it will
@@ -475,7 +475,7 @@ ExitInfo LocalFileSystemObserverWorker::generateInitialSnapshot() {
         mainExitInfo = exitInfo;
     }
 
-    const std::lock_guard<std::recursive_mutex> lock(_recursiveMutex);
+    const std::scoped_lock lock(_recursiveMutex);
     if (!_pendingFileEvents.empty()) {
         LOG_SYNCPAL_DEBUG(_logger, "Processing pending file events");
         if (const auto exitInfo = changesDetected(_pendingFileEvents); !exitInfo) {

@@ -41,7 +41,7 @@ void PlatformInconsistencyCheckerWorker::execute() {
     checkTree(ReplicaSide::Remote);
     checkTree(ReplicaSide::Local);
 
-    const std::lock_guard<std::recursive_mutex> lock(SyncPal::updateTreesMutex);
+    const std::scoped_lock lock(SyncPal::updateTreesMutex);
     if (!_syncPal->updateTree(ReplicaSide::Local) || !_syncPal->updateTree(ReplicaSide::Remote)) {
         setDone(ExitCode::LogicError);
         return;

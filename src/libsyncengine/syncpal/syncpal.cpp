@@ -392,7 +392,7 @@ void SyncPal::loadProgress(SyncProgress &syncProgress) const {
 
 void SyncPal::createSharedObjects() {
     LOG_SYNCPAL_DEBUG(_logger, "Create shared objects");
-    const std::lock_guard<std::recursive_mutex> lock(updateTreesMutex);
+    const std::scoped_lock lock(updateTreesMutex);
     _localOperationSet = std::make_shared<FSOperationSet>(ReplicaSide::Local);
     _remoteOperationSet = std::make_shared<FSOperationSet>(ReplicaSide::Remote);
     _localUpdateTree = std::make_shared<UpdateTree>(ReplicaSide::Local, _syncDb->rootNode());
@@ -406,7 +406,7 @@ void SyncPal::createSharedObjects() {
 
 void SyncPal::freeSharedObjects() {
     LOG_SYNCPAL_DEBUG(_logger, "Free shared objects");
-    const std::lock_guard<std::recursive_mutex> lock(updateTreesMutex);
+    const std::scoped_lock lock(updateTreesMutex);
     _localSnapshot.reset();
     _remoteSnapshot.reset();
     _localOperationSet.reset();
@@ -431,7 +431,7 @@ void SyncPal::freeSharedObjects() {
 
 void SyncPal::initSharedObjects() {
     LOG_SYNCPAL_DEBUG(_logger, "Init shared objects");
-    const std::lock_guard<std::recursive_mutex> lock(updateTreesMutex);
+    const std::scoped_lock lock(updateTreesMutex);
     if (_localUpdateTree) _localUpdateTree->init();
     if (_remoteUpdateTree) _remoteUpdateTree->init();
 
@@ -440,7 +440,7 @@ void SyncPal::initSharedObjects() {
 
 void SyncPal::resetSharedObjects() {
     LOG_SYNCPAL_DEBUG(_logger, "Reset shared objects");
-    const std::lock_guard<std::recursive_mutex> lock(updateTreesMutex);
+    const std::scoped_lock lock(updateTreesMutex);
     if (_localOperationSet) _localOperationSet->clear();
     if (_remoteOperationSet) _remoteOperationSet->clear();
     if (_localUpdateTree) _localUpdateTree->clear();
@@ -613,7 +613,7 @@ bool SyncPal::setProgressComplete(const SyncPath &relativeLocalPath, SyncFileSta
 }
 
 void SyncPal::directDownloadCallback(UniqueId jobId) {
-    const std::lock_guard lock(_directDownloadJobsMapMutex);
+    const std::scoped_lock lock(_directDownloadJobsMapMutex);
     auto directDownloadJobsMapIt = _directDownloadJobsMap.find(jobId);
     if (directDownloadJobsMapIt == _directDownloadJobsMap.end()) {
         // No need to send a warning, the job might have been canceled, and therefor not in the map anymore
@@ -720,7 +720,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
     job->setAdditionalCallback(callback);
     SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_HIGH);
 
-    const std::lock_guard lock(_directDownloadJobsMapMutex);
+    const std::scoped_lock lock(_directDownloadJobsMapMutex);
     (void) _directDownloadJobsMap.try_emplace(job->jobId(), job);
     (void) _syncPathToDownloadJobMap.try_emplace(absoluteLocalPath, job->jobId());
     if (!parentFolderPath.empty() && _folderHydrationInProgress.contains(parentFolderPath)) {
@@ -731,14 +731,14 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
 }
 
 void SyncPal::monitorFolderHydration(const SyncPath &absoluteLocalPath) {
-    const std::lock_guard lock(_directDownloadJobsMapMutex);
+    const std::scoped_lock lock(_directDownloadJobsMapMutex);
     (void) _folderHydrationInProgress.try_emplace(absoluteLocalPath);
     LOGW_INFO(_logger, L"Monitoring folder hydration: " << Utility::formatSyncPath(absoluteLocalPath));
 }
 
 ExitCode SyncPal::cancelDlDirectJobs(const std::vector<SyncPath> &fileList) {
     for (const auto &filePath: fileList) {
-        const std::lock_guard lock(_directDownloadJobsMapMutex);
+        const std::scoped_lock lock(_directDownloadJobsMapMutex);
 
         if (const auto itId = _syncPathToDownloadJobMap.find(filePath); itId != _syncPathToDownloadJobMap.end()) {
             if (const auto itJob = _directDownloadJobsMap.find(itId->second); itJob != _directDownloadJobsMap.end()) {
@@ -759,7 +759,7 @@ ExitCode SyncPal::cancelDlDirectJobs(const std::vector<SyncPath> &fileList) {
 ExitCode SyncPal::cancelAllDlDirectJobs(bool quit) {
     LOG_SYNCPAL_INFO(_logger, "Cancelling all direct download jobs");
 
-    const std::lock_guard<std::mutex> lock(_directDownloadJobsMapMutex);
+    const std::scoped_lock<std::mutex> lock(_directDownloadJobsMapMutex);
     for (auto &directDownloadJobsMapElt: _directDownloadJobsMap) {
         LOG_SYNCPAL_DEBUG(_logger, "Cancelling download job " << directDownloadJobsMapElt.first);
         if (quit) {
@@ -1411,7 +1411,7 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std:
     }
 
     // Blacklist the item
-    const std::lock_guard<std::recursive_mutex> lock(updateTreesMutex);
+    const std::scoped_lock lock(updateTreesMutex);
     if (!updateTree(ReplicaSide::Local) || !updateTree(ReplicaSide::Remote)) {
         return ExitCode::LogicError;
     }

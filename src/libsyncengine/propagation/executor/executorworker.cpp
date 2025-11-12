@@ -589,7 +589,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
                                                    << exitInfo);
                 _syncPal->setRestart(true);
 
-                const std::lock_guard<std::recursive_mutex> lock(SyncPal::updateTreesMutex);
+                const std::scoped_lock lock(SyncPal::updateTreesMutex);
                 if (!_syncPal->updateTree(ReplicaSide::Local)) {
                     return ExitCode::LogicError;
                 }
@@ -1560,7 +1560,7 @@ ExitInfo ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &pr
                 }
             }
             // Remove node from update tree
-            const std::lock_guard<std::recursive_mutex> lock(SyncPal::updateTreesMutex);
+            const std::scoped_lock lock(SyncPal::updateTreesMutex);
             if (!_syncPal->updateTree(ReplicaSide::Local) || !_syncPal->updateTree(ReplicaSide::Remote)) {
                 return ExitCode::LogicError;
             }

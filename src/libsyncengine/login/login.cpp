@@ -111,7 +111,7 @@ ExitCode Login::refreshToken(const std::string &keychainKey, ApiToken &apiToken,
 
     const std::chrono::time_point<std::chrono::steady_clock> tokenLastUpdate = _info[apiToken.userId()]._lastTokenUpdateTime;
 
-    const std::lock_guard lock(_info[apiToken.userId()]._mutex);
+    const std::scoped_lock lock(_info[apiToken.userId()]._mutex);
 
     if (_info[apiToken.userId()]._lastTokenUpdateTime > tokenLastUpdate) {
         LOG_INFO(Log::instance()->getLogger(), "Token already refreshed in another thread");

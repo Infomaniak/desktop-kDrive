@@ -42,7 +42,7 @@ void ConflictFinderWorker::findConflicts() {
     std::vector<std::shared_ptr<Node>> remoteMoveDirNodes;
     std::vector<std::shared_ptr<Node>> localMoveDirNodes;
     {
-        const std::lock_guard<std::recursive_mutex> lock(SyncPal::updateTreesMutex);
+        const std::scoped_lock lock(SyncPal::updateTreesMutex);
         if (!_syncPal->updateTree(ReplicaSide::Local)) return;
         findConflictsInTree(_syncPal->updateTree(ReplicaSide::Local), _syncPal->updateTree(ReplicaSide::Remote),
                             localMoveDirNodes, remoteMoveDirNodes);
