@@ -11,11 +11,11 @@
              mc:Ignorable="d">
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        <converters:NodeTypeToIconUriConverter x:Key="NodeTypeToSvgUriConverter" />
         <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
+        <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />
         <converters:DateTimeToTimeAgoConverter x:Key="DateTimeToTimeAgoConverter" />
         <converters:BytesToHumanReadableStringConverter x:Key="BytesToHumanReadableStringConverter" />
-        <converters:SyncActivityStateToIconUriConverter x:Key="SyncActivityStateToIconConverter" />
+        <converters:SyncActivityStatusToIconUriConverter x:Key="SyncActivityStatusToIconConverter" />
         <converters:SyncActivityDirectionToIconUriConverter x:Key="SyncActivityDirectionToIconConverter" />
         <converters:SyncDirectionToToolTipConverter x:Key="SyncDirectionToToolTipConverter" />
     </UserControl.Resources>
@@ -105,29 +105,29 @@
                 </Style>
             </ListView.ItemContainerStyle>
             <ListView.ItemTemplate>
-                <DataTemplate x:DataType="viewmodels:SyncActivity">
+                <DataTemplate x:DataType="viewmodels:SyncFileItem">
                     <Grid CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
                           MinHeight="34"
                           Background="{ThemeResource LayerFillColorAlt}">
                         <Grid.Resources>
                             <DataTemplate x:Key="FileSizeTemplate"
-                                          x:DataType="viewmodels:SyncActivity">
-                                <TextBlock Text="{x:Bind Size, Converter={StaticResource BytesToHumanReadableStringConverter}}"
+                                          x:DataType="viewmodels:SyncFileItem">
+                                <TextBlock Text="{x:Bind FileSize, Converter={StaticResource BytesToHumanReadableStringConverter}}"
                                            VerticalAlignment="Center" />
                             </DataTemplate>
                             <DataTemplate x:Key="DirectorySizeTemplate"
-                                          x:DataType="viewmodels:SyncActivity">
+                                          x:DataType="viewmodels:SyncFileItem">
                                 <TextBlock Text="-"
                                            VerticalAlignment="Center"
                                            HorizontalAlignment="Center" />
                             </DataTemplate>
                             <DataTemplate x:Key="FileIconTemplate"
-                                          x:DataType="viewmodels:SyncActivity">
+                                          x:DataType="viewmodels:SyncFileItem">
                                 <controls:SvgIcon Height="16"
-                                                  UriString="{x:Bind NodeType, Converter={StaticResource NodeTypeToSvgUriConverter}}" />
+                                                  UriString="{x:Bind Path, Converter={StaticResource FilePathToIconConverter}}" />
                             </DataTemplate>
                             <DataTemplate x:Key="DirectoryIconTemplate"
-                                          x:DataType="viewmodels:SyncActivity">
+                                          x:DataType="viewmodels:SyncFileItem">
                                 <controls:SvgIcon Height="16"
                                                   UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder}"
                                                   Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
@@ -155,8 +155,9 @@
                             <ContentControl Grid.Column="0"
                                             ContentTemplateSelector="{StaticResource ItemTypeIconDataTemplateSelector}"
                                             Content="{x:Bind}" />
-                            <TextBlock Text="{x:Bind Name}"
-                                       Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
+                            <TextBlock Text="{x:Bind LocalPath, Converter={StaticResource StringPathToFileNameConverter}}"
+                                       Style="{StaticResource Infomaniak.Style.TextBlock.Body}" 
+                                       TextWrapping="Wrap"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal"
                                     Grid.Column="1"
@@ -168,7 +169,7 @@
                             <TextBlock VerticalAlignment="Center"
                                        Style="{StaticResource Infomaniak.Style.TextBlock.Body}">
                                     <Run Text=" - " />
-                                    <Run Text="{x:Bind ActivityTime, Converter={StaticResource DateTimeToTimeAgoConverter}, Mode=OneWay}" />
+                                    <Run Text="{x:Bind Timestamp, Converter={StaticResource DateTimeToTimeAgoConverter}, Mode=OneWay}" />
                             </TextBlock>
                         </StackPanel>
 
@@ -188,7 +189,7 @@
                                               Grid.Column="0"
                                               VerticalAlignment="Center"
                                               HorizontalAlignment="Left"
-                                              UriString="{x:Bind State, Converter={StaticResource SyncActivityStateToIconConverter}, Mode=OneWay}" />
+                                              UriString="{x:Bind Status, Converter={StaticResource SyncActivityStatusToIconConverter}, Mode=OneWay}" />
                             <controls:SvgIcon Width="16"
                                               Grid.Column="1"
                                               VerticalAlignment="Center"

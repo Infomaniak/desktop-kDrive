@@ -33,7 +33,7 @@ namespace Infomaniak.kDrive.Converters
 
             var units = new (long Threshold, string ResourceKey)[]
             {
-                (1L,                      "Global_Bytes"),
+                (0L,                      "Global_Bytes"),
                 (1024L,                   "Global_KiloBytes"),
                 (1024L * 1024L,           "Global_MegaBytes"),
                 (1024L * 1024L * 1024L,   "Global_GigaBytes"),
@@ -47,7 +47,7 @@ namespace Infomaniak.kDrive.Converters
             {
                 if (byteCount >= units[i].Threshold)
                 {
-                    displayValue = (double)byteCount / units[i].Threshold;
+                    displayValue = (double)byteCount / (units[i].Threshold > 0 ? units[i].Threshold : 1);
                     unitKey = units[i].ResourceKey;
                     break;
                 }

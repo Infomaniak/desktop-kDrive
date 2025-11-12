@@ -53,9 +53,24 @@
 
 #define SYNCPAL_NEW_ERROR_MSG "Failed to create SyncPal instance!"
 
+
+static const auto currentFile = "currentFile";
+static const auto totalFiles = "totalFiles";
+static const auto completedSize = "completedSize";
+static const auto totalSize = "totalSize";
+static const auto estimatedRemainingTime = "estimatedRemainingTime";
+
 namespace KDC {
 
 std::recursive_mutex SyncPal::updateTreesMutex;
+
+void SyncProgress::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
+    CommonUtility::writeValueToStruct(dstruct, currentFile, _currentFile);
+    CommonUtility::writeValueToStruct(dstruct, totalFiles, _totalFiles);
+    CommonUtility::writeValueToStruct(dstruct, completedSize, _completedSize);
+    CommonUtility::writeValueToStruct(dstruct, totalSize, _totalSize);
+    CommonUtility::writeValueToStruct(dstruct, estimatedRemainingTime, _estimatedRemainingTime);
+}
 
 SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const SyncPath &syncDbPath, const std::string &version, const bool hasFullyCompleted) :
     _vfs(vfs),

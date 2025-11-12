@@ -1,23 +1,10 @@
-using CommunityToolkit.Mvvm.ComponentModel;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Threading.Tasks;
-using Windows.Data.Xml.Dom;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -39,20 +26,15 @@ public sealed partial class SyncStartPauseButton : UserControl
 
     private async void StartPauseButton_Click(object sender, RoutedEventArgs e)
     {
-        // TODO: Replace with actual start/pause logic
-        if (ViewModel.SelectedSync?.SyncStatus == SyncStatus.Pause)
-        {
-            Logger.Log(Logger.Level.Info, "Starting sync...");
-            ViewModel.SelectedSync.SyncStatus = SyncStatus.Starting;
-            await Task.Delay(1000); // Simulate some delay for pausing
-            ViewModel.SelectedSync.SyncStatus = SyncStatus.Running;
-        }
-        else if (ViewModel.SelectedSync?.SyncStatus == SyncStatus.Running || ViewModel.SelectedSync?.SyncStatus == SyncStatus.Idle)
+        if (ViewModel.SelectedSync?.SyncStatus == SyncStatus.Running || ViewModel.SelectedSync?.SyncStatus == SyncStatus.Idle)
         {
             Logger.Log(Logger.Level.Info, "Pausing sync...");
-            ViewModel.SelectedSync.SyncStatus = SyncStatus.Pausing;
-            await Task.Delay(1000); // Simulate some delay for pausing
-            ViewModel.SelectedSync.SyncStatus = SyncStatus.Pause;
+            await ViewModel.SelectedSync.Pause();
+        }
+        else if(ViewModel is not null)
+        {
+            Logger.Log(Logger.Level.Info, "Starting sync...");
+            await ViewModel.SelectedSync.Start();
         }
     }
 }
@@ -75,8 +57,10 @@ public class StartPauseButtonTemplateSelector : DataTemplateSelector
                 case SyncStatus.Idle:
                 case SyncStatus.Running:
                     return PauseButtonTemplate;
-                case SyncStatus.Pause:
+                case SyncStatus.Paused:
                 case SyncStatus.Offline:
+                case SyncStatus.Error:
+                case SyncStatus.Stopped:
                     return StartButtonTemplate;
                 default:
                     return LoadingButtonTemplate;
@@ -92,7 +76,7 @@ public class SyncStatusToButtonEnabledConverter : IValueConverter
     {
         if (value is SyncStatus syncStatus)
         {
-            return (syncStatus == SyncStatus.Running || syncStatus == SyncStatus.Pause || syncStatus == SyncStatus.Idle);
+            return (syncStatus == SyncStatus.Running || syncStatus == SyncStatus.Paused || syncStatus == SyncStatus.Idle || syncStatus == SyncStatus.Stopped || syncStatus == SyncStatus.Error);
         }
         return false;
     }

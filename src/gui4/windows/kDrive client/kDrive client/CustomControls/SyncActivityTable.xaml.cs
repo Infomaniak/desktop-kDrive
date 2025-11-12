@@ -3,28 +3,14 @@ using DynamicData.Binding;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reactive.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
-using Windows.Data.Xml.Dom;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using WinRT;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -36,7 +22,7 @@ namespace Infomaniak.kDrive.CustomControls
         private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel => _viewModel;
 
-        private readonly ObservableCollection<SyncActivity> _outGoingActivities = new();
+        private readonly ObservableCollection<SyncFileItem> _outGoingActivities = new();
         private IDisposable? _activitySubscription;
 
         public SyncActivityTable()
@@ -72,7 +58,8 @@ namespace Infomaniak.kDrive.CustomControls
             _outGoingActivities.Clear();
             _activitySubscription = sync.SyncActivities
                 .ToObservableChangeSet()
-                .Filter(a => a.Direction == SyncActivityDirection.Outgoing)
+                .Filter(a => a.Direction == SyncDirection.Up)
+                .Sort(SortExpressionComparer<SyncFileItem>.Ascending(a => a.Timestamp))
                 .OnItemAdded(a => _outGoingActivities.Insert(0, a))
                 .Subscribe();
         }
@@ -123,7 +110,7 @@ namespace Infomaniak.kDrive.CustomControls
 
         private async void SyncActivityParent_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is HyperlinkButton btn && btn.DataContext is SyncActivity activity)
+            if (sender is HyperlinkButton btn && btn.DataContext is SyncFileItem activity)
             {
                 if (Directory.Exists(activity.ParentFolderPath))
                 {
@@ -159,9 +146,9 @@ namespace Infomaniak.kDrive.CustomControls
                 return null;
 
             Types.NodeType nodeType;
-            if (item is SyncActivity syncActivity)
+            if (item is SyncFileItem syncActivity)
             {
-                nodeType = syncActivity.NodeType;
+                nodeType = syncActivity.Type;
             }
             else
             {

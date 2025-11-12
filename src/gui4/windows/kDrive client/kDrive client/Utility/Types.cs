@@ -15,40 +15,95 @@ namespace Infomaniak.kDrive.Types
 
     public enum NodeType
     {
-        Directory,
-        File,
-        Doc,
-        Pdf,
-        Image,
-        Video,
-        Audio,
-        Grid
+        Unknown,
+        File, // File or symlink
+        Directory
     }
 
     public enum SyncStatus
     {
-        Unknown,
+        Undefined,
         Starting,
         Running,
         Idle,
-        Pausing,
-        Pause,
+        PauseAsked,
+        Paused,
+        StopAsked,
+        Stopped,
+        Error,
         Offline
-    }
-
-    public enum SyncActivityDirection
-    {
-        Unknown = 0,
-        Outgoing,
-        Incoming
     };
 
-    public enum SyncActivityState
+    public enum SyncFileInstruction
     {
-        Unknown = 0,
-        Successful,
-        Failed,
-        InProgress
+        None,
+        Update,
+        UpdateMetadata,
+        Remove,
+        Move,
+        Get,
+        Put,
+        Ignore
+    };
+    public enum SyncFileStatus
+    {
+        Unknown,
+        Error,
+        Success,
+        Conflict,
+        Inconsistency,
+        Ignored,
+        Syncing
+    };
+    public enum ConflictType
+    {
+        None,
+        EditDelete,
+        MoveDelete,
+        MoveParentDelete,
+        CreateParentDelete,
+        MoveMoveSource,
+        MoveMoveDest,
+        MoveCreate,
+        CreateCreate,
+        EditEdit,
+        MoveMoveCycle
+    };
+    public enum CancelType
+    {
+        None,
+        Create,
+        Edit,
+        Move,
+        Delete,
+        AlreadyExistRemote,
+        MoveToBinFailed,
+        AlreadyExistLocal,
+        TmpBlacklisted,
+        ExcludedByTemplate,
+        Hardlink,
+        FileRescued
+    };
+
+    public enum InconsistencyType
+    {
+        None = 0x000,
+        Case = 0x001,
+        ForbiddenChar = 0x002, // Char unsupported by OS
+        ReservedName = 0x004,
+        NameLength = 0x008,
+        PathLength = 0x010,
+        NotYetSupportedChar = 0x020, // Char not yet supported, ie recent Unicode char (ex: U+1FA77 on pre macOS 13.4)
+        DuplicateNames = 0x040, // Two items have the same standardized paths with possibly different encodings (Windows 10 and 11).
+        ForbiddenCharOnlySpaces = 0x080, // The name contains only spaces (not supported by back end)
+        ForbiddenCharEndWithSpace = 0x100, // The name ends with a space
+    };
+
+    public enum SyncDirection
+    {
+        Unknown,
+        Up,
+        Down
     };
 
     public enum SyncType
