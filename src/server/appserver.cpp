@@ -139,6 +139,10 @@ AppServer::AppServer(int &argc, char **argv) :
 }
 
 AppServer::~AppServer() {
+    if (_clientProcess->isOpen()) {
+        _clientProcess->kill();
+    }
+
     if (Log::isSet()) {
         LOG_DEBUG(_logger, "~AppServer");
     }
@@ -3408,11 +3412,11 @@ bool AppServer::startClient() {
         LOGW_INFO(_logger, L"Starting kDrive client - path=" << Path2WStr(QStr2Path(pathToExecutable)) << L" args="
                                                              << arguments[0].toStdWString());
 
-        QProcess *clientProcess = new QProcess(this);
-        clientProcess->setProgram(pathToExecutable);
-        clientProcess->setArguments(arguments);
-        clientProcess->start();
-        if (!clientProcess->waitForStarted()) {
+        _clientProcess = new QProcess(this);
+        _clientProcess->setProgram(pathToExecutable);
+        _clientProcess->setArguments(arguments);
+        _clientProcess->start();
+        if (!_clientProcess->waitForStarted()) {
             LOG_WARN(_logger, "Failed to start kDrive client");
             return false;
         }
