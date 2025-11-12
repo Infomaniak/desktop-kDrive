@@ -24,4 +24,4 @@ jobs:
     steps:
       - uses: depends-on/depends-on-action@0.15.0
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.AUTO_UPDATE_BRANCH_TOKEN }}
