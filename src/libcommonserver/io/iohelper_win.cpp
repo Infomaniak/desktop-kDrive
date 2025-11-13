@@ -170,26 +170,26 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
     LONGLONG fileInfo[(MAX_PATH_LENGTH_WIN_LONG + sizeof(FILE_ID_FULL_DIR_INFORMATION)) / sizeof(LONGLONG)];
     PFILE_ID_FULL_DIR_INFORMATION pFileInfo = (PFILE_ID_FULL_DIR_INFORMATION) fileInfo;
 
-    IoError ioError;
+    IoError ioError = IoError::Success;
     PZW_QUERY_DIRECTORY_FILE pzwQueryDirectoryFile = pzwQueryDirectoryFileFct(ioError);
     if (!pzwQueryDirectoryFile) {
         LOGW_WARN(logger(), L"Error in pzwQueryDirectoryFileFct: " << Utility::formatIoError(ioError));
-        CloseHandle(hParent);
+        (void) CloseHandle(hParent);
         return false;
     }
 
-    NTSTATUS status = pzwQueryDirectoryFile(hParent, NULL, NULL, NULL, &iosb, fileInfo, sizeof(fileInfo),
+    NTSTATUS status = pzwQueryDirectoryFile(hParent, nullptr, nullptr, nullptr, &iosb, fileInfo, sizeof(fileInfo),
                                             FileIdFullDirectoryInformation, true, &fn, TRUE);
 
     if (!NT_SUCCESS(status)) {
-        CloseHandle(hParent);
+        (void) CloseHandle(hParent);
         return false;
     }
 
     // Get the Windows file id as an inode replacement.
     nodeId = std::to_string(computeNodeId(pFileInfo));
 
-    CloseHandle(hParent);
+    (void) CloseHandle(hParent);
     return true;
 }
 
@@ -204,8 +204,8 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *filestat, IoError 
         retry = false;
 
         const DWORD dwShareMode = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
-        hParent = CreateFileW(path.parent_path().wstring().c_str(), FILE_LIST_DIRECTORY, dwShareMode, NULL, OPEN_EXISTING,
-                              FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
+        hParent = CreateFileW(path.parent_path().wstring().c_str(), FILE_LIST_DIRECTORY, dwShareMode, nullptr, OPEN_EXISTING,
+                              FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, nullptr);
         if (hParent == INVALID_HANDLE_VALUE) {
             DWORD dwError = GetLastError();
             if (utility_base::isLikeFileNotFoundError(dwError)) {
@@ -245,17 +245,17 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *filestat, IoError 
     PZW_QUERY_DIRECTORY_FILE pzwQueryDirectoryFile = pzwQueryDirectoryFileFct(ioError);
     if (!pzwQueryDirectoryFile) {
         LOGW_WARN(logger(), L"Error in pzwQueryDirectoryFileFct: " << Utility::formatIoError(ioError));
-        CloseHandle(hParent);
+        (void) CloseHandle(hParent);
         return false;
     }
 
-    NTSTATUS status = pzwQueryDirectoryFile(hParent, NULL, NULL, NULL, &iosb, fileInfo, sizeof(fileInfo),
+    NTSTATUS status = pzwQueryDirectoryFile(hParent, nullptr, nullptr, nullptr, &iosb, fileInfo, sizeof(fileInfo),
                                             FileIdFullDirectoryInformation, true, &fn, TRUE);
 
     DWORD dwError = GetLastError();
     // On FAT32 file system, NT_SUCCESS will return false even if it is a success, therefore we also check GetLastError
     if ((CommonUtility::isNTFS(path) && !NT_SUCCESS(status)) || (CommonUtility::isFAT(path) && dwError != 0)) {
-        CloseHandle(hParent);
+        (void) CloseHandle(hParent);
 
         if (!NT_SUCCESS(status)) {
             ioError = ntStatus2ioError(status);
@@ -277,7 +277,7 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *filestat, IoError 
 
     filestat->isHidden = pFileInfo->FileAttributes & FILE_ATTRIBUTE_HIDDEN;
     filestat->nodeType = pFileInfo->FileAttributes & FILE_ATTRIBUTE_DIRECTORY ? NodeType::Directory : NodeType::File;
-    CloseHandle(hParent);
+    (void) CloseHandle(hParent);
 
     return true;
 }
@@ -285,7 +285,8 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *filestat, IoError 
 bool IoHelper::isFileAccessible(const SyncPath &absolutePath, IoError &ioError) {
     ioError = IoError::Success;
 
-    HANDLE hFile = CreateFileW(Path2WStr(absolutePath).c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, NULL, NULL);
+    HANDLE hFile =
+            CreateFileW(Path2WStr(absolutePath).c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, nullptr, nullptr);
     if (hFile == INVALID_HANDLE_VALUE) {
         ioError = dWordError2ioError(GetLastError(), logger());
         return false;
@@ -749,8 +750,8 @@ bool IoHelper::checkIfIsJunction(const SyncPath &path, bool &isJunction, IoError
     isJunction = false;
     ioError = IoError::Success;
 
-    HANDLE hFile = CreateFileW(Path2WStr(path).c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
-                               FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
+    HANDLE hFile = CreateFileW(Path2WStr(path).c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING,
+                               FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, nullptr);
     if (hFile == INVALID_HANDLE_VALUE) {
         ioError = dWordError2ioError(GetLastError(), logger());
         return isExpectedError(ioError);
@@ -759,8 +760,8 @@ bool IoHelper::checkIfIsJunction(const SyncPath &path, bool &isJunction, IoError
     BYTE buf[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
     REPARSE_DATA_BUFFER &ReparseBuffer = (REPARSE_DATA_BUFFER &) buf;
     DWORD dwRet;
-    if (!DeviceIoControl(hFile, FSCTL_GET_REPARSE_POINT, NULL, 0, &ReparseBuffer, MAXIMUM_REPARSE_DATA_BUFFER_SIZE, &dwRet,
-                         NULL)) {
+    if (!DeviceIoControl(hFile, FSCTL_GET_REPARSE_POINT, nullptr, 0, &ReparseBuffer, MAXIMUM_REPARSE_DATA_BUFFER_SIZE, &dwRet,
+                         nullptr)) {
         DWORD dwError = GetLastError();
         CloseHandle(hFile);
 
@@ -781,22 +782,22 @@ bool IoHelper::createJunction(const std::string &data, const SyncPath &path, IoE
     ioError = IoError::Success;
 
     // Create the junction directory
-    if (!CreateDirectoryW(Path2WStr(path).c_str(), NULL)) {
+    if (!CreateDirectoryW(Path2WStr(path).c_str(), nullptr)) {
         ioError = dWordError2ioError(GetLastError(), logger());
         return false;
     }
 
     // Set the reparse point
     HANDLE hDir;
-    hDir = CreateFileW(Path2WStr(path).c_str(), GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
-                       FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS, NULL);
+    hDir = CreateFileW(Path2WStr(path).c_str(), GENERIC_WRITE, 0, nullptr, OPEN_EXISTING,
+                       FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS, nullptr);
     if (hDir == INVALID_HANDLE_VALUE) {
         ioError = dWordError2ioError(GetLastError(), logger());
         return false;
     }
 
     DWORD dwRet = 0;
-    if (!DeviceIoControl(hDir, FSCTL_SET_REPARSE_POINT, (void *) data.data(), (WORD) data.size(), NULL, 0, &dwRet, NULL)) {
+    if (!DeviceIoControl(hDir, FSCTL_SET_REPARSE_POINT, (void *) data.data(), (WORD) data.size(), nullptr, 0, &dwRet, nullptr)) {
         RemoveDirectoryW(Path2WStr(path).c_str());
         CloseHandle(hDir);
         ioError = dWordError2ioError(GetLastError(), logger());
@@ -812,7 +813,7 @@ bool IoHelper::readJunction(const SyncPath &path, std::string &data, SyncPath &t
 
     HANDLE hFile =
             CreateFileW(Path2WStr(path).c_str(), FILE_WRITE_ATTRIBUTES, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
-                        NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
+                        nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, nullptr);
     if (hFile == INVALID_HANDLE_VALUE) {
         ioError = dWordError2ioError(GetLastError(), logger());
         return isExpectedError(ioError);
@@ -821,8 +822,8 @@ bool IoHelper::readJunction(const SyncPath &path, std::string &data, SyncPath &t
     BYTE buf[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
     REPARSE_DATA_BUFFER &reparseBuffer = (REPARSE_DATA_BUFFER &) buf;
     DWORD dwRet;
-    if (!DeviceIoControl(hFile, FSCTL_GET_REPARSE_POINT, NULL, 0, &reparseBuffer, MAXIMUM_REPARSE_DATA_BUFFER_SIZE, &dwRet,
-                         NULL)) {
+    if (!DeviceIoControl(hFile, FSCTL_GET_REPARSE_POINT, nullptr, 0, &reparseBuffer, MAXIMUM_REPARSE_DATA_BUFFER_SIZE, &dwRet,
+                         nullptr)) {
         DWORD dwError = GetLastError();
         CloseHandle(hFile);
 
@@ -850,15 +851,15 @@ bool IoHelper::createJunctionFromPath(const SyncPath &targetPath, const SyncPath
     ioError = IoError::Success;
 
     // Create the junction directory
-    if (!CreateDirectoryW(Path2WStr(path).c_str(), NULL)) {
+    if (!CreateDirectoryW(Path2WStr(path).c_str(), nullptr)) {
         ioError = dWordError2ioError(GetLastError(), logger());
         return false;
     }
 
     // Set the reparse point
     HANDLE hDir;
-    hDir = CreateFileW(Path2WStr(path).c_str(), GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
-                       FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS, NULL);
+    hDir = CreateFileW(Path2WStr(path).c_str(), GENERIC_WRITE, 0, nullptr, OPEN_EXISTING,
+                       FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS, nullptr);
     if (hDir == INVALID_HANDLE_VALUE) {
         ioError = dWordError2ioError(GetLastError(), logger());
         return false;
@@ -889,7 +890,7 @@ bool IoHelper::createJunctionFromPath(const SyncPath &targetPath, const SyncPath
     DWORD dwError = ERROR_SUCCESS;
     const bool success =
             DeviceIoControl(hDir, FSCTL_SET_REPARSE_POINT, reparseDataBuffer,
-                            reparseDataBuffer->ReparseDataLength + REPARSE_MOUNTPOINT_HEADER_SIZE, NULL, 0, &dwError, NULL);
+                            reparseDataBuffer->ReparseDataLength + REPARSE_MOUNTPOINT_HEADER_SIZE, nullptr, 0, &dwError, nullptr);
 
     ioError = dWordError2ioError(dwError, logger());
     free(reparseDataBuffer);
@@ -931,8 +932,8 @@ IoError IoHelper::setFileDates(const SyncPath &filePath, const SyncTime creation
     HANDLE hFile = INVALID_HANDLE_VALUE;
     for (bool isDirectory: {false, true}) {
         hFile = CreateFileW(filePath.native().c_str(), FILE_WRITE_ATTRIBUTES,
-                            FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
-                            (isDirectory ? FILE_FLAG_BACKUP_SEMANTICS : 0) | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
+                            FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING,
+                            (isDirectory ? FILE_FLAG_BACKUP_SEMANTICS : 0) | FILE_FLAG_OPEN_REPARSE_POINT, nullptr);
         if (hFile == INVALID_HANDLE_VALUE) {
             DWORD dwError = GetLastError();
             if (dwError == ERROR_ACCESS_DENIED) {
@@ -956,7 +957,7 @@ IoError IoHelper::setFileDates(const SyncPath &filePath, const SyncTime creation
         return IoError::Unknown;
     }
 
-    if (!SetFileTime(hFile, &creationTime, NULL, &modificationTime)) {
+    if (!SetFileTime(hFile, &creationTime, nullptr, &modificationTime)) {
         auto ioError = IoError::Unknown;
         DWORD dwError = GetLastError();
         if (utility_base::isLikeFileNotFoundError(dwError)) {
