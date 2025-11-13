@@ -56,11 +56,11 @@ class TestWorkers : public CppUnit::TestFixture, public TestBase {
         LocalTemporaryDirectory _localParmsDbTempDir{"testParmsDbTempDir"};
 
 #if defined(KD_MACOS)
-        static std::shared_ptr<VfsMac> _vfsPtr;
+        static std::shared_ptr<VfsMac> _vfs;
 #elif defined(KD_WINDOWS)
-        static std::shared_ptr<VfsWin> _vfsPtr;
+        static std::shared_ptr<VfsWin> _vfs;
 #else
-        static std::shared_ptr<VfsOff> _vfsPtr;
+        static std::shared_ptr<VfsOff> _vfs;
 #endif
 
         static bool _vfsInstallationDone;

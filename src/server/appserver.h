@@ -19,7 +19,9 @@
 #pragma once
 
 #include "qtsingleapplication.h"
+#if defined(KD_WINDOWS)
 #include "navigationpanehelper.h"
+#endif
 #include "config.h"
 #include "requests/serverrequests.h"
 #include "comm/oldcommserver.h"
@@ -53,6 +55,12 @@ class AppServer : public SharedTools::QtSingleApplication {
         Q_OBJECT
 
     public:
+        static SyncPalMap syncPalMap;
+        static std::recursive_mutex syncPalMapMutex;
+
+        static VfsMap vfsMap;
+        static std::recursive_mutex vfsMapMutex;
+
         struct SyncCache {
                 SyncStatus _status;
                 SyncStep _step;
@@ -96,10 +104,6 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         void showHint(std::string errorHint);
 
-        auto &syncPalMap() const { return _syncPalMap; }
-        auto &vfsMap() const { return _vfsMap; }
-        auto &navigationPaneHelper() const { return _navigationPaneHelper; }
-
         void stopAllSyncsTask(const std::vector<int> &syncDbIdList);
 
         static void addError(const Error &error);
@@ -135,14 +139,19 @@ class AppServer : public SharedTools::QtSingleApplication {
         }
 #endif
 
+#if defined(KD_WINDOWS)
+        auto &navigationPaneHelper() { return _navigationPaneHelper; }
+#endif
+
     private:
         QStringList _arguments;
         log4cplus::Logger _logger;
-        static SyncPalMap _syncPalMap;
-        static VfsMap _vfsMap;
         static std::vector<Notification> _notifications;
 
+#if defined(KD_WINDOWS)
         std::unique_ptr<NavigationPaneHelper> _navigationPaneHelper;
+#endif
+
         std::shared_ptr<CommManager> _commManager;
         bool _appRestartRequired{false};
         Theme *_theme{nullptr};
@@ -229,7 +238,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void addCompletedItem(int syncDbId, const SyncFileItem &item, bool notify);
         void sendSignal(SignalNum sigNum, int syncDbId, const SigValueType &val);
 
-        static ExitInfo getVfsPtr(int syncDbId, std::shared_ptr<Vfs> &vfs);
+        static ExitInfo getVfs(int syncDbId, std::shared_ptr<Vfs> &vfs);
 
         static void syncFileStatus(int syncDbId, const KDC::SyncPath &path, KDC::SyncFileStatus &status);
         static void syncFileSyncing(int syncDbId, const KDC::SyncPath &path, bool &syncing);
