@@ -9,46 +9,26 @@
              mc:Ignorable="d">
     <Grid Height="58"
           HorizontalAlignment="Stretch">
-        <!-- Layer 1: Gradient background -->
-        <Border CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}">
-            <Border.Background>
-                <LinearGradientBrush StartPoint="0,0"
-                                     EndPoint="1,0">
-                    <GradientStop Color="#1DDDFD"
-                                  Offset="0.0" />
-                    <GradientStop Color="#337CFF"
-                                  Offset="0.25" />
-                    <GradientStop Color="#A055FC"
-                                  Offset="0.5" />
-                    <GradientStop Color="#F34BBB"
-                                  Offset="0.75" />
-                    <GradientStop Color="#FDBC3D"
-                                  Offset="1.0" />
-                </LinearGradientBrush>
-            </Border.Background>
-        </Border>
-
-        <!-- Layer 2: Acrylic background with content -->
+        
         <Border CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"
                 BorderThickness="1">
             <Border.BorderBrush>
                 <LinearGradientBrush StartPoint="0,0"
                                      EndPoint="1,0">
-                    <GradientStop Color="#1DDDFD"
+                    <GradientStop Color="{ThemeResource kSuite.Gradient.lightblue}"
                                   Offset="0.0" />
-                    <GradientStop Color="#337CFF"
+                    <GradientStop Color="{ThemeResource kSuite.Gradient.darkblue}"
                                   Offset="0.25" />
-                    <GradientStop Color="#A055FC"
+                    <GradientStop Color="{ThemeResource kSuite.Gradient.purple}"
                                   Offset="0.5" />
-                    <GradientStop Color="#F34BBB"
+                    <GradientStop Color="{ThemeResource kSuite.Gradient.pink}"
                                   Offset="0.75" />
-                    <GradientStop Color="#FDBC3D"
+                    <GradientStop Color="{ThemeResource kSuite.Gradient.orange}"
                                   Offset="1.0" />
                 </LinearGradientBrush>
             </Border.BorderBrush>
             <Border.Background>
-                <AcrylicBrush TintColor="{ThemeResource SolidBackgroundFillColorBaseAlt}"
-                              TintOpacity="0.6" />
+                <SolidColorBrush Color="{ThemeResource LayerFillColorDefault}" />
             </Border.Background>
 
             <Grid VerticalAlignment="Center"
