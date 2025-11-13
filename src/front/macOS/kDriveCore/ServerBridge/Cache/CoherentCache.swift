@@ -43,9 +43,10 @@ public protocol CoherentCacheProtocol: Sendable {
 
     // MARK: - Drive
 
-    func getDrive(_ driveId: Int32, accountId: Int32, userId: Int32) async -> Drive?
-    func addDrive(_ drive: Drive, toAccount accountId: Int32, userId: Int32) async
-    func removeDrive(_ driveId: Int32, fromAccount accountId: Int32, userId: Int32) async
+    func getDrive(_ driveId: Int32, accountId: Int32, userDbId: Int32) async -> Drive?
+    func addDrive(_ drive: Drive, toAccount accountId: Int32, userDbId: Int32) async
+    func removeDrive(_ driveId: Int32, fromAccount accountId: Int32, userDbId: Int32) async
+    func updateDrive(drive: Drive) async
 
     // MARK: - Synchro
 
@@ -138,28 +139,46 @@ public actor CoherentCache: CoherentCacheProtocol, CoherentCacheObservation {
 
     // MARK: - DRIVE
 
-    public func getDrive(_ driveId: Int32, accountId: Int32, userId: Int32) -> Drive? {
-        users[userId]?.accounts[accountId]?.drives[driveId]
+    public func getDrive(_ driveId: Int32, accountId: Int32, userDbId: Int32) -> Drive? {
+        users[userDbId]?.accounts[accountId]?.drives[driveId]
     }
 
-    public func addDrive(_ drive: Drive, toAccount accountId: Int32, userId: Int32) {
-        guard var user = users[userId],
+    public func addDrive(_ drive: Drive, toAccount accountId: Int32, userDbId: Int32) {
+        guard var user = users[userDbId],
               var account = user.accounts[accountId]
         else { return }
 
         account.drives[drive.id] = drive
         user.accounts[accountId] = account
-        users[userId] = user
+        users[userDbId] = user
     }
 
-    public func removeDrive(_ driveId: Int32, fromAccount accountId: Int32, userId: Int32) {
-        guard var user = users[userId],
+    public func removeDrive(_ driveId: Int32, fromAccount accountId: Int32, userDbId: Int32) {
+        guard var user = users[userDbId],
               var account = user.accounts[accountId]
         else { return }
 
         account.drives.removeValue(forKey: driveId)
         user.accounts[accountId] = account
-        users[userId] = user
+        users[userDbId] = user
+    }
+
+    public func updateDrive(drive: Drive) {
+        let userDbId = drive.userDbId
+        let accountId = drive.accountId
+
+        guard var user = users[userDbId],
+              var account = user.accounts[accountId]
+        else { return }
+
+        var indexedDrives = account.drives
+        indexedDrives[drive.id] = drive
+
+        account.drives = indexedDrives
+        user.accounts[accountId] = account
+        users[userDbId] = user
+
+        // TODO: Observation
     }
 
     // MARK: - SYNCRO
