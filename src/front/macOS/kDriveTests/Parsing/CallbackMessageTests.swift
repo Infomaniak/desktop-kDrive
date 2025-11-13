@@ -43,8 +43,8 @@ struct CallbackMessageTests {
         let expectedId = Int32(69)
 
         let user = TestUser(name: "Base64")
-        let message = CallbackMessage<TestUser>(cause: expectedCause,
-                                                code: expectedCode,
+        let message = CallbackMessage<TestUser>(code: expectedCode,
+                                                cause: expectedCause,
                                                 id: expectedId,
                                                 body: user)
 
