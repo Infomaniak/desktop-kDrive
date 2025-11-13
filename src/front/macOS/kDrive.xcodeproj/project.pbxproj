@@ -160,11 +160,6 @@
 			path = kDriveTests;
 			sourceTree = "<group>";
 		};
-		7A4DFBB22EA91F9D00B138B8 /* kDriveTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = kDriveTests;
-			sourceTree = "<group>";
-		};
 		F967009F2E95352C00EDD4D7 /* kDriveResources */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = kDriveResources;
@@ -229,7 +224,6 @@
 				F967009F2E95352C00EDD4D7 /* kDriveResources */,
 				F9ACC5372E5DF50B0081E80B /* swiftgen.yml */,
 				7A46E1CE2EA7AC1B00880412 /* kDriveTests */,
-				7A4DFBB22EA91F9D00B138B8 /* kDriveTests */,
 				37A1C4272E546A5200596DBB /* Products */,
 				F967014F2E953CF600EDD4D7 /* Frameworks */,
 			);
@@ -373,9 +367,6 @@
 			);
 			dependencies = (
 				7A4DFBB62EA91F9D00B138B8 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				7A4DFBB22EA91F9D00B138B8 /* kDriveTests */,
 			);
 			name = kDriveTests;
 			packageProductDependencies = (
