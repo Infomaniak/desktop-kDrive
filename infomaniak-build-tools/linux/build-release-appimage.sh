@@ -115,11 +115,11 @@ function move_dependencies() {
   cd /app
 
   mkdir -p ./usr/plugins
-  cp -P -r /opt/qt6.2.3/plugins/* ./usr/plugins/
+  cp -P -r $QTDIR/plugins/* ./usr/plugins/
 
-  cp -P -r /opt/qt6.2.3/libexec ./usr
-  cp -P -r /opt/qt6.2.3/resources ./usr
-  cp -P -r /opt/qt6.2.3/translations ./usr
+  cp -P -r $QTDIR/libexec ./usr
+  cp -P -r $QTDIR/resources ./usr
+  cp -P -r $QTDIR/translations ./usr
 
   mv "./usr/lib/$arch-linux-gnu/"* ./usr/lib/ || echo "The folder /app/usr/lib/$arch-linux-gnu/ might not exist." >&2
 
@@ -128,9 +128,8 @@ function move_dependencies() {
 
   cp -P -r "/usr/lib/$arch-linux-gnu/nss" ./usr/lib/
 
-  cp -P /opt/qt6.2.3/lib/libQt6WaylandClient.so* ./usr/lib
-  cp -P /opt/qt6.2.3/lib/libQt6WaylandEglClientHwIntegration.so* ./usr/lib
-
+  cp -P $QTDIR/lib/libQt6WaylandClient.so* ./usr/lib
+ 
   cp -P "$conan_dependencies_folder"/* ./usr/lib
 
   mkdir -p ./usr/qml
@@ -164,13 +163,12 @@ function setup_build() {
   mkdir -p /app
   mkdir -p /build
 
-  # Set Qt-6.2
-  export QT_BASE_DIR=/opt/qt6.2.3
-  export QTDIR="$QT_BASE_DIR"
-  export QMAKE="$QT_BASE_DIR/bin/qmake"
-  export PATH="$QT_BASE_DIR/bin:$QT_BASE_DIR/libexec:$PATH"
-  export LD_LIBRARY_PATH="$QT_BASE_DIR/lib:$LD_LIBRARY_PATH"
-  export PKG_CONFIG_PATH="$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH"
+  # Set Qt-6.10.0
+  export QTDIR="/opt/qt6.10.0"
+  export QMAKE="$QTDIR/bin/qmake"
+  export PATH="$QTDIR/bin:$QTDIR/libexec:$PATH"
+  export LD_LIBRARY_PATH="$QTDIR/lib:$LD_LIBRARY_PATH"
+  export PKG_CONFIG_PATH="$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 }
 
 while :

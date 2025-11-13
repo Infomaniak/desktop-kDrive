@@ -23,9 +23,8 @@ base_dir="$PWD"
 
 cd "$app_dir"
 
-export QT_BASE_DIR="$HOME/Qt/6.2.3/gcc_64"
-export QTDIR="$QT_BASE_DIR"
-export QMAKE="$QT_BASE_DIR/bin/qmake"
+export QTDIR="$HOME/Qt/6.10.0/gcc_64"
+export QMAKE="$QTDIR/bin/qmake"
 export PATH="$QT_BASE_DIR/bin:$QT_BASE_DIR/libexec:$PATH"
 export LD_LIBRARY_PATH="$QT_BASE_DIR/lib:$app_dir/usr/lib:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
 export PKG_CONFIG_PATH="$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH"
