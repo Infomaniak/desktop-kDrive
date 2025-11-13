@@ -398,7 +398,7 @@ void TestSyncJobManagerSingleton::testCanRunjob() {
             Utility::msleep(100);
         }
         CPPUNIT_ASSERT_EQUAL(true, noMoreRun);
-        CPPUNIT_ASSERT_EQUAL(uint64_t{maxNumberParallelBigDownloads}, counter);
+        CPPUNIT_ASSERT_EQUAL(maxNumberParallelBigDownloads, counter);
 
         while (!SyncJobManagerSingleton::instance()->_data._managedJobs.empty()) {
             Utility::msleep(100);
