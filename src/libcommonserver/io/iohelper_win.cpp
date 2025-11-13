@@ -170,17 +170,16 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
     LONGLONG fileInfo[(MAX_PATH_LENGTH_WIN_LONG + sizeof(FILE_ID_FULL_DIR_INFORMATION)) / sizeof(LONGLONG)];
     PFILE_ID_FULL_DIR_INFORMATION pFileInfo = (PFILE_ID_FULL_DIR_INFORMATION) fileInfo;
 
-    PZW_QUERY_DIRECTORY_FILE zwQueryDirectoryFile =
-            (PZW_QUERY_DIRECTORY_FILE) GetProcAddress(GetModuleHandle(L"ntdll.dll"), "ZwQueryDirectoryFile");
-
-    if (zwQueryDirectoryFile == 0) {
-        LOGW_WARN(logger(), L"Error in GetProcAddress: " << Utility::formatSyncPath(path.parent_path()) << L", "
-                                                         << utility_base::getLastErrorMessage());
+    IoError ioError;
+    PZW_QUERY_DIRECTORY_FILE pzwQueryDirectoryFile = pzwQueryDirectoryFileFct(ioError);
+    if (!pzwQueryDirectoryFile) {
+        LOGW_WARN(logger(), L"Error in pzwQueryDirectoryFileFct: " << Utility::formatIoError(ioError));
+        CloseHandle(hParent);
         return false;
     }
 
-    NTSTATUS status = zwQueryDirectoryFile(hParent, NULL, NULL, NULL, &iosb, fileInfo, sizeof(fileInfo),
-                                           FileIdFullDirectoryInformation, true, &fn, TRUE);
+    NTSTATUS status = pzwQueryDirectoryFile(hParent, NULL, NULL, NULL, &iosb, fileInfo, sizeof(fileInfo),
+                                            FileIdFullDirectoryInformation, true, &fn, TRUE);
 
     if (!NT_SUCCESS(status)) {
         CloseHandle(hParent);
@@ -243,18 +242,15 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *filestat, IoError 
     LONGLONG fileInfo[(MAX_PATH_LENGTH_WIN_LONG + sizeof(FILE_ID_FULL_DIR_INFORMATION)) / sizeof(LONGLONG)];
     PFILE_ID_FULL_DIR_INFORMATION pFileInfo = (PFILE_ID_FULL_DIR_INFORMATION) fileInfo;
 
-    PZW_QUERY_DIRECTORY_FILE zwQueryDirectoryFile =
-            (PZW_QUERY_DIRECTORY_FILE) GetProcAddress(GetModuleHandle(L"ntdll.dll"), "ZwQueryDirectoryFile");
-
-    if (zwQueryDirectoryFile == 0) {
-        LOG_WARN(logger(), "Error in GetProcAddress");
-        ioError = dWordError2ioError(GetLastError(), logger());
+    PZW_QUERY_DIRECTORY_FILE pzwQueryDirectoryFile = pzwQueryDirectoryFileFct(ioError);
+    if (!pzwQueryDirectoryFile) {
+        LOGW_WARN(logger(), L"Error in pzwQueryDirectoryFileFct: " << Utility::formatIoError(ioError));
         CloseHandle(hParent);
         return false;
     }
 
-    NTSTATUS status = zwQueryDirectoryFile(hParent, NULL, NULL, NULL, &iosb, fileInfo, sizeof(fileInfo),
-                                           FileIdFullDirectoryInformation, true, &fn, TRUE);
+    NTSTATUS status = pzwQueryDirectoryFile(hParent, NULL, NULL, NULL, &iosb, fileInfo, sizeof(fileInfo),
+                                            FileIdFullDirectoryInformation, true, &fn, TRUE);
 
     DWORD dwError = GetLastError();
     // On FAT32 file system, NT_SUCCESS will return false even if it is a success, therefore we also check GetLastError
@@ -1160,6 +1156,35 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
     CoUninitialize();
 
     return result;
+}
+
+PZW_QUERY_DIRECTORY_FILE pzwQueryDirectoryFileFct(IoError &ioError) {
+    static PZW_QUERY_DIRECTORY_FILE pzwQueryDirectoryFile = nullptr;
+
+    ioError = IoError::Success;
+    if (pzwQueryDirectoryFile) return pzwQueryDirectoryFile;
+
+    HMODULE hModule = GetModuleHandle(L"ntdll.dll");
+    if (hModule == 0) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in GetModuleHandle for ntdll.dll");
+        ioError = dWordError2ioError(GetLastError(), Log::instance()->getLogger());
+        return nullptr;
+    }
+
+    try {
+        pzwQueryDirectoryFile = (PZW_QUERY_DIRECTORY_FILE) GetProcAddress(hModule, "ZwQueryDirectoryFile");
+    } catch (const std::exception &e) {
+        LOG_WARN(Log::instance()->getLogger(), "Exception in GetProcAddress: err=" << e.what());
+        return nullptr;
+    }
+
+    if (pzwQueryDirectoryFile == 0) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in GetProcAddress");
+        ioError = dWordError2ioError(GetLastError(), Log::instance()->getLogger());
+        return nullptr;
+    }
+
+    return pzwQueryDirectoryFile;
 }
 
 } // namespace KDC
