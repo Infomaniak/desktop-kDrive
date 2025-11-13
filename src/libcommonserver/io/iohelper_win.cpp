@@ -286,7 +286,7 @@ bool IoHelper::isFileAccessible(const SyncPath &absolutePath, IoError &ioError) 
     ioError = IoError::Success;
 
     HANDLE hFile =
-            CreateFileW(Path2WStr(absolutePath).c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, nullptr, nullptr);
+            CreateFileW(Path2WStr(absolutePath).c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, NULL, NULL);
     if (hFile == INVALID_HANDLE_VALUE) {
         ioError = dWordError2ioError(GetLastError(), logger());
         return false;
