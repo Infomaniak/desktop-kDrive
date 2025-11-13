@@ -1166,7 +1166,7 @@ PZW_QUERY_DIRECTORY_FILE pzwQueryDirectoryFileFct(IoError &ioError) {
     if (pzwQueryDirectoryFile) return pzwQueryDirectoryFile;
 
     HMODULE hModule = GetModuleHandle(L"ntdll.dll");
-    if (hModule == 0) {
+    if (hModule == nullptr) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetModuleHandle for ntdll.dll");
         ioError = dWordError2ioError(GetLastError(), Log::instance()->getLogger());
         return nullptr;
@@ -1179,7 +1179,7 @@ PZW_QUERY_DIRECTORY_FILE pzwQueryDirectoryFileFct(IoError &ioError) {
         return nullptr;
     }
 
-    if (pzwQueryDirectoryFile == 0) {
+    if (pzwQueryDirectoryFile == nullptr) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetProcAddress");
         ioError = dWordError2ioError(GetLastError(), Log::instance()->getLogger());
         return nullptr;
