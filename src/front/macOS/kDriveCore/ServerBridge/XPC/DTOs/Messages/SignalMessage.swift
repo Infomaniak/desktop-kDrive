@@ -30,8 +30,6 @@ public struct SignalMessage<Body: Codable>: Codable {
         case signalNotSupported(SignalNum)
     }
 
-    public let cause: KDC.ExitCause?
-    public let code: KDC.ExitCode?
     public let id: Int32
     public let num: SignalNum
     private let params: SignalParams<Body>?
@@ -39,13 +37,9 @@ public struct SignalMessage<Body: Codable>: Codable {
         return params?.userInfo
     }
 
-    public init(cause: KDC.ExitCause?,
-                code: KDC.ExitCode?,
-                id: Int32,
+    public init(id: Int32,
                 num: SignalNum,
                 params: SignalParams<Body>?) {
-        self.cause = cause
-        self.code = code
         self.id = id
         self.num = num
         self.params = params
