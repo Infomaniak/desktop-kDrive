@@ -55,6 +55,18 @@ public struct User: Identifiable, Hashable, Sendable {
     }
 }
 
+extension User {
+    var asUserInfoSignal: UserInfoSignal {
+        UserInfoSignal(dbId: dbId,
+                       userId: userId,
+                       name: name,
+                       email: email,
+                       avatar: avatar ?? Data(),
+                       isConnected: isConnected,
+                       isStaff: isStaff)
+    }
+}
+
 public extension User {
     func updated(with other: User) -> User? {
         guard other.id == id else {
