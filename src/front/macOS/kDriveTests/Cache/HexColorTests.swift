@@ -49,6 +49,17 @@ struct HexColorTests {
         #expect(colorFromHex == colorFromRGBA)
     }
 
+    @Test(arguments: ["", "#", "##", "###", "####", "#####", "######", "#######",
+                      "#f", "#ff", "#fff", "#ffff", "#fffff", "#fffffff",
+                      "f", "ff", "fff", "ffff", "fffff", "#fffffff"])
+    func testInitFailure(invalidInput: String) {
+        // WHEN
+        let colorFromHex = HexColor(hex: invalidInput)
+
+        // THEN
+        #expect(colorFromHex == nil, "Invalid input should not init a valid color struct")
+    }
+
     // MARK: Description
 
     @Test(arguments: testCases)
