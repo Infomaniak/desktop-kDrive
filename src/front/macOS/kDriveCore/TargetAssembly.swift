@@ -47,7 +47,8 @@ open class TargetAssembly {
                                      resolver: resolver)
             },
             Factory(type: XPCConnectionProvider.self) { _, _ in
-                XPCConnectionManager()
+                XPCServerMock() // Use Mocked server
+                //XPCConnectionManager() // Use real server over XPC
             },
             Factory(type: XPCQueryFetcherProtocol.self) { _, _ in
                 XPCQueryFetcher()
