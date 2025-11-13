@@ -24,7 +24,8 @@ public struct LoginJob: Sendable {
 
     public enum LoginJobError: Error {
         case userNotFound
-        case userDbIdNotFound
+        case noReplyMessage
+        case serverError(code: KDC.ExitCode, cause: KDC.ExitCause,)
     }
 
     public init() {}
@@ -52,11 +53,15 @@ public struct LoginJob: Sendable {
         do {
             let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<LoginResponse>.self)
 
-            guard let userDbId = decodedMessage?.body.userDbId else {
-                throw LoginJobError.userDbIdNotFound
+            guard let decodedMessage else {
+                throw LoginJobError.noReplyMessage
             }
 
-            return userDbId
+            guard decodedMessage.code == .Ok, decodedMessage.cause == .Unknown else {
+                throw LoginJobError.serverError(code: decodedMessage.code, cause: decodedMessage.cause)
+            }
+
+            return decodedMessage.body.userDbId
         } catch XPCQueryFetcher.QueryError.noReplyData {
             throw LoginJobError.userNotFound
         }
