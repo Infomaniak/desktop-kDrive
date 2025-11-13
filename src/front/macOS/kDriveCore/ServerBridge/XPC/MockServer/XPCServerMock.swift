@@ -64,8 +64,7 @@ public actor XPCServerMock: XPCGuiProtocol, XPCConnectionProvider {
                 }
             } catch {
                 IKLogger.xpc.error("XPCServerMock: Kaput")
-                let data = Data()
-                callback(data)
+                try await replyDummyError(callback: callback)
             }
         }
     }
@@ -98,5 +97,17 @@ public actor XPCServerMock: XPCGuiProtocol, XPCConnectionProvider {
                                                              params: userInfo)
         let encodedSignal = try encoder.encode(updateUserSignal)
         signalHandler.handleServerSignal(encodedSignal)
+    }
+
+    func replyDummyError(callback: @escaping (Data) -> Void) async throws {
+        let requestId = await requestCounter.nextID
+        let callbackMessage = CallbackMessage<EmptyResponse>(
+            code: .SystemError,
+            cause: .Unknown,
+            id: requestId,
+            body: EmptyResponse()
+        )
+        let encodedCallback = try encoder.encode(callbackMessage)
+        callback(encodedCallback)
     }
 }
