@@ -76,9 +76,6 @@ fi
 echo "Build type: $build_type"
 echo "Unit tests build flag: $unit_tests"
 
-
-export QT_BASE_DIR="$HOME/Qt/6.2.3"
-export QTDIR="$QT_BASE_DIR/gcc_64"
 export BASEPATH="$PWD"
 export CONTENTDIR="$BASEPATH/build-linux"
 export BUILD_DIR="$CONTENTDIR/build"

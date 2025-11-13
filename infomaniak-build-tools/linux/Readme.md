@@ -1,7 +1,7 @@
 - [kDrive files](#kdrive-files)
 - [Installation Requirements](#installation-requirements)
     - [Packages](#packages)
-    - [Qt 6.2.3](#qt-623)
+    - [Qt 6.10.0](#qt-610)
     - [Poco](#poco)
     - [CPPUnit](#cppunit)
     - [Sentry](#sentry)
@@ -66,15 +66,15 @@ sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/lib/llvm-18/bin
 
 Check the version again with `clang --version` to ensure that the version is now 18 or higher.
 
-## Qt 6.2.3
+## Qt 6.10.0
 
 From the [Qt Installer](https://www.qt.io/download-qt-installer-oss?hsCtaTracking=99d9dd4f-5681-48d2-b096-470725510d34%7C074ddad0-fdef-4e53-8aa8-5e8a876d6ab4), 
 tick the **Archive** box and then press the `Refresh` button to see earlier `Qt` versions.  
-In QT 6.2.3, select :
+In QT 6.10.0, select :
 - Desktop gcc 64-bits
 - Qt 5 Compatibility Module
 
-In Qt 6.2.3 Additional Libraries, select :
+In Qt 6.10.0 Additional Libraries, select :
 - Qt WebEngine
 - Qt Positioning
 - Qt WebChannel
@@ -138,7 +138,7 @@ cd external/crashpad
 git submodule init
 git submodule update --recursive
 cd ../..
-cmake -B build -DSENTRY_INTEGRATION_QT=YES -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_PREFIX_PATH=~/Qt/6.2.3/gcc_64
+cmake -B build -DSENTRY_INTEGRATION_QT=YES -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_PREFIX_PATH=~/Qt/6.10.0/gcc_64
 cmake --build build --parallel
 sudo cmake --install build
 ```
