@@ -139,7 +139,7 @@ AppServer::AppServer(int &argc, char **argv) :
 }
 
 AppServer::~AppServer() {
-    if (_clientProcess->isOpen()) {
+    if (_clientProcess && _clientProcess->isOpen()) {
         _clientProcess->kill();
     }
 
@@ -463,7 +463,10 @@ void AppServer::cleanup() {
     LOG_DEBUG(_logger, "AppServer::cleanup");
 
     // Stop CommManager
-    _commManager->stop();
+    if (_commManager) {
+        _commManager->stop();
+        LOG_DEBUG(_logger, "CommManager stopped");
+    }
 
     // Stop JobManager(s)
     GuiJobManagerSingleton::instance()->stop();
