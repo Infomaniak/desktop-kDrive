@@ -30,5 +30,5 @@ public struct Account: Identifiable, Hashable, Sendable {
 
     public let id: Int32
     public var name: String
-    public var drives: [Int32: Drive]
+    public var drives: IndexedDrives
 }

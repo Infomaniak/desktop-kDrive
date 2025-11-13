@@ -18,6 +18,8 @@
 
 import Foundation
 
+public typealias IndexedDrives = [Int32: Drive]
+
 public struct Drive: Identifiable, Hashable, Sendable {
     public var id: Int32 {
         driveId
