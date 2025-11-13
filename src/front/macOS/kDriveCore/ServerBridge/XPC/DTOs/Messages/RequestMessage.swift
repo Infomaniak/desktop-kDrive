@@ -25,7 +25,8 @@ public struct RequestMessage<Body: Codable>: Codable {
     public let body: Body
 
     public init(num: RequestNum, body: Body) async {
-        @InjectService var requestIDGenerator: XPCRequestIDGenerator
+        /// This mimic the server using an auto-increment ids to debug async comms.
+        @InjectService var requestIDGenerator: AutoIncrementIDGenerator
         id = await requestIDGenerator.nextID
         self.num = num
         self.body = body

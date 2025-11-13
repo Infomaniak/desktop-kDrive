@@ -35,8 +35,8 @@ public actor XPCServerMock: XPCGuiProtocol, XPCConnectionProvider {
     let encoder = JSONEncoder()
     let decoder = JSONDecoder()
     let cache = CoherentCache()
-    let requestCounter = XPCRequestIDGenerator()
-    let userDbIdGenerator = XPCRequestIDGenerator()
+    let requestCounter = AutoIncrementIDGenerator()
+    let userDbIdGenerator = AutoIncrementIDGenerator()
 
     enum serverError: Error {
         case unsupported
