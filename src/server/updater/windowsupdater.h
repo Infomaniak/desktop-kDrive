@@ -57,6 +57,8 @@ class WindowsUpdater : public AbstractUpdater {
          * @return true if the signature is valid.
          */
         virtual bool verifyDigitalSignature(const SyncPath &filepath);
+
+        bool _autoUpdate{false};
 };
 
 } // namespace KDC
