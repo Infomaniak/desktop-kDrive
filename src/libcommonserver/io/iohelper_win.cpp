@@ -1176,6 +1176,7 @@ PZW_QUERY_DIRECTORY_FILE pzwQueryDirectoryFileFct(IoError &ioError) {
         pzwQueryDirectoryFile = (PZW_QUERY_DIRECTORY_FILE) GetProcAddress(hModule, "ZwQueryDirectoryFile");
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(), "Exception in GetProcAddress: err=" << e.what());
+        ioError = IoError::Unknown;
         return nullptr;
     }
 
