@@ -68,7 +68,7 @@ fi
 
 cd "$build_folder"
 
-cmake -DCMAKE_PREFIX_PATH="$QT_BASE_DIR" \
+cmake -DCMAKE_PREFIX_PATH="$QTDIR" \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DQT_FEATURE_neon=ON \
     -DCMAKE_BUILD_TYPE=$build_type \
