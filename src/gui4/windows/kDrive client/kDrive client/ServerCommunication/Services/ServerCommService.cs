@@ -357,6 +357,15 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             });
         }
 
+        public async Task RemoveSync(DbId syncDbId, CancellationToken cancellationToken)
+        {
+            JsonObject parms = new()
+            {
+                [JsonKeys.SyncDbId] = syncDbId
+            };
+            var commData = await _commClient.SendRequestAsync(RequestNum.SYNC_DELETE, parms, cancellationToken);
+        }
+
         public async Task StartSync(DbId syncDbId, CancellationToken cancellationToken)
         {
             Sync? sync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == syncDbId);
@@ -492,9 +501,15 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 case SignalNum.ACCOUNT_UPDATED:
                     await HandleAccountUpdatedOrAddedAsync(sender, args);
                     break;
+                case SignalNum.ACCOUNT_REMOVED:
+                    await HandleAccountRemovedAsync(sender, args);
+                    break;
                 case SignalNum.DRIVE_ADDED:
                 case SignalNum.DRIVE_UPDATED:
                     await HandleDriveUpdatedOrAddedAsync(sender, args);
+                    break;
+                case SignalNum.DRIVE_REMOVED:
+                    await HandleDriveRemovedAsync(sender, args);
                     break;
                 case SignalNum.SYNC_ADDED:
                 case SignalNum.SYNC_UPDATED:
@@ -571,7 +586,32 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             await AddOrUpdateAccountInModel(accountInfo);
         }
+        public async Task HandleAccountRemovedAsync(object? sender, SignalEventArgs args)
+        {
+            var signalData = args.SignalData;
 
+            if (signalData == null || !signalData.ContainsKey(JsonKeys.AccountDbId))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.AccountDbId} not found in parameters.");
+                return;
+            }
+
+            DbId? accountDbId = signalData[JsonKeys.AccountDbId]?.AsValue().GetValue<DbId>();
+
+            if (accountDbId is null)
+            {
+                Logger.Log(Logger.Level.Error, "accountDbId is null.");
+                return;
+            }
+
+            Account? deletedAccount = _viewModel.Users.SelectMany(u => u.Accounts).FirstOrDefault(a => a.DbId == accountDbId);
+            if (deletedAccount == null)
+            {
+                Logger.Log(Logger.Level.Error, $"Account with dbID {accountDbId} not found in the model.");
+                return;
+            }
+            await Utility.RunOnUIThread(() => { deletedAccount.User.Accounts.Remove(deletedAccount); });
+        }
         public async Task HandleDriveUpdatedOrAddedAsync(object? sender, SignalEventArgs args)
         {
             var signalData = args.SignalData;
@@ -596,6 +636,32 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return;
             }
             await AddOrUpdateDriveInModel(driveInfo);
+        }
+        public async Task HandleDriveRemovedAsync(object? sender, SignalEventArgs args)
+        {
+            var signalData = args.SignalData;
+
+            if (signalData == null || !signalData.ContainsKey(JsonKeys.DriveDbId))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.DriveDbId} not found in parameters.");
+                return;
+            }
+
+            DbId? driveDbId = signalData[JsonKeys.DriveDbId]?.AsValue().GetValue<DbId>();
+
+            if (driveDbId is null)
+            {
+                Logger.Log(Logger.Level.Error, "driveDbId is null.");
+                return;
+            }
+
+            Drive? deletedDrive = _viewModel.AllDrives.FirstOrDefault(d => d.DbId == driveDbId);
+            if (deletedDrive == null)
+            {
+                Logger.Log(Logger.Level.Error, $"Drive with dbID {driveDbId} not found in the model.");
+                return;
+            }
+            await Utility.RunOnUIThread(() => { deletedDrive.Account.Drives.Remove(deletedDrive); });
         }
 
         public async Task HandleSyncUpdatedOrAddedAsync(object? sender, SignalEventArgs args)

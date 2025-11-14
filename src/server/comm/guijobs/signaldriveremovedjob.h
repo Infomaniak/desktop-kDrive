@@ -16,40 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #pragma once
 
-#include "libcommonserver/vfs/vfs.h"
-
-#include <QObject>
-#include <QTimer>
-
-#include <unordered_map>
+#include "server/comm/guijobs/abstractguijob.h"
 
 namespace KDC {
 
-class NavigationPaneHelper : public QObject {
-        Q_OBJECT
-
+class SignalDriveRemovedJob : public AbstractGuiJob {
     public:
-        NavigationPaneHelper();
-
-#ifdef Q_OS_WIN
-        bool showInExplorerNavigationPane() const { return _showInExplorerNavigationPane; }
-        void setShowInExplorerNavigationPane(bool show);
-
-        void scheduleUpdateCloudStorageRegistry();
-#endif
+        explicit SignalDriveRemovedJob(int driveDbId);
 
     private:
-#ifdef Q_OS_WIN
-        void updateCloudStorageRegistry();
-#endif
+        // Output parameters
+        int _driveDbId;
 
-        bool _showInExplorerNavigationPane;
-#ifdef Q_OS_WIN
-        QTimer _updateCloudStorageRegistryTimer;
-#endif
+        ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
+        ExitInfo serializeOutputParms() override;
+        ExitInfo process() override { return ExitCode::Ok; }
 };
 
 } // namespace KDC

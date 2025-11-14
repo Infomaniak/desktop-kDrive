@@ -16,40 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "signalaccountremovedjob.h"
+#include "libcommon/utility/utility.h"
+#include "libcommon/comm.h"
 
-#pragma once
-
-#include "libcommonserver/vfs/vfs.h"
-
-#include <QObject>
-#include <QTimer>
-
-#include <unordered_map>
+// Output parameters keys
+static const auto outParamsAccountDbId = "accountDbId";
 
 namespace KDC {
 
-class NavigationPaneHelper : public QObject {
-        Q_OBJECT
+SignalAccountRemovedJob::SignalAccountRemovedJob(int accountDbId) :
+    _accountDbId(accountDbId) {
+    _signalNum = SignalNum::ACCOUNT_REMOVED;
+}
 
-    public:
-        NavigationPaneHelper();
-
-#ifdef Q_OS_WIN
-        bool showInExplorerNavigationPane() const { return _showInExplorerNavigationPane; }
-        void setShowInExplorerNavigationPane(bool show);
-
-        void scheduleUpdateCloudStorageRegistry();
-#endif
-
-    private:
-#ifdef Q_OS_WIN
-        void updateCloudStorageRegistry();
-#endif
-
-        bool _showInExplorerNavigationPane;
-#ifdef Q_OS_WIN
-        QTimer _updateCloudStorageRegistryTimer;
-#endif
-};
+ExitInfo SignalAccountRemovedJob::serializeOutputParms() {
+    // Output parameters serialization
+    writeParamValue(outParamsAccountDbId, _accountDbId);
+    return ExitCode::Ok;
+}
 
 } // namespace KDC

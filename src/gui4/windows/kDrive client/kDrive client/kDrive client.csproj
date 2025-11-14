@@ -101,6 +101,9 @@
     <Page Update="Pages\Onboarding\FinishingPage.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="Pages\Settings\DriveManagementPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Styles\Custom\InfomaniakStylesDark.xaml">
       <SubType>Designer</SubType>
     </Page>

@@ -62,11 +62,21 @@ SyncOpPtr SyncOperationList::getOp(const UniqueId id) {
     return opIt == _allOps.end() ? nullptr : opIt->second;
 }
 
+std::list<UniqueId> SyncOperationList::getOpIdsFromNodeId(const NodeId &nodeId, const ReplicaSide side) {
+    std::list<UniqueId> opList;
+    for (const auto opId: _node2op[nodeId]) {
+        const auto op = _allOps[opId];
+        // Keep the op only if its source side is the same as `side`.
+        if (op && otherSide(op->targetSide()) == side) opList.push_back(opId);
+    }
+    return opList;
+}
+
 bool SyncOperationList::pushOp(SyncOpPtr op) {
     const auto [it, inserted] = _allOps.try_emplace(op->id(), op);
     if (!inserted) return false;
     _opSortedList.push_back(op->id());
-    _opListByType[op->type()].insert(op->id());
+    (void) _opListByType[op->type()].insert(op->id());
     _node2op[*op->affectedNode()->id()].push_back(op->id());
     return true;
 }

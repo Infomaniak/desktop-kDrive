@@ -16,40 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "signaldriveremovedjob.h"
+#include "libcommon/utility/utility.h"
+#include "libcommon/comm.h"
 
-#pragma once
-
-#include "libcommonserver/vfs/vfs.h"
-
-#include <QObject>
-#include <QTimer>
-
-#include <unordered_map>
+// Output parameters keys
+static const auto outParamsDriveDbId = "driveDbId";
 
 namespace KDC {
 
-class NavigationPaneHelper : public QObject {
-        Q_OBJECT
+SignalDriveRemovedJob::SignalDriveRemovedJob(int driveDbId) :
+    _driveDbId(driveDbId) {
+    _signalNum = SignalNum::DRIVE_REMOVED;
+}
 
-    public:
-        NavigationPaneHelper();
-
-#ifdef Q_OS_WIN
-        bool showInExplorerNavigationPane() const { return _showInExplorerNavigationPane; }
-        void setShowInExplorerNavigationPane(bool show);
-
-        void scheduleUpdateCloudStorageRegistry();
-#endif
-
-    private:
-#ifdef Q_OS_WIN
-        void updateCloudStorageRegistry();
-#endif
-
-        bool _showInExplorerNavigationPane;
-#ifdef Q_OS_WIN
-        QTimer _updateCloudStorageRegistryTimer;
-#endif
-};
+ExitInfo SignalDriveRemovedJob::serializeOutputParms() {
+    // Output parameters serialization
+    writeParamValue(outParamsDriveDbId, _driveDbId);
+    return ExitCode::Ok;
+}
 
 } // namespace KDC

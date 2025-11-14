@@ -33,11 +33,11 @@
 namespace KDC {
 
 #if defined(KD_MACOS)
-std::shared_ptr<VfsMac> TestWorkers::_vfsPtr = nullptr;
+std::shared_ptr<VfsMac> TestWorkers::_vfs = nullptr;
 #elif defined(KD_WINDOWS)
-std::shared_ptr<VfsWin> TestWorkers::_vfsPtr = nullptr;
+std::shared_ptr<VfsWin> TestWorkers::_vfs = nullptr;
 #else
-std::shared_ptr<VfsOff> TestWorkers::_vfsPtr = nullptr;
+std::shared_ptr<VfsOff> TestWorkers::_vfs = nullptr;
 #endif
 
 bool TestWorkers::_vfsInstallationDone = false;
@@ -112,19 +112,19 @@ void TestWorkers::setUp() {
     vfsSetupParams.executeCommand = [](const CommString &, bool) {};
 
 #if defined(KD_MACOS)
-    _vfsPtr = std::shared_ptr<VfsMac>(new VfsMac(vfsSetupParams));
+    _vfs = std::shared_ptr<VfsMac>(new VfsMac(vfsSetupParams));
 #elif defined(KD_WINDOWS)
-    _vfsPtr = std::shared_ptr<VfsWin>(new VfsWin(vfsSetupParams));
+    _vfs = std::shared_ptr<VfsWin>(new VfsWin(vfsSetupParams));
 #else
-    _vfsPtr = std::shared_ptr<VfsOff>(new VfsOff(vfsSetupParams));
+    _vfs = std::shared_ptr<VfsOff>(new VfsOff(vfsSetupParams));
 #endif
 
 #if defined(KD_MACOS)
-    _vfsPtr->setExclusionAppListCallback([](QString &) {});
+    _vfs->setExclusionAppListCallback([](QString &) {});
 #endif
 
     // Setup SyncPal
-    _syncPal = std::make_shared<SyncPal>(_vfsPtr, _sync.dbId(), KDRIVE_VERSION_STRING);
+    _syncPal = std::make_shared<SyncPal>(_vfs, _sync.dbId(), KDRIVE_VERSION_STRING);
     _syncPal->createSharedObjects();
     _syncPal->createWorkers(std::chrono::seconds(0));
     _syncPal->syncDb()->setAutoDelete(true);
@@ -134,7 +134,7 @@ void TestWorkers::setUp() {
     std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> syncPalMap;
     syncPalMap[_sync.dbId()] = _syncPal;
     std::unordered_map<int, std::shared_ptr<KDC::Vfs>> vfsMap;
-    vfsMap[_sync.dbId()] = _vfsPtr;
+    vfsMap[_sync.dbId()] = _vfs;
 
 #if defined(KD_WINDOWS)
     // Initializes the COM library
@@ -159,10 +159,10 @@ void TestWorkers::tearDown() {
     if (_syncPal && _syncPal->syncDb()) {
         _syncPal->syncDb()->close();
     }
-    if (_vfsPtr) {
+    if (_vfs) {
         // Stop Vfs
-        _vfsPtr->stopImpl(true);
-        _vfsPtr = nullptr;
+        _vfs->stopImpl(true);
+        _vfs = nullptr;
     }
     TestBase::stop();
 }
@@ -367,7 +367,7 @@ void TestWorkers::testConvertToPlaceholder() {
 }
 
 bool TestWorkers::startVfs() {
-    return _vfsPtr->startImpl(_vfsInstallationDone, _vfsActivationDone, _vfsConnectionDone);
+    return _vfs->startImpl(_vfsInstallationDone, _vfsActivationDone, _vfsConnectionDone);
 }
 
 } // namespace KDC
