@@ -25,7 +25,7 @@ public struct LoginJob: Sendable {
     public enum LoginJobError: Error {
         case userNotFound
         case noReplyMessage
-        case serverError(code: KDC.ExitCode, cause: KDC.ExitCause,)
+        case serverError(code: KDC.ExitCode, cause: KDC.ExitCause)
     }
 
     public init() {}
