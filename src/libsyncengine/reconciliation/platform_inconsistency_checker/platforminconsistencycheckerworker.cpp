@@ -38,14 +38,14 @@ void PlatformInconsistencyCheckerWorker::execute() {
 
     _idsToBeRemoved.clear();
 
-    checkTree(ReplicaSide::Remote);
-    checkTree(ReplicaSide::Local);
-
     const std::scoped_lock lock(SyncPal::updateTreesMutex);
     if (!_syncPal->updateTree(ReplicaSide::Local) || !_syncPal->updateTree(ReplicaSide::Remote)) {
         setDone(ExitCode::LogicError);
         return;
     }
+
+    checkTree(ReplicaSide::Remote);
+    checkTree(ReplicaSide::Local);
 
     for (const auto &[remoteId, localId]: _idsToBeRemoved) {
         if (!remoteId.empty() && !_syncPal->updateTree(ReplicaSide::Remote)->deleteNode(remoteId)) {
