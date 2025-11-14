@@ -157,8 +157,7 @@ void TestSyncJobManagerSingleton::testWithCallback() {
 
         auto job = std::make_shared<UploadJob>(nullptr, driveDbId, dirEntry.path(), dirEntry.path().filename().native(),
                                                remoteTmpDir.id(), 0, 0);
-        const std::function<void(UniqueId)> callback = std::bind_front(&TestSyncJobManagerSingleton::callback, this);
-        job->setAdditionalCallback(callback);
+        job->setAdditionalCallback(std::bind_front(&TestSyncJobManagerSingleton::callback, this));
         SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
         counter++;
         const std::scoped_lock lock(_mutex);
@@ -215,8 +214,7 @@ void TestSyncJobManagerSingleton::testCancelJobs() {
     for (auto &dirEntry: std::filesystem::directory_iterator(localTmpDir.path())) {
         auto job = std::make_shared<UploadJob>(nullptr, driveDbId, dirEntry.path(), dirEntry.path().filename().native(),
                                                remoteTmpDir.id(), 0, 0);
-        const std::function<void(UniqueId)> callback = std::bind_front(&TestSyncJobManagerSingleton::callback, this);
-        job->setAdditionalCallback(callback);
+        job->setAdditionalCallback(std::bind_front(&TestSyncJobManagerSingleton::callback, this));
         SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
         const std::scoped_lock lock(_mutex);
         (void) _ongoingJobs.try_emplace(job->jobId(), job);
@@ -487,12 +485,10 @@ void TestSyncJobManagerSingleton::testWithCallbackBigFiles(const SyncPath &dirPa
                 continue;
             }
 
-            const std::function<void(UniqueId)> callback = std::bind_front(&TestSyncJobManagerSingleton::callback, this);
-
             if (size <= useUploadSessionThreshold) {
                 auto job = std::make_shared<UploadJob>(nullptr, driveDbId, dirEntry.path(), dirEntry.path().filename().native(),
                                                        remoteTmpDir.id(), 0, 0);
-                job->setAdditionalCallback(callback);
+                job->setAdditionalCallback(std::bind_front(&TestSyncJobManagerSingleton::callback, this));
                 SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
                 const std::scoped_lock lock(_mutex);
                 (void) _ongoingJobs.try_emplace(job->jobId(), job);
@@ -501,7 +497,7 @@ void TestSyncJobManagerSingleton::testWithCallbackBigFiles(const SyncPath &dirPa
                         nullptr, driveDbId, nullptr, dirEntry.path(), dirEntry.path().filename().native(), remoteTmpDir.id(),
                         testhelpers::defaultTime, testhelpers::defaultTime, false,
                         ParametersCache::instance()->parameters().uploadSessionParallelJobs());
-                job->setAdditionalCallback(callback);
+                job->setAdditionalCallback(std::bind_front(&TestSyncJobManagerSingleton::callback, this));
                 SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
                 const std::scoped_lock lock(_mutex);
                 (void) _ongoingJobs.try_emplace(job->jobId(), job);
