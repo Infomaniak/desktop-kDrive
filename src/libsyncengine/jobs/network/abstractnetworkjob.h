@@ -140,7 +140,7 @@ class AbstractNetworkJob : public SyncJob {
         bool ioOrLogicalErrorOccurred(std::ios &stream);
         static bool isManagedError(ExitInfo exitInfo) noexcept;
 
-        std::unordered_map<std::string, std::string> _rawHeaders;
+        std::unordered_map<std::string, std::string, StringHashFunction, std::equal_to<>> _rawHeaders;
 };
 
 } // namespace KDC
