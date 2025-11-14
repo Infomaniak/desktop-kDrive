@@ -22,7 +22,6 @@ set(server_srcs_path ${CMAKE_SOURCE_DIR}/src/server)
 
 set(server_SRCS
     ${server_srcs_path}/appserver.h ${server_srcs_path}/appserver.cpp
-    ${server_srcs_path}/navigationpanehelper.h ${server_srcs_path}/navigationpanehelper.cpp
     ${server_srcs_path}/comm/oldcommserver.h ${server_srcs_path}/comm/oldcommserver.cpp
     ${server_srcs_path}/comm/abstractcommchannel.h ${server_srcs_path}/comm/abstractcommchannel.cpp
     ${server_srcs_path}/comm/socketcommserver.h ${server_srcs_path}/comm/socketcommserver.cpp
@@ -99,6 +98,7 @@ if(APPLE)
         list(APPEND updater_DEPS ${SPARKLE_LIBRARY})
     endif()
 elseif(WIN32)
+    list(APPEND server_SRCS ${server_srcs_path}/navigationpanehelper.h ${server_srcs_path}/navigationpanehelper.cpp)
     list(APPEND server_SRCS ${server_srcs_path}/comm/pipecommserver.h ${server_srcs_path}/comm/pipecommserver.cpp)
     list(APPEND server_SRCS ${server_srcs_path}/updater/windowsupdater.h ${server_srcs_path}/updater/windowsupdater.cpp ${server_srcs_path}/../common/utility_win.cpp)
 else()

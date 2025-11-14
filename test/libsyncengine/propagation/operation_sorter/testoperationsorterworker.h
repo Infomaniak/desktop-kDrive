@@ -36,6 +36,7 @@ class TestOperationSorterWorker final : public CppUnit::TestFixture, public Test
         CPPUNIT_TEST(testFixMoveBeforeMoveOccupied);
         CPPUNIT_TEST(testFixCreateBeforeCreate);
         CPPUNIT_TEST(testFixCreateBeforeCreateComplexOrdering);
+        CPPUNIT_TEST(testFixCreateBeforeCreateSameIdOnBothSide);
         CPPUNIT_TEST(testFixEditBeforeMove);
         CPPUNIT_TEST(testFixEditBeforeMove2);
         CPPUNIT_TEST(testFixMoveBeforeMoveParentChildFlip);
@@ -63,6 +64,7 @@ class TestOperationSorterWorker final : public CppUnit::TestFixture, public Test
         void testFixMoveBeforeMoveOccupied();
         void testFixCreateBeforeCreate();
         void testFixCreateBeforeCreateComplexOrdering();
+        void testFixCreateBeforeCreateSameIdOnBothSide();
 
         void testFixEditBeforeMove();
         void testFixEditBeforeMove2();

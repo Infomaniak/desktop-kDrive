@@ -1028,8 +1028,7 @@ ExitCode SyncPal::syncListUpdated(bool restartSync) {
 
     _blacklistPropagator.reset(new BlacklistPropagator(shared_from_this()));
     _blacklistPropagator->setRestartSyncPal(restartSync);
-    std::function<void(UniqueId)> callback = std::bind(&SyncPal::syncPalStartCallback, this, std::placeholders::_1);
-    _blacklistPropagator->setAdditionalCallback(callback);
+    _blacklistPropagator->setAdditionalCallback(std::bind_front(&SyncPal::syncPalStartCallback, this));
     SyncJobManagerSingleton::instance()->queueAsyncJob(_blacklistPropagator, Poco::Thread::PRIO_HIGHEST);
 
     return ExitCode::Ok;
@@ -1049,8 +1048,7 @@ ExitCode SyncPal::excludeListUpdated() {
 
     _excludeListPropagator.reset(new ExcludeListPropagator(shared_from_this()));
     _excludeListPropagator->setRestartSyncPal(restartSync);
-    std::function<void(UniqueId)> callback = std::bind(&SyncPal::syncPalStartCallback, this, std::placeholders::_1);
-    _excludeListPropagator->setAdditionalCallback(callback);
+    _excludeListPropagator->setAdditionalCallback(std::bind_front(&SyncPal::syncPalStartCallback, this));
     SyncJobManagerSingleton::instance()->queueAsyncJob(_excludeListPropagator, Poco::Thread::PRIO_HIGHEST);
 
     return ExitCode::Ok;
@@ -1070,8 +1068,7 @@ ExitCode SyncPal::fixConflictingFiles(bool keepLocalVersion, std::vector<Error> 
 
     _conflictingFilesCorrector.reset(new ConflictingFilesCorrector(shared_from_this(), keepLocalVersion, errorList));
     _conflictingFilesCorrector->setRestartSyncPal(restartSync);
-    std::function<void(UniqueId)> callback = std::bind(&SyncPal::syncPalStartCallback, this, std::placeholders::_1);
-    _conflictingFilesCorrector->setAdditionalCallback(callback);
+    _conflictingFilesCorrector->setAdditionalCallback(std::bind_front(&SyncPal::syncPalStartCallback, this));
     SyncJobManagerSingleton::instance()->queueAsyncJob(_conflictingFilesCorrector, Poco::Thread::PRIO_HIGHEST);
 
     return ExitCode::Ok;
