@@ -38,6 +38,7 @@ static constexpr uint64_t maxNumberParallelBigDownloads = 3; // Download max. 3 
 static const std::string mimeTypeJson = "application/json";
 static const std::string mimeTypeOctetStream = "application/octet-stream";
 static const std::string mimeTypeImageJpeg = "image/jpeg";
+static const std::string mimeTypeTextCsv = "text/csv";
 
 // Link content types
 static const std::string mimeTypeSymlink = "inode/symlink";

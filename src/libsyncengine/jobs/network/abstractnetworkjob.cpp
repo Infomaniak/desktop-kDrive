@@ -323,8 +323,9 @@ ExitInfo AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
     // Set headers
     req.set("User-Agent", _userAgent);
     req.setContentType(getContentType());
-    for (const auto &header: _rawHeaders) {
-        req.add(header.first, header.second);
+    req.add("Accept", getContentType());
+    for (const auto &[headerKey, headerValue]: _rawHeaders) {
+        req.add(headerKey, headerValue);
     }
 
     if (!_data.empty()) {
