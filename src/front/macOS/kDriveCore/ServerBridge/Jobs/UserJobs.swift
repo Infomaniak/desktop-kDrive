@@ -50,7 +50,7 @@ public struct UserJobs: Sendable {
 
     public func userInfoList() async throws -> [UserInfoResponse] {
         IKLogger.data.log("Query for userInfo list")
-        let request = await RequestMessage<EmptyQuery>(num: RequestNum.USER_DBIDLIST, body: EmptyQuery())
+        let request = await RequestMessage<EmptyQuery>(num: RequestNum.USER_INFOLIST, body: EmptyQuery())
 
         do {
             let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<UserInfoListResponse>.self)
