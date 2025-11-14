@@ -321,6 +321,20 @@ namespace Infomaniak.kDrive
                 }
             }
         }
+ 
+        public static async Task<ContentDialogResult> ShowContentDialog(XamlRoot xamlRoot, string xuid)
+        {
+            ContentDialog dialog = new ContentDialog();
+
+            dialog.XamlRoot = xamlRoot;
+            dialog.Title = Utility.GetLocalizedString(xuid + "/Title");
+            dialog.PrimaryButtonText = Utility.GetLocalizedString(xuid + "/PrimaryButtonText");
+            dialog.SecondaryButtonText = Utility.GetLocalizedString(xuid + "/SecondaryButtonText");
+            dialog.DefaultButton = ContentDialogButton.Primary;
+            dialog.Content = Utility.GetLocalizedString(xuid + "/Content");
+            var result = await dialog.ShowAsync();
+            return result;
+        }
     }
 }
 
