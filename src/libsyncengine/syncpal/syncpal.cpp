@@ -1423,22 +1423,29 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std:
     }
 
     // Blacklist the item
-    const std::scoped_lock lock(updateTreesMutex);
-    if (!updateTree(ReplicaSide::Local) || !updateTree(ReplicaSide::Remote)) {
-        return ExitCode::LogicError;
-    }
-
     if (!localNodeId.empty()) {
         _tmpBlacklistManager->blacklistItem(localNodeId, relativeLocalPath, ReplicaSide::Local);
-        if (updateTree(ReplicaSide::Local) && !updateTree(ReplicaSide::Local)->deleteNode(localNodeId)) {
-            // Do nothing: Can happen if the UpdateTreeWorker step has never been launched
-        }
     }
 
     if (!remoteNodeId.empty()) {
         _tmpBlacklistManager->blacklistItem(remoteNodeId, relativeLocalPath, ReplicaSide::Remote);
-        if (updateTree(ReplicaSide::Remote) && !updateTree(ReplicaSide::Remote)->deleteNode(remoteNodeId)) {
-            // Do nothing: Can happen if the UpdateTreeWorker step has never been launched
+    }
+
+    // Delete nodes from update trees
+    if (!localNodeId.empty() || !remoteNodeId.empty()) {
+        const std::scoped_lock lock(updateTreesMutex);
+        if (!updateTree(ReplicaSide::Local) || !updateTree(ReplicaSide::Remote)) {
+            // Can happen if the sync is restarting
+            return ExitCode::Ok;
+        }
+
+        // deleteNode can fail if the UpdateTreeWorker has never been launched
+        if (!localNodeId.empty()) {
+            (void) updateTree(ReplicaSide::Local)->deleteNode(localNodeId);
+        }
+
+        if (!remoteNodeId.empty()) {
+            (void) updateTree(ReplicaSide::Remote)->deleteNode(remoteNodeId);
         }
     }
 
