@@ -26,6 +26,10 @@ struct DriveUpdateQuery: Codable, Sendable {
     let driveInfo: DriveResponse
 }
 
+struct DriveDeleteQuery: Codable, Sendable {
+    let driveDbId: Int32
+}
+
 struct DriveListResponse: Codable, Sendable {
     let driveAvailableInfoList: [DriveResponse]
 }
@@ -41,7 +45,8 @@ public struct DriveResponse: Codable, Sendable {
 
 extension DriveResponse {
     var asDrive: Drive {
-        Drive(driveId: driveId,
+        Drive(driveDbId: driveId, // TODO: I get only DriveID and no DriveDBId from the server ? Check with team
+              driveId: driveId,
               accountId: accountId,
               userDbId: userDbId,
               userId: userId,

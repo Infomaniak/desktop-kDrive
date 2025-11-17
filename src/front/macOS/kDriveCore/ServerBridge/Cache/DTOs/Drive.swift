@@ -22,9 +22,10 @@ public typealias IndexedDrives = [Int32: Drive]
 
 public struct Drive: Identifiable, Hashable, Sendable {
     public var id: Int32 {
-        driveId
+        driveDbId
     }
 
+    public let driveDbId: Int32
     public let driveId: Int32
     public let accountId: Int32
     public let userDbId: Int32

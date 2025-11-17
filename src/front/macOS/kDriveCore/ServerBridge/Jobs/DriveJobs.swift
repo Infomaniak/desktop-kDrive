@@ -53,4 +53,17 @@ public struct DriveJobs: Sendable {
 
         await coherentCache.updateDrive(drive: driveInfo.asDrive)
     }
+
+    // TODO: Simplify parameters requirements once I checked with team how to get a `driveDbId` all the time
+    public func driveDelete(driveDbId: Int32, accountId: Int32, userDbId: Int32) async throws {
+        IKLogger.data.log("Query for driveDelete")
+        let query = DriveDeleteQuery(driveDbId: driveDbId)
+        let request = await RequestMessage<DriveDeleteQuery>(num: RequestNum.DRIVE_DELETE, body: query)
+
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+
+        try decodedMessage.validate()
+
+        await coherentCache.removeDrive(driveDbId, fromAccount: accountId, userDbId: userDbId)
+    }
 }
