@@ -24,11 +24,6 @@ public struct DriveJobs: Sendable {
     @LazyInjectService private var coherentCache: CoherentCacheProtocol
     @LazyInjectService private var queryFetcher: XPCQueryFetcherProtocol
 
-    public enum DriveJobsError: Error {
-        case responseListNotFound
-        case noReplyData
-    }
-
     public init() {}
 
     public func availableDrives(userDbId: Int32) async throws -> [DriveResponse] {
@@ -36,18 +31,26 @@ public struct DriveJobs: Sendable {
         let query = DriveListQuery(userDbId: userDbId)
         let request = await RequestMessage<DriveListQuery>(num: RequestNum.USER_AVAILABLEDRIVES, body: query)
 
-        do {
-            let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<DriveListResponse>.self)
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<DriveListResponse>.self)
 
-            guard let driveList = decodedMessage?.body.driveAvailableInfoList else {
-                throw DriveJobsError.responseListNotFound
-            }
+        try decodedMessage.validate()
 
-            await driveList.asyncForEach { await coherentCache.updateDrive(drive: $0.asDrive) }
+        let driveList = decodedMessage.body.driveAvailableInfoList
 
-            return driveList
-        } catch XPCQueryFetcher.QueryError.noReplyData {
-            throw DriveJobsError.noReplyData
-        }
+        await driveList.asyncForEach { await coherentCache.updateDrive(drive: $0.asDrive) }
+
+        return driveList
+    }
+
+    public func driveUpdate(driveInfo: DriveResponse) async throws {
+        IKLogger.data.log("Query to update drive: \(driveInfo.driveId)")
+        let query = DriveUpdateQuery(driveInfo: driveInfo)
+        let request = await RequestMessage<DriveUpdateQuery>(num: RequestNum.DRIVE_UPDATE, body: query)
+
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+
+        try decodedMessage.validate()
+
+        await coherentCache.updateDrive(drive: driveInfo.asDrive)
     }
 }

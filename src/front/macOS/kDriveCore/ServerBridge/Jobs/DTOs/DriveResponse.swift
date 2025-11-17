@@ -22,6 +22,10 @@ struct DriveListQuery: Codable, Sendable {
     let userDbId: Int32
 }
 
+struct DriveUpdateQuery: Codable, Sendable {
+    let driveInfo: DriveResponse
+}
+
 struct DriveListResponse: Codable, Sendable {
     let driveAvailableInfoList: [DriveResponse]
 }
