@@ -774,12 +774,11 @@ Function un.UninstallFct
 		 ${PowerShellExecLog} "Remove-AppxPackage ${PackageFullName_arm64}"
 	  !undef PackageFullName_arm64
 	  uninstall_kdrive_ext_arm64_done:
-   ${EndIf}
-   
-   ;Remove all the Program Files.
-   RMDir /r $INSTDIR
-;@{uninstallFiles}
-;@{uninstallDirs}
+	${EndIf}
+	
+	;Remove all the Program Files.
+	RMDir /r $INSTDIR
+	RMDir /r "$PROGRAMFILES32\${APPLICATION_NAME}"	; Make sure the old installation directory is removed as well
 
    DeleteRegKey ${MEMENTO_REGISTRY_ROOT} "${MEMENTO_REGISTRY_KEY}"
 
@@ -874,15 +873,8 @@ Function .onInit
       MessageBox MB_OK|MB_ICONEXCLAMATION $INIT_INSTALLER_RUNNING
       Abort
 
-   ;Use available InstallLocation when possible. This is useful in the uninstaller
-   ;via re-install, which would otherwise use a default location - a bug.
-   ReadRegStr $R0 ${MEMENTO_REGISTRY_ROOT} "${MEMENTO_REGISTRY_KEY}" "InstallLocation"
-   StrCmp $R0 "" SkipSetInstDir
-   StrCpy $INSTDIR $R0
-   SkipSetInstDir:
-
-   ;Shutdown ${APPLICATION_NAME} in case Add/Remove re-installer option used.
-   Call EnsureKDriveShutdown
+	;Shutdown ${APPLICATION_NAME} in case Add/Remove re-installer option used.
+	Call EnsureKDriveShutdown
 
    ReadRegStr $R0 ${MEMENTO_REGISTRY_ROOT} "${MEMENTO_REGISTRY_KEY}" "InstallLocation"
    ${If} ${Silent}
@@ -898,15 +890,10 @@ Function .onInstSuccess
       WriteRegDWORD HKLM "${regkey}" "skipUpdateCheck" "1"
    ${EndIf}
 
-   ; TODO: Only needed to when updating from 2.1.{0,1}. Remove in due time.
-   Delete /REBOOTOK $INSTDIR\bearer\qgenericbearer.dll
-   Delete /REBOOTOK $INSTDIR\bearer\qnativewifibearer.dll
-   RMDir /REBOOTOK $INSTDIR\bearer
-
-   DeleteRegKey SHCTX "${uninstkey}"
-   DeleteRegKey SHCTX "${regkey}"
-   ;Do not add the desktop shortcut anymore on app update
-   WriteRegDWORD ${MEMENTO_REGISTRY_ROOT} "${MEMENTO_REGISTRY_KEY}" "MementoSection_SEC_DESKTOP" "0"
+	DeleteRegKey SHCTX "${uninstkey}"
+	DeleteRegKey SHCTX "${regkey}"
+	;Do not add the desktop shortcut anymore on app update
+	WriteRegDWORD ${MEMENTO_REGISTRY_ROOT} "${MEMENTO_REGISTRY_KEY}" "MementoSection_SEC_DESKTOP" "0"
 
    ${If} ${Silent}
    ${AndIf} $InstallRunIfSilent == "yes"
