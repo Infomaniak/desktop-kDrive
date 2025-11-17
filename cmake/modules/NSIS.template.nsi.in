@@ -69,7 +69,7 @@ Name "@{productname}"
 Caption "@{productname} @{version}"
 BrandingText "${APPLICATION_NAME} ${VERSION} -- ${BUILD_TIME}"
 OutFile "@{setupname}"
-InstallDir "$PROGRAMFILES\${APPLICATION_NAME}"
+InstallDir "$PROGRAMFILES64\${APPLICATION_NAME}"
 InstallDirRegKey HKCU "${regkey}" ""
 InstType Standard
 InstType Full
@@ -792,7 +792,7 @@ Function un.UninstallFct
        ;Uninstall extension
        ;${If} ${RunningX64}
           !define PackageFullName_x64 "${VFS_PACKAGE_NAME}_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.${VER_BUILD}_x64__@{AUMID}"
-          IfFileExists "C:\Program Files\WindowsApps\${PackageFullName_x64}\*.*" uninstall_x64 uninstall_kdrive_ext_x64_done
+          IfFileExists "$PROGRAMFILES64\WindowsApps\${PackageFullName_x64}\*.*" uninstall_x64 uninstall_kdrive_ext_x64_done
              uninstall_x64:
              DetailPrint $UNINSTALL_EXTENSION
              ${PowerShellExecLog} "Remove-AppxPackage ${PackageFullName_x64}"
@@ -800,7 +800,7 @@ Function un.UninstallFct
           uninstall_kdrive_ext_x64_done:
        ;${ElseIf} ${IsNativeARM64}
           !define PackageFullName_arm64 "${VFS_PACKAGE_NAME}_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.${VER_BUILD}_arm64__@{AUMID}"
-          IfFileExists "C:\Program Files\WindowsApps\${PackageFullName_arm64}\*.*" uninstall_arm64 uninstall_kdrive_ext_arm64_done
+          IfFileExists "$PROGRAMFILES64\WindowsApps\${PackageFullName_arm64}\*.*" uninstall_arm64 uninstall_kdrive_ext_arm64_done
              uninstall_arm64:
              DetailPrint $UNINSTALL_EXTENSION
              ${PowerShellExecLog} "Remove-AppxPackage ${PackageFullName_arm64}"
