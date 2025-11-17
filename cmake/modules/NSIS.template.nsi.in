@@ -738,42 +738,42 @@ Function un.UninstallFct
 
 	DetailPrint "Removing all files..."
 
-	;Remove configuration directory
-	IfFileExists "$LOCALAPPDATA\kDrive\*.*" del_config_dir del_config_dir_end
-	 del_config_dir:
-	 RMDir /r /REBOOTOK "$LOCALAPPDATA\kDrive"
-	del_config_dir_end:
+	${IfNot} ${Silent}
+		;Remove configuration directory
+		IfFileExists "$LOCALAPPDATA\kDrive\*.*" del_config_dir del_config_dir_end
+		 del_config_dir:
+		 RMDir /r /REBOOTOK "$LOCALAPPDATA\kDrive"
+		del_config_dir_end:
 
-	;Remove credentials
-	System::Call 'ADVAPI32::CredEnumerate(t "com.infomaniak.drive.desktopclient*", i0, *i0r1, *p0r2)i.r0'
-	${If} $0 <> 0
-	 ${IfThen} $1 U> 0 ${|} IntOp $1 $1 - 1 ${|}
-	 ${ForEach} $3 0 $1 + 1
-		IntOp $4 $3 * ${NSIS_PTR_SIZE}
-		System::Call '*$2(&i$4, p.r4)'
-		System::Call '*$4(i, i.r5, p.r6)'
-		System::Call 'ADVAPI32::CredDelete(t)(pr6, ir5, i0)'
-	 ${Next}
-	 System::Call 'ADVAPI32::CredFree(pr2)'
-	${EndIf}
+		;Remove credentials
+		System::Call 'ADVAPI32::CredEnumerate(t "com.infomaniak.drive.desktopclient*", i0, *i0r1, *p0r2)i.r0'
+		${If} $0 <> 0
+		 ${IfThen} $1 U> 0 ${|} IntOp $1 $1 - 1 ${|}
+		 ${ForEach} $3 0 $1 + 1
+			IntOp $4 $3 * ${NSIS_PTR_SIZE}
+			System::Call '*$2(&i$4, p.r4)'
+			System::Call '*$4(i, i.r5, p.r6)'
+			System::Call 'ADVAPI32::CredDelete(t)(pr6, ir5, i0)'
+		 ${Next}
+		 System::Call 'ADVAPI32::CredFree(pr2)'
+		${EndIf}
 
-   ${IfNot} ${Silent}
-       ;Uninstall extension
-	  !define PackageFullName_x64 "${VFS_PACKAGE_NAME}_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.${VER_BUILD}_x64__@{AUMID}"
-	  IfFileExists "$PROGRAMFILES64\WindowsApps\${PackageFullName_x64}\*.*" uninstall_x64 uninstall_kdrive_ext_x64_done
-		 uninstall_x64:
-		 DetailPrint $UNINSTALL_EXTENSION
-		 ${PowerShellExecLog} "Remove-AppxPackage ${PackageFullName_x64}"
-	  !undef PackageFullName_x64
-	  uninstall_kdrive_ext_x64_done:
+		 ;Uninstall extension
+		!define PackageFullName_x64 "${VFS_PACKAGE_NAME}_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.${VER_BUILD}_x64__@{AUMID}"
+		IfFileExists "$PROGRAMFILES64\WindowsApps\${PackageFullName_x64}\*.*" uninstall_x64 uninstall_kdrive_ext_x64_done
+			uninstall_x64:
+			DetailPrint $UNINSTALL_EXTENSION
+			${PowerShellExecLog} "Remove-AppxPackage ${PackageFullName_x64}"
+		!undef PackageFullName_x64
+		uninstall_kdrive_ext_x64_done:
 
-	  !define PackageFullName_arm64 "${VFS_PACKAGE_NAME}_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.${VER_BUILD}_arm64__@{AUMID}"
-	  IfFileExists "$PROGRAMFILES64\WindowsApps\${PackageFullName_arm64}\*.*" uninstall_arm64 uninstall_kdrive_ext_arm64_done
-		 uninstall_arm64:
-		 DetailPrint $UNINSTALL_EXTENSION
-		 ${PowerShellExecLog} "Remove-AppxPackage ${PackageFullName_arm64}"
-	  !undef PackageFullName_arm64
-	  uninstall_kdrive_ext_arm64_done:
+		!define PackageFullName_arm64 "${VFS_PACKAGE_NAME}_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.${VER_BUILD}_arm64__@{AUMID}"
+		IfFileExists "$PROGRAMFILES64\WindowsApps\${PackageFullName_arm64}\*.*" uninstall_arm64 uninstall_kdrive_ext_arm64_done
+			uninstall_arm64:
+			DetailPrint $UNINSTALL_EXTENSION
+			${PowerShellExecLog} "Remove-AppxPackage ${PackageFullName_arm64}"
+		!undef PackageFullName_arm64
+		uninstall_kdrive_ext_arm64_done:
 	${EndIf}
 	
 	;Remove all the Program Files.
