@@ -736,9 +736,9 @@ Function un.UninstallFct
    SetShellVarContext current
 
 
-	DetailPrint "Removing all files..."
-
 	${IfNot} ${Silent}
+		DetailPrint "Removing all files..."
+	
 		;Remove configuration directory
 		IfFileExists "$LOCALAPPDATA\kDrive\*.*" del_config_dir del_config_dir_end
 		 del_config_dir:
