@@ -37,14 +37,14 @@ final class ObservedAccoutTests: XCTestCase {
                          cacheObservation: cache) var observedAccount: Account?
         XCTAssertNil(observedAccount, "Account should initially be nil")
 
-        let expectedAccount = Account(id: Self.expectedAccountDbId, name: "3", drives: [:])
+        let expectedAccount = Account(dbId: Self.expectedAccountDbId, name: "3", drives: [:])
 
         // WHEN
         let indexedAccounts: IndexedAccounts = [
-            1: Account(id: 1, name: "1", drives: [:]),
-            2: Account(id: 2, name: "2", drives: [:]),
+            1: Account(dbId: 1, name: "1", drives: [:]),
+            2: Account(dbId: 2, name: "2", drives: [:]),
             Self.expectedAccountDbId: expectedAccount,
-            4: Account(id: 4, name: "4", drives: [:])
+            4: Account(dbId: 4, name: "4", drives: [:])
         ]
         let user = User(
             dbId: Self.expectedUserDbId,

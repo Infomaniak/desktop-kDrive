@@ -16,11 +16,17 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+struct AccountListResponse: Codable, Sendable {
+    let accountInfoList: [AccountInfoResponse]
+}
+
 public struct AccountInfoResponse: Codable, Sendable {
     let userDbId: Int32
     let dbId: Int32
 }
 
-struct AccountListResponse: Codable, Sendable {
-    let accountInfoList: [AccountInfoResponse]
+extension AccountInfoResponse {
+    var asAccount: Account {
+        Account(dbId: dbId, name: "", drives: [:])
+    }
 }
