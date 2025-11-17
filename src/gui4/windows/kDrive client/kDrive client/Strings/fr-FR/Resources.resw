@@ -290,7 +290,7 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
     <value>Annuler</value>
   </data>
   <data name="CC_KSuiteUpgradeBar_message.Text" xml:space="preserve">
-    <value>Débloquez plus de fonctionnalités et stockage</value>
+    <value>Plus d’espace, plus de fonctionnalités, avec my kSuite+</value>
     <comment>A message prompting the user to upgrade his offer</comment>
   </data>
   <data name="Page_ErrorPage_Application_Header.Text" xml:space="preserve">
@@ -578,10 +578,12 @@ Ne fermez pas l’application pendant le processus.</value>
     <value>Modifier quand même</value>
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncMode_Offline.Description" xml:space="preserve">
-    <value>Vos fichiers sont copiés sur votre ordinateur.  Vous pouvez les ouvrir à tout moment, même sans internet.</value>
+    <value>Vos fichiers sont copiés sur votre ordinateur. 
+Vous pouvez les ouvrir à tout moment, même sans internet.</value>
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncMode_Online.Description" xml:space="preserve">
-    <value>Vos fichiers restent dans le cloud et n’utilisent pas de place sur votre ordinateur.  Connexion internet requise pour y accéder.</value>
+    <value>Vos fichiers restent dans le cloud et n’utilisent pas de place sur votre ordinateur. 
+Connexion internet requise pour y accéder.</value>
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncMode.Description" xml:space="preserve">
     <value>Mode de synchronisation des fichiers</value>
@@ -812,12 +814,6 @@ Le code source de cette application peut être vérifié, les informations réco
   <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.CloseButtonText" xml:space="preserve">
     <value>Annuler</value>
   </data>
-  <data name="Page_SettingsPage_Proxy_ComoBox_HTTP.Content" xml:space="preserve">
-    <value>Configuration manuelle</value>
-  </data>
-  <data name="Page_SettingsPage_Proxy_ComoBox_NONE.Content" xml:space="preserve">
-    <value>Desactivé</value>
-  </data>
   <data name="W_MainWindow_PaneFooter_Folder.Content" xml:space="preserve">
     <value>Ouvrir l'explorateur</value>
     <comment>Open the file explorer</comment>
@@ -841,11 +837,17 @@ Le code source de cette application peut être vérifié, les informations réco
   <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.SecondaryButtonText" xml:space="preserve">
     <value>Annuler</value>
   </data>
-  <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.Content" xml:space="preserve">
+    <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.Content" xml:space="preserve">
     <value>Le dossier local restera sur votre ordinateur, mais il ne sera plus synchronisé avec kDrive.
 Cette action est définitive. 
 Pour synchroniser à nouveau votre drive, vous devrez le reconnecter ultérieurement.
 
 Avant de continuer, assurez-vous que tout vos fichiers sont bien à jour et synchronisées.</value>
+      </data>
+  <data name="Page_SettingsPage_Proxy_ComoBox_HTTP.Content" xml:space="preserve">
+    <value>Configuration manuelle</value>
+  </data>
+  <data name="Page_SettingsPage_Proxy_ComoBox_NONE.Content" xml:space="preserve">
+    <value>Desactivé</value>
   </data>
 </root>

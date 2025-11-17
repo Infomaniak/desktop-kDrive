@@ -21,6 +21,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <!-- Images -->
     <x:String x:Key="Infomaniak.Custom.Images.servin">ms-appx:///Assets/Custom/Images/servin-light.svg</x:String>
+    <x:String x:Key="Infomaniak.Custom.Icons.logo-myksuiteplus">ms-appx:///Assets/Custom/Icons/logo-myksuiteplus.svg</x:String>
 
     <!-- Animations -->
     <x:String x:Key="Infomaniak.Custom.Animations.check">ms-appx:///Assets/Custom/Animations/check-light.json</x:String>
