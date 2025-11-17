@@ -24,11 +24,6 @@ public struct AccountJobs: Sendable {
     @LazyInjectService private var coherentCache: CoherentCacheProtocol
     @LazyInjectService private var queryFetcher: XPCQueryFetcherProtocol
 
-    public enum AccountJobsError: Error {
-        case noReplyData
-        case responseListNotFound
-    }
-
     public init() {}
 
     public func accountInfoList() async throws -> [AccountInfoResponse] {
@@ -36,21 +31,14 @@ public struct AccountJobs: Sendable {
         let query = EmptyQuery()
         let request = await RequestMessage<EmptyQuery>(num: RequestNum.ACCOUNT_INFOLIST, body: query)
 
-        do {
-            let decodedMessage = try await queryFetcher.query(request, responseType:
-                CallbackMessage<AccountListResponse>.self)
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<AccountListResponse>.self)
 
-            guard let accountList = decodedMessage?.body.accountInfoList else {
-                throw AccountJobsError.responseListNotFound
-            }
+        try decodedMessage.validate()
 
-            // TODO: Bump cache
+        let accountList = decodedMessage.body.accountInfoList
 
-            return accountList
-        } catch XPCQueryFetcher.QueryError.noReplyData {
-            throw AccountJobsError.noReplyData
-        } catch {
-            throw error
-        }
+        await accountList.asyncForEach { await coherentCache.updateAccount($0.asAccount) }
+
+        return accountList
     }
 }
