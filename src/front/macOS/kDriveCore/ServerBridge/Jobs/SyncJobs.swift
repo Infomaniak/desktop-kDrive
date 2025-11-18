@@ -42,4 +42,14 @@ public struct SyncJobs: Sendable {
 
         return syncList
     }
+
+    public func startSync(syncDbId: Int32) async throws {
+        IKLogger.data.log("Query to startSync")
+        let query = SyncQuery(syncDbId: syncDbId)
+        let request = await RequestMessage<SyncQuery>(num: RequestNum.SYNC_START, body: query)
+
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+
+        try decodedMessage.validate()
+    }
 }
