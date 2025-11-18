@@ -66,4 +66,17 @@ public struct DriveJobs: Sendable {
 
         await coherentCache.removeDrive(driveDbId, fromAccount: accountId, userDbId: userDbId)
     }
+
+    public func driveSearch(driveDbId: Int32, searchString: String) async throws -> [FileResponse] {
+        IKLogger.data.log("Query for driveSearch")
+        let query = DriveSearchQuery(driveDbId: driveDbId, searchString: searchString)
+        let request = await RequestMessage<DriveSearchQuery>(num: RequestNum.DRIVE_SEARCH, body: query)
+
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<SearchInfoList>.self)
+
+        try decodedMessage.validate()
+
+        let searchResult = decodedMessage.body.searchInfoList
+        return searchResult
+    }
 }

@@ -30,6 +30,11 @@ struct DriveDeleteQuery: Codable, Sendable {
     let driveDbId: Int32
 }
 
+struct DriveSearchQuery: Codable, Sendable {
+    let driveDbId: Int32
+    let searchString: String
+}
+
 struct DriveListResponse: Codable, Sendable {
     let driveAvailableInfoList: [DriveResponse]
 }
