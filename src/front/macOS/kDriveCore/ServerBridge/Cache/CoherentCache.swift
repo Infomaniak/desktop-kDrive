@@ -54,6 +54,7 @@ public protocol CoherentCacheProtocol: Sendable {
     func getSynchro(_ syncroId: Int32, driveDbId: Int32, accountId: Int32, userId: Int32) async -> Synchro?
     func addSynchro(_ syncro: Synchro, toDrive driveDbId: Int32, accountId: Int32, userId: Int32) async
     func removeSynchro(_ syncroId: Int32, fromDrive driveDbId: Int32, accountId: Int32, userId: Int32) async
+    func updateSynchro(_ syncro: Synchro) async
 
     // MARK: - Cleanup
 
@@ -218,6 +219,10 @@ public actor CoherentCache: CoherentCacheProtocol, CoherentCacheObservation {
         account.drives[driveDbId] = drive
         user.accounts[accountId] = account
         users[userId] = user
+    }
+
+    public func updateSynchro(_ syncro: Synchro) {
+        // TODO: Implement update
     }
 
     // MARK: - Observation

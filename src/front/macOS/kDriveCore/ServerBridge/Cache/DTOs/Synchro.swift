@@ -20,5 +20,5 @@ import Foundation
 
 public struct Synchro: Identifiable, Hashable, Sendable {
     public let id: Int32
-    public var name: String
+    public let localPath: String
 }
