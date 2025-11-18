@@ -52,4 +52,14 @@ public struct SyncJobs: Sendable {
 
         try decodedMessage.validate()
     }
+
+    public func stopSync(syncDbId: Int32) async throws {
+        IKLogger.data.log("Query to stopSync")
+        let query = SyncQuery(syncDbId: syncDbId)
+        let request = await RequestMessage<SyncQuery>(num: RequestNum.SYNC_STOP, body: query)
+
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+
+        try decodedMessage.validate()
+    }
 }
