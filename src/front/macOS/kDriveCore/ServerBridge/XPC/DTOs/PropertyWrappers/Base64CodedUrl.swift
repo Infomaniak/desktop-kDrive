@@ -22,32 +22,28 @@ import Foundation
 public struct Base64CodedURL: Codable, Sendable {
     public let wrappedValue: URL
 
-    // Decode: base64 string → regular string
+    public init(wrappedValue: URL) {
+        self.wrappedValue = wrappedValue
+    }
+
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
-        let base64Encoded = try container.decode(String.self)
+        let encoded = try container.decode(String.self)
+        let decodedString = try Base64Helper.decode(encoded)
 
-        guard let data = Data(base64Encoded: base64Encoded),
-              let decoded = String(data: data, encoding: .utf8),
-              let url = URL(string: decoded) else {
+        guard let url = URL(string: decodedString) else {
             throw DecodingError.dataCorruptedError(
                 in: container,
-                debugDescription: "Invalid base64 URL"
+                debugDescription: "Invalid URL after base64 decoding"
             )
         }
 
         wrappedValue = url
     }
 
-    // Encode: regular string → base64 string
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
-        let urlString = wrappedValue.absoluteString.utf8
-        let base64Encoded = Data(urlString).base64EncodedString()
-        try container.encode(base64Encoded)
-    }
-
-    public init(wrappedValue: URL) {
-        self.wrappedValue = wrappedValue
+        let encoded = Base64Helper.encode(wrappedValue.absoluteString)
+        try container.encode(encoded)
     }
 }
