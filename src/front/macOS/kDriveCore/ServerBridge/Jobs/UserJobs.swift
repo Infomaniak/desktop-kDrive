@@ -54,8 +54,8 @@ public struct UserJobs: Sendable {
 
     public func userDelete(dbId: Int32) async throws {
         IKLogger.data.log("Query for userDelete")
-        let query = UserDeleteQuery(userDbId: dbId)
-        let request = await RequestMessage<UserDeleteQuery>(num: RequestNum.USER_DELETE, body: query)
+        let query = UserQuery(userDbId: dbId)
+        let request = await RequestMessage<UserQuery>(num: RequestNum.USER_DELETE, body: query)
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
 

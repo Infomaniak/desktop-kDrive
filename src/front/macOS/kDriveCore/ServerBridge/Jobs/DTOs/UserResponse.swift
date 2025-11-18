@@ -18,7 +18,7 @@
 
 import Foundation
 
-struct UserDeleteQuery: Codable, Sendable {
+struct UserQuery: Codable, Sendable {
     let userDbId: Int32
 }
 
