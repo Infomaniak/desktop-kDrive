@@ -74,4 +74,24 @@ public struct SyncJobs: Sendable {
 
         return decodedMessage.body.syncStatus
     }
+
+    // TODO, clean init
+    public func addSync(_ newSyncQuery: NewSyncQuery) async throws -> SyncInfo {
+        IKLogger.data.log("Query to addSync")
+        let request = await RequestMessage<NewSyncQuery>(num: RequestNum.SYNC_ADD, body: newSyncQuery)
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<SyncInfoSingle>.self)
+        try decodedMessage.validate()
+
+        return decodedMessage.body.syncInfo
+    }
+
+    // TODO, clean init
+    public func addSync(_ newSyncQuery: NewSyncQueryAlternate) async throws -> SyncInfo {
+        IKLogger.data.log("Query to addSync")
+        let request = await RequestMessage<NewSyncQueryAlternate>(num: RequestNum.SYNC_ADD2, body: newSyncQuery)
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<SyncInfoSingle>.self)
+        try decodedMessage.validate()
+
+        return decodedMessage.body.syncInfo
+    }
 }
