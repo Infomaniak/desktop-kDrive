@@ -20,22 +20,23 @@
 import Foundation
 
 public struct UIUser: Sendable {
-    init(id: Int, name: String, email: String) {
+    public let id: Int
+    public let name: String
+    public let email: String
+
+    public init(id: Int, name: String, email: String) {
         self.id = id
         self.name = name
         self.email = email
     }
-
-    let id: Int
-
-    let name: String
-    let email: String
 }
 
 public extension UIUser {
     init(user: User) {
-        self.id = Int(user.id)
-        self.name = user.name
-        self.email = user.email
+        self.init(
+            id: Int(user.id),
+            name: user.name,
+            email: user.email
+        )
     }
 }

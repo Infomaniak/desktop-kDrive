@@ -87,7 +87,13 @@ extension OnboardingViewModel: InfomaniakLoginDelegate {
         SentryDebug.loginError(error: error)
     }
 
-    private func computeNextStep(for user: User?) -> OnboardingStep {
+    private func nextStep(for user: UIUser?) -> OnboardingStep {
+        guard let user else {
+            return .login()
+        }
+
+        
+
         return .login()
     }
 }
