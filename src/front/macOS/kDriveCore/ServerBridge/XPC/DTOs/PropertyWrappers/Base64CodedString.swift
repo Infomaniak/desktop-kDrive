@@ -60,3 +60,32 @@ public struct Base64CodedString: Codable, Sendable {
         try container.encode(Base64Helper.encode(wrappedValue))
     }
 }
+
+@propertyWrapper
+public struct Base64CodedStrings: Codable, Sendable {
+    public let wrappedValue: [String]
+
+    public init(wrappedValue: [String]) {
+        self.wrappedValue = wrappedValue
+    }
+
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        var decoded: [String] = []
+
+        while !container.isAtEnd {
+            let encoded = try container.decode(String.self)
+            try decoded.append(Base64Helper.decode(encoded))
+        }
+
+        wrappedValue = decoded
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        for string in wrappedValue {
+            try container.encode(Base64Helper.encode(string))
+        }
+    }
+}
+
