@@ -62,4 +62,16 @@ public struct SyncJobs: Sendable {
 
         try decodedMessage.validate()
     }
+
+    public func syncStatus(syncDbId: Int32) async throws -> KDC.SyncFileStatus {
+        IKLogger.data.log("Query for syncStatus")
+        let query = SyncQuery(syncDbId: syncDbId)
+        let request = await RequestMessage<SyncQuery>(num: RequestNum.SYNC_STATUS, body: query)
+
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<SyncStatusResponse>.self)
+
+        try decodedMessage.validate()
+
+        return decodedMessage.body.syncStatus
+    }
 }
