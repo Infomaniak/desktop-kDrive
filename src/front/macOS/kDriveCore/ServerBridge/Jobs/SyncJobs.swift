@@ -114,4 +114,14 @@ public struct SyncJobs: Sendable {
 
         try decodedMessage.validate()
     }
+
+    public func getPublicLinkUrl(driveDbId: Int32, nodeId: String) async throws {
+        IKLogger.data.log("Query to syncGetPublicLinkUrl")
+        let query = PublicLinkQuery(driveDbId: driveDbId, nodeId: nodeId)
+        let request = await RequestMessage<PublicLinkQuery>(num: RequestNum.SYNC_GETPUBLICLINKURL, body: query)
+
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<PublicLinkResponse>.self)
+
+        try decodedMessage.validate()
+    }
 }
