@@ -94,4 +94,14 @@ public struct SyncJobs: Sendable {
 
         return decodedMessage.body.syncInfo
     }
+
+    public func syncStartAfterLoginJob(userDbId: Int32) async throws {
+        IKLogger.data.log("Query for userDelete")
+        let query = UserQuery(userDbId: userDbId)
+        let request = await RequestMessage<UserQuery>(num: RequestNum.SYNC_START_AFTER_LOGIN, body: query)
+
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+
+        try decodedMessage.validate()
+    }
 }
