@@ -23,6 +23,10 @@ struct TestStringCoding: Codable {
     @Base64CodedString var string: String
 }
 
+struct TestURLCoding: Codable {
+    @Base64CodedURL var url: URL
+}
+
 struct TestDataCoding: Codable {
     @Base64CodedData var data: Data
 }
@@ -58,6 +62,34 @@ struct Base64CodedStringPropertyWrapperTests {
 
         // THEN
         #expect(jsonString == #"{"string":"QmFzZTY0"}"#)
+    }
+}
+
+struct Base64CodedURLPropertyWrapperTests {
+    static let sourceJson = #"{"url":"aHR0cHM6Ly93d3cuYXBwbGUuY29t"}"# // "https://www.apple.com"
+    static let sourceURL = URL(string: "https://www.apple.com")!
+
+    @Test func testDecodingURLWithBase64Coding() async throws {
+        // GIVEN
+        let data = Data(Self.sourceJson.utf8)
+
+        // WHEN
+        let parsed = try JSONDecoder().decode(TestURLCoding.self, from: data)
+
+        // THEN
+        #expect(parsed.url == Self.sourceURL)
+    }
+
+    @Test func testEncodingURLWithBase64Coding() async throws {
+        // GIVEN
+        let testURLCoding = TestURLCoding(url: Self.sourceURL)
+
+        // WHEN
+        let data = try JSONEncoder().encode(testURLCoding)
+        let jsonString = String(data: data, encoding: .utf8)
+
+        // THEN
+        #expect(jsonString == Self.sourceJson)
     }
 }
 
