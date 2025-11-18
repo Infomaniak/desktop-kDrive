@@ -40,28 +40,30 @@ struct TestColorCoding: Codable {
 }
 
 struct Base64CodedStringPropertyWrapperTests {
+    static let sourceJson = #"{"string":"QmFzZTY0"}"# // "QmFzZTY0" is "Base64"
+    static let sourceString = "Base64"
+
     @Test func decodingStringWithBase64Coding() async throws {
         // GIVEN
-        let sourceJson = #"{"string":"QmFzZTY0"}"# // "QmFzZTY0" is "Base64"
-        let data = Data(sourceJson.utf8)
+        let data = Data(Self.sourceJson.utf8)
 
         // WHEN
         let parsed = try JSONDecoder().decode(TestStringCoding.self, from: data)
 
         // THEN
-        #expect(parsed.string == "Base64")
+        #expect(parsed.string == Self.sourceString)
     }
 
     @Test func encodingStringWithBase64Coding() async throws {
         // GIVEN
-        let testStringCoding = TestStringCoding(string: "Base64")
+        let testStringCoding = TestStringCoding(string: Self.sourceString)
 
         // WHEN
         let data = try JSONEncoder().encode(testStringCoding)
         let jsonString = String(data: data, encoding: .utf8)
 
         // THEN
-        #expect(jsonString == #"{"string":"QmFzZTY0"}"#)
+        #expect(jsonString == Self.sourceJson)
     }
 }
 
