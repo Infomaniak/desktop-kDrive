@@ -104,4 +104,14 @@ public struct SyncJobs: Sendable {
 
         try decodedMessage.validate()
     }
+
+    public func syncDelete(syncDbId: Int32) async throws {
+        IKLogger.data.log("Query to syncDelete")
+        let query = SyncQuery(syncDbId: syncDbId)
+        let request = await RequestMessage<SyncQuery>(num: RequestNum.SYNC_DELETE, body: query)
+
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+
+        try decodedMessage.validate()
+    }
 }
