@@ -31,7 +31,6 @@ enum OnboardingStep: Sendable {
 
     enum LoginStep: Sendable {
         case initial
-        case success
         case fail
     }
 }
@@ -58,20 +57,18 @@ final class OnboardingViewModel: ObservableObject {
 
 extension OnboardingViewModel: InfomaniakLoginDelegate {
     func didCompleteLoginWith(code: String, verifier: String) {
-        isShowingAuthenticationWindow = false
-
         Task {
-            try await LoginJob().login(code: code, verifier: verifier)
-            IKLogger.general.log("Login successful")
+            do {
+                try await LoginJob().login(code: code, verifier: verifier)
 
-            // TODO: remove
-            Task { @MainActor in
-                @InjectService var windowRouter: WindowRouter
-                windowRouter.navigate(to: .splitView)
+                // TODO: We need to know how many drives are available
+//                let nextStep = getNextStepAfterLogin()
+//                currentStep = nextStep
+            } catch {
+                handleLoginFailure(error: error)
             }
 
-            // TODO: change to correct step when screen available
-            // currentStep = .driveSelection
+            isShowingAuthenticationWindow = false
         }
     }
 
@@ -82,6 +79,15 @@ extension OnboardingViewModel: InfomaniakLoginDelegate {
             return
         }
 
+        handleLoginFailure(error: error)
+    }
+
+    private func handleLoginFailure(error: Error) {
         currentStep = .login(.fail)
+        SentryDebug.loginError(error: error)
+    }
+
+    private func computeNextStep(for user: User?) -> OnboardingStep {
+        return .login()
     }
 }

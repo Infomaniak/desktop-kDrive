@@ -37,7 +37,9 @@ final class LoginViewController: OnboardingStepViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+
         bindViewModel()
+        setupButtons()
     }
 
     private func bindViewModel() {
@@ -60,9 +62,6 @@ final class LoginViewController: OnboardingStepViewController {
         switch loginStep {
         case .initial:
             setupInitialView()
-        case .success:
-            // TODO: Check if this step is necessary once the server is implemented
-            fatalError("Not Implemented Yet")
         case .fail:
             setupErrorView()
         }
@@ -71,13 +70,11 @@ final class LoginViewController: OnboardingStepViewController {
     private func setupInitialView() {
         titleLabel.stringValue = KDriveLocalizable.onboardingLoginTitle
         descriptionLabel.stringValue = KDriveLocalizable.onboardingLoginDescription
-        setupButtons()
     }
 
     private func setupErrorView() {
         titleLabel.stringValue = KDriveLocalizable.onboardingErrorTitle
         descriptionLabel.stringValue = KDriveLocalizable.onboardingLoginErrorDescription
-        setupButtons()
     }
 
     private func setupButtons() {
@@ -99,6 +96,6 @@ final class LoginViewController: OnboardingStepViewController {
     }
 
     @objc private func openCreateAccount() {
-
+        // TODO: Handle account creation
     }
 }
