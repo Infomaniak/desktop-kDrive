@@ -19,6 +19,7 @@
 import Cocoa
 import InfomaniakDI
 import kDriveCoreUI
+import kDriveResources
 
 class DriveSelectionViewController: OnboardingStepViewController {
     override func viewDidLoad() {
@@ -27,13 +28,13 @@ class DriveSelectionViewController: OnboardingStepViewController {
     }
 
     private func setupUI() {
-        titleLabel.stringValue = "!Content de vous retrouver !"
+        titleLabel.stringValue = KDriveLocalizable.onboardingDriveSelectionTitle
         descriptionLabel.isHidden = true
 
-        primaryButton.title = "!Continuer"
+        primaryButton.title = KDriveLocalizable.buttonContinue
         primaryButton.target = self
         primaryButton.action = #selector(didTapContinue)
-        secondaryButton.title = "!Paramètres avancés"
+        secondaryButton.title = KDriveLocalizable.buttonAdvancedParameters
         secondaryButton.target = self
         secondaryButton.action = #selector(didTapAdvancedSettings)
     }

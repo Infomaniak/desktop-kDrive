@@ -27,13 +27,13 @@ final class LoginViewController: OnboardingStepViewController {
     private var bindStore = Set<AnyCancellable>()
 
     private let waitingForWebAuthenticationLabel: LoadingLabelView = {
-        let label = LoadingLabelView(text: "!En attente du navigateur…")
+        let label = LoadingLabelView(text: KDriveLocalizable.onboardingLoginHintWebAuth)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
 
     private let loadingUserLabel: LoadingLabelView = {
-        let label = LoadingLabelView(text: "!Encore quelques instants, nous chargeons votre compte…")
+        let label = LoadingLabelView(text: KDriveLocalizable.onboardingLoginHintLoading)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -114,7 +114,7 @@ final class LoginViewController: OnboardingStepViewController {
     private func showGenericErrorAlert() {
         let alert = NSAlert()
         alert.alertStyle = .critical
-        alert.messageText = KDriveLocalizable.onboardingErrorTitle
+        alert.messageText = KDriveLocalizable.onboardingLoginErrorTitle
         alert.informativeText = KDriveLocalizable.onboardingLoginErrorDescription
         alert.runModal()
 
