@@ -217,7 +217,7 @@ void TestSyncJobManagerSingleton::testCancelJobs() {
         job->setAdditionalCallback(std::bind_front(&TestSyncJobManagerSingleton::callback, this));
         SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
         const std::scoped_lock lock(_mutex);
-        (void) _ongoingJobs.try_emplace(static_cast<UniqueId>(job->jobId()), job);
+        (void) _ongoingJobs.try_emplace(job->jobId(), job);
     }
     while (_ongoingJobs.size() == localFileCounter) {
         Utility::msleep(1); // Wait 1ms
@@ -225,7 +225,7 @@ void TestSyncJobManagerSingleton::testCancelJobs() {
 
     cancelAllOngoingJobs();
 
-    int retry = 1000; // Wait max 10sec
+    uint32_t retry = 1000; // Wait max 10sec
     while ((!SyncJobManagerSingleton::instance()->_data._managedJobs.empty() ||
             !SyncJobManagerSingleton::instance()->_data._queuedJobs.empty() ||
             !SyncJobManagerSingleton::instance()->_data._runningJobs.empty() ||
@@ -394,7 +394,7 @@ void TestSyncJobManagerSingleton::testCanRunjob() {
             Utility::msleep(100);
         }
         CPPUNIT_ASSERT_EQUAL(true, noMoreRun);
-        CPPUNIT_ASSERT_EQUAL(uint64_t{3}, counter);
+        CPPUNIT_ASSERT_EQUAL(maxNumberParallelBigDownloads, counter);
 
         while (!SyncJobManagerSingleton::instance()->_data._managedJobs.empty()) {
             Utility::msleep(100);
@@ -466,7 +466,7 @@ void TestSyncJobManagerSingleton::testWithCallbackBigFiles(const SyncPath &dirPa
 
     // Reset upload session max parallel jobs & SyncJobManagerSingleton pool capacity
     ParametersCache::instance()->setUploadSessionParallelThreads(10);
-    SyncJobManagerSingleton::instance()->setPoolCapacity(4 * (int) std::thread::hardware_concurrency());
+    SyncJobManagerSingleton::instance()->setPoolCapacity(4 * static_cast<int>(std::thread::hardware_concurrency()));
     const int useUploadSessionThreshold = 2; // MBs
 
     // Create temp remote directory
@@ -506,7 +506,7 @@ void TestSyncJobManagerSingleton::testWithCallbackBigFiles(const SyncPath &dirPa
             counter++;
         }
 
-        int waitCountMax = 6000; // Wait max 10 minutes.
+        uint32_t waitCountMax = 6000; // Wait max 10 minutes.
         while (ongoingJobsCount() > 0 && waitCountMax > 0 && !_jobErrorSocketsDefuncted && !_jobErrorOther) {
             --waitCountMax;
             Utility::msleep(100);

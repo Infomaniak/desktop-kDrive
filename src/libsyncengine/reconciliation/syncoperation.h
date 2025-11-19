@@ -134,8 +134,8 @@ class SyncOperationList : public SharedObject {
         [[nodiscard]] const std::list<UniqueId> &opSortedList() const { return _opSortedList; }
         const std::unordered_set<UniqueId> &opListIdByType(const OperationType type) { return _opListByType[type]; }
         /**
-         * @brief Get the list of operation IDs related to the given node. The side must also be provided to handle cases where the 
-         *  same ID exists on both the local and remote replicas.
+         * @brief Get the list of operation IDs related to the given node. The side must also be provided to handle cases where
+         * the same ID exists on both the local and remote replicas.
          * @param nodeId The ID of the object whose operations we want to retrieve.
          * @param side The side of the object designated by `nodeId`.
          * @return A list of operation IDs.
