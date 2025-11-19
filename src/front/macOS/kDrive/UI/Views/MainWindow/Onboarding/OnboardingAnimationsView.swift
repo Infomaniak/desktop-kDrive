@@ -23,18 +23,18 @@ import kDriveResources
 import Lottie
 
 class OnboardingAnimationsView: NSView {
-    private let viewModel: OnboardingFlowCoordinator
+    private let flowCoordinator: OnboardingFlowCoordinator
 
     private let animationView = ThemedAnimationView()
 
     private var bindStore = Set<AnyCancellable>()
 
-    init(viewModel: OnboardingFlowCoordinator) {
-        self.viewModel = viewModel
+    init(flowCoordinator: OnboardingFlowCoordinator) {
+        self.flowCoordinator = flowCoordinator
         super.init(frame: .zero)
 
         setupAnimationView()
-        bindViewModel()
+        bindCoordinator()
     }
 
     @available(*, unavailable)
@@ -58,9 +58,9 @@ class OnboardingAnimationsView: NSView {
         ])
     }
 
-    private func bindViewModel() {
-        transitionAnimation(forStep: viewModel.currentStep)
-        viewModel.$currentStep.receive(on: DispatchQueue.main)
+    private func bindCoordinator() {
+        transitionAnimation(forStep: flowCoordinator.currentStep)
+        flowCoordinator.$currentStep.receive(on: DispatchQueue.main)
             .sink { [weak self] step in
                 self?.transitionAnimation(forStep: step)
             }

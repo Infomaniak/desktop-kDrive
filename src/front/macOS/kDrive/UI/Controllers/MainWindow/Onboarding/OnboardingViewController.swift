@@ -21,7 +21,7 @@ import Combine
 import kDriveResources
 
 final class OnboardingViewController: NSViewController {
-    private let viewModel: OnboardingFlowCoordinator
+    private let flowCoordinator: OnboardingFlowCoordinator
 
     private var currentContentViewController: NSViewController?
 
@@ -31,10 +31,10 @@ final class OnboardingViewController: NSViewController {
     private var bindStore = Set<AnyCancellable>()
 
     init() {
-        viewModel = OnboardingFlowCoordinator()
+        flowCoordinator = OnboardingFlowCoordinator()
 
         contentView = NSView()
-        animationsView = OnboardingAnimationsView(viewModel: viewModel)
+        animationsView = OnboardingAnimationsView(flowCoordinator: flowCoordinator)
 
         super.init(nibName: nil, bundle: nil)
     }
@@ -46,9 +46,9 @@ final class OnboardingViewController: NSViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         setupUI()
-        bindViewModel()
+        bindCoordinator()
     }
 
     override func viewDidAppear() {
@@ -93,9 +93,9 @@ final class OnboardingViewController: NSViewController {
         ])
     }
 
-    private func bindViewModel() {
-        transition(toStep: viewModel.currentStep)
-        viewModel.$currentStep.receive(on: DispatchQueue.main)
+    private func bindCoordinator() {
+        transition(toStep: flowCoordinator.currentStep)
+        flowCoordinator.$currentStep.receive(on: DispatchQueue.main)
             .sink { [weak self] step in
                 self?.transition(toStep: step)
             }
@@ -112,7 +112,7 @@ final class OnboardingViewController: NSViewController {
     private func getViewController(forStep step: OnboardingStep) -> NSViewController {
         switch step {
         case .login:
-            return LoginViewController(flowCoordinator: viewModel)
+            return LoginViewController(flowCoordinator: flowCoordinator)
         case .driveSelection:
             return DriveSelectionViewController()
         case .permissions:
@@ -120,15 +120,6 @@ final class OnboardingViewController: NSViewController {
         case .synchronisation:
             fatalError("Not Implemented Yet")
         }
-    }
-
-    private func removeCurrentContentViewController() {
-        guard let currentContentViewController else { return }
-
-        currentContentViewController.view.removeFromSuperview()
-        currentContentViewController.removeFromParent()
-
-        self.currentContentViewController = nil
     }
 
     private func addContentViewController(_ viewController: NSViewController) {
@@ -145,5 +136,14 @@ final class OnboardingViewController: NSViewController {
         ])
 
         currentContentViewController = viewController
+    }
+
+    private func removeCurrentContentViewController() {
+        guard let currentContentViewController else { return }
+
+        currentContentViewController.view.removeFromSuperview()
+        currentContentViewController.removeFromParent()
+
+        self.currentContentViewController = nil
     }
 }
