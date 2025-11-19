@@ -28,6 +28,7 @@ final class LoginViewModel: ObservableObject {
     @LazyInjectService private var loginService: InfomaniakLoginable
 
     @Published private(set) var isShowingAuthenticationWindow = false
+    @Published var isShowingError = false
 
     private let flowCoordinator: OnboardingFlowCoordinator
 
@@ -72,9 +73,6 @@ extension LoginViewModel: InfomaniakLoginDelegate {
 
     private func handleLoginFailure(error: Error) {
         SentryDebug.loginError(error: error)
-
-        let alert = NSAlert()
-        alert.alertStyle = .critical
-        alert.runModal()
+        isShowingError = true
     }
 }

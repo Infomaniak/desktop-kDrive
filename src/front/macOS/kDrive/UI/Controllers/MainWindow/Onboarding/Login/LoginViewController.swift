@@ -51,6 +51,14 @@ final class LoginViewController: OnboardingStepViewController {
                 self?.markButtonsAsLoading(isShowing)
             }
             .store(in: &bindStore)
+
+        loginViewModel.$isShowingError
+            .receive(on: RunLoop.main)
+            .sink { [weak self] isShowingError in
+                guard isShowingError else { return }
+                self?.showGenericErrorAlert()
+            }
+            .store(in: &bindStore)
     }
 
     private func setupUI() {
@@ -68,6 +76,16 @@ final class LoginViewController: OnboardingStepViewController {
     private func markButtonsAsLoading(_ isLoading: Bool) {
         primaryButton.isEnabled = !isLoading
         secondaryButton.isEnabled = !isLoading
+    }
+
+    private func showGenericErrorAlert() {
+        let alert = NSAlert()
+        alert.alertStyle = .critical
+        alert.messageText = KDriveLocalizable.onboardingErrorTitle
+        alert.informativeText = KDriveLocalizable.onboardingLoginErrorDescription
+        alert.runModal()
+
+        loginViewModel.isShowingError = false
     }
 
     @objc private func openLoginWebView() {
