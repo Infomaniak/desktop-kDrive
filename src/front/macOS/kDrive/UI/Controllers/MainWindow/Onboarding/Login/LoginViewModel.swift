@@ -23,19 +23,17 @@ import InfomaniakDI
 import InfomaniakLogin
 import kDriveCore
 
-enum OnboardingStep: Sendable {
-    case login
-    case driveSelection
-    case permissions
-    case synchronisation
-}
-
 @MainActor
-final class OnboardingViewModel: ObservableObject {
+final class LoginViewModel: ObservableObject {
     @LazyInjectService private var loginService: InfomaniakLoginable
 
-    @Published private(set) var currentStep: OnboardingStep = .login
     @Published private(set) var isShowingAuthenticationWindow = false
+
+    private let flowCoordinator: OnboardingFlowCoordinator
+
+    init(flowCoordinator: OnboardingFlowCoordinator) {
+        self.flowCoordinator = flowCoordinator
+    }
 
     func startWebAuthenticationLogin(anchor: ASPresentationAnchor?) {
         isShowingAuthenticationWindow = true
@@ -48,13 +46,12 @@ final class OnboardingViewModel: ObservableObject {
     }
 }
 
-// MARK: - InfomaniakLoginDelegate
-
-extension OnboardingViewModel: InfomaniakLoginDelegate {
+extension LoginViewModel: InfomaniakLoginDelegate {
     func didCompleteLoginWith(code: String, verifier: String) {
         Task {
             do {
                 try await LoginJob().login(code: code, verifier: verifier)
+                flowCoordinator.currentStep = .driveSelection
             } catch {
                 handleLoginFailure(error: error)
             }
@@ -74,7 +71,10 @@ extension OnboardingViewModel: InfomaniakLoginDelegate {
     }
 
     private func handleLoginFailure(error: Error) {
-        // TODO: Handle Error
         SentryDebug.loginError(error: error)
+
+        let alert = NSAlert()
+        alert.alertStyle = .critical
+        alert.runModal()
     }
 }

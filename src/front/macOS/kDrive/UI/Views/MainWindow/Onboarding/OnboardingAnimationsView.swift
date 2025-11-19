@@ -23,13 +23,13 @@ import kDriveResources
 import Lottie
 
 class OnboardingAnimationsView: NSView {
-    private let viewModel: OnboardingViewModel
+    private let viewModel: OnboardingFlowCoordinator
 
     private let animationView = ThemedAnimationView()
 
     private var bindStore = Set<AnyCancellable>()
 
-    init(viewModel: OnboardingViewModel) {
+    init(viewModel: OnboardingFlowCoordinator) {
         self.viewModel = viewModel
         super.init(frame: .zero)
 

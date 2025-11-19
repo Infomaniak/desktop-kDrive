@@ -21,7 +21,7 @@ import Combine
 import kDriveResources
 
 final class OnboardingViewController: NSViewController {
-    private let viewModel: OnboardingViewModel
+    private let viewModel: OnboardingFlowCoordinator
 
     private var currentContentViewController: NSViewController?
 
@@ -31,7 +31,7 @@ final class OnboardingViewController: NSViewController {
     private var bindStore = Set<AnyCancellable>()
 
     init() {
-        viewModel = OnboardingViewModel()
+        viewModel = OnboardingFlowCoordinator()
 
         contentView = NSView()
         animationsView = OnboardingAnimationsView(viewModel: viewModel)
@@ -112,7 +112,7 @@ final class OnboardingViewController: NSViewController {
     private func getViewController(forStep step: OnboardingStep) -> NSViewController {
         switch step {
         case .login:
-            return LoginViewController(viewModel: viewModel)
+            return LoginViewController(flowCoordinator: viewModel)
         case .driveSelection:
             return DriveSelectionViewController()
         case .permissions:

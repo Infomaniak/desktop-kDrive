@@ -22,11 +22,12 @@ import kDriveCoreUI
 import kDriveResources
 
 final class LoginViewController: OnboardingStepViewController {
-    private let viewModel: OnboardingViewModel
+    private let loginViewModel: LoginViewModel
+
     private var bindStore = Set<AnyCancellable>()
 
-    init(viewModel: OnboardingViewModel) {
-        self.viewModel = viewModel
+    init(flowCoordinator: OnboardingFlowCoordinator) {
+        loginViewModel = LoginViewModel(flowCoordinator: flowCoordinator)
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -39,18 +40,20 @@ final class LoginViewController: OnboardingStepViewController {
         super.viewDidLoad()
 
         bindViewModel()
-        setupView()
+        setupUI()
     }
 
     private func bindViewModel() {
-        markButtonsAsLoading(viewModel.isShowingAuthenticationWindow)
-        viewModel.$isShowingAuthenticationWindow.receive(on: DispatchQueue.main).sink { [weak self] isShowing in
-            self?.markButtonsAsLoading(isShowing)
-        }
-        .store(in: &bindStore)
+        markButtonsAsLoading(loginViewModel.isShowingAuthenticationWindow)
+        loginViewModel.$isShowingAuthenticationWindow
+            .receive(on: RunLoop.main)
+            .sink { [weak self] isShowing in
+                self?.markButtonsAsLoading(isShowing)
+            }
+            .store(in: &bindStore)
     }
 
-    private func setupView() {
+    private func setupUI() {
         titleLabel.stringValue = KDriveLocalizable.onboardingLoginTitle
         descriptionLabel.stringValue = KDriveLocalizable.onboardingLoginDescription
 
@@ -68,7 +71,7 @@ final class LoginViewController: OnboardingStepViewController {
     }
 
     @objc private func openLoginWebView() {
-        viewModel.startWebAuthenticationLogin(anchor: view.window)
+        loginViewModel.startWebAuthenticationLogin(anchor: view.window)
     }
 
     @objc private func openCreateAccount() {
