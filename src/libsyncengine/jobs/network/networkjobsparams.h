@@ -164,6 +164,7 @@ static const std::string reasonKey = "reason";
 static const std::string codeKey = "code";
 static const std::string descriptionKey = "description";
 static const std::string contextKey = "context";
+static const std::string modelKey = "model";
 
 /// Error codes
 enum class NetworkErrorCode {

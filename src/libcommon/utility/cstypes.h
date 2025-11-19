@@ -133,6 +133,7 @@ enum class ExitCause {
     FileOrDirectoryCorrupted,
     TmpDirAccessError,
     UpdateTreeIntegrityCheckFailed,
+    DriveNotFound,
     EnumEnd
 };
 

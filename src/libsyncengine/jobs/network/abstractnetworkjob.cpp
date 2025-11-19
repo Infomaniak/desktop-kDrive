@@ -616,20 +616,21 @@ ExitInfo AbstractNetworkJob::extractJson(const std::string &replyBody, Poco::JSO
     return ExitCode::Ok;
 }
 
-ExitInfo AbstractNetworkJob::extractJsonError(const std::string &replyBody, Poco::JSON::Object::Ptr errorObjPtr /*= nullptr*/) {
-    Poco::JSON::Object::Ptr jsonObj;
-    if (const auto exitInfo = extractJson(replyBody, jsonObj); !exitInfo) return exitInfo;
-
-    errorObjPtr = jsonObj->getObject(errorKey);
-    if (!JsonParserUtility::extractValue(errorObjPtr, codeKey, _errorCode)) {
-        return {};
-    }
-    if (!JsonParserUtility::extractValue(errorObjPtr, descriptionKey, _errorDescr)) {
-        return {};
-    }
-
-    return ExitCode::Ok;
-}
+// ExitInfo AbstractNetworkJob::extractJsonError(const std::string &replyBody, Poco::JSON::Object::Ptr errorObjPtr /*= nullptr*/)
+// {
+//     Poco::JSON::Object::Ptr jsonObj;
+//     if (const auto exitInfo = extractJson(replyBody, jsonObj); !exitInfo) return exitInfo;
+//
+//     errorObjPtr = jsonObj->getObject(errorKey);
+//     if (!JsonParserUtility::extractValue(errorObjPtr, codeKey, _errorCode)) {
+//         return {};
+//     }
+//     if (!JsonParserUtility::extractValue(errorObjPtr, descriptionKey, _errorDescr)) {
+//         return {};
+//     }
+//
+//     return ExitCode::Ok;
+// }
 
 void AbstractNetworkJob::TimeoutHelper::add(std::chrono::duration<double> duration) {
     unsigned int roundDuration = static_cast<unsigned int>(round(duration.count() / PRECISION) * PRECISION);

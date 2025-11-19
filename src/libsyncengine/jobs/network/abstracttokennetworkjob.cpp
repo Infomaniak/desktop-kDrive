@@ -71,7 +71,7 @@ AbstractTokenNetworkJob::AbstractTokenNetworkJob(const ApiType apiType, const bo
 
 ExitCause AbstractTokenNetworkJob::getExitCause() const {
     if (exitInfo().cause() == ExitCause::Unknown) {
-        if (!_errorCode.empty()) {
+        if (!_backError.code().empty()) {
             return ExitCause::ApiErr;
         }
         if (getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN) {
@@ -169,7 +169,7 @@ void AbstractTokenNetworkJob::defaultBackErrorHandling(const NetworkErrorCode er
 
     const auto &errorHandling = errorCodeHandlingMap.find(errorCode);
     if (errorHandling == errorCodeHandlingMap.cend()) {
-        LOG_WARN(_logger, "Error in request " << Utility::formatRequest(uri, _errorCode, _errorDescr));
+        LOG_WARN(_logger, "Error in request " << Utility::formatRequest(uri, _backError.code(), _backError.description()));
         exitCause = ExitCause::HttpErr;
         return;
     }
@@ -181,12 +181,19 @@ void AbstractTokenNetworkJob::defaultBackErrorHandling(const NetworkErrorCode er
 
 
 ExitInfo AbstractTokenNetworkJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
+    Poco::JSON::Object::Ptr jsonObj;
+    if (!replyBody.empty()) {
+        if (const auto exitInfo = extractJson(replyBody, jsonObj); !exitInfo) return exitInfo;
+    }
+    _backError = BackError(jsonObj);
+
     switch (httpResponse().getStatus()) {
         case Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED:
             return handleUnauthorizedResponse();
         case Poco::Net::HTTPResponse::HTTP_NOT_FOUND: {
             disableRetry();
-            return {ExitCode::BackError, ExitCause::NotFound};
+            const auto exitCause = _backError.contextModel() == "Drive" ? ExitCause::DriveNotFound : ExitCause::NotFound;
+            return {ExitCode::BackError, exitCause};
         }
         default:
             break;
@@ -194,13 +201,10 @@ ExitInfo AbstractTokenNetworkJob::handleError(const std::string &replyBody, cons
 
     ExitInfo exitInfo = ExitCode::BackError;
 
-    Poco::JSON::Object::Ptr errorObjPtr = nullptr;
-    if (!extractJsonError(replyBody, errorObjPtr)) return exitInfo;
-
-    switch (const NetworkErrorCode errorCode = getNetworkErrorCode(_errorCode); errorCode) {
+    switch (const NetworkErrorCode errorCode = getNetworkErrorCode(_backError.code()); errorCode) {
         case NetworkErrorCode::NotAuthorized: {
             if (!_accessTokenAlreadyRefreshed) {
-                LOG_DEBUG(_logger, "Request failed: " << Utility::formatRequest(uri, _errorCode, _errorDescr)
+                LOG_DEBUG(_logger, "Request failed: " << Utility::formatRequest(uri, _backError.code(), _backError.description())
                                                       << ". Refreshing access token.");
 
                 if (!refreshToken()) {
@@ -218,13 +222,10 @@ ExitInfo AbstractTokenNetworkJob::handleError(const std::string &replyBody, cons
         case NetworkErrorCode::DriveIsInMaintenanceError: {
             LOG_DEBUG(_logger, "Product in maintenance");
             disableRetry();
-            if (const auto contextObj = errorObjPtr->getObject(contextKey); contextObj != nullptr) {
-                std::string context;
-                (void) JsonParserUtility::extractValue(contextObj, reasonKey, context, false);
-                if (getNetworkErrorReason(context) == NetworkErrorReason::NotRenew) {
-                    exitInfo.setCause(ExitCause::DriveNotRenew);
-                    return exitInfo;
-                }
+
+            if (getNetworkErrorReason(_backError.contextReason()) == NetworkErrorReason::NotRenew) {
+                exitInfo.setCause(ExitCause::DriveNotRenew);
+                return exitInfo;
             }
             exitInfo.setCause(ExitCause::DriveMaintenance);
             break;

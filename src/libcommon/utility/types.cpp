@@ -224,6 +224,8 @@ std::string toString(const ExitCause e) {
             return "TmpDirAccessError";
         case ExitCause::UpdateTreeIntegrityCheckFailed:
             return "UpdateTreeIntegrityCheckFailed";
+        case ExitCause::DriveNotFound:
+            return "DriveNotFound";
         default:
             return noConversionStr;
     }
