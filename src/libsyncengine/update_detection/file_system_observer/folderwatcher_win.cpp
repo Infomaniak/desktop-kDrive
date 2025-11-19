@@ -95,7 +95,7 @@ void FolderWatcher_win::watchChanges() {
     overlapped.hEvent = _resultEventHandle;
 
     while (!_stop) {
-        ResetEvent(_resultEventHandle);
+        (void) ResetEvent(_resultEventHandle);
 
         DWORD dwBytesReturned = 0;
         if (!ReadDirectoryChangesW(_directoryHandle, &fileNotifyBuffer, static_cast<DWORD>(NOTIFY_BUFFER_SIZE), true,
@@ -141,6 +141,11 @@ void FolderWatcher_win::watchChanges() {
 
         const FILE_NOTIFY_INFORMATION *notifInfo = reinterpret_cast<const FILE_NOTIFY_INFORMATION *>(&fileNotifyBuffer);
         while (!_stop) {
+            if (!notifInfo) {
+                LOG_WARN(KDC::Log::instance()->getLogger(), "Bad notifInfo");
+                break;
+            }
+
             std::wstring wPathName(notifInfo->FileName,
                                    notifInfo->FileName + (notifInfo->FileNameLength / sizeof(notifInfo->FileName)));
             SyncPath filepath = (_folder / wPathName).lexically_normal();
@@ -190,8 +195,8 @@ void FolderWatcher_win::watchChanges() {
         }
     }
 
-    CancelIo(_directoryHandle);
-    closeHandle();
+    (void) CancelIo(_directoryHandle);
+    (void) closeHandle();
 
     LOG_DEBUG(_logger, "Watching changes stopped");
 }
