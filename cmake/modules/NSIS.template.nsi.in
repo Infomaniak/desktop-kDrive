@@ -69,7 +69,7 @@ Name "@{productname}"
 Caption "@{productname} @{version}"
 BrandingText "${APPLICATION_NAME} ${VERSION} -- ${BUILD_TIME}"
 OutFile "@{setupname}"
-InstallDir "$PROGRAMFILES\${APPLICATION_NAME}"
+InstallDir "$PROGRAMFILES64\${APPLICATION_NAME}"
 InstallDirRegKey HKCU "${regkey}" ""
 InstType Standard
 InstType Full
@@ -133,7 +133,6 @@ RequestExecutionLevel user ;Now using the UAC plugin.
 !endif
 Page custom PageReinstall PageLeaveReinstall
 !insertmacro MUI_PAGE_COMPONENTS
-!insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 !ifdef OPTION_FINISHPAGE
    !insertmacro MUI_PAGE_FINISH
@@ -445,31 +444,6 @@ FunctionEnd
 
 ##############################################################################
 #                                                                            #
-#   UNINSTALLER CUSTOM FUNCTIONS                                             #
-#                                                                            #
-##############################################################################
-;Function un.PageCompleteUninstallation
-;   !insertmacro INSTALLOPTIONS_WRITE "NSIS.InstallOptionsWithButtons.ini" "Field 1" "Text" ""
-;   !insertmacro INSTALLOPTIONS_WRITE "NSIS.InstallOptionsWithButtons.ini" "Field 2" "Text" $PageCustomUninstall_NEW_Field_2
-;   !insertmacro INSTALLOPTIONS_WRITE "NSIS.InstallOptionsWithButtons.ini" "Field 3" "Text" $PageCustomUninstall_NEW_Field_3
-;   !insertmacro MUI_HEADER_TEXT $PageCustomUninstall_NEW_MUI_HEADER_TEXT_TITLE $PageCustomUninstall_NEW_MUI_HEADER_TEXT_SUBTITLE
-
-;   !insertmacro INSTALLOPTIONS_DISPLAY "NSIS.InstallOptionsWithButtons.ini"
-;FunctionEnd
-
-;Function un.PageLeaveCompleteUninstallation
-;   !insertmacro INSTALLOPTIONS_READ $R1 "NSIS.InstallOptionsWithButtons.ini" "Field 2" "State"
-;   StrCmp $R1 "1" 0 del_all
-;      StrCpy $RemoveAllFiles "no"
-;      Goto end_complete_uninstall
-;   del_all:
-;      StrCpy $RemoveAllFiles "yes"
-;   end_complete_uninstall:
-;
-;FunctionEnd
-
-##############################################################################
-#                                                                            #
 #   INSTALLER SECTIONS                                                       #
 #                                                                            #
 ##############################################################################
@@ -761,60 +735,50 @@ Function un.UninstallFct
 
    SetShellVarContext current
 
-   ${If} ${Silent}
-      ;DetailPrint "Clearing node DB table..."
 
-      ;Clear node DB table
-      ;ExecWait '"$INSTDIR\${APPLICATION_SERVER_EXECUTABLE}" --clearSyncNodes'
-   ${else}
-      DetailPrint "Removing all files..."
+	${IfNot} ${Silent}
+		DetailPrint "Removing all files..."
+	
+		;Remove configuration directory
+		IfFileExists "$LOCALAPPDATA\kDrive\*.*" del_config_dir del_config_dir_end
+		 del_config_dir:
+		 RMDir /r /REBOOTOK "$LOCALAPPDATA\kDrive"
+		del_config_dir_end:
 
-      ;Remove configuration directory
-      IfFileExists "$LOCALAPPDATA\kDrive\*.*" del_config_dir del_config_dir_end
-         del_config_dir:
-         RMDir /r /REBOOTOK "$LOCALAPPDATA\kDrive"
-      del_config_dir_end:
+		;Remove credentials
+		System::Call 'ADVAPI32::CredEnumerate(t "com.infomaniak.drive.desktopclient*", i0, *i0r1, *p0r2)i.r0'
+		${If} $0 <> 0
+		 ${IfThen} $1 U> 0 ${|} IntOp $1 $1 - 1 ${|}
+		 ${ForEach} $3 0 $1 + 1
+			IntOp $4 $3 * ${NSIS_PTR_SIZE}
+			System::Call '*$2(&i$4, p.r4)'
+			System::Call '*$4(i, i.r5, p.r6)'
+			System::Call 'ADVAPI32::CredDelete(t)(pr6, ir5, i0)'
+		 ${Next}
+		 System::Call 'ADVAPI32::CredFree(pr2)'
+		${EndIf}
 
-      ;Remove credentials
-      System::Call 'ADVAPI32::CredEnumerate(t "com.infomaniak.drive.desktopclient*", i0, *i0r1, *p0r2)i.r0'
-      ${If} $0 <> 0
-         ${IfThen} $1 U> 0 ${|} IntOp $1 $1 - 1 ${|}
-         ${ForEach} $3 0 $1 + 1
-            IntOp $4 $3 * ${NSIS_PTR_SIZE}
-            System::Call '*$2(&i$4, p.r4)'
-            System::Call '*$4(i, i.r5, p.r6)'
-            System::Call 'ADVAPI32::CredDelete(t)(pr6, ir5, i0)'
-         ${Next}
-         System::Call 'ADVAPI32::CredFree(pr2)'
-      ${EndIf}
-   ${EndIf}
+		 ;Uninstall extension
+		!define PackageFullName_x64 "${VFS_PACKAGE_NAME}_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.${VER_BUILD}_x64__@{AUMID}"
+		IfFileExists "$PROGRAMFILES64\WindowsApps\${PackageFullName_x64}\*.*" uninstall_x64 uninstall_kdrive_ext_x64_done
+			uninstall_x64:
+			DetailPrint $UNINSTALL_EXTENSION
+			${PowerShellExecLog} "Remove-AppxPackage ${PackageFullName_x64}"
+		!undef PackageFullName_x64
+		uninstall_kdrive_ext_x64_done:
 
-   ${IfNot} ${Silent}
-       ;Uninstall extension
-       ;${If} ${RunningX64}
-          !define PackageFullName_x64 "${VFS_PACKAGE_NAME}_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.${VER_BUILD}_x64__@{AUMID}"
-          IfFileExists "C:\Program Files\WindowsApps\${PackageFullName_x64}\*.*" uninstall_x64 uninstall_kdrive_ext_x64_done
-             uninstall_x64:
-             DetailPrint $UNINSTALL_EXTENSION
-             ${PowerShellExecLog} "Remove-AppxPackage ${PackageFullName_x64}"
-          !undef PackageFullName_x64
-          uninstall_kdrive_ext_x64_done:
-       ;${ElseIf} ${IsNativeARM64}
-          !define PackageFullName_arm64 "${VFS_PACKAGE_NAME}_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.${VER_BUILD}_arm64__@{AUMID}"
-          IfFileExists "C:\Program Files\WindowsApps\${PackageFullName_arm64}\*.*" uninstall_arm64 uninstall_kdrive_ext_arm64_done
-             uninstall_arm64:
-             DetailPrint $UNINSTALL_EXTENSION
-             ${PowerShellExecLog} "Remove-AppxPackage ${PackageFullName_arm64}"
-          !undef PackageFullName_arm64
-          uninstall_kdrive_ext_arm64_done:
-       ;${EndIf}
-       ;uninstall_kdrive_ext_done:
-   ${EndIf}
-   
-   ;Remove all the Program Files.
-   RMDir /r $INSTDIR
-;@{uninstallFiles}
-;@{uninstallDirs}
+		!define PackageFullName_arm64 "${VFS_PACKAGE_NAME}_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.${VER_BUILD}_arm64__@{AUMID}"
+		IfFileExists "$PROGRAMFILES64\WindowsApps\${PackageFullName_arm64}\*.*" uninstall_arm64 uninstall_kdrive_ext_arm64_done
+			uninstall_arm64:
+			DetailPrint $UNINSTALL_EXTENSION
+			${PowerShellExecLog} "Remove-AppxPackage ${PackageFullName_arm64}"
+		!undef PackageFullName_arm64
+		uninstall_kdrive_ext_arm64_done:
+	${EndIf}
+	
+	;Remove all the Program Files.
+	RMDir /r $INSTDIR
+	RMDir /r "$PROGRAMFILES32\${APPLICATION_NAME}"	; Make sure the old installation directory is removed as well
 
    DeleteRegKey ${MEMENTO_REGISTRY_ROOT} "${MEMENTO_REGISTRY_KEY}"
 
@@ -909,15 +873,8 @@ Function .onInit
       MessageBox MB_OK|MB_ICONEXCLAMATION $INIT_INSTALLER_RUNNING
       Abort
 
-   ;Use available InstallLocation when possible. This is useful in the uninstaller
-   ;via re-install, which would otherwise use a default location - a bug.
-   ReadRegStr $R0 ${MEMENTO_REGISTRY_ROOT} "${MEMENTO_REGISTRY_KEY}" "InstallLocation"
-   StrCmp $R0 "" SkipSetInstDir
-   StrCpy $INSTDIR $R0
-   SkipSetInstDir:
-
-   ;Shutdown ${APPLICATION_NAME} in case Add/Remove re-installer option used.
-   Call EnsureKDriveShutdown
+	;Shutdown ${APPLICATION_NAME} in case Add/Remove re-installer option used.
+	Call EnsureKDriveShutdown
 
    ReadRegStr $R0 ${MEMENTO_REGISTRY_ROOT} "${MEMENTO_REGISTRY_KEY}" "InstallLocation"
    ${If} ${Silent}
@@ -933,15 +890,10 @@ Function .onInstSuccess
       WriteRegDWORD HKLM "${regkey}" "skipUpdateCheck" "1"
    ${EndIf}
 
-   ; TODO: Only needed to when updating from 2.1.{0,1}. Remove in due time.
-   Delete /REBOOTOK $INSTDIR\bearer\qgenericbearer.dll
-   Delete /REBOOTOK $INSTDIR\bearer\qnativewifibearer.dll
-   RMDir /REBOOTOK $INSTDIR\bearer
-
-   DeleteRegKey SHCTX "${uninstkey}"
-   DeleteRegKey SHCTX "${regkey}"
-   ;Do not add the desktop shortcut anymore on app update
-   WriteRegDWORD ${MEMENTO_REGISTRY_ROOT} "${MEMENTO_REGISTRY_KEY}" "MementoSection_SEC_DESKTOP" "0"
+	DeleteRegKey SHCTX "${uninstkey}"
+	DeleteRegKey SHCTX "${regkey}"
+	;Do not add the desktop shortcut anymore on app update
+	WriteRegDWORD ${MEMENTO_REGISTRY_ROOT} "${MEMENTO_REGISTRY_KEY}" "MementoSection_SEC_DESKTOP" "0"
 
    ${If} ${Silent}
    ${AndIf} $InstallRunIfSilent == "yes"
