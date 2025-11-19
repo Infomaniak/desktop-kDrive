@@ -40,8 +40,8 @@ final class DriveCellView: NSView {
     private lazy var titleLabel: NSTextField = {
         let textField = NSTextField(labelWithString: title)
         textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.font = .preferredFont(forTextStyle: .body)
-        textField.textColor = .Tokens.Text.primary
+        textField.font = NSFont.Tokens.body
+        textField.textColor = NSColor.Tokens.Text.primary
         return textField
     }()
 
@@ -50,8 +50,8 @@ final class DriveCellView: NSView {
 
         let textField = NSTextField(labelWithString: subtitle)
         textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.font = .preferredFont(forTextStyle: .subheadline)
-        textField.textColor = .Tokens.Text.tertiary
+        textField.font = NSFont.Tokens.subheadline
+        textField.textColor = NSColor.Tokens.Text.tertiary
         return textField
     }()
 

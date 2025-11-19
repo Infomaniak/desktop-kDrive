@@ -41,6 +41,7 @@ public final class LoadingLabelView: NSView {
 
         let label = NSTextField(labelWithString: text)
         label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = NSFont.Tokens.body
         label.textColor = NSColor.Tokens.Text.tertiary
         // TODO: Set correct font
 

@@ -55,14 +55,14 @@ open class OnboardingStepViewController: NSViewController {
         stackView.alignment = .leading
         view.addSubview(stackView)
 
-        titleLabel.font = .preferredFont(forTextStyle: .largeTitle)
-        titleLabel.textColor = .Tokens.Text.primary
+        titleLabel.font = NSFont.Tokens.largeTitleEmphasized
+        titleLabel.textColor = NSColor.Tokens.Text.primary
         stackView.addArrangedSubview(titleLabel)
         stackView.setCustomSpacing(AppPadding.padding8, after: titleLabel)
 
-        descriptionLabel.font = .preferredFont(forTextStyle: .body)
+        descriptionLabel.font = NSFont.Tokens.body
         descriptionLabel.lineBreakMode = .byWordWrapping
-        descriptionLabel.textColor = .Tokens.Text.secondary
+        descriptionLabel.textColor = NSColor.Tokens.Text.secondary
         descriptionLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         stackView.addArrangedSubview(descriptionLabel)
         stackView.setCustomSpacing(AppPadding.padding32, after: descriptionLabel)
