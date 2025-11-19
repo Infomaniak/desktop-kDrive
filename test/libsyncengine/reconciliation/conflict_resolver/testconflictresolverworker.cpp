@@ -261,7 +261,6 @@ void TestConflictResolverWorker::testEditDelete1() {
 
         // Simulate edit of file A/AA/AAA on local replica
         const auto editNodeAAA = _testSituationGenerator.editNode(editSide, "aaa");
-        editNodeAAA->setChangeEvents(OperationType::Edit);
 
         // and delete of file A/AA/AAA on remote replica
         const auto deleteNodeAAA = _testSituationGenerator.getNode(otherSide(editSide), "aaa");

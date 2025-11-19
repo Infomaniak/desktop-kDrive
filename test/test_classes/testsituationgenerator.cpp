@@ -133,7 +133,7 @@ std::shared_ptr<Node> TestSituationGenerator::renameNode(const ReplicaSide side,
         modificationTime += node->modificationTime().value() + static_cast<SyncTime>(++editCounter);
     }
     node->setModificationTime(modificationTime);
-    node->insertChangeEvent(OperationType::Edit);
+    node->setChangeEvents(OperationType::Edit);
     return node;
 }
 
