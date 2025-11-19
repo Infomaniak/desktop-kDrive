@@ -658,7 +658,7 @@ Function un.UninstallFct
 		loop2:
 			; Look at every registered explorer SyncRootManager for HKLM and check if it was added by our application
 			EnumRegKey $1 HKLM "Software\Microsoft\Windows\CurrentVersion\Explorer\SyncRootManager" $0
-			trCmp $1 "" done2
+			StrCmp $1 "" done2
 
 			ReadRegStr $R0 HKLM "Software\Microsoft\Windows\CurrentVersion\Explorer\SyncRootManager\$1" ""
 			StrCmp $R0 "${APPLICATION_NAME}" deleteSyncRootManager
