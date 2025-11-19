@@ -61,8 +61,13 @@ $languages = @(
     "it"
 )
 
-foreach ($lang in $languages)
+foreach ($language in $languages)
 {
+    $lang = $language
+    if ($os -eq "linux-arm" -Or $os -eq "linux-amd") {
+        $lang "linux"
+    }
+    
     $fileName = "kDrive-$versionNumber-$os-$lang.html"
     $filePath = ".\release_notes\kDrive-$versionNumber\$fileName"
     if (-not (Test-Path $filePath)) {
