@@ -78,7 +78,7 @@ public extension User {
             userId: userId,
             name: other.name.isEmpty ? name : other.name,
             email: other.email.isEmpty ? email : other.email,
-            accounts: other.accounts, // TODO: Actual merge of accounts - This is incorrect
+            accounts: other.accounts.isEmpty ? accounts : other.accounts,
             avatar: other.avatar,
             isConnected: other.isConnected,
             isStaff: other.isStaff
