@@ -20,11 +20,11 @@ import Foundation
 import kDriveCore
 import Testing
 
-struct CoherentCacheTests {
+struct CoherentCacheUserTests {
     static let expectedUserId: Int32 = 56789
     static let expectedUserDbId: Int32 = 12345
 
-    @Test func testSetGetUserInCacheFromPrimaryKey() async throws {
+    @Test func setGetUserInCacheFromPrimaryKey() async throws {
         // GIVEN
         let user = User(
             dbId: Self.expectedUserDbId,
@@ -47,7 +47,7 @@ struct CoherentCacheTests {
         #expect(await cache.getUser(dbId: Self.expectedUserDbId) == user)
     }
 
-    @Test func testSetGetUserInCacheFromDbId() async throws {
+    @Test func setGetUserInCacheFromDbId() async throws {
         // GIVEN
         let user = User(
             dbId: Self.expectedUserDbId,
