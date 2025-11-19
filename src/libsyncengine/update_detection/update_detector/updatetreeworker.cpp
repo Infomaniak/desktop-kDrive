@@ -62,13 +62,19 @@ void UpdateTreeWorker::execute() {
     _updateTree->startUpdate();
 
     // Reset nodes working properties
-    for (const auto &[_, node]: _updateTree->nodes()) {
-        node->clearChangeEvents();
-        node->clearConflictAlreadyConsidered();
-        node->setInconsistencyType(InconsistencyType::None);
-        node->setPreviousId(std::nullopt);
-        node->setStatus(NodeStatus::Unprocessed);
-        node->clearMoveOriginInfos();
+    auto nodeIt = _updateTree->nodes().begin();
+    while (nodeIt != _updateTree->nodes().end()) {
+        if (nodeIt->second->status() == NodeStatus::ToDelete) {
+            nodeIt = _updateTree->nodes().erase(nodeIt);
+        } else {
+            nodeIt->second->clearChangeEvents();
+            nodeIt->second->clearConflictAlreadyConsidered();
+            nodeIt->second->setInconsistencyType(InconsistencyType::None);
+            nodeIt->second->setPreviousId(std::nullopt);
+            nodeIt->second->setStatus(NodeStatus::Unprocessed);
+            nodeIt->second->clearMoveOriginInfos();
+            ++nodeIt;
+        }
     }
 
     _updateTree->previousIdSet().clear();
@@ -159,21 +165,26 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
         const auto currentNodeIt = _updateTree->nodes().find(deleteOp->nodeId());
         if (currentNodeIt != _updateTree->nodes().end()) {
             // Node exists
-            currentNodeIt->second->insertChangeEvent(OperationType::Delete);
+            if (currentNodeIt->second->changeEvents() != OperationType::None) {
+                assert(false);
+                LOGW_SYNCPAL_WARN(_logger, _side << L" update tree: Node '"
+                                                 << SyncName2WStr(currentNodeIt->second->name()).c_str() << L"' (node ID: '"
+                                                 << CommonUtility::s2ws(currentNodeIt->second->id().value_or(""))
+                                                 << L"', DB ID: '" << currentNodeIt->second->idb().value_or(-1)
+                                                 << L"') events is not empty: " << currentNodeIt->second->changeEvents());
+                return ExitCode::DataError;
+            }
+            currentNodeIt->second->setChangeEvents(OperationType::Delete);
             currentNodeIt->second->setCreatedAt(deleteOp->createdAt());
             currentNodeIt->second->setModificationTime(deleteOp->lastModified());
             currentNodeIt->second->setSize(deleteOp->size());
             currentNodeIt->second->setIsTmp(false);
             if (ParametersCache::isExtendedLogEnabled()) {
-                LOGW_SYNCPAL_DEBUG(
-                        _logger,
-                        _side << L" update tree: Node '" << SyncName2WStr(currentNodeIt->second->name()).c_str()
-                              << L"' (node ID: '"
-                              << CommonUtility::s2ws(currentNodeIt->second->id().has_value() ? *currentNodeIt->second->id()
-                                                                                             : NodeId())
-                                         .c_str()
-                              << L"', DB ID: '" << (currentNodeIt->second->idb().has_value() ? *currentNodeIt->second->idb() : -1)
-                              << L"') updated. Operation DELETE inserted in change events.");
+                LOGW_SYNCPAL_DEBUG(_logger, _side << L" update tree: Node '"
+                                                  << SyncName2WStr(currentNodeIt->second->name()).c_str() << L"' (node ID: '"
+                                                  << CommonUtility::s2ws(currentNodeIt->second->id().value_or(""))
+                                                  << L"', DB ID: '" << currentNodeIt->second->idb().value_or(-1)
+                                                  << L"') updated. Operation DELETE inserted in change events.");
             }
         } else {
             std::shared_ptr<Node> parentNode;
@@ -216,19 +227,27 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::updateNodeId");
                     return ExitCode::DataError;
                 }
+                if (currentNodeIt->second->changeEvents() != OperationType::None) {
+                    assert(false);
+                    LOGW_SYNCPAL_WARN(_logger, _side << L" update tree: Node '"
+                                                     << SyncName2WStr(currentNodeIt->second->name()).c_str() << L"' (node ID: '"
+                                                     << CommonUtility::s2ws(currentNodeIt->second->id().value_or(""))
+                                                     << L"', DB ID: '" << currentNodeIt->second->idb().value_or(-1)
+                                                     << L"') events is not empty: " << currentNodeIt->second->changeEvents());
+                    return ExitCode::DataError;
+                }
                 existingNode->setCreatedAt(deleteOp->createdAt());
                 existingNode->setModificationTime(deleteOp->lastModified());
                 existingNode->setSize(deleteOp->size());
-                existingNode->insertChangeEvent(OperationType::Delete);
+                existingNode->setChangeEvents(OperationType::Delete);
                 existingNode->setIsTmp(false);
                 _updateTree->nodes()[deleteOp->nodeId()] = existingNode;
                 if (ParametersCache::isExtendedLogEnabled()) {
-                    LOGW_SYNCPAL_DEBUG(
-                            _logger,
-                            _side << L" update tree: Node '" << SyncName2WStr(existingNode->name()).c_str() << L"' (node ID: '"
-                                  << CommonUtility::s2ws(existingNode->id().has_value() ? *existingNode->id() : NodeId()).c_str()
-                                  << L"', DB ID: '" << (existingNode->idb().has_value() ? *existingNode->idb() : -1)
-                                  << L"') updated. Operation DELETE inserted in change events.");
+                    LOGW_SYNCPAL_DEBUG(_logger, _side << L" update tree: Node '"
+                                                      << SyncName2WStr(currentNodeIt->second->name()).c_str() << L"' (node ID: '"
+                                                      << CommonUtility::s2ws(currentNodeIt->second->id().value_or(""))
+                                                      << L"', DB ID: '" << currentNodeIt->second->idb().value_or(-1)
+                                                      << L"') updated. Operation DELETE inserted in change events.");
                 }
             } else {
                 // create node

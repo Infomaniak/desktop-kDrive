@@ -62,8 +62,6 @@ static const auto estimatedRemainingTime = "estimatedRemainingTime";
 
 namespace KDC {
 
-std::recursive_mutex SyncPal::updateTreesMutex;
-
 void SyncProgress::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, currentFile, _currentFile);
     CommonUtility::writeValueToStruct(dstruct, totalFiles, _totalFiles);
@@ -407,7 +405,6 @@ void SyncPal::loadProgress(SyncProgress &syncProgress) const {
 
 void SyncPal::createSharedObjects() {
     LOG_SYNCPAL_DEBUG(_logger, "Create shared objects");
-    const std::scoped_lock lock(updateTreesMutex);
     _localOperationSet = std::make_shared<FSOperationSet>(ReplicaSide::Local);
     _remoteOperationSet = std::make_shared<FSOperationSet>(ReplicaSide::Remote);
     _localUpdateTree = std::make_shared<UpdateTree>(ReplicaSide::Local, _syncDb->rootNode());
@@ -421,7 +418,6 @@ void SyncPal::createSharedObjects() {
 
 void SyncPal::freeSharedObjects() {
     LOG_SYNCPAL_DEBUG(_logger, "Free shared objects");
-    const std::scoped_lock lock(updateTreesMutex);
     _localSnapshot.reset();
     _remoteSnapshot.reset();
     _localOperationSet.reset();
@@ -437,8 +433,8 @@ void SyncPal::freeSharedObjects() {
     LOG_IF_FAIL(_remoteSnapshot.use_count() == 0);
     LOG_IF_FAIL(_localOperationSet.use_count() == 0);
     LOG_IF_FAIL(_remoteOperationSet.use_count() == 0);
-    LOG_IF_FAIL(_localUpdateTree.use_count() == 0);
-    LOG_IF_FAIL(_remoteUpdateTree.use_count() == 0);
+    // LOG_IF_FAIL(_localUpdateTree.use_count() == 0); // Can happen if handleAccessDeniedItem is deleting a node
+    // LOG_IF_FAIL(_remoteUpdateTree.use_count() == 0); // Can happen if handleAccessDeniedItem is deleting a node
     LOG_IF_FAIL(_conflictQueue.use_count() == 0);
     LOG_IF_FAIL(_syncOps.use_count() == 0);
     LOG_IF_FAIL(_progressInfo.use_count() == 0);
@@ -446,7 +442,6 @@ void SyncPal::freeSharedObjects() {
 
 void SyncPal::initSharedObjects() {
     LOG_SYNCPAL_DEBUG(_logger, "Init shared objects");
-    const std::scoped_lock lock(updateTreesMutex);
     if (_localUpdateTree) _localUpdateTree->init();
     if (_remoteUpdateTree) _remoteUpdateTree->init();
 
@@ -455,7 +450,6 @@ void SyncPal::initSharedObjects() {
 
 void SyncPal::resetSharedObjects() {
     LOG_SYNCPAL_DEBUG(_logger, "Reset shared objects");
-    const std::scoped_lock lock(updateTreesMutex);
     if (_localOperationSet) _localOperationSet->clear();
     if (_remoteOperationSet) _remoteOperationSet->clear();
     if (_localUpdateTree) _localUpdateTree->clear();
@@ -1372,12 +1366,13 @@ void SyncPal::removeItemFromTmpBlacklist(const SyncPath &relativePath) {
     _tmpBlacklistManager->removeItemFromTmpBlacklist(relativePath);
 }
 
-ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, ExitCause cause) {
+ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool deleteNodeLater, ExitCause cause) {
     std::shared_ptr<Node> dummyNodePtr;
-    return handleAccessDeniedItem(relativeLocalPath, dummyNodePtr, dummyNodePtr, cause);
+    return handleAccessDeniedItem(relativeLocalPath, deleteNodeLater, dummyNodePtr, dummyNodePtr, cause);
 }
 
-ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std::shared_ptr<Node> &localBlacklistedNode,
+ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool deleteNodeLater,
+                                         std::shared_ptr<Node> &localBlacklistedNode,
                                          std::shared_ptr<Node> &remoteBlacklistedNode, ExitCause cause) {
     if (relativeLocalPath.empty()) {
         LOG_SYNCPAL_WARN(_logger, "Access error on root folder");
@@ -1405,8 +1400,8 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std:
             if (ioError == IoError::AccessDenied) { // A parent of the file does not have sufficient right
                 LOGW_DEBUG(_logger, L"A parent of " << Utility::formatSyncPath(relativeLocalPath)
                                                     << L"does not have sufficient right, blacklisting the parent item.");
-                return handleAccessDeniedItem(relativeLocalPath.parent_path(), localBlacklistedNode, remoteBlacklistedNode,
-                                              cause);
+                return handleAccessDeniedItem(relativeLocalPath.parent_path(), deleteNodeLater, localBlacklistedNode,
+                                              remoteBlacklistedNode, cause);
             }
         }
     }
@@ -1433,19 +1428,21 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std:
 
     // Delete nodes from update trees
     if (!localNodeId.empty() || !remoteNodeId.empty()) {
-        const std::scoped_lock lock(updateTreesMutex);
-        if (!updateTree(ReplicaSide::Local) || !updateTree(ReplicaSide::Remote)) {
+        // Copy the update trees shared ptrs to protect their access
+        auto localUpdateTree = updateTree(ReplicaSide::Local);
+        auto remoteUpdateTree = updateTree(ReplicaSide::Remote);
+        if (!localUpdateTree || !remoteUpdateTree) {
             // Can happen if the sync is restarting
             return ExitCode::Ok;
         }
 
-        // deleteNode can fail if the UpdateTreeWorker has never been launched
+        // deleteNode can fail if the UpdateTreeWorker has never been launched or the node has been deleted by a concurrent worker
         if (!localNodeId.empty()) {
-            (void) updateTree(ReplicaSide::Local)->deleteNode(localNodeId);
+            (void) localUpdateTree->deleteNode(localNodeId, deleteNodeLater);
         }
 
         if (!remoteNodeId.empty()) {
-            (void) updateTree(ReplicaSide::Remote)->deleteNode(remoteNodeId);
+            (void) remoteUpdateTree->deleteNode(remoteNodeId, deleteNodeLater);
         }
     }
 

@@ -587,11 +587,6 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
                                                    << exitInfo);
                 _syncPal->setRestart(true);
 
-                const std::scoped_lock lock(SyncPal::updateTreesMutex);
-                if (!_syncPal->updateTree(ReplicaSide::Local)) {
-                    return ExitCode::LogicError;
-                }
-
                 if (!_syncPal->updateTree(ReplicaSide::Local)->deleteNode(syncOp->affectedNode())) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
                                                        << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" "
@@ -1456,7 +1451,7 @@ ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath 
                         absoluteLocalFilePath, PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted)) {
                 LOGW_SYNCPAL_WARN(_logger, L"PlatformInconsistencyCheckerUtility::renameLocalFile failed for "
                                                    << Utility::formatSyncPath(absoluteLocalFilePath));
-                return _syncPal->handleAccessDeniedItem(relativeLocalPath);
+                return _syncPal->handleAccessDeniedItem(relativeLocalPath, false);
             }
             removeFromDb = false;
             break;
@@ -1558,11 +1553,6 @@ ExitInfo ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &pr
                 }
             }
             // Remove node from update tree
-            const std::scoped_lock lock(SyncPal::updateTreesMutex);
-            if (!_syncPal->updateTree(ReplicaSide::Local) || !_syncPal->updateTree(ReplicaSide::Remote)) {
-                return ExitCode::LogicError;
-            }
-
             if (!_syncPal->updateTree(ReplicaSide::Local)->deleteNode(syncOp->conflict().localNode())) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node "
                                                    << Utility::formatSyncName(syncOp->conflict().localNode()->name()));
@@ -2238,7 +2228,7 @@ ExitInfo ExecutorWorker::handleOpsLocalFileAccessError(const SyncOpPtr syncOp, c
     std::shared_ptr<Node> remoteBlacklistedNode = nullptr;
     if (syncOp->targetSide() == ReplicaSide::Local && syncOp->type() == OperationType::Create) {
         // The item does not exist yet locally, we will only tmpBlacklist the remote item
-        if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(syncOp->localCreationTargetPath(), localBlacklistedNode,
+        if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(syncOp->localCreationTargetPath(), false, localBlacklistedNode,
                                                                  remoteBlacklistedNode, opsExitInfo.cause());
             !exitInfo) {
             return exitInfo;
@@ -2249,7 +2239,7 @@ ExitInfo ExecutorWorker::handleOpsLocalFileAccessError(const SyncOpPtr syncOp, c
         if (!localNode) return ExitCode::LogicError;
 
         const SyncPath relativeLocalFilePath = localNode->getPath();
-        if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(relativeLocalFilePath, localBlacklistedNode,
+        if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(relativeLocalFilePath, false, localBlacklistedNode,
                                                                  remoteBlacklistedNode, opsExitInfo.cause());
             !exitInfo) {
             return exitInfo;

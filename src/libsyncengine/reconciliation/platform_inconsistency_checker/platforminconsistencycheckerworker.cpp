@@ -38,12 +38,6 @@ void PlatformInconsistencyCheckerWorker::execute() {
 
     _idsToBeRemoved.clear();
 
-    const std::scoped_lock lock(SyncPal::updateTreesMutex);
-    if (!_syncPal->updateTree(ReplicaSide::Local) || !_syncPal->updateTree(ReplicaSide::Remote)) {
-        setDone(ExitCode::LogicError);
-        return;
-    }
-
     checkTree(ReplicaSide::Remote);
     checkTree(ReplicaSide::Local);
 

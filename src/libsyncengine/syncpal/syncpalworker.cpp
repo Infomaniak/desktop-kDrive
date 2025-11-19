@@ -244,7 +244,6 @@ void SyncPalWorker::execute() {
             // Start workers
             LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step) << " start");
             isStepInProgress = true;
-            const std::scoped_lock lock(SyncPal::updateTreesMutex);
             for (int index = 0; index < 2; index++) {
                 if (inputSharedObject[index]) {
                     inputSharedObject[index]->startRead();

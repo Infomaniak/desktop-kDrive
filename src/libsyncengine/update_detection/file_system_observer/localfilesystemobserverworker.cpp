@@ -553,7 +553,7 @@ void LocalFileSystemObserverWorker::sendAccessDeniedError(const SyncPath &absolu
     if (ExclusionTemplateCache::instance()->isExcluded(relativePath)) {
         return;
     }
-    if (const auto exitInfo = _syncPal->handleAccessDeniedItem(relativePath); !exitInfo) {
+    if (const auto exitInfo = _syncPal->handleAccessDeniedItem(relativePath, true); !exitInfo) {
         // Do nothing, can happen if the sync is restarting
     }
 }
