@@ -26,6 +26,18 @@ final class LoginViewController: OnboardingStepViewController {
 
     private var bindStore = Set<AnyCancellable>()
 
+    private let waitingForWebAuthenticationLabel: LoadingLabelView = {
+        let label = LoadingLabelView(text: "!En attente du navigateur…")
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+
+    private let loadingUserLabel: LoadingLabelView = {
+        let label = LoadingLabelView(text: "!Encore quelques instants, nous chargeons votre compte…")
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+
     init(flowCoordinator: OnboardingFlowCoordinator) {
         loginViewModel = LoginViewModel(flowCoordinator: flowCoordinator)
         super.init(nibName: nil, bundle: nil)
@@ -44,11 +56,10 @@ final class LoginViewController: OnboardingStepViewController {
     }
 
     private func bindViewModel() {
-        markButtonsAsLoading(loginViewModel.isShowingAuthenticationWindow)
-        loginViewModel.$isShowingAuthenticationWindow
+        loginViewModel.$loginState
             .receive(on: RunLoop.main)
-            .sink { [weak self] isShowing in
-                self?.markButtonsAsLoading(isShowing)
+            .sink { [weak self] newState in
+                self?.handleStateUpdate(newState)
             }
             .store(in: &bindStore)
 
@@ -71,11 +82,33 @@ final class LoginViewController: OnboardingStepViewController {
         secondaryButton.title = KDriveLocalizable.buttonCreateAccount
         secondaryButton.target = self
         secondaryButton.action = #selector(openCreateAccount)
+
+        view.addSubview(waitingForWebAuthenticationLabel)
+        view.addSubview(loadingUserLabel)
+        NSLayoutConstraint.activate([
+            waitingForWebAuthenticationLabel.centerYAnchor.constraint(equalTo: buttonsStack.centerYAnchor),
+            waitingForWebAuthenticationLabel.leadingAnchor.constraint(equalTo: stackView.leadingAnchor),
+            waitingForWebAuthenticationLabel.trailingAnchor.constraint(equalTo: stackView.trailingAnchor),
+
+            loadingUserLabel.centerYAnchor.constraint(equalTo: buttonsStack.centerYAnchor),
+            loadingUserLabel.leadingAnchor.constraint(equalTo: stackView.leadingAnchor),
+            loadingUserLabel.trailingAnchor.constraint(equalTo: stackView.trailingAnchor)
+        ])
     }
 
-    private func markButtonsAsLoading(_ isLoading: Bool) {
-        primaryButton.isEnabled = !isLoading
-        secondaryButton.isEnabled = !isLoading
+    @objc private func openLoginWebView() {
+        loginViewModel.startWebAuthenticationLogin(anchor: view.window)
+    }
+
+    @objc private func openCreateAccount() {
+        loginViewModel.openAccountRegistrationProcess()
+    }
+
+    private func handleStateUpdate(_ newState: LoginViewModel.LoginState) {
+        buttonsStack.alphaValue = newState == .idle ? 1.0 : 0.0
+
+        waitingForWebAuthenticationLabel.isHidden = newState == .waitingForWebAuthentication ? false : true
+        loadingUserLabel.isHidden = newState == .loadingUser ? false : true
     }
 
     private func showGenericErrorAlert() {
@@ -86,13 +119,5 @@ final class LoginViewController: OnboardingStepViewController {
         alert.runModal()
 
         loginViewModel.isShowingError = false
-    }
-
-    @objc private func openLoginWebView() {
-        loginViewModel.startWebAuthenticationLogin(anchor: view.window)
-    }
-
-    @objc private func openCreateAccount() {
-        // TODO: Handle account creation
     }
 }

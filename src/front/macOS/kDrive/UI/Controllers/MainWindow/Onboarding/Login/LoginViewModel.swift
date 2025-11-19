@@ -25,9 +25,15 @@ import kDriveCore
 
 @MainActor
 final class LoginViewModel: ObservableObject {
+    enum LoginState {
+        case idle
+        case waitingForWebAuthentication
+        case loadingUser
+    }
+
     @LazyInjectService private var loginService: InfomaniakLoginable
 
-    @Published private(set) var isShowingAuthenticationWindow = false
+    @Published private(set) var loginState: LoginState = .idle
     @Published var isShowingError = false
 
     private let flowCoordinator: OnboardingFlowCoordinator
@@ -37,13 +43,17 @@ final class LoginViewModel: ObservableObject {
     }
 
     func startWebAuthenticationLogin(anchor: ASPresentationAnchor?) {
-        isShowingAuthenticationWindow = true
+        loginState = .waitingForWebAuthentication
         loginService.asWebAuthenticationLoginFrom(
             anchor: anchor ?? ASPresentationAnchor(),
             useEphemeralSession: true,
             hideCreateAccountButton: true,
             delegate: self
         )
+    }
+
+    func openAccountRegistrationProcess() {
+        // TODO: Handle account registration
     }
 }
 
@@ -52,17 +62,18 @@ extension LoginViewModel: InfomaniakLoginDelegate {
         Task {
             do {
                 try await LoginJob().login(code: code, verifier: verifier)
+                loginState = .loadingUser
+
                 flowCoordinator.currentStep = .driveSelection
             } catch {
+                loginState = .idle
                 handleLoginFailure(error: error)
             }
-
-            isShowingAuthenticationWindow = false
         }
     }
 
     func didFailLoginWith(error: any Error) {
-        isShowingAuthenticationWindow = false
+        loginState = .idle
 
         guard (error as? ASWebAuthenticationSessionError)?.code != .canceledLogin else {
             return

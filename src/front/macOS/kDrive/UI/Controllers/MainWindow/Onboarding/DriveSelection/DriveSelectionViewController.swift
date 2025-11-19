@@ -17,6 +17,7 @@
  */
 
 import Cocoa
+import InfomaniakDI
 import kDriveCoreUI
 
 class DriveSelectionViewController: OnboardingStepViewController {
@@ -37,7 +38,11 @@ class DriveSelectionViewController: OnboardingStepViewController {
         secondaryButton.action = #selector(didTapAdvancedSettings)
     }
 
-    @objc private func didTapContinue() {}
+    @objc private func didTapContinue() {
+        // dummy implementation
+        @InjectService var windowRouter: WindowRouter
+        windowRouter.navigate(to: .splitView)
+    }
 
     @objc private func didTapAdvancedSettings() {}
 }

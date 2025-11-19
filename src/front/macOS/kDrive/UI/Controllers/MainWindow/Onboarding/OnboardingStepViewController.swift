@@ -34,8 +34,11 @@ open class OnboardingStepViewController: NSViewController {
     }
 
     public let stackView = NSStackView()
+
     public let titleLabel = NSTextField(labelWithString: "")
     public let descriptionLabel = NSTextField(labelWithString: "")
+
+    public let buttonsStack = NSStackView()
     public let primaryButton = BorderedProminentButton()
     public let secondaryButton = BorderlessButton()
 
@@ -64,13 +67,14 @@ open class OnboardingStepViewController: NSViewController {
         stackView.addArrangedSubview(descriptionLabel)
         stackView.setCustomSpacing(AppPadding.padding32, after: descriptionLabel)
 
-        let buttonStack = NSStackView(views: [secondaryButton, primaryButton])
-        buttonStack.spacing = AppPadding.padding8
-        buttonStack.alignment = .centerY
-        stackView.addArrangedSubview(buttonStack)
+        buttonsStack.spacing = AppPadding.padding8
+        buttonsStack.alignment = .centerY
+        stackView.addArrangedSubview(buttonsStack)
 
+        buttonsStack.addArrangedSubview(secondaryButton)
         secondaryButton.translatesAutoresizingMaskIntoConstraints = false
 
+        buttonsStack.addArrangedSubview(primaryButton)
         primaryButton.translatesAutoresizingMaskIntoConstraints = false
         primaryButton.keyEquivalent = "\r"
 
