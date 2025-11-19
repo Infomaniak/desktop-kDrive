@@ -65,6 +65,19 @@ void WindowsUpdater::startInstaller() {
         setState(UpdateState::DownloadError);
         return;
     }
+    if (std::error_code ec; !std::filesystem::exists(filepath, ec)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Installer file not found. " << Utility::formatStdError(filepath, ec));
+        if (_autoUpdate) {
+            LOG_ERROR(Log::instance()->getLogger(), "Already tried to re-download the installer before.");
+            setState(UpdateState::UpdateError);
+            return;
+        }
+        _autoUpdate = true;
+        downloadUpdate();
+        return;
+    }
+    _autoUpdate = false;
+
     LOGW_INFO(Log::instance()->getLogger(), L"Starting updater " << Utility::formatSyncPath(filepath));
     const auto cmd = filepath.wstring() + L" /S /launch";
     (void) Utility::runDetachedProcess(cmd);
@@ -118,11 +131,10 @@ void WindowsUpdater::downloadFinished(const UniqueId jobId) {
         setState(UpdateState::DownloadError);
         return;
     }
-    if (!std::filesystem::exists(filepath)) {
-        const auto error = "Installer file not found.";
-        sentry::Handler::captureMessage(sentry::Level::Warning, "WindowsUpdater::downloadFinished", error);
-        LOG_ERROR(Log::instance()->getLogger(), error);
-        setState(UpdateState::DownloadError);
+
+    if (std::error_code ec; !std::filesystem::exists(filepath, ec)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Installer file not found. " << Utility::formatStdError(filepath, ec));
+        downloadUpdate();
         return;
     }
 
@@ -134,6 +146,10 @@ void WindowsUpdater::downloadFinished(const UniqueId jobId) {
     LOGW_INFO(Log::instance()->getLogger(),
               L"Installer downloaded at: " << Utility::formatSyncPath(filepath) << L". Update is ready to be installed.");
     setState(UpdateState::Ready);
+    if (_autoUpdate) {
+        // Start the installer automatically.
+        startInstaller();
+    }
 }
 
 bool WindowsUpdater::getInstallerPath(SyncPath &path) const {
