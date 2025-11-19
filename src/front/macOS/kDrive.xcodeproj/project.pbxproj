@@ -102,7 +102,6 @@
 				Cache/ObservableCoherentCacheTests.swift,
 				Cache/ObservedAccoutTests.swift,
 				Cache/ObservedUserTests.swift,
-				Jobs/LoginJobTests.swift,
 				Parsing/Base64CodedTests.swift,
 				Parsing/CallbackMessageTests.swift,
 				Parsing/SignalMessageTests.swift,
@@ -217,6 +216,7 @@
 				7A46E1CE2EA7AC1B00880412 /* kDriveTests */,
 				37A1C4272E546A5200596DBB /* Products */,
 				F967014F2E953CF600EDD4D7 /* Frameworks */,
+				F97BF4552ECDB8B40012EA15 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -237,6 +237,14 @@
 			children = (
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		F97BF4552ECDB8B40012EA15 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				F9ACC5372E5DF50B0081E80B /* swiftgen.yml */,
+			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

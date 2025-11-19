@@ -39,16 +39,10 @@ final class LoginViewController: OnboardingStepViewController {
         super.viewDidLoad()
 
         bindViewModel()
-        setupButtons()
+        setupView()
     }
 
     private func bindViewModel() {
-        transitionLogin(toStep: viewModel.currentStep)
-        viewModel.$currentStep.receive(on: DispatchQueue.main).sink { [weak self] step in
-            self?.transitionLogin(toStep: step)
-        }
-        .store(in: &bindStore)
-
         markButtonsAsLoading(viewModel.isShowingAuthenticationWindow)
         viewModel.$isShowingAuthenticationWindow.receive(on: DispatchQueue.main).sink { [weak self] isShowing in
             self?.markButtonsAsLoading(isShowing)
@@ -56,28 +50,10 @@ final class LoginViewController: OnboardingStepViewController {
         .store(in: &bindStore)
     }
 
-    private func transitionLogin(toStep step: OnboardingStep) {
-        guard case .login(let loginStep) = viewModel.currentStep else { return }
-
-        switch loginStep {
-        case .initial:
-            setupInitialView()
-        case .fail:
-            setupErrorView()
-        }
-    }
-
-    private func setupInitialView() {
+    private func setupView() {
         titleLabel.stringValue = KDriveLocalizable.onboardingLoginTitle
         descriptionLabel.stringValue = KDriveLocalizable.onboardingLoginDescription
-    }
 
-    private func setupErrorView() {
-        titleLabel.stringValue = KDriveLocalizable.onboardingErrorTitle
-        descriptionLabel.stringValue = KDriveLocalizable.onboardingLoginErrorDescription
-    }
-
-    private func setupButtons() {
         primaryButton.title = KDriveLocalizable.buttonLogin
         primaryButton.target = self
         primaryButton.action = #selector(openLoginWebView)

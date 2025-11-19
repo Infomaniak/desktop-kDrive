@@ -24,22 +24,17 @@ import InfomaniakLogin
 import kDriveCore
 
 enum OnboardingStep: Sendable {
-    case login(LoginStep = .initial)
+    case login
     case driveSelection
     case permissions
     case synchronisation
-
-    enum LoginStep: Sendable {
-        case initial
-        case fail
-    }
 }
 
 @MainActor
 final class OnboardingViewModel: ObservableObject {
     @LazyInjectService private var loginService: InfomaniakLoginable
 
-    @Published private(set) var currentStep = OnboardingStep.login()
+    @Published private(set) var currentStep: OnboardingStep = .login
     @Published private(set) var isShowingAuthenticationWindow = false
 
     func startWebAuthenticationLogin(anchor: ASPresentationAnchor?) {
@@ -60,10 +55,6 @@ extension OnboardingViewModel: InfomaniakLoginDelegate {
         Task {
             do {
                 try await LoginJob().login(code: code, verifier: verifier)
-
-                // TODO: We need to know how many drives are available
-//                let nextStep = getNextStepAfterLogin()
-//                currentStep = nextStep
             } catch {
                 handleLoginFailure(error: error)
             }
@@ -83,15 +74,7 @@ extension OnboardingViewModel: InfomaniakLoginDelegate {
     }
 
     private func handleLoginFailure(error: Error) {
-        currentStep = .login(.fail)
+        // TODO: Handle Error
         SentryDebug.loginError(error: error)
-    }
-
-    private func getNextStep(for user: UIUser?) -> OnboardingStep {
-        guard let user else {
-            return .login()
-        }
-
-        return .login()
     }
 }
