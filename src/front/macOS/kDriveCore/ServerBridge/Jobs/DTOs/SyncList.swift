@@ -64,6 +64,19 @@ public struct NewSyncQuery: Codable, Sendable {
     let liteSync: Bool
     @Base64CodedStrings var blackList: [String]
     @Base64CodedStrings var whiteList: [String]
+
+    public init(userDbId: Int32, accountId: Int32, driveId: Int32, metadata: NewSyncMetadata) {
+        self.userDbId = userDbId
+        self.accountId = accountId
+        self.driveId = driveId
+
+        self._localFolderPath = Base64CodedString(wrappedValue: metadata.localFolderPath)
+        self._serverFolderPath = Base64CodedString(wrappedValue: metadata.serverFolderPath)
+        self._serverFolderNodeId = Base64CodedString(wrappedValue: metadata.serverFolderNodeId)
+        self.liteSync = metadata.liteSync
+        self._blackList = Base64CodedStrings(wrappedValue: metadata.blackList)
+        self._whiteList = Base64CodedStrings(wrappedValue: metadata.whiteList)
+    }
 }
 
 public struct NewSyncQueryAlternate: Codable, Sendable {
@@ -74,6 +87,17 @@ public struct NewSyncQueryAlternate: Codable, Sendable {
     let liteSync: Bool
     @Base64CodedStrings var blackList: [String]
     @Base64CodedStrings var whiteList: [String]
+
+    init(driveDbId: Int32, metadata: NewSyncMetadata) {
+        self.driveDbId = driveDbId
+
+        self._localFolderPath = Base64CodedString(wrappedValue: metadata.localFolderPath)
+        self._serverFolderPath = Base64CodedString(wrappedValue: metadata.serverFolderPath)
+        self._serverFolderNodeId = Base64CodedString(wrappedValue: metadata.serverFolderNodeId)
+        self.liteSync = metadata.liteSync
+        self._blackList = Base64CodedStrings(wrappedValue: metadata.blackList)
+        self._whiteList = Base64CodedStrings(wrappedValue: metadata.whiteList)
+    }
 }
 
 extension SyncInfo {

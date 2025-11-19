@@ -20,6 +20,23 @@ import Foundation
 import InfomaniakConcurrency
 import InfomaniakDI
 
+public enum NewSyncParentIdentifier: Sendable {
+    case driveDbId(Int32)
+    case transitive(userDbId: Int32, accountId: Int32, driveId: Int32)
+}
+
+public struct NewSyncMetadata: Sendable {
+    let userDbId: Int32
+    let accountId: Int32
+    let driveId: Int32
+    let localFolderPath: String
+    let serverFolderPath: String
+    let serverFolderNodeId: String
+    let liteSync: Bool
+    let blackList: [String]
+    let whiteList: [String]
+}
+
 public struct SyncJobs: Sendable {
     @LazyInjectService private var coherentCache: CoherentCacheProtocol
     @LazyInjectService private var queryFetcher: XPCQueryFetcherProtocol
@@ -75,9 +92,23 @@ public struct SyncJobs: Sendable {
         return decodedMessage.body.syncStatus
     }
 
-    // TODO, clean init
-    public func addSync(_ newSyncQuery: NewSyncQuery) async throws -> SyncInfo {
+    public func addSync(identifier: NewSyncParentIdentifier, metadata: NewSyncMetadata) async throws -> SyncInfo {
         IKLogger.data.log("Query to addSync")
+
+        switch identifier {
+        case let .transitive(userDbId, accountId, driveId):
+            let newSyncQuery = NewSyncQuery(userDbId: userDbId,
+                                            accountId: accountId,
+                                            driveId: driveId,
+                                            metadata: metadata)
+            return try await addSync(newSyncQuery)
+        case let .driveDbId(driveDbId):
+            let newSyncQuery = NewSyncQueryAlternate(driveDbId: driveDbId, metadata: metadata)
+            return try await addSync(newSyncQuery)
+        }
+    }
+
+    private func addSync(_ newSyncQuery: NewSyncQuery) async throws -> SyncInfo {
         let request = await RequestMessage<NewSyncQuery>(num: RequestNum.SYNC_ADD, body: newSyncQuery)
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<SyncInfoSingle>.self)
         try decodedMessage.validate()
@@ -85,9 +116,7 @@ public struct SyncJobs: Sendable {
         return decodedMessage.body.syncInfo
     }
 
-    // TODO, clean init
-    public func addSync(_ newSyncQuery: NewSyncQueryAlternate) async throws -> SyncInfo {
-        IKLogger.data.log("Query to addSync")
+    private func addSync(_ newSyncQuery: NewSyncQueryAlternate) async throws -> SyncInfo {
         let request = await RequestMessage<NewSyncQueryAlternate>(num: RequestNum.SYNC_ADD2, body: newSyncQuery)
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<SyncInfoSingle>.self)
         try decodedMessage.validate()
