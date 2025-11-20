@@ -1165,7 +1165,7 @@ void TestGuiCommChannel::testSyncSetRootPinStateJob() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     const auto queryStr{R"({ "id": 1,)"
                         R"( "num": )" +
-                        std::to_string(toInt(RequestNum::RequestNum::SYNC_SETROOTPINSTATE)) +
+                        std::to_string(toInt(RequestNum::SYNC_SETROOTPINSTATE)) +
                         R"(,)"
                         R"( "params": { "driveDbId": 1, "pinState": 2 } })"};
 #else
