@@ -23,6 +23,7 @@ struct AccountListResponse: Codable, Sendable {
 public struct AccountInfoResponse: Codable, Sendable {
     let userDbId: Int32
     let dbId: Int32
+    // TODO: add name property once the server has added it
 }
 
 extension AccountInfoResponse {
