@@ -32,5 +32,5 @@ public struct Drive: Identifiable, Hashable, Sendable {
     public let userId: Int32
     public let name: String
     public let color: HexColor?
-    public var syncros: [Int32: Synchro]
+    public var synchros: [Int32: Synchro]
 }
