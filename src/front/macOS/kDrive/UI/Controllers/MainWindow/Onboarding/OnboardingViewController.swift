@@ -113,7 +113,7 @@ final class OnboardingViewController: NSViewController {
         switch step {
         case .login:
             return LoginViewController(flowCoordinator: flowCoordinator)
-        case .driveSelection:
+        case .drivesSelection:
             return DriveSelectionViewController()
         case .permissions:
             fatalError("Not Implemented Yet")

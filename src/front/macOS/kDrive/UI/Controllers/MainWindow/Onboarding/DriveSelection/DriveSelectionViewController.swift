@@ -22,9 +22,22 @@ import kDriveCoreUI
 import kDriveResources
 
 class DriveSelectionViewController: OnboardingStepViewController {
+    private let viewModel = DriveSelectionViewModel()
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+    }
+
+    override func viewWillAppear() {
+        super.viewWillAppear()
+        Task {
+            do {
+                try await viewModel.loadAvailableDrives()
+            } catch {
+                print("Error loading available drives: \(error)")
+            }
+        }
     }
 
     private func setupUI() {

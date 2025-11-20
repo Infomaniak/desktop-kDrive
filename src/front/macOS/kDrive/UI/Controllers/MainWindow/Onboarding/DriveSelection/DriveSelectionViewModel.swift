@@ -16,9 +16,31 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import AppKit
+import Combine
 import Foundation
+import InfomaniakDI
+import kDriveCore
 
 @MainActor
-final class DriveSelectionViewModel {
-    
+final class DriveSelectionViewModel: ObservableObject {
+    @LazyInjectService private var coherentCache: CoherentCache
+
+    @Published private(set) var currentUser: User?
+    @Published private(set) var availableDrives = [UIDrive]()
+
+    init() {}
+
+    func loadAvailableDrives() async throws {
+        currentUser = await coherentCache.getFirstAvailableUser()
+        guard let currentUser else {
+            return
+        }
+
+//        let drivesResponse = try await DriveJobs().availableDrives(userDbId: currentUser.dbId)
+//        let availableDrives = drivesResponse.asDrives()
+//        self.availableDrives = availableDrives.map { UIDrive(drive: $0) }
+
+        availableDrives = [UIDrive(id: 1, name: "kDrive du Bojo", color: .blue)]
+    }
 }

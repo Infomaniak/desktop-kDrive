@@ -23,25 +23,20 @@ import kDriveCore
 
 enum OnboardingStep: Sendable {
     case login
-    case driveSelection
+    case drivesSelection
     case permissions
     case synchronization
 }
 
 @MainActor
 final class OnboardingFlowCoordinator: ObservableObject {
-    @LazyInjectService private var coherentCache: CoherentCache
+    @Published private(set) var currentStep: OnboardingStep
 
-    @Published private(set) var currentStep: OnboardingStep = .login
+    init(currentStep: OnboardingStep = .login) {
+        self.currentStep = currentStep
+    }
 
-    func navigateToNextStep(for user: User? = nil) {
-        guard let user else {
-            currentStep = .login
-            return
-        }
-
-        // TODO: Check
-
-        currentStep = .driveSelection
+    func navigate(to step: OnboardingStep) {
+        currentStep = step
     }
 }
