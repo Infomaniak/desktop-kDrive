@@ -60,7 +60,7 @@ class DriveSelectionViewController: OnboardingStepViewController {
         viewModel.$currentUser
             .receiveOnMain(store: &bindStore) { [weak self] user in
                 guard let user else { return }
-
+                self?.setupCurrentUser(user)
             }
 
         viewModel.$availableDrives
@@ -76,16 +76,16 @@ class DriveSelectionViewController: OnboardingStepViewController {
 
     private func updateDrivesList(_ drives: [UIDrive]) {
         guard !drives.isEmpty else {
-            setupNoKDriveView()
+            showNoDriveAvailableView()
             return
         }
 
         // TODO: List drives
     }
 
-    private func setupNoKDriveView() {
+    private func showNoDriveAvailableView() {
+        // TODO: Show no kDrive available view
     }
-
 
     @objc private func didTapContinue() {
         // dummy implementation

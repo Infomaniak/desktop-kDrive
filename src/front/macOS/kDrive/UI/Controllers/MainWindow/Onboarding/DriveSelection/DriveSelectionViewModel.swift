@@ -26,22 +26,23 @@ import kDriveCore
 final class DriveSelectionViewModel: ObservableObject {
     @LazyInjectService private var coherentCache: CoherentCache
 
-    @Published private(set) var currentUser: User?
+    @Published private(set) var currentUser: UIUser?
     @Published private(set) var availableDrives: [UIDrive]? = nil
 
     init() {}
 
     func loadAvailableDrives() async throws {
-        currentUser = await coherentCache.getFirstAvailableUser()
-        guard let currentUser else {
+        guard let firstAvailableUser = await coherentCache.getFirstAvailableUser() else {
             return
         }
+
+        currentUser = UIUser(user: firstAvailableUser)
 
         // FIXME: We do not receive the drives from the XPC service yet. There is an async issue.
 //        let drivesResponse = try await DriveJobs().availableDrives(userDbId: currentUser.dbId)
 //        let availableDrives = drivesResponse.asDrives()
 //        self.availableDrives = availableDrives.map { UIDrive(drive: $0) }
 
-        availableDrives = [UIDrive(id: 1, name: "kDrive du Bojo", color: .blue)]
+        availableDrives = []
     }
 }

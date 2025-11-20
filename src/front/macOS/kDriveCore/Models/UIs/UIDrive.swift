@@ -20,12 +20,18 @@ import AppKit
 import Foundation
 
 public struct UIDrive: Sendable {
-    public let id: Int
+    public var id: Int {
+        dbId
+    }
+
+    public let dbId: Int
+    public let driveId: Int
     public let name: String
     public let color: NSColor
 
-    public init(id: Int, name: String, color: NSColor) {
-        self.id = id
+    public init(dbId: Int, driveId: Int, name: String, color: NSColor) {
+        self.dbId = dbId
+        self.driveId = driveId
         self.name = name
         self.color = color
     }
@@ -34,7 +40,8 @@ public struct UIDrive: Sendable {
 public extension UIDrive {
     init(drive: Drive) {
         self.init(
-            id: Int(drive.id),
+            dbId: Int(drive.driveDbId),
+            driveId: Int(drive.driveId),
             name: drive.name,
             color: .blue // TODO: Get the real color from the Drive model
         )
