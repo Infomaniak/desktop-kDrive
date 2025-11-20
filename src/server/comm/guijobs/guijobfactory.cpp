@@ -37,13 +37,12 @@
 #include "syncstartafterloginjob.h"
 #include "syncdeletejob.h"
 #include "syncgetpubliclinkurljob.h"
+#include "syncsetsupportsvirtualfilesjob.h"
 #include "nodesubfoldersjob.h"
 #include "nodefoldersizejob.h"
 #include "blacklistednodelistjob.h"
 #include "blacklistednodesetlistjob.h"
 #include "nodeinfojob.h"
-#include "syncgetprivatelinkurljob.h"
-#include "syncsetrootpinstatejob.h"
 
 namespace KDC {
 
@@ -66,14 +65,7 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::SYNC_ADD2, makeShared<SyncAdd2Job>},
                 {RequestNum::SYNC_START_AFTER_LOGIN, makeShared<SyncStartAfterLoginJob>},
                 {RequestNum::SYNC_DELETE, makeShared<SyncDeleteJob>},
-                {RequestNum::SYNC_GETPUBLICLINKURL, makeShared<SyncGetPublicLinkUrlJob>},
-                {RequestNum::SYNC_GETPRIVATELINKURL, makeShared<SyncGetPrivateLinkUrlJob>},
-                {RequestNum::SYNC_SETROOTPINSTATE, makeShared<SyncSetRootPinStateJob>},
-                {RequestNum::NODE_SUBFOLDERS, makeShared<NodeSubFoldersJob>},
-                {RequestNum::NODE_FOLDER_SIZE, makeShared<NodeFolderSizeJob>},
-                {RequestNum::BLACKLISTED_NODE_LIST, makeShared<BlacklistedNodeListJob>},
-                {RequestNum::BLACKLISTED_NODE_SETLIST, makeShared<BlacklistedNodeSetListJob>},
-                {RequestNum::NODE_INFO, makeShared<NodeInfoJob>}};
+                {RequestNum::SYNC_GETPUBLICLINKURL, makeShared<SyncGetPublicLinkUrlJob>}};
 }
 
 std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::shared_ptr<CommManager> commManager,
