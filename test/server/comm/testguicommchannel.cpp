@@ -31,6 +31,7 @@
 #include "comm/guijobs/syncadd2job.h"
 #include "comm/guijobs/syncgetpubliclinkurljob.h"
 #include "comm/guijobs/syncgetprivatelinkurljob.h"
+#include "comm/guijobs/syncsetrootpinstatejob.h"
 #include "libcommon/comm.h"
 #include "log/log.h"
 
@@ -1112,45 +1113,85 @@ void TestGuiCommChannel::testSyncGetPublicLinkUrlJob() {
 #endif
 }
 
-void TestGuiCommChannel::testSyncGetPrivateLinkUrlJob() {
-    // Base64 conversions
-    // "1111" <=> "MTExMQ=="
-    // "https://kdrive.infomaniak.com/app/drive/1/redirect/1111" <=>
-    // "aHR0cHM6Ly9rZHJpdmUuaW5mb21hbmlhay5jb20vYXBwL2RyaXZlLzEvcmVkaXJlY3QvMTExMQ=="
+    void TestGuiCommChannel::testSyncGetPrivateLinkUrlJob() {
+        // Base64 conversions
+        // "1111" <=> "MTExMQ=="
+        // "https://kdrive.infomaniak.com/app/drive/1/redirect/1111" <=>
+        // "aHR0cHM6Ly9rZHJpdmUuaW5mb21hbmlhay5jb20vYXBwL2RyaXZlLzEvcmVkaXJlY3QvMTExMQ=="
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{R"({ "id": 1,)"
+        const auto queryStr{R"({ "id": 1,)"
                         R"( "num": )" +
                         std::to_string(toInt(RequestNum::SYNC_GETPRIVATELINKURL)) +
                         R"(,)"
                         R"( "params": { "driveDbId": 1, "fileId": "MTExMQ==" } })"};
 #else
-    // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::SYNC_GETPRIVATELINKURL)) +
+        // There is no need to pass a request id as the response is via a callback.
+        const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::SYNC_GETPRIVATELINKURL)) +
+                            R"(,)"
+                            R"( "params": { "driveDbId": 1, "fileId": "MTExMQ==" } })"};
+
+        // Callback expected answer
+        const auto cbkAnswerStr{
+                R"({"cause":0,"code":0,"id":1,"params":{"linkUrl":"aHR0cHM6Ly9rZHJpdmUuaW5mb21hbmlhay5jb20vYXBwL2RyaXZlLzEvcmVkaXJlY3QvMTExMQ=="}})"};
+#endif
+
+        // Job expected answer
+        const auto answerStr{
+                R"({ "cause": 0,)"
+                R"( "code": 0,)"
+                R"( "id": 1,)"
+                R"( "num": )" +
+                std::to_string(toInt(RequestNum::SYNC_GETPRIVATELINKURL)) +
+                R"(,)"
+                R"( "params": { "linkUrl": "aHR0cHM6Ly9rZHJpdmUuaW5mb21hbmlhay5jb20vYXBwL2RyaXZlLzEvcmVkaXJlY3QvMTExMQ==" },)"
+                R"( "type": )" +
+                std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+
+        auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+            auto syncGetPrivateLinkUrlJob = std::dynamic_pointer_cast<SyncGetPrivateLinkUrlJob>(job);
+
+            syncGetPrivateLinkUrlJob->_linkUrl = std::string{"https://kdrive.infomaniak.com/app/drive/1/redirect/1111"};
+        };
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+        testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+#else
+        testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+    }
+
+void TestGuiCommChannel::testSyncSetRootPinStateJob() {
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    const auto queryStr{R"({ "id": 1,)"
+                        R"( "num": )" +
+                        std::to_string(toInt(RequestNum::RequestNum::SYNC_SETROOTPINSTATE)) +
                         R"(,)"
-                        R"( "params": { "driveDbId": 1, "fileId": "MTExMQ==" } })"};
+                        R"( "params": { "driveDbId": 1, "pinState": 2 } })"};
+#else
+    // There is no need to pass a request id as the response is via a callback.
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::SYNC_SETROOTPINSTATE)) +
+                        R"(,)"
+                        R"( "params": { "syncDbId": 1, "state": 2 } })"};
 
     // Callback expected answer
-    const auto cbkAnswerStr{
-            R"({"cause":0,"code":0,"id":1,"params":{"linkUrl":"aHR0cHM6Ly9rZHJpdmUuaW5mb21hbmlhay5jb20vYXBwL2RyaXZlLzEvcmVkaXJlY3QvMTExMQ=="}})"};
+    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{}})"};
 #endif
 
     // Job expected answer
-    const auto answerStr{
-            R"({ "cause": 0,)"
-            R"( "code": 0,)"
-            R"( "id": 1,)"
-            R"( "num": )" +
-            std::to_string(toInt(RequestNum::SYNC_GETPRIVATELINKURL)) +
-            R"(,)"
-            R"( "params": { "linkUrl": "aHR0cHM6Ly9rZHJpdmUuaW5mb21hbmlhay5jb20vYXBwL2RyaXZlLzEvcmVkaXJlY3QvMTExMQ==" },)"
-            R"( "type": )" +
-            std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+    const auto answerStr{R"({ "cause": 0,)"
+                         R"( "code": 0,)"
+                         R"( "id": 1,)"
+                         R"( "num": )" +
+                         std::to_string(toInt(RequestNum::SYNC_SETROOTPINSTATE)) +
+                         R"(,)"
+                         R"( "params": {  },)"
+                         R"( "type": )" +
+                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-        auto syncGetPrivateLinkUrlJob = std::dynamic_pointer_cast<SyncGetPrivateLinkUrlJob>(job);
-
-        syncGetPrivateLinkUrlJob->_linkUrl = std::string{"https://kdrive.infomaniak.com/app/drive/1/redirect/1111"};
+        auto syncSetRootPinStateJob = std::dynamic_pointer_cast<SyncSetRootPinStateJob>(job);
+        CPPUNIT_ASSERT(syncSetRootPinStateJob);
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
@@ -1158,7 +1199,7 @@ void TestGuiCommChannel::testSyncGetPrivateLinkUrlJob() {
 #else
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
-}
+};
 
 void TestGuiCommChannel::testGenericJob(const CommString &query, const CommString &answer, const CommString &cbkAnswer,
                                         const std::function<void(std::shared_ptr<AbstractGuiJob>)> &processFct) {

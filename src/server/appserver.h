@@ -121,6 +121,7 @@ class AppServer : public SharedTools::QtSingleApplication {
           \return ExitCode::Ok if no unexpected error occurred.
         */
         [[nodiscard]] ExitInfo tryCreateAndStartVfs(const Sync &sync, bool &startPostponed) noexcept;
+        [[nodiscard]] static ExitInfo getVfs(int syncDbId, std::shared_ptr<Vfs> &vfs);
         [[nodiscard]] ExitInfo initSyncPal(const Sync &sync, const NodeSet &blackList = {}, const NodeSet &undecidedList = {},
                                            const NodeSet &whiteList = {}, bool start = true,
                                            const std::chrono::seconds &startDelay = std::chrono::seconds(0),
@@ -237,8 +238,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         static void sendErrorAdded(bool serverLevel, ExitCode exitCode, int syncDbId);
         void addCompletedItem(int syncDbId, const SyncFileItem &item, bool notify);
         void sendSignal(SignalNum sigNum, int syncDbId, const SigValueType &val);
-
-        static ExitInfo getVfs(int syncDbId, std::shared_ptr<Vfs> &vfs);
 
         static void syncFileStatus(int syncDbId, const KDC::SyncPath &path, KDC::SyncFileStatus &status);
         static void syncFileSyncing(int syncDbId, const KDC::SyncPath &path, bool &syncing);

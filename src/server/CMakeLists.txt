@@ -71,10 +71,7 @@ set(server_SRCS
     comm/guijobs/syncstartafterloginjob.h comm/guijobs/syncstartafterloginjob.cpp
     comm/guijobs/syncdeletejob.h comm/guijobs/syncdeletejob.cpp
     comm/guijobs/syncgetpubliclinkurljob.h comm/guijobs/syncgetpubliclinkurljob.cpp
-    comm/guijobs/syncgetprivatelinkurljob.h comm/guijobs/syncgetprivatelinkurljob.cpp
-    comm/guijobs/signaluseraddedjob.h comm/guijobs/signaluseraddedjob.cpp
-    comm/guijobs/signaluserupdatedjob.h comm/guijobs/signaluserupdatedjob.cpp
-    comm/guijobs/signaluserremovedjob.h comm/guijobs/signaluserremovedjob.cpp
+    comm/guijobs/syncgetprivatelinkurljob.h comm/guijobs/syncgetprivatelinkurljob.cpp comm/guijobs/signaluseraddedjob.h comm/guijobs/signaluseraddedjob.cpp comm/guijobs/syncsetrootpinstatejob.h comm/guijobs/syncsetrootpinstatejob.cpp comm/guijobs/signaluserupdatedjob.h comm/guijobs/signaluserupdatedjob.cpp comm/guijobs/syncsetrootpinstatejob.h comm/guijobs/syncsetrootpinstatejob.cpp comm/guijobs/signaluserremovedjob.h comm/guijobs/signaluserremovedjob.cpp
     comm/guijobs/signalaccountaddedjob.h comm/guijobs/signalaccountaddedjob.cpp
     comm/guijobs/signalaccountremovedjob.h comm/guijobs/signalaccountremovedjob.cpp
     comm/guijobs/signaldriveaddedjob.h comm/guijobs/signaldriveaddedjob.cpp
