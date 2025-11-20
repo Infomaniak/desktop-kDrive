@@ -89,7 +89,7 @@ class OnboardingAnimationsView: NSView {
             return .kDriveSynchronizeFiles
         case .permissions:
             fatalError("Not Implemented Yet")
-        case .synchronisation:
+        case .synchronization:
             fatalError("Not Implemented Yet")
         }
     }

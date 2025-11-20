@@ -37,11 +37,11 @@ open class TargetAssembly {
             Factory(type: ServerBridgeable.self) { _, _ in
                 ServerBridge()
             },
-            Factory(type: CoherentCacheProtocol.self) { _, _ in
-                CoherentCache()
+            Factory(type: CoherentCache.self) { _, _ in
+                ServerCoherentCache()
             },
             Factory(type: CoherentCacheObservable.self) { _, resolver in
-                try resolver.resolve(type: CoherentCacheProtocol.self,
+                try resolver.resolve(type: CoherentCache.self,
                                      forCustomTypeIdentifier: nil,
                                      factoryParameters: nil,
                                      resolver: resolver)

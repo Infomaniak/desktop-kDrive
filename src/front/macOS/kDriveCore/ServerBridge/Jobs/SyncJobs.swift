@@ -38,7 +38,7 @@ public struct NewSyncMetadata: Sendable {
 }
 
 public struct SyncJobs: Sendable {
-    @LazyInjectService private var coherentCache: CoherentCacheProtocol
+    @LazyInjectService private var coherentCache: CoherentCache
     @LazyInjectService private var queryFetcher: XPCQueryFetcherProtocol
 
     public init() {}

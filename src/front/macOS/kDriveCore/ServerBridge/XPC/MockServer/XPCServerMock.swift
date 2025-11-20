@@ -34,7 +34,7 @@ public actor XPCServerMock: XPCGuiProtocol, XPCConnectionProvider {
 
     let encoder = JSONEncoder()
     let decoder = JSONDecoder()
-    let cache = CoherentCache()
+    let cache = ServerCoherentCache()
     let requestCounter = AutoIncrementIDGenerator()
     let userDbIdGenerator = AutoIncrementIDGenerator()
 

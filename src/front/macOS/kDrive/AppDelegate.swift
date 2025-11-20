@@ -30,13 +30,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        SentryService().initSentry()
-        DriveTargetAssembly.setupDI()
-
         let testing = AppDelegate.isRunningTests
+        DriveTargetAssembly.setupDI(testing: testing)
         guard !testing else {
             return
         }
+
+        SentryService().initSentry()
 
         openMainWindow()
     }

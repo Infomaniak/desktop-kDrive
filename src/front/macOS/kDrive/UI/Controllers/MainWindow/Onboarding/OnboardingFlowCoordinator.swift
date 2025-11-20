@@ -17,6 +17,7 @@
  */
 
 import Combine
+import InfomaniakDI
 import Foundation
 import kDriveCore
 
@@ -24,11 +25,13 @@ enum OnboardingStep: Sendable {
     case login
     case driveSelection
     case permissions
-    case synchronisation
+    case synchronization
 }
 
 @MainActor
 final class OnboardingFlowCoordinator: ObservableObject {
+    @LazyInjectService private var coherentCache: CoherentCache
+
     @Published private(set) var currentStep: OnboardingStep = .login
 
     func navigateToNextStep(for user: User? = nil) {

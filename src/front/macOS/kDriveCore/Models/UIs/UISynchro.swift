@@ -20,11 +20,11 @@ import Foundation
 
 public struct UISynchro: Sendable {
     public let id: Int
-    public let name: String
+    public let localPath: String
 
-    public init(id: Int, name: String) {
+    public init(id: Int, localPath: String) {
         self.id = id
-        self.name = name
+        self.localPath = localPath
     }
 }
 
@@ -32,7 +32,7 @@ public extension UISynchro {
     init(synchro: Synchro) {
         self.init(
             id: Int(synchro.id),
-            name: synchro.name
+            localPath: synchro.localPath
         )
     }
 }
