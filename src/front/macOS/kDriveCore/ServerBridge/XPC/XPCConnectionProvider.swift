@@ -35,6 +35,7 @@ extension XPCConnectionManager: XPCConnectionProvider {
 
     public var guiConnection: XPCGuiProtocol {
         get async throws {
+            // TODO: Remove reset connection hack
             appConnection?.invalidate()
             appConnection = nil
 
