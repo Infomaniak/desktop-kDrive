@@ -17,6 +17,8 @@
  */
 
 #include "testguicommchannel.h"
+#include "test_utility/testhelpers.h"
+
 #include "comm/guijobs/abstractguijob.h"
 #include "comm/guijobs/loginrequesttokenjob.h"
 #include "comm/guijobs/userdbidlistjob.h"
@@ -34,12 +36,20 @@
 #include "log/log.h"
 
 #include "mocks/libcommonserver/db/mockdb.h"
-#include "test_utility/testhelpers.h"
 
 #include <qbytearray.h>
 #include <qbuffer.h>
 
+
 namespace KDC {
+
+namespace {
+std::string toQuotedBase64(const std::string &input) {
+    std::string output;
+    CommonUtility::convertToBase64Str(input, output);
+    return R"(")" + output + R"(")";
+}
+} // namespace
 
 uint64_t GuiCommChannelTest::readData(CommChar *data, uint64_t maxlen) {
     std::scoped_lock lock(_bufferMutex);
@@ -151,16 +161,22 @@ void TestGuiCommChannel::testLoginRequestTokenJob() {
                         std::to_string(toInt(RequestNum::LOGIN_REQUESTTOKEN)) +
                         R"(,)"
                         R"( "params": {)"
-                        R"( "code": "YWFhYQ==",)"
-                        R"( "codeVerifier": "YmJiYg==" } })"};
+                        R"( "code": )" +
+                        toQuotedBase64("aaaa") +
+                        R"(,)"
+                        R"( "codeVerifier": )" +
+                        toQuotedBase64("bbbb") + R"(} })"};
 
 #else
     // There is no need to pass a request id as the response is via a callback.
     const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::LOGIN_REQUESTTOKEN)) +
                         R"(,)"
                         R"( "params": {)"
-                        R"( "code": "YWFhYQ==",)"
-                        R"( "codeVerifier": "YmJiYg==" } })"};
+                        R"( "code": )" +
+                        toQuotedBase64("aaaa") +
+                        R"(,)"
+                        R"( "codeVerifier": )" +
+                        toQuotedBase64("bbbb") + R"(} })"};
 
     // Callback expected answer
     const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"userDbId":1}})"};
@@ -243,6 +259,10 @@ void TestGuiCommChannel::testUserInfoListJob() {
     // "bbbbb" <=> "YmJiYmI="
     // "bbbbb@xxx.com" <=> "YmJiYmJAeHh4LmNvbQ=="
 
+    const std::string avatarBase64Str{
+            R"(iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=)"};
+    const std::string quotedAvatarBase64 = R"(")" + avatarBase64Str + R"(")";
+
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     const auto queryStr{R"({ "id": 1,)"
                         R"( "num": )" +
@@ -256,10 +276,21 @@ void TestGuiCommChannel::testUserInfoListJob() {
                         R"( "params": { } })"};
 
     // Callback expected answer
-    const auto cbkAnswerStr{
-            R"({"cause":0,"code":0,"id":1,"params":{"userInfoList":[)"
-            R"({"avatar":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=","dbId":1,"email":"YWFhYWFAeHh4LmNvbQ==","isConnected":true,"isStaff":false,"name":"YWFhYWE=","userId":1001},)"
-            R"({"avatar":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=","dbId":2,"email":"YmJiYmJAeHh4LmNvbQ==","isConnected":false,"isStaff":false,"name":"YmJiYmI=","userId":1002}]}})"};
+    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"userInfoList":[)"
+                            R"({"avatar":)" +
+                            quotedAvatarBase64 +
+                            R"(,"dbId":1,)"
+                            R"("email":)" +
+                            toQuotedBase64("aaaaa@xxx.com") +
+                            R"(,)"
+                            R"("isConnected":true,"isStaff":false,)" +
+                            R"("name":)" + toQuotedBase64("aaaaa") +
+                            R"(,)"
+                            R"("userId":1001},)"
+                            R"({"avatar":)" +
+                            quotedAvatarBase64 + R"(,"dbId":2,)" + R"("email":)" + toQuotedBase64("bbbbb@xxx.com") + R"(,)" +
+                            R"("isConnected":false,"isStaff":false,)" + R"("name":)" + toQuotedBase64("bbbbb") + R"(,)" +
+                            R"("userId":1002}]}})"};
 #endif
 
     // Job expected answer
@@ -272,15 +303,17 @@ void TestGuiCommChannel::testUserInfoListJob() {
             R"(,)"
             R"( "params": {)"
             R"( "userInfoList": [)"
-            R"( { "avatar": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=", "dbId": 1, "email": "YWFhYWFAeHh4LmNvbQ==", "isConnected": true, "isStaff": false, "name": "YWFhYWE=", "userId": 1001 },)"
-            R"( { "avatar": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=", "dbId": 2, "email": "YmJiYmJAeHh4LmNvbQ==", "isConnected": false, "isStaff": false, "name": "YmJiYmI=", "userId": 1002 } ] },)"
+            R"( { "avatar": )" +
+            quotedAvatarBase64 +
+            R"(, "dbId": 1, "email": "YWFhYWFAeHh4LmNvbQ==", "isConnected": true, "isStaff": false, "name": "YWFhYWE=", "userId": 1001 },)"
+            R"( { "avatar": )" +
+            quotedAvatarBase64 +
+            R"(", "dbId": 2, "email": "YmJiYmJAeHh4LmNvbQ==", "isConnected": false, "isStaff": false, "name": "YmJiYmI=", "userId": 1002 } ] },)"
             R"( "type": )" +
             std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
-    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+    auto processFct = [&avatarBase64Str](std::shared_ptr<AbstractGuiJob> job) {
         auto userInfoListJob = std::dynamic_pointer_cast<UserInfoListJob>(job);
-        std::string avatarBase64Str{
-                R"(iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=)"};
         CommBLOB avatarBLOB;
         CommonUtility::convertFromBase64Str(avatarBase64Str, avatarBLOB);
         QByteArray avatarQBA;
