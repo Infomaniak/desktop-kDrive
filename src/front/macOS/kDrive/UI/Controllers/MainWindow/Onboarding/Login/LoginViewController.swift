@@ -18,6 +18,7 @@
 
 import Cocoa
 import Combine
+import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 
@@ -57,19 +58,15 @@ final class LoginViewController: OnboardingStepViewController {
 
     private func bindViewModel() {
         loginViewModel.$loginState
-            .receive(on: RunLoop.main)
-            .sink { [weak self] newState in
+            .receiveOnMain(store: &bindStore) { [weak self] newState in
                 self?.handleStateUpdate(newState)
             }
-            .store(in: &bindStore)
 
         loginViewModel.$isShowingError
-            .receive(on: RunLoop.main)
-            .sink { [weak self] isShowingError in
+            .receiveOnMain(store: &bindStore) { [weak self] isShowingError in
                 guard isShowingError else { return }
                 self?.showGenericErrorAlert()
             }
-            .store(in: &bindStore)
     }
 
     private func setupUI() {
