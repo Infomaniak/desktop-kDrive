@@ -18,6 +18,7 @@
 
 import Combine
 import Foundation
+import kDriveCore
 
 enum OnboardingStep: Sendable {
     case login
@@ -28,5 +29,16 @@ enum OnboardingStep: Sendable {
 
 @MainActor
 final class OnboardingFlowCoordinator: ObservableObject {
-    @Published var currentStep: OnboardingStep = .login
+    @Published private(set) var currentStep: OnboardingStep = .login
+
+    func navigateToNextStep(for user: User? = nil) {
+        guard let user else {
+            currentStep = .login
+            return
+        }
+
+        // TODO: Check
+
+        currentStep = .driveSelection
+    }
 }

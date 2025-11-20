@@ -64,7 +64,7 @@ final class LoginViewModel: ObservableObject {
             return
         }
 
-        flowCoordinator.currentStep = .driveSelection
+        flowCoordinator.navigateToNextStep(for: user)
     }
 }
 
