@@ -27,7 +27,7 @@ final class DriveSelectionViewModel: ObservableObject {
     @LazyInjectService private var coherentCache: CoherentCache
 
     @Published private(set) var currentUser: User?
-    @Published private(set) var availableDrives = [UIDrive]()
+    @Published private(set) var availableDrives: [UIDrive]? = nil
 
     init() {}
 
@@ -37,6 +37,7 @@ final class DriveSelectionViewModel: ObservableObject {
             return
         }
 
+        // FIXME: We do not receive the drives from the XPC service yet. There is an async issue.
 //        let drivesResponse = try await DriveJobs().availableDrives(userDbId: currentUser.dbId)
 //        let availableDrives = drivesResponse.asDrives()
 //        self.availableDrives = availableDrives.map { UIDrive(drive: $0) }

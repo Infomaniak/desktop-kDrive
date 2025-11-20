@@ -17,12 +17,16 @@
  */
 
 import Cocoa
+import Combine
 import InfomaniakDI
+import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 
 class DriveSelectionViewController: OnboardingStepViewController {
     private let viewModel = DriveSelectionViewModel()
+
+    private var bindStore = Set<AnyCancellable>()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -51,6 +55,37 @@ class DriveSelectionViewController: OnboardingStepViewController {
         secondaryButton.target = self
         secondaryButton.action = #selector(didTapAdvancedSettings)
     }
+
+    private func bindViewModel() {
+        viewModel.$currentUser
+            .receiveOnMain(store: &bindStore) { [weak self] user in
+                guard let user else { return }
+
+            }
+
+        viewModel.$availableDrives
+            .receiveOnMain(store: &bindStore) { [weak self] availableDrives in
+                guard let availableDrives else { return }
+                self?.updateDrivesList(availableDrives)
+            }
+    }
+
+    private func setupCurrentUser(_ user: UIUser) {
+        // TODO: Show user info
+    }
+
+    private func updateDrivesList(_ drives: [UIDrive]) {
+        guard !drives.isEmpty else {
+            setupNoKDriveView()
+            return
+        }
+
+        // TODO: List drives
+    }
+
+    private func setupNoKDriveView() {
+    }
+
 
     @objc private func didTapContinue() {
         // dummy implementation
