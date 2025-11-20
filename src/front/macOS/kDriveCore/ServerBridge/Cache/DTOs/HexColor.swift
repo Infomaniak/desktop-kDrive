@@ -28,8 +28,6 @@ public struct HexColor: Sendable, CustomStringConvertible, Equatable, Hashable {
     let blue: UInt8
 
     public var description: String {
-        // Server runs with lowercase Hex strings
-        // Server exchange colors without alpha
         String(format: "#%02x%02x%02x", red, green, blue)
     }
 
