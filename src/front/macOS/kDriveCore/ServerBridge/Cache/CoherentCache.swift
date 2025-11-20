@@ -45,6 +45,7 @@ public protocol CoherentCacheProtocol: Sendable {
     // MARK: - Drive
 
     func getDrive(_ driveDbId: Int32, accountId: Int32, userDbId: Int32) async -> Drive?
+    func getDrive(_ driveDbId: Int32) async -> Drive?
     func addDrive(_ drive: Drive, toAccount accountId: Int32, userDbId: Int32) async
     func removeDrive(_ driveDbId: Int32, fromAccount accountId: Int32, userDbId: Int32) async
     func updateDrive(drive: Drive) async
@@ -148,6 +149,17 @@ public actor CoherentCache: CoherentCacheProtocol, CoherentCacheObservation {
 
     public func getDrive(_ driveDbId: Int32, accountId: Int32, userDbId: Int32) -> Drive? {
         users[userDbId]?.accounts[accountId]?.drives[driveDbId]
+    }
+
+    public func getDrive(_ driveDbId: Int32) -> Drive? {
+        for user in users.values {
+            for account in user.accounts.values {
+                if let drive = account.drives[driveDbId] {
+                    return drive
+                }
+            }
+        }
+        return nil
     }
 
     public func addDrive(_ drive: Drive, toAccount accountId: Int32, userDbId: Int32) {
