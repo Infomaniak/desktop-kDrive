@@ -68,6 +68,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode getParameters(ParametersInfo &parametersInfo);
         static ExitCode updateParameters(const ParametersInfo &parametersInfo);
         static ExitCode findGoodPathForNewSync(int driveDbId, const QString &basePath, QString &path, QString &error);
+        static ExitCode getPrivateLinkUrl(int driveDbId, const std::string &fileId, std::string &linkUrl);
         static ExitCode getPrivateLinkUrl(int driveDbId, const QString &fileId, QString &linkUrl);
         static ExitCode getExclusionTemplateList(bool def, QList<ExclusionTemplateInfo> &list);
         static ExitCode setExclusionTemplateList(bool def, const QList<ExclusionTemplateInfo> &list);

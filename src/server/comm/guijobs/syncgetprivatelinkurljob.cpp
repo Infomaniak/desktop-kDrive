@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "syncgetpubliclinkurljob.h"
+#include "syncgetprivatelinkurljob.h"
 #include "appserver.h"
 #include "requests/serverrequests.h"
 #include "server/comm/guijobmanager.h"
@@ -26,7 +26,7 @@
 
 // Input parameters keys
 static const auto inParamsDriveDbId = "driveDbId";
-static const auto inParamsNodeId = "nodeId";
+static const auto inParamsFileId = "fileId";
 
 // Output parameters keys
 static const auto outParamsLinkUrl = "linkUrl";
@@ -34,17 +34,17 @@ static const auto outParamsLinkUrl = "linkUrl";
 
 namespace KDC {
 
-SyncGetPublicLinkUrlJob::SyncGetPublicLinkUrlJob(std::shared_ptr<CommManager> commManager, int requestId,
-                                                 const Poco::DynamicStruct &inParams,
-                                                 std::shared_ptr<AbstractCommChannel> channel) :
+SyncGetPrivateLinkUrlJob::SyncGetPrivateLinkUrlJob(std::shared_ptr<CommManager> commManager, int requestId,
+                                                   const Poco::DynamicStruct &inParams,
+                                                   std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
-    _requestNum = RequestNum::SYNC_GETPUBLICLINKURL;
+    _requestNum = RequestNum::SYNC_GETPRIVATELINKURL;
 }
 
-ExitInfo SyncGetPublicLinkUrlJob::deserializeInputParms() {
+ExitInfo SyncGetPrivateLinkUrlJob::deserializeInputParms() {
     try {
         readParamValue(inParamsDriveDbId, _driveDbId);
-        readParamValue(inParamsNodeId, _nodeId);
+        readParamValue(inParamsFileId, _fileId);
     } catch (const std::exception &e) {
         LOG_WARN(_logger, "Exception in AbstractGuiJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
@@ -53,18 +53,18 @@ ExitInfo SyncGetPublicLinkUrlJob::deserializeInputParms() {
     return ExitCode::Ok;
 }
 
-ExitInfo SyncGetPublicLinkUrlJob::serializeOutputParms() {
-    // Output parameters serialization
+ExitInfo SyncGetPrivateLinkUrlJob::serializeOutputParms() {
     writeParamValue(outParamsLinkUrl, _linkUrl);
 
     return ExitCode::Ok;
 }
 
-ExitInfo SyncGetPublicLinkUrlJob::process() {
-    const auto exitCode = ServerRequests::getPublicLinkUrl(_driveDbId, _nodeId, _linkUrl);
-    if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in ServerRequests::getPublicLinkUrl");
+ExitInfo SyncGetPrivateLinkUrlJob::process() {
+    if (const auto exitCode = ServerRequests::getPrivateLinkUrl(_driveDbId, CommonUtility::commString2Str(_fileId), _linkUrl);
+        exitCode != ExitCode::Ok) {
+        LOG_WARN(_logger, "Error in ServerRequests::getPrivateLinkUrl");
         AppServer::addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+
         return exitCode;
     }
 
