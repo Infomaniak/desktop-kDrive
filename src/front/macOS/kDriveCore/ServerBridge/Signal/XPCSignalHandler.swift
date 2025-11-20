@@ -47,7 +47,7 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         IKLogger.xpc.log("[KD] recv signal: \(signalNum)")
 
         switch signalNum {
-        case .USER_UPDATED:
+        case .USER_UPDATED, .USER_ADDED:
             guard let userInfoSignal = try? decoder.decode(SignalMessage<UserInfoSignal>.self, from: msg),
                   let user = userInfoSignal.body?.asUser else {
                 IKLogger.xpc.error("[KD] Unable to get user from signal")
@@ -58,6 +58,12 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
                 @InjectService var coherentCache: CoherentCacheProtocol
                 await coherentCache.updateUser(user)
             }
+
+        case .ACCOUNT_ADDED, .ACCOUNT_UPDATED:
+            IKLogger.xpc.log("[KD] TODO - account signal")
+
+        case .DRIVE_ADDED, .DRIVE_UPDATED:
+            IKLogger.xpc.log("[KD] TODO - drive signal")
 
         default:
             IKLogger.xpc.error("[KD] recv error code:\(String(describing: signalMetadata.code)) cause:\(String(describing: signalMetadata.cause))")

@@ -21,30 +21,32 @@ import Foundation
 
 public protocol CoherentCacheObservation: Sendable {
     var usersPublisher: AnyPublisher<IndexedUsers, Never> { get }
+    var accountsPublisher: AnyPublisher<UserAccounts, Never> { get }
 }
 
 /// Structure always follow this nested model: User → Account → Drive → Synchro
 public protocol CoherentCacheProtocol: Sendable {
     // MARK: - User
 
-    func getUser(id: Int32) async -> User?
+    func getUser(apiId: Int32) async -> User?
     func getUser(dbId: Int32) async -> User?
     func getFirstAvailableUser() async -> User?
     func addUser(_ user: User) async
-    func removeUser(_ id: Int32) async
+    func removeUser(dbId: Int32) async
     func updateUser(_ user: User) async
 
     // MARK: - Account
 
-    func getAccount(_ accountId: Int32, forUser userId: Int32) async -> Account?
-    func addAccount(_ account: Account, toUser userId: Int32) async
-    func removeAccount(_ accountId: Int32, fromUser userId: Int32) async
+    func getAccount(_ accountId: Int32, userDbId: Int32) async -> Account?
+    func addAccount(_ account: Account, userDbId: Int32) async
+    func removeAccount(_ accountId: Int32, userDbId: Int32) async
 
     // MARK: - Drive
 
-    func getDrive(_ driveId: Int32, accountId: Int32, userId: Int32) async -> Drive?
-    func addDrive(_ drive: Drive, toAccount accountId: Int32, userId: Int32) async
-    func removeDrive(_ driveId: Int32, fromAccount accountId: Int32, userId: Int32) async
+    func getDrive(_ driveId: Int32, accountId: Int32, userDbId: Int32) async -> Drive?
+    func addDrive(_ drive: Drive, toAccount accountId: Int32, userDbId: Int32) async
+    func removeDrive(_ driveId: Int32, fromAccount accountId: Int32, userDbId: Int32) async
+    func updateDrive(drive: Drive) async
 
     // MARK: - Synchro
 
@@ -57,16 +59,21 @@ public protocol CoherentCacheProtocol: Sendable {
     func clearOnServerRestart() async
 }
 
-public typealias IndexedUsers = [Int32: User]
-
 /// This cache must track 1:1 the server, can only be purged on server restart
 public actor CoherentCache: CoherentCacheProtocol, CoherentCacheObservation {
     private var users: IndexedUsers = [:]
 
     private nonisolated let usersSubject = PassthroughSubject<IndexedUsers, Never>()
+    private nonisolated let accountsSubject = PassthroughSubject<UserAccounts, Never>()
 
     public nonisolated var usersPublisher: AnyPublisher<IndexedUsers, Never> {
         usersSubject
+            .subscribe(on: DispatchQueue.global(qos: .userInitiated))
+            .eraseToAnyPublisher()
+    }
+
+    public nonisolated var accountsPublisher: AnyPublisher<UserAccounts, Never> {
+        accountsSubject
             .subscribe(on: DispatchQueue.global(qos: .userInitiated))
             .eraseToAnyPublisher()
     }
@@ -76,11 +83,11 @@ public actor CoherentCache: CoherentCacheProtocol, CoherentCacheObservation {
     // MARK: - USER
 
     public func getUser(dbId: Int32) -> User? {
-        users.values.first { $0.dbId == dbId }
+        users[dbId]
     }
 
-    public func getUser(id: Int32) -> User? {
-        users[id]
+    public func getUser(apiId: Int32) -> User? {
+        users.values.first { $0.userId == apiId }
     }
 
     public func getFirstAvailableUser() -> User? {
@@ -88,13 +95,13 @@ public actor CoherentCache: CoherentCacheProtocol, CoherentCacheObservation {
     }
 
     public func addUser(_ user: User) {
-        users[user.id] = user
-        usersSubject.send(users)
+        users[user.dbId] = user
+        notifyUserUpdate(dbId: user.dbId, indexedAccounts: user.accounts)
     }
 
-    public func removeUser(_ id: Int32) {
-        users.removeValue(forKey: id)
-        usersSubject.send(users)
+    public func removeUser(dbId: Int32) {
+        users.removeValue(forKey: dbId)
+        notifyUserUpdate(dbId: dbId, indexedAccounts: [:])
     }
 
     public func updateUser(_ user: User) {
@@ -105,51 +112,73 @@ public actor CoherentCache: CoherentCacheProtocol, CoherentCacheObservation {
             users[user.id] = user
         }
 
-        usersSubject.send(users)
+        notifyUserUpdate(dbId: user.userId, indexedAccounts: user.accounts)
     }
 
     // MARK: - ACCOUNT
 
-    public func getAccount(_ accountId: Int32, forUser userId: Int32) -> Account? {
-        users[userId]?.accounts[accountId]
+    public func getAccount(_ accountId: Int32, userDbId: Int32) -> Account? {
+        users[userDbId]?.accounts[accountId]
     }
 
-    public func addAccount(_ account: Account, toUser userId: Int32) {
-        guard var user = users[userId] else { return }
+    public func addAccount(_ account: Account, userDbId: Int32) {
+        guard var user = users[userDbId] else { return }
         user.accounts[account.id] = account
-        users[userId] = user
+        users[userDbId] = user
+
+        notifyAccountUpdate(userDbId: userDbId, indexedAccounts: user.accounts)
     }
 
-    public func removeAccount(_ accountId: Int32, fromUser userId: Int32) {
-        guard var user = users[userId] else { return }
+    public func removeAccount(_ accountId: Int32, userDbId: Int32) {
+        guard var user = users[userDbId] else { return }
         user.accounts.removeValue(forKey: accountId)
-        users[userId] = user
+        users[userDbId] = user
+
+        notifyAccountUpdate(userDbId: userDbId, indexedAccounts: user.accounts)
     }
 
     // MARK: - DRIVE
 
-    public func getDrive(_ driveId: Int32, accountId: Int32, userId: Int32) -> Drive? {
-        users[userId]?.accounts[accountId]?.drives[driveId]
+    public func getDrive(_ driveId: Int32, accountId: Int32, userDbId: Int32) -> Drive? {
+        users[userDbId]?.accounts[accountId]?.drives[driveId]
     }
 
-    public func addDrive(_ drive: Drive, toAccount accountId: Int32, userId: Int32) {
-        guard var user = users[userId],
+    public func addDrive(_ drive: Drive, toAccount accountId: Int32, userDbId: Int32) {
+        guard var user = users[userDbId],
               var account = user.accounts[accountId]
         else { return }
 
         account.drives[drive.id] = drive
         user.accounts[accountId] = account
-        users[userId] = user
+        users[userDbId] = user
     }
 
-    public func removeDrive(_ driveId: Int32, fromAccount accountId: Int32, userId: Int32) {
-        guard var user = users[userId],
+    public func removeDrive(_ driveId: Int32, fromAccount accountId: Int32, userDbId: Int32) {
+        guard var user = users[userDbId],
               var account = user.accounts[accountId]
         else { return }
 
         account.drives.removeValue(forKey: driveId)
         user.accounts[accountId] = account
-        users[userId] = user
+        users[userDbId] = user
+    }
+
+    public func updateDrive(drive: Drive) {
+        let userDbId = drive.userDbId
+        let accountId = drive.accountId
+
+        guard var user = users[userDbId],
+              var account = user.accounts[accountId]
+        else { return }
+
+        var indexedDrives = account.drives
+        indexedDrives[drive.id] = drive
+
+        account.drives = indexedDrives
+        user.accounts[accountId] = account
+        users[userDbId] = user
+
+        // TODO: Observation
     }
 
     // MARK: - SYNCRO
@@ -185,7 +214,19 @@ public actor CoherentCache: CoherentCacheProtocol, CoherentCacheObservation {
         users[userId] = user
     }
 
-    // MARK: - Clenup
+    // MARK: - Observation
+
+    private func notifyUserUpdate(dbId: Int32, indexedAccounts: IndexedAccounts) {
+        usersSubject.send(users)
+        notifyAccountUpdate(userDbId: dbId, indexedAccounts: indexedAccounts)
+    }
+
+    private func notifyAccountUpdate(userDbId: Int32, indexedAccounts: IndexedAccounts) {
+        let userAccounts = UserAccounts(userDbId: userDbId, indexedAccounts: indexedAccounts)
+        accountsSubject.send(userAccounts)
+    }
+
+    // MARK: - Cleanup
 
     public func clearOnServerRestart() {
         users = [:]

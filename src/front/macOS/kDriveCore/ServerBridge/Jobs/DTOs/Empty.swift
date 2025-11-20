@@ -18,6 +18,6 @@
 
 import Foundation
 
-struct LoginResponse: Codable, Sendable {
-    let userDbId: Int32
-}
+struct EmptyQuery: Codable, Sendable {}
+
+struct EmptyResponse: Codable, Sendable {}

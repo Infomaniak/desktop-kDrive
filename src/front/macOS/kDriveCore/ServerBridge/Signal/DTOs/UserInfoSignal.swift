@@ -18,7 +18,7 @@
 
 import Foundation
 
-struct UserInfoSignal: Codable {
+struct UserInfoSignal: Codable, Sendable {
     let dbId: Int32
     let userId: Int32
     @Base64CodedString var name: String

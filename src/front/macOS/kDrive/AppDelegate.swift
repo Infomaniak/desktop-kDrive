@@ -24,8 +24,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private lazy var mainWindow = MainWindowController()
     private lazy var preferencesWindow = PreferencesWindowController()
 
+    private static var isRunningTests: Bool {
+        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+            || Bundle.allBundles.contains { $0.bundlePath.hasSuffix(".xctest") }
+    }
+
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         DriveTargetAssembly.setupDI()
+
+        guard !AppDelegate.isRunningTests else {
+            return
+        }
+
         openMainWindow()
     }
 

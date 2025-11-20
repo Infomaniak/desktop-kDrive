@@ -21,26 +21,37 @@ import Foundation
 import kDriveCore
 import XCTest
 
-final class ObservedUserTests: XCTestCase {
-    static let expectedUserId: Int32 = 12345
-    static let expectedUserDbId: Int32 = 5678
+final class ObservedAccoutTests: XCTestCase {
+    static let expectedUserId: Int32 = 123
+    static let expectedUserDbId: Int32 = 456
+    static let expectedAccountDbId: Int32 = 3
 
-    func testSetGetUserFromPropertyWrapper() async throws {
+    func testSetGetAccountFromPropertyWrapper() async throws {
         // GIVEN
         let cache = CoherentCache()
         let initialUser = await cache.getUser(dbId: Self.expectedUserDbId)
         XCTAssertNil(initialUser, "Cache should initially be empty")
 
-        @ObservedUser(dbId: ObservedUserTests.expectedUserDbId, cacheObservation: cache) var observedUser: User?
-        XCTAssertNil(observedUser, "User should initially be nil")
+        @ObservedAccount(userDbId: Self.expectedUserDbId,
+                         accountDbId: Self.expectedAccountDbId,
+                         cacheObservation: cache) var observedAccount: Account?
+        XCTAssertNil(observedAccount, "Account should initially be nil")
+
+        let expectedAccount = Account(id: Self.expectedAccountDbId, name: "3", drives: [:])
 
         // WHEN
+        let indexedAccounts: IndexedAccounts = [
+            1: Account(id: 1, name: "1", drives: [:]),
+            2: Account(id: 2, name: "2", drives: [:]),
+            Self.expectedAccountDbId: expectedAccount,
+            4: Account(id: 4, name: "4", drives: [:])
+        ]
         let user = User(
             dbId: Self.expectedUserDbId,
             userId: Self.expectedUserId,
             name: "appleseed",
             email: "ja@apple.com",
-            accounts: [:],
+            accounts: indexedAccounts,
             avatar: Data(),
             isConnected: true,
             isStaff: true
@@ -53,7 +64,9 @@ final class ObservedUserTests: XCTestCase {
 
         // THEN
         let cachedUser = await cache.getUser(dbId: Self.expectedUserDbId)
-        XCTAssertEqual(cachedUser, user, "The cache should have been updated")
-        XCTAssertEqual(observedUser, user, "The observed object should have been updated")
+        let cachedAccount = await cache.getAccount(Self.expectedAccountDbId, userDbId: Self.expectedUserDbId)
+        XCTAssertEqual(cachedUser, user, "The cache user should have been updated")
+        XCTAssertEqual(cachedAccount, cachedAccount, "The cache account should have been updated")
+        XCTAssertEqual(observedAccount, expectedAccount, "The observed object should have been updated")
     }
 }

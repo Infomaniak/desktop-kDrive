@@ -1,5 +1,5 @@
 {
-  "originHash" : "41ea040fe35a69686cee9eb846233e149c6f9e53c3a3a975d2dbe9a7e1f02bde",
+  "originHash" : "639db9cee397a1b3c5e76e8c4675992b39162ecee01a5f921b37d193da6328c7",
   "pins" : [
     {
       "identity" : "ios-dependency-injection",
@@ -26,6 +26,15 @@
       "state" : {
         "revision" : "04f2fd18cc9404a0a0917265a449002674f24ec9",
         "version" : "4.5.2"
+      }
+    },
+    {
+      "identity" : "swift-concurrency",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Infomaniak/swift-concurrency.git",
+      "state" : {
+        "revision" : "97ae7c9b998a43812d3f57ae106cb447a853bf3b",
+        "version" : "1.0.0"
       }
     }
   ],

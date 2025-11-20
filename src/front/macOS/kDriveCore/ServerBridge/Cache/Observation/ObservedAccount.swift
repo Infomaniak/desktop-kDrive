@@ -21,17 +21,17 @@ import Foundation
 import InfomaniakDI
 
 @propertyWrapper
-public final class ObservedUser: ObservableObject {
-    @Published public private(set) var wrappedValue: User?
+public final class ObservedAccount: ObservableObject {
+    @Published public private(set) var wrappedValue: Account?
 
     private var cancellable: AnyCancellable?
 
-    public init(dbId: Int32, cacheObservation: CoherentCacheObservation? = nil) {
+    public init(userDbId: Int32, accountDbId: Int32, cacheObservation: CoherentCacheObservation? = nil) {
         let cacheObservation = cacheObservation ?? InjectService<CoherentCacheObservation>().wrappedValue
-        let usersPublisher = cacheObservation.usersPublisher
+        let accountsPublisher = cacheObservation.accountsPublisher
 
-        cancellable = usersPublisher
-            .userPublisher(for: dbId)
+        cancellable = accountsPublisher
+            .accountPublisher(forUserDbId: userDbId, accountDbId: accountDbId)
             .receive(on: DispatchQueue.main)
             .assign(to: \.wrappedValue, onWeak: self)
     }
@@ -40,25 +40,19 @@ public final class ObservedUser: ObservableObject {
         cancellable?.cancel()
     }
 
-    public var projectedValue: ObservedUser { self }
+    public var projectedValue: ObservedAccount { self }
 }
 
-extension AnyPublisher where Output == IndexedUsers, Failure == Never {
-    func userPublisher(for dbId: Int32) -> AnyPublisher<User?, Never> {
-        map { $0[dbId] }
-            .removeDuplicates { $0 == $1 }
-            .eraseToAnyPublisher()
-    }
-}
-
-extension Publisher {
-    /// Assigns values to a property on a weakly captured object to avoid retain cycles
-    func assign<Root: AnyObject>(
-        to keyPath: ReferenceWritableKeyPath<Root, Output>,
-        onWeak object: Root
-    ) -> AnyCancellable where Failure == Never {
-        sink { [weak object] value in
-            object?[keyPath: keyPath] = value
+extension AnyPublisher where Output == UserAccounts, Failure == Never {
+    func accountPublisher(forUserDbId userDbId: Int32, accountDbId: Int32) -> AnyPublisher<Account?, Never> {
+        map { userAccounts in
+            let receivedUserDbId = userAccounts.0
+            let receivedAccounts = userAccounts.1
+            guard receivedUserDbId == userDbId else { return nil }
+            guard let account = receivedAccounts[accountDbId] else { return nil }
+            return account
         }
+        .removeDuplicates { $0 == $1 }
+        .eraseToAnyPublisher()
     }
 }

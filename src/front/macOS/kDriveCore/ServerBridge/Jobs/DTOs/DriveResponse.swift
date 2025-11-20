@@ -18,6 +18,31 @@
 
 import Foundation
 
-struct LoginResponse: Codable, Sendable {
+struct DriveListQuery: Codable, Sendable {
     let userDbId: Int32
+}
+
+struct DriveListResponse: Codable, Sendable {
+    let driveAvailableInfoList: [DriveResponse]
+}
+
+public struct DriveResponse: Codable, Sendable {
+    let accountId: Int32
+    let driveId: Int32
+    let userDbId: Int32
+    let userId: Int32
+    @Base64CodedString var name: String
+    @Base64CodedColor var color: HexColor
+}
+
+extension DriveResponse {
+    var asDrive: Drive {
+        Drive(driveId: driveId,
+              accountId: accountId,
+              userDbId: userDbId,
+              userId: userId,
+              name: name,
+              color: color,
+              syncros: [:])
+    }
 }

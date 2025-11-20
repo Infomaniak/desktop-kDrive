@@ -47,7 +47,8 @@ open class TargetAssembly {
                                      resolver: resolver)
             },
             Factory(type: XPCConnectionProvider.self) { _, _ in
-                XPCConnectionManager()
+                //XPCServerMock() // Use Mocked server
+                XPCConnectionManager() // Use real server over XPC
             },
             Factory(type: XPCQueryFetcherProtocol.self) { _, _ in
                 XPCQueryFetcher()
@@ -55,8 +56,8 @@ open class TargetAssembly {
             Factory(type: XPCSignalHandlerProtocol.self) { _, _ in
                 XPCSignalHandler()
             },
-            Factory(type: XPCRequestIDGenerator.self) { _, _ in
-                XPCRequestIDGenerator()
+            Factory(type: AutoIncrementIDGenerator.self) { _, _ in
+                AutoIncrementIDGenerator()
             }
         ]
     }

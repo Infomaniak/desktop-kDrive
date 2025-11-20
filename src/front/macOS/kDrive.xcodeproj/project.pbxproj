@@ -11,6 +11,7 @@
 		37A1C4462E546A9600596DBB /* kDriveCoreUI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C43F2E546A9600596DBB /* kDriveCoreUI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		37A1C4602E546CB700596DBB /* kDriveCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C45A2E546CB600596DBB /* kDriveCore.framework */; };
 		37A1C4612E546CB700596DBB /* kDriveCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C45A2E546CB600596DBB /* kDriveCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		7AFF54E22EC34B4100904C5C /* InfomaniakConcurrency in Frameworks */ = {isa = PBXBuildFile; productRef = 7AFF54E12EC34B4100904C5C /* InfomaniakConcurrency */; };
 		F96700A42E95352C00EDD4D7 /* kDriveResources.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F967009E2E95352C00EDD4D7 /* kDriveResources.framework */; };
 		F96700A52E95352C00EDD4D7 /* kDriveResources.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F967009E2E95352C00EDD4D7 /* kDriveResources.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F96701502E953CF600EDD4D7 /* kDriveResources.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F967009E2E95352C00EDD4D7 /* kDriveResources.framework */; };
@@ -96,6 +97,14 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Cache/CoherentCacheTests.swift,
+				Cache/HexColorTests.swift,
+				Cache/ObservableCoherentCacheTests.swift,
+				Cache/ObservedAccoutTests.swift,
+				Cache/ObservedUserTests.swift,
+				Jobs/LoginJobTests.swift,
+				Parsing/Base64CodedTests.swift,
+				Parsing/CallbackMessageTests.swift,
+				Parsing/SignalMessageTests.swift,
 			);
 			target = 7A4DFBB02EA91F9D00B138B8 /* kDriveTests */;
 		};
@@ -159,11 +168,6 @@
 			path = kDriveTests;
 			sourceTree = "<group>";
 		};
-		7A4DFBB22EA91F9D00B138B8 /* kDriveTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = kDriveTests;
-			sourceTree = "<group>";
-		};
 		F967009F2E95352C00EDD4D7 /* kDriveResources */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = kDriveResources;
@@ -198,6 +202,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F97805C32E97E3F900BC146C /* InfomaniakDI in Frameworks */,
+				7AFF54E22EC34B4100904C5C /* InfomaniakConcurrency in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -227,7 +232,6 @@
 				F967009F2E95352C00EDD4D7 /* kDriveResources */,
 				F9ACC5372E5DF50B0081E80B /* swiftgen.yml */,
 				7A46E1CE2EA7AC1B00880412 /* kDriveTests */,
-				7A4DFBB22EA91F9D00B138B8 /* kDriveTests */,
 				37A1C4272E546A5200596DBB /* Products */,
 				F967014F2E953CF600EDD4D7 /* Frameworks */,
 			);
@@ -353,6 +357,7 @@
 			name = kDriveCore;
 			packageProductDependencies = (
 				F97805C22E97E3F900BC146C /* InfomaniakDI */,
+				7AFF54E12EC34B4100904C5C /* InfomaniakConcurrency */,
 			);
 			productName = kDriveCore;
 			productReference = 37A1C45A2E546CB600596DBB /* kDriveCore.framework */;
@@ -370,9 +375,6 @@
 			);
 			dependencies = (
 				7A4DFBB62EA91F9D00B138B8 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				7A4DFBB22EA91F9D00B138B8 /* kDriveTests */,
 			);
 			name = kDriveTests;
 			packageProductDependencies = (
@@ -452,6 +454,7 @@
 				F967FC8A2E8BC9FE00EDD4D7 /* XCRemoteSwiftPackageReference "lottie-spm" */,
 				F97805BC2E97E3AF00BC146C /* XCRemoteSwiftPackageReference "ios-dependency-injection" */,
 				F97805BF2E97E3C500BC146C /* XCRemoteSwiftPackageReference "ios-login" */,
+				7AFF54E02EC34ACE00904C5C /* XCRemoteSwiftPackageReference "swift-concurrency" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 37A1C4272E546A5200596DBB /* Products */;
@@ -1142,6 +1145,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		7AFF54E02EC34ACE00904C5C /* XCRemoteSwiftPackageReference "swift-concurrency" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Infomaniak/swift-concurrency.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
 		F967FC8A2E8BC9FE00EDD4D7 /* XCRemoteSwiftPackageReference "lottie-spm" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/airbnb/lottie-spm.git";
@@ -1169,6 +1180,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		7AFF54E12EC34B4100904C5C /* InfomaniakConcurrency */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7AFF54E02EC34ACE00904C5C /* XCRemoteSwiftPackageReference "swift-concurrency" */;
+			productName = InfomaniakConcurrency;
+		};
 		F967FC8B2E8BC9FE00EDD4D7 /* Lottie */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = F967FC8A2E8BC9FE00EDD4D7 /* XCRemoteSwiftPackageReference "lottie-spm" */;

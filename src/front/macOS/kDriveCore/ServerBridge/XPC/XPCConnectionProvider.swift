@@ -19,7 +19,6 @@
 import Foundation
 
 public protocol XPCConnectionProvider: Sendable {
-    var connection: NSXPCConnection { get async throws }
     var guiConnection: XPCGuiProtocol { get async throws }
 }
 

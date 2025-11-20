@@ -18,8 +18,17 @@
 
 import Foundation
 
+public typealias IndexedAccounts = [Int32: Account]
+public typealias UserAccounts = (userDbId: Int32, indexedAccounts: [Int32: Account])
+
 public struct Account: Identifiable, Hashable, Sendable {
+    public init(id: Int32, name: String, drives: [Int32: Drive]) {
+        self.id = id
+        self.name = name
+        self.drives = drives
+    }
+
     public let id: Int32
     public var name: String
-    public var drives: [Int32: Drive]
+    public var drives: IndexedDrives
 }

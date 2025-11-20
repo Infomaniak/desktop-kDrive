@@ -16,9 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// Mimic the server using an auto-increment id to debug async comms.
-/// This is used when we send something to the server on our side.
-actor XPCRequestIDGenerator {
+public actor AutoIncrementIDGenerator {
     private var counter: Int32 = 0
 
     var nextID: Int32 {

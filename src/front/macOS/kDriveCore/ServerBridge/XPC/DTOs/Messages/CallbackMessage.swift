@@ -19,14 +19,14 @@
 import Foundation
 
 public struct CallbackMessage<Body: Codable>: Codable, CustomStringConvertible {
-    public let cause: KDC.ExitCause
     public let code: KDC.ExitCode
+    public let cause: KDC.ExitCause
     public let id: Int32
     public let body: Body
 
-    public init(cause: KDC.ExitCause, code: KDC.ExitCode, id: Int32, body: Body) {
-        self.cause = cause
+    public init(code: KDC.ExitCode, cause: KDC.ExitCause, id: Int32, body: Body) {
         self.code = code
+        self.cause = cause
         self.id = id
         self.body = body
     }
