@@ -19,7 +19,7 @@
 import Combine
 import Foundation
 
-public protocol CoherentCacheObservation: Sendable {
+public protocol CoherentCacheObservable: Sendable {
     var usersPublisher: AnyPublisher<IndexedUsers, Never> { get }
     var accountsPublisher: AnyPublisher<UserAccounts, Never> { get }
 }
@@ -64,7 +64,7 @@ public protocol CoherentCacheProtocol: Sendable {
 }
 
 /// This cache must track 1:1 the server, can only be purged on server restart
-public actor CoherentCache: CoherentCacheProtocol, CoherentCacheObservation {
+public actor CoherentCache: CoherentCacheProtocol, CoherentCacheObservable {
     private var users: IndexedUsers = [:]
 
     private nonisolated let usersSubject = PassthroughSubject<IndexedUsers, Never>()

@@ -36,6 +36,8 @@ final class LoginViewModel: ObservableObject {
     @Published private(set) var loginState: LoginState = .idle
     @Published var isShowingError = false
 
+    private var bindStore = Set<AnyCancellable>()
+
     private let flowCoordinator: OnboardingFlowCoordinator
 
     init(flowCoordinator: OnboardingFlowCoordinator) {
@@ -55,16 +57,29 @@ final class LoginViewModel: ObservableObject {
     func openAccountRegistrationProcess() {
         // TODO: Handle account registration
     }
+
+    private func handleConnectedUser(_ user: User?) {
+        guard let user else {
+            loginState = .idle
+            return
+        }
+
+        flowCoordinator.currentStep = .driveSelection
+    }
 }
 
 extension LoginViewModel: InfomaniakLoginDelegate {
     func didCompleteLoginWith(code: String, verifier: String) {
         Task {
             do {
-                try await LoginJob().login(code: code, verifier: verifier)
                 loginState = .loadingUser
+                let userDbId = try await LoginJob().login(code: code, verifier: verifier)
 
-                flowCoordinator.currentStep = .driveSelection
+                @InjectService var coherentCacheObservable: CoherentCacheObservable
+                coherentCacheObservable.usersPublisher.userPublisher(for: userDbId)
+                    .receiveOnMain(store: &bindStore) { [weak self] user in
+                        self?.handleConnectedUser(user)
+                    }
             } catch {
                 loginState = .idle
                 handleLoginFailure(error: error)

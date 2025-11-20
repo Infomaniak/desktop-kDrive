@@ -26,8 +26,8 @@ public final class ObservedUser: ObservableObject {
 
     private var cancellable: AnyCancellable?
 
-    public init(dbId: Int32, cacheObservation: CoherentCacheObservation? = nil) {
-        let cacheObservation = cacheObservation ?? InjectService<CoherentCacheObservation>().wrappedValue
+    public init(dbId: Int32, cacheObservation: CoherentCacheObservable? = nil) {
+        let cacheObservation = cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
         let usersPublisher = cacheObservation.usersPublisher
 
         cancellable = usersPublisher
@@ -43,7 +43,7 @@ public final class ObservedUser: ObservableObject {
     public var projectedValue: ObservedUser { self }
 }
 
-extension AnyPublisher where Output == IndexedUsers, Failure == Never {
+public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
     func userPublisher(for dbId: Int32) -> AnyPublisher<User?, Never> {
         map { $0[dbId] }
             .removeDuplicates { $0 == $1 }

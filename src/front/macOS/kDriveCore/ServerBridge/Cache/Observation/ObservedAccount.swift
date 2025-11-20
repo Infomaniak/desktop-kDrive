@@ -26,8 +26,8 @@ public final class ObservedAccount: ObservableObject {
 
     private var cancellable: AnyCancellable?
 
-    public init(userDbId: Int32, accountDbId: Int32, cacheObservation: CoherentCacheObservation? = nil) {
-        let cacheObservation = cacheObservation ?? InjectService<CoherentCacheObservation>().wrappedValue
+    public init(userDbId: Int32, accountDbId: Int32, cacheObservation: CoherentCacheObservable? = nil) {
+        let cacheObservation = cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
         let accountsPublisher = cacheObservation.accountsPublisher
 
         cancellable = accountsPublisher
