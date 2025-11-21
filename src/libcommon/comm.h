@@ -303,7 +303,6 @@ enum class SignalNum {
     UPDATER_STATE_CHANGED,
     // Utility
     UTILITY_SHOW_NOTIFICATION,
-    UTILITY_NEW_BIG_FOLDER,
     UTILITY_ERROR_ADDED,
     UTILITY_ERRORS_CLEARED,
     UTILITY_SHOW_SETTINGS,
@@ -363,8 +362,6 @@ inline std::string toString(SignalNum e) {
             return "UPDATER_STATE_CHANGED";
         case SignalNum::UTILITY_SHOW_NOTIFICATION:
             return "UTILITY_SHOW_NOTIFICATION";
-        case SignalNum::UTILITY_NEW_BIG_FOLDER:
-            return "UTILITY_NEW_BIG_FOLDER";
         case SignalNum::UTILITY_ERROR_ADDED:
             return "UTILITY_ERROR_ADDED";
         case SignalNum::UTILITY_ERRORS_CLEARED:

@@ -76,7 +76,6 @@ ClientGui::ClientGui(AppClient *parent) :
     connect(_app, &AppClient::syncProgressInfo, this, &ClientGui::onProgressInfo);
     connect(_app, &AppClient::itemCompleted, this, &ClientGui::itemCompleted);
     connect(_app, &AppClient::vfsConversionCompleted, this, &ClientGui::vfsConversionCompleted);
-    connect(_app, &AppClient::newBigFolder, this, &ClientGui::newBigFolder);
     connect(_app, &AppClient::showNotification, this, &ClientGui::onShowOptionalTrayMessage);
     connect(_app, &AppClient::errorAdded, this, &ClientGui::onErrorAdded);
     connect(_app, &AppClient::errorsCleared, this, &ClientGui::onErrorsCleared);
@@ -503,7 +502,6 @@ void ClientGui::setupParametersDialog() {
     connect(this, &ClientGui::updateProgress, _parametersDialog.get(), &ParametersDialog::onUpdateProgress);
     connect(this, &ClientGui::driveQuotaUpdated, _parametersDialog.get(), &ParametersDialog::onDriveQuotaUpdated);
     connect(this, &ClientGui::itemCompleted, _parametersDialog.get(), &ParametersDialog::onItemCompleted);
-    connect(this, &ClientGui::newBigFolder, _parametersDialog.get(), &ParametersDialog::newBigFolder);
     connect(this, &ClientGui::errorAdded, _parametersDialog.get(), &ParametersDialog::onRefreshErrorList);
     connect(this, &ClientGui::refreshStatusNeeded, _parametersDialog.get(), &ParametersDialog::onRefreshStatusNeeded);
 }

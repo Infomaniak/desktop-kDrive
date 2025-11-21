@@ -281,10 +281,7 @@ void ParametersDialog::initUI() {
     connect(_errorsMenuBarWidget, &ErrorsMenuBarWidget::backButtonClicked, this, &ParametersDialog::onBackButtonClicked);
     connect(_preferencesWidget, &PreferencesWidget::displayErrors, this, &ParametersDialog::onDisplayGeneralErrors);
     connect(_preferencesWidget, &PreferencesWidget::setStyle, this, &ParametersDialog::onSetStyle);
-    connect(_preferencesWidget, &PreferencesWidget::undecidedListsCleared, _drivePreferencesWidget,
-            &DrivePreferencesWidget::undecidedListsCleared);
     connect(this, &ParametersDialog::clearErrors, this, &ParametersDialog::onClearErrors);
-    connect(this, &ParametersDialog::newBigFolder, _drivePreferencesWidget, &DrivePreferencesWidget::newBigFolderDiscovered);
 }
 
 QByteArray ParametersDialog::contents(const QString &path) {

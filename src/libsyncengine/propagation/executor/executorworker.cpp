@@ -57,13 +57,6 @@ void ExecutorWorker::executorCallback(UniqueId jobId) {
     _terminatedJobs.push(jobId);
 }
 
-void ExecutorWorker::removeSyncNodeFromWhitelistIfSynced(const NodeId &nodeId) {
-    if (SyncNodeCache::instance()->contains(_syncPal->syncDbId(), SyncNodeType::WhiteList, nodeId)) {
-        // This item has been synchronized, it can now be removed from white list
-        (void) SyncNodeCache::instance()->deleteSyncNode(_syncPal->syncDbId(), nodeId);
-    }
-}
-
 void ExecutorWorker::execute() {
     ExitInfo executorExitInfo = ExitCode::Ok;
     _snapshotToInvalidate = false;
@@ -175,8 +168,6 @@ void ExecutorWorker::execute() {
                         setProgressComplete(syncOp, hydrating ? SyncFileStatus::Syncing : SyncFileStatus::Success);
                     }
                 }
-
-                if (syncOp->affectedNode()->id()) removeSyncNodeFromWhitelistIfSynced(*syncOp->affectedNode()->id());
             }
         }
 
@@ -1321,8 +1312,6 @@ ExitInfo ExecutorWorker::deleteFinishedAsyncJobs() {
                     } else {
                         setProgressComplete(syncOp, SyncFileStatus::Success);
                     }
-
-                    if (syncOp->affectedNode()->id()) removeSyncNodeFromWhitelistIfSynced(*syncOp->affectedNode()->id());
                 }
             } else {
                 increaseErrorCount(syncOp, exitInfo);

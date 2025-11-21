@@ -82,8 +82,8 @@ ExitInfo SyncStartJob::process() {
         mainExitInfo = exitInfo;
     }
 
-    if (const auto exitInfo = _commManager->appServer().initSyncPal(sync, NodeSet(), NodeSet(), NodeSet(), !startPostponed,
-                                                                    std::chrono::seconds(0), true, false);
+    if (const auto exitInfo =
+                _commManager->appServer().initSyncPal(sync, NodeSet(), !startPostponed, std::chrono::seconds(0), true, false);
         !exitInfo) {
         LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " : " << exitInfo);
         AppServer::addError(Error(ERR_ID, exitInfo));

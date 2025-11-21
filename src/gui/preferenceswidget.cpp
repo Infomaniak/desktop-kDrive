@@ -69,52 +69,6 @@ static const QString italianCode = "it";
 
 Q_LOGGING_CATEGORY(lcPreferencesWidget, "gui.preferenceswidget", QtInfoMsg)
 
-LargeFolderConfirmation::LargeFolderConfirmation(QBoxLayout *folderConfirmationBox) :
-    _label{new QLabel()},
-    _amountLabel{new QLabel()},
-    _amountLineEdit{new QLineEdit()},
-    _switch{new CustomSwitch()} {
-    const auto folderConfirmation1HBox = new QHBoxLayout();
-    folderConfirmation1HBox->setContentsMargins(0, 0, 0, 0);
-    folderConfirmation1HBox->setSpacing(0);
-    folderConfirmationBox->addLayout(folderConfirmation1HBox);
-
-    _label->setWordWrap(true);
-    folderConfirmation1HBox->addWidget(_label);
-    folderConfirmation1HBox->setStretchFactor(_label, 1);
-
-    _switch->setLayoutDirection(Qt::RightToLeft);
-    _switch->setAttribute(Qt::WA_MacShowFocusRect, false);
-    _switch->setCheckState(ParametersCache::instance()->parametersInfo().useBigFolderSizeLimit() ? Qt::Checked : Qt::Unchecked);
-    folderConfirmation1HBox->addWidget(_switch);
-
-    const auto folderConfirmation2HBox = new QHBoxLayout();
-    folderConfirmation2HBox->setContentsMargins(0, 0, 0, 0);
-    folderConfirmation2HBox->setSpacing(textHSpacing);
-    folderConfirmationBox->addLayout(folderConfirmation2HBox);
-
-    _amountLineEdit->setAttribute(Qt::WA_MacShowFocusRect, false);
-    _amountLineEdit->setEnabled(ParametersCache::instance()->parametersInfo().useBigFolderSizeLimit());
-    _amountLineEdit->setText(QString::number(ParametersCache::instance()->parametersInfo().bigFolderSizeLimit()));
-    _amountLineEdit->setValidator(new QIntValidator(0, 999999));
-    _amountLineEdit->setMinimumWidth(amountLineEditWidth);
-    _amountLineEdit->setMaximumWidth(amountLineEditWidth);
-    folderConfirmation2HBox->addWidget(_amountLineEdit);
-
-    _amountLabel->setObjectName("folderConfirmationAmountLabel");
-    folderConfirmation2HBox->addWidget(_amountLabel);
-    folderConfirmation2HBox->addStretch();
-}
-
-void LargeFolderConfirmation::retranslateUi() {
-    _label->setText(tr("Ask for confirmation before synchronizing folders greater than"));
-    _amountLabel->setText(tr("MB"));
-}
-
-void LargeFolderConfirmation::setAmountLineEditEnabled(bool enabled) {
-    _amountLineEdit->setEnabled(enabled);
-}
-
 PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *parent) :
     LargeWidgetWithCustomToolTip(parent),
     _gui(gui),
@@ -208,7 +162,6 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
 
     // Synchronization confirmation for large folders
     QBoxLayout *folderConfirmationBox = generalBloc->addLayout(QBoxLayout::Direction::TopToBottom);
-    _largeFolderConfirmation = std::unique_ptr<LargeFolderConfirmation>(new LargeFolderConfirmation(folderConfirmationBox));
 
     generalBloc->addSeparator();
 
@@ -399,10 +352,6 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     const auto languageFilter = new LanguageChangeFilter(this);
     installEventFilter(languageFilter);
 
-    connect(_largeFolderConfirmation->customSwitch(), &CustomSwitch::clicked, this,
-            &PreferencesWidget::onFolderConfirmationSwitchClicked);
-    connect(_largeFolderConfirmation->amountLineEdit(), &QLineEdit::textEdited, this,
-            &PreferencesWidget::onFolderConfirmationAmountTextEdited);
     if (darkThemeSwitch) {
         connect(darkThemeSwitch, &CustomSwitch::clicked, this, &PreferencesWidget::onDarkThemeSwitchClicked);
     }
@@ -439,50 +388,11 @@ void PreferencesWidget::showEvent(QShowEvent *event) {
     _versionWidget->refresh(isStaff());
 }
 
-void PreferencesWidget::clearUndecidedLists() {
-    for (const auto &syncInfoMapElt: _gui->syncInfoMap()) {
-        // Clear the undecided list
-        ExitCode exitCode = GuiRequests::setSyncIdSet(syncInfoMapElt.first, SyncNodeType::UndecidedList, QSet<QString>());
-        if (exitCode != ExitCode::Ok) {
-            qCWarning(lcPreferencesWidget()) << "Error in Requests::setSyncIdSet";
-            return;
-        }
-
-        // Re-sync
-        emit undecidedListsCleared();
-        emit restartSync(syncInfoMapElt.first);
-    }
-}
-
 bool PreferencesWidget::isStaff() const {
     constexpr auto isStaffCallback = [](std::pair<int, UserInfoClient> const &item) { return item.second.isStaff(); };
     // To be used with an later gcc version
     // return std::ranges::any_of(_gui->userInfoMap(), isStaffCallback);
     return std::any_of(_gui->userInfoMap().cbegin(), _gui->userInfoMap().cend(), isStaffCallback);
-}
-
-void PreferencesWidget::onFolderConfirmationSwitchClicked(bool checked) {
-    ParametersCache::instance()->parametersInfo().setUseBigFolderSizeLimit(checked);
-    if (!ParametersCache::instance()->saveParametersInfo()) {
-        return;
-    }
-
-    _largeFolderConfirmation->setAmountLineEditEnabled(checked);
-
-    clearUndecidedLists();
-    MatomoClient::sendEvent("preferences", MatomoEventAction::Click, "largeFolderConfirmationSwitch", checked ? 1 : 0);
-}
-
-void PreferencesWidget::onFolderConfirmationAmountTextEdited(const QString &text) {
-    const qint64 lValue = text.toLongLong();
-    ParametersCache::instance()->parametersInfo().setBigFolderSizeLimit(lValue);
-    if (!ParametersCache::instance()->saveParametersInfo()) {
-        return;
-    }
-    // we can cast lvalue to an int because the max value is 999999
-    MatomoClient::sendEvent("preferences", MatomoEventAction::Input, "largeFolderConfirmationValue", static_cast<int>(lValue));
-
-    clearUndecidedLists();
 }
 
 void PreferencesWidget::onDarkThemeSwitchClicked(bool checked) {
@@ -630,7 +540,6 @@ void PreferencesWidget::onLinkActivated(const QString &link) {
 void PreferencesWidget::retranslateUi() const {
     _displayErrorsWidget->setText(tr("Some process failed to run."));
     _generalLabel->setText(tr("General"));
-    _largeFolderConfirmation->retranslateUi();
     if (_darkThemeLabel) {
         _darkThemeLabel->setText(tr("Activate dark theme"));
     }

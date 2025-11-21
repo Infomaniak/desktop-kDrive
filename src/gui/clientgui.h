@@ -95,7 +95,6 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void syncFinished(int syncDbId);
         void itemCompleted(int syncDbId, const SyncFileItemInfo &itemInfo);
         void vfsConversionCompleted(int syncDbId);
-        void newBigFolder(int syncDbId, const QString &path);
         void errorAdded(int syncDbId);
         void appVersionLocked(bool currentVersionLocked);
         void errorsCleared(int syncDbId);
