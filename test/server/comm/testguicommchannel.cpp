@@ -1167,7 +1167,7 @@ void TestGuiCommChannel::testSyncSetRootPinStateJob() {
                         R"( "num": )" +
                         std::to_string(toInt(RequestNum::SYNC_SETROOTPINSTATE)) +
                         R"(,)"
-                        R"( "params": { "driveDbId": 1, "pinState": 2 } })"};
+                        R"( "params": { "syncDbId": 1, "state": 2 } })"};
 #else
     // There is no need to pass a request id as the response is via a callback.
     const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::SYNC_SETROOTPINSTATE)) +
