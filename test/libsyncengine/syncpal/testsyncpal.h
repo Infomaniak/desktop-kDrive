@@ -46,6 +46,7 @@ class TestSyncPal : public CppUnit::TestFixture, public TestBase {
         std::shared_ptr<SyncPal> _syncPal = nullptr;
         std::shared_ptr<ParmsDb> _parmsDb = nullptr;
         LocalTemporaryDirectory _localTempDir = LocalTemporaryDirectory("TestSyncpal");
+        LocalTemporaryDirectory _localParmsDbTempDir = LocalTemporaryDirectory("TestSyncpalParmsDbDir");
         int _driveDbId = 0;
         SyncPath _localPath;
         SyncPath _remotePath;
