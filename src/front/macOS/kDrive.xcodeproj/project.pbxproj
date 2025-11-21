@@ -135,13 +135,6 @@
 			);
 			target = 37A1C4252E546A5200596DBB /* kDrive */;
 		};
-		F9A927B12ECF6B4300B09ABA /* Exceptions for "kDriveCoreUI" folder in "kDriveCoreUI" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Utils/Previews/PreviewResources.xcassets,
-			);
-			target = 37A1C43E2E546A9600596DBB /* kDriveCoreUI */;
-		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -155,9 +148,6 @@
 		};
 		37A1C4402E546A9600596DBB /* kDriveCoreUI */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				F9A927B12ECF6B4300B09ABA /* Exceptions for "kDriveCoreUI" folder in "kDriveCoreUI" target */,
-			);
 			path = kDriveCoreUI;
 			sourceTree = "<group>";
 		};

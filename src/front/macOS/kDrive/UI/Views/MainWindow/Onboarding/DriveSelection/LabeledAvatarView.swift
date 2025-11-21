@@ -39,13 +39,18 @@ class LabeledAvatarView: NSView {
         let stackView = NSStackView()
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.alignment = .centerY
+        stackView.spacing = AppPadding.padding8
         addSubview(stackView)
 
         if let avatar {
-            print(avatar)
             let imageView = NSImageView(image: avatar)
             imageView.translatesAutoresizingMaskIntoConstraints = false
             stackView.addArrangedSubview(imageView)
+
+            NSLayoutConstraint.activate([
+                imageView.widthAnchor.constraint(equalToConstant: 24),
+                imageView.heightAnchor.constraint(equalTo: imageView.widthAnchor)
+            ])
         }
 
         let label = NSTextField(labelWithString: name)
@@ -53,6 +58,13 @@ class LabeledAvatarView: NSView {
         label.textColor = NSColor.Tokens.Text.secondary
         label.font = NSFont.Tokens.body
         stackView.addArrangedSubview(label)
+
+        NSLayoutConstraint.activate([
+            stackView.topAnchor.constraint(equalTo: topAnchor),
+            stackView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            stackView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            stackView.trailingAnchor.constraint(equalTo: trailingAnchor)
+        ])
     }
 }
 

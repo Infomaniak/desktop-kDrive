@@ -20,12 +20,16 @@ import Cocoa
 import Foundation
 import kDriveCore
 
+private final class PreviewBundle {
+    /** Meant to access kDriveCoreUI bundle in `PreviewHelper` */
+}
+
 public enum PreviewHelper {
     public static let user = UIUser(
         dbId: 95014,
         userId: 95014,
         name: "Tim Cook",
         email: "tim@apple.com",
-        avatar: NSImage(named: "tim")
+        avatar: Bundle(for: PreviewBundle.self).image(forResource: "tim")
     )
 }
