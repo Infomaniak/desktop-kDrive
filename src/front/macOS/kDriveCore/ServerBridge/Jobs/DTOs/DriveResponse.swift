@@ -55,7 +55,6 @@ extension DriveResponse {
                        userDbId: userDbId,
                        userId: userId,
                        name: name,
-                       color: color,
-                       synchros: [:])
+                       color: color)
     }
 }

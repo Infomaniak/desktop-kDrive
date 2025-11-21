@@ -25,11 +25,12 @@ enum CoherentCacheTestsData {
     static let expectedUserDbId: Int32 = 12345
     static var expectedUser: User {
         User(
-            dbId: Self.expectedUserDbId,
-            userId: Self.expectedUserId,
+            dbId: expectedUserDbId,
+            userId: expectedUserId,
             name: "appleseed",
             email: "ja@apple.com",
             accounts: [:],
+            availableDrives: [:],
             avatar: Data(),
             isConnected: true,
             isStaff: true
