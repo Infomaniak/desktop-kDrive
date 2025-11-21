@@ -390,6 +390,9 @@ ExitCode ServerRequests::requestToken(const QString &code, const QString &codeVe
     return requestToken(QStr2Str(code), QStr2Str(codeVerifier), userInfo, userCreated, error, errorDescr);
 }
 
+ExitInfo ServerRequests::getNodeInfo(int userDbId, int driveId, const std::string &nodeId, NodeInfo &nodeInfo, bool withPath) {
+    return getNodeInfo(userDbId, driveId, QString::fromStdString(nodeId), nodeInfo, withPath);
+}
 ExitInfo ServerRequests::getNodeInfo(int userDbId, int driveId, const QString &nodeId, NodeInfo &nodeInfo,
                                      bool withPath /*= false*/) {
     std::shared_ptr<GetFileInfoJob> job;
@@ -780,12 +783,26 @@ ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, 
 
 ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, const QString &nodeId, QList<NodeInfo> &list,
                                        const bool withPath /*= false*/) {
+    std::vector<NodeInfo> stdVector;
+    const ExitInfo exitInfo = getSubFolders(userDbId, driveId, nodeId.toStdString(), stdVector, withPath);
+    if (!exitInfo) {
+        return exitInfo;
+    }
+    list.clear();
+    for (const NodeInfo &nodeInfo: stdVector) {
+        list.push_back(nodeInfo);
+    }
+    return ExitCode::Ok;
+}
+
+ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, const NodeId &nodeId, std::vector<NodeInfo> &list,
+                                       const bool withPath /*= false*/) {
     list.clear();
     uint64_t page = 1;
     uint64_t totalPages = 0;
     do {
         std::shared_ptr<GetRootFileListJob> job = nullptr;
-        if (nodeId.isEmpty()) {
+        if (nodeId.empty()) {
             try {
                 job = std::make_shared<GetRootFileListJob>(userDbId, driveId, page, true);
             } catch (const std::exception &e) {
@@ -795,11 +812,11 @@ ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, co
             }
         } else {
             try {
-                job = std::make_shared<GetFileListJob>(userDbId, driveId, nodeId.toStdString(), page, true);
+                job = std::make_shared<GetFileListJob>(userDbId, driveId, nodeId, page, true);
             } catch (const std::exception &e) {
                 LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::GetFileListJob for userDbId="
                                                                << userDbId << " driveId=" << driveId
-                                                               << " nodeId=" << nodeId.toStdString() << " error=" << e.what());
+                                                               << " nodeId=" << nodeId << " error=" << e.what());
                 return AbstractTokenNetworkJob::exception2ExitCode(e);
             }
         }
@@ -808,7 +825,7 @@ ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, co
         if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
             LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::runSynchronously for userDbId="
                                                            << userDbId << " driveId=" << driveId
-                                                           << " nodeId=" << nodeId.toStdString() << " error=" << exitInfo);
+                                                           << " nodeId=" << nodeId << " error=" << exitInfo);
             return exitInfo;
         }
 
@@ -870,7 +887,7 @@ ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, co
             NodeInfo nodeInfo(QString::fromStdString(nodeId2), SyncName2QStr(name),
                               -1, // Size is not set here as it can be very long to evaluate
                               parentId.c_str(), modTime, SyncName2QStr(path));
-            list << nodeInfo;
+            list.push_back(nodeInfo);
         }
 
         page++;
@@ -1302,8 +1319,19 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const NodeId &nodeId, s
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::getFolderSize(int userDbId, int driveId, const NodeId &nodeId,
+ExitInfo ServerRequests::getFolderSizeWithCallback(int userDbId, int driveId, const NodeId &nodeId,
                                        std::function<void(const QString &, qint64)> callback) {
+
+    int64_t result = 0;
+    if (ExitInfo exitInfo =ServerRequests::getFolderSize(userDbId, driveId, nodeId, result); !exitInfo) {
+        return exitInfo;
+    }
+
+    callback(QString::fromStdString(nodeId), result);
+    return ExitCode::Ok;
+}
+
+ExitInfo ServerRequests::getFolderSize(int userDbId, int driveId, const NodeId &nodeId, int64_t &result) {
     if (nodeId.empty()) {
         LOG_WARN(Log::instance()->getLogger(), "Node ID is empty");
         return ExitCode::DataError;
@@ -1343,12 +1371,9 @@ ExitInfo ServerRequests::getFolderSize(int userDbId, int driveId, const NodeId &
         return ExitCode::BackError;
     }
 
-    qint64 size = 0;
-    if (!JsonParserUtility::extractValue(dataObj, sizeKey, size)) {
+    if (!JsonParserUtility::extractValue(dataObj, sizeKey, result)) {
         return ExitCode::BackError;
     }
-
-    callback(QString::fromStdString(nodeId), size);
 
     return ExitCode::Ok;
 }
