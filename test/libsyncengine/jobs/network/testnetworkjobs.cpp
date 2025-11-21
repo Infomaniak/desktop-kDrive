@@ -967,8 +967,8 @@ void TestNetworkJobs::testFullFileListWithCursorCsvZip() {
         const ExitCode exitCode = job.runSynchronously();
         CPPUNIT_ASSERT(exitCode != ExitCode::Ok);
         CPPUNIT_ASSERT(job.hasErrorApi());
-        CPPUNIT_ASSERT(!job.errorCode().empty());
-        CPPUNIT_ASSERT(!job.errorDescr().empty());
+        CPPUNIT_ASSERT(!job.backError().code().empty());
+        CPPUNIT_ASSERT(!job.backError().description().empty());
     }
 }
 

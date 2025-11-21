@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <Poco/JSON/Object.h>
+
 namespace KDC {
 
 /**
@@ -30,12 +32,17 @@ namespace KDC {
  */
 class BackError {
     public:
+        explicit BackError() = default;
         explicit BackError(const Poco::JSON::Object::Ptr jsonObjPtr);
+        explicit BackError(const std::string &code, const std::string &description = {}, const std::string &contextReason = {},
+                           const std::string &contextModel = {});
 
         [[nodiscard]] const std::string &code() const { return _code; }
         [[nodiscard]] const std::string &description() const { return _description; }
         [[nodiscard]] const std::string &contextReason() const { return _contextReason; }
         [[nodiscard]] const std::string &contextModel() const { return _contextModel; }
+
+        bool hasValidError() const { return !_code.empty(); }
 
     private:
         void extractFromFullReply(const Poco::JSON::Object::Ptr jsonObjPtr);

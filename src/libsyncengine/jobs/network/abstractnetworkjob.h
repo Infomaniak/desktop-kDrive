@@ -77,7 +77,6 @@ class AbstractNetworkJob : public SyncJob {
         virtual ExitInfo handleJsonResponse(const std::string &replyBody);
         virtual ExitInfo handleOctetStreamResponse(std::istream &is);
         ExitInfo extractJson(const std::string &replyBody, Poco::JSON::Object::Ptr &jsonObj);
-        // ExitInfo extractJsonError(const std::string &replyBody, Poco::JSON::Object::Ptr errorObjPtr = nullptr);
         void getStringFromStream(std::istream &inputStream, std::string &res);
 
         std::string _httpMethod;

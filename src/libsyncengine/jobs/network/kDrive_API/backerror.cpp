@@ -30,6 +30,13 @@ BackError::BackError(const Poco::JSON::Object::Ptr jsonObjPtr) {
         extractFromErrorObject(jsonObjPtr);
 }
 
+BackError::BackError(const std::string &code, const std::string &description /*= {}*/, const std::string &contextReason /*= {}*/,
+                     const std::string &contextModel /*= {}*/) :
+    _code(code),
+    _description(description),
+    _contextReason(contextReason),
+    _contextModel(contextModel) {}
+
 void BackError::extractFromFullReply(const Poco::JSON::Object::Ptr jsonObjPtr) {
     if (!jsonObjPtr) return;
 

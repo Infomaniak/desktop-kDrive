@@ -67,24 +67,20 @@ ExitInfo AbstractLoginJob::handleError(const std::string &replyBody, const Poco:
     }
 
     ExitInfo exitInfo;
-    if (Poco::JSON::Object::Ptr errorObj = jsonError->getObject(errorKey); errorObj) {
-        if (!JsonParserUtility::extractValue(errorObj, codeKey, _errorCode)) {
-            return {};
-        }
-        if (!JsonParserUtility::extractValue(errorObj, descriptionKey, _errorDescr)) {
-            return {};
-        }
-        LOG_WARN(_logger, "Error in request " << uri.toString() << " : " << _errorCode << " - " << _errorDescr);
+    _backError = BackError(jsonError);
+    if (_backError.hasValidError()) {
+        LOG_WARN(_logger,
+                 "Error in request " << uri.toString() << " : " << _backError.code() << " - " << _backError.description());
         exitInfo = ExitCode::BackError;
     } else {
-        JsonParserUtility::extractValue(jsonError, errorKey, _errorCode, false);
+        std::string errorCode;
+        (void) JsonParserUtility::extractValue(jsonError, errorKey, errorCode, false);
 
         std::string errorReason;
-        JsonParserUtility::extractValue(jsonError, reasonKey, errorReason, false);
+        (void) JsonParserUtility::extractValue(jsonError, reasonKey, errorReason, false);
 
-        if (getNetworkErrorCode(_errorCode) == NetworkErrorCode::InvalidGrant ||
+        if (getNetworkErrorCode(errorCode) == NetworkErrorCode::InvalidGrant ||
             getNetworkErrorReason(errorReason) == NetworkErrorReason::RefreshTokenRevoked) {
-            _errorDescr = errorReason;
             LOG_WARN(_logger, "Error in request " << uri.toString() << " : refresh token has been revoked ");
             disableRetry();
             exitInfo = ExitCode::InvalidToken;
@@ -92,6 +88,7 @@ ExitInfo AbstractLoginJob::handleError(const std::string &replyBody, const Poco:
             LOG_WARN(_logger, "Error in request " << uri.toString() << " : " << errorReason);
             exitInfo = ExitCode::BackError;
         }
+        _backError = BackError(errorCode, errorReason);
     }
 
     exitInfo.setCause(ExitCause::LoginError);

@@ -97,7 +97,7 @@ void UpdateChecker::versionInfoReceived(UniqueId jobId) {
 
     if (getAppVersionJobPtr->hasErrorApi()) {
         std::stringstream ss;
-        ss << getAppVersionJobPtr->errorCode() << " - " << getAppVersionJobPtr->errorDescr();
+        ss << getAppVersionJobPtr->backError().code() << " - " << getAppVersionJobPtr->backError().code();
         sentry::Handler::captureMessage(sentry::Level::Warning, "AbstractUpdater::checkUpdateAvailable", ss.str());
         LOG_ERROR(Log::instance()->getLogger(), ss.str());
     } else if (getAppVersionJobPtr->exitInfo().code() != ExitCode::Ok) {

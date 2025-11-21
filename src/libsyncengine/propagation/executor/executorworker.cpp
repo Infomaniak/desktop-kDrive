@@ -2015,7 +2015,7 @@ ExitInfo ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<SyncJ
     (void) job->runSynchronously();
 
     if (auto tokenJob(std::dynamic_pointer_cast<AbstractTokenNetworkJob>(job)); tokenJob && tokenJob->hasErrorApi()) {
-        const auto code = getNetworkErrorCode(tokenJob->errorCode());
+        const auto code = getNetworkErrorCode(tokenJob->backError().code());
         if (code == NetworkErrorCode::DestinationAlreadyExists) {
             // Folder is already there, ignore this error
         } else if (code == NetworkErrorCode::ForbiddenError) {

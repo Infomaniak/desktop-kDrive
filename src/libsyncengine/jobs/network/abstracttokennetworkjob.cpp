@@ -192,7 +192,7 @@ ExitInfo AbstractTokenNetworkJob::handleError(const std::string &replyBody, cons
             return handleUnauthorizedResponse();
         case Poco::Net::HTTPResponse::HTTP_NOT_FOUND: {
             disableRetry();
-            const auto exitCause = _backError.contextModel() == "Drive" ? ExitCause::DriveNotFound : ExitCause::NotFound;
+            const auto exitCause = _backError.contextModel() == "Drive" ? ExitCause::DriveAccessError : ExitCause::NotFound;
             return {ExitCode::BackError, exitCause};
         }
         default:
