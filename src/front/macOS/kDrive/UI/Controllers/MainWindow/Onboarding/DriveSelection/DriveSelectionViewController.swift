@@ -56,12 +56,9 @@ class DriveSelectionViewController: OnboardingStepViewController {
         titleLabel.stringValue = KDriveLocalizable.onboardingDriveSelectionTitle
         descriptionLabel.isHidden = true
 
-        primaryButton.title = KDriveLocalizable.buttonContinue
+        buttonsStack.isHidden = true
         primaryButton.target = self
-        primaryButton.action = #selector(didTapContinue)
-        secondaryButton.title = KDriveLocalizable.buttonAdvancedParameters
         secondaryButton.target = self
-        secondaryButton.action = #selector(didTapAdvancedSettings)
 
         stackView.insertArrangedSubview(labeledUserView, at: 1)
         stackView.setCustomSpacing(AppPadding.padding12, after: titleLabel)
@@ -77,28 +74,51 @@ class DriveSelectionViewController: OnboardingStepViewController {
         viewModel.$availableDrives
             .receiveOnMain(store: &bindStore) { [weak self] availableDrives in
                 guard let availableDrives else { return }
-                self?.updateDrivesList(availableDrives)
+                self?.handleUpdatedDrivesList(availableDrives)
             }
     }
 
-    private func updateDrivesList(_ drives: [UIDrive]) {
-        guard !drives.isEmpty else {
+    private func handleUpdatedDrivesList(_ drives: [UIDrive]) {
+        buttonsStack.isHidden = false
+
+        if drives.isEmpty {
             showNoDriveAvailableView()
-            return
+        } else {
+            updateDrivesList(drives)
         }
+    }
+}
 
+// MARK: - Update drives list
+
+extension DriveSelectionViewController {
+    private func updateDrivesList(_ drives: [UIDrive]) {
         // TODO: List drives
+
+        primaryButton.title = KDriveLocalizable.buttonContinue
+        primaryButton.action = #selector(didTapContinue)
+        secondaryButton.title = KDriveLocalizable.buttonAdvancedParameters
+        secondaryButton.action = #selector(didTapAdvancedSettings)
     }
 
-    private func showNoDriveAvailableView() {
-        // TODO: Show no kDrive available view
-    }
-
-    @objc private func didTapContinue() {
-        // dummy implementation
-        @InjectService var windowRouter: WindowRouter
-        windowRouter.navigate(to: .splitView)
-    }
+    @objc private func didTapContinue() {}
 
     @objc private func didTapAdvancedSettings() {}
+}
+
+// MARK: - No drive available
+
+extension DriveSelectionViewController {
+    private func showNoDriveAvailableView() {
+        // TODO: Show no kDrive available view
+
+        primaryButton.title = "!Commencer gratuitement"
+        primaryButton.action = #selector(didTapStartForFree)
+        secondaryButton.title = "!Voir les offres"
+        secondaryButton.action = #selector(didTapShowOffers)
+    }
+
+    @objc private func didTapStartForFree() {}
+
+    @objc private func didTapShowOffers() {}
 }
