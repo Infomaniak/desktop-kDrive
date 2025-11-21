@@ -25,11 +25,13 @@ private final class PreviewBundle {
 }
 
 public enum PreviewHelper {
+    public static let userImage = Bundle(for: PreviewBundle.self).image(forResource: "tim")!
+
     public static let user = UIUser(
         dbId: 95014,
         userId: 95014,
         name: "Tim Cook",
         email: "tim@apple.com",
-        avatar: Bundle(for: PreviewBundle.self).image(forResource: "tim")
+        avatar: PreviewHelper.userImage
     )
 }

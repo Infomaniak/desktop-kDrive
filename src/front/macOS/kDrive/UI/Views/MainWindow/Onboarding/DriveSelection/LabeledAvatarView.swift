@@ -24,13 +24,14 @@ class LabeledAvatarView: NSView {
     let name: String
     let avatar: NSImage?
 
-    public init(user: UIUser) {
+    init(user: UIUser) {
         name = user.name
         avatar = user.avatar
         super.init(frame: .zero)
         setupView()
     }
 
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -43,13 +44,14 @@ class LabeledAvatarView: NSView {
         addSubview(stackView)
 
         if let avatar {
-            let imageView = NSImageView(image: avatar)
+            let imageView = ResizableImageView(image: avatar)
             imageView.translatesAutoresizingMaskIntoConstraints = false
+            imageView.preferredRect = NSRect(x: 0, y: 0, width: 24, height: 24)
             stackView.addArrangedSubview(imageView)
 
             NSLayoutConstraint.activate([
-                imageView.widthAnchor.constraint(equalToConstant: 24),
-                imageView.heightAnchor.constraint(equalTo: imageView.widthAnchor)
+                imageView.widthAnchor.constraint(equalToConstant: imageView.preferredRect.width),
+                imageView.heightAnchor.constraint(equalToConstant: imageView.preferredRect.height)
             ])
         }
 

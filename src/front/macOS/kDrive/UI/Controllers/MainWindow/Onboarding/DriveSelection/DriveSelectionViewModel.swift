@@ -38,11 +38,8 @@ final class DriveSelectionViewModel: ObservableObject {
 
         currentUser = UIUser(user: firstAvailableUser)
 
-        // FIXME: We do not receive the drives from the XPC service yet. There is an async issue.
-//        let drivesResponse = try await DriveJobs().availableDrives(userDbId: currentUser.dbId)
-//        let availableDrives = drivesResponse.asDrives()
-//        self.availableDrives = availableDrives.map { UIDrive(drive: $0) }
-
-        availableDrives = []
+        let drivesResponse = try await DriveJobs().availableDrives(userDbId: firstAvailableUser.dbId)
+        let availableDrives = drivesResponse.asDrives()
+        self.availableDrives = availableDrives.map { UIDrive(drive: $0) }
     }
 }
