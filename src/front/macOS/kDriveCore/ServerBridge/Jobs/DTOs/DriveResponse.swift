@@ -49,14 +49,13 @@ public struct DriveResponse: Codable, Sendable {
 }
 
 extension DriveResponse {
-    var asDrive: Drive {
-        Drive(driveDbId: driveId, // TODO: I get only DriveID and no DriveDBId from the server ? Check with team
-              driveId: driveId,
-              accountId: accountId,
-              userDbId: userDbId,
-              userId: userId,
-              name: name,
-              color: color,
-              synchros: [:])
+    var asAvailableDrive: AvailableDrive {
+        AvailableDrive(driveId: driveId,
+                       accountId: accountId,
+                       userDbId: userDbId,
+                       userId: userId,
+                       name: name,
+                       color: color,
+                       synchros: [:])
     }
 }

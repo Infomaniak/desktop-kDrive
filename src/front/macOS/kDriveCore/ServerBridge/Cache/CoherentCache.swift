@@ -34,6 +34,7 @@ public protocol CoherentCacheProtocol: Sendable {
     func addUser(_ user: User) async
     func removeUser(dbId: Int32) async
     func updateUser(_ user: User) async
+    func updateAvailableDrives(_ drives: [AvailableDrive], forUserDbId accountId: Int32) async
 
     // MARK: - Account
 
@@ -117,6 +118,10 @@ public actor CoherentCache: CoherentCacheProtocol, CoherentCacheObservation {
         }
 
         notifyUserUpdate(dbId: user.userId, indexedAccounts: user.accounts)
+    }
+
+    public func updateAvailableDrives(_ drives: [AvailableDrive], forUserDbId userDbId: Int32) {
+        // TODO: Implement
     }
 
     // MARK: - ACCOUNT

@@ -30,6 +30,7 @@ public struct User: Identifiable, Hashable, Sendable {
     public var name: String
     public var email: String
     public var accounts: IndexedAccounts
+    public var availableDrives: IndexedAvailableDrives // The available drives do not have a db id
     public var avatar: Data?
     public var isConnected: Bool
     public var isStaff: Bool
@@ -40,6 +41,7 @@ public struct User: Identifiable, Hashable, Sendable {
         name: String,
         email: String,
         accounts: IndexedAccounts,
+        availableDrives: IndexedAvailableDrives,
         avatar: Data? = nil,
         isConnected: Bool,
         isStaff: Bool
@@ -49,6 +51,7 @@ public struct User: Identifiable, Hashable, Sendable {
         self.name = name
         self.email = email
         self.accounts = accounts
+        self.availableDrives = availableDrives
         self.avatar = avatar
         self.isConnected = isConnected
         self.isStaff = isStaff
@@ -79,6 +82,7 @@ public extension User {
             name: other.name.isEmpty ? name : other.name,
             email: other.email.isEmpty ? email : other.email,
             accounts: other.accounts.isEmpty ? accounts : other.accounts,
+            availableDrives: other.availableDrives.isEmpty ? availableDrives : other.availableDrives,
             avatar: other.avatar,
             isConnected: other.isConnected,
             isStaff: other.isStaff
