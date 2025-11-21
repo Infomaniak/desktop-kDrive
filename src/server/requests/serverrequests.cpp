@@ -1407,9 +1407,10 @@ ExitInfo ServerRequests::getFolderSize(int userDbId, int driveId, const NodeId &
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getPrivateLinkUrl(int driveDbId, const QString &fileId, QString &linkUrl) {
+ExitCode ServerRequests::getPrivateLinkUrl(const int driveDbId, const std::string &fileId, std::string &linkUrl) {
+    linkUrl = {};
     Drive drive;
-    bool found;
+    bool found = false;
     if (!ParmsDb::instance()->selectDrive(driveDbId, drive, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in selectDrive");
         return ExitCode::DbError;
@@ -1419,9 +1420,22 @@ ExitCode ServerRequests::getPrivateLinkUrl(int driveDbId, const QString &fileId,
         return ExitCode::DataError;
     }
 
-    linkUrl = QString(APPLICATION_PREVIEW_URL).arg(drive.driveId()).arg(fileId);
+    // Replace this line with a call to std::format (C++20) when compilation issues are addressed on Linux.
+    const QString linkUrlQStr = QString(APPLICATION_PREVIEW_URL).arg(drive.driveId()).arg(QString::fromStdString(fileId));
+
+    linkUrl = QStr2Str(linkUrlQStr);
 
     return ExitCode::Ok;
+}
+
+ExitCode ServerRequests::getPrivateLinkUrl(const int driveDbId, const QString &fileId, QString &linkUrl) {
+    linkUrl = {};
+    std::string linkUrlStr;
+
+    const auto exitCode = getPrivateLinkUrl(driveDbId, QStr2Str(fileId), linkUrlStr);
+    linkUrl = QString::fromStdString(linkUrlStr);
+
+    return exitCode;
 }
 
 ExitCode ServerRequests::getExclusionTemplateList(bool def, QList<ExclusionTemplateInfo> &list) {
