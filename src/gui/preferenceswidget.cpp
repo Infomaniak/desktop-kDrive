@@ -94,13 +94,6 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
      *      _displayErrorsWidget
      *      generalLabel
      *      generalBloc
-     *          folderConfirmationBox
-     *              folderConfirmation1HBox
-     *                  _largeFolderConfirmation->_label
-     *                  _largeFolderConfirmation->_switch
-     *              folderConfirmation2HBox
-     *                  _largeFolderConfirmation->_amountLineEdit
-     *                  _largeFolderConfirmation->_amountLabel
      *          darkThemeBox
      *              darkThemeLabel
      *              darkThemeSwitch
@@ -159,11 +152,6 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
 
     const auto generalBloc = new PreferencesBlocWidget();
     vBox->addWidget(generalBloc);
-
-    // Synchronization confirmation for large folders
-    QBoxLayout *folderConfirmationBox = generalBloc->addLayout(QBoxLayout::Direction::TopToBottom);
-
-    generalBloc->addSeparator();
 
     // Dark theme activation
     CustomSwitch *darkThemeSwitch = nullptr;
