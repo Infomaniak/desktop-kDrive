@@ -37,6 +37,7 @@ public struct AccountJobs: Sendable {
 
         let accountList = decodedMessage.body.accountInfoList
 
+        // TODO: Parse name when available
         await accountList.asyncForEach { await coherentCache.updateAccount($0.asAccount) }
 
         return accountList

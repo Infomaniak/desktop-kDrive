@@ -112,6 +112,7 @@ public actor CoherentCache: CoherentCacheProtocol, CoherentCacheObservation {
     public func updateUser(_ user: User) {
         if let existingUser = users[user.id],
            let updatedUser = existingUser.updated(with: user) {
+            // TODO: fix merge `accounts` and `availableDrives`
             users[user.id] = updatedUser
         } else {
             users[user.id] = user
@@ -239,7 +240,7 @@ public actor CoherentCache: CoherentCacheProtocol, CoherentCacheObservation {
     }
 
     public func updateSynchro(_ synchro: Synchro) {
-        // TODO: Implement update
+        // TODO: Implement update, lookup on DriveDbId
     }
 
     // MARK: - Observation

@@ -54,7 +54,6 @@ public struct SyncJobs: Sendable {
 
         let syncList = decodedMessage.body.syncInfoList
 
-        // TODO: Check if this needs cache (prolly not)
         await syncList.asyncForEach { await coherentCache.updateSynchro($0.asSynchro) }
 
         return syncList
@@ -89,7 +88,12 @@ public struct SyncJobs: Sendable {
 
         try decodedMessage.validate()
 
-        return decodedMessage.body.syncStatus
+        let syncStatus = decodedMessage.body.syncStatus
+
+        // TODO: update existing sync state in cache
+        // await coherentCache.updateSynchroState(syncDbId / newSyncState)
+
+        return syncStatus
     }
 
     public func addSync(identifier: NewSyncParentIdentifier, metadata: NewSyncMetadata) async throws -> SyncInfo {
@@ -110,17 +114,19 @@ public struct SyncJobs: Sendable {
 
     private func addSync(_ newSyncQuery: NewSyncQuery) async throws -> SyncInfo {
         let request = await RequestMessage<NewSyncQuery>(num: RequestNum.SYNC_ADD, body: newSyncQuery)
-        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<SyncInfoSingle>.self)
-        try decodedMessage.validate()
-
-        return decodedMessage.body.syncInfo
+        return try await addSyncQuery(request, responseType: CallbackMessage<SyncInfoSingle>.self)
     }
 
     private func addSync(_ newSyncQuery: NewSyncQueryAlternate) async throws -> SyncInfo {
         let request = await RequestMessage<NewSyncQueryAlternate>(num: RequestNum.SYNC_ADD2, body: newSyncQuery)
+        return try await addSyncQuery(request, responseType: CallbackMessage<SyncInfoSingle>.self)
+    }
+
+    private func addSyncQuery<Response: Decodable>(_ request: Encodable, responseType: Response.Type) async throws -> SyncInfo {
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<SyncInfoSingle>.self)
         try decodedMessage.validate()
 
+        // TODO: bump cache / listen signal
         return decodedMessage.body.syncInfo
     }
 
@@ -142,6 +148,9 @@ public struct SyncJobs: Sendable {
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
 
         try decodedMessage.validate()
+
+        // TODO: clear cache based only on syncDbId
+        // coherentCache.removeSynchro(syncDbId, fromDrive: <#T##Int32#>, accountId: <#T##Int32#>, userId: <#T##Int32#>)
     }
 
     public func getPublicLinkUrl(driveDbId: Int32, nodeId: String) async throws {
