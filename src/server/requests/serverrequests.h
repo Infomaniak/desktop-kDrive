@@ -115,6 +115,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
                                       std::function<void(const QString &, qint64)> callback);
         static ExitCode getNodeIdByPath(int userDbId, int driveId, const SyncPath &path, QString &nodeId);
         static ExitInfo getPathByNodeId(int userDbId, int driveId, const QString &nodeId, QString &path);
+        static ExitInfo getPathByNodeId(int userDbId, int driveId, const NodeId &nodeId, CommString &path);
 
         // C/S requests (others)
         static ExitCode deleteUser(int userDbId); // !!! Use COMM_LONG_TIMEOUT !!!

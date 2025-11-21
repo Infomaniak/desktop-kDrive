@@ -51,6 +51,7 @@ set(server_SRCS
     comm/guijobs/abstractguijob.h comm/guijobs/abstractguijob.cpp
     comm/guijobs/guijobfactory.h comm/guijobs/guijobfactory.cpp
     comm/guijobs/loginrequesttokenjob.h comm/guijobs/loginrequesttokenjob.cpp
+    comm/guijobs/nodepathjob.h comm/guijobs/nodepathjob.cpp
     comm/guijobs/unknownrequestjob.h comm/guijobs/unknownrequestjob.cpp
     comm/guijobs/userdbidlistjob.h comm/guijobs/userdbidlistjob.cpp
     comm/guijobs/userinfolistjob.h comm/guijobs/userinfolistjob.cpp

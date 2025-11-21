@@ -948,6 +948,16 @@ ExitCode ServerRequests::getNodeIdByPath(int userDbId, int driveId, const SyncPa
     return ExitCode::Ok;
 }
 
+ExitInfo ServerRequests::getPathByNodeId(const int userDbId, const int driveId, const NodeId &nodeId, CommString &path) {
+    path = {};
+    QString pathQString;
+
+    const auto exitInfo = getPathByNodeId(userDbId, driveId, QString::fromStdString(nodeId), pathQString);
+    path = CommonUtility::qStr2CommString(pathQString);
+
+    return exitInfo;
+}
+
 ExitInfo ServerRequests::getPathByNodeId(int userDbId, int driveId, const QString &nodeId, QString &path) {
     NodeInfo nodeInfo;
 
