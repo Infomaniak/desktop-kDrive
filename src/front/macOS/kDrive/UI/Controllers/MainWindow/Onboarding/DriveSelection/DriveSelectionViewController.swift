@@ -34,6 +34,12 @@ class DriveSelectionViewController: OnboardingStepViewController {
         return labeledAvatarView
     }()
 
+    private lazy var noDriveAvailableView: NoDriveAvailableView = {
+        let noDriveAvailable = NoDriveAvailableView()
+        noDriveAvailable.translatesAutoresizingMaskIntoConstraints = false
+        return noDriveAvailable
+    }()
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -62,6 +68,10 @@ class DriveSelectionViewController: OnboardingStepViewController {
 
         stackView.insertArrangedSubview(labeledUserView, at: 1)
         stackView.setCustomSpacing(AppPadding.padding12, after: titleLabel)
+
+        stackView.insertArrangedSubview(noDriveAvailableView, at: 2)
+        stackView.setCustomSpacing(AppPadding.padding24, after: titleLabel)
+        noDriveAvailableView.isHidden = true
     }
 
     private func bindViewModel() {
