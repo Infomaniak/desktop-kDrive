@@ -31,6 +31,7 @@
 #include "comm/guijobs/syncadd2job.h"
 #include "comm/guijobs/syncgetpubliclinkurljob.h"
 #include "comm/guijobs/syncgetprivatelinkurljob.h"
+#include "comm/guijobs/syncpropagatesynclistchangejob.h"
 #include "libcommon/comm.h"
 #include "log/log.h"
 
@@ -1149,7 +1150,6 @@ void TestGuiCommChannel::testSyncGetPrivateLinkUrlJob() {
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto syncGetPrivateLinkUrlJob = std::dynamic_pointer_cast<SyncGetPrivateLinkUrlJob>(job);
-
         syncGetPrivateLinkUrlJob->_linkUrl = std::string{"https://kdrive.infomaniak.com/app/drive/1/redirect/1111"};
     };
 
@@ -1159,6 +1159,50 @@ void TestGuiCommChannel::testSyncGetPrivateLinkUrlJob() {
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
+
+void TestGuiCommChannel::testSyncPropagateSyncListChangeJob() {
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    const auto queryStr{R"({ "id": 1,)"
+                        R"( "num": )" +
+                        std::to_string(toInt(RequestNum::SYNC_PROPAGATE_SYNCLIST_CHANGE)) +
+                        R"(,)"
+                        R"( "params": { "driveDbId": 1, "restartSync": true } })"};
+#else
+    // There is no need to pass a request id as the response is via a callback.
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::SYNC_PROPAGATE_SYNCLIST_CHANGE)) +
+                        R"(,)"
+                        R"( "params": { "syncDbId": 1, "restartSync": true } })"};
+
+    // Callback expected answer
+    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{}})"};
+#endif
+
+    // Job expected answer
+    const auto answerStr{R"({ "cause": 0,)"
+                         R"( "code": 0,)"
+                         R"( "id": 1,)"
+                         R"( "num": )" +
+                         std::to_string(toInt(RequestNum::SYNC_PROPAGATE_SYNCLIST_CHANGE)) +
+                         R"(,)"
+                         R"( "params": {  },)"
+                         R"( "type": )" +
+                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto syncPropagateSyncListChangeJob = std::dynamic_pointer_cast<SyncPropagateSyncListChangeJob>(job);
+
+        CPPUNIT_ASSERT(syncPropagateSyncListChangeJob);
+        CPPUNIT_ASSERT(syncPropagateSyncListChangeJob->_restartSync);
+        CPPUNIT_ASSERT_EQUAL(1, syncPropagateSyncListChangeJob->_syncDbId);
+    };
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+#else
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
 
 void TestGuiCommChannel::testGenericJob(const CommString &query, const CommString &answer, const CommString &cbkAnswer,
                                         const std::function<void(std::shared_ptr<AbstractGuiJob>)> &processFct) {

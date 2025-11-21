@@ -38,6 +38,7 @@
 #include "syncdeletejob.h"
 #include "syncgetpubliclinkurljob.h"
 #include "syncgetprivatelinkurljob.h"
+#include "syncpropagatesynclistchangejob.h"
 
 namespace KDC {
 
@@ -61,7 +62,8 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::SYNC_START_AFTER_LOGIN, makeShared<SyncStartAfterLoginJob>},
                 {RequestNum::SYNC_DELETE, makeShared<SyncDeleteJob>},
                 {RequestNum::SYNC_GETPUBLICLINKURL, makeShared<SyncGetPublicLinkUrlJob>},
-                {RequestNum::SYNC_GETPRIVATELINKURL, makeShared<SyncGetPrivateLinkUrlJob>}};
+                {RequestNum::SYNC_GETPRIVATELINKURL, makeShared<SyncGetPrivateLinkUrlJob>},
+                {RequestNum::SYNC_PROPAGATE_SYNCLIST_CHANGE, makeShared<SyncPropagateSyncListChangeJob>}};
 }
 
 std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::shared_ptr<CommManager> commManager,
