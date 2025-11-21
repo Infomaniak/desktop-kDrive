@@ -19,17 +19,22 @@
 import Cocoa
 
 public final class ResizableImageView: NSView {
-    public let image: NSImage
+    public var image: NSImage? {
+        didSet {
+            setImage(image)
+        }
+    }
 
-    public var preferredRect: NSRect
+    public var preferredRect: NSRect = .zero
     public var imageGravity: CALayerContentsGravity = .resizeAspectFill
 
-    public init(image: NSImage) {
+    private var contentsScale: CGFloat {
+        return window?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2.0
+    }
+
+    public init(image: NSImage? = nil) {
         self.image = image
-
-        preferredRect = CGRect(origin: .zero, size: image.size)
         super.init(frame: .zero)
-
         setupView()
     }
 
@@ -39,24 +44,33 @@ public final class ResizableImageView: NSView {
     }
 
     private func setupView() {
-        let contentsScale = window?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2.0
-        var imageRect = CGRect(
+        wantsLayer = true
+
+        layer?.masksToBounds = true
+        layer?.contentsGravity = imageGravity
+        layer?.contentsScale = contentsScale
+
+        setImage(image)
+    }
+
+    private func setImage(_ image: NSImage?) {
+        guard let image else {
+            return
+        }
+
+        if preferredRect == .zero {
+            preferredRect = CGRect(origin: .zero, size: image.size)
+        }
+
+        var proposedRect = CGRect(
             x: 0,
             y: 0,
             width: preferredRect.width * contentsScale,
             height: preferredRect.height * contentsScale
         )
-
-        guard let cgImage = image.cgImage(forProposedRect: &imageRect, context: nil, hints: nil) else {
-            return
+        if let cgImage = image.cgImage(forProposedRect: &proposedRect, context: nil, hints: nil) {
+            layer?.contents = cgImage
         }
-
-        wantsLayer = true
-
-        layer?.masksToBounds = true
-        layer?.contents = cgImage
-        layer?.contentsGravity = imageGravity
-        layer?.contentsScale = contentsScale
     }
 }
 

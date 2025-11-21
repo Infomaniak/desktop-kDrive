@@ -21,52 +21,74 @@ import kDriveCore
 import kDriveCoreUI
 
 class LabeledAvatarView: NSView {
-    let name: String
-    let avatar: NSImage?
+    var user: UIUser? {
+        didSet {
+            update(for: user)
+        }
+    }
 
-    init(user: UIUser) {
-        name = user.name
-        avatar = user.avatar
-        super.init(frame: .zero)
+    private lazy var imageView: ResizableImageView = {
+        let resizableImage = ResizableImageView()
+        resizableImage.translatesAutoresizingMaskIntoConstraints = false
+        resizableImage.preferredRect = NSRect(x: 0, y: 0, width: 24, height: 24)
+        resizableImage.layer?.cornerRadius = resizableImage.preferredRect.width / 2
+        return resizableImage
+    }()
+
+    private lazy var label: NSTextField = {
+        let textField = NSTextField(labelWithString: user?.name ?? "")
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.textColor = NSColor.Tokens.Text.secondary
+        textField.font = NSFont.Tokens.body
+        return textField
+    }()
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
         setupView()
     }
 
-    @available(*, unavailable)
+    convenience init(user: UIUser? = nil) {
+        self.init(frame: .zero)
+
+        self.user = user
+        setupView()
+    }
+
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        super.init(coder: coder)
+        setupView()
     }
 
     private func setupView() {
-        let stackView = NSStackView()
+        let stackView = NSStackView(views: [imageView, label])
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.alignment = .centerY
         stackView.spacing = AppPadding.padding8
         addSubview(stackView)
 
-        if let avatar {
-            let imageView = ResizableImageView(image: avatar)
-            imageView.translatesAutoresizingMaskIntoConstraints = false
-            imageView.preferredRect = NSRect(x: 0, y: 0, width: 24, height: 24)
-            stackView.addArrangedSubview(imageView)
-
-            NSLayoutConstraint.activate([
-                imageView.widthAnchor.constraint(equalToConstant: imageView.preferredRect.width),
-                imageView.heightAnchor.constraint(equalToConstant: imageView.preferredRect.height)
-            ])
+        if let avatar = user?.avatar {
+            imageView.image = avatar
         }
 
-        let label = NSTextField(labelWithString: name)
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.textColor = NSColor.Tokens.Text.secondary
-        label.font = NSFont.Tokens.body
-        stackView.addArrangedSubview(label)
-
         NSLayoutConstraint.activate([
+            imageView.widthAnchor.constraint(equalToConstant: imageView.preferredRect.width),
+            imageView.heightAnchor.constraint(equalToConstant: imageView.preferredRect.height),
+
             stackView.topAnchor.constraint(equalTo: topAnchor),
             stackView.bottomAnchor.constraint(equalTo: bottomAnchor),
             stackView.leadingAnchor.constraint(equalTo: leadingAnchor),
             stackView.trailingAnchor.constraint(equalTo: trailingAnchor)
         ])
+    }
+
+    private func update(for user: UIUser?) {
+        guard let user else { return }
+
+        label.stringValue = user.name
+        if let avatar = user.avatar {
+            imageView.image = avatar
+        }
     }
 }
 

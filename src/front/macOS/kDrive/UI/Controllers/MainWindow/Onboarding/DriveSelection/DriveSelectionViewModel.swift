@@ -27,7 +27,7 @@ final class DriveSelectionViewModel: ObservableObject {
     @LazyInjectService private var coherentCache: CoherentCache
 
     @Published private(set) var currentUser: UIUser?
-    @Published private(set) var availableDrives: [UIDrive]? = nil
+    @Published private(set) var availableDrives: [UIDrive]?
 
     init() {}
 

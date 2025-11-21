@@ -28,9 +28,17 @@ class DriveSelectionViewController: OnboardingStepViewController {
 
     private var bindStore = Set<AnyCancellable>()
 
+    private lazy var labeledUserView: LabeledAvatarView = {
+        let labeledAvatarView = LabeledAvatarView()
+        labeledAvatarView.translatesAutoresizingMaskIntoConstraints = false
+        return labeledAvatarView
+    }()
+
     override func viewDidLoad() {
         super.viewDidLoad()
+
         setupUI()
+        bindViewModel()
     }
 
     override func viewWillAppear() {
@@ -54,13 +62,16 @@ class DriveSelectionViewController: OnboardingStepViewController {
         secondaryButton.title = KDriveLocalizable.buttonAdvancedParameters
         secondaryButton.target = self
         secondaryButton.action = #selector(didTapAdvancedSettings)
+
+        stackView.insertArrangedSubview(labeledUserView, at: 1)
+        stackView.setCustomSpacing(AppPadding.padding12, after: titleLabel)
     }
 
     private func bindViewModel() {
         viewModel.$currentUser
             .receiveOnMain(store: &bindStore) { [weak self] user in
                 guard let user else { return }
-                self?.setupCurrentUser(user)
+                self?.labeledUserView.user = user
             }
 
         viewModel.$availableDrives
@@ -68,10 +79,6 @@ class DriveSelectionViewController: OnboardingStepViewController {
                 guard let availableDrives else { return }
                 self?.updateDrivesList(availableDrives)
             }
-    }
-
-    private func setupCurrentUser(_ user: UIUser) {
-        // TODO: Show user info
     }
 
     private func updateDrivesList(_ drives: [UIDrive]) {
