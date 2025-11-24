@@ -30,7 +30,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         // Requests
         public async Task<List<DbId>?> GetUserDbIds(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.UserDbIds, new JsonObject(), cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.USER_DBIDLIST, new JsonObject(), cancellationToken);
             if (data.Params == null || !data.Params.ContainsKey(JsonKeys.UserDbIds))
             {
                 Logger.Log(Logger.Level.Error, $"{JsonKeys.UserDbIds} not found in response.");
@@ -41,10 +41,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task<User?> AddOrRelogUser(string oAuthCode, string oAuthCodeVerifier, CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.LoginRequestToken, new JsonObject
+            CommData data = await _commClient.SendRequestAsync(RequestNum.LOGIN_REQUESTTOKEN, new JsonObject
             {
-                [JsonKeys.OAuthCode] = Convert.ToBase64String(Encoding.UTF8.GetBytes(oAuthCode)),
-                [JsonKeys.OAuthCodeVerifier] = Convert.ToBase64String(Encoding.UTF8.GetBytes(oAuthCodeVerifier))
+                [JsonKeys.OAuthCode] = Utility.ToBase64String(oAuthCode),
+                [JsonKeys.OAuthCodeVerifier] = Utility.ToBase64String(oAuthCodeVerifier)
             }, cancellationToken);
 
             if (data.Params == null || !data.Params.ContainsKey(JsonKeys.UserDbId) || data.Params[JsonKeys.UserDbId] == null)
@@ -73,7 +73,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task RefreshUsers(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.UserInfoList, new JsonObject(), cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.USER_INFOLIST, new JsonObject(), cancellationToken);
             if (data.Params == null || !data.Params.ContainsKey(JsonKeys.UserInfoList))
             {
                 Logger.Log(Logger.Level.Error, $"{JsonKeys.UserInfoList} not found in response.");
@@ -121,7 +121,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task RefreshAccounts(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.AccountInfoList, new JsonObject(), cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.ACCOUNT_INFOLIST, new JsonObject(), cancellationToken);
             if (data.Params == null || !data.Params.ContainsKey(JsonKeys.AccountInfoList))
             {
                 Logger.Log(Logger.Level.Error, $"{JsonKeys.AccountInfoList} not found in response.");
@@ -172,7 +172,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task RefreshDrives(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.DriveInfoList, new JsonObject(), cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.DRIVE_INFOLIST, new JsonObject(), cancellationToken);
             if (data.Params == null || !data.Params.ContainsKey(JsonKeys.DriveInfoList))
             {
                 Logger.Log(Logger.Level.Error, $"{JsonKeys.DriveInfoList} not found in response.");
@@ -307,7 +307,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task RefreshSyncs(CancellationToken cancellationToken)
         {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.SyncInfoList, new JsonObject(), cancellationToken);
+            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_INFOLIST, new JsonObject(), cancellationToken);
             if (data.Params == null || !data.Params.ContainsKey(JsonKeys.SyncInfoList))
             {
                 Logger.Log(Logger.Level.Error, $"{JsonKeys.DriveInfoList} not found in response.");
@@ -433,6 +433,121 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             CommStruct.ConversionHelper.copyToSettings(parametersInfo, _viewModel.Settings);
         }
 
+        public async Task<List<Node>?> GetSubFolders(DbId userDbId, DriveId driveId, NodeId parentNodeId, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.UserDbId] = userDbId,
+                [JsonKeys.DriveId] = driveId,
+                [JsonKeys.NodeId] = Utility.ToBase64String(parentNodeId) ?? "",
+                [JsonKeys.WithPath] = true
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.NODE_SUBFOLDERS, parms, cancellationToken);
+
+            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.NodeSubFolderInfoList))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.NodeSubFolderInfoList} not found in response.");
+                return new List<Node>();
+            }
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            options.Converters.Add(new Base64StringJsonConverter());
+            List<NodeInfo> nodeList = data.Params[JsonKeys.NodeSubFolderInfoList].Deserialize<List<NodeInfo>>(options) ?? new List<NodeInfo>();
+            List<Node> nodes = nodeList.Select(n =>
+            {
+                return new Node(n.NodeId ?? "", n.Name ?? "", n.Size ?? 0, n.ParentNodeId ?? "", n.Path ?? "", userDbId, driveId);
+            }).ToList();
+
+            return nodes;
+        }
+        public async Task<Node?> GetNodeInfo(DbId userDbId, DriveId driveId, NodeId nodeId, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.UserDbId] = userDbId,
+                [JsonKeys.DriveId] = driveId,
+                [JsonKeys.NodeId] = Utility.ToBase64String(nodeId),
+                [JsonKeys.WithPath] = true
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.NODE_INFO, parms, cancellationToken);
+
+            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.NodeInfo))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.NodeInfo} not found in response.");
+                return null;
+            }
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            options.Converters.Add(new Base64StringJsonConverter());
+            NodeInfo? nodeInfo = data.Params[JsonKeys.NodeInfo].Deserialize<NodeInfo>(options);
+            if (nodeInfo is null)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to deserialize nodeInfo from ${data.Params[JsonKeys.NodeInfo]}.");
+                return null;
+            }
+            return new Node(nodeInfo.NodeId ?? "", nodeInfo.Name ?? "", nodeInfo.Size ?? 0, nodeInfo.ParentNodeId ?? "", nodeInfo.Path ?? "", userDbId, driveId);
+        }
+
+        public async Task<Int64?> GetFolderSize(long userDbId, long driveId, string nodeId, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.UserDbId] = userDbId,
+                [JsonKeys.DriveId] = driveId,
+                [JsonKeys.NodeId] = Utility.ToBase64String(nodeId),
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.NODE_FOLDER_SIZE, parms, cancellationToken);
+
+            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.FolderSize))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.FolderSize} not found in response.");
+                return -1;
+            }
+
+            Int64? folderSize = data.Params[JsonKeys.FolderSize]?.GetValue<Int64>();
+            return folderSize;
+        }
+
+        public async Task<List<NodeId>?> GetBlacklistedNodeIdList(DbId syncDbId, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.SyncDbId] = syncDbId,
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.BLACKLISTED_NODE_LIST, parms, cancellationToken);
+
+            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.NodeIdList))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.NodeIdList} not found in response.");
+                return null;
+            }
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            options.Converters.Add(new Base64StringJsonConverter());
+            return data.Params[JsonKeys.NodeIdList].Deserialize<List<NodeId>>(options) ?? new List<NodeId>();
+        }
+
+        public async Task SetBlacklistedNodeIdList(DbId syncDbId, List<NodeId> idList, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.SyncDbId] = syncDbId,
+                [JsonKeys.NodeIdList] = JsonSerializer.SerializeToNode(idList, new JsonSerializerOptions { Converters = { new Base64StringJsonConverter() } })
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.BLACKLISTED_NODE_SETLIST, parms, cancellationToken);
+
+            if (data.Params is not null && data.Params.ContainsKey(JsonKeys.ExitCode) && data.Params[JsonKeys.ExitCode]?.GetValue<int>() != 0)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to set sync node id list for syncDbId {syncDbId}, exit code: {data.Params[JsonKeys.ExitCode]?.GetValue<int>()}");
+                return;
+            }
+        }
         public async Task StartUpdate(CancellationToken cancellationToken)
         {
             await _commClient.SendRequestAsync(RequestNum.UPDATER_START_INSTALLER, new JsonObject(), cancellationToken);

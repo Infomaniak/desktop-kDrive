@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "syncnodesetlistjob.h"
+#include "blacklistednodesetlistjob.h"
 #include "appserver.h"
 #include "requests/serverrequests.h"
 #include "server/comm/guijobmanager.h"
@@ -26,42 +26,40 @@
 
 // Input parameters keys
 static const auto inParamsSyncDbId = "syncDbId";
-static const auto inParamsSyncNodeType = "syncNodeType";
 static const auto inParamsNodeIdList = "nodeIdList";
 
 namespace KDC {
 
-SyncNodeSetListJob::SyncNodeSetListJob(std::shared_ptr<CommManager> commManager, int requestId,
+BlacklistedNodeSetListJob::BlacklistedNodeSetListJob(std::shared_ptr<CommManager> commManager, int requestId,
                                        const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
-    _requestNum = RequestNum::SYNCNODE_SETLIST;
+    _requestNum = RequestNum::BLACKLISTED_NODE_SETLIST;
 }
 
-ExitInfo SyncNodeSetListJob::deserializeInputParms() {
+ExitInfo BlacklistedNodeSetListJob::deserializeInputParms() {
     try {
         readParamValue(inParamsSyncDbId, _syncDbId);
-        readParamValue(inParamsSyncNodeType, _syncNodeType);
         readParamValues(inParamsNodeIdList, _nodeIdList);
     } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in SyncNodeSetListJob::readParamValue: error=" << e.what());
+        LOG_WARN(_logger, "Exception in AbstractGuiJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
     }
 
     return ExitCode::Ok;
 }
 
-ExitInfo SyncNodeSetListJob::process() {
+ExitInfo BlacklistedNodeSetListJob::process() {
     std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
     auto &syncPalMap = _commManager->appServer().syncPalMap;
     auto it = syncPalMap.find(_syncDbId);
     if (it == syncPalMap.end()) {
-        LOG_WARN(_logger, "SyncNodeSetListJob::process: SyncPal not found for syncDbId=" << _syncDbId);
+        LOG_WARN(_logger, "BlacklistedNodeSetListJob::process: SyncPal not found for syncDbId=" << _syncDbId);
         return ExitCode::DataError;
     }
 
     NodeSet nodeIdSet;
     nodeIdSet.insert(_nodeIdList.begin(), _nodeIdList.end());
-    if (ExitInfo exitInfo = it->second->setSyncIdSet(_syncNodeType, nodeIdSet); !exitInfo) {
+    if (ExitInfo exitInfo = it->second->setSyncIdSet(SyncNodeType::BlackList, nodeIdSet); !exitInfo) {
         LOG_WARN(_logger, "SyncNodeSetListJob::process: setSyncIdSet failed for syncDbId=" << _syncDbId
                                                                                            << ", syncNodeType=" << _syncNodeType);
         AppServer::addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));

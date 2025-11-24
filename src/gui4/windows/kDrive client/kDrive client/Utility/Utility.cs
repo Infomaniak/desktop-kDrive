@@ -335,6 +335,13 @@ namespace Infomaniak.kDrive
             var result = await dialog.ShowAsync();
             return result;
         }
+
+
+        public static string? ToBase64String(string? data)
+        {
+            if (data is null) return null;
+            return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(data));
+        }
     }
 }
 

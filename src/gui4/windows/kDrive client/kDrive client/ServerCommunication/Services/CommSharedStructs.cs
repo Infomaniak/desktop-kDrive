@@ -222,8 +222,6 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         public bool? ExtendedLog { get; set; }
         public bool? PurgeOldLogs { get; set; }
         public ProxyConfigInfo? ProxyConfigInfo { get; set; }
-        public bool? UseBigFolderSizeLimit { get; set; } // Not implemented
-        public long? BigFolderSizeLimit { get; set; } // Not implemented
         public bool? ShowShortcuts { get; set; }
         public bool MatomoEnabled { get; set; }
         public bool SentryEnabled { get; set; }
@@ -299,8 +297,8 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         public NodeType? Type { get; set; }
         public string? Path { get; set; }
         public string? NewPath { get; set; }
-        public string? LocalNodeId { get; set; }
-        public string? RemoteNodeId { get; set; }
+        public NodeId? LocalNodeId { get; set; }
+        public NodeId? RemoteNodeId { get; set; }
 
         public SyncDirection? Direction { get; set; }
         public SyncFileInstruction? Instruction { get; set; }
@@ -327,6 +325,27 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             copyProperty(source, target, nameof(source.Inconsistency), nameof(target.Inconsistency));
             copyProperty(source, target, nameof(source.CancelType), nameof(target.CancelType));
             copyProperty(source, target, nameof(source.Error), nameof(target.Error));
+        }
+    }
+
+    public class NodeInfo
+    {
+        public NodeId? NodeId { get; set; }
+        public string? Name { get; set; }
+        public Int64? Size { get; set; }
+        public NodeId? ParentNodeId { get; set; }
+        public string? Path { get; set; }
+    };
+
+    public static partial class ConversionHelper
+    {
+        static public void copyToNode(NodeInfo source, Node target)
+        {
+            copyProperty(source, target, nameof(source.NodeId), nameof(target.NodeId));
+            copyProperty(source, target, nameof(source.Name), nameof(target.Name));
+            copyProperty(source, target, nameof(source.Size), nameof(target.Size));
+            copyProperty(source, target, nameof(source.ParentNodeId), nameof(target.ParentNodeId));
+            copyProperty(source, target, nameof(source.Path), nameof(target.Path));
         }
     }
 }

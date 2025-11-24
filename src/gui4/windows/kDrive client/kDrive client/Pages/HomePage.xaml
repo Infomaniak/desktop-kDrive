@@ -79,7 +79,8 @@
 
                 <controls:LottiePlayer Grid.Row="0"
                                        UriSource="{ThemeResource Infomaniak.Custom.Animations.check}"
-                                       MaxWidth="230" />
+                                       MaxWidth="230" 
+                                       Padding="50"/>
 
                 <StackPanel Grid.Row="1"
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">

@@ -21,19 +21,20 @@
 #include "server/comm/guijobs/abstractguijob.h"
 namespace KDC {
 
-class SyncNodeSetListJob : public AbstractGuiJob {
+class BlacklistedNodeListJob : public AbstractGuiJob {
     public:
-        SyncNodeSetListJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+        BlacklistedNodeListJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
                     std::shared_ptr<AbstractCommChannel> channel);
 
     private:
         // Input parameters
         int _syncDbId = 0;
-        SyncNodeType _syncNodeType = SyncNodeType::Undefined;
+
+        // Output parameters
         std::vector<NodeId> _nodeIdList;
 
         ExitInfo deserializeInputParms() override;
-        ExitInfo serializeOutputParms() override { return ExitCode::Ok; }
+        ExitInfo serializeOutputParms() override;
         ExitInfo process() override;
 
         friend class TestGuiCommChannel;

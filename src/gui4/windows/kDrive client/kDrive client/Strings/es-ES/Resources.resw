@@ -123,6 +123,12 @@
   <data name="CC_TrayIcon_OpenApplicationCommand.Label" xml:space="preserve">
     <value />
   </data>
+  <data name="CC_SyncExclusionSelector_Header_Size.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncExclusionSelector_Header_Name.Text" xml:space="preserve">
+    <value />
+  </data>
   <data name="W_MainWindow_NavBar_Home.Content" xml:space="preserve">
     <value />
   </data>
@@ -136,9 +142,6 @@
     <value />
   </data>
   <data name="CC_SyncStatusBar_PausedStatus.Text" xml:space="preserve">
-    <value />
-  </data>
-  <data name="CC_SyncStatusBar_SyncingStatus.Text" xml:space="preserve">
     <value />
   </data>
   <data name="CC_SyncStatusBar_StartingStatus.Text" xml:space="preserve">
@@ -496,10 +499,16 @@
   <data name="Page_Settings_DriveManagementPage_FolderSelection.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
-  <data name="Page_Settings_DriveManagementPage_FolderSelection_Presentation.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+  <data name="Page_Settings_DriveManagementPage_FolderSelection_Presentation_Header.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
-  <data name="Page_Settings_DriveManagementPage_FolderSelection_Presentation.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+  <data name="Page_Settings_DriveManagementPage_FolderSelection_SaveButton.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_FolderSelection_CancelButton.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_FolderSelection_Presentation_Description.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncMode.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
@@ -763,9 +772,6 @@
   <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.CloseButtonText" xml:space="preserve">
     <value />
   </data>
-  <data name="Page_SettingsPage_Proxy_ComoBox_HTTP.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
-    <value />
-  </data>
   <data name="W_MainWindow_PaneFooter_Folder.Content" xml:space="preserve">
     <value />
   </data>
@@ -788,6 +794,12 @@
     <value />
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Proxy_ComoBox_HTTP.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="CC_SyncStatusBar_SyncingStatus.Text" xml:space="preserve">
     <value />
   </data>
 </root>
