@@ -42,7 +42,7 @@ ExitInfo GetAvatarJob::handleError(const std::string &replyBody, const Poco::URI
     Poco::AutoPtr<Poco::XML::Document> pDoc = parser.parseString(replyBody);
     Poco::XML::Node *pNode = pDoc->getNodeByPath(errorCodePathKey);
     if (pNode != nullptr) {
-        _backError = BackError(pNode->innerText());
+        _backError = BackError(pNode->innerText(), {});
         LOG_WARN(_logger, "Error in request: " << uri.toString() << ". Error code: " << _backError.code());
     } else {
         LOG_WARN(_logger, "Unknown error in request: " << uri.toString());

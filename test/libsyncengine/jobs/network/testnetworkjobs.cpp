@@ -977,8 +977,8 @@ void TestNetworkJobs::testFullFileListWithCursorCsvBlacklist() {
     const ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
-    int counter = 0;
-    std::string cursor = job.getCursor();
+    auto counter = 0;
+    const std::string cursor = job.getCursor();
     SnapshotItem item;
     bool error = false;
     bool ignore = false;

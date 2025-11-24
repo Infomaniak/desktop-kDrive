@@ -34,7 +34,8 @@ class BackError {
     public:
         explicit BackError() = default;
         explicit BackError(const Poco::JSON::Object::Ptr jsonObjPtr);
-        explicit BackError(const std::string &code, const std::string &description = {}, const std::string &contextReason = {},
+        explicit BackError(const std::string &jsonStr);
+        explicit BackError(const std::string &code, const std::string &description, const std::string &contextReason = {},
                            const std::string &contextModel = {});
 
         [[nodiscard]] const std::string &code() const { return _code; }
@@ -45,6 +46,7 @@ class BackError {
         bool hasValidError() const { return !_code.empty(); }
 
     private:
+        void extractErrorFromJsonObject(const Poco::JSON::Object::Ptr jsonObjPtr);
         void extractFromFullReply(const Poco::JSON::Object::Ptr jsonObjPtr);
         void extractFromErrorObject(const Poco::JSON::Object::Ptr jsonObjPtr);
 
