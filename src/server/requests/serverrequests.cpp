@@ -90,13 +90,13 @@ ExitCode ServerRequests::getUserInfoList(QList<UserInfo> &list) {
 }
 
 ExitCode ServerRequests::getUserInfoList(std::vector<UserInfo> &list) {
+    list.clear();
     std::vector<User> userList;
     if (!ParmsDb::instance()->selectAllUsers(userList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
         return ExitCode::DbError;
     }
 
-    list.clear();
     for (const User &user: userList) {
         UserInfo userInfo;
         userToUserInfo(user, userInfo);
