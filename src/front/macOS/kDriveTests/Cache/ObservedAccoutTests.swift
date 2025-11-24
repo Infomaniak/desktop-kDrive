@@ -52,7 +52,7 @@ final class ObservedAccoutTests: XCTestCase {
             name: "appleseed",
             email: "ja@apple.com",
             accounts: indexedAccounts,
-            availableDrives: [:],
+            availableDrives: [],
             avatar: Data(),
             isConnected: true,
             isStaff: true
@@ -65,7 +65,7 @@ final class ObservedAccoutTests: XCTestCase {
 
         // THEN
         let cachedUser = await cache.getUser(dbId: Self.expectedUserDbId)
-        let cachedAccount = await cache.getAccount(Self.expectedAccountDbId, userDbId: Self.expectedUserDbId)
+        let cachedAccount = await cache.getAccount(accountDbId: Self.expectedAccountDbId, userDbId: Self.expectedUserDbId)
         XCTAssertEqual(cachedUser, user, "The cache user should have been updated")
         XCTAssertEqual(cachedAccount, cachedAccount, "The cache account should have been updated")
         XCTAssertEqual(observedAccount, expectedAccount, "The observed object should have been updated")

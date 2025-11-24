@@ -33,7 +33,7 @@ final class ObservableCoherentCacheTests: XCTestCase {
             name: "appleseed",
             email: "ja@apple.com",
             accounts: [:],
-            availableDrives: [:],
+            availableDrives: [],
             avatar: Data(),
             isConnected: true,
             isStaff: true

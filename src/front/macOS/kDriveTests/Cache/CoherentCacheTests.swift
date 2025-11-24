@@ -30,7 +30,7 @@ enum CoherentCacheTestsData {
             name: "appleseed",
             email: "ja@apple.com",
             accounts: [:],
-            availableDrives: [:],
+            availableDrives: [],
             avatar: Data(),
             isConnected: true,
             isStaff: true
@@ -46,7 +46,7 @@ enum CoherentCacheTestsData {
             name: updatedUserName,
             email: "ja@apple.com",
             accounts: [:],
-            availableDrives: [:],
+            availableDrives: [],
             avatar: Data(),
             isConnected: true,
             isStaff: true

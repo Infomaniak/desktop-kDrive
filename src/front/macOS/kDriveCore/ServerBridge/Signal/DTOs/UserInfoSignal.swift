@@ -35,7 +35,7 @@ extension UserInfoSignal {
              name: name,
              email: email,
              accounts: [:],
-             availableDrives: [:],
+             availableDrives: [],
              avatar: avatar,
              isConnected: isConnected,
              isStaff: isStaff)
