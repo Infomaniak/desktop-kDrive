@@ -58,6 +58,11 @@ enum CacheData {
     static var expectedAccount: Account {
         Account(dbId: expectedAccountDbId, name: expectedAccountName, drives: [:])
     }
+
+    static let updatedAccountName = "myUpdatedAccount"
+    static var updatedAccount: Account {
+        Account(dbId: expectedAccountDbId, name: updatedAccountName, drives: [:])
+    }
 }
 
 struct CoherentCacheUserTests {
@@ -114,5 +119,70 @@ struct CoherentCacheUserTests {
                 "Should not be able to fetch an object with the old API id")
         #expect(await cache.getUser(apiId: CacheData.updatedUserAPIId) == CacheData.updatedUser,
                 "Should be able to fetch an object with the old API id")
+    }
+}
+
+struct CoherentCacheAccountTests {
+    @Test func getAccountInCache() async throws {
+        // GIVEN
+        let user = CacheData.expectedUser
+        let cache = CoherentCache()
+        #expect(await cache.getUser(apiId: CacheData.expectedUserAPIId) == nil)
+        await cache.addUser(user)
+        #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
+
+        // WHEN
+        await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
+
+        // THEN
+        #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId) == CacheData.expectedAccount)
+        #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId) == CacheData.expectedAccount)
+    }
+
+    @Test func removeAccountInCacheFromDbId() async throws {
+        // GIVEN
+        let user = CacheData.expectedUser
+        let cache = CoherentCache()
+        #expect(await cache.getUser(apiId: CacheData.expectedUserAPIId) == nil)
+        await cache.addUser(user)
+        #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == CacheData.expectedUser)
+        #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId) == nil)
+        await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
+        #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId) == CacheData.expectedAccount)
+
+        // WHEN
+        await cache.removeAccount(accountDbId: CacheData.expectedAccountDbId)
+
+        // THEN
+        #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId) == nil)
+        #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == CacheData.expectedUser)
+    }
+
+    @Test func updateAccountInCache() async throws {
+        // GIVEN
+        let user = CacheData.expectedUser
+        let cache = CoherentCache()
+        #expect(await cache.getUser(apiId: CacheData.expectedUserAPIId) == nil)
+        await cache.addUser(user)
+        #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == CacheData.expectedUser)
+        #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId) == nil)
+        await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
+        #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId) == CacheData.expectedAccount)
+
+        // WHEN
+        do {
+            try await cache.updateAccount(CacheData.updatedAccount)
+
+            // THEN
+            guard let accountByDbId = await cache.getAccount(accountDbId: CacheData.expectedAccountDbId) else {
+                Issue.record("We should be able to fetch an account from db id")
+                return
+            }
+
+            #expect(accountByDbId == CacheData.updatedAccount)
+            #expect(accountByDbId.name == CacheData.updatedAccountName)
+        } catch {
+            Issue.record("unexpected error: \(error)")
+        }
     }
 }
