@@ -17,7 +17,7 @@
  */
 
 import Foundation
-import kDriveCore
+@testable import kDriveCore
 import Testing
 
 enum CacheData {
@@ -62,6 +62,35 @@ enum CacheData {
     static let updatedAccountName = "myUpdatedAccount"
     static var updatedAccount: Account {
         Account(dbId: expectedAccountDbId, name: updatedAccountName, drives: [:])
+    }
+
+    static let expectedDriveDbId: Int32 = 424_242
+    static let expectedDriveId: Int32 = 112_233
+    static let expectedDriveName: String = "My Drive"
+    static let expectedDriveColor: HexColor = .init(hex: "9de4ec")!
+    static var expectedDrive: Drive {
+        Drive(driveDbId: expectedDriveDbId,
+              driveId: expectedDriveId,
+              accountId: expectedAccountDbId,
+              userDbId: expectedUserDbId,
+              userId: expectedUserDbId,
+              name: expectedDriveName,
+              color: expectedDriveColor,
+              synchros: [:])
+    }
+
+    static let updatedDriveId: Int32 = 112_244
+    static let updatedDriveName: String = "My Drive Pro Max"
+    static let updatedDriveColor: HexColor = .init(hex: "#aabbcc")!
+    static var updatedDrive: Drive {
+        Drive(driveDbId: expectedDriveDbId,
+              driveId: updatedDriveId,
+              accountId: expectedAccountDbId,
+              userDbId: expectedUserDbId,
+              userId: expectedUserDbId,
+              name: updatedDriveName,
+              color: updatedDriveColor,
+              synchros: [:])
     }
 }
 
@@ -181,6 +210,64 @@ struct CoherentCacheAccountTests {
 
             #expect(accountByDbId == CacheData.updatedAccount)
             #expect(accountByDbId.name == CacheData.updatedAccountName)
+        } catch {
+            Issue.record("unexpected error: \(error)")
+        }
+    }
+}
+
+struct CoherentCacheDriveTests {
+    @Test func getDriveInCache() async throws {
+        // GIVEN
+        let user = CacheData.expectedUser
+        let cache = CoherentCache()
+        await cache.addUser(user)
+        #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
+        await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
+        #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId) == CacheData.expectedAccount)
+
+        // WHEN
+        await cache.addDrive(CacheData.expectedDrive, toAccount: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId)
+
+        // THEN
+        #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == CacheData.expectedDrive)
+    }
+
+    @Test func removeDriveInCacheFromDbId() async throws {
+        // GIVEN
+        let user = CacheData.expectedUser
+        let cache = CoherentCache()
+        await cache.addUser(user)
+        #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
+        await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
+        #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId) == CacheData.expectedAccount)
+        await cache.addDrive(CacheData.expectedDrive, toAccount: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId)
+        #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == CacheData.expectedDrive)
+
+        // WHEN
+        await cache.removeDrive(driveDbId: CacheData.expectedDriveDbId, fromAccount: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId)
+
+        // THEN
+        #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == nil)
+    }
+
+    @Test func updateDriveInCache() async throws {
+        // GIVEN
+        let user = CacheData.expectedUser
+        let cache = CoherentCache()
+        await cache.addUser(user)
+        #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
+        await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
+        #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId) == CacheData.expectedAccount)
+        await cache.addDrive(CacheData.expectedDrive, toAccount: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId)
+        #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == CacheData.expectedDrive)
+
+        // WHEN
+        do {
+            try await cache.updateDrive(drive: CacheData.updatedDrive)
+
+            // THEN
+            #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == CacheData.updatedDrive)
         } catch {
             Issue.record("unexpected error: \(error)")
         }
