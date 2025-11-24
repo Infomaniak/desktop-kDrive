@@ -48,9 +48,9 @@ public protocol CoherentCacheProtocol: Sendable {
 
     // MARK: - Synchro
 
-    func getSynchro(_ synchroId: Int32, driveDbId: Int32, accountDbId: Int32, userId: Int32) async -> Synchro?
+    func getSynchro(synchroId: Int32, driveDbId: Int32, accountDbId: Int32, userId: Int32) async -> Synchro?
     func addSynchro(_ synchro: Synchro, toDrive driveDbId: Int32, accountDbId: Int32, userId: Int32) async
-    func removeSynchro(_ synchroId: Int32, fromDrive driveDbId: Int32, accountDbId: Int32, userId: Int32) async
+    func removeSynchro(synchroId: Int32, fromDrive driveDbId: Int32, accountDbId: Int32, userId: Int32) async
     func updateSynchro(_ synchro: Synchro) async
 
     // MARK: - Cleanup
