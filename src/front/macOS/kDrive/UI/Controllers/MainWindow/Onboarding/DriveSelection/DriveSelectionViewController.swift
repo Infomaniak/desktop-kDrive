@@ -23,6 +23,11 @@ import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 
+enum OnboardingLinks {
+    static let shopDriveSelection = URL(string: "https://shop.infomaniak.com/order/select/drive")!
+    static let myKSuiteOffers = URL(string: "https://www.infomaniak.com/fr/ksuite/myksuite/tarifs#prices")!
+}
+
 class DriveSelectionViewController: OnboardingStepViewController {
     private let viewModel = DriveSelectionViewModel()
 
@@ -103,7 +108,7 @@ class DriveSelectionViewController: OnboardingStepViewController {
 
 extension DriveSelectionViewController {
     private func updateDrivesList(_ drives: [UIDrive]) {
-        // TODO: List drives
+        noDriveAvailableView.isHidden = true
 
         primaryButton.title = KDriveLocalizable.buttonContinue
         primaryButton.action = #selector(didTapContinue)
@@ -120,15 +125,19 @@ extension DriveSelectionViewController {
 
 extension DriveSelectionViewController {
     private func showNoDriveAvailableView() {
-        // TODO: Show no kDrive available view
+        noDriveAvailableView.isHidden = false
 
-        primaryButton.title = "!Commencer gratuitement"
+        primaryButton.title = KDriveLocalizable.buttonStartForFree
         primaryButton.action = #selector(didTapStartForFree)
-        secondaryButton.title = "!Voir les offres"
+        secondaryButton.title = KDriveLocalizable.buttonShowOffers
         secondaryButton.action = #selector(didTapShowOffers)
     }
 
-    @objc private func didTapStartForFree() {}
+    @objc private func didTapStartForFree() {
+        NSWorkspace.shared.open(OnboardingLinks.shopDriveSelection)
+    }
 
-    @objc private func didTapShowOffers() {}
+    @objc private func didTapShowOffers() {
+        NSWorkspace.shared.open(OnboardingLinks.myKSuiteOffers)
+    }
 }
