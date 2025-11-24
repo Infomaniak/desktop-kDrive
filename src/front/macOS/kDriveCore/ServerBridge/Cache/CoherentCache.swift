@@ -34,7 +34,7 @@ public protocol CoherentCache: Sendable {
     func addUser(_ user: User) async
     func removeUser(dbId: Int32) async
     func updateUser(_ user: User) async
-    func updateAvailableDrives(_ drives: [AvailableDrive], forUserDbId accountId: Int32) async
+    func updateAvailableDrives(_ drives: [AvailableDrive], forUserDbId accountId: Int32) async throws
 
     // MARK: - Account
 
@@ -83,6 +83,10 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
             .eraseToAnyPublisher()
     }
 
+    enum CacheError: Error {
+        case userNotFound
+    }
+
     public init() {}
 
     // MARK: - USER
@@ -122,8 +126,14 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         notifyUserUpdate(dbId: user.dbId, indexedAccounts: user.accounts)
     }
 
-    public func updateAvailableDrives(_ drives: [AvailableDrive], forUserDbId userDbId: Int32) {
-        // TODO: Implement
+    public func updateAvailableDrives(_ drives: [AvailableDrive], forUserDbId userDbId: Int32) throws {
+        guard var user = getUser(dbId: userDbId) else {
+            throw CacheError.userNotFound
+        }
+
+        user.availableDrives = drives
+
+        updateUser(user)
     }
 
     // MARK: - ACCOUNT
