@@ -23,7 +23,7 @@
 namespace KDC {
 
 /**
- * @brief Utility class to extract and store error information returned by the infomaniak API.
+ * @brief Utility class to extract and store error information returned by the Infomaniak API.
  * None of the field are mandatory!
  * The expected JSON object must be in the form:
  * {"code":"object_not_found","description":"Object not found","context":{"model":"Drive"}}

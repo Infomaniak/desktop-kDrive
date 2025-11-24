@@ -757,7 +757,7 @@ ExitCode MigrationParams::getTokenFromAppPassword(const std::string &email, cons
         if (job.hasErrorApi()) {
             LOGW_WARN(_logger, L"Failed to retrieve authentification token. code="
                                        << KDC::CommonUtility::s2ws(job.backError().code()) << L" descr="
-                                       << KDC::CommonUtility::s2ws(job.backError().code()));
+                                       << KDC::CommonUtility::s2ws(job.backError().description()));
             return ExitCode::BackError;
         }
 
