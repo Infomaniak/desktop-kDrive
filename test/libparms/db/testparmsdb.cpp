@@ -60,8 +60,6 @@ void TestParmsDb::testParameters() {
     CPPUNIT_ASSERT(parameters.proxyConfig().needsAuth() == defaultParameters.proxyConfig().needsAuth());
     CPPUNIT_ASSERT(parameters.proxyConfig().user() == defaultParameters.proxyConfig().user());
     CPPUNIT_ASSERT(parameters.proxyConfig().token() == defaultParameters.proxyConfig().token());
-    CPPUNIT_ASSERT(parameters.useBigFolderSizeLimit() == defaultParameters.useBigFolderSizeLimit());
-    CPPUNIT_ASSERT(parameters.bigFolderSizeLimit() == defaultParameters.bigFolderSizeLimit());
     CPPUNIT_ASSERT(parameters.darkTheme() == defaultParameters.darkTheme());
     CPPUNIT_ASSERT(parameters.showShortcuts() == defaultParameters.showShortcuts());
     CPPUNIT_ASSERT(parameters.dialogGeometry() == defaultParameters.dialogGeometry());
@@ -76,8 +74,6 @@ void TestParmsDb::testParameters() {
     parameters2.setLogLevel(LogLevel::Warning);
     parameters2.setPurgeOldLogs(true);
     parameters2.setProxyConfig(ProxyConfig(ProxyType::HTTP, "host name", 44444444, true, "user", "token"));
-    parameters2.setUseBigFolderSizeLimit(true);
-    parameters2.setBigFolderSizeLimit(1000);
     parameters2.setDarkTheme(true);
     std::string geometryStr("XXXXXXXXXX");
     parameters2.setDialogGeometry(
@@ -99,8 +95,6 @@ void TestParmsDb::testParameters() {
     CPPUNIT_ASSERT(parameters.proxyConfig().needsAuth() == parameters2.proxyConfig().needsAuth());
     CPPUNIT_ASSERT(parameters.proxyConfig().user() == parameters2.proxyConfig().user());
     CPPUNIT_ASSERT(parameters.proxyConfig().token() == parameters2.proxyConfig().token());
-    CPPUNIT_ASSERT(parameters.useBigFolderSizeLimit() == parameters2.useBigFolderSizeLimit());
-    CPPUNIT_ASSERT(parameters.bigFolderSizeLimit() == parameters2.bigFolderSizeLimit());
     CPPUNIT_ASSERT(parameters.darkTheme() == parameters2.darkTheme());
     CPPUNIT_ASSERT(parameters.showShortcuts() == parameters2.showShortcuts());
     CPPUNIT_ASSERT(*parameters.dialogGeometry() == *parameters2.dialogGeometry());

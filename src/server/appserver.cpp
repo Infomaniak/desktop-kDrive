@@ -1187,8 +1187,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 mainExitInfo = exitInfo;
             }
 
-            if (const auto exitInfo =
-                        initSyncPal(sync, NodeSet(), NodeSet(), NodeSet(), !startPostponed, std::chrono::seconds(0), true, false);
+            if (const auto exitInfo = initSyncPal(sync, NodeSet(), !startPostponed, std::chrono::seconds(0), true, false);
                 !exitInfo) {
                 LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " : " << exitInfo);
                 addError(Error(ERR_ID, exitInfo));
@@ -1255,13 +1254,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QString serverFolderNodeId;
             bool liteSync = false;
             QSet<QString> blackList;
-            QSet<QString> whiteList;
             if (num == RequestNum::SYNC_ADD) {
                 ArgsWriter(params).write(userDbId, accountId, driveId, localFolderPath, serverFolderPath, serverFolderNodeId,
-                                         liteSync, blackList, whiteList);
+                                         liteSync, blackList);
             } else {
-                ArgsWriter(params).write(driveDbId, localFolderPath, serverFolderPath, serverFolderNodeId, liteSync, blackList,
-                                         whiteList);
+                ArgsWriter(params).write(driveDbId, localFolderPath, serverFolderPath, serverFolderNodeId, liteSync, blackList);
             }
 
             // Add sync in DB
@@ -1341,8 +1338,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 }
 
                 // Create and start SyncPal
-                if (const auto exitInfo = initSyncPal(sync, blackList, QSet<QString>(), whiteList, !startPostponed,
-                                                      std::chrono::seconds(0), false, true);
+                if (const auto exitInfo = initSyncPal(sync, blackList, !startPostponed, std::chrono::seconds(0), false, true);
                     !exitInfo) {
                     stopSyncTask(syncInfo.dbId());
 
@@ -2424,16 +2420,6 @@ void AppServer::sendShowNotification(const QString &title, const QString &messag
     OldCommServer::instance()->sendSignal(SignalNum::UTILITY_SHOW_NOTIFICATION, params, id);
 }
 
-void AppServer::sendNewBigFolder(int syncDbId, const QString &path) {
-    int id = 0;
-
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << syncDbId;
-    paramsStream << path;
-    OldCommServer::instance()->sendSignal(SignalNum::UTILITY_NEW_BIG_FOLDER, params, id);
-}
-
 void AppServer::sendErrorAdded(bool serverLevel, ExitCode exitCode, int syncDbId) {
     int id = 0;
 
@@ -2859,14 +2845,12 @@ ExitInfo AppServer::startSyncs(User &user) {
 
             for (Sync &sync: syncList) {
                 QSet<QString> blackList;
-                QSet<QString> undecidedList;
-
                 if (user.toMigrate()) {
                     if (!user.keychainKey().empty()) {
                         // End migration once connected
                         bool syncUpdated = false;
-                        if (const auto exitInfo = processMigratedSyncOnceConnected(user.dbId(), drive.driveId(), sync, blackList,
-                                                                                   undecidedList, syncUpdated);
+                        if (const auto exitInfo =
+                                    processMigratedSyncOnceConnected(user.dbId(), drive.driveId(), sync, blackList, syncUpdated);
                             !exitInfo) {
                             LOG_WARN(_logger, "Error in updateMigratedSyncPalOnceConnected for syncDbId=" << sync.dbId() << " : "
                                                                                                           << exitInfo);
@@ -2917,9 +2901,7 @@ ExitInfo AppServer::startSyncs(User &user) {
 
                 // Create and start SyncPal
                 startDelay += std::chrono::seconds(START_SYNCPALS_TIME_GAP);
-                if (const auto exitInfo = initSyncPal(sync, blackList, undecidedList, QSet<QString>(), !startPostponed,
-                                                      startDelay, false, false);
-                    !exitInfo) {
+                if (const auto exitInfo = initSyncPal(sync, blackList, !startPostponed, startDelay, false, false); !exitInfo) {
                     LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " : " << exitInfo);
                     addError(Error(sync.dbId(), ERR_ID, exitInfo));
                     mainExitInfo.merge(exitInfo, {ExitCode::SystemError});
@@ -2948,7 +2930,7 @@ ExitInfo AppServer::startSyncs(User &user) {
 }
 
 ExitInfo AppServer::processMigratedSyncOnceConnected(int userDbId, int driveId, Sync &sync, QSet<QString> &blackList,
-                                                     QSet<QString> &undecidedList, bool &syncUpdated) {
+                                                     bool &syncUpdated) {
     LOG_DEBUG(_logger, "Update migrated SyncPal for syncDbId=" << sync.dbId());
 
     // Set sync target nodeId for advanced sync
@@ -3013,15 +2995,11 @@ ExitInfo AppServer::processMigratedSyncOnceConnected(int userDbId, int driveId, 
                 continue;
             }
 
-            if (!nodeId.isEmpty()) {
-                if (migrationSelectiveSync.type() == SyncNodeType::BlackList) {
+            if (!nodeId.isEmpty() && migrationSelectiveSync.type() == SyncNodeType::BlackList) {
                     blackList << nodeId;
-                } else if (migrationSelectiveSync.type() == SyncNodeType::UndecidedList) {
-                    undecidedList << nodeId;
                 }
             }
         }
-    }
 
     return ExitCode::Ok;
 }
@@ -3562,9 +3540,8 @@ ExitCode AppServer::updateAllUsersInfo() {
     return ExitCode::Ok;
 }
 
-ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, const NodeSet &undecidedList,
-                                const NodeSet &whiteList, bool start, const std::chrono::seconds &startDelay, bool resumedByUser,
-                                bool firstInit) {
+ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, bool start, const std::chrono::seconds &startDelay,
+                                bool resumedByUser, bool firstInit) {
     const std::scoped_lock lock(syncPalMapMutex);
     auto syncPalMapIt = syncPalMap.find(sync.dbId());
     if (syncPalMapIt == syncPalMap.end()) {
@@ -3596,24 +3573,7 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, cons
                 return exitInfo;
             }
         }
-
-        if (!undecidedList.empty()) {
-            // Set undecidedList (create or overwrite the possible existing list in DB)
-            if (const ExitInfo exitInfo = syncPalMapIt->second->setSyncIdSet(SyncNodeType::UndecidedList, undecidedList);
-                !exitInfo) {
-                LOG_WARN(_logger, "Error in SyncPal::setSyncIdSet for syncDbId=" << sync.dbId() << " : " << exitInfo);
-                return exitInfo;
             }
-        }
-
-        if (!whiteList.empty()) {
-            // Set whiteList (create or overwrite the possible existing list in DB)
-            if (const ExitInfo exitInfo = syncPalMapIt->second->setSyncIdSet(SyncNodeType::WhiteList, whiteList); !exitInfo) {
-                LOG_WARN(_logger, "Error in SyncPal::setSyncIdSet for syncDbId=" << sync.dbId() << " : " << exitInfo);
-                return exitInfo;
-            }
-        }
-    }
 
 #if defined(KD_WINDOWS) || defined(KD_MACOS)
     if (firstInit) {
@@ -3640,27 +3600,14 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, cons
     return ExitCode::Ok;
 }
 
-ExitInfo AppServer::initSyncPal(const Sync &sync, const QSet<QString> &blackList, const QSet<QString> &undecidedList,
-                                const QSet<QString> &whiteList, bool start, const std::chrono::seconds &startDelay,
-                                bool resumedByUser, bool firstInit) {
+ExitInfo AppServer::initSyncPal(const Sync &sync, const QSet<QString> &blackList, bool start,
+                                const std::chrono::seconds &startDelay, bool resumedByUser, bool firstInit) {
     NodeSet blackList2;
     for (const QString &nodeId: blackList) {
         blackList2.insert(nodeId.toStdString());
     }
 
-    NodeSet undecidedList2;
-    for (const QString &nodeId: undecidedList) {
-        undecidedList2.insert(nodeId.toStdString());
-    }
-
-    NodeSet whiteList2;
-    for (const QString &nodeId: whiteList) {
-        whiteList2.insert(nodeId.toStdString());
-    }
-
-    if (const auto exitInfo =
-                initSyncPal(sync, blackList2, undecidedList2, whiteList2, start, startDelay, resumedByUser, firstInit);
-        !exitInfo) {
+    if (const auto exitInfo = initSyncPal(sync, blackList2, start, startDelay, resumedByUser, firstInit); !exitInfo) {
         LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " : " << exitInfo);
         return exitInfo;
     }
@@ -4383,45 +4330,6 @@ void AppServer::onUpdateSyncsProgress() {
 
                 // Send progress to the client
                 sendSyncProgressInfo(sync.dbId(), syncCache._status, syncCache._step, progress);
-            }
-
-            // New big folders detection
-            NodeSet undecidedSet;
-            if (const auto exitCode = syncPal->syncIdSet(SyncNodeType::UndecidedList, undecidedSet); exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in SyncPal::syncIdSet: code=" << exitCode);
-                addError(Error(sync.dbId(), ERR_ID, exitCode, ExitCause::Unknown));
-                return;
-            }
-
-            auto [undecidedListCacheMapIt, _] = _undecidedListCacheMap.try_emplace(sync.dbId(), NodeSet());
-            bool undecidedSetUpdated = false;
-            for (const NodeId &nodeId: undecidedSet) {
-                if (!undecidedListCacheMapIt->second.contains(nodeId)) {
-                    undecidedSetUpdated = true;
-
-                    QString path;
-                    if (const auto exitInfo = ServerRequests::getPathByNodeId(syncPal->userDbId(), syncPal->driveId(),
-                                                                              QString::fromStdString(nodeId), path);
-                        exitInfo.code() != ExitCode::Ok) {
-                        LOG_WARN(_logger, "Error in Requests::getPathByNodeId: " << exitInfo);
-                        continue;
-                    }
-
-                    // Send newBigFolder signal to client
-                    sendNewBigFolder(sync.dbId(), path);
-
-                    // Ask client to display notification
-                    sendShowNotification(
-                            QString::fromStdString(Theme::instance()->appName()),
-                            tr("A new folder larger than %1 MB has been added in the drive %2, you must validate its "
-                               "synchronization: %3.\n")
-                                    .arg(ParametersCache::instance()->parameters().bigFolderSizeLimit())
-                                    .arg(QString::fromStdString(syncPal->driveName()), path));
-                }
-            }
-
-            if (undecidedSetUpdated || undecidedListCacheMapIt->second.size() != undecidedSet.size()) {
-                undecidedListCacheMapIt->second = undecidedSet;
             }
         }
     }

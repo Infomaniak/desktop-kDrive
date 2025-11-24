@@ -381,10 +381,6 @@ std::string toString(const SyncNodeType e) {
             return "Undefined";
         case SyncNodeType::BlackList:
             return "BlackList";
-        case SyncNodeType::WhiteList:
-            return "WhiteList";
-        case SyncNodeType::UndecidedList:
-            return "UndecidedList";
         case SyncNodeType::TmpRemoteBlacklist:
             return "TmpRemoteBlacklist";
         case SyncNodeType::TmpLocalBlacklist:

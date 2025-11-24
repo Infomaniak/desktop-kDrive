@@ -222,8 +222,6 @@ ExitCode MigrationParams::migrateGeneralParams() {
     ParametersCache::instance()->parameters().setMonoIcons(monoIcons);
     ParametersCache::instance()->parameters().setUseLog(automaticLogDir);
     ParametersCache::instance()->parameters().setLogLevel(logLevel);
-    ParametersCache::instance()->parameters().setUseBigFolderSizeLimit(useNewBigFolderSizeLimit);
-    ParametersCache::instance()->parameters().setBigFolderSizeLimit(newBigFolderSizeLimit);
     ParametersCache::instance()->parameters().setLanguage(strToLanguage(language));
     bool purgeOldLogs = false;
     if (deleteOldLogsAfterHours == QString() || deleteOldLogsAfterHours != "-1") {
@@ -618,19 +616,6 @@ ExitCode MigrationParams::migrateProxySettings(ProxyConfig &proxyConfig) {
         proxyConfig.setToken(keychainKeyProxyPass);
     }
     return ExitCode::Ok;
-}
-
-ExitCode MigrationParams::migrateSelectiveSyncs() {
-    LOG_INFO(Log::instance()->getLogger(), "Migrate selective syncs");
-
-    ExitCode ret = ExitCode::Ok;
-    for (auto &syncToMigrateElt: _syncToMigrate) {
-        ExitCode code = ServerRequests::migrateSelectiveSync(syncToMigrateElt.first, syncToMigrateElt.second);
-        if (code != ExitCode::Ok) {
-            ret = code;
-        }
-    }
-    return ret;
 }
 
 void MigrationParams::deleteUselessConfigFiles() {

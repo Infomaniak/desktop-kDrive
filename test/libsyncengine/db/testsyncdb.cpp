@@ -346,13 +346,8 @@ void TestSyncDb::testSyncNodes() {
     (void) nodeIdSet.emplace("4");
     (void) nodeIdSet.emplace("5");
 
-    NodeSet nodeIdSet2;
-    (void) nodeIdSet2.emplace("11");
-    (void) nodeIdSet2.emplace("12");
-    (void) nodeIdSet2.emplace("13");
 
     CPPUNIT_ASSERT(_testObj->updateAllSyncNodes(SyncNodeType::BlackList, nodeIdSet));
-    CPPUNIT_ASSERT(_testObj->updateAllSyncNodes(SyncNodeType::UndecidedList, nodeIdSet2));
 
     NodeSet nodeIdSet3;
     CPPUNIT_ASSERT(_testObj->selectAllSyncNodes(SyncNodeType::BlackList, nodeIdSet3));
@@ -363,11 +358,6 @@ void TestSyncDb::testSyncNodes() {
     CPPUNIT_ASSERT(nodeIdSet3.contains("4"));
     CPPUNIT_ASSERT(nodeIdSet3.contains("5"));
     nodeIdSet3.clear();
-    CPPUNIT_ASSERT(_testObj->selectAllSyncNodes(SyncNodeType::UndecidedList, nodeIdSet3));
-    CPPUNIT_ASSERT_EQUAL(size_t(3), nodeIdSet3.size());
-    CPPUNIT_ASSERT(nodeIdSet3.contains("11"));
-    CPPUNIT_ASSERT(nodeIdSet3.contains("12"));
-    CPPUNIT_ASSERT(nodeIdSet3.contains("13"));
 
     CPPUNIT_ASSERT(_testObj->updateAllSyncNodes(SyncNodeType::BlackList, NodeSet()));
     nodeIdSet3.clear();
@@ -378,8 +368,8 @@ void TestSyncDb::testSyncNodes() {
     nodeIdSet.clear();
     (void) nodeIdSet.emplace("1");
     (void) nodeIdSet.emplace("2");
-    CPPUNIT_ASSERT(_testObj->updateAllSyncNodes(SyncNodeType::WhiteList, nodeIdSet));
-    CPPUNIT_ASSERT(_testObj->selectAllSyncNodes(SyncNodeType::WhiteList, nodeIdSet));
+    CPPUNIT_ASSERT(_testObj->updateAllSyncNodes(SyncNodeType::BlackList, nodeIdSet));
+    CPPUNIT_ASSERT(_testObj->selectAllSyncNodes(SyncNodeType::BlackList, nodeIdSet));
     CPPUNIT_ASSERT_EQUAL(size_t{2}, nodeIdSet.size());
 
     bool found = false;
@@ -387,7 +377,7 @@ void TestSyncDb::testSyncNodes() {
     CPPUNIT_ASSERT(found);
 
     nodeIdSet.clear();
-    CPPUNIT_ASSERT(_testObj->selectAllSyncNodes(SyncNodeType::WhiteList, nodeIdSet));
+    CPPUNIT_ASSERT(_testObj->selectAllSyncNodes(SyncNodeType::BlackList, nodeIdSet));
     CPPUNIT_ASSERT_EQUAL(size_t{1}, nodeIdSet.size());
     CPPUNIT_ASSERT(nodeIdSet.contains("1"));
 

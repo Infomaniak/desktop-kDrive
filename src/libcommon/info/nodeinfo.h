@@ -24,6 +24,8 @@
 #include <QString>
 #include <QList>
 
+#include <Poco/Dynamic/Struct.h>
+
 namespace KDC {
 
 class NodeInfo {
@@ -44,6 +46,7 @@ class NodeInfo {
         inline const QString &path() const { return _path; }
         inline void setPath(const QString &newPath) { _path = newPath; }
 
+        void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
         friend QDataStream &operator>>(QDataStream &in, NodeInfo &info);
         friend QDataStream &operator<<(QDataStream &out, const NodeInfo &info);
 

@@ -83,7 +83,6 @@ class AppClient : public SharedTools::QtSingleApplication {
         void folderSizeCompleted(QString nodeId, qint64 size);
         void fixConflictingFilesCompleted(int syncDbId, uint64_t nbErrors);
         // Utility
-        void newBigFolder(int syncDbId, const QString &path);
         void showNotification(const QString &title, const QString &message);
         void errorAdded(bool serverLevel, ExitCode exitCode, int syncDbId);
         void errorsCleared(int syncDbId);

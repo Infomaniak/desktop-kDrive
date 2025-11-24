@@ -206,7 +206,7 @@ void TestTypes::testToString() {
     testToStringIntValues<NodeStatus>();
     testToStringIntValues<SyncStatus>();
     testToStringIntValues<UploadSessionType>();
-    testToStringIntValues<SyncNodeType>();
+    // testToStringIntValues<SyncNodeType>(); We cannot test this one because the enums values are not continuous
     testToStringIntValues<SyncDirection>();
     testToStringIntValues<SyncFileStatus>();
     testToStringIntValues<SyncDirection>();
