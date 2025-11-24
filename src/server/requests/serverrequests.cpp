@@ -781,11 +781,27 @@ ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, 
 ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, const QString &nodeId, QList<NodeInfo> &list,
                                        const bool withPath /*= false*/) {
     list.clear();
+    std::vector<NodeInfo> stdVector;
+
+    if (const ExitInfo exitInfo = getSubFolders(userDbId, driveId, nodeId.toStdString(), stdVector, withPath); !exitInfo) {
+        return exitInfo;
+    }
+
+    for (const NodeInfo &nodeInfo: stdVector) {
+        list.push_back(nodeInfo);
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, const NodeId &nodeId, std::vector<NodeInfo> &list,
+                                       const bool withPath /*= false*/) {
+    list.clear();
     uint64_t page = 1;
     uint64_t totalPages = 0;
     do {
         std::shared_ptr<GetRootFileListJob> job = nullptr;
-        if (nodeId.isEmpty()) {
+        if (nodeId.empty()) {
             try {
                 job = std::make_shared<GetRootFileListJob>(userDbId, driveId, page, true);
             } catch (const std::exception &e) {
@@ -795,20 +811,20 @@ ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, co
             }
         } else {
             try {
-                job = std::make_shared<GetFileListJob>(userDbId, driveId, nodeId.toStdString(), page, true);
+                job = std::make_shared<GetFileListJob>(userDbId, driveId, nodeId, page, true);
             } catch (const std::exception &e) {
                 LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::GetFileListJob for userDbId="
-                                                               << userDbId << " driveId=" << driveId
-                                                               << " nodeId=" << nodeId.toStdString() << " error=" << e.what());
+                                                               << userDbId << " driveId=" << driveId << " nodeId=" << nodeId
+                                                               << " error=" << e.what());
                 return AbstractTokenNetworkJob::exception2ExitCode(e);
             }
         }
 
         job->setWithPath(withPath);
         if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::runSynchronously for userDbId="
-                                                           << userDbId << " driveId=" << driveId
-                                                           << " nodeId=" << nodeId.toStdString() << " error=" << exitInfo);
+            LOG_WARN(Log::instance()->getLogger(),
+                     "Error in GetFileListJob::runSynchronously for userDbId=" << userDbId << " driveId=" << driveId
+                                                                               << " nodeId=" << nodeId << " error=" << exitInfo);
             return exitInfo;
         }
 
@@ -870,7 +886,7 @@ ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, co
             NodeInfo nodeInfo(QString::fromStdString(nodeId2), SyncName2QStr(name),
                               -1, // Size is not set here as it can be very long to evaluate
                               parentId.c_str(), modTime, SyncName2QStr(path));
-            list << nodeInfo;
+            list.push_back(nodeInfo);
         }
 
         page++;
@@ -880,7 +896,7 @@ ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, co
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::getSubFolders(int driveDbId, const QString &nodeId, QList<NodeInfo> &list, bool withPath /*= false*/) {
+ExitInfo ServerRequests::getSubFolders(int driveDbId, const NodeId &nodeId, std::vector<NodeInfo> &list, bool withPath) {
     Drive drive;
     bool found = false;
     if (!ParmsDb::instance()->selectDrive(driveDbId, drive, found)) {
@@ -903,6 +919,22 @@ ExitInfo ServerRequests::getSubFolders(int driveDbId, const QString &nodeId, QLi
     }
 
     return getSubFolders(account.userDbId(), drive.driveId(), nodeId, list, withPath);
+}
+
+
+ExitInfo ServerRequests::getSubFolders(const int driveDbId, const QString &nodeId, QList<NodeInfo> &list,
+                                       bool withPath /*= false*/) {
+    list.clear();
+    std::vector<NodeInfo> stdVector;
+
+    const auto exitInfo = getSubFolders(driveDbId, NodeId{nodeId.toStdString()}, stdVector, withPath);
+    if (!exitInfo) return exitInfo;
+
+    for (NodeInfo &nodeInfo: stdVector) {
+        list.push_back(std::move(nodeInfo));
+    }
+
+    return ExitCode::Ok;
 }
 
 ExitCode ServerRequests::getNodeIdByPath(int userDbId, int driveId, const SyncPath &path, QString &nodeId) {

@@ -52,6 +52,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/syncdeletejob.h ${server_srcs_path}/comm/guijobs/syncdeletejob.cpp
     ${server_srcs_path}/comm/guijobs/syncgetpubliclinkurljob.h ${server_srcs_path}/comm/guijobs/syncgetpubliclinkurljob.cpp
     ${server_srcs_path}/comm/guijobs/syncgetprivatelinkurljob.h ${server_srcs_path}/comm/guijobs/syncgetprivatelinkurljob.cpp
+    ${server_srcs_path}/comm/guijobs/nodesubfolders2job.h ${server_srcs_path}/comm/guijobs/nodesubfolders2job.cpp
     ${server_srcs_path}/comm/guijobs/signaluseraddedjob.h ${server_srcs_path}/comm/guijobs/signaluseraddedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.h ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserremovedjob.h ${server_srcs_path}/comm/guijobs/signaluserremovedjob.cpp
