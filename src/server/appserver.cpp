@@ -2566,7 +2566,6 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 #if defined(KD_MACOS)
         {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
-        {&MigrationParams::migrateSelectiveSyncs, "migrateSelectiveSyncs"}
     };
 
     for (const auto &migrate: migrateArr) {
@@ -2996,10 +2995,10 @@ ExitInfo AppServer::processMigratedSyncOnceConnected(int userDbId, int driveId, 
             }
 
             if (!nodeId.isEmpty() && migrationSelectiveSync.type() == SyncNodeType::BlackList) {
-                    blackList << nodeId;
-                }
+                blackList << nodeId;
             }
         }
+    }
 
     return ExitCode::Ok;
 }
@@ -3573,7 +3572,7 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, bool
                 return exitInfo;
             }
         }
-            }
+    }
 
 #if defined(KD_WINDOWS) || defined(KD_MACOS)
     if (firstInit) {
