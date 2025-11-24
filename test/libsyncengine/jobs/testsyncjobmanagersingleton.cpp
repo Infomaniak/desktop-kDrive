@@ -512,6 +512,8 @@ void TestSyncJobManagerSingleton::testWithCallbackBigFiles(const SyncPath &dirPa
             Utility::msleep(100);
         }
 
+        LOG_DEBUG(Log::instance()->getLogger(), "$$$$$ testWithCallbackBigFiles - checking socket errors and job errors.");
+
         if (_jobErrorSocketsDefuncted || _jobErrorOther) {
             LOG_DEBUG(Log::instance()->getLogger(), "$$$$$ testWithCallbackBigFiles - Error, cancel ongoing jobs");
             cancelAllOngoingJobs();
