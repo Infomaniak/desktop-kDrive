@@ -61,9 +61,14 @@ $languages = @(
     "it"
 )
 
+$simplifiedOs = $os
+if ($simplifiedOs -eq "linux-arm" -Or $simplifiedOs -eq "linux-amd") {
+    $simplifiedOs = "linux"
+}
+
 foreach ($lang in $languages)
 {
-    $fileName = "kDrive-$versionNumber-$os-$lang.html"
+    $fileName = "kDrive-$versionNumber-$simplifiedOs-$lang.html"
     $filePath = ".\release_notes\kDrive-$versionNumber\$fileName"
     if (-not (Test-Path $filePath)) {
         Write-Host "❌ File $filePath does not exist, aborting upload." -f Red
