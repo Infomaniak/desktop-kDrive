@@ -1152,7 +1152,7 @@ void TestGuiCommChannel::testSyncGetPrivateLinkUrlJob() {
         auto syncGetPrivateLinkUrlJob = std::dynamic_pointer_cast<SyncGetPrivateLinkUrlJob>(job);
         CPPUNIT_ASSERT(syncGetPrivateLinkUrlJob);
         CPPUNIT_ASSERT_EQUAL(1, syncGetPrivateLinkUrlJob->_driveDbId);
-        CPPUNIT_ASSERT_EQUAL(CommString{"1111"}, syncGetPrivateLinkUrlJob->_fileId);
+        CPPUNIT_ASSERT(CommString{"1111"} == syncGetPrivateLinkUrlJob->_fileId);
 
         syncGetPrivateLinkUrlJob->_linkUrl = std::string{"https://kdrive.infomaniak.com/app/drive/1/redirect/1111"};
     };
