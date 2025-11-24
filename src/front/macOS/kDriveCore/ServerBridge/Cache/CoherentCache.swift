@@ -39,6 +39,7 @@ public protocol CoherentCache: Sendable {
     // MARK: - Account
 
     func getAccount(accountDbId: Int32, userDbId: Int32) async -> Account?
+    func getAccount(accountDbId: Int32) async -> Account?
     func addAccount(_ account: Account, userDbId: Int32) async
     func removeAccount(accountDbId: Int32, userDbId: Int32) async
     func updateAccount(_ account: Account) async
@@ -129,6 +130,15 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
 
     public func getAccount(accountDbId: Int32, userDbId: Int32) -> Account? {
         users[userDbId]?.accounts[accountDbId]
+    }
+
+    public func getAccount(accountDbId: Int32) -> Account? {
+        for user in users.values {
+            if let account = user.accounts[accountDbId] {
+                return account
+            }
+        }
+        return nil
     }
 
     public func addAccount(_ account: Account, userDbId: Int32) {
