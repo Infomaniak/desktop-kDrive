@@ -50,6 +50,7 @@ public protocol CoherentCache: Sendable {
     func getDrive(driveDbId: Int32) async -> Drive?
     func addDrive(_ drive: Drive, toAccount accountDbId: Int32, userDbId: Int32) async
     func removeDrive(driveDbId: Int32, fromAccount accountDbId: Int32, userDbId: Int32) async
+    func updateDrive(drive: Drive) async throws
 
     // MARK: - Synchro
 
@@ -217,13 +218,16 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         users[userDbId] = user
     }
 
-    public func updateDrive(drive: Drive) {
+    public func updateDrive(drive: Drive) throws {
         let userDbId = drive.userDbId
         let accountId = drive.accountId
 
-        guard var user = users[userDbId],
-              var account = user.accounts[accountId]
-        else { return }
+        guard var user = users[userDbId] else {
+            throw CacheError.userNotFound(userDbId)
+        }
+        guard var account = user.accounts[accountId] else {
+            throw CacheError.accountNotFound(accountId)
+        }
 
         var indexedDrives = account.drives
         indexedDrives[drive.id] = drive
