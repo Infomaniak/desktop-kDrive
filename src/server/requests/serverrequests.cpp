@@ -815,17 +815,17 @@ ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, co
                 job = std::make_shared<GetFileListJob>(userDbId, driveId, nodeId, page, true);
             } catch (const std::exception &e) {
                 LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::GetFileListJob for userDbId="
-                                                               << userDbId << " driveId=" << driveId
-                                                               << " nodeId=" << nodeId << " error=" << e.what());
+                                                               << userDbId << " driveId=" << driveId << " nodeId=" << nodeId
+                                                               << " error=" << e.what());
                 return AbstractTokenNetworkJob::exception2ExitCode(e);
             }
         }
 
         job->setWithPath(withPath);
         if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::runSynchronously for userDbId="
-                                                           << userDbId << " driveId=" << driveId
-                                                           << " nodeId=" << nodeId << " error=" << exitInfo);
+            LOG_WARN(Log::instance()->getLogger(),
+                     "Error in GetFileListJob::runSynchronously for userDbId=" << userDbId << " driveId=" << driveId
+                                                                               << " nodeId=" << nodeId << " error=" << exitInfo);
             return exitInfo;
         }
 
@@ -1320,10 +1320,9 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const NodeId &nodeId, s
 }
 
 ExitInfo ServerRequests::getFolderSizeWithCallback(int userDbId, int driveId, const NodeId &nodeId,
-                                       std::function<void(const QString &, qint64)> callback) {
-
+                                                   std::function<void(const QString &, qint64)> callback) {
     int64_t result = 0;
-    if (ExitInfo exitInfo =ServerRequests::getFolderSize(userDbId, driveId, nodeId, result); !exitInfo) {
+    if (ExitInfo exitInfo = ServerRequests::getFolderSize(userDbId, driveId, nodeId, result); !exitInfo) {
         return exitInfo;
     }
 

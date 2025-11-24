@@ -1521,7 +1521,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
             exitCode = syncPalMapIt->second->syncListUpdated(true);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in SyncPal::setSyncIdSet: code=" << exitCode);
+                LOG_WARN(_logger, "Error in SyncPal::syncListUpdated: code=" << exitCode);
                 addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
             }
             resultStream << toInt(exitCode);

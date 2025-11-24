@@ -34,7 +34,7 @@ namespace KDC {
 SyncNodeSetListJob::SyncNodeSetListJob(std::shared_ptr<CommManager> commManager, int requestId,
                                        const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
-    _requestNum = RequestNum::SYNCNODE_LIST;
+    _requestNum = RequestNum::SYNCNODE_SETLIST;
 }
 
 ExitInfo SyncNodeSetListJob::deserializeInputParms() {

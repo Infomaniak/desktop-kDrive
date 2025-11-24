@@ -32,7 +32,6 @@ class NodeFolderSizeJob : public AbstractGuiJob {
         int _userDbId = 0;
         int _driveId = 0;
         NodeId _nodeId;
-        bool _withPath = false;
 
         // Output parameters
         int64_t _folderSize = 0;
