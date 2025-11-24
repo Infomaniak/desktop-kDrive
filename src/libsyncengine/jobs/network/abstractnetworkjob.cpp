@@ -234,7 +234,7 @@ bool AbstractNetworkJob::hasHttpError(std::string *errorCode /*= nullptr*/) cons
 
 bool AbstractNetworkJob::hasErrorApi() const {
     if (hasHttpError()) return true;
-    if (!_backError.hasValidError()) return false;
+    if (!_backError.isValidError()) return false;
     return true;
 }
 

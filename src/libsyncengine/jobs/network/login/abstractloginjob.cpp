@@ -68,7 +68,7 @@ ExitInfo AbstractLoginJob::handleError(const std::string &replyBody, const Poco:
 
     ExitInfo exitInfo;
     _backError = BackError(jsonError);
-    if (_backError.hasValidError()) {
+    if (_backError.isValidError()) {
         LOG_WARN(_logger,
                  "Error in request " << uri.toString() << " : " << _backError.code() << " - " << _backError.description());
         exitInfo = ExitCode::BackError;

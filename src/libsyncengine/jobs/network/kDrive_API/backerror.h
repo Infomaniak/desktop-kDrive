@@ -43,7 +43,7 @@ class BackError {
         [[nodiscard]] const std::string &contextReason() const { return _contextReason; }
         [[nodiscard]] const std::string &contextModel() const { return _contextModel; }
 
-        bool hasValidError() const { return !_code.empty(); }
+        bool isValidError() const { return !_code.empty(); }
 
     private:
         void extractErrorFromJsonObject(const Poco::JSON::Object::Ptr jsonObjPtr);
