@@ -38,24 +38,24 @@ public protocol CoherentCache: Sendable {
 
     // MARK: - Account
 
-    func getAccount(_ accountId: Int32, userDbId: Int32) async -> Account?
+    func getAccount(_ accountDbId: Int32, userDbId: Int32) async -> Account?
     func addAccount(_ account: Account, userDbId: Int32) async
-    func removeAccount(_ accountId: Int32, userDbId: Int32) async
+    func removeAccount(_ accountDbId: Int32, userDbId: Int32) async
     func updateAccount(_ account: Account) async
 
     // MARK: - Drive
 
-    func getDrive(_ driveDbId: Int32, accountId: Int32, userDbId: Int32) async -> Drive?
+    func getDrive(_ driveDbId: Int32, accountDbId: Int32, userDbId: Int32) async -> Drive?
     func getDrive(_ driveDbId: Int32) async -> Drive?
-    func addDrive(_ drive: Drive, toAccount accountId: Int32, userDbId: Int32) async
-    func removeDrive(_ driveDbId: Int32, fromAccount accountId: Int32, userDbId: Int32) async
+    func addDrive(_ drive: Drive, toAccount accountDbId: Int32, userDbId: Int32) async
+    func removeDrive(_ driveDbId: Int32, fromAccount accountDbId: Int32, userDbId: Int32) async
     func updateDrive(drive: Drive) async
 
     // MARK: - Synchro
 
-    func getSynchro(_ synchroId: Int32, driveDbId: Int32, accountId: Int32, userId: Int32) async -> Synchro?
-    func addSynchro(_ synchro: Synchro, toDrive driveDbId: Int32, accountId: Int32, userId: Int32) async
-    func removeSynchro(_ synchroId: Int32, fromDrive driveDbId: Int32, accountId: Int32, userId: Int32) async
+    func getSynchro(_ synchroId: Int32, driveDbId: Int32, accountDbId: Int32, userId: Int32) async -> Synchro?
+    func addSynchro(_ synchro: Synchro, toDrive driveDbId: Int32, accountDbId: Int32, userId: Int32) async
+    func removeSynchro(_ synchroId: Int32, fromDrive driveDbId: Int32, accountDbId: Int32, userId: Int32) async
     func updateSynchro(_ synchro: Synchro) async
 
     // MARK: - Cleanup
@@ -127,8 +127,8 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
 
     // MARK: - ACCOUNT
 
-    public func getAccount(_ accountId: Int32, userDbId: Int32) -> Account? {
-        users[userDbId]?.accounts[accountId]
+    public func getAccount(_ accountDbId: Int32, userDbId: Int32) -> Account? {
+        users[userDbId]?.accounts[accountDbId]
     }
 
     public func addAccount(_ account: Account, userDbId: Int32) {
@@ -139,9 +139,9 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         notifyAccountUpdate(userDbId: userDbId, indexedAccounts: user.accounts)
     }
 
-    public func removeAccount(_ accountId: Int32, userDbId: Int32) {
+    public func removeAccount(_ accountDbId: Int32, userDbId: Int32) {
         guard var user = users[userDbId] else { return }
-        user.accounts.removeValue(forKey: accountId)
+        user.accounts.removeValue(forKey: accountDbId)
         users[userDbId] = user
 
         notifyAccountUpdate(userDbId: userDbId, indexedAccounts: user.accounts)
@@ -153,8 +153,8 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
 
     // MARK: - DRIVE
 
-    public func getDrive(_ driveDbId: Int32, accountId: Int32, userDbId: Int32) -> Drive? {
-        users[userDbId]?.accounts[accountId]?.drives[driveDbId]
+    public func getDrive(_ driveDbId: Int32, accountDbId: Int32, userDbId: Int32) -> Drive? {
+        users[userDbId]?.accounts[accountDbId]?.drives[driveDbId]
     }
 
     public func getDrive(_ driveDbId: Int32) -> Drive? {
@@ -168,23 +168,23 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         return nil
     }
 
-    public func addDrive(_ drive: Drive, toAccount accountId: Int32, userDbId: Int32) {
+    public func addDrive(_ drive: Drive, toAccount accountDbId: Int32, userDbId: Int32) {
         guard var user = users[userDbId],
-              var account = user.accounts[accountId]
+              var account = user.accounts[accountDbId]
         else { return }
 
         account.drives[drive.id] = drive
-        user.accounts[accountId] = account
+        user.accounts[accountDbId] = account
         users[userDbId] = user
     }
 
-    public func removeDrive(_ driveDbId: Int32, fromAccount accountId: Int32, userDbId: Int32) {
+    public func removeDrive(_ driveDbId: Int32, fromAccount accountDbId: Int32, userDbId: Int32) {
         guard var user = users[userDbId],
-              var account = user.accounts[accountId]
+              var account = user.accounts[accountDbId]
         else { return }
 
         account.drives.removeValue(forKey: driveDbId)
-        user.accounts[accountId] = account
+        user.accounts[accountDbId] = account
         users[userDbId] = user
     }
 
@@ -208,34 +208,34 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
 
     // MARK: - SYNCHRO
 
-    public func getSynchro(_ synchroId: Int32, driveDbId: Int32, accountId: Int32, userId: Int32) -> Synchro? {
+    public func getSynchro(_ synchroId: Int32, driveDbId: Int32, accountDbId: Int32, userId: Int32) -> Synchro? {
         users[userId]?
-            .accounts[accountId]?
+            .accounts[accountDbId]?
             .drives[driveDbId]?
             .synchros[synchroId]
     }
 
-    public func addSynchro(_ synchro: Synchro, toDrive driveDbId: Int32, accountId: Int32, userId: Int32) {
+    public func addSynchro(_ synchro: Synchro, toDrive driveDbId: Int32, accountDbId: Int32, userId: Int32) {
         guard var user = users[userId],
-              var account = user.accounts[accountId],
+              var account = user.accounts[accountDbId],
               var drive = account.drives[driveDbId]
         else { return }
 
         drive.synchros[synchro.id] = synchro
         account.drives[driveDbId] = drive
-        user.accounts[accountId] = account
+        user.accounts[accountDbId] = account
         users[userId] = user
     }
 
-    public func removeSynchro(_ synchroId: Int32, fromDrive driveDbId: Int32, accountId: Int32, userId: Int32) {
+    public func removeSynchro(_ synchroId: Int32, fromDrive driveDbId: Int32, accountDbId: Int32, userId: Int32) {
         guard var user = users[userId],
-              var account = user.accounts[accountId],
+              var account = user.accounts[accountDbId],
               var drive = account.drives[driveDbId]
         else { return }
 
         drive.synchros.removeValue(forKey: synchroId)
         account.drives[driveDbId] = drive
-        user.accounts[accountId] = account
+        user.accounts[accountDbId] = account
         users[userId] = user
     }
 
