@@ -42,7 +42,7 @@ public protocol CoherentCache: Sendable {
     func getAccount(accountDbId: Int32) async -> Account?
     func addAccount(_ account: Account, userDbId: Int32) async
     func removeAccount(accountDbId: Int32) async
-    func updateAccount(_ account: Account) async
+    func updateAccount(_ account: Account) async throws
 
     // MARK: - Drive
 
@@ -171,8 +171,14 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         }
     }
 
-    public func updateAccount(_ account: Account) {
-        // TODO: Implement
+    public func updateAccount(_ account: Account) throws {
+        guard var user = users.values.first(where: { $0.accounts.keys.contains(account.dbId) }) else {
+            throw CacheError.accountNotFound(account.dbId)
+        }
+
+        user.accounts[account.dbId] = account
+        users[user.dbId] = user
+        notifyUserUpdate(dbId: user.dbId, indexedAccounts: user.accounts)
     }
 
     // MARK: - DRIVE
