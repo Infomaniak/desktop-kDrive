@@ -480,7 +480,7 @@ ApiToken AbstractTokenNetworkJob::loadApiToken() {
     return apiToken;
 }
 
-std::string AbstractTokenNetworkJob::getContentType() {
+std::string AbstractTokenNetworkJob::contentType() {
     return mimeTypeJson;
 }
 

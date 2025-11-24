@@ -122,7 +122,8 @@ class AbstractNetworkJob : public SyncJob {
 
         virtual void setQueryParameters(Poco::URI &) { /* Empty by default */ }
         virtual ExitInfo setData() { return ExitCode::Ok; }
-        virtual std::string getContentType() { return {}; }
+        virtual std::string contentType() { return {}; }
+        virtual std::string acceptHeader() { return contentType(); }
 
         std::unique_ptr<Poco::Net::HTTPSClientSession> _session;
         std::recursive_mutex _mutexSession;

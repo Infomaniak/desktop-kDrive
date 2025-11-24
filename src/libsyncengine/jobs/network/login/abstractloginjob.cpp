@@ -39,7 +39,7 @@ std::string AbstractLoginJob::getUrl() {
     return std::string(UrlHelper::loginApiUrl()) + getSpecificUrl();
 }
 
-std::string AbstractLoginJob::getContentType() {
+std::string AbstractLoginJob::contentType() {
     return "application/x-www-form-urlencoded";
 }
 
