@@ -37,7 +37,7 @@ public struct DriveJobs: Sendable {
 
         let driveList = decodedMessage.body.driveAvailableInfoList
         let availableDrives = driveList.map { $0.asAvailableDrive }
-        await coherentCache.updateAvailableDrives(availableDrives, forUserDbId: userDbId)
+        try? await coherentCache.updateAvailableDrives(availableDrives, forUserDbId: userDbId)
 
         return driveList
     }

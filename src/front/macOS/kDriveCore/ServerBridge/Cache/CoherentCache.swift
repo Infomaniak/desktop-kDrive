@@ -84,7 +84,8 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
     }
 
     enum CacheError: Error {
-        case userNotFound
+        case userNotFound(_ dbId: Int32)
+        case accountNotFound(_ dbId: Int32)
     }
 
     public init() {}
@@ -128,7 +129,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
 
     public func updateAvailableDrives(_ drives: [AvailableDrive], forUserDbId userDbId: Int32) throws {
         guard var user = getUser(dbId: userDbId) else {
-            throw CacheError.userNotFound
+            throw CacheError.userNotFound(userDbId)
         }
 
         user.availableDrives = drives
