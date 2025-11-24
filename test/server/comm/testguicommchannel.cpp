@@ -31,6 +31,7 @@
 #include "comm/guijobs/syncadd2job.h"
 #include "comm/guijobs/syncgetpubliclinkurljob.h"
 #include "comm/guijobs/syncgetprivatelinkurljob.h"
+#include "comm/guijobs/nodesubfolders2job.h"
 #include "libcommon/comm.h"
 #include "log/log.h"
 
@@ -1151,6 +1152,56 @@ void TestGuiCommChannel::testSyncGetPrivateLinkUrlJob() {
         auto syncGetPrivateLinkUrlJob = std::dynamic_pointer_cast<SyncGetPrivateLinkUrlJob>(job);
 
         syncGetPrivateLinkUrlJob->_linkUrl = std::string{"https://kdrive.infomaniak.com/app/drive/1/redirect/1111"};
+    };
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+#else
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
+void TestGuiCommChannel::testNodeSubFolders2() {
+    // Base64 conversions
+    // "1111" <=> "MTExMQ=="
+    // "https://kdrive.infomaniak.com/app/drive/1/redirect/1111" <=>
+    // "aHR0cHM6Ly9rZHJpdmUuaW5mb21hbmlhay5jb20vYXBwL2RyaXZlLzEvcmVkaXJlY3QvMTExMQ=="
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    const auto queryStr{R"({ "id": 1,)"
+                        R"( "num": )" +
+                        std::to_string(toInt(RequestNum::SYNC_GETPRIVATELINKURL)) +
+                        R"(,)"
+                        R"( "params": { "driveDbId": 1, "fileId": "MTExMQ==" } })"};
+#else
+    // There is no need to pass a request id as the response is via a callback.
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::NODE_SUBFOLDERS2)) +
+                        R"(,)"
+                        R"( "params": { "driveDbId": 1, "nodeId": "MTExMQ==", "withPath": true } })"};
+
+    // Callback expected answer
+    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"subfoldersList":{}}})"};
+#endif
+
+    // Job expected answer
+    const auto answerStr{R"({ "cause": 0,)"
+                         R"( "code": 0,)"
+                         R"( "id": 1,)"
+                         R"( "num": )" +
+                         std::to_string(toInt(RequestNum::NODE_SUBFOLDERS2)) +
+                         R"(,)"
+                         R"( "params": { "subfoldersList": { } },)"
+                         R"( "type": )" +
+                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto nodeSubFolders2Job = std::dynamic_pointer_cast<NodeSubFolders2Job>(job);
+        CPPUNIT_ASSERT(nodeSubFolders2Job);
+        CPPUNIT_ASSERT_EQUAL(1, nodeSubFolders2Job->_driveDbId);
+        CPPUNIT_ASSERT_EQUAL(NodeId{"1111"}, nodeSubFolders2Job->_nodeId);
+        CPPUNIT_ASSERT(nodeSubFolders2Job->_withPath);
+
+        nodeSubFolders2Job->_subfoldersList = {};
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
