@@ -24,7 +24,7 @@
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
 
-// Input parameters keys
+ // Input parameters keys
 static const auto inParamsUserDbId = "userDbId";
 static const auto inParamsDriveId = "driveId";
 static const auto inParamsNodeId = "nodeId";
@@ -56,12 +56,7 @@ ExitInfo NodeInfoJob::deserializeInputParms() {
 }
 
 ExitInfo NodeInfoJob::serializeOutputParms() {
-    std::function<Poco::Dynamic::Var(const NodeInfo &)> nodeInfo2DynamicVar = [](const NodeInfo &value) {
-        Poco::DynamicStruct structValue;
-        value.toDynamicStruct(structValue);
-        return structValue;
-    };
-    writeParamValue(outParamsNodeInfo, _nodeInfo, nodeInfo2DynamicVar);
+    writeParamValue(outParamsNodeInfo, _nodeInfo, info2DynamicVar<NodeInfo>);
 
     return ExitCode::Ok;
 }

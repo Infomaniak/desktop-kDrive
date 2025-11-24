@@ -50,13 +50,7 @@ ExitInfo UserAvailableDrivesJob::deserializeInputParms() {
 }
 
 ExitInfo UserAvailableDrivesJob::serializeOutputParms() {
-    std::function<Poco::Dynamic::Var(const DriveAvailableInfo &)> driveAvailableInfo2DynamicVar =
-            [](const DriveAvailableInfo &value) {
-                Poco::DynamicStruct structValue;
-                value.toDynamicStruct(structValue);
-                return structValue;
-            };
-    writeParamValues(outParamsDriveAvailableInfoList, _driveAvailableInfoList, driveAvailableInfo2DynamicVar);
+    writeParamValues(outParamsDriveAvailableInfoList, _driveAvailableInfoList, info2DynamicVar<DriveAvailableInfo>);
 
     return ExitCode::Ok;
 }
