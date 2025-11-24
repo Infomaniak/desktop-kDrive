@@ -72,13 +72,13 @@ extension User {
 
 public extension User {
     func updated(with other: User) -> User? {
-        guard other.id == id else {
+        guard other.dbId == dbId else {
             return nil
         }
 
         return User(
             dbId: dbId,
-            userId: userId,
+            userId: other.userId,
             name: other.name.isEmpty ? name : other.name,
             email: other.email.isEmpty ? email : other.email,
             accounts: other.accounts.isEmpty ? accounts : other.accounts,
