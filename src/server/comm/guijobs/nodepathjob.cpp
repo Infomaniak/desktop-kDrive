@@ -39,7 +39,7 @@ namespace KDC {
 NodePathJob::NodePathJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
                          std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
-    _requestNum = RequestNum::SYNC_ADD;
+    _requestNum = RequestNum::NODE_PATH;
 }
 
 ExitInfo NodePathJob::deserializeInputParms() {
@@ -82,8 +82,8 @@ ExitInfo NodePathJob::process() {
         if (exitInfo.cause() == ExitCause::NotFound) {
             (void) SyncNodeCache::instance()->deleteSyncNode(_syncDbId, _nodeId);
         } else {
-            LOG_WARN(_logger, "Error in AppServer::getPathByNodeId: " << exitInfo);
-            AppServer::addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
+            LOG_WARN(_logger, "Error in ServerRequests::getPathByNodeId: " << exitInfo);
+            AppServer::addError(Error(ERR_ID, exitInfo));
         }
     }
 

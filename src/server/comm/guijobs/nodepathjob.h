@@ -30,7 +30,7 @@ class NodePathJob : public AbstractGuiJob {
     private:
         // Input parameters
         int _syncDbId = 0;
-        NodeId _nodeId = 0;
+        NodeId _nodeId;
 
         // Output parameters
         CommString _path;

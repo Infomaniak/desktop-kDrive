@@ -31,6 +31,7 @@
 #include "comm/guijobs/syncadd2job.h"
 #include "comm/guijobs/syncgetpubliclinkurljob.h"
 #include "comm/guijobs/syncgetprivatelinkurljob.h"
+#include "comm/guijobs/nodepathjob.h"
 #include "libcommon/comm.h"
 #include "log/log.h"
 
@@ -41,6 +42,14 @@
 #include <qbuffer.h>
 
 namespace KDC {
+
+namespace {
+std::string toQuotedBase64(const std::string &input) {
+    std::string output;
+    CommonUtility::convertToBase64Str(input, output);
+    return R"(")" + output + R"(")";
+}
+} // namespace
 
 uint64_t GuiCommChannelTest::readData(CommChar *data, uint64_t maxlen) {
     std::scoped_lock lock(_bufferMutex);
@@ -1151,6 +1160,54 @@ void TestGuiCommChannel::testSyncGetPrivateLinkUrlJob() {
         auto syncGetPrivateLinkUrlJob = std::dynamic_pointer_cast<SyncGetPrivateLinkUrlJob>(job);
 
         syncGetPrivateLinkUrlJob->_linkUrl = std::string{"https://kdrive.infomaniak.com/app/drive/1/redirect/1111"};
+    };
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+#else
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
+void TestGuiCommChannel::testNodePathJob() {
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    const auto queryStr{R"({ "id": 1,)"
+                        R"( "num": )" +
+                        std::to_string(toInt(RequestNum::SYNC_GETPRIVATELINKURL)) +
+                        R"(,)"
+                        R"( "params": { "driveDbId": 1, "fileId": "MTExMQ==" } })"};
+#else
+    // There is no need to pass a request id as the response is via a callback.
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::NODE_PATH)) +
+                        R"(,)"
+                        R"( "params": { "syncDbId": 1, "nodeId": )" +
+                        toQuotedBase64("1111") + R"( } })"};
+
+    // Callback expected answer
+    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"path":)" +
+                            toQuotedBase64("/home/kDrive/Documents/presentation.doc") + R"(}})"};
+#endif
+
+    // Job expected answer
+    const auto answerStr{R"({ "cause": 0,)"
+                         R"( "code": 0,)"
+                         R"( "id": 1,)"
+                         R"( "num": )" +
+                         std::to_string(toInt(RequestNum::NODE_PATH)) +
+                         R"(,)"
+                         R"( "params": { "path": )" +
+                         toQuotedBase64("/home/kDrive/Documents/presentation.doc") +
+                         R"( },)"
+                         R"( "type": )" +
+                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto nodePathJob = std::dynamic_pointer_cast<NodePathJob>(job);
+        CPPUNIT_ASSERT(nodePathJob);
+        CPPUNIT_ASSERT_EQUAL(1, nodePathJob->_syncDbId);
+        CPPUNIT_ASSERT_EQUAL(NodeId{"1111"}, nodePathJob->_nodeId);
+
+        nodePathJob->_path = CommString{"/home/kDrive/Documents/presentation.doc"};
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)

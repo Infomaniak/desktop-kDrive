@@ -63,7 +63,7 @@
 #include "server/comm/guijobs/signalaccountaddedjob.h"
 #include "server/comm/guijobs/signaluseraddedjob.h"
 #include "server/comm/guijobs/signaluserupdatedjob.h"
-#include "server/comm/guijobs/signaluserremovedjob.h" 
+#include "server/comm/guijobs/signaluserremovedjob.h"
 #include "server/comm/guijobs/signalaccountremovedjob.h"
 #include "server/comm/guijobs/signaldriveaddedjob.h"
 #include "server/comm/guijobs/signaldriveremovedjob.h"
@@ -463,7 +463,7 @@ void AppServer::cleanup() {
     LOG_DEBUG(_logger, "AppServer::cleanup");
 
     // Stop CommManager
-    _commManager->stop();
+    if (_commManager) _commManager->stop();
 
     // Stop JobManager(s)
     GuiJobManagerSingleton::instance()->stop();
@@ -2574,13 +2574,14 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
-            {&MigrationParams::migrateSelectiveSyncs, "migrateSelectiveSyncs"}};
+        {&MigrationParams::migrateSelectiveSyncs, "migrateSelectiveSyncs"}
+    };
 
     for (const auto &migrate: migrateArr) {
         ExitCode functionExitCode = (mp.*migrate.first)();
