@@ -24,7 +24,7 @@
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
 
- // Input parameters keys
+// Input parameters keys
 static const auto inParamsUserDbId = "userDbId";
 static const auto inParamsDriveId = "driveId";
 static const auto inParamsNodeId = "nodeId";
@@ -62,7 +62,11 @@ ExitInfo NodeInfoJob::serializeOutputParms() {
 }
 
 ExitInfo NodeInfoJob::process() {
-    return ServerRequests::getNodeInfo(_userDbId, _driveId, _nodeId, _nodeInfo, _withPath);
+    if (ExitInfo exitInfo = ServerRequests::getNodeInfo(_userDbId, _driveId, _nodeId, _nodeInfo, _withPath); !exitInfo) {
+        LOG_WARN(_logger, "Error in Requests::getNodeInfo");
+        AppServer::addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
+        return exitInfo;
+    }
+    return ExitCode::Ok;
 }
-
 } // namespace KDC

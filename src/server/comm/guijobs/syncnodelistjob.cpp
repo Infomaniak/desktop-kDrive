@@ -67,6 +67,8 @@ ExitInfo SyncNodeListJob::process() {
 
     NodeSet nodeIdSet;
     if (ExitInfo exitInfo = it->second->syncIdSet(_syncNodeType, nodeIdSet); !exitInfo) {
+        LOG_WARN(_logger, "Error in SyncPal::setSyncIdSet: " << exitInfo);
+        AppServer::addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
         return exitInfo;
     }
     _nodeIdList.assign(nodeIdSet.begin(), nodeIdSet.end());

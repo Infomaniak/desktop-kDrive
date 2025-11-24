@@ -64,9 +64,16 @@ ExitInfo SyncNodeSetListJob::process() {
     if (ExitInfo exitInfo = it->second->setSyncIdSet(_syncNodeType, nodeIdSet); !exitInfo) {
         LOG_WARN(_logger, "SyncNodeSetListJob::process: setSyncIdSet failed for syncDbId=" << _syncDbId
                                                                                            << ", syncNodeType=" << _syncNodeType);
+        AppServer::addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
         return exitInfo;
     }
-    return it->second->syncListUpdated(it->second->isRunning());
-}
 
+    if (ExitInfo exitInfo = it->second->syncListUpdated(it->second->isRunning()); !exitInfo) {
+        LOG_WARN(_logger, "SyncNodeSetListJob::process: syncListUpdated failed for syncDbId=" << _syncDbId << ", syncNodeType="
+                                                                                              << _syncNodeType);
+        AppServer::addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
+        return exitInfo;
+    }
+    return ExitCode::Ok;
+}
 } // namespace KDC
