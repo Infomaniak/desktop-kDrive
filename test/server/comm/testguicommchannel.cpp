@@ -43,6 +43,14 @@
 
 namespace KDC {
 
+namespace {
+std::string toQuotedBase64(const std::string &input) {
+    std::string output;
+    CommonUtility::convertToBase64Str(input, output);
+    return R"(")" + output + R"(")";
+}
+} // namespace
+
 uint64_t GuiCommChannelTest::readData(CommChar *data, uint64_t maxlen) {
     std::scoped_lock lock(_bufferMutex);
     uint64_t toRead = (std::min)(maxlen, static_cast<uint64_t>(_buffer.size()));
@@ -1161,26 +1169,25 @@ void TestGuiCommChannel::testSyncGetPrivateLinkUrlJob() {
 #endif
 }
 
-void TestGuiCommChannel::testNodeSubFolders2() {
-    // Base64 conversions
-    // "1111" <=> "MTExMQ=="
-    // "https://kdrive.infomaniak.com/app/drive/1/redirect/1111" <=>
-    // "aHR0cHM6Ly9rZHJpdmUuaW5mb21hbmlhay5jb20vYXBwL2RyaXZlLzEvcmVkaXJlY3QvMTExMQ=="
-
+void TestGuiCommChannel::testNodeSubFolders2Job() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     const auto queryStr{R"({ "id": 1,)"
                         R"( "num": )" +
-                        std::to_string(toInt(RequestNum::SYNC_GETPRIVATELINKURL)) +
+                        std::to_string(toInt(RequestNum::NODE_SUBFOLDERS2)) +
                         R"(,)"
-                        R"( "params": { "driveDbId": 1, "fileId": "MTExMQ==" } })"};
+                        R"( "params": { "driveDbId": 1, "nodeId": )" +
+                        toQuotedBase64("1111") + R"(, "withPath": true } })"};
 #else
     // There is no need to pass a request id as the response is via a callback.
     const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::NODE_SUBFOLDERS2)) +
                         R"(,)"
-                        R"( "params": { "driveDbId": 1, "nodeId": "MTExMQ==", "withPath": true } })"};
+                        R"( "params": { "driveDbId": 1, "nodeId": )" +
+                        toQuotedBase64("1111") + R"(, "withPath": true } })"};
 
     // Callback expected answer
-    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"subfoldersList":{}}})"};
+    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"subfoldersList":[{"modtime":0,"name":)" +
+                            toQuotedBase64("name") + R"(,"nodeId":)" + toQuotedBase64("1111") + R"(,"parentNodeId":)" +
+                            toQuotedBase64("0000") + R"(,"path":)" + toQuotedBase64("documents/pending") + R"(,"size":1024}]}})"};
 #endif
 
     // Job expected answer
@@ -1190,7 +1197,10 @@ void TestGuiCommChannel::testNodeSubFolders2() {
                          R"( "num": )" +
                          std::to_string(toInt(RequestNum::NODE_SUBFOLDERS2)) +
                          R"(,)"
-                         R"( "params": { "subfoldersList": { } },)"
+                         R"( "params": { "subfoldersList": [ { "modtime": 0, "name": )" +
+                         toQuotedBase64("name") + R"(, "nodeId": )" + toQuotedBase64("1111") + R"(, "parentNodeId": )" +
+                         toQuotedBase64("0000") + R"(, "path": )" + toQuotedBase64("documents/pending") +
+                         R"(, "size": 1024 } ] },)"
                          R"( "type": )" +
                          std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
@@ -1201,7 +1211,8 @@ void TestGuiCommChannel::testNodeSubFolders2() {
         CPPUNIT_ASSERT_EQUAL(NodeId{"1111"}, nodeSubFolders2Job->_nodeId);
         CPPUNIT_ASSERT(nodeSubFolders2Job->_withPath);
 
-        nodeSubFolders2Job->_subfoldersList = {};
+        const NodeInfo nodeInfo(QString{"1111"}, "name", 1024, "0000", 0, "documents/pending");
+        nodeSubFolders2Job->_subfoldersList = {nodeInfo};
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
