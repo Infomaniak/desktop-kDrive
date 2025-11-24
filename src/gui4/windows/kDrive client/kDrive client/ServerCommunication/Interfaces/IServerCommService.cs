@@ -1,8 +1,10 @@
 ﻿using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Media.Animation;
 using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommProtocol;
 
 namespace Infomaniak.kDrive.ServerCommunication.Interfaces
@@ -56,8 +58,15 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task PauseSync(DbId syncDbId, CancellationToken cancellationToken);
         Task RemoveSync(DbId syncDbId, CancellationToken cancellationToken);
 
-        // Setting-related requests
-        Task RefreshSettings(CancellationToken cancellationToken);
+        // Node-related requests
+        Task<List<Node>?> GetSubFolders(DbId userDbId, DriveId driveId, NodeId parentNodeId /*Leave empty for root node*/, CancellationToken cancellationToken);
+        Task<Node?> GetNodeInfo(DbId userDbId, DriveId driveId, NodeId nodeId, CancellationToken cancellationToken);
+        Task<Int64?> GetFolderSize(DbId userDbId, DriveId driveId, NodeId nodeId, CancellationToken cancellationToken);
+        Task<List<NodeId>?> GetBlacklistedNodeIdList(DbId syncDbId, CancellationToken cancellationToken);
+        Task SetBlacklistedNodeIdList(DbId syncDbId, List<NodeId> idList, CancellationToken cancellationToken);
+
+       // Setting-related requests
+       Task RefreshSettings(CancellationToken cancellationToken);
 
         // Saves the settings provided in the Settings view model to the server.
         Task SaveSettings(CancellationToken cancellationToken);

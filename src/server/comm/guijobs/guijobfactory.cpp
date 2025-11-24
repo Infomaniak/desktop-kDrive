@@ -39,8 +39,8 @@
 #include "syncgetpubliclinkurljob.h"
 #include "nodesubfoldersjob.h"
 #include "nodefoldersizejob.h"
-#include "syncnodelistjob.h"
-#include "syncnodesetlistjob.h"
+#include "blacklistednodelistjob.h"
+#include "blacklistednodesetlistjob.h"
 #include "nodeinfojob.h"
 #include "syncgetprivatelinkurljob.h"
 
@@ -68,8 +68,8 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::SYNC_GETPUBLICLINKURL, makeShared<SyncGetPublicLinkUrlJob>},
                 {RequestNum::NODE_SUBFOLDERS, makeShared<NodeSubFoldersJob>},
                 {RequestNum::NODE_FOLDER_SIZE, makeShared<NodeFolderSizeJob>},
-                {RequestNum::SYNCNODE_LIST, makeShared<SyncNodeListJob>},
-                {RequestNum::SYNCNODE_SETLIST, makeShared<SyncNodeSetListJob>},
+                {RequestNum::BLACKLISTED_NODE_LIST, makeShared<BlacklistedNodeListJob>},
+                {RequestNum::BLACKLISTED_NODE_SETLIST, makeShared<BlacklistedNodeSetListJob>},
                 {RequestNum::NODE_INFO, makeShared<NodeInfoJob>},
                 {RequestNum::SYNC_GETPRIVATELINKURL, makeShared<SyncGetPrivateLinkUrlJob>}};
 }

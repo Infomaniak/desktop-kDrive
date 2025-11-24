@@ -48,6 +48,7 @@ namespace Infomaniak.kDrive.ViewModels
             Syncs.CollectionChanged += (s, e) => RefreshAdvancedSyncsMap();
 
         }
+        public DbId UserDbId { get => _account.User.DbId; }
 
         private void RefreshAdvancedSyncsMap()
         {

@@ -2,7 +2,7 @@
 global using AccountId = System.Int64;
 global using DriveId = System.Int64;
 global using SyncId = System.Int64;
-global using NodeId = System.Int64;
+global using NodeId = System.String;
 
 global using DbId = System.Int64;
 global using ExitCode = System.Int16;
@@ -145,6 +145,7 @@ namespace Infomaniak.kDrive.Types
         public string Name { get; }
         public System.Drawing.Color Color { get; }
         public DriveId DriveId { get; set; }
+        public DbId UserDbId { get; }
     }
 
     public class DriveAvailable : IDrive
