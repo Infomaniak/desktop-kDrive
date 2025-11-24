@@ -110,15 +110,15 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
     }
 
     public func updateUser(_ user: User) {
-        if let existingUser = users[user.id],
+        if let existingUser = users[user.dbId],
            let updatedUser = existingUser.updated(with: user) {
             // TODO: fix merge `accounts` and `availableDrives`
-            users[user.id] = updatedUser
+            users[user.dbId] = updatedUser
         } else {
-            users[user.id] = user
+            users[user.dbId] = user
         }
 
-        notifyUserUpdate(dbId: user.userId, indexedAccounts: user.accounts)
+        notifyUserUpdate(dbId: user.dbId, indexedAccounts: user.accounts)
     }
 
     public func updateAvailableDrives(_ drives: [AvailableDrive], forUserDbId userDbId: Int32) {
