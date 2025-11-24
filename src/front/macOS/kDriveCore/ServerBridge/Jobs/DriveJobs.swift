@@ -65,7 +65,7 @@ public struct DriveJobs: Sendable {
 
         try decodedMessage.validate()
 
-        await coherentCache.removeDrive(driveDbId, fromAccount: accountId, userDbId: userDbId)
+        await coherentCache.removeDrive(driveDbId: driveDbId, fromAccount: accountId, userDbId: userDbId)
     }
 
     public func driveSearch(driveDbId: Int32, searchString: String) async throws -> [FileResponse] {

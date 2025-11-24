@@ -46,11 +46,10 @@ public protocol CoherentCache: Sendable {
 
     // MARK: - Drive
 
-    func getDrive(_ driveDbId: Int32, accountDbId: Int32, userDbId: Int32) async -> Drive?
-    func getDrive(_ driveDbId: Int32) async -> Drive?
+    func getDrive(driveDbId: Int32, accountDbId: Int32, userDbId: Int32) async -> Drive?
+    func getDrive(driveDbId: Int32) async -> Drive?
     func addDrive(_ drive: Drive, toAccount accountDbId: Int32, userDbId: Int32) async
-    func removeDrive(_ driveDbId: Int32, fromAccount accountDbId: Int32, userDbId: Int32) async
-    func updateDrive(drive: Drive) async
+    func removeDrive(driveDbId: Int32, fromAccount accountDbId: Int32, userDbId: Int32) async
 
     // MARK: - Synchro
 
@@ -183,11 +182,11 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
 
     // MARK: - DRIVE
 
-    public func getDrive(_ driveDbId: Int32, accountDbId: Int32, userDbId: Int32) -> Drive? {
+    public func getDrive(driveDbId: Int32, accountDbId: Int32, userDbId: Int32) -> Drive? {
         users[userDbId]?.accounts[accountDbId]?.drives[driveDbId]
     }
 
-    public func getDrive(_ driveDbId: Int32) -> Drive? {
+    public func getDrive(driveDbId: Int32) -> Drive? {
         for user in users.values {
             for account in user.accounts.values {
                 if let drive = account.drives[driveDbId] {
@@ -208,7 +207,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         users[userDbId] = user
     }
 
-    public func removeDrive(_ driveDbId: Int32, fromAccount accountDbId: Int32, userDbId: Int32) {
+    public func removeDrive(driveDbId: Int32, fromAccount accountDbId: Int32, userDbId: Int32) {
         guard var user = users[userDbId],
               var account = user.accounts[accountDbId]
         else { return }
