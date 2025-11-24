@@ -54,7 +54,6 @@ ExitInfo NodeFolderSizeJob::deserializeInputParms() {
 }
 
 ExitInfo NodeFolderSizeJob::serializeOutputParms() {
-    // Output parameters serialization
     writeParamValue(outParamsFolderSize, _folderSize);
     return ExitCode::Ok;
 }

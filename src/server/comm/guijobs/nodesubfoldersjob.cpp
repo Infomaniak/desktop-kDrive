@@ -56,7 +56,6 @@ ExitInfo NodeSubFoldersJob::deserializeInputParms() {
 }
 
 ExitInfo NodeSubFoldersJob::serializeOutputParms() {
-    // Output parameters serialization
     std::function<Poco::Dynamic::Var(const NodeInfo &)> nodeInfo2DynamicVar = [](const NodeInfo &value) {
         Poco::DynamicStruct structValue;
         value.toDynamicStruct(structValue);

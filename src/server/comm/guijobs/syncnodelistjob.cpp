@@ -52,9 +52,7 @@ ExitInfo SyncNodeListJob::deserializeInputParms() {
 }
 
 ExitInfo SyncNodeListJob::serializeOutputParms() {
-    // Output parameters serialization
     writeParamValues(outParamsNodeIdList, _nodeIdList);
-
     return ExitCode::Ok;
 }
 

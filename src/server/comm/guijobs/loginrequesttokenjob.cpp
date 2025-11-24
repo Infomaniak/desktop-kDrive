@@ -57,7 +57,6 @@ ExitInfo LoginRequestTokenJob::deserializeInputParms() {
 }
 
 ExitInfo LoginRequestTokenJob::serializeOutputParms() {
-    // Output parameters serialization
     if (_error.empty()) {
         writeParamValue(outParamsUserDbId, _userDbId);
     } else {

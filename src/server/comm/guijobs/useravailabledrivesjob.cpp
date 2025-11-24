@@ -50,7 +50,6 @@ ExitInfo UserAvailableDrivesJob::deserializeInputParms() {
 }
 
 ExitInfo UserAvailableDrivesJob::serializeOutputParms() {
-    // Output parameters serialization
     std::function<Poco::Dynamic::Var(const DriveAvailableInfo &)> driveAvailableInfo2DynamicVar =
             [](const DriveAvailableInfo &value) {
                 Poco::DynamicStruct structValue;

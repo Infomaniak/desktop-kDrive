@@ -53,7 +53,6 @@ ExitInfo DriveSearchJob::deserializeInputParms() {
 }
 
 ExitInfo DriveSearchJob::serializeOutputParms() {
-    // Output parameters serialization
     writeParamValues(outParamsSearchInfoList, _searchInfoList, info2DynamicVar<SearchInfo>);
     writeParamValue(outParamsHasMore, _hasMore);
 

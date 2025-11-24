@@ -50,7 +50,6 @@ ExitInfo SyncStatusJob::deserializeInputParms() {
 }
 
 ExitInfo SyncStatusJob::serializeOutputParms() {
-    // Output parameters serialization
     writeParamValue(outParamsSyncStatus, _syncStatus);
 
     return ExitCode::Ok;

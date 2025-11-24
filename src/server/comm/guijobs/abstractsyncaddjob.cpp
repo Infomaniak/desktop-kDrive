@@ -66,7 +66,6 @@ ExitInfo AbstractSyncAddJob::deserializeInputParms() {
 }
 
 ExitInfo AbstractSyncAddJob::serializeOutputParms() {
-    // Output parameters serialization
     writeParamValue(outParamsSyncInfo, _syncInfo, info2DynamicVar<SyncInfo>);
 
     return ExitCode::Ok;
