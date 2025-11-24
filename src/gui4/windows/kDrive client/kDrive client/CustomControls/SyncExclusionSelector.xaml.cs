@@ -23,10 +23,10 @@ namespace Infomaniak.kDrive.CustomControls
         public ObservableCollection<TreeItem> RootItems { get; } = new ObservableCollection<TreeItem>();
 
         // The lists of special sync nodes (loaded from the server)
-        private List<NodeId> BlacklistedNodeIds = new List<NodeId>();
+        private List<NodeId> _blacklistedNodeIds = new List<NodeId>();
 
         // The paths of currently excluded nodes (Blacklist and Undecided)
-        private Dictionary<NodeId, string> BlacklistedNodesPaths = new Dictionary<NodeId, string>();
+        private Dictionary<NodeId, string> _blacklistedNodesPaths = new Dictionary<NodeId, string>();
 
         // Flag to prevent recursive state propagation during selection changes
         private bool StatePropagationInProgress { get; set; } = false;
@@ -126,13 +126,13 @@ namespace Infomaniak.kDrive.CustomControls
                 new PropertyMetadata(true)
             );
 
-        public TreeItem RootItem
+        private TreeItem RootItem
         {
             get => (TreeItem)GetValue(RootItemProperty);
             set => SetValue(RootItemProperty, value);
         }
 
-        public static readonly DependencyProperty RootItemProperty =
+        private static readonly DependencyProperty RootItemProperty =
             DependencyProperty.Register(
                 nameof(RootItem),
                 typeof(TreeItem),
@@ -200,7 +200,7 @@ namespace Infomaniak.kDrive.CustomControls
                 // If the children are not loaded, add all the excluded nodes under this parent
                 List<NodeId> unselectedNodes = new List<NodeId>();
 
-                foreach (var pair in BlacklistedNodesPaths)
+                foreach (var pair in _blacklistedNodesPaths)
                 {
                     if (pair.Value.StartsWith(parent.Node.Path))
                         unselectedNodes.Add(pair.Key);
@@ -247,7 +247,7 @@ namespace Infomaniak.kDrive.CustomControls
 
             // Get the root nodes from the server
             Node rootNode = new Node(RemoteNodeId, "", -1, "", "", UserDbId, DriveId);
-            RootItem = new TreeItem(rootNode, UserDbId, DriveId, null, BlacklistedNodesPaths);
+            RootItem = new TreeItem(rootNode, UserDbId, DriveId, null, _blacklistedNodesPaths);
             var fileItem = RootItem.Children.FirstOrDefault(i => i.Type == NodeType.File);
             if (fileItem is not null) RootItem.Children.Remove(fileItem);
             await RootItem.LoadDirectChildren();
@@ -259,17 +259,17 @@ namespace Infomaniak.kDrive.CustomControls
         private async Task RefreshBlackListedNodesAsync()
         {
             DbId syncDbId = SyncDbId ?? -1;
-            BlacklistedNodeIds.Clear();
+            _blacklistedNodeIds.Clear();
 
             if (syncDbId != -1) // Only load excluded nodes if a valid SyncDbId is provided, for new syncs there isn't any excluded nodes
             {
                 var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-                BlacklistedNodeIds = await commService.GetBlacklistedNodeIdList(syncDbId, CancellationToken.None) ?? new();
+                _blacklistedNodeIds = await commService.GetBlacklistedNodeIdList(syncDbId, CancellationToken.None) ?? new();
                 await RefreshBlacklistedNodesPaths();
             }
             else
             {
-                BlacklistedNodesPaths.Clear();
+                _blacklistedNodesPaths.Clear();
             }
         }
 
@@ -286,18 +286,18 @@ namespace Infomaniak.kDrive.CustomControls
             async Task loadPath(NodeId nodeId)
             {
                 var nodeInfo = await commService.GetNodeInfo(UserDbId, DriveId, nodeId, CancellationToken.None);
-                if (nodeId is null || nodeInfo is null)
+                if (nodeId is null || nodeInfo is null || nodeInfo.Path == "")
                 {
                     Logger.Log(Logger.Level.Warning, "Failed to load node info for nodeId: " + nodeId);
                     return;
                 }
-                BlacklistedNodesPaths.Add(nodeId, nodeInfo.Path);
+                _blacklistedNodesPaths.Add(nodeId, nodeInfo.Path);
             }
 
-            BlacklistedNodesPaths = BlacklistedNodesPaths.Where((pair) => BlacklistedNodeIds.Contains(pair.Key)).ToDictionary(); // Remove all the nodes that are not blacklisted anymore.
+            _blacklistedNodesPaths = _blacklistedNodesPaths.Where((pair) => _blacklistedNodeIds.Contains(pair.Key)).ToDictionary(); // Remove all the nodes that are not blacklisted anymore.
 
             List<Task> loadExcludedNodePathTasks = new List<Task>();
-            foreach (var item in BlacklistedNodeIds.Where((nodeId) => !BlacklistedNodesPaths.ContainsKey(nodeId))) // Fetch the path of all the new nodes
+            foreach (var item in _blacklistedNodeIds.Where((nodeId) => !_blacklistedNodesPaths.ContainsKey(nodeId))) // Fetch the path of all the new nodes
             {
                 loadExcludedNodePathTasks.Add(loadPath(item));
             }
@@ -406,7 +406,7 @@ namespace Infomaniak.kDrive.CustomControls
                 return;
             }
             var unselectedNodes = UnselectedChildNodes(RootItem);
-            HasPendingChanges = unselectedNodes.Count != BlacklistedNodeIds.Count || unselectedNodes.Except(BlacklistedNodeIds).Any() || BlacklistedNodeIds.Except(unselectedNodes).Any();
+            HasPendingChanges = unselectedNodes.Count != _blacklistedNodeIds.Count || unselectedNodes.Except(_blacklistedNodeIds).Any() || _blacklistedNodeIds.Except(unselectedNodes).Any();
         }
     }
 
