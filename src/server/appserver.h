@@ -121,8 +121,7 @@ class AppServer : public SharedTools::QtSingleApplication {
           \return ExitCode::Ok if no unexpected error occurred.
         */
         [[nodiscard]] ExitInfo tryCreateAndStartVfs(const Sync &sync, bool &startPostponed) noexcept;
-        [[nodiscard]] ExitInfo initSyncPal(const Sync &sync, const NodeSet &blackList = {}, const NodeSet &undecidedList = {},
-                                           const NodeSet &whiteList = {}, bool start = true,
+        [[nodiscard]] ExitInfo initSyncPal(const Sync &sync, const NodeSet &blackList = {}, bool start = true,
                                            const std::chrono::seconds &startDelay = std::chrono::seconds(0),
                                            bool resumedByUser = false, bool firstInit = false);
         [[nodiscard]] ExitInfo stopSyncPal(int syncDbId, bool pausedByUser = false, bool quit = false, bool clear = false);
@@ -194,8 +193,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         ExitCode migrateConfiguration(bool &proxyNotSupported);
         ExitCode updateUserInfo(User &user);
         ExitCode updateAllUsersInfo();
-        [[nodiscard]] ExitInfo initSyncPal(const Sync &sync, const QSet<QString> &blackList, const QSet<QString> &undecidedList,
-                                           const QSet<QString> &whiteList, bool start = true,
+        [[nodiscard]] ExitInfo initSyncPal(const Sync &sync, const QSet<QString> &blackList, bool start = true,
                                            const std::chrono::seconds &startDelay = std::chrono::seconds(0),
                                            bool resumedByUser = false, bool firstInit = false);
 
@@ -205,7 +203,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void startSyncsAndRetryOnError();
         [[nodiscard]] ExitInfo startSyncs();
         [[nodiscard]] ExitInfo processMigratedSyncOnceConnected(int userDbId, int driveId, Sync &sync, QSet<QString> &blackList,
-                                                                QSet<QString> &undecidedList, bool &syncUpdated);
+                                                                bool &syncUpdated);
 
         void sendUserAdded(const UserInfo &userInfo);
         static void sendUserUpdated(const UserInfo &userInfo);
@@ -225,7 +223,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         void sendSyncRemoved(int syncDbId);
         void sendSyncDeletionFailed(int syncDbId);
         void sendGetFolderSizeCompleted(const QString &nodeId, qint64 size);
-        void sendNewBigFolder(int syncDbId, const QString &path);
         static void sendErrorsCleared(int syncDbId);
         void sendQuit(); // Ask client to quit
 

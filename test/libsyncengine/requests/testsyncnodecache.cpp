@@ -69,7 +69,6 @@ void TestSyncNodeCache::testContainsSyncNode() {
 
     CPPUNIT_ASSERT(SyncNodeCache::instance()->contains(1, "1"));
     CPPUNIT_ASSERT(SyncNodeCache::instance()->contains(1, SyncNodeType::BlackList, "1"));
-    CPPUNIT_ASSERT(!SyncNodeCache::instance()->contains(1, SyncNodeType::WhiteList, "1"));
 }
 
 

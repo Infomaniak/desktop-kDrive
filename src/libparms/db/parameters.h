@@ -62,13 +62,6 @@ class PARMS_EXPORT Parameters {
         inline const ProxyConfig &proxyConfig() const { return _proxyConfig; }
         inline void setProxyConfig(const ProxyConfig &proxyConfig) { _proxyConfig = proxyConfig; }
 
-        inline bool useBigFolderSizeLimit() const { return _useBigFolderSizeLimit; }
-        inline void setUseBigFolderSizeLimit(bool useBigFolderSizeLimit) { _useBigFolderSizeLimit = useBigFolderSizeLimit; }
-
-        inline int64_t bigFolderSizeLimit() const { return _bigFolderSizeLimit; }
-        inline int64_t bigFolderSizeLimitB() const { return _bigFolderSizeLimit * 1024 * 1024; }
-        inline void setBigFolderSizeLimit(int64_t bigFolderSizeLimit) { _bigFolderSizeLimit = bigFolderSizeLimit; }
-
         inline bool darkTheme() const { return _darkTheme; }
         inline void setDarkTheme(bool darkTheme) { _darkTheme = darkTheme; }
 
@@ -121,8 +114,6 @@ class PARMS_EXPORT Parameters {
         bool _extendedLog;
         bool _purgeOldLogs;
         ProxyConfig _proxyConfig;
-        bool _useBigFolderSizeLimit;
-        int64_t _bigFolderSizeLimit; // MB
         bool _darkTheme;
         bool _showShortcuts;
         std::string _updateFileAvailable;

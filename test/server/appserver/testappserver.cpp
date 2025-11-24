@@ -110,7 +110,7 @@ void TestAppServer::testInitAndStopSyncPal() {
     CPPUNIT_ASSERT(exitInfo);
     // Start SyncPal
     const std::chrono::seconds startDelay{0};
-    exitInfo = _appPtr->initSyncPal(sync, QSet<QString>(), QSet<QString>(), QSet<QString>(), /*start*/ true, startDelay,
+    exitInfo = _appPtr->initSyncPal(sync, QSet<QString>(), /*start*/ true, startDelay,
                                     /*resumedByUser*/ false, /*firstInit*/ true);
     CPPUNIT_ASSERT(exitInfo);
     CPPUNIT_ASSERT(syncIsActive(syncDbId));
@@ -119,7 +119,7 @@ void TestAppServer::testInitAndStopSyncPal() {
     CPPUNIT_ASSERT(exitInfo);
     CPPUNIT_ASSERT(waitForSyncStatus(syncDbId, SyncStatus::Stopped));
     // Resume SyncPal
-    exitInfo = _appPtr->initSyncPal(sync, QSet<QString>(), QSet<QString>(), QSet<QString>(), /*start*/ true, startDelay,
+    exitInfo = _appPtr->initSyncPal(sync, QSet<QString>(), /*start*/ true, startDelay,
                                     /*resumedByUser*/ true, /*firstInit*/ false);
     CPPUNIT_ASSERT(exitInfo);
     CPPUNIT_ASSERT(syncIsActive(syncDbId));

@@ -21,7 +21,6 @@
 #include "serverbasefolderdialog.h"
 #include "serverfoldersdialog.h"
 #include "confirmsynchronizationdialog.h"
-#include "bigfoldersdialog.h"
 #include "custommessagebox.h"
 #include "custompushbutton.h"
 
@@ -70,7 +69,6 @@ DrivePreferencesWidget::DrivePreferencesWidget(std::shared_ptr<ClientGui> gui, Q
      *  _mainVBox
      *      _displayErrorsWidget
      *      _displayInfosWidget
-     *      _displayBigFoldersWarningWidget
      *      foldersHeaderHBox
      *          foldersLabel
      *          addFolderButton
@@ -120,16 +118,6 @@ DrivePreferencesWidget::DrivePreferencesWidget(std::shared_ptr<ClientGui> gui, Q
     _displayErrorsWidget->setObjectName("displayErrorsWidget");
     _mainVBox->addWidget(_displayErrorsWidget);
     _displayErrorsWidget->setVisible(false);
-
-    //
-    // Big folders warning
-    //
-    _displayBigFoldersWarningWidget =
-            new ActionWidget(":/client/resources/icons/actions/warning.svg",
-                             tr("Some folders were not synchronized because they are too large."), this);
-    _displayBigFoldersWarningWidget->setObjectName("displayBigFoldersWarningWidget");
-    _displayBigFoldersWarningWidget->setVisible(false);
-    _mainVBox->addWidget(_displayBigFoldersWarningWidget);
 
     //
     //  Search bloc
@@ -233,14 +221,10 @@ DrivePreferencesWidget::DrivePreferencesWidget(std::shared_ptr<ClientGui> gui, Q
     connect(languageFilter, &LanguageChangeFilter::retranslate, this, &DrivePreferencesWidget::retranslateUi);
 
     connect(_displayErrorsWidget, &ActionWidget::clicked, this, &DrivePreferencesWidget::onErrorsWidgetClicked);
-    connect(_displayBigFoldersWarningWidget, &ActionWidget::clicked, this,
-            &DrivePreferencesWidget::onBigFoldersWarningWidgetClicked);
     connect(_addLocalFolderButton, &CustomPushButton::clicked, this, &DrivePreferencesWidget::onAddLocalFolder);
     connect(_notificationsSwitch, &CustomSwitch::clicked, this, &DrivePreferencesWidget::onNotificationsSwitchClicked);
     connect(this, &DrivePreferencesWidget::errorAdded, this, &DrivePreferencesWidget::onErrorAdded);
     connect(_removeDriveButton, &CustomToolButton::clicked, this, &DrivePreferencesWidget::onRemoveDrive);
-    connect(this, &DrivePreferencesWidget::newBigFolderDiscovered, this, &DrivePreferencesWidget::onNewBigFolderDiscovered);
-    connect(this, &DrivePreferencesWidget::undecidedListsCleared, this, &DrivePreferencesWidget::onUndecidedListsCleared);
 
     connect(_gui.get(), &ClientGui::vfsConversionCompleted, this, &DrivePreferencesWidget::onVfsConversionCompleted);
     connect(_gui.get(), &ClientGui::driveBeingRemoved, this, &DrivePreferencesWidget::onDriveBeingRemoved);
@@ -257,7 +241,6 @@ void DrivePreferencesWidget::setDrive(int driveDbId, bool unresolvedErrors) {
 
     _driveDbId = driveDbId;
     _displayErrorsWidget->setVisible(unresolvedErrors);
-    _displayBigFoldersWarningWidget->setVisible(existUndecidedSet());
     _notificationsSwitch->setChecked(driveInfoMapIt->second.notifications());
     _notificationsSwitch->setVisible(true);
 
@@ -268,7 +251,6 @@ void DrivePreferencesWidget::setDrive(int driveDbId, bool unresolvedErrors) {
 void DrivePreferencesWidget::reset() {
     _driveDbId = 0;
     _displayErrorsWidget->setVisible(false);
-    _displayBigFoldersWarningWidget->setVisible(false);
     resetFoldersBlocs();
     _notificationsSwitch->setChecked(true);
     _userAvatarLabel->setPixmap(QPixmap());
@@ -324,31 +306,6 @@ void DrivePreferencesWidget::onVfsConversionCompleted(int syncDbId) {
             }
         }
     }
-}
-
-bool DrivePreferencesWidget::existUndecidedSet() {
-    if (!_driveDbId) return false;
-
-    bool ret = false;
-    for (const auto &[key, info]: _gui->syncInfoMap()) {
-        if (info.driveDbId() != _driveDbId) continue;
-        if (info.status() == SyncStatus::Undefined) continue;
-        if (info.virtualFileMode() == VirtualFileMode::Win || info.virtualFileMode() == VirtualFileMode::Mac) continue;
-
-        QSet<QString> undecidedSet;
-        if (const auto exitCode = GuiRequests::getSyncIdSet(key, SyncNodeType::UndecidedList, undecidedSet);
-            exitCode != ExitCode::Ok) {
-            qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::getSyncIdSet";
-            break;
-        }
-
-        if (!undecidedSet.empty()) {
-            ret = true;
-            break;
-        }
-    }
-
-    return ret;
 }
 
 void DrivePreferencesWidget::updateUserInfo() {
@@ -685,112 +642,8 @@ bool DrivePreferencesWidget::addSync(const QString &localFolderPath, bool liteSy
     return true;
 }
 
-bool DrivePreferencesWidget::updateSelectiveSyncList(const QHash<int, QHash<const QString, bool>> &mapUndefinedFolders) {
-    bool res = true;
-    for (auto it = mapUndefinedFolders.begin(); it != mapUndefinedFolders.end(); ++it) {
-        int syncDbId = it.key();
-        QSet<QString> undecidedSet;
-        if (const auto exitCode = GuiRequests::getSyncIdSet(syncDbId, SyncNodeType::UndecidedList, undecidedSet);
-            exitCode != ExitCode::Ok) {
-            qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::getSyncIdSet";
-            res = false;
-            continue;
-        }
-
-        // If this folder had no undecided entries, skip it.
-        if (undecidedSet.isEmpty()) {
-            continue;
-        }
-
-        // Get blacklisted folders
-        QSet<QString> blackSet;
-        if (const auto exitCode = GuiRequests::getSyncIdSet(syncDbId, SyncNodeType::BlackList, blackSet);
-            exitCode != ExitCode::Ok) {
-            qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::getSyncIdSet";
-            res = false;
-            continue;
-        }
-
-        // Remove all the folders that were not selected by the user
-        for (auto itUserChoice = it.value().begin(); itUserChoice != it.value().end(); ++itUserChoice) {
-            if (!itUserChoice.value()) {
-                blackSet << itUserChoice.key();
-                undecidedSet.remove(itUserChoice.key());
-            }
-        }
-
-        // Remove all undecided folders from the blacklist and push them to the whitelist
-        QSet<QString> whiteSet;
-        foreach (const auto &nodeId, undecidedSet) {
-            blackSet.remove(nodeId);
-            whiteSet.insert(nodeId);
-        }
-
-        // Update the black list
-        if (const auto exitCode = GuiRequests::setSyncIdSet(syncDbId, SyncNodeType::BlackList, blackSet);
-            exitCode != ExitCode::Ok) {
-            qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::setSyncIdSet";
-            res = false;
-            continue;
-        }
-
-        // Clear the undecided list
-        if (const auto exitCode = GuiRequests::setSyncIdSet(syncDbId, SyncNodeType::UndecidedList, {});
-            exitCode != ExitCode::Ok) {
-            qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::setSyncIdSet";
-            res = false;
-            continue;
-        }
-
-        // Update the white list
-        if (const auto exitCode = GuiRequests::setSyncIdSet(syncDbId, SyncNodeType::WhiteList, whiteSet);
-            exitCode != ExitCode::Ok) {
-            qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::setSyncIdSet";
-            res = false;
-            continue;
-        }
-
-        GuiRequests::propagateSyncListChange(syncDbId, !whiteSet.empty());
-    }
-
-    return res;
-}
-
 void DrivePreferencesWidget::onErrorsWidgetClicked() {
     emit displayErrors(_driveDbId);
-}
-
-void DrivePreferencesWidget::onBigFoldersWarningWidgetClicked() {
-    EnableStateHolder _(this);
-
-    std::unordered_map<int, std::pair<SyncInfoClient, QSet<QString>>> syncsUndecidedMap;
-    for (const auto &[key, info]: _gui->syncInfoMap()) {
-        if (info.driveDbId() == _driveDbId) {
-            QSet<QString> tmpSet;
-            ExitCode exitCode = GuiRequests::getSyncIdSet(key, SyncNodeType::UndecidedList, tmpSet);
-            syncsUndecidedMap[key] = {info, tmpSet};
-            if (exitCode != ExitCode::Ok) {
-                qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::getSyncIdSet";
-                return;
-            }
-        }
-    }
-
-    const auto driveInfoIt = _gui->driveInfoMap().find(_driveDbId);
-    if (driveInfoIt == _gui->driveInfoMap().end()) {
-        qCWarning(lcDrivePreferencesWidget()) << "Drive not found in drive map for driveDbId=" << _driveDbId;
-        return;
-    }
-
-    BigFoldersDialog dialog(syncsUndecidedMap, driveInfoIt->second, this);
-    if (dialog.exec() == QDialog::Accepted) {
-        if (!updateSelectiveSyncList(dialog.mapWhiteListedSubFolders())) {
-            qCWarning(lcDrivePreferencesWidget) << "Error in updateSelectiveSyncList";
-        }
-
-        _displayBigFoldersWarningWidget->setVisible(existUndecidedSet());
-        refreshFoldersBlocs();
-    }
 }
 
 void DrivePreferencesWidget::onAddLocalFolder(bool checked) {
@@ -1248,14 +1101,6 @@ void DrivePreferencesWidget::onValidateUpdate(int syncDbId) {
     if (!treeItemWidget) return;
 
     QLOG_IF_FAIL(treeItemWidget->syncDbId() == syncDbId);
-    _displayBigFoldersWarningWidget->setVisible(false);
-
-    QSet<QString> oldUndecidedSet;
-    if (const auto exitCode = GuiRequests::getSyncIdSet(syncDbId, SyncNodeType::UndecidedList, oldUndecidedSet);
-        exitCode != ExitCode::Ok) {
-        qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::getSyncIdSet";
-        return;
-    }
 
     QSet<QString> oldBlackSet;
     if (const auto exitCode = GuiRequests::getSyncIdSet(syncDbId, SyncNodeType::BlackList, oldBlackSet);
@@ -1263,26 +1108,11 @@ void DrivePreferencesWidget::onValidateUpdate(int syncDbId) {
         qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::getSyncIdSet";
         return;
     }
-
-    // Clear the undecided list
-    if (const auto exitCode = GuiRequests::setSyncIdSet(syncDbId, SyncNodeType::UndecidedList, QSet<QString>());
-        exitCode != ExitCode::Ok) {
-        qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::setSyncIdSet";
-        return;
-    }
-
     // Update the blacklist
     const QSet<QString> blackSet = treeItemWidget->createBlackSet();
     if (!GuiUtility::checkBlacklistSize(blackSet.size(), this)) return;
 
     if (const auto exitCode = GuiRequests::setSyncIdSet(syncDbId, SyncNodeType::BlackList, blackSet); exitCode != ExitCode::Ok) {
-        qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::setSyncIdSet";
-        return;
-    }
-
-    // Update the whitelist
-    QSet<QString> whiteSet = (oldUndecidedSet + oldBlackSet) - blackSet;
-    if (const auto exitCode = GuiRequests::setSyncIdSet(syncDbId, SyncNodeType::WhiteList, whiteSet); exitCode != ExitCode::Ok) {
         qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::setSyncIdSet";
         return;
     }
@@ -1296,22 +1126,8 @@ void DrivePreferencesWidget::onValidateUpdate(int syncDbId) {
     }
 }
 
-void DrivePreferencesWidget::onNewBigFolderDiscovered(int syncDbId, const QString &path) {
-    Q_UNUSED(syncDbId)
-    Q_UNUSED(path)
-
-    _displayBigFoldersWarningWidget->setVisible(existUndecidedSet());
-    refreshFoldersBlocs();
-}
-
-void DrivePreferencesWidget::onUndecidedListsCleared() {
-    _displayBigFoldersWarningWidget->setVisible(existUndecidedSet());
-    refreshFoldersBlocs();
-}
-
 void DrivePreferencesWidget::retranslateUi() {
     _displayErrorsWidget->setText(tr("Synchronization errors and information."));
-    _displayBigFoldersWarningWidget->setText(tr("Some folders were not synchronized because they are too large."));
     _foldersLabel->setText(tr("Folders"));
     _addLocalFolderButton->setText(tr("Synchronize a local folder"));
     _notificationsLabel->setText(tr("Notifications"));

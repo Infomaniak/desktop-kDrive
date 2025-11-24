@@ -597,8 +597,8 @@ bool ParmsDb::insertDefaultParameters() {
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 13, parameters.proxyConfig().needsAuth()));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 14, parameters.proxyConfig().user()));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 15, parameters.proxyConfig().token()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 16, parameters.useBigFolderSizeLimit()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 17, parameters.bigFolderSizeLimit()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 16, false)); // useBigFolderSizeLimit : not used anymore
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 17, 0)); // bigFolderSizeLimit : not used anymore
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 18, parameters.darkTheme()));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 19, parameters.showShortcuts()));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 20, parameters.updateFileAvailable()));
@@ -1208,8 +1208,8 @@ bool ParmsDb::updateParameters(const Parameters &parameters, bool &found) {
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 13, parameters.proxyConfig().needsAuth()));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 14, parameters.proxyConfig().user()));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 15, parameters.proxyConfig().token()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 16, parameters.useBigFolderSizeLimit()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 17, parameters.bigFolderSizeLimit()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 16, false)); // useBigFolderSizeLimit : not used anymore
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 17, 0)); // bigFolderSizeLimit : not used anymore
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 18, parameters.darkTheme()));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 19, parameters.showShortcuts()));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 20, parameters.updateFileAvailable()));
@@ -1293,14 +1293,8 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
     LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, 14, token));
     parameters.setProxyConfig(ProxyConfig(proxyType, hostName, port, needsAuth, user, token));
 
-    bool useBigFolderSizeLimit = false;
-    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 15, intResult));
-    useBigFolderSizeLimit = static_cast<bool>(intResult);
-    parameters.setUseBigFolderSizeLimit(useBigFolderSizeLimit);
-
-    int64_t int64Result = 0;
-    LOG_IF_FAIL(queryInt64Value(SELECT_PARAMETERS_REQUEST_ID, 16, int64Result));
-    parameters.setBigFolderSizeLimit(int64Result);
+    // 15: useBigFolderSizeLimit : not used anymore
+    // 16: bigFolderSizeLimit : not used anymore
 
     LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 17, intResult));
     parameters.setDarkTheme(intResult);
