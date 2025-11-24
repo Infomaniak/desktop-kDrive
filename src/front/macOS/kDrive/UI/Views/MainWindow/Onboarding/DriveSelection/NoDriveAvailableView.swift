@@ -17,13 +17,48 @@
  */
 
 import Cocoa
+import kDriveCoreUI
+import kDriveResources
 
 final class NoDriveAvailableView: NSView {
-
-    override func draw(_ dirtyRect: NSRect) {
-        super.draw(dirtyRect)
-
-        // Drawing code here.
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        setupView()
     }
-    
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupView()
+    }
+
+    private func setupView() {
+        let titleLabel = NSTextField(labelWithString: KDriveLocalizable.onboardingDriveSelectionNoDriveTitle)
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        titleLabel.font = NSFont.Tokens.headline
+        titleLabel.textColor = NSColor.Tokens.Text.secondary
+
+        let descriptionLabel = NSTextField(labelWithString: KDriveLocalizable.onboardingDriveSelectionNoDriveDescription)
+        descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
+        descriptionLabel.font = NSFont.Tokens.body
+        descriptionLabel.textColor = NSColor.Tokens.Text.secondary
+
+        let stackView = NSStackView(views: [titleLabel, descriptionLabel])
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.orientation = .vertical
+        stackView.alignment = .leading
+        stackView.spacing = AppPadding.padding8
+        addSubview(stackView)
+
+        NSLayoutConstraint.activate([
+            stackView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            stackView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            stackView.topAnchor.constraint(equalTo: topAnchor),
+            stackView.bottomAnchor.constraint(equalTo: bottomAnchor)
+        ])
+    }
+}
+
+@available(macOS 14.0, *)
+#Preview {
+    NoDriveAvailableView()
 }

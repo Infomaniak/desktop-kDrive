@@ -4,7 +4,7 @@
  * Locale: it, Italian
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Wed, 19 Nov 2025 17:08:58 +0100
+ * Exported at: Mon, 24 Nov 2025 08:38:30 +0100
  */
 
 /* loco:691deb2291b20ac7fd045012 */
@@ -25,6 +25,12 @@
 /* loco:68b04d5a63085b7ab90cea63 */
 "buttonOpenInFinder" = "Aprire nel Finder";
 
+/* loco:692406b0258f5599bf01d113 */
+"onboardingDriveSelectionNoDriveDescription" = "Iniziate gratuitamente con my kSuite,\noppure scegliete un pacchetto su misura per le vostre esigenze.";
+
+/* loco:692405adc5c224ad2a07ff62 */
+"onboardingDriveSelectionNoDriveTitle" = "Non avete ancora un kDrive.";
+
 /* loco:691deaf47145f10ab4052cd2 */
 "onboardingDriveSelectionTitle" = "Bentornati!";
 
@@ -38,10 +44,10 @@
 "onboardingLoginErrorTitle" = "Errore di connessione";
 
 /* loco:691deb66e28b84c78e034353 */
-"onboardingLoginHintLoading" = "Ancora qualche istante e caricheremo il suo conto..";
+"onboardingLoginHintLoading" = "Ancora qualche istante e caricheremo il suo conto…";
 
 /* loco:691deb477145f10ab4052cd4 */
-"onboardingLoginHintWebAuth" = "Connessione dal browser..";
+"onboardingLoginHintWebAuth" = "Connessione dal browser…";
 
 /* loco:68e673754d80559c460bdf02 */
 "onboardingLoginTitle" = "Benvenuti su kDrive!";

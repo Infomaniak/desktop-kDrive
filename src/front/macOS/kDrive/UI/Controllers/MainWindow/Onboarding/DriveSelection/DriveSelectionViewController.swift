@@ -70,7 +70,7 @@ class DriveSelectionViewController: OnboardingStepViewController {
         stackView.setCustomSpacing(AppPadding.padding12, after: titleLabel)
 
         stackView.insertArrangedSubview(noDriveAvailableView, at: 2)
-        stackView.setCustomSpacing(AppPadding.padding24, after: titleLabel)
+        stackView.setCustomSpacing(AppPadding.padding24, after: labeledUserView)
         noDriveAvailableView.isHidden = true
     }
 
