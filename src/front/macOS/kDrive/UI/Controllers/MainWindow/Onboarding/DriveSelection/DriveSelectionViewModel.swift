@@ -40,8 +40,6 @@ final class DriveSelectionViewModel: ObservableObject {
 
         let drivesResponse = try await DriveJobs().availableDrives(userDbId: firstAvailableUser.dbId)
         let availableDrives = drivesResponse.asDrives()
-//        self.availableDrives = availableDrives.map { UIDrive(drive: $0) }
-
-        self.availableDrives = []
+        self.availableDrives = availableDrives.map { UIDrive(drive: $0) }
     }
 }

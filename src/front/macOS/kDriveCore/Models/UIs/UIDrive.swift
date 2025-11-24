@@ -39,11 +39,27 @@ public struct UIDrive: Sendable {
 
 public extension UIDrive {
     init(drive: Drive) {
+        var color = NSColor.blue
+        if let driveColor = drive.color {
+            color = NSColor(hexColor: driveColor)
+        }
+
         self.init(
             dbId: Int(drive.driveDbId),
             driveId: Int(drive.driveId),
             name: drive.name,
-            color: .blue // TODO: Get the real color from the Drive model
+            color: color
+        )
+    }
+}
+
+extension NSColor {
+    convenience init(hexColor: HexColor) {
+        self.init(
+            red: CGFloat(hexColor.red) / 255,
+            green: CGFloat(hexColor.green) / 255,
+            blue: CGFloat(hexColor.blue) / 255,
+            alpha: 1
         )
     }
 }

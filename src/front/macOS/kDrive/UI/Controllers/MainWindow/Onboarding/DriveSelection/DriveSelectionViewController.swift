@@ -45,6 +45,12 @@ class DriveSelectionViewController: OnboardingStepViewController {
         return noDriveAvailable
     }()
 
+    private lazy var drivesListView: DrivesListView = {
+        let drivesListView = DrivesListView()
+        drivesListView.translatesAutoresizingMaskIntoConstraints = false
+        return drivesListView
+    }()
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -73,10 +79,15 @@ class DriveSelectionViewController: OnboardingStepViewController {
 
         stackView.insertArrangedSubview(labeledUserView, at: 1)
         stackView.setCustomSpacing(AppPadding.padding12, after: titleLabel)
+        stackView.setCustomSpacing(AppPadding.padding24, after: labeledUserView)
 
         stackView.insertArrangedSubview(noDriveAvailableView, at: 2)
-        stackView.setCustomSpacing(AppPadding.padding24, after: labeledUserView)
+        stackView.setCustomSpacing(AppPadding.padding24, after: noDriveAvailableView)
         noDriveAvailableView.isHidden = true
+
+        stackView.insertArrangedSubview(drivesListView, at: 3)
+        stackView.setCustomSpacing(AppPadding.padding24, after: drivesListView)
+        drivesListView.isHidden = true
     }
 
     private func bindViewModel() {
@@ -109,6 +120,9 @@ class DriveSelectionViewController: OnboardingStepViewController {
 extension DriveSelectionViewController {
     private func updateDrivesList(_ drives: [UIDrive]) {
         noDriveAvailableView.isHidden = true
+        drivesListView.isHidden = false
+
+        drivesListView.drives = drives
 
         primaryButton.title = KDriveLocalizable.buttonContinue
         primaryButton.action = #selector(didTapContinue)
@@ -126,6 +140,7 @@ extension DriveSelectionViewController {
 extension DriveSelectionViewController {
     private func showNoDriveAvailableView() {
         noDriveAvailableView.isHidden = false
+        drivesListView.isHidden = true
 
         primaryButton.title = KDriveLocalizable.buttonStartForFree
         primaryButton.action = #selector(didTapStartForFree)

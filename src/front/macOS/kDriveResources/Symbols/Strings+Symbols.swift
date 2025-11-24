@@ -30,6 +30,8 @@ public enum KDriveLocalizable {
   public static let onboardingDriveSelectionNoDriveDescription = KDriveLocalizable.tr("Localizable", "onboardingDriveSelectionNoDriveDescription", fallback: "Get started for free with my kSuite,\nor choose a package tailored to your needs.")
   /// loco:692405adc5c224ad2a07ff62
   public static let onboardingDriveSelectionNoDriveTitle = KDriveLocalizable.tr("Localizable", "onboardingDriveSelectionNoDriveTitle", fallback: "You don't have a kDrive yet.")
+  /// loco:69242dd4299cf487060f2143
+  public static let onboardingDriveSelectionSelectTitle = KDriveLocalizable.tr("Localizable", "onboardingDriveSelectionSelectTitle", fallback: "Select the kDrive to be synchronized on this computer:")
   /// loco:691deaf47145f10ab4052cd2
   public static let onboardingDriveSelectionTitle = KDriveLocalizable.tr("Localizable", "onboardingDriveSelectionTitle", fallback: "Welcome back!")
   /// loco:68e6739c8af12c42e80027c5

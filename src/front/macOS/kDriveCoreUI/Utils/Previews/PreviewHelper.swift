@@ -34,4 +34,17 @@ public enum PreviewHelper {
         email: "tim@apple.com",
         avatar: PreviewHelper.userImage
     )
+
+    public static let drive1 = UIDrive(
+        dbId: 1,
+        driveId: 1,
+        name: "Tim Drive",
+        color: .blue
+    )
+    public static let drive2 = UIDrive(
+        dbId: 2,
+        driveId: 2,
+        name: "Drive Pro Max",
+        color: .red
+    )
 }
