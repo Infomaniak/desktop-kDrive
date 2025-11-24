@@ -42,7 +42,7 @@ ExitInfo SyncStatusJob::deserializeInputParms() {
     try {
         readParamValue(inParamsSyncDbId, _syncDbId);
     } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in AbstractGuiJob::readParamValue: error=" << e.what());
+        LOG_WARN(_logger, "Exception in SyncStatusJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
     }
 

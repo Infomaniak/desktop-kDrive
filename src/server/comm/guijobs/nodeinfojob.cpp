@@ -48,7 +48,7 @@ ExitInfo NodeInfoJob::deserializeInputParms() {
         readParamValue(inParamsNodeId, _nodeId);
         readParamValue(inParamsWithPath, _withPath);
     } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in AbstractGuiJob::readParamValue: error=" << e.what());
+        LOG_WARN(_logger, "Exception in NodeInfoJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
     }
 

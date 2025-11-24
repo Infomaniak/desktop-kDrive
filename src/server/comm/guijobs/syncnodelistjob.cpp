@@ -44,7 +44,7 @@ ExitInfo SyncNodeListJob::deserializeInputParms() {
         readParamValue(inParamsSyncDbId, _syncDbId);
         readParamValue(inParamsSyncNodeType, _syncNodeType);
     } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in AbstractGuiJob::readParamValue: error=" << e.what());
+        LOG_WARN(_logger, "Exception in SyncNodeListJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
     }
 

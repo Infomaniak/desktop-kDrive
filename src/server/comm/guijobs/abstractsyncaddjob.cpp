@@ -58,7 +58,7 @@ ExitInfo AbstractSyncAddJob::deserializeInputParms() {
         readParamValue(inParamsLiteSync, _liteSync);
         readParamValues(inParamsBlackList, _blackList);
     } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in AbstractGuiJob::readParamValue: error=" << e.what());
+        LOG_WARN(_logger, "Exception in AbstractSyncAddJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
     }
 
