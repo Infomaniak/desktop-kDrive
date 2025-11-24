@@ -41,7 +41,7 @@ public protocol CoherentCache: Sendable {
     func getAccount(accountDbId: Int32, userDbId: Int32) async -> Account?
     func getAccount(accountDbId: Int32) async -> Account?
     func addAccount(_ account: Account, userDbId: Int32) async
-    func removeAccount(accountDbId: Int32, userDbId: Int32) async
+    func removeAccount(accountDbId: Int32) async
     func updateAccount(_ account: Account) async
 
     // MARK: - Drive
@@ -155,16 +155,19 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         guard var user = users[userDbId] else { return }
         user.accounts[account.id] = account
         users[userDbId] = user
-
         notifyAccountUpdate(userDbId: userDbId, indexedAccounts: user.accounts)
     }
 
-    public func removeAccount(accountDbId: Int32, userDbId: Int32) {
-        guard var user = users[userDbId] else { return }
-        user.accounts.removeValue(forKey: accountDbId)
-        users[userDbId] = user
+    public func removeAccount(accountDbId: Int32) {
+        for var user in users.values {
+            guard user.accounts[accountDbId] != nil else {
+                continue
+            }
 
-        notifyAccountUpdate(userDbId: userDbId, indexedAccounts: user.accounts)
+            user.accounts.removeValue(forKey: accountDbId)
+            users[user.dbId] = user
+            notifyUserUpdate(dbId: user.dbId, indexedAccounts: user.accounts)
+        }
     }
 
     public func updateAccount(_ account: Account) {
