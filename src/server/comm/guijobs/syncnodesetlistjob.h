@@ -33,7 +33,7 @@ class SyncNodeSetListJob : public AbstractGuiJob {
         std::vector<NodeId> _nodeIdList;
 
         ExitInfo deserializeInputParms() override;
-        ExitInfo serializeOutputParms() { return ExitCode::Ok; }
+        ExitInfo serializeOutputParms() override { return ExitCode::Ok; }
         ExitInfo process() override;
 
         friend class TestGuiCommChannel;
