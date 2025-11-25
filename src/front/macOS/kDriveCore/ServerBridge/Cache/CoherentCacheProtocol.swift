@@ -42,16 +42,17 @@ public protocol CoherentCacheProtocol: Sendable {
 
     func getDrive(driveDbId: Int32, accountDbId: Int32, userDbId: Int32) async -> Drive?
     func getDrive(driveDbId: Int32) async -> Drive?
-    func addDrive(_ drive: Drive, toAccount accountDbId: Int32, userDbId: Int32) async
-    func removeDrive(driveDbId: Int32, fromAccount accountDbId: Int32, userDbId: Int32) async
+    func addDrive(_ drive: Drive, accountDbId: Int32, userDbId: Int32) async
+    func removeDrive(driveDbId: Int32, accountDbId: Int32, userDbId: Int32) async
     func updateDrive(drive: Drive) async throws
 
     // MARK: - Synchro
 
-    func getSynchro(synchroDbId: Int32, driveDbId: Int32, accountDbId: Int32, userId: Int32) async -> Synchro?
-    func addSynchro(_ synchro: Synchro, toDrive driveDbId: Int32, accountDbId: Int32, userId: Int32) async
-    func removeSynchro(synchroDbId: Int32, fromDrive driveDbId: Int32, accountDbId: Int32, userId: Int32) async
-    func updateSynchro(_ synchro: Synchro) async
+    func getSynchro(synchroDbId: Int32, driveDbId: Int32, accountDbId: Int32, userDbId: Int32) async -> Synchro?
+    func getSynchro(synchroDbId: Int32) async -> Synchro?
+    func addSynchro(_ synchro: Synchro, toDrive driveDbId: Int32, accountDbId: Int32, userDbId: Int32) async
+    func removeSynchro(synchroDbId: Int32, driveDbId: Int32, accountDbId: Int32, userDbId: Int32) async
+    func updateSynchro(_ synchro: Synchro) async throws
 
     // MARK: - Cleanup
 
