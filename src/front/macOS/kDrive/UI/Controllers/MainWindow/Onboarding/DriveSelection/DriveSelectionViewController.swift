@@ -104,7 +104,7 @@ class DriveSelectionViewController: OnboardingStepViewController {
             }
     }
 
-    private func handleUpdatedDrivesList(_ drives: [UIDrive]) {
+    private func handleUpdatedDrivesList(_ drives: [UIAvailableDrive]) {
         buttonsStack.isHidden = false
 
         if drives.isEmpty {
@@ -118,7 +118,7 @@ class DriveSelectionViewController: OnboardingStepViewController {
 // MARK: - Update drives list
 
 extension DriveSelectionViewController {
-    private func updateDrivesList(_ drives: [UIDrive]) {
+    private func updateDrivesList(_ drives: [UIAvailableDrive]) {
         noDriveAvailableView.isHidden = true
         drivesListView.isHidden = false
 

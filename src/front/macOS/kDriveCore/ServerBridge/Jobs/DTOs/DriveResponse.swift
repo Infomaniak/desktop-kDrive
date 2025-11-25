@@ -48,7 +48,7 @@ public struct DriveResponse: Codable, Sendable {
     @Base64CodedColor var color: HexColor
 }
 
-extension DriveResponse {
+public extension DriveResponse {
     var asAvailableDrive: AvailableDrive {
         AvailableDrive(driveId: driveId,
                        accountId: accountId,
@@ -59,3 +59,8 @@ extension DriveResponse {
     }
 }
 
+public extension Collection where Element == DriveResponse {
+    var asAvailableDrives: [AvailableDrive] {
+        return map { $0.asAvailableDrive }
+    }
+}

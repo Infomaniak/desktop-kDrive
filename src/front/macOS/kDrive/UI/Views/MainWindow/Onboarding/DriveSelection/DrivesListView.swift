@@ -31,7 +31,7 @@ class DrivesListView: NSView {
         return stackView
     }()
 
-    var drives: [UIDrive] = [] {
+    var drives: [UIDriveRepresentation] = [] {
         didSet {
             updateDrivesList()
         }

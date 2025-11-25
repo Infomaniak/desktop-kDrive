@@ -19,17 +19,58 @@
 import AppKit
 import Foundation
 
-public struct UIDrive: Sendable {
+public protocol UIDriveRepresentation: Sendable {
+    var id: Int { get }
+    var name: String { get }
+    var color: NSColor? { get }
+}
+
+// MARK: - UIAvailableDrive
+
+public struct UIAvailableDrive: UIDriveRepresentation {
     public var id: Int {
-        dbId
+        return driveId
+    }
+
+    public let driveId: Int
+    public let name: String
+    public let color: NSColor?
+
+    public init(driveId: Int, name: String, color: NSColor?) {
+        self.driveId = driveId
+        self.name = name
+        self.color = color
+    }
+}
+
+public extension UIAvailableDrive {
+    init(availableDrive: AvailableDrive) {
+        var color: NSColor?
+        if let driveColor = availableDrive.color {
+            color = NSColor(hexColor: driveColor)
+        }
+
+        self.init(
+            driveId: Int(availableDrive.driveId),
+            name: availableDrive.name,
+            color: color
+        )
+    }
+}
+
+// MARK: - UIDrive
+
+public struct UIDrive: UIDriveRepresentation {
+    public var id: Int {
+        return dbId
     }
 
     public let dbId: Int
     public let driveId: Int
     public let name: String
-    public let color: NSColor
+    public let color: NSColor?
 
-    public init(dbId: Int, driveId: Int, name: String, color: NSColor) {
+    public init(dbId: Int, driveId: Int, name: String, color: NSColor?) {
         self.dbId = dbId
         self.driveId = driveId
         self.name = name
@@ -39,7 +80,7 @@ public struct UIDrive: Sendable {
 
 public extension UIDrive {
     init(drive: Drive) {
-        var color = NSColor.blue
+        var color: NSColor?
         if let driveColor = drive.color {
             color = NSColor(hexColor: driveColor)
         }

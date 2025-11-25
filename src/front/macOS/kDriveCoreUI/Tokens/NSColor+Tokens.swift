@@ -38,6 +38,10 @@ extension NSColor {
             public static let secondary = NSColor(light: KDriveColors.neutralBlue100, dark: KDriveColors.neutralBlue700)
             public static let tertiary = NSColor(light: KDriveColors.neutralBlue200, dark: KDriveColors.neutralBlue600)
         }
+
+        public enum Drive {
+            public static let defaultColor = KDriveColors.infomaniak.color
+        }
     }
 }
 // swiftlint:enable nesting

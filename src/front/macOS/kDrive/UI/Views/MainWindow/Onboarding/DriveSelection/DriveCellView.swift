@@ -85,8 +85,8 @@ final class DriveCellView: NSView {
         return textField
     }()
 
-    init(color: NSColor, title: String, subtitle: String? = nil) {
-        self.color = color
+    init(color: NSColor?, title: String, subtitle: String? = nil) {
+        self.color = color ?? NSColor.Tokens.Drive.defaultColor
         self.title = title
         self.subtitle = subtitle
 

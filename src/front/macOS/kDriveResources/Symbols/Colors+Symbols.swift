@@ -22,6 +22,7 @@ public typealias AssetColorTypeAlias = ColorAsset.Color
 
 // swiftlint:disable identifier_name line_length nesting type_body_length type_name
 public enum KDriveColors {
+  public static let infomaniak = ColorAsset(name: "Infomaniak")
   public static let drive400 = ColorAsset(name: "Drive400")
   public static let drive600 = ColorAsset(name: "Drive600")
   public static let neutralBlue100 = ColorAsset(name: "NeutralBlue100")

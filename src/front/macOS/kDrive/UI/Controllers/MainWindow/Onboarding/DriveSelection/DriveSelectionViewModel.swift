@@ -27,7 +27,7 @@ final class DriveSelectionViewModel: ObservableObject {
     @LazyInjectService private var coherentCache: CoherentCache
 
     @Published private(set) var currentUser: UIUser?
-    @Published private(set) var availableDrives: [UIDrive]?
+    @Published private(set) var availableDrives: [UIAvailableDrive]?
 
     init() {}
 
@@ -39,7 +39,7 @@ final class DriveSelectionViewModel: ObservableObject {
         currentUser = UIUser(user: firstAvailableUser)
 
         let drivesResponse = try await DriveJobs().availableDrives(userDbId: firstAvailableUser.dbId)
-        let availableDrives = drivesResponse.asDrives()
-        self.availableDrives = availableDrives.map { UIDrive(drive: $0) }
+        let availableDrives = drivesResponse.asAvailableDrives
+        self.availableDrives = availableDrives.map { UIAvailableDrive(availableDrive: $0) }
     }
 }
