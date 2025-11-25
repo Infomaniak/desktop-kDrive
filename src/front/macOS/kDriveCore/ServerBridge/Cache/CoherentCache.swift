@@ -248,6 +248,20 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
             .synchros[synchroDbId]
     }
 
+    // TODO: If synchro has driveDbId, reuse getDrive
+    public func getSynchro(synchroDbId: Int32) -> Synchro? {
+        for user in users.values {
+            for account in user.accounts.values {
+                for drive in account.drives.values {
+                    if let synchro = drive.synchros[synchroDbId] {
+                        return synchro
+                    }
+                }
+            }
+        }
+        return nil
+    }
+
     public func addSynchro(_ synchro: Synchro, toDrive driveDbId: Int32, accountDbId: Int32, userDbId: Int32) {
         guard var user = users[userDbId],
               var account = user.accounts[accountDbId],
