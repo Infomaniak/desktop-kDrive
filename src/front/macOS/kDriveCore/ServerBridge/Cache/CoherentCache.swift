@@ -86,6 +86,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
     enum CacheError: Error {
         case userNotFound(_ dbId: Int32)
         case accountNotFound(_ dbId: Int32)
+        case driveNotFound(_ dbId: Int32)
     }
 
     public init() {}
@@ -288,8 +289,15 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         // TODO: Notify observation
     }
 
-    public func updateSynchro(_ synchro: Synchro) {
-        // TODO: Implement update, lookup on DriveDbId
+    public func updateSynchro(_ synchro: Synchro) throws {
+        guard var drive = getDrive(driveDbId: synchro.driveDbId) else {
+            throw CacheError.driveNotFound(synchro.driveDbId)
+        }
+
+        drive.synchros[synchro.dbId] = synchro
+        try updateDrive(drive: drive)
+
+        // TODO: observation update on synchro
     }
 
     // MARK: - Observation
