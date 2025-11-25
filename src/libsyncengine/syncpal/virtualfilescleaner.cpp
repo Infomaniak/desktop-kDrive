@@ -20,7 +20,6 @@
 
 #include "db/syncdb.h"
 #include "libcommon/utility/utility.h"
-#include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/exclusiontemplatecache.h"
@@ -54,34 +53,38 @@ bool hasFileType(const std::filesystem::directory_entry &entry) {
 } // namespace
 
 bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPath) {
-    const SyncName rootPathStr = _rootPath.native();
+    bool directoryIterationException = false;
+    IoError ioError = IoError::Success;
+    IoHelper::DirectoryIterator dirIt;
+    bool endOfDir = false;
+    DirectoryEntry entry;
+
     try {
-        std::filesystem::recursive_directory_iterator dirIt;
         if (!recursiveDirectoryIterator(parentPath, dirIt)) {
             LOGW_WARN(_logger, L"Error in VirtualFilesCleaner::recursiveDirectoryIterator");
             return false;
         }
 
-        for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
-            if (!folderCanBeProcessed(dirIt)) {
-                dirIt.disable_recursion_pending();
+        while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
+            if (!folderCanBeProcessed(entry)) {
+                dirIt.disableRecursionPending();
                 continue;
             }
-            SyncPath absolutePath = dirIt->path();
-            SyncPath relativePath = CommonUtility::relativePath(_rootPath, absolutePath);
-
+            const SyncPath &absolutePath = entry.path();
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_DEBUG(_logger, L"VirtualFilesCleaner: processing item " << Utility::formatSyncPath(absolutePath));
             }
+
+            const SyncPath relativePath = CommonUtility::relativePath(_rootPath, absolutePath);
             if (ExclusionTemplateCache::instance()->isExcluded(relativePath)) {
                 LOGW_DEBUG(_logger, L"Ignore " << Utility::formatSyncPath(absolutePath) << L" because it is excluded");
-                dirIt.disable_recursion_pending();
+                dirIt.disableRecursionPending();
                 continue;
             }
 
             // Check file system
             VfsStatus vfsStatus;
-            assert(_vfs);
+            assert(_vfs && "Missing VFS.");
             if (ExitInfo exitInfo = _vfs->status(absolutePath, vfsStatus); !exitInfo) {
                 LOGW_WARN(_logger, L"Error in vfsStatus for " << Utility::formatSyncPath(absolutePath) << L": " << exitInfo);
                 _exitCode = exitInfo.code();
@@ -89,7 +92,7 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
                 return false;
             }
 
-            if (const bool dirItemHasFileType = hasFileType(*dirIt);
+            if (const bool dirItemHasFileType = hasFileType(entry);
                 dirItemHasFileType && vfsStatus.isPlaceholder && vfsStatus.isHydrated) {
                 // Keep this file in file system
                 if (ParametersCache::isExtendedLogEnabled()) {
@@ -103,7 +106,7 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
                                                                                << L" from file system");
                 }
 
-                if (std::error_code removeEc; !std::filesystem::remove(dirIt->path(), removeEc)) {
+                if (std::error_code removeEc; !std::filesystem::remove(entry.path(), removeEc)) {
                     if (removeEc) {
                         LOGW_WARN(_logger, L"Failed to remove all for " << Utility::formatStdError(absolutePath, removeEc));
                         _exitCode = ExitCode::SystemError;
@@ -154,44 +157,44 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
             _vfs->clearFileAttributes(absolutePath);
         }
     } catch (std::filesystem::filesystem_error &e) {
-        LOG_WARN(_logger, "Error caught in VirtualFilesCleaner::removePlaceholdersRecursively: code=" << e.code()
-                                                                                                      << " error=" << e.what());
-        return false;
-    } catch (...) {
-        LOG_WARN(_logger, "Error caught in VirtualFilesCleaner::removePlaceholdersRecursively");
-        return false;
-    }
-
-    return true;
-}
-
-bool VirtualFilesCleaner::folderCanBeProcessed(std::filesystem::recursive_directory_iterator &dirIt) {
-#if defined(KD_WINDOWS)
-    // skip_permission_denied doesn't work on Windows
-    try {
-        bool dummy = dirIt->exists();
-        (void) (dummy);
-    } catch (std::filesystem::filesystem_error &) {
-        return false;
-    }
-#endif
-
-    if (dirIt->path().native().length() > CommonUtility::maxPathLength()) {
         LOGW_WARN(_logger,
-                  L"Ignore " << Utility::formatSyncPath(dirIt->path()) << L" because size > " << CommonUtility::maxPathLength());
+                  L"Exception caught in VirtualFilesCleaner::removePlaceholdersRecursively: " << Utility::formatSystemError(e));
+        directoryIterationException = true;
+    } catch (...) {
+        LOG_WARN(_logger, "Exception caught in VirtualFilesCleaner::removePlaceholdersRecursively");
+        directoryIterationException = true;
+    }
+
+    if (!endOfDir || ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error in IoHelper::DirectoryIterator causing early interruption: "
+                                   << Utility::formatIoError(entry.path(), ioError));
+    }
+
+    const bool success = (ioError == IoError::Success) && endOfDir && !directoryIterationException;
+    if (!success) {
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::FileOrDirectoryCorrupted;
+    }
+
+    return success;
+}
+
+bool VirtualFilesCleaner::folderCanBeProcessed(const DirectoryEntry &directoryEntry) {
+    if (directoryEntry.path().native().length() > CommonUtility::maxPathLength()) {
+        LOGW_WARN(_logger, L"Ignore " << Utility::formatSyncPath(directoryEntry.path()) << L" because size > "
+                                      << CommonUtility::maxPathLength());
         return false;
     }
 
     return true;
 }
 
-bool VirtualFilesCleaner::recursiveDirectoryIterator(const SyncPath &path, std::filesystem::recursive_directory_iterator &dirIt) {
-    (void) path;
-    std::error_code ec;
-    dirIt = std::filesystem::recursive_directory_iterator(_rootPath, std::filesystem::directory_options::skip_permission_denied,
-                                                          ec);
-    if (ec) {
-        LOGW_WARN(_logger, L"Error in std::filesystem::recursive_directory_iterator: " << Utility::formatStdError(ec));
+bool VirtualFilesCleaner::recursiveDirectoryIterator(const SyncPath &path, IoHelper::DirectoryIterator &dirIt) {
+    IoError ioError = IoError::Success;
+    dirIt = IoHelper::DirectoryIterator(path, true, ioError);
+
+    if (ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error in IoHelper::DirectoryIterator: " << Utility::formatIoError(path, ioError));
         return false;
     }
 
@@ -199,61 +202,77 @@ bool VirtualFilesCleaner::recursiveDirectoryIterator(const SyncPath &path, std::
 }
 
 bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &failedToRemovePlaceholders) {
-    bool ret = true;
+    bool directoryIterationException = false;
+
+    IoError iterationIoError = IoError::Success;
+    IoHelper::DirectoryIterator dirIt;
+    bool endOfDir = false;
+    DirectoryEntry entry;
+
     try {
-        std::filesystem::recursive_directory_iterator dirIt;
         if (!recursiveDirectoryIterator(_rootPath, dirIt)) {
             LOGW_WARN(_logger, L"Error in VirtualFilesCleaner::recursiveDirectoryIterator");
             return false;
         }
-        for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
-            if (!folderCanBeProcessed(dirIt)) {
-                dirIt.disable_recursion_pending();
+
+        while (dirIt.next(entry, endOfDir, iterationIoError) && !endOfDir && iterationIoError == IoError::Success) {
+            if (!folderCanBeProcessed(entry)) {
+                dirIt.disableRecursionPending();
                 continue;
             }
 
-            if (hasFileType(*dirIt)) {
-                bool isDehydrated = false;
-                IoError ioError = IoError::Success;
-                const bool success = IoHelper::checkIfFileIsDehydrated(dirIt->path(), isDehydrated, ioError);
-                if (!success || ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied) {
-                    LOGW_WARN(_logger,
-                              L"Error in IoHelper::checkIfFileIsDehydrated: " << Utility::formatIoError(dirIt->path(), ioError));
-                    continue;
+            if (!hasFileType(entry)) continue;
+
+            bool isDehydrated = false;
+            IoError ioError = IoError::Success;
+            if (const bool success = IoHelper::checkIfFileIsDehydrated(entry.path(), isDehydrated, ioError);
+                !success || ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied) {
+                LOGW_WARN(_logger,
+                          L"Error in IoHelper::checkIfFileIsDehydrated: " << Utility::formatIoError(entry.path(), ioError));
+                continue;
+            }
+
+            if (!isDehydrated) continue;
+
+            const SyncPath &filePath = entry.path();
+            if (std::error_code ec; !std::filesystem::remove(filePath, ec)) {
+                if (ec) {
+                    LOGW_WARN(_logger, L"Failed to remove " << Utility::formatStdError(filePath, ec));
+                    _exitCode = ExitCode::SystemError;
+                    _exitCause = ExitCause::FileAccessError;
+
+                    failedToRemovePlaceholders.push_back(CommonUtility::relativePath(_rootPath, filePath));
                 }
 
-                if (isDehydrated) {
-                    const SyncPath filePath = dirIt->path();
-                    if (std::error_code ec; !std::filesystem::remove(filePath, ec)) {
-                        if (ec) {
-                            LOGW_WARN(_logger, L"Failed to remove " << Utility::formatStdError(filePath, ec));
-                            _exitCode = ExitCode::SystemError;
-                            _exitCause = ExitCause::FileAccessError;
+                LOGW_WARN(_logger, L"File does not exist: " << Utility::formatSyncPath(filePath));
+            }
 
-                            failedToRemovePlaceholders.push_back(CommonUtility::relativePath(_rootPath, filePath));
-                            ret = false;
-                        }
-
-                        LOGW_WARN(_logger, L"File does not exist: " << Utility::formatSyncPath(filePath));
-                    }
-
-                    if (ParametersCache::isExtendedLogEnabled()) {
-                        LOGW_DEBUG(_logger,
-                                   L"VFC removeDehydratedPlaceholders: removing item with " << Utility::formatSyncPath(filePath));
-                    }
-                }
+            if (ParametersCache::isExtendedLogEnabled()) {
+                LOGW_DEBUG(_logger,
+                           L"VFC removeDehydratedPlaceholders: removing item with " << Utility::formatSyncPath(filePath));
             }
         }
     } catch (std::filesystem::filesystem_error &e) {
-        LOG_WARN(_logger, "Exception caught in VirtualFilesCleaner::removeDehydratedPlaceholders: code=" << e.code() << " error="
-                                                                                                         << e.what());
-        ret = false;
+        LOGW_WARN(_logger,
+                  L"Exception caught in VirtualFilesCleaner::removeDehydratedPlaceholders: " << Utility::formatSystemError(e));
+        directoryIterationException = true;
     } catch (...) {
         LOG_WARN(_logger, "Exception caught in VirtualFilesCleaner::removeDehydratedPlaceholders");
-        ret = false;
+        directoryIterationException = true;
     }
 
-    return ret;
+    if (!endOfDir || iterationIoError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error in IoHelper::DirectoryIterator causing early interruption: "
+                                   << Utility::formatIoError(entry.path(), iterationIoError));
+    }
+
+    const bool iterationSuccess = (iterationIoError == IoError::Success) && endOfDir && !directoryIterationException;
+    if (!iterationSuccess) {
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::FileOrDirectoryCorrupted;
+    }
+
+    return iterationSuccess && failedToRemovePlaceholders.empty();
 }
 
 } // namespace KDC
