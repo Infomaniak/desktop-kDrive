@@ -23,75 +23,77 @@ import Testing
 enum CacheData {
     static let expectedUserAPIId: Int32 = 56789
     static let expectedUserDbId: Int32 = 12345
-    static var expectedUser: User {
-        User(
-            dbId: expectedUserDbId,
-            userId: expectedUserAPIId,
-            name: "appleseed",
-            email: "ja@apple.com",
-            accounts: [:],
-            availableDrives: [],
-            avatar: Data(),
-            isConnected: true,
-            isStaff: true
-        )
-    }
+    static var expectedUser = User(
+        dbId: expectedUserDbId,
+        userId: expectedUserAPIId,
+        name: "appleseed",
+        email: "ja@apple.com",
+        accounts: [:],
+        availableDrives: [],
+        avatar: Data(),
+        isConnected: true,
+        isStaff: true
+    )
 
     static let updatedUserAPIId: Int32 = expectedUserAPIId + 1
     static let updatedUserName = "appleseed2"
-    static var updatedUser: User {
-        User(
-            dbId: expectedUserDbId,
-            userId: updatedUserAPIId,
-            name: updatedUserName,
-            email: "ja@apple.com",
-            accounts: [:],
-            availableDrives: [],
-            avatar: Data(),
-            isConnected: true,
-            isStaff: true
-        )
-    }
+    static var updatedUser = User(
+        dbId: expectedUserDbId,
+        userId: updatedUserAPIId,
+        name: updatedUserName,
+        email: "ja@apple.com",
+        accounts: [:],
+        availableDrives: [],
+        avatar: Data(),
+        isConnected: true,
+        isStaff: true
+    )
 
     static let expectedAccountDbId: Int32 = 2468
     static let expectedAccountName = "myAccount"
-    static var expectedAccount: Account {
-        Account(dbId: expectedAccountDbId, name: expectedAccountName, drives: [:])
-    }
+    static var expectedAccount = Account(
+        dbId: expectedAccountDbId, name: expectedAccountName, drives: [:]
+    )
 
     static let updatedAccountName = "myUpdatedAccount"
-    static var updatedAccount: Account {
-        Account(dbId: expectedAccountDbId, name: updatedAccountName, drives: [:])
-    }
+    static var updatedAccount = Account(
+        dbId: expectedAccountDbId, name: updatedAccountName, drives: [:]
+    )
 
     static let expectedDriveDbId: Int32 = 424_242
     static let expectedDriveId: Int32 = 112_233
     static let expectedDriveName: String = "My Drive"
     static let expectedDriveColor: HexColor = .init(hex: "9de4ec")!
-    static var expectedDrive: Drive {
-        Drive(driveDbId: expectedDriveDbId,
-              driveId: expectedDriveId,
-              accountId: expectedAccountDbId,
-              userDbId: expectedUserDbId,
-              userId: expectedUserDbId,
-              name: expectedDriveName,
-              color: expectedDriveColor,
-              synchros: [:])
-    }
+    static var expectedDrive = Drive(
+        driveDbId: expectedDriveDbId,
+        driveId: expectedDriveId,
+        accountId: expectedAccountDbId,
+        userDbId: expectedUserDbId,
+        userId: expectedUserDbId,
+        name: expectedDriveName,
+        color: expectedDriveColor,
+        synchros: [:]
+    )
 
     static let updatedDriveId: Int32 = 112_244
     static let updatedDriveName: String = "My Drive Pro Max"
     static let updatedDriveColor: HexColor = .init(hex: "#aabbcc")!
-    static var updatedDrive: Drive {
-        Drive(driveDbId: expectedDriveDbId,
-              driveId: updatedDriveId,
-              accountId: expectedAccountDbId,
-              userDbId: expectedUserDbId,
-              userId: expectedUserDbId,
-              name: updatedDriveName,
-              color: updatedDriveColor,
-              synchros: [:])
-    }
+    static var updatedDrive = Drive(
+        driveDbId: expectedDriveDbId,
+        driveId: updatedDriveId,
+        accountId: expectedAccountDbId,
+        userDbId: expectedUserDbId,
+        userId: expectedUserDbId,
+        name: updatedDriveName,
+        color: updatedDriveColor,
+        synchros: [:]
+    )
+
+    static let expectedSynchroDbId: Int32 = 244_112
+    static let expectedSynchroLocalPath = "/dev/null"
+    static let expectedSynchro = Synchro(
+        dbId: expectedSynchroDbId, driveDbId: expectedDriveDbId, localPath: expectedSynchroLocalPath
+    )
 }
 
 struct CoherentCacheUserTests {
