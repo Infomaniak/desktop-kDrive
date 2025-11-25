@@ -51,7 +51,8 @@ public struct DriveJobs: Sendable {
 
         try decodedMessage.validate()
 
-        await coherentCache.updateDrive(drive: driveInfo.asDrive)
+        // TODO: Cache fixed in XPC6
+        // await coherentCache.updateDrive(drive: driveInfo.asDrive)
     }
 
     // TODO: Simplify parameters requirements once I checked with team how to get a `driveDbId` all the time
