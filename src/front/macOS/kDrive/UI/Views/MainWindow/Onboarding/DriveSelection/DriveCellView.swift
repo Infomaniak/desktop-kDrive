@@ -32,9 +32,8 @@ final class DriveCellView: NSView {
         static let activatedBackgroundColor = NSColor.Tokens.Surface.tertiary
     }
 
-    let color: NSColor
-    let title: String
-    let subtitle: String?
+    let drive: UIAvailableDrive
+    var toggleDrive: ((UIAvailableDrive) -> Void)?
 
     public var state: NSControl.StateValue {
         get { checkbox.state }
@@ -45,6 +44,10 @@ final class DriveCellView: NSView {
         didSet {
             checkbox.isEnabled = isEnabled
         }
+    }
+
+    private var color: NSColor {
+        return drive.color ?? NSColor.Tokens.Drive.defaultColor
     }
 
     private var isActivated: Bool = false
@@ -67,29 +70,15 @@ final class DriveCellView: NSView {
     }()
 
     private lazy var titleLabel: NSTextField = {
-        let textField = NSTextField(labelWithString: title)
+        let textField = NSTextField(labelWithString: drive.name)
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.font = NSFont.Tokens.body
         textField.textColor = NSColor.Tokens.Text.secondary
         return textField
     }()
 
-    private lazy var subtitleLabel: NSTextField? = {
-        guard let subtitle else { return nil }
-
-        let textField = NSTextField(labelWithString: subtitle)
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.maximumNumberOfLines = 1
-        textField.font = NSFont.Tokens.subheadline
-        textField.textColor = NSColor.Tokens.Text.tertiary
-        return textField
-    }()
-
-    init(color: NSColor?, title: String, subtitle: String? = nil) {
-        self.color = color ?? NSColor.Tokens.Drive.defaultColor
-        self.title = title
-        self.subtitle = subtitle
-
+    init(drive: UIAvailableDrive) {
+        self.drive = drive
         super.init(frame: .zero)
         setupView()
     }
@@ -114,28 +103,16 @@ final class DriveCellView: NSView {
             checkbox.centerYAnchor.constraint(equalTo: titleLabel.centerYAnchor),
             checkbox.leadingAnchor.constraint(equalTo: leadingAnchor, constant: AppPadding.padding8),
 
-            driveIcon.centerYAnchor.constraint(equalTo: titleLabel.centerYAnchor),
             driveIcon.leadingAnchor.constraint(equalTo: checkbox.trailingAnchor, constant: AppPadding.padding8),
+            driveIcon.topAnchor.constraint(equalTo: topAnchor, constant: AppPadding.padding8),
+            driveIcon.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -AppPadding.padding8),
 
+            titleLabel.centerYAnchor.constraint(equalTo: driveIcon.centerYAnchor),
             titleLabel.leadingAnchor.constraint(equalTo: driveIcon.trailingAnchor, constant: AppPadding.padding8),
-            titleLabel.topAnchor.constraint(equalTo: topAnchor, constant: AppPadding.padding8),
             titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -AppPadding.padding8),
 
             widthAnchor.constraint(equalToConstant: 264)
         ])
-
-        if let subtitleLabel {
-            addSubview(subtitleLabel)
-            NSLayoutConstraint.activate([
-                subtitleLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
-                subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: AppPadding.padding2),
-                bottomAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: AppPadding.padding8)
-            ])
-        } else {
-            NSLayoutConstraint.activate([
-                bottomAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: AppPadding.padding8)
-            ])
-        }
     }
 
     override func mouseDown(with event: NSEvent) {
@@ -152,22 +129,18 @@ final class DriveCellView: NSView {
         needsDisplay = true
 
         state = state == .on ? .off : .on
+        toggleDrive?(drive)
     }
 }
 
 @available(macOS 14.0, *)
-#Preview("No subtitle") {
-    DriveCellView(color: .systemBlue, title: "Rolex")
-}
-
-@available(macOS 14.0, *)
-#Preview("With subtitle") {
-    DriveCellView(color: .systemBlue, title: "Geneva", subtitle: "Rolex")
+#Preview("Drive") {
+    DriveCellView(drive: PreviewHelper.availableDrive1)
 }
 
 @available(macOS 14.0, *)
 #Preview("Activated == true / isEnabled == false") {
-    let cell = DriveCellView(color: .systemBlue, title: "Geneva")
+    let cell = DriveCellView(drive: PreviewHelper.availableDrive1)
     cell.state = .on
     cell.isEnabled = false
     return cell

@@ -31,11 +31,15 @@ class DrivesListView: NSView {
         return stackView
     }()
 
-    var drives: [UIDriveRepresentation] = [] {
+    private(set) var cells = [Int: DriveCellView]()
+
+    var drives: [UIAvailableDrive] = [] {
         didSet {
             updateDrivesList()
         }
     }
+
+    var toggleDrive: ((UIAvailableDrive) -> Void)?
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -71,12 +75,16 @@ class DrivesListView: NSView {
     private func updateDrivesList() {
         for view in drivesStackView.views {
             drivesStackView.removeView(view)
+            cells = [:]
         }
 
         for drive in drives {
-            let cell = DriveCellView(color: drive.color, title: drive.name)
+            let cell = DriveCellView(drive: drive)
             cell.translatesAutoresizingMaskIntoConstraints = false
+            cell.toggleDrive = toggleDrive
             drivesStackView.addArrangedSubview(cell)
+
+            cells[drive.id] = cell
         }
     }
 }
@@ -84,6 +92,6 @@ class DrivesListView: NSView {
 @available(macOS 14.0, *)
 #Preview {
     let drivesList = DrivesListView()
-    drivesList.drives = [PreviewHelper.drive1, PreviewHelper.drive2]
+    drivesList.drives = [PreviewHelper.availableDrive1, PreviewHelper.availableDrive2]
     return drivesList
 }

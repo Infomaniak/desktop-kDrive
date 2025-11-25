@@ -28,6 +28,7 @@ final class DriveSelectionViewModel: ObservableObject {
 
     @Published private(set) var currentUser: UIUser?
     @Published private(set) var availableDrives: [UIAvailableDrive]?
+    @Published private(set) var selectedDrives = Set<UIAvailableDrive>()
 
     init() {}
 
@@ -41,5 +42,13 @@ final class DriveSelectionViewModel: ObservableObject {
         let drivesResponse = try await DriveJobs().availableDrives(userDbId: firstAvailableUser.dbId)
         let availableDrives = drivesResponse.asAvailableDrives
         self.availableDrives = availableDrives.map { UIAvailableDrive(availableDrive: $0) }
+    }
+
+    func toggleDriveSelection(_ drive: UIAvailableDrive) {
+        if selectedDrives.contains(drive) {
+            selectedDrives.remove(drive)
+        } else {
+            selectedDrives.insert(drive)
+        }
     }
 }

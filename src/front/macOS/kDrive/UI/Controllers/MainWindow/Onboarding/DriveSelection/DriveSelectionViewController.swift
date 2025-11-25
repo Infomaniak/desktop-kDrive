@@ -48,6 +48,7 @@ class DriveSelectionViewController: OnboardingStepViewController {
     private lazy var drivesListView: DrivesListView = {
         let drivesListView = DrivesListView()
         drivesListView.translatesAutoresizingMaskIntoConstraints = false
+        drivesListView.toggleDrive = viewModel.toggleDriveSelection
         return drivesListView
     }()
 
@@ -102,6 +103,12 @@ class DriveSelectionViewController: OnboardingStepViewController {
                 guard let availableDrives else { return }
                 self?.handleUpdatedDrivesList(availableDrives)
             }
+
+        handleSelectedDrivesChanged(viewModel.selectedDrives)
+        viewModel.$selectedDrives
+            .receiveOnMain(store: &bindStore) { [weak self] selectedDrives in
+                self?.handleSelectedDrivesChanged(selectedDrives)
+            }
     }
 
     private func handleUpdatedDrivesList(_ drives: [UIAvailableDrive]) {
@@ -124,6 +131,11 @@ extension DriveSelectionViewController {
 
         drivesListView.drives = drives
 
+        if drives.count == 1, let singleDrive = drives.first {
+            drivesListView.cells[singleDrive.id]?.state = .on
+            drivesListView.cells[singleDrive.id]?.isEnabled = false
+        }
+
         primaryButton.title = KDriveLocalizable.buttonContinue
         primaryButton.action = #selector(didTapContinue)
         secondaryButton.title = KDriveLocalizable.buttonAdvancedParameters
@@ -133,6 +145,10 @@ extension DriveSelectionViewController {
     @objc private func didTapContinue() {}
 
     @objc private func didTapAdvancedSettings() {}
+
+    private func handleSelectedDrivesChanged(_ selectedDrives: Set<UIAvailableDrive>) {
+        primaryButton.isEnabled = !selectedDrives.isEmpty
+    }
 }
 
 // MARK: - No drive available
