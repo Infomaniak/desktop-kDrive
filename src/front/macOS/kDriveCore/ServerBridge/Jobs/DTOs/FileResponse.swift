@@ -18,37 +18,12 @@
 
 import Foundation
 
-struct UserQuery: Codable, Sendable {
-    let userDbId: Int32
+struct SearchInfoList: Codable, Sendable {
+    let searchInfoList: [FileResponse]
 }
 
-struct UserDbIdsListResponse: Codable, Sendable {
-    let userDbIdList: [Int32]
-}
-
-public struct UserInfoResponse: Codable, Sendable {
-    let dbId: Int32
-    let userId: Int32
-    @Base64CodedString var email: String
+public struct FileResponse: Codable, Sendable {
+    @Base64CodedString var id: String
     @Base64CodedString var name: String
-    @Base64CodedData var avatar: Data
-    let isConnected: Bool
-    let isStaff: Bool
-}
-
-extension UserInfoResponse {
-    var userCache: User {
-        User(dbId: dbId,
-             userId: userId,
-             name: name,
-             email: email,
-             accounts: [:],
-             availableDrives: [:],
-             isConnected: isConnected,
-             isStaff: isStaff)
-    }
-}
-
-struct UserInfoListResponse: Codable, Sendable {
-    let userInfoList: [UserInfoResponse]
+    let type: KDC.NodeType
 }

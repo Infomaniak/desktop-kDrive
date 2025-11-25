@@ -22,6 +22,19 @@ struct DriveListQuery: Codable, Sendable {
     let userDbId: Int32
 }
 
+struct DriveUpdateQuery: Codable, Sendable {
+    let driveInfo: DriveResponse
+}
+
+struct DriveDeleteQuery: Codable, Sendable {
+    let driveDbId: Int32
+}
+
+struct DriveSearchQuery: Codable, Sendable {
+    let driveDbId: Int32
+    let searchString: String
+}
+
 struct DriveListResponse: Codable, Sendable {
     let driveAvailableInfoList: [DriveResponse]
 }
@@ -36,13 +49,12 @@ public struct DriveResponse: Codable, Sendable {
 }
 
 extension DriveResponse {
-    var asDrive: Drive {
-        Drive(driveId: driveId,
-              accountId: accountId,
-              userDbId: userDbId,
-              userId: userId,
-              name: name,
-              color: color,
-              syncros: [:])
+    var asAvailableDrive: AvailableDrive {
+        AvailableDrive(driveId: driveId,
+                       accountId: accountId,
+                       userDbId: userDbId,
+                       userId: userId,
+                       name: name,
+                       color: color)
     }
 }

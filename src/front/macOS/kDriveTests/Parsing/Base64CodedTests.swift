@@ -23,6 +23,14 @@ struct TestStringCoding: Codable {
     @Base64CodedString var string: String
 }
 
+struct TestStringsCoding: Codable {
+    @Base64CodedStrings var strings: [String]
+}
+
+struct TestURLCoding: Codable {
+    @Base64CodedURL var url: URL
+}
+
 struct TestDataCoding: Codable {
     @Base64CodedData var data: Data
 }
@@ -30,39 +38,97 @@ struct TestDataCoding: Codable {
 struct TestColorCoding: Codable {
     @Base64CodedColor var color: HexColor
 
-    public init(color: HexColor) {
+    init(color: HexColor) {
         _color = Base64CodedColor(wrappedValue: color)
     }
 }
 
 struct Base64CodedStringPropertyWrapperTests {
-    @Test func testDecodingStringWithBase64Coding() async throws {
+    static let sourceJson = #"{"string":"QmFzZTY0"}"# // "QmFzZTY0" is "Base64"
+    static let sourceString = "Base64"
+
+    @Test func decodingStringWithBase64Coding() async throws {
         // GIVEN
-        let sourceJson = #"{"string":"QmFzZTY0"}"# // "QmFzZTY0" is "Base64"
-        let data = Data(sourceJson.utf8)
+        let data = Data(Self.sourceJson.utf8)
 
         // WHEN
         let parsed = try JSONDecoder().decode(TestStringCoding.self, from: data)
 
         // THEN
-        #expect(parsed.string == "Base64")
+        #expect(parsed.string == Self.sourceString)
     }
 
-    @Test func testEncodingStringWithBase64Coding() async throws {
+    @Test func encodingStringWithBase64Coding() async throws {
         // GIVEN
-        let testStringCoding = TestStringCoding(string: "Base64")
+        let testStringCoding = TestStringCoding(string: Self.sourceString)
 
         // WHEN
         let data = try JSONEncoder().encode(testStringCoding)
         let jsonString = String(data: data, encoding: .utf8)
 
         // THEN
-        #expect(jsonString == #"{"string":"QmFzZTY0"}"#)
+        #expect(jsonString == Self.sourceJson)
+    }
+}
+
+struct Base64CodedStringsPropertyWrapperTests {
+    static let sourceJson = #"{"strings":["bGE=","bGk=","bHU=","bGU=","bG8="]}"# // la li lu le lo
+    static let sourceArray = ["la", "li", "lu", "le", "lo"]
+
+    @Test func decodingStringWithBase64Coding() async throws {
+        // GIVEN
+        let data = Data(Self.sourceJson.utf8)
+
+        // WHEN
+        let parsed = try JSONDecoder().decode(TestStringsCoding.self, from: data)
+
+        // THEN
+        #expect(parsed.strings == Self.sourceArray)
+    }
+
+    @Test func encodingStringWithBase64Coding() async throws {
+        // GIVEN
+        let testStringCoding = TestStringsCoding(strings: Self.sourceArray)
+
+        // WHEN
+        let data = try JSONEncoder().encode(testStringCoding)
+        let jsonString = String(data: data, encoding: .utf8)
+
+        // THEN
+        #expect(jsonString == Self.sourceJson)
+    }
+}
+
+struct Base64CodedURLPropertyWrapperTests {
+    static let sourceJson = #"{"url":"aHR0cHM6Ly93d3cuYXBwbGUuY29t"}"# // "https://www.apple.com"
+    static let sourceURL = URL(string: "https://www.apple.com")!
+
+    @Test func decodingURLWithBase64Coding() async throws {
+        // GIVEN
+        let data = Data(Self.sourceJson.utf8)
+
+        // WHEN
+        let parsed = try JSONDecoder().decode(TestURLCoding.self, from: data)
+
+        // THEN
+        #expect(parsed.url == Self.sourceURL)
+    }
+
+    @Test func encodingURLWithBase64Coding() async throws {
+        // GIVEN
+        let testURLCoding = TestURLCoding(url: Self.sourceURL)
+
+        // WHEN
+        let data = try JSONEncoder().encode(testURLCoding)
+        let jsonString = String(data: data, encoding: .utf8)
+
+        // THEN
+        #expect(jsonString == Self.sourceJson)
     }
 }
 
 struct Base64CodedDataPropertyWrapperTests {
-    @Test func testDecodingDataWithBase64Coding() async throws {
+    @Test func decodingDataWithBase64Coding() async throws {
         // GIVEN
         let sourceJson = #"{"data":"QmFzZTY0"}"# // "QmFzZTY0" is "Base64"
         let sourceData = Data(sourceJson.utf8)
@@ -74,7 +140,7 @@ struct Base64CodedDataPropertyWrapperTests {
         #expect(parsed.data == Data("Base64".utf8))
     }
 
-    @Test func testEncodingDataWithBase64Coding() async throws {
+    @Test func encodingDataWithBase64Coding() async throws {
         // GIVEN
         let sourceData = Data("Base64".utf8)
         let testDataCoding = TestDataCoding(data: sourceData)
@@ -93,9 +159,9 @@ struct Base64CodedColorPropertyWrapperTests {
                             ("#AABBCC", "I2FhYmJjYw=="),
                             ("#FFFFFF", "I2ZmZmZmZg=="),
                             ("#000000", "IzAwMDAwMA==")]
-    
+
     @Test(arguments: testCases)
-    func testDecodingColorWithBase64Coding(hexColorExpected: String, base64Input: String) async throws {
+    func decodingColorWithBase64Coding(hexColorExpected: String, base64Input: String) async throws {
         // GIVEN
         guard let expectedColor = HexColor(hex: hexColorExpected) else {
             Issue.record("failed to parse \(hexColorExpected) as a color")
@@ -112,7 +178,7 @@ struct Base64CodedColorPropertyWrapperTests {
     }
 
     @Test(arguments: testCases)
-    func testEncodingColorWithBase64Coding(hexColorInput: String, base64Expected: String) async throws {
+    func encodingColorWithBase64Coding(hexColorInput: String, base64Expected: String) async throws {
         // GIVEN
         guard let sourceColor = HexColor(hex: hexColorInput) else {
             Issue.record("failed to parse #aabbcc as a color")

@@ -16,11 +16,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-@testable import kDriveCore
+import kDriveCore
 import Testing
-#if canImport(CoreGraphics)
-import CoreGraphics
-#endif
 
 struct HexColorTests {
     typealias TestCase = (red: CGFloat, green: CGFloat, blue: CGFloat, hex: String)
@@ -33,7 +30,7 @@ struct HexColorTests {
     // MARK: init
 
     @Test(arguments: testCases)
-    func testInitWithHex(
+    func initWithHex(
         expectedRed: CGFloat,
         expectedGreen: CGFloat,
         expectedBlue: CGFloat,
@@ -52,7 +49,7 @@ struct HexColorTests {
     @Test(arguments: ["", "#", "##", "###", "####", "#####", "######", "#######",
                       "#f", "#ff", "#fff", "#ffff", "#fffff", "#fffffff",
                       "f", "ff", "fff", "ffff", "fffff", "#fffffff"])
-    func testInitFailure(invalidInput: String) {
+    func initFailure(invalidInput: String) {
         // WHEN
         let colorFromHex = HexColor(hex: invalidInput)
 
@@ -63,7 +60,7 @@ struct HexColorTests {
     // MARK: Description
 
     @Test(arguments: testCases)
-    func testDescriptionString(red: CGFloat, green: CGFloat, blue: CGFloat, expectedHex: String) {
+    func descriptionString(red: CGFloat, green: CGFloat, blue: CGFloat, expectedHex: String) {
         // GIVEN
         let color = HexColor(red: red, green: green, blue: blue)
 
@@ -73,24 +70,4 @@ struct HexColorTests {
         // THEN
         #expect(hexColor == expectedHex)
     }
-
-    // MARK: CGColor
-
-    #if canImport(CoreGraphics)
-    @Test(arguments: [(1, 1, 1),
-                      (0, 0, 0),
-                      (1, 0, 1),
-                      (0, 1, 0)])
-    func testCGColorConversion(red: CGFloat, green: CGFloat, blue: CGFloat) {
-        // GIVEN
-        let expectedCGColor = CGColor(red: red, green: green, blue: blue, alpha: 1.0)
-        let color = HexColor(red: red, green: green, blue: blue)
-
-        // WHEN
-        let cgColor = color.cgColor
-
-        // THEN
-        #expect(cgColor == expectedCGColor)
-    }
-    #endif
 }

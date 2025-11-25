@@ -16,9 +16,18 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Foundation
+struct AccountListResponse: Codable, Sendable {
+    let accountInfoList: [AccountInfoResponse]
+}
 
-public struct Synchro: Identifiable, Hashable, Sendable {
-    public let id: Int32
-    public let localPath: String
+public struct AccountInfoResponse: Codable, Sendable {
+    let userDbId: Int32
+    let dbId: Int32
+    // TODO: add name property once the server has added it
+}
+
+extension AccountInfoResponse {
+    var asAccount: Account {
+        Account(dbId: dbId, name: "", drives: [:])
+    }
 }

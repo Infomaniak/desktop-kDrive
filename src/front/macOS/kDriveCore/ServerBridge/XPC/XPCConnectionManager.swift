@@ -53,6 +53,11 @@ import InfomaniakDI
         }
     }
 
+    deinit {
+        loginItemAgentConnection?.invalidate()
+        appConnection?.invalidate()
+    }
+
     func scheduleRetryToConnectToLoginAgent() {
         Task {
             IKLogger.xpc.log("[KD] Set timer to retry to connect to login agent")
@@ -154,6 +159,7 @@ import InfomaniakDI
         appConnection?.interruptionHandler = { [weak self] in
             IKLogger.xpc.error("[KD] Connection with app interrupted (server crash)")
             guard let self else { return }
+            self.appConnection?.invalidate()
             self.appConnection = nil
             self.scheduleRetryToConnectToServer()
         }
@@ -161,6 +167,7 @@ import InfomaniakDI
         appConnection?.invalidationHandler = { [weak self] in
             IKLogger.xpc.error("[KD] Connection with app invalidated (no server running)")
             guard let self else { return }
+            self.appConnection?.invalidate()
             self.appConnection = nil
             self.scheduleRetryToConnectToServer()
         }

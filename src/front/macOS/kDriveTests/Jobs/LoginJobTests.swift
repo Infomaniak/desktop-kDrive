@@ -16,9 +16,16 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Foundation
+import InfomaniakDI
+import kDriveCore
+import Testing
 
-public struct Synchro: Identifiable, Hashable, Sendable {
-    public let id: Int32
-    public let localPath: String
+struct LoginJobTests {
+    @Test func testLoginJobSuccess() async throws {
+        // WHEN
+        let userDbId = try await LoginJob().login(code: "123", verifier: "456")
+
+        // THEN
+        print("userDbId \(userDbId)")
+    }
 }

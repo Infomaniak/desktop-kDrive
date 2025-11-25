@@ -20,7 +20,7 @@ import Foundation
 import InfomaniakDI
 import OSLog
 
-extension [Factory] {
+public extension [Factory] {
     func registerFactoriesInDI() {
         forEach { SimpleResolver.sharedResolver.store(factory: $0) }
     }
@@ -28,11 +28,11 @@ extension [Factory] {
 
 /// Each target should subclass `TargetAssembly` and override `getTargetServices` to provide additional, target related, services.
 open class TargetAssembly {
-    public init() {
-        Self.setupDI()
+    public init(testing: Bool) {
+        Self.setupDI(testing: testing)
     }
 
-    open class func getCommonServices() -> [Factory] {
+    open class func getCommonServices(testing: Bool) -> [Factory] {
         return [
             Factory(type: ServerBridgeable.self) { _, _ in
                 ServerBridge()
@@ -47,8 +47,11 @@ open class TargetAssembly {
                                      resolver: resolver)
             },
             Factory(type: XPCConnectionProvider.self) { _, _ in
-                //XPCServerMock() // Use Mocked server
-                XPCConnectionManager() // Use real server over XPC
+                if testing {
+                    return XPCServerMock()
+                } else {
+                    return XPCConnectionManager()
+                }
             },
             Factory(type: XPCQueryFetcherProtocol.self) { _, _ in
                 XPCQueryFetcher()
@@ -67,8 +70,8 @@ open class TargetAssembly {
         return []
     }
 
-    public static func setupDI() {
-        (getCommonServices() + getTargetServices()).registerFactoriesInDI()
+    public static func setupDI(testing: Bool) {
+        (getCommonServices(testing: testing) + getTargetServices()).registerFactoriesInDI()
 
         // Startup XPC connection
         @InjectService var xpc: XPCConnectionProvider

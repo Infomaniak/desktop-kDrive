@@ -21,14 +21,19 @@ import Foundation
 public typealias IndexedAccounts = [Int32: Account]
 public typealias UserAccounts = (userDbId: Int32, indexedAccounts: [Int32: Account])
 
+// TODO: Update to track userDbId in Account to match server type
 public struct Account: Identifiable, Hashable, Sendable {
-    public init(id: Int32, name: String, drives: [Int32: Drive]) {
-        self.id = id
+    public let dbId: Int32
+    public var name: String
+    public var drives: IndexedDrives
+
+    public var id: Int32 {
+        dbId
+    }
+
+    public init(dbId: Int32, name: String, drives: [Int32: Drive]) {
+        self.dbId = dbId
         self.name = name
         self.drives = drives
     }
-
-    public let id: Int32
-    public var name: String
-    public var drives: IndexedDrives
 }

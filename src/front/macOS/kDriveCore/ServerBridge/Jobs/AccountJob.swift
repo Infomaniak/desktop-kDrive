@@ -17,22 +17,29 @@
  */
 
 import Foundation
+import InfomaniakConcurrency
 import InfomaniakDI
 
-public struct LoginJob: Sendable {
+public struct AccountJobs: Sendable {
+    @LazyInjectService private var coherentCache: CoherentCacheProtocol
     @LazyInjectService private var queryFetcher: XPCQueryFetcherProtocol
 
     public init() {}
 
-    public func login(code: String, verifier: String) async throws -> Int32 {
-        IKLogger.data.log("Query for login token")
-        let userQuery = LoginQuery(code: code, codeVerifier: verifier)
-        let request = await RequestMessage<LoginQuery>(num: RequestNum.LOGIN_REQUESTTOKEN, body: userQuery)
+    public func accountInfoList() async throws -> [AccountInfoResponse] {
+        IKLogger.data.log("Query for accountInfoList")
+        let query = EmptyQuery()
+        let request = await RequestMessage<EmptyQuery>(num: RequestNum.ACCOUNT_INFOLIST, body: query)
 
-        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<LoginResponse>.self)
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<AccountListResponse>.self)
 
         try decodedMessage.validate()
 
-        return decodedMessage.body.userDbId
+        let accountList = decodedMessage.body.accountInfoList
+
+        // TODO: Parse name when available
+        await accountList.asyncForEach { await coherentCache.updateAccount($0.asAccount) }
+
+        return accountList
     }
 }

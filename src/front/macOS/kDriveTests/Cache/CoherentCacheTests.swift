@@ -20,52 +20,49 @@ import Foundation
 import kDriveCore
 import Testing
 
-struct CoherentCacheTests {
+enum CoherentCacheTestsData {
     static let expectedUserId: Int32 = 56789
     static let expectedUserDbId: Int32 = 12345
-
-    @Test func testSetGetUserInCacheFromPrimaryKey() async throws {
-        // GIVEN
-        let user = User(
-            dbId: Self.expectedUserDbId,
-            userId: Self.expectedUserId,
+    static var expectedUser: User {
+        User(
+            dbId: expectedUserDbId,
+            userId: expectedUserId,
             name: "appleseed",
             email: "ja@apple.com",
             accounts: [:],
+            availableDrives: [:],
             avatar: Data(),
             isConnected: true,
             isStaff: true
         )
+    }
+}
+
+struct CoherentCacheUserTests {
+    @Test func setGetUserInCacheFromPrimaryKey() async throws {
+        // GIVEN
+        let user = CoherentCacheTestsData.expectedUser
         let cache = CoherentCache()
-        #expect(await cache.getUser(apiId: Self.expectedUserId) == nil)
+        #expect(await cache.getUser(apiId: CoherentCacheTestsData.expectedUserId) == nil)
 
         // WHEN
         await cache.addUser(user)
 
         // THEN
-        #expect(await cache.getUser(apiId: Self.expectedUserId) == user)
-        #expect(await cache.getUser(dbId: Self.expectedUserDbId) == user)
+        #expect(await cache.getUser(apiId: CoherentCacheTestsData.expectedUserId) == user)
+        #expect(await cache.getUser(dbId: CoherentCacheTestsData.expectedUserDbId) == user)
     }
 
-    @Test func testSetGetUserInCacheFromDbId() async throws {
+    @Test func setGetUserInCacheFromDbId() async throws {
         // GIVEN
-        let user = User(
-            dbId: Self.expectedUserDbId,
-            userId: Self.expectedUserId,
-            name: "appleseed",
-            email: "ja@apple.com",
-            accounts: [:],
-            avatar: Data(),
-            isConnected: true,
-            isStaff: true
-        )
+        let user = CoherentCacheTestsData.expectedUser
         let cache = CoherentCache()
-        #expect(await cache.getUser(dbId: Self.expectedUserDbId) == nil)
+        #expect(await cache.getUser(dbId: CoherentCacheTestsData.expectedUserDbId) == nil)
 
         // WHEN
         await cache.addUser(user)
 
         // THEN
-        #expect(await cache.getUser(dbId: Self.expectedUserDbId) == user)
+        #expect(await cache.getUser(dbId: CoherentCacheTestsData.expectedUserDbId) == user)
     }
 }
