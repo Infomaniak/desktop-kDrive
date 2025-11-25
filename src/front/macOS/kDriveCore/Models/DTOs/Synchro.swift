@@ -18,7 +18,13 @@
 
 import Foundation
 
+public typealias IndexedSynchros = [Int32: Synchro]
+
 public struct Synchro: Identifiable, Hashable, Sendable {
-    public let id: Int32
+    public var id: Int32 {
+        dbId
+    }
+
+    public let dbId: Int32
     public let localPath: String
 }

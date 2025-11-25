@@ -102,6 +102,6 @@ public struct NewSyncQueryAlternate: Codable, Sendable {
 
 extension SyncInfo {
     var asSynchro: Synchro {
-        Synchro(id: dbId, localPath: localPath)
+        Synchro(dbId: dbId, localPath: localPath)
     }
 }

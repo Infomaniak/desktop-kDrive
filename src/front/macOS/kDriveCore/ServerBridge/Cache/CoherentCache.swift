@@ -241,11 +241,11 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
 
     // MARK: - SYNCHRO
 
-    public func getSynchro(synchroId: Int32, driveDbId: Int32, accountDbId: Int32, userId: Int32) -> Synchro? {
+    public func getSynchro(synchroDbId: Int32, driveDbId: Int32, accountDbId: Int32, userId: Int32) -> Synchro? {
         users[userId]?
             .accounts[accountDbId]?
             .drives[driveDbId]?
-            .synchros[synchroId]
+            .synchros[synchroDbId]
     }
 
     public func addSynchro(_ synchro: Synchro, toDrive driveDbId: Int32, accountDbId: Int32, userId: Int32) {
@@ -260,13 +260,13 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         users[userId] = user
     }
 
-    public func removeSynchro(synchroId: Int32, fromDrive driveDbId: Int32, accountDbId: Int32, userId: Int32) {
+    public func removeSynchro(synchroDbId: Int32, fromDrive driveDbId: Int32, accountDbId: Int32, userId: Int32) {
         guard var user = users[userId],
               var account = user.accounts[accountDbId],
               var drive = account.drives[driveDbId]
         else { return }
 
-        drive.synchros.removeValue(forKey: synchroId)
+        drive.synchros.removeValue(forKey: synchroDbId)
         account.drives[driveDbId] = drive
         user.accounts[accountDbId] = account
         users[userId] = user
