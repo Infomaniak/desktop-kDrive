@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <Poco/Dynamic/Struct.h>
+
 #include <QImage>
 #include <QDataStream>
 #include <QString>
@@ -28,7 +30,7 @@ namespace KDC {
 class ExclusionAppInfo {
     public:
         ExclusionAppInfo(const QString &appId, const QString &description, bool def = false);
-        ExclusionAppInfo();
+        ExclusionAppInfo() = default;
 
         void setAppId(const QString &appId) { _appId = appId; }
         const QString &appId() const { return _appId; }
@@ -43,10 +45,13 @@ class ExclusionAppInfo {
         friend QDataStream &operator>>(QDataStream &in, QList<ExclusionAppInfo> &list);
         friend QDataStream &operator<<(QDataStream &out, const QList<ExclusionAppInfo> &list);
 
+        void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
+        void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
+
     private:
         QString _appId;
         QString _description;
-        bool _def;
+        bool _def{false};
 };
 
 } // namespace KDC
