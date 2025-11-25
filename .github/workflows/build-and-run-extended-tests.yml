@@ -41,9 +41,6 @@ jobs:
 
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
-        with:
-          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || 'develop' }}
-          submodules: recursive
         
       - name: Clean the log directory
         run : rm -r -force C:/Windows/Temp/kDrive-logdir/*
