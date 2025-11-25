@@ -16,4 +16,17 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Combine
+import Foundation
 
+enum OnboardingStep: Sendable {
+    case login
+    case driveSelection
+    case permissions
+    case synchronisation
+}
+
+@MainActor
+final class OnboardingFlowCoordinator: ObservableObject {
+    @Published var currentStep: OnboardingStep = .login
+}

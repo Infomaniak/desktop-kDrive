@@ -16,4 +16,23 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Foundation
 
+public struct UIAccount: Sendable {
+    public let id: Int
+    public let name: String
+
+    public init(id: Int, name: String) {
+        self.id = id
+        self.name = name
+    }
+}
+
+public extension UIAccount {
+    init(account: Account) {
+        self.init(
+            id: Int(account.id),
+            name: account.name
+        )
+    }
+}

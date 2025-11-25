@@ -16,4 +16,27 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import AppKit
+import Foundation
 
+public struct UIDrive: Sendable {
+    public let id: Int
+    public let name: String
+    public let color: NSColor
+
+    public init(id: Int, name: String, color: NSColor) {
+        self.id = id
+        self.name = name
+        self.color = color
+    }
+}
+
+public extension UIDrive {
+    init(drive: Drive) {
+        self.init(
+            id: Int(drive.id),
+            name: drive.name,
+            color: .blue // TODO: Get the real color from the Drive model
+        )
+    }
+}

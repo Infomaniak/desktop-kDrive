@@ -1,3 +1,4 @@
+//
 /*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2025 Infomaniak Network SA
@@ -16,4 +17,9 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Foundation
 
+public enum AppRadius {
+    public static let radius8: CGFloat = 8
+    public static let radius4: CGFloat = 4
+}

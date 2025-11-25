@@ -19,9 +19,9 @@
 import Foundation
 
 final class MockServerBridge: ServerBridgeable {
-    func getConnectedUser() async -> Bool {
+    func getConnectedUser() async -> UIUser? {
         // It will be removed when the server part will be ready
         try? await Task.sleep(nanoseconds: 5_000_000_000)
-        return false
+        return UIUser(id: 0, name: "", email: "")
     }
 }

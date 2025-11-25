@@ -16,11 +16,23 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import kDriveCoreUI
+import Foundation
 
-public extension ThemedAnimation {
-    static let kDriveLoader = ThemedAnimation(
-        light: "kdrive-loader-light",
-        dark: "kdrive-loader-light"
-    )
+public struct UISynchro: Sendable {
+    public let id: Int
+    public let name: String
+
+    public init(id: Int, name: String) {
+        self.id = id
+        self.name = name
+    }
+}
+
+public extension UISynchro {
+    init(synchro: Synchro) {
+        self.init(
+            id: Int(synchro.id),
+            name: synchro.name
+        )
+    }
 }

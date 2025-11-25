@@ -16,4 +16,16 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Sentry
 
+public enum SentryDebug {
+    public static func loginError(error: Error) {
+        SentrySDK.capture(message: "Error while logging") { scope in
+            scope.setLevel(.error)
+            scope.setContext(
+                value: ["error": error, "description": error.localizedDescription],
+                key: "underlying error"
+            )
+        }
+    }
+}
