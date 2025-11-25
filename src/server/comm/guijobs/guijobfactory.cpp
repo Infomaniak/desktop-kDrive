@@ -44,6 +44,7 @@
 #include "nodesubfoldersjob.h"
 #include "nodesubfolders2job.h"
 #include "nodefoldersizejob.h"
+#include "nodecreatemissingfoldersjob.h"
 #include "blacklistednodelistjob.h"
 #include "blacklistednodesetlistjob.h"
 
@@ -69,15 +70,7 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::SYNC_START_AFTER_LOGIN, makeShared<SyncStartAfterLoginJob>},
                 {RequestNum::SYNC_DELETE, makeShared<SyncDeleteJob>},
                 {RequestNum::SYNC_GETPUBLICLINKURL, makeShared<SyncGetPublicLinkUrlJob>},
-                {RequestNum::SYNC_GETPRIVATELINKURL, makeShared<SyncGetPrivateLinkUrlJob>},
-                {RequestNum::SYNC_SETSUPPORTSVIRTUALFILES, makeShared<SyncSetSupportsVirtualFilesJob>},
-                {RequestNum::SYNC_SETROOTPINSTATE, makeShared<SyncSetRootPinStateJob>},
-                {RequestNum::NODE_SUBFOLDERS, makeShared<NodeSubFoldersJob>},
-                {RequestNum::NODE_SUBFOLDERS2, makeShared<NodeSubFolders2Job>},
-                {RequestNum::NODE_FOLDER_SIZE, makeShared<NodeFolderSizeJob>},
-                {RequestNum::BLACKLISTED_NODE_LIST, makeShared<BlacklistedNodeListJob>},
-                {RequestNum::BLACKLISTED_NODE_SETLIST, makeShared<BlacklistedNodeSetListJob>},
-                {RequestNum::NODE_INFO, makeShared<NodeInfoJob>}};
+                {RequestNum::SYNC_GETPRIVATELINKURL, makeShared<SyncGetPrivateLinkUrlJob>}};
 }
 
 std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::shared_ptr<CommManager> commManager,

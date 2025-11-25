@@ -113,6 +113,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
                                       bool withPath = false); // TODO: Delete after switching to the new comm layer
         static ExitInfo getSubFolders(int driveDbId, const NodeId &nodeId, std::vector<NodeInfo> &list, bool withPath = false);
         static ExitInfo getSubFolders(int driveDbId, const QString &nodeId, QList<NodeInfo> &list, bool withPath = false);
+        static ExitCode createDir(int driveDbId, const NodeId &parentNodeId, const CommString &dirName, NodeId &newNodeId);
         static ExitCode createDir(int driveDbId, const QString &parentNodeId, const QString &dirName, QString &newNodeId);
         static ExitCode getPublicLinkUrl(int driveDbId, const NodeId &nodeId, std::string &linkUrl);
         static ExitInfo getFolderSizeWithCallback(int userDbId, int driveId, const NodeId &nodeId,
