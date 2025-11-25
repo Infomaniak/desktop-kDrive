@@ -321,7 +321,7 @@ namespace Infomaniak.kDrive
                 }
             }
         }
- 
+
         public static async Task<ContentDialogResult> ShowContentDialog(XamlRoot xamlRoot, string xuid)
         {
             ContentDialog dialog = new ContentDialog();
@@ -341,6 +341,18 @@ namespace Infomaniak.kDrive
         {
             if (data is null) return null;
             return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(data));
+        }
+
+        public static bool IsSubPathOf(string path, string prefix)
+        {
+            if (!path.StartsWith(prefix))
+                return false;
+
+            if (path.Length == prefix.Length)
+                return true;
+
+            char nextChar = path[prefix.Length];
+            return nextChar == Path.DirectorySeparatorChar || nextChar == Path.AltDirectorySeparatorChar;
         }
     }
 }
