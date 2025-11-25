@@ -68,7 +68,10 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSyncDeleteJob);
         CPPUNIT_TEST(testSyncGetPublicLinkUrlJob);
         CPPUNIT_TEST(testSyncGetPrivateLinkUrlJob);
+#if defined(KD_MACOS)
+        CPPUNIT_TEST(testExclAppGetListJob);
         CPPUNIT_TEST_SUITE_END();
+#endif
 
     public:
         void setUp() final;
@@ -96,6 +99,9 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testSyncDeleteJob();
         void testSyncGetPublicLinkUrlJob();
         void testSyncGetPrivateLinkUrlJob();
+#if defined(KD_MACOS)
+        void testExclAppGetListJob();
+#endif
 
     private:
         GuiJobFactory _guiJobFactory;

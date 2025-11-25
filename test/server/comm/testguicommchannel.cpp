@@ -31,6 +31,7 @@
 #include "comm/guijobs/syncadd2job.h"
 #include "comm/guijobs/syncgetpubliclinkurljob.h"
 #include "comm/guijobs/syncgetprivatelinkurljob.h"
+#include "comm/guijobs/exclappgetlistjob.h"
 #include "libcommon/comm.h"
 #include "log/log.h"
 
@@ -1159,6 +1160,38 @@ void TestGuiCommChannel::testSyncGetPrivateLinkUrlJob() {
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
+
+void TestGuiCommChannel::testExclAppGetListJob() {
+    // There is no need to pass a request id as the response is via a callback.
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::EXCLAPP_GETLIST)) +
+                        R"(,)"
+                        R"( "params": { "default": false } })"};
+
+    // Callback expected answer
+    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"applicationList":[]}})"};
+
+    // Job expected answer
+    const auto answerStr{R"({ "cause": 0,)"
+                         R"( "code": 0,)"
+                         R"( "id": 1,)"
+                         R"( "num": )" +
+                         std::to_string(toInt(RequestNum::EXCLAPP_GETLIST)) +
+                         R"(,)"
+                         R"( "params": { "applicationList": [  ] },)"
+                         R"( "type": )" +
+                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto exclAppGetListJob = std::dynamic_pointer_cast<ExclAppGetListJob>(job);
+        CPPUNIT_ASSERT(exclAppGetListJob);
+
+        exclAppGetListJob->_applicationList = {};
+    };
+
+
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+}
+
 
 void TestGuiCommChannel::testGenericJob(const CommString &query, const CommString &answer, const CommString &cbkAnswer,
                                         const std::function<void(std::shared_ptr<AbstractGuiJob>)> &processFct) {
