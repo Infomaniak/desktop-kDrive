@@ -80,12 +80,12 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSyncNodeSetListJob);
          */
         CPPUNIT_TEST(testNodeSubFolders2Job);
+        CPPUNIT_TEST(testNodeCreateMissingFoldersJob);
         CPPUNIT_TEST_SUITE_END();
 
     public:
         void setUp() final;
         void tearDown() final;
-
         void testSendMessage();
         void testReadMessage();
         void testCanReadMessage();
@@ -109,14 +109,6 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testSyncDeleteJob();
         void testSyncGetPublicLinkUrlJob();
         void testSyncGetPrivateLinkUrlJob();
-        void testSyncSetSupportsVirtualFilesJob();
-        void testSyncSetRootPinStateJob();
-        void testNodeInfoJob();
-        void testNodeSubFolders2Job();
-        void testNodeSubFolderJob();
-        void testNodeFolderSizeJob();
-        void testSyncNodeListJob();
-        void testSyncNodeSetListJob();
 
     private:
         GuiJobFactory _guiJobFactory;
