@@ -26,5 +26,6 @@ public struct Synchro: Identifiable, Hashable, Sendable {
     }
 
     public let dbId: Int32
+    public let driveDbId: Int32
     public let localPath: String
 }
