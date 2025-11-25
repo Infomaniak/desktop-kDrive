@@ -51,7 +51,7 @@ public struct DriveJobs: Sendable {
 
         try decodedMessage.validate()
 
-        // TODO: Cache fixed in XPC6
+        // TODO: update cache by drive update signal
         // await coherentCache.updateDrive(drive: driveInfo.asDrive)
     }
 
