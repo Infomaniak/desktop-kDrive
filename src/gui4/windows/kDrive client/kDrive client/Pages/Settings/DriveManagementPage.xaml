@@ -104,10 +104,12 @@
                                 <StackPanel Orientation="Horizontal"
                                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
                                     <Button x:Uid="Page_Settings_DriveManagementPage_FolderSelection_CancelButton"
-                                            Click="CancelSyncSelection_click" />
+                                            Click="CancelSyncSelection_click"
+                                            IsEnabled="{x:Bind ExclSelector.IsLoading, Converter={StaticResource BooleanToInvertedBooleanConverter} , Mode=OneWay}" />
                                     <Button x:Uid="Page_Settings_DriveManagementPage_FolderSelection_SaveButton"
                                             Style="{ThemeResource AccentButtonStyle}"
-                                            Click="SaveSyncSelection_click" />
+                                            Click="SaveSyncSelection_click"
+                                            IsEnabled="{x:Bind ExclSelector.IsLoading, Converter={StaticResource BooleanToInvertedBooleanConverter} , Mode=OneWay}" />
                                 </StackPanel>
                             </toolKit:SettingsCard>
                         </toolKit:SettingsExpander.Items>
