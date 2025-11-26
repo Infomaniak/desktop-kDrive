@@ -143,7 +143,9 @@ extension DriveSelectionViewController {
     }
 
     @objc private func didTapContinue() {
-        viewModel.startSynchronization()
+        Task {
+            await viewModel.startSynchronization()
+        }
     }
 
     @objc private func didTapAdvancedSettings() {}

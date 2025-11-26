@@ -61,6 +61,9 @@ open class TargetAssembly {
             },
             Factory(type: AutoIncrementIDGenerator.self) { _, _ in
                 AutoIncrementIDGenerator()
+            },
+            Factory(type: SyncCreator.self) { _, _ in
+                SyncCreationService()
             }
         ]
     }

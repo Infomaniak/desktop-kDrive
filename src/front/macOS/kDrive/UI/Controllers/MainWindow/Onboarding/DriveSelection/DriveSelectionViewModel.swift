@@ -19,14 +19,18 @@
 import AppKit
 import Combine
 import Foundation
+import InfomaniakConcurrency
 import InfomaniakDI
 import kDriveCore
 
 @MainActor
 final class DriveSelectionViewModel: ObservableObject {
     @LazyInjectService private var coherentCache: CoherentCache
+    @LazyInjectService private var syncCreator: SyncCreator
 
     @Published private(set) var currentUser: UIUser?
+    @Published private(set) var isLoading = false
+
     @Published private(set) var availableDrives: [UIAvailableDrive]?
     @Published private(set) var selectedDrives = Set<UIAvailableDrive>()
 
@@ -52,47 +56,37 @@ final class DriveSelectionViewModel: ObservableObject {
         }
     }
 
-    func startSynchronization() {
-        guard !selectedDrives.isEmpty else { return }
+    func startSynchronization() async {
+        guard !selectedDrives.isEmpty, let currentUser else { return }
 
-        Task {
-            guard let currentUser else {
-                return
-            }
+        isLoading = true
+        defer { isLoading = false }
 
-            let drives = try await DriveJobs().availableDrives(userDbId: Int32(currentUser.dbId)).asAvailableDrives
+        do {
+            // TODO: Use the cache property when available (next XPC PR)
+            let availableDrives = try await DriveJobs().availableDrives(userDbId: Int32(currentUser.dbId)).asAvailableDrives
 
-            for selectedDrive in selectedDrives {
-                guard let drive = drives.first(where: { $0.driveId == selectedDrive.driveId }) else {
-                    continue
+            try await selectedDrives.concurrentForEach { selectedDrive in
+                guard let availableDrive = availableDrives.first(where: { $0.id == selectedDrive.id }) else {
+                    return
                 }
 
-                let identifier = NewSyncParentIdentifier.transitive(
-                    userDbId: drive.userDbId,
-                    accountId: drive.accountId,
-                    driveId: drive.driveId
-                )
-                let metadata = NewSyncMetadata(
-                    userDbId: drive.userDbId,
-                    accountId: drive.accountId,
-                    driveId: drive.driveId,
-                    localFolderPath: "/Users/valentinperignon/kDriveTest",
-                    serverFolderPath: "/",
-                    serverFolderNodeId: "1",
-                    liteSync: true,
-                    blackList: [],
-                    whiteList: []
-                )
+                let syncOrigin = SyncOrigin.availableDrive(availableDrive)
+                let localFolder = try await self.syncCreator.preferredLocalPath(for: syncOrigin)
 
-                do {
-                    let syncInfo = try await SyncJobs().addSync(identifier: identifier, metadata: metadata)
-                    print(syncInfo)
+                let newSyncCandidate = NewSyncCandidate(
+                    origin: syncOrigin,
+                    remoteFolder: .kDriveRoot,
+                    localFolder: localFolder,
+                    blackList: []
+                )
+                let syncInfo = try await self.syncCreator.create(from: newSyncCandidate)
+                try? await SyncJobs().startSync(syncDbId: syncInfo.dbId)
 
-                    try await SyncJobs().startSync(syncDbId: syncInfo.dbId)
-                } catch {
-                    print("Coucou")
-                }
+                print("New Synchro ->", newSyncCandidate.localFolder)
             }
+        } catch {
+            // TODO: Handle error
         }
     }
 }
