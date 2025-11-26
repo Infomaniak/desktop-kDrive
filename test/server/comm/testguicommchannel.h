@@ -70,8 +70,8 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSyncGetPrivateLinkUrlJob);
 #if defined(KD_MACOS)
         CPPUNIT_TEST(testExclAppGetListJob);
-        CPPUNIT_TEST_SUITE_END();
 #endif
+        CPPUNIT_TEST_SUITE_END();
 
     public:
         void setUp() final;
