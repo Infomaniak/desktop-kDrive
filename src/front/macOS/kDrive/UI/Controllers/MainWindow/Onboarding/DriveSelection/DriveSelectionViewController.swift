@@ -162,7 +162,7 @@ extension DriveSelectionViewController {
     private func handleLoadingState(_ isLoading: Bool) {
         toggleCellsEnabledState(!isLoading)
         if isLoading {
-            showLoadingButtonsLabel(withText: "We are loading blabla…")
+            showLoadingButtonsLabel(withText: KDriveLocalizable.onboardingDriveSelectionSyncInProgress)
         } else {
             hideLoadingButtonsLabel()
         }

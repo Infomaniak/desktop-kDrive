@@ -103,8 +103,8 @@ public final class SyncCreationService: SyncCreator {
             serverFolderPath: sync.remoteFolder.path,
             serverFolderNodeId: sync.remoteFolder.nodeId,
             liteSync: useLightSync,
-            blackList: [],
-            whiteList: []
+            blackList: sync.blackList,
+            whiteList: [] // TODO: Remove this parameter when removed from the server object
         )
         return metadata
     }
