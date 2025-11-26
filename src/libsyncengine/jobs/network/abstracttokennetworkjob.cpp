@@ -135,17 +135,14 @@ ExitInfo AbstractTokenNetworkJob::handleUnauthorizedResponse() {
         if (const auto exitInfo = refreshToken(); !exitInfo) {
             LOG_WARN(_logger, "Refresh token failed");
             disableRetry();
-            return {ExitCode::InvalidToken, ExitCause::LoginError};
+            return ExitCode::InvalidToken;
         }
 
         LOG_DEBUG(_logger, "Refresh token succeeded");
         return ExitCode::TokenRefreshed;
     }
 
-    if (_trials > 2) {
-        disableRetry();
-        return {ExitCode::InvalidToken, ExitCause::LoginError};
-    }
+    if (_trials > 2) disableRetry();
 
     return ExitCode::InvalidToken;
 }

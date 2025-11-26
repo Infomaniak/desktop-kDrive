@@ -18,7 +18,21 @@
 
 import Foundation
 
-public struct Synchro: Identifiable, Hashable, Sendable {
-    public let id: Int32
-    public var name: String
+public struct UISynchro: Sendable {
+    public let id: Int
+    public let name: String
+
+    public init(id: Int, name: String) {
+        self.id = id
+        self.name = name
+    }
+}
+
+public extension UISynchro {
+    init(synchro: Synchro) {
+        self.init(
+            id: Int(synchro.id),
+            name: synchro.name
+        )
+    }
 }

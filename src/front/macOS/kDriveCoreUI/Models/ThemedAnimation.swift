@@ -16,24 +16,4 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Cocoa
 
-public struct ThemedAnimation: Sendable {
-    public let light: String
-    public let dark: String
-
-    public init(light: String, dark: String) {
-        self.light = light
-        self.dark = dark
-    }
-
-    public func animation(forAppearance appearance: NSAppearance?) -> String {
-        guard let appearance else { return light }
-
-        if appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua {
-            return dark
-        } else {
-            return light
-        }
-    }
-}

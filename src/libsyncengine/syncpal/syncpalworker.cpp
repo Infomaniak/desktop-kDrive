@@ -74,10 +74,12 @@ bool shouldBeStopped(const std::shared_ptr<ISyncWorker> w1, const std::shared_pt
             (w1 && w1->exitCode() == ExitCode::UpdateRequired) || (w2 && w2->exitCode() == ExitCode::UpdateRequired);
     const auto invalidSyncError =
             (w1 && w1->exitCode() == ExitCode::InvalidSync) || (w2 && w2->exitCode() == ExitCode::InvalidSync);
+    const auto invalidToken =
+            (w1 && w1->exitCode() == ExitCode::InvalidToken) || (w2 && w2->exitCode() == ExitCode::InvalidToken);
     const auto driveNotFound = (w1 && w1->exitCode() == ExitCode::BackError && w1->exitCause() == ExitCause::DriveAccessError) ||
                                (w2 && w2->exitCode() == ExitCode::BackError && w2->exitCause() == ExitCause::DriveAccessError);
 
-    return dbError || systemError || updateRequired || invalidSyncError || driveNotFound;
+    return dbError || systemError || updateRequired || invalidSyncError || invalidToken || driveNotFound;
 }
 
 } // namespace

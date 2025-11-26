@@ -1,3 +1,4 @@
+//
 /*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2025 Infomaniak Network SA
@@ -16,11 +17,26 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import kDriveCoreUI
+import Foundation
 
-public extension ThemedAnimation {
-    static let kDriveLoader = ThemedAnimation(
-        light: "kdrive-loader-light",
-        dark: "kdrive-loader-light"
-    )
+public struct UIUser: Sendable {
+    public let id: Int
+    public let name: String
+    public let email: String
+
+    public init(id: Int, name: String, email: String) {
+        self.id = id
+        self.name = name
+        self.email = email
+    }
+}
+
+public extension UIUser {
+    init(user: User) {
+        self.init(
+            id: Int(user.id),
+            name: user.name,
+            email: user.email
+        )
+    }
 }

@@ -23,28 +23,27 @@ import InfomaniakDI
 import InfomaniakLogin
 import kDriveCore
 
-enum OnboardingStep: Sendable {
-    case login(LoginStep = .initial)
-    case driveSelection
-    case permissions
-    case synchronisation
-
-    enum LoginStep: Sendable {
-        case initial
-        case success
-        case fail
-    }
-}
-
 @MainActor
-final class OnboardingViewModel: ObservableObject {
+final class LoginViewModel: ObservableObject {
+    enum LoginState {
+        case idle
+        case waitingForWebAuthentication
+        case loadingUser
+    }
+
     @LazyInjectService private var loginService: InfomaniakLoginable
 
-    @Published private(set) var currentStep = OnboardingStep.login()
-    @Published private(set) var isShowingAuthenticationWindow = false
+    @Published private(set) var loginState: LoginState = .idle
+    @Published var isShowingError = false
+
+    private let flowCoordinator: OnboardingFlowCoordinator
+
+    init(flowCoordinator: OnboardingFlowCoordinator) {
+        self.flowCoordinator = flowCoordinator
+    }
 
     func startWebAuthenticationLogin(anchor: ASPresentationAnchor?) {
-        isShowingAuthenticationWindow = true
+        loginState = .waitingForWebAuthentication
         loginService.asWebAuthenticationLoginFrom(
             anchor: anchor ?? ASPresentationAnchor(),
             useEphemeralSession: true,
@@ -52,36 +51,39 @@ final class OnboardingViewModel: ObservableObject {
             delegate: self
         )
     }
+
+    func openAccountRegistrationProcess() {
+        // TODO: Handle account registration
+    }
 }
 
-// MARK: - InfomaniakLoginDelegate
-
-extension OnboardingViewModel: InfomaniakLoginDelegate {
+extension LoginViewModel: InfomaniakLoginDelegate {
     func didCompleteLoginWith(code: String, verifier: String) {
-        isShowingAuthenticationWindow = false
-
         Task {
-            try await LoginJob().login(code: code, verifier: verifier)
-            IKLogger.general.log("Login successful")
+            do {
+                try await LoginJob().login(code: code, verifier: verifier)
+                loginState = .loadingUser
 
-            // TODO: remove
-            Task { @MainActor in
-                @InjectService var windowRouter: WindowRouter
-                windowRouter.navigate(to: .splitView)
+                flowCoordinator.currentStep = .driveSelection
+            } catch {
+                loginState = .idle
+                handleLoginFailure(error: error)
             }
-
-            // TODO: change to correct step when screen available
-            // currentStep = .driveSelection
         }
     }
 
     func didFailLoginWith(error: any Error) {
-        isShowingAuthenticationWindow = false
+        loginState = .idle
 
         guard (error as? ASWebAuthenticationSessionError)?.code != .canceledLogin else {
             return
         }
 
-        currentStep = .login(.fail)
+        handleLoginFailure(error: error)
+    }
+
+    private func handleLoginFailure(error: Error) {
+        SentryDebug.loginError(error: error)
+        isShowingError = true
     }
 }

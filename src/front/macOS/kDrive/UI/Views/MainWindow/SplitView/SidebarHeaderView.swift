@@ -39,7 +39,7 @@ final class SidebarHeaderView: NSView {
 
         let textField = NSTextField(labelWithString: "kDrive")
         textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.font = .preferredFont(forTextStyle: .title3)
+        textField.font = NSFont.Tokens.title3Emphasized
         textField.backgroundColor = .clear
         addSubview(textField)
 

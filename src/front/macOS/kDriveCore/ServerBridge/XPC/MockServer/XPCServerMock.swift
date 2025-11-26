@@ -86,6 +86,7 @@ public actor XPCServerMock: XPCGuiProtocol, XPCConnectionProvider {
                            name: "Jonh Appleseed",
                            email: "jonh.appleseed@apple.com",
                            accounts: [:],
+                           availableDrives: [:],
                            isConnected: true,
                            isStaff: true)
         await cache.addUser(newUser)

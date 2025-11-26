@@ -24,7 +24,7 @@ import XCTest
 final class ObservableCoherentCacheTests: XCTestCase {
     static let expectedUserId: Int32 = 12345
     static let expectedUserDbId: Int32 = 5678
-    
+
     @MainActor func testObserveUserChangesWithCombine() throws {
         // GIVEN
         let user = User(
@@ -33,6 +33,7 @@ final class ObservableCoherentCacheTests: XCTestCase {
             name: "appleseed",
             email: "ja@apple.com",
             accounts: [:],
+            availableDrives: [:],
             avatar: Data(),
             isConnected: true,
             isStaff: true
@@ -56,7 +57,7 @@ final class ObservableCoherentCacheTests: XCTestCase {
             }
 
         subscription.store(in: &cancellables)
-        
+
         Task {
             await cache.addUser(user)
         }

@@ -17,9 +17,6 @@
  */
 
 import Foundation
-#if canImport(CoreGraphics)
-import CoreGraphics
-#endif
 
 /// A lightweight exchange type mapping 1:1 the colors sent by the server (Hex RGB without alpha channel)
 public struct HexColor: Sendable, CustomStringConvertible, Equatable, Hashable {
@@ -28,8 +25,6 @@ public struct HexColor: Sendable, CustomStringConvertible, Equatable, Hashable {
     let blue: UInt8
 
     public var description: String {
-        // Server runs with lowercase Hex strings
-        // Server exchange colors without alpha
         String(format: "#%02x%02x%02x", red, green, blue)
     }
 
@@ -53,15 +48,4 @@ public struct HexColor: Sendable, CustomStringConvertible, Equatable, Hashable {
         self.green = UInt8(round(green * 255))
         self.blue = UInt8(round(blue * 255))
     }
-
-    #if canImport(CoreGraphics)
-    public var cgColor: CGColor {
-        CGColor(
-            red: CGFloat(red) / 255.0,
-            green: CGFloat(green) / 255.0,
-            blue: CGFloat(blue) / 255.0,
-            alpha: 1.0
-        )
-    }
-    #endif
 }

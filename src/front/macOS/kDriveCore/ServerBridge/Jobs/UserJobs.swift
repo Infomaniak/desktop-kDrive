@@ -24,62 +24,43 @@ public struct UserJobs: Sendable {
     @LazyInjectService private var coherentCache: CoherentCacheProtocol
     @LazyInjectService private var queryFetcher: XPCQueryFetcherProtocol
 
-    public enum UserJobError: Error {
-        case responseListNotFound
-        case noReplyData
-    }
-
     public init() {}
 
     public func userDbIds() async throws -> [Int32] {
         IKLogger.data.log("Query for userDbIds list")
         let request = await RequestMessage<EmptyQuery>(num: RequestNum.USER_DBIDLIST, body: EmptyQuery())
 
-        do {
-            let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<UserDbIdsListResponse>.self)
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<UserDbIdsListResponse>.self)
 
-            guard let userDbIds = decodedMessage?.body.userDbIdList else {
-                throw UserJobError.responseListNotFound
-            }
+        try decodedMessage.validate()
 
-            return userDbIds
-        } catch XPCQueryFetcher.QueryError.noReplyData {
-            throw UserJobError.noReplyData
-        }
+        return decodedMessage.body.userDbIdList
     }
 
     public func userInfoList() async throws -> [UserInfoResponse] {
         IKLogger.data.log("Query for userInfo list")
         let request = await RequestMessage<EmptyQuery>(num: RequestNum.USER_INFOLIST, body: EmptyQuery())
 
-        do {
-            let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<UserInfoListResponse>.self)
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<UserInfoListResponse>.self)
 
-            guard let userList = decodedMessage?.body.userInfoList else {
-                throw UserJobError.responseListNotFound
-            }
+        try decodedMessage.validate()
 
-            await userList.asyncForEach { await coherentCache.updateUser($0.userCache) }
+        let userList = decodedMessage.body.userInfoList
 
-            return userList
-        } catch XPCQueryFetcher.QueryError.noReplyData {
-            throw UserJobError.noReplyData
-        }
+        await userList.asyncForEach { await coherentCache.updateUser($0.userCache) }
+
+        return userList
     }
 
     public func userDelete(dbId: Int32) async throws {
         IKLogger.data.log("Query for userDelete")
-        let query = UserDeleteQuery(userDbId: dbId)
-        let request = await RequestMessage<UserDeleteQuery>(num: RequestNum.USER_DELETE, body: query)
+        let query = UserQuery(userDbId: dbId)
+        let request = await RequestMessage<UserQuery>(num: RequestNum.USER_DELETE, body: query)
 
-        do {
-            guard try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self) != nil else {
-                throw UserJobError.noReplyData
-            }
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
 
-            await coherentCache.removeUser(dbId: dbId)
-        } catch XPCQueryFetcher.QueryError.noReplyData {
-            throw UserJobError.noReplyData
-        }
+        try decodedMessage.validate()
+
+        await coherentCache.removeUser(dbId: dbId)
     }
 }

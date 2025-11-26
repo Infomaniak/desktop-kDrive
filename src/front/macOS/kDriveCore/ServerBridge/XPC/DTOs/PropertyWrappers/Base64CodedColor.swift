@@ -22,30 +22,29 @@ import Foundation
 public struct Base64CodedColor: Codable, Sendable {
     public let wrappedValue: HexColor
 
+    public init(wrappedValue: HexColor) {
+        self.wrappedValue = wrappedValue
+    }
+
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
-        let base64Encoded = try container.decode(String.self)
+        let encoded = try container.decode(String.self)
 
-        guard let data = Data(base64Encoded: base64Encoded),
-              let decodedString = String(data: data, encoding: .utf8),
-              let decodedColor = HexColor(hex: decodedString) else {
+        let decodedString = try Base64Helper.decode(encoded)
+
+        guard let color = HexColor(hex: decodedString) else {
             throw DecodingError.dataCorruptedError(
                 in: container,
-                debugDescription: "Invalid base64 color"
+                debugDescription: "Invalid hex color after base64 decoding"
             )
         }
 
-        wrappedValue = decodedColor
+        wrappedValue = color
     }
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
-        let data = Data(wrappedValue.description.utf8)
-        let base64Encoded = data.base64EncodedString()
-        try container.encode(base64Encoded)
-    }
-
-    public init(wrappedValue: HexColor) {
-        self.wrappedValue = wrappedValue
+        let encoded = Base64Helper.encode(wrappedValue.description)
+        try container.encode(encoded)
     }
 }

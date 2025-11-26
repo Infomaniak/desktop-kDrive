@@ -17,6 +17,7 @@
 		F96701502E953CF600EDD4D7 /* kDriveResources.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F967009E2E95352C00EDD4D7 /* kDriveResources.framework */; };
 		F967FC8C2E8BC9FE00EDD4D7 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = F967FC8B2E8BC9FE00EDD4D7 /* Lottie */; };
 		F97269782E98F1CE002EA08D /* InfomaniakLogin in Frameworks */ = {isa = PBXBuildFile; productRef = F97269772E98F1CE002EA08D /* InfomaniakLogin */; };
+		F97590BC2ECC7A8A002CC428 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = F97590BB2ECC7A8A002CC428 /* Sentry */; };
 		F97805BE2E97E3AF00BC146C /* InfomaniakDI in Frameworks */ = {isa = PBXBuildFile; productRef = F97805BD2E97E3AF00BC146C /* InfomaniakDI */; };
 		F97805C32E97E3F900BC146C /* InfomaniakDI in Frameworks */ = {isa = PBXBuildFile; productRef = F97805C22E97E3F900BC146C /* InfomaniakDI */; };
 		F9ACC5382E5DF50F0081E80B /* swiftgen.yml in Resources */ = {isa = PBXBuildFile; fileRef = F9ACC5372E5DF50B0081E80B /* swiftgen.yml */; };
@@ -101,26 +102,11 @@
 				Cache/ObservableCoherentCacheTests.swift,
 				Cache/ObservedAccoutTests.swift,
 				Cache/ObservedUserTests.swift,
-				Jobs/LoginJobTests.swift,
 				Parsing/Base64CodedTests.swift,
 				Parsing/CallbackMessageTests.swift,
 				Parsing/SignalMessageTests.swift,
 			);
 			target = 7A4DFBB02EA91F9D00B138B8 /* kDriveTests */;
-		};
-		F96700B82E953B8300EDD4D7 /* Exceptions for "kDriveCoreUI" folder in "kDrive" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"Tokens/ThemedAnimation+Tokens.swift",
-			);
-			target = 37A1C4252E546A5200596DBB /* kDrive */;
-		};
-		F96700B92E953B8300EDD4D7 /* Exceptions for "kDriveCoreUI" folder in "kDriveCoreUI" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"Tokens/ThemedAnimation+Tokens.swift",
-			);
-			target = 37A1C43E2E546A9600596DBB /* kDriveCoreUI */;
 		};
 		F97805C62E97E4DF00BC146C /* Exceptions for "kDrive" folder in "kDrive" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -142,10 +128,6 @@
 		};
 		37A1C4402E546A9600596DBB /* kDriveCoreUI */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				F96700B82E953B8300EDD4D7 /* Exceptions for "kDriveCoreUI" folder in "kDrive" target */,
-				F96700B92E953B8300EDD4D7 /* Exceptions for "kDriveCoreUI" folder in "kDriveCoreUI" target */,
-			);
 			path = kDriveCoreUI;
 			sourceTree = "<group>";
 		};
@@ -203,6 +185,7 @@
 			files = (
 				F97805C32E97E3F900BC146C /* InfomaniakDI in Frameworks */,
 				7AFF54E22EC34B4100904C5C /* InfomaniakConcurrency in Frameworks */,
+				F97590BC2ECC7A8A002CC428 /* Sentry in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -230,10 +213,10 @@
 				37A1C45B2E546CB700596DBB /* kDriveCore */,
 				37A1C4402E546A9600596DBB /* kDriveCoreUI */,
 				F967009F2E95352C00EDD4D7 /* kDriveResources */,
-				F9ACC5372E5DF50B0081E80B /* swiftgen.yml */,
 				7A46E1CE2EA7AC1B00880412 /* kDriveTests */,
 				37A1C4272E546A5200596DBB /* Products */,
 				F967014F2E953CF600EDD4D7 /* Frameworks */,
+				F97BF4552ECDB8B40012EA15 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -254,6 +237,14 @@
 			children = (
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		F97BF4552ECDB8B40012EA15 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				F9ACC5372E5DF50B0081E80B /* swiftgen.yml */,
+			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -358,6 +349,7 @@
 			packageProductDependencies = (
 				F97805C22E97E3F900BC146C /* InfomaniakDI */,
 				7AFF54E12EC34B4100904C5C /* InfomaniakConcurrency */,
+				F97590BB2ECC7A8A002CC428 /* Sentry */,
 			);
 			productName = kDriveCore;
 			productReference = 37A1C45A2E546CB600596DBB /* kDriveCore.framework */;
@@ -455,6 +447,7 @@
 				F97805BC2E97E3AF00BC146C /* XCRemoteSwiftPackageReference "ios-dependency-injection" */,
 				F97805BF2E97E3C500BC146C /* XCRemoteSwiftPackageReference "ios-login" */,
 				7AFF54E02EC34ACE00904C5C /* XCRemoteSwiftPackageReference "swift-concurrency" */,
+				F97590BA2ECC7A8A002CC428 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 37A1C4272E546A5200596DBB /* Products */;
@@ -1161,6 +1154,14 @@
 				minimumVersion = 4.5.2;
 			};
 		};
+		F97590BA2ECC7A8A002CC428 /* XCRemoteSwiftPackageReference "sentry-cocoa" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "git@github.com:getsentry/sentry-cocoa.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.57.3;
+			};
+		};
 		F97805BC2E97E3AF00BC146C /* XCRemoteSwiftPackageReference "ios-dependency-injection" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Infomaniak/ios-dependency-injection.git";
@@ -1194,6 +1195,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = F97805BF2E97E3C500BC146C /* XCRemoteSwiftPackageReference "ios-login" */;
 			productName = InfomaniakLogin;
+		};
+		F97590BB2ECC7A8A002CC428 /* Sentry */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F97590BA2ECC7A8A002CC428 /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
+			productName = Sentry;
 		};
 		F97805BD2E97E3AF00BC146C /* InfomaniakDI */ = {
 			isa = XCSwiftPackageProductDependency;
