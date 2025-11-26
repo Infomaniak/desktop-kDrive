@@ -382,18 +382,38 @@ void AppServer::init() {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAppState");
         throw std::runtime_error("Unable to read NoUpdate value in app_state table.");
     }
-    const bool noUpdate = static_cast<bool>(std::get<int>(noUpdateAppStateValue));
-    if (_noUpdate && !noUpdate) {
-        // Update Updater activation flag
-        noUpdateAppStateValue = 1;
-        if (bool found = false;
-            !ParmsDb::instance()->updateAppState(AppStateKey::NoUpdate, noUpdateAppStateValue, found) || !found) {
-            LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
-            throw std::runtime_error("Unable to update NoUpdate value in app_state table.");
+
+    const bool noUpdateDb = static_cast<bool>(std::get<int>(noUpdateAppStateValue));
+
+    if (!noUpdateDb) {
+        if (!_noUpdate) { // If not already set by command line argument
+            // Check if the file "no_update" exists in the application directory to disable updates
+            SyncPath noUpdateFilePath = CommonUtility::applicationFilePath().parent_path() / SyncPath("no_update");
+            bool noUpdateFlagFileExists = false;
+            ioError = IoError::Success;
+            if (!IoHelper::checkIfPathExists(noUpdateFilePath, noUpdateFlagFileExists, ioError) || ioError != IoError::Success) {
+                std::string errorMsg = "Error in checkIfPathExists(noUpdateFilePath, ...): ioError=" + toString(ioError);
+                LOG_ERROR(_logger, errorMsg);
+                KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "noUpdateFilePath lookup error", errorMsg);
+            }
+            _noUpdate = noUpdateFlagFileExists;
+        }
+
+        if (_noUpdate) {
+            LOG_INFO(_logger, "Updater disabled by command line argument or no_update file");
+            // Update Updater activation flag
+            noUpdateAppStateValue = 1;
+            if (bool found = false;
+                !ParmsDb::instance()->updateAppState(AppStateKey::NoUpdate, noUpdateAppStateValue, found) || !found) {
+                LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+                throw std::runtime_error("Unable to update NoUpdate value in app_state table.");
+            }
         }
     } else {
-        _noUpdate |= noUpdate;
+        _noUpdate = true;
+        LOG_INFO(_logger, "Updater disabled by app_state table");
     }
+
 
     if (!_noUpdate) {
         // Update checks
