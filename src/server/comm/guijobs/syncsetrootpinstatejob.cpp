@@ -37,12 +37,15 @@ SyncSetRootPinStateJob::SyncSetRootPinStateJob(std::shared_ptr<CommManager> comm
     _requestNum = RequestNum::SYNC_SETROOTPINSTATE;
 }
 
-ExitInfo SyncSetRootPinStateJob::deserializeInputParms() {
+ExitInfo SyncSetRootPinStateJob::deserializeInputParms() noexcept {
+    constexpr auto logMessage = "Exception in SyncSetRootPinStateJob::readParamValue: error=";
     try {
         readParamValue(inParamsSyncDbId, _syncDbId);
         readParamValue(inParamsPinState, _state);
-    } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in SyncSetRootPinStateJob::readParamValue: error=" << e.what());
+    } catch (const Poco::Exception &pocoException) {
+        LOG_WARN(_logger, logMessage << pocoException.message());
+    } catch (const CommonUtility::InvalidEnumerationValue &cuException) {
+        LOG_WARN(_logger, logMessage << cuException.what());
         return ExitCode::LogicError;
     }
 
@@ -52,7 +55,7 @@ ExitInfo SyncSetRootPinStateJob::deserializeInputParms() {
 ExitInfo SyncSetRootPinStateJob::process() {
     std::shared_ptr<Vfs> vfs;
     const std::scoped_lock lock(AppServer::vfsMapMutex);
-    if (const ExitInfo exitInfo = _commManager->appServer().getVfs(_syncDbId, vfs); !exitInfo) {
+    if (const ExitInfo exitInfo = AppServer::getVfs(_syncDbId, vfs); !exitInfo) {
         LOG_WARN(_logger, "Error in getVfs for syncDbId=" << _syncDbId << " : " << exitInfo);
         return exitInfo;
     }

@@ -32,7 +32,7 @@ class SyncSetRootPinStateJob : public AbstractGuiJob {
         int _syncDbId = 0;
         PinState _state;
 
-        ExitInfo deserializeInputParms() override;
+        ExitInfo deserializeInputParms() noexcept override;
         ExitInfo serializeOutputParms() override { return ExitCode::Ok; };
         ExitInfo process() override;
 
