@@ -31,7 +31,6 @@
 #include "comm/guijobs/syncadd2job.h"
 #include "comm/guijobs/syncgetpubliclinkurljob.h"
 #include "comm/guijobs/syncgetprivatelinkurljob.h"
-#include "comm/guijobs/exclappgetlistjob.h"
 #include "libcommon/comm.h"
 #include "log/log.h"
 
@@ -42,42 +41,6 @@
 #include <qbuffer.h>
 
 namespace KDC {
-
-namespace {
-std::string toBase64(const std::string &input) {
-    std::string output;
-    CommonUtility::convertToBase64Str(input, output);
-    return output;
-}
-
-CommString beautifulString(const Poco::JSON::Object &obj) {
-    std::ostringstream oss;
-    Poco::JSON::Stringifier::stringify(obj, oss, 1, 0);
-
-    const CommString _answerStr = oss.str();
-    Poco::JSON::Parser parser;
-    Poco::Dynamic::Var dynamicVar = parser.parse(CommonUtility::commString2Str(_answerStr));
-    Poco::DynamicStruct paramsStruct = *dynamicVar.extract<Poco::JSON::Object::Ptr>();
-
-    return Poco::Dynamic::structToString(paramsStruct);
-}
-
-CommString stringifyQueryObj(const Poco::JSON::Object &obj) {
-    return beautifulString(obj);
-}
-
-CommString stringifyAnswerObj(const Poco::JSON::Object &obj) {
-    return beautifulString(obj);
-}
-
-CommString stringifyCbkAnswerObj(const Poco::JSON::Object &obj) {
-    std::ostringstream json;
-    Poco::JSON::Stringifier::stringify(obj, json, 0); // compact form
-
-    return json.str();
-}
-
-} // namespace
 
 uint64_t GuiCommChannelTest::readData(CommChar *data, uint64_t maxlen) {
     std::scoped_lock lock(_bufferMutex);
@@ -1196,62 +1159,6 @@ void TestGuiCommChannel::testSyncGetPrivateLinkUrlJob() {
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
-
-void TestGuiCommChannel::testExclAppGetListJob() {
-    // Query. No need to pass a request id as the response is via a callback.
-    Poco::JSON::Object queryObj;
-    queryObj.set("num", toInt(RequestNum::EXCLAPP_GETLIST));
-    Poco::JSON::Object queryParamsObj;
-    queryParamsObj.set("default", false);
-    queryObj.set("params", queryParamsObj);
-
-    const auto queryStr = stringifyQueryObj(queryObj);
-
-    // Answer
-    Poco::JSON::Object answerObj;
-    answerObj.set("cause", 0);
-    answerObj.set("code", 0);
-    answerObj.set("id", 1);
-
-    Poco::JSON::Object exclAppInfoObj1;
-    exclAppInfoObj1.set("appId", toBase64("appId1"));
-    exclAppInfoObj1.set("def", false);
-    exclAppInfoObj1.set("description", toBase64("description1"));
-
-    Poco::JSON::Object exclAppInfoObj2;
-    exclAppInfoObj2.set("appId", toBase64("appId2"));
-    exclAppInfoObj2.set("def", false);
-    exclAppInfoObj2.set("description", toBase64("description2"));
-
-    Poco::JSON::Array applicationList;
-    applicationList.add(exclAppInfoObj1);
-    applicationList.add(exclAppInfoObj2);
-
-    Poco::JSON::Object paramsObj;
-    paramsObj.set("applicationList", applicationList);
-
-    answerObj.set("params", paramsObj);
-
-    Poco::JSON::Object answerObjWithNumAndType = answerObj;
-    answerObjWithNumAndType.set("num", toInt(RequestNum::EXCLAPP_GETLIST));
-    answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
-
-    // Job expected answers
-    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
-    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
-
-    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-        auto exclAppGetListJob = std::dynamic_pointer_cast<ExclAppGetListJob>(job);
-        CPPUNIT_ASSERT(exclAppGetListJob);
-        CPPUNIT_ASSERT(!exclAppGetListJob->_default);
-
-        exclAppGetListJob->_applicationList = {ExclusionAppInfo("appId1", "description1", false),
-                                               ExclusionAppInfo("appId2", "description2", false)};
-    };
-
-    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
-}
-
 
 void TestGuiCommChannel::testGenericJob(const CommString &query, const CommString &answer, const CommString &cbkAnswer,
                                         const std::function<void(std::shared_ptr<AbstractGuiJob>)> &processFct) {
