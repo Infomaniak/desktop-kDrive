@@ -20,6 +20,8 @@
 
 #include "libsyncengine/jobs/syncjob.h"
 
+#include "kDrive_API/backerror.h"
+
 #include <string>
 #include <unordered_map>
 #include <queue>
@@ -49,8 +51,7 @@ class AbstractNetworkJob : public SyncJob {
         [[nodiscard]] std::string octetStreamRes() const { return _octetStreamRes; }
         Poco::JSON::Object::Ptr jsonRes() { return _jsonRes; }
 
-        [[nodiscard]] const std::string &errorCode() const { return _errorCode; }
-        [[nodiscard]] const std::string &errorDescr() const { return _errorDescr; }
+        [[nodiscard]] const BackError &backError() const { return _backError; }
 
         int32_t trials() const noexcept { return _trials; };
 
@@ -76,7 +77,6 @@ class AbstractNetworkJob : public SyncJob {
         virtual ExitInfo handleJsonResponse(const std::string &replyBody);
         virtual ExitInfo handleOctetStreamResponse(std::istream &is);
         ExitInfo extractJson(const std::string &replyBody, Poco::JSON::Object::Ptr &jsonObj);
-        ExitInfo extractJsonError(const std::string &replyBody, Poco::JSON::Object::Ptr errorObjPtr = nullptr);
         void getStringFromStream(std::istream &inputStream, std::string &res);
 
         std::string _httpMethod;
@@ -84,8 +84,7 @@ class AbstractNetworkJob : public SyncJob {
         std::string _data;
         int _customTimeout = 0;
         int32_t _trials = 2; // By default, try again once if exception is thrown
-        std::string _errorCode;
-        std::string _errorDescr;
+        BackError _backError;
 
     private:
         ExitInfo receiveResponse(const Poco::URI &uri);
@@ -123,7 +122,8 @@ class AbstractNetworkJob : public SyncJob {
 
         virtual void setQueryParameters(Poco::URI &) { /* Empty by default */ }
         virtual ExitInfo setData() { return ExitCode::Ok; }
-        virtual std::string getContentType() { return {}; }
+        virtual std::string contentType() { return {}; }
+        virtual std::string acceptHeader() { return contentType(); }
 
         std::unique_ptr<Poco::Net::HTTPSClientSession> _session;
         std::recursive_mutex _mutexSession;
@@ -140,7 +140,7 @@ class AbstractNetworkJob : public SyncJob {
         bool ioOrLogicalErrorOccurred(std::ios &stream);
         static bool isManagedError(ExitInfo exitInfo) noexcept;
 
-        std::unordered_map<std::string, std::string> _rawHeaders;
+        std::unordered_map<std::string, std::string, StringHashFunction, std::equal_to<>> _rawHeaders;
 };
 
 } // namespace KDC

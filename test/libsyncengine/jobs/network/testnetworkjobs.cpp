@@ -967,8 +967,8 @@ void TestNetworkJobs::testFullFileListWithCursorCsvZip() {
         const ExitCode exitCode = job.runSynchronously();
         CPPUNIT_ASSERT(exitCode != ExitCode::Ok);
         CPPUNIT_ASSERT(job.hasErrorApi());
-        CPPUNIT_ASSERT(!job.errorCode().empty());
-        CPPUNIT_ASSERT(!job.errorDescr().empty());
+        CPPUNIT_ASSERT(!job.backError().code().empty());
+        CPPUNIT_ASSERT(!job.backError().description().empty());
     }
 }
 
@@ -977,8 +977,8 @@ void TestNetworkJobs::testFullFileListWithCursorCsvBlacklist() {
     const ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
-    int counter = 0;
-    std::string cursor = job.getCursor();
+    auto counter = 0;
+    const std::string cursor = job.getCursor();
     SnapshotItem item;
     bool error = false;
     bool ignore = false;

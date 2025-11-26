@@ -56,6 +56,14 @@ std::string CsvFullFileListWithCursorJob::getSpecificUrl() {
     return str;
 }
 
+std::string CsvFullFileListWithCursorJob::contentType() {
+    return mimeTypeJson;
+}
+
+std::string CsvFullFileListWithCursorJob::acceptHeader() {
+    return mimeTypeTextCsv + "," + mimeTypeJson;
+}
+
 void CsvFullFileListWithCursorJob::setQueryParameters(Poco::URI &uri) {
     uri.addQueryParameter("directory_id", _dirId);
     uri.addQueryParameter("recursive", "true");

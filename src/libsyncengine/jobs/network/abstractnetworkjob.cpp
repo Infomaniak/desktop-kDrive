@@ -234,7 +234,7 @@ bool AbstractNetworkJob::hasHttpError(std::string *errorCode /*= nullptr*/) cons
 
 bool AbstractNetworkJob::hasErrorApi() const {
     if (hasHttpError()) return true;
-    if (_errorCode.empty()) return false;
+    if (!_backError.isValidError()) return false;
     return true;
 }
 
@@ -322,9 +322,10 @@ ExitInfo AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
 
     // Set headers
     req.set("User-Agent", _userAgent);
-    req.setContentType(getContentType());
-    for (const auto &header: _rawHeaders) {
-        req.add(header.first, header.second);
+    req.setContentType(contentType());
+    req.add("Accept", acceptHeader());
+    for (const auto &[headerKey, headerValue]: _rawHeaders) {
+        req.add(headerKey, headerValue);
     }
 
     if (!_data.empty()) {
@@ -444,7 +445,7 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
             std::string replyBody;
             getStringFromStream(stream[0].get(), replyBody);
             LOG_WARN(_logger, "Reply " << jobId() << ": " << replyBody);
-            (void) extractJsonError(replyBody);
+            _backError = BackError(replyBody);
             return {ExitCode::BackError, ExitCause::HttpErr};
         }
         case Poco::Net::HTTPResponse::HTTP_UPGRADE_REQUIRED: {
@@ -612,21 +613,6 @@ ExitInfo AbstractNetworkJob::extractJson(const std::string &replyBody, Poco::JSO
         jsonObj->stringify(os);
         LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << CommonUtility::s2ws(os.str()));
     }
-    return ExitCode::Ok;
-}
-
-ExitInfo AbstractNetworkJob::extractJsonError(const std::string &replyBody, Poco::JSON::Object::Ptr errorObjPtr /*= nullptr*/) {
-    Poco::JSON::Object::Ptr jsonObj;
-    if (const auto exitInfo = extractJson(replyBody, jsonObj); !exitInfo) return exitInfo;
-
-    errorObjPtr = jsonObj->getObject(errorKey);
-    if (!JsonParserUtility::extractValue(errorObjPtr, codeKey, _errorCode)) {
-        return {};
-    }
-    if (!JsonParserUtility::extractValue(errorObjPtr, descriptionKey, _errorDescr)) {
-        return {};
-    }
-
     return ExitCode::Ok;
 }
 

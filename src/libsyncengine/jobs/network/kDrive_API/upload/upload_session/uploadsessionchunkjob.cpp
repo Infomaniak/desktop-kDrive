@@ -55,7 +55,7 @@ std::string UploadSessionChunkJob::getSpecificUrl() {
     return str;
 }
 
-std::string UploadSessionChunkJob::getContentType() {
+std::string UploadSessionChunkJob::contentType() {
     return mimeTypeOctetStream;
 }
 
