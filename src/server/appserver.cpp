@@ -63,7 +63,7 @@
 #include "server/comm/guijobs/signalaccountaddedjob.h"
 #include "server/comm/guijobs/signaluseraddedjob.h"
 #include "server/comm/guijobs/signaluserupdatedjob.h"
-#include "server/comm/guijobs/signaluserremovedjob.h" 
+#include "server/comm/guijobs/signaluserremovedjob.h"
 #include "server/comm/guijobs/signalaccountremovedjob.h"
 #include "server/comm/guijobs/signaldriveaddedjob.h"
 #include "server/comm/guijobs/signaldriveremovedjob.h"
@@ -463,7 +463,7 @@ void AppServer::cleanup() {
     LOG_DEBUG(_logger, "AppServer::cleanup");
 
     // Stop CommManager
-    _commManager->stop();
+    if (_commManager) _commManager->stop();
 
     // Stop JobManager(s)
     GuiJobManagerSingleton::instance()->stop();
@@ -2996,10 +2996,10 @@ ExitInfo AppServer::processMigratedSyncOnceConnected(int userDbId, int driveId, 
             }
 
             if (!nodeId.isEmpty() && migrationSelectiveSync.type() == SyncNodeType::BlackList) {
-                    blackList << nodeId;
-                }
+                blackList << nodeId;
             }
         }
+    }
 
     return ExitCode::Ok;
 }
@@ -3573,7 +3573,7 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, bool
                 return exitInfo;
             }
         }
-            }
+    }
 
 #if defined(KD_WINDOWS) || defined(KD_MACOS)
     if (firstInit) {
