@@ -136,8 +136,6 @@ namespace Infomaniak.kDrive.CustomControls
         #region Compatibility binding properties (preserve original XAML bindings)
         // Expose original property names expected by existing XAML for backward compatibility.
         // They map to the renamed internal members.
-        public ObservableCollection<TreeItem> RootItems => _rootLevelItems;
-        public TreeItem? RootItem => RootTreeItem;
         public bool StatePropagationInProgress => _isBulkSelectionPropagation;
         #endregion
 
@@ -356,7 +354,7 @@ namespace Infomaniak.kDrive.CustomControls
         private static TreeItem? ExtractTreeItemFromSender(object sender)
         {
             var control = sender as Control;
-            return control?.DataContext as TreeItem ?? control?.Tag as TreeItem;
+            return control?.DataContext as TreeItem;
         }
 
         private void SelectAllDescendants(TreeItem parent)

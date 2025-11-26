@@ -20,8 +20,6 @@ using Infomaniak.kDrive.ServerCommunication.JsonConverters;
 using Infomaniak.kDrive.Types;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
@@ -69,18 +67,21 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         {
             // Fetch the port from the .comm file
             string homePath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + Path.DirectorySeparatorChar + "kDrive" + Path.DirectorySeparatorChar + ".comm";
-            int port = int.Parse((File.ReadAllText(homePath)).Trim());
-
-
-            Logger.Log(Logger.Level.Info, $"Connecting to port {port}");
+            
             try
             {
+                int port = int.Parse((File.ReadAllText(homePath)).Trim());
+                Logger.Log(Logger.Level.Info, $"Connecting to port {port}");
                 _client = new TcpClient("localhost", port);
                 Logger.Log(Logger.Level.Info, "Connected to server.");
             }
             catch (SocketException ex)
             {
                 Logger.Log(Logger.Level.Error, $"Socket connection error: {ex.Message}");
+                _client = null;
+            }catch (System.IO.FileNotFoundException)
+            {
+                Logger.Log(Logger.Level.Error, $".comm file not found at {homePath}");
                 _client = null;
             }
 
