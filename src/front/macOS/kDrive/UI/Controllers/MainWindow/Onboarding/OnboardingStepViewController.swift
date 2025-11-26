@@ -42,11 +42,30 @@ open class OnboardingStepViewController: NSViewController {
     public let primaryButton = BorderedProminentButton()
     public let secondaryButton = BorderlessButton()
 
+    private let loadingButtonsLabel: LoadingLabelView = {
+        let label = LoadingLabelView(text: "")
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.isHidden = true
+        return label
+    }()
+
     private var customContent: NSView?
 
     override open func viewDidLoad() {
         super.viewDidLoad()
         setupComponents()
+    }
+
+    func showLoadingButtonsLabel(withText text: String) {
+        loadingButtonsLabel.isHidden = false
+        buttonsStack.alphaValue = 0.0
+
+        loadingButtonsLabel.stringValue = text
+    }
+
+    func hideLoadingButtonsLabel() {
+        loadingButtonsLabel.isHidden = true
+        buttonsStack.alphaValue = 1.0
     }
 
     private func setupComponents() {
@@ -78,6 +97,8 @@ open class OnboardingStepViewController: NSViewController {
         primaryButton.translatesAutoresizingMaskIntoConstraints = false
         primaryButton.keyEquivalent = "\r"
 
+        view.addSubview(loadingButtonsLabel)
+
         NSLayoutConstraint.activate([
             stackView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
             stackView.widthAnchor.constraint(greaterThanOrEqualToConstant: Self.Tokens.minContainerWidth),
@@ -89,7 +110,11 @@ open class OnboardingStepViewController: NSViewController {
                 constant: Self.Tokens.viewHorizontalPadding
             ),
             stackView.topAnchor.constraint(greaterThanOrEqualTo: view.topAnchor, constant: Self.Tokens.viewVerticalPadding),
-            view.bottomAnchor.constraint(greaterThanOrEqualTo: stackView.bottomAnchor, constant: Self.Tokens.viewVerticalPadding)
+            view.bottomAnchor.constraint(greaterThanOrEqualTo: stackView.bottomAnchor, constant: Self.Tokens.viewVerticalPadding),
+
+            loadingButtonsLabel.centerYAnchor.constraint(equalTo: buttonsStack.centerYAnchor),
+            loadingButtonsLabel.leadingAnchor.constraint(equalTo: stackView.leadingAnchor),
+            loadingButtonsLabel.trailingAnchor.constraint(equalTo: stackView.trailingAnchor)
         ])
     }
 }

@@ -109,6 +109,11 @@ class DriveSelectionViewController: OnboardingStepViewController {
             .receiveOnMain(store: &bindStore) { [weak self] selectedDrives in
                 self?.handleSelectedDrivesChanged(selectedDrives)
             }
+
+        viewModel.$isLoading
+            .receiveOnMain(store: &bindStore) { [weak self] isLoading in
+                self?.handleLoadingState(isLoading)
+            }
     }
 
     private func handleUpdatedDrivesList(_ drives: [UIAvailableDrive]) {
@@ -152,6 +157,21 @@ extension DriveSelectionViewController {
 
     private func handleSelectedDrivesChanged(_ selectedDrives: Set<UIAvailableDrive>) {
         primaryButton.isEnabled = !selectedDrives.isEmpty
+    }
+
+    private func handleLoadingState(_ isLoading: Bool) {
+        toggleCellsEnabledState(!isLoading)
+        if isLoading {
+            showLoadingButtonsLabel(withText: "We are loading blabla…")
+        } else {
+            hideLoadingButtonsLabel()
+        }
+    }
+
+    private func toggleCellsEnabledState(_ isEnabled: Bool) {
+        for cell in drivesListView.cells.values {
+            cell.isEnabled = isEnabled
+        }
     }
 }
 

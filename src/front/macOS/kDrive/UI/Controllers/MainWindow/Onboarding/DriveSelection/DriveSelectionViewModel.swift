@@ -60,7 +60,6 @@ final class DriveSelectionViewModel: ObservableObject {
         guard !selectedDrives.isEmpty, let currentUser else { return }
 
         isLoading = true
-        defer { isLoading = false }
 
         do {
             // TODO: Use the cache property when available (next XPC PR)
@@ -87,6 +86,7 @@ final class DriveSelectionViewModel: ObservableObject {
             }
         } catch {
             // TODO: Handle error
+            isLoading = false
         }
     }
 }

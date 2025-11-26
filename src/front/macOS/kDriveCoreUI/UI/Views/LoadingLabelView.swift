@@ -19,10 +19,22 @@
 import AppKit
 
 public final class LoadingLabelView: NSView {
-    public let text: String
+    public var stringValue: String {
+        didSet {
+            label.stringValue = stringValue
+        }
+    }
+
+    private lazy var label: NSTextField = {
+        let label = NSTextField(labelWithString: stringValue)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = NSFont.Tokens.body
+        label.textColor = NSColor.Tokens.Text.tertiary
+        return label
+    }()
 
     public init(text: String) {
-        self.text = text
+        self.stringValue = text
         super.init(frame: .zero)
         setupView()
     }
@@ -38,12 +50,6 @@ public final class LoadingLabelView: NSView {
         progressIndicator.style = .spinning
         progressIndicator.controlSize = .small
         progressIndicator.startAnimation(nil)
-
-        let label = NSTextField(labelWithString: text)
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = NSFont.Tokens.body
-        label.textColor = NSColor.Tokens.Text.tertiary
-        // TODO: Set correct font
 
         let stackView = NSStackView(views: [progressIndicator, label])
         stackView.translatesAutoresizingMaskIntoConstraints = false

@@ -27,18 +27,6 @@ final class LoginViewController: OnboardingStepViewController {
 
     private var bindStore = Set<AnyCancellable>()
 
-    private let waitingForWebAuthenticationLabel: LoadingLabelView = {
-        let label = LoadingLabelView(text: KDriveLocalizable.onboardingLoginHintWebAuth)
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-
-    private let loadingUserLabel: LoadingLabelView = {
-        let label = LoadingLabelView(text: KDriveLocalizable.onboardingLoginHintLoading)
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-
     init(flowCoordinator: OnboardingFlowCoordinator) {
         loginViewModel = LoginViewModel(flowCoordinator: flowCoordinator)
         super.init(nibName: nil, bundle: nil)
@@ -79,18 +67,6 @@ final class LoginViewController: OnboardingStepViewController {
         secondaryButton.title = KDriveLocalizable.buttonCreateAccount
         secondaryButton.target = self
         secondaryButton.action = #selector(openCreateAccount)
-
-        view.addSubview(waitingForWebAuthenticationLabel)
-        view.addSubview(loadingUserLabel)
-        NSLayoutConstraint.activate([
-            waitingForWebAuthenticationLabel.centerYAnchor.constraint(equalTo: buttonsStack.centerYAnchor),
-            waitingForWebAuthenticationLabel.leadingAnchor.constraint(equalTo: stackView.leadingAnchor),
-            waitingForWebAuthenticationLabel.trailingAnchor.constraint(equalTo: stackView.trailingAnchor),
-
-            loadingUserLabel.centerYAnchor.constraint(equalTo: buttonsStack.centerYAnchor),
-            loadingUserLabel.leadingAnchor.constraint(equalTo: stackView.leadingAnchor),
-            loadingUserLabel.trailingAnchor.constraint(equalTo: stackView.trailingAnchor)
-        ])
     }
 
     @objc private func openLoginWebView() {
@@ -102,10 +78,14 @@ final class LoginViewController: OnboardingStepViewController {
     }
 
     private func handleStateUpdate(_ newState: LoginViewModel.LoginState) {
-        buttonsStack.alphaValue = newState == .idle ? 1.0 : 0.0
-
-        waitingForWebAuthenticationLabel.isHidden = newState == .waitingForWebAuthentication ? false : true
-        loadingUserLabel.isHidden = newState == .loadingUser ? false : true
+        switch newState {
+        case .idle:
+            hideLoadingButtonsLabel()
+        case .waitingForWebAuthentication:
+            showLoadingButtonsLabel(withText: KDriveLocalizable.onboardingLoginHintWebAuth)
+        case .loadingUser:
+            showLoadingButtonsLabel(withText: KDriveLocalizable.onboardingLoginHintLoading)
+        }
     }
 
     private func showGenericErrorAlert() {
