@@ -2,7 +2,7 @@
 # In the case the uninstallation of the LiteSync failed but the dehydrated placeholders have been deleted, we do not want to have valid synchronization set up because it will propagate all the DELETE operations on the server.
 
 # Clean kDrive folders for all users
-$profiles = Get-ChildItem "C:\Users" -Directory -ErrorAction SilentlyContinue
+$profiles = Get-ChildItem "C:\Users" -Directory -ErrorAction Continue
 
 foreach ($profile in $profiles) {
 
@@ -18,7 +18,7 @@ foreach ($profile in $profiles) {
     foreach ($path in $pathsToDelete) {
         if (Test-Path $path) {
             Write-Host "Deleting $path"
-            Remove-Item $path -Recurse -Force -ErrorAction SilentlyContinue
+            Remove-Item $path -Recurse -Force -ErrorAction Continue
         }
     }
 }
@@ -36,7 +36,7 @@ $pathsToDelete = @(
 foreach ($path in $pathsToDelete) {
     if (Test-Path $path) {
         Write-Host "Deleting $path"
-        Remove-Item $path -Force -ErrorAction SilentlyContinue
+        Remove-Item $path -Force -ErrorAction Continue
     }
 }
 
@@ -51,22 +51,15 @@ $syncRootRegPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Syn
 
 Write-Host "Scanning SyncRootManager registry entries..."
 
-Get-ChildItem $syncRootRegPath -ErrorAction SilentlyContinue | ForEach-Object {
+Get-ChildItem $syncRootRegPath -ErrorAction Continue | ForEach-Object {
     $key = $_
-    $props = Get-ItemProperty -Path $key.PSPath -ErrorAction SilentlyContinue
+    $props = Get-ItemProperty -Path $key.PSPath -ErrorAction Continue
     $defaultValue = $props.'(default)'
 
     if ($defaultValue -eq "kDrive") {
         $syncRootId = $key.PSChildName
         Write-Host "Deleting SyncRoot key: $syncRootId"
-
-        try {
-            Remove-Item -Path $key.PSPath -Recurse -Force -ErrorAction SilentlyContinue
-            Write-Host " → Deleted successfully" -ForegroundColor Green
-        }
-        catch {
-            Write-Warning " → Failed to delete $syncRootId : $_"
-        }
+        Remove-Item -Path $key.PSPath -Recurse -Force -ErrorAction Continue
     }
 }
 
