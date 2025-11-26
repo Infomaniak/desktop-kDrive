@@ -1,5 +1,5 @@
 ﻿# We should clean up parameters files before uninstalling the extension because removing the LiteSync leads to deletion of all the dehydrated placeholders.
-# In the case the uninstallation of the LiteSync failed but the dehydrated placeholders have been deleted, we do not want to have valid synchronization set up because it will propagate all the DELETE opearations on the server.
+# In the case the uninstallation of the LiteSync failed but the dehydrated placeholders have been deleted, we do not want to have valid synchronization set up because it will propagate all the DELETE operations on the server.
 
 # Clean kDrive folders for all users
 $profiles = Get-ChildItem "C:\Users" -Directory -ErrorAction SilentlyContinue
@@ -18,26 +18,27 @@ foreach ($profile in $profiles) {
     foreach ($path in $pathsToDelete) {
         if (Test-Path $path) {
             Write-Host "Deleting $path"
-            try {
-                Remove-Item $path -Recurse -Force -ErrorAction SilentlyContinue
-                Write-Host " → Deleted" -ForegroundColor Green
-            }
-            catch {
-                Write-Warning " → Failed to delete $path : $_"
-            }
+            Remove-Item $path -Recurse -Force -ErrorAction SilentlyContinue
         }
     }
 }
 
 # Remove shortcuts
 ## Start menu shortcut
-Remove-Item "%ProgramData%\Microsoft\Windows\Start Menu\Programs\kDrive.lnk"
-Remove-Item "%AppData%\Microsoft\Windows\Start Menu\Programs\kDrive.lnk"
-## Desktop shortcut
+Write-Host "Removing shortcuts..."
 $DesktopPath = [Environment]::GetFolderPath("Desktop")
-Remove-Item "$DesktopPath\kDrive.lnk" -Force -ErrorAction SilentlyContinue
-## Quick Launch shortcut
-Remove-Item $quickLaunchPath\${APPLICATION_NAME}.lnk -Force -ErrorAction SilentlyContinue
+$pathsToDelete = @(
+    "$env:ProgramData\Microsoft\Windows\Start Menu\Programs\kDrive.lnk",
+    "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\kDrive.lnk",
+    "$DesktopPath\kDrive.lnk"
+)
+
+foreach ($path in $pathsToDelete) {
+    if (Test-Path $path) {
+        Write-Host "Deleting $path"
+        Remove-Item $path -Force -ErrorAction SilentlyContinue
+    }
+}
 
 # Remove credentials
 $CredentialsToDelete = 'com.infomaniak.drive.desktopclient*'
