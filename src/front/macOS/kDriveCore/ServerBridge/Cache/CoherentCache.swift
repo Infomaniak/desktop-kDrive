@@ -19,13 +19,13 @@
 import Combine
 import Foundation
 
-public protocol CoherentCacheObservation: Sendable {
+public protocol CoherentCacheObservable: Sendable {
     var usersPublisher: AnyPublisher<IndexedUsers, Never> { get }
     var accountsPublisher: AnyPublisher<UserAccounts, Never> { get }
 }
 
 /// Structure always follow this nested model: User → Account → Drive → Synchro
-public protocol CoherentCacheProtocol: Sendable {
+public protocol CoherentCache: Sendable {
     // MARK: - User
 
     func getUser(apiId: Int32) async -> User?
@@ -64,7 +64,7 @@ public protocol CoherentCacheProtocol: Sendable {
 }
 
 /// This cache must track 1:1 the server, can only be purged on server restart
-public actor CoherentCache: CoherentCacheProtocol, CoherentCacheObservation {
+public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
     private var users: IndexedUsers = [:]
 
     private nonisolated let usersSubject = PassthroughSubject<IndexedUsers, Never>()

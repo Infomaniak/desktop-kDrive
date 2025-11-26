@@ -20,6 +20,8 @@
 		F97590BC2ECC7A8A002CC428 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = F97590BB2ECC7A8A002CC428 /* Sentry */; };
 		F97805BE2E97E3AF00BC146C /* InfomaniakDI in Frameworks */ = {isa = PBXBuildFile; productRef = F97805BD2E97E3AF00BC146C /* InfomaniakDI */; };
 		F97805C32E97E3F900BC146C /* InfomaniakDI in Frameworks */ = {isa = PBXBuildFile; productRef = F97805C22E97E3F900BC146C /* InfomaniakDI */; };
+		F9A927C92ECF6BF400B09ABA /* kDriveCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C45A2E546CB600596DBB /* kDriveCore.framework */; };
+		F9A927CA2ECF6BF400B09ABA /* kDriveCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C45A2E546CB600596DBB /* kDriveCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F9ACC5382E5DF50F0081E80B /* swiftgen.yml in Resources */ = {isa = PBXBuildFile; fileRef = F9ACC5372E5DF50B0081E80B /* swiftgen.yml */; };
 /* End PBXBuildFile section */
 
@@ -66,6 +68,13 @@
 			remoteGlobalIDString = F97269622E98EC15002EA08D;
 			remoteInfo = kDriveLogin;
 		};
+		F9A927CB2ECF6BF400B09ABA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 37A1C41E2E546A5200596DBB /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 37A1C4592E546CB600596DBB;
+			remoteInfo = kDriveCore;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -78,6 +87,17 @@
 				37A1C4612E546CB700596DBB /* kDriveCore.framework in Embed Frameworks */,
 				F96700A52E95352C00EDD4D7 /* kDriveResources.framework in Embed Frameworks */,
 				37A1C4462E546A9600596DBB /* kDriveCoreUI.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F9A927CD2ECF6BF400B09ABA /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				F9A927CA2ECF6BF400B09ABA /* kDriveCore.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -175,6 +195,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F9A927C92ECF6BF400B09ABA /* kDriveCore.framework in Frameworks */,
 				F96701502E953CF600EDD4D7 /* kDriveResources.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -214,9 +235,9 @@
 				37A1C4402E546A9600596DBB /* kDriveCoreUI */,
 				F967009F2E95352C00EDD4D7 /* kDriveResources */,
 				7A46E1CE2EA7AC1B00880412 /* kDriveTests */,
+				F9ACC5372E5DF50B0081E80B /* swiftgen.yml */,
 				37A1C4272E546A5200596DBB /* Products */,
 				F967014F2E953CF600EDD4D7 /* Frameworks */,
-				F97BF4552ECDB8B40012EA15 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -237,14 +258,6 @@
 			children = (
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		F97BF4552ECDB8B40012EA15 /* Recovered References */ = {
-			isa = PBXGroup;
-			children = (
-				F9ACC5372E5DF50B0081E80B /* swiftgen.yml */,
-			);
-			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -313,11 +326,13 @@
 				37A1C43B2E546A9600596DBB /* Sources */,
 				37A1C43C2E546A9600596DBB /* Frameworks */,
 				37A1C43D2E546A9600596DBB /* Resources */,
+				F9A927CD2ECF6BF400B09ABA /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				F96701532E953CF600EDD4D7 /* PBXTargetDependency */,
+				F9A927CC2ECF6BF400B09ABA /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				37A1C4402E546A9600596DBB /* kDriveCoreUI */,
@@ -592,6 +607,11 @@
 			isa = PBXTargetDependency;
 			targetProxy = F97269752E98EFAF002EA08D /* PBXContainerItemProxy */;
 		};
+		F9A927CC2ECF6BF400B09ABA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 37A1C4592E546CB600596DBB /* kDriveCore */;
+			targetProxy = F9A927CB2ECF6BF400B09ABA /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -803,6 +823,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = kDriveCoreUI/Utils/Previews/PreviewResources.xcassets;
 				DEVELOPMENT_TEAM = 864VDCS2QY;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -843,6 +864,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = kDriveCoreUI/Utils/Previews/PreviewResources.xcassets;
 				DEVELOPMENT_TEAM = 864VDCS2QY;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;

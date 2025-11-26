@@ -24,7 +24,7 @@ public protocol ServerBridgeable: Sendable {
 }
 
 public struct ServerBridge: ServerBridgeable {
-    @LazyInjectService private var coherentCache: CoherentCacheProtocol
+    @LazyInjectService private var coherentCache: CoherentCache
 
     public init() {}
 

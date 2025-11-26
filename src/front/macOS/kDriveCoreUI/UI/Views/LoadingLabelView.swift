@@ -47,6 +47,7 @@ public final class LoadingLabelView: NSView {
 
         let stackView = NSStackView(views: [progressIndicator, label])
         stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.alignment = .centerY
         addSubview(stackView)
 
         NSLayoutConstraint.activate([

@@ -4,7 +4,7 @@
  * Locale: fr, French
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Wed, 19 Nov 2025 17:08:58 +0100
+ * Exported at: Mon, 24 Nov 2025 11:57:22 +0100
  */
 
 /* loco:691deb2291b20ac7fd045012 */
@@ -25,11 +25,26 @@
 /* loco:68b04d5a63085b7ab90cea63 */
 "buttonOpenInFinder" = "Ouvrir dans Finder";
 
+/* loco:69240f7b15d05a975c07dc13 */
+"buttonShowOffers" = "Voir les offres";
+
+/* loco:69240f6d4433e24658054fd4 */
+"buttonStartForFree" = "Commencer gratuitement";
+
+/* loco:692406b0258f5599bf01d113 */
+"onboardingDriveSelectionNoDriveDescription" = "Commencez gratuitement avec my kSuite, \nou choisissez une offre adaptée à vos besoins.";
+
+/* loco:692405adc5c224ad2a07ff62 */
+"onboardingDriveSelectionNoDriveTitle" = "Vous n’avez pas encore de kDrive.";
+
+/* loco:69242dd4299cf487060f2143 */
+"onboardingDriveSelectionSelectTitle" = "Choisissez les kDrive à synchroniser sur cet ordinateur :";
+
 /* loco:691deaf47145f10ab4052cd2 */
 "onboardingDriveSelectionTitle" = "Content de vous retrouver !";
 
 /* loco:68e6739c8af12c42e80027c5 */
-"onboardingLoginDescription" = "Le cloud privé, rapide et sécurisé, hébergé en Suisse.\n\nConnectez-vous et gardez vos documents synchronisés sur tous vos appareils.";
+"onboardingLoginDescription" = "Le cloud privé rapide et sécurisé, hébergé en Suisse.\n\nConnectez-vous et gardez vos documents synchronisés sur tous vos appareils.";
 
 /* loco:68e8fa543a683192560af9e2 */
 "onboardingLoginErrorDescription" = "Une erreur est survenue, veuillez réessayer.";

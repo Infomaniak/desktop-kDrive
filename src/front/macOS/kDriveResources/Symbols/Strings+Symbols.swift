@@ -22,6 +22,16 @@ public enum KDriveLocalizable {
   public static let buttonOpenInBrowser = KDriveLocalizable.tr("Localizable", "buttonOpenInBrowser", fallback: "Open in browser")
   /// loco:68b04d5a63085b7ab90cea63
   public static let buttonOpenInFinder = KDriveLocalizable.tr("Localizable", "buttonOpenInFinder", fallback: "Open in Finder")
+  /// loco:69240f7b15d05a975c07dc13
+  public static let buttonShowOffers = KDriveLocalizable.tr("Localizable", "buttonShowOffers", fallback: "Show offers")
+  /// loco:69240f6d4433e24658054fd4
+  public static let buttonStartForFree = KDriveLocalizable.tr("Localizable", "buttonStartForFree", fallback: "Get started for free")
+  /// loco:692406b0258f5599bf01d113
+  public static let onboardingDriveSelectionNoDriveDescription = KDriveLocalizable.tr("Localizable", "onboardingDriveSelectionNoDriveDescription", fallback: "Get started for free with my kSuite,\nor choose a package tailored to your needs.")
+  /// loco:692405adc5c224ad2a07ff62
+  public static let onboardingDriveSelectionNoDriveTitle = KDriveLocalizable.tr("Localizable", "onboardingDriveSelectionNoDriveTitle", fallback: "You don't have a kDrive yet.")
+  /// loco:69242dd4299cf487060f2143
+  public static let onboardingDriveSelectionSelectTitle = KDriveLocalizable.tr("Localizable", "onboardingDriveSelectionSelectTitle", fallback: "Select the kDrive to be synchronized on this computer:")
   /// loco:691deaf47145f10ab4052cd2
   public static let onboardingDriveSelectionTitle = KDriveLocalizable.tr("Localizable", "onboardingDriveSelectionTitle", fallback: "Welcome back!")
   /// loco:68e6739c8af12c42e80027c5
@@ -31,9 +41,9 @@ public enum KDriveLocalizable {
   /// loco:68e8fa06c1b003290f0ccf42
   public static let onboardingLoginErrorTitle = KDriveLocalizable.tr("Localizable", "onboardingLoginErrorTitle", fallback: "Connection error")
   /// loco:691deb66e28b84c78e034353
-  public static let onboardingLoginHintLoading = KDriveLocalizable.tr("Localizable", "onboardingLoginHintLoading", fallback: "Just a few more moments, and we'll load your account..")
+  public static let onboardingLoginHintLoading = KDriveLocalizable.tr("Localizable", "onboardingLoginHintLoading", fallback: "Just a few more moments, and we'll load your account…")
   /// loco:691deb477145f10ab4052cd4
-  public static let onboardingLoginHintWebAuth = KDriveLocalizable.tr("Localizable", "onboardingLoginHintWebAuth", fallback: "Login from your browser..")
+  public static let onboardingLoginHintWebAuth = KDriveLocalizable.tr("Localizable", "onboardingLoginHintWebAuth", fallback: "Login from your browser…")
   /// loco:68e673754d80559c460bdf02
   public static let onboardingLoginTitle = KDriveLocalizable.tr("Localizable", "onboardingLoginTitle", fallback: "Welcome to kDrive!")
   /// loco:68e8fa27d09187683c0679b2

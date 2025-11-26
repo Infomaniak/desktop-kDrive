@@ -16,4 +16,13 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Combine
 
+public extension Publisher where Self.Failure == Never {
+    func receiveOnMain(store: inout Set<AnyCancellable>, receiveValue: @escaping (Output) -> Void) {
+        self
+            .receive(on: RunLoop.main)
+            .sink(receiveValue: receiveValue)
+            .store(in: &store)
+    }
+}

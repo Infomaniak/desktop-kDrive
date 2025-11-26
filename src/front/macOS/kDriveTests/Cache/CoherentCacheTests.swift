@@ -42,7 +42,7 @@ struct CoherentCacheUserTests {
     @Test func setGetUserInCacheFromPrimaryKey() async throws {
         // GIVEN
         let user = CoherentCacheTestsData.expectedUser
-        let cache = CoherentCache()
+        let cache = ServerCoherentCache()
         #expect(await cache.getUser(apiId: CoherentCacheTestsData.expectedUserId) == nil)
 
         // WHEN
@@ -56,7 +56,7 @@ struct CoherentCacheUserTests {
     @Test func setGetUserInCacheFromDbId() async throws {
         // GIVEN
         let user = CoherentCacheTestsData.expectedUser
-        let cache = CoherentCache()
+        let cache = ServerCoherentCache()
         #expect(await cache.getUser(dbId: CoherentCacheTestsData.expectedUserDbId) == nil)
 
         // WHEN

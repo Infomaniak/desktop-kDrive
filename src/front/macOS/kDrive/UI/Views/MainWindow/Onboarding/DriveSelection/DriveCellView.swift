@@ -20,14 +20,43 @@ import Cocoa
 import kDriveCore
 import kDriveCoreUI
 
+final class NonInteractiveButton: NSButton {
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        return nil
+    }
+}
+
 final class DriveCellView: NSView {
+    enum Tokens {
+        static let backgroundColor = NSColor.Tokens.Surface.secondary
+        static let activatedBackgroundColor = NSColor.Tokens.Surface.tertiary
+    }
+
     let color: NSColor
     let title: String
     let subtitle: String?
 
+    public var state: NSControl.StateValue {
+        get { checkbox.state }
+        set { checkbox.state = newValue }
+    }
+
+    public var isEnabled = true {
+        didSet {
+            checkbox.isEnabled = isEnabled
+        }
+    }
+
+    private var isActivated: Bool = false
+
+    private var backgroundColor: NSColor {
+        isActivated ? Tokens.activatedBackgroundColor : Tokens.backgroundColor
+    }
+
     private lazy var checkbox: NSButton = {
-        let checkboxButton = NSButton(checkboxWithTitle: "", target: self, action: #selector(didTapCheckbox))
+        let checkboxButton = NonInteractiveButton(checkboxWithTitle: "", target: nil, action: nil)
         checkboxButton.translatesAutoresizingMaskIntoConstraints = false
+        checkboxButton.refusesFirstResponder = true
         return checkboxButton
     }()
 
@@ -41,7 +70,7 @@ final class DriveCellView: NSView {
         let textField = NSTextField(labelWithString: title)
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.font = NSFont.Tokens.body
-        textField.textColor = NSColor.Tokens.Text.primary
+        textField.textColor = NSColor.Tokens.Text.secondary
         return textField
     }()
 
@@ -50,13 +79,14 @@ final class DriveCellView: NSView {
 
         let textField = NSTextField(labelWithString: subtitle)
         textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.maximumNumberOfLines = 1
         textField.font = NSFont.Tokens.subheadline
         textField.textColor = NSColor.Tokens.Text.tertiary
         return textField
     }()
 
-    init(color: NSColor, title: String, subtitle: String? = nil) {
-        self.color = color
+    init(color: NSColor?, title: String, subtitle: String? = nil) {
+        self.color = color ?? NSColor.Tokens.Drive.defaultColor
         self.title = title
         self.subtitle = subtitle
 
@@ -71,7 +101,7 @@ final class DriveCellView: NSView {
 
     override func draw(_ dirtyRect: NSRect) {
         let path = NSBezierPath(roundedRect: bounds, xRadius: AppRadius.radius8, yRadius: AppRadius.radius8)
-        NSColor.Tokens.Surface.secondary.setFill()
+        backgroundColor.setFill()
         path.fill()
     }
 
@@ -88,7 +118,10 @@ final class DriveCellView: NSView {
             driveIcon.leadingAnchor.constraint(equalTo: checkbox.trailingAnchor, constant: AppPadding.padding8),
 
             titleLabel.leadingAnchor.constraint(equalTo: driveIcon.trailingAnchor, constant: AppPadding.padding8),
-            titleLabel.topAnchor.constraint(equalTo: topAnchor, constant: AppPadding.padding8)
+            titleLabel.topAnchor.constraint(equalTo: topAnchor, constant: AppPadding.padding8),
+            titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -AppPadding.padding8),
+
+            widthAnchor.constraint(equalToConstant: 264)
         ])
 
         if let subtitleLabel {
@@ -105,12 +138,37 @@ final class DriveCellView: NSView {
         }
     }
 
-    @objc private func didTapCheckbox() {}
+    override func mouseDown(with event: NSEvent) {
+        guard isEnabled else { return }
+
+        isActivated = true
+        needsDisplay = true
+    }
+
+    override func mouseUp(with event: NSEvent) {
+        guard isEnabled else { return }
+
+        isActivated = false
+        needsDisplay = true
+
+        state = state == .on ? .off : .on
+    }
 }
 
 @available(macOS 14.0, *)
-#Preview {
-    let driveCell = DriveCellView(color: .systemBlue, title: "Mon entreprise", subtitle: "kDrive Pro")
-    driveCell.translatesAutoresizingMaskIntoConstraints = false
-    return driveCell
+#Preview("No subtitle") {
+    DriveCellView(color: .systemBlue, title: "Rolex")
+}
+
+@available(macOS 14.0, *)
+#Preview("With subtitle") {
+    DriveCellView(color: .systemBlue, title: "Geneva", subtitle: "Rolex")
+}
+
+@available(macOS 14.0, *)
+#Preview("Activated == true / isEnabled == false") {
+    let cell = DriveCellView(color: .systemBlue, title: "Geneva")
+    cell.state = .on
+    cell.isEnabled = false
+    return cell
 }

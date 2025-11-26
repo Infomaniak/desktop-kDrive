@@ -39,7 +39,7 @@ final class ObservableCoherentCacheTests: XCTestCase {
             isStaff: true
         )
 
-        let cache = CoherentCache()
+        let cache = ServerCoherentCache()
         let expectation = self.expectation(description: "User updates observed")
         var receivedUsers: IndexedUsers?
         var cancellables = Set<AnyCancellable>()

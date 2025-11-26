@@ -18,6 +18,7 @@
 
 import Cocoa
 import Combine
+import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import Lottie
@@ -60,11 +61,10 @@ class OnboardingAnimationsView: NSView {
 
     private func bindCoordinator() {
         transitionAnimation(forStep: flowCoordinator.currentStep)
-        flowCoordinator.$currentStep.receive(on: DispatchQueue.main)
-            .sink { [weak self] step in
+        flowCoordinator.$currentStep
+            .receiveOnMain(store: &bindStore) { [weak self] step in
                 self?.transitionAnimation(forStep: step)
             }
-            .store(in: &bindStore)
     }
 
     private func transitionAnimation(forStep step: OnboardingStep) {
@@ -85,11 +85,11 @@ class OnboardingAnimationsView: NSView {
         switch step {
         case .login:
             return .kDriveLoader
-        case .driveSelection:
+        case .drivesSelection:
             return .kDriveSynchronizeFiles
         case .permissions:
             fatalError("Not Implemented Yet")
-        case .synchronisation:
+        case .synchronization:
             fatalError("Not Implemented Yet")
         }
     }

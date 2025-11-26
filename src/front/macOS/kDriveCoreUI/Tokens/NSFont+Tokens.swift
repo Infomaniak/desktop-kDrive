@@ -28,6 +28,8 @@ public extension NSFont {
 
         public static let title3Emphasized: NSFont = .preferredFont(forTextStyle: .title3, weight: .emphasized)
 
+        public static let headline: NSFont = .preferredFont(forTextStyle: .headline)
+
         public static let body: NSFont = .preferredFont(forTextStyle: .body)
 
         public static let subheadline: NSFont = .preferredFont(forTextStyle: .subheadline)

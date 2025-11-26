@@ -36,6 +36,11 @@ extension NSColor {
         public enum Surface {
             public static let primary = NSColor(light: KDriveColors.neutralBlue50, dark: KDriveColors.neutralBlue800)
             public static let secondary = NSColor(light: KDriveColors.neutralBlue100, dark: KDriveColors.neutralBlue700)
+            public static let tertiary = NSColor(light: KDriveColors.neutralBlue200, dark: KDriveColors.neutralBlue600)
+        }
+
+        public enum Drive {
+            public static let defaultColor = KDriveColors.infomaniak.color
         }
     }
 }

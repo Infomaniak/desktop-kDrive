@@ -18,6 +18,7 @@
 
 import Cocoa
 import Combine
+import kDriveCore
 import kDriveResources
 
 final class OnboardingViewController: NSViewController {
@@ -46,7 +47,7 @@ final class OnboardingViewController: NSViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         setupUI()
         bindCoordinator()
     }
@@ -95,11 +96,10 @@ final class OnboardingViewController: NSViewController {
 
     private func bindCoordinator() {
         transition(toStep: flowCoordinator.currentStep)
-        flowCoordinator.$currentStep.receive(on: DispatchQueue.main)
-            .sink { [weak self] step in
+        flowCoordinator.$currentStep
+            .receiveOnMain(store: &bindStore) { [weak self] step in
                 self?.transition(toStep: step)
             }
-            .store(in: &bindStore)
     }
 
     private func transition(toStep step: OnboardingStep) {
@@ -113,11 +113,11 @@ final class OnboardingViewController: NSViewController {
         switch step {
         case .login:
             return LoginViewController(flowCoordinator: flowCoordinator)
-        case .driveSelection:
+        case .drivesSelection:
             return DriveSelectionViewController()
         case .permissions:
             fatalError("Not Implemented Yet")
-        case .synchronisation:
+        case .synchronization:
             fatalError("Not Implemented Yet")
         }
     }

@@ -4,7 +4,7 @@
  * Locale: de, German
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Wed, 19 Nov 2025 17:08:58 +0100
+ * Exported at: Mon, 24 Nov 2025 11:57:22 +0100
  */
 
 /* loco:691deb2291b20ac7fd045012 */
@@ -25,6 +25,21 @@
 /* loco:68b04d5a63085b7ab90cea63 */
 "buttonOpenInFinder" = "In Finder öffnen";
 
+/* loco:69240f7b15d05a975c07dc13 */
+"buttonShowOffers" = "Zu den Angeboten";
+
+/* loco:69240f6d4433e24658054fd4 */
+"buttonStartForFree" = "Kostenlos anfangen";
+
+/* loco:692406b0258f5599bf01d113 */
+"onboardingDriveSelectionNoDriveDescription" = "Beginnen Sie kostenlos mit my kSuite oder wählen Sie ein Angebot,\ndas auf Ihre Bedürfnisse zugeschnitten ist.";
+
+/* loco:692405adc5c224ad2a07ff62 */
+"onboardingDriveSelectionNoDriveTitle" = "Sie haben noch kein kDrive.";
+
+/* loco:69242dd4299cf487060f2143 */
+"onboardingDriveSelectionSelectTitle" = "Wählen Sie die kDrive, die auf diesem Computer synchronisiert werden sollen:";
+
 /* loco:691deaf47145f10ab4052cd2 */
 "onboardingDriveSelectionTitle" = "Schön, dass Sie wieder da sind!";
 
@@ -38,10 +53,10 @@
 "onboardingLoginErrorTitle" = "Verbindungsfehler";
 
 /* loco:691deb66e28b84c78e034353 */
-"onboardingLoginHintLoading" = "Nur noch wenige Augenblicke, wir laden Ihr Konto..";
+"onboardingLoginHintLoading" = "Nur noch wenige Augenblicke, wir laden Ihr Konto…";
 
 /* loco:691deb477145f10ab4052cd4 */
-"onboardingLoginHintWebAuth" = "Anmelden über Ihren Browser..";
+"onboardingLoginHintWebAuth" = "Anmelden über Ihren Browser…";
 
 /* loco:68e673754d80559c460bdf02 */
 "onboardingLoginTitle" = "Willkommen bei kDrive!";

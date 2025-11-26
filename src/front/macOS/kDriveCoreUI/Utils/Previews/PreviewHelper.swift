@@ -16,27 +16,35 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Combine
-import InfomaniakDI
+import Cocoa
 import Foundation
 import kDriveCore
 
-enum OnboardingStep: Sendable {
-    case login
-    case drivesSelection
-    case permissions
-    case synchronization
+private final class PreviewBundle {
+    /** Meant to access kDriveCoreUI bundle in `PreviewHelper` */
 }
 
-@MainActor
-final class OnboardingFlowCoordinator: ObservableObject {
-    @Published private(set) var currentStep: OnboardingStep
+public enum PreviewHelper {
+    public static let userImage = Bundle(for: PreviewBundle.self).image(forResource: "tim")!
 
-    init(currentStep: OnboardingStep = .login) {
-        self.currentStep = currentStep
-    }
+    public static let user = UIUser(
+        dbId: 95014,
+        userId: 95014,
+        name: "Tim Cook",
+        email: "tim@apple.com",
+        avatar: PreviewHelper.userImage
+    )
 
-    func navigate(to step: OnboardingStep) {
-        currentStep = step
-    }
+    public static let drive1 = UIDrive(
+        dbId: 1,
+        driveId: 1,
+        name: "Tim Drive",
+        color: .blue
+    )
+    public static let drive2 = UIDrive(
+        dbId: 2,
+        driveId: 2,
+        name: "Drive Pro Max",
+        color: .red
+    )
 }
