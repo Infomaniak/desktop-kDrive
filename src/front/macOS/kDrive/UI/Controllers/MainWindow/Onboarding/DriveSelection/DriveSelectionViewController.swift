@@ -142,7 +142,9 @@ extension DriveSelectionViewController {
         secondaryButton.action = #selector(didTapAdvancedSettings)
     }
 
-    @objc private func didTapContinue() {}
+    @objc private func didTapContinue() {
+        viewModel.startSynchronization()
+    }
 
     @objc private func didTapAdvancedSettings() {}
 

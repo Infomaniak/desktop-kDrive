@@ -51,4 +51,48 @@ final class DriveSelectionViewModel: ObservableObject {
             selectedDrives.insert(drive)
         }
     }
+
+    func startSynchronization() {
+        guard !selectedDrives.isEmpty else { return }
+
+        Task {
+            guard let currentUser else {
+                return
+            }
+
+            let drives = try await DriveJobs().availableDrives(userDbId: Int32(currentUser.dbId)).asAvailableDrives
+
+            for selectedDrive in selectedDrives {
+                guard let drive = drives.first(where: { $0.driveId == selectedDrive.driveId }) else {
+                    continue
+                }
+
+                let identifier = NewSyncParentIdentifier.transitive(
+                    userDbId: drive.userDbId,
+                    accountId: drive.accountId,
+                    driveId: drive.driveId
+                )
+                let metadata = NewSyncMetadata(
+                    userDbId: drive.userDbId,
+                    accountId: drive.accountId,
+                    driveId: drive.driveId,
+                    localFolderPath: "/Users/valentinperignon/kDriveTest",
+                    serverFolderPath: "/",
+                    serverFolderNodeId: "1",
+                    liteSync: true,
+                    blackList: [],
+                    whiteList: []
+                )
+
+                do {
+                    let syncInfo = try await SyncJobs().addSync(identifier: identifier, metadata: metadata)
+                    print(syncInfo)
+
+                    try await SyncJobs().startSync(syncDbId: syncInfo.dbId)
+                } catch {
+                    print("Coucou")
+                }
+            }
+        }
+    }
 }
