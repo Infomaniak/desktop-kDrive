@@ -2,7 +2,8 @@
 # In the case the uninstallation of the LiteSync failed but the dehydrated placeholders have been deleted, we do not want to have valid synchronization set up because it will propagate all the DELETE operations on the server.
 
 # Clean kDrive folders for all users
-$profiles = Get-ChildItem "C:\Users" -Directory -ErrorAction Continue
+$profilesFolder = [Environment]::GetFolderPath("UserProfile") + "\..\"
+$profiles = Get-ChildItem $profilesFolder -Directory -ErrorAction Continue
 
 foreach ($profile in $profiles) {
 
