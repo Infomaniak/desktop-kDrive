@@ -30,6 +30,7 @@
 #include "comm/guijobs/syncaddjob.h"
 #include "comm/guijobs/syncadd2job.h"
 #include "comm/guijobs/syncgetpubliclinkurljob.h"
+#include "comm/guijobs/syncgetprivatelinkurljob.h"
 #include "libcommon/comm.h"
 #include "log/log.h"
 
@@ -1102,6 +1103,54 @@ void TestGuiCommChannel::testSyncGetPublicLinkUrlJob() {
         auto syncGetPublicLinkUrlJob = std::dynamic_pointer_cast<SyncGetPublicLinkUrlJob>(job);
 
         syncGetPublicLinkUrlJob->_linkUrl = "https://kdrive.infomaniak.com/app/share/012345/abcdef";
+    };
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+#else
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
+void TestGuiCommChannel::testSyncGetPrivateLinkUrlJob() {
+    // Base64 conversions
+    // "1111" <=> "MTExMQ=="
+    // "https://kdrive.infomaniak.com/app/drive/1/redirect/1111" <=>
+    // "aHR0cHM6Ly9rZHJpdmUuaW5mb21hbmlhay5jb20vYXBwL2RyaXZlLzEvcmVkaXJlY3QvMTExMQ=="
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    const auto queryStr{R"({ "id": 1,)"
+                        R"( "num": )" +
+                        std::to_string(toInt(RequestNum::SYNC_GETPRIVATELINKURL)) +
+                        R"(,)"
+                        R"( "params": { "driveDbId": 1, "fileId": "MTExMQ==" } })"};
+#else
+    // There is no need to pass a request id as the response is via a callback.
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::SYNC_GETPRIVATELINKURL)) +
+                        R"(,)"
+                        R"( "params": { "driveDbId": 1, "fileId": "MTExMQ==" } })"};
+
+    // Callback expected answer
+    const auto cbkAnswerStr{
+            R"({"cause":0,"code":0,"id":1,"params":{"linkUrl":"aHR0cHM6Ly9rZHJpdmUuaW5mb21hbmlhay5jb20vYXBwL2RyaXZlLzEvcmVkaXJlY3QvMTExMQ=="}})"};
+#endif
+
+    // Job expected answer
+    const auto answerStr{
+            R"({ "cause": 0,)"
+            R"( "code": 0,)"
+            R"( "id": 1,)"
+            R"( "num": )" +
+            std::to_string(toInt(RequestNum::SYNC_GETPRIVATELINKURL)) +
+            R"(,)"
+            R"( "params": { "linkUrl": "aHR0cHM6Ly9rZHJpdmUuaW5mb21hbmlhay5jb20vYXBwL2RyaXZlLzEvcmVkaXJlY3QvMTExMQ==" },)"
+            R"( "type": )" +
+            std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto syncGetPrivateLinkUrlJob = std::dynamic_pointer_cast<SyncGetPrivateLinkUrlJob>(job);
+
+        syncGetPrivateLinkUrlJob->_linkUrl = std::string{"https://kdrive.infomaniak.com/app/drive/1/redirect/1111"};
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)

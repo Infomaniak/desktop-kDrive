@@ -86,11 +86,11 @@ CommManager::CommManager(AppServer &appServer) :
 
     // Set CommServer(s) callbacks
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
-    _extCommServer->setNewConnectionCbk(std::bind(&CommManager::onNewExtConnection, this));
-    _extCommServer->setLostConnectionCbk(std::bind(&CommManager::onLostExtConnection, this, std::placeholders::_1));
+    _extCommServer->setNewConnectionCbk(std::bind_front(&CommManager::onNewExtConnection, this));
+    _extCommServer->setLostConnectionCbk(std::bind_front(&CommManager::onLostExtConnection, this));
 #endif
-    _guiCommServer->setNewConnectionCbk(std::bind(&CommManager::onNewGuiConnection, this));
-    _guiCommServer->setLostConnectionCbk(std::bind(&CommManager::onLostGuiConnection, this, std::placeholders::_1));
+    _guiCommServer->setNewConnectionCbk(std::bind_front(&CommManager::onNewGuiConnection, this));
+    _guiCommServer->setLostConnectionCbk(std::bind_front(&CommManager::onLostGuiConnection, this));
 }
 
 CommManager::~CommManager() {
@@ -214,7 +214,7 @@ void CommManager::onNewExtConnection() {
     if (!channel) return;
 
     LOG_INFO(Log::instance()->getLogger(), "New ext connection: channel=" << channel->id());
-    channel->setReadyReadCbk(std::bind(&CommManager::onExtQueryReceived, this, std::placeholders::_1));
+    channel->setReadyReadCbk(std::bind_front(&CommManager::onExtQueryReceived, this));
 
     // Load sync list
     std::vector<Sync> syncList;
@@ -301,7 +301,7 @@ void CommManager::onNewGuiConnection() {
     if (!channel) return;
 
     LOG_INFO(Log::instance()->getLogger(), "New gui connection: channel=" << channel->id());
-    channel->setReadyReadCbk(std::bind(&CommManager::onGuiQueryReceived, this, std::placeholders::_1));
+    channel->setReadyReadCbk(std::bind_front(&CommManager::onGuiQueryReceived, this));
 }
 
 void CommManager::onGuiQueryReceived(std::shared_ptr<AbstractCommChannel> channel) {

@@ -19,7 +19,6 @@
 import Foundation
 
 public protocol XPCConnectionProvider: Sendable {
-    var connection: NSXPCConnection { get async throws }
     var guiConnection: XPCGuiProtocol { get async throws }
 }
 
@@ -36,6 +35,12 @@ extension XPCConnectionManager: XPCConnectionProvider {
 
     public var guiConnection: XPCGuiProtocol {
         get async throws {
+            // TODO: Remove reset connection hack
+            appConnection?.invalidate()
+            appConnection = nil
+
+            try await fetchServerEndpointFromLoginItemAgentAndConnect()
+
             let connection = try self.connection
             return try connection.proxy(from: connection, type: XPCGuiProtocol.self)
         }

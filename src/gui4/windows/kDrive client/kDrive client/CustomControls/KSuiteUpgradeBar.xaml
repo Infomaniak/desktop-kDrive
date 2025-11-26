@@ -7,73 +7,51 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="using:Infomaniak.kDrive.CustomControls"
              mc:Ignorable="d">
-    <Grid Height="58"
-          HorizontalAlignment="Stretch">
-        <!-- Layer 1: Gradient background -->
-        <Border CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}">
-            <Border.Background>
-                <LinearGradientBrush StartPoint="0,0"
-                                     EndPoint="1,0">
-                    <GradientStop Color="#1DDDFD"
-                                  Offset="0.0" />
-                    <GradientStop Color="#337CFF"
-                                  Offset="0.25" />
-                    <GradientStop Color="#A055FC"
-                                  Offset="0.5" />
-                    <GradientStop Color="#F34BBB"
-                                  Offset="0.75" />
-                    <GradientStop Color="#FDBC3D"
-                                  Offset="1.0" />
-                </LinearGradientBrush>
-            </Border.Background>
-        </Border>
+    
+    <Border CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"
+            BorderThickness="1"
+            Height="58">
+        <Border.BorderBrush>
+            <LinearGradientBrush StartPoint="0,0"
+                                 EndPoint="1,0">
+                <GradientStop Color="{ThemeResource kSuite.Gradient.lightblue}"
+                              Offset="0.0" />
+                <GradientStop Color="{ThemeResource kSuite.Gradient.darkblue}"
+                              Offset="0.25" />
+                <GradientStop Color="{ThemeResource kSuite.Gradient.purple}"
+                              Offset="0.5" />
+                <GradientStop Color="{ThemeResource kSuite.Gradient.pink}"
+                              Offset="0.75" />
+                <GradientStop Color="{ThemeResource kSuite.Gradient.orange}"
+                              Offset="1.0" />
+            </LinearGradientBrush>
+        </Border.BorderBrush>
+        <Border.Background>
+            <SolidColorBrush Color="{ThemeResource LayerFillColorDefault}" />
+        </Border.Background>
 
-        <!-- Layer 2: Acrylic background with content -->
-        <Border CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"
-                BorderThickness="1">
-            <Border.BorderBrush>
-                <LinearGradientBrush StartPoint="0,0"
-                                     EndPoint="1,0">
-                    <GradientStop Color="#1DDDFD"
-                                  Offset="0.0" />
-                    <GradientStop Color="#337CFF"
-                                  Offset="0.25" />
-                    <GradientStop Color="#A055FC"
-                                  Offset="0.5" />
-                    <GradientStop Color="#F34BBB"
-                                  Offset="0.75" />
-                    <GradientStop Color="#FDBC3D"
-                                  Offset="1.0" />
-                </LinearGradientBrush>
-            </Border.BorderBrush>
-            <Border.Background>
-                <AcrylicBrush TintColor="{ThemeResource SolidBackgroundFillColorBaseAlt}"
-                              TintOpacity="0.6" />
-            </Border.Background>
-
-            <Grid VerticalAlignment="Center"
-                  Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.M}"
-                  ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="auto" />
-                    <ColumnDefinition Width="auto" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
+        <Grid VerticalAlignment="Center"
+              Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.M}"
+              ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+            <!-- kSuite icon / message -->
+            <StackPanel Orientation="Vertical"
+                        HorizontalAlignment="Left"
+                        Grid.Column="0"
+                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                        Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.M}">
                 <controls:SvgIcon Height="16"
-                                  Grid.Column="0"
-                                  UriString="{StaticResource Infomaniak.Custom.Icons.logo-myksuiteplus}" />
-
-                <!-- kSuite icon / message -->
+                                  HorizontalAlignment="Left"
+                                  UriString="{ThemeResource Infomaniak.Custom.Icons.logo-myksuiteplus}" />
                 <TextBlock x:Uid="CC_KSuiteUpgradeBar_message"
-                           VerticalAlignment="Center"
-                           Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
-                           Grid.Column="1" />
+                           HorizontalAlignment="Left"
+                           Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
+            </StackPanel>
 
-                <HyperlinkButton x:Name="UpgradeHyperLinkButton"
-                                 x:Uid="CC_KSuiteUpgradeBar_link"
-                                 Grid.Column="2"
-                                 HorizontalAlignment="Right" />
-            </Grid>
-        </Border>
-    </Grid>
+            <HyperlinkButton x:Name="UpgradeHyperLinkButton"
+                             x:Uid="CC_KSuiteUpgradeBar_link"
+                             HorizontalAlignment="Right"
+                             HorizontalContentAlignment="Right"
+                             Grid.Column="1"/>
+        </Grid>
+    </Border>
 </UserControl>

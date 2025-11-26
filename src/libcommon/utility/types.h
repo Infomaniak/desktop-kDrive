@@ -343,13 +343,10 @@ enum class SignalType {
 
 enum class SyncNodeType {
     Undefined = 0,
-    BlackList, // Nodes that are excluded from sync
-    WhiteList, // Explicitly whitelisted nodes (e.g. folder size above limit but user want to sync anyway). Note: all
-               // nodes in none of those lists are implicitly whitelisted
-    UndecidedList, // Considered as blacklisted until user action
-    TmpRemoteBlacklist, // Blacklisted temporarily
-    TmpLocalBlacklist, // Blacklisted temporarily
-    EnumEnd
+    BlackList = 1, // Nodes that are excluded from sync
+    TmpRemoteBlacklist = 4, // Blacklisted temporarily
+    TmpLocalBlacklist = 5, // Blacklisted temporarily
+    EnumEnd = 6
 };
 
 enum class SyncStatus {

@@ -21,5 +21,8 @@ import Foundation
 extension MsgType: Codable {}
 extension KDC.ExitCause: Codable {}
 extension KDC.ExitCode: Codable {}
+extension KDC.NodeType: Codable {}
+extension KDC.VirtualFileMode: Codable {}
+extension KDC.SyncFileStatus: Codable {}
 extension SignalNum: Codable {}
 extension RequestNum: Codable {}

@@ -41,7 +41,6 @@
 #include "libcommon/utility/utility.h" // fileSystemName(const QString&)
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
-#include "libsyncengine/olddb/oldsyncdb.h"
 #include "libsyncengine/requests/parameterscache.h"
 #include "libsyncengine/requests/exclusiontemplatecache.h"
 
@@ -961,59 +960,6 @@ ExitInfo ServerRequests::getPathByNodeId(int userDbId, int driveId, const QStrin
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::migrateSelectiveSync(int syncDbId, std::pair<SyncPath, SyncName> &syncToMigrate) {
-    Sync sync;
-    bool found = false;
-    if (!ParmsDb::instance()->selectSync(syncDbId, sync, found)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error while connecting to ParmsDb");
-        return ExitCode::DbError;
-    }
-    if (!found) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in selecSync id = " << syncDbId << " not found");
-        return ExitCode::DataError;
-    }
-
-    // contruct file path with folder path and dbName
-    SyncPath dbPath(syncToMigrate.first);
-    dbPath /= syncToMigrate.second;
-
-    bool exists = false;
-    IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(dbPath, exists, ioError)) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dbPath, ioError));
-        return ExitCode::SystemError;
-    }
-
-    if (ioError == IoError::AccessDenied) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"DB to migrate " << Path2WStr(dbPath) << L" misses search permission.");
-        return ExitCode::SystemError;
-    }
-
-    if (!exists) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"DB to migrate " << Path2WStr(dbPath) << L" does not exist.");
-        return ExitCode::SystemError;
-    }
-
-
-    QList<QPair<QString, SyncNodeType>> list;
-    ExitCode exitCode = loadOldSelectiveSyncTable(dbPath, list);
-    if (exitCode != ExitCode::Ok) {
-        return exitCode;
-    }
-
-    for (auto &pair: list) {
-        std::filesystem::path path(QStr2Path(pair.first));
-        SyncNodeType type = pair.second;
-        if (!ParmsDb::instance()->insertMigrationSelectiveSync(MigrationSelectiveSync(syncDbId, path, type))) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::insertMigrationSelectiveSync");
-            return ExitCode::DbError;
-        }
-    }
-
-    return ExitCode::Ok;
-}
-
 ExitCode ServerRequests::createUser(const User &user, UserInfo &userInfo) {
     if (!ParmsDb::instance()->insertUser(user)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::insertUser");
@@ -1407,9 +1353,10 @@ ExitInfo ServerRequests::getFolderSize(int userDbId, int driveId, const NodeId &
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getPrivateLinkUrl(int driveDbId, const QString &fileId, QString &linkUrl) {
+ExitCode ServerRequests::getPrivateLinkUrl(const int driveDbId, const std::string &fileId, std::string &linkUrl) {
+    linkUrl = {};
     Drive drive;
-    bool found;
+    bool found = false;
     if (!ParmsDb::instance()->selectDrive(driveDbId, drive, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in selectDrive");
         return ExitCode::DbError;
@@ -1419,9 +1366,22 @@ ExitCode ServerRequests::getPrivateLinkUrl(int driveDbId, const QString &fileId,
         return ExitCode::DataError;
     }
 
-    linkUrl = QString(APPLICATION_PREVIEW_URL).arg(drive.driveId()).arg(fileId);
+    // Replace this line with a call to std::format (C++20) when compilation issues are addressed on Linux.
+    const QString linkUrlQStr = QString(APPLICATION_PREVIEW_URL).arg(drive.driveId()).arg(QString::fromStdString(fileId));
+
+    linkUrl = QStr2Str(linkUrlQStr);
 
     return ExitCode::Ok;
+}
+
+ExitCode ServerRequests::getPrivateLinkUrl(const int driveDbId, const QString &fileId, QString &linkUrl) {
+    linkUrl = {};
+    std::string linkUrlStr;
+
+    const auto exitCode = getPrivateLinkUrl(driveDbId, QStr2Str(fileId), linkUrlStr);
+    linkUrl = QString::fromStdString(linkUrlStr);
+
+    return exitCode;
 }
 
 ExitCode ServerRequests::getExclusionTemplateList(bool def, QList<ExclusionTemplateInfo> &list) {
@@ -2126,8 +2086,6 @@ void ServerRequests::parametersToParametersInfo(const Parameters &parameters, Pa
     proxyConfigToProxyConfigInfo(parameters.proxyConfig(), proxyConfigInfo);
     parametersInfo.setProxyConfigInfo(proxyConfigInfo);
 
-    parametersInfo.setUseBigFolderSizeLimit(parameters.useBigFolderSizeLimit());
-    parametersInfo.setBigFolderSizeLimit(parameters.bigFolderSizeLimit());
     parametersInfo.setDarkTheme(parameters.darkTheme());
     parametersInfo.setShowShortcuts(parameters.showShortcuts());
 
@@ -2161,8 +2119,6 @@ void ServerRequests::parametersInfoToParameters(const ParametersInfo &parameters
     proxyConfigInfoToProxyConfig(parametersInfo.proxyConfigInfo(), proxyConfig);
     parameters.setProxyConfig(proxyConfig);
 
-    parameters.setUseBigFolderSizeLimit(parametersInfo.useBigFolderSizeLimit());
-    parameters.setBigFolderSizeLimit(parametersInfo.bigFolderSizeLimit());
     parameters.setDarkTheme(parametersInfo.darkTheme());
     parameters.setShowShortcuts(parametersInfo.showShortcuts());
     parameters.setMoveToTrash(parametersInfo.moveToTrash());
@@ -2257,35 +2213,4 @@ void ServerRequests::exclusionAppInfoToExclusionApp(const ExclusionAppInfo &excl
     exclusionApp.setDescription(exclusionAppInfo.description().toStdString());
     exclusionApp.setDef(exclusionAppInfo.def());
 }
-
-ExitCode ServerRequests::loadOldSelectiveSyncTable(const SyncPath &syncDbPath, QList<QPair<QString, SyncNodeType>> &list) {
-    try {
-        OldSyncDb oldSyncDb(syncDbPath);
-
-        if (!oldSyncDb.exists()) {
-            LOG_WARN(Log::instance()->getLogger(), "Cannot open DB!");
-            return ExitCode::SystemError;
-        }
-
-        std::list<std::pair<std::string, SyncNodeType>> selectiveSyncList;
-        if (!oldSyncDb.selectAllSelectiveSync(selectiveSyncList)) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in OldSyncDb::selectAllSelectiveSync");
-            return ExitCode::DbError;
-        }
-
-        list.clear();
-        for (const auto &selectiveSyncElt: selectiveSyncList) {
-            list << qMakePair(QString::fromStdString(selectiveSyncElt.first), selectiveSyncElt.second);
-        }
-
-        oldSyncDb.close();
-    } catch (std::runtime_error &err) {
-        LOG_WARN(Log::instance()->getLogger(),
-                 "Error getting old selective sync list, oldSyncDb may not exist anymore or is corrupted. error=" << err.what());
-        return ExitCode::DbError;
-    }
-
-    return ExitCode::Ok;
-}
-
 } // namespace KDC

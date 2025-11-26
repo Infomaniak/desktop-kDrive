@@ -19,14 +19,18 @@
 import Foundation
 
 public struct CallbackMessage<Body: Codable>: Codable, CustomStringConvertible {
-    public let cause: KDC.ExitCause
     public let code: KDC.ExitCode
+    public let cause: KDC.ExitCause
     public let id: Int32
     public let body: Body
 
-    public init(cause: KDC.ExitCause, code: KDC.ExitCode, id: Int32, body: Body) {
-        self.cause = cause
+    enum CallbackError: Error {
+        case serverError(code: KDC.ExitCode, cause: KDC.ExitCause)
+    }
+
+    public init(code: KDC.ExitCode, cause: KDC.ExitCause, id: Int32, body: Body) {
         self.code = code
+        self.cause = cause
         self.id = id
         self.body = body
     }
@@ -40,5 +44,13 @@ public struct CallbackMessage<Body: Codable>: Codable, CustomStringConvertible {
 
     public var description: String {
         "CallbackMessage(cause: \(cause.rawValue), code: \(code.rawValue), id: \(id), body: \(body))"
+    }
+}
+
+public extension CallbackMessage {
+    func validate() throws {
+        if code != .Ok || cause != .Unknown {
+            throw CallbackError.serverError(code: code, cause: cause)
+        }
     }
 }

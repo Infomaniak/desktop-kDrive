@@ -188,7 +188,7 @@ static NSNumber *lastRequestId = @0;
     auto *server = (KDC::GuiCommServer *) self.wrapper->publicPtr;
 
     auto channel = std::make_shared<KDC::GuiCommChannel>(channelPrivate);
-    channel->setLostConnectionCbk(std::bind(&KDC::GuiCommServer::lostConnectionCbk, server, std::placeholders::_1));
+    channel->setLostConnectionCbk(std::bind_front(&KDC::GuiCommServer::lostConnectionCbk, server));
     self.wrapper->pendingChannels.push_back(channel);
 
     // Set exported interface

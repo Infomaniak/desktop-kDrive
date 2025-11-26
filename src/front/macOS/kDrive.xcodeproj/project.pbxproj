@@ -11,13 +11,17 @@
 		37A1C4462E546A9600596DBB /* kDriveCoreUI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C43F2E546A9600596DBB /* kDriveCoreUI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		37A1C4602E546CB700596DBB /* kDriveCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C45A2E546CB600596DBB /* kDriveCore.framework */; };
 		37A1C4612E546CB700596DBB /* kDriveCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C45A2E546CB600596DBB /* kDriveCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		7AFF54E22EC34B4100904C5C /* InfomaniakConcurrency in Frameworks */ = {isa = PBXBuildFile; productRef = 7AFF54E12EC34B4100904C5C /* InfomaniakConcurrency */; };
 		F96700A42E95352C00EDD4D7 /* kDriveResources.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F967009E2E95352C00EDD4D7 /* kDriveResources.framework */; };
 		F96700A52E95352C00EDD4D7 /* kDriveResources.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F967009E2E95352C00EDD4D7 /* kDriveResources.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F96701502E953CF600EDD4D7 /* kDriveResources.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F967009E2E95352C00EDD4D7 /* kDriveResources.framework */; };
 		F967FC8C2E8BC9FE00EDD4D7 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = F967FC8B2E8BC9FE00EDD4D7 /* Lottie */; };
 		F97269782E98F1CE002EA08D /* InfomaniakLogin in Frameworks */ = {isa = PBXBuildFile; productRef = F97269772E98F1CE002EA08D /* InfomaniakLogin */; };
+		F97590BC2ECC7A8A002CC428 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = F97590BB2ECC7A8A002CC428 /* Sentry */; };
 		F97805BE2E97E3AF00BC146C /* InfomaniakDI in Frameworks */ = {isa = PBXBuildFile; productRef = F97805BD2E97E3AF00BC146C /* InfomaniakDI */; };
 		F97805C32E97E3F900BC146C /* InfomaniakDI in Frameworks */ = {isa = PBXBuildFile; productRef = F97805C22E97E3F900BC146C /* InfomaniakDI */; };
+		F9A927C92ECF6BF400B09ABA /* kDriveCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C45A2E546CB600596DBB /* kDriveCore.framework */; };
+		F9A927CA2ECF6BF400B09ABA /* kDriveCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C45A2E546CB600596DBB /* kDriveCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F9ACC5382E5DF50F0081E80B /* swiftgen.yml in Resources */ = {isa = PBXBuildFile; fileRef = F9ACC5372E5DF50B0081E80B /* swiftgen.yml */; };
 /* End PBXBuildFile section */
 
@@ -64,6 +68,13 @@
 			remoteGlobalIDString = F97269622E98EC15002EA08D;
 			remoteInfo = kDriveLogin;
 		};
+		F9A927CB2ECF6BF400B09ABA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 37A1C41E2E546A5200596DBB /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 37A1C4592E546CB600596DBB;
+			remoteInfo = kDriveCore;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -76,6 +87,17 @@
 				37A1C4612E546CB700596DBB /* kDriveCore.framework in Embed Frameworks */,
 				F96700A52E95352C00EDD4D7 /* kDriveResources.framework in Embed Frameworks */,
 				37A1C4462E546A9600596DBB /* kDriveCoreUI.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F9A927CD2ECF6BF400B09ABA /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				F9A927CA2ECF6BF400B09ABA /* kDriveCore.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -96,22 +118,15 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Cache/CoherentCacheTests.swift,
+				Cache/HexColorTests.swift,
+				Cache/ObservableCoherentCacheTests.swift,
+				Cache/ObservedAccoutTests.swift,
+				Cache/ObservedUserTests.swift,
+				Parsing/Base64CodedTests.swift,
+				Parsing/CallbackMessageTests.swift,
+				Parsing/SignalMessageTests.swift,
 			);
 			target = 7A4DFBB02EA91F9D00B138B8 /* kDriveTests */;
-		};
-		F96700B82E953B8300EDD4D7 /* Exceptions for "kDriveCoreUI" folder in "kDrive" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"Tokens/ThemedAnimation+Tokens.swift",
-			);
-			target = 37A1C4252E546A5200596DBB /* kDrive */;
-		};
-		F96700B92E953B8300EDD4D7 /* Exceptions for "kDriveCoreUI" folder in "kDriveCoreUI" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"Tokens/ThemedAnimation+Tokens.swift",
-			);
-			target = 37A1C43E2E546A9600596DBB /* kDriveCoreUI */;
 		};
 		F97805C62E97E4DF00BC146C /* Exceptions for "kDrive" folder in "kDrive" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -133,10 +148,6 @@
 		};
 		37A1C4402E546A9600596DBB /* kDriveCoreUI */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				F96700B82E953B8300EDD4D7 /* Exceptions for "kDriveCoreUI" folder in "kDrive" target */,
-				F96700B92E953B8300EDD4D7 /* Exceptions for "kDriveCoreUI" folder in "kDriveCoreUI" target */,
-			);
 			path = kDriveCoreUI;
 			sourceTree = "<group>";
 		};
@@ -156,11 +167,6 @@
 			exceptions = (
 				7A03B6FD2EBA59F40020A47B /* Exceptions for "kDriveTests" folder in "kDriveTests" target */,
 			);
-			path = kDriveTests;
-			sourceTree = "<group>";
-		};
-		7A4DFBB22EA91F9D00B138B8 /* kDriveTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
 			path = kDriveTests;
 			sourceTree = "<group>";
 		};
@@ -189,6 +195,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F9A927C92ECF6BF400B09ABA /* kDriveCore.framework in Frameworks */,
 				F96701502E953CF600EDD4D7 /* kDriveResources.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -198,6 +205,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				F97805C32E97E3F900BC146C /* InfomaniakDI in Frameworks */,
+				7AFF54E22EC34B4100904C5C /* InfomaniakConcurrency in Frameworks */,
+				F97590BC2ECC7A8A002CC428 /* Sentry in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -225,9 +234,8 @@
 				37A1C45B2E546CB700596DBB /* kDriveCore */,
 				37A1C4402E546A9600596DBB /* kDriveCoreUI */,
 				F967009F2E95352C00EDD4D7 /* kDriveResources */,
-				F9ACC5372E5DF50B0081E80B /* swiftgen.yml */,
 				7A46E1CE2EA7AC1B00880412 /* kDriveTests */,
-				7A4DFBB22EA91F9D00B138B8 /* kDriveTests */,
+				F9ACC5372E5DF50B0081E80B /* swiftgen.yml */,
 				37A1C4272E546A5200596DBB /* Products */,
 				F967014F2E953CF600EDD4D7 /* Frameworks */,
 			);
@@ -318,11 +326,13 @@
 				37A1C43B2E546A9600596DBB /* Sources */,
 				37A1C43C2E546A9600596DBB /* Frameworks */,
 				37A1C43D2E546A9600596DBB /* Resources */,
+				F9A927CD2ECF6BF400B09ABA /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				F96701532E953CF600EDD4D7 /* PBXTargetDependency */,
+				F9A927CC2ECF6BF400B09ABA /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				37A1C4402E546A9600596DBB /* kDriveCoreUI */,
@@ -353,6 +363,8 @@
 			name = kDriveCore;
 			packageProductDependencies = (
 				F97805C22E97E3F900BC146C /* InfomaniakDI */,
+				7AFF54E12EC34B4100904C5C /* InfomaniakConcurrency */,
+				F97590BB2ECC7A8A002CC428 /* Sentry */,
 			);
 			productName = kDriveCore;
 			productReference = 37A1C45A2E546CB600596DBB /* kDriveCore.framework */;
@@ -370,9 +382,6 @@
 			);
 			dependencies = (
 				7A4DFBB62EA91F9D00B138B8 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				7A4DFBB22EA91F9D00B138B8 /* kDriveTests */,
 			);
 			name = kDriveTests;
 			packageProductDependencies = (
@@ -452,6 +461,8 @@
 				F967FC8A2E8BC9FE00EDD4D7 /* XCRemoteSwiftPackageReference "lottie-spm" */,
 				F97805BC2E97E3AF00BC146C /* XCRemoteSwiftPackageReference "ios-dependency-injection" */,
 				F97805BF2E97E3C500BC146C /* XCRemoteSwiftPackageReference "ios-login" */,
+				7AFF54E02EC34ACE00904C5C /* XCRemoteSwiftPackageReference "swift-concurrency" */,
+				F97590BA2ECC7A8A002CC428 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 37A1C4272E546A5200596DBB /* Products */;
@@ -595,6 +606,11 @@
 		F97269762E98EFAF002EA08D /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			targetProxy = F97269752E98EFAF002EA08D /* PBXContainerItemProxy */;
+		};
+		F9A927CC2ECF6BF400B09ABA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 37A1C4592E546CB600596DBB /* kDriveCore */;
+			targetProxy = F9A927CB2ECF6BF400B09ABA /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -807,6 +823,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = kDriveCoreUI/Utils/Previews/PreviewResources.xcassets;
 				DEVELOPMENT_TEAM = 864VDCS2QY;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -847,6 +864,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = kDriveCoreUI/Utils/Previews/PreviewResources.xcassets;
 				DEVELOPMENT_TEAM = 864VDCS2QY;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -1142,12 +1160,28 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		7AFF54E02EC34ACE00904C5C /* XCRemoteSwiftPackageReference "swift-concurrency" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Infomaniak/swift-concurrency.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
 		F967FC8A2E8BC9FE00EDD4D7 /* XCRemoteSwiftPackageReference "lottie-spm" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/airbnb/lottie-spm.git";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 4.5.2;
+			};
+		};
+		F97590BA2ECC7A8A002CC428 /* XCRemoteSwiftPackageReference "sentry-cocoa" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "git@github.com:getsentry/sentry-cocoa.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.57.3;
 			};
 		};
 		F97805BC2E97E3AF00BC146C /* XCRemoteSwiftPackageReference "ios-dependency-injection" */ = {
@@ -1169,6 +1203,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		7AFF54E12EC34B4100904C5C /* InfomaniakConcurrency */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7AFF54E02EC34ACE00904C5C /* XCRemoteSwiftPackageReference "swift-concurrency" */;
+			productName = InfomaniakConcurrency;
+		};
 		F967FC8B2E8BC9FE00EDD4D7 /* Lottie */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = F967FC8A2E8BC9FE00EDD4D7 /* XCRemoteSwiftPackageReference "lottie-spm" */;
@@ -1178,6 +1217,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = F97805BF2E97E3C500BC146C /* XCRemoteSwiftPackageReference "ios-login" */;
 			productName = InfomaniakLogin;
+		};
+		F97590BB2ECC7A8A002CC428 /* Sentry */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F97590BA2ECC7A8A002CC428 /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
+			productName = Sentry;
 		};
 		F97805BD2E97E3AF00BC146C /* InfomaniakDI */ = {
 			isa = XCSwiftPackageProductDependency;

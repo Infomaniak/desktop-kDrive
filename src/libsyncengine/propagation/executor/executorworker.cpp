@@ -57,13 +57,6 @@ void ExecutorWorker::executorCallback(UniqueId jobId) {
     _terminatedJobs.push(jobId);
 }
 
-void ExecutorWorker::removeSyncNodeFromWhitelistIfSynced(const NodeId &nodeId) {
-    if (SyncNodeCache::instance()->contains(_syncPal->syncDbId(), SyncNodeType::WhiteList, nodeId)) {
-        // This item has been synchronized, it can now be removed from white list
-        (void) SyncNodeCache::instance()->deleteSyncNode(_syncPal->syncDbId(), nodeId);
-    }
-}
-
 void ExecutorWorker::execute() {
     ExitInfo executorExitInfo = ExitCode::Ok;
     _snapshotToInvalidate = false;
@@ -161,9 +154,7 @@ void ExecutorWorker::execute() {
             }
 
             if (job) {
-                std::function<void(UniqueId)> callback =
-                        std::bind(&ExecutorWorker::executorCallback, this, std::placeholders::_1);
-                job->setAdditionalCallback(callback);
+                job->setAdditionalCallback(std::bind_front(&ExecutorWorker::executorCallback, this));
                 SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
                 _ongoingJobs.insert({job->jobId(), job});
                 _jobToSyncOpMap.insert({job->jobId(), syncOp});
@@ -177,8 +168,6 @@ void ExecutorWorker::execute() {
                         setProgressComplete(syncOp, hydrating ? SyncFileStatus::Syncing : SyncFileStatus::Success);
                     }
                 }
-
-                if (syncOp->affectedNode()->id()) removeSyncNodeFromWhitelistIfSynced(*syncOp->affectedNode()->id());
             }
         }
 
@@ -1323,8 +1312,6 @@ ExitInfo ExecutorWorker::deleteFinishedAsyncJobs() {
                     } else {
                         setProgressComplete(syncOp, SyncFileStatus::Success);
                     }
-
-                    if (syncOp->affectedNode()->id()) removeSyncNodeFromWhitelistIfSynced(*syncOp->affectedNode()->id());
                 }
             } else {
                 increaseErrorCount(syncOp, exitInfo);
@@ -2028,7 +2015,7 @@ ExitInfo ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<SyncJ
     (void) job->runSynchronously();
 
     if (auto tokenJob(std::dynamic_pointer_cast<AbstractTokenNetworkJob>(job)); tokenJob && tokenJob->hasErrorApi()) {
-        const auto code = getNetworkErrorCode(tokenJob->errorCode());
+        const auto code = getNetworkErrorCode(tokenJob->backError().code());
         if (code == NetworkErrorCode::DestinationAlreadyExists) {
             // Folder is already there, ignore this error
         } else if (code == NetworkErrorCode::ForbiddenError) {

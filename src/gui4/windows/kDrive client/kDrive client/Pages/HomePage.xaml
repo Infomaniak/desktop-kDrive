@@ -302,15 +302,12 @@
                     Padding="24">
                 <Border.Background>
                     <LinearGradientBrush StartPoint="0,0"
-                                         EndPoint="1,1">
-                        <GradientStop Color="{ThemeResource LayerFillColorDefault}"
+                                         EndPoint="0,1"
+                                         Opacity="0.4">
+                        <GradientStop Color="#446FDD"
                                       Offset="0.0" />
                         <GradientStop Color="{ThemeResource LayerFillColorDefault}"
-                                      Offset="0.45" />
-                        <GradientStop Color="{ThemeResource LayerFillColorDefault}"
-                                      Offset="0.55" />
-                        <GradientStop Color="{ThemeResource LayerFillColorDefault}"
-                                      Offset="1.0" />
+                                      Offset="0.6" />
                     </LinearGradientBrush>
                 </Border.Background>
 

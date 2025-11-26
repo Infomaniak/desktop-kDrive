@@ -46,6 +46,7 @@ namespace Infomaniak.kDrive.ViewModels
         private bool _isStaff = false;
         private readonly ObservableCollection<Account> _accounts = new ObservableCollection<Account>();
         private ObservableCollection<DriveAvailable> _drivesAvailable = new ObservableCollection<DriveAvailable>();
+        private bool _driveRefreshInProgress = false;
         private readonly IDisposable _allDriveSubscribtion;
         public User(DbId dbId)
         {
@@ -131,6 +132,11 @@ namespace Infomaniak.kDrive.ViewModels
             get => _drivesAvailable;
         }
 
+        public bool DriveRefreshInProgress
+        {
+            get => _driveRefreshInProgress;
+        }
+
         public ReadOnlyObservableCollection<Drive> Drives
         {
             get;
@@ -155,8 +161,15 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task RefreshAvailableDrives()
         {
+            if (DriveRefreshInProgress)
+            {
+                Logger.Log(Logger.Level.Info, $"Drive refresh already in progress for user {Name} ({DbId}), skipping.");
+                return;
+            }
+            SetPropertyInUIThread(ref _driveRefreshInProgress, true, nameof(DriveRefreshInProgress));
             await App.ServiceProvider.GetRequiredService<IServerCommService>().RefreshUserDrivesAvailable(this.DbId, CancellationToken.None);
             MergeDrives();
+            SetPropertyInUIThread(ref _driveRefreshInProgress, false, nameof(DriveRefreshInProgress));
         }
 
         /* Merges the Drives and DrivesAvailable collections into the AllDrives collection,
@@ -181,7 +194,7 @@ namespace Infomaniak.kDrive.ViewModels
             }
 
             foreach (var drive in drives)
-                if (AllDrives.FirstOrDefault(d =>  d == drive) is null)
+                if (AllDrives.FirstOrDefault(d => d == drive) is null)
                     AllDrives.Add(drive);
         }
     }

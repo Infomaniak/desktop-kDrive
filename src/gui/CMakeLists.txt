@@ -63,7 +63,6 @@ set(client_SRCS
     adddrivewizard.h adddrivewizard.cpp
     appclient.h appclient.cpp
     basefoldertreeitemwidget.h basefoldertreeitemwidget.cpp
-    bigfoldersdialog.h bigfoldersdialog.cpp
     bottomwidget.h bottomwidget.cpp
     buttonsbarwidget.h buttonsbarwidget.cpp
     clickablewidget.h clickablewidget.cpp

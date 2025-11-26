@@ -222,8 +222,6 @@ ExitCode MigrationParams::migrateGeneralParams() {
     ParametersCache::instance()->parameters().setMonoIcons(monoIcons);
     ParametersCache::instance()->parameters().setUseLog(automaticLogDir);
     ParametersCache::instance()->parameters().setLogLevel(logLevel);
-    ParametersCache::instance()->parameters().setUseBigFolderSizeLimit(useNewBigFolderSizeLimit);
-    ParametersCache::instance()->parameters().setBigFolderSizeLimit(newBigFolderSizeLimit);
     ParametersCache::instance()->parameters().setLanguage(strToLanguage(language));
     bool purgeOldLogs = false;
     if (deleteOldLogsAfterHours == QString() || deleteOldLogsAfterHours != "-1") {
@@ -620,19 +618,6 @@ ExitCode MigrationParams::migrateProxySettings(ProxyConfig &proxyConfig) {
     return ExitCode::Ok;
 }
 
-ExitCode MigrationParams::migrateSelectiveSyncs() {
-    LOG_INFO(Log::instance()->getLogger(), "Migrate selective syncs");
-
-    ExitCode ret = ExitCode::Ok;
-    for (auto &syncToMigrateElt: _syncToMigrate) {
-        ExitCode code = ServerRequests::migrateSelectiveSync(syncToMigrateElt.first, syncToMigrateElt.second);
-        if (code != ExitCode::Ok) {
-            ret = code;
-        }
-    }
-    return ret;
-}
-
 void MigrationParams::deleteUselessConfigFiles() {
     // Remove old configuration files
     QDir cfgDir(configDir().absolutePath());
@@ -770,9 +755,9 @@ ExitCode MigrationParams::getTokenFromAppPassword(const std::string &email, cons
 
         LOG_DEBUG(_logger, "job.runSynchronously() done");
         if (job.hasErrorApi()) {
-            LOGW_WARN(_logger, L"Failed to retrieve authentification token. code=" << KDC::CommonUtility::s2ws(job.errorCode())
-                                                                                   << L" descr="
-                                                                                   << KDC::CommonUtility::s2ws(job.errorDescr()));
+            LOGW_WARN(_logger, L"Failed to retrieve authentification token. code="
+                                       << KDC::CommonUtility::s2ws(job.backError().code()) << L" descr="
+                                       << KDC::CommonUtility::s2ws(job.backError().description()));
             return ExitCode::BackError;
         }
 

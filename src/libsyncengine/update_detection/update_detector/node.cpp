@@ -116,11 +116,21 @@ std::shared_ptr<Node> Node::getChildExcept(const SyncName &normalizedName, const
 void Node::setChangeEvents(const OperationType ops) {
     _changeEvents = ops;
     LOG_IF_FAIL(Log::instance()->getLogger(), (!hasChangeEvent(OperationType::Move) || _moveOriginInfos.isValid()));
+    // LOG_IF_FAIL(Log::instance()->getLogger(), !hasInvalidEvents()); TODO: to be reactivated once the tests have been cleaned up
 }
 
 void Node::insertChangeEvent(const OperationType op) {
     _changeEvents |= op;
     LOG_IF_FAIL(Log::instance()->getLogger(), (!hasChangeEvent(OperationType::Move) || _moveOriginInfos.isValid()));
+    // LOG_IF_FAIL(Log::instance()->getLogger(), !hasInvalidEvents()); TODO: to be reactivated once the tests have been cleaned up
+}
+
+bool Node::hasInvalidEvents() const {
+    using enum OperationType;
+    const bool res = (hasChangeEvent(Create) && _changeEvents != Create) || (hasChangeEvent(Delete) && _changeEvents != Delete) ||
+                     ((hasChangeEvent(Move) || hasChangeEvent(Edit)) && _changeEvents != Move && _changeEvents != Edit &&
+                      _changeEvents != MoveEdit);
+    return res;
 }
 
 std::shared_ptr<Node> Node::findChildren(const SyncName &name, const NodeId &nodeId /*= ""*/) {

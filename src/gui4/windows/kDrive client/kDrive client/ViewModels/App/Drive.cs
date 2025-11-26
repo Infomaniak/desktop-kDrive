@@ -16,10 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using DynamicData;
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.ObjectModel;
 using System.Drawing;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.ViewModels
 {
@@ -31,11 +37,33 @@ namespace Infomaniak.kDrive.ViewModels
         private Color _color = Color.Blue;
         private bool _isPaidOffer = false; // Indicates if the drive is a paid offer (i.e. myKsuite+/pro +, ...)
         private ObservableCollection<Sync> _syncs = new ObservableCollection<Sync>();
+        private Sync? _mainSync;
+        private ObservableCollection<Sync> _advancedSyncs = new ObservableCollection<Sync>();
+
         private Account _account;
         public Drive(DbId dbId, Account account)
         {
             DbId = dbId;
-            _account = account;
+            Account = account;
+            Syncs.CollectionChanged += (s, e) => RefreshAdvancedSyncsMap();
+
+        }
+
+        private void RefreshAdvancedSyncsMap()
+        {
+            var advancedSyncs = Syncs.Where(s => s != MainSync);
+            foreach (int i in Enumerable.Range(0, _advancedSyncs.Count).Reverse())
+            {
+                Sync? sync = _advancedSyncs.ElementAt(i);
+                if (!advancedSyncs.Contains(sync))
+                    _advancedSyncs.Remove(sync);
+            }
+
+            foreach (var sync in advancedSyncs)
+                if (!_advancedSyncs.Contains(sync))
+                    _advancedSyncs.Add(sync);
+
+            MainSync = Syncs.FirstOrDefault(s => s.RemotePath == "/" || s.RemotePath == "");
         }
 
         public DbId DbId
@@ -71,7 +99,17 @@ namespace Infomaniak.kDrive.ViewModels
         public ObservableCollection<Sync> Syncs
         {
             get { return _syncs; }
-            set => SetPropertyInUIThread(ref _syncs, value);
+        }
+
+        public Sync? MainSync
+        {
+            get => _mainSync;
+            set => SetPropertyInUIThread(ref _mainSync, value);
+        }
+
+        public ObservableCollection<Sync> AdvancedSyncs
+        {
+            get => _advancedSyncs;
         }
 
         public Uri GetWebUri()
@@ -99,5 +137,12 @@ namespace Infomaniak.kDrive.ViewModels
             get => _account;
             set => SetPropertyInUIThread(ref _account, value);
         }
+
+        public async Task RemoveSync(Sync sync, CancellationToken cancellationToken)
+        {
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            await commService.RemoveSync(sync.DbId, cancellationToken);
+        }
+
     }
 }

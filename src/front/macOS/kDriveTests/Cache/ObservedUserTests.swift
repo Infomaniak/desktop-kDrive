@@ -27,11 +27,11 @@ final class ObservedUserTests: XCTestCase {
 
     func testSetGetUserFromPropertyWrapper() async throws {
         // GIVEN
-        let cache = CoherentCache()
-        let initialUser = await cache.getUser(id: Self.expectedUserId)
+        let cache = ServerCoherentCache()
+        let initialUser = await cache.getUser(dbId: Self.expectedUserDbId)
         XCTAssertNil(initialUser, "Cache should initially be empty")
 
-        @ObservedUser(id: ObservedUserTests.expectedUserId, cacheObservation: cache) var observedUser: User?
+        @ObservedUser(dbId: ObservedUserTests.expectedUserDbId, cacheObservation: cache) var observedUser: User?
         XCTAssertNil(observedUser, "User should initially be nil")
 
         // WHEN
@@ -41,6 +41,7 @@ final class ObservedUserTests: XCTestCase {
             name: "appleseed",
             email: "ja@apple.com",
             accounts: [:],
+            availableDrives: [:],
             avatar: Data(),
             isConnected: true,
             isStaff: true
@@ -49,10 +50,10 @@ final class ObservedUserTests: XCTestCase {
         await cache.addUser(user)
 
         // Give time for observation to propagate
-        try await Task.sleep(nanoseconds: 1_000_000_000)
+        try await Task.sleep(nanoseconds: 5_000_000_000)
 
         // THEN
-        let cachedUser = await cache.getUser(id: Self.expectedUserId)
+        let cachedUser = await cache.getUser(dbId: Self.expectedUserDbId)
         XCTAssertEqual(cachedUser, user, "The cache should have been updated")
         XCTAssertEqual(observedUser, user, "The observed object should have been updated")
     }

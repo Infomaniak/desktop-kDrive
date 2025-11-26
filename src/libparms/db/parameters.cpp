@@ -19,7 +19,6 @@
 #include "parameters.h"
 
 #define DEFAULT_VERSION "1"
-#define DEFAULT_BIG_FOLDERS_SIZE_LIMIT 500 // MB
 
 #define UPLOAD_SESSION_PARALLEL_THREADS 3
 
@@ -38,8 +37,6 @@ Parameters::Parameters() :
     _extendedLog(false),
     _purgeOldLogs(true),
     _proxyConfig(ProxyConfig()),
-    _useBigFolderSizeLimit(false),
-    _bigFolderSizeLimit(DEFAULT_BIG_FOLDERS_SIZE_LIMIT),
     _darkTheme(false),
     _showShortcuts(true),
     _updateFileAvailable(std::string()),

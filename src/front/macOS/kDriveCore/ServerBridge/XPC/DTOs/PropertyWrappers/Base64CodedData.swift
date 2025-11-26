@@ -19,32 +19,29 @@
 import Foundation
 
 @propertyWrapper
-public struct Base64CodedData: Codable {
-    public var wrappedValue: Data
+public struct Base64CodedData: Codable, Sendable {
+    public let wrappedValue: Data
 
-    // Decode: base64 string → regular Data
+    public init(wrappedValue: Data) {
+        self.wrappedValue = wrappedValue
+    }
+
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
-        let base64Encoded = try container.decode(String.self)
+        let encoded = try container.decode(String.self)
 
-        guard let data = Data(base64Encoded: base64Encoded) else {
+        guard let data = Data(base64Encoded: encoded) else {
             throw DecodingError.dataCorruptedError(
                 in: container,
-                debugDescription: "Invalid base64 string"
+                debugDescription: "Invalid base64 string for Data"
             )
         }
 
         wrappedValue = data
     }
 
-    // Encode: regular Data → base64 string
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
-        let base64Encoded = wrappedValue.base64EncodedString()
-        try container.encode(base64Encoded)
-    }
-
-    public init(wrappedValue: Data) {
-        self.wrappedValue = wrappedValue
+        try container.encode(wrappedValue.base64EncodedString())
     }
 }

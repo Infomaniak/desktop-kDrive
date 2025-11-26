@@ -47,36 +47,4 @@ struct SignalMessageTests {
         #expect(message.num == SignalNum.USER_UPDATED)
         #expect(message.body?.name == "Base64")
     }
-
-    @Test func testEncodingSignalMessageWithUpdateUserError() async throws {
-        // GIVEN
-        let expectedCause = KDC.ExitCause.ApiErr
-        let expectedCode = KDC.ExitCode.DbError
-        let expectedId = Int32(69)
-        let expectedNum = SignalNum.ACCOUNT_ADDED
-
-        let message = SignalMessage<TestUser>(
-            cause: expectedCause,
-            code: expectedCode,
-            id: expectedId,
-            num: expectedNum,
-            params: nil
-        )
-
-        // WHEN
-        let data = try JSONEncoder().encode(message)
-        guard let jsonString = String(data: data, encoding: .utf8) else {
-            #expect(Bool(false), "we should be able to read a jsonString")
-            return
-        }
-        let jsonData = Data(jsonString.utf8)
-        let decodedMessage = try JSONDecoder().decode(SignalMessage<TestUser>.self, from: jsonData)
-
-        // THEN
-        #expect(decodedMessage.cause == expectedCause)
-        #expect(decodedMessage.code == expectedCode)
-        #expect(decodedMessage.id == expectedId)
-        #expect(decodedMessage.num == expectedNum)
-        #expect(decodedMessage.body == nil)
-    }
 }

@@ -292,8 +292,8 @@ SyncOpPtr OperationSorterWorker::getAncestorOpWithHighestIndex(const std::unorde
     std::shared_ptr<const Node> ancestorNode = node->parentNode();
     depth = ancestorNode ? 1 : 0;
 
-    while (ancestorNode && ancestorNode != _syncPal->updateTree(ancestorNode->side())->rootNode()) {
-        for (const auto parentOpIdList = _syncPal->_syncOps->getOpIdsFromNodeId(*ancestorNode->id());
+    while (ancestorNode && ancestorNode != _syncPal->updateTree(node->side())->rootNode()) {
+        for (const auto parentOpIdList = _syncPal->_syncOps->getOpIdsFromNodeId(*ancestorNode->id(), node->side());
              const auto &parentOpId: parentOpIdList) {
             const auto parentOp = _syncPal->_syncOps->getOp(parentOpId);
             if (parentOp->type() != OperationType::Create) {
@@ -402,7 +402,7 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
     int32_t lowestIndex = INT32_MAX;
     SyncOpPtr selectedOp = nullptr;
     for (const auto &n: moveDirectoryList) {
-        for (const auto opIds = _syncPal->_syncOps->getOpIdsFromNodeId(*n->id()); const auto opId: opIds) {
+        for (const auto opIds = _syncPal->_syncOps->getOpIdsFromNodeId(*n->id(), n->side()); const auto opId: opIds) {
             const auto op = _syncPal->_syncOps->getOp(opId);
             LOG_IF_FAIL(op)
             if (op->type() != OperationType::Move) {

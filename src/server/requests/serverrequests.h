@@ -68,6 +68,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode getParameters(ParametersInfo &parametersInfo);
         static ExitCode updateParameters(const ParametersInfo &parametersInfo);
         static ExitCode findGoodPathForNewSync(int driveDbId, const QString &basePath, QString &path, QString &error);
+        static ExitCode getPrivateLinkUrl(int driveDbId, const std::string &fileId, std::string &linkUrl);
         static ExitCode getPrivateLinkUrl(int driveDbId, const QString &fileId, QString &linkUrl);
         static ExitCode getExclusionTemplateList(bool def, QList<ExclusionTemplateInfo> &list);
         static ExitCode setExclusionTemplateList(bool def, const QList<ExclusionTemplateInfo> &list);
@@ -145,8 +146,6 @@ struct SYNCENGINE_EXPORT ServerRequests {
                                                              ExclusionTemplate &exclusionTemplate);
         static void exclusionAppToExclusionAppInfo(const ExclusionApp &exclusionApp, ExclusionAppInfo &exclusionAppInfo);
         static void exclusionAppInfoToExclusionApp(const ExclusionAppInfo &exclusionAppInfo, ExclusionApp &exclusionApp);
-        static ExitCode loadOldSelectiveSyncTable(const SyncPath &syncDbPath, QList<QPair<QString, SyncNodeType>> &list);
-        static ExitCode migrateSelectiveSync(int syncDbId, std::pair<SyncPath, SyncName> &syncToMigrate);
         static bool isDisplayableError(const Error &error);
         static bool isAutoResolvedError(const Error &error);
         static ExitCode getUserFromSyncDbId(int syncDbId, User &user);

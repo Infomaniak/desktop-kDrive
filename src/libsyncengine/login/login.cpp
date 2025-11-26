@@ -61,10 +61,10 @@ ExitInfo Login::requestToken(const std::string &authorizationCode, const std::st
         LOG_DEBUG(_logger, "job.runSynchronously() done");
         if (job.hasErrorApi()) {
             LOGW_WARN(_logger, L"Failed to retrieve authentification token. Error : "
-                                       << KDC::CommonUtility::s2ws(job.errorCode()) << L" - "
-                                       << KDC::CommonUtility::s2ws(job.errorDescr()));
-            _error = job.errorCode();
-            _errorDescr = job.errorDescr();
+                                       << KDC::CommonUtility::s2ws(job.backError().code()) << L" - "
+                                       << KDC::CommonUtility::s2ws(job.backError().description()));
+            _error = job.backError().code();
+            _errorDescr = job.backError().description();
             return ExitCode::BackError;
         }
 
@@ -131,14 +131,14 @@ ExitCode Login::refreshToken(const std::string &keychainKey, ApiToken &apiToken,
         RefreshTokenJob job(apiToken);
         if (const ExitCode exitCode = job.runSynchronously(); exitCode != ExitCode::Ok) {
             LOG_WARN(Log::instance()->getLogger(), "Error in RefreshTokenJob::runSynchronously: code=" << exitCode);
-            error = job.errorCode();
-            errorDescr = job.errorDescr();
+            error = job.backError().code();
+            errorDescr = job.backError().description();
             return exitCode;
         }
 
         if (job.hasErrorApi()) {
-            error = job.errorCode();
-            errorDescr = job.errorDescr();
+            error = job.backError().code();
+            errorDescr = job.backError().description();
             LOG_WARN(Log::instance()->getLogger(),
                      "Failed to retrieve authentication token. Error : " << error << " - " << errorDescr);
             return ExitCode::NetworkError;

@@ -26,12 +26,12 @@ public final class ObservedUser: ObservableObject {
 
     private var cancellable: AnyCancellable?
 
-    public init(id: Int32, cacheObservation: CoherentCacheObservation? = nil) {
-        let cacheObservation = cacheObservation ?? InjectService<CoherentCacheObservation>().wrappedValue
+    public init(dbId: Int32, cacheObservation: CoherentCacheObservable? = nil) {
+        let cacheObservation = cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
         let usersPublisher = cacheObservation.usersPublisher
 
         cancellable = usersPublisher
-            .userPublisher(for: id)
+            .userPublisher(for: dbId)
             .receive(on: DispatchQueue.main)
             .assign(to: \.wrappedValue, onWeak: self)
     }
@@ -43,15 +43,15 @@ public final class ObservedUser: ObservableObject {
     public var projectedValue: ObservedUser { self }
 }
 
-extension AnyPublisher where Output == IndexedUsers, Failure == Never {
-    func userPublisher(for id: Int32) -> AnyPublisher<User?, Never> {
-        map { $0[id] }
+public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
+    func userPublisher(for dbId: Int32) -> AnyPublisher<User?, Never> {
+        map { $0[dbId] }
             .removeDuplicates { $0 == $1 }
             .eraseToAnyPublisher()
     }
 }
 
-private extension Publisher {
+extension Publisher {
     /// Assigns values to a property on a weakly captured object to avoid retain cycles
     func assign<Root: AnyObject>(
         to keyPath: ReferenceWritableKeyPath<Root, Output>,

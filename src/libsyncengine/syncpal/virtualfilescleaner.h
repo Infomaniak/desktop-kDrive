@@ -19,6 +19,7 @@
 #pragma once
 
 #include "utility/types.h"
+#include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/vfs/vfs.h"
 
 #include <log4cplus/logger.h>
@@ -41,8 +42,8 @@ class VirtualFilesCleaner {
 
     private:
         bool removePlaceholdersRecursively(const SyncPath &parentPath);
-        bool recursiveDirectoryIterator(const SyncPath &path, std::filesystem::recursive_directory_iterator &dirIt);
-        bool folderCanBeProcessed(std::filesystem::recursive_directory_iterator &dirIt);
+        bool recursiveDirectoryIterator(const SyncPath &path, IoHelper::DirectoryIterator &dirIt);
+        bool folderCanBeProcessed(const DirectoryEntry &directoryEntry);
 
         log4cplus::Logger _logger;
 

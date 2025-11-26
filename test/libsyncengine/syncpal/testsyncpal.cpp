@@ -37,7 +37,6 @@ void TestSyncPal::setUp() {
     TestBase::start();
     const testhelpers::TestVariables testVariables;
 
-    const std::string localPathStr = _localTempDir.path().string();
     // Insert api token into keystore
     ApiToken apiToken;
     apiToken.setAccessToken(testVariables.apiToken);
@@ -47,7 +46,7 @@ void TestSyncPal::setUp() {
     (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
-    (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
+    (void) ParmsDb::instance(_localParmsDbTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
 
     // Insert user, account, drive & sync
     int userId = atoi(testVariables.userId.c_str());
@@ -63,7 +62,7 @@ void TestSyncPal::setUp() {
     Drive drive(_driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
 
-    _localPath = localPathStr;
+    _localPath = _localTempDir.path().string();
     _remotePath = testVariables.remotePath;
     Sync sync(1, drive.dbId(), _localPath, "", _remotePath);
     (void) ParmsDb::instance()->insertSync(sync);
@@ -477,5 +476,22 @@ bool TestSyncPal::check_case_6_4() {
     }
 
     return true;
+}
+
+void TestSyncPal::testWipeVirtualFiles() {
+#if !defined(KD_LINUX)
+    const SyncPath placeholderPath = _localTempDir.path() / "dehydrated_placeholder.txt";
+    {
+        std::ofstream placeholder{placeholderPath};
+        auto ioError = IoError::Success;
+        testhelpers::setDehydratedPlaceholderStatus(placeholderPath, ioError);
+    }
+#endif
+    CPPUNIT_ASSERT(_syncPal->wipeVirtualFiles());
+#if !defined(KD_LINUX)
+    std::error_code ec;
+    CPPUNIT_ASSERT(!std::filesystem::exists(placeholderPath, ec));
+    CPPUNIT_ASSERT(!ec);
+#endif
 }
 } // namespace KDC

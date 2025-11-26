@@ -490,6 +490,60 @@
   <data name="Page_SettingsPage_Accounts.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
+  <data name="Page_Settings_DriveManagementPage_Location.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_FolderSelection.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_FolderSelection_Presentation.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_FolderSelection_Presentation.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_Offline.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_Online.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.Title" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.Title" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_InProgress.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_InProgress.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.SecondaryButtonText" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="SecondaryButtonText" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.PrimaryButtonText" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_Offline.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_Online.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
   <data name="Page_SettingsPage_Advanced.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
@@ -713,7 +767,7 @@
     <value />
   </data>
   <data name="Page_SettingsPage_Proxy_ComoBox_NONE.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
-      <value />
+    <value />
   </data>
   <data name="W_MainWindow_PaneFooter_Folder.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
@@ -722,6 +776,21 @@
     <value />
   </data>
   <data name="Global_Bytes" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_DriveManagement_Title.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_AdvancedSyncs.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.PrimaryButtonText" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.SecondaryButtonText" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
 </root>
