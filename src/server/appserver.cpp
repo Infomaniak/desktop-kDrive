@@ -394,7 +394,7 @@ void AppServer::init() {
             if (!IoHelper::checkIfPathExists(noUpdateFilePath, noUpdateFlagFileExists, ioError) || ioError != IoError::Success) {
                 std::string errorMsg = "Error in checkIfPathExists(noUpdateFilePath, ...): ioError=" + toString(ioError);
                 LOG_ERROR(_logger, errorMsg);
-                KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Fatal, "noUpdateFilePath lookup error", errorMsg);
+                KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "noUpdateFilePath lookup error", errorMsg);
             }
             _noUpdate = noUpdateFlagFileExists;
         }
