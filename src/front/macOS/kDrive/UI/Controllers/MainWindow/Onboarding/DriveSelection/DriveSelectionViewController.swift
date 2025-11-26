@@ -25,7 +25,7 @@ import kDriveResources
 
 enum OnboardingLinks {
     static let shopDriveSelection = URL(string: "https://shop.infomaniak.com/order/select/drive")!
-    static let myKSuiteOffers = URL(string: "https://www.infomaniak.com/fr/ksuite/myksuite/tarifs#prices")!
+    static let myKSuiteOffers = URL(string: "https://www.infomaniak.com/gtl/myksuite#prices")!
 }
 
 class DriveSelectionViewController: OnboardingStepViewController {
