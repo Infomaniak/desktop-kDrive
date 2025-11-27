@@ -29,7 +29,7 @@ enum CacheData {
         name: "appleseed",
         email: "ja@apple.com",
         accounts: [:],
-        availableDrives: [],
+        availableDrives: [:],
         avatar: Data(),
         isConnected: true,
         isStaff: true
@@ -43,7 +43,7 @@ enum CacheData {
         name: updatedUserName,
         email: "ja@apple.com",
         accounts: [:],
-        availableDrives: [],
+        availableDrives: [:],
         avatar: Data(),
         isConnected: true,
         isStaff: true

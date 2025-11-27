@@ -43,7 +43,7 @@ extension UserInfoResponse {
              name: name,
              email: email,
              accounts: [:],
-             availableDrives: [],
+             availableDrives: [:],
              isConnected: isConnected,
              isStaff: isStaff)
     }

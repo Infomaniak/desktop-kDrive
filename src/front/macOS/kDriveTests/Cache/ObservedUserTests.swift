@@ -41,7 +41,7 @@ final class ObservedUserTests: XCTestCase {
             name: "appleseed",
             email: "ja@apple.com",
             accounts: [:],
-            availableDrives: [],
+            availableDrives: [:],
             avatar: Data(),
             isConnected: true,
             isStaff: true
