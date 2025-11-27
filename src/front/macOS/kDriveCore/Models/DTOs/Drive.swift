@@ -25,7 +25,7 @@ public enum DriveType: Equatable, Hashable, Sendable {
     case full(driveDbId: Int32, synchros: IndexedSynchros)
 }
 
-public protocol DriveInterface: Identifiable, Hashable, Sendable {
+public protocol DriveRepresentation: Identifiable, Hashable, Sendable {
     var driveId: Int32 { get }
     var accountId: Int32 { get }
     var userDbId: Int32 { get }
@@ -35,7 +35,7 @@ public protocol DriveInterface: Identifiable, Hashable, Sendable {
     var type: DriveType { get }
 }
 
-public struct Drive: DriveInterface {
+public struct Drive: DriveRepresentation {
     public var id: Int32 {
         driveDbId
     }
@@ -56,7 +56,7 @@ public struct Drive: DriveInterface {
 
 public typealias IndexedAvailableDrive = [Int32: AvailableDrive]
 
-public struct AvailableDrive: DriveInterface {
+public struct AvailableDrive: DriveRepresentation {
     public var id: Int32 {
         driveId
     }

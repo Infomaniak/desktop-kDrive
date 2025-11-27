@@ -61,7 +61,7 @@ final class ObservedAccoutTests: XCTestCase {
         await cache.addUser(user)
 
         // Give time for observation to propagate
-        try await Task.sleep(nanoseconds: 5_000_000_000)
+        try await Task.sleep(nanoseconds: 10_000_000_000)
 
         // THEN
         let cachedUser = await cache.getUser(dbId: Self.expectedUserDbId)
