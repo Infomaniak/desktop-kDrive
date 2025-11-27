@@ -15,10 +15,6 @@
   <ItemGroup>
     <Content Remove="Assets\Custom\Animations\Readme.md" />
   </ItemGroup>
-  <ItemGroup>
-    <None Remove="CustomControls\AppTitleBarLogo.xaml" />
-    <None Remove="Pages\KSuiteUpgradeBar.xaml" />
-  </ItemGroup>
 
   <ItemGroup>
     <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -134,6 +130,11 @@
   <ItemGroup>
     <Folder Include="AnimatedElements\" />
     <Folder Include="Assets\DS\Icons\Communication\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Pages\Onboarding\NoDrivesPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Page Update="CustomControls\AppTitleBarLogo.xaml">

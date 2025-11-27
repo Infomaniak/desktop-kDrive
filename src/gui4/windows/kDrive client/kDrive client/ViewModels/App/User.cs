@@ -159,7 +159,7 @@ namespace Infomaniak.kDrive.ViewModels
             return bitmap;
         }
 
-        public async Task RefreshAvailableDrives()
+        public async Task RefreshAvailableDrives(CancellationToken cancellationToken = default)
         {
             if (DriveRefreshInProgress)
             {
@@ -167,7 +167,7 @@ namespace Infomaniak.kDrive.ViewModels
                 return;
             }
             SetPropertyInUIThread(ref _driveRefreshInProgress, true, nameof(DriveRefreshInProgress));
-            await App.ServiceProvider.GetRequiredService<IServerCommService>().RefreshUserDrivesAvailable(this.DbId, CancellationToken.None);
+            await App.ServiceProvider.GetRequiredService<IServerCommService>().RefreshUserDrivesAvailable(this.DbId, cancellationToken);
             MergeDrives();
             SetPropertyInUIThread(ref _driveRefreshInProgress, false, nameof(DriveRefreshInProgress));
         }

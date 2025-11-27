@@ -338,7 +338,9 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
     <value>Bienvenue dans kDrive</value>
   </data>
   <data name="Page_Onboarding_WelcomePage_Subtitle.Text" xml:space="preserve">
-    <value>Connectez-vous pour commencer à utiliser kDrive, le cloud éthique et sécurisé, hébergé en Suisse.</value>
+    <value>Le cloud privé, rapide et sécurisé, hébergé en Suisse.
+
+Connectez-vous et gardez vos documents synchronisés  sur tous vos appareils.</value>
   </data>
   <data name="Page_Onboarding_WelcomePage_SigninButton.Content" xml:space="preserve">
     <value>Connexion</value>
@@ -380,7 +382,8 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
     <value>Vous n’avez pas encore de kDrive.</value>
   </data>
   <data name="Page_Onboarding_DriveSelectionPage_NoDrive_Text.Text" xml:space="preserve">
-    <value>Commencez gratuitement avec my kSuite, ou choisissez une offre adaptée à vos besoins.</value>
+    <value>Commencez gratuitement avec my kSuite, 
+ou choisissez une offre adaptée à vos besoins.</value>
   </data>
   <data name="Page_Onboarding_DriveSelectionPage_StartFreeButton.Content" xml:space="preserve">
     <value>Commencer gratuitement</value>
@@ -389,7 +392,10 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
     <value>Voir les offres</value>
   </data>
   <data name="Global_kDriveOffersUrl" xml:space="preserve">
-    <value>https://www.infomaniak.com/fr/ksuite/kdrive</value>
+    <value>https://www.infomaniak.com/fr/ksuite/kdrive/tarifs</value>
+  </data>
+  <data name="Global_kDriveShopUrl" xml:space="preserve">
+    <value>http://shop.infomaniak.com/order/select/drive</value>
   </data>
   <data name="Page_StoragePage_Title.Text" xml:space="preserve">
     <value>Stockage</value>

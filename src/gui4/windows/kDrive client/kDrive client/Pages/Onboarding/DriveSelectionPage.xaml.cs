@@ -1,27 +1,14 @@
-using Infomaniak.kDrive.Pages.Onboarding;
-using Infomaniak.kDrive.ViewModels;
 using Infomaniak.kDrive.OnBoarding;
 using Infomaniak.kDrive.Types;
-using Microsoft.UI;
+using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI;
 using Windows.Storage.Pickers;
-using Microsoft.Extensions.DependencyInjection;
-using Infomaniak.kDrive.ServerCommunication.Interfaces;
 
 namespace Infomaniak.kDrive.Pages.Onboarding
 {
@@ -39,11 +26,20 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             Logger.Log(Logger.Level.Debug, "DriveSelectionPage components initialized");
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             if (e.Parameter is ViewModels.Onboarding obvm)
             {
                 _onBoardingViewModel = obvm;
+                await ObViewModel.SelectedUser.RefreshAvailableDrives();
+                if (!ObViewModel.SelectedUser.AllDrives.Any())
+                {
+                    Logger.Log(Logger.Level.Info, "No drives found for user in DriveSelectionPage - Navigating to NoDrivePage");
+                    Frame.Navigate(typeof(NoDrivesPage), ObViewModel);
+                    return;
+                }
+                if ((App.Current as App).CurrentWindow is OnBoardingWindow onBoardingWindow)
+                    onBoardingWindow.UpdateLottieSource("Infomaniak.Custom.Animations.synchro-file", 219);
             }
             else
             {

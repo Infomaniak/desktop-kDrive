@@ -48,6 +48,8 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
                 _onBoardingTask = _onboardingViewModel.ConnectUser(_oauthCts.Token);
                 ScheduleRestartButtonEnableAsync();
+                if ((App.Current as App).CurrentWindow is OnBoardingWindow onBoardingWindow)
+                    onBoardingWindow.UpdateLottieSource("Infomaniak.Custom.Animations.loader-stroke", 130);
             }
             else
             {

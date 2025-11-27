@@ -47,6 +47,9 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     Frame.GoBack();
                     return;
                 }
+                if ((App.Current as App).CurrentWindow is OnBoardingWindow onBoardingWindow)
+                    onBoardingWindow.UpdateLottieSource("Infomaniak.Custom.Animations.synchro-file", 219);
+
                 await _onBoardingViewModel.FinishOnboarding();
                 Frame.Navigate(typeof(FinishPage), _onBoardingViewModel);
             }

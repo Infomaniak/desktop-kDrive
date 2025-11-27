@@ -360,6 +360,9 @@
   <data name="Global_kDriveOffersUrl" xml:space="preserve">
     <value />
   </data>
+  <data name="Global_kDriveShopUrl" xml:space="preserve">
+    <value />
+  </data>
   <data name="Page_StoragePage_Title.Text" xml:space="preserve">
     <value />
   </data>
