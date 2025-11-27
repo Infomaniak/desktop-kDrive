@@ -100,7 +100,7 @@ struct CoherentCacheUserTests {
     @Test func getUserInCache() async throws {
         // GIVEN
         let user = CacheData.expectedUser
-        let cache = CoherentCache()
+        let cache = ServerCoherentCache()
         #expect(await cache.getUser(apiId: CacheData.expectedUserAPIId) == nil)
 
         // WHEN
@@ -114,7 +114,7 @@ struct CoherentCacheUserTests {
     @Test func removeUserInCacheFromDbId() async throws {
         // GIVEN
         let user = CacheData.expectedUser
-        let cache = CoherentCache()
+        let cache = ServerCoherentCache()
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == nil)
         await cache.addUser(user)
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
@@ -129,7 +129,7 @@ struct CoherentCacheUserTests {
     @Test func updateUserInCache() async throws {
         // GIVEN
         let user = CacheData.expectedUser
-        let cache = CoherentCache()
+        let cache = ServerCoherentCache()
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == nil)
         await cache.addUser(user)
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
@@ -157,7 +157,7 @@ struct CoherentCacheAccountTests {
     @Test func getAccountInCache() async throws {
         // GIVEN
         let user = CacheData.expectedUser
-        let cache = CoherentCache()
+        let cache = ServerCoherentCache()
         #expect(await cache.getUser(apiId: CacheData.expectedUserAPIId) == nil)
         await cache.addUser(user)
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
@@ -173,7 +173,7 @@ struct CoherentCacheAccountTests {
     @Test func removeAccountInCacheFromDbId() async throws {
         // GIVEN
         let user = CacheData.expectedUser
-        let cache = CoherentCache()
+        let cache = ServerCoherentCache()
         #expect(await cache.getUser(apiId: CacheData.expectedUserAPIId) == nil)
         await cache.addUser(user)
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == CacheData.expectedUser)
@@ -192,7 +192,7 @@ struct CoherentCacheAccountTests {
     @Test func updateAccountInCache() async throws {
         // GIVEN
         let user = CacheData.expectedUser
-        let cache = CoherentCache()
+        let cache = ServerCoherentCache()
         #expect(await cache.getUser(apiId: CacheData.expectedUserAPIId) == nil)
         await cache.addUser(user)
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == CacheData.expectedUser)
@@ -222,7 +222,7 @@ struct CoherentCacheDriveTests {
     @Test func getDriveInCache() async throws {
         // GIVEN
         let user = CacheData.expectedUser
-        let cache = CoherentCache()
+        let cache = ServerCoherentCache()
         await cache.addUser(user)
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
         await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
@@ -238,7 +238,7 @@ struct CoherentCacheDriveTests {
     @Test func removeDriveInCacheFromDbId() async throws {
         // GIVEN
         let user = CacheData.expectedUser
-        let cache = CoherentCache()
+        let cache = ServerCoherentCache()
         await cache.addUser(user)
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
         await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
@@ -258,7 +258,7 @@ struct CoherentCacheDriveTests {
     @Test func updateDriveInCache() async throws {
         // GIVEN
         let user = CacheData.expectedUser
-        let cache = CoherentCache()
+        let cache = ServerCoherentCache()
         await cache.addUser(user)
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
         await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
@@ -282,7 +282,7 @@ struct CoherentCacheSynchroTests {
     @Test func getSynchroInCache() async throws {
         // GIVEN
         let user = CacheData.expectedUser
-        let cache = CoherentCache()
+        let cache = ServerCoherentCache()
         await cache.addUser(user)
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
         await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
@@ -309,7 +309,7 @@ struct CoherentCacheSynchroTests {
     @Test func removeSynchroInCacheFromDbId() async throws {
         // GIVEN
         let user = CacheData.expectedUser
-        let cache = CoherentCache()
+        let cache = ServerCoherentCache()
         await cache.addUser(user)
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
         await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
