@@ -672,24 +672,6 @@ ExitCode GuiRequests::deleteSync(const int syncDbId) {
     return exitCode;
 }
 
-ExitCode GuiRequests::propagateSyncListChange(const int syncDbId, const bool restartSync) {
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << syncDbId;
-    paramsStream << restartSync;
-
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::SYNC_PROPAGATE_SYNCLIST_CHANGE, params, results)) {
-        return ExitCode::SystemError;
-    }
-
-    auto exitCode = ExitCode::Unknown;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
-
-    return exitCode;
-}
-
 ExitCode GuiRequests::bestAvailableVfsMode(VirtualFileMode &mode) {
     QByteArray results;
     if (!CommClient::instance()->execute(RequestNum::UTILITY_BESTVFSAVAILABLEMODE, {}, results)) {

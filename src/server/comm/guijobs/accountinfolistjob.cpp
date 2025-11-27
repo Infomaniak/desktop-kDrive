@@ -38,7 +38,6 @@ ExitInfo AccountInfoListJob::deserializeInputParms() {
 }
 
 ExitInfo AccountInfoListJob::serializeOutputParms() {
-    // Output parameters serialization
     writeParamValues(outParamsAccountInfoList, _accountInfoList, info2DynamicVar<AccountInfo>);
 
     return ExitCode::Ok;

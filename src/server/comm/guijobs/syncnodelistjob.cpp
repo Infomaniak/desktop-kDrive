@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "syncstatusjob.h"
+#include "syncnodelistjob.h"
 #include "appserver.h"
 #include "requests/serverrequests.h"
 #include "server/comm/guijobmanager.h"
@@ -26,44 +26,52 @@
 
 // Input parameters keys
 static const auto inParamsSyncDbId = "syncDbId";
+static const auto inParamsSyncNodeType = "syncNodeType";
 
 // Output parameters keys
-static const auto outParamsSyncStatus = "syncStatus";
+static const auto outParamsNodeIdList = "nodeIdList";
 
 namespace KDC {
 
-SyncStatusJob::SyncStatusJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                             std::shared_ptr<AbstractCommChannel> channel) :
+SyncNodeListJob::SyncNodeListJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                                 std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
-    _requestNum = RequestNum::SYNC_STATUS;
+    _requestNum = RequestNum::SYNCNODE_LIST;
 }
 
-ExitInfo SyncStatusJob::deserializeInputParms() {
+ExitInfo SyncNodeListJob::deserializeInputParms() {
     try {
         readParamValue(inParamsSyncDbId, _syncDbId);
+        readParamValue(inParamsSyncNodeType, _syncNodeType);
     } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in SyncStatusJob::readParamValue: error=" << e.what());
+        LOG_WARN(_logger, "Exception in SyncNodeListJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
     }
 
     return ExitCode::Ok;
 }
 
-ExitInfo SyncStatusJob::serializeOutputParms() {
-    writeParamValue(outParamsSyncStatus, _syncStatus);
-
+ExitInfo SyncNodeListJob::serializeOutputParms() {
+    writeParamValues(outParamsNodeIdList, _nodeIdList);
     return ExitCode::Ok;
 }
 
-ExitInfo SyncStatusJob::process() {
-    const auto syncPalMapIt = AppServer::syncPalMap.find(_syncDbId);
-    if (syncPalMapIt == AppServer::syncPalMap.end()) {
-        LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << _syncDbId);
+ExitInfo SyncNodeListJob::process() {
+    std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
+    auto &syncPalMap = _commManager->appServer().syncPalMap;
+    auto it = syncPalMap.find(_syncDbId);
+    if (it == syncPalMap.end()) {
+        LOG_WARN(_logger, "SyncNodeListJob::process: SyncPal not found for syncDbId=" << _syncDbId);
         return ExitCode::DataError;
     }
 
-    _syncStatus = syncPalMapIt->second->status();
-
+    NodeSet nodeIdSet;
+    if (ExitInfo exitInfo = it->second->syncIdSet(_syncNodeType, nodeIdSet); !exitInfo) {
+        LOG_WARN(_logger, "Error in SyncPal::setSyncIdSet: " << exitInfo);
+        AppServer::addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
+        return exitInfo;
+    }
+    _nodeIdList.assign(nodeIdSet.begin(), nodeIdSet.end());
     return ExitCode::Ok;
 }
 
