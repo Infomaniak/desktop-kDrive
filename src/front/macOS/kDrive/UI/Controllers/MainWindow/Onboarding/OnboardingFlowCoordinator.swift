@@ -17,8 +17,8 @@
  */
 
 import Combine
-import InfomaniakDI
 import Foundation
+import InfomaniakDI
 import kDriveCore
 
 enum OnboardingStep: Sendable {
@@ -32,11 +32,51 @@ enum OnboardingStep: Sendable {
 final class OnboardingFlowCoordinator: ObservableObject {
     @Published private(set) var currentStep: OnboardingStep
 
-    init(currentStep: OnboardingStep = .login) {
-        self.currentStep = currentStep
+    @Published var targetUser: UIUser?
+
+    var synchronizations = [NewSyncCandidate]()
+
+    init(initialStep: OnboardingStep?) {
+        currentStep = initialStep ?? .login
     }
 
     func navigate(to step: OnboardingStep) {
         currentStep = step
+    }
+
+    func navigateToNextStep() {
+        guard let nextStep = nextRequiredStep(from: currentStep) else {
+            return
+        }
+
+        navigate(to: nextStep)
+    }
+
+    func nextRequiredStep(from currentStep: OnboardingStep) -> OnboardingStep? {
+        switch currentStep {
+        case .login:
+            return .drivesSelection
+        case .drivesSelection:
+            // TODO: Check if permissions are required
+            return .permissions
+        case .permissions:
+            return .permissions
+        case .synchronization:
+            return nil
+        }
+    }
+
+    func guessAndNavigateToInitialStep() {
+        Task {
+            @InjectService var coherentCache: CoherentCache
+            let user = await coherentCache.getFirstAvailableUser()
+
+            guard let user else {
+                return
+            }
+
+            targetUser = UIUser(user: user)
+            navigateToNextStep()
+        }
     }
 }

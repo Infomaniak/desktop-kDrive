@@ -23,12 +23,12 @@ import kDriveCoreUI
 import kDriveResources
 
 final class LoginViewController: OnboardingStepViewController {
-    private let loginViewModel: LoginViewModel
+    private let viewModel: LoginViewModel
 
     private var bindStore = Set<AnyCancellable>()
 
     init(flowCoordinator: OnboardingFlowCoordinator) {
-        loginViewModel = LoginViewModel(flowCoordinator: flowCoordinator)
+        viewModel = LoginViewModel(flowCoordinator: flowCoordinator)
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -45,12 +45,12 @@ final class LoginViewController: OnboardingStepViewController {
     }
 
     private func bindViewModel() {
-        loginViewModel.$loginState
+        viewModel.$loginState
             .receiveOnMain(store: &bindStore) { [weak self] newState in
                 self?.handleStateUpdate(newState)
             }
 
-        loginViewModel.$isShowingError
+        viewModel.$isShowingError
             .receiveOnMain(store: &bindStore) { [weak self] isShowingError in
                 guard isShowingError else { return }
                 self?.showGenericErrorAlert()
@@ -70,11 +70,11 @@ final class LoginViewController: OnboardingStepViewController {
     }
 
     @objc private func openLoginWebView() {
-        loginViewModel.startWebAuthenticationLogin(anchor: view.window)
+        viewModel.startWebAuthenticationLogin(anchor: view.window)
     }
 
     @objc private func openCreateAccount() {
-        loginViewModel.openAccountRegistrationProcess()
+        viewModel.openAccountRegistrationProcess()
     }
 
     private func handleStateUpdate(_ newState: LoginViewModel.LoginState) {
@@ -95,6 +95,6 @@ final class LoginViewController: OnboardingStepViewController {
         alert.informativeText = KDriveLocalizable.onboardingLoginErrorDescription
         alert.runModal()
 
-        loginViewModel.isShowingError = false
+        viewModel.isShowingError = false
     }
 }

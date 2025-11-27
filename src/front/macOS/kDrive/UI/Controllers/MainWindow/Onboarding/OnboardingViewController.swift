@@ -24,6 +24,8 @@ import kDriveResources
 final class OnboardingViewController: NSViewController {
     private let flowCoordinator: OnboardingFlowCoordinator
 
+    private let shouldGuessInitialStep: Bool
+
     private var currentContentViewController: NSViewController?
 
     private let contentView: NSView
@@ -31,8 +33,9 @@ final class OnboardingViewController: NSViewController {
 
     private var bindStore = Set<AnyCancellable>()
 
-    init() {
-        flowCoordinator = OnboardingFlowCoordinator()
+    init(initialStep: OnboardingStep?) {
+        self.shouldGuessInitialStep = initialStep == nil
+        flowCoordinator = OnboardingFlowCoordinator(initialStep: initialStep)
 
         contentView = NSView()
         animationsView = OnboardingAnimationsView(flowCoordinator: flowCoordinator)
@@ -50,6 +53,14 @@ final class OnboardingViewController: NSViewController {
 
         setupUI()
         bindCoordinator()
+    }
+
+    override func viewWillAppear() {
+        super.viewWillAppear()
+
+        if shouldGuessInitialStep {
+            flowCoordinator.guessAndNavigateToInitialStep()
+        }
     }
 
     override func viewDidAppear() {
@@ -114,7 +125,7 @@ final class OnboardingViewController: NSViewController {
         case .login:
             return LoginViewController(flowCoordinator: flowCoordinator)
         case .drivesSelection:
-            return DriveSelectionViewController()
+            return DriveSelectionViewController(flowCoordinator: flowCoordinator)
         case .permissions:
             fatalError("Not Implemented Yet")
         case .synchronization:
