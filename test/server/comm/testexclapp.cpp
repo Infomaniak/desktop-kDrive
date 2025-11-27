@@ -66,41 +66,41 @@ CommString stringifyCbkAnswerObj(const Poco::JSON::Object &obj) {
 void TestGuiCommChannel::testExclAppGetListJob() {
     // Query. No need to pass a request id as the response is via a callback.
     Poco::JSON::Object queryObj;
-    queryObj.set("num", toInt(RequestNum::EXCLAPP_GETLIST));
+    (void) queryObj.set("num", toInt(RequestNum::EXCLAPP_GETLIST));
     Poco::JSON::Object queryParamsObj;
-    queryParamsObj.set("default", false);
-    queryObj.set("params", queryParamsObj);
+    (void) queryParamsObj.set("default", false);
+    (void) queryObj.set("params", queryParamsObj);
 
     const auto queryStr = stringifyQueryObj(queryObj);
 
     // Answer
     Poco::JSON::Object answerObj;
-    answerObj.set("cause", 0);
-    answerObj.set("code", 0);
-    answerObj.set("id", 1);
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
 
     Poco::JSON::Object exclAppInfoObj1;
-    exclAppInfoObj1.set("appId", toBase64("appId1"));
-    exclAppInfoObj1.set("def", false);
-    exclAppInfoObj1.set("description", toBase64("description1"));
+    (void) exclAppInfoObj1.set("appId", toBase64("appId1"));
+    (void) exclAppInfoObj1.set("def", false);
+    (void) exclAppInfoObj1.set("description", toBase64("description1"));
 
     Poco::JSON::Object exclAppInfoObj2;
-    exclAppInfoObj2.set("appId", toBase64("appId2"));
-    exclAppInfoObj2.set("def", false);
-    exclAppInfoObj2.set("description", toBase64("description2"));
+    (void) exclAppInfoObj2.set("appId", toBase64("appId2"));
+    (void) exclAppInfoObj2.set("def", false);
+    (void) exclAppInfoObj2.set("description", toBase64("description2"));
 
     Poco::JSON::Array applicationList;
     applicationList.add(exclAppInfoObj1);
     applicationList.add(exclAppInfoObj2);
 
     Poco::JSON::Object paramsObj;
-    paramsObj.set("applicationList", applicationList);
+    (void) paramsObj.set("applicationList", applicationList);
 
-    answerObj.set("params", paramsObj);
+    (void) answerObj.set("params", paramsObj);
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
-    answerObjWithNumAndType.set("num", toInt(RequestNum::EXCLAPP_GETLIST));
-    answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::EXCLAPP_GETLIST));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
     // Job expected answers
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
@@ -121,41 +121,41 @@ void TestGuiCommChannel::testExclAppGetListJob() {
 void TestGuiCommChannel::testExclAppSetListJob() {
     // Query. No need to pass a request id as the response is via a callback.
     Poco::JSON::Object queryObj;
-    queryObj.set("num", toInt(RequestNum::EXCLAPP_SETLIST));
+    (void) queryObj.set("num", toInt(RequestNum::EXCLAPP_SETLIST));
 
     Poco::JSON::Object exclAppInfoObj1;
-    exclAppInfoObj1.set("appId", toBase64("appId1"));
-    exclAppInfoObj1.set("def", false);
-    exclAppInfoObj1.set("description", toBase64("description1"));
+    (void) exclAppInfoObj1.set("appId", toBase64("appId1"));
+    (void) exclAppInfoObj1.set("def", false);
+    (void) exclAppInfoObj1.set("description", toBase64("description1"));
 
     Poco::JSON::Object exclAppInfoObj2;
-    exclAppInfoObj2.set("appId", toBase64("appId2"));
-    exclAppInfoObj2.set("def", false);
-    exclAppInfoObj2.set("description", toBase64("description2"));
+    (void) exclAppInfoObj2.set("appId", toBase64("appId2"));
+    (void) exclAppInfoObj2.set("def", false);
+    (void) exclAppInfoObj2.set("description", toBase64("description2"));
 
     Poco::JSON::Array applicationList;
     applicationList.add(exclAppInfoObj1);
     applicationList.add(exclAppInfoObj2);
 
     Poco::JSON::Object queryParamsObj;
-    queryParamsObj.set("applicationList", applicationList);
-    queryParamsObj.set("default", false);
-    queryObj.set("params", queryParamsObj);
+    (void) queryParamsObj.set("applicationList", applicationList);
+    (void) queryParamsObj.set("default", false);
+    (void) queryObj.set("params", queryParamsObj);
 
     const auto queryStr = stringifyQueryObj(queryObj);
 
     // Answer
     Poco::JSON::Object answerObj;
-    answerObj.set("cause", 0);
-    answerObj.set("code", 0);
-    answerObj.set("id", 1);
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
 
     Poco::JSON::Object paramsObj;
-    answerObj.set("params", paramsObj);
+    (void) answerObj.set("params", paramsObj);
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
-    answerObjWithNumAndType.set("num", toInt(RequestNum::EXCLAPP_SETLIST));
-    answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::EXCLAPP_SETLIST));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
     // Job expected answers
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
@@ -176,29 +176,29 @@ void TestGuiCommChannel::testExclAppSetListJob() {
 void TestGuiCommChannel::testExclAppGetFetchingAppListJob() {
     // Query. No need to pass a request id as the response is via a callback.
     Poco::JSON::Object queryObj;
-    queryObj.set("num", toInt(RequestNum::EXCLAPP_GET_FETCHING_APP_LIST));
+    (void) queryObj.set("num", toInt(RequestNum::EXCLAPP_GET_FETCHING_APP_LIST));
     Poco::JSON::Object queryParamsObj;
-    queryObj.set("params", queryParamsObj);
+    (void) queryObj.set("params", queryParamsObj);
 
     const auto queryStr = stringifyQueryObj(queryObj);
 
     // Answer
     Poco::JSON::Object answerObj;
-    answerObj.set("cause", 0);
-    answerObj.set("code", 0);
-    answerObj.set("id", 1);
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
 
     Poco::JSON::Object applicationTableObj;
-    applicationTableObj.set("appId1", toBase64("applicationName1"));
-    applicationTableObj.set("appId2", toBase64("applicationName2"));
+    (void) applicationTableObj.set("appId1", toBase64("applicationName1"));
+    (void) applicationTableObj.set("appId2", toBase64("applicationName2"));
 
     Poco::JSON::Object paramsObj;
-    paramsObj.set("applicationTable", applicationTableObj);
-    answerObj.set("params", paramsObj);
+    (void) paramsObj.set("applicationTable", applicationTableObj);
+    (void) answerObj.set("params", paramsObj);
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
-    answerObjWithNumAndType.set("num", toInt(RequestNum::EXCLAPP_GET_FETCHING_APP_LIST));
-    answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::EXCLAPP_GET_FETCHING_APP_LIST));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
     // Job expected answers
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
