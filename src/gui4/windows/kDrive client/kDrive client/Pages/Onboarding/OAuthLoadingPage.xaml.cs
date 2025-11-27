@@ -108,11 +108,23 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     TitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_Success_Title/Text");
                     SubtitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_Success_Subtitle/Text");
                     RestartOAuthButton.Visibility = Visibility.Collapsed;
-
-                    AppModel.UIThreadDispatcher.TryEnqueue(() =>
+                    if (_onboardingViewModel?.SelectedUser is not null)
                     {
-                        Frame.Navigate(typeof(DriveSelectionPage), _onboardingViewModel);
-                    });
+                        await _onboardingViewModel.SelectedUser.RefreshAvailableDrives();
+                        if (_onboardingViewModel.SelectedUser.AllDrives.Any())
+                        {
+                            Frame.Navigate(typeof(DriveSelectionPage), _onboardingViewModel);
+                        }
+                        else
+                        {
+                            Frame.Navigate(typeof(NoDrivesPage), _onboardingViewModel);
+                        }
+                    }
+                    else
+                    {
+                        Logger.Log(Logger.Level.Error, "SelectedUser is not set after a successful oAuth");
+                        HandleOAuth2StateChanged(OAuth2State.Error);
+                    }
                     break;
 
                 case OAuth2State.Error:
