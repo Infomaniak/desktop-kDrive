@@ -627,7 +627,6 @@ ExitInfo VfsMac::getFetchingAppList(AppTable &appTable) {
 
 ExitInfo VfsMac::getFetchingAppList(QHash<QString, QString> &appTable) {
     appTable.clear();
-
     AppTable tmpTable;
     if (const auto exitInfo = getFetchingAppList(tmpTable); !exitInfo) return exitInfo;
 

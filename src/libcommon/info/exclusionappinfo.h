@@ -28,6 +28,10 @@
 namespace KDC {
 
 class ExclusionAppInfo {
+        friend bool operator==(const ExclusionAppInfo &lhs, const ExclusionAppInfo &rhs) {
+            return (lhs.appId() == rhs.appId()) && (lhs.description() == rhs.description() && lhs.def() == rhs.def());
+        }
+
     public:
         ExclusionAppInfo(const QString &appId, const QString &description, bool def = false);
         ExclusionAppInfo() = default;

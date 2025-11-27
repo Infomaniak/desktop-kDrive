@@ -21,6 +21,7 @@
 #include "testguicommchannel.h"
 #include "comm/guijobs/exclappgetlistjob.h"
 #include "comm/guijobs/exclappsetlistjob.h"
+#include "comm/guijobs/exclappgetfetchingapplistjob.h"
 #include "libcommon/comm.h"
 #include "log/log.h"
 
@@ -164,6 +165,50 @@ void TestGuiCommChannel::testExclAppSetListJob() {
         auto exclAppSetListJob = std::dynamic_pointer_cast<ExclAppSetListJob>(job);
         CPPUNIT_ASSERT(exclAppSetListJob);
         CPPUNIT_ASSERT(!exclAppSetListJob->_default);
+        CPPUNIT_ASSERT_EQUAL(size_t{2}, exclAppSetListJob->_applicationList.size());
+        CPPUNIT_ASSERT(ExclusionAppInfo("appId1", "description1", false) == exclAppSetListJob->_applicationList.at(0));
+        CPPUNIT_ASSERT(ExclusionAppInfo("appId2", "description2", false) == exclAppSetListJob->_applicationList.at(1));
+    };
+
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+}
+
+void TestGuiCommChannel::testExclAppGetFetchingAppListJob() {
+    // Query. No need to pass a request id as the response is via a callback.
+    Poco::JSON::Object queryObj;
+    queryObj.set("num", toInt(RequestNum::EXCLAPP_GET_FETCHING_APP_LIST));
+    Poco::JSON::Object queryParamsObj;
+    queryObj.set("params", queryParamsObj);
+
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    answerObj.set("cause", 0);
+    answerObj.set("code", 0);
+    answerObj.set("id", 1);
+
+    Poco::JSON::Object applicationTableObj;
+    applicationTableObj.set("appId1", toBase64("applicationName1"));
+    applicationTableObj.set("appId2", toBase64("applicationName2"));
+
+    Poco::JSON::Object paramsObj;
+    paramsObj.set("applicationTable", applicationTableObj);
+    answerObj.set("params", paramsObj);
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    answerObjWithNumAndType.set("num", toInt(RequestNum::EXCLAPP_GET_FETCHING_APP_LIST));
+    answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+
+    // Job expected answers
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto exclAppGetFetchingAppListJob = std::dynamic_pointer_cast<ExclAppGetFetchingAppListJob>(job);
+        CPPUNIT_ASSERT(exclAppGetFetchingAppListJob);
+
+        exclAppGetFetchingAppListJob->_applicationTable = {{"appId1", "applicationName1"}, {"appId2", "applicationName2"}};
     };
 
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);

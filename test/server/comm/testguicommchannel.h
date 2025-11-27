@@ -71,6 +71,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
 #if defined(KD_MACOS)
         CPPUNIT_TEST(testExclAppGetListJob);
         CPPUNIT_TEST(testExclAppSetListJob);
+        CPPUNIT_TEST(testExclAppGetFetchingAppListJob);
 #endif
         CPPUNIT_TEST_SUITE_END();
 
@@ -103,6 +104,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
 #if defined(KD_MACOS)
         void testExclAppGetListJob();
         void testExclAppSetListJob();
+        void testExclAppGetFetchingAppListJob();
 #endif
 
     private:
