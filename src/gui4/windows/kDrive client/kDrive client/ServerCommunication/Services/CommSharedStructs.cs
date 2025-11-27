@@ -156,6 +156,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             copyProperty(source, target, nameof(source.AccountId), nameof(target.AccountId));
             copyProperty(source, target, nameof(source.Name), nameof(target.Name));
             copyProperty(source, target, nameof(source.Color), nameof(target.Color));
+            copyProperty(source, target, nameof(source.UserDbId), nameof(target.UserDbId));
         }
     }
 

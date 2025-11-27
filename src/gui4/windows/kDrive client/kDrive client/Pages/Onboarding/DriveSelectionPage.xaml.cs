@@ -212,4 +212,27 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             await Windows.System.Launcher.LaunchUriAsync(new Uri(Utility.GetLocalizedString("Global_kDriveOffersUrl")));
         }
     }
+
+    public class DriveTemplateSelector : DataTemplateSelector
+    {
+        public DataTemplate? SingleAccountDriveTemplate { get; set; }
+        public DataTemplate? MultiAccountDriveTemplate { get; set; }
+
+        protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container)
+        {
+            if (item is null || item is not IDrive)
+                return base.SelectTemplateCore(item, container);
+            
+            IDrive drive = item as IDrive;
+
+            User? user = App.ServiceProvider.GetRequiredService<AppModel>().Users.FirstOrDefault(u => u.DbId == drive.UserDbId);
+            if(user is null)
+            {
+                Logger.Log(Logger.Level.Warning, "DriveTemplateSelector: User not found for drive");
+                return SingleAccountDriveTemplate; // Fallback to single account template
+            }
+            
+            return user.AllDrives.Select(drive => drive.AccountId).Distinct().Count() > 1 ? MultiAccountDriveTemplate : SingleAccountDriveTemplate;
+        }
+    }
 }

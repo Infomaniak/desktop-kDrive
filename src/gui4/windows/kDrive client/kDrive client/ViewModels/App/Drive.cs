@@ -79,6 +79,16 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _driveId, value);
         }
 
+        public AccountId AccountId
+        {
+            get => _account.AccountId;
+        }
+
+        public string AccountName 
+        {
+            get => _account.Name;
+        }
+
         public string Name
         {
             get => _name;
