@@ -1,13 +1,7 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using Infomaniak.kDrive.ServerCommunication;
-using Infomaniak.kDrive.ServerCommunication.Interfaces;
+﻿using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
-using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 

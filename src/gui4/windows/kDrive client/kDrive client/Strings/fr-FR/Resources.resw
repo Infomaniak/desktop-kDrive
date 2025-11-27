@@ -811,9 +811,6 @@ Le code source de cette application peut être vérifié, les informations réco
     <value>Confirmer</value>
   </data>
   <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Title.Text" xml:space="preserve">
-    <value>Paramètres avancés</value>
-  </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Description.Text" xml:space="preserve">
     <value>Personnalisez l’emplacement de vos dossiers kDrive</value>
   </data>
   <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_InfoBar.Message" xml:space="preserve">

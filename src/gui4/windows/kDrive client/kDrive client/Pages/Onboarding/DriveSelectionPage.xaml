@@ -192,19 +192,15 @@
             <Grid RowSpacing="{StaticResource Infomaniak.Style.Spacing.S}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto" />
-                    <RowDefinition Height="auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                <TextBlock Grid.Row="0"
-                           x:Uid="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Description"
-                           TextWrapping="WrapWholeWords"
-                           Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
-                <InfoBar Grid.Row="1"
+
+                <InfoBar Grid.Row="0"
                          x:Uid="Page_Onboarding_DriveSelectionPage_AdvancedDialog_InfoBar"
                          IsOpen="True"
                          IsClosable="False"
                          Severity="Informational" />
-                <ListView Grid.Row="2"
+                <ListView Grid.Row="1"
                           SelectionMode="None"
                           IsItemClickEnabled="False"
                           ItemsSource="{x:Bind ObViewModel.NewSyncs}">
@@ -242,13 +238,13 @@
                                                HorizontalAlignment="Left"
                                                VerticalAlignment="Top"
                                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
-                                               Foreground="{ThemeResource TextBoxDisabledForegroundThemeBrush}"
+                                               Foreground="{ThemeResource TextFillColorSecondary}"
                                                TextWrapping="Wrap" />
 
                                     <Button Grid.RowSpan="2"
                                             Grid.Column="2"
                                             x:Uid="Page_Onboarding_DriveSelectionPage_AdvancedDialog_CustomizeButton"
-                                            Style="{StaticResource Infomaniak.Style.Button.WithoutBackground}"
+                                            Style="{StaticResource SubtleButtonStyle}"
                                             Click="ChangeSyncPathButton_Click" />
                                 </Grid>
                             </Border>
