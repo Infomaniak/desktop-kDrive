@@ -70,6 +70,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode findGoodPathForNewSync(int driveDbId, const QString &basePath, QString &path, QString &error);
         static ExitCode getPrivateLinkUrl(int driveDbId, const std::string &fileId, std::string &linkUrl);
         static ExitCode getPrivateLinkUrl(int driveDbId, const QString &fileId, QString &linkUrl);
+        static ExitCode getExclusionTemplateList(bool def, std::vector<ExclusionTemplateInfo> &list);
         static ExitCode getExclusionTemplateList(bool def, QList<ExclusionTemplateInfo> &list);
         static ExitCode setExclusionTemplateList(bool def, const QList<ExclusionTemplateInfo> &list);
         static ExitCode getExclusionAppList(bool def, QList<ExclusionAppInfo> &list);
@@ -106,7 +107,8 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode addSync(int driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
                                 const QString &serverFolderNodeId, bool liteSync, bool showInNavigationPane, SyncInfo &syncInfo);
         static ExitInfo getNodeInfo(int userDbId, int driveId, const QString &nodeId, NodeInfo &nodeInfo, bool withPath = false);
-        static ExitInfo getNodeInfo(int userDbId, int driveId, const std::string &nodeId, NodeInfo &nodeInfo, bool withPath = false);
+        static ExitInfo getNodeInfo(int userDbId, int driveId, const std::string &nodeId, NodeInfo &nodeInfo,
+                                    bool withPath = false);
         static ExitInfo getSubFolders(int userDbId, int driveId, const QString &nodeId, QList<NodeInfo> &list,
                                       bool withPath = false); // TODO: Delete after switching to the new comm layer
         static ExitInfo getSubFolders(int userDbId, int driveId, const NodeId &nodeId, std::vector<NodeInfo> &list,
@@ -115,8 +117,8 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode createDir(int driveDbId, const QString &parentNodeId, const QString &dirName, QString &newNodeId);
         static ExitCode getPublicLinkUrl(int driveDbId, const NodeId &nodeId, std::string &linkUrl);
         static ExitInfo getFolderSizeWithCallback(int userDbId, int driveId, const NodeId &nodeId,
-                                      std::function<void(const QString &, qint64)> callback);
-        static ExitInfo getFolderSize(int userDbId, int driveId, const NodeId &nodeId, int64_t& result);
+                                                  std::function<void(const QString &, qint64)> callback);
+        static ExitInfo getFolderSize(int userDbId, int driveId, const NodeId &nodeId, int64_t &result);
         static ExitCode getNodeIdByPath(int userDbId, int driveId, const SyncPath &path, QString &nodeId);
         static ExitInfo getPathByNodeId(int userDbId, int driveId, const QString &nodeId, QString &path);
 

@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <Poco/DynamicStruct.h>
+
 #include <QDataStream>
 #include <QString>
 #include <QList>
@@ -27,7 +29,7 @@ namespace KDC {
 class ExclusionTemplateInfo {
     public:
         ExclusionTemplateInfo(const QString &templ, bool warning = false, bool def = false, bool deleted = false);
-        ExclusionTemplateInfo();
+        ExclusionTemplateInfo() = default;
 
         inline void setTempl(const QString &templ) { _templ = templ; }
         inline const QString &templ() const { return _templ; }
@@ -38,6 +40,9 @@ class ExclusionTemplateInfo {
         inline void setDeleted(bool deleted) { _deleted = deleted; }
         inline bool deleted() const { return _deleted; }
 
+        void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
+        void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
+
         friend QDataStream &operator>>(QDataStream &in, ExclusionTemplateInfo &exclusionTemplateInfo);
         friend QDataStream &operator<<(QDataStream &out, const ExclusionTemplateInfo &exclusionTemplateInfo);
 
@@ -46,9 +51,9 @@ class ExclusionTemplateInfo {
 
     private:
         QString _templ;
-        bool _warning;
-        bool _def;
-        bool _deleted;
+        bool _warning = false;
+        bool _def = false;
+        bool _deleted = false;
 };
 
 } // namespace KDC

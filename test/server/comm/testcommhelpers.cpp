@@ -23,9 +23,10 @@
 #include <Poco/JSON/Parser.h>
 
 namespace KDC::testcommhelpers {
-std::string toBase64(const std::string &input) {
-    std::string output;
+CommString toBase64(const CommString &input) {
+    CommString output;
     CommonUtility::convertToBase64Str(input, output);
+
     return output;
 }
 

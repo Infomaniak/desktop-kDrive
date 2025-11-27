@@ -1408,12 +1408,25 @@ ExitCode ServerRequests::getPrivateLinkUrl(const int driveDbId, const QString &f
     return exitCode;
 }
 
-ExitCode ServerRequests::getExclusionTemplateList(bool def, QList<ExclusionTemplateInfo> &list) {
+ExitCode ServerRequests::getExclusionTemplateList(const bool def, std::vector<ExclusionTemplateInfo> &list) {
     list.clear();
     for (const ExclusionTemplate &exclusionTemplate: ExclusionTemplateCache::instance()->exclusionTemplates(def)) {
         ExclusionTemplateInfo exclusionTemplateInfo;
         ServerRequests::exclusionTemplateToExclusionTemplateInfo(exclusionTemplate, exclusionTemplateInfo);
-        list << exclusionTemplateInfo;
+        list.push_back(std::move(exclusionTemplateInfo));
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitCode ServerRequests::getExclusionTemplateList(const bool def, QList<ExclusionTemplateInfo> &list) {
+    list.clear();
+    std::vector<ExclusionTemplateInfo> stdVector;
+
+    if (const auto exitCode = getExclusionTemplateList(def, stdVector); exitCode != ExitCode::Ok) return exitCode;
+
+    for (auto &exclusionTemplateInfo: stdVector) {
+        list.append(std::move(exclusionTemplateInfo));
     }
 
     return ExitCode::Ok;
