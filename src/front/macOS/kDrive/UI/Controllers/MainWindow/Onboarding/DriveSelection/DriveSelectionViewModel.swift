@@ -56,37 +56,39 @@ final class DriveSelectionViewModel: ObservableObject {
         }
     }
 
-    func startSynchronization() async {
+    func startSynchronization() {
         guard !selectedDrives.isEmpty, let currentUser else { return }
 
-        isLoading = true
+        Task {
+            isLoading = true
 
-        do {
-            // TODO: Use the cache property when available (next XPC PR)
-            let availableDrives = try await DriveJobs().availableDrives(userDbId: Int32(currentUser.dbId)).asAvailableDrives
+            do {
+                // TODO: Use the cache property when available (next XPC PR)
+                let availableDrives = try await DriveJobs().availableDrives(userDbId: Int32(currentUser.dbId)).asAvailableDrives
 
-            try await selectedDrives.concurrentForEach { selectedDrive in
-                guard let availableDrive = availableDrives.first(where: { $0.id == selectedDrive.id }) else {
-                    return
+                try await selectedDrives.concurrentForEach { selectedDrive in
+                    guard let availableDrive = availableDrives.first(where: { $0.id == selectedDrive.id }) else {
+                        return
+                    }
+
+                    let syncOrigin = SyncOrigin.availableDrive(availableDrive)
+                    let localFolder = try await self.syncCreator.preferredLocalPath(for: syncOrigin)
+
+                    let newSyncCandidate = NewSyncCandidate(
+                        origin: syncOrigin,
+                        remoteFolder: .kDriveRoot,
+                        localFolder: localFolder,
+                        blackList: []
+                    )
+                    let syncInfo = try await self.syncCreator.create(from: newSyncCandidate)
+                    try? await SyncJobs().startSync(syncDbId: syncInfo.dbId)
+
+                    print("New Synchro ->", newSyncCandidate.localFolder)
                 }
-
-                let syncOrigin = SyncOrigin.availableDrive(availableDrive)
-                let localFolder = try await self.syncCreator.preferredLocalPath(for: syncOrigin)
-
-                let newSyncCandidate = NewSyncCandidate(
-                    origin: syncOrigin,
-                    remoteFolder: .kDriveRoot,
-                    localFolder: localFolder,
-                    blackList: []
-                )
-                let syncInfo = try await self.syncCreator.create(from: newSyncCandidate)
-                try? await SyncJobs().startSync(syncDbId: syncInfo.dbId)
-
-                print("New Synchro ->", newSyncCandidate.localFolder)
+            } catch {
+                // TODO: Handle error
+                isLoading = false
             }
-        } catch {
-            // TODO: Handle error
-            isLoading = false
         }
     }
 }
