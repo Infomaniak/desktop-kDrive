@@ -4,7 +4,7 @@
  * Locale: en, English
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Mon, 24 Nov 2025 11:57:22 +0100
+ * Exported at: Wed, 26 Nov 2025 16:37:39 +0100
  */
 
 /* loco:691deb2291b20ac7fd045012 */
@@ -39,6 +39,9 @@
 
 /* loco:69242dd4299cf487060f2143 */
 "onboardingDriveSelectionSelectTitle" = "Select the kDrive to be synchronized on this computer:";
+
+/* loco:69271e987f61390c0e053442 */
+"onboardingDriveSelectionSyncInProgress" = "Synchronization in progress";
 
 /* loco:691deaf47145f10ab4052cd2 */
 "onboardingDriveSelectionTitle" = "Welcome back!";

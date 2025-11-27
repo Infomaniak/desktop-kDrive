@@ -42,7 +42,7 @@ ExitInfo UserAvailableDrivesJob::deserializeInputParms() {
     try {
         readParamValue(inParamsUserDbId, _userDbId);
     } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in AbstractGuiJob::readParamValue: error=" << e.what());
+        LOG_WARN(_logger, "Exception in UserAvailableDrivesJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
     }
 
@@ -50,14 +50,7 @@ ExitInfo UserAvailableDrivesJob::deserializeInputParms() {
 }
 
 ExitInfo UserAvailableDrivesJob::serializeOutputParms() {
-    // Output parameters serialization
-    std::function<Poco::Dynamic::Var(const DriveAvailableInfo &)> driveAvailableInfo2DynamicVar =
-            [](const DriveAvailableInfo &value) {
-                Poco::DynamicStruct structValue;
-                value.toDynamicStruct(structValue);
-                return structValue;
-            };
-    writeParamValues(outParamsDriveAvailableInfoList, _driveAvailableInfoList, driveAvailableInfo2DynamicVar);
+    writeParamValues(outParamsDriveAvailableInfoList, _driveAvailableInfoList, info2DynamicVar<DriveAvailableInfo>);
 
     return ExitCode::Ok;
 }

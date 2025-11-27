@@ -63,7 +63,7 @@
 #include "server/comm/guijobs/signalaccountaddedjob.h"
 #include "server/comm/guijobs/signaluseraddedjob.h"
 #include "server/comm/guijobs/signaluserupdatedjob.h"
-#include "server/comm/guijobs/signaluserremovedjob.h" 
+#include "server/comm/guijobs/signaluserremovedjob.h"
 #include "server/comm/guijobs/signalaccountremovedjob.h"
 #include "server/comm/guijobs/signaldriveaddedjob.h"
 #include "server/comm/guijobs/signaldriveremovedjob.h"
@@ -1526,7 +1526,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 LOG_WARN(_logger, "Error in SyncPal::setSyncIdSet: code=" << exitCode);
                 addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
             }
-
+            exitCode = syncPalMapIt->second->syncListUpdated(true);
+            if (exitCode != ExitCode::Ok) {
+                LOG_WARN(_logger, "Error in SyncPal::syncListUpdated: code=" << exitCode);
+                addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+            }
             resultStream << toInt(exitCode);
             break;
         }
@@ -1641,7 +1645,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> driveId;
             paramsStream >> nodeId;
 
-            std::thread getFolderSize(ServerRequests::getFolderSize, userDbId, driveId, nodeId.toStdString(),
+            std::thread getFolderSize(ServerRequests::getFolderSizeWithCallback, userDbId, driveId, nodeId.toStdString(),
                                       std::bind_front(&AppServer::sendGetFolderSizeCompleted, this));
             getFolderSize.detach();
 
@@ -2140,35 +2144,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 resultStream << toInt(exitInfo.code());
                 break;
             }
-            resultStream << ExitCode::Ok;
-            break;
-        }
-        case RequestNum::SYNC_PROPAGATE_SYNCLIST_CHANGE: {
-            int syncDbId;
-            bool restartSync;
-            QDataStream paramsStream(params);
-            paramsStream >> syncDbId;
-            paramsStream >> restartSync;
-
-            const std::scoped_lock lock(syncPalMapMutex);
-            auto syncPalMapIt = syncPalMap.find(syncDbId);
-            if (syncPalMapIt == syncPalMap.end()) {
-                LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << syncDbId);
-                resultStream << ExitCode::DataError;
-                break;
-            }
-            if (!syncPalMapIt->second) {
-                LOG_WARN(_logger, "SyncPal not set in syncPalMap for syncDbId=" << syncDbId);
-                resultStream << ExitCode::DataError;
-                break;
-            }
-
-            if (const auto exitCode = syncPalMapIt->second->syncListUpdated(restartSync); exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in SyncPal::syncListUpdated for syncDbId=" << syncDbId);
-                resultStream << exitCode;
-                break;
-            }
-
             resultStream << ExitCode::Ok;
             break;
         }
@@ -3003,10 +2978,10 @@ ExitInfo AppServer::processMigratedSyncOnceConnected(int userDbId, int driveId, 
             }
 
             if (!nodeId.isEmpty() && migrationSelectiveSync.type() == SyncNodeType::BlackList) {
-                    blackList << nodeId;
-                }
+                blackList << nodeId;
             }
         }
+    }
 
     return ExitCode::Ok;
 }
@@ -3580,7 +3555,7 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, bool
                 return exitInfo;
             }
         }
-            }
+    }
 
 #if defined(KD_WINDOWS) || defined(KD_MACOS)
     if (firstInit) {

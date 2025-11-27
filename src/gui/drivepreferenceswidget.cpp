@@ -1117,8 +1117,6 @@ void DrivePreferencesWidget::onValidateUpdate(int syncDbId) {
         return;
     }
 
-    GuiRequests::propagateSyncListChange(syncDbId, true);
-
     // Hide update widget
     if (auto *itemWidget = (FolderItemWidget *) sender(); itemWidget) {
         itemWidget->setUpdateWidgetVisible(false);

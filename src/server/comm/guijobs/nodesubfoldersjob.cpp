@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "syncstartafterloginjob.h"
+#include "nodesubfoldersjob.h"
 #include "appserver.h"
 #include "requests/serverrequests.h"
 #include "server/comm/guijobmanager.h"
@@ -24,50 +24,49 @@
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
 
-// Input parameters keys
+        // Input parameters keys
 static const auto inParamsUserDbId = "userDbId";
+static const auto inParamsDriveId = "driveId";
+static const auto inParamsNodeId = "nodeId";
+static const auto inParamsWithPath = "withPath";
+
+// Output parameters keys
+static const auto outParamsNodeSubFolderInfoList = "nodeSubFolderInfoList";
 
 namespace KDC {
 
-SyncStartAfterLoginJob::SyncStartAfterLoginJob(std::shared_ptr<CommManager> commManager, int requestId,
-                                               const Poco::DynamicStruct &inParams,
-                                               std::shared_ptr<AbstractCommChannel> channel) :
+NodeSubFoldersJob::NodeSubFoldersJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                                     std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
-    _requestNum = RequestNum::SYNC_START_AFTER_LOGIN;
+    _requestNum = RequestNum::NODE_SUBFOLDERS;
 }
 
-ExitInfo SyncStartAfterLoginJob::deserializeInputParms() {
+ExitInfo NodeSubFoldersJob::deserializeInputParms() {
     try {
         readParamValue(inParamsUserDbId, _userDbId);
+        readParamValue(inParamsDriveId, _driveId);
+        readParamValue(inParamsNodeId, _nodeId);
+        readParamValue(inParamsWithPath, _withPath);
     } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in SyncStartAfterLoginJob::readParamValue: error=" << e.what());
+        LOG_WARN(_logger, "Exception in NodeSubFoldersJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
     }
 
     return ExitCode::Ok;
 }
 
-ExitInfo SyncStartAfterLoginJob::serializeOutputParms() {
+ExitInfo NodeSubFoldersJob::serializeOutputParms() {
+    writeParamValues(outParamsNodeSubFolderInfoList, _nodeSubFolderInfoList, info2DynamicVar<NodeInfo>);
     return ExitCode::Ok;
 }
 
-ExitInfo SyncStartAfterLoginJob::process() {
-    User user;
-    bool found = false;
-    if (!ParmsDb::instance()->selectUser(_userDbId, user, found)) {
-        LOG_WARN(_logger, "Error in ParmsDb::selectUser");
-        return ExitCode::DbError;
-    }
-    if (!found) {
-        LOG_WARN(_logger, "User not found in user table for userDbId=" << _userDbId);
-        return ExitCode::DataError;
-    }
+ExitInfo NodeSubFoldersJob::process() {
 
-    if (const auto exitInfo = _commManager->appServer().startSyncs(user); !exitInfo) {
-        LOG_WARN(_logger, "Error in startSyncs for userDbId=" << user.dbId() << " : " << exitInfo);
+    if (const auto exitInfo = ServerRequests::getSubFolders(_userDbId, _driveId, _nodeId, _nodeSubFolderInfoList, _withPath); !exitInfo) {
+        LOG_WARN(_logger, "Error in Requests::getSubFolders");
+        AppServer::addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
         return exitInfo;
     }
-
     return ExitCode::Ok;
 }
 

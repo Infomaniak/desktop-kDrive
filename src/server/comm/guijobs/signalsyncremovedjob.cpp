@@ -31,7 +31,6 @@ SignalSyncRemovedJob::SignalSyncRemovedJob(int syncDbId) :
 }
 
 ExitInfo SignalSyncRemovedJob::serializeOutputParms() {
-    // Output parameters serialization
     writeParamValue(outParamsSyncDbId, _syncDbId);
     return ExitCode::Ok;
 }

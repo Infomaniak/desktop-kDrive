@@ -16,23 +16,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "signalaccountremovedjob.h"
-#include "libcommon/utility/utility.h"
-#include "libcommon/comm.h"
+#pragma once
 
-// Output parameters keys
-static const auto outParamsAccountDbId = "accountDbId";
-
+#include "server/comm/guijobs/abstractguijob.h"
+#include "libcommon/info/nodeinfo.h"
 namespace KDC {
 
-SignalAccountRemovedJob::SignalAccountRemovedJob(int accountDbId) :
-    _accountDbId(accountDbId) {
-    _signalNum = SignalNum::ACCOUNT_REMOVED;
-}
+class NodeFolderSizeJob : public AbstractGuiJob {
+    public:
+        NodeFolderSizeJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                    std::shared_ptr<AbstractCommChannel> channel);
 
-ExitInfo SignalAccountRemovedJob::serializeOutputParms() {
-    writeParamValue(outParamsAccountDbId, _accountDbId);
-    return ExitCode::Ok;
-}
+    private:
+        // Input parameters
+        int _userDbId = 0;
+        int _driveId = 0;
+        NodeId _nodeId;
+
+        // Output parameters
+        int64_t _folderSize = 0;
+
+        ExitInfo deserializeInputParms() override;
+        ExitInfo serializeOutputParms() override;
+        ExitInfo process() override;
+
+        friend class TestGuiCommChannel;
+};
 
 } // namespace KDC
