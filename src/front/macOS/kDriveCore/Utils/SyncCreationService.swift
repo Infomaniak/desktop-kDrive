@@ -21,6 +21,15 @@ import Foundation
 public enum SyncOrigin: Sendable {
     case storedDrive(Drive)
     case availableDrive(AvailableDrive)
+
+    var drive: any DriveRepresentation {
+        switch self {
+        case .storedDrive(let drive):
+            return drive
+        case .availableDrive(let availableDrive):
+            return availableDrive
+        }
+    }
 }
 
 public struct SyncRemoteFolder: Sendable {
@@ -95,10 +104,11 @@ public final class SyncCreationService: SyncCreator {
     }
 
     private func getMetadata(for sync: NewSyncCandidate, useLightSync: Bool) -> NewSyncMetadata {
+        let drive = sync.origin.drive
         let metadata = NewSyncMetadata(
-            userDbId: 0,
-            accountId: 0,
-            driveId: 0,
+            userDbId: drive.userDbId,
+            accountId: drive.accountId,
+            driveId: drive.driveId,
             localFolderPath: sync.localFolder,
             serverFolderPath: sync.remoteFolder.path,
             serverFolderNodeId: sync.remoteFolder.nodeId,
