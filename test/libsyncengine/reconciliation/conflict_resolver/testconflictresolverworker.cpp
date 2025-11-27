@@ -289,7 +289,7 @@ void TestConflictResolverWorker::testEditDelete2() {
         _syncPal->_syncOps->clear();
 
         // Simulate edit of file A/AA/AAA on editSide replica
-        const auto editNodeAAA = _testSituationGenerator.getNode(ReplicaSide::Local, "aaa");
+        const auto editNodeAAA = _testSituationGenerator.getNode(editSide, "aaa");
         editNodeAAA->setChangeEvents(OperationType::Edit);
 
         // and delete of dir A/AA (and all children) on otherSide(editSide) replica
