@@ -143,6 +143,9 @@ struct CoherentCacheUserTests {
             return
         }
 
+        #expect(userByDbId != CacheData.expectedUser)
+        #expect(userByDbId == CacheData.updatedUser)
+
         #expect(userByDbId.userId == CacheData.updatedUserAPIId, "The API id should change")
         #expect(userByDbId.name == CacheData.updatedUserName, "The user name should change")
 
@@ -210,6 +213,7 @@ struct CoherentCacheAccountTests {
                 return
             }
 
+            #expect(accountByDbId != CacheData.expectedAccount)
             #expect(accountByDbId == CacheData.updatedAccount)
             #expect(accountByDbId.name == CacheData.updatedAccountName)
         } catch {
@@ -271,6 +275,7 @@ struct CoherentCacheDriveTests {
             try await cache.updateDrive(drive: CacheData.updatedDrive)
 
             // THEN
+            #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) != CacheData.expectedDrive)
             #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == CacheData.updatedDrive)
         } catch {
             Issue.record("unexpected error: \(error)")
