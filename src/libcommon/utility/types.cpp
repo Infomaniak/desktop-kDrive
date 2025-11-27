@@ -332,6 +332,8 @@ std::string toString(const NodeStatus e) {
             return "Processed";
         case NodeStatus::ConflictOpGenerated:
             return "ConflictOpGenerated";
+        case NodeStatus::ToDelete:
+            return "ToDelete";
         default:
             return noConversionStr;
     }

@@ -164,16 +164,6 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
 
         const auto currentNodeIt = _updateTree->nodes().find(deleteOp->nodeId());
         if (currentNodeIt != _updateTree->nodes().end()) {
-            // Node exists
-            if (currentNodeIt->second->changeEvents() != OperationType::None) {
-                assert(false);
-                LOGW_SYNCPAL_WARN(_logger, _side << L" update tree: Node '"
-                                                 << SyncName2WStr(currentNodeIt->second->name()).c_str() << L"' (node ID: '"
-                                                 << CommonUtility::s2ws(currentNodeIt->second->id().value_or(""))
-                                                 << L"', DB ID: '" << currentNodeIt->second->idb().value_or(-1)
-                                                 << L"') events is not empty: " << currentNodeIt->second->changeEvents());
-                return ExitCode::DataError;
-            }
             currentNodeIt->second->setChangeEvents(OperationType::Delete);
             currentNodeIt->second->setCreatedAt(deleteOp->createdAt());
             currentNodeIt->second->setModificationTime(deleteOp->lastModified());

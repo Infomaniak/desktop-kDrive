@@ -744,21 +744,16 @@ void TestUpdateTreeWorker::testClearTreeStep3() {
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Move, "id11", NodeType::Directory,
                                                           testhelpers::defaultTime, testhelpers::defaultTime,
                                                           testhelpers::defaultFileSize, "Dir 1/Dir 1.1", "Dir 1/Dir 1.2"));
-    _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Delete, "id32", NodeType::Directory,
+    _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Delete, "id3", NodeType::Directory,
                                                           testhelpers::defaultTime, testhelpers::defaultTime,
-                                                          testhelpers::defaultFileSize, "Dir 1/Dir 1.2/Dir 3/Dir 3.2"));
-    _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Delete, "id2", NodeType::Directory,
-                                                          testhelpers::defaultTime, testhelpers::defaultTime,
-                                                          testhelpers::defaultFileSize, "Dir 2"));
+                                                          testhelpers::defaultFileSize, "Dir 1/Dir 1.2/Dir 3"));
+
     // make move dir to test special case
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->step1MoveDirectory());
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->step3DeleteDirectory());
-    CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 1/Dir 1.2/Dir 3")->hasChangeEvent(OperationType::Move));
-    CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 1/Dir 1.2/Dir 3/Dir 3.2")->hasChangeEvent(OperationType::Delete));
+    CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 1/Dir 1.2/Dir 3")->hasChangeEvent(OperationType::Delete));
     CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 1/Dir 1.2/Dir 3")->id() == "id3");
     CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 1/Dir 1.2/Dir 3")->parentNode()->id() == "id11");
-    CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 2")->id() == "id2");
-    CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 2")->hasChangeEvent(OperationType::Delete));
 }
 
 void TestUpdateTreeWorker::testClearTreeStep4() {
@@ -861,7 +856,7 @@ void TestUpdateTreeWorker::testClearTreeStep7() {
 
 void TestUpdateTreeWorker::testClearTreeStep8() {
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->step8CompleteUpdateTree());
-    CPPUNIT_ASSERT(_localUpdateTreeWorker->_updateTree->nodes().size() == 19);
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->_updateTree->nodes().size() == 20);
 }
 
 void TestUpdateTreeWorker::testGetOriginPath() {
