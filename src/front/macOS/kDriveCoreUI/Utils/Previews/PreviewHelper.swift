@@ -47,4 +47,15 @@ public enum PreviewHelper {
         name: "Drive Pro Max",
         color: .red
     )
+
+    public static let availableDrive1 = UIAvailableDrive(
+        driveId: 1,
+        name: "Tim Drive",
+        color: .blue
+    )
+    public static let availableDrive2 = UIAvailableDrive(
+        driveId: 2,
+        name: "Drive Pro Max",
+        color: .red
+    )
 }

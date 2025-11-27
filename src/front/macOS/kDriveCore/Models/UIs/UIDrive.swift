@@ -27,7 +27,7 @@ public protocol UIDriveRepresentation: Sendable {
 
 // MARK: - UIAvailableDrive
 
-public struct UIAvailableDrive: UIDriveRepresentation {
+public struct UIAvailableDrive: UIDriveRepresentation, Hashable {
     public var id: Int {
         return driveId
     }

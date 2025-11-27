@@ -20,7 +20,17 @@ import Foundation
 
 public typealias IndexedDrives = [Int32: Drive]
 
-public struct Drive: Identifiable, Hashable, Sendable {
+public protocol DriveRepresentation: Identifiable, Sendable, Hashable {
+    var id: Int32 { get }
+    var driveId: Int32 { get }
+    var accountId: Int32 { get }
+    var userDbId: Int32 { get }
+    var userId: Int32 { get }
+    var name: String { get }
+    var color: HexColor? { get }
+}
+
+public struct Drive: DriveRepresentation {
     public var id: Int32 {
         driveDbId
     }
@@ -37,7 +47,7 @@ public struct Drive: Identifiable, Hashable, Sendable {
 
 public typealias IndexedAvailableDrives = [Int32: AvailableDrive]
 
-public struct AvailableDrive: Identifiable, Hashable, Sendable {
+public struct AvailableDrive: DriveRepresentation {
     public var id: Int32 {
         driveId
     }

@@ -35,6 +35,28 @@ public struct NewSyncMetadata: Sendable {
     let liteSync: Bool
     let blackList: [String]
     let whiteList: [String]
+
+    public init(
+        userDbId: Int32,
+        accountId: Int32,
+        driveId: Int32,
+        localFolderPath: String,
+        serverFolderPath: String,
+        serverFolderNodeId: String,
+        liteSync: Bool,
+        blackList: [String],
+        whiteList: [String]
+    ) {
+        self.userDbId = userDbId
+        self.accountId = accountId
+        self.driveId = driveId
+        self.localFolderPath = localFolderPath
+        self.serverFolderPath = serverFolderPath
+        self.serverFolderNodeId = serverFolderNodeId
+        self.liteSync = liteSync
+        self.blackList = blackList
+        self.whiteList = whiteList
+    }
 }
 
 public struct SyncJobs: Sendable {

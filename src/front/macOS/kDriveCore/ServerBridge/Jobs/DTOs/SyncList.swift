@@ -44,14 +44,14 @@ struct SyncStatusResponse: Codable, Sendable {
 }
 
 public struct SyncInfo: Codable, Sendable {
-    let dbId: Int32
-    let driveDbId: Int32
-    @Base64CodedString var localPath: String
-    @Base64CodedString var navigationPaneClsid: String
-    let supportVfs: Bool
-    @Base64CodedString var targetNodeId: String
-    @Base64CodedString var targetPath: String
-    let virtualFileMode: KDC.VirtualFileMode
+    public let dbId: Int32
+    public let driveDbId: Int32
+    @Base64CodedString public var localPath: String
+    @Base64CodedString public var navigationPaneClsid: String
+    public let supportVfs: Bool
+    @Base64CodedString public var targetNodeId: String
+    @Base64CodedString public var targetPath: String
+    public let virtualFileMode: KDC.VirtualFileMode
 }
 
 public struct NewSyncQuery: Codable, Sendable {
