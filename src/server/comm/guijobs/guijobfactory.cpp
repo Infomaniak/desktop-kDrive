@@ -43,6 +43,7 @@
 #include "syncnodesetlistjob.h"
 #include "nodeinfojob.h"
 #include "syncgetprivatelinkurljob.h"
+#include "excltemplgetexcludedjob.h"
 
 namespace KDC {
 
@@ -71,7 +72,8 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::SYNCNODE_LIST, makeShared<SyncNodeListJob>},
                 {RequestNum::SYNCNODE_SETLIST, makeShared<SyncNodeSetListJob>},
                 {RequestNum::NODE_INFO, makeShared<NodeInfoJob>},
-                {RequestNum::SYNC_GETPRIVATELINKURL, makeShared<SyncGetPrivateLinkUrlJob>}};
+                {RequestNum::SYNC_GETPRIVATELINKURL, makeShared<SyncGetPrivateLinkUrlJob>},
+                {RequestNum::EXCLTEMPL_GETEXCLUDED, makeShared<ExclTemplGetExcludedJob>}};
 }
 
 std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::shared_ptr<CommManager> commManager,

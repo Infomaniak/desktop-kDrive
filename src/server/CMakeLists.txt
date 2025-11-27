@@ -75,6 +75,7 @@ set(server_SRCS
     comm/guijobs/nodesubfoldersjob.h comm/guijobs/nodesubfoldersjob.cpp
     comm/guijobs/nodefoldersizejob.h comm/guijobs/nodefoldersizejob.cpp
     comm/guijobs/nodeinfojob.h comm/guijobs/nodeinfojob.cpp
+    comm/guijobs/excltemplgetexcludedjob.h comm/guijobs/excltemplgetexcludedjob.cpp
     comm/guijobs/syncnodelistjob.h comm/guijobs/syncnodelistjob.cpp
     comm/guijobs/syncnodesetlistjob.h comm/guijobs/syncnodesetlistjob.cpp
     comm/guijobs/signaluseraddedjob.h comm/guijobs/signaluseraddedjob.cpp
