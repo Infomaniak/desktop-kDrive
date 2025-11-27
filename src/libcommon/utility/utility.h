@@ -367,7 +367,7 @@ struct COMMON_EXPORT CommonUtility {
             readValuesFromStruct(dstruct, key, values, dynamicVar2T);
         }
 
-        //! Write an output built-in/std::string/std::wstring/CommBLOB parameter to a Poco::DynamicStruct..
+        //! Write an output built-in/std::string/std::wstring/CommBLOB parameter to a Poco::DynamicStruct.
         /*!
           \param parms is a Poco::DynamicStruct.
           \param key is the key of the JSON pair.
@@ -415,6 +415,18 @@ struct COMMON_EXPORT CommonUtility {
             Poco::Dynamic::Array arrValues;
             (void) std::transform(values.begin(), values.end(), std::back_inserter(arrValues), t2DynamicVar);
             (void) dstruct.insert(key, arrValues);
+        }
+
+        //! Write an output std::unordered_map values to a a Poco::DynamicStruct.
+        template<typename T, typename H, typename A = std::allocator<T>>
+        static void writeValuesToStruct(Poco::DynamicStruct &dstruct, const std::string &key,
+                                        const std::unordered_map<std::string, T, H, std::equal_to<>, A> &table) {
+            Poco::DynamicStruct tableValues;
+            for (const auto &[keyStr, value]: table) {
+                writeValueToStruct(tableValues, keyStr, value);
+            }
+
+            (void) dstruct.insert(key, tableValues);
         }
 
         template<template<typename, typename> class C, typename T, typename A = std::allocator<T>>
