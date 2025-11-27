@@ -22,18 +22,21 @@
         <!-- Data templates -->
         <DataTemplate x:Key="SingleAccountDriveTemplate"
                       x:DataType="types:IDrive">
-            <CheckBox Checked="DriveListCheckBox_Checked"
-                      Unchecked="DriveListCheckBox_Unchecked"
-                      HorizontalAlignment="Stretch">
-                <StackPanel Orientation="Horizontal"
-                            Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                    <controls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom}"
-                                      Foreground="{x:Bind Color, Converter={StaticResource ColorToBrushConverter}}"
-                                      Height="16" />
-                    <TextBlock Text="{x:Bind Name}"
-                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
-                </StackPanel>
-            </CheckBox>
+            <StackPanel Orientation="Horizontal"
+                        Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                <CheckBox Checked="DriveListCheckBox_Checked"
+                          Unchecked="DriveListCheckBox_Unchecked"
+                          HorizontalAlignment="Stretch"
+                          MinWidth="0"
+                          MinHeight="0" />
+
+                <controls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom}"
+                                  Foreground="{x:Bind Color, Converter={StaticResource ColorToBrushConverter}}"
+                                  Height="16" />
+                <TextBlock  Text="{x:Bind Name}"
+                            Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                            VerticalAlignment="Center" />
+            </StackPanel>
         </DataTemplate>
         <DataTemplate x:Key="MultiAccountDriveTemplate"
                       x:DataType="types:IDrive">
@@ -52,7 +55,8 @@
                     <CheckBox Checked="DriveListCheckBox_Checked"
                               Unchecked="DriveListCheckBox_Unchecked"
                               HorizontalAlignment="Stretch"
-                              MinWidth="0" />
+                              MinWidth="0"
+                              MinHeight="0" />
 
                     <controls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom}"
                                       Foreground="{x:Bind Color, Converter={StaticResource ColorToBrushConverter}}"
@@ -128,7 +132,8 @@
                           Grid.Row="1"
                           SelectionMode="None"
                           IsItemClickEnabled="False"
-                          ItemsSource="{x:Bind ObViewModel.SelectedUser.AllDrives, Mode=OneWay}">
+                          ItemsSource="{x:Bind ObViewModel.SelectedUser.AllDrives, Mode=OneWay}"
+                          HorizontalAlignment="Left">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Setter Property="Padding"
@@ -141,15 +146,19 @@
                     <ListView.ItemTemplate>
                         <!-- Data templates -->
                         <DataTemplate x:DataType="types:IDrive">
-                            <Grid Margin="{StaticResource Infomaniak.Style.Thickness.Top.XS}">
+                            <Grid>
                                 <ToolTipService.ToolTip>
                                     <ToolTip x:Uid="Page_Onboarding_DriveSelectionPage_DriveAlreadyConfigured"
                                              VerticalOffset="-80"
                                              IsEnabled="false" />
                                 </ToolTipService.ToolTip>
-                                <Border Style="{StaticResource Infomaniak.Style.Border.WithContent}">
+                                <Border Style="{StaticResource Infomaniak.Style.Border.WithContent}"
+                                        Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                        MinHeight="44"
+                                        MinWidth="280">
                                     <ContentControl Content="{x:Bind Mode=OneWay}"
-                                                    ContentTemplateSelector="{StaticResource DriveTemplateSelector}" />
+                                                    ContentTemplateSelector="{StaticResource DriveTemplateSelector}"
+                                                    VerticalContentAlignment="Center"/>
                                 </Border>
 
                             </Grid>
@@ -167,13 +176,13 @@
             <Button x:Name="AdvancedButton"
                     x:Uid="Page_Onboarding_DriveSelectionPage_AdvancedButton"
                     HorizontalAlignment="Left"
-                    Style="{StaticResource Infomaniak.Style.Button.WithoutBackground}"
+                    Style="{StaticResource SubtleButtonStyle}"
                     IsEnabled="{x:Bind ObViewModel.NewSyncs.Count, Converter={StaticResource IntegerToBooleanConverter}, Mode=OneWay}"
                     Click="AdvancedSettingsButton_Click" />
 
             <Button x:Uid="Page_Onboarding_DriveSelectionPage_FinishButton"
                     HorizontalAlignment="Left"
-                    Style="{StaticResource Infomaniak.Style.Button.WithBackground}"
+                    Style="{StaticResource AccentButtonStyle}"
                     IsEnabled="{x:Bind ObViewModel.NewSyncs.Count, Converter={StaticResource IntegerToBooleanConverter}, Mode=OneWay}"
                     Click="Finish_Click" />
 
@@ -200,12 +209,13 @@
                          IsOpen="True"
                          IsClosable="False"
                          Severity="Informational" />
-                <ListView Grid.Row="1"
+                <ListView x:Name="DriveListView"
+                          Grid.Row="1"
                           SelectionMode="None"
                           IsItemClickEnabled="False"
-                          ItemsSource="{x:Bind ObViewModel.NewSyncs}">
+                          ItemsSource="{x:Bind ObViewModel.NewSyncs, Mode=OneWay}">
                     <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="viewmodels:Sync">
+                        <DataTemplate x:DataType="viewmodels:NewSync">
                             <Border Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}">
                                 <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                                     <Grid.RowDefinitions>
@@ -223,11 +233,11 @@
                                                       Grid.Row="0"
                                                       Height="16"
                                                       VerticalAlignment="Center"
-                                                      Foreground="{x:Bind Drive.Color, Converter={StaticResource ColorToBrushConverter}}" />
+                                                      Foreground="{x:Bind Drive.Color, Converter={StaticResource ColorToBrushConverter}, Mode=OneWay}" />
 
                                     <TextBlock Grid.Column="1"
                                                Grid.Row="0"
-                                               Text="{x:Bind Drive.Name}"
+                                               Text="{x:Bind Drive.Name, Mode=OneWay}"
                                                HorizontalAlignment="Left"
                                                VerticalAlignment="Center"
                                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />

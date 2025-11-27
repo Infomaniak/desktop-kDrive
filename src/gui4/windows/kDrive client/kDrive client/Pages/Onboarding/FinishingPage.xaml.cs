@@ -1,24 +1,9 @@
-using Infomaniak.kDrive.Pages.Onboarding;
-using Infomaniak.kDrive.ViewModels;
 using Infomaniak.kDrive.OnBoarding;
-using Microsoft.UI;
-using Microsoft.UI.Xaml;
+using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Infomaniak.kDrive.Pages.Onboarding
 {
@@ -47,7 +32,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     Frame.GoBack();
                     return;
                 }
-                if ((App.Current as App).CurrentWindow is OnBoardingWindow onBoardingWindow)
+                if ((App.Current as App)?.CurrentWindow is OnBoardingWindow onBoardingWindow)
                     onBoardingWindow.UpdateLottieSource("Infomaniak.Custom.Animations.synchro-file", 219);
 
                 await _onBoardingViewModel.FinishOnboarding();

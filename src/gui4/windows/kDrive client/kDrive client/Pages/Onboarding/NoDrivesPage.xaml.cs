@@ -31,7 +31,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             if (e.Parameter is ViewModels.Onboarding onboardingVm)
             {
                 _onboardingViewModel = onboardingVm;
-                if ((App.Current as App).CurrentWindow is OnBoardingWindow onBoardingWindow)
+                if ((App.Current as App)?.CurrentWindow is OnBoardingWindow onBoardingWindow)
                     onBoardingWindow.UpdateLottieSource("Infomaniak.Custom.Animations.synchro-file", 219);
 
                 Logger.Log(Logger.Level.Info, "Starting drive availability watcher task");

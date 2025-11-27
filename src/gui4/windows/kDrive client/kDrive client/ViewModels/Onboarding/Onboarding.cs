@@ -10,34 +10,29 @@ namespace Infomaniak.kDrive.ViewModels
     public class Onboarding : UISafeObservableObject
     {
         private readonly IServerCommService _serverCommService;
-
         private OAuth2State _currentOAuth2State = OAuth2State.None;
-
         private User? _selectedUser = null;
+
+     
+        internal Onboarding(IServerCommService serverCommService)
+        {
+            _serverCommService = serverCommService;
+        }
+
+        public ObservableCollection<NewSync> NewSyncs { get; } = new();
+
         public OAuth2State CurrentOAuth2State
         {
             get => _currentOAuth2State;
-            set
-            {
-                SetPropertyInUIThread(ref _currentOAuth2State, value);
-            }
+            set => SetPropertyInUIThread(ref _currentOAuth2State, value);
         }
 
         public User? SelectedUser
         {
             get => _selectedUser;
-            set
-            {
-                SetPropertyInUIThread(ref _selectedUser, value);
-            }
+            set => SetPropertyInUIThread(ref _selectedUser, value);
         }
 
-        public ObservableCollection<Sync> NewSyncs { get; } = new();
-
-        internal Onboarding(IServerCommService serverCommService)
-        {
-            _serverCommService = serverCommService;
-        }
         public async Task ConnectUser(CancellationToken cancelationToken)
         {
             CurrentOAuth2State = OAuth2State.WaitingForUserAction;

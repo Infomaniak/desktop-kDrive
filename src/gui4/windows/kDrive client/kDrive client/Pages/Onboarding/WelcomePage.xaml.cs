@@ -26,7 +26,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             if (e.Parameter is ViewModels.Onboarding obvm)
             {
                 _onBoardingViewModel = obvm;
-                if ((App.Current as App).CurrentWindow is OnBoardingWindow onBoardingWindow)
+                if ((App.Current as App)?.CurrentWindow is OnBoardingWindow onBoardingWindow)
                     onBoardingWindow.UpdateLottieSource("Infomaniak.Custom.Animations.loader-stroke", 130);
             }
         }

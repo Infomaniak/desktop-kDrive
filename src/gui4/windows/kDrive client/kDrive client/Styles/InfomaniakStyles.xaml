@@ -238,7 +238,7 @@
     <Style x:Key="Infomaniak.Style.Border.WithContent"
            TargetType="Border">
         <Setter Property="Padding"
-                Value="12,8" />
+                Value="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}" />
         <Setter Property="BorderThickness"
                 Value="1" />
         <Setter Property="CornerRadius"
