@@ -1443,7 +1443,7 @@ ExitCode ServerRequests::getExclusionAppList(const bool def, QList<ExclusionAppI
     return exitInfo;
 }
 
-ExitCode ServerRequests::setExclusionAppList(bool def, const QList<ExclusionAppInfo> &list) {
+ExitCode ServerRequests::setExclusionAppList(const bool def, const std::vector<ExclusionAppInfo> &list) {
     std::vector<ExclusionApp> exclusionList;
     for (const ExclusionAppInfo &exclusionAppInfo: list) {
         ExclusionApp exclusionApp;
@@ -1456,6 +1456,13 @@ ExitCode ServerRequests::setExclusionAppList(bool def, const QList<ExclusionAppI
     }
 
     return ExitCode::Ok;
+}
+
+ExitCode ServerRequests::setExclusionAppList(const bool def, const QList<ExclusionAppInfo> &list) {
+    std::vector<ExclusionAppInfo> stdVector;
+    for (const ExclusionAppInfo &exclusionAppInfo: list) stdVector.push_back(exclusionAppInfo);
+
+    return setExclusionAppList(def, stdVector);
 }
 #endif
 

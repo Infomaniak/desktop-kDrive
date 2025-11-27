@@ -39,6 +39,7 @@
 #include "syncgetpubliclinkurljob.h"
 #include "syncgetprivatelinkurljob.h"
 #include "exclappgetlistjob.h"
+#include "exclappsetlistjob.h"
 
 namespace KDC {
 
@@ -63,7 +64,8 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::SYNC_DELETE, makeShared<SyncDeleteJob>},
                 {RequestNum::SYNC_GETPUBLICLINKURL, makeShared<SyncGetPublicLinkUrlJob>},
                 {RequestNum::SYNC_GETPRIVATELINKURL, makeShared<SyncGetPrivateLinkUrlJob>},
-                {RequestNum::EXCLAPP_GETLIST, makeShared<ExclAppGetListJob>}};
+                {RequestNum::EXCLAPP_GETLIST, makeShared<ExclAppGetListJob>},
+                {RequestNum::EXCLAPP_SETLIST, makeShared<ExclAppSetListJob>}};
 }
 
 std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::shared_ptr<CommManager> commManager,

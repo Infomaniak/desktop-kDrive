@@ -108,6 +108,7 @@ if(APPLE)
     list(APPEND server_SRCS comm/extcommserver_mac.mm)
     list(APPEND server_SRCS comm/guicommserver_mac.mm)
     list(APPEND server_SRCS comm/guijobs/exclappgetlistjob.h comm/guijobs/exclappgetlistjob.cpp)
+    list(APPEND server_SRCS comm/guijobs/exclappsetlistjob.h comm/guijobs/exclappsetlistjob.cpp)
 
     set_property(SOURCE ../common/utility_mac.cpp APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
     set_property(SOURCE comm/abstractcommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")

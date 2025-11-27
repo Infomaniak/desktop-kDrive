@@ -16,10 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "exclappgetlistjob.h"
+#include "exclappsetlistjob.h"
 #include "appserver.h"
 #include "requests/serverrequests.h"
-
 #include "libcommon/info/userinfo.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
@@ -27,42 +26,45 @@
 
 // Input parameters keys
 static const auto inParamsDefault = "default";
-
-// Output parameters keys
-static const auto outParamsApplicationList = "applicationList";
+static const auto inParamsApplicationList = "applicationList";
 
 
 namespace KDC {
 
-ExclAppGetListJob::ExclAppGetListJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+ExclAppSetListJob::ExclAppSetListJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
                                      std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
     _requestNum = RequestNum::EXCLAPP_GETLIST;
 }
 
-ExitInfo ExclAppGetListJob::deserializeInputParms() {
+ExitInfo ExclAppSetListJob::deserializeInputParms() {
     try {
         readParamValue(inParamsDefault, _default);
+        readParamValues(inParamsApplicationList, _applicationList, dynamicVar2Struct<ExclusionAppInfo>);
     } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in ExclAppGetListJob::readParamValue: error=" << e.what());
+        LOG_WARN(_logger, "Exception in ExclAppSetListJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
     }
 
     return ExitCode::Ok;
 }
 
-ExitInfo ExclAppGetListJob::serializeOutputParms() {
-    writeParamValues(outParamsApplicationList, _applicationList, info2DynamicVar<ExclusionAppInfo>);
-
-    return ExitCode::Ok;
-}
-
-ExitInfo ExclAppGetListJob::process() {
-    if (const auto exitCode = ServerRequests::getExclusionAppList(_default, _applicationList); exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in Requests::getExclusionAppList: code=" << exitCode);
-        AppServer::addError(Error(ERR_ID, exitCode));
+ExitInfo ExclAppSetListJob::process() {
+    if (const auto exitCode = ServerRequests::setExclusionAppList(_default, _applicationList); exitCode != ExitCode::Ok) {
+        LOG_WARN(_logger, "Error in Requests::setExclusionAppList: code=" << exitCode);
+        AppServer::addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
 
         return exitCode;
+    }
+
+    const std::scoped_lock lock(AppServer::vfsMapMutex);
+    const auto it = std::find_if(AppServer::vfsMap.cbegin(), AppServer::vfsMap.cend(),
+                                 [](const auto &pair) { return pair.second->mode() == VirtualFileMode::Mac; });
+    if (it != AppServer::vfsMap.cend() && !it->second->setAppExcludeList()) {
+        LOG_WARN(_logger, "Error in Vfs::setAppExcludeList!");
+        AppServer::addError(Error(ERR_ID, ExitCode::SystemError));
+
+        return ExitCode::SystemError;
     }
 
     return ExitCode::Ok;

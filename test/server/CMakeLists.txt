@@ -85,6 +85,7 @@ if(APPLE)
     list(APPEND server_SRCS ${server_srcs_path}/comm/guicommserver_mac.mm)
     list(APPEND server_SRCS ${server_srcs_path}/comm/litesynccommclient_mac.h ${server_srcs_path}/comm/litesynccommclient_mac.mm)
     list(APPEND server_SRCS ${server_srcs_path}/comm/guijobs/exclappgetlistjob.h ${server_srcs_path}/comm/guijobs/exclappgetlistjob.cpp)
+    list(APPEND server_SRCS ${server_srcs_path}/comm/guijobs/exclappsetlistjob.h ${server_srcs_path}/comm/guijobs/exclappsetlistjob.cpp)
 
     set_property(SOURCE ${server_srcs_path}/comm/abstractcommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
     set_property(SOURCE ${server_srcs_path}/comm/xpccommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
