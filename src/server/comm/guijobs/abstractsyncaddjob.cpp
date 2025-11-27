@@ -106,9 +106,6 @@ ExitInfo AbstractSyncAddJob::process(SyncInfo &syncInfo) {
         return exitInfo;
     }
 
-    auto signalSyncAddedJob = std::make_shared<SignalSyncAddedJob>(syncInfo);
-    _commManager->sendGuiSignal(signalSyncAddedJob);
-
 #if defined(KD_MACOS)
     Utility::restartFinderExtension();
 #endif

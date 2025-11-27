@@ -2,6 +2,7 @@
 using Infomaniak.kDrive.Types;
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -65,16 +66,31 @@ namespace Infomaniak.kDrive.ViewModels
             }
         }
 
-        public async Task FinishOnboarding()
+        public async Task<bool> FinishOnboarding()
         {
             if (SelectedUser == null)
             {
                 Logger.Log(Logger.Level.Error, "No user selected to finish onboarding.");
-                return;
+                return false;
             }
+            if(!NewSyncs.Any())
+            {
+                Logger.Log(Logger.Level.Warning, "No new syncs to set up during onboarding.");
+                return false;
+            }
+
+            Logger.Log(Logger.Level.Info, $"Finishing onboarding for user {SelectedUser.Name} with {NewSyncs.Count} new syncs.");
+            var commService = _serverCommService;
+            foreach (var sync in NewSyncs)
+            {
+                Logger.Log(Logger.Level.Debug, $"Setting up new sync: LocalPath={sync.LocalPath}, RemotePath={sync.RemotePath}, Drive={sync.Drive.Name}");
+                await _serverCommService.AddSync(sync, CancellationToken.None);
+            }
+
             // Simulate some finalization work
             await Task.Delay(5000);
             Logger.Log(Logger.Level.Info, $"Onboarding finished for user {SelectedUser.Name}.");
+            return true;
         }
     }
 }

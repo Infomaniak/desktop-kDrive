@@ -58,7 +58,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                 {
                     LocalPath = localPath,
                     SupportOnlineMode = Utility.SupportOnlineSync(localPath),  // TODO: Call UTILITY_BESTVFSAVAILABLEMODE once implemented
-                    SyncType = Utility.SupportOnlineSync(localPath) ? SyncType.Online : SyncType.Offline,
+                    SyncType = /*Utility.SupportOnlineSync(localPath) ? SyncType.Online :*/ SyncType.Offline,
                     Drive = drive
                 };
                 _onBoardingViewModel.NewSyncs.Add(newSync);

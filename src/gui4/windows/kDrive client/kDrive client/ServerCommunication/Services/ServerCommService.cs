@@ -356,6 +356,35 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 }
             });
         }
+        public async Task<bool> AddSync(NewSync newSync, CancellationToken cancellationToken)
+        {
+            if (newSync.Drive is null)
+            {
+                Logger.Log(Logger.Level.Error, "NewSync Drive is null.");
+                return false;
+            }
+
+            JsonObject parms = new()
+            {
+                [JsonKeys.UserDbId] = newSync.Drive.UserDbId,
+                [JsonKeys.AccountId] = newSync.Drive.AccountId,
+                [JsonKeys.DriveId] = newSync.Drive.DriveId,
+                [JsonKeys.LocalFolderPath] = Utility.ToBase64String(newSync.LocalPath),
+                [JsonKeys.ServerFolderPath] = Utility.ToBase64String(newSync.RemotePath),
+                [JsonKeys.ServerFolderNodeId] = Utility.ToBase64String(newSync.RemoteNodeId),
+                [JsonKeys.LiteSync] = newSync.SyncType == SyncType.Online,
+                [JsonKeys.NodeIdList] = JsonSerializer.SerializeToNode(newSync.ExcludedNodeIds, new JsonSerializerOptions { Converters = { new Base64StringJsonConverter() } })
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_ADD, parms, cancellationToken);
+            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.SyncInfo))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.SyncInfo} not found in response.");
+                return false;
+            }
+
+            // Rely on signal to add the sync to the model
+            return true;
+        }
 
         public async Task RemoveSync(DbId syncDbId, CancellationToken cancellationToken)
         {

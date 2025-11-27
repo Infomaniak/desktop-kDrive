@@ -35,8 +35,13 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                 if ((App.Current as App)?.CurrentWindow is OnBoardingWindow onBoardingWindow)
                     onBoardingWindow.UpdateLottieSource("Infomaniak.Custom.Animations.synchro-file", 219);
 
-                await _onBoardingViewModel.FinishOnboarding();
-                Frame.Navigate(typeof(FinishPage), _onBoardingViewModel);
+                if (await _onBoardingViewModel.FinishOnboarding())
+                    Frame.Navigate(typeof(FinishPage), _onBoardingViewModel);
+                else
+                {
+                    Logger.Log(Logger.Level.Info, "Finishing onboarding failed. Returning to previous page.");
+                    Frame.GoBack();
+                }
             }
             else
             {
