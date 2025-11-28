@@ -32,8 +32,6 @@
 #include "migrationselectivesync.h"
 #include "libcommonserver/db/db.h"
 
-#include <set>
-
 namespace KDC {
 
 class PARMS_EXPORT ParmsDb : public Db {
