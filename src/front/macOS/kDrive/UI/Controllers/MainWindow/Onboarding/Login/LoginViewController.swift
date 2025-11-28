@@ -22,6 +22,8 @@ import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 
+import InfomaniakDI
+
 final class LoginViewController: OnboardingStepViewController {
     private let viewModel: LoginViewModel
 
@@ -42,6 +44,19 @@ final class LoginViewController: OnboardingStepViewController {
 
         bindViewModel()
         setupUI()
+    }
+
+    override func viewWillAppear() {
+        super.viewWillAppear()
+        Task {
+            @InjectService var macOSPermissionsHandling: MacOSPermissionHandling
+
+            let fullDiskAccess = await macOSPermissionsHandling.isAuthorized(for: .fullDiskAccess)
+            print("DEBUG -> .fullDiskAccess", fullDiskAccess)
+
+            let endpointSecurityExtension = await macOSPermissionsHandling.isAuthorized(for: .endpointSecurityExtension)
+            print("DEBUG -> .endpointSecurityExtension", endpointSecurityExtension)
+        }
     }
 
     private func bindViewModel() {

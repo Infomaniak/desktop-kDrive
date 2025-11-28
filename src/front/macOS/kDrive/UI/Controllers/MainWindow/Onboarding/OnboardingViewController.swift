@@ -106,7 +106,6 @@ final class OnboardingViewController: NSViewController {
     }
 
     private func bindCoordinator() {
-        transition(toStep: flowCoordinator.currentStep)
         flowCoordinator.$currentStep
             .receiveOnMain(store: &bindStore) { [weak self] step in
                 self?.transition(toStep: step)
