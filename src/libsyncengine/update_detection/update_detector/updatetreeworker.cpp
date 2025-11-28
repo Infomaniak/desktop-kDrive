@@ -290,24 +290,24 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
                     LOGW_SYNCPAL_WARN(_logger, L"Failed to normalize: " << Utility::formatSyncPath(createOp->path()));
                 }
                 if (!_createFileOperationSet.try_emplace(path, createOp).second) {
-                    insertionFailedBecausePathExist =
-                            _createFileOperationSet.contains(path); // The insertion might have failed because of unsupported
-                                                                    // characters in `path` (e.g.: a file name finishing by a space or a dot).
+                    insertionFailedBecausePathExists = _createFileOperationSet.contains(
+                            path); // The insertion might have failed because of unsupported
+                                   // characters in `path` (e.g.: a file name finishing by a space or a dot).
                 }
                 break;
             }
             case NodeType::Directory:
                 if (!createDirectoryOperationSet.try_emplace(createOp->path(), createOp).second) {
-                    insertionFailedBecausePathExist =
-                            createDirectoryOperationSet.contains(path); // The insertion might have failed because of unsupported
-                                                                        // characters (e.g.: a folder name finishing by a space or a dot).
+                    insertionFailedBecausePathExists = createDirectoryOperationSet.contains(
+                            path); // The insertion might have failed because of unsupported
+                                   // characters (e.g.: a folder name finishing by a space or a dot).
                 }
                 break;
             default:
                 break;
         }
 
-        if (insertionFailedBecausePathExist) {
+        if (insertionFailedBecausePathExists) {
             // Failed to insert Create operation. A full rebuild of the snapshot is required.
             // The following issue has been identified: the operating system missed a delete operation, in which case a
             // liveSnapshot rebuild is both required and sufficient.
