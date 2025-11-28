@@ -68,9 +68,9 @@ final class DriveSelectionViewModel: ObservableObject {
                 // TODO: Use the cache property when available (next XPC PR)
                 let availableDrives = try await DriveJobs().availableDrives(userDbId: Int32(targetUser.dbId)).asAvailableDrives
 
-                try await selectedDrives.concurrentForEach { selectedDrive in
+                let syncCandidates: [NewSyncCandidate] = try await selectedDrives.concurrentCompactMap { selectedDrive in
                     guard let availableDrive = availableDrives.first(where: { $0.id == selectedDrive.id }) else {
-                        return
+                        return nil
                     }
 
                     let syncOrigin = SyncOrigin.availableDrive(availableDrive)
@@ -83,11 +83,10 @@ final class DriveSelectionViewModel: ObservableObject {
                         blackList: []
                     )
 
-                    Task { @MainActor in
-                        self.flowCoordinator.synchronizations.append(newSyncCandidate)
-                    }
+                    return newSyncCandidate
                 }
 
+                flowCoordinator.synchronizations = syncCandidates
                 flowCoordinator.navigateToNextStep()
             } catch {
                 // TODO: Handle error

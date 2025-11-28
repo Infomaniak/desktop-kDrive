@@ -31,6 +31,7 @@ public struct ShellExecutor: Sendable {
         process.standardInput = nil
 
         try process.run()
+        process.waitUntilExit()
 
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
 

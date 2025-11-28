@@ -24,12 +24,12 @@ public enum MacOSPermission: Sendable {
     case endpointSecurityExtension
 }
 
-protocol AuthorizationChecker {
+protocol AuthorizationChecker: Sendable {
     func hasAccess() async -> Bool
     func openSystemPreferences() async
 }
 
-public protocol MacOSPermissionHandling {
+public protocol MacOSPermissionHandling: Sendable {
     func isAuthorized(for permission: MacOSPermission) async -> Bool
     func openSystemPreferences(for permission: MacOSPermission) async
 }
@@ -65,16 +65,9 @@ final class FullDiskChecker: AuthorizationChecker {
         "/Library/Application Support/com.apple.TCC"
     ]
 
-    private var lastAccessedFile: String?
-
     func hasAccess() async -> Bool {
-        if let lastAccessedFile {
-            return canAccess(toFile: lastAccessedFile)
-        }
-
         for testableFile in FullDiskChecker.testableFiles {
             if canAccess(toFile: testableFile) {
-                lastAccessedFile = testableFile
                 return true
             }
         }
@@ -89,7 +82,7 @@ final class FullDiskChecker: AuthorizationChecker {
 
     private func canAccess(toFile file: String) -> Bool {
         do {
-            let path = URL(fileURLWithPath: file).path
+            let path = (file as NSString).expandingTildeInPath
             _ = try FileManager.default.contentsOfDirectory(atPath: path)
             return true
         } catch {
@@ -115,7 +108,7 @@ final class EndpointSecurityExtensionChecker: AuthorizationChecker {
     }
 
     func openSystemPreferences() async {
-        let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Securiy")!
+        let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Security")!
         NSWorkspace.shared.open(url)
     }
 }

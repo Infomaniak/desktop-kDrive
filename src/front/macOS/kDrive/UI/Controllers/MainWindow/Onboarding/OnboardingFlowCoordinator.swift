@@ -60,7 +60,7 @@ final class OnboardingFlowCoordinator: ObservableObject {
             // TODO: Check if permissions are required
             return .permissions
         case .permissions:
-            return .permissions
+            return .synchronization
         case .synchronization:
             return nil
         }

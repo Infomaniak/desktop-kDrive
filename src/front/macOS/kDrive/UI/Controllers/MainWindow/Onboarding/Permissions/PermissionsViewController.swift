@@ -38,9 +38,5 @@ final class PermissionsViewController: OnboardingStepViewController {
         setupUI()
     }
 
-    override func viewWillAppear() {
-        super.viewWillAppear()
-    }
-
     private func setupUI() {}
 }
