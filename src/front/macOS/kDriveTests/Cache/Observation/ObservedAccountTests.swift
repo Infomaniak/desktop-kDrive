@@ -21,7 +21,7 @@ import Foundation
 import kDriveCore
 import XCTest
 
-final class ObservedAccoutTests: XCTestCase {
+final class ObservedAccountTests: XCTestCase {
     static let expectedUserId: Int32 = 123
     static let expectedUserDbId: Int32 = 456
     static let expectedAccountDbId: Int32 = 3
