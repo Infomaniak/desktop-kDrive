@@ -20,7 +20,7 @@
 #include <Poco/JSON/Object.h>
 
 namespace KDC::testcommhelpers {
-std::string toBase64(const std::string &input);
+std::string toBase64(const CommString &input);
 
 CommString beautifulString(const Poco::JSON::Object &obj);
 CommString stringifyQueryObj(const Poco::JSON::Object &obj);
