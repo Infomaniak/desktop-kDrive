@@ -388,7 +388,7 @@ void AppServer::init() {
     if (!noUpdateDb) {
         if (!_noUpdate) { // If not already set by command line argument
             // Check if the file "no_update" exists in the application directory to disable updates
-            SyncPath noUpdateFilePath = CommonUtility::applicationFilePath().parent_path() / SyncPath("no_update");
+            const auto noUpdateFilePath = CommonUtility::applicationFilePath().parent_path() / SyncPath("no_update");
             bool noUpdateFlagFileExists = false;
             ioError = IoError::Success;
             if (!IoHelper::checkIfPathExists(noUpdateFilePath, noUpdateFlagFileExists, ioError) || ioError != IoError::Success) {
