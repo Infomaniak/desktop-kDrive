@@ -245,6 +245,6 @@
         <Setter Property="CornerRadius"
                 Value="{StaticResource Infomaniak.Style.CornerRadius.M}" />
         <Setter Property="BorderBrush"
-                Value="{ThemeResource ToolTipBorderThemeBrush}" />
+                Value="{ThemeResource SystemControlBackgroundBaseLowRevealBorderBrush}" />
     </Style>
 </ResourceDictionary>

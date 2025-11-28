@@ -1,23 +1,12 @@
-using DynamicData.Binding;
+using Infomaniak.kDrive.Pages.Settings;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI;
 
 namespace Infomaniak.kDrive.Pages
 {
@@ -37,6 +26,10 @@ namespace Infomaniak.kDrive.Pages
 
 
             UpdateTitleTemplate();
+        }
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        {
+            if (ViewModel.SelectedSync is null) AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(SettingsPage)));
         }
 
         private void ViewModel_PropertyChanging(object? sender, System.ComponentModel.PropertyChangingEventArgs e)

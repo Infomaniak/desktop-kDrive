@@ -14,7 +14,10 @@
         <converters:BooleanToInvertedBooleanConverter x:Key="BooleanToInvertedBooleanConverter" />
     </Page.Resources>
 
-    <Grid>
+    <StackPanel Orientation="Vertical"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Spacing="{StaticResource Infomaniak.Style.Spacing.XL}">
         <StackPanel Orientation="Vertical"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
@@ -33,21 +36,12 @@
                        TextWrapping="WrapWholeWords"
                        Foreground="{ThemeResource TextFillColorSecondary}" />
 
-            <!-- Progress bar -->
-            <ProgressBar x:Name="LoadingProgressBar"
-                         Width="130"
-                         IsIndeterminate="True"
-                         ShowPaused="False"
-                         ShowError="False" 
-                         HorizontalAlignment="Left"/>
-
-            <!-- Restart oauth button -->
-            <Button x:Name="RestartOAuthButton"
-                    x:Uid="Page_Onboarding_OAuthLoadingPage_RestartOAuthButton"
-                    Style="{StaticResource Infomaniak.Style.Button.Secondary}"
-                    Click="RestartOAuthButton_Click"
-                    IsEnabled="False" />
         </StackPanel>
-    </Grid>
-
+        <!-- Restart oauth button -->
+        <Button x:Name="RestartOAuthButton"
+                x:Uid="Page_Onboarding_OAuthLoadingPage_RestartOAuthButton"
+                Style="{StaticResource AccentButtonStyle}"
+                Click="RestartOAuthButton_Click"
+                IsEnabled="False" />
+    </StackPanel>
 </Page>

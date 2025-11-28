@@ -14,7 +14,7 @@ namespace Infomaniak.kDrive.ViewModels
         private OAuth2State _currentOAuth2State = OAuth2State.None;
         private User? _selectedUser = null;
 
-     
+
         internal Onboarding(IServerCommService serverCommService)
         {
             _serverCommService = serverCommService;
@@ -62,7 +62,7 @@ namespace Infomaniak.kDrive.ViewModels
             catch (Exception ex)
             {
                 CurrentOAuth2State = OAuth2State.Error;
-                Logger.Log(Logger.Level.Warning, $"Authentication process failed {ex.Message}");
+                Logger.Log(Logger.Level.Error, $"Authentication process failed {ex.Message}");
             }
         }
 
@@ -73,7 +73,7 @@ namespace Infomaniak.kDrive.ViewModels
                 Logger.Log(Logger.Level.Error, "No user selected to finish onboarding.");
                 return false;
             }
-            if(!NewSyncs.Any())
+            if (!NewSyncs.Any())
             {
                 Logger.Log(Logger.Level.Warning, "No new syncs to set up during onboarding.");
                 return false;

@@ -83,28 +83,18 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     break;
 
                 case OAuth2State.WaitingForUserAction:
-                    LoadingProgressBar.ShowError = false;
-                    LoadingProgressBar.IsIndeterminate = true;
-                    LoadingProgressBar.Foreground = new SolidColorBrush(Colors.Blue);
                     TitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Title/Text");
                     SubtitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Subtitle/Text");
                     RestartOAuthButton.Visibility = Visibility.Visible;
                     break;
 
                 case OAuth2State.ProcessingResponse:
-                    LoadingProgressBar.ShowError = false;
-                    LoadingProgressBar.IsIndeterminate = true;
-                    LoadingProgressBar.Foreground = new SolidColorBrush(Colors.Blue);
                     TitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_Processing_Title/Text");
                     SubtitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_Processing_Subtitle/Text");
                     RestartOAuthButton.Visibility = Visibility.Collapsed;
                     break;
 
                 case OAuth2State.Success:
-                    LoadingProgressBar.ShowError = false;
-                    LoadingProgressBar.Value = 100;
-                    LoadingProgressBar.IsIndeterminate = false;
-                    LoadingProgressBar.Foreground = new SolidColorBrush(Colors.LimeGreen);
                     TitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_Success_Title/Text");
                     SubtitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_Success_Subtitle/Text");
                     RestartOAuthButton.Visibility = Visibility.Collapsed;
@@ -128,11 +118,8 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     break;
 
                 case OAuth2State.Error:
-                    // TODO: Change this behavior once UX/UI is defined
-                    LoadingProgressBar.ShowError = true;
-                    LoadingProgressBar.IsIndeterminate = false;
-                    TitleTextBlock.Text = "Erreur de connexion";
-                    SubtitleTextBlock.Text = "Une erreur est survenue lors de la connexion. Veuillez réessayer.";
+                    TitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_Error_Title/Text");
+                    SubtitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_Error_Subtitle/Text");
                     RestartOAuthButton.IsEnabled = true;
                     RestartOAuthButton.Visibility = Visibility.Visible;
                     await _enableRestartCts.CancelAsync();

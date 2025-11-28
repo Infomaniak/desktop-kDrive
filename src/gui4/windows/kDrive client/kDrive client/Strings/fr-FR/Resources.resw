@@ -324,6 +324,9 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
   <data name="Page_Onboarding_OAuthLoadingPage_Success_Title.Text" xml:space="preserve">
     <value>Connexion réussie !</value>
   </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Error_Title.Text" xml:space="preserve">
+    <value>Erreur de connexion</value>
+  </data>
   <data name="Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Subtitle.Text" xml:space="preserve">
     <value>Une fois connecté, vous pourrez passer à l’étape suivante.</value>
   </data>
@@ -333,6 +336,9 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
   <data name="Page_Onboarding_OAuthLoadingPage_Success_Subtitle.Text" xml:space="preserve">
     <value />
     <comment>Empty</comment>
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Error_Subtitle.Text" xml:space="preserve">
+    <value>Une erreur est survenue, veuillez réessayer.</value>
   </data>
   <data name="Page_Onboarding_WelcomePage_Title.Text" xml:space="preserve">
     <value>Bienvenue dans kDrive</value>

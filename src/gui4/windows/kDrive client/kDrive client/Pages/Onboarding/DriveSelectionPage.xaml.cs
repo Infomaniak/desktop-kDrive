@@ -31,6 +31,12 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             if (e.Parameter is ViewModels.Onboarding obvm)
             {
                 _onBoardingViewModel = obvm;
+                if(ObViewModel?.SelectedUser is null)
+                {
+                    Logger.Log(Logger.Level.Error, "SelectedUser is null in OnBoardingViewModel when navigating to DriveSelectionPage");
+                    Frame.GoBack();
+                    return;
+                }
                 await ObViewModel.SelectedUser.RefreshAvailableDrives();
                 if (!ObViewModel.SelectedUser.AllDrives.Any())
                 {
@@ -52,7 +58,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
         {
             if (sender is CheckBox cb && cb.DataContext is IDrive drive && _onBoardingViewModel != null)
             {
-                string localPath = Utility.DefaultSyncPath(drive.Name);
+                string localPath = Utility.DefaultSyncPath(drive.Name, _onBoardingViewModel.NewSyncs.Select(s => s.LocalPath).ToList());
                 // TODO: Call ServerRequests::findGoodPathForNewSync once implemented
                 NewSync newSync = new NewSync()
                 {
@@ -127,7 +133,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             if (folder != null)
             {
                 Logger.Log(Logger.Level.Info, "Folder picked: " + folder.Path);
-                if (!Utility.CheckSyncPathValidity(folder.Path, out string errorMessage))
+                if (!Utility.CheckSyncPathValidity(folder.Path, out string errorMessage, _onBoardingViewModel?.NewSyncs.Select(s => s.LocalPath).ToList()))
                 {
                     Logger.Log(Logger.Level.Warning, $"Selected folder path '{folder.Path}' is not valid for syncing: {errorMessage}");
                     FolderSelectionError.IsOpen = true;
