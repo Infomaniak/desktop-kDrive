@@ -21,7 +21,6 @@ import Foundation
 import kDriveCore
 import XCTest
 
-
 final class ObservedUserTests: XCTestCase {
     func testSetGetUserFromPropertyWrapper() async throws {
         // GIVEN
