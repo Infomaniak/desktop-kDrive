@@ -39,8 +39,11 @@ jobs:
         run : echo Path=%Path%>> %GITHUB_ENV%
         shell: cmd
 
-      - name: Checkout the PR
+      - name: Checkout the code
         uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || (github.event_name == 'workflow_dispatch' && github.ref_name || 'develop') }}
+          submodules: recursive
         
       - name: Clean the log directory
         run : rm -r -force C:/Windows/Temp/kDrive-logdir/*
@@ -117,7 +120,7 @@ jobs:
       - name: Checkout the code
         uses: actions/checkout@v4.1.1
         with:
-          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || 'develop' }}
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || (github.event_name == 'workflow_dispatch' && github.ref_name || 'develop') }}
           submodules: recursive
 
       - name: Grant empty trash script execute permission
@@ -165,10 +168,10 @@ jobs:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
       QT_QPA_PLATFORM: "offscreen"
     steps:
-      - name: Checkout the PR
+      - name: Checkout the code
         uses: actions/checkout@v4.1.1
         with:
-          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || 'develop' }}
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || (github.event_name == 'workflow_dispatch' && github.ref_name || 'develop') }}
           submodules: recursive
 
       - name: Clean the log directory
