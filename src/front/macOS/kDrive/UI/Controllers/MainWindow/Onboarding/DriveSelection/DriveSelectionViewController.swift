@@ -28,7 +28,7 @@ enum OnboardingLinks {
     static let myKSuiteOffers = URL(string: "https://www.infomaniak.com/gtl/myksuite#prices")!
 }
 
-class DriveSelectionViewController: OnboardingStepViewController {
+final class DriveSelectionViewController: OnboardingStepViewController {
     private let viewModel: DriveSelectionViewModel
     private let flowCoordinator: OnboardingFlowCoordinator
 

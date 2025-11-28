@@ -127,7 +127,7 @@ final class OnboardingViewController: NSViewController {
         case .drivesSelection:
             return DriveSelectionViewController(flowCoordinator: flowCoordinator)
         case .permissions:
-            fatalError("Not Implemented Yet")
+            return PermissionsViewController(flowCoordinator: flowCoordinator)
         case .synchronization:
             fatalError("Not Implemented Yet")
         }
