@@ -143,6 +143,10 @@ AppServer::AppServer(int &argc, char **argv) :
 }
 
 AppServer::~AppServer() {
+    if (_clientProcess && _clientProcess->isOpen()) {
+        _clientProcess->kill();
+    }
+
     if (Log::isSet()) {
         LOG_DEBUG(_logger, "~AppServer");
     }
@@ -463,7 +467,10 @@ void AppServer::cleanup() {
     LOG_DEBUG(_logger, "AppServer::cleanup");
 
     // Stop CommManager
-    if (_commManager) _commManager->stop();
+    if (_commManager) {
+        _commManager->stop();
+        LOG_DEBUG(_logger, "CommManager stopped");
+    }
 
     // Stop JobManager(s)
     GuiJobManagerSingleton::instance()->stop();
@@ -3467,11 +3474,11 @@ bool AppServer::startClient() {
         LOGW_INFO(_logger, L"Starting kDrive client - path=" << Path2WStr(QStr2Path(pathToExecutable)) << L" args="
                                                              << arguments[0].toStdWString());
 
-        QProcess *clientProcess = new QProcess(this);
-        clientProcess->setProgram(pathToExecutable);
-        clientProcess->setArguments(arguments);
-        clientProcess->start();
-        if (!clientProcess->waitForStarted()) {
+        _clientProcess = new QProcess(this);
+        _clientProcess->setProgram(pathToExecutable);
+        _clientProcess->setArguments(arguments);
+        _clientProcess->start();
+        if (!_clientProcess->waitForStarted()) {
             LOG_WARN(_logger, "Failed to start kDrive client");
             return false;
         }

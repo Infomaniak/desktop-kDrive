@@ -38,6 +38,7 @@
 #include <QApplication>
 #include <QElapsedTimer>
 #include <QPointer>
+#include <QProcess>
 #include <QQueue>
 #include <QTimer>
 
@@ -151,7 +152,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         std::unique_ptr<NavigationPaneHelper> _navigationPaneHelper;
 #endif
 
-        std::shared_ptr<CommManager> _commManager;
+        std::shared_ptr<CommManager> _commManager = nullptr;
         bool _appRestartRequired{false};
         Theme *_theme{nullptr};
         bool _helpAsked{false};
@@ -173,6 +174,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         QTimer _restartSyncsTimer;
         std::unordered_map<int, SyncCache> _syncCacheMap;
         std::unordered_map<int, NodeSet> _undecidedListCacheMap;
+        QProcess *_clientProcess = nullptr;
 
         static std::unique_ptr<UpdateManager> _updateManager;
 
