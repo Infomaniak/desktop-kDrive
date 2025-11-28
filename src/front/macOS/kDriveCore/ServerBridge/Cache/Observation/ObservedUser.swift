@@ -20,6 +20,12 @@ import Combine
 import Foundation
 import InfomaniakDI
 
+// TODO: Extend observation with deletion _after_ signals are created
+public enum ObservationEvent<Some: Equatable>: Equatable {
+    case update(Some)
+    case removed
+}
+
 @propertyWrapper
 public final class ObservedUser: ObservableObject {
     @Published public private(set) var wrappedValue: User?
