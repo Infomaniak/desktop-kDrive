@@ -37,12 +37,14 @@
 #include "syncstartafterloginjob.h"
 #include "syncdeletejob.h"
 #include "syncgetpubliclinkurljob.h"
+#include "syncgetprivatelinkurljob.h"
 #include "nodesubfoldersjob.h"
 #include "nodefoldersizejob.h"
 #include "syncnodelistjob.h"
 #include "syncnodesetlistjob.h"
 #include "nodeinfojob.h"
-#include "syncgetprivatelinkurljob.h"
+#include "parametersupdatejob.h"
+
 
 namespace KDC {
 
@@ -71,7 +73,8 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::SYNCNODE_LIST, makeShared<SyncNodeListJob>},
                 {RequestNum::SYNCNODE_SETLIST, makeShared<SyncNodeSetListJob>},
                 {RequestNum::NODE_INFO, makeShared<NodeInfoJob>},
-                {RequestNum::SYNC_GETPRIVATELINKURL, makeShared<SyncGetPrivateLinkUrlJob>}};
+                {RequestNum::SYNC_GETPRIVATELINKURL, makeShared<SyncGetPrivateLinkUrlJob>},
+                {RequestNum::PARAMETERS_UPDATE, makeShared<ParametersUpdateJob>}};
 }
 
 std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::shared_ptr<CommManager> commManager,

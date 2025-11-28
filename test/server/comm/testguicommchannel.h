@@ -68,6 +68,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSyncDeleteJob);
         CPPUNIT_TEST(testSyncGetPublicLinkUrlJob);
         CPPUNIT_TEST(testSyncGetPrivateLinkUrlJob);
+        CPPUNIT_TEST(testParametersUpdateJob);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -101,6 +102,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testSyncNodeListJob();
         void testSyncNodeSetListJob();
         void testNodeInfoJob();
+        void testParametersUpdateJob();
 
 
     private:

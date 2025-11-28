@@ -21,6 +21,8 @@
 #include "libcommon/info/proxyconfiginfo.h"
 #include "libcommon/utility/types.h"
 
+#include <Poco/Dynamic/Struct.h>
+
 #include <QString>
 #include <QDataStream>
 #include <QMap>
@@ -30,11 +32,11 @@ namespace KDC {
 
 class ParametersInfo {
     public:
+        using DialogGeometry = QMap<QString, QByteArray>;
         ParametersInfo(Language language, bool monoIcons, bool autoStart, bool moveToTrash,
                        NotificationsDisabled notificationsDisabled, bool useLog, LogLevel logLevel, bool extendedLog,
-                       bool purgeOldLogs, bool darkTheme, bool showShortcuts, QMap<QString, QByteArray> dialogGeometry,
-                       int maxAllowedCpu);
-        ParametersInfo();
+                       bool purgeOldLogs, bool darkTheme, bool showShortcuts, DialogGeometry dialogGeometry, int maxAllowedCpu);
+        ParametersInfo() = default;
 
         inline void setLanguage(Language language) { _language = language; }
         inline Language language() const { return _language; }
@@ -66,30 +68,43 @@ class ParametersInfo {
             _dialogGeometry[objectName] = saveGeometry;
         }
         inline const QByteArray dialogGeometry(const QString &objectName) const { return _dialogGeometry[objectName]; }
-        inline const QMap<QString, QByteArray> &dialogGeometry() const { return _dialogGeometry; }
+        inline const DialogGeometry &dialogGeometry() const { return _dialogGeometry; }
         inline int maxAllowedCpu() const { return _maxAllowedCpu; }
         inline void setMaxAllowedCpu(int maxAllowedCpu) { _maxAllowedCpu = maxAllowedCpu; }
         [[nodiscard]] VersionChannel distributionChannel() const { return _distributionChannel; }
         void setDistributionChannel(const VersionChannel channel) { _distributionChannel = channel; }
 
+        friend bool operator==(const ParametersInfo &lhs, const ParametersInfo &rhs) {
+            return (lhs.language() == rhs.language()) && (lhs.monoIcons() == rhs.monoIcons()) &&
+                   (lhs.autoStart() == rhs.autoStart()) && (lhs.moveToTrash() == rhs.moveToTrash()) &&
+                   (lhs.notificationsDisabled() == rhs.notificationsDisabled()) && (lhs.useLog() == rhs.useLog()) &&
+                   (lhs.logLevel() == rhs.logLevel()) && (lhs.extendedLog() == rhs.extendedLog()) &&
+                   (lhs.purgeOldLogs() == rhs.purgeOldLogs()) && (lhs.darkTheme() == rhs.darkTheme()) &&
+                   (lhs.showShortcuts() == rhs.showShortcuts()) && (lhs.dialogGeometry() == rhs.dialogGeometry()) &&
+                   (lhs.maxAllowedCpu() == rhs.maxAllowedCpu());
+        }
+
+        void toDynamicStruct(Poco::DynamicStruct &) const;
+        void fromDynamicStruct(const Poco::DynamicStruct &);
+
         friend QDataStream &operator>>(QDataStream &in, ParametersInfo &parametersInfo);
         friend QDataStream &operator<<(QDataStream &out, const ParametersInfo &parametersInfo);
 
     private:
-        Language _language;
-        bool _monoIcons;
-        bool _autoStart;
-        bool _moveToTrash;
-        NotificationsDisabled _notificationsDisabled;
-        bool _useLog;
-        LogLevel _logLevel;
-        bool _extendedLog;
-        bool _purgeOldLogs;
+        Language _language{Language::Default};
+        bool _monoIcons{false};
+        bool _autoStart{true};
+        bool _moveToTrash{true};
+        NotificationsDisabled _notificationsDisabled{NotificationsDisabled::Never};
+        bool _useLog{true};
+        LogLevel _logLevel{LogLevel::Debug};
+        bool _extendedLog{false};
+        bool _purgeOldLogs{true};
         ProxyConfigInfo _proxyConfigInfo;
-        bool _darkTheme;
-        bool _showShortcuts;
-        QMap<QString, QByteArray> _dialogGeometry;
-        int _maxAllowedCpu;
+        bool _darkTheme{false};
+        bool _showShortcuts{true};
+        DialogGeometry _dialogGeometry;
+        int _maxAllowedCpu{50};
         VersionChannel _distributionChannel{VersionChannel::Prod};
 };
 

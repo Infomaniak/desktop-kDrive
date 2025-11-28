@@ -56,6 +56,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/nodefoldersizejob.h ${server_srcs_path}/comm/guijobs/nodefoldersizejob.cpp
     ${server_srcs_path}/comm/guijobs/syncnodelistjob.h ${server_srcs_path}/comm/guijobs/syncnodelistjob.cpp
     ${server_srcs_path}/comm/guijobs/syncnodesetlistjob.h ${server_srcs_path}/comm/guijobs/syncnodesetlistjob.cpp
+    ${server_srcs_path}/comm/guijobs/parametersupdatejob.h ${server_srcs_path}/comm/guijobs/parametersupdatejob.cpp
     ${server_srcs_path}/comm/guijobs/nodeinfojob.h ${server_srcs_path}/comm/guijobs/nodeinfojob.cpp
     ${server_srcs_path}/comm/guijobs/signaluseraddedjob.h ${server_srcs_path}/comm/guijobs/signaluseraddedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.h ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.cpp
@@ -145,6 +146,8 @@ set(testserver_SRCS
     appserver/testappserver.h appserver/testappserver.cpp
     comm/testsocketcomm.h comm/testsocketcomm.cpp
     comm/testguicommchannel.h comm/testguicommchannel.cpp
+    comm/testparameters.cpp
+    comm/testcommhelpers.h comm/testcommhelpers.cpp
     comm/guijobs/testabstractguijob.h comm/guijobs/testabstractguijob.cpp
 )
 

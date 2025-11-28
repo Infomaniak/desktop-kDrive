@@ -77,6 +77,7 @@ set(server_SRCS
     comm/guijobs/nodeinfojob.h comm/guijobs/nodeinfojob.cpp
     comm/guijobs/syncnodelistjob.h comm/guijobs/syncnodelistjob.cpp
     comm/guijobs/syncnodesetlistjob.h comm/guijobs/syncnodesetlistjob.cpp
+    comm/guijobs/parametersupdatejob.h comm/guijobs/parametersupdatejob.cpp
     comm/guijobs/signaluseraddedjob.h comm/guijobs/signaluseraddedjob.cpp
     comm/guijobs/signaluserupdatedjob.h comm/guijobs/signaluserupdatedjob.cpp
     comm/guijobs/signaluserremovedjob.h comm/guijobs/signaluserremovedjob.cpp
