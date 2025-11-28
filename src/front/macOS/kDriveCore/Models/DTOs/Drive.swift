@@ -54,7 +54,7 @@ public struct Drive: DriveRepresentation {
     public var synchros: IndexedSynchros
 }
 
-public typealias IndexedAvailableDrive = [Int32: AvailableDrive]
+public typealias IndexedAvailableDrives = [Int32: AvailableDrive]
 
 public struct AvailableDrive: DriveRepresentation {
     public var id: Int32 {

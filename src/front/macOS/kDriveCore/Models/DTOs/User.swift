@@ -30,7 +30,7 @@ public struct User: Identifiable, Hashable, Sendable {
     public var name: String
     public var email: String
     public var accounts: IndexedAccounts
-    public var availableDrives: IndexedAvailableDrive
+    public var availableDrives: IndexedAvailableDrives
     public var avatar: Data?
     public var isConnected: Bool
     public var isStaff: Bool
@@ -41,7 +41,7 @@ public struct User: Identifiable, Hashable, Sendable {
         name: String,
         email: String,
         accounts: IndexedAccounts,
-        availableDrives: IndexedAvailableDrive,
+        availableDrives: IndexedAvailableDrives,
         avatar: Data? = nil,
         isConnected: Bool,
         isStaff: Bool
