@@ -160,17 +160,15 @@ void ExtensionJob::commandGetMenuItems(const CommString &argument, std::shared_p
 
         if (syncPalMapIt != AppServer::syncPalMap.end() && syncPalMapIt->second && vfsMapIt != AppServer::vfsMap.end() &&
             vfsMapIt->second) {
+            // Some options only show for single files
+            bool isSingleFile = false;
+            if (paths.size() == 1) {
+                manageActionsOnSingleFile(channel, paths[0], syncPalMapIt, vfsMapIt, sync);
+                isSingleFile = QFileInfo(CommonUtility::commString2QStr(paths[0])).isFile();
+            }
 #if defined(KD_MACOS)
             // File availability actions
             if (sync.virtualFileMode() != VirtualFileMode::Off && vfsMapIt->second->showPinStateActions()) {
-                // Some options only show for single files
-                bool isSingleFile = false;
-                if (paths.size() == 1) {
-                    manageActionsOnSingleFile(channel, paths[0], syncPalMapIt, vfsMapIt, sync);
-
-                    isSingleFile = QFileInfo(CommonUtility::commString2QStr(paths[0])).isFile();
-                }
-
                 // Manage hydration/dehydration
                 bool canCancelDehydration = false;
 
@@ -214,11 +212,6 @@ void ExtensionJob::commandGetMenuItems(const CommString &argument, std::shared_p
                 };
 
                 makePinContextMenu(canHydrate, canDehydrate, canCancelDehydration, canCancelHydration);
-            }
-#elif defined(KD_WINDOWS)
-            // Some options only show for single files
-            if (paths.size() == 1) {
-                manageActionsOnSingleFile(channel, paths[0], syncPalMapIt, vfsMapIt, sync);
             }
 #endif
         }
