@@ -124,7 +124,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
             user.accounts.removeValue(forKey: accountDbId)
             users[user.dbId] = user
         }
-        
+
         notifyUpdate()
     }
 
@@ -164,7 +164,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         account.drives[drive.id] = drive
         user.accounts[accountDbId] = account
         users[userDbId] = user
-        
+
         notifyUpdate()
     }
 
@@ -176,7 +176,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         account.drives.removeValue(forKey: driveDbId)
         user.accounts[accountDbId] = account
         users[userDbId] = user
-        
+
         notifyUpdate()
     }
 
@@ -234,7 +234,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         account.drives[driveDbId] = drive
         user.accounts[accountDbId] = account
         users[userDbId] = user
-        
+
         notifyUpdate()
     }
 
