@@ -102,8 +102,20 @@ final class FullDiskChecker: AuthorizationChecker {
 
 final class EndpointSecurityExtensionChecker: AuthorizationChecker {
     func hasAccess() async -> Bool {
-        return false
+        let command = "systemextensionsctl list | grep \(Constants.lightSyncBundleID) | grep enabled | wc -l"
+        guard let result = try? ShellExecutor().execute(command: command) else {
+            return false
+        }
+
+        guard let processCount = Int(result.trimmingCharacters(in: .whitespacesAndNewlines)), processCount > 0 else {
+            return false
+        }
+
+        return true
     }
 
-    func openSystemPreferences() async {}
+    func openSystemPreferences() async {
+        let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Securiy")!
+        NSWorkspace.shared.open(url)
+    }
 }

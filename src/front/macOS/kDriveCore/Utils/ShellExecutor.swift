@@ -1,4 +1,3 @@
-//
 /*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2025 Infomaniak Network SA
@@ -17,31 +16,25 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Cocoa
-import InfomaniakDI
-import kDriveCore
+import Foundation
 
-final class PermissionsViewController: OnboardingStepViewController {
-    private let viewModel: PermissionsViewModel
+public struct ShellExecutor: Sendable {
+    public func execute(command: String) throws -> String? {
+        let process = Process()
 
-    init(flowCoordinator: OnboardingFlowCoordinator) {
-        viewModel = PermissionsViewModel(flowCoordinator: flowCoordinator)
-        super.init(nibName: nil, bundle: nil)
+        process.executableURL = URL(fileURLWithPath: "/bin/sh")
+        process.arguments = ["-c", command]
+
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = nil
+        process.standardInput = nil
+
+        try process.run()
+
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+
+        let output = String(data: data, encoding: .utf8)
+        return output
     }
-
-    @available(*, unavailable)
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupUI()
-    }
-
-    override func viewWillAppear() {
-        super.viewWillAppear()
-    }
-
-    private func setupUI() {}
 }

@@ -1,4 +1,3 @@
-//
 /*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2025 Infomaniak Network SA
@@ -17,31 +16,9 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Cocoa
-import InfomaniakDI
-import kDriveCore
+import Foundation
 
-final class PermissionsViewController: OnboardingStepViewController {
-    private let viewModel: PermissionsViewModel
-
-    init(flowCoordinator: OnboardingFlowCoordinator) {
-        viewModel = PermissionsViewModel(flowCoordinator: flowCoordinator)
-        super.init(nibName: nil, bundle: nil)
-    }
-
-    @available(*, unavailable)
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupUI()
-    }
-
-    override func viewWillAppear() {
-        super.viewWillAppear()
-    }
-
-    private func setupUI() {}
+public enum Constants {
+    public static let bundleID = Bundle.main.bundleIdentifier ?? "com.infomaniak.drive"
+    public static let lightSyncBundleID = "com.infomaniak.drive.desktopclient.LiteSyncExt"
 }
