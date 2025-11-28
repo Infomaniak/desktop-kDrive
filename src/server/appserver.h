@@ -129,6 +129,12 @@ class AppServer : public SharedTools::QtSingleApplication {
         [[nodiscard]] ExitInfo startSyncs(User &user);
         void stopSyncTask(int syncDbId); // Long task which can block GUI: post-poned in the event loop by means of timer
 
+        // Ask the Finder/File explorer Extension to register the folder
+        void registerSync(std::shared_ptr<SyncPal> syncPal);
+
+        // Ask the Finder/File explorer Extension to unregister the folder
+        void unregisterSync(std::shared_ptr<SyncPal> syncPal);
+
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         static ExitCode getThumbnail(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) {
             return ServerRequests::getThumbnail(driveDbId, nodeId, width, thumbnail);
@@ -261,11 +267,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         bool noMacVfsSync() const;
         bool areMacVfsAuthsOk() const;
 #endif
-
-        // Ask the Finder/File explorer Extension to register the folder
-        void registerSync(std::shared_ptr<SyncPal> syncPal);
-        // Ask the Finder/File explorer Extension to unregister the folder
-        void unregisterSync(std::shared_ptr<SyncPal> syncPal);
 
         // For testing purpose
         void crash() const;

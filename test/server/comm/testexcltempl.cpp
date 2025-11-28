@@ -19,6 +19,7 @@
 #include "comm/guijobs/excltemplgetexcludedjob.h"
 #include "comm/guijobs/excltemplgetlistjob.h"
 #include "comm/guijobs/excltemplsetlistjob.h"
+#include "comm/guijobs/excltemplpropagatechangejob.h"
 
 #include "testguicommchannel.h"
 #include "testcommhelpers.h"
@@ -179,5 +180,40 @@ void TestGuiCommChannel::testExclTemplSetListJob() {
 
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 }
+
+void TestGuiCommChannel::testExclTemplPropagateChangeJob() {
+    // Query. No need to pass a request id as the response is via a callback.
+    Poco::JSON::Object queryObj;
+    (void) queryObj.set("num", toInt(RequestNum::EXCLTEMPL_PROPAGATE_CHANGE));
+    Poco::JSON::Object queryParamsObj;
+    (void) queryObj.set("params", queryParamsObj);
+
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+
+    Poco::JSON::Object paramsObj;
+    (void) answerObj.set("params", paramsObj);
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::EXCLTEMPL_PROPAGATE_CHANGE));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+
+    // Job expected answers
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto exclTemplPropagateChangeJob = std::dynamic_pointer_cast<ExclTemplPropagateChangeJob>(job);
+        CPPUNIT_ASSERT(exclTemplPropagateChangeJob);
+    };
+
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+}
+
 
 } // namespace KDC
