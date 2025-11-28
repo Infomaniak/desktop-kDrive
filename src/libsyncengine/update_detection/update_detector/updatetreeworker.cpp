@@ -281,7 +281,7 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
         FSOpPtr createOp;
         (void) _operationSet->getOp(createOpId, createOp);
 
-        bool insertionFailedBecausePathExist = false;
+        bool insertionFailedBecausePathExists = false;
         SyncPath path;
         switch (createOp->objectType()) {
             case NodeType::File: {
@@ -291,16 +291,16 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
                 }
                 if (!_createFileOperationSet.try_emplace(path, createOp).second) {
                     insertionFailedBecausePathExist =
-                            _createFileOperationSet.contains(path); // The insertion might have fail because of unsupported
-                                                                    // character (e.g.: name finishing by a space or .)
+                            _createFileOperationSet.contains(path); // The insertion might have failed because of unsupported
+                                                                    // characters in `path` (e.g.: a file name finishing by a space or a dot).
                 }
                 break;
             }
             case NodeType::Directory:
                 if (!createDirectoryOperationSet.try_emplace(createOp->path(), createOp).second) {
                     insertionFailedBecausePathExist =
-                            createDirectoryOperationSet.contains(path); // The insertion might have fail because of unsupported
-                                                                        // character (e.g.: name finishing by a space or .)
+                            createDirectoryOperationSet.contains(path); // The insertion might have failed because of unsupported
+                                                                        // characters (e.g.: a folder name finishing by a space or a dot).
                 }
                 break;
             default:
