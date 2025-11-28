@@ -18,6 +18,7 @@
 
 #include "comm/guijobs/excltemplgetexcludedjob.h"
 #include "comm/guijobs/excltemplgetlistjob.h"
+#include "comm/guijobs/excltemplsetlistjob.h"
 
 #include "testguicommchannel.h"
 #include "testcommhelpers.h"
@@ -116,6 +117,64 @@ void TestGuiCommChannel::testExclTemplGetListJob() {
 
         exclTemplGetListJob->_exclusionTemplateList = {ExclusionTemplateInfo("template1", true, true, true),
                                                        ExclusionTemplateInfo("template2", false, true, false)};
+    };
+
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+}
+
+void TestGuiCommChannel::testExclTemplSetListJob() {
+    // Query. No need to pass a request id as the response is via a callback.
+    Poco::JSON::Object queryObj;
+    (void) queryObj.set("num", toInt(RequestNum::EXCLTEMPL_SETLIST));
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("default", true);
+
+    Poco::JSON::Object exclusionTemplateInfo1;
+    (void) exclusionTemplateInfo1.set("template", toBase64("template1"));
+    (void) exclusionTemplateInfo1.set("warning", true);
+    (void) exclusionTemplateInfo1.set("default", true);
+    (void) exclusionTemplateInfo1.set("deleted", true);
+
+    Poco::JSON::Object exclusionTemplateInfo2;
+    (void) exclusionTemplateInfo2.set("template", toBase64("template2"));
+    (void) exclusionTemplateInfo2.set("warning", false);
+    (void) exclusionTemplateInfo2.set("default", true);
+    (void) exclusionTemplateInfo2.set("deleted", false);
+
+    Poco::JSON::Array exclusionTemplateList;
+    exclusionTemplateList.add(exclusionTemplateInfo1);
+    exclusionTemplateList.add(exclusionTemplateInfo2);
+
+    (void) queryParamsObj.set("exclusionTemplateList", exclusionTemplateList);
+    (void) queryObj.set("params", queryParamsObj);
+
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+
+    Poco::JSON::Object paramsObj;
+    (void) answerObj.set("params", paramsObj);
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::EXCLTEMPL_SETLIST));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+
+    // Job expected answers
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto exclTemplSetListJob = std::dynamic_pointer_cast<ExclTemplSetListJob>(job);
+        CPPUNIT_ASSERT(exclTemplSetListJob);
+        CPPUNIT_ASSERT(exclTemplSetListJob->_default);
+        CPPUNIT_ASSERT_EQUAL(size_t{2}, exclTemplSetListJob->_exclusionTemplateList.size());
+        CPPUNIT_ASSERT(ExclusionTemplateInfo("template1", true, true, true) == exclTemplSetListJob->_exclusionTemplateList.at(0));
+        CPPUNIT_ASSERT(ExclusionTemplateInfo("template2", false, true, false) ==
+                       exclTemplSetListJob->_exclusionTemplateList.at(1));
     };
 
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);

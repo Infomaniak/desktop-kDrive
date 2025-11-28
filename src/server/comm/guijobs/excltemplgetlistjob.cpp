@@ -3,8 +3,6 @@
 #include "excltemplgetlistjob.h"
 #include "appserver.h"
 
-#include "libsyncengine/requests/exclusiontemplatecache.h"
-
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
 
@@ -13,7 +11,6 @@ static const auto inParamsDefault = "default";
 
 // Output parameters keys
 static const auto outParamsExclusionTemplateList = "exclusionTemplateList";
-
 
 namespace KDC {
 

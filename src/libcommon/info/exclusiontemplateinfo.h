@@ -40,6 +40,11 @@ class ExclusionTemplateInfo {
         inline void setDeleted(bool deleted) { _deleted = deleted; }
         inline bool deleted() const { return _deleted; }
 
+        friend bool operator==(const ExclusionTemplateInfo &lhs, const ExclusionTemplateInfo &rhs) {
+            return (lhs.templ() == rhs.templ()) && (lhs.warning() == rhs.warning()) && (lhs.def() == rhs.def()) &&
+                   (lhs.deleted() == rhs.deleted());
+        }
+
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
         void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
 

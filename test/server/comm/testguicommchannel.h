@@ -70,6 +70,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSyncGetPrivateLinkUrlJob);
         CPPUNIT_TEST(testExclTemplGetExcludedJob);
         CPPUNIT_TEST(testExclTemplGetListJob);
+        CPPUNIT_TEST(testExclTemplSetListJob);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -105,6 +106,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testNodeInfoJob();
         void testExclTemplGetExcludedJob();
         void testExclTemplGetListJob();
+        void testExclTemplSetListJob();
 
 
     private:

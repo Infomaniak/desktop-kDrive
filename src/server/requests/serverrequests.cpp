@@ -1432,20 +1432,27 @@ ExitCode ServerRequests::getExclusionTemplateList(const bool def, QList<Exclusio
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::setExclusionTemplateList(bool def, const QList<ExclusionTemplateInfo> &list) {
+ExitCode ServerRequests::setExclusionTemplateList(const bool def, const std::vector<ExclusionTemplateInfo> &list) {
     std::vector<ExclusionTemplate> exclusionList;
     for (const ExclusionTemplateInfo &exclusionTemplateInfo: list) {
         ExclusionTemplate exclusionTemplate;
         ServerRequests::exclusionTemplateInfoToExclusionTemplate(exclusionTemplateInfo, exclusionTemplate);
-        exclusionList.push_back(exclusionTemplate);
+        exclusionList.push_back(std::move(exclusionTemplate));
     }
-    ExitCode exitCode = ExclusionTemplateCache::instance()->update(def, exclusionList);
-    if (exitCode != ExitCode::Ok) {
+
+    if (const auto exitCode = ExclusionTemplateCache::instance()->update(def, exclusionList); exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ExclusionTemplateCache::save");
         return exitCode;
     }
 
     return ExitCode::Ok;
+}
+
+ExitCode ServerRequests::setExclusionTemplateList(bool def, const QList<ExclusionTemplateInfo> &list) {
+    std::vector<ExclusionTemplateInfo> exclusionStdVector;
+    for (const auto &exclusionTemplateInfo: list) exclusionStdVector.push_back(exclusionTemplateInfo);
+
+    return setExclusionTemplateList(def, exclusionStdVector);
 }
 
 #if defined(KD_MACOS)
