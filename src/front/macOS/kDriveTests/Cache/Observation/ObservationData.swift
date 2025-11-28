@@ -19,10 +19,21 @@
 import kDriveCore
 
 enum ObservableData {
-    static let expectedUserId: Int32 = 123
-    static let expectedUserDbId: Int32 = 456
-    static let expectedAccountDbId: Int32 = 3
-    static let expectedAccount = Account(dbId: expectedAccountDbId, name: "3", drives: [:])
+    static let expectedUserId = Int32.random(in: 0...1000)
+    static let expectedUserDbId = Int32.random(in: 0...1000)
+    static let expectedAccountDbId = Int32.random(in: 0...1000)
+    static let expectedAccountId = Int32.random(in: 0...1000)
+    static let expectedDriveDbId = Int32.random(in: 0...1000)
+    static let expectedDriveId = Int32.random(in: 0...1000)
+    
+    static let expectedDrive = Drive(driveDbId: expectedDriveDbId,
+                                     driveId: expectedDriveId,
+                                     accountId: expectedAccountId,
+                                     userDbId: expectedUserDbId,
+                                     userId: expectedUserId,
+                                     name: "The amazing test Drive",
+                                     color: HexColor(hex: "#ffffff"!),
+    static let expectedAccount = Account(dbId: expectedAccountDbId, name: "3", drives: [expectedDriveDbId:expectedDrive])
     static let indexedAccounts: IndexedAccounts = [
         1: Account(dbId: 1, name: "1", drives: [:]),
         2: Account(dbId: 2, name: "2", drives: [:]),

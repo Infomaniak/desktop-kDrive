@@ -21,8 +21,8 @@ import Foundation
 import Testing
 
 enum CacheData {
-    static let expectedUserAPIId: Int32 = 56789
-    static let expectedUserDbId: Int32 = 12345
+    static let expectedUserAPIId = Int32.random(in: 0 ... 10000)
+    static let expectedUserDbId = Int32.random(in: 0 ... 10000)
     static var expectedUser = User(
         dbId: expectedUserDbId,
         userId: expectedUserAPIId,
@@ -35,7 +35,7 @@ enum CacheData {
         isStaff: true
     )
 
-    static let updatedUserAPIId: Int32 = expectedUserAPIId + 1
+    static let updatedUserAPIId = Int32.random(in: 0 ... 10000)
     static let updatedUserName = "appleseed2"
     static var updatedUser = User(
         dbId: expectedUserDbId,
@@ -49,7 +49,7 @@ enum CacheData {
         isStaff: true
     )
 
-    static let expectedAccountDbId: Int32 = 2468
+    static let expectedAccountDbId = Int32.random(in: 0 ... 10000)
     static let expectedAccountName = "myAccount"
     static var expectedAccount = Account(
         dbId: expectedAccountDbId, name: expectedAccountName, drives: [:]
@@ -60,8 +60,8 @@ enum CacheData {
         dbId: expectedAccountDbId, name: updatedAccountName, drives: [:]
     )
 
-    static let expectedDriveDbId: Int32 = 424_242
-    static let expectedDriveId: Int32 = 112_233
+    static let expectedDriveDbId = Int32.random(in: 0 ... 10000)
+    static let expectedDriveId = Int32.random(in: 0 ... 10000)
     static let expectedDriveName: String = "My Drive"
     static let expectedDriveColor: HexColor = .init(hex: "9de4ec")!
     static var expectedDrive = Drive(
@@ -75,7 +75,7 @@ enum CacheData {
         synchros: [:]
     )
 
-    static let updatedDriveId: Int32 = 112_244
+    static let updatedDriveId = Int32.random(in: 0 ... 10000)
     static let updatedDriveName: String = "My Drive Pro Max"
     static let updatedDriveColor: HexColor = .init(hex: "#aabbcc")!
     static var updatedDrive = Drive(
@@ -89,7 +89,7 @@ enum CacheData {
         synchros: [:]
     )
 
-    static let expectedSynchroDbId: Int32 = 244_112
+    static let expectedSynchroDbId = Int32.random(in: 0 ... 10000)
     static let expectedSynchroLocalPath = "/dev/null"
     static let expectedSynchro = Synchro(
         dbId: expectedSynchroDbId, driveDbId: expectedDriveDbId, localPath: expectedSynchroLocalPath

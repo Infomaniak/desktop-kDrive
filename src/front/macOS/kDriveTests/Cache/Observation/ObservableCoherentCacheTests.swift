@@ -22,8 +22,8 @@ import kDriveCore
 import XCTest
 
 final class ObservableCoherentCacheTests: XCTestCase {
-    static let expectedUserId: Int32 = 12345
-    static let expectedUserDbId: Int32 = 5678
+    static let expectedUserId = Int32.random(in: 0 ... 1000)
+    static let expectedUserDbId = Int32.random(in: 0 ... 1000)
 
     @MainActor func testObserveUserChangesWithCombine() throws {
         // GIVEN
