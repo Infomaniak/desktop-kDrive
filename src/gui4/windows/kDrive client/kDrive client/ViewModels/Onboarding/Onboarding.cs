@@ -87,8 +87,6 @@ namespace Infomaniak.kDrive.ViewModels
                 await _serverCommService.AddSync(sync, CancellationToken.None);
             }
 
-            // Simulate some finalization work
-            await Task.Delay(5000);
             Logger.Log(Logger.Level.Info, $"Onboarding finished for user {SelectedUser.Name}.");
             return true;
         }

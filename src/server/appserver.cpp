@@ -2604,9 +2604,6 @@ ExitCode AppServer::updateUserInfo(User &user) {
     }
 
     for (auto &account: accounts) {
-        QHash<int, DriveAvailableInfo> userDriveInfoList;
-        ServerRequests::getUserAvailableDrives(account.userDbId(), userDriveInfoList);
-
         std::vector<Drive> drives;
         if (!ParmsDb::instance()->selectAllDrives(account.dbId(), drives)) {
             LOG_WARN(_logger, "Error in ParmsDb::selectAllDrives");
@@ -2646,15 +2643,6 @@ ExitCode AppServer::updateUserInfo(User &user) {
                             exitCause = ExitCause::DriveMaintenance;
                     }
                     addError(Error(sync.dbId(), ERR_ID, ExitCode::BackError, exitCause));
-                }
-            }
-
-            if (userDriveInfoList.contains(drive.driveId())) {
-                const DriveAvailableInfo &userDriveInfo = userDriveInfoList[drive.driveId()];
-                std::string strColor = userDriveInfo.color().name().toStdString();
-                if (strColor != drive.color()) {
-                    drive.setColor(strColor);
-                    updated = true;
                 }
             }
 

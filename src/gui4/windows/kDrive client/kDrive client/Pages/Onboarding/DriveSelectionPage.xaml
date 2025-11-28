@@ -155,7 +155,8 @@
                                 <Border Style="{StaticResource Infomaniak.Style.Border.WithContent}"
                                         Background="{ThemeResource LayerFillColorDefaultBrush}"
                                         MinHeight="44"
-                                        MinWidth="280">
+                                        MinWidth="280"
+                                        Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.XS}">
                                     <ContentControl Content="{x:Bind Mode=OneWay}"
                                                     ContentTemplateSelector="{StaticResource DriveTemplateSelector}"
                                                     VerticalContentAlignment="Center"/>

@@ -6,6 +6,7 @@ using Infomaniak.kDrive.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -997,110 +998,141 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         private async Task AddOrUpdateAccountInModel(AccountInfo accountInfo)
         {
-            foreach (var user in _viewModel.Users)
+            await AutoRetry(async Task<bool> () =>
             {
-                if (user.Accounts.Any(a => a.DbId == accountInfo.DbId))
+                foreach (var user in _viewModel.Users)
                 {
-                    Logger.Log(Logger.Level.Info, $"Account with DbId {accountInfo.DbId} already exists in the application.");
                     var account = user.Accounts.FirstOrDefault(a => a.DbId == accountInfo.DbId);
                     if (account == null)
                     {
-                        Logger.Log(Logger.Level.Error, $"Unexpected error, account with DbId {accountInfo.DbId} not found after existence check.");
-                        return;
+                        continue;
                     }
                     ConversionHelper.copyToAccount(accountInfo, account);
                     Logger.Log(Logger.Level.Info, $"Account with DbId {accountInfo.DbId} updated.");
-                    return;
+                    return true;
                 }
-            }
 
-            // Account not found, add it to the correct user
-            DbId? userDbId = accountInfo.UserDbId;
-            var parentUser = _viewModel.Users.FirstOrDefault(u => u.DbId == userDbId);
-            if (parentUser == null)
-            {
-                Logger.Log(Logger.Level.Error, $"Parent user with DbId {userDbId} not found for account DbId {accountInfo.DbId}.");
-                return;
-            }
+                // Account not found, add it to the correct user
+                DbId? userDbId = accountInfo.UserDbId;
+                var parentUser = _viewModel.Users.FirstOrDefault(u => u.DbId == userDbId);
+                if (parentUser == null)
+                {
+                    // This might happen due to asynchronous signal processing
+                    Logger.Log(Logger.Level.Error, $"Parent user with DbId {userDbId} not found for account DbId {accountInfo.DbId}.");
+                    return false;
+                }
 
-            var newAccount = new Account(accountInfo.DbId ?? throw new InvalidOperationException("DbId should not be null here."), parentUser);
-            ConversionHelper.copyToAccount(accountInfo, newAccount);
-            await Utility.RunOnUIThread(() => { parentUser.Accounts.Add(newAccount); });
-            Logger.Log(Logger.Level.Info, $"New account added to user with DbId {userDbId}.");
+                var newAccount = new Account(accountInfo.DbId ?? throw new InvalidOperationException("DbId should not be null here."), parentUser);
+                ConversionHelper.copyToAccount(accountInfo, newAccount);
+                await Utility.RunOnUIThread(() => { parentUser.Accounts.Add(newAccount); });
+                Logger.Log(Logger.Level.Info, $"New account added to user with DbId {userDbId}.");
+                return true;
+            });
+
         }
 
         private async Task AddOrUpdateDriveInModel(DriveInfo driveInfo)
         {
-            foreach (var user in _viewModel.Users)
+            await AutoRetry(async Task<bool> () =>
             {
-
-                var drive = user.Drives.FirstOrDefault(d => d?.DbId == driveInfo.DbId, null);
-                if (drive == null)
+                foreach (var user in _viewModel.Users)
                 {
-                    continue;
-                }
-                ConversionHelper.copyToDrive(driveInfo, drive);
-                Logger.Log(Logger.Level.Info, $"Drive with DbId {driveInfo.DbId} updated.");
-                return;
-            }
-            // Drive not found, add it to the correct account
-            DbId? accountDbId = driveInfo.AccountDbId; // Assuming DriveInfo has an AccountDbId property
-            Account? parentAccount = null;
-            foreach (var user in _viewModel.Users)
-            {
-                parentAccount = user.Accounts.FirstOrDefault(a => a.DbId == accountDbId);
-                if (parentAccount != null)
-                    break;
-            }
-            if (parentAccount == null)
-            {
-                Logger.Log(Logger.Level.Error, $"Parent account with DbId {accountDbId} not found for drive DbId {driveInfo.DbId}.");
-                return;
-            }
-            await Utility.RunOnUIThread(() =>
-            {
-                Drive newDrive = new Drive(driveInfo.DbId ?? throw new InvalidOperationException("DbId should not be null here."), parentAccount);
-                ConversionHelper.copyToDrive(driveInfo, newDrive);
-                parentAccount.Drives.Add(newDrive);
 
+                    var drive = user.Drives.FirstOrDefault(d => d?.DbId == driveInfo.DbId, null);
+                    if (drive == null)
+                    {
+                        continue;
+                    }
+                    ConversionHelper.copyToDrive(driveInfo, drive);
+                    Logger.Log(Logger.Level.Info, $"Drive with DbId {driveInfo.DbId} updated.");
+                    return true;
+                }
+                // Drive not found, add it to the correct account
+                DbId? accountDbId = driveInfo.AccountDbId; // Assuming DriveInfo has an AccountDbId property
+                Account? parentAccount = null;
+                foreach (var user in _viewModel.Users)
+                {
+                    parentAccount = user.Accounts.FirstOrDefault(a => a.DbId == accountDbId);
+                    if (parentAccount != null)
+                        break;
+                }
+                if (parentAccount == null)
+                {
+                    // This might happen due to asynchronous signal processing
+                    Logger.Log(Logger.Level.Error, $"Parent account with DbId {accountDbId} not found for drive DbId {driveInfo.DbId}.");
+                    return false;
+                }
+                await Utility.RunOnUIThread(() =>
+                {
+                    Drive newDrive = new Drive(driveInfo.DbId ?? throw new InvalidOperationException("DbId should not be null here."), parentAccount);
+                    ConversionHelper.copyToDrive(driveInfo, newDrive);
+                    parentAccount.Drives.Add(newDrive);
+
+                });
+                Logger.Log(Logger.Level.Info, $"New drive added to account with DbId {accountDbId}.");
+                return true;
             });
-            Logger.Log(Logger.Level.Info, $"New drive added to account with DbId {accountDbId}.");
         }
 
         private async Task AddOrUpdateSyncInModel(SyncInfo syncInfo)
         {
-            List<Drive> allDrives = new();
-            foreach (var user in _viewModel.Users)
+            await AutoRetry(async Task<bool> () =>
             {
-                allDrives.AddRange(user.Drives);
-            }
-
-            foreach (var drive in allDrives)
-            {
-                var sync = drive.Syncs.FirstOrDefault(s => s?.DbId == syncInfo.DbId, null);
-                if (sync == null)
+                List<Drive> allDrives = new();
+                foreach (var user in _viewModel.Users)
                 {
-                    continue;
+                    allDrives.AddRange(user.Drives);
                 }
-                ConversionHelper.copyToSync(syncInfo, sync);
-                Logger.Log(Logger.Level.Info, $"Sync with DbId {syncInfo.DbId} updated.");
-                return;
-            }
-            // Sync not found, add it to the correct drive
-            DbId? driveDbId = syncInfo.DriveDbId; // Assuming SyncInfo has a DriveDbId property
-            var parentDrive = allDrives.FirstOrDefault(d => d.DbId == driveDbId);
-            if (parentDrive == null)
-            {
-                Logger.Log(Logger.Level.Error, $"Parent drive with DbId {driveDbId} not found for sync DbId {syncInfo.DbId}.");
-                return;
-            }
-            await Utility.RunOnUIThread(() =>
-            {
-                Sync newSync = new Sync(syncInfo.DbId ?? throw new InvalidOperationException("DbId should not be null here."), parentDrive);
-                ConversionHelper.copyToSync(syncInfo, newSync);
-                parentDrive.Syncs.Add(newSync);
+
+                foreach (var drive in allDrives)
+                {
+                    var sync = drive.Syncs.FirstOrDefault(s => s?.DbId == syncInfo.DbId, null);
+                    if (sync == null)
+                    {
+                        continue;
+                    }
+                    ConversionHelper.copyToSync(syncInfo, sync);
+                    Logger.Log(Logger.Level.Info, $"Sync with DbId {syncInfo.DbId} updated.");
+                    return true;
+                }
+
+                // Sync not found, add it to the correct drive
+                DbId? driveDbId = syncInfo.DriveDbId; // Assuming SyncInfo has a DriveDbId property
+                var parentDrive = allDrives.FirstOrDefault(d => d.DbId == driveDbId);
+                if (parentDrive == null)
+                {
+                    // This might happen due to asynchronous signal processing
+                    Logger.Log(Logger.Level.Error, $"Parent drive with DbId {driveDbId} not found for sync DbId {syncInfo.DbId}.");
+                    return false;
+                }
+                await Utility.RunOnUIThread(() =>
+                {
+                    Sync newSync = new Sync(syncInfo.DbId ?? throw new InvalidOperationException("DbId should not be null here."), parentDrive);
+                    ConversionHelper.copyToSync(syncInfo, newSync);
+                    parentDrive.Syncs.Add(newSync);
+                });
+                Logger.Log(Logger.Level.Info, $"New sync added to drive with DbId {driveDbId}.");
+                return true;
             });
-            Logger.Log(Logger.Level.Info, $"New sync added to drive with DbId {driveDbId}.");
+        }
+
+        private async Task AutoRetry(Func<Task<bool>> action, int maxRetries = 3, int delayMilliseconds = 1000, [CallerMemberName] string callerName = "?")
+        {
+            int attempt = 0;
+            while (attempt < maxRetries)
+            {
+                if (await action())
+                {
+                    return;
+                }
+
+                attempt++;
+                if (attempt < maxRetries)
+                {
+                    await Task.Delay(delayMilliseconds);
+                }
+            }
+            Logger.Log(Logger.Level.Error, $"AutoRetry: Failed to complete action in {callerName} after {maxRetries} attempts separated by {delayMilliseconds}ms.");
         }
     }
 }

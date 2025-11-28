@@ -90,6 +90,7 @@
     <Thickness x:Key="Infomaniak.Style.Thickness.Top.M">0,16,0,0</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Top.L">0,24,0,0</Thickness>
 
+    <Thickness x:Key="Infomaniak.Style.Thickness.Bottom.XS">0,0,0,8</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Bottom.S">0,0,0,12</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Bottom.M">0,0,0,16</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Bottom.L">0,0,0,24</Thickness>
@@ -244,6 +245,6 @@
         <Setter Property="CornerRadius"
                 Value="{StaticResource Infomaniak.Style.CornerRadius.M}" />
         <Setter Property="BorderBrush"
-                Value="{ThemeResource ButtonDisabledBorderThemeBrush}" />
+                Value="{ThemeResource ToolTipBorderThemeBrush}" />
     </Style>
 </ResourceDictionary>

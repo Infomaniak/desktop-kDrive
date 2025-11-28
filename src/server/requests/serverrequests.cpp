@@ -706,6 +706,14 @@ ExitCode ServerRequests::addSync(int driveDbId, const SyncPath &localFolderPath,
                                                                             << Path2WStr(localFolderPath) << L" serverFolderPath="
                                                                             << Path2WStr(serverFolderPath) << L" liteSync="
                                                                             << liteSync);
+    // Create the sync folder if it does not exist
+    IoError ioError = IoError::Success;
+    bool res = IoHelper::createDirectory(localFolderPath, true, ioError);
+    if ((!res || ioError != IoError::Success) && ioError != IoError::DirectoryExists) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error creating local sync folder - path=" << Path2WStr(localFolderPath) << L" ioError=" << ioError);
+        return ExitCode::SystemError;
+    }
 
 #ifndef Q_OS_WIN
     Q_UNUSED(showInNavigationPane)
@@ -1694,6 +1702,17 @@ ExitInfo ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &upd
             accountUpdated = true;
         }
 
+        std::string colorHex;
+        if (Poco::JSON::Object::Ptr prefObj = dataObj->getObject(preferencesKey)) {
+            if (!JsonParserUtility::extractValue(prefObj, colorKey, colorHex, false)) {
+                return ExitCode::BackError;
+            }
+            if (drive.color() != colorHex) {
+                drive.setColor(colorHex);
+                updated = true;
+            }
+        }
+
         // Non DB attributes
         bool inMaintenance = false;
         if (!JsonParserUtility::extractValue(dataObj, inMaintenanceKey, inMaintenance)) {
@@ -2023,6 +2042,7 @@ void ServerRequests::userToUserInfo(const User &user, UserInfo &userInfo) {
 void ServerRequests::accountToAccountInfo(const Account &account, AccountInfo &accountInfo) {
     accountInfo.setDbId(account.dbId());
     accountInfo.setUserDbId(account.userDbId());
+    accountInfo.setAccountId(account.accountId());
 }
 
 void ServerRequests::driveToDriveInfo(const Drive &drive, DriveInfo &driveInfo) {

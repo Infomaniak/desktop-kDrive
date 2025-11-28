@@ -419,8 +419,8 @@ void TestGuiCommChannel::testAccountInfoListJob() {
 
     // Callback expected answer
     const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"accountInfoList":[)"
-                            R"({"dbId":1,"userDbId":1},)"
-                            R"({"dbId":2,"userDbId":1}]}})"};
+                            R"({"dbId":1,"userDbId":1, "accountId": 1111},)"
+                            R"({"dbId":2,"userDbId":1, "accountId": 2222}]}})"};
 #endif
 
     // Job expected answer
@@ -432,8 +432,8 @@ void TestGuiCommChannel::testAccountInfoListJob() {
                          R"(,)"
                          R"( "params": {)"
                          R"( "accountInfoList": [)"
-                         R"( { "dbId": 1, "userDbId": 1 },)"
-                         R"( { "dbId": 2, "userDbId": 1 } ] },)"
+                         R"( { "dbId": 1, "userDbId": 1, "accountId": 1111 },)"
+                         R"( { "dbId": 2, "userDbId": 1, "accountId": 2222} ] },)"
                          R"( "type": )" +
                          std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
