@@ -806,7 +806,7 @@ ExitInfo SyncPal::isRootFolderValid() {
     if (NodeId rootNodeId; IoHelper::getNodeId(localPath(), rootNodeId)) {
         if (rootNodeId.empty()) {
             LOGW_SYNCPAL_WARN(_logger, L"Unable to get root folder nodeId: " << Utility::formatSyncPath(localPath()));
-            return ExitCode::SystemError;
+            return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
         }
 
         if (localNodeId().empty()) {
@@ -820,7 +820,7 @@ ExitInfo SyncPal::isRootFolderValid() {
         return localNodeId() == rootNodeId ? ExitInfo(ExitCode::Ok) : ExitInfo(ExitCode::DataError, ExitCause::SyncDirChanged);
     } else {
         LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getNodeId for root folder: " << Utility::formatSyncPath(localPath()));
-        return ExitCode::SystemError;
+        return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
     }
 }
 
