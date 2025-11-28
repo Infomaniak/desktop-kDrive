@@ -50,7 +50,7 @@ class TestWorkers : public CppUnit::TestFixture, public TestBase {
         static bool startVfs();
 
         log4cplus::Logger _logger;
-        std::shared_ptr<SyncPal> _syncPal;
+        std::shared_ptr<SyncPal> _syncPal = nullptr;
         Sync _sync;
         LocalTemporaryDirectory _localTempDir{"TestWorkers"};
         LocalTemporaryDirectory _localParmsDbTempDir{"testParmsDbTempDir"};
