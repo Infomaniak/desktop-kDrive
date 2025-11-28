@@ -34,7 +34,22 @@ public final class ObservedAccount: ObservableObject {
             cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
 
         cancellable = cacheObservation.usersPublisher
-            .accountPublisher(forUserDbId: userDbId, accountDbId: accountDbId)
+            .accountPublisher(userDbId: userDbId, accountDbId: accountDbId)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] account in
+                self?.wrappedValue = account
+            }
+    }
+
+    public init(
+        accountDbId: Int32,
+        cacheObservation: CoherentCacheObservable? = nil
+    ) {
+        let cacheObservation =
+            cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
+
+        cancellable = cacheObservation.usersPublisher
+            .accountPublisher(accountDbId: accountDbId)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] account in
                 self?.wrappedValue = account
@@ -47,11 +62,31 @@ public final class ObservedAccount: ObservableObject {
 }
 
 public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
-    func accountPublisher(forUserDbId userDbId: Int32,
+    func accountPublisher(userDbId: Int32,
                           accountDbId: Int32)
         -> AnyPublisher<Account?, Never> {
         map { usersDict -> Account? in
             usersDict[userDbId]?.accounts[accountDbId]
+        }
+        .scan((old: Account?.none, new: Account?.none)) { prev, newAccount in
+            (old: prev.new, new: newAccount)
+        }
+        .map { pair -> Account? in
+            guard pair.old != pair.new else { return nil }
+            return pair.new
+        }
+        .compactMap { $0 }
+        .eraseToAnyPublisher()
+    }
+
+    func accountPublisher(accountDbId: Int32) -> AnyPublisher<Account?, Never> {
+        map { usersDict -> Account? in
+            for user in usersDict.values {
+                if let account = user.accounts[accountDbId] {
+                    return account
+                }
+            }
+            return nil
         }
         .scan((old: Account?.none, new: Account?.none)) { prev, newAccount in
             (old: prev.new, new: newAccount)
