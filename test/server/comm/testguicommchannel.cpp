@@ -1329,7 +1329,7 @@ void TestGuiCommChannel::testGenericJob(const CommString &query, const CommStrin
             // (QImage.save() gives different results depending on the machine)
             CommString s{answer};
             assert(job->_outputParamsStr == answer);
-            CPPUNIT_ASSERT(job->_outputParamsStr == answer);
+            CPPUNIT_ASSERT_MESSAGE(CommonUtility::commString2Str(job->_outputParamsStr).c_str(), job->_outputParamsStr == answer);
         }
 
         CPPUNIT_ASSERT(testChannel->sendMessage(job->_outputParamsStr));
