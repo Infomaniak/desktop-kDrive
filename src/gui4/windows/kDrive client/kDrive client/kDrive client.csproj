@@ -77,6 +77,9 @@
     <Page Update="CustomControls\DynamicTextBlock.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="CustomControls\SyncExclusionSelector.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="CustomControls\LottiePlayer.xaml">
       <SubType>Designer</SubType>
     </Page>

@@ -21,17 +21,17 @@ namespace Infomaniak.kDrive.Types
     public enum RequestNum
     {
         Unknown = 0,
-        LoginRequestToken,
-        UserDbIds,
-        UserInfoList,
+        LOGIN_REQUESTTOKEN,
+        USER_DBIDLIST,
+        USER_INFOLIST,
         USER_DELETE,
         USER_AVAILABLEDRIVES,
-        AccountInfoList,
-        DriveInfoList,
+        ACCOUNT_INFOLIST,
+        DRIVE_INFOLIST,
         DRIVE_UPDATE,
         DRIVE_DELETE,
         DRIVE_SEARCH,
-        SyncInfoList,
+        SYNC_INFOLIST,
         SYNC_START,
         SYNC_STOP,
         SYNC_STATUS,
@@ -44,9 +44,8 @@ namespace Infomaniak.kDrive.Types
         SYNC_ASKFORSTATUS,
         SYNC_SETSUPPORTSVIRTUALFILES,
         SYNC_SETROOTPINSTATE,
-        SYNC_PROPAGATE_SYNCLIST_CHANGE,
-        SYNCNODE_LIST,
-        SYNCNODE_SETLIST,
+        BLACKLISTED_NODE_LIST,
+        BLACKLISTED_NODE_SETLIST,
         NODE_PATH,
         NODE_INFO,
         NODE_SUBFOLDERS,
@@ -90,6 +89,7 @@ namespace Infomaniak.kDrive.Types
         UPDATER_SKIP_VERSION,
         EnumEnd
     };
+
     public enum SignalNum
     {
         Unknown = 0,
@@ -156,5 +156,17 @@ namespace Infomaniak.kDrive.Types
         Unknown = 0,
         Request = 1,
         Signal = 2,
+    }
+
+    public enum SyncNodeType
+    {
+        Undefined = 0,
+        BlackList, // Nodes that are excluded from sync
+        WhiteList, // Explicitly whitelisted nodes (e.g. folder size above limit but user want to sync anyway). Note: all
+                   // nodes in none of those lists are implicitly whitelisted
+        UndecidedList, // Considered as blacklisted until user action
+        TmpRemoteBlacklist, // Blacklisted temporarily
+        TmpLocalBlacklist, // Blacklisted temporarily
+        EnumEnd
     }
 }

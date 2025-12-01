@@ -54,8 +54,8 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/syncgetprivatelinkurljob.h ${server_srcs_path}/comm/guijobs/syncgetprivatelinkurljob.cpp
     ${server_srcs_path}/comm/guijobs/nodesubfoldersjob.h ${server_srcs_path}/comm/guijobs/nodesubfoldersjob.cpp
     ${server_srcs_path}/comm/guijobs/nodefoldersizejob.h ${server_srcs_path}/comm/guijobs/nodefoldersizejob.cpp
-    ${server_srcs_path}/comm/guijobs/syncnodelistjob.h ${server_srcs_path}/comm/guijobs/syncnodelistjob.cpp
-    ${server_srcs_path}/comm/guijobs/syncnodesetlistjob.h ${server_srcs_path}/comm/guijobs/syncnodesetlistjob.cpp
+    ${server_srcs_path}/comm/guijobs/blacklistednodelistjob.h ${server_srcs_path}/comm/guijobs/blacklistednodelistjob.cpp
+    ${server_srcs_path}/comm/guijobs/blacklistednodesetlistjob.h ${server_srcs_path}/comm/guijobs/blacklistednodesetlistjob.cpp
     ${server_srcs_path}/comm/guijobs/nodeinfojob.h ${server_srcs_path}/comm/guijobs/nodeinfojob.cpp
     ${server_srcs_path}/comm/guijobs/signaluseraddedjob.h ${server_srcs_path}/comm/guijobs/signaluseraddedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.h ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.cpp

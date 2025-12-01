@@ -1476,12 +1476,10 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << ExitCode::Ok;
             break;
         }
-        case RequestNum::SYNCNODE_LIST: {
+        case RequestNum::BLACKLISTED_NODE_LIST: {
             int syncDbId;
-            SyncNodeType type;
             QDataStream paramsStream(params);
             paramsStream >> syncDbId;
-            paramsStream >> type;
 
             const std::scoped_lock lock(syncPalMapMutex);
             auto syncPalMapIt = syncPalMap.find(syncDbId);
@@ -1499,7 +1497,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
 
             NodeSet nodeIdSet;
-            ExitCode exitCode = syncPalMapIt->second->syncIdSet(type, nodeIdSet);
+            ExitCode exitCode = syncPalMapIt->second->syncIdSet(SyncNodeType::BlackList, nodeIdSet);
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in SyncPal::getSyncIdSet: code=" << exitCode);
                 addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
@@ -1514,13 +1512,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << nodeIdSet2;
             break;
         }
-        case RequestNum::SYNCNODE_SETLIST: {
+        case RequestNum::BLACKLISTED_NODE_SETLIST: {
             int syncDbId;
-            SyncNodeType type;
             QSet<QString> nodeIdSet;
             QDataStream paramsStream(params);
             paramsStream >> syncDbId;
-            paramsStream >> type;
             paramsStream >> nodeIdSet;
 
             const std::scoped_lock lock(syncPalMapMutex);
@@ -1541,7 +1537,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 nodeIdSet2.insert(nodeId.toStdString());
             }
 
-            ExitCode exitCode = syncPalMapIt->second->setSyncIdSet(type, nodeIdSet2);
+            ExitCode exitCode = syncPalMapIt->second->setSyncIdSet(SyncNodeType::BlackList, nodeIdSet2);
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in SyncPal::setSyncIdSet: code=" << exitCode);
                 addError(Error(ERR_ID, exitCode, ExitCause::Unknown));

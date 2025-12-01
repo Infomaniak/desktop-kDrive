@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "syncnodelistjob.h"
+#include "blacklistednodesetlistjob.h"
 #include "appserver.h"
 #include "requests/serverrequests.h"
 #include "server/comm/guijobmanager.h"
@@ -26,53 +26,50 @@
 
 // Input parameters keys
 static const auto inParamsSyncDbId = "syncDbId";
-static const auto inParamsSyncNodeType = "syncNodeType";
-
-// Output parameters keys
-static const auto outParamsNodeIdList = "nodeIdList";
+static const auto inParamsNodeIdList = "nodeIdList";
 
 namespace KDC {
 
-SyncNodeListJob::SyncNodeListJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                                 std::shared_ptr<AbstractCommChannel> channel) :
+BlacklistedNodeSetListJob::BlacklistedNodeSetListJob(std::shared_ptr<CommManager> commManager, int requestId,
+                                       const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
-    _requestNum = RequestNum::SYNCNODE_LIST;
+    _requestNum = RequestNum::BLACKLISTED_NODE_SETLIST;
 }
 
-ExitInfo SyncNodeListJob::deserializeInputParms() {
+ExitInfo BlacklistedNodeSetListJob::deserializeInputParms() {
     try {
         readParamValue(inParamsSyncDbId, _syncDbId);
-        readParamValue(inParamsSyncNodeType, _syncNodeType);
+        readParamValues(inParamsNodeIdList, _nodeIdList);
     } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in SyncNodeListJob::readParamValue: error=" << e.what());
+        LOG_WARN(_logger, "Exception in AbstractGuiJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
     }
 
     return ExitCode::Ok;
 }
 
-ExitInfo SyncNodeListJob::serializeOutputParms() {
-    writeParamValues(outParamsNodeIdList, _nodeIdList);
-    return ExitCode::Ok;
-}
-
-ExitInfo SyncNodeListJob::process() {
+ExitInfo BlacklistedNodeSetListJob::process() {
     std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
     auto &syncPalMap = _commManager->appServer().syncPalMap;
     auto it = syncPalMap.find(_syncDbId);
     if (it == syncPalMap.end()) {
-        LOG_WARN(_logger, "SyncNodeListJob::process: SyncPal not found for syncDbId=" << _syncDbId);
+        LOG_WARN(_logger, "BlacklistedNodeSetListJob::process: SyncPal not found for syncDbId=" << _syncDbId);
         return ExitCode::DataError;
     }
 
     NodeSet nodeIdSet;
-    if (ExitInfo exitInfo = it->second->syncIdSet(_syncNodeType, nodeIdSet); !exitInfo) {
-        LOG_WARN(_logger, "Error in SyncPal::setSyncIdSet: " << exitInfo);
+    nodeIdSet.insert(_nodeIdList.begin(), _nodeIdList.end());
+    if (ExitInfo exitInfo = it->second->setSyncIdSet(SyncNodeType::BlackList, nodeIdSet); !exitInfo) {
+        LOG_WARN(_logger, "BlacklistedNodeSetListJob::process: setSyncIdSet failed for syncDbId=" << _syncDbId);
         AppServer::addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
         return exitInfo;
     }
-    _nodeIdList.assign(nodeIdSet.begin(), nodeIdSet.end());
+
+    if (ExitInfo exitInfo = it->second->syncListUpdated(it->second->isRunning()); !exitInfo) {
+        LOG_WARN(_logger, "BlacklistedNodeSetListJob::process: syncListUpdated failed for syncDbId=" << _syncDbId);
+        AppServer::addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
+        return exitInfo;
+    }
     return ExitCode::Ok;
 }
-
 } // namespace KDC

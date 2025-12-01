@@ -81,7 +81,14 @@ namespace Infomaniak.kDrive
                 return;
 #endif
             string logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [{level}] ({Path.GetFileName(filePath)}:{lineNumber}) {memberName}: {message}";
-            _logStream?.WriteLine(logEntry);
+            try
+            {
+                _logStream?.WriteLine(logEntry);
+            }catch (Exception ex) {
+                System.Diagnostics.Debug.WriteLine($"Failed to write log entry: {ex.Message}");
+                // Reset the log stream to avoid further errors
+                _logStream = new StreamWriter(_logFilePath, append: true) { AutoFlush = true };
+            }
 
 #if DEBUG
             if (level > Level.Info)

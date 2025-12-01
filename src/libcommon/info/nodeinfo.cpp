@@ -38,7 +38,7 @@ NodeInfo::NodeInfo(QString nodeId, QString name, qint64 size, QString parentNode
 NodeInfo::NodeInfo() :
     _nodeId(QString()),
     _name(QString()),
-    _size(0),
+    _size(-1),
     _parentNodeId(QString()),
     _modtime(0) {}
 
