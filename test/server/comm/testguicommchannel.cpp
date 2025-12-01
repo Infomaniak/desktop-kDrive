@@ -31,6 +31,7 @@
 #include "comm/guijobs/syncadd2job.h"
 #include "comm/guijobs/syncgetpubliclinkurljob.h"
 #include "comm/guijobs/syncgetprivatelinkurljob.h"
+#include "comm/guijobs/syncsetrootpinstatejob.h"
 #include "comm/guijobs/nodesubfoldersjob.h"
 #include "comm/guijobs/nodefoldersizejob.h"
 #include "comm/guijobs/blacklistednodelistjob.h"
@@ -1154,10 +1155,54 @@ void TestGuiCommChannel::testSyncGetPrivateLinkUrlJob() {
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto syncGetPrivateLinkUrlJob = std::dynamic_pointer_cast<SyncGetPrivateLinkUrlJob>(job);
+        CPPUNIT_ASSERT(syncGetPrivateLinkUrlJob);
+        CPPUNIT_ASSERT_EQUAL(1, syncGetPrivateLinkUrlJob->_driveDbId);
+        CPPUNIT_ASSERT(CommString{Str("1111")} == syncGetPrivateLinkUrlJob->_fileId);
 
         syncGetPrivateLinkUrlJob->_linkUrl = std::string{"https://kdrive.infomaniak.com/app/drive/1/redirect/1111"};
     };
 
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+#else
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
+void TestGuiCommChannel::testSyncSetRootPinStateJob() {
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    const auto queryStr{R"({ "id": 1,)"
+                        R"( "num": )" +
+                        std::to_string(toInt(RequestNum::SYNC_SETROOTPINSTATE)) +
+                        R"(,)"
+                        R"( "params": { "syncDbId": 1, "state": 2 } })"};
+#else
+    // There is no need to pass a request id as the response is via a callback.
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::SYNC_SETROOTPINSTATE)) +
+                        R"(,)"
+                        R"( "params": { "syncDbId": 1, "state": 2 } })"};
+
+    // Callback expected answer
+    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{}})"};
+#endif
+
+    // Job expected answer
+    const auto answerStr{R"({ "cause": 0,)"
+                         R"( "code": 0,)"
+                         R"( "id": 1,)"
+                         R"( "num": )" +
+                         std::to_string(toInt(RequestNum::SYNC_SETROOTPINSTATE)) +
+                         R"(,)"
+                         R"( "params": {  },)"
+                         R"( "type": )" +
+                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto syncSetRootPinStateJob = std::dynamic_pointer_cast<SyncSetRootPinStateJob>(job);
+        CPPUNIT_ASSERT(syncSetRootPinStateJob);
+        CPPUNIT_ASSERT_EQUAL(1, syncSetRootPinStateJob->_syncDbId);
+        CPPUNIT_ASSERT_EQUAL(PinState::OnlineOnly, syncSetRootPinStateJob->_state);
+    };
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else
@@ -1173,11 +1218,13 @@ void TestGuiCommChannel::testNodeSubFolderJob() {
 #else
     const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::NODE_SUBFOLDERS)) +
                         R"(, "params": { "userDbId": 1, "driveId": 1111, "nodeId": "123", "withPath": true } })"};
-    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"nodeSubFolderInfoList":[{"modtime":10,"name":"FolderA","nodeId":"A","parentNodeId":"123","path":"/root/FolderA","size":0},{"modtime":20,"name":"FolderB","nodeId":"B","parentNodeId":"123","path":"/root/FolderB","size":0}]}})"};
+    const auto cbkAnswerStr{
+            R"({"cause":0,"code":0,"id":1,"params":{"nodeSubFolderInfoList":[{"modtime":10,"name":"FolderA","nodeId":"A","parentNodeId":"123","path":"/root/FolderA","size":0},{"modtime":20,"name":"FolderB","nodeId":"B","parentNodeId":"123","path":"/root/FolderB","size":0}]}})"};
 #endif
-    const auto answerStr{R"({ "cause": 0, "code": 0, "id": 1, "num": )" + std::to_string(toInt(RequestNum::NODE_SUBFOLDERS)) +
-                         R"(, "params": { "nodeSubFolderInfoList": [ { "modtime": 10, "name": "FolderA", "nodeId": "A", "parentNodeId": "123", "path": "/root/FolderA", "size": 0 }, { "modtime": 20, "name": "FolderB", "nodeId": "B", "parentNodeId": "123", "path": "/root/FolderB", "size": 0 } ] }, "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+    const auto answerStr{
+            R"({ "cause": 0, "code": 0, "id": 1, "num": )" + std::to_string(toInt(RequestNum::NODE_SUBFOLDERS)) +
+            R"(, "params": { "nodeSubFolderInfoList": [ { "modtime": 10, "name": "FolderA", "nodeId": "A", "parentNodeId": "123", "path": "/root/FolderA", "size": 0 }, { "modtime": 20, "name": "FolderB", "nodeId": "B", "parentNodeId": "123", "path": "/root/FolderB", "size": 0 } ] }, "type": )" +
+            std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto nodeSubFoldersJob = std::dynamic_pointer_cast<NodeSubFoldersJob>(job);
@@ -1225,7 +1272,8 @@ void TestGuiCommChannel::testSyncNodeListJob() {
                         R"(, "params": { "syncDbId": 5 } })"};
     const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"nodeIdList":["n1","n2","n3"]}})"};
 #endif
-    const auto answerStr{R"({ "cause": 0, "code": 0, "id": 1, "num": )" + std::to_string(toInt(RequestNum::BLACKLISTED_NODE_LIST)) +
+    const auto answerStr{R"({ "cause": 0, "code": 0, "id": 1, "num": )" +
+                         std::to_string(toInt(RequestNum::BLACKLISTED_NODE_LIST)) +
                          R"(, "params": { "nodeIdList": [ "n1", "n2", "n3" ] }, "type": )" +
                          std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
@@ -1249,11 +1297,18 @@ void TestGuiCommChannel::testSyncNodeSetListJob() {
                         R"(, "params": { "syncDbId": 5, "nodeIdList": ["x1","x2"] } })"};
     const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{}})"};
 #endif
-    const auto answerStr{R"({ "cause": 0, "code": 0, "id": 1, "num": )" + std::to_string(toInt(RequestNum::BLACKLISTED_NODE_SETLIST)) +
-                         R"(, "params": {  }, "type": )" + std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+    const auto answerStr{R"({ "cause": 0, "code": 0, "id": 1, "num": )" +
+                         std::to_string(toInt(RequestNum::BLACKLISTED_NODE_SETLIST)) + R"(, "params": {  }, "type": )" +
+                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         // Nothing to serialize back for set job
+        auto blacklistedNodeSetListJob = std::dynamic_pointer_cast<BlacklistedNodeSetListJob>(job);
+        CPPUNIT_ASSERT(std::dynamic_pointer_cast<BlacklistedNodeSetListJob>(job));
+        CPPUNIT_ASSERT_EQUAL(5, blacklistedNodeSetListJob->_syncDbId);
+        CPPUNIT_ASSERT_EQUAL(size_t{2}, blacklistedNodeSetListJob->_nodeIdList.size());
+        CPPUNIT_ASSERT_EQUAL(std::string{"x1"}, blacklistedNodeSetListJob->_nodeIdList.at(0));
+        CPPUNIT_ASSERT_EQUAL(std::string{"x2"}, blacklistedNodeSetListJob->_nodeIdList.at(0));
     };
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
@@ -1269,11 +1324,13 @@ void TestGuiCommChannel::testNodeInfoJob() {
 #else
     const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::NODE_INFO)) +
                         R"(, "params": { "userDbId": 1, "driveId": 1111, "nodeId": "n1", "withPath": true } })"};
-    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"nodeInfo":{"modtime":55,"name":"FileA","nodeId":"n1","parentNodeId":"n2","path":"/root/FileA","size":123}}})"};
+    const auto cbkAnswerStr{
+            R"({"cause":0,"code":0,"id":1,"params":{"nodeInfo":{"modtime":55,"name":"FileA","nodeId":"n1","parentNodeId":"n2","path":"/root/FileA","size":123}}})"};
 #endif
-    const auto answerStr{R"({ "cause": 0, "code": 0, "id": 1, "num": )" + std::to_string(toInt(RequestNum::NODE_INFO)) +
-                         R"(, "params": { "nodeInfo": { "modtime": 55, "name": "FileA", "nodeId": "n1", "parentNodeId": "n2", "path": "/root/FileA", "size": 123 } }, "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+    const auto answerStr{
+            R"({ "cause": 0, "code": 0, "id": 1, "num": )" + std::to_string(toInt(RequestNum::NODE_INFO)) +
+            R"(, "params": { "nodeInfo": { "modtime": 55, "name": "FileA", "nodeId": "n1", "parentNodeId": "n2", "path": "/root/FileA", "size": 123 } }, "type": )" +
+            std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto nodeInfoJob = std::dynamic_pointer_cast<NodeInfoJob>(job);

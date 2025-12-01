@@ -72,6 +72,7 @@ set(server_SRCS
     comm/guijobs/syncdeletejob.h comm/guijobs/syncdeletejob.cpp
     comm/guijobs/syncgetpubliclinkurljob.h comm/guijobs/syncgetpubliclinkurljob.cpp
     comm/guijobs/syncgetprivatelinkurljob.h comm/guijobs/syncgetprivatelinkurljob.cpp
+    comm/guijobs/syncsetrootpinstatejob.h comm/guijobs/syncsetrootpinstatejob.cpp
     comm/guijobs/nodesubfoldersjob.h comm/guijobs/nodesubfoldersjob.cpp
     comm/guijobs/nodefoldersizejob.h comm/guijobs/nodefoldersizejob.cpp
     comm/guijobs/nodeinfojob.h comm/guijobs/nodeinfojob.cpp

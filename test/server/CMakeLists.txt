@@ -52,6 +52,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/syncdeletejob.h ${server_srcs_path}/comm/guijobs/syncdeletejob.cpp
     ${server_srcs_path}/comm/guijobs/syncgetpubliclinkurljob.h ${server_srcs_path}/comm/guijobs/syncgetpubliclinkurljob.cpp
     ${server_srcs_path}/comm/guijobs/syncgetprivatelinkurljob.h ${server_srcs_path}/comm/guijobs/syncgetprivatelinkurljob.cpp
+    ${server_srcs_path}/comm/guijobs/syncsetrootpinstatejob.h ${server_srcs_path}/comm/guijobs/syncsetrootpinstatejob.cpp
     ${server_srcs_path}/comm/guijobs/nodesubfoldersjob.h ${server_srcs_path}/comm/guijobs/nodesubfoldersjob.cpp
     ${server_srcs_path}/comm/guijobs/nodefoldersizejob.h ${server_srcs_path}/comm/guijobs/nodefoldersizejob.cpp
     ${server_srcs_path}/comm/guijobs/blacklistednodelistjob.h ${server_srcs_path}/comm/guijobs/blacklistednodelistjob.cpp
