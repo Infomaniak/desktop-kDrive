@@ -99,6 +99,12 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testSyncGetPublicLinkUrlJob();
         void testSyncGetPrivateLinkUrlJob();
         void testSyncSetRootPinStateJob();
+        void testNodeSubFolderJob();
+        void testNodeFolderSizeJob();
+        void testSyncNodeListJob();
+        void testSyncNodeSetListJob();
+        void testNodeInfoJob();
+
 
     private:
         GuiJobFactory _guiJobFactory;

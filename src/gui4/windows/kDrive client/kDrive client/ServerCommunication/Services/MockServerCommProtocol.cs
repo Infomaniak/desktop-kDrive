@@ -56,17 +56,17 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         {
             switch (requestNum)
             {
-                case RequestNum.LoginRequestToken:
+                case RequestNum.LOGIN_REQUESTTOKEN:
                     return await LoginRequestToken(parameters);
-                case RequestNum.UserDbIds:
+                case RequestNum.USER_DBIDLIST:
                     return await UserDbIdsRequest(parameters);
-                case RequestNum.UserInfoList:
+                case RequestNum.USER_INFOLIST:
                     return await UserInfoListRequest(parameters);
-                case RequestNum.AccountInfoList:
+                case RequestNum.ACCOUNT_INFOLIST:
                     return await AccountInfoListRequest(parameters);
-                case RequestNum.DriveInfoList:
+                case RequestNum.DRIVE_INFOLIST:
                     return await DriveInfoListRequest(parameters);
-                case RequestNum.SyncInfoList:
+                case RequestNum.SYNC_INFOLIST:
                     return await SyncInfoListRequest(parameters);
                 case RequestNum.UPDATER_START_INSTALLER:
                     return await UpdateStartInstaller(parameters);
@@ -112,7 +112,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 Type = CommMessageType.Request,
                 Id = (int)NextId,
-                RequestNum = RequestNum.LoginRequestToken,
+                RequestNum = RequestNum.LOGIN_REQUESTTOKEN,
                 Params = new JsonObject
                 {
                     { "userDbId", user.DbId }
@@ -127,7 +127,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 Type = CommMessageType.Request,
                 Id = (int)NextId,
-                RequestNum = RequestNum.UserDbIds,
+                RequestNum = RequestNum.USER_DBIDLIST,
                 Params = new JsonObject
                 {
                     { JsonKeys.UserDbIds, JsonSerializer.SerializeToNode(userDbIds) }
@@ -146,8 +146,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 {
                     { "dbId", user.DbId },
                     { "userId", user.UserId },
-                    { "name", Convert.ToBase64String(Encoding.UTF8.GetBytes(user.Name)) },
-                    { "email", Convert.ToBase64String(Encoding.UTF8.GetBytes(user.Email)) },
+                    { "name", Utility.ToBase64String(user.Name) },
+                    { "email", Utility.ToBase64String(user.Email) },
                     { "isConnected", user.IsConnected },
                     { "isStaff", user.IsStaff }
                 };
@@ -163,7 +163,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 Type = CommMessageType.Request,
                 Id = (int)NextId,
-                RequestNum = RequestNum.UserInfoList,
+                RequestNum = RequestNum.USER_INFOLIST,
                 Params = result
             });
         }
@@ -192,7 +192,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 Type = CommMessageType.Request,
                 Id = (int)NextId,
-                RequestNum = RequestNum.AccountInfoList,
+                RequestNum = RequestNum.ACCOUNT_INFOLIST,
                 Params = result
             });
         }
@@ -209,8 +209,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     { "dbId", drive.DbId },
                     { "driveId", drive.DriveId },
                     { "accountDbId", drive.Account.DbId },
-                    { "name", Convert.ToBase64String(Encoding.UTF8.GetBytes(drive.Name)) },
-                    { "color", Convert.ToBase64String(Encoding.UTF8.GetBytes(System.Drawing.ColorTranslator.ToHtml(drive.Color))) },
+                    { "name", Utility.ToBase64String(drive.Name) },
+                    { "color", Utility.ToBase64String(System.Drawing.ColorTranslator.ToHtml(drive.Color)) },
                     { "notifications", true },
                     { "maintenance", false },
                     { "locked", false },
@@ -227,7 +227,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 Type = CommMessageType.Request,
                 Id = (int)NextId,
-                RequestNum = RequestNum.DriveInfoList,
+                RequestNum = RequestNum.DRIVE_INFOLIST,
                 Params = result
             });
         }
@@ -242,8 +242,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 {
                     { "dbId", sync.DbId },
                     { "driveDbId", sync.Drive.DbId },
-                    { "localPath", Convert.ToBase64String(Encoding.UTF8.GetBytes(sync.LocalPath)) },
-                    { "targetPath", Convert.ToBase64String(Encoding.UTF8.GetBytes(sync.RemotePath)) },
+                    { "localPath", Utility.ToBase64String(sync.LocalPath) },
+                    { "targetPath", Utility.ToBase64String(sync.RemotePath) },
                     { "targetNodeId", "" },
                     { "supportOnlineMode", sync.SupportOnlineMode },
                     { "syncType", (int)sync.SyncType }
@@ -260,7 +260,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 Type = CommMessageType.Request,
                 Id = (int)NextId,
-                RequestNum = RequestNum.SyncInfoList,
+                RequestNum = RequestNum.SYNC_INFOLIST,
                 Params = result
             });
         }
@@ -291,8 +291,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             var versionInfo = new JsonObject
             {
                 { "channel", (int)update.Channel },
-                { "tag", Convert.ToBase64String(Encoding.UTF8.GetBytes(update.Tag)) },
-                { "buildVersion", Convert.ToBase64String(Encoding.UTF8.GetBytes(update.BuildVersion)) },
+                { "tag", Utility.ToBase64String(update.Tag) },
+                { "buildVersion", Utility.ToBase64String(update.BuildVersion) },
                 { "buildMinOsVersion","" }, // Not used
                 { "downloadUrl", "" }, // Not used
             };

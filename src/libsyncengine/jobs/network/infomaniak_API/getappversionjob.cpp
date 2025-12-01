@@ -102,7 +102,7 @@ void GetAppVersionJob::setQueryParameters(Poco::URI &uri) {
 }
 
 ExitInfo GetAppVersionJob::handleError(const std::string &, const Poco::URI &uri) {
-    LOG_DEBUG(_logger, "Request failed: " << Utility::formatRequest(uri, _errorCode, _errorDescr));
+    LOG_DEBUG(_logger, "Request failed: " << Utility::formatRequest(uri, _backError.code(), _backError.description()));
     return {};
 }
 

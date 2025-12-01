@@ -20,6 +20,7 @@ import Cocoa
 import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
+import kDriveResources
 import Lottie
 
 final class PreloadingViewController: NSViewController {
@@ -41,14 +42,14 @@ final class PreloadingViewController: NSViewController {
 
     private func preloadApp() {
         Task {
-            @InjectService var serverBridge: ServerBridgeable
-            let hasUser = await serverBridge.getConnectedUser()
+            @InjectService var coherentCache: CoherentCache
+            let hasAtLeastOneConnectedUser = await coherentCache.getFirstAvailableUser() != nil
 
             @InjectService var windowRouter: WindowRouter
-            if hasUser {
-                windowRouter.navigate(to: .splitView)
+            if !hasAtLeastOneConnectedUser {
+                windowRouter.navigate(to: .onboarding())
             } else {
-                windowRouter.navigate(to: .onboarding)
+                windowRouter.navigate(to: .splitView)
             }
         }
     }

@@ -4,8 +4,14 @@
  * Locale: en, English
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Mon, 13 Oct 2025 08:40:02 +0200
+ * Exported at: Wed, 26 Nov 2025 16:37:39 +0100
  */
+
+/* loco:691deb2291b20ac7fd045012 */
+"buttonAdvancedParameters" = "Advanced settings";
+
+/* loco:691deb0be15255c13908ba42 */
+"buttonContinue" = "Continue";
 
 /* loco:68e673c48af12c42e80027c8 */
 "buttonCreateAccount" = "Create an account";
@@ -19,14 +25,41 @@
 /* loco:68b04d5a63085b7ab90cea63 */
 "buttonOpenInFinder" = "Open in Finder";
 
-/* loco:68e8fa06c1b003290f0ccf42 */
-"onboardingErrorTitle" = "Connection error";
+/* loco:69240f7b15d05a975c07dc13 */
+"buttonShowOffers" = "Show offers";
+
+/* loco:69240f6d4433e24658054fd4 */
+"buttonStartForFree" = "Get started for free";
+
+/* loco:692406b0258f5599bf01d113 */
+"onboardingDriveSelectionNoDriveDescription" = "Get started for free with my kSuite,\nor choose a package tailored to your needs.";
+
+/* loco:692405adc5c224ad2a07ff62 */
+"onboardingDriveSelectionNoDriveTitle" = "You don't have a kDrive yet.";
+
+/* loco:69242dd4299cf487060f2143 */
+"onboardingDriveSelectionSelectTitle" = "Select the kDrive to be synchronized on this computer:";
+
+/* loco:69271e987f61390c0e053442 */
+"onboardingDriveSelectionSyncInProgress" = "Synchronization in progress";
+
+/* loco:691deaf47145f10ab4052cd2 */
+"onboardingDriveSelectionTitle" = "Welcome back!";
 
 /* loco:68e6739c8af12c42e80027c5 */
 "onboardingLoginDescription" = "The fast, secure private cloud, hosted in Switzerland.\n\nLog in and keep your documents synchronized on all your devices.";
 
 /* loco:68e8fa543a683192560af9e2 */
 "onboardingLoginErrorDescription" = "An error has occurred, please try again.";
+
+/* loco:68e8fa06c1b003290f0ccf42 */
+"onboardingLoginErrorTitle" = "Connection error";
+
+/* loco:691deb66e28b84c78e034353 */
+"onboardingLoginHintLoading" = "Just a few more moments, and we'll load your account…";
+
+/* loco:691deb477145f10ab4052cd4 */
+"onboardingLoginHintWebAuth" = "Login from your browser…";
 
 /* loco:68e673754d80559c460bdf02 */
 "onboardingLoginTitle" = "Welcome to kDrive!";

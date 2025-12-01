@@ -69,9 +69,8 @@ enum class RequestNum {
     SYNC_ASKFORSTATUS,
     SYNC_SETSUPPORTSVIRTUALFILES,
     SYNC_SETROOTPINSTATE,
-    SYNC_PROPAGATE_SYNCLIST_CHANGE,
-    SYNCNODE_LIST,
-    SYNCNODE_SETLIST,
+    BLACKLISTED_NODE_LIST,
+    BLACKLISTED_NODE_SETLIST,
     NODE_PATH,
     NODE_INFO,
     NODE_SUBFOLDERS,
@@ -169,12 +168,10 @@ inline std::string toString(RequestNum e) {
             return "SYNC_SETSUPPORTSVIRTUALFILES";
         case RequestNum::SYNC_SETROOTPINSTATE:
             return "SYNC_SETROOTPINSTATE";
-        case RequestNum::SYNC_PROPAGATE_SYNCLIST_CHANGE:
-            return "SYNC_PROPAGATE_SYNCLIST_CHANGE";
-        case RequestNum::SYNCNODE_LIST:
-            return "SYNCNODE_LIST";
-        case RequestNum::SYNCNODE_SETLIST:
-            return "SYNCNODE_SETLIST";
+        case RequestNum::BLACKLISTED_NODE_LIST:
+            return "BLACKLISTED_NODE_LIST";
+        case RequestNum::BLACKLISTED_NODE_SETLIST:
+            return "BLACKLISTED_NODE_SETLIST";
         case RequestNum::NODE_PATH:
             return "NODE_PATH";
         case RequestNum::NODE_INFO:

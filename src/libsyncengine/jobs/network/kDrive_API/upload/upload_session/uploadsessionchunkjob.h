@@ -38,7 +38,7 @@ class UploadSessionChunkJob : public AbstractUploadSessionJob {
 
     private:
         std::string getSpecificUrl() override;
-        std::string getContentType() override;
+        std::string contentType() override;
         void setQueryParameters(Poco::URI &) override;
         ExitInfo setData() override { return ExitCode::Ok; }
 

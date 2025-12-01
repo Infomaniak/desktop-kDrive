@@ -76,6 +76,8 @@
     <Thickness x:Key="Infomaniak.Style.Thickness.Sides.Horizontal.XS">8,0</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Sides.Horizontal.S">12,0</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Sides.Horizontal.M">16,0</Thickness>
+    <Thickness x:Key="Infomaniak.Style.Thickness.Sides.Horizontal.L">24,0</Thickness>
+    <Thickness x:Key="Infomaniak.Style.Thickness.Sides.Horizontal.XL">32,0</Thickness>
 
     <Thickness x:Key="Infomaniak.Style.Thickness.Sides.Vertical.XXS">0,4</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Sides.Vertical.XS">0,8</Thickness>
@@ -95,10 +97,14 @@
     <Thickness x:Key="Infomaniak.Style.Thickness.Left.XS">8,0,0,0</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Left.S">12,0,0,0</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Left.M">16,0,0,0</Thickness>
+    <Thickness x:Key="Infomaniak.Style.Thickness.Left.L">24,0,0,0</Thickness>
+    <Thickness x:Key="Infomaniak.Style.Thickness.Left.XL">32,0,0,0</Thickness>
 
     <Thickness x:Key="Infomaniak.Style.Thickness.Right.XS">0,0,8,0</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Right.S">0,0,12,0</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Right.M">0,0,16,0</Thickness>
+    <Thickness x:Key="Infomaniak.Style.Thickness.Right.L">0,0,24,0</Thickness>
+    <Thickness x:Key="Infomaniak.Style.Thickness.Right.XL">0,0,32,0</Thickness>
     <!-- Corner Radius -->
     <CornerRadius x:Key="Infomaniak.Style.CornerRadius.XS">2</CornerRadius>
     <CornerRadius x:Key="Infomaniak.Style.CornerRadius.S">4</CornerRadius>
