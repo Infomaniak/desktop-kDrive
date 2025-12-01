@@ -66,7 +66,7 @@ void ParametersInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, parametersInfoLogLevel, _logLevel);
     CommonUtility::writeValueToStruct(dstruct, parametersInfoExtendedLog, _extendedLog);
     CommonUtility::writeValueToStruct(dstruct, parametersInfoPurgeOldLogs, _purgeOldLogs);
-    CommonUtility::writeValueToStruct(dstruct, parametersInfoProxyConfigInfo, _proxyConfigInfo);
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoProxyConfigInfo, _proxyConfigInfo, info2DynamicVar<ProxyConfigInfo>);
     CommonUtility::writeValueToStruct(dstruct, parametersInfoDarkTheme, _darkTheme);
     CommonUtility::writeValueToStruct(dstruct, parametersInfoShowShortcuts, _showShortcuts);
 
@@ -76,7 +76,7 @@ void ParametersInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
         for (auto it = value.keyValueBegin(); it != value.keyValueEnd(); ++it) {
             std::string blob64Str;
             CommonUtility::convertToBase64Str(it->second.toStdString(), blob64Str);
-            structValue[it->first.toStdString()] = blob64Str;
+            (void) structValue.insert(it->first.toStdString(), blob64Str);
         }
 
         return structValue;

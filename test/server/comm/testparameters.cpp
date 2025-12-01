@@ -64,11 +64,11 @@ void TestGuiCommChannel::testParametersUpdateJob() {
     (void) parametersInfoObj.set("proxyConfigInfo", proxyConfigInfoObj);
 
     (void) parametersInfoObj.set("darkTheme", true);
-    (void) parametersInfoObj.set("showShortCuts", false);
+    (void) parametersInfoObj.set("showShortcuts", false);
 
     Poco::JSON::Object dialogGeometryObj;
     (void) dialogGeometryObj.set("preferencesWindow", toBase64("blob1234"));
-    (void) dialogGeometryObj.set("driveParametersPanel", toBase64("blob4567"));
+    (void) dialogGeometryObj.set("drivePreferencesPanel", toBase64("blob4567"));
 
     (void) parametersInfoObj.set("dialogGeometry", dialogGeometryObj);
     (void) parametersInfoObj.set("maxAllowedCpu", 50);
@@ -89,7 +89,7 @@ void TestGuiCommChannel::testParametersUpdateJob() {
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto parametersUpdateJob = std::dynamic_pointer_cast<ParametersUpdateJob>(job);
         CPPUNIT_ASSERT(parametersUpdateJob);
-        const ProxyConfigInfo proxyConfigInfo(ProxyType::HTTP, "myHostName", 6666, true, "john.does", "1234");
+        const ProxyConfigInfo proxyConfigInfo(ProxyType::HTTP, "myHostName", 6666, true, "john.doe", "1234");
         const ParametersInfo::DialogGeometry dialogGeometry = {{"preferencesWindow", "blob1234"},
                                                                {"drivePreferencesPanel", "blob4567"}};
 
