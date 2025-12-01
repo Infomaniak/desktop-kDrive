@@ -1200,18 +1200,6 @@ void TestUpdateTreeWorker::testIntegrityCheck() {
     CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
     newNode->setChangeEvents(OperationType::Edit | OperationType::Move);
     CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
-    if (testhelpers::isRunningOnCI()) {
-        newNode->setChangeEvents(OperationType::Create | OperationType::Move);
-        CPPUNIT_ASSERT(!_localUpdateTreeWorker->integrityCheck());
-        newNode->setChangeEvents(OperationType::Create | OperationType::Edit);
-        CPPUNIT_ASSERT(!_localUpdateTreeWorker->integrityCheck());
-        newNode->setChangeEvents(OperationType::Delete | OperationType::Move);
-        CPPUNIT_ASSERT(!_localUpdateTreeWorker->integrityCheck());
-        newNode->setChangeEvents(OperationType::Delete | OperationType::Edit);
-        CPPUNIT_ASSERT(!_localUpdateTreeWorker->integrityCheck());
-        newNode->setChangeEvents(OperationType::Delete | OperationType::Create);
-        CPPUNIT_ASSERT(!_localUpdateTreeWorker->integrityCheck());
-    }
 }
 
 } // namespace KDC

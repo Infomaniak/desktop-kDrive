@@ -197,7 +197,7 @@ void ExtensionJob::commandGetMenuItems(const CommString &argument, std::shared_p
                 }
 
                 {
-                    const std::scoped_lock lock(_dehydrationMutex);
+                    const std::scoped_lock lock2(_dehydrationMutex);
                     if (_nbOfOngoingDehydration > 0) {
                         canCancelDehydration = true;
                     }
