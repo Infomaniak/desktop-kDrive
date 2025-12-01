@@ -719,28 +719,27 @@ void TestNetworkJobs::testDownload() {
 }
 
 void TestNetworkJobs::testDownloadHasEnoughSpace() {
-    if (testhelpers::isRunningOnCI() && testhelpers::isExtendedTest(false)) {
-        // Only run on CI because it requires a small partition to be set up)
-        const SyncPath smallPartitionPath = testhelpers::TestVariables().local8MoPartitionPath;
-        if (smallPartitionPath.empty()) return;
+    if (!testhelpers::isRunningOnCI() || !testhelpers::isExtendedTest(false)) return;
 
-        // Enough disk space on both paths
-        const LocalTemporaryDirectory temporaryDirectory("tmp");
-        CPPUNIT_ASSERT(DownloadJob::hasEnoughPlace(temporaryDirectory.path(), temporaryDirectory.path(), 9000000,
-                                                   Log::instance()->getLogger()));
+    // Only run on CI because it requires a small partition to be set up)
+    const SyncPath smallPartitionPath = testhelpers::TestVariables().local8MoPartitionPath;
+    if (smallPartitionPath.empty()) return;
 
-        // Enough disk space on destination path, but not on tmp path
-        CPPUNIT_ASSERT(!DownloadJob::hasEnoughPlace(temporaryDirectory.path(), smallPartitionPath, 9000000,
-                                                    Log::instance()->getLogger()));
+    // Enough disk space on both paths
+    const LocalTemporaryDirectory temporaryDirectory("tmp");
+    CPPUNIT_ASSERT(DownloadJob::hasEnoughPlace(temporaryDirectory.path(), temporaryDirectory.path(), 9000000,
+                                               Log::instance()->getLogger()));
 
-        // Enough disk space on tmp path, but not on destination path
-        CPPUNIT_ASSERT(!DownloadJob::hasEnoughPlace(smallPartitionPath, temporaryDirectory.path(), 9000000,
-                                                    Log::instance()->getLogger()));
+    // Enough disk space on destination path, but not on tmp path
+    CPPUNIT_ASSERT(
+            !DownloadJob::hasEnoughPlace(temporaryDirectory.path(), smallPartitionPath, 9000000, Log::instance()->getLogger()));
 
-        // Not enough disk space on both paths
-        CPPUNIT_ASSERT(
-                !DownloadJob::hasEnoughPlace(smallPartitionPath, smallPartitionPath, 9000000, Log::instance()->getLogger()));
-    }
+    // Enough disk space on tmp path, but not on destination path
+    CPPUNIT_ASSERT(
+            !DownloadJob::hasEnoughPlace(smallPartitionPath, temporaryDirectory.path(), 9000000, Log::instance()->getLogger()));
+
+    // Not enough disk space on both paths
+    CPPUNIT_ASSERT(!DownloadJob::hasEnoughPlace(smallPartitionPath, smallPartitionPath, 9000000, Log::instance()->getLogger()));
 }
 
 void TestNetworkJobs::testSearch() {
