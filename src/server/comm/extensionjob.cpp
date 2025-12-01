@@ -196,6 +196,13 @@ void ExtensionJob::commandGetMenuItems(const CommString &argument, std::shared_p
                     }
                 }
 
+                {
+                    const std::scoped_lock lock2(_dehydrationMutex);
+                    if (_nbOfOngoingDehydration > 0) {
+                        canCancelDehydration = true;
+                    }
+                }
+
                 // TODO: Should be a submenu, should use icons
                 auto makePinContextMenu = [this, channel](bool makeAvailableLocally, bool freeSpace, bool cancelDehydration,
                                                           bool cancelHydration) {
@@ -603,7 +610,7 @@ void ExtensionJob::commandMakeOnlineOnlyDirect(const CommString &argument, std::
     const auto fileList = CommonUtility::splitCommString(argument, messageArgSeparator);
 
     {
-        const std::lock_guard lock(_dehydrationMutex);
+        const std::scoped_lock lock(_dehydrationMutex);
         _nbOfOngoingDehydration++;
     }
 
@@ -642,7 +649,7 @@ void ExtensionJob::commandMakeOnlineOnlyDirect(const CommString &argument, std::
     }
 
     {
-        const std::lock_guard lock(_dehydrationMutex);
+        const std::scoped_lock lock(_dehydrationMutex);
         _nbOfOngoingDehydration--;
         if (_nbOfOngoingDehydration == 0) {
             _dehydrationCanceled = false;

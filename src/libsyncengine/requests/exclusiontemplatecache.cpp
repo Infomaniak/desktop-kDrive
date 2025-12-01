@@ -81,7 +81,7 @@ void ExclusionTemplateCache::updateRegexPatterns() {
     static const std::string anyCharacter =
             "(.|\n)*?"; // The question mark `?` is used for lazy matching, i.e. it matches as few characters as possible.
 
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock<std::mutex> lock(_mutex);
     _regexPatterns.clear();
 
     for (const auto &exclPattern: exclusionTemplates()) {

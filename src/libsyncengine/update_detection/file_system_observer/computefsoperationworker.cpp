@@ -934,7 +934,7 @@ void ComputeFSOperationWorker::notifyIgnoredItem(const NodeId &nodeId, const Syn
 
 ExitInfo ComputeFSOperationWorker::blacklistItem(const SyncPath &relativeLocalPath) {
     // Blacklist item
-    if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(relativeLocalPath); !exitInfo) {
+    if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(relativeLocalPath, false); !exitInfo) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::handleAccessDeniedItem: " << Utility::formatSyncPath(relativeLocalPath));
         return exitInfo;
     }
