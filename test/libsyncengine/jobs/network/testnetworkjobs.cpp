@@ -719,7 +719,7 @@ void TestNetworkJobs::testDownload() {
 }
 
 void TestNetworkJobs::testDownloadHasEnoughSpace() {
-    if (!testhelpers::isRunningOnCI() && testhelpers::isExtendedTest(false)) return;
+    if (!testhelpers::isRunningOnCI() || !testhelpers::isExtendedTest(false)) return;
 
     // Only run on CI because it requires a small partition to be set up)
     const SyncPath smallPartitionPath = testhelpers::TestVariables().local8MoPartitionPath;
