@@ -1201,6 +1201,8 @@ void TestGuiCommChannel::testSyncSetSupportsVirtualFilesJob() {
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto syncSetSupportsVirtualFilesJob = std::dynamic_pointer_cast<SyncSetSupportsVirtualFilesJob>(job);
         CPPUNIT_ASSERT(syncSetSupportsVirtualFilesJob);
+        CPPUNIT_ASSERT_EQUAL(1, syncSetSupportsVirtualFilesJob->_syncDbId);
+        CPPUNIT_ASSERT(!syncSetSupportsVirtualFilesJob->_value);
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
