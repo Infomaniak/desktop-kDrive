@@ -67,7 +67,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         {
             // Fetch the port from the .comm file
             string homePath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + Path.DirectorySeparatorChar + "kDrive" + Path.DirectorySeparatorChar + ".comm";
-            
+
             try
             {
                 int port = int.Parse((File.ReadAllText(homePath)).Trim());
@@ -79,7 +79,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 Logger.Log(Logger.Level.Error, $"Socket connection error: {ex.Message}");
                 _client = null;
-            }catch (System.IO.FileNotFoundException)
+            }
+            catch (System.IO.FileNotFoundException)
             {
                 Logger.Log(Logger.Level.Error, $".comm file not found at {homePath}");
                 _client = null;

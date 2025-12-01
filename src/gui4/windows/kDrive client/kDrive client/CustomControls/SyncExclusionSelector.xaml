@@ -111,7 +111,7 @@
     <local:ContentLoader x:Name="TreeViewContentLoader"
                          IsLoading="{x:Bind IsLoading, Mode=OneWay}"
                          CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
-                         MinLoaderHeight="200">
+                         LoaderMinHeightMinLoaderHeight="200">
         <local:ContentLoader.LoaderContent>
             <Grid RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                 <Grid.RowDefinitions>

@@ -31,7 +31,7 @@ namespace Infomaniak.kDrive.CustomControls
     ///
     /// Important invariants:
     ///  - If a directory is explicitly unchecked -> all its descendants are implicitly excluded (we do not need to load them).
-    ///  - If a directory is explicitly checked -> all its descendants are implicitly included unless individually excluded.
+    ///  - If a directory is explicitly checked -> all its descendants are implicitly included.
     ///  - Indeterminate means at least one descendant differs (some excluded, some included).
     ///
     /// Persistence flow:
@@ -91,13 +91,13 @@ namespace Infomaniak.kDrive.CustomControls
         public static readonly DependencyProperty DriveIdProperty =
             DependencyProperty.Register(nameof(DriveId), typeof(DriveId), typeof(SyncExclusionSelector), new PropertyMetadata(null));
 
-        public NodeId RemoteNodeId
+        public NodeId RemoteRootNodeId
         {
             get => (NodeId)GetValue(RemoteNodeIdProperty);
             set => SetValue(RemoteNodeIdProperty, value);
         }
         public static readonly DependencyProperty RemoteNodeIdProperty =
-            DependencyProperty.Register(nameof(RemoteNodeId), typeof(NodeId), typeof(SyncExclusionSelector), new PropertyMetadata(""));
+            DependencyProperty.Register(nameof(RemoteRootNodeId), typeof(NodeId), typeof(SyncExclusionSelector), new PropertyMetadata(""));
 
         public DbId? SyncDbId
         {
@@ -236,7 +236,7 @@ namespace Infomaniak.kDrive.CustomControls
             _rootLevelItems.Clear();
 
             // Logical root node
-            Node rootNode = new Node(RemoteNodeId, "", -1, "", "", UserDbId, DriveId);
+            Node rootNode = new Node(RemoteRootNodeId, "", -1, "", "", UserDbId, DriveId);
             RootTreeItem = new TreeItem(rootNode, UserDbId, DriveId, null, _excludedNodePathsMap);
 
             // Remove synthetic file item at root (not needed at top level)
