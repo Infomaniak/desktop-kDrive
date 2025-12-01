@@ -72,9 +72,6 @@ static const char automaticLogDirC[] = "logToTemporaryLogDir";
 static const char minLogLevelC[] = "minLogLevel";
 static const char moveToTrashC[] = "moveToTrash";
 static const char monoIconsC[] = "monoIcons";
-static const char newBigFolderSizeLimitC[] = "newBigFolderSizeLimit";
-static const char useNewBigFolderSizeLimitC[] = "useNewBigFolderSizeLimit";
-static const int defaultBigFolderSizeLimit = 500;
 static const int defaultMinLogLevel = 1;
 static const char navigationPaneClsidC[] = "navigationPaneClsid";
 
@@ -202,12 +199,10 @@ ExitCode MigrationParams::migrateGeneralParams() {
     bool moveToTrash = settings.value(QString(moveToTrashC), true).toBool();
     bool monoIcons = settings.value(QString(monoIconsC), false).toBool();
     int minLogLevel = settings.value(QString(minLogLevelC), defaultMinLogLevel).toInt();
-    long newBigFolderSizeLimit = settings.value(QString(newBigFolderSizeLimitC), defaultBigFolderSizeLimit).toLongLong();
     QString clientVersion = settings.value(QString(clientVersionC), QString()).toString();
     QString language = settings.value(QString(languageC), QString()).toString();
     QString deleteOldLogsAfterHours = settings.value(QString(deleteOldLogsAfterHoursC), QString()).toString();
     bool automaticLogDir = settings.value(QString(automaticLogDirC), true).toBool();
-    bool useNewBigFolderSizeLimit = settings.value(QString(useNewBigFolderSizeLimitC), true).toBool();
 
     // Log level Info and Debug are to be switched
     LogLevel logLevel = intToLogLevel(minLogLevel);

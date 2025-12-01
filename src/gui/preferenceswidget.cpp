@@ -56,7 +56,6 @@ static constexpr int boxHMargin = 20;
 static constexpr int boxVMargin = 20;
 static constexpr int boxSpacing = 12;
 static constexpr int textHSpacing = 10;
-static constexpr int amountLineEditWidth = 85;
 
 static const QString debuggingFolderLink = "debuggingFolderLink";
 static const QString moveToTrashFAQLink = "https://faq.infomaniak.com/2383#desktop";

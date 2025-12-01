@@ -1440,8 +1440,7 @@ ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath 
                         absoluteLocalFilePath, PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted)) {
                 LOGW_SYNCPAL_WARN(_logger, L"PlatformInconsistencyCheckerUtility::renameLocalFile failed for "
                                                    << Utility::formatSyncPath(absoluteLocalFilePath));
-                _syncPal->handleAccessDeniedItem(relativeLocalPath);
-                return ExitCode::Ok;
+                return _syncPal->handleAccessDeniedItem(relativeLocalPath, false);
             }
             removeFromDb = false;
             break;
@@ -2218,7 +2217,7 @@ ExitInfo ExecutorWorker::handleOpsLocalFileAccessError(const SyncOpPtr syncOp, c
     std::shared_ptr<Node> remoteBlacklistedNode = nullptr;
     if (syncOp->targetSide() == ReplicaSide::Local && syncOp->type() == OperationType::Create) {
         // The item does not exist yet locally, we will only tmpBlacklist the remote item
-        if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(syncOp->localCreationTargetPath(), localBlacklistedNode,
+        if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(syncOp->localCreationTargetPath(), false, localBlacklistedNode,
                                                                  remoteBlacklistedNode, opsExitInfo.cause());
             !exitInfo) {
             return exitInfo;
@@ -2229,7 +2228,7 @@ ExitInfo ExecutorWorker::handleOpsLocalFileAccessError(const SyncOpPtr syncOp, c
         if (!localNode) return ExitCode::LogicError;
 
         const SyncPath relativeLocalFilePath = localNode->getPath();
-        if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(relativeLocalFilePath, localBlacklistedNode,
+        if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(relativeLocalFilePath, false, localBlacklistedNode,
                                                                  remoteBlacklistedNode, opsExitInfo.cause());
             !exitInfo) {
             return exitInfo;

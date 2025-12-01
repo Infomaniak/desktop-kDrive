@@ -50,7 +50,7 @@ void ContentChecksumWorker::computeChecksum(const NodeId &id, const SyncPath &fi
 }
 
 void ContentChecksumWorker::callback(UniqueId jobId) {
-    const std::lock_guard<std::mutex> lock(_checksumMutex);
+    const std::scoped_lock<std::mutex> lock(_checksumMutex);
     _runningJobs.extract(jobId);
 }
 
@@ -69,7 +69,7 @@ void ContentChecksumWorker::execute() {
                 // Do nothing
             }
 
-            const std::lock_guard<std::mutex> lock(_checksumMutex);
+            const std::scoped_lock<std::mutex> lock(_checksumMutex);
             while (_runningJobs.begin() != _runningJobs.end()) {
                 _runningJobs.erase(_runningJobs.begin());
             }
@@ -87,7 +87,7 @@ void ContentChecksumWorker::execute() {
             }
 
             if (_threadPool.available()) {
-                const std::lock_guard<std::mutex> lock(_checksumMutex);
+                const std::scoped_lock<std::mutex> lock(_checksumMutex);
                 std::shared_ptr<ComputeChecksumJob> job =
                         std::make_shared<ComputeChecksumJob>(_toCompute.front().first, _toCompute.front().second, _localSnapshot);
                 _runningJobs.insert({job->jobId(), job});

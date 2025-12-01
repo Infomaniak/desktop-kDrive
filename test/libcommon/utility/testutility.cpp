@@ -429,7 +429,7 @@ void TestUtility::testGenerateRandomStringAlphaNum() {
                         std::this_thread::sleep_for(std::chrono::milliseconds(1));
                     }
                     const std::string str = CommonUtility::generateRandomStringAlphaNum();
-                    const std::lock_guard lock(resultsMutex);
+                    const std::scoped_lock lock(resultsMutex);
                     if (!results.insert(str).second) {
                         err++;
                     }
