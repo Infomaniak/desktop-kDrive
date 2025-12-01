@@ -24,18 +24,18 @@
 
 namespace KDC {
 
-class ParametersUpdateJob : public AbstractGuiJob {
+class ParametersInfoJob : public AbstractGuiJob {
     public:
-        ParametersUpdateJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                            std::shared_ptr<AbstractCommChannel> channel);
+        ParametersInfoJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                          std::shared_ptr<AbstractCommChannel> channel);
 
     private:
-        // Input parameters
+        // Output parameters
         ParametersInfo _parametersInfo;
 
 
-        ExitInfo deserializeInputParms() override;
-        ExitInfo serializeOutputParms() override { return ExitCode::Ok; };
+        ExitInfo deserializeInputParms() override { return ExitCode::Ok; };
+        ExitInfo serializeOutputParms() override;
         ExitInfo process() override;
 
         friend class TestGuiCommChannel;

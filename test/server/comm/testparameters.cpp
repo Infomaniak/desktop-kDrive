@@ -25,12 +25,12 @@ namespace KDC {
 
 using namespace testcommhelpers;
 
-void TestGuiCommChannel::testParametersUpdateJob() {
+void TestGuiCommChannel::testParametersInfoJob() {
     Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     (void) queryObj.set("id", 1);
 #endif
-    (void) queryObj.set("num", toInt(RequestNum::PARAMETERS_UPDATE));
+    (void) queryObj.set("num", toInt(RequestNum::PARAMETERS_INFO));
     Poco::JSON::Object queryParamsObj;
     (void) queryObj.set("params", queryParamsObj);
 
@@ -79,7 +79,7 @@ void TestGuiCommChannel::testParametersUpdateJob() {
     (void) answerObj.set("params", paramsObj);
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
-    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::PARAMETERS_UPDATE));
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::PARAMETERS_INFO));
     (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
     // Job expected answers
@@ -103,5 +103,7 @@ void TestGuiCommChannel::testParametersUpdateJob() {
 
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 }
+
+void TestGuiCommChannel::testParametersUpdateJob() {}
 
 } // namespace KDC

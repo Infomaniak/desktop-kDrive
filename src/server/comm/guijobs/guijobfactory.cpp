@@ -43,6 +43,7 @@
 #include "syncnodelistjob.h"
 #include "syncnodesetlistjob.h"
 #include "nodeinfojob.h"
+#include "parametersinfojob.h"
 #include "parametersupdatejob.h"
 
 
@@ -74,6 +75,7 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::SYNCNODE_SETLIST, makeShared<SyncNodeSetListJob>},
                 {RequestNum::NODE_INFO, makeShared<NodeInfoJob>},
                 {RequestNum::SYNC_GETPRIVATELINKURL, makeShared<SyncGetPrivateLinkUrlJob>},
+                {RequestNum::PARAMETERS_INFO, makeShared<ParametersInfoJob>},
                 {RequestNum::PARAMETERS_UPDATE, makeShared<ParametersUpdateJob>}};
 }
 

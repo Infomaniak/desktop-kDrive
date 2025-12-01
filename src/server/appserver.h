@@ -130,6 +130,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         [[nodiscard]] ExitInfo startSyncs(User &user);
         void stopSyncTask(int syncDbId); // Long task which can block GUI: post-poned in the event loop by means of timer
 
+        void logExtendedLogActivationMessage(bool isExtendedLogEnabled) noexcept;
+
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         static ExitCode getThumbnail(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) {
             return ServerRequests::getThumbnail(driveDbId, nodeId, width, thumbnail);
@@ -253,8 +255,6 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         void showSettings();
         void showSynthesis();
-
-        void logExtendedLogActivationMessage(bool isExtendedLogEnabled) noexcept;
 
         bool clientHasCrashed() const;
         void handleClientCrash(bool &quit);
