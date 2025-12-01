@@ -46,7 +46,8 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
             TRACE_ERROR(L"Error in getSyncRootId");
             return std::wstring();
         }
-
+        TRACE_DEBUG(L"Registering sync root with ID: %s", syncRootID.c_str());
+        TRACE_DEBUG(L"Registering sync root for folder path: %s", providerInfo->folderPath());
         // Find if the provider is already registered
         bool found(false);
         auto infoVector = winrt::StorageProviderSyncRootManager::GetCurrentSyncRoots();
@@ -60,15 +61,18 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
         if (found) {
             HKEY hKey;
             std::wstring subKey = REGPATH_SYNCROOTMANAGER + syncRootID;
+            TRACE_DEBUG(L"Provider already registered, opening key %s", subKey.c_str());
             if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subKey.c_str(), 0, KEY_ALL_ACCESS, &hKey) == ERROR_SUCCESS) {
+                TRACE_DEBUG(L"Opened key %s", subKey.c_str());
                 if (namespaceCLSID) {
                     // Get CLSID
+                    TRACE_DEBUG(L"Getting NamespaceCLSID value");
                     if (RegGetValue(hKey, 0, REGKEY_NAMESPACECLSID, RRF_RT_ANY, nullptr, namespaceCLSID, namespaceCLSIDSize) !=
                         ERROR_SUCCESS) {
                         TRACE_ERROR(L"Could not get registry value NamespaceCLSID");
                     }
                 }
-
+                TRACE_DEBUG(L"Setting registry values");
                 // Set default key
                 if (RegSetValueEx(hKey, nullptr, 0, REG_SZ, (BYTE *) Utilities::s_appName.c_str(),
                                   (DWORD) (Utilities::s_appName.size() + 1) * sizeof(wchar_t)) != ERROR_SUCCESS) {
@@ -87,6 +91,7 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
                     TRACE_ERROR(L"Could not set registry value %s=%s", name.c_str(), value.c_str());
                 }
 
+                TRACE_DEBUG(L"Closing key %s", subKey.c_str());
                 if (RegCloseKey(hKey) != ERROR_SUCCESS) {
                     TRACE_ERROR(L"Could not close key %s", subKey.c_str());
                 }
@@ -94,6 +99,7 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
                 TRACE_ERROR(L"Could not open key %s", subKey.c_str());
             }
         } else {
+            TRACE_DEBUG(L"Registering new provider");
             if (!providerInfo->folderPath()) {
                 TRACE_ERROR(L"Folder path is empty");
                 return std::wstring();
@@ -116,6 +122,7 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
             // Silent WINRT_ASSERT(!is_sta())
             int reportMode = _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG);
 #endif
+            TRACE_DEBUG(L"Getting StorageFolder from path");
             auto folder = winrt::StorageFolder::GetFolderFromPathAsync(providerInfo->folderPath()).get();
 #ifndef NDEBUG
             // Restore old report mode
@@ -127,6 +134,7 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
             info.DisplayNameResource(providerInfo->folderName());
 
             WCHAR exePath[MAX_FULL_PATH];
+            TRACE_DEBUG(L"Getting module file name for icon resource");
             if (!GetModuleFileNameW(nullptr, exePath, MAX_FULL_PATH)) {
                 TRACE_ERROR(L"Error in GetModuleFileNameW");
                 return std::wstring();
@@ -149,6 +157,7 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
             // Context
             std::wstring syncRootIdentity(providerInfo->id());
 
+            TRACE_DEBUG(L"Converting sync root identity to binary");
             winrt::IBuffer contextBuffer =
                     winrt::CryptographicBuffer::ConvertStringToBinary(syncRootIdentity.data(), winrt::BinaryStringEncoding::Utf8);
             info.Context(contextBuffer);
@@ -158,22 +167,26 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
                 return std::wstring();
             }
 
+            TRACE_DEBUG(L"Calling StorageProviderSyncRootManager::Register");
             winrt::StorageProviderSyncRootManager::Register(info);
-
+            TRACE_DEBUG(L"Registered new provider with syncRootID=%s", syncRootID.c_str());
             // Give the cache some time to invalidate
             Sleep(1000);
 
             HKEY hKey;
             std::wstring subKey = REGPATH_SYNCROOTMANAGER + syncRootID;
+            TRACE_DEBUG(L"Opening key %s", subKey.c_str());
             if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subKey.c_str(), 0, KEY_ALL_ACCESS, &hKey) == ERROR_SUCCESS) {
+                TRACE_DEBUG(L"Opened key %s", subKey.c_str());
                 if (namespaceCLSID) {
+                    TRACE_DEBUG(L"Getting NamespaceCLSID value");
                     // Get CLSID
                     if (RegGetValue(hKey, 0, REGKEY_NAMESPACECLSID, RRF_RT_ANY, nullptr, namespaceCLSID, namespaceCLSIDSize) !=
                         ERROR_SUCCESS) {
                         TRACE_ERROR(L"Could not get registry value NamespaceCLSID");
                     }
                 }
-
+                TRACE_DEBUG(L"Setting registry values");
                 // Set default key
                 if (RegSetValueEx(hKey, nullptr, 0, REG_SZ, (BYTE *) Utilities::s_appName.c_str(),
                                   (DWORD) (Utilities::s_appName.size() + 1) * sizeof(wchar_t)) != ERROR_SUCCESS) {
@@ -192,6 +205,7 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
                     TRACE_ERROR(L"Could not set registry value %s=%s", name.c_str(), value.c_str());
                 }
 
+                TRACE_DEBUG(L"Closing key %s", subKey.c_str());
                 if (RegCloseKey(hKey) != ERROR_SUCCESS) {
                     TRACE_ERROR(L"Could not close key %s", subKey.c_str());
                 }
