@@ -84,11 +84,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Logger.Log(Logger.Level.Error, $".comm file not found at {homePath}");
                 _client = null;
             }
-            catch (System.IO.FileNotFoundException)
-            {
-                Logger.Log(Logger.Level.Error, $".comm file not found at {homePath}");
-                _client = null;
-            }
 
             if (_client != null && _client.Connected)
             {

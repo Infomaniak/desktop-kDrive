@@ -14,7 +14,7 @@
     <Grid>
         <Grid Visibility="{x:Bind IsLoading, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
               MaxHeight="400"
-              MinHeight="{x:Bind MinLoaderHeight, Mode=OneWay}">
+              MinHeight="{x:Bind LoaderMinHeight, Mode=OneWay}">
             <ProgressBar IsIndeterminate="True"
                          CornerRadius="{x:Bind CornerRadius, Mode=OneWay}" />
             <Border CornerRadius="{x:Bind CornerRadius, Mode=OneWay}">
