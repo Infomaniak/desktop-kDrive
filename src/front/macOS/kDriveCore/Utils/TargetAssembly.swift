@@ -64,6 +64,9 @@ open class TargetAssembly {
             },
             Factory(type: SyncCreator.self) { _, _ in
                 SyncCreationService()
+            },
+            Factory(type: MacOSPermissionHandling.self) { _, _ in
+                MacOSPermissionHandler()
             }
         ]
     }
