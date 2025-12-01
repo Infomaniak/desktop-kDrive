@@ -38,6 +38,7 @@ namespace Infomaniak.kDrive.ViewModels
         private bool _isPaidOffer = false; // Indicates if the drive is a paid offer (i.e. myKsuite+/pro +, ...)
         private ObservableCollection<Sync> _syncs = new ObservableCollection<Sync>();
         private Sync? _mainSync;
+        private bool _isConfigured = false; // Indicates if at least one sync (which is not an advanced sync) is set up for this drive
         private ObservableCollection<Sync> _advancedSyncs = new ObservableCollection<Sync>();
 
         private Account _account;
@@ -84,7 +85,7 @@ namespace Infomaniak.kDrive.ViewModels
             get => _account.AccountId;
         }
 
-        public string AccountName 
+        public string AccountName
         {
             get => _account.Name;
         }
@@ -115,7 +116,17 @@ namespace Infomaniak.kDrive.ViewModels
         public Sync? MainSync
         {
             get => _mainSync;
-            set => SetPropertyInUIThread(ref _mainSync, value);
+            set 
+            { 
+                SetPropertyInUIThread(ref _mainSync, value);
+                IsConfigured = value is not null;
+            }
+        }
+
+        public bool IsConfigured
+        {
+            get => _isConfigured;
+            set => SetPropertyInUIThread(ref _isConfigured, value);
         }
 
         public ObservableCollection<Sync> AdvancedSyncs

@@ -26,15 +26,15 @@ public sealed partial class SyncStartPauseButton : UserControl
 
     private async void StartPauseButton_Click(object sender, RoutedEventArgs e)
     {
-        if (ViewModel?.SelectedSync?.SyncStatus == SyncStatus.Running || ViewModel.SelectedSync?.SyncStatus == SyncStatus.Idle)
+        if (ViewModel?.SelectedSync is not null && (ViewModel.SelectedSync.SyncStatus == SyncStatus.Running || ViewModel.SelectedSync.SyncStatus == SyncStatus.Idle))
         {
             Logger.Log(Logger.Level.Info, "Pausing sync...");
-            await ViewModel.SelectedSync?.Pause();
+            await ViewModel.SelectedSync.Pause();
         }
-        else if (ViewModel is not null)
+        else if (ViewModel?.SelectedSync is not null)
         {
             Logger.Log(Logger.Level.Info, "Starting sync...");
-            await ViewModel.SelectedSync?.Start();
+            await ViewModel.SelectedSync.Start();
         }
     }
 }

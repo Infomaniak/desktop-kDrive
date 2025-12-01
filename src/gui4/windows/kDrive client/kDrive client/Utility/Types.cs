@@ -148,6 +148,7 @@ namespace Infomaniak.kDrive.Types
         public DbId UserDbId { get; }
         public AccountId AccountId { get; }
         public string AccountName { get; }
+        public bool IsConfigured { get; } // Indicates if at least one sync (which is not an advanced sync) is set up for this drive
     }
 
     public class DriveAvailable : IDrive
@@ -159,6 +160,7 @@ namespace Infomaniak.kDrive.Types
         public string AccountName { get; set; } = "Account Name"; // TODO: set properly
         public string Name { get; set; } = "";
         public System.Drawing.Color Color { get; set; } = System.Drawing.Color.White;
+        public bool IsConfigured { get; } = false;
     }
 }
 
