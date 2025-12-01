@@ -2565,7 +2565,6 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 #if defined(KD_MACOS)
         {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
-        {&MigrationParams::migrateSelectiveSyncs, "migrateSelectiveSyncs"}
     };
 
     for (const auto &migrate: migrateArr) {
