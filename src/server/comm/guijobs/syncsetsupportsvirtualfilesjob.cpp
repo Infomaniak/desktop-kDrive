@@ -18,8 +18,7 @@
 
 #include "syncsetsupportsvirtualfilesjob.h"
 #include "appserver.h"
-#include "requests/serverrequests.h"
-#include "server/comm/guijobmanager.h"
+
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
@@ -42,7 +41,7 @@ ExitInfo SyncSetSupportsVirtualFilesJob::deserializeInputParms() {
         readParamValue(inParamsSyncDbId, _syncDbId);
         readParamValue(inParamsValue, _value);
     } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in AbstractGuiJob::readParamValue: error=" << e.what());
+        LOG_WARN(_logger, "Exception in SyncSetSupportsVirtualFilesJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
     }
 
@@ -50,9 +49,10 @@ ExitInfo SyncSetSupportsVirtualFilesJob::deserializeInputParms() {
 }
 
 ExitInfo SyncSetSupportsVirtualFilesJob::process() {
-    if (const ExitCode exitCode = _commManager->appServer().setSupportsVirtualFiles(_syncDbId, _value);
-        exitCode != ExitCode::Ok) {
+    if (const auto exitInfo = _commManager->appServer().setSupportsVirtualFiles(_syncDbId, _value); !exitInfo) {
         LOG_WARN(_logger, "Error in setSupportsVirtualFiles for syncDbId=" << _syncDbId);
+
+        return exitInfo;
     }
 
     return ExitCode::Ok;
