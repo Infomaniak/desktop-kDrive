@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "comm/guijobs/parametersinfojob.h"
 #include "comm/guijobs/parametersupdatejob.h"
 
 #include "testguicommchannel.h"
@@ -25,23 +26,21 @@ namespace KDC {
 
 using namespace testcommhelpers;
 
-void TestGuiCommChannel::testParametersInfoJob() {
-    Poco::JSON::Object queryObj;
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    (void) queryObj.set("id", 1);
-#endif
-    (void) queryObj.set("num", toInt(RequestNum::PARAMETERS_INFO));
-    Poco::JSON::Object queryParamsObj;
-    (void) queryObj.set("params", queryParamsObj);
+namespace {
+ParametersInfo getExpectedParametersInfo() {
+    const ProxyConfigInfo proxyConfigInfo(ProxyType::HTTP, "myHostName", 6666, true, "john.doe", "1234");
+    const ParametersInfo::DialogGeometry dialogGeometry = {{"preferencesWindow", "blob1234"},
+                                                           {"drivePreferencesPanel", "blob4567"}};
 
-    const auto queryStr = stringifyQueryObj(queryObj);
+    ParametersInfo parametersInfo(Language::Default, false, true, true, NotificationsDisabled::Never, true, LogLevel::Debug, true,
+                                  true, true, false, dialogGeometry, 50);
 
-    // Answer
-    Poco::JSON::Object answerObj;
-    (void) answerObj.set("cause", 0);
-    (void) answerObj.set("code", 0);
-    (void) answerObj.set("id", 1);
+    parametersInfo.setProxyConfigInfo(proxyConfigInfo);
 
+    return parametersInfo;
+};
+
+Poco::JSON::Object createParametersInfoObject() {
     Poco::JSON::Object parametersInfoObj;
     (void) parametersInfoObj.set("language", toInt(Language::Default));
     (void) parametersInfoObj.set("monoIcons", false);
@@ -74,8 +73,30 @@ void TestGuiCommChannel::testParametersInfoJob() {
     (void) parametersInfoObj.set("maxAllowedCpu", 50);
     (void) parametersInfoObj.set("distributionChannel", toInt(VersionChannel::Prod));
 
+    return parametersInfoObj;
+};
+} // namespace
+
+void TestGuiCommChannel::testParametersInfoJob() {
+    Poco::JSON::Object queryObj;
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    (void) queryObj.set("id", 1);
+#endif
+    (void) queryObj.set("num", toInt(RequestNum::PARAMETERS_INFO));
+    Poco::JSON::Object queryParamsObj;
+    (void) queryObj.set("params", queryParamsObj);
+
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+
+
     Poco::JSON::Object paramsObj;
-    (void) paramsObj.set("parametersInfo", parametersInfoObj);
+    (void) paramsObj.set("parametersInfo", createParametersInfoObject());
     (void) answerObj.set("params", paramsObj);
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
@@ -87,23 +108,50 @@ void TestGuiCommChannel::testParametersInfoJob() {
     const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-        auto parametersUpdateJob = std::dynamic_pointer_cast<ParametersUpdateJob>(job);
-        CPPUNIT_ASSERT(parametersUpdateJob);
-        const ProxyConfigInfo proxyConfigInfo(ProxyType::HTTP, "myHostName", 6666, true, "john.doe", "1234");
-        const ParametersInfo::DialogGeometry dialogGeometry = {{"preferencesWindow", "blob1234"},
-                                                               {"drivePreferencesPanel", "blob4567"}};
-
-        ParametersInfo parametersInfo(Language::Default, false, true, true, NotificationsDisabled::Never, true, LogLevel::Debug,
-                                      true, true, true, false, dialogGeometry, 50);
-
-        parametersInfo.setProxyConfigInfo(proxyConfigInfo);
-
-        parametersUpdateJob->_parametersInfo = parametersInfo;
+        auto parametersInfoJob = std::dynamic_pointer_cast<ParametersInfoJob>(job);
+        CPPUNIT_ASSERT(parametersInfoJob);
+        parametersInfoJob->_parametersInfo = getExpectedParametersInfo();
     };
 
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 }
 
-void TestGuiCommChannel::testParametersUpdateJob() {}
+void TestGuiCommChannel::testParametersUpdateJob() {
+    Poco::JSON::Object queryObj;
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    (void) queryObj.set("id", 1);
+#endif
+    (void) queryObj.set("num", toInt(RequestNum::PARAMETERS_UPDATE));
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("parametersInfo", createParametersInfoObject());
+    (void) queryObj.set("params", queryParamsObj);
+
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+
+    Poco::JSON::Object paramsObj;
+    (void) answerObj.set("params", paramsObj);
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::PARAMETERS_UPDATE));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+
+    // Job expected answers
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto parametersUpdateJob = std::dynamic_pointer_cast<ParametersUpdateJob>(job);
+        CPPUNIT_ASSERT(parametersUpdateJob);
+        CPPUNIT_ASSERT(getExpectedParametersInfo() == parametersUpdateJob->_parametersInfo);
+    };
+
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+}
 
 } // namespace KDC

@@ -32,7 +32,7 @@ namespace KDC {
 ParametersInfoJob::ParametersInfoJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
                                      std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
-    _requestNum = RequestNum::PARAMETERS_UPDATE;
+    _requestNum = RequestNum::PARAMETERS_INFO;
 }
 
 
