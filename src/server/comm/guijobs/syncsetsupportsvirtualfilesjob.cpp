@@ -43,8 +43,11 @@ ExitInfo SyncSetSupportsVirtualFilesJob::deserializeInputParms() {
         readParamValue(inParamsValue, _value);
     } catch (const Poco::Exception &pocoException) {
         LOG_WARN(_logger, logMessage << pocoException.message());
+
+        return ExitCode::LogicError;
     } catch (const CommonUtility::InvalidEnumerationValue &cuException) {
         LOG_WARN(_logger, logMessage << cuException.what());
+
         return ExitCode::LogicError;
     }
 
