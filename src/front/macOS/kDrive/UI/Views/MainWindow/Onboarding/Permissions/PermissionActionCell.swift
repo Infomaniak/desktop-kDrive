@@ -44,8 +44,17 @@ class PermissionActionCell: NSView {
         }
     }
 
-    let step: Int
-    let title: NSAttributedString
+    var step: Int {
+        didSet {
+            stepCircleView.step = step
+        }
+    }
+
+    var title: NSAttributedString {
+        didSet {
+            titleLabel.attributedStringValue = title
+        }
+    }
 
     private lazy var stepCircleView: StepCircleView = {
         let view = StepCircleView(step: step)

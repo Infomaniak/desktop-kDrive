@@ -22,7 +22,7 @@ import kDriveCore
 
 @MainActor
 final class PermissionsViewModel: ObservableObject {
-    static let requiredPermissions: [MacOSPermission] = [.fullDiskAccess, .endpointSecurityExtension]
+    static let requiredPermissions: [MacOSPermission] = [.endpointSecurityExtension, .fullDiskAccess]
 
     @Published var currentPermission: MacOSPermission
 
@@ -34,7 +34,7 @@ final class PermissionsViewModel: ObservableObject {
         self.flowCoordinator = flowCoordinator
 
         guard case .permissions(let permission) = flowCoordinator.currentStep else {
-            currentPermission = .fullDiskAccess
+            currentPermission = PermissionsViewModel.requiredPermissions[0]
             return
         }
         currentPermission = permission

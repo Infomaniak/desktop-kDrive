@@ -30,7 +30,11 @@ public final class StepCircleView: NSView {
         }
     }
 
-    let step: Int
+    public var step: Int {
+        didSet {
+            stepLabel.stringValue = "\(step)"
+        }
+    }
 
     private lazy var stepLabel: NSTextField = {
         let textField = NSTextField(labelWithString: "\(step)")

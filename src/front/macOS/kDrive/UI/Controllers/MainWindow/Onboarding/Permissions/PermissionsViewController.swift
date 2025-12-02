@@ -20,11 +20,20 @@ import Cocoa
 import Combine
 import InfomaniakDI
 import kDriveCore
+import kDriveCoreUI
 
 final class PermissionsViewController: OnboardingStepViewController {
     private let viewModel: PermissionsViewModel
 
     private var bindStore = Set<AnyCancellable>()
+
+    private lazy var instructionsStack: NSStackView = {
+        let stackView = NSStackView()
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.spacing = 0
+        stackView.orientation = .vertical
+        return stackView
+    }()
 
     init(flowCoordinator: OnboardingFlowCoordinator) {
         viewModel = PermissionsViewModel(flowCoordinator: flowCoordinator)
@@ -50,11 +59,31 @@ final class PermissionsViewController: OnboardingStepViewController {
             }
     }
 
-    private func setupUI() {}
+    private func setupUI() {
+        titleLabel.isHidden = false
+        descriptionLabel.isHidden = false
+
+        stackView.insertArrangedSubview(instructionsStack, at: 2)
+    }
 
     private func updateUIForPermission(_ permission: MacOSPermission) {
+        setupHeader(for: permission)
+        setupInstructions(for: permission)
         setupButtons(for: permission)
     }
+
+    private func setupHeader(for permission: MacOSPermission) {
+        switch permission {
+        case .endpointSecurityExtension:
+            titleLabel.stringValue = "!Activez kDrive sur votre Mac"
+            descriptionLabel.stringValue = "!Autorisez kDrive dans les réglages macOS :"
+        case .fullDiskAccess:
+            titleLabel.stringValue = "!Autorisez l’accès aux dossiers"
+            descriptionLabel.stringValue = "!Pour terminer l’installation, vous devez autoriser kDrive à accéder à vos dossiers :"
+        }
+    }
+
+    private func setupInstructions(for permission: MacOSPermission) {}
 
     private func setupButtons(for permission: MacOSPermission) {
         primaryButton.isHidden = false
@@ -63,12 +92,14 @@ final class PermissionsViewController: OnboardingStepViewController {
         secondaryButton.isHidden = true
 
         switch permission {
-        case .fullDiskAccess:
-            primaryButton.stringValue = "!J'ai activé kDrive"
         case .endpointSecurityExtension:
-            primaryButton.stringValue = "!Terminer l'installation"
+            primaryButton.title = "!Terminer l'installation"
+        case .fullDiskAccess:
+            primaryButton.title = "!J'ai activé kDrive"
         }
     }
+
+    private func updateButtonStatus() {}
 
     @objc private func validatePermission() {}
 }

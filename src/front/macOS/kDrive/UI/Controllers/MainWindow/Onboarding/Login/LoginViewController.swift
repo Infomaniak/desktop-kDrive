@@ -46,19 +46,6 @@ final class LoginViewController: OnboardingStepViewController {
         setupUI()
     }
 
-    override func viewWillAppear() {
-        super.viewWillAppear()
-        Task {
-            @InjectService var macOSPermissionsHandling: MacOSPermissionHandling
-
-            let fullDiskAccess = await macOSPermissionsHandling.isAuthorized(for: .fullDiskAccess)
-            print("DEBUG -> .fullDiskAccess", fullDiskAccess)
-
-            let endpointSecurityExtension = await macOSPermissionsHandling.isAuthorized(for: .endpointSecurityExtension)
-            print("DEBUG -> .endpointSecurityExtension", endpointSecurityExtension)
-        }
-    }
-
     private func bindViewModel() {
         viewModel.$loginState
             .receiveOnMain(store: &bindStore) { [weak self] newState in
