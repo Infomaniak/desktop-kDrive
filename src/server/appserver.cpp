@@ -70,6 +70,7 @@
 #include "server/comm/guijobs/signalsyncaddedjob.h"
 #include "server/comm/guijobs/signalsyncremovedjob.h"
 #include "server/comm/guijobs/signalsynccompleteditem.h"
+#include "server/comm/guijobs/signalsyncupdatedjob.h"
 
 #include "server/comm/guijobs/signalsyncprogressinfo.h"
 
@@ -4190,6 +4191,7 @@ void AppServer::sendSyncUpdated(const SyncInfo &syncInfo) {
     paramsStream << syncInfo;
 
     OldCommServer::instance()->sendSignal(SignalNum::SYNC_UPDATED, params, id);
+    _commManager->sendGuiSignal(std::make_shared<SignalSyncUpdatedJob>(syncInfo));
 }
 
 void AppServer::sendSyncRemoved(int syncDbId) {

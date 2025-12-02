@@ -129,7 +129,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         [[nodiscard]] ExitInfo stopSyncPal(int syncDbId, bool pausedByUser = false, bool quit = false, bool clear = false);
         [[nodiscard]] ExitInfo stopVfs(int syncDbId, bool unregister);
         [[nodiscard]] ExitInfo startSyncs(User &user);
-        void stopSyncTask(int syncDbId); // Long task which can block GUI: post-poned in the event loop by means of timer
+        void stopSyncTask(int syncDbId);
+        [[nodiscard]] ExitInfo setSupportsVirtualFiles(int syncDbId, bool value);
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         static ExitCode getThumbnail(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) {
@@ -201,7 +202,6 @@ class AppServer : public SharedTools::QtSingleApplication {
                                            bool resumedByUser = false, bool firstInit = false);
 
         [[nodiscard]] ExitInfo createAndStartVfs(const Sync &sync) noexcept;
-        [[nodiscard]] ExitInfo setSupportsVirtualFiles(int syncDbId, bool value);
 
         void startSyncsAndRetryOnError();
         [[nodiscard]] ExitInfo startSyncs();
