@@ -23,6 +23,7 @@ using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Security.Authentication.OAuth;
 using Microsoft.UI.Xaml;
+using Microsoft.Win32;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -72,7 +73,7 @@ namespace Infomaniak.kDrive
                     if (OAuth2Manager.CompleteAuthRequest(new Uri(oauthArg)))
                     {
                         // Terminate the Process
-                        Logger.Log(Logger.Level.Info, "OAuth process completed, response routed successfully. Terminating the process.");
+                        Logger.Log(Logger.Level.Info, $"OAuth process completed, response routed successfully. Terminating the process. ${oauthArg}");
                     }
                     else
                     {
@@ -83,6 +84,7 @@ namespace Infomaniak.kDrive
                 }
             }
 
+            RegisterProtocol();
             // Start all singleton services
             foreach (var serviceDescriptor in _services.Where(sd => sd.Lifetime == ServiceLifetime.Singleton))
             {
@@ -102,6 +104,23 @@ namespace Infomaniak.kDrive
             });
 
         }
+
+        private void RegisterProtocol()
+        {
+            const string protocol = "kDrive";
+            string exe = Environment.ProcessPath;
+
+            using var key = Registry.CurrentUser.CreateSubKey($@"Software\Classes\{protocol}");
+            key.SetValue("", $"URL:{protocol} protocol");
+            key.SetValue("URL Protocol", "");
+
+            using var icon = Registry.CurrentUser.CreateSubKey($@"Software\Classes\{protocol}\DefaultIcon");
+            icon.SetValue("", $"{exe},1");
+
+            using var command = Registry.CurrentUser.CreateSubKey($@"Software\Classes\{protocol}\shell\open\command");
+            command.SetValue("", $"\"{exe}\" \"%1\"");
+        }
+
 
         public void StartOnboarding()
         {
