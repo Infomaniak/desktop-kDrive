@@ -48,8 +48,11 @@ ExitInfo SyncGetPrivateLinkUrlJob::deserializeInputParms() {
         readParamValue(inParamsFileId, _fileId);
     } catch (const Poco::Exception &pocoException) {
         LOG_WARN(_logger, logMessage << pocoException.message());
+
+        return ExitCode::LogicError;
     } catch (const CommonUtility::InvalidEnumerationValue &cuException) {
         LOG_WARN(_logger, logMessage << cuException.what());
+
         return ExitCode::LogicError;
     }
 
