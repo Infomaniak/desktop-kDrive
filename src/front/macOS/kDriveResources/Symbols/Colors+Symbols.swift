@@ -26,6 +26,8 @@ public enum KDriveColors {
   public static let drive400 = ColorAsset(name: "Drive400")
   public static let drive500 = ColorAsset(name: "Drive500")
   public static let drive600 = ColorAsset(name: "Drive600")
+  public static let green400 = ColorAsset(name: "Green400")
+  public static let green500 = ColorAsset(name: "Green500")
   public static let neutralBlue100 = ColorAsset(name: "NeutralBlue100")
   public static let neutralBlue200 = ColorAsset(name: "NeutralBlue200")
   public static let neutralBlue300 = ColorAsset(name: "NeutralBlue300")

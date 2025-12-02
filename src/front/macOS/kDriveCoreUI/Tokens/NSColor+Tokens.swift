@@ -43,6 +43,7 @@ extension NSColor {
 
         public enum Status {
             public enum Medium {
+                public static let success = NSColor(light: KDriveColors.green500, dark: KDriveColors.green400)
                 public static let warning = NSColor(light: KDriveColors.orange500, dark: KDriveColors.orange400)
                 public static let security = NSColor(light: KDriveColors.drive500, dark: KDriveColors.drive400)
             }

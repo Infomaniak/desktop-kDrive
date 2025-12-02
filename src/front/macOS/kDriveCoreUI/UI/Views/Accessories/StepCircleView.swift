@@ -18,10 +18,15 @@
 
 import Cocoa
 
-final class StepCircleView: NSView {
-    var color = NSColor.Tokens.Status.Medium.security {
+public final class StepCircleView: NSView {
+    public var color = NSColor.Tokens.Status.Medium.security {
         didSet {
-            needsDisplay = true
+            if #available(macOS 26.0, *) {
+                let backgroundView = self.backgroundView as? NSGlassEffectView
+                backgroundView?.tintColor = color
+            } else {
+                needsDisplay = true
+            }
         }
     }
 
@@ -37,11 +42,21 @@ final class StepCircleView: NSView {
         return textField
     }()
 
-    override var intrinsicContentSize: NSSize {
+    private lazy var backgroundView: NSView? = {
+        guard #available(macOS 26.0, *) else { return nil }
+
+        let backgroundView = NSGlassEffectView()
+        backgroundView.translatesAutoresizingMaskIntoConstraints = false
+        backgroundView.tintColor = color
+        backgroundView.cornerRadius = intrinsicContentSize.width / 2
+        return backgroundView
+    }()
+
+    override public var intrinsicContentSize: NSSize {
         return NSSize(width: 20, height: 20)
     }
 
-    init(step: Int) {
+    public init(step: Int) {
         self.step = step
         super.init(frame: .zero)
 
@@ -49,11 +64,11 @@ final class StepCircleView: NSView {
     }
 
     @available(*, unavailable)
-    required init?(coder: NSCoder) {
+    public required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
-    override func draw(_ dirtyRect: NSRect) {
+    override public func draw(_ dirtyRect: NSRect) {
         if #unavailable(macOS 26.0) {
             let path = NSBezierPath(ovalIn: NSRect(origin: .zero, size: intrinsicContentSize))
             color.setFill()
@@ -63,14 +78,12 @@ final class StepCircleView: NSView {
 
     private func setupView() {
         if #available(macOS 26.0, *) {
+            guard let backgroundView = backgroundView as? NSGlassEffectView else { return }
+
             let contentView = NSView()
             contentView.addSubview(stepLabel)
 
-            let backgroundView = NSGlassEffectView()
-            backgroundView.translatesAutoresizingMaskIntoConstraints = false
             backgroundView.contentView = contentView
-            backgroundView.tintColor = color
-            backgroundView.cornerRadius = intrinsicContentSize.width / 2
             addSubview(backgroundView)
 
             NSLayoutConstraint.activate([

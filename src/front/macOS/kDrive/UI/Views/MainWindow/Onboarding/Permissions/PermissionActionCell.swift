@@ -17,15 +17,63 @@
  */
 
 import Cocoa
+import kDriveCoreUI
+import kDriveResources
 
 class PermissionActionCell: NSView {
+    enum State: Sendable {
+        case neutral
+        case warning
+        case done
+
+        var color: NSColor {
+            switch self {
+            case .neutral:
+                return NSColor.Tokens.Status.Medium.security
+            case .warning:
+                return NSColor.Tokens.Status.Medium.warning
+            case .done:
+                return NSColor.Tokens.Status.Medium.success
+            }
+        }
+    }
+
+    var state: State = .neutral {
+        didSet {
+            updateState(state: state)
+        }
+    }
+
     let step: Int
     let title: NSAttributedString
+
+    private lazy var stepCircleView: StepCircleView = {
+        let view = StepCircleView(step: step)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.color = state.color
+        return view
+    }()
+
+    private lazy var iconCircleView: IconCircleView = {
+        let view = IconCircleView(icon: KDriveResources.checkmark.image)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.color = state.color
+        return view
+    }()
+
+    private lazy var titleLabel: NSTextField = {
+        let textField = NSTextField(labelWithAttributedString: title)
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        return textField
+    }()
 
     init(step: Int, title: NSAttributedString) {
         self.step = step
         self.title = title
         super.init(frame: .zero)
+
+        setupView()
+        updateState(state: state)
     }
 
     @available(*, unavailable)
@@ -34,12 +82,45 @@ class PermissionActionCell: NSView {
     }
 
     private func setupView() {
-        
+        let stackView = NSStackView(views: [stepCircleView, iconCircleView, titleLabel])
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.spacing = AppPadding.padding8
+        addSubview(stackView)
+    }
+
+    private func updateState(state: State) {
+        stepCircleView.color = state.color
+        iconCircleView.color = state.color
+
+        switch state {
+        case .neutral, .warning:
+            stepCircleView.isHidden = false
+            iconCircleView.isHidden = true
+        case .done:
+            stepCircleView.isHidden = true
+            iconCircleView.isHidden = false
+        }
     }
 }
 
 @available(macOS 14.0, *)
-#Preview {
+#Preview("Neutral") {
     let attributedString = NSAttributedString("Sélectionnez Ouverture et extensions > Extensions de sécurité")
     return PermissionActionCell(step: 1, title: attributedString)
+}
+
+@available(macOS 14.0, *)
+#Preview("Warning") {
+    let attributedString = NSAttributedString("Sélectionnez Ouverture et extensions > Extensions de sécurité")
+    let permissionCell = PermissionActionCell(step: 1, title: attributedString)
+    permissionCell.state = .warning
+    return permissionCell
+}
+
+@available(macOS 14.0, *)
+#Preview("Done") {
+    let attributedString = NSAttributedString("Sélectionnez Ouverture et extensions > Extensions de sécurité")
+    let permissionCell = PermissionActionCell(step: 1, title: attributedString)
+    permissionCell.state = .done
+    return permissionCell
 }
