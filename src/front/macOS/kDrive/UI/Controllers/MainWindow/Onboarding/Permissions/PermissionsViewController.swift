@@ -17,11 +17,14 @@
  */
 
 import Cocoa
+import Combine
 import InfomaniakDI
 import kDriveCore
 
 final class PermissionsViewController: OnboardingStepViewController {
     private let viewModel: PermissionsViewModel
+
+    private var bindStore = Set<AnyCancellable>()
 
     init(flowCoordinator: OnboardingFlowCoordinator) {
         viewModel = PermissionsViewModel(flowCoordinator: flowCoordinator)
@@ -35,8 +38,37 @@ final class PermissionsViewController: OnboardingStepViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+
         setupUI()
+        bindValues()
+    }
+
+    private func bindValues() {
+        viewModel.$currentPermission
+            .receiveOnMain(store: &bindStore) { [weak self] permission in
+                self?.updateUIForPermission(permission)
+            }
     }
 
     private func setupUI() {}
+
+    private func updateUIForPermission(_ permission: MacOSPermission) {
+        setupButtons(for: permission)
+    }
+
+    private func setupButtons(for permission: MacOSPermission) {
+        primaryButton.isHidden = false
+        primaryButton.target = self
+        primaryButton.action = #selector(validatePermission)
+        secondaryButton.isHidden = true
+
+        switch permission {
+        case .fullDiskAccess:
+            primaryButton.stringValue = "!J'ai activé kDrive"
+        case .endpointSecurityExtension:
+            primaryButton.stringValue = "!Terminer l'installation"
+        }
+    }
+
+    @objc private func validatePermission() {}
 }

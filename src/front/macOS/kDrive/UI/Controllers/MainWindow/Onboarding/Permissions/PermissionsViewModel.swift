@@ -24,9 +24,28 @@ import kDriveCore
 final class PermissionsViewModel: ObservableObject {
     static let requiredPermissions: [MacOSPermission] = [.fullDiskAccess, .endpointSecurityExtension]
 
-    let flowCoordinator: OnboardingFlowCoordinator
+    @Published var currentPermission: MacOSPermission
+
+    private let flowCoordinator: OnboardingFlowCoordinator
+
+    private var bindStore = Set<AnyCancellable>()
 
     init(flowCoordinator: OnboardingFlowCoordinator) {
         self.flowCoordinator = flowCoordinator
+
+        guard case .permissions(let permission) = flowCoordinator.currentStep else {
+            currentPermission = .fullDiskAccess
+            return
+        }
+        currentPermission = permission
+        flowCoordinator.$currentStep
+            .receiveOnMain(store: &bindStore) { [weak self] newStep in
+                self?.updateCurrentPermission(from: newStep)
+            }
+    }
+
+    private func updateCurrentPermission(from state: OnboardingStep) {
+        guard case .permissions(let permission) = state else { return }
+        currentPermission = permission
     }
 }
