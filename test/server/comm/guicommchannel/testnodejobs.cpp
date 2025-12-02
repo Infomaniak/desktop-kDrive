@@ -18,12 +18,13 @@
 
 #include "testguicommchannel.h"
 
+#include "comm/guijobs/blacklistednodelistjob.h"
+#include "comm/guijobs/blacklistednodesetlistjob.h"
 #include "comm/guijobs/nodeinfojob.h"
 #include "comm/guijobs/nodesubfoldersjob.h"
 #include "comm/guijobs/nodesubfolders2job.h"
 #include "comm/guijobs/nodefoldersizejob.h"
-#include "comm/guijobs/blacklistednodelistjob.h"
-#include "comm/guijobs/blacklistednodesetlistjob.h"
+#include "comm/guijobs/nodecreatemissingfoldersjob.h"
 
 namespace KDC {
 
@@ -34,6 +35,60 @@ std::string toQuotedBase64(const std::string &input) {
     return R"(")" + output + R"(")";
 }
 } // namespace
+
+void TestGuiCommChannel::testBlacklistedSyncNodeListJob() {
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    const auto queryStr{R"({ "id": 1, "num": )" + std::to_string(toInt(RequestNum::BLACKLISTED_NODE_LIST)) +
+                        R"(, "params": { "syncDbId": 5 } })"};
+#else
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::BLACKLISTED_NODE_LIST)) +
+                        R"(, "params": { "syncDbId": 5 } })"};
+    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"nodeIdList":["n1","n2","n3"]}})"};
+#endif
+    const auto answerStr{R"({ "cause": 0, "code": 0, "id": 1, "num": )" +
+                         std::to_string(toInt(RequestNum::BLACKLISTED_NODE_LIST)) +
+                         R"(, "params": { "nodeIdList": [ "n1", "n2", "n3" ] }, "type": )" +
+                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto listJob = std::dynamic_pointer_cast<BlacklistedNodeListJob>(job);
+        listJob->_nodeIdList = {"n1", "n2", "n3"};
+    };
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+#else
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
+void TestGuiCommChannel::testBlacklistedSyncNodeSetListJob() {
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    const auto queryStr{R"({ "id": 1, "num": )" + std::to_string(toInt(RequestNum::BLACKLISTED_NODE_SETLIST)) +
+                        R"(, "params": { "syncDbId": 5, "nodeIdList": ["x1","x2"] } })"};
+#else
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::BLACKLISTED_NODE_SETLIST)) +
+                        R"(, "params": { "syncDbId": 5, "nodeIdList": ["x1","x2"] } })"};
+    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{}})"};
+#endif
+    const auto answerStr{R"({ "cause": 0, "code": 0, "id": 1, "num": )" +
+                         std::to_string(toInt(RequestNum::BLACKLISTED_NODE_SETLIST)) + R"(, "params": {  }, "type": )" +
+                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        // Nothing to serialize back for set job
+        auto blacklistedNodeSetListJob = std::dynamic_pointer_cast<BlacklistedNodeSetListJob>(job);
+        CPPUNIT_ASSERT(std::dynamic_pointer_cast<BlacklistedNodeSetListJob>(job));
+        CPPUNIT_ASSERT_EQUAL(5, blacklistedNodeSetListJob->_syncDbId);
+        CPPUNIT_ASSERT_EQUAL(size_t{2}, blacklistedNodeSetListJob->_nodeIdList.size());
+        CPPUNIT_ASSERT_EQUAL(std::string{"x1"}, blacklistedNodeSetListJob->_nodeIdList.at(0));
+        CPPUNIT_ASSERT_EQUAL(std::string{"x2"}, blacklistedNodeSetListJob->_nodeIdList.at(0));
+    };
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+#else
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
 
 void TestGuiCommChannel::testNodeInfoJob() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
@@ -167,53 +222,52 @@ void TestGuiCommChannel::testNodeFolderSizeJob() {
 #endif
 }
 
-void TestGuiCommChannel::testSyncNodeListJob() {
+void TestGuiCommChannel::testNodeCreateMissingFoldersJob() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{R"({ "id": 1, "num": )" + std::to_string(toInt(RequestNum::BLACKLISTED_NODE_LIST)) +
-                        R"(, "params": { "syncDbId": 5 } })"};
+    const auto queryStr{R"({ "id": 1,)"
+                        R"( "num": )" +
+                        std::to_string(toInt(RequestNum::NODE_CREATEMISSINGFOLDERS)) +
+                        R"(,)"
+                        R"( "params": { "driveDbId": 1, "folderList": [ { "path": )" +
+                        toQuotedBase64("some-path") + R"(, "parentNodeId": )" + toQuotedBase64("6666") + R"( }, { "path": )" +
+                        toQuotedBase64("some-other-path") + R"(, "parentNodeId": )" + toQuotedBase64("7777") + R"( }  ] } })"};
 #else
-    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::BLACKLISTED_NODE_LIST)) +
-                        R"(, "params": { "syncDbId": 5 } })"};
-    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"nodeIdList":["n1","n2","n3"]}})"};
+    // There is no need to pass a request id as the response is via a callback.
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::NODE_CREATEMISSINGFOLDERS)) +
+                        R"(,)"
+                        R"( "params": { "driveDbId": 1, "folderList": [ { "path": )" +
+                        toQuotedBase64("some-path") + R"(, "parentNodeId": )" + toQuotedBase64("6666") + R"( }, { "path": )" +
+                        toQuotedBase64("some-other-path") + R"(, "parentNodeId": )" + toQuotedBase64("7777") + R"( }  ] } })"};
+
+    // Callback expected answer
+    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"parentNodeId":)" + toQuotedBase64("1111") + R"(}})"};
 #endif
-    const auto answerStr{R"({ "cause": 0, "code": 0, "id": 1, "num": )" +
-                         std::to_string(toInt(RequestNum::BLACKLISTED_NODE_LIST)) +
-                         R"(, "params": { "nodeIdList": [ "n1", "n2", "n3" ] }, "type": )" +
+
+    // Job expected answer
+    const auto answerStr{R"({ "cause": 0,)"
+                         R"( "code": 0,)"
+                         R"( "id": 1,)"
+                         R"( "num": )" +
+                         std::to_string(toInt(RequestNum::NODE_CREATEMISSINGFOLDERS)) +
+                         R"(,)"
+                         R"( "params": { "parentNodeId": )" +
+                         toQuotedBase64("1111") +
+                         R"( },)"
+                         R"( "type": )" +
                          std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-        auto listJob = std::dynamic_pointer_cast<BlacklistedNodeListJob>(job);
-        listJob->_nodeIdList = {"n1", "n2", "n3"};
-    };
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
-#else
-    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
-#endif
-}
+        auto nodeCreateMissingFoldersJob = std::dynamic_pointer_cast<NodeCreateMissingFoldersJob>(job);
+        CPPUNIT_ASSERT(nodeCreateMissingFoldersJob);
+        CPPUNIT_ASSERT_EQUAL(1, nodeCreateMissingFoldersJob->_driveDbId);
+        CPPUNIT_ASSERT(NodeId{"6666"} == nodeCreateMissingFoldersJob->_folderList.at(0).parentNodeId);
+        CPPUNIT_ASSERT(CommString{Str("some-path")} == nodeCreateMissingFoldersJob->_folderList.at(0).path);
+        CPPUNIT_ASSERT(NodeId{"7777"} == nodeCreateMissingFoldersJob->_folderList.at(1).parentNodeId);
+        CPPUNIT_ASSERT(CommString{Str("some-other-path")} == nodeCreateMissingFoldersJob->_folderList.at(1).path);
 
-void TestGuiCommChannel::testSyncNodeSetListJob() {
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{R"({ "id": 1, "num": )" + std::to_string(toInt(RequestNum::BLACKLISTED_NODE_SETLIST)) +
-                        R"(, "params": { "syncDbId": 5, "nodeIdList": ["x1","x2"] } })"};
-#else
-    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::BLACKLISTED_NODE_SETLIST)) +
-                        R"(, "params": { "syncDbId": 5, "nodeIdList": ["x1","x2"] } })"};
-    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{}})"};
-#endif
-    const auto answerStr{R"({ "cause": 0, "code": 0, "id": 1, "num": )" +
-                         std::to_string(toInt(RequestNum::BLACKLISTED_NODE_SETLIST)) + R"(, "params": {  }, "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
-
-    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-        // Nothing to serialize back for set job
-        auto blacklistedNodeSetListJob = std::dynamic_pointer_cast<BlacklistedNodeSetListJob>(job);
-        CPPUNIT_ASSERT(std::dynamic_pointer_cast<BlacklistedNodeSetListJob>(job));
-        CPPUNIT_ASSERT_EQUAL(5, blacklistedNodeSetListJob->_syncDbId);
-        CPPUNIT_ASSERT_EQUAL(size_t{2}, blacklistedNodeSetListJob->_nodeIdList.size());
-        CPPUNIT_ASSERT_EQUAL(std::string{"x1"}, blacklistedNodeSetListJob->_nodeIdList.at(0));
-        CPPUNIT_ASSERT_EQUAL(std::string{"x2"}, blacklistedNodeSetListJob->_nodeIdList.at(0));
+        nodeCreateMissingFoldersJob->_parentNodeId = NodeId("1111");
     };
+
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else
