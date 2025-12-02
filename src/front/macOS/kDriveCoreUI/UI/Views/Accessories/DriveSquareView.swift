@@ -47,9 +47,7 @@ public final class DriveSquareView: NSView {
     }
 
     public override func draw(_ dirtyRect: NSRect) {
-        if #available(macOS 26.0, *) {
-            // Nothing to do, we use a NSGlassEffectView
-        } else {
+        if #unavailable(macOS 26.0) {
             let path = NSBezierPath(roundedRect: bounds, xRadius: AppRadius.radius4, yRadius: AppRadius.radius4)
             color.setFill()
             path.fill()
@@ -77,6 +75,7 @@ public final class DriveSquareView: NSView {
                 iconView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
             ])
         } else {
+            addSubview(iconView)
             NSLayoutConstraint.activate([
                 iconView.widthAnchor.constraint(equalToConstant: Self.iconSize.width),
                 iconView.heightAnchor.constraint(equalToConstant: Self.iconSize.height),

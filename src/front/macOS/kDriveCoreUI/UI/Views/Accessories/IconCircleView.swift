@@ -16,33 +16,33 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveResources
 import Cocoa
 
-final class StepCircleView: NSView {
-    var color: NSColor = NSColor.Tokens.Status.Medium.security {
+final class IconCircleView: NSView {
+    static let iconSize = NSSize(width: 12, height: 12)
+
+    var color = NSColor.Tokens.Status.Medium.security {
         didSet {
             needsDisplay = true
         }
     }
 
-    let step: Int
+    let icon: NSImage
 
-    private lazy var stepLabel: NSTextField = {
-        let textField = NSTextField(labelWithString: "\(step)")
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.alignment = .center
-        textField.maximumNumberOfLines = 1
-        textField.font = NSFont.Tokens.subheadline
-        textField.textColor = .white
-        return textField
+    private lazy var iconView: NSImageView = {
+        let imageView = NSImageView(image: icon)
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.contentTintColor = .white
+        return imageView
     }()
 
     override var intrinsicContentSize: NSSize {
         return NSSize(width: 20, height: 20)
     }
 
-    init(step: Int) {
-        self.step = step
+    init(icon: NSImage) {
+        self.icon = icon
         super.init(frame: .zero)
 
         setupView()
@@ -64,7 +64,7 @@ final class StepCircleView: NSView {
     private func setupView() {
         if #available(macOS 26.0, *) {
             let contentView = NSView()
-            contentView.addSubview(stepLabel)
+            contentView.addSubview(iconView)
 
             let backgroundView = NSGlassEffectView()
             backgroundView.translatesAutoresizingMaskIntoConstraints = false
@@ -76,18 +76,18 @@ final class StepCircleView: NSView {
             NSLayoutConstraint.activate([
                 backgroundView.widthAnchor.constraint(equalTo: widthAnchor),
                 backgroundView.heightAnchor.constraint(equalTo: heightAnchor),
-                stepLabel.widthAnchor.constraint(equalToConstant: intrinsicContentSize.width),
-                stepLabel.heightAnchor.constraint(lessThanOrEqualToConstant: intrinsicContentSize.height),
-                stepLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-                stepLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
+                iconView.widthAnchor.constraint(equalToConstant: IconCircleView.iconSize.width),
+                iconView.heightAnchor.constraint(equalToConstant: IconCircleView.iconSize.height),
+                iconView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+                iconView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
             ])
         } else {
-            addSubview(stepLabel)
+            addSubview(iconView)
             NSLayoutConstraint.activate([
-                stepLabel.widthAnchor.constraint(equalTo: widthAnchor),
-                stepLabel.heightAnchor.constraint(lessThanOrEqualToConstant: intrinsicContentSize.height),
-                stepLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
-                stepLabel.centerYAnchor.constraint(equalTo: centerYAnchor)
+                iconView.widthAnchor.constraint(equalToConstant: IconCircleView.iconSize.width),
+                iconView.heightAnchor.constraint(equalToConstant: IconCircleView.iconSize.height),
+                iconView.centerXAnchor.constraint(equalTo: centerXAnchor),
+                iconView.centerYAnchor.constraint(equalTo: centerYAnchor)
             ])
         }
     }
@@ -95,5 +95,5 @@ final class StepCircleView: NSView {
 
 @available(macOS 14.0, *)
 #Preview {
-    StepCircleView(step: 1)
+    IconCircleView(icon: KDriveResources.checkmark.image)
 }
