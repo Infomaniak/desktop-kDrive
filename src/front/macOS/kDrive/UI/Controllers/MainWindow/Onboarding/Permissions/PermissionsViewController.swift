@@ -22,6 +22,77 @@ import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 
+extension MacOSPermission {
+    var title: String {
+        switch self {
+        case .endpointSecurityExtension:
+            return "!Activez kDrive sur votre Mac"
+        case .fullDiskAccess:
+            return "!Autorisez l’accès aux dossiers"
+        }
+    }
+
+    var subtitle: String {
+        switch self {
+        case .endpointSecurityExtension:
+            return "!Autorisez kDrive dans les réglages macOS :"
+        case .fullDiskAccess:
+            return "!Pour terminer l’installation, vous devez autoriser kDrive à accéder à vos dossiers :"
+        }
+    }
+}
+
+extension MacOSPermission {
+    var instructions: [Instruction] {
+        switch self {
+        case .endpointSecurityExtension:
+            return [.openSystemSettings, .openSecurityExtensions, .enableKDrive]
+        case .fullDiskAccess:
+            return [.openPrivacySecurity, .enableFullDiskAccess, .restartAppIfNecessary]
+        }
+    }
+
+    enum Instruction: Sendable {
+        case openSystemSettings
+        case openSecurityExtensions
+        case enableKDrive
+
+        case openPrivacySecurity
+        case enableFullDiskAccess
+        case restartAppIfNecessary
+
+        var value: String {
+            switch self {
+            case .openSystemSettings:
+                return "!Ouvrez les Réglages système > Général"
+            case .openSecurityExtensions:
+                return "!Sélectionnez Ouverture et extensions > Extensions de sécurité"
+            case .enableKDrive:
+                return "!Activez kDrive.app"
+            case .openPrivacySecurity:
+                return "!Allez dans Confidentialité et sécurité > Accès complet au disque"
+            case .enableFullDiskAccess:
+                return "!Activez kDrive et kDrive LiteSync Extension"
+            case .restartAppIfNecessary:
+                return "!Redémarrez l’application si demandé"
+            }
+        }
+
+        var argument: String? {
+            switch self {
+            case .openSecurityExtensions:
+                return "Extensions de sécurité"
+            case .enableKDrive:
+                return "kDrive.app"
+            case .openPrivacySecurity:
+                return "Accès complet au disque"
+            default:
+                return nil
+            }
+        }
+    }
+}
+
 final class PermissionsViewController: OnboardingStepViewController {
     private let viewModel: PermissionsViewModel
 
@@ -79,45 +150,34 @@ final class PermissionsViewController: OnboardingStepViewController {
     }
 
     private func setupHeader(for permission: MacOSPermission) {
-        switch permission {
-        case .endpointSecurityExtension:
-            titleLabel.stringValue = "!Activez kDrive sur votre Mac"
-            descriptionLabel.stringValue = "!Autorisez kDrive dans les réglages macOS :"
-        case .fullDiskAccess:
-            titleLabel.stringValue = "!Autorisez l’accès aux dossiers"
-            descriptionLabel.stringValue = "!Pour terminer l’installation, vous devez autoriser kDrive à accéder à vos dossiers :"
-        }
+        titleLabel.stringValue = permission.title
+        descriptionLabel.stringValue = permission.subtitle
     }
 
     private func setupInstructions(for permission: MacOSPermission) {
-        switch permission {
-        case .endpointSecurityExtension:
-            setupEndpointSecurityExtensionInstructions()
-        case .fullDiskAccess:
-            setupFullDiskAccessInstructions()
+        for index in 0 ..< permission.instructions.count {
+            let instruction = permission.instructions[index]
+            let attributedString = createAttributedString(for: instruction)
+
+            getInstruction(at: index)?.title = attributedString
         }
     }
 
-    private func setupEndpointSecurityExtensionInstructions() {
-        let step1Label = NSMutableAttributedString(string: "!Ouvrez les Réglages système > Général")
-        instruction(at: 0)?.title = step1Label
+    private func createAttributedString(for instruction: MacOSPermission.Instruction) -> NSAttributedString {
+        let attributedString = NSMutableAttributedString(string: instruction.value)
 
-        let step2Label = NSMutableAttributedString(string: "!Sélectionnez Ouverture et extensions > Extensions de sécurité")
-        instruction(at: 1)?.title = step2Label
+        let basicAttributes: [NSAttributedString.Key: Any] = [
+            .font: NSFont.Tokens.body,
+            .foregroundColor: NSColor.Tokens.Text.secondary
+        ]
+        attributedString.addAttributes(basicAttributes, range: NSRange(location: 0, length: attributedString.length))
 
-        let step3Label = NSMutableAttributedString(string: "!Activez kDrive.app")
-        instruction(at: 2)?.title = step3Label
-    }
+        if let argument = instruction.argument {
+            let range = (attributedString.string as NSString).range(of: argument)
+            attributedString.addAttribute(.font, value: NSFont.Tokens.bodyEmphasized, range: range)
+        }
 
-    private func setupFullDiskAccessInstructions() {
-        let step1Label = NSMutableAttributedString(string: "!Allez dans Confidentialité et sécurité > Accès complet au disque")
-        instruction(at: 0)?.title = step1Label
-
-        let step2Label = NSMutableAttributedString(string: "!Activez kDrive et kDrive LiteSync Extension")
-        instruction(at: 1)?.title = step2Label
-
-        let step3Label = NSMutableAttributedString(string: "!Redémarrez l’application si demandé")
-        instruction(at: 2)?.title = step3Label
+        return attributedString
     }
 
     private func setupButtons(for permission: MacOSPermission) {
@@ -138,7 +198,7 @@ final class PermissionsViewController: OnboardingStepViewController {
 
     @objc private func validatePermission() {}
 
-    private func instruction(at index: Int) -> PermissionInstructionCell? {
+    private func getInstruction(at index: Int) -> PermissionInstructionCell? {
         return instructionsStack.arrangedSubviews[index] as? PermissionInstructionCell
     }
 }
