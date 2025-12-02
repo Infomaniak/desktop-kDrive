@@ -37,11 +37,17 @@ SyncSetSupportsVirtualFilesJob::SyncSetSupportsVirtualFilesJob(std::shared_ptr<C
 }
 
 ExitInfo SyncSetSupportsVirtualFilesJob::deserializeInputParms() {
+    constexpr auto logMessage = "Exception in SyncSetSupportsVirtualFilesJob::readParamValue: error=";
     try {
         readParamValue(inParamsSyncDbId, _syncDbId);
         readParamValue(inParamsValue, _value);
-    } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in SyncSetSupportsVirtualFilesJob::readParamValue: error=" << e.what());
+    } catch (const Poco::Exception &pocoException) {
+        LOG_WARN(_logger, logMessage << pocoException.message());
+
+        return ExitCode::LogicError;
+    } catch (const CommonUtility::InvalidEnumerationValue &cuException) {
+        LOG_WARN(_logger, logMessage << cuException.what());
+
         return ExitCode::LogicError;
     }
 

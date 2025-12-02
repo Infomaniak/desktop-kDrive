@@ -30,7 +30,7 @@
 #include "updater/testupdatechecker.h"
 #include "requests/testserverrequests.h"
 #include "appserver/testappserver.h"
-#include "comm/testguicommchannel.h"
+#include "comm/guicommchannel/testguicommchannel.h"
 #include "comm/testsocketcomm.h"
 #if defined(KD_WINDOWS)
 #include "comm/testpipecomm.h"

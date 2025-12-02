@@ -795,6 +795,7 @@ ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, co
     return ExitCode::Ok;
 }
 
+
 ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, const NodeId &nodeId, std::vector<NodeInfo> &list,
                                        const bool withPath /*= false*/) {
     list.clear();
@@ -897,7 +898,7 @@ ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, co
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::getSubFolders(int driveDbId, const QString &nodeId, QList<NodeInfo> &list, bool withPath /*= false*/) {
+ExitInfo ServerRequests::getSubFolders(int driveDbId, const NodeId &nodeId, std::vector<NodeInfo> &list, bool withPath) {
     Drive drive;
     bool found = false;
     if (!ParmsDb::instance()->selectDrive(driveDbId, drive, found)) {
@@ -920,6 +921,22 @@ ExitInfo ServerRequests::getSubFolders(int driveDbId, const QString &nodeId, QLi
     }
 
     return getSubFolders(account.userDbId(), drive.driveId(), nodeId, list, withPath);
+}
+
+
+ExitInfo ServerRequests::getSubFolders(const int driveDbId, const QString &nodeId, QList<NodeInfo> &list,
+                                       bool withPath /*= false*/) {
+    list.clear();
+    std::vector<NodeInfo> stdVector;
+
+    const auto exitInfo = getSubFolders(driveDbId, NodeId{nodeId.toStdString()}, stdVector, withPath);
+    if (!exitInfo) return exitInfo;
+
+    for (NodeInfo &nodeInfo: stdVector) {
+        list.push_back(std::move(nodeInfo));
+    }
+
+    return ExitCode::Ok;
 }
 
 ExitCode ServerRequests::getNodeIdByPath(int userDbId, int driveId, const SyncPath &path, QString &nodeId) {

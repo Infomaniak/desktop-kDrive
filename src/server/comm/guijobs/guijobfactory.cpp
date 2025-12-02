@@ -40,11 +40,12 @@
 #include "syncgetprivatelinkurljob.h"
 #include "syncsetsupportsvirtualfilesjob.h"
 #include "syncsetrootpinstatejob.h"
+#include "nodeinfojob.h"
 #include "nodesubfoldersjob.h"
+#include "nodesubfolders2job.h"
 #include "nodefoldersizejob.h"
 #include "blacklistednodelistjob.h"
 #include "blacklistednodesetlistjob.h"
-#include "nodeinfojob.h"
 
 namespace KDC {
 
@@ -72,6 +73,7 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::SYNC_SETSUPPORTSVIRTUALFILES, makeShared<SyncSetSupportsVirtualFilesJob>},
                 {RequestNum::SYNC_SETROOTPINSTATE, makeShared<SyncSetRootPinStateJob>},
                 {RequestNum::NODE_SUBFOLDERS, makeShared<NodeSubFoldersJob>},
+                {RequestNum::NODE_SUBFOLDERS2, makeShared<NodeSubFolders2Job>},
                 {RequestNum::NODE_FOLDER_SIZE, makeShared<NodeFolderSizeJob>},
                 {RequestNum::BLACKLISTED_NODE_LIST, makeShared<BlacklistedNodeListJob>},
                 {RequestNum::BLACKLISTED_NODE_SETLIST, makeShared<BlacklistedNodeSetListJob>},
