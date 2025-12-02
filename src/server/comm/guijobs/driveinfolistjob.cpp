@@ -38,7 +38,6 @@ ExitInfo DriveInfoListJob::deserializeInputParms() {
 }
 
 ExitInfo DriveInfoListJob::serializeOutputParms() {
-    // Output parameters serialization
     writeParamValues(outParamsDriveInfoList, _driveInfoList, info2DynamicVar<DriveInfo>);
 
     return ExitCode::Ok;

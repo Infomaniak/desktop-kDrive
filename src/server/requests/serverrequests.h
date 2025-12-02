@@ -105,17 +105,19 @@ struct SYNCENGINE_EXPORT ServerRequests {
                                 const NodeId &serverFolderNodeId, bool liteSync, bool showInNavigationPane, SyncInfo &syncInfo);
         static ExitCode addSync(int driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
                                 const QString &serverFolderNodeId, bool liteSync, bool showInNavigationPane, SyncInfo &syncInfo);
+        static ExitInfo getNodeInfo(int userDbId, int driveId, const std::string &nodeId, NodeInfo &nodeInfo, bool withPath = false);
         static ExitInfo getNodeInfo(int userDbId, int driveId, const QString &nodeId, NodeInfo &nodeInfo, bool withPath = false);
         static ExitInfo getSubFolders(const int userDbId, const int driveId, const NodeId &nodeId, std::vector<NodeInfo> &list,
                                       const bool withPath = false);
         static ExitInfo getSubFolders(int userDbId, int driveId, const QString &nodeId, QList<NodeInfo> &list,
-                                      bool withPath = false);
+                                      bool withPath = false); // TODO: Delete after switching to the new comm layer
         static ExitInfo getSubFolders(int driveDbId, const NodeId &nodeId, std::vector<NodeInfo> &list, bool withPath = false);
         static ExitInfo getSubFolders(int driveDbId, const QString &nodeId, QList<NodeInfo> &list, bool withPath = false);
         static ExitCode createDir(int driveDbId, const QString &parentNodeId, const QString &dirName, QString &newNodeId);
         static ExitCode getPublicLinkUrl(int driveDbId, const NodeId &nodeId, std::string &linkUrl);
-        static ExitInfo getFolderSize(int userDbId, int driveId, const NodeId &nodeId,
+        static ExitInfo getFolderSizeWithCallback(int userDbId, int driveId, const NodeId &nodeId,
                                       std::function<void(const QString &, qint64)> callback);
+        static ExitInfo getFolderSize(int userDbId, int driveId, const NodeId &nodeId, int64_t& result);
         static ExitCode getNodeIdByPath(int userDbId, int driveId, const SyncPath &path, QString &nodeId);
         static ExitInfo getPathByNodeId(int userDbId, int driveId, const QString &nodeId, QString &path);
 

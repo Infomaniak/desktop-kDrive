@@ -51,7 +51,7 @@ class UploadJob : public AbstractTokenNetworkJob {
         std::string getSpecificUrl() override;
         void setQueryParameters(Poco::URI &) override;
         ExitInfo setData() override;
-        std::string getContentType() override;
+        std::string contentType() override;
 
         ExitInfo readFile();
         ExitInfo readLink();

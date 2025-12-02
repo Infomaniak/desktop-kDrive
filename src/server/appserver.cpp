@@ -70,6 +70,7 @@
 #include "server/comm/guijobs/signalsyncaddedjob.h"
 #include "server/comm/guijobs/signalsyncremovedjob.h"
 #include "server/comm/guijobs/signalsynccompleteditem.h"
+#include "server/comm/guijobs/signalsyncupdatedjob.h"
 
 #include "server/comm/guijobs/signalsyncprogressinfo.h"
 
@@ -143,6 +144,10 @@ AppServer::AppServer(int &argc, char **argv) :
 }
 
 AppServer::~AppServer() {
+    if (_clientProcess && _clientProcess->isOpen()) {
+        _clientProcess->kill();
+    }
+
     if (Log::isSet()) {
         LOG_DEBUG(_logger, "~AppServer");
     }
@@ -373,18 +378,38 @@ void AppServer::init() {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAppState");
         throw std::runtime_error("Unable to read NoUpdate value in app_state table.");
     }
-    const bool noUpdate = static_cast<bool>(std::get<int>(noUpdateAppStateValue));
-    if (_noUpdate && !noUpdate) {
-        // Update Updater activation flag
-        noUpdateAppStateValue = 1;
-        if (bool found = false;
-            !ParmsDb::instance()->updateAppState(AppStateKey::NoUpdate, noUpdateAppStateValue, found) || !found) {
-            LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
-            throw std::runtime_error("Unable to update NoUpdate value in app_state table.");
+
+    const bool noUpdateDb = static_cast<bool>(std::get<int>(noUpdateAppStateValue));
+
+    if (!noUpdateDb) {
+        if (!_noUpdate) { // If not already set by command line argument
+            // Check if the file "no_update" exists in the application directory to disable updates
+            const auto noUpdateFilePath = CommonUtility::applicationFilePath().parent_path() / SyncPath("no_update");
+            bool noUpdateFlagFileExists = false;
+            ioError = IoError::Success;
+            if (!IoHelper::checkIfPathExists(noUpdateFilePath, noUpdateFlagFileExists, ioError) || ioError != IoError::Success) {
+                std::string errorMsg = "Error in checkIfPathExists(noUpdateFilePath, ...): ioError=" + toString(ioError);
+                LOG_ERROR(_logger, errorMsg);
+                KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "noUpdateFilePath lookup error", errorMsg);
+            }
+            _noUpdate = noUpdateFlagFileExists;
+        }
+
+        if (_noUpdate) {
+            LOG_INFO(_logger, "Updater disabled by command line argument or no_update file");
+            // Update Updater activation flag
+            noUpdateAppStateValue = 1;
+            if (bool found = false;
+                !ParmsDb::instance()->updateAppState(AppStateKey::NoUpdate, noUpdateAppStateValue, found) || !found) {
+                LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+                throw std::runtime_error("Unable to update NoUpdate value in app_state table.");
+            }
         }
     } else {
-        _noUpdate |= noUpdate;
+        _noUpdate = true;
+        LOG_INFO(_logger, "Updater disabled by app_state table");
     }
+
 
     if (!_noUpdate) {
         // Update checks
@@ -463,7 +488,10 @@ void AppServer::cleanup() {
     LOG_DEBUG(_logger, "AppServer::cleanup");
 
     // Stop CommManager
-    if (_commManager) _commManager->stop();
+    if (_commManager) {
+        _commManager->stop();
+        LOG_DEBUG(_logger, "CommManager stopped");
+    }
 
     // Stop JobManager(s)
     GuiJobManagerSingleton::instance()->stop();
@@ -1449,12 +1477,10 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << ExitCode::Ok;
             break;
         }
-        case RequestNum::SYNCNODE_LIST: {
+        case RequestNum::BLACKLISTED_NODE_LIST: {
             int syncDbId;
-            SyncNodeType type;
             QDataStream paramsStream(params);
             paramsStream >> syncDbId;
-            paramsStream >> type;
 
             const std::scoped_lock lock(syncPalMapMutex);
             auto syncPalMapIt = syncPalMap.find(syncDbId);
@@ -1472,7 +1498,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
 
             NodeSet nodeIdSet;
-            ExitCode exitCode = syncPalMapIt->second->syncIdSet(type, nodeIdSet);
+            ExitCode exitCode = syncPalMapIt->second->syncIdSet(SyncNodeType::BlackList, nodeIdSet);
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in SyncPal::getSyncIdSet: code=" << exitCode);
                 addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
@@ -1487,13 +1513,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << nodeIdSet2;
             break;
         }
-        case RequestNum::SYNCNODE_SETLIST: {
+        case RequestNum::BLACKLISTED_NODE_SETLIST: {
             int syncDbId;
-            SyncNodeType type;
             QSet<QString> nodeIdSet;
             QDataStream paramsStream(params);
             paramsStream >> syncDbId;
-            paramsStream >> type;
             paramsStream >> nodeIdSet;
 
             const std::scoped_lock lock(syncPalMapMutex);
@@ -1514,12 +1538,16 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 nodeIdSet2.insert(nodeId.toStdString());
             }
 
-            ExitCode exitCode = syncPalMapIt->second->setSyncIdSet(type, nodeIdSet2);
+            ExitCode exitCode = syncPalMapIt->second->setSyncIdSet(SyncNodeType::BlackList, nodeIdSet2);
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in SyncPal::setSyncIdSet: code=" << exitCode);
                 addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
             }
-
+            exitCode = syncPalMapIt->second->syncListUpdated(true);
+            if (exitCode != ExitCode::Ok) {
+                LOG_WARN(_logger, "Error in SyncPal::syncListUpdated: code=" << exitCode);
+                addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+            }
             resultStream << toInt(exitCode);
             break;
         }
@@ -1634,7 +1662,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> driveId;
             paramsStream >> nodeId;
 
-            std::thread getFolderSize(ServerRequests::getFolderSize, userDbId, driveId, nodeId.toStdString(),
+            std::thread getFolderSize(ServerRequests::getFolderSizeWithCallback, userDbId, driveId, nodeId.toStdString(),
                                       std::bind_front(&AppServer::sendGetFolderSizeCompleted, this));
             getFolderSize.detach();
 
@@ -2136,35 +2164,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << ExitCode::Ok;
             break;
         }
-        case RequestNum::SYNC_PROPAGATE_SYNCLIST_CHANGE: {
-            int syncDbId;
-            bool restartSync;
-            QDataStream paramsStream(params);
-            paramsStream >> syncDbId;
-            paramsStream >> restartSync;
-
-            const std::scoped_lock lock(syncPalMapMutex);
-            auto syncPalMapIt = syncPalMap.find(syncDbId);
-            if (syncPalMapIt == syncPalMap.end()) {
-                LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << syncDbId);
-                resultStream << ExitCode::DataError;
-                break;
-            }
-            if (!syncPalMapIt->second) {
-                LOG_WARN(_logger, "SyncPal not set in syncPalMap for syncDbId=" << syncDbId);
-                resultStream << ExitCode::DataError;
-                break;
-            }
-
-            if (const auto exitCode = syncPalMapIt->second->syncListUpdated(restartSync); exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in SyncPal::syncListUpdated for syncDbId=" << syncDbId);
-                resultStream << exitCode;
-                break;
-            }
-
-            resultStream << ExitCode::Ok;
-            break;
-        }
         case RequestNum::UPDATER_CHANGE_CHANNEL: {
             if (_noUpdate) {
                 assert(false);
@@ -2560,12 +2559,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"}
+        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-            ,
-            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"}
+        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 
@@ -3492,11 +3490,11 @@ bool AppServer::startClient() {
         LOGW_INFO(_logger, L"Starting kDrive client - path=" << Path2WStr(QStr2Path(pathToExecutable)) << L" args="
                                                              << arguments[0].toStdWString());
 
-        QProcess *clientProcess = new QProcess(this);
-        clientProcess->setProgram(pathToExecutable);
-        clientProcess->setArguments(arguments);
-        clientProcess->start();
-        if (!clientProcess->waitForStarted()) {
+        _clientProcess = new QProcess(this);
+        _clientProcess->setProgram(pathToExecutable);
+        _clientProcess->setArguments(arguments);
+        _clientProcess->start();
+        if (!_clientProcess->waitForStarted()) {
             LOG_WARN(_logger, "Failed to start kDrive client");
             return false;
         }
@@ -4193,6 +4191,7 @@ void AppServer::sendSyncUpdated(const SyncInfo &syncInfo) {
     paramsStream << syncInfo;
 
     OldCommServer::instance()->sendSignal(SignalNum::SYNC_UPDATED, params, id);
+    _commManager->sendGuiSignal(std::make_shared<SignalSyncUpdatedJob>(syncInfo));
 }
 
 void AppServer::sendSyncRemoved(int syncDbId) {

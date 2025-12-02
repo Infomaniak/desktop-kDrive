@@ -167,8 +167,7 @@ ExitCode FolderTreeItemWidget::updateBlacklistSet() {
 
     if (!userConnected) return ExitCode::Ok;
 
-    if (const auto exitCode = GuiRequests::getSyncIdSet(_syncDbId, SyncNodeType::BlackList, _oldBlackList);
-        exitCode != ExitCode::Ok) {
+    if (const auto exitCode = GuiRequests::getBlacklistedNodeIdSet(_syncDbId, _oldBlackList); exitCode != ExitCode::Ok) {
         qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getSyncIdSet with SyncNodeType::BlackList";
         return exitCode;
     }

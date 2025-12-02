@@ -608,7 +608,7 @@ ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
 }
 
 bool ComputeFSOperationWorker::isExcludedFromSync(const std::shared_ptr<const Snapshot> snapshot, const ReplicaSide side,
-                                                  const NodeId &nodeId, const SyncPath &path, NodeType type, int64_t size) {
+                                                  const NodeId &nodeId, const SyncPath &path, NodeType type, int64_t /*size*/) {
     if (isInUnsyncedListParentSearchInSnapshot(snapshot, nodeId, side)) {
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Ignoring item " << Path2WStr(path) << L" (" << CommonUtility::s2ws(nodeId)
@@ -934,7 +934,7 @@ void ComputeFSOperationWorker::notifyIgnoredItem(const NodeId &nodeId, const Syn
 
 ExitInfo ComputeFSOperationWorker::blacklistItem(const SyncPath &relativeLocalPath) {
     // Blacklist item
-    if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(relativeLocalPath); !exitInfo) {
+    if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(relativeLocalPath, false); !exitInfo) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::handleAccessDeniedItem: " << Utility::formatSyncPath(relativeLocalPath));
         return exitInfo;
     }

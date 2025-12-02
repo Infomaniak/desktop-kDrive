@@ -27,7 +27,7 @@ final class ObservedUserTests: XCTestCase {
 
     func testSetGetUserFromPropertyWrapper() async throws {
         // GIVEN
-        let cache = CoherentCache()
+        let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: Self.expectedUserDbId)
         XCTAssertNil(initialUser, "Cache should initially be empty")
 
@@ -41,6 +41,7 @@ final class ObservedUserTests: XCTestCase {
             name: "appleseed",
             email: "ja@apple.com",
             accounts: [:],
+            availableDrives: [:],
             avatar: Data(),
             isConnected: true,
             isStaff: true

@@ -528,13 +528,10 @@ void TestConflictFinderWorker::testConflictCmp() {
 
     ConflictQueue queue(_syncPal->updateTree(ReplicaSide::Local), _syncPal->updateTree(ReplicaSide::Remote));
 
-    const OperationType allOp = OperationType::Create | OperationType::Edit | OperationType::Delete | OperationType::Move;
     const auto lNodeAA = _situationGenerator.getNode(ReplicaSide::Local, "aa");
     lNodeAA->setMoveOriginInfos({lNodeAA->getPath(), *lNodeAA->parentNode()->id()});
-    lNodeAA->setChangeEvents(allOp);
     const auto rNodeAA = _situationGenerator.getNode(ReplicaSide::Remote, "aa");
     rNodeAA->setMoveOriginInfos({rNodeAA->getPath(), *rNodeAA->parentNode()->id()});
-    rNodeAA->setChangeEvents(allOp);
 
     constexpr auto nbConflictType = conflictTypes.size();
     std::random_device rd; // Will be used to obtain a seed for the random number engine
@@ -543,6 +540,7 @@ void TestConflictFinderWorker::testConflictCmp() {
     for (size_t i = 0; i < 100; i++) {
         const auto index = dis(gen) % nbConflictType;
         const Conflict c1(lNodeAA, rNodeAA, conflictTypes[index]);
+        queue.push(c1);
     }
 
     // Ensure that all the operations are grouped and sorted by type

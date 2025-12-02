@@ -38,7 +38,6 @@ ExitInfo SyncInfoListJob::deserializeInputParms() {
 }
 
 ExitInfo SyncInfoListJob::serializeOutputParms() {
-    // Output parameters serialization
     writeParamValues(outParamsSyncInfoList, _syncInfoList, info2DynamicVar<SyncInfo>);
 
     return ExitCode::Ok;
