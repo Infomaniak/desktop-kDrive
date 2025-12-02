@@ -726,9 +726,7 @@ ExitCode ServerRequests::addSync(int driveDbId, const SyncPath &localFolderPath,
 
     QUuid navigationPaneClsid;
 #ifdef Q_OS_WIN
-    if (showInNavigationPane) {
-        navigationPaneClsid = QUuid::createUuid();
-    }
+    navigationPaneClsid = QUuid::createUuid();
 #endif
 
     Sync sync;
@@ -761,7 +759,7 @@ ExitCode ServerRequests::addSync(int driveDbId, const SyncPath &localFolderPath,
     sync.setDbPath(std::filesystem::path());
     sync.setHasFullyCompleted(false);
     sync.setNavigationPaneClsid(navigationPaneClsid.toString().toStdString());
-    if (ExitCode exitCode = createSync(sync, syncInfo); exitCode != ExitCode::Ok) {
+    if (const auto exitCode = createSync(sync, syncInfo); exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in createSync");
         return exitCode;
     }

@@ -2559,11 +2559,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 
@@ -2843,6 +2843,14 @@ ExitInfo AppServer::startSyncs(User &user) {
 
             for (Sync &sync: syncList) {
                 QSet<QString> blackList;
+                bool syncUpdated = false;
+
+                // Make sure we have valid CLSID
+                if (sync.navigationPaneClsid().empty()) {
+                    sync.setNavigationPaneClsid(QUuid::createUuid().toString().toStdString());
+                    syncUpdated = true;
+                }
+
                 if (user.toMigrate()) {
                     if (!user.keychainKey().empty()) {
                         // End migration once connected
@@ -2856,24 +2864,24 @@ ExitInfo AppServer::startSyncs(User &user) {
                             mainExitInfo.merge(exitInfo, {ExitCode::SystemError});
                             continue;
                         }
-
-                        if (syncUpdated) {
-                            // Update sync
-                            bool found = false;
-                            if (!ParmsDb::instance()->updateSync(sync, found)) {
-                                LOG_WARN(_logger, "Error in ParmsDb::updateSync");
-                                return {ExitCode::DbError, ExitCause::DbAccessError};
-                            }
-                            if (!found) {
-                                LOG_WARN(_logger, "Sync not found in sync table for syncDbId=" << sync.dbId());
-                                return {ExitCode::DataError, ExitCause::DbEntryNotFound};
-                            }
-
-                            SyncInfo syncInfo;
-                            ServerRequests::syncToSyncInfo(sync, syncInfo);
-                            sendSyncUpdated(syncInfo);
-                        }
                     }
+                }
+
+                if (syncUpdated) {
+                    // Update sync
+                    bool found = false;
+                    if (!ParmsDb::instance()->updateSync(sync, found)) {
+                        LOG_WARN(_logger, "Error in ParmsDb::updateSync");
+                        return {ExitCode::DbError, ExitCause::DbAccessError};
+                    }
+                    if (!found) {
+                        LOG_WARN(_logger, "Sync not found in sync table for syncDbId=" << sync.dbId());
+                        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
+                    }
+
+                    SyncInfo syncInfo;
+                    ServerRequests::syncToSyncInfo(sync, syncInfo);
+                    sendSyncUpdated(syncInfo);
                 }
 
                 // Clear old errors for this sync
@@ -3756,28 +3764,24 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
 
 #if defined(KD_WINDOWS)
     // Save sync
-    Sync tmpSync(sync);
-    tmpSync.setNavigationPaneClsid(vfsMapIt->second->namespaceCLSID());
-
-    if (tmpSync.virtualFileMode() == KDC::VirtualFileMode::Win) {
-        Utility::setFolderPinState(CommonUtility::s2ws(tmpSync.navigationPaneClsid()),
+    if (sync.virtualFileMode() == KDC::VirtualFileMode::Win) {
+        Utility::setFolderPinState(CommonUtility::s2ws(vfsMapIt->second->namespaceCLSID()),
                                    _navigationPaneHelper->showInExplorerNavigationPane());
     } else {
-        if (tmpSync.navigationPaneClsid().empty()) {
-            tmpSync.setNavigationPaneClsid(QUuid::createUuid().toString().toStdString());
-            vfsMapIt->second->setNamespaceCLSID(tmpSync.navigationPaneClsid());
+        if (vfsMapIt->second->namespaceCLSID().empty()) {
+            vfsMapIt->second->setNamespaceCLSID(sync.navigationPaneClsid());
         }
         Utility::addLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()), sync.localPath(),
                                        _navigationPaneHelper->showInExplorerNavigationPane());
     }
 
     bool found = false;
-    if (!ParmsDb::instance()->updateSync(tmpSync, found)) {
+    if (!ParmsDb::instance()->updateSync(sync, found)) {
         LOG_WARN(_logger, "Error in ParmsDb::updateSync");
         return {ExitCode::DbError, ExitCause::DbAccessError};
     }
     if (!found) {
-        LOG_WARN(_logger, "Sync not found in sync table for syncDbId=" << tmpSync.dbId());
+        LOG_WARN(_logger, "Sync not found in sync table for syncDbId=" << sync.dbId());
         return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 #endif
@@ -3867,16 +3871,10 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
 
 #if defined(KD_WINDOWS)
         if (newMode == VirtualFileMode::Win) {
-            // Remove legacy sync root keys
             Utility::removeLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()));
-            sync.setNavigationPaneClsid(std::string());
         } else if (sync.virtualFileMode() == VirtualFileMode::Win) {
-            // Add legacy sync root keys
-            bool show = _navigationPaneHelper->showInExplorerNavigationPane();
-            if (sync.navigationPaneClsid().empty()) {
-                sync.setNavigationPaneClsid(QUuid::createUuid().toString().toStdString());
-            }
-            Utility::addLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()), sync.localPath(), show);
+            Utility::addLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()), sync.localPath(),
+                                           _navigationPaneHelper->showInExplorerNavigationPane());
         }
 #endif
 
