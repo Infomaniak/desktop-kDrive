@@ -86,6 +86,14 @@ class PermissionActionCell: NSView {
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.spacing = AppPadding.padding8
         addSubview(stackView)
+
+        NSLayoutConstraint.activate([
+            stackView.heightAnchor.constraint(greaterThanOrEqualToConstant: 42),
+            stackView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            stackView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            stackView.topAnchor.constraint(equalTo: topAnchor),
+            stackView.bottomAnchor.constraint(equalTo: bottomAnchor)
+        ])
     }
 
     private func updateState(state: State) {
