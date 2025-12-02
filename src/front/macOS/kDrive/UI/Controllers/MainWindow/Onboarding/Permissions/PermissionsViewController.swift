@@ -32,6 +32,7 @@ final class PermissionsViewController: OnboardingStepViewController {
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.spacing = 0
         stackView.orientation = .vertical
+        stackView.alignment = .leading
         return stackView
     }()
 
@@ -64,6 +65,11 @@ final class PermissionsViewController: OnboardingStepViewController {
         descriptionLabel.isHidden = false
 
         stackView.insertArrangedSubview(instructionsStack, at: 2)
+        stackView.setCustomSpacing(AppPadding.padding24, after: instructionsStack)
+
+        for step in 1 ... 3 {
+            instructionsStack.addArrangedSubview(PermissionInstructionCell(step: step, title: NSAttributedString(string: "")))
+        }
     }
 
     private func updateUIForPermission(_ permission: MacOSPermission) {
@@ -83,7 +89,36 @@ final class PermissionsViewController: OnboardingStepViewController {
         }
     }
 
-    private func setupInstructions(for permission: MacOSPermission) {}
+    private func setupInstructions(for permission: MacOSPermission) {
+        switch permission {
+        case .endpointSecurityExtension:
+            setupEndpointSecurityExtensionInstructions()
+        case .fullDiskAccess:
+            setupFullDiskAccessInstructions()
+        }
+    }
+
+    private func setupEndpointSecurityExtensionInstructions() {
+        let step1Label = NSMutableAttributedString(string: "!Ouvrez les Réglages système > Général")
+        instruction(at: 0)?.title = step1Label
+
+        let step2Label = NSMutableAttributedString(string: "!Sélectionnez Ouverture et extensions > Extensions de sécurité")
+        instruction(at: 1)?.title = step2Label
+
+        let step3Label = NSMutableAttributedString(string: "!Activez kDrive.app")
+        instruction(at: 2)?.title = step3Label
+    }
+
+    private func setupFullDiskAccessInstructions() {
+        let step1Label = NSMutableAttributedString(string: "!Allez dans Confidentialité et sécurité > Accès complet au disque")
+        instruction(at: 0)?.title = step1Label
+
+        let step2Label = NSMutableAttributedString(string: "!Activez kDrive et kDrive LiteSync Extension")
+        instruction(at: 1)?.title = step2Label
+
+        let step3Label = NSMutableAttributedString(string: "!Redémarrez l’application si demandé")
+        instruction(at: 2)?.title = step3Label
+    }
 
     private func setupButtons(for permission: MacOSPermission) {
         primaryButton.isHidden = false
@@ -93,13 +128,17 @@ final class PermissionsViewController: OnboardingStepViewController {
 
         switch permission {
         case .endpointSecurityExtension:
-            primaryButton.title = "!Terminer l'installation"
-        case .fullDiskAccess:
             primaryButton.title = "!J'ai activé kDrive"
+        case .fullDiskAccess:
+            primaryButton.title = "!Terminer l'installation"
         }
     }
 
     private func updateButtonStatus() {}
 
     @objc private func validatePermission() {}
+
+    private func instruction(at index: Int) -> PermissionInstructionCell? {
+        return instructionsStack.arrangedSubviews[index] as? PermissionInstructionCell
+    }
 }

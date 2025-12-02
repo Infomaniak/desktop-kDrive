@@ -20,8 +20,8 @@ import Cocoa
 import Foundation
 
 public enum MacOSPermission: Sendable {
-    case fullDiskAccess
     case endpointSecurityExtension
+    case fullDiskAccess
 }
 
 protocol AuthorizationChecker: Sendable {

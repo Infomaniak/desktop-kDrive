@@ -20,7 +20,7 @@ import Cocoa
 import kDriveCoreUI
 import kDriveResources
 
-class PermissionActionCell: NSView {
+class PermissionInstructionCell: NSView {
     enum State: Sendable {
         case neutral
         case warning
@@ -123,13 +123,13 @@ class PermissionActionCell: NSView {
 @available(macOS 14.0, *)
 #Preview("Neutral") {
     let attributedString = NSAttributedString("Sélectionnez Ouverture et extensions > Extensions de sécurité")
-    return PermissionActionCell(step: 1, title: attributedString)
+    return PermissionInstructionCell(step: 1, title: attributedString)
 }
 
 @available(macOS 14.0, *)
 #Preview("Warning") {
     let attributedString = NSAttributedString("Sélectionnez Ouverture et extensions > Extensions de sécurité")
-    let permissionCell = PermissionActionCell(step: 1, title: attributedString)
+    let permissionCell = PermissionInstructionCell(step: 1, title: attributedString)
     permissionCell.state = .warning
     return permissionCell
 }
@@ -137,7 +137,7 @@ class PermissionActionCell: NSView {
 @available(macOS 14.0, *)
 #Preview("Done") {
     let attributedString = NSAttributedString("Sélectionnez Ouverture et extensions > Extensions de sécurité")
-    let permissionCell = PermissionActionCell(step: 1, title: attributedString)
+    let permissionCell = PermissionInstructionCell(step: 1, title: attributedString)
     permissionCell.state = .done
     return permissionCell
 }
