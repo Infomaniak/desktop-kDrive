@@ -24,7 +24,7 @@ import kDriveCore
 enum OnboardingStep: Sendable {
     case login
     case drivesSelection
-    case permissions
+    case permissions(MacOSPermission)
     case synchronization
 }
 
@@ -44,23 +44,31 @@ final class OnboardingFlowCoordinator: ObservableObject {
         currentStep = step
     }
 
-    func navigateToNextStep() {
-        guard let nextStep = nextRequiredStep(from: currentStep) else {
+    func navigateToNextStep() async {
+        guard let nextStep = await nextRequiredStep(from: currentStep) else {
             return
         }
 
         navigate(to: nextStep)
     }
 
-    func nextRequiredStep(from currentStep: OnboardingStep) -> OnboardingStep? {
+    func nextRequiredStep(from currentStep: OnboardingStep) async -> OnboardingStep? {
         switch currentStep {
         case .login:
             return .drivesSelection
+
         case .drivesSelection:
-            // TODO: Check if permissions are required
-            return .permissions
+            for permission in PermissionsViewModel.requiredPermissions {
+                @InjectService var permissionHandler: MacOSPermissionHandling
+                if await !permissionHandler.isAuthorized(for: permission) {
+                    return .permissions(permission)
+                }
+            }
+            return .synchronization
+
         case .permissions:
             return .synchronization
+
         case .synchronization:
             return nil
         }
@@ -76,7 +84,7 @@ final class OnboardingFlowCoordinator: ObservableObject {
             }
 
             targetUser = UIUser(user: user)
-            navigateToNextStep()
+            await navigateToNextStep()
         }
     }
 }

@@ -22,7 +22,7 @@ import kDriveCore
 
 @MainActor
 final class PermissionsViewModel: ObservableObject {
-    @Published private(set) var permission: MacOSPermission = .endpointSecurityExtension
+    static let requiredPermissions: [MacOSPermission] = [.fullDiskAccess, .endpointSecurityExtension]
 
     let flowCoordinator: OnboardingFlowCoordinator
 
