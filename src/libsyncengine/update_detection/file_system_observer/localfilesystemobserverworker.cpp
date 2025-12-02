@@ -269,8 +269,9 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
                 // happens for instance if a file is deleted while another file with the same path is created shortly
                 // afterward. Typically, editors of the MS suite (xlsx, docx) or Adobe suite (pdf) perform a
                 // Delete-followed-by-Create operation during a single edit.
-                NodeId itemId = _liveSnapshot.itemId(relativePath);
-                if (!itemId.empty() && _liveSnapshot.removeItem(itemId)) {
+                const NodeId itemId = _liveSnapshot.itemId(relativePath);
+                if (itemId.empty()) continue;
+                if (_liveSnapshot.removeItem(itemId)) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: " << Utility::formatSyncPath(absolutePath)
                                                                                       << L" (" << CommonUtility::s2ws(itemId)
                                                                                       << L")");
