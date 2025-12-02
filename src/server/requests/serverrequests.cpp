@@ -795,21 +795,6 @@ ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, co
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, const NodeId &nodeId, std::vector<NodeInfo> &list,
-                                       const bool withPath /*= false*/) {
-    list.clear();
-    std::vector<NodeInfo> stdVector;
-
-    if (const ExitInfo exitInfo = getSubFolders(userDbId, driveId, nodeId.toStdString(), stdVector, withPath); !exitInfo) {
-        return exitInfo;
-    }
-
-    for (const NodeInfo &nodeInfo: stdVector) {
-        list.push_back(nodeInfo);
-    }
-
-    return ExitCode::Ok;
-}
 
 ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, const NodeId &nodeId, std::vector<NodeInfo> &list,
                                        const bool withPath /*= false*/) {

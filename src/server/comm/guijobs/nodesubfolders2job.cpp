@@ -42,12 +42,15 @@ NodeSubFolders2Job::NodeSubFolders2Job(std::shared_ptr<CommManager> commManager,
 }
 
 ExitInfo NodeSubFolders2Job::deserializeInputParms() {
+    constexpr auto logMessage = "Exception in NodeSubFolders2Job::readParamValue: error=";
     try {
         readParamValue(inParamsDriveDbId, _driveDbId);
         readParamValue(inParamsNodeId, _nodeId);
         readParamValue(inParamsWithPath, _withPath);
-    } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in NodeSubFolders2Job::readParamValue: error=" << e.what());
+    } catch (const Poco::Exception &pocoException) {
+        LOG_WARN(_logger, logMessage << pocoException.message());
+    } catch (const CommonUtility::InvalidEnumerationValue &cuException) {
+        LOG_WARN(_logger, logMessage << cuException.what());
         return ExitCode::LogicError;
     }
 

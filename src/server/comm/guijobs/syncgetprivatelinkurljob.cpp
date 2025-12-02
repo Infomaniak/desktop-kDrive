@@ -42,11 +42,14 @@ SyncGetPrivateLinkUrlJob::SyncGetPrivateLinkUrlJob(std::shared_ptr<CommManager> 
 }
 
 ExitInfo SyncGetPrivateLinkUrlJob::deserializeInputParms() {
+    constexpr auto logMessage = "Exception in SyncGetPrivateLinkUrlJob::readParamValue: error=";
     try {
         readParamValue(inParamsDriveDbId, _driveDbId);
         readParamValue(inParamsFileId, _fileId);
-    } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in SyncGetPrivateLinkUrlJob::readParamValue: error=" << e.what());
+    } catch (const Poco::Exception &pocoException) {
+        LOG_WARN(_logger, logMessage << pocoException.message());
+    } catch (const CommonUtility::InvalidEnumerationValue &cuException) {
+        LOG_WARN(_logger, logMessage << cuException.what());
         return ExitCode::LogicError;
     }
 
