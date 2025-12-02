@@ -66,6 +66,7 @@ $buildPath = "$contentPath/build"
 $installPath = "$contentPath/install"
 
 $extPath = "$path/extensions/windows/cfapi"
+$clientPath = "$path/src/gui4/windows/kDrive client"
 $vfsDir = "$extPath/x64/Release"
 
 $msiInstallerFolderPath = "$path/installer/windows/kDriveInstaller"
@@ -270,6 +271,53 @@ function Build-Extension {
     Write-Host "Extension built."
 }
 
+function Build-Client {
+    param (
+        [string] $path,
+        [string] $contentPath,
+        [string] $clientPath,
+        [string] $buildType,
+        [string] $thumbprint
+    )
+
+    Write-Host "Building client ($buildType) ..."
+
+    $configuration = $buildType
+    if ($buildType -eq "RelWithDebInfo") { $configuration = "Release" }
+
+    $version = Get-version -IncludeBuildVersion $true
+    Write-Host "Client version: $version"
+	
+	$aumid = Get-Aumid $upload
+	Write-Host "Building client with AUMID: $aumid"
+    # Remove any previous build
+    Remove-Item -Path "$clientPath/kDrive client/bin" -Recurse -Force -ErrorAction SilentlyContinue
+
+	dotnet clean "$clientPath\kDrive client.sln"
+    dotnet restore "$clientPath\kDrive client.sln"
+    dotnet build "$clientPath\kDrive client\kDrive client.csproj"  -c Release -r win-x64 --self-contained true
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+    # Copy built client to content path
+    $clientBuildOutputPath = Get-ChildItem -Path "$clientPath/kDrive client/bin/x64/Release" -Directory | Select-Object -ExpandProperty FullName | Where-Object { Test-Path "$_/win-x64" } | Select-Object -First 1
+    $sourcePath = "$clientBuildOutputPath/win-x64/."
+    $destinationPath = "$contentPath/client"
+    Copy-Item -Path $sourcePath -Destination $destinationPath -Recurse -Force
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+    # Sign all the .exe, .dll and .xbf that have no signature yet
+    $filesToSign = Get-ChildItem -Path $destinationPath -Recurse -Include *.exe, *.dll, *.xbf | Where-Object {
+        $signature = Get-AuthenticodeSignature $_.FullName
+        $signature.Status -eq 'NotSigned'
+    }
+    foreach ($file in $filesToSign) {
+        Sign-File -FilePath $file.FullName -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description $file.Name
+        Write-Host "Signed file: $($file.FullName)"
+    }
+
+    Write-Host "Client built."
+}
+
 function CMake-Build-And-Install {
     param (
         [string] $path,
@@ -440,6 +488,7 @@ function Prepare-Archive {
         [string] $buildType,
         [string] $buildPath,
         [string] $vfsDir,
+        [string] $ClientDir,
         [string] $archivePath,
         [bool] $upload,
         [bool] $ci
@@ -520,6 +569,10 @@ function Prepare-Archive {
         Sign-File -FilePath $archivePath/$filename -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description $filename
 
     }
+
+    # Copies the client files
+    Write-Host "Copying client files ($ClientDir) to the archive ..."
+    Copy-Item -Path "$ClientDir/." -Destination "$archivePath/client" -Recurse
 
     Write-Host "Archive prepared."
 }
@@ -752,6 +805,21 @@ if (!(Test-Path "$vfsDir\vfs.dll") -or $ext) {
 
 #################################################################################################
 #                                                                                               #
+#                                             GUI                                               #
+#                                                                                               #
+#################################################################################################
+
+
+$thumbprint = Get-Thumbprint -Upload $upload -Ci $ci
+Build-Client -Path $path -ContentPath $contentPath -ClientPath $clientPath -BuildType $buildType -Thumbprint $thumbprint
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Failed to build the client. Aborting." -f Red
+    exit $LASTEXITCODE
+}
+
+#################################################################################################
+#                                                                                               #
 #                                           CMAKE                   	                        #
 #                                                                                               #
 #################################################################################################
@@ -782,7 +850,7 @@ if ($LASTEXITCODE -ne 0) {
 #                                                                                               #
 #################################################################################################
 
-Prepare-Archive -BuildType $buildType -BuildPath $buildPath -VfsDir $vfsDir -ArchivePath $archivePath -Upload $upload -Ci $ci
+Prepare-Archive -BuildType $buildType -BuildPath $buildPath -VfsDir $vfsDir -ArchivePath $archivePath -Upload $upload -Ci $ci -ClientDir $contentPath/client
 if ($LASTEXITCODE -ne 0)
 {
     Write-Host "Archive preparation failed. Aborting." -f Red
@@ -795,7 +863,7 @@ if ($LASTEXITCODE -ne 0)
 #                                                                                               #
 #################################################################################################
 
-if (!$ci -or $upload) {
+if (!$ci) {
     Create-Archive -Path $path -BuildPath $buildPath -ContentPath $contentPath -InstallPath $installPath -Archivename $archiveName -ArchivePath $archivePath -Upload $upload -Ci $ci
     if ($LASTEXITCODE -ne 0) {
         Write-Host "Archive creation failed ($LASTEXITCODE) . Aborting." -f Red

@@ -4,6 +4,7 @@
 		<TargetFramework>net9.0-windows10.0.19041</TargetFramework>
 		<TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
 		<RootNamespace>Infomaniak.kDrive</RootNamespace>
+		<SupportedLocales>en-US;fr-FR;de-DE;es-ES;it-IT</SupportedLocales>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<Platforms>x86;x64;ARM64</Platforms>
 		<RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
@@ -78,6 +79,30 @@
 		<GenerateTestArtifacts>True</GenerateTestArtifacts>
 		<AppxBundle>Never</AppxBundle>
 		<HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
+		<StartupObject>Infomaniak.kDrive.Program</StartupObject>
+		<AssemblyName>kDrive</AssemblyName>
+		<ApplicationIcon>Assets\kdrive.ico</ApplicationIcon>
+		<NuGetAuditMode>direct</NuGetAuditMode>
+		<SignAssembly>False</SignAssembly>
+		<DelaySign>False</DelaySign>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+	  <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+	  <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
+	  <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+	  <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+	  <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+	  <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
 	</PropertyGroup>
 	<ItemGroup>
 		<Page Update="CustomControls\DynamicTextBlock.xaml">
@@ -184,5 +209,24 @@
 	</ItemGroup>
 	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
 		<Exec Command="powershell -ExecutionPolicy Bypass -NoProfile -File &quot;$(ProjectDir)\Assets\Custom\Animations\lottieConverter.ps1&quot; -Directory &quot;$(ProjectDir)\Assets\Custom\Animations&quot;" />
+	</Target>
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+		<!-- Rename the generated .pri file to Resources.pri | This is a bug in the generations of unpackaged winui apps -->
+		<Exec Command="powershell -ExecutionPolicy Bypass -NoProfile -Command &quot;Rename-Item -Path '$(OutDir)$(AssemblyName).pri' -NewName 'Resources.pri' -Force&quot;" />
+		<ItemGroup>
+			<!-- Keep only fr-FR, en-US, es-ES, it-IT, de-DE -->
+			<RemovingFiles
+				Include="$(OutDir)*\*.mui"
+				Exclude="
+            $(OutDir)fr-FR\*.mui;
+            $(OutDir)en-US\*.mui;
+            $(OutDir)es-ES\*.mui;
+            $(OutDir)it-IT\*.mui;
+            $(OutDir)de-DE\*.mui" />
+
+			<RemovingFolders Include="@(RemovingFiles->'%(RootDir)%(Directory)')" />
+		</ItemGroup>
+
+		<RemoveDir Directories="@(RemovingFolders)" />
 	</Target>
 </Project>
