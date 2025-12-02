@@ -46,11 +46,17 @@ void NodeCreateMissingFoldersJob::FolderItem::fromDynamicStruct(const Poco::Dyna
 }
 
 ExitInfo NodeCreateMissingFoldersJob::deserializeInputParms() {
+    constexpr auto logMessage = "Exception in NodeCreateMissingFoldersJob::readParamValue: error=";
     try {
         readParamValue(inParamsDriveDbId, _driveDbId);
         readParamValues(inParamsFolderList, _folderList, dynamicVar2Struct<FolderItem>);
-    } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in NodeCreateMissingFoldersJob::readParamValue: error=" << e.what());
+    } catch (const Poco::Exception &pocoException) {
+        LOG_WARN(_logger, logMessage << pocoException.message());
+
+        return ExitCode::LogicError;
+    } catch (const CommonUtility::InvalidEnumerationValue &cuException) {
+        LOG_WARN(_logger, logMessage << cuException.what());
+
         return ExitCode::LogicError;
     }
 
