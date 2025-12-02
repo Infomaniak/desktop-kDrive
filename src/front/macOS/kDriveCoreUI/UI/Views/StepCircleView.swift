@@ -1,0 +1,99 @@
+/*
+ Infomaniak kDrive - Desktop
+ Copyright (C) 2023-2025 Infomaniak Network SA
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+import Cocoa
+
+final class StepCircleView: NSView {
+    var color: NSColor = NSColor.Tokens.Status.Medium.security {
+        didSet {
+            needsDisplay = true
+        }
+    }
+
+    let step: Int
+
+    private lazy var stepLabel: NSTextField = {
+        let textField = NSTextField(labelWithString: "\(step)")
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.alignment = .center
+        textField.maximumNumberOfLines = 1
+        textField.font = NSFont.Tokens.subheadline
+        textField.textColor = .white
+        return textField
+    }()
+
+    override var intrinsicContentSize: NSSize {
+        return NSSize(width: 20, height: 20)
+    }
+
+    init(step: Int) {
+        self.step = step
+        super.init(frame: .zero)
+
+        setupView()
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func draw(_ dirtyRect: NSRect) {
+        if #unavailable(macOS 26.0) {
+            let path = NSBezierPath(ovalIn: NSRect(origin: .zero, size: intrinsicContentSize))
+            color.setFill()
+            path.fill()
+        }
+    }
+
+    private func setupView() {
+        if #available(macOS 26.0, *) {
+            let contentView = NSView()
+            contentView.addSubview(stepLabel)
+
+            let backgroundView = NSGlassEffectView()
+            backgroundView.translatesAutoresizingMaskIntoConstraints = false
+            backgroundView.contentView = contentView
+            backgroundView.tintColor = color
+            backgroundView.cornerRadius = intrinsicContentSize.width / 2
+            addSubview(backgroundView)
+
+            NSLayoutConstraint.activate([
+                backgroundView.widthAnchor.constraint(equalTo: widthAnchor),
+                backgroundView.heightAnchor.constraint(equalTo: heightAnchor),
+                stepLabel.widthAnchor.constraint(equalToConstant: intrinsicContentSize.width),
+                stepLabel.heightAnchor.constraint(lessThanOrEqualToConstant: intrinsicContentSize.height),
+                stepLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+                stepLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
+            ])
+        } else {
+            addSubview(stepLabel)
+            NSLayoutConstraint.activate([
+                stepLabel.widthAnchor.constraint(equalTo: widthAnchor),
+                stepLabel.heightAnchor.constraint(lessThanOrEqualToConstant: intrinsicContentSize.height),
+                stepLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
+                stepLabel.centerYAnchor.constraint(equalTo: centerYAnchor)
+            ])
+        }
+    }
+}
+
+@available(macOS 14.0, *)
+#Preview {
+    StepCircleView(step: 1)
+}

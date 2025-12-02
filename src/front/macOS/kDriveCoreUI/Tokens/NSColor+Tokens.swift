@@ -22,6 +22,8 @@ import kDriveResources
 // swiftlint:disable nesting
 extension NSColor {
     public enum Tokens {
+        // MARK: - Tokens level 2
+
         public enum Action {
             public static let primary = NSColor(light: KDriveColors.drive600, dark: KDriveColors.drive400)
             public static let onPrimary = NSColor(light: KDriveColors.neutralBlue100, dark: KDriveColors.neutralBlue800)
@@ -38,6 +40,15 @@ extension NSColor {
             public static let secondary = NSColor(light: KDriveColors.neutralBlue100, dark: KDriveColors.neutralBlue700)
             public static let tertiary = NSColor(light: KDriveColors.neutralBlue200, dark: KDriveColors.neutralBlue600)
         }
+
+        public enum Status {
+            public enum Medium {
+                public static let warning = NSColor(light: KDriveColors.orange500, dark: KDriveColors.orange400)
+                public static let security = NSColor(light: KDriveColors.drive500, dark: KDriveColors.drive400)
+            }
+        }
+
+        // MARK: - Tokens level 3
 
         public enum Drive {
             public static let defaultColor = KDriveColors.infomaniak.color
