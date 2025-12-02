@@ -286,31 +286,38 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
         }
 
         FSOpPtr createOp;
-        _operationSet->getOp(createOpId, createOp);
+        (void) _operationSet->getOp(createOpId, createOp);
 
-        std::pair<FSOpPtrMap::iterator, bool> insertionResult;
+        bool insertionFailedBecausePathExists = false;
+        SyncPath path;
         switch (createOp->objectType()) {
             case NodeType::File: {
-                SyncPath normalizedPath;
-                if (!Utility::normalizedSyncPath(createOp->path(), normalizedPath)) {
-                    normalizedPath = createOp->path();
+                if (!Utility::normalizedSyncPath(createOp->path(), path)) {
+                    path = createOp->path();
                     LOGW_SYNCPAL_WARN(_logger, L"Failed to normalize: " << Utility::formatSyncPath(createOp->path()));
                 }
-                insertionResult = _createFileOperationSet.try_emplace(normalizedPath, createOp);
+                if (!_createFileOperationSet.try_emplace(path, createOp).second) {
+                    insertionFailedBecausePathExists = _createFileOperationSet.contains(
+                            path); // The insertion might have failed because of unsupported
+                                   // characters in `path` (e.g.: a file name finishing by a space or a dot).
+                }
                 break;
             }
             case NodeType::Directory:
-                insertionResult = createDirectoryOperationSet.try_emplace(createOp->path(), createOp);
+                if (!createDirectoryOperationSet.try_emplace(createOp->path(), createOp).second) {
+                    insertionFailedBecausePathExists = createDirectoryOperationSet.contains(
+                            path); // The insertion might have failed because of unsupported
+                                   // characters (e.g.: a folder name finishing by a space or a dot).
+                }
                 break;
             default:
                 break;
         }
 
-        if (!insertionResult.second) {
+        if (insertionFailedBecausePathExists) {
             // Failed to insert Create operation. A full rebuild of the snapshot is required.
             // The following issue has been identified: the operating system missed a delete operation, in which case a
             // liveSnapshot rebuild is both required and sufficient.
-
             LOGW_SYNCPAL_WARN(_logger, _side << L" update tree: Operation Create already exists on item with "
                                              << Utility::formatSyncPath(createOp->path()) << L", ID: "
                                              << CommonUtility::s2ws(createOp->nodeId()) << L", type " << createOp->objectType()
