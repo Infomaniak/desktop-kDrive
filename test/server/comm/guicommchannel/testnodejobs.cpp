@@ -94,7 +94,7 @@ void TestGuiCommChannel::testNodeSubFolders2Job() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     const auto queryStr{R"({ "id": 1,)"
                         R"( "num": )" +
-                        std::to_string(toInt(RequestNum::SYNC_GETPRIVATELINKURL)) +
+                        std::to_string(toInt(RequestNum::NODE_SUBFOLDERS2)) +
                         R"(,)"
                         R"( "params": { "driveDbId": 1, "nodeId": )" +
                         toQuotedBase64("1111") + R"(, "withPath": true } })"};
