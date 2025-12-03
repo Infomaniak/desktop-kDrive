@@ -208,7 +208,7 @@
 		</Content>
 	</ItemGroup>
 	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-		<Exec Command="powershell -ExecutionPolicy Bypass -NoProfile -File &quot;$(ProjectDir)\Assets\Custom\Animations\lottieConverter.ps1&quot; -Directory &quot;$(ProjectDir)\Assets\Custom\Animations&quot;" />
+		<Exec Command="powershell -ExecutionPolicy Bypass -NoProfile -File &quot;$(ProjectDir)Assets\Custom\Animations\lottieConverter.ps1&quot; -Directory &quot;$(ProjectDir)Assets\Custom\Animations&quot;" />
 	</Target>
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<!-- Rename the generated .pri file to Resources.pri | This is a bug in the generations of unpackaged winui apps -->
