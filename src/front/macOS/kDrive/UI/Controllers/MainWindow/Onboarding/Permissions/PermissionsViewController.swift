@@ -125,6 +125,7 @@ final class PermissionsViewController: OnboardingStepViewController {
     private let viewModel: PermissionsViewModel
 
     private var bindStore = Set<AnyCancellable>()
+    private var didBecomeActiveObserver: NSObjectProtocol?
 
     private lazy var instructionsStack: NSStackView = {
         let stackView = NSStackView()
@@ -145,11 +146,26 @@ final class PermissionsViewController: OnboardingStepViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
+    deinit {
+        if let didBecomeActiveObserver {
+            NotificationCenter.default.removeObserver(didBecomeActiveObserver)
+        }
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
         setupUI()
         bindValues()
+    }
+
+    override func viewWillAppear() {
+        super.viewWillAppear()
+
+        didBecomeActiveObserver = NotificationCenter.default
+            .addObserver(forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main) { [weak self] _ in
+                self?.checkPermission()
+            }
     }
 
     private func bindValues() {
@@ -187,7 +203,7 @@ final class PermissionsViewController: OnboardingStepViewController {
             let instruction = permission.instructions[index]
             let attributedString = createAttributedString(for: instruction)
 
-            getInstruction(at: index)?.title = attributedString
+            instructionCell(at: index)?.title = attributedString
         }
     }
 
@@ -229,7 +245,7 @@ final class PermissionsViewController: OnboardingStepViewController {
     private func setupButtons(for permission: MacOSPermission) {
         primaryButton.isHidden = false
         primaryButton.target = self
-        primaryButton.action = #selector(validatePermission)
+        primaryButton.action = #selector(didClickValidate)
         secondaryButton.isHidden = true
 
         switch permission {
@@ -242,9 +258,13 @@ final class PermissionsViewController: OnboardingStepViewController {
 
     private func updateButtonStatus() {}
 
-    @objc private func validatePermission() {}
+    @objc private func didClickValidate() {}
 
-    private func getInstruction(at index: Int) -> PermissionInstructionCell? {
+    private func checkPermission() {
+        viewModel.checkCurrentPermission()
+    }
+
+    private func instructionCell(at index: Int) -> PermissionInstructionCell? {
         return instructionsStack.arrangedSubviews[index] as? PermissionInstructionCell
     }
 }

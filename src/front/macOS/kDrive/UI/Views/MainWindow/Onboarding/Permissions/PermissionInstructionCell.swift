@@ -20,25 +20,21 @@ import Cocoa
 import kDriveCoreUI
 import kDriveResources
 
-class PermissionInstructionCell: NSView {
-    enum State: Sendable {
-        case neutral
-        case warning
-        case done
-
-        var color: NSColor {
-            switch self {
-            case .neutral:
-                return NSColor.Tokens.Status.Medium.security
-            case .warning:
-                return NSColor.Tokens.Status.Medium.warning
-            case .done:
-                return NSColor.Tokens.Status.Medium.success
-            }
+extension MacOSPermissionState {
+    var color: NSColor {
+        switch self {
+        case .neutral:
+            return NSColor.Tokens.Status.Medium.security
+        case .warning:
+            return NSColor.Tokens.Status.Medium.warning
+        case .done:
+            return NSColor.Tokens.Status.Medium.success
         }
     }
+}
 
-    var state: State = .neutral {
+class PermissionInstructionCell: NSView {
+    var state: MacOSPermissionState = .neutral {
         didSet {
             updateState(state: state)
         }
@@ -108,7 +104,7 @@ class PermissionInstructionCell: NSView {
         ])
     }
 
-    private func updateState(state: State) {
+    private func updateState(state: MacOSPermissionState) {
         stepCircleView.color = state.color
         iconCircleView.color = state.color
 

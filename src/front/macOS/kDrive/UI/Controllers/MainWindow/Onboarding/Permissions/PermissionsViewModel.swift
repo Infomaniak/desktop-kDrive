@@ -19,12 +19,22 @@
 import Combine
 import Foundation
 import kDriveCore
+import InfomaniakDI
+
+enum MacOSPermissionState: Sendable {
+    case neutral
+    case warning
+    case done
+}
 
 @MainActor
 final class PermissionsViewModel: ObservableObject {
     static let requiredPermissions: [MacOSPermission] = [.endpointSecurityExtension, .fullDiskAccess]
 
+    @LazyInjectService private var permissionHander: MacOSPermissionHandling
+
     @Published var currentPermission: MacOSPermission
+    @Published var currentState: MacOSPermissionState = .neutral
 
     private let flowCoordinator: OnboardingFlowCoordinator
 
@@ -42,6 +52,21 @@ final class PermissionsViewModel: ObservableObject {
             .receiveOnMain(store: &bindStore) { [weak self] newStep in
                 self?.updateCurrentPermission(from: newStep)
             }
+    }
+
+    func checkCurrentPermission() {
+        Task {
+            let isAuthorized = await permissionHander.isAuthorized(for: currentPermission)
+            if isAuthorized {
+                currentState = .done
+            } else {
+                currentState = .warning
+            }
+        }
+    }
+
+    func navigateIfPossible() {
+        guard currentState == .done else { return }
     }
 
     private func updateCurrentPermission(from state: OnboardingStep) {
