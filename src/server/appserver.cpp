@@ -2854,7 +2854,6 @@ ExitInfo AppServer::startSyncs(User &user) {
                 if (user.toMigrate()) {
                     if (!user.keychainKey().empty()) {
                         // End migration once connected
-                        bool syncUpdated = false;
                         if (const auto exitInfo =
                                     processMigratedSyncOnceConnected(user.dbId(), drive.driveId(), sync, blackList, syncUpdated);
                             !exitInfo) {
