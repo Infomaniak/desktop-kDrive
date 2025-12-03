@@ -48,7 +48,7 @@ $buildNumber = $versionTab[3]
 # version number example: 3.7.1
 $versionNumber = $versionTab[0..2] -join '.'
 
-#extended version number example: 3.7.1.1
+# extended version number example: 3.7.1.1
 $extendedVersionNumber = $versionTab[0..3] -join '.'
 
 $headers = @{
