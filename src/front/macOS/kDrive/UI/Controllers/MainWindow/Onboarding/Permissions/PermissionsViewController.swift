@@ -41,6 +41,15 @@ extension MacOSPermission {
             return KDriveLocalizable.onboardingAuthorizationFullDiskDescription
         }
     }
+
+    var majorCellIndex: Int {
+        switch self {
+        case .endpointSecurityExtension:
+            return 2
+        case .fullDiskAccess:
+            return 1
+        }
+    }
 }
 
 extension MacOSPermission {
@@ -200,19 +209,19 @@ final class PermissionsViewController: OnboardingStepViewController {
     }
 
     private func updateUIForState(_ state: MacOSPermissionState) {
-        guard let lastCell = instructionsStack.arrangedSubviews.last as? PermissionInstructionCell else {
+        guard let cell = instructionCell(at: viewModel.currentPermission.majorCellIndex) else {
             return
         }
 
         switch state {
         case .neutral:
-            lastCell.state = .neutral
+            cell.state = .neutral
             primaryButton.isEnabled = false
         case .warning:
-            lastCell.state = .warning
+            cell.state = .warning
             primaryButton.isEnabled = false
         case .done:
-            lastCell.state = .done
+            cell.state = .done
             primaryButton.isEnabled = true
         }
     }
