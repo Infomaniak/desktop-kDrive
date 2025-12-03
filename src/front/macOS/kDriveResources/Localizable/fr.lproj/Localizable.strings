@@ -4,7 +4,7 @@
  * Locale: fr, French
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Wed, 26 Nov 2025 16:37:39 +0100
+ * Exported at: Wed, 03 Dec 2025 16:29:15 +0100
  */
 
 /* loco:691deb2291b20ac7fd045012 */
@@ -15,6 +15,12 @@
 
 /* loco:68e673c48af12c42e80027c8 */
 "buttonCreateAccount" = "Créer un compte";
+
+/* loco:6930506962426d4ff30af473 */
+"buttonFinishInstallation" = "Terminer l’installation";
+
+/* loco:69304d546385bb9cfc03e524 */
+"buttonKDriveIsActivated" = "J’ai activé kDrive";
 
 /* loco:68e673b2042a15d8470f9452 */
 "buttonLogin" = "Se connecter";
@@ -30,6 +36,18 @@
 
 /* loco:69240f6d4433e24658054fd4 */
 "buttonStartForFree" = "Commencer gratuitement";
+
+/* loco:693050ed6a0836d25507da22 */
+"onboardingAuthorizationExtensionDescription" = "Autorisez kDrive dans les réglages macOS :";
+
+/* loco:6930509e14b396d6fc04b0f2 */
+"onboardingAuthorizationExtensionTitle" = "Activez kDrive sur votre Mac";
+
+/* loco:6930510648920a67910d1094 */
+"onboardingAuthorizationFullDiskDescription" = "Pour terminer l’installation, vous devez autoriser kDrive à accéder à vos dossiers :";
+
+/* loco:693050bab2a2c1990a0d2f04 */
+"onboardingAuthorizationFullDiskTitle" = "Autorisez l’accès aux dossiers";
 
 /* loco:692406b0258f5599bf01d113 */
 "onboardingDriveSelectionNoDriveDescription" = "Commencez gratuitement avec my kSuite, \nou choisissez une offre adaptée à vos besoins.";

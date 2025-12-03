@@ -16,6 +16,10 @@ public enum KDriveLocalizable {
   public static let buttonContinue = KDriveLocalizable.tr("Localizable", "buttonContinue", fallback: "Continue")
   /// loco:68e673c48af12c42e80027c8
   public static let buttonCreateAccount = KDriveLocalizable.tr("Localizable", "buttonCreateAccount", fallback: "Create an account")
+  /// loco:6930506962426d4ff30af473
+  public static let buttonFinishInstallation = KDriveLocalizable.tr("Localizable", "buttonFinishInstallation", fallback: "Finish installation")
+  /// loco:69304d546385bb9cfc03e524
+  public static let buttonKDriveIsActivated = KDriveLocalizable.tr("Localizable", "buttonKDriveIsActivated", fallback: "I've activated kDrive")
   /// loco:68e673b2042a15d8470f9452
   public static let buttonLogin = KDriveLocalizable.tr("Localizable", "buttonLogin", fallback: "Login")
   /// loco:68b04d823f2b735c170caea2
@@ -26,6 +30,14 @@ public enum KDriveLocalizable {
   public static let buttonShowOffers = KDriveLocalizable.tr("Localizable", "buttonShowOffers", fallback: "Show offers")
   /// loco:69240f6d4433e24658054fd4
   public static let buttonStartForFree = KDriveLocalizable.tr("Localizable", "buttonStartForFree", fallback: "Get started for free")
+  /// loco:693050ed6a0836d25507da22
+  public static let onboardingAuthorizationExtensionDescription = KDriveLocalizable.tr("Localizable", "onboardingAuthorizationExtensionDescription", fallback: "Authorize kDrive in macOS settings :")
+  /// loco:6930509e14b396d6fc04b0f2
+  public static let onboardingAuthorizationExtensionTitle = KDriveLocalizable.tr("Localizable", "onboardingAuthorizationExtensionTitle", fallback: "Activate kDrive on your Mac")
+  /// loco:6930510648920a67910d1094
+  public static let onboardingAuthorizationFullDiskDescription = KDriveLocalizable.tr("Localizable", "onboardingAuthorizationFullDiskDescription", fallback: "To complete the installation, you must authorize kDrive to access your :")
+  /// loco:693050bab2a2c1990a0d2f04
+  public static let onboardingAuthorizationFullDiskTitle = KDriveLocalizable.tr("Localizable", "onboardingAuthorizationFullDiskTitle", fallback: "Authorize access to files")
   /// loco:692406b0258f5599bf01d113
   public static let onboardingDriveSelectionNoDriveDescription = KDriveLocalizable.tr("Localizable", "onboardingDriveSelectionNoDriveDescription", fallback: "Get started for free with my kSuite,\nor choose a package tailored to your needs.")
   /// loco:692405adc5c224ad2a07ff62

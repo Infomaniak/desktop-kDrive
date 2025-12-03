@@ -21,23 +21,24 @@ import Combine
 import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
+import kDriveResources
 
 extension MacOSPermission {
     var title: String {
         switch self {
         case .endpointSecurityExtension:
-            return "!Activez kDrive sur votre Mac"
+            return KDriveLocalizable.onboardingAuthorizationExtensionTitle
         case .fullDiskAccess:
-            return "!Autorisez l’accès aux dossiers"
+            return KDriveLocalizable.onboardingAuthorizationFullDiskTitle
         }
     }
 
-    var subtitle: String {
+    var description: String {
         switch self {
         case .endpointSecurityExtension:
-            return "!Autorisez kDrive dans les réglages macOS :"
+            return KDriveLocalizable.onboardingAuthorizationExtensionDescription
         case .fullDiskAccess:
-            return "!Pour terminer l’installation, vous devez autoriser kDrive à accéder à vos dossiers :"
+            return KDriveLocalizable.onboardingAuthorizationFullDiskDescription
         }
     }
 }
@@ -218,7 +219,7 @@ final class PermissionsViewController: OnboardingStepViewController {
 
     private func setupHeader(for permission: MacOSPermission) {
         titleLabel.stringValue = permission.title
-        descriptionLabel.stringValue = permission.subtitle
+        descriptionLabel.stringValue = permission.description
     }
 
     private func setupInstructions(for permission: MacOSPermission) {
@@ -273,18 +274,18 @@ final class PermissionsViewController: OnboardingStepViewController {
 
         switch permission {
         case .endpointSecurityExtension:
-            primaryButton.title = "!J'ai activé kDrive"
+            primaryButton.title = KDriveLocalizable.buttonKDriveIsActivated
         case .fullDiskAccess:
-            primaryButton.title = "!Terminer l'installation"
+            primaryButton.title = KDriveLocalizable.buttonFinishInstallation
         }
     }
 
-    private func updateButtonStatus() {}
-
-    @objc private func didClickValidate() {}
+    @objc private func didClickValidate() {
+        viewModel.navigateIfPossible()
+    }
 
     private func checkPermission() {
-        viewModel.checkCurrentPermission()
+        viewModel.updatePermissionStatus()
     }
 
     private func instructionCell(at index: Int) -> PermissionInstructionCell? {

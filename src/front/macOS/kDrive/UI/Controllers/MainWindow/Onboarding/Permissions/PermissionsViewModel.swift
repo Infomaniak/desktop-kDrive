@@ -54,7 +54,7 @@ final class PermissionsViewModel: ObservableObject {
             }
     }
 
-    func checkCurrentPermission() {
+    func updatePermissionStatus() {
         Task {
             let isAuthorized = await permissionHander.isAuthorized(for: currentPermission)
             if isAuthorized {
@@ -66,7 +66,16 @@ final class PermissionsViewModel: ObservableObject {
     }
 
     func navigateIfPossible() {
-        guard currentState == .done else { return }
+        Task {
+            guard currentState == .done else { return }
+
+            switch currentPermission {
+            case .endpointSecurityExtension:
+                flowCoordinator.navigate(to: .permissions(.fullDiskAccess))
+            case .fullDiskAccess:
+                await flowCoordinator.navigateToNextStep()
+            }
+        }
     }
 
     private func updateCurrentPermission(from state: OnboardingStep) {
