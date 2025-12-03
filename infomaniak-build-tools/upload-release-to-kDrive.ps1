@@ -48,6 +48,9 @@ $buildNumber = $versionTab[3]
 # version number example: 3.7.1
 $versionNumber = $versionTab[0..2] -join '.'
 
+# Full version number example: 3.7.1.1
+$fullVersionNumber = $versionTab[0..3] -join '.'
+
 $headers = @{
     Authorization="Bearer $env:KDRIVE_TOKEN"
 }
@@ -69,6 +72,7 @@ if ($simplifiedOs -eq "linux-arm" -Or $simplifiedOs -eq "linux-amd") {
 foreach ($lang in $languages)
 {
     $fileName = "kDrive-$versionNumber-$simplifiedOs-$lang.html"
+
     $filePath = ".\release_notes\kDrive-$versionNumber\$fileName"
     if (-not (Test-Path $filePath)) {
         Write-Host "❌ File $filePath does not exist, aborting upload." -f Red
@@ -82,7 +86,15 @@ foreach ($lang in $languages)
         exit 1
     }
 
-    $uri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/upload?directory_id=$env:KDRIVE_DIR_ID&total_size=$size&file_name=$fileName&directory_path=$versionNumber/$date/release-notes&conflict=version"
+    $uri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/upload?directory_id=$env:KDRIVE_DIR_ID&total_size=$size&file_name=$fileName&directory_path=$versionNumber/$buildNumber/release-notes&conflict=version"
+    Write-Host "uploading $filePath to kDrive at $uri"
+    $result = Invoke-RestMethod -Method "POST" -Uri $uri -Header $headers -ContentType 'application/octet-stream' -InFile $filePath
+    Write-Host "Uploaded $filePath to kDrive successfully. $result" -f Green
+    Sleep(5)
+
+    # Upload legacy file name as well so that older versions (pre 3.7.5) can retrieve the latest release notes
+    $legacyFileName = "kDrive-$fullVersionNumber-$simplifiedOs-$lang.html"
+    $uri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/upload?directory_id=$env:KDRIVE_DIR_ID&total_size=$size&file_name=$legacyFileName&directory_path=$versionNumber/$buildNumber/release-notes&conflict=version"
     Write-Host "uploading $filePath to kDrive at $uri"
     $result = Invoke-RestMethod -Method "POST" -Uri $uri -Header $headers -ContentType 'application/octet-stream' -InFile $filePath
     Write-Host "Uploaded $filePath to kDrive successfully. $result" -f Green
