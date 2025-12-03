@@ -90,6 +90,34 @@ extension MacOSPermission {
                 return nil
             }
         }
+
+        var link: String? {
+            switch self {
+            case .openSystemSettings:
+                return "Réglages système"
+            case .openSecurityExtensions:
+                return "Ouverture et extensions"
+            case .openPrivacySecurity:
+                return "Confidentialité et sécurité"
+            default:
+                return nil
+            }
+        }
+
+        var linkURL: URL? {
+            @InjectService var permissionHandler: MacOSPermissionHandling
+
+            switch self {
+            case .openSystemSettings:
+                return URL(string: "x-apple.systempreferences:com.apple.preference")!
+            case .openSecurityExtensions:
+                return permissionHandler.systemPreferencesURL(for: .endpointSecurityExtension)
+            case .openPrivacySecurity:
+                return permissionHandler.systemPreferencesURL(for: .fullDiskAccess)
+            default:
+                return nil
+            }
+        }
     }
 }
 
@@ -139,7 +167,7 @@ final class PermissionsViewController: OnboardingStepViewController {
         stackView.setCustomSpacing(AppPadding.padding24, after: instructionsStack)
 
         for step in 1 ... 3 {
-            instructionsStack.addArrangedSubview(PermissionInstructionCell(step: step, title: NSAttributedString(string: "")))
+            instructionsStack.addArrangedSubview(PermissionInstructionCell(step: step, title: .init(string: "")))
         }
     }
 
@@ -163,18 +191,36 @@ final class PermissionsViewController: OnboardingStepViewController {
         }
     }
 
-    private func createAttributedString(for instruction: MacOSPermission.Instruction) -> NSAttributedString {
+    private func createAttributedString(for instruction: MacOSPermission.Instruction) -> NSMutableAttributedString {
         let attributedString = NSMutableAttributedString(string: instruction.value)
+
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.setParagraphStyle(.default)
+        paragraphStyle.alignment = .left
+        paragraphStyle.lineBreakMode = .byWordWrapping
 
         let basicAttributes: [NSAttributedString.Key: Any] = [
             .font: NSFont.Tokens.body,
-            .foregroundColor: NSColor.Tokens.Text.secondary
+            .foregroundColor: NSColor.Tokens.Text.secondary,
+            .paragraphStyle: paragraphStyle,
+            .cursor: NSCursor.arrow
         ]
         attributedString.addAttributes(basicAttributes, range: NSRange(location: 0, length: attributedString.length))
 
         if let argument = instruction.argument {
             let range = (attributedString.string as NSString).range(of: argument)
             attributedString.addAttribute(.font, value: NSFont.Tokens.bodyEmphasized, range: range)
+        }
+
+        if let link = instruction.link, let linkURL = instruction.linkURL {
+            let range = (attributedString.string as NSString).range(of: link)
+            let attributes: [NSAttributedString.Key: Any] = [
+                .font: NSFont.Tokens.bodyEmphasized,
+                .foregroundColor: NSColor.Tokens.Action.primary,
+                .link: linkURL,
+                .cursor: NSCursor.pointingHand
+            ]
+            attributedString.addAttributes(attributes, range: range)
         }
 
         return attributedString

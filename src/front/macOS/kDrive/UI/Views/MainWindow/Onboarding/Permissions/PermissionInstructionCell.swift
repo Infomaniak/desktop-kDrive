@@ -50,7 +50,7 @@ class PermissionInstructionCell: NSView {
         }
     }
 
-    var title: NSAttributedString {
+    var title: NSMutableAttributedString {
         didSet {
             titleLabel.attributedStringValue = title
         }
@@ -73,10 +73,13 @@ class PermissionInstructionCell: NSView {
     private lazy var titleLabel: NSTextField = {
         let textField = NSTextField(labelWithAttributedString: title)
         textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.usesSingleLineMode = false
+        textField.allowsEditingTextAttributes = true
+        textField.isSelectable = true
         return textField
     }()
 
-    init(step: Int, title: NSAttributedString) {
+    init(step: Int, title: NSMutableAttributedString) {
         self.step = step
         self.title = title
         super.init(frame: .zero)
@@ -122,22 +125,25 @@ class PermissionInstructionCell: NSView {
 
 @available(macOS 14.0, *)
 #Preview("Neutral") {
-    let attributedString = NSAttributedString("Sélectionnez Ouverture et extensions > Extensions de sécurité")
-    return PermissionInstructionCell(step: 1, title: attributedString)
+    PermissionInstructionCell(step: 1, title: .init("Sélectionnez Ouverture et extensions > Extensions de sécurité"))
 }
 
 @available(macOS 14.0, *)
 #Preview("Warning") {
-    let attributedString = NSAttributedString("Sélectionnez Ouverture et extensions > Extensions de sécurité")
-    let permissionCell = PermissionInstructionCell(step: 1, title: attributedString)
+    let permissionCell = PermissionInstructionCell(
+        step: 1,
+        title: .init("Sélectionnez Ouverture et extensions > Extensions de sécurité")
+    )
     permissionCell.state = .warning
     return permissionCell
 }
 
 @available(macOS 14.0, *)
 #Preview("Done") {
-    let attributedString = NSAttributedString("Sélectionnez Ouverture et extensions > Extensions de sécurité")
-    let permissionCell = PermissionInstructionCell(step: 1, title: attributedString)
+    let permissionCell = PermissionInstructionCell(
+        step: 1,
+        title: .init("Sélectionnez Ouverture et extensions > Extensions de sécurité")
+    )
     permissionCell.state = .done
     return permissionCell
 }

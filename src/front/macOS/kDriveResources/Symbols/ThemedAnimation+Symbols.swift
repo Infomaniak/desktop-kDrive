@@ -25,7 +25,7 @@ public extension ThemedAnimation {
     )
     static let kDriveSynchronizeFiles = ThemedAnimation(
         light: "kdrive-synchronize-files-light",
-        dark: "kdrive-synchronize-files-light"
+        dark: "kdrive-synchronize-files-dark"
     )
 
     static let permissionFullDiskAccess = ThemedAnimation(
