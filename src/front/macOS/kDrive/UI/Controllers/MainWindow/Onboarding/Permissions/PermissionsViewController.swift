@@ -114,6 +114,17 @@ extension MacOSPermission {
             }
         }
 
+        var hint: String? {
+            switch self {
+            case .enableKDrive:
+                return "!Vous devez activer kDrive.app avant de continuer"
+            case .enableFullDiskAccess:
+                return "!Vous devez activer les autorisations avant de continuer"
+            default:
+                return nil
+            }
+        }
+
         var linkURL: URL? {
             @InjectService var permissionHandler: MacOSPermissionHandling
 
@@ -216,12 +227,15 @@ final class PermissionsViewController: OnboardingStepViewController {
         switch state {
         case .neutral:
             cell.state = .neutral
+            cell.hintLabel.isHidden = true
             primaryButton.isEnabled = false
         case .warning:
             cell.state = .warning
+            cell.hintLabel.isHidden = false
             primaryButton.isEnabled = false
         case .done:
             cell.state = .done
+            cell.hintLabel.isHidden = true
             primaryButton.isEnabled = true
         }
     }
@@ -236,7 +250,12 @@ final class PermissionsViewController: OnboardingStepViewController {
             let instruction = permission.instructions[index]
             let attributedString = createAttributedString(for: instruction)
 
-            instructionCell(at: index)?.title = attributedString
+            let instructionCell = instructionCell(at: index)
+            instructionCell?.title = attributedString
+            if let hint = instruction.hint {
+                instructionCell?.hint = hint
+                instructionCell?.hintLabel.textColor = NSColor.Tokens.Status.Strong.warning
+            }
         }
     }
 

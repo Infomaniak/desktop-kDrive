@@ -36,8 +36,10 @@ public enum KDriveColors {
   public static let neutralBlue600 = ColorAsset(name: "NeutralBlue600")
   public static let neutralBlue700 = ColorAsset(name: "NeutralBlue700")
   public static let neutralBlue800 = ColorAsset(name: "NeutralBlue800")
+  public static let orange300 = ColorAsset(name: "Orange300")
   public static let orange400 = ColorAsset(name: "Orange400")
   public static let orange500 = ColorAsset(name: "Orange500")
+  public static let orange800 = ColorAsset(name: "Orange800")
 }
 // swiftlint:enable identifier_name line_length nesting type_body_length type_name
 

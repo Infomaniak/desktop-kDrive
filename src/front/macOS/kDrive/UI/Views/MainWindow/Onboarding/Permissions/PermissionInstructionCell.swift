@@ -52,6 +52,12 @@ class PermissionInstructionCell: NSView {
         }
     }
 
+    var hint: String? {
+        didSet {
+            hintLabel.stringValue = hint ?? ""
+        }
+    }
+
     private lazy var stepCircleView: StepCircleView = {
         let view = StepCircleView(step: step)
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -75,6 +81,16 @@ class PermissionInstructionCell: NSView {
         return textField
     }()
 
+    lazy var hintLabel: NSTextField = {
+        let textField = NSTextField(labelWithString: hint ?? "")
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.usesSingleLineMode = false
+        textField.textColor = NSColor.Tokens.Text.tertiary
+        textField.font = NSFont.Tokens.subheadline
+        textField.isHidden = hint == nil
+        return textField
+    }()
+
     init(step: Int, title: NSMutableAttributedString) {
         self.step = step
         self.title = title
@@ -90,9 +106,15 @@ class PermissionInstructionCell: NSView {
     }
 
     private func setupView() {
-        let stackView = NSStackView(views: [stepCircleView, iconCircleView, titleLabel])
+        let labelsStack = NSStackView(views: [titleLabel, hintLabel])
+        labelsStack.orientation = .vertical
+        labelsStack.alignment = .leading
+        labelsStack.spacing = AppPadding.padding2
+
+        let stackView = NSStackView(views: [stepCircleView, iconCircleView, labelsStack])
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.spacing = AppPadding.padding8
+        stackView.alignment = .centerY
         addSubview(stackView)
 
         NSLayoutConstraint.activate([
@@ -130,6 +152,8 @@ class PermissionInstructionCell: NSView {
         step: 1,
         title: .init("Sélectionnez Ouverture et extensions > Extensions de sécurité")
     )
+    permissionCell.hint = "Vous devez activer les autorisations avant de continuer"
+    permissionCell.hintLabel.isHidden = false
     permissionCell.state = .warning
     return permissionCell
 }
