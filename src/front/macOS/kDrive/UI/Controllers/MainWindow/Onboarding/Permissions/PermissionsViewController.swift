@@ -173,6 +173,11 @@ final class PermissionsViewController: OnboardingStepViewController {
             .receiveOnMain(store: &bindStore) { [weak self] permission in
                 self?.updateUIForPermission(permission)
             }
+
+        viewModel.$currentState
+            .receiveOnMain(store: &bindStore) { [weak self] state in
+                self?.updateUIForState(state)
+            }
     }
 
     private func setupUI() {
@@ -191,6 +196,24 @@ final class PermissionsViewController: OnboardingStepViewController {
         setupHeader(for: permission)
         setupInstructions(for: permission)
         setupButtons(for: permission)
+    }
+
+    private func updateUIForState(_ state: MacOSPermissionState) {
+        guard let lastCell = instructionsStack.arrangedSubviews.last as? PermissionInstructionCell else {
+            return
+        }
+
+        switch state {
+        case .neutral:
+            lastCell.state = .neutral
+            primaryButton.isEnabled = false
+        case .warning:
+            lastCell.state = .warning
+            primaryButton.isEnabled = false
+        case .done:
+            lastCell.state = .done
+            primaryButton.isEnabled = true
+        }
     }
 
     private func setupHeader(for permission: MacOSPermission) {
