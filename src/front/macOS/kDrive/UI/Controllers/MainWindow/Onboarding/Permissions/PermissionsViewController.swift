@@ -130,7 +130,7 @@ extension MacOSPermission {
 
             switch self {
             case .openSystemSettings:
-                return URL(string: "x-apple.systempreferences:com.apple.preference")!
+                return SystemPreferencesURL.general
             case .openSecurityExtensions:
                 return permissionHandler.systemPreferencesURL(for: .endpointSecurityExtension)
             case .openPrivacySecurity:

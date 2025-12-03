@@ -65,7 +65,7 @@ final class FullDiskChecker: AuthorizationChecker {
         "/Library/Application Support/com.apple.TCC"
     ]
 
-    let systemPreferencesURL = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles")!
+    let systemPreferencesURL = SystemPreferencesURL.fullDiskAccess
 
     func hasAccess() async -> Bool {
         for testableFile in FullDiskChecker.testableFiles {
@@ -91,7 +91,7 @@ final class FullDiskChecker: AuthorizationChecker {
 // MARK: - Endpoint Security Extension
 
 final class EndpointSecurityExtensionChecker: AuthorizationChecker {
-    let systemPreferencesURL = URL(string: "x-apple.systempreferences:com.apple.preference.security?Security")!
+    let systemPreferencesURL = SystemPreferencesURL.endpointSecurityExtension
 
     func hasAccess() async -> Bool {
         let command = "systemextensionsctl list | grep \(Constants.lightSyncBundleID) | grep enabled | wc -l"
