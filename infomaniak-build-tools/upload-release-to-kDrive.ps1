@@ -92,7 +92,7 @@ foreach ($lang in $languages)
     Write-Host "Uploaded $filePath to kDrive successfully. $result" -f Green
     Sleep(5)
 
-    # Upload legacy file name as well to support old version (pre 3.7.5)
+    # Upload legacy file name as well so that older versions (pre 3.7.5) can retrieve the latest release notes
     $legacyFileName = "kDrive-$fullVersionNumber-$simplifiedOs-$lang.html"
     $uri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/upload?directory_id=$env:KDRIVE_DIR_ID&total_size=$size&file_name=$legacyFileName&directory_path=$versionNumber/$buildNumber/release-notes&conflict=version"
     Write-Host "uploading $filePath to kDrive at $uri"
