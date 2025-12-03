@@ -117,7 +117,7 @@ ExitInfo NodeCreateMissingFoldersJob::process() {
             }
 
             // Set blacklist
-            nodeIdSet.insert(firstCreatedNodeId);
+            (void) nodeIdSet.insert(firstCreatedNodeId);
             if (const auto exitCode = syncPal->setSyncIdSet(SyncNodeType::BlackList, nodeIdSet); exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in SyncPal::setSyncIdSet for syncDbId=" << syncPalId);
                 AppServer::addError(Error(ERR_ID, exitCode));
@@ -128,7 +128,7 @@ ExitInfo NodeCreateMissingFoldersJob::process() {
     }
 
     // Resume all paused syncs
-    for (int syncDbId: pausedSyncs) {
+    for (auto syncDbId: pausedSyncs) {
         if (AppServer::syncPalMap.contains(syncDbId)) {
             AppServer::syncPalMap[syncDbId]->unpause();
         }
