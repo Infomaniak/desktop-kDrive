@@ -85,7 +85,7 @@ ExitInfo AbstractSyncAddJob::process(SyncInfo &syncInfo) {
     bool startPostponed = false;
     if (const auto exitInfo = _commManager->appServer().tryCreateAndStartVfs(sync, startPostponed); !exitInfo) {
         LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " : " << exitInfo);
-        if (!(exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::LiteSyncNotAllowed)) {
+        if (!Utility::isLiteSyncExtError(exitInfo)) {
             return exitInfo;
         }
     }

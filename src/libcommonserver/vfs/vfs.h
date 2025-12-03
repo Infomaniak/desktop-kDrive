@@ -116,7 +116,7 @@ class Vfs : public QObject {
          * The plugin-specific work is done in startImpl().
          * Possible return values are:
          * - ExitCode::Ok: Everything went fine.
-         * - ExitCode::LiteSyncError, ExitCause::UnableToCreateVfs: The VFS provider could not be started.
+         * - ExitCode::LiteSyncError, ExitCause::UnableToStartVfs: The VFS provider could not be started.
          */
         ExitInfo start(bool &installationDone, bool &activationDone, bool &connectionDone);
 

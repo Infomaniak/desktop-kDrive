@@ -1626,8 +1626,12 @@ ExitCode ServerRequests::deleteInvalidTokenErrors() {
 }
 
 #ifdef Q_OS_MAC
-ExitCode ServerRequests::deleteLiteSyncNotAllowedErrors() {
+ExitCode ServerRequests::deleteLiteSyncErrors() {
     if (!ParmsDb::instance()->deleteAllErrorsByExitCause(ExitCause::LiteSyncNotAllowed)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteAllErrorsByExitCause");
+        return ExitCode::DbError;
+    }
+    if (!ParmsDb::instance()->deleteAllErrorsByExitCause(ExitCause::LiteSyncExtNotRunning)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteAllErrorsByExitCause");
         return ExitCode::DbError;
     }
