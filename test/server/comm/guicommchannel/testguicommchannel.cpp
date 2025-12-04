@@ -408,8 +408,8 @@ void TestGuiCommChannel::testAccountInfoListJob() {
 
     // Callback expected answer
     const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"accountInfoList":[)"
-                            R"({"accountId": 1111, "dbId":1,"userDbId":1},)"
-                            R"({"accountId": 2222, "dbId":2,"userDbId":1}]}})"};
+                            R"({"accountId":1111,"dbId":1,"userDbId":1},)"
+                            R"({"accountId":2222,"dbId":2,"userDbId":1}]}})"};
 #endif
 
     // Job expected answer
@@ -735,7 +735,7 @@ void TestGuiCommChannel::testGenericJob(const CommString &query, const CommStrin
     auto answerCbk = [=](const CommString &answer) {
         CommString s{answer};
         assert(answer == CommString(cbkAnswer));
-        CPPUNIT_ASSERT(answer == CommString(cbkAnswer));
+        CPPUNIT_ASSERT_MESSAGE(answer, answer == CommString(cbkAnswer));
     };
 
     GuiCommChannel::runProcessQuery(query, readyReadCbk, answerCbk);
