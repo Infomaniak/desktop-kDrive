@@ -432,16 +432,18 @@ void TestGuiCommChannel::testAccountInfoListJob() {
                          R"(,)"
                          R"( "params": {)"
                          R"( "accountInfoList": [)"
-                         R"( { "dbId": 1, "userDbId": 1, "accountId": 1111 },)"
-                         R"( { "dbId": 2, "userDbId": 1, "accountId": 2222} ] },)"
+                         R"( {  "accountId": 1111, "dbId": 1, "userDbId": 1 },)"
+                         R"( {  "accountId": 2222, "dbId": 2, "userDbId": 1 } ] },)"
                          R"( "type": )" +
                          std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto accountInfoListJob = std::dynamic_pointer_cast<AccountInfoListJob>(job);
 
-        const AccountInfo ai1(1, 1);
-        const AccountInfo ai2(2, 1);
+        AccountInfo ai1(1, 1);
+        ai1.setAccountId(1111);
+        AccountInfo ai2(2, 1);
+        ai2.setAccountId(2222);
 
         accountInfoListJob->_accountInfoList = {ai1, ai2};
     };
