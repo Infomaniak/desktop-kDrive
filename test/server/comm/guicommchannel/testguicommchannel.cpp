@@ -408,8 +408,8 @@ void TestGuiCommChannel::testAccountInfoListJob() {
 
     // Callback expected answer
     const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"accountInfoList":[)"
-                            R"({ "accountId": 1111, "dbId":1,"userDbId":1},)"
-                            R"({ "accountId": 2222, "dbId":2,"userDbId":1}]}})"};
+                            R"({"accountId": 1111, "dbId":1,"userDbId":1},)"
+                            R"({"accountId": 2222, "dbId":2,"userDbId":1}]}})"};
 #endif
 
     // Job expected answer
