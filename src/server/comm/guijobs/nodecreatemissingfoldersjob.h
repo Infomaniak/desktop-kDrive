@@ -35,8 +35,12 @@ class NodeCreateMissingFoldersJob : public AbstractGuiJob {
         struct FolderItem {
                 void fromDynamicStruct(const Poco::DynamicStruct &);
 
-                CommString path;
+                CommString name;
+                NodeId nodeId;
+        };
+        struct MissingFoldersInfo {
                 NodeId parentNodeId;
+                NodeId firstCreatedNodeId;
         };
 
         std::vector<FolderItem> _folderList;
@@ -48,6 +52,8 @@ class NodeCreateMissingFoldersJob : public AbstractGuiJob {
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;
         ExitInfo process() override;
+
+        ExitInfo getMissingFoldersInfo(const FolderItem &folderItem, MissingFoldersInfo &info);
 
         friend class TestGuiCommChannel;
 };

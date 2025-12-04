@@ -235,9 +235,9 @@ void TestGuiCommChannel::testNodeCreateMissingFoldersJob() {
     // There is no need to pass a request id as the response is via a callback.
     const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::NODE_CREATEMISSINGFOLDERS)) +
                         R"(,)"
-                        R"( "params": { "driveDbId": 1, "folderList": [ { "path": )" +
-                        toQuotedBase64("some-path") + R"(, "parentNodeId": )" + toQuotedBase64("6666") + R"( }, { "path": )" +
-                        toQuotedBase64("some-other-path") + R"(, "parentNodeId": )" + toQuotedBase64("7777") + R"( }  ] } })"};
+                        R"( "params": { "driveDbId": 1, "folderList": [ { "name": )" +
+                        toQuotedBase64("some-name") + R"(, "nodeId": )" + toQuotedBase64("6666") + R"( }, { "name": )" +
+                        toQuotedBase64("some-other-name") + R"(, "nodeId": )" + toQuotedBase64("7777") + R"( }  ] } })"};
 
     // Callback expected answer
     const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"parentNodeId":)" + toQuotedBase64("1111") + R"(}})"};
@@ -260,10 +260,10 @@ void TestGuiCommChannel::testNodeCreateMissingFoldersJob() {
         auto nodeCreateMissingFoldersJob = std::dynamic_pointer_cast<NodeCreateMissingFoldersJob>(job);
         CPPUNIT_ASSERT(nodeCreateMissingFoldersJob);
         CPPUNIT_ASSERT_EQUAL(1, nodeCreateMissingFoldersJob->_driveDbId);
-        CPPUNIT_ASSERT(NodeId{"6666"} == nodeCreateMissingFoldersJob->_folderList.at(0).parentNodeId);
-        CPPUNIT_ASSERT(CommString{Str("some-path")} == nodeCreateMissingFoldersJob->_folderList.at(0).path);
-        CPPUNIT_ASSERT(NodeId{"7777"} == nodeCreateMissingFoldersJob->_folderList.at(1).parentNodeId);
-        CPPUNIT_ASSERT(CommString{Str("some-other-path")} == nodeCreateMissingFoldersJob->_folderList.at(1).path);
+        CPPUNIT_ASSERT(NodeId{"6666"} == nodeCreateMissingFoldersJob->_folderList.at(0).nodeId);
+        CPPUNIT_ASSERT(CommString{Str("some-name")} == nodeCreateMissingFoldersJob->_folderList.at(0).name);
+        CPPUNIT_ASSERT(NodeId{"7777"} == nodeCreateMissingFoldersJob->_folderList.at(1).nodeId);
+        CPPUNIT_ASSERT(CommString{Str("some-other-name")} == nodeCreateMissingFoldersJob->_folderList.at(1).name);
 
         nodeCreateMissingFoldersJob->_parentNodeId = NodeId("1111");
     };
