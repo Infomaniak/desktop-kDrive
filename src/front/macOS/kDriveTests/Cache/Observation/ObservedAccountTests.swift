@@ -78,7 +78,7 @@ final class ObservedAccountTests_dbIdOnly: XCTestCase {
         XCTAssertEqual(latestAccount, ObservableData.updatedAccount, "The cache account should have been updated again")
         XCTAssertEqual(observedAccount, ObservableData.updatedAccount, "The observed object should have been updated again")
     }
-    
+
     func testDoubleUpdateObservedAccount() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
@@ -199,7 +199,7 @@ final class ObservedAccountTests_allIds: XCTestCase {
         XCTAssertEqual(latestAccount, ObservableData.updatedAccount, "The cache account should have been updated again")
         XCTAssertEqual(observedAccount, ObservableData.updatedAccount, "The observed object should have been updated again")
     }
-    
+
     func testDoubleUpdateObservedAccount() async throws {
         // GIVEN
         let cache = ServerCoherentCache()

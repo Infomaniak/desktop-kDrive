@@ -70,7 +70,7 @@ final class ObservedUserTests: XCTestCase {
         let latestCachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
         XCTAssertEqual(latestCachedUser, updatedUser, "The observed object should have been updated again")
     }
-    
+
     func testUpdateObservedUserTwice() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
@@ -98,7 +98,7 @@ final class ObservedUserTests: XCTestCase {
         let latestCachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
         XCTAssertEqual(latestCachedUser, updatedUser, "The observed object should have been updated again")
     }
-    
+
     func testRemoveObservedUser() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
@@ -113,10 +113,10 @@ final class ObservedUserTests: XCTestCase {
 
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
         XCTAssertEqual(cachedUser, expectedUser, "The cache should have been updated")
-        
+
         // WHEN
         await cache.removeUser(dbId: ObservableData.expectedUserDbId)
-        
+
         // Give time for observation to propagate
         try await Task.sleep(nanoseconds: 10_000_000_000)
 

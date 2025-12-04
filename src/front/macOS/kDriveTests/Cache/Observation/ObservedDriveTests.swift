@@ -45,7 +45,7 @@ final class ObservedDriveTests_driveDbIdOnly: XCTestCase {
         XCTAssertEqual(cachedDrive, expectedDrive, "The cache should have been updated")
         XCTAssertEqual(observedDrive, expectedDrive, "The observed object should have been updated")
     }
-    
+
     func testUpdateObservedDrive() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
@@ -59,10 +59,10 @@ final class ObservedDriveTests_driveDbIdOnly: XCTestCase {
 
         let expectedDrive = ObservableData.expectedDrive
         try await cache.addDrive(expectedDrive, accountDbId: ObservableData.expectedAccountDbId)
-        
+
         let cachedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
         XCTAssertEqual(cachedDrive, expectedDrive, "The cache should have been updated")
-        
+
         // WHEN
         let updatedDrive = ObservableData.updatedDrive
         try await cache.addDrive(updatedDrive, accountDbId: ObservableData.expectedAccountDbId)
@@ -150,10 +150,10 @@ final class ObservedDriveTests_allIds: XCTestCase {
 
         let expectedDrive = ObservableData.expectedDrive
         try await cache.addDrive(expectedDrive, accountDbId: ObservableData.expectedAccountDbId)
-        
+
         let cachedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
         XCTAssertEqual(cachedDrive, expectedDrive, "The cache should have been updated")
-        
+
         // WHEN
         let updatedDrive = ObservableData.updatedDrive
         try await cache.addDrive(updatedDrive, accountDbId: ObservableData.expectedAccountDbId)
