@@ -88,6 +88,14 @@ public enum KDriveLocalizable {
   public static let onboardingLoginHintWebAuth = KDriveLocalizable.tr("Localizable", "onboardingLoginHintWebAuth", fallback: "Login from your browser…")
   /// loco:68e673754d80559c460bdf02
   public static let onboardingLoginTitle = KDriveLocalizable.tr("Localizable", "onboardingLoginTitle", fallback: "Welcome to kDrive!")
+  /// loco:6931a1769dc60cb1820f5fe3
+  public static let onboardingSynchronizationAppReadyDescription = KDriveLocalizable.tr("Localizable", "onboardingSynchronizationAppReadyDescription", fallback: "Your files are ready to be securely synchronized on your computer.")
+  /// loco:6931a16c3498d5205b0380d3
+  public static let onboardingSynchronizationAppReadyTitle = KDriveLocalizable.tr("Localizable", "onboardingSynchronizationAppReadyTitle", fallback: "All set!")
+  /// loco:6931a1582ee1a869eb0303f4
+  public static let onboardingSynchronizationInProgressDescription = KDriveLocalizable.tr("Localizable", "onboardingSynchronizationInProgressDescription", fallback: "Your kDrive files are being synchronized.\nPlease wait a few moments.")
+  /// loco:6931a14fa4031f6161097f42
+  public static let onboardingSynchronizationInProgressTitle = KDriveLocalizable.tr("Localizable", "onboardingSynchronizationInProgressTitle", fallback: "Synchronization in progress..")
   /// loco:68e8fa27d09187683c0679b2
   public static let onboardingWindowTitle = KDriveLocalizable.tr("Localizable", "onboardingWindowTitle", fallback: "Welcome to kDrive")
   /// loco:68cd386502633dee14000352

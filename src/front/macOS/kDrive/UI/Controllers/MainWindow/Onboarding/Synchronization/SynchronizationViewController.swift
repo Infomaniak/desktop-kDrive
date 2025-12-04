@@ -18,6 +18,8 @@
 
 import Cocoa
 import Combine
+import kDriveCore
+import kDriveResources
 
 final class SynchronizationViewController: OnboardingStepViewController {
     private let viewModel: SynchronizationViewModel
@@ -40,6 +42,34 @@ final class SynchronizationViewController: OnboardingStepViewController {
     }
 
     private func bindValues() {
+        viewModel.$currentState
+            .receiveOnMain(store: &bindStore) { [weak self] state in
+                self?.updateUIForState(state)
+            }
+    }
 
+    private func updateUIForState(_ state: StartSyncState) {
+        switch state {
+        case .inProgress:
+            updateUIForSyncInProgress()
+        case .appReady:
+            updateUIForAppReady()
+        }
+    }
+
+    private func updateUIForSyncInProgress() {
+        titleLabel.stringValue = KDriveLocalizable.onboardingSynchronizationInProgressTitle
+        descriptionLabel.stringValue = KDriveLocalizable.onboardingSynchronizationInProgressDescription
+
+        primaryButton.isHidden = true
+        secondaryButton.isHidden = true
+    }
+
+    private func updateUIForAppReady() {
+        titleLabel.stringValue = KDriveLocalizable.onboardingSynchronizationAppReadyTitle
+        descriptionLabel.stringValue = KDriveLocalizable.onboardingSynchronizationAppReadyDescription
+
+        primaryButton.isHidden = false
+        secondaryButton.isHidden = true
     }
 }

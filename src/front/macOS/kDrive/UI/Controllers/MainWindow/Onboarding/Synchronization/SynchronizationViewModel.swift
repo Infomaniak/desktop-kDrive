@@ -22,7 +22,7 @@ import kDriveCore
 
 enum StartSyncState {
     case inProgress
-    case done
+    case appReady
 }
 
 @MainActor
