@@ -156,7 +156,8 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         return nil
     }
 
-    public func addDrive(_ drive: Drive, accountDbId: Int32, userDbId: Int32) {
+    public func addDrive(_ drive: Drive, accountDbId: Int32) {
+        let userDbId = drive.userDbId
         guard var user = users[userDbId],
               var account = user.accounts[accountDbId]
         else { return }

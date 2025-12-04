@@ -238,7 +238,7 @@ struct CoherentCacheDriveTests {
         #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId) == CacheData.expectedAccount)
 
         // WHEN
-        await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId)
+        await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
 
         // THEN
         #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == CacheData.expectedDrive)
@@ -252,7 +252,7 @@ struct CoherentCacheDriveTests {
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
         await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
         #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId) == CacheData.expectedAccount)
-        await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId)
+        await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
         #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == CacheData.expectedDrive)
 
         // WHEN
@@ -272,7 +272,7 @@ struct CoherentCacheDriveTests {
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
         await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
         #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId) == CacheData.expectedAccount)
-        await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId)
+        await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
         #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == CacheData.expectedDrive)
 
         // WHEN
@@ -297,7 +297,7 @@ struct CoherentCacheSynchroTests {
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
         await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
         #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId) == CacheData.expectedAccount)
-        await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId)
+        await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
         #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == CacheData.expectedDrive)
 
         // WHEN
@@ -324,7 +324,7 @@ struct CoherentCacheSynchroTests {
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
         await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
         #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId) == CacheData.expectedAccount)
-        await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId)
+        await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
         #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == CacheData.expectedDrive)
         await cache.addSynchro(CacheData.expectedSynchro,
                                toDrive: CacheData.expectedDriveDbId,
@@ -358,7 +358,7 @@ struct CoherentCacheSynchroTests {
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
         await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
         #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId) == CacheData.expectedAccount)
-        await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId)
+        await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
         #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == CacheData.expectedDrive)
         await cache.addSynchro(CacheData.expectedSynchro,
                                toDrive: CacheData.expectedDriveDbId,
