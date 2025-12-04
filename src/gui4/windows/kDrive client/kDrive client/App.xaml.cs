@@ -34,6 +34,7 @@ namespace Infomaniak.kDrive
     public partial class App : Application
     {
         private Window? _currentWindow;
+        public int LegacyCommPort { get; private set; } = -1;
         public Window? CurrentWindow
         {
             get => _currentWindow;
@@ -81,7 +82,10 @@ namespace Infomaniak.kDrive
                     }
                     Process current = Process.GetCurrentProcess();
                     current.Kill();
+                    return;
                 }
+
+                LegacyCommPort = Int32.Parse(arguments[1]);
             }
 
             RegisterProtocol();

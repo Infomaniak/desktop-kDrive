@@ -212,7 +212,9 @@
 	</Target>
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<!-- Rename the generated .pri file to Resources.pri | This is a bug in the generations of unpackaged winui apps -->
-		<Exec Command="powershell -ExecutionPolicy Bypass -NoProfile -Command &quot;Rename-Item -Path '$(OutDir)$(AssemblyName).pri' -NewName 'Resources.pri' -Force&quot;" />
+		<Exec Command="powershell -ExecutionPolicy Bypass -NoProfile -Command &quot;$src = '$(OutDir)$(AssemblyName).pri'; $dst = '$(OutDir)Resources.pri'; if (Test-Path $dst) { Remove-Item $dst -Force }; Rename-Item -Path $src -NewName 'Resources.pri';&quot;" />
+
+
 		<ItemGroup>
 			<!-- Keep only fr-FR, en-US, es-ES, it-IT, de-DE -->
 			<RemovingFiles
