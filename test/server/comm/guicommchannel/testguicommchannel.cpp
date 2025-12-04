@@ -421,8 +421,8 @@ void TestGuiCommChannel::testAccountInfoListJob() {
                          R"(,)"
                          R"( "params": {)"
                          R"( "accountInfoList": [)"
-                         R"( {  "accountId": 1111, "dbId": 1, "userDbId": 1 },)"
-                         R"( {  "accountId": 2222, "dbId": 2, "userDbId": 1 } ] },)"
+                         R"( { "accountId": 1111, "dbId": 1, "userDbId": 1 },)"
+                         R"( { "accountId": 2222, "dbId": 2, "userDbId": 1 } ] },)"
                          R"( "type": )" +
                          std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
