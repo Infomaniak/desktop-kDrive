@@ -24,6 +24,7 @@ public typealias UserAccounts = (userDbId: Int32, indexedAccounts: [Int32: Accou
 // TODO: Update to track userDbId in Account to match server type
 public struct Account: Identifiable, Hashable, Sendable {
     public let dbId: Int32
+    public let userDbId: Int32
     public var name: String
     public var drives: IndexedDrives
 
@@ -31,8 +32,9 @@ public struct Account: Identifiable, Hashable, Sendable {
         dbId
     }
 
-    public init(dbId: Int32, name: String, drives: [Int32: Drive]) {
+    public init(dbId: Int32, userDbId: Int32, name: String, drives: [Int32: Drive]) {
         self.dbId = dbId
+        self.userDbId = userDbId
         self.name = name
         self.drives = drives
     }
