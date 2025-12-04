@@ -131,6 +131,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         [[nodiscard]] ExitInfo startSyncs(User &user);
         void stopSyncTask(int syncDbId);
         [[nodiscard]] ExitInfo setSupportsVirtualFiles(int syncDbId, bool value);
+        void setDistributionChannel(VersionChannel versionChannel);
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         static ExitCode getThumbnail(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) {
