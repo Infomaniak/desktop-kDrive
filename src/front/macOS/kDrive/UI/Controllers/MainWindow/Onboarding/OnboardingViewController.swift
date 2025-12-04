@@ -129,6 +129,8 @@ final class OnboardingViewController: NSViewController {
             return PermissionsViewController(flowCoordinator: flowCoordinator)
         case .synchronization:
             return SynchronizationViewController(flowCoordinator: flowCoordinator)
+        case .appReady:
+            return AppReadyViewController()
         }
     }
 

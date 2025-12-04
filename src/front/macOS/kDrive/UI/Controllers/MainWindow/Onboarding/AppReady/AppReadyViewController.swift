@@ -16,15 +16,25 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Combine
-import Foundation
-import kDriveCore
+import Cocoa
+import kDriveResources
 
-@MainActor
-final class SynchronizationViewModel: ObservableObject {
-    private let flowCoordinator: OnboardingFlowCoordinator
+final class AppReadyViewController: OnboardingStepViewController {
+    init() {
+        super.init(nibName: NSNib.Name("OnboardingAppReadyView"), bundle: .main)
+        setupUI()
+    }
 
-    init(flowCoordinator: OnboardingFlowCoordinator) {
-        self.flowCoordinator = flowCoordinator
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    private func setupUI() {
+        titleLabel.stringValue = KDriveLocalizable.onboardingSynchronizationAppReadyTitle
+        descriptionLabel.stringValue = KDriveLocalizable.onboardingSynchronizationAppReadyDescription
+
+        primaryButton.isHidden = false
+        secondaryButton.isHidden = true
     }
 }

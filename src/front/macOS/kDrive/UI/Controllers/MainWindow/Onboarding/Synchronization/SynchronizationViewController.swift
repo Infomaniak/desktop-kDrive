@@ -24,8 +24,6 @@ import kDriveResources
 final class SynchronizationViewController: OnboardingStepViewController {
     private let viewModel: SynchronizationViewModel
 
-    private var bindStore = Set<AnyCancellable>()
-
     init(flowCoordinator: OnboardingFlowCoordinator) {
         viewModel = SynchronizationViewModel(flowCoordinator: flowCoordinator)
         super.init(nibName: nil, bundle: nil)
@@ -38,26 +36,9 @@ final class SynchronizationViewController: OnboardingStepViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        bindValues()
     }
 
-    private func bindValues() {
-        viewModel.$currentState
-            .receiveOnMain(store: &bindStore) { [weak self] state in
-                self?.updateUIForState(state)
-            }
-    }
-
-    private func updateUIForState(_ state: StartSyncState) {
-        switch state {
-        case .inProgress:
-            updateUIForSyncInProgress()
-        case .appReady:
-            updateUIForAppReady()
-        }
-    }
-
-    private func updateUIForSyncInProgress() {
+    private func setupUI() {
         titleLabel.stringValue = KDriveLocalizable.onboardingSynchronizationInProgressTitle
         descriptionLabel.stringValue = KDriveLocalizable.onboardingSynchronizationInProgressDescription
 
