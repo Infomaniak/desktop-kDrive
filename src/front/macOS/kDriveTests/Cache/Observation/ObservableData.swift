@@ -42,15 +42,21 @@ public enum ObservableData {
                                     name: "The amazing UPDATED test Drive",
                                     color: HexColor(hex: "#0a0a0a"), synchros: [:])
 
-    static let expectedAccount = Account(dbId: expectedAccountDbId, name: "Some account", drives: [expectedDriveDbId: expectedDrive])
+    static let expectedAccount = Account(dbId: expectedAccountDbId,
+                                         userDbId: expectedUserDbId,
+                                         name: "Some account",
+                                         drives: [expectedDriveDbId: expectedDrive])
 
-    static let updatedAccount = Account(dbId: expectedAccountDbId, name: "Some UPDATED account", drives: [expectedDriveDbId: updatedDrive])
+    static let updatedAccount = Account(dbId: expectedAccountDbId,
+                                        userDbId: expectedUserDbId,
+                                        name: "Some UPDATED account",
+                                        drives: [expectedDriveDbId: updatedDrive])
 
     static let indexedAccounts: IndexedAccounts = [
-        1: Account(dbId: 1, name: "1", drives: [:]),
-        2: Account(dbId: 2, name: "2", drives: [:]),
+        1: Account(dbId: 1, userDbId: expectedUserDbId, name: "1", drives: [:]),
+        2: Account(dbId: 2, userDbId: expectedUserDbId, name: "2", drives: [:]),
         expectedAccountDbId: expectedAccount,
-        4: Account(dbId: 4, name: "4", drives: [:])
+        4: Account(dbId: 4, userDbId: expectedUserDbId, name: "4", drives: [:])
     ]
 
     static let expectedUser = User(
@@ -88,4 +94,15 @@ public enum ObservableData {
         isConnected: true,
         isStaff: true
     )
+
+    static let expectedSynchroDbId = Int32.random(in: 0 ... 1000)
+    static let expectedSynchroPath = "/dev/null"
+    static let expectedSynchro = Synchro(dbId: expectedSynchroDbId,
+                                         driveDbId: expectedDriveDbId,
+                                         localPath: expectedSynchroPath)
+
+    static let updatedSynchroPath = "C:\\Windows\\System32"
+    static let updatedSynchro = Synchro(dbId: expectedSynchroDbId,
+                                        driveDbId: expectedDriveDbId,
+                                        localPath: updatedSynchroPath)
 }

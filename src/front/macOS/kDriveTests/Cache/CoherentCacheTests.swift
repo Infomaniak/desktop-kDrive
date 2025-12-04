@@ -52,12 +52,12 @@ enum CacheData {
     static let expectedAccountDbId = Int32.random(in: 0 ... 10000)
     static let expectedAccountName = "myAccount"
     static var expectedAccount = Account(
-        dbId: expectedAccountDbId, name: expectedAccountName, drives: [:]
+        dbId: expectedAccountDbId, userDbId: expectedUserDbId, name: expectedAccountName, drives: [:]
     )
 
     static let updatedAccountName = "myUpdatedAccount"
     static var updatedAccount = Account(
-        dbId: expectedAccountDbId, name: updatedAccountName, drives: [:]
+        dbId: expectedAccountDbId, userDbId: expectedUserDbId, name: updatedAccountName, drives: [:]
     )
 
     static let expectedDriveDbId = Int32.random(in: 0 ... 10000)
@@ -301,10 +301,7 @@ struct CoherentCacheSynchroTests {
         #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == CacheData.expectedDrive)
 
         // WHEN
-        await cache.addSynchro(CacheData.expectedSynchro,
-                               toDrive: CacheData.expectedDriveDbId,
-                               accountDbId: CacheData.expectedAccountDbId,
-                               userDbId: CacheData.expectedUserDbId)
+        try await cache.addSynchro(CacheData.expectedSynchro)
 
         // THEN
         #expect(await cache.getSynchro(synchroDbId: CacheData.expectedSynchroDbId) == CacheData.expectedSynchro)
@@ -326,18 +323,13 @@ struct CoherentCacheSynchroTests {
         #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId) == CacheData.expectedAccount)
         try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
         #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == CacheData.expectedDrive)
-        await cache.addSynchro(CacheData.expectedSynchro,
-                               toDrive: CacheData.expectedDriveDbId,
-                               accountDbId: CacheData.expectedAccountDbId,
-                               userDbId: CacheData.expectedUserDbId)
+        try await cache.addSynchro(CacheData.expectedSynchro)
         #expect(await cache.getSynchro(synchroDbId: CacheData.expectedSynchroDbId) == CacheData.expectedSynchro)
 
         // WHEN
-        await cache.removeSynchro(
+        try await cache.removeSynchro(
             synchroDbId: CacheData.expectedSynchroDbId,
-            driveDbId: CacheData.expectedDriveDbId,
-            accountDbId: CacheData.expectedAccountDbId,
-            userDbId: CacheData.expectedUserDbId
+            driveDbId: CacheData.expectedDriveDbId
         )
 
         // THEN
@@ -360,10 +352,7 @@ struct CoherentCacheSynchroTests {
         #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId) == CacheData.expectedAccount)
         try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
         #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == CacheData.expectedDrive)
-        await cache.addSynchro(CacheData.expectedSynchro,
-                               toDrive: CacheData.expectedDriveDbId,
-                               accountDbId: CacheData.expectedAccountDbId,
-                               userDbId: CacheData.expectedUserDbId)
+        try await cache.addSynchro(CacheData.expectedSynchro)
         #expect(await cache.getSynchro(synchroDbId: CacheData.expectedSynchroDbId) == CacheData.expectedSynchro)
 
         // WHEN
