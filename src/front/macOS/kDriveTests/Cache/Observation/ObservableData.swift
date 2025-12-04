@@ -34,6 +34,14 @@ public enum ObservableData {
                                      name: "The amazing test Drive",
                                      color: HexColor(hex: "#ffffff"), synchros: [:])
 
+    static let updatedDrive = Drive(driveDbId: expectedDriveDbId,
+                                    driveId: expectedDriveId,
+                                    accountId: expectedAccountId,
+                                    userDbId: expectedUserDbId,
+                                    userId: expectedUserId,
+                                    name: "The amazing UPDATED test Drive",
+                                    color: HexColor(hex: "#0a0a0a"), synchros: [:])
+
     static let expectedAccount = Account(dbId: expectedAccountDbId, name: "3", drives: [expectedDriveDbId: expectedDrive])
     static let indexedAccounts: IndexedAccounts = [
         1: Account(dbId: 1, name: "1", drives: [:]),
