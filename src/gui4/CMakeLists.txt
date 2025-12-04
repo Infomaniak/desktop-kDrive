@@ -14,15 +14,14 @@ if(WIN32)
     list(FILTER CLIENT_SOURCES EXCLUDE REGEX "/kDrive client/bin/")
     list(FILTER CLIENT_SOURCES EXCLUDE REGEX "/kDrive client/obj/")
     add_custom_command(
+        COMMENT "Building kDrive client for ${CMAKE_BUILD_TYPE}..."
         OUTPUT "${CLIENT_STAMP}"
         COMMAND ${CMAKE_COMMAND} -E remove_directory "${CLIENT_DEST}"
-        COMMAND ${CMAKE_COMMAND} -E remove_directory "${CLIENT_OUTPUT_DIRECTORY}"
         COMMAND dotnet restore "\"${CLIENT_PROJECT}\"" -p:Platform=x64
         COMMAND dotnet build "\"${CLIENT_PROJECT}\"" -c ${CMAKE_BUILD_TYPE} -r win-x64 -p:Platform=x64 --self-contained true
         COMMAND ${CMAKE_COMMAND} -E copy_directory "${CLIENT_OUTPUT_DIRECTORY}" "${CLIENT_DEST}"
         COMMAND ${CMAKE_COMMAND} -E touch "${CLIENT_STAMP}"
         DEPENDS "${CLIENT_PROJECT}" ${CLIENT_SOURCES}
-        COMMENT "Building kDrive client for ${CMAKE_BUILD_TYPE}..."
     )
 
     add_custom_target(build_kdrive_client ALL

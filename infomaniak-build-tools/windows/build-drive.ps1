@@ -66,7 +66,7 @@ Param(
 # CMake will treat any backslash as escape character and return an error
 $path = $path.Replace('\', '/')
 $contentPath = "$path/build-windows"
-$buildPath = "$contentPath/build/"
+$buildPath = "$contentPath/build"
 $installPath = "$contentPath/install"
 
 $extPath = "$path/extensions/windows/cfapi"
@@ -527,7 +527,7 @@ function Prepare-Archive {
 
     if ($newGui) {
         # Copy client files
-        Write-Host "Copying new client files ($buildpath) to the archive ..."
+        Write-Host "Copying new client files ($ClientDir) to the archive ..."
         Remove-Item -Path "$archivePath/client" -Recurse -Force -ErrorAction SilentlyContinue
         Copy-Item -Path "$ClientDir/." -Destination "$archivePath/client" -Recurse
 

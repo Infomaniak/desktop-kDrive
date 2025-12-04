@@ -74,7 +74,7 @@ namespace Infomaniak.kDrive
                     if (OAuth2Manager.CompleteAuthRequest(new Uri(oauthArg)))
                     {
                         // Terminate the Process
-                        Logger.Log(Logger.Level.Info, $"OAuth process completed, response routed successfully. Terminating the process. ${oauthArg}");
+                        Logger.Log(Logger.Level.Info, $"OAuth process completed, response routed successfully. Terminating the process.");
                     }
                     else
                     {
@@ -84,11 +84,11 @@ namespace Infomaniak.kDrive
                     current.Kill();
                     return;
                 }
-
                 LegacyCommPort = Int32.Parse(arguments[1]);
             }
-
+            // Register oAuth protocol handler
             RegisterProtocol();
+
             // Start all singleton services
             foreach (var serviceDescriptor in _services.Where(sd => sd.Lifetime == ServiceLifetime.Singleton))
             {
@@ -112,7 +112,12 @@ namespace Infomaniak.kDrive
         private void RegisterProtocol()
         {
             const string protocol = "kDrive";
-            string exe = Environment.ProcessPath;
+            string exe = Environment.ProcessPath ?? "";
+            if (exe == "")
+            {
+                Logger.Log(Logger.Level.Error, "Failed to register oauth protocol handler: unable to determine executable path.");
+                return;
+            }
 
             using var key = Registry.CurrentUser.CreateSubKey($@"Software\Classes\{protocol}");
             key.SetValue("", $"URL:{protocol} protocol");
