@@ -42,29 +42,5 @@ namespace Infomaniak.kDrive
             Utility.SetWindowProperties(this, 900, 530, true);
             AppModel.UIThreadDispatcher = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread(); // Save the UI thread dispatcher for later use in view models
         }
-
-        private void AppTitleBarLogo_PointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            int legacyCommPort = ((App)Application.Current).LegacyCommPort;
-
-
-            try
-            {
-                if (legacyCommPort <= 0)
-                {
-                    Logger.Log(Logger.Level.Warning, "Legacy communication port not set, starting legacy kDrive client without port argument.");
-                    System.Diagnostics.Process.Start("kDrive_client.exe");
-                }
-                else
-                {
-                    Logger.Log(Logger.Level.Info, $"Starting legacy kDrive client with communication port: {legacyCommPort}");
-                    System.Diagnostics.Process.Start("kDrive_client.exe", legacyCommPort.ToString());
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Log(Logger.Level.Error, $"Failed to start legacy kDrive client: {ex.Message}");
-            }
-        }
     }
 }
