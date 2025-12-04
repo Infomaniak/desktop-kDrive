@@ -46,7 +46,7 @@ cd desktop-kDrive && git submodule update --init --recursive
 
 Once `Visual Studio 2019` is installed, **all** commands should to be run using the `x64 Native Tools Command Prompt` with administrator permissions.  
 
-## Visual Studio 2019/2022
+## Visual Studio 2019/2022/2025
 You must install both `Visual Studio 2019` and either `Visual Studio 2022` or `Visual Studio 2025` to build the project.
 
 When installing `Visual Studio 2019`, select the following components:
