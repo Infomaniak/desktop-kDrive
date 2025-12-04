@@ -118,12 +118,13 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Cache/CoherentCacheTests.swift,
-				Cache/HexColorTests.swift,
-				Cache/ObservableCoherentCacheTests.swift,
-				Cache/ObservedAccoutTests.swift,
-				Cache/ObservedUserTests.swift,
+				Cache/Observation/ObservableCoherentCacheTests.swift,
+				Cache/Observation/ObservableData.swift,
+				Cache/Observation/ObservedAccountTests.swift,
+				Cache/Observation/ObservedUserTests.swift,
 				Parsing/Base64CodedTests.swift,
 				Parsing/CallbackMessageTests.swift,
+				Parsing/HexColorTests.swift,
 				Parsing/SignalMessageTests.swift,
 			);
 			target = 7A4DFBB02EA91F9D00B138B8 /* kDriveTests */;

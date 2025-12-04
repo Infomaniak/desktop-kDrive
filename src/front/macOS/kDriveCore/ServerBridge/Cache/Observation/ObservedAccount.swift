@@ -23,36 +23,79 @@ import InfomaniakDI
 @propertyWrapper
 public final class ObservedAccount: ObservableObject {
     @Published public private(set) var wrappedValue: Account?
-
     private var cancellable: AnyCancellable?
 
-    public init(userDbId: Int32, accountDbId: Int32, cacheObservation: CoherentCacheObservable? = nil) {
-        let cacheObservation = cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
-        let accountsPublisher = cacheObservation.accountsPublisher
+    public init(
+        userDbId: Int32,
+        accountDbId: Int32,
+        cacheObservation: CoherentCacheObservable? = nil
+    ) {
+        let cacheObservation =
+            cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
 
-        cancellable = accountsPublisher
-            .accountPublisher(forUserDbId: userDbId, accountDbId: accountDbId)
+        cancellable = cacheObservation.usersPublisher
+            .accountPublisher(userDbId: userDbId, accountDbId: accountDbId)
             .receive(on: DispatchQueue.main)
-            .assign(to: \.wrappedValue, onWeak: self)
+            .sink { [weak self] account in
+                self?.wrappedValue = account
+            }
     }
 
-    deinit {
-        cancellable?.cancel()
+    public init(
+        accountDbId: Int32,
+        cacheObservation: CoherentCacheObservable? = nil
+    ) {
+        let cacheObservation =
+            cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
+
+        cancellable = cacheObservation.usersPublisher
+            .accountPublisher(accountDbId: accountDbId)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] account in
+                self?.wrappedValue = account
+            }
     }
+
+    deinit { cancellable?.cancel() }
 
     public var projectedValue: ObservedAccount { self }
 }
 
-extension AnyPublisher where Output == UserAccounts, Failure == Never {
-    func accountPublisher(forUserDbId userDbId: Int32, accountDbId: Int32) -> AnyPublisher<Account?, Never> {
-        map { userAccounts in
-            let receivedUserDbId = userAccounts.0
-            let receivedAccounts = userAccounts.1
-            guard receivedUserDbId == userDbId else { return nil }
-            guard let account = receivedAccounts[accountDbId] else { return nil }
-            return account
+public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
+    func accountPublisher(userDbId: Int32,
+                          accountDbId: Int32)
+        -> AnyPublisher<Account?, Never> {
+        map { usersDict -> Account? in
+            usersDict[userDbId]?.accounts[accountDbId]
         }
-        .removeDuplicates { $0 == $1 }
+        .scan((old: Account?.none, new: Account?.none)) { prev, newAccount in
+            (old: prev.new, new: newAccount)
+        }
+        .map { pair -> Account? in
+            guard pair.old != pair.new else { return nil }
+            return pair.new
+        }
+        .compactMap { $0 }
+        .eraseToAnyPublisher()
+    }
+
+    func accountPublisher(accountDbId: Int32) -> AnyPublisher<Account?, Never> {
+        map { usersDict -> Account? in
+            for user in usersDict.values {
+                if let account = user.accounts[accountDbId] {
+                    return account
+                }
+            }
+            return nil
+        }
+        .scan((old: Account?.none, new: Account?.none)) { prev, newAccount in
+            (old: prev.new, new: newAccount)
+        }
+        .map { pair -> Account? in
+            guard pair.old != pair.new else { return nil }
+            return pair.new
+        }
+        .compactMap { $0 }
         .eraseToAnyPublisher()
     }
 }
