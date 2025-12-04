@@ -71,7 +71,12 @@ final class PermissionsViewModel: ObservableObject {
 
             switch currentPermission {
             case .endpointSecurityExtension:
-                flowCoordinator.navigate(to: .permissions(.fullDiskAccess))
+                let nextPermission = MacOSPermission.fullDiskAccess
+                if await permissionHander.isAuthorized(for: nextPermission) {
+                    await flowCoordinator.navigateToNextStep()
+                } else {
+                    flowCoordinator.navigate(to: .permissions(nextPermission))
+                }
             case .fullDiskAccess:
                 await flowCoordinator.navigateToNextStep()
             }
