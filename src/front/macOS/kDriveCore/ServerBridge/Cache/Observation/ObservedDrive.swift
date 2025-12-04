@@ -67,28 +67,25 @@ public final class ObservedDrive: ObservableObject {
 }
 
 public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
-    func drivePublisher(
+    func driveEventPublisher(
         userDbId: Int32,
         accountDbId: Int32,
         driveDbId: Int32
-    ) -> AnyPublisher<Drive?, Never> {
+    ) -> AnyPublisher<ObservationEvent<Drive>, Never> {
         map { usersDict -> Drive? in
             usersDict[userDbId]?
                 .accounts[accountDbId]?
                 .drives[driveDbId]
         }
-        .scan((old: Drive?.none, new: Drive?.none)) { prev, newDrive in
-            (old: prev.new, new: newDrive)
+        .map { drive -> ObservationEvent<Drive> in
+            if let drive { return .update(drive) }
+            return .removed
         }
-        .map { pair -> Drive? in
-            guard pair.old != pair.new else { return nil }
-            return pair.new
-        }
-        .compactMap { $0 }
+        .removeDuplicates()
         .eraseToAnyPublisher()
     }
 
-    func drivePublisher(driveDbId: Int32) -> AnyPublisher<Drive?, Never> {
+    func driveEventPublisher(driveDbId: Int32) -> AnyPublisher<ObservationEvent<Drive>, Never> {
         map { usersDict -> Drive? in
             for user in usersDict.values {
                 for account in user.accounts.values {
@@ -99,14 +96,38 @@ public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
             }
             return nil
         }
-        .scan((old: Drive?.none, new: Drive?.none)) { prev, newDrive in
-            (old: prev.new, new: newDrive)
+        .map { drive -> ObservationEvent<Drive> in
+            drive.map(ObservationEvent.update) ?? .removed
         }
-        .map { pair -> Drive? in
-            guard pair.old != pair.new else { return nil }
-            return pair.new
-        }
-        .compactMap { $0 }
+        .removeDuplicates()
         .eraseToAnyPublisher()
+    }
+
+    func drivePublisher(
+        userDbId: Int32,
+        accountDbId: Int32,
+        driveDbId: Int32
+    ) -> AnyPublisher<Drive?, Never> {
+        driveEventPublisher(userDbId: userDbId, accountDbId: accountDbId, driveDbId: driveDbId)
+            .map { event -> Drive? in
+                switch event {
+                case let .update(drive): return drive
+                case .removed: return nil
+                }
+            }
+            .removeDuplicates()
+            .eraseToAnyPublisher()
+    }
+
+    func drivePublisher(driveDbId: Int32) -> AnyPublisher<Drive?, Never> {
+        driveEventPublisher(driveDbId: driveDbId)
+            .map { event -> Drive? in
+                switch event {
+                case let .update(drive): return drive
+                case .removed: return nil
+                }
+            }
+            .removeDuplicates()
+            .eraseToAnyPublisher()
     }
 }
