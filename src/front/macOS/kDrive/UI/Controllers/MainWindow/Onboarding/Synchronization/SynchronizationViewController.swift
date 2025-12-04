@@ -36,6 +36,7 @@ final class SynchronizationViewController: OnboardingStepViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupUI()
     }
 
     override func viewWillAppear() {
