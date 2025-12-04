@@ -42,7 +42,10 @@ public enum ObservableData {
                                     name: "The amazing UPDATED test Drive",
                                     color: HexColor(hex: "#0a0a0a"), synchros: [:])
 
-    static let expectedAccount = Account(dbId: expectedAccountDbId, name: "3", drives: [expectedDriveDbId: expectedDrive])
+    static let expectedAccount = Account(dbId: expectedAccountDbId, name: "Some account", drives: [expectedDriveDbId: expectedDrive])
+
+    static let updatedAccount = Account(dbId: expectedAccountDbId, name: "Some UPDATED account", drives: [expectedDriveDbId: updatedDrive])
+
     static let indexedAccounts: IndexedAccounts = [
         1: Account(dbId: 1, name: "1", drives: [:]),
         2: Account(dbId: 2, name: "2", drives: [:]),
