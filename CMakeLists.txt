@@ -21,6 +21,11 @@ endif()
 if(WIN32)
     foreach(CONFIG ${CMAKE_CONFIGURATION_TYPES})
         # Those variables should be set before any target is defined
+        # When using multi-configuration generators (like Visual Studio or Xcode),
+        # we need to set the output directories for each configuration to avoid
+        # the default behavior of placing the binaries in subdirectories named after the configuration.
+        # See https://cmake.org/cmake/help/latest/prop_tgt/RUNTIME_OUTPUT_DIRECTORY_CONFIG.html#prop_tgt:RUNTIME_OUTPUT_DIRECTORY_%3CCONFIG%3E
+
         string(TOUPPER ${CONFIG} CONFIG_UPPER)
         set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${CONFIG_UPPER} "${CMAKE_BINARY_DIR}/bin")
         set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${CONFIG_UPPER} "${CMAKE_BINARY_DIR}/lib")
