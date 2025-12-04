@@ -52,10 +52,35 @@ public enum ObservableData {
         expectedAccountDbId: expectedAccount,
         4: Account(dbId: 4, name: "4", drives: [:])
     ]
+
     static let expectedUser = User(
         dbId: expectedUserDbId,
         userId: expectedUserId,
         name: "appleseed",
+        email: "ja@apple.com",
+        accounts: [:],
+        availableDrives: [:],
+        avatar: Data(),
+        isConnected: true,
+        isStaff: false
+    )
+
+    static let expectedUserWithAccounts = User(
+        dbId: expectedUserDbId,
+        userId: expectedUserId,
+        name: "appleseed",
+        email: "ja@apple.com",
+        accounts: indexedAccounts,
+        availableDrives: [:],
+        avatar: Data(),
+        isConnected: true,
+        isStaff: false
+    )
+
+    static let updatedUser = User(
+        dbId: expectedUserDbId,
+        userId: expectedUserId,
+        name: "appleseed UPDATE",
         email: "ja@apple.com",
         accounts: indexedAccounts,
         availableDrives: [:],

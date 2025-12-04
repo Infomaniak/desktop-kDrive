@@ -33,7 +33,7 @@ final class ObservedAccountTests_dbIdOnly: XCTestCase {
         XCTAssertNil(observedAccount, "Account should initially be nil")
 
         // WHEN
-        let expectedUser = ObservableData.expectedUser
+        let expectedUser = ObservableData.expectedUserWithAccounts
         await cache.addUser(expectedUser)
 
         // Give time for observation to propagate
@@ -58,7 +58,7 @@ final class ObservedAccountTests_dbIdOnly: XCTestCase {
                          cacheObservation: cache) var observedAccount: Account?
         XCTAssertNil(observedAccount, "Account should initially be nil")
 
-        let expectedUser = ObservableData.expectedUser
+        let expectedUser = ObservableData.expectedUserWithAccounts
         await cache.addUser(expectedUser)
 
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
@@ -89,7 +89,7 @@ final class ObservedAccountTests_dbIdOnly: XCTestCase {
                          cacheObservation: cache) var observedAccount: Account?
         XCTAssertNil(observedAccount, "Account should initially be nil")
 
-        let expectedUser = ObservableData.expectedUser
+        let expectedUser = ObservableData.expectedUserWithAccounts
         await cache.addUser(expectedUser)
 
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
@@ -121,7 +121,7 @@ final class ObservedAccountTests_dbIdOnly: XCTestCase {
                          cacheObservation: cache) var observedAccount: Account?
         XCTAssertNil(observedAccount, "Account should initially be nil")
 
-        let expectedUser = ObservableData.expectedUser
+        let expectedUser = ObservableData.expectedUserWithAccounts
         await cache.addUser(expectedUser)
 
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
@@ -154,7 +154,7 @@ final class ObservedAccountTests_allIds: XCTestCase {
         XCTAssertNil(observedAccount, "Account should initially be nil")
 
         // WHEN
-        let expectedUser = ObservableData.expectedUser
+        let expectedUser = ObservableData.expectedUserWithAccounts
         await cache.addUser(expectedUser)
 
         // Give time for observation to propagate
@@ -179,7 +179,7 @@ final class ObservedAccountTests_allIds: XCTestCase {
                          cacheObservation: cache) var observedAccount: Account?
         XCTAssertNil(observedAccount, "Account should initially be nil")
 
-        let expectedUser = ObservableData.expectedUser
+        let expectedUser = ObservableData.expectedUserWithAccounts
         await cache.addUser(expectedUser)
 
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
@@ -211,7 +211,7 @@ final class ObservedAccountTests_allIds: XCTestCase {
                          cacheObservation: cache) var observedAccount: Account?
         XCTAssertNil(observedAccount, "Account should initially be nil")
 
-        let expectedUser = ObservableData.expectedUser
+        let expectedUser = ObservableData.expectedUserWithAccounts
         await cache.addUser(expectedUser)
 
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
@@ -244,7 +244,7 @@ final class ObservedAccountTests_allIds: XCTestCase {
                          cacheObservation: cache) var observedAccount: Account?
         XCTAssertNil(observedAccount, "Account should initially be nil")
 
-        let expectedUser = ObservableData.expectedUser
+        let expectedUser = ObservableData.expectedUserWithAccounts
         await cache.addUser(expectedUser)
 
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)

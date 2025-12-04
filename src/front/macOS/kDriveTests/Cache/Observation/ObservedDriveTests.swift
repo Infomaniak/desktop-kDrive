@@ -31,7 +31,7 @@ final class ObservedDriveTests_driveDbIdOnly: XCTestCase {
         @ObservedDrive(driveDbId: ObservableData.expectedDriveDbId, cacheObservation: cache) var observedDrive: Drive?
         XCTAssertNil(observedDrive, "Drive should initially be nil")
 
-        await cache.addUser(ObservableData.expectedUser)
+        await cache.addUser(ObservableData.expectedUserWithAccounts)
 
         // WHEN
         let expectedDrive = ObservableData.expectedDrive
@@ -55,7 +55,7 @@ final class ObservedDriveTests_driveDbIdOnly: XCTestCase {
         @ObservedDrive(driveDbId: ObservableData.expectedDriveDbId, cacheObservation: cache) var observedDrive: Drive?
         XCTAssertNil(observedDrive, "Drive should initially be nil")
 
-        await cache.addUser(ObservableData.expectedUser)
+        await cache.addUser(ObservableData.expectedUserWithAccounts)
 
         let expectedDrive = ObservableData.expectedDrive
         try await cache.addDrive(expectedDrive, accountDbId: ObservableData.expectedAccountDbId)
@@ -85,7 +85,7 @@ final class ObservedDriveTests_driveDbIdOnly: XCTestCase {
         @ObservedDrive(driveDbId: ObservableData.expectedDriveDbId, cacheObservation: cache) var observedDrive: Drive?
         XCTAssertNil(observedDrive, "Drive should initially be nil")
 
-        await cache.addUser(ObservableData.expectedUser)
+        await cache.addUser(ObservableData.expectedUserWithAccounts)
 
         let expectedDrive = ObservableData.expectedDrive
         try await cache.addDrive(expectedDrive, accountDbId: ObservableData.expectedAccountDbId)
@@ -119,7 +119,7 @@ final class ObservedDriveTests_allIds: XCTestCase {
                        cacheObservation: cache) var observedDrive: Drive?
         XCTAssertNil(observedDrive, "Drive should initially be nil")
 
-        await cache.addUser(ObservableData.expectedUser)
+        await cache.addUser(ObservableData.expectedUserWithAccounts)
 
         // WHEN
         let expectedDrive = ObservableData.expectedDrive
@@ -146,7 +146,7 @@ final class ObservedDriveTests_allIds: XCTestCase {
                        cacheObservation: cache) var observedDrive: Drive?
         XCTAssertNil(observedDrive, "Drive should initially be nil")
 
-        await cache.addUser(ObservableData.expectedUser)
+        await cache.addUser(ObservableData.expectedUserWithAccounts)
 
         let expectedDrive = ObservableData.expectedDrive
         try await cache.addDrive(expectedDrive, accountDbId: ObservableData.expectedAccountDbId)
@@ -179,7 +179,7 @@ final class ObservedDriveTests_allIds: XCTestCase {
                        cacheObservation: cache) var observedDrive: Drive?
         XCTAssertNil(observedDrive, "Drive should initially be nil")
 
-        await cache.addUser(ObservableData.expectedUser)
+        await cache.addUser(ObservableData.expectedUserWithAccounts)
 
         let expectedDrive = ObservableData.expectedDrive
         try await cache.addDrive(expectedDrive, accountDbId: ObservableData.expectedAccountDbId)
