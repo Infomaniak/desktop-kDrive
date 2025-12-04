@@ -94,13 +94,10 @@ class OnboardingAnimationsView: NSView {
             case .fullDiskAccess:
                 return .permissionFullDiskAccess
             }
-        case .synchronization(let state):
-            switch state {
-            case .inProgress:
-                return .kDriveSynchronizeFiles
-            case .done:
-                return .kDriveLoader
-            }
+        case .synchronization:
+            return .kDriveSynchronizeFiles
+        case .appReady:
+            return .kDriveLoader
         }
     }
 }

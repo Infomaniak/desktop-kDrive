@@ -22,7 +22,7 @@ import kDriveResources
 
 final class AppReadyViewController: OnboardingStepViewController {
     init() {
-        super.init(nibName: NSNib.Name("OnboardingAppReadyView"), bundle: .main)
+        super.init(nibName: nil, bundle: nil)
         setupUI()
     }
 
