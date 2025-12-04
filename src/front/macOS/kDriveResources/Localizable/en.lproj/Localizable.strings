@@ -4,7 +4,7 @@
  * Locale: en, English
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Thu, 04 Dec 2025 08:40:42 +0100
+ * Exported at: Thu, 04 Dec 2025 09:58:28 +0100
  */
 
 /* loco:691deb2291b20ac7fd045012 */
@@ -43,6 +43,24 @@
 /* loco:693059768c31ab63990a0c82 */
 "instructionEnableKDriveArgument" = "kDrive.app";
 
+/* loco:69314c10606d30eb26081742 */
+"instructionEnableKDriveHint" = "You must activate kDrive.app before continuing";
+
+/* loco:69314cfb358e5c25a50b1fb3 */
+"instructionFullDisk" = "Activate kDrive and kDrive LiteSync Extension";
+
+/* loco:69314c248389940c6c08d902 */
+"instructionFullDiskHint" = "You must activate authorizations before continuing";
+
+/* loco:69314c4aba85c2962d068dc2 */
+"instructionOpenPrivacySecurity" = "Go to Privacy & Security > Full disk access";
+
+/* loco:69314c54606d30eb26081743 */
+"instructionOpenPrivacySecurityArgument" = "Full disk access";
+
+/* loco:69314c62739c205c410aa082 */
+"instructionOpenPrivacySecurityLink" = "Privacy & Security";
+
 /* loco:69305911b203efcf750e7bb4 */
 "instructionOpenSecurityExtensions" = "Select Open & Extensions > Security extensions";
 
@@ -57,6 +75,9 @@
 
 /* loco:6930588953221ff00608e983 */
 "instructionOpenSystemSettingsLink" = "System Settings";
+
+/* loco:69314d1a739c205c410aa087 */
+"instructionRestartIfNecessary" = "Restart the application if required";
 
 /* loco:693050ed6a0836d25507da22 */
 "onboardingAuthorizationExtensionDescription" = "Authorize kDrive in macOS settings :";

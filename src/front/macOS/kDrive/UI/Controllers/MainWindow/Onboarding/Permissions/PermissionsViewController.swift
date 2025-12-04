@@ -80,11 +80,11 @@ extension MacOSPermission {
             case .enableKDrive:
                 return KDriveLocalizable.instructionEnableKDrive
             case .openPrivacySecurity:
-                return "!Allez dans Confidentialité et sécurité > Accès complet au disque"
+                return KDriveLocalizable.instructionOpenPrivacySecurity
             case .enableFullDiskAccess:
-                return "!Activez kDrive et kDrive LiteSync Extension"
+                return KDriveLocalizable.instructionFullDisk
             case .restartAppIfNecessary:
-                return "!Redémarrez l’application si demandé"
+                return KDriveLocalizable.instructionRestartIfNecessary
             }
         }
 
@@ -95,7 +95,7 @@ extension MacOSPermission {
             case .enableKDrive:
                 return KDriveLocalizable.instructionEnableKDriveArgument
             case .openPrivacySecurity:
-                return "Accès complet au disque"
+                return KDriveLocalizable.instructionOpenPrivacySecurityArgument
             default:
                 return nil
             }
@@ -108,7 +108,7 @@ extension MacOSPermission {
             case .openSecurityExtensions:
                 return KDriveLocalizable.instructionOpenSecurityExtensionsLink
             case .openPrivacySecurity:
-                return "Confidentialité et sécurité"
+                return KDriveLocalizable.instructionOpenPrivacySecurityLink
             default:
                 return nil
             }
@@ -117,9 +117,9 @@ extension MacOSPermission {
         var hint: String? {
             switch self {
             case .enableKDrive:
-                return "!Vous devez activer kDrive.app avant de continuer"
+                return KDriveLocalizable.instructionEnableKDriveHint
             case .enableFullDiskAccess:
-                return "!Vous devez activer les autorisations avant de continuer"
+                return KDriveLocalizable.instructionFullDiskHint
             default:
                 return nil
             }

@@ -34,6 +34,18 @@ public enum KDriveLocalizable {
   public static let instructionEnableKDrive = KDriveLocalizable.tr("Localizable", "instructionEnableKDrive", fallback: "Activate kDrive.app")
   /// loco:693059768c31ab63990a0c82
   public static let instructionEnableKDriveArgument = KDriveLocalizable.tr("Localizable", "instructionEnableKDriveArgument", fallback: "kDrive.app")
+  /// loco:69314c10606d30eb26081742
+  public static let instructionEnableKDriveHint = KDriveLocalizable.tr("Localizable", "instructionEnableKDriveHint", fallback: "You must activate kDrive.app before continuing")
+  /// loco:69314cfb358e5c25a50b1fb3
+  public static let instructionFullDisk = KDriveLocalizable.tr("Localizable", "instructionFullDisk", fallback: "Activate kDrive and kDrive LiteSync Extension")
+  /// loco:69314c248389940c6c08d902
+  public static let instructionFullDiskHint = KDriveLocalizable.tr("Localizable", "instructionFullDiskHint", fallback: "You must activate authorizations before continuing")
+  /// loco:69314c4aba85c2962d068dc2
+  public static let instructionOpenPrivacySecurity = KDriveLocalizable.tr("Localizable", "instructionOpenPrivacySecurity", fallback: "Go to Privacy & Security > Full disk access")
+  /// loco:69314c54606d30eb26081743
+  public static let instructionOpenPrivacySecurityArgument = KDriveLocalizable.tr("Localizable", "instructionOpenPrivacySecurityArgument", fallback: "Full disk access")
+  /// loco:69314c62739c205c410aa082
+  public static let instructionOpenPrivacySecurityLink = KDriveLocalizable.tr("Localizable", "instructionOpenPrivacySecurityLink", fallback: "Privacy & Security")
   /// loco:69305911b203efcf750e7bb4
   public static let instructionOpenSecurityExtensions = KDriveLocalizable.tr("Localizable", "instructionOpenSecurityExtensions", fallback: "Select Open & Extensions > Security extensions")
   /// loco:6930592bfd6c86f6690db6d5
@@ -44,6 +56,8 @@ public enum KDriveLocalizable {
   public static let instructionOpenSystemSettings = KDriveLocalizable.tr("Localizable", "instructionOpenSystemSettings", fallback: "Open System Settings > General")
   /// loco:6930588953221ff00608e983
   public static let instructionOpenSystemSettingsLink = KDriveLocalizable.tr("Localizable", "instructionOpenSystemSettingsLink", fallback: "System Settings")
+  /// loco:69314d1a739c205c410aa087
+  public static let instructionRestartIfNecessary = KDriveLocalizable.tr("Localizable", "instructionRestartIfNecessary", fallback: "Restart the application if required")
   /// loco:693050ed6a0836d25507da22
   public static let onboardingAuthorizationExtensionDescription = KDriveLocalizable.tr("Localizable", "onboardingAuthorizationExtensionDescription", fallback: "Authorize kDrive in macOS settings :")
   /// loco:6930509e14b396d6fc04b0f2
