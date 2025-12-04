@@ -74,11 +74,11 @@ extension MacOSPermission {
         var value: String {
             switch self {
             case .openSystemSettings:
-                return "!Ouvrez les Réglages système > Général"
+                return KDriveLocalizable.instructionOpenSystemSettings
             case .openSecurityExtensions:
-                return "!Sélectionnez Ouverture et extensions > Extensions de sécurité"
+                return KDriveLocalizable.instructionOpenSecurityExtensions
             case .enableKDrive:
-                return "!Activez kDrive.app"
+                return KDriveLocalizable.instructionEnableKDrive
             case .openPrivacySecurity:
                 return "!Allez dans Confidentialité et sécurité > Accès complet au disque"
             case .enableFullDiskAccess:
@@ -91,9 +91,9 @@ extension MacOSPermission {
         var argument: String? {
             switch self {
             case .openSecurityExtensions:
-                return "Extensions de sécurité"
+                return KDriveLocalizable.instructionOpenSecurityExtensionsArgument
             case .enableKDrive:
-                return "kDrive.app"
+                return KDriveLocalizable.instructionEnableKDriveArgument
             case .openPrivacySecurity:
                 return "Accès complet au disque"
             default:
@@ -104,9 +104,9 @@ extension MacOSPermission {
         var link: String? {
             switch self {
             case .openSystemSettings:
-                return "Réglages système"
+                return KDriveLocalizable.instructionOpenSystemSettingsLink
             case .openSecurityExtensions:
-                return "Ouverture et extensions"
+                return KDriveLocalizable.instructionOpenSecurityExtensionsLink
             case .openPrivacySecurity:
                 return "Confidentialité et sécurité"
             default:
