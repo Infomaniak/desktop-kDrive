@@ -17,10 +17,13 @@
  */
 
 import Cocoa
+import InfomaniakDI
 import kDriveCoreUI
 import kDriveResources
 
 final class AppReadyViewController: OnboardingStepViewController {
+    @LazyInjectService private var windowRouter: WindowRouter
+
     init() {
         super.init(nibName: nil, bundle: nil)
         setupUI()
@@ -43,6 +46,6 @@ final class AppReadyViewController: OnboardingStepViewController {
     }
 
     @objc private func openMainWindow() {
-        // TODO: Open Main Window
+        windowRouter.navigate(to: .splitView)
     }
 }
