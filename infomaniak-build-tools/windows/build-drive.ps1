@@ -50,7 +50,7 @@ Param(
     [switch] $unitTests,
 
     # include new GUI: Flag to enable or disable the new GUI build. If included, any user in the internal release channel will be able to test it. 
-    # The legacy GUI will still be built and installed alongside and can be launch by clicking on kDrive logo on the top left corner of the new GUI.
+    # The legacy GUI will still be built and installed alongside and can be launched by clicking on kDrive logo on the top left corner of the new GUI.
     [switch] $newGui,
 
     # Help: Displays the help message and exits
