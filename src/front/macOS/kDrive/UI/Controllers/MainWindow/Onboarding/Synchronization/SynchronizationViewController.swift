@@ -38,6 +38,11 @@ final class SynchronizationViewController: OnboardingStepViewController {
         super.viewDidLoad()
     }
 
+    override func viewWillAppear() {
+        super.viewWillAppear()
+        viewModel.startSynchronizations()
+    }
+
     private func setupUI() {
         titleLabel.stringValue = KDriveLocalizable.onboardingSynchronizationInProgressTitle
         descriptionLabel.stringValue = KDriveLocalizable.onboardingSynchronizationInProgressDescription

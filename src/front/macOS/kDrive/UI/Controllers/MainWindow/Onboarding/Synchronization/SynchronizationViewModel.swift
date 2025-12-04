@@ -18,13 +18,31 @@
 
 import Combine
 import Foundation
+import InfomaniakConcurrency
+import InfomaniakDI
 import kDriveCore
 
 @MainActor
 final class SynchronizationViewModel: ObservableObject {
+    @LazyInjectService private var syncCreator: SyncCreator
+
     private let flowCoordinator: OnboardingFlowCoordinator
 
     init(flowCoordinator: OnboardingFlowCoordinator) {
         self.flowCoordinator = flowCoordinator
+    }
+
+    func startSynchronizations() {
+        Task {
+            let syncCandidates = flowCoordinator.synchronizations
+            try? await syncCandidates.asyncForEach { syncCandidate in
+                let syncInfo = try await self.syncCreator.create(from: syncCandidate)
+                try await SyncJobs().startSync(syncDbId: syncInfo.dbId)
+
+                print("New Synchro Created ->", syncCandidate.localFolder)
+            }
+
+            await flowCoordinator.navigateToNextStep()
+        }
     }
 }
