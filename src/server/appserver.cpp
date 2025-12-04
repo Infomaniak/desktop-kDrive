@@ -70,6 +70,7 @@
 #include "server/comm/guijobs/signalsyncaddedjob.h"
 #include "server/comm/guijobs/signalsyncremovedjob.h"
 #include "server/comm/guijobs/signalsynccompleteditem.h"
+#include "server/comm/guijobs/signalsyncupdatedjob.h"
 
 #include "server/comm/guijobs/signalsyncprogressinfo.h"
 
@@ -2558,12 +2559,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"}
+        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-            ,
-            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"}
+        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 
@@ -4192,6 +4192,7 @@ void AppServer::sendSyncUpdated(const SyncInfo &syncInfo) {
     paramsStream << syncInfo;
 
     OldCommServer::instance()->sendSignal(SignalNum::SYNC_UPDATED, params, id);
+    _commManager->sendGuiSignal(std::make_shared<SignalSyncUpdatedJob>(syncInfo));
 }
 
 void AppServer::sendSyncRemoved(int syncDbId) {

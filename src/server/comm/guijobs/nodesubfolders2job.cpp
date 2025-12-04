@@ -16,36 +16,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "syncgetprivatelinkurljob.h"
+#include "nodesubfolders2job.h"
 #include "appserver.h"
 #include "requests/serverrequests.h"
 #include "server/comm/guijobmanager.h"
+#include "libcommon/info/userinfo.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
 
 // Input parameters keys
 static const auto inParamsDriveDbId = "driveDbId";
-static const auto inParamsFileId = "fileId";
+static const auto inParamsNodeId = "nodeId";
+static const auto inParamsWithPath = "withPath";
 
 // Output parameters keys
-static const auto outParamsLinkUrl = "linkUrl";
-
+static const auto outParamsSubfoldersList = "subfoldersList";
 
 namespace KDC {
 
-SyncGetPrivateLinkUrlJob::SyncGetPrivateLinkUrlJob(std::shared_ptr<CommManager> commManager, int requestId,
-                                                   const Poco::DynamicStruct &inParams,
-                                                   std::shared_ptr<AbstractCommChannel> channel) :
+NodeSubFolders2Job::NodeSubFolders2Job(std::shared_ptr<CommManager> commManager, int requestId,
+                                       const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
-    _requestNum = RequestNum::SYNC_GETPRIVATELINKURL;
+    _requestNum = RequestNum::NODE_SUBFOLDERS2;
 }
 
-ExitInfo SyncGetPrivateLinkUrlJob::deserializeInputParms() {
-    constexpr auto logMessage = "Exception in SyncGetPrivateLinkUrlJob::readParamValue: error=";
+ExitInfo NodeSubFolders2Job::deserializeInputParms() {
+    constexpr auto logMessage = "Exception in NodeSubFolders2Job::readParamValue: error=";
     try {
         readParamValue(inParamsDriveDbId, _driveDbId);
-        readParamValue(inParamsFileId, _fileId);
+        readParamValue(inParamsNodeId, _nodeId);
+        readParamValue(inParamsWithPath, _withPath);
     } catch (const Poco::Exception &pocoException) {
         LOG_WARN(_logger, logMessage << pocoException.message());
 
@@ -59,19 +60,19 @@ ExitInfo SyncGetPrivateLinkUrlJob::deserializeInputParms() {
     return ExitCode::Ok;
 }
 
-ExitInfo SyncGetPrivateLinkUrlJob::serializeOutputParms() {
-    writeParamValue(outParamsLinkUrl, _linkUrl);
+ExitInfo NodeSubFolders2Job::serializeOutputParms() {
+    writeParamValues(outParamsSubfoldersList, _subfoldersList, info2DynamicVar<NodeInfo>);
 
     return ExitCode::Ok;
 }
 
-ExitInfo SyncGetPrivateLinkUrlJob::process() {
-    if (const auto exitCode = ServerRequests::getPrivateLinkUrl(_driveDbId, CommonUtility::commString2Str(_fileId), _linkUrl);
-        exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in ServerRequests::getPrivateLinkUrl");
-        AppServer::addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+ExitInfo NodeSubFolders2Job::process() {
+    if (const auto exitInfo = ServerRequests::getSubFolders(_driveDbId, _nodeId, _subfoldersList, _withPath);
+        exitInfo.code() != ExitCode::Ok) {
+        LOG_WARN(_logger, "Error in Requests::getSubFolders");
+        AppServer::addError(Error(ERR_ID, exitInfo));
 
-        return exitCode;
+        return exitInfo;
     }
 
     return ExitCode::Ok;

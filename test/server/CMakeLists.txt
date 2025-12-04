@@ -52,11 +52,14 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/syncdeletejob.h ${server_srcs_path}/comm/guijobs/syncdeletejob.cpp
     ${server_srcs_path}/comm/guijobs/syncgetpubliclinkurljob.h ${server_srcs_path}/comm/guijobs/syncgetpubliclinkurljob.cpp
     ${server_srcs_path}/comm/guijobs/syncgetprivatelinkurljob.h ${server_srcs_path}/comm/guijobs/syncgetprivatelinkurljob.cpp
+    ${server_srcs_path}/comm/guijobs/syncsetsupportsvirtualfilesjob.h ${server_srcs_path}/comm/guijobs/syncsetsupportsvirtualfilesjob.cpp
+    ${server_srcs_path}/comm/guijobs/syncsetrootpinstatejob.h ${server_srcs_path}/comm/guijobs/syncsetrootpinstatejob.cpp
+    ${server_srcs_path}/comm/guijobs/nodeinfojob.h ${server_srcs_path}/comm/guijobs/nodeinfojob.cpp
     ${server_srcs_path}/comm/guijobs/nodesubfoldersjob.h ${server_srcs_path}/comm/guijobs/nodesubfoldersjob.cpp
+    ${server_srcs_path}/comm/guijobs/nodesubfolders2job.h ${server_srcs_path}/comm/guijobs/nodesubfolders2job.cpp
     ${server_srcs_path}/comm/guijobs/nodefoldersizejob.h ${server_srcs_path}/comm/guijobs/nodefoldersizejob.cpp
     ${server_srcs_path}/comm/guijobs/blacklistednodelistjob.h ${server_srcs_path}/comm/guijobs/blacklistednodelistjob.cpp
     ${server_srcs_path}/comm/guijobs/blacklistednodesetlistjob.h ${server_srcs_path}/comm/guijobs/blacklistednodesetlistjob.cpp
-    ${server_srcs_path}/comm/guijobs/nodeinfojob.h ${server_srcs_path}/comm/guijobs/nodeinfojob.cpp
     ${server_srcs_path}/comm/guijobs/signaluseraddedjob.h ${server_srcs_path}/comm/guijobs/signaluseraddedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.h ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserremovedjob.h ${server_srcs_path}/comm/guijobs/signaluserremovedjob.cpp
@@ -68,6 +71,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/signalsyncremovedjob.h ${server_srcs_path}/comm/guijobs/signalsyncremovedjob.cpp
     ${server_srcs_path}/comm/guijobs/signalsyncprogressinfo.h ${server_srcs_path}/comm/guijobs/signalsyncprogressinfo.cpp
     ${server_srcs_path}/comm/guijobs/signalsynccompleteditem.h ${server_srcs_path}/comm/guijobs/signalsynccompleteditem.cpp
+    ${server_srcs_path}/comm/guijobs/signalsyncupdatedjob.h ${server_srcs_path}/comm/guijobs/signalsyncupdatedjob.cpp
     ${server_srcs_path}/migration/migrationparams.h ${server_srcs_path}/migration/migrationparams.cpp
     ${server_srcs_path}/requests/serverrequests.h ${server_srcs_path}/requests/serverrequests.cpp
     ${server_srcs_path}/updater/abstractupdater.h ${server_srcs_path}/updater/abstractupdater.cpp
@@ -144,7 +148,8 @@ set(testserver_SRCS
     requests/testserverrequests.h requests/testserverrequests.cpp
     appserver/testappserver.h appserver/testappserver.cpp
     comm/testsocketcomm.h comm/testsocketcomm.cpp
-    comm/testguicommchannel.h comm/testguicommchannel.cpp
+    comm/guicommchannel/testguicommchannel.h comm/guicommchannel/testguicommchannel.cpp 
+    comm/guicommchannel/testsyncjobs.cpp comm/guicommchannel/testnodejobs.cpp
     comm/guijobs/testabstractguijob.h comm/guijobs/testabstractguijob.cpp
 )
 

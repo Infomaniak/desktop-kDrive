@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "syncgetprivatelinkurljob.h"
+#include "syncsetrootpinstatejob.h"
 #include "appserver.h"
 #include "requests/serverrequests.h"
 #include "server/comm/guijobmanager.h"
@@ -25,27 +25,23 @@
 #include "libcommonserver/log/log.h"
 
 // Input parameters keys
-static const auto inParamsDriveDbId = "driveDbId";
-static const auto inParamsFileId = "fileId";
-
-// Output parameters keys
-static const auto outParamsLinkUrl = "linkUrl";
-
+static const auto inParamsSyncDbId = "syncDbId";
+static const auto inParamsPinState = "state";
 
 namespace KDC {
 
-SyncGetPrivateLinkUrlJob::SyncGetPrivateLinkUrlJob(std::shared_ptr<CommManager> commManager, int requestId,
-                                                   const Poco::DynamicStruct &inParams,
-                                                   std::shared_ptr<AbstractCommChannel> channel) :
+SyncSetRootPinStateJob::SyncSetRootPinStateJob(std::shared_ptr<CommManager> commManager, int requestId,
+                                               const Poco::DynamicStruct &inParams,
+                                               std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
-    _requestNum = RequestNum::SYNC_GETPRIVATELINKURL;
+    _requestNum = RequestNum::SYNC_SETROOTPINSTATE;
 }
 
-ExitInfo SyncGetPrivateLinkUrlJob::deserializeInputParms() {
-    constexpr auto logMessage = "Exception in SyncGetPrivateLinkUrlJob::readParamValue: error=";
+ExitInfo SyncSetRootPinStateJob::deserializeInputParms() noexcept {
+    constexpr auto logMessage = "Exception in SyncSetRootPinStateJob::readParamValue: error=";
     try {
-        readParamValue(inParamsDriveDbId, _driveDbId);
-        readParamValue(inParamsFileId, _fileId);
+        readParamValue(inParamsSyncDbId, _syncDbId);
+        readParamValue(inParamsPinState, _state);
     } catch (const Poco::Exception &pocoException) {
         LOG_WARN(_logger, logMessage << pocoException.message());
 
@@ -59,19 +55,17 @@ ExitInfo SyncGetPrivateLinkUrlJob::deserializeInputParms() {
     return ExitCode::Ok;
 }
 
-ExitInfo SyncGetPrivateLinkUrlJob::serializeOutputParms() {
-    writeParamValue(outParamsLinkUrl, _linkUrl);
+ExitInfo SyncSetRootPinStateJob::process() {
+    std::shared_ptr<Vfs> vfs;
+    const std::scoped_lock lock(AppServer::vfsMapMutex);
+    if (const ExitInfo exitInfo = AppServer::getVfs(_syncDbId, vfs); !exitInfo) {
+        LOG_WARN(_logger, "Error in getVfs for syncDbId=" << _syncDbId << " : " << exitInfo);
+        return exitInfo;
+    }
 
-    return ExitCode::Ok;
-}
-
-ExitInfo SyncGetPrivateLinkUrlJob::process() {
-    if (const auto exitCode = ServerRequests::getPrivateLinkUrl(_driveDbId, CommonUtility::commString2Str(_fileId), _linkUrl);
-        exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in ServerRequests::getPrivateLinkUrl");
-        AppServer::addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
-
-        return exitCode;
+    if (const ExitInfo exitInfo = vfs->setPinState("", _state); !exitInfo) {
+        LOG_WARN(_logger, "Error in vfsSetPinState for syncDbId=" << _syncDbId << " : " << exitInfo);
+        return exitInfo;
     }
 
     return ExitCode::Ok;
