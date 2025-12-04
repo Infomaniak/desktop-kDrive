@@ -298,7 +298,7 @@ elseif(BUILD_CLIENT)
         install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
         # Client
-        install(DIRECTORY ${BIN_OUTPUT_DIRECTORY}/client DESTINATION ${CMAKE_INSTALL_BINDIR})
+        install(DIRECTORY ${BIN_OUTPUT_DIRECTORY}/client DESTINATION ${CMAKE_INSTALL_BINDIR} OPTIONAL)
 
     else()
         # Default sync exclude list
