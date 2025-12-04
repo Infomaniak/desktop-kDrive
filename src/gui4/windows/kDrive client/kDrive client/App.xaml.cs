@@ -74,7 +74,7 @@ namespace Infomaniak.kDrive
                     if (OAuth2Manager.CompleteAuthRequest(new Uri(oauthArg)))
                     {
                         // Terminate the Process
-                        Logger.Log(Logger.Level.Info, $"OAuth process completed, response routed successfully. Terminating the process.");
+                        Logger.Log(Logger.Level.Info, "OAuth process completed, response routed successfully. Terminating the process.");
                     }
                     else
                     {
