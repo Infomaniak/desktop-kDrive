@@ -48,6 +48,7 @@ final class PermissionsViewModel: ObservableObject {
             return
         }
         currentPermission = permission
+
         flowCoordinator.$currentStep
             .receiveOnMain(store: &bindStore) { [weak self] newStep in
                 self?.updateCurrentPermission(from: newStep)
@@ -83,8 +84,8 @@ final class PermissionsViewModel: ObservableObject {
         }
     }
 
-    private func updateCurrentPermission(from state: OnboardingStep) {
-        guard case .permissions(let permission) = state else { return }
+    private func updateCurrentPermission(from step: OnboardingStep) {
+        guard case .permissions(let permission) = step else { return }
         currentPermission = permission
     }
 }

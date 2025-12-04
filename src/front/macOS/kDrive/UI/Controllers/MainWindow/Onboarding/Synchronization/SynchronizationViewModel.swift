@@ -18,6 +18,7 @@
 
 import Combine
 import Foundation
+import kDriveCore
 
 enum StartSyncState {
     case inProgress
@@ -28,7 +29,27 @@ enum StartSyncState {
 final class SynchronizationViewModel: ObservableObject {
     private let flowCoordinator: OnboardingFlowCoordinator
 
+    @Published var currentState: StartSyncState = .inProgress
+
+    private var bindStore = Set<AnyCancellable>()
+
     init(flowCoordinator: OnboardingFlowCoordinator) {
         self.flowCoordinator = flowCoordinator
+
+        guard case .synchronization(let state) = flowCoordinator.currentStep else {
+            currentState = .inProgress
+            return
+        }
+        currentState = state
+
+        flowCoordinator.$currentStep
+            .receiveOnMain(store: &bindStore) { [weak self] newStep in
+                self?.updateCurrentState(from: newStep)
+            }
+    }
+
+    private func updateCurrentState(from step: OnboardingStep) {
+        guard case .synchronization(let state) = step else { return }
+        currentState = state
     }
 }
