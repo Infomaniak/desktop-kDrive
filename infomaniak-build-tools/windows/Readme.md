@@ -46,8 +46,8 @@ cd desktop-kDrive && git submodule update --init --recursive
 
 Once `Visual Studio 2019` is installed, **all** commands should to be run using the `x64 Native Tools Command Prompt` with administrator permissions.  
 
-## Visual Studio 2019/2022
-Currently, both `Visual Studio 2019` and `Visual Studio 2022 or 2025` are needed to build the project.
+## Visual Studio 2019/2022/2025
+You must install both `Visual Studio 2019` and either `Visual Studio 2022` or `Visual Studio 2025` to build the project.
 
 When installing `Visual Studio 2019`, select the following components:
 
@@ -61,7 +61,7 @@ When installing `Visual Studio 2019`, select the following components:
 - Windows 10 SDK (10.0.17763.0)
 - Windows 10 SDK (10.0.20348.0)
 
-When installing `Visual Studio 2022`, select the following components:
+When installing `Visual Studio 2022 or 2025`, select the following components:
 - Desktop development with C++
 - Desktop development with .NET
 - WinUI development with .NET

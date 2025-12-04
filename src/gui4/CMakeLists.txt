@@ -24,7 +24,7 @@ if(WIN32)
         DEPENDS "${CLIENT_PROJECT}" ${CLIENT_SOURCES}
     )
 
-    add_custom_target(build_kdrive_client ALL
+    add_custom_target(build_kDrive_client ALL
         DEPENDS "${CLIENT_STAMP}"
     )
 endif()
