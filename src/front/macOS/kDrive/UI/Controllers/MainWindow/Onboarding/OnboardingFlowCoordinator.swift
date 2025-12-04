@@ -25,7 +25,7 @@ enum OnboardingStep: Sendable {
     case login
     case drivesSelection
     case permissions(MacOSPermission)
-    case synchronization
+    case synchronization(StartSyncState = .inProgress)
 }
 
 @MainActor
@@ -64,10 +64,11 @@ final class OnboardingFlowCoordinator: ObservableObject {
                     return .permissions(permission)
                 }
             }
-            return .synchronization
+
+            return .synchronization()
 
         case .permissions:
-            return .synchronization
+            return .synchronization()
 
         case .synchronization:
             return nil
