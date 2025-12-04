@@ -119,7 +119,8 @@
 			membershipExceptions = (
 				Cache/CoherentCacheTests.swift,
 				Cache/Observation/ObservableCoherentCacheTests.swift,
-				Cache/Observation/ObservedAccoutTests.swift,
+				Cache/Observation/ObservableData.swift,
+				Cache/Observation/ObservedAccountTests.swift,
 				Cache/Observation/ObservedUserTests.swift,
 				Parsing/Base64CodedTests.swift,
 				Parsing/CallbackMessageTests.swift,

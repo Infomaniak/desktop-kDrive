@@ -32,16 +32,15 @@ final class ObservedUserTests: XCTestCase {
         XCTAssertNil(observedUser, "User should initially be nil")
 
         // WHEN
-        let user = ObservableData.expectedUser
-
-        await cache.addUser(user)
+        let expectedUser = ObservableData.expectedUser
+        await cache.addUser(expectedUser)
 
         // Give time for observation to propagate
         try await Task.sleep(nanoseconds: 10_000_000_000)
 
         // THEN
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        XCTAssertEqual(cachedUser, user, "The cache should have been updated")
-        XCTAssertEqual(observedUser, user, "The observed object should have been updated")
+        XCTAssertEqual(cachedUser, expectedUser, "The cache should have been updated")
+        XCTAssertEqual(observedUser, expectedUser, "The observed object should have been updated")
     }
 }

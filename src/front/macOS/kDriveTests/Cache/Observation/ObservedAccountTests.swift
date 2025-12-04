@@ -33,8 +33,6 @@ final class ObservedAccountTests: XCTestCase {
                          cacheObservation: cache) var observedAccount: Account?
         XCTAssertNil(observedAccount, "Account should initially be nil")
 
-        let expectedAccount = Account(dbId: ObservableData.expectedAccountDbId, name: "3", drives: [:])
-
         // WHEN
         let user = ObservableData.expectedUser
 
@@ -47,8 +45,8 @@ final class ObservedAccountTests: XCTestCase {
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
         let cachedAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
         XCTAssertEqual(cachedUser, user, "The cache user should have been updated")
-        XCTAssertEqual(cachedAccount, cachedAccount, "The cache account should have been updated")
-        XCTAssertEqual(observedAccount, expectedAccount, "The observed object should have been updated")
+        XCTAssertEqual(cachedAccount, ObservableData.expectedAccount, "The cache account should have been updated")
+        XCTAssertEqual(observedAccount, ObservableData.expectedAccount, "The observed object should have been updated")
     }
 
     func testSetGetAccountFromPropertyWrapper_accountDbId() async throws {
@@ -61,8 +59,6 @@ final class ObservedAccountTests: XCTestCase {
                          cacheObservation: cache) var observedAccount: Account?
         XCTAssertNil(observedAccount, "Account should initially be nil")
 
-        let expectedAccount = Account(dbId: ObservableData.expectedAccountDbId, name: "3", drives: [:])
-
         // WHEN
         let user = ObservableData.expectedUser
 
@@ -74,8 +70,9 @@ final class ObservedAccountTests: XCTestCase {
         // THEN
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
         let cachedAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
+
         XCTAssertEqual(cachedUser, user, "The cache user should have been updated")
-        XCTAssertEqual(cachedAccount, cachedAccount, "The cache account should have been updated")
-        XCTAssertEqual(observedAccount, expectedAccount, "The observed object should have been updated")
+        XCTAssertEqual(cachedAccount, ObservableData.expectedAccount, "The cache account should have been updated")
+        XCTAssertEqual(observedAccount, ObservableData.expectedAccount, "The observed object should have been updated")
     }
 }
