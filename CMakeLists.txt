@@ -20,7 +20,6 @@ endif()
 
 if(WIN32)
     foreach(CONFIG ${CMAKE_CONFIGURATION_TYPES})
-        # Those variables should be set before any target is defined
         # When using multi-configuration generators (like Visual Studio or Xcode),
         # we need to set the output directories for each configuration to avoid
         # the default behavior of placing the binaries in subdirectories named after the configuration.

@@ -7,8 +7,8 @@ if(WIN32)
     set(CLIENT_STAMP "${CMAKE_BINARY_DIR}/client_build.stamp")
 
     set(CLIENT_SOURCES
-        ${CLIENT_PATH}/**/*.cs
-        ${CLIENT_PATH}/**/*.xaml
+        ${CLIENT_PATH}/*.cs
+        ${CLIENT_PATH}/*.xaml
     )
     file(GLOB_RECURSE CLIENT_SOURCES ${CLIENT_SOURCES})
     list(FILTER CLIENT_SOURCES EXCLUDE REGEX "/kDrive client/bin/")

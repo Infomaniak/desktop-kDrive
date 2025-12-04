@@ -443,7 +443,8 @@ function Prepare-Archive {
         [string] $buildType,
         [string] $buildPath,
         [string] $vfsDir,
-        [string] $ClientDir,
+        [switch] $newGui,
+        [string] $newGuiDir,
         [string] $archivePath,
         [bool] $upload,
         [bool] $ci
@@ -527,9 +528,9 @@ function Prepare-Archive {
 
     if ($newGui) {
         # Copy client files
-        Write-Host "Copying new client files ($ClientDir) to the archive ..."
+        Write-Host "Copying new client files ($newGuiDir) to the archive ..."
         Remove-Item -Path "$archivePath/client" -Recurse -Force -ErrorAction SilentlyContinue
-        Copy-Item -Path "$ClientDir/." -Destination "$archivePath/client" -Recurse
+        Copy-Item -Path "$newGuiDir/." -Destination "$archivePath/client" -Recurse
 
         # Sign all the .exe, .dll and .xbf that have no signature yet
         $filesToSign = Get-ChildItem -Path "$archivePath/client" -Recurse -Include *.exe, *.dll, *.xbf | Where-Object {
@@ -803,7 +804,7 @@ if ($LASTEXITCODE -ne 0) {
 #                                                                                               #
 #################################################################################################
 
-Prepare-Archive -BuildType $buildType -BuildPath $buildPath -VfsDir $vfsDir -ArchivePath $archivePath -Upload $upload -Ci $ci -ClientDir $buildpath/bin/client
+Prepare-Archive -BuildType $buildType -BuildPath $buildPath -VfsDir $vfsDir -ArchivePath $archivePath -Upload $upload -Ci $ci -NewGuitDir $buildpath/bin/client -NewGui $newGui
 if ($LASTEXITCODE -ne 0)
 {
     Write-Host "Archive preparation failed. Aborting." -f Red
