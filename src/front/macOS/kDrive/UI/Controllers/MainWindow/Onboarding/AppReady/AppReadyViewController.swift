@@ -17,6 +17,7 @@
  */
 
 import Cocoa
+import kDriveCoreUI
 import kDriveResources
 
 final class AppReadyViewController: OnboardingStepViewController {
@@ -35,6 +36,13 @@ final class AppReadyViewController: OnboardingStepViewController {
         descriptionLabel.stringValue = KDriveLocalizable.onboardingSynchronizationAppReadyDescription
 
         primaryButton.isHidden = false
+        primaryButton.title = KDriveLocalizable.buttonOpenKDrive
+        primaryButton.target = self
+        primaryButton.action = #selector(openMainWindow)
         secondaryButton.isHidden = true
+    }
+
+    @objc private func openMainWindow() {
+        // TODO: Open Main Window
     }
 }

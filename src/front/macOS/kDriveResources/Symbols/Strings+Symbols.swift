@@ -26,6 +26,8 @@ public enum KDriveLocalizable {
   public static let buttonOpenInBrowser = KDriveLocalizable.tr("Localizable", "buttonOpenInBrowser", fallback: "Open in browser")
   /// loco:68b04d5a63085b7ab90cea63
   public static let buttonOpenInFinder = KDriveLocalizable.tr("Localizable", "buttonOpenInFinder", fallback: "Open in Finder")
+  /// loco:6931a5687031691272002314
+  public static let buttonOpenKDrive = KDriveLocalizable.tr("Localizable", "buttonOpenKDrive", fallback: "Open kDrive")
   /// loco:69240f7b15d05a975c07dc13
   public static let buttonShowOffers = KDriveLocalizable.tr("Localizable", "buttonShowOffers", fallback: "Show offers")
   /// loco:69240f6d4433e24658054fd4
