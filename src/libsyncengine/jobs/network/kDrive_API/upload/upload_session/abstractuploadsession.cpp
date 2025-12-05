@@ -388,7 +388,7 @@ ExitInfo AbstractUploadSession::sendChunks() {
         if (_jobExecutionError) {
             // Job execution issue
             // exitCode & exitCause are those of the chunk that has failed
-            return exitInfo;
+            return _chunkJobExitInfo;
         }
         if (readError) {
             // Read file issue
