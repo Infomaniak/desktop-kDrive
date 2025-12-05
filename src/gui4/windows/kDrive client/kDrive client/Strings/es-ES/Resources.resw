@@ -294,6 +294,9 @@
   <data name="Page_Onboarding_OAuthLoadingPage_Success_Title.Text" xml:space="preserve">
     <value />
   </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Error_Title.Text" xml:space="preserve">
+    <value />
+  </data>
   <data name="Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Subtitle.Text" xml:space="preserve">
     <value />
   </data>
@@ -301,6 +304,9 @@
     <value />
   </data>
   <data name="Page_Onboarding_OAuthLoadingPage_Success_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Error_Subtitle.Text" xml:space="preserve">
     <value />
   </data>
   <data name="Page_Onboarding_WelcomePage_Title.Text" xml:space="preserve">
@@ -358,6 +364,9 @@
     <value />
   </data>
   <data name="Global_kDriveOffersUrl" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_kDriveShopUrl" xml:space="preserve">
     <value />
   </data>
   <data name="Page_StoragePage_Title.Text" xml:space="preserve">
@@ -752,9 +761,6 @@
     <value />
   </data>
   <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Title.Text" xml:space="preserve">
-    <value />
-  </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Description.Text" xml:space="preserve">
     <value />
   </data>
   <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_InfoBar.Message" xml:space="preserve">

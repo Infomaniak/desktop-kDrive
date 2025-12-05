@@ -18,6 +18,7 @@
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using Infomaniak.kDrive.Pages.Onboarding;
+using Infomaniak.kDrive.Pages.Settings;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -43,6 +44,7 @@ namespace Infomaniak.kDrive.Pages
 
         protected async override void OnNavigatedTo(NavigationEventArgs e)
         {
+            if (App.ServiceProvider.GetRequiredService<AppModel>().SelectedSync is null) AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(SettingsPage)));
             try
             {
                 await PageViewModel.UpdateDiskSizeAsync().ConfigureAwait(false);

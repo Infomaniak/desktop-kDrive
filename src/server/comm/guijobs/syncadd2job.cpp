@@ -71,6 +71,9 @@ ExitInfo SyncAdd2Job::process() {
         return exitCode;
     }
 
+    auto signalSyncAddedJob = std::make_shared<SignalSyncAddedJob>(syncInfo);
+    _commManager->sendGuiSignal(signalSyncAddedJob);
+
     return AbstractSyncAddJob::process(syncInfo);
 }
 

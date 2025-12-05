@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<NavigationView x:Class="Infomaniak.kDrive.CustomControls.AppNavigationView"
+                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:local="using:Infomaniak.kDrive.CustomControls"
+                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+                xmlns:converters="using:Infomaniak.kDrive.Converters"
+                mc:Ignorable="d"
+                PaneDisplayMode="Left"
+                SelectionChanged="OnSelectionChanged"
+                ItemInvoked="OnItemInvoked"
+                IsBackEnabled="{x:Bind ContentFrame.CanGoBack, Mode=OneWay}"
+                BackRequested="OnBackRequested"
+                OpenPaneLength="280">
+    <NavigationView.Resources>
+        <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
+    </NavigationView.Resources>
+
+    <NavigationView.PaneCustomContent>
+        <controls:SyncSelector HorizontalAlignment="Stretch"
+                               Margin="4,9,4,20"
+                               Visibility="{x:Bind IsPaneOpen, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               IsEnabled="{x:Bind ViewModel.SelectedSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}" />
+    </NavigationView.PaneCustomContent>
+
+    <NavigationView.MenuItems>
+        <NavigationViewItem x:Uid="W_MainWindow_NavBar_Home"
+                            Tag="HomePage"
+                            MinHeight="30"
+                            IsSelected="True"
+                            IsEnabled="{x:Bind ViewModel.SelectedSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
+            <NavigationViewItem.Icon>
+                <SymbolIcon Symbol="Home" />
+            </NavigationViewItem.Icon>
+        </NavigationViewItem>
+        <NavigationViewItem x:Uid="W_MainWindow_NavBar_Activity"
+                            Tag="ActivityPage"
+                            MinHeight="30"
+                            IsEnabled="{x:Bind ViewModel.SelectedSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
+            <NavigationViewItem.Icon>
+                <SymbolIcon Symbol="Sync" />
+            </NavigationViewItem.Icon>
+            <NavigationViewItem.InfoBadge>
+                <InfoBadge x:Name="infoBadge1"
+                           Value="4" />
+            </NavigationViewItem.InfoBadge>
+        </NavigationViewItem>
+        <NavigationViewItem x:Uid="W_MainWindow_NavBar_Storage"
+                            Tag="StoragePage"
+                            MinHeight="30"
+                            IsEnabled="{x:Bind ViewModel.SelectedSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
+            <NavigationViewItem.Icon>
+                <SymbolIcon Symbol="MapDrive" />
+            </NavigationViewItem.Icon>
+        </NavigationViewItem>
+    </NavigationView.MenuItems>
+
+    <NavigationView.PaneFooter>
+        <NavigationViewItem x:Uid="W_MainWindow_PaneFooter_Folder"
+                            Tapped="NavigationViewItem_Tapped"
+                            MinHeight="30"
+                            IsEnabled="{x:Bind ViewModel.SelectedSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
+            <NavigationViewItem.Icon>
+                <SymbolIcon Symbol="Folder" />
+            </NavigationViewItem.Icon>
+        </NavigationViewItem>
+    </NavigationView.PaneFooter>
+
+    <Frame x:Name="ContentFrame" />
+</NavigationView>

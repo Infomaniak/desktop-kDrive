@@ -89,6 +89,9 @@ ExitInfo SyncAddJob::process() {
         _commManager->sendGuiSignal(signalDriveAddedJob);
     }
 
+    auto signalSyncAddedJob = std::make_shared<SignalSyncAddedJob>(syncInfo);
+    _commManager->sendGuiSignal(signalSyncAddedJob);
+
     return AbstractSyncAddJob::process(syncInfo);
 }
 

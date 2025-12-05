@@ -33,6 +33,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string UserInfo = "userInfo";
 
         static public string AccountDbId = "accountDbId";
+        static public string AccountId = "accountId";
         static public string AccountInfoList = "accountInfoList";
         static public string AccountInfo = "accountInfo";
 
@@ -53,6 +54,11 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string NodeId = "nodeId";
         static public string NodeInfo = "nodeInfo";
         static public string NodeIdList = "nodeIdList";
+        static public string LocalFolderPath = "localFolderPath";
+        static public string ServerFolderPath = "serverFolderPath";
+        static public string ServerFolderNodeId = "serverFolderNodeId";
+        static public string LiteSync = "liteSync";
+        static public string BlackList = "blackList";
 
         static public string NodeSubFolderInfoList = "nodeSubFolderInfoList";
         static public string FolderSize = "folderSize";
