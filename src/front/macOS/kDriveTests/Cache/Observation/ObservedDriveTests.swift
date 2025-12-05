@@ -19,18 +19,20 @@
 import Foundation
 @testable import InfomaniakDI
 @testable import kDriveCore
-import XCTest
+import Testing
 
-final class ObservedDriveTests_driveDbIdOnly: XCTestCase {
-    func testSetObservedDrive() async throws {
+@MainActor
+struct ObservedDriveTests_driveDbIdOnly {
+    @Test(.timeLimit(.minutes(1)))
+    func setObservedDrive() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        XCTAssertNil(initialUser, "Cache should initially be empty")
+        #expect(initialUser == nil, "Cache should initially be empty")
 
         @ObservedDrive(driveDbId: ObservableData.expectedDriveDbId, cacheObservation: cache) var observedDrive: Drive?
         let receivedValues = $observedDrive.receivedValues // Start to save the received values
-        XCTAssertNil(observedDrive, "Drive should initially be nil")
+        #expect(observedDrive == nil, "Drive should initially be nil")
 
         await cache.addUser(ObservableData.expectedUserWithAccounts)
 
@@ -40,22 +42,23 @@ final class ObservedDriveTests_driveDbIdOnly: XCTestCase {
 
         // THEN
         let lastReceivedObject = await receivedValues.first(where: { $0 != nil })
-        XCTAssertEqual(lastReceivedObject, expectedDrive)
+        #expect(lastReceivedObject == expectedDrive)
 
         let cachedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
-        XCTAssertEqual(cachedDrive, expectedDrive, "The cache should have been updated")
-        XCTAssertEqual(observedDrive, expectedDrive, "The observed object should have been updated")
+        #expect(cachedDrive == expectedDrive, "The cache should have been updated")
+        #expect(observedDrive == expectedDrive, "The observed object should have been updated")
     }
 
-    func testUpdateObservedDrive() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func updateObservedDrive() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        XCTAssertNil(initialUser, "Cache should initially be empty")
+        #expect(initialUser == nil, "Cache should initially be empty")
 
         @ObservedDrive(driveDbId: ObservableData.expectedDriveDbId, cacheObservation: cache) var observedDrive: Drive?
         let receivedValues = $observedDrive.receivedValues
-        XCTAssertNil(observedDrive, "Drive should initially be nil")
+        #expect(observedDrive == nil, "Drive should initially be nil")
 
         await cache.addUser(ObservableData.expectedUserWithAccounts)
 
@@ -63,7 +66,7 @@ final class ObservedDriveTests_driveDbIdOnly: XCTestCase {
         try await cache.addDrive(expectedDrive, accountDbId: ObservableData.expectedAccountDbId)
 
         let cachedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
-        XCTAssertEqual(cachedDrive, expectedDrive, "The cache should have been updated")
+        #expect(cachedDrive == expectedDrive, "The cache should have been updated")
 
         // WHEN
         let updatedDrive = ObservableData.updatedDrive
@@ -73,19 +76,20 @@ final class ObservedDriveTests_driveDbIdOnly: XCTestCase {
         _ = await receivedValues.dropFirst().first(where: { $0 != nil })
 
         let latestCachedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
-        XCTAssertEqual(latestCachedDrive, updatedDrive, "The cache should have been updated again")
-        XCTAssertEqual(observedDrive, updatedDrive, "The observed object should have been updated again")
+        #expect(latestCachedDrive == updatedDrive, "The cache should have been updated again")
+        #expect(observedDrive == updatedDrive, "The observed object should have been updated again")
     }
 
-    func testRemoveObservedDrive() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func doubleUpdateObservedDrive() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        XCTAssertNil(initialUser, "Cache should initially be empty")
+        #expect(initialUser == nil, "Cache should initially be empty")
 
         @ObservedDrive(driveDbId: ObservableData.expectedDriveDbId, cacheObservation: cache) var observedDrive: Drive?
         let receivedValues = $observedDrive.receivedValues
-        XCTAssertNil(observedDrive, "Drive should initially be nil")
+        #expect(observedDrive == nil, "Drive should initially be nil")
 
         await cache.addUser(ObservableData.expectedUserWithAccounts)
 
@@ -93,7 +97,39 @@ final class ObservedDriveTests_driveDbIdOnly: XCTestCase {
         try await cache.addDrive(expectedDrive, accountDbId: ObservableData.expectedAccountDbId)
 
         let cachedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
-        XCTAssertEqual(cachedDrive, expectedDrive, "The cache should have been updated")
+        #expect(cachedDrive == expectedDrive, "The cache should have been updated")
+
+        // WHEN
+        let updatedDrive = ObservableData.updatedDrive
+        try await cache.addDrive(updatedDrive, accountDbId: ObservableData.expectedAccountDbId)
+        try await cache.addDrive(updatedDrive, accountDbId: ObservableData.expectedAccountDbId)
+
+        // THEN
+        _ = await receivedValues.dropFirst().dropFirst().first(where: { $0 != nil })
+
+        let latestCachedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
+        #expect(latestCachedDrive == updatedDrive, "The cache should have been updated again")
+        #expect(observedDrive == updatedDrive, "The observed object should have been updated again")
+    }
+
+    @Test(.timeLimit(.minutes(1)))
+    func removeObservedDrive() async throws {
+        // GIVEN
+        let cache = ServerCoherentCache()
+        let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
+        #expect(initialUser == nil, "Cache should initially be empty")
+
+        @ObservedDrive(driveDbId: ObservableData.expectedDriveDbId, cacheObservation: cache) var observedDrive: Drive?
+        let receivedValues = $observedDrive.receivedValues
+        #expect(observedDrive == nil, "Drive should initially be nil")
+
+        await cache.addUser(ObservableData.expectedUserWithAccounts)
+
+        let expectedDrive = ObservableData.expectedDrive
+        try await cache.addDrive(expectedDrive, accountDbId: ObservableData.expectedAccountDbId)
+
+        let cachedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
+        #expect(cachedDrive == expectedDrive, "The cache should have been updated")
 
         // WHEN
         await cache.removeDrive(driveDbId: ObservableData.expectedDrive.driveDbId,
@@ -103,23 +139,25 @@ final class ObservedDriveTests_driveDbIdOnly: XCTestCase {
         // THEN
         _ = await receivedValues.dropFirst().first(where: { $0 == nil })
 
-        XCTAssertNil(observedDrive, "The observed object should have been updated to nil to reflect deletion")
+        #expect(observedDrive == nil, "The observed object should have been updated to nil to reflect deletion")
     }
 }
 
-final class ObservedDriveTests_allIds: XCTestCase {
-    func testSetObservedDrive() async throws {
+@MainActor
+struct ObservedDriveTests_allIds {
+    @Test(.timeLimit(.minutes(1)))
+    func setObservedDrive() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        XCTAssertNil(initialUser, "Cache should initially be empty")
+        #expect(initialUser == nil, "Cache should initially be empty")
 
         @ObservedDrive(userDbId: ObservableData.expectedUserDbId,
                        accountDbId: ObservableData.expectedAccountDbId,
                        driveDbId: ObservableData.expectedDriveDbId,
                        cacheObservation: cache) var observedDrive: Drive?
         let receivedValues = $observedDrive.receivedValues
-        XCTAssertNil(observedDrive, "Drive should initially be nil")
+        #expect(observedDrive == nil, "Drive should initially be nil")
 
         await cache.addUser(ObservableData.expectedUserWithAccounts)
 
@@ -129,25 +167,26 @@ final class ObservedDriveTests_allIds: XCTestCase {
 
         // THEN
         let lastReceivedObject = await receivedValues.first(where: { $0 != nil })
-        XCTAssertEqual(lastReceivedObject, expectedDrive)
+        #expect(lastReceivedObject == expectedDrive)
 
         let cachedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
-        XCTAssertEqual(cachedDrive, expectedDrive, "The cache should have been updated")
-        XCTAssertEqual(observedDrive, expectedDrive, "The observed object should have been updated")
+        #expect(cachedDrive == expectedDrive, "The cache should have been updated")
+        #expect(observedDrive == expectedDrive, "The observed object should have been updated")
     }
 
-    func testUpdateObservedDrive() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func updateObservedDrive() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        XCTAssertNil(initialUser, "Cache should initially be empty")
+        #expect(initialUser == nil, "Cache should initially be empty")
 
         @ObservedDrive(userDbId: ObservableData.expectedUserDbId,
                        accountDbId: ObservableData.expectedAccountDbId,
                        driveDbId: ObservableData.expectedDriveDbId,
                        cacheObservation: cache) var observedDrive: Drive?
         let receivedValues = $observedDrive.receivedValues
-        XCTAssertNil(observedDrive, "Drive should initially be nil")
+        #expect(observedDrive == nil, "Drive should initially be nil")
 
         await cache.addUser(ObservableData.expectedUserWithAccounts)
 
@@ -155,7 +194,7 @@ final class ObservedDriveTests_allIds: XCTestCase {
         try await cache.addDrive(expectedDrive, accountDbId: ObservableData.expectedAccountDbId)
 
         let cachedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
-        XCTAssertEqual(cachedDrive, expectedDrive, "The cache should have been updated")
+        #expect(cachedDrive == expectedDrive, "The cache should have been updated")
 
         // WHEN
         let updatedDrive = ObservableData.updatedDrive
@@ -165,22 +204,23 @@ final class ObservedDriveTests_allIds: XCTestCase {
         _ = await receivedValues.dropFirst().first(where: { $0 != nil })
 
         let latestCachedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
-        XCTAssertEqual(latestCachedDrive, updatedDrive, "The cache should have been updated again")
-        XCTAssertEqual(observedDrive, updatedDrive, "The observed object should have been updated again")
+        #expect(latestCachedDrive == updatedDrive, "The cache should have been updated again")
+        #expect(observedDrive == updatedDrive, "The observed object should have been updated again")
     }
 
-    func testRemoveObservedDrive() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func doubleUpdateObservedDrive() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        XCTAssertNil(initialUser, "Cache should initially be empty")
+        #expect(initialUser == nil, "Cache should initially be empty")
 
         @ObservedDrive(userDbId: ObservableData.expectedUserDbId,
                        accountDbId: ObservableData.expectedAccountDbId,
                        driveDbId: ObservableData.expectedDriveDbId,
                        cacheObservation: cache) var observedDrive: Drive?
         let receivedValues = $observedDrive.receivedValues
-        XCTAssertNil(observedDrive, "Drive should initially be nil")
+        #expect(observedDrive == nil, "Drive should initially be nil")
 
         await cache.addUser(ObservableData.expectedUserWithAccounts)
 
@@ -188,7 +228,42 @@ final class ObservedDriveTests_allIds: XCTestCase {
         try await cache.addDrive(expectedDrive, accountDbId: ObservableData.expectedAccountDbId)
 
         let cachedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
-        XCTAssertEqual(cachedDrive, expectedDrive, "The cache should have been updated")
+        #expect(cachedDrive == expectedDrive, "The cache should have been updated")
+
+        // WHEN
+        let updatedDrive = ObservableData.updatedDrive
+        try await cache.addDrive(updatedDrive, accountDbId: ObservableData.expectedAccountDbId)
+        try await cache.addDrive(updatedDrive, accountDbId: ObservableData.expectedAccountDbId)
+
+        // THEN
+        _ = await receivedValues.dropFirst().dropFirst().first(where: { $0 != nil })
+
+        let latestCachedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
+        #expect(latestCachedDrive == updatedDrive, "The cache should have been updated again")
+        #expect(observedDrive == updatedDrive, "The observed object should have been updated again")
+    }
+
+    @Test(.timeLimit(.minutes(1)))
+    func removeObservedDrive() async throws {
+        // GIVEN
+        let cache = ServerCoherentCache()
+        let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
+        #expect(initialUser == nil, "Cache should initially be empty")
+
+        @ObservedDrive(userDbId: ObservableData.expectedUserDbId,
+                       accountDbId: ObservableData.expectedAccountDbId,
+                       driveDbId: ObservableData.expectedDriveDbId,
+                       cacheObservation: cache) var observedDrive: Drive?
+        let receivedValues = $observedDrive.receivedValues
+        #expect(observedDrive == nil, "Drive should initially be nil")
+
+        await cache.addUser(ObservableData.expectedUserWithAccounts)
+
+        let expectedDrive = ObservableData.expectedDrive
+        try await cache.addDrive(expectedDrive, accountDbId: ObservableData.expectedAccountDbId)
+
+        let cachedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
+        #expect(cachedDrive == expectedDrive, "The cache should have been updated")
 
         // WHEN
         await cache.removeDrive(driveDbId: ObservableData.expectedDrive.driveDbId,
@@ -198,6 +273,6 @@ final class ObservedDriveTests_allIds: XCTestCase {
         // THEN
         _ = await receivedValues.dropFirst().first(where: { $0 == nil })
 
-        XCTAssertNil(observedDrive, "The observed object should have been updated to nil to reflect deletion")
+        #expect(observedDrive == nil, "The observed object should have been updated to nil to reflect deletion")
     }
 }

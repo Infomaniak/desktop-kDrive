@@ -20,6 +20,7 @@ import Combine
 import Foundation
 import InfomaniakDI
 
+@MainActor
 @propertyWrapper
 public final class ObservedDrive: ObservableObject {
     @Published public private(set) var wrappedValue: Drive?
