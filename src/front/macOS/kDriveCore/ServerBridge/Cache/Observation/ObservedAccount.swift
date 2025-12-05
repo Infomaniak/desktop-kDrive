@@ -20,6 +20,7 @@ import Combine
 import Foundation
 import InfomaniakDI
 
+@MainActor
 @propertyWrapper
 public final class ObservedAccount: ObservableObject {
     @Published public private(set) var wrappedValue: Account?
@@ -55,7 +56,7 @@ public final class ObservedAccount: ObservableObject {
                 self?.wrappedValue = account
             }
     }
-    
+
     /// Async stream for testing
     var receivedValues: AsyncStream<Account?> {
         AsyncStream { continuation in

@@ -19,19 +19,20 @@
 import Foundation
 @testable import InfomaniakDI
 @testable import kDriveCore
-import XCTest
+import Testing
 
-final class ObservedAccountTests_dbIdOnly: XCTestCase {
-    func testSetObservedAccount() async throws {
+@MainActor
+struct ObservedAccountTests_dbIdOnly {
+    @Test func setObservedAccount() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        XCTAssertNil(initialUser, "Cache should initially be empty")
+        #expect(initialUser == nil, "Cache should initially be empty")
 
         @ObservedAccount(accountDbId: ObservableData.expectedAccountDbId,
                          cacheObservation: cache) var observedAccount: Account?
         let receivedValues = $observedAccount.receivedValues // Start to save the received values
-        XCTAssertNil(observedAccount, "Account should initially be nil")
+        #expect(observedAccount == nil, "Account should initially be nil")
 
         // WHEN
         let expectedUser = ObservableData.expectedUserWithAccounts
@@ -39,26 +40,26 @@ final class ObservedAccountTests_dbIdOnly: XCTestCase {
 
         // THEN
         let lastReceivedObject = await receivedValues.first(where: { $0 != nil })
-        XCTAssertEqual(lastReceivedObject, ObservableData.expectedAccount)
+        #expect(lastReceivedObject == ObservableData.expectedAccount)
 
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
         let cachedAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
 
-        XCTAssertEqual(cachedUser, expectedUser, "The cache user should have been updated")
-        XCTAssertEqual(cachedAccount, ObservableData.expectedAccount, "The cache account should have been updated")
-        XCTAssertEqual(observedAccount, ObservableData.expectedAccount, "The observed object should have been updated")
+        #expect(cachedUser == expectedUser, "The cache user should have been updated")
+        #expect(cachedAccount == ObservableData.expectedAccount, "The cache account should have been updated")
+        #expect(observedAccount == ObservableData.expectedAccount, "The observed object should have been updated")
     }
 
-    func testUpdateObservedAccount() async throws {
+    @Test func updateObservedAccount() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        XCTAssertNil(initialUser, "Cache should initially be empty")
+        #expect(initialUser == nil, "Cache should initially be empty")
 
         @ObservedAccount(accountDbId: ObservableData.expectedAccountDbId,
                          cacheObservation: cache) var observedAccount: Account?
         let receivedValues = $observedAccount.receivedValues
-        XCTAssertNil(observedAccount, "Account should initially be nil")
+        #expect(observedAccount == nil, "Account should initially be nil")
 
         let expectedUser = ObservableData.expectedUserWithAccounts
         await cache.addUser(expectedUser)
@@ -66,8 +67,8 @@ final class ObservedAccountTests_dbIdOnly: XCTestCase {
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
         let cachedAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
 
-        XCTAssertEqual(cachedUser, expectedUser, "The cache user should have been updated")
-        XCTAssertEqual(cachedAccount, ObservableData.expectedAccount, "The cache account should have been updated")
+        #expect(cachedUser == expectedUser, "The cache user should have been updated")
+        #expect(cachedAccount == ObservableData.expectedAccount, "The cache account should have been updated")
 
         // WHEN
         try await cache.updateAccount(ObservableData.updatedAccount)
@@ -76,20 +77,20 @@ final class ObservedAccountTests_dbIdOnly: XCTestCase {
         _ = await receivedValues.dropFirst().first(where: { $0 != nil })
 
         let latestAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
-        XCTAssertEqual(latestAccount, ObservableData.updatedAccount, "The cache account should have been updated again")
-        XCTAssertEqual(observedAccount, ObservableData.updatedAccount, "The observed object should have been updated again")
+        #expect(latestAccount == ObservableData.updatedAccount, "The cache account should have been updated again")
+        #expect(observedAccount == ObservableData.updatedAccount, "The observed object should have been updated again")
     }
 
-    func testDoubleUpdateObservedAccount() async throws {
+    @Test func doubleUpdateObservedAccount() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        XCTAssertNil(initialUser, "Cache should initially be empty")
+        #expect(initialUser == nil, "Cache should initially be empty")
 
         @ObservedAccount(accountDbId: ObservableData.expectedAccountDbId,
                          cacheObservation: cache) var observedAccount: Account?
         let receivedValues = $observedAccount.receivedValues
-        XCTAssertNil(observedAccount, "Account should initially be nil")
+        #expect(observedAccount == nil, "Account should initially be nil")
 
         let expectedUser = ObservableData.expectedUserWithAccounts
         await cache.addUser(expectedUser)
@@ -97,8 +98,8 @@ final class ObservedAccountTests_dbIdOnly: XCTestCase {
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
         let cachedAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
 
-        XCTAssertEqual(cachedUser, expectedUser, "The cache user should have been updated")
-        XCTAssertEqual(cachedAccount, ObservableData.expectedAccount, "The cache account should have been updated")
+        #expect(cachedUser == expectedUser, "The cache user should have been updated")
+        #expect(cachedAccount == ObservableData.expectedAccount, "The cache account should have been updated")
 
         // WHEN
         try await cache.updateAccount(ObservableData.updatedAccount)
@@ -108,20 +109,20 @@ final class ObservedAccountTests_dbIdOnly: XCTestCase {
         _ = await receivedValues.dropFirst().dropFirst().first(where: { $0 != nil })
 
         let latestAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
-        XCTAssertEqual(latestAccount, ObservableData.updatedAccount, "The cache account should have been updated again")
-        XCTAssertEqual(observedAccount, ObservableData.updatedAccount, "The observed object should have been updated again")
+        #expect(latestAccount == ObservableData.updatedAccount, "The cache account should have been updated again")
+        #expect(observedAccount == ObservableData.updatedAccount, "The observed object should have been updated again")
     }
 
-    func testDeleteObservedAccount() async throws {
+    @Test func deleteObservedAccount() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        XCTAssertNil(initialUser, "Cache should initially be empty")
+        #expect(initialUser == nil, "Cache should initially be empty")
 
         @ObservedAccount(accountDbId: ObservableData.expectedAccountDbId,
                          cacheObservation: cache) var observedAccount: Account?
         let receivedValues = $observedAccount.receivedValues
-        XCTAssertNil(observedAccount, "Account should initially be nil")
+        #expect(observedAccount == nil, "Account should initially be nil")
 
         let expectedUser = ObservableData.expectedUserWithAccounts
         await cache.addUser(expectedUser)
@@ -129,30 +130,31 @@ final class ObservedAccountTests_dbIdOnly: XCTestCase {
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
         let cachedAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
 
-        XCTAssertEqual(cachedUser, expectedUser, "The cache user should have been updated")
-        XCTAssertEqual(cachedAccount, ObservableData.expectedAccount, "The cache account should have been updated")
+        #expect(cachedUser == expectedUser, "The cache user should have been updated")
+        #expect(cachedAccount == ObservableData.expectedAccount, "The cache account should have been updated")
 
         // WHEN
         await cache.removeAccount(accountDbId: ObservableData.expectedAccountDbId)
 
         // THEN
         _ = await receivedValues.dropFirst().first(where: { $0 == nil })
-        XCTAssertNil(observedAccount, "The observed object should be nil to reflect deletion")
+        #expect(observedAccount == nil, "The observed object should be nil to reflect deletion")
     }
 }
 
-final class ObservedAccountTests_allIds: XCTestCase {
-    func testSetObservedAccount() async throws {
+@MainActor
+struct ObservedAccountTests_allIds {
+    @Test func setObservedAccount() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        XCTAssertNil(initialUser, "Cache should initially be empty")
+        #expect(initialUser == nil, "Cache should initially be empty")
 
         @ObservedAccount(userDbId: ObservableData.expectedUserDbId,
                          accountDbId: ObservableData.expectedAccountDbId,
                          cacheObservation: cache) var observedAccount: Account?
         let receivedValues = $observedAccount.receivedValues
-        XCTAssertNil(observedAccount, "Account should initially be nil")
+        #expect(observedAccount == nil, "Account should initially be nil")
 
         // WHEN
         let expectedUser = ObservableData.expectedUserWithAccounts
@@ -160,26 +162,26 @@ final class ObservedAccountTests_allIds: XCTestCase {
 
         // THEN
         let lastReceivedObject = await receivedValues.first(where: { $0 != nil })
-        XCTAssertEqual(lastReceivedObject, ObservableData.expectedAccount)
+        #expect(lastReceivedObject == ObservableData.expectedAccount)
 
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
         let cachedAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
-        XCTAssertEqual(cachedUser, expectedUser, "The cache user should have been updated")
-        XCTAssertEqual(cachedAccount, ObservableData.expectedAccount, "The cache account should have been updated")
-        XCTAssertEqual(observedAccount, ObservableData.expectedAccount, "The observed object should have been updated")
+        #expect(cachedUser == expectedUser, "The cache user should have been updated")
+        #expect(cachedAccount == ObservableData.expectedAccount, "The cache account should have been updated")
+        #expect(observedAccount == ObservableData.expectedAccount, "The observed object should have been updated")
     }
 
-    func testUpdateObservedAccount() async throws {
+    @Test func updateObservedAccount() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        XCTAssertNil(initialUser, "Cache should initially be empty")
+        #expect(initialUser == nil, "Cache should initially be empty")
 
         @ObservedAccount(userDbId: ObservableData.expectedUserDbId,
                          accountDbId: ObservableData.expectedAccountDbId,
                          cacheObservation: cache) var observedAccount: Account?
         let receivedValues = $observedAccount.receivedValues
-        XCTAssertNil(observedAccount, "Account should initially be nil")
+        #expect(observedAccount == nil, "Account should initially be nil")
 
         let expectedUser = ObservableData.expectedUserWithAccounts
         await cache.addUser(expectedUser)
@@ -187,8 +189,8 @@ final class ObservedAccountTests_allIds: XCTestCase {
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
         let cachedAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
 
-        XCTAssertEqual(cachedUser, expectedUser, "The cache user should have been updated")
-        XCTAssertEqual(cachedAccount, ObservableData.expectedAccount, "The cache account should have been updated")
+        #expect(cachedUser == expectedUser, "The cache user should have been updated")
+        #expect(cachedAccount == ObservableData.expectedAccount, "The cache account should have been updated")
 
         // WHEN
         try await cache.updateAccount(ObservableData.updatedAccount)
@@ -197,21 +199,21 @@ final class ObservedAccountTests_allIds: XCTestCase {
         _ = await receivedValues.dropFirst().first(where: { $0 != nil })
 
         let latestAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
-        XCTAssertEqual(latestAccount, ObservableData.updatedAccount, "The cache account should have been updated again")
-        XCTAssertEqual(observedAccount, ObservableData.updatedAccount, "The observed object should have been updated again")
+        #expect(latestAccount == ObservableData.updatedAccount, "The cache account should have been updated again")
+        #expect(observedAccount == ObservableData.updatedAccount, "The observed object should have been updated again")
     }
 
-    func testDoubleUpdateObservedAccount() async throws {
+    @Test func doubleUpdateObservedAccount() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        XCTAssertNil(initialUser, "Cache should initially be empty")
+        #expect(initialUser == nil, "Cache should initially be empty")
 
         @ObservedAccount(userDbId: ObservableData.expectedUserDbId,
                          accountDbId: ObservableData.expectedAccountDbId,
                          cacheObservation: cache) var observedAccount: Account?
         let receivedValues = $observedAccount.receivedValues
-        XCTAssertNil(observedAccount, "Account should initially be nil")
+        #expect(observedAccount == nil, "Account should initially be nil")
 
         let expectedUser = ObservableData.expectedUserWithAccounts
         await cache.addUser(expectedUser)
@@ -219,8 +221,8 @@ final class ObservedAccountTests_allIds: XCTestCase {
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
         let cachedAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
 
-        XCTAssertEqual(cachedUser, expectedUser, "The cache user should have been updated")
-        XCTAssertEqual(cachedAccount, ObservableData.expectedAccount, "The cache account should have been updated")
+        #expect(cachedUser == expectedUser, "The cache user should have been updated")
+        #expect(cachedAccount == ObservableData.expectedAccount, "The cache account should have been updated")
 
         // WHEN
         try await cache.updateAccount(ObservableData.updatedAccount)
@@ -230,21 +232,21 @@ final class ObservedAccountTests_allIds: XCTestCase {
         _ = await receivedValues.dropFirst().dropFirst().first(where: { $0 != nil })
 
         let latestAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
-        XCTAssertEqual(latestAccount, ObservableData.updatedAccount, "The cache account should have been updated again")
-        XCTAssertEqual(observedAccount, ObservableData.updatedAccount, "The observed object should have been updated again")
+        #expect(latestAccount == ObservableData.updatedAccount, "The cache account should have been updated again")
+        #expect(observedAccount == ObservableData.updatedAccount, "The observed object should have been updated again")
     }
 
-    func testDeleteObservedAccount() async throws {
+    @Test func deleteObservedAccount() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        XCTAssertNil(initialUser, "Cache should initially be empty")
+        #expect(initialUser == nil, "Cache should initially be empty")
 
         @ObservedAccount(userDbId: ObservableData.expectedUserDbId,
                          accountDbId: ObservableData.expectedAccountDbId,
                          cacheObservation: cache) var observedAccount: Account?
         let receivedValues = $observedAccount.receivedValues
-        XCTAssertNil(observedAccount, "Account should initially be nil")
+        #expect(observedAccount == nil, "Account should initially be nil")
 
         let expectedUser = ObservableData.expectedUserWithAccounts
         await cache.addUser(expectedUser)
@@ -252,8 +254,8 @@ final class ObservedAccountTests_allIds: XCTestCase {
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
         let cachedAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
 
-        XCTAssertEqual(cachedUser, expectedUser, "The cache user should have been updated")
-        XCTAssertEqual(cachedAccount, ObservableData.expectedAccount, "The cache account should have been updated")
+        #expect(cachedUser == expectedUser, "The cache user should have been updated")
+        #expect(cachedAccount == ObservableData.expectedAccount, "The cache account should have been updated")
 
         // WHEN
         await cache.removeAccount(accountDbId: ObservableData.expectedAccountDbId)
@@ -261,6 +263,6 @@ final class ObservedAccountTests_allIds: XCTestCase {
         // THEN
         _ = await receivedValues.dropFirst().first(where: { $0 == nil })
 
-        XCTAssertNil(observedAccount, "The observed object should be nil to reflect deletion")
+        #expect(observedAccount == nil, "The observed object should be nil to reflect deletion")
     }
 }
