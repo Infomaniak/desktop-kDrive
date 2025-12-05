@@ -43,7 +43,9 @@ static const std::vector<std::string> rejectedFiles = {
         "testfile_conflict_test_20220913_130102_abcdefghij.txt",
         "_conflict___",
         "testfile_blacklisted_20220913_130102_abcdefghij.txt",
+#if !defined(KD_WINDOWS)
         "A\n_blacklisted_20240824_081432_s2L5tFynHP_blacklisted_20240824_180957.eml",
+#endif
 #if defined(KD_MACOS)
         ".DS_Store",
 #elif defined(KD_WINDOWS)
@@ -65,12 +67,15 @@ static const std::vector<std::string> acceptedFiles = {"~test",
                                                        "test.apdisk",
                                                        "test_Icon\rtest"
 #elif defined(KD_WINDOWS)
-                                                       "test.testkate-swp",
-                                                       "system volume information",
-                                                       "System test Volume Information"
+                                                    "test.testkate-swp",
+                                                    "system volume information",
+                                                    "System test Volume Information",
+                                                    "رتجمع ثامر ورفاقه أمام باب المدرسة سيذهبون في رحلة إلى إسبانيا قال لهم "
+                                                    "مرافقهم راقبوا أمتعتكم ولا تعبثوا بأثاث الحافلة قضوا هناك أياما ممتعة "
+                                                    "زاروا فيها مدنا كثيرة" // Long name in arabic used to generate infinite in the std::regex_match on Windows
 #else
-                                                       "test.fuse_hidden"
-                                                       "test.gnucash.test.tmp-test"
+                                                    "test.fuse_hidden"
+                                                    "test.gnucash.test.tmp-test"
 #endif
 };
 
