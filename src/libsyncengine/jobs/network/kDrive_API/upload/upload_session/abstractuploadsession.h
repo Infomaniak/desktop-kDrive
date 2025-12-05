@@ -94,6 +94,7 @@ class AbstractUploadSession : public SyncJob {
         bool _sessionStarted = false;
         bool _sessionCancelled = false;
         bool _jobExecutionError = false;
+        ExitInfo _chunkJobExitInfo;
 
         std::string _sessionToken;
 
