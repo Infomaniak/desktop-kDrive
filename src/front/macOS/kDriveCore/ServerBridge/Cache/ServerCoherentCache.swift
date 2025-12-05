@@ -217,7 +217,6 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
             .synchros[synchroDbId]
     }
 
-    // TODO: If synchro has driveDbId, reuse getDrive
     public func getSynchro(synchroDbId: Int32) -> Synchro? {
         for user in users.values {
             for account in user.accounts.values {
@@ -238,7 +237,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         }
 
         drive.synchros[synchro.dbId] = synchro
-        try updateDrive(drive: drive) // does observation update
+        try updateDrive(drive: drive)
     }
 
     public func removeSynchro(synchroDbId: Int32, driveDbId: Int32) throws {
@@ -246,11 +245,11 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
             throw CacheError.driveNotFound(driveDbId)
         }
 
-        guard let _ = drive.synchros.removeValue(forKey: synchroDbId) else {
+        guard drive.synchros.removeValue(forKey: synchroDbId) != nil else {
             throw CacheError.synchroNotFound(synchroDbId)
         }
 
-        try updateDrive(drive: drive) // does observation update
+        try updateDrive(drive: drive)
     }
 
     public func updateSynchro(_ synchro: Synchro) throws {
@@ -259,7 +258,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         }
 
         drive.synchros[synchro.dbId] = synchro
-        try updateDrive(drive: drive) // does observation update
+        try updateDrive(drive: drive)
     }
 
     // MARK: - Observation
