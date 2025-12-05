@@ -30,11 +30,11 @@ public final class ObservedUser: ObservableObject {
     @Published public private(set) var wrappedValue: User?
     private var cancellable: AnyCancellable?
 
-    public init(dbId: Int32, cacheObservation: CoherentCacheObservable? = nil) {
+    public init(userDbId: Int32, cacheObservation: CoherentCacheObservable? = nil) {
         let cacheObservation = cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
 
         cancellable = cacheObservation.usersPublisher
-            .userPublisher(for: dbId)
+            .userPublisher(userDbId: userDbId)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] user in
                 self?.wrappedValue = user
@@ -47,16 +47,26 @@ public final class ObservedUser: ObservableObject {
 }
 
 public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
-    func userPublisher(for dbId: Int32) -> AnyPublisher<User?, Never> {
-        map { $0[dbId] }
-            .scan((old: User?.none, new: User?.none)) { prev, newUser in
-                (old: prev.new, new: newUser)
+    func userEventPublisher(userDbId: Int32) -> AnyPublisher<ObservationEvent<User>, Never> {
+        map { usersDict -> User? in
+            usersDict[userDbId]
+        }
+        .map { account in
+            account.map(ObservationEvent.update) ?? .removed
+        }
+        .removeDuplicates()
+        .eraseToAnyPublisher()
+    }
+
+    func userPublisher(userDbId: Int32) -> AnyPublisher<User?, Never> {
+        userEventPublisher(userDbId: userDbId)
+            .map { event -> User? in
+                switch event {
+                case let .update(user): return user
+                case .removed: return nil
+                }
             }
-            .map { pair -> User? in
-                guard pair.old != pair.new else { return nil }
-                return pair.new
-            }
-            .compactMap { $0 }
+            .removeDuplicates()
             .eraseToAnyPublisher()
     }
 }
