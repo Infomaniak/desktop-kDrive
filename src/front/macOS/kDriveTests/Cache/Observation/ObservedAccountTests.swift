@@ -18,7 +18,7 @@
 
 import Foundation
 @testable import InfomaniakDI
-import kDriveCore
+@testable import kDriveCore
 import XCTest
 
 final class ObservedAccountTests_dbIdOnly: XCTestCase {
@@ -30,16 +30,17 @@ final class ObservedAccountTests_dbIdOnly: XCTestCase {
 
         @ObservedAccount(accountDbId: ObservableData.expectedAccountDbId,
                          cacheObservation: cache) var observedAccount: Account?
+        let receivedValues = $observedAccount.receivedValues // Start to save the received values
         XCTAssertNil(observedAccount, "Account should initially be nil")
 
         // WHEN
         let expectedUser = ObservableData.expectedUserWithAccounts
         await cache.addUser(expectedUser)
 
-        // Give time for observation to propagate
-        try await Task.sleep(nanoseconds: 10_000_000_000)
-
         // THEN
+        let lastReceivedObject = await receivedValues.first(where: { $0 != nil })
+        XCTAssertEqual(lastReceivedObject, ObservableData.expectedAccount)
+
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
         let cachedAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
 
@@ -56,6 +57,7 @@ final class ObservedAccountTests_dbIdOnly: XCTestCase {
 
         @ObservedAccount(accountDbId: ObservableData.expectedAccountDbId,
                          cacheObservation: cache) var observedAccount: Account?
+        let receivedValues = $observedAccount.receivedValues
         XCTAssertNil(observedAccount, "Account should initially be nil")
 
         let expectedUser = ObservableData.expectedUserWithAccounts
@@ -70,10 +72,9 @@ final class ObservedAccountTests_dbIdOnly: XCTestCase {
         // WHEN
         try await cache.updateAccount(ObservableData.updatedAccount)
 
-        // Give time for observation to propagate
-        try await Task.sleep(nanoseconds: 10_000_000_000)
-
         // THEN
+        _ = await receivedValues.dropFirst().first(where: { $0 != nil })
+
         let latestAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
         XCTAssertEqual(latestAccount, ObservableData.updatedAccount, "The cache account should have been updated again")
         XCTAssertEqual(observedAccount, ObservableData.updatedAccount, "The observed object should have been updated again")
@@ -87,6 +88,7 @@ final class ObservedAccountTests_dbIdOnly: XCTestCase {
 
         @ObservedAccount(accountDbId: ObservableData.expectedAccountDbId,
                          cacheObservation: cache) var observedAccount: Account?
+        let receivedValues = $observedAccount.receivedValues
         XCTAssertNil(observedAccount, "Account should initially be nil")
 
         let expectedUser = ObservableData.expectedUserWithAccounts
@@ -102,10 +104,9 @@ final class ObservedAccountTests_dbIdOnly: XCTestCase {
         try await cache.updateAccount(ObservableData.updatedAccount)
         try await cache.updateAccount(ObservableData.updatedAccount)
 
-        // Give time for observation to propagate
-        try await Task.sleep(nanoseconds: 10_000_000_000)
-
         // THEN
+        _ = await receivedValues.dropFirst().dropFirst().first(where: { $0 != nil })
+
         let latestAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
         XCTAssertEqual(latestAccount, ObservableData.updatedAccount, "The cache account should have been updated again")
         XCTAssertEqual(observedAccount, ObservableData.updatedAccount, "The observed object should have been updated again")
@@ -119,6 +120,7 @@ final class ObservedAccountTests_dbIdOnly: XCTestCase {
 
         @ObservedAccount(accountDbId: ObservableData.expectedAccountDbId,
                          cacheObservation: cache) var observedAccount: Account?
+        let receivedValues = $observedAccount.receivedValues
         XCTAssertNil(observedAccount, "Account should initially be nil")
 
         let expectedUser = ObservableData.expectedUserWithAccounts
@@ -133,10 +135,8 @@ final class ObservedAccountTests_dbIdOnly: XCTestCase {
         // WHEN
         await cache.removeAccount(accountDbId: ObservableData.expectedAccountDbId)
 
-        // Give time for observation to propagate
-        try await Task.sleep(nanoseconds: 10_000_000_000)
-
         // THEN
+        _ = await receivedValues.dropFirst().first(where: { $0 == nil })
         XCTAssertNil(observedAccount, "The observed object should be nil to reflect deletion")
     }
 }
@@ -151,16 +151,17 @@ final class ObservedAccountTests_allIds: XCTestCase {
         @ObservedAccount(userDbId: ObservableData.expectedUserDbId,
                          accountDbId: ObservableData.expectedAccountDbId,
                          cacheObservation: cache) var observedAccount: Account?
+        let receivedValues = $observedAccount.receivedValues
         XCTAssertNil(observedAccount, "Account should initially be nil")
 
         // WHEN
         let expectedUser = ObservableData.expectedUserWithAccounts
         await cache.addUser(expectedUser)
 
-        // Give time for observation to propagate
-        try await Task.sleep(nanoseconds: 10_000_000_000)
-
         // THEN
+        let lastReceivedObject = await receivedValues.first(where: { $0 != nil })
+        XCTAssertEqual(lastReceivedObject, ObservableData.expectedAccount)
+
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
         let cachedAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
         XCTAssertEqual(cachedUser, expectedUser, "The cache user should have been updated")
@@ -177,6 +178,7 @@ final class ObservedAccountTests_allIds: XCTestCase {
         @ObservedAccount(userDbId: ObservableData.expectedUserDbId,
                          accountDbId: ObservableData.expectedAccountDbId,
                          cacheObservation: cache) var observedAccount: Account?
+        let receivedValues = $observedAccount.receivedValues
         XCTAssertNil(observedAccount, "Account should initially be nil")
 
         let expectedUser = ObservableData.expectedUserWithAccounts
@@ -191,10 +193,9 @@ final class ObservedAccountTests_allIds: XCTestCase {
         // WHEN
         try await cache.updateAccount(ObservableData.updatedAccount)
 
-        // Give time for observation to propagate
-        try await Task.sleep(nanoseconds: 10_000_000_000)
-
         // THEN
+        _ = await receivedValues.dropFirst().first(where: { $0 != nil })
+
         let latestAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
         XCTAssertEqual(latestAccount, ObservableData.updatedAccount, "The cache account should have been updated again")
         XCTAssertEqual(observedAccount, ObservableData.updatedAccount, "The observed object should have been updated again")
@@ -209,6 +210,7 @@ final class ObservedAccountTests_allIds: XCTestCase {
         @ObservedAccount(userDbId: ObservableData.expectedUserDbId,
                          accountDbId: ObservableData.expectedAccountDbId,
                          cacheObservation: cache) var observedAccount: Account?
+        let receivedValues = $observedAccount.receivedValues
         XCTAssertNil(observedAccount, "Account should initially be nil")
 
         let expectedUser = ObservableData.expectedUserWithAccounts
@@ -224,10 +226,9 @@ final class ObservedAccountTests_allIds: XCTestCase {
         try await cache.updateAccount(ObservableData.updatedAccount)
         try await cache.updateAccount(ObservableData.updatedAccount)
 
-        // Give time for observation to propagate
-        try await Task.sleep(nanoseconds: 10_000_000_000)
-
         // THEN
+        _ = await receivedValues.dropFirst().dropFirst().first(where: { $0 != nil })
+
         let latestAccount = await cache.getAccount(accountDbId: ObservableData.expectedAccountDbId, userDbId: ObservableData.expectedUserDbId)
         XCTAssertEqual(latestAccount, ObservableData.updatedAccount, "The cache account should have been updated again")
         XCTAssertEqual(observedAccount, ObservableData.updatedAccount, "The observed object should have been updated again")
@@ -242,6 +243,7 @@ final class ObservedAccountTests_allIds: XCTestCase {
         @ObservedAccount(userDbId: ObservableData.expectedUserDbId,
                          accountDbId: ObservableData.expectedAccountDbId,
                          cacheObservation: cache) var observedAccount: Account?
+        let receivedValues = $observedAccount.receivedValues
         XCTAssertNil(observedAccount, "Account should initially be nil")
 
         let expectedUser = ObservableData.expectedUserWithAccounts
@@ -256,10 +258,9 @@ final class ObservedAccountTests_allIds: XCTestCase {
         // WHEN
         await cache.removeAccount(accountDbId: ObservableData.expectedAccountDbId)
 
-        // Give time for observation to propagate
-        try await Task.sleep(nanoseconds: 10_000_000_000)
-
         // THEN
+        _ = await receivedValues.dropFirst().first(where: { $0 == nil })
+
         XCTAssertNil(observedAccount, "The observed object should be nil to reflect deletion")
     }
 }
