@@ -23,7 +23,8 @@ import Testing
 
 @MainActor
 struct ObservedUserTests {
-    @Test func setObservedUser() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func setObservedUser() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
@@ -46,7 +47,8 @@ struct ObservedUserTests {
         #expect(observedUser == expectedUser, "The observed object should have been updated")
     }
 
-    @Test func updateObservedUser() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func updateObservedUser() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
@@ -74,7 +76,8 @@ struct ObservedUserTests {
         #expect(observedUser == updatedUser, "The observed object should be up to date")
     }
 
-    @Test func updateObservedUserTwice() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func updateObservedUserTwice() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
@@ -103,7 +106,8 @@ struct ObservedUserTests {
         #expect(observedUser == updatedUser, "The observed object should be up to date")
     }
 
-    @Test func removeObservedUser() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func removeObservedUser() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
