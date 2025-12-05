@@ -102,7 +102,8 @@ enum CacheData {
 }
 
 struct CoherentCacheUserTests {
-    @Test func getUserInCache() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func getUserInCache() async throws {
         // GIVEN
         let user = CacheData.expectedUser
         let cache = ServerCoherentCache()
@@ -116,7 +117,8 @@ struct CoherentCacheUserTests {
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
     }
 
-    @Test func removeUserInCacheFromDbId() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func removeUserInCacheFromDbId() async throws {
         // GIVEN
         let user = CacheData.expectedUser
         let cache = ServerCoherentCache()
@@ -131,7 +133,8 @@ struct CoherentCacheUserTests {
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == nil)
     }
 
-    @Test func updateUserInCache() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func updateUserInCache() async throws {
         // GIVEN
         let user = CacheData.expectedUser
         let cache = ServerCoherentCache()
@@ -162,7 +165,8 @@ struct CoherentCacheUserTests {
 }
 
 struct CoherentCacheAccountTests {
-    @Test func getAccountInCache() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func getAccountInCache() async throws {
         // GIVEN
         let user = CacheData.expectedUser
         let cache = ServerCoherentCache()
@@ -178,7 +182,8 @@ struct CoherentCacheAccountTests {
         #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId) == CacheData.expectedAccount)
     }
 
-    @Test func removeAccountInCacheFromDbId() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func removeAccountInCacheFromDbId() async throws {
         // GIVEN
         let user = CacheData.expectedUser
         let cache = ServerCoherentCache()
@@ -197,7 +202,8 @@ struct CoherentCacheAccountTests {
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == CacheData.expectedUser)
     }
 
-    @Test func updateAccountInCache() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func updateAccountInCache() async throws {
         // GIVEN
         let user = CacheData.expectedUser
         let cache = ServerCoherentCache()
@@ -228,7 +234,8 @@ struct CoherentCacheAccountTests {
 }
 
 struct CoherentCacheDriveTests {
-    @Test func getDriveInCache() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func getDriveInCache() async throws {
         // GIVEN
         let user = CacheData.expectedUser
         let cache = ServerCoherentCache()
@@ -244,7 +251,8 @@ struct CoherentCacheDriveTests {
         #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == CacheData.expectedDrive)
     }
 
-    @Test func removeDriveInCacheFromDbId() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func removeDriveInCacheFromDbId() async throws {
         // GIVEN
         let user = CacheData.expectedUser
         let cache = ServerCoherentCache()
@@ -264,7 +272,8 @@ struct CoherentCacheDriveTests {
         #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == nil)
     }
 
-    @Test func updateDriveInCache() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func updateDriveInCache() async throws {
         // GIVEN
         let user = CacheData.expectedUser
         let cache = ServerCoherentCache()
@@ -289,7 +298,8 @@ struct CoherentCacheDriveTests {
 }
 
 struct CoherentCacheSynchroTests {
-    @Test func getSynchroInCache() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func getSynchroInCache() async throws {
         // GIVEN
         let user = CacheData.expectedUser
         let cache = ServerCoherentCache()
@@ -313,7 +323,8 @@ struct CoherentCacheSynchroTests {
         ) == CacheData.expectedSynchro)
     }
 
-    @Test func removeSynchroInCacheFromDbId() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func removeSynchroInCacheFromDbId() async throws {
         // GIVEN
         let user = CacheData.expectedUser
         let cache = ServerCoherentCache()
@@ -342,7 +353,8 @@ struct CoherentCacheSynchroTests {
         ) == nil)
     }
 
-    @Test func updateSynchroInCache() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func updateSynchroInCache() async throws {
         // GIVEN
         let user = CacheData.expectedUser
         let cache = ServerCoherentCache()
