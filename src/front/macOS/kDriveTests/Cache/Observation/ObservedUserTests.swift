@@ -18,7 +18,7 @@
 
 import Foundation
 @testable import InfomaniakDI
-import kDriveCore
+@testable import kDriveCore
 import XCTest
 
 final class ObservedUserTests: XCTestCase {
@@ -29,16 +29,17 @@ final class ObservedUserTests: XCTestCase {
         XCTAssertNil(initialUser, "Cache should initially be empty")
 
         @ObservedUser(userDbId: ObservableData.expectedUserDbId, cacheObservation: cache) var observedUser: User?
+        let receivedValues = $observedUser.receivedValues // Start to save the received values
         XCTAssertNil(observedUser, "User should initially be nil")
 
         // WHEN
         let expectedUser = ObservableData.expectedUserWithAccounts
         await cache.addUser(expectedUser)
 
-        // Give time for observation to propagate
-        try await Task.sleep(nanoseconds: 10_000_000_000)
-
         // THEN
+        let lastReceivedObject = await receivedValues.first(where: { $0 != nil })
+        XCTAssertEqual(lastReceivedObject, expectedUser, "The object should be a received event")
+
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
         XCTAssertEqual(cachedUser, expectedUser, "The cache should have been updated")
         XCTAssertEqual(observedUser, expectedUser, "The observed object should have been updated")
@@ -51,6 +52,7 @@ final class ObservedUserTests: XCTestCase {
         XCTAssertNil(initialUser, "Cache should initially be empty")
 
         @ObservedUser(userDbId: ObservableData.expectedUserDbId, cacheObservation: cache) var observedUser: User?
+        let receivedValues = $observedUser.receivedValues
         XCTAssertNil(observedUser, "User should initially be nil")
 
         let expectedUser = ObservableData.expectedUser
@@ -63,10 +65,9 @@ final class ObservedUserTests: XCTestCase {
         let updatedUser = ObservableData.updatedUser
         await cache.addUser(updatedUser)
 
-        // Give time for observation to propagate
-        try await Task.sleep(nanoseconds: 10_000_000_000)
-
         // THEN
+        _ = await receivedValues.dropFirst().first(where: { $0 != nil })
+
         let latestCachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
         XCTAssertEqual(latestCachedUser, updatedUser, "The object should be in cache")
         XCTAssertEqual(observedUser, updatedUser, "The observed object should be up to date")
@@ -79,6 +80,7 @@ final class ObservedUserTests: XCTestCase {
         XCTAssertNil(initialUser, "Cache should initially be empty")
 
         @ObservedUser(userDbId: ObservableData.expectedUserDbId, cacheObservation: cache) var observedUser: User?
+        let receivedValues = $observedUser.receivedValues
         XCTAssertNil(observedUser, "User should initially be nil")
 
         let expectedUser = ObservableData.expectedUser
@@ -92,10 +94,9 @@ final class ObservedUserTests: XCTestCase {
         await cache.addUser(updatedUser)
         await cache.addUser(updatedUser)
 
-        // Give time for observation to propagate
-        try await Task.sleep(nanoseconds: 10_000_000_000)
-
         // THEN
+        _ = await receivedValues.dropFirst().dropFirst().first(where: { $0 != nil })
+
         let latestCachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
         XCTAssertEqual(latestCachedUser, updatedUser, "The object should no longer be in cache")
         XCTAssertEqual(observedUser, updatedUser, "The observed object should be up to date")
@@ -108,6 +109,7 @@ final class ObservedUserTests: XCTestCase {
         XCTAssertNil(initialUser, "Cache should initially be empty")
 
         @ObservedUser(userDbId: ObservableData.expectedUserDbId, cacheObservation: cache) var observedUser: User?
+        let receivedValues = $observedUser.receivedValues
         XCTAssertNil(observedUser, "User should initially be nil")
 
         let expectedUser = ObservableData.expectedUser
@@ -119,10 +121,9 @@ final class ObservedUserTests: XCTestCase {
         // WHEN
         await cache.removeUser(dbId: ObservableData.expectedUserDbId)
 
-        // Give time for observation to propagate
-        try await Task.sleep(nanoseconds: 10_000_000_000)
-
         // THEN
+        _ = await receivedValues.first(where: { $0 == nil })
+
         let latestCachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
         XCTAssertNil(latestCachedUser, "The object should no longer be in cache")
         XCTAssertNil(observedUser, "The observed object should be nil since the cache entry was deleted")
