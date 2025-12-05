@@ -72,7 +72,7 @@ static const std::vector<std::string> acceptedFiles = {"~test",
                                                     "System test Volume Information",
                                                     "رتجمع ثامر ورفاقه أمام باب المدرسة سيذهبون في رحلة إلى إسبانيا قال لهم "
                                                     "مرافقهم راقبوا أمتعتكم ولا تعبثوا بأثاث الحافلة قضوا هناك أياما ممتعة "
-                                                    "زاروا فيها مدنا كثيرة" // Long name in arabic used to generate infinite in the std::regex_match on Windows
+                                                    "زاروا فيها مدنا كثيرة" // Long name in arabic used to generate infinite loop in the std::regex_match on Windows
 #else
                                                     "test.fuse_hidden"
                                                     "test.gnucash.test.tmp-test"
