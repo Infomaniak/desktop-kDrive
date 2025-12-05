@@ -172,4 +172,13 @@ std::function<Poco::Dynamic::Var(const C &)> info2DynamicVar = [](const C &value
     return structValue;
 };
 
+template<class C>
+std::function<C(const Poco::Dynamic::Var &)> dynamicVar2Struct = [](const Poco::Dynamic::Var &value) {
+    assert(value.isStruct());
+    const auto &structValue = value.extract<Poco::DynamicStruct>();
+    C c;
+    c.fromDynamicStruct(structValue);
+    return c;
+};
+
 } // namespace KDC

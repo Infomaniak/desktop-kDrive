@@ -58,6 +58,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/nodesubfoldersjob.h ${server_srcs_path}/comm/guijobs/nodesubfoldersjob.cpp
     ${server_srcs_path}/comm/guijobs/nodesubfolders2job.h ${server_srcs_path}/comm/guijobs/nodesubfolders2job.cpp
     ${server_srcs_path}/comm/guijobs/nodefoldersizejob.h ${server_srcs_path}/comm/guijobs/nodefoldersizejob.cpp
+    ${server_srcs_path}/comm/guijobs/nodecreatemissingfoldersjob.h ${server_srcs_path}/comm/guijobs/nodecreatemissingfoldersjob.cpp
     ${server_srcs_path}/comm/guijobs/blacklistednodelistjob.h ${server_srcs_path}/comm/guijobs/blacklistednodelistjob.cpp
     ${server_srcs_path}/comm/guijobs/blacklistednodesetlistjob.h ${server_srcs_path}/comm/guijobs/blacklistednodesetlistjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluseraddedjob.h ${server_srcs_path}/comm/guijobs/signaluseraddedjob.cpp
@@ -148,7 +149,7 @@ set(testserver_SRCS
     requests/testserverrequests.h requests/testserverrequests.cpp
     appserver/testappserver.h appserver/testappserver.cpp
     comm/testsocketcomm.h comm/testsocketcomm.cpp
-    comm/guicommchannel/testguicommchannel.h comm/guicommchannel/testguicommchannel.cpp 
+    comm/guicommchannel/testguicommchannel.h comm/guicommchannel/testguicommchannel.cpp
     comm/guicommchannel/testsyncjobs.cpp comm/guicommchannel/testnodejobs.cpp
     comm/guijobs/testabstractguijob.h comm/guijobs/testabstractguijob.cpp
 )
