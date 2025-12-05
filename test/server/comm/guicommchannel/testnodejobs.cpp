@@ -228,9 +228,9 @@ void TestGuiCommChannel::testNodeCreateMissingFoldersJob() {
                         R"( "num": )" +
                         std::to_string(toInt(RequestNum::NODE_CREATEMISSINGFOLDERS)) +
                         R"(,)"
-                        R"( "params": { "driveDbId": 1, "folderList": [ { "path": )" +
-                        toQuotedBase64("some-path") + R"(, "parentNodeId": )" + toQuotedBase64("6666") + R"( }, { "path": )" +
-                        toQuotedBase64("some-other-path") + R"(, "parentNodeId": )" + toQuotedBase64("7777") + R"( }  ] } })"};
+                        R"( "params": { "driveDbId": 1, "folderList": [ { "name": )" +
+                        toQuotedBase64("some-name") + R"(, "nodeId": )" + toQuotedBase64("6666") + R"( }, { "name": )" +
+                        toQuotedBase64("some-other-name") + R"(, "nodeId": )" + toQuotedBase64("7777") + R"( }  ] } })"};
 #else
     // There is no need to pass a request id as the response is via a callback.
     const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::NODE_CREATEMISSINGFOLDERS)) +
