@@ -42,7 +42,6 @@ namespace Infomaniak.kDrive.ViewModels
         private SyncType _syncType = SyncType.Unknown;
         private bool _isTypeOnline = false;
         private bool _syncTypeMigrationInProgress = false;
-        private ObservableCollection<Errors.BaseError> _syncErrors = new();
         private SyncFileItem? _lastActivity;
 
         // Sync UI properties
@@ -87,6 +86,27 @@ namespace Infomaniak.kDrive.ViewModels
                 }
 
             };
+
+            // Fake sync level error for testing
+            Error testSyncError = new();
+            testSyncError.DbId = 1;
+            testSyncError.SyncDbId = DbId;
+            testSyncError.Timestamp = DateTime.Now;
+            testSyncError.ErrorLevel = ErrorLevel.SyncPal;
+            testSyncError.ExitCode = ExitCode.SystemError;
+            testSyncError.ExitCause = ExitCause.SyncDirAccessError;
+            AddError(testSyncError);
+
+            // Fake node level error for testing
+            Error testNodeError = new();
+            testNodeError.DbId = 2;
+            testNodeError.SyncDbId = DbId;
+            testNodeError.Timestamp = DateTime.Now;
+            testNodeError.ErrorLevel = ErrorLevel.Node;
+            testNodeError.Path = "/path/to/error/file.txt";
+            testNodeError.ExitCode = ExitCode.SystemError;
+            testNodeError.ExitCause = ExitCause.FileAccessError;
+            AddError(testNodeError);
         }
 
         public DbId DbId
@@ -131,12 +151,13 @@ namespace Infomaniak.kDrive.ViewModels
         public SyncType SyncType
         {
             get => _syncType;
-            set {
+            set
+            {
                 SetPropertyInUIThread(ref _syncType, value);
                 SetPropertyInUIThread(ref _isTypeOnline, value == SyncType.Online, nameof(IsTypeOnline));
             }
         }
-     
+
         public bool SyncTypeMigrationInProgress
         {
             get => _syncTypeMigrationInProgress;
@@ -152,15 +173,12 @@ namespace Infomaniak.kDrive.ViewModels
             get => _syncActivities;
         }
 
+        // The list of sync and node errors
+        public ObservableCollection<Error> SyncErrors = new();
+
         public Drive Drive
         {
             get => _drive;
-        }
-
-        public ObservableCollection<Errors.BaseError> SyncErrors
-        {
-            get => _syncErrors;
-            set => SetPropertyInUIThread(ref _syncErrors, value);
         }
 
         public SyncFileItem? LastActivity
@@ -194,6 +212,26 @@ namespace Infomaniak.kDrive.ViewModels
             await Task.Delay(5000); // TODO: Replace with actual implementation
             SetPropertyInUIThread(ref _syncTypeMigrationInProgress, false, nameof(SyncTypeMigrationInProgress));
 
+        }
+
+        public void AddError(Error error)
+        {
+            if (error.ErrorLevel != Types.ErrorLevel.SyncPal && error.ErrorLevel != Types.ErrorLevel.Node)
+            {
+                Logger.Log(Logger.Level.Error, $"Sync {DbId}: Ignoring error {error.ExitCode} - {error.Path} with level {error.ErrorLevel}");
+                return;
+            }
+
+            Logger.Log(Logger.Level.Info, $"Sync {DbId}: Adding error {error.ExitCode} - {error.Path}");
+            SyncErrors.Add(error);
+        }
+
+        public void RemoveError(Error error)
+        {
+            Logger.Log(Logger.Level.Info, $"Sync {DbId}: Removing error {error.ExitCode} - {error.Path}");
+            if (!SyncErrors.Remove(error)){
+                Logger.Log(Logger.Level.Warning, $"Sync {DbId}: Tried to remove non-existing error {error.ExitCode} - {error.Path}");
+            }
         }
     }
 }

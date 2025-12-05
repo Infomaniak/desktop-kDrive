@@ -23,7 +23,8 @@ namespace Infomaniak.kDrive.CustomControls
         private Dictionary<string, Type> _navigationPages = new Dictionary<string, Type>()
         {
             { "HomePage", typeof(Pages.HomePage) },
-            { "ActivityPage", typeof(Pages.ActivityPage) },
+            // { "ActivityPage", typeof(Pages.ActivityPage) },
+            { "ActivityPage", typeof(Pages.ErrorPage) },
             { "SettingsPage", typeof(Pages.Settings.SettingsPage) },
             { "StoragePage", typeof(Pages.StoragePage) }
         };

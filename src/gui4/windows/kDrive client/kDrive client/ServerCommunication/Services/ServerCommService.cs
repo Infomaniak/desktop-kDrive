@@ -635,8 +635,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         {
             switch (args.SignalNum)
             {
-                case SignalNum.UserUpdated:
-                case SignalNum.UserAdded:
+                case SignalNum.USER_UPDATED:
+                case SignalNum.USER_ADDED:
                     await HandleUserUpdatedOrAddedAsync(sender, args);
                     break;
                 case SignalNum.USER_REMOVED:
@@ -671,6 +671,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     break;
                 case SignalNum.SYNC_COMPLETEDITEM:
                     await HandleSyncCompletedItem(sender, args);
+                    break;
+                case SignalNum.UTILITY_ERROR_ADDED:
+                    await HandleErrorAddedAsync(sender, args);
+                    break;
+                case SignalNum.UTILITY_ERRORS_REMOVED:
+                    await HandleErrorRemovedAsync(sender, args);
                     break;
                 default:
                     Logger.Log(Logger.Level.Warning, $"Unhandled signal received: {args.SignalNum}");
@@ -967,6 +973,50 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             await Utility.RunOnUIThread(() => { _viewModel.Users.Remove(user); });
             return;
+        }
+
+        public async Task HandleErrorAddedAsync(object? sender, SignalEventArgs args)
+        {
+            var signalData = args.SignalData;
+
+            if (signalData == null || !signalData.ContainsKey(JsonKeys.ErrorInfo))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.ErrorInfo} not found in parameters.");
+                return;
+            }
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            options.Converters.Add(new Base64StringJsonConverter());
+            ErrorInfo? errorInfo = signalData[JsonKeys.ErrorInfo]?.Deserialize<ErrorInfo>(options);
+            Error error = new Error();
+            if (errorInfo == null)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to deserialize errorInfo from ${signalData[JsonKeys.ErrorInfo]}.");
+                return;
+            }
+
+            ConversionHelper.copyToError(errorInfo, error);
+            _viewModel.AddError(error);
+        }
+        public async Task HandleErrorRemovedAsync(object? sender, SignalEventArgs args)
+        {
+            var signalData = args.SignalData;
+            if (signalData == null || !signalData.ContainsKey(JsonKeys.ErrorDbId))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.ErrorDbId} not found in parameters.");
+                return;
+            }
+
+            DbId? errorDbId = signalData[JsonKeys.ErrorDbId]?.AsValue().GetValue<DbId>();
+            if (errorDbId is null)
+            {
+                Logger.Log(Logger.Level.Error, "errorDbId is null.");
+                return;
+            }
+            _viewModel.RemoveErrorByDbId(errorDbId.Value);
         }
 
         // Helpers

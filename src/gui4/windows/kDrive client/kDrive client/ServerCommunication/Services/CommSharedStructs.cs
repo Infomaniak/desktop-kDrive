@@ -350,4 +350,39 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             copyProperty(source, target, nameof(source.Path), nameof(target.Path));
         }
     }
+
+    public class ErrorInfo
+    {
+        public DbId? DbId { get; set; }
+        public DateTime? Timestamp { get; set; }
+        public ErrorLevel? ErrorLevel { get; set; }
+        public DbId? SyncDbId { get; set; }
+        public ExitCode? ExitCode { get; set; }
+        public ExitCause? ExitCause { get; set; }
+        public NodeType? NodeType { get; set; }
+        public string? Path { get; set; }
+        public string? DestinationPath { get; set; }
+        public ConflictType? ConflictType { get; set; }
+        public InconsistencyType? InconsistencyType { get; set; }
+        public bool? AutoResolved { get; set; }
+    }
+
+    public static partial class ConversionHelper
+    {
+        static public void copyToError(ErrorInfo source, Error target)
+        {
+            copyProperty(source, target, nameof(source.DbId), nameof(target.DbId));
+            copyProperty(source, target, nameof(source.Timestamp), nameof(target.Timestamp));
+            copyProperty(source, target, nameof(source.ErrorLevel), nameof(target.ErrorLevel));
+            copyProperty(source, target, nameof(source.SyncDbId), nameof(target.SyncDbId));
+            copyProperty(source, target, nameof(source.ExitCode), nameof(target.ExitCode));
+            copyProperty(source, target, nameof(source.ExitCause), nameof(target.ExitCause));
+            copyProperty(source, target, nameof(source.NodeType), nameof(target.NodeType));
+            copyProperty(source, target, nameof(source.Path), nameof(target.Path));
+            copyProperty(source, target, nameof(source.DestinationPath), nameof(target.DestinationPath));
+            copyProperty(source, target, nameof(source.ConflictType), nameof(target.ConflictType));
+            copyProperty(source, target, nameof(source.InconsistencyType), nameof(target.InconsistencyType));
+            copyProperty(source, target, nameof(source.AutoResolved), nameof(target.AutoResolved));
+        }
+    }
 }

@@ -5,8 +5,6 @@ global using SyncId = System.Int64;
 global using NodeId = System.String;
 
 global using DbId = System.Int64;
-global using ExitCode = System.Int16;
-global using ExitCause = System.Int16;
 global using SyncPath = System.String;
 
 
@@ -55,50 +53,7 @@ namespace Infomaniak.kDrive.Types
         Ignored,
         Syncing
     };
-    public enum ConflictType
-    {
-        None,
-        EditDelete,
-        MoveDelete,
-        MoveParentDelete,
-        CreateParentDelete,
-        MoveMoveSource,
-        MoveMoveDest,
-        MoveCreate,
-        CreateCreate,
-        EditEdit,
-        MoveMoveCycle
-    };
-    public enum CancelType
-    {
-        None,
-        Create,
-        Edit,
-        Move,
-        Delete,
-        AlreadyExistRemote,
-        MoveToBinFailed,
-        AlreadyExistLocal,
-        TmpBlacklisted,
-        ExcludedByTemplate,
-        Hardlink,
-        FileRescued
-    };
-
-    public enum InconsistencyType
-    {
-        None = 0x000,
-        Case = 0x001,
-        ForbiddenChar = 0x002, // Char unsupported by OS
-        ReservedName = 0x004,
-        NameLength = 0x008,
-        PathLength = 0x010,
-        NotYetSupportedChar = 0x020, // Char not yet supported, ie recent Unicode char (ex: U+1FA77 on pre macOS 13.4)
-        DuplicateNames = 0x040, // Two items have the same standardized paths with possibly different encodings (Windows 10 and 11).
-        ForbiddenCharOnlySpaces = 0x080, // The name contains only spaces (not supported by back end)
-        ForbiddenCharEndWithSpace = 0x100, // The name ends with a space
-    };
-
+  
     public enum SyncDirection
     {
         Unknown,

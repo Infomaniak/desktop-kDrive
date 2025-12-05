@@ -18,6 +18,7 @@
 
 using DynamicData;
 using DynamicData.Binding;
+using DynamicData.Kernel;
 using Infomaniak.kDrive.Pages.Settings;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
@@ -59,17 +60,8 @@ namespace Infomaniak.kDrive.ViewModels
          */
         public static DispatcherQueue UIThreadDispatcher { get; set; } = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
 
-        /** The list of application errors.
-         *  This is an observable collection, so the UI can bind to it and be notified of changes.
-         */
-        private ObservableCollection<Errors.AppError> _appErrors = new();
-
-        /** Indicates if there is error in application or in the selected sync.
-         *  This is true if there is at least one app errors or one selected sync error.
-         *  This is a read-only property that is automatically updated when AppErrors or SelectedSync.SyncErrors change.
-         */
-        public bool HasErrors => AppErrors.Count > 0 ||
-                           (SelectedSync?.SyncErrors?.Count ?? 0) > 0;
+        // The list of server level error
+        public ObservableCollection<Error> AppErrors = new();
 
         // Helpers - Agregated collections
         /** The list of active syncs across all users.
@@ -92,20 +84,7 @@ namespace Infomaniak.kDrive.ViewModels
         public Sync? SelectedSync
         {
             get => _selectedSync;
-            set
-            {
-                if (SelectedSync != null)
-                {
-                    SelectedSync.SyncErrors.CollectionChanged -= SyncErrors_CollectionChanged;
-                }
-                SetPropertyInUIThread(ref _selectedSync, value);
-
-                if (SelectedSync != null)
-                {
-                    SelectedSync.SyncErrors.CollectionChanged += SyncErrors_CollectionChanged;
-                }
-                OnPropertyChangedInUIThread(nameof(HasErrors));
-            }
+            set => SetPropertyInUIThread(ref _selectedSync, value);
         }
 
         public AppModel()
@@ -135,9 +114,6 @@ namespace Infomaniak.kDrive.ViewModels
             // Observe changes to ActiveDrives list and ensure SelectedSync is valid
             AllSyncs.ToObservableChangeSet()
                                        .Subscribe(_ => UIThreadDispatcher.TryEnqueue(EnsureValidSelectedSync));
-
-            // Observe changes to AppErrors and SelectedSync.SyncErrors to update HasNoErrors property
-            AppErrors.CollectionChanged += (_, __) => OnPropertyChanged(nameof(HasErrors));
 
             _networkAvailable = _network.IsAvailable;
             _networkWatcher = WatchNetworkAsync(_networkWatcherCancellationSource.Token);
@@ -219,12 +195,6 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _isInitialized, value);
         }
 
-        public ObservableCollection<Errors.AppError> AppErrors
-        {
-            get => _appErrors;
-            set => SetPropertyInUIThread(ref _appErrors, value);
-        }
-
         public bool NetworkAvailable
         {
             get => _networkAvailable;
@@ -252,15 +222,52 @@ namespace Infomaniak.kDrive.ViewModels
             IsInitialized = true;
         }
 
-        private void SyncErrors_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        {
-            OnPropertyChanged(nameof(HasErrors));
-        }
-
         public async Task DisconnectUserAsync(DbId userDbId)
         {
             IServerCommService serverCommService = App.ServiceProvider.GetRequiredService<IServerCommService>();
             await serverCommService.RemoveUser(userDbId, CancellationToken.None);
+        }
+
+        public void AddError(Error error)
+        {
+            Logger.Log(Logger.Level.Info, $"AppModel: Adding error - {error}");
+            if (error.ErrorLevel == Types.ErrorLevel.Server)
+            {
+                AppErrors.Add(error);
+                return;
+            }
+
+            var sync = AllSyncs.FirstOrDefault(s => s.DbId == error.SyncDbId);
+            if (sync == null)
+            {
+                Logger.Log(Logger.Level.Error, $"AppModel: Could not find sync with DbId {error.SyncDbId} for error {error}");
+                return;
+            }
+
+            sync.AddError(error);
+        }
+
+        public void RemoveErrorByDbId(DbId errorDbId)
+        {
+            Logger.Log(Logger.Level.Info, $"AppModel: Removing error - {errorDbId}");
+            var appError = AppErrors.FirstOrDefault(e => e.DbId == errorDbId);
+            if (appError != null)
+            {
+                AppErrors.Remove(appError);
+                return;
+            }
+
+            foreach (var sync in AllSyncs)
+            {
+                var syncError = sync.SyncErrors.FirstOrDefault(e => e.DbId == errorDbId);
+                if (syncError != null)
+                {
+                    sync.RemoveError(syncError);
+                    return;
+                }
+            }
+
+            Logger.Log(Logger.Level.Warning, $"AppModel: Could not find error with DbId {errorDbId} to remove.");
         }
     }
 }

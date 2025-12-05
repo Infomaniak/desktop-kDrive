@@ -51,6 +51,9 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string SyncFileItemInfo = "itemInfo";
         static public string RestartSync = "restartSync";
 
+        static public string ErrorDbId = "errorDbId";
+        static public string ErrorInfo = "errorInfo";
+
         static public string NodeId = "nodeId";
         static public string NodeInfo = "nodeInfo";
         static public string NodeIdList = "nodeIdList";
