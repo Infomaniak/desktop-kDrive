@@ -47,7 +47,7 @@ final class AppReadyViewController: OnboardingStepViewController {
     }
 
     @objc private func didTapOpenApp() {
-        windowRouter.navigate(to: .splitView)
+        windowRouter.navigate(to: .mainWindow)
         UserDefaults.standard.shouldPresentOnboarding = false
     }
 }

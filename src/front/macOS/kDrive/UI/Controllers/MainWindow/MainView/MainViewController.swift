@@ -23,7 +23,7 @@ extension NSToolbarItem.Identifier {
     static let searchTextField = NSToolbarItem.Identifier("SearchTextField")
 }
 
-final class MainSplitViewController: IKSplitViewController {
+final class MainViewController: IKSplitViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupSplitView()
@@ -63,7 +63,7 @@ final class MainSplitViewController: IKSplitViewController {
 
 // MARK: - NavigableSidebarViewControllerDelegate
 
-extension MainSplitViewController: NavigableSidebarViewControllerDelegate {
+extension MainViewController: NavigableSidebarViewControllerDelegate {
     func sidebarViewController(_ controller: NSViewController, didSelectItem item: SidebarItem) {
         var contentViewController: NSViewController
         switch item {
@@ -83,7 +83,7 @@ extension MainSplitViewController: NavigableSidebarViewControllerDelegate {
 
 // MARK: - NSToolbarDelegate
 
-extension MainSplitViewController {
+extension MainViewController {
     override func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
         var initialItems = super.toolbarAllowedItemIdentifiers(toolbar)
         initialItems.append(.searchTextField)

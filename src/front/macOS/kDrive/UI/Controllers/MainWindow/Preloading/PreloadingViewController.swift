@@ -55,7 +55,7 @@ final class PreloadingViewController: NSViewController {
 
             @InjectService var windowRouter: WindowRouter
             if hasAtLeastOneConnectedUser && !UserDefaults.standard.shouldPresentOnboarding {
-                windowRouter.navigate(to: .splitView)
+                windowRouter.navigate(to: .mainWindow)
             } else {
                 windowRouter.navigate(to: .onboarding())
             }
