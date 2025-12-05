@@ -18,7 +18,7 @@
 
 import Foundation
 @testable import InfomaniakDI
-import kDriveCore
+@testable import kDriveCore
 import XCTest
 
 final class ObservedDriveTests_driveDbIdOnly: XCTestCase {
@@ -29,6 +29,7 @@ final class ObservedDriveTests_driveDbIdOnly: XCTestCase {
         XCTAssertNil(initialUser, "Cache should initially be empty")
 
         @ObservedDrive(driveDbId: ObservableData.expectedDriveDbId, cacheObservation: cache) var observedDrive: Drive?
+        let receivedValues = $observedDrive.receivedValues // Start to save the received values
         XCTAssertNil(observedDrive, "Drive should initially be nil")
 
         await cache.addUser(ObservableData.expectedUserWithAccounts)
@@ -37,10 +38,10 @@ final class ObservedDriveTests_driveDbIdOnly: XCTestCase {
         let expectedDrive = ObservableData.expectedDrive
         try await cache.addDrive(expectedDrive, accountDbId: ObservableData.expectedAccountDbId)
 
-        // Give time for observation to propagate
-        try await Task.sleep(nanoseconds: 10_000_000_000)
-
         // THEN
+        let lastReceivedObject = await receivedValues.first(where: { $0 != nil })
+        XCTAssertEqual(lastReceivedObject, expectedDrive)
+
         let cachedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
         XCTAssertEqual(cachedDrive, expectedDrive, "The cache should have been updated")
         XCTAssertEqual(observedDrive, expectedDrive, "The observed object should have been updated")
@@ -53,6 +54,7 @@ final class ObservedDriveTests_driveDbIdOnly: XCTestCase {
         XCTAssertNil(initialUser, "Cache should initially be empty")
 
         @ObservedDrive(driveDbId: ObservableData.expectedDriveDbId, cacheObservation: cache) var observedDrive: Drive?
+        let receivedValues = $observedDrive.receivedValues
         XCTAssertNil(observedDrive, "Drive should initially be nil")
 
         await cache.addUser(ObservableData.expectedUserWithAccounts)
@@ -67,10 +69,9 @@ final class ObservedDriveTests_driveDbIdOnly: XCTestCase {
         let updatedDrive = ObservableData.updatedDrive
         try await cache.addDrive(updatedDrive, accountDbId: ObservableData.expectedAccountDbId)
 
-        // Give time for observation to propagate
-        try await Task.sleep(nanoseconds: 10_000_000_000)
-
         // THEN
+        _ = await receivedValues.dropFirst().first(where: { $0 != nil })
+
         let latestCachedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
         XCTAssertEqual(latestCachedDrive, updatedDrive, "The cache should have been updated again")
         XCTAssertEqual(observedDrive, updatedDrive, "The observed object should have been updated again")
@@ -83,6 +84,7 @@ final class ObservedDriveTests_driveDbIdOnly: XCTestCase {
         XCTAssertNil(initialUser, "Cache should initially be empty")
 
         @ObservedDrive(driveDbId: ObservableData.expectedDriveDbId, cacheObservation: cache) var observedDrive: Drive?
+        let receivedValues = $observedDrive.receivedValues
         XCTAssertNil(observedDrive, "Drive should initially be nil")
 
         await cache.addUser(ObservableData.expectedUserWithAccounts)
@@ -98,10 +100,9 @@ final class ObservedDriveTests_driveDbIdOnly: XCTestCase {
                                 accountDbId: ObservableData.expectedAccountDbId,
                                 userDbId: ObservableData.expectedUserDbId)
 
-        // Give time for observation to propagate
-        try await Task.sleep(nanoseconds: 10_000_000_000)
-
         // THEN
+        _ = await receivedValues.dropFirst().first(where: { $0 == nil })
+
         XCTAssertNil(observedDrive, "The observed object should have been updated to nil to reflect deletion")
     }
 }
@@ -117,6 +118,7 @@ final class ObservedDriveTests_allIds: XCTestCase {
                        accountDbId: ObservableData.expectedAccountDbId,
                        driveDbId: ObservableData.expectedDriveDbId,
                        cacheObservation: cache) var observedDrive: Drive?
+        let receivedValues = $observedDrive.receivedValues
         XCTAssertNil(observedDrive, "Drive should initially be nil")
 
         await cache.addUser(ObservableData.expectedUserWithAccounts)
@@ -125,10 +127,10 @@ final class ObservedDriveTests_allIds: XCTestCase {
         let expectedDrive = ObservableData.expectedDrive
         try await cache.addDrive(expectedDrive, accountDbId: ObservableData.expectedAccountDbId)
 
-        // Give time for observation to propagate
-        try await Task.sleep(nanoseconds: 10_000_000_000)
-
         // THEN
+        let lastReceivedObject = await receivedValues.first(where: { $0 != nil })
+        XCTAssertEqual(lastReceivedObject, expectedDrive)
+
         let cachedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
         XCTAssertEqual(cachedDrive, expectedDrive, "The cache should have been updated")
         XCTAssertEqual(observedDrive, expectedDrive, "The observed object should have been updated")
@@ -144,6 +146,7 @@ final class ObservedDriveTests_allIds: XCTestCase {
                        accountDbId: ObservableData.expectedAccountDbId,
                        driveDbId: ObservableData.expectedDriveDbId,
                        cacheObservation: cache) var observedDrive: Drive?
+        let receivedValues = $observedDrive.receivedValues
         XCTAssertNil(observedDrive, "Drive should initially be nil")
 
         await cache.addUser(ObservableData.expectedUserWithAccounts)
@@ -158,10 +161,9 @@ final class ObservedDriveTests_allIds: XCTestCase {
         let updatedDrive = ObservableData.updatedDrive
         try await cache.addDrive(updatedDrive, accountDbId: ObservableData.expectedAccountDbId)
 
-        // Give time for observation to propagate
-        try await Task.sleep(nanoseconds: 10_000_000_000)
-
         // THEN
+        _ = await receivedValues.dropFirst().first(where: { $0 != nil })
+
         let latestCachedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
         XCTAssertEqual(latestCachedDrive, updatedDrive, "The cache should have been updated again")
         XCTAssertEqual(observedDrive, updatedDrive, "The observed object should have been updated again")
@@ -177,6 +179,7 @@ final class ObservedDriveTests_allIds: XCTestCase {
                        accountDbId: ObservableData.expectedAccountDbId,
                        driveDbId: ObservableData.expectedDriveDbId,
                        cacheObservation: cache) var observedDrive: Drive?
+        let receivedValues = $observedDrive.receivedValues
         XCTAssertNil(observedDrive, "Drive should initially be nil")
 
         await cache.addUser(ObservableData.expectedUserWithAccounts)
@@ -192,10 +195,9 @@ final class ObservedDriveTests_allIds: XCTestCase {
                                 accountDbId: ObservableData.expectedAccountDbId,
                                 userDbId: ObservableData.expectedUserDbId)
 
-        // Give time for observation to propagate
-        try await Task.sleep(nanoseconds: 10_000_000_000)
-
         // THEN
+        _ = await receivedValues.dropFirst().first(where: { $0 == nil })
+
         XCTAssertNil(observedDrive, "The observed object should have been updated to nil to reflect deletion")
     }
 }
