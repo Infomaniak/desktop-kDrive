@@ -18,7 +18,7 @@
 
 import Foundation
 @testable import InfomaniakDI
-import kDriveCore
+@testable import kDriveCore
 import XCTest
 
 final class ObservedSynchroTests_dbIdOnly: XCTestCase {
@@ -29,6 +29,7 @@ final class ObservedSynchroTests_dbIdOnly: XCTestCase {
         XCTAssertNil(initialUser, "Cache should initially be empty")
 
         @ObservedSynchro(synchroDbId: ObservableData.expectedSynchroDbId, cacheObservation: cache) var observedSynchro: Synchro?
+        let receivedValues = $observedSynchro.receivedValues // Start to save the received values
 
         XCTAssertNil(observedSynchro, "Synchro should initially be nil")
         await cache.addUser(ObservableData.expectedUserWithAccounts)
@@ -43,10 +44,9 @@ final class ObservedSynchroTests_dbIdOnly: XCTestCase {
         let expectedSynchro = ObservableData.expectedSynchro
         try await cache.addSynchro(expectedSynchro)
 
-        // Give time for observation to propagate
-        try await Task.sleep(nanoseconds: 10_000_000_000)
-
         // THEN
+        _ = await receivedValues.first(where: { $0 != nil })
+
         let fetchedSynchro = await cache.getSynchro(synchroDbId: ObservableData.expectedSynchroDbId)
         XCTAssertEqual(fetchedSynchro, ObservableData.expectedSynchro, "We should find the object in cache")
         XCTAssertEqual(observedSynchro, ObservableData.expectedSynchro, "The observed object should have been updated")
@@ -81,6 +81,7 @@ final class ObservedSynchroTests_dbIdOnly: XCTestCase {
         XCTAssertNil(initialUser, "Cache should initially be empty")
 
         @ObservedSynchro(synchroDbId: ObservableData.expectedSynchroDbId, cacheObservation: cache) var observedSynchro: Synchro?
+        let receivedValues = $observedSynchro.receivedValues
 
         XCTAssertNil(observedSynchro, "Synchro should initially be nil")
         await cache.addUser(ObservableData.expectedUserWithAccounts)
@@ -101,10 +102,9 @@ final class ObservedSynchroTests_dbIdOnly: XCTestCase {
         let updatedSynchro = ObservableData.updatedSynchro
         try await cache.updateSynchro(updatedSynchro)
 
-        // Give time for observation to propagate
-        try await Task.sleep(nanoseconds: 10_000_000_000)
-
         // THEN
+        _ = await receivedValues.dropFirst().first(where: { $0 != nil })
+
         let latestFetchedSynchro = await cache.getSynchro(synchroDbId: ObservableData.expectedSynchroDbId)
         XCTAssertEqual(latestFetchedSynchro, ObservableData.updatedSynchro, "We should find the object in cache updated")
         XCTAssertEqual(observedSynchro, ObservableData.updatedSynchro, "The observed object should have been updated again")
@@ -117,6 +117,7 @@ final class ObservedSynchroTests_dbIdOnly: XCTestCase {
         XCTAssertNil(initialUser, "Cache should initially be empty")
 
         @ObservedSynchro(synchroDbId: ObservableData.expectedSynchroDbId, cacheObservation: cache) var observedSynchro: Synchro?
+        let receivedValues = $observedSynchro.receivedValues
 
         XCTAssertNil(observedSynchro, "Synchro should initially be nil")
         await cache.addUser(ObservableData.expectedUserWithAccounts)
@@ -138,10 +139,9 @@ final class ObservedSynchroTests_dbIdOnly: XCTestCase {
         try await cache.updateSynchro(updatedSynchro)
         try await cache.updateSynchro(updatedSynchro)
 
-        // Give time for observation to propagate
-        try await Task.sleep(nanoseconds: 10_000_000_000)
-
         // THEN
+        _ = await receivedValues.dropFirst().dropFirst().dropFirst().first(where: { $0 != nil })
+
         let latestFetchedSynchro = await cache.getSynchro(synchroDbId: ObservableData.expectedSynchroDbId)
         XCTAssertEqual(latestFetchedSynchro, ObservableData.updatedSynchro, "We should find the object in cache updated")
         XCTAssertEqual(observedSynchro, ObservableData.updatedSynchro, "The observed object should have been updated again")
@@ -154,6 +154,7 @@ final class ObservedSynchroTests_dbIdOnly: XCTestCase {
         XCTAssertNil(initialUser, "Cache should initially be empty")
 
         @ObservedSynchro(synchroDbId: ObservableData.expectedSynchroDbId, cacheObservation: cache) var observedSynchro: Synchro?
+        let receivedValues = $observedSynchro.receivedValues
 
         XCTAssertNil(observedSynchro, "Synchro should initially be nil")
         await cache.addUser(ObservableData.expectedUserWithAccounts)
@@ -174,10 +175,9 @@ final class ObservedSynchroTests_dbIdOnly: XCTestCase {
         try await cache.removeSynchro(synchroDbId: expectedSynchro.dbId,
                                       driveDbId: expectedSynchro.driveDbId)
 
-        // Give time for observation to propagate
-        try await Task.sleep(nanoseconds: 10_000_000_000)
-
         // THEN
+        _ = await receivedValues.dropFirst().first(where: { $0 == nil })
+
         let latestFetchedSynchro = await cache.getSynchro(synchroDbId: ObservableData.expectedSynchroDbId)
         XCTAssertNil(latestFetchedSynchro, "Object should no longer be available in cache")
         XCTAssertNil(observedSynchro, "Object should be nilified once it's removed from the cache")
@@ -196,6 +196,7 @@ final class ObservedSynchroTests_allIds: XCTestCase {
                          driveDbId: ObservableData.expectedDriveDbId,
                          synchroDbId: ObservableData.expectedSynchroDbId,
                          cacheObservation: cache) var observedSynchro: Synchro?
+        let receivedValues = $observedSynchro.receivedValues
 
         XCTAssertNil(observedSynchro, "Synchro should initially be nil")
         await cache.addUser(ObservableData.expectedUserWithAccounts)
@@ -210,10 +211,9 @@ final class ObservedSynchroTests_allIds: XCTestCase {
         let expectedSynchro = ObservableData.expectedSynchro
         try await cache.addSynchro(expectedSynchro)
 
-        // Give time for observation to propagate
-        try await Task.sleep(nanoseconds: 10_000_000_000)
-
         // THEN
+        _ = await receivedValues.first(where: { $0 != nil })
+
         let fetchedSynchro = await cache.getSynchro(synchroDbId: ObservableData.expectedSynchroDbId)
         XCTAssertEqual(fetchedSynchro, ObservableData.expectedSynchro, "We should find the object in cache")
         XCTAssertEqual(observedSynchro, ObservableData.expectedSynchro, "The observed object should have been updated")
@@ -256,6 +256,7 @@ final class ObservedSynchroTests_allIds: XCTestCase {
                          driveDbId: ObservableData.expectedDriveDbId,
                          synchroDbId: ObservableData.expectedSynchroDbId,
                          cacheObservation: cache) var observedSynchro: Synchro?
+        let receivedValues = $observedSynchro.receivedValues
 
         XCTAssertNil(observedSynchro, "Synchro should initially be nil")
         await cache.addUser(ObservableData.expectedUserWithAccounts)
@@ -276,10 +277,9 @@ final class ObservedSynchroTests_allIds: XCTestCase {
         let updatedSynchro = ObservableData.updatedSynchro
         try await cache.updateSynchro(updatedSynchro)
 
-        // Give time for observation to propagate
-        try await Task.sleep(nanoseconds: 10_000_000_000)
-
         // THEN
+        _ = await receivedValues.dropFirst().first(where: { $0 != nil })
+
         let latestFetchedSynchro = await cache.getSynchro(synchroDbId: ObservableData.expectedSynchroDbId)
         XCTAssertEqual(latestFetchedSynchro, ObservableData.updatedSynchro, "We should find the object in cache updated")
         XCTAssertEqual(observedSynchro, ObservableData.updatedSynchro, "The observed object should have been updated again")
@@ -296,6 +296,7 @@ final class ObservedSynchroTests_allIds: XCTestCase {
                          driveDbId: ObservableData.expectedDriveDbId,
                          synchroDbId: ObservableData.expectedSynchroDbId,
                          cacheObservation: cache) var observedSynchro: Synchro?
+        let receivedValues = $observedSynchro.receivedValues
 
         XCTAssertNil(observedSynchro, "Synchro should initially be nil")
         await cache.addUser(ObservableData.expectedUserWithAccounts)
@@ -317,10 +318,9 @@ final class ObservedSynchroTests_allIds: XCTestCase {
         try await cache.updateSynchro(updatedSynchro)
         try await cache.updateSynchro(updatedSynchro)
 
-        // Give time for observation to propagate
-        try await Task.sleep(nanoseconds: 10_000_000_000)
-
         // THEN
+        _ = await receivedValues.dropFirst().dropFirst().first(where: { $0 != nil })
+
         let latestFetchedSynchro = await cache.getSynchro(synchroDbId: ObservableData.expectedSynchroDbId)
         XCTAssertEqual(latestFetchedSynchro, ObservableData.updatedSynchro, "We should find the object in cache updated")
         XCTAssertEqual(observedSynchro, ObservableData.updatedSynchro, "The observed object should have been updated again")
@@ -337,6 +337,7 @@ final class ObservedSynchroTests_allIds: XCTestCase {
                          driveDbId: ObservableData.expectedDriveDbId,
                          synchroDbId: ObservableData.expectedSynchroDbId,
                          cacheObservation: cache) var observedSynchro: Synchro?
+        let receivedValues = $observedSynchro.receivedValues
 
         XCTAssertNil(observedSynchro, "Synchro should initially be nil")
         await cache.addUser(ObservableData.expectedUserWithAccounts)
@@ -357,10 +358,9 @@ final class ObservedSynchroTests_allIds: XCTestCase {
         try await cache.removeSynchro(synchroDbId: expectedSynchro.dbId,
                                       driveDbId: expectedSynchro.driveDbId)
 
-        // Give time for observation to propagate
-        try await Task.sleep(nanoseconds: 10_000_000_000)
-
         // THEN
+        _ = await receivedValues.dropFirst().first(where: { $0 == nil })
+
         let latestFetchedSynchro = await cache.getSynchro(synchroDbId: ObservableData.expectedSynchroDbId)
         XCTAssertNil(latestFetchedSynchro, "Object should no longer be available in cache")
         XCTAssertNil(observedSynchro, "Object should be nilified once it's removed from the cache")
