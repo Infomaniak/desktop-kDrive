@@ -16,7 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import AppKit
+import Cocoa
 
 extension NSFont.Weight {
     public static let emphasized = NSFont.Weight.semibold

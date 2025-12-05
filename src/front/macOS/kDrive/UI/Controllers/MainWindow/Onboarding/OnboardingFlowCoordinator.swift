@@ -26,6 +26,7 @@ enum OnboardingStep: Sendable {
     case drivesSelection
     case permissions(MacOSPermission)
     case synchronization
+    case appReady
 }
 
 @MainActor
@@ -64,12 +65,16 @@ final class OnboardingFlowCoordinator: ObservableObject {
                     return .permissions(permission)
                 }
             }
-            return .synchronization
+
+            return synchronizations.isEmpty ? .appReady : .synchronization
 
         case .permissions:
-            return .synchronization
+            return synchronizations.isEmpty ? .appReady : .synchronization
 
         case .synchronization:
+            return .appReady
+
+        case .appReady:
             return nil
         }
     }

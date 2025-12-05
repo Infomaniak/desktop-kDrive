@@ -42,14 +42,22 @@ final class PreloadingViewController: NSViewController {
 
     private func preloadApp() {
         Task {
-            @InjectService var coherentCache: CoherentCache
-            let hasAtLeastOneConnectedUser = await coherentCache.getFirstAvailableUser() != nil
+            let connectedUsers = try? await UserJobs().userInfoList().filter { $0.isConnected == true }
+            let hasAtLeastOneConnectedUser = connectedUsers?.isEmpty == false
+
+            if UserDefaults.standard.isFirstLaunch {
+                let availableSync = try? await SyncJobs().availableSync()
+                let hasAtLeastOneSync = availableSync?.isEmpty == false
+
+                UserDefaults.standard.shouldPresentOnboarding = !hasAtLeastOneConnectedUser || !hasAtLeastOneSync
+                UserDefaults.standard.isFirstLaunch = false
+            }
 
             @InjectService var windowRouter: WindowRouter
-            if !hasAtLeastOneConnectedUser {
-                windowRouter.navigate(to: .onboarding())
-            } else {
+            if hasAtLeastOneConnectedUser && !UserDefaults.standard.shouldPresentOnboarding {
                 windowRouter.navigate(to: .splitView)
+            } else {
+                windowRouter.navigate(to: .onboarding())
             }
         }
     }

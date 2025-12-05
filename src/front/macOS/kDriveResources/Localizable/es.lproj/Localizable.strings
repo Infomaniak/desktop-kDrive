@@ -4,7 +4,7 @@
  * Locale: es, Spanish
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Thu, 04 Dec 2025 09:58:28 +0100
+ * Exported at: Thu, 04 Dec 2025 16:15:08 +0100
  */
 
 /* loco:691deb2291b20ac7fd045012 */
@@ -30,6 +30,9 @@
 
 /* loco:68b04d5a63085b7ab90cea63 */
 "buttonOpenInFinder" = "Abrir en el Finder";
+
+/* loco:6931a5687031691272002314 */
+"buttonOpenKDrive" = "Abrir kDrive";
 
 /* loco:69240f7b15d05a975c07dc13 */
 "buttonShowOffers" = "Ver las ofertas";
@@ -123,6 +126,18 @@
 
 /* loco:68e673754d80559c460bdf02 */
 "onboardingLoginTitle" = "¡Bienvenido a kDrive!";
+
+/* loco:6931a1769dc60cb1820f5fe3 */
+"onboardingSynchronizationAppReadyDescription" = "Tus archivos están listos para sincronizarse de forma segura en tu ordenador.";
+
+/* loco:6931a16c3498d5205b0380d3 */
+"onboardingSynchronizationAppReadyTitle" = "¡Todo listo!";
+
+/* loco:6931a1582ee1a869eb0303f4 */
+"onboardingSynchronizationInProgressDescription" = "Tus archivos de kDrive se están sincronizando.\nEspere unos instantes.";
+
+/* loco:6931a14fa4031f6161097f42 */
+"onboardingSynchronizationInProgressTitle" = "Sincronización en curso..";
 
 /* loco:68e8fa27d09187683c0679b2 */
 "onboardingWindowTitle" = "Bienvenido a kDrive";

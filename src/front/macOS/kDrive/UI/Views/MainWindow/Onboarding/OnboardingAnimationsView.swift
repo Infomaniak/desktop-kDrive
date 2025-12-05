@@ -95,7 +95,9 @@ class OnboardingAnimationsView: NSView {
                 return .permissionFullDiskAccess
             }
         case .synchronization:
-            fatalError("Not Implemented Yet")
+            return .kDriveSynchronizeFiles
+        case .appReady:
+            return .kDriveLoader
         }
     }
 }
