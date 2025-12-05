@@ -18,20 +18,21 @@
 
 import Cocoa
 import InfomaniakDI
+import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 
 final class AppReadyViewController: OnboardingStepViewController {
     @LazyInjectService private var windowRouter: WindowRouter
 
-    init() {
-        super.init(nibName: nil, bundle: nil)
+    override init(nibName nibNameOrNil: NSNib.Name?, bundle nibBundleOrNil: Bundle?) {
+        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
         setupUI()
     }
 
-    @available(*, unavailable)
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        super.init(coder: coder)
+        setupUI()
     }
 
     private func setupUI() {
@@ -41,11 +42,12 @@ final class AppReadyViewController: OnboardingStepViewController {
         primaryButton.isHidden = false
         primaryButton.title = KDriveLocalizable.buttonOpenKDrive
         primaryButton.target = self
-        primaryButton.action = #selector(openMainWindow)
+        primaryButton.action = #selector(didTapOpenApp)
         secondaryButton.isHidden = true
     }
 
-    @objc private func openMainWindow() {
+    @objc private func didTapOpenApp() {
         windowRouter.navigate(to: .splitView)
+        UserDefaults.standard.shouldPresentOnboarding = false
     }
 }
