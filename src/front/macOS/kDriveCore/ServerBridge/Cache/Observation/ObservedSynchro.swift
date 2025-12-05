@@ -20,6 +20,7 @@ import Combine
 import Foundation
 import InfomaniakDI
 
+@MainActor
 @propertyWrapper
 public final class ObservedSynchro: ObservableObject {
     @Published public private(set) var wrappedValue: Synchro?
