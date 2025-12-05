@@ -75,39 +75,9 @@ struct ObservedUserTests {
         #expect(latestCachedUser == updatedUser, "The object should be in cache")
         #expect(observedUser == updatedUser, "The observed object should be up to date")
     }
-    
+
     @Test(.timeLimit(.minutes(1)))
     func doubleUpdateObservedUser() async throws {
-        // GIVEN
-        let cache = ServerCoherentCache()
-        let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        #expect(initialUser == nil, "Cache should initially be empty")
-
-        @ObservedUser(userDbId: ObservableData.expectedUserDbId, cacheObservation: cache) var observedUser: User?
-        let receivedValues = $observedUser.receivedValues
-        #expect(observedUser == nil, "User should initially be nil")
-
-        let expectedUser = ObservableData.expectedUser
-        await cache.addUser(expectedUser)
-
-        let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        #expect(cachedUser == expectedUser, "The cache should have been updated")
-
-        // WHEN
-        let updatedUser = ObservableData.updatedUser
-        await cache.addUser(updatedUser)
-        await cache.addUser(updatedUser)
-
-        // THEN
-        _ = await receivedValues.dropFirst().dropFirst().first(where: { $0 != nil })
-
-        let latestCachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        #expect(latestCachedUser == updatedUser, "The object should be in cache")
-        #expect(observedUser == updatedUser, "The observed object should be up to date")
-    }
-
-    @Test(.timeLimit(.minutes(1)))
-    func updateObservedUserTwice() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
