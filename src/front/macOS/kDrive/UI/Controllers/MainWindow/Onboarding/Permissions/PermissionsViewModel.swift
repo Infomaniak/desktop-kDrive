@@ -19,14 +19,73 @@
 import Combine
 import Foundation
 import kDriveCore
+import InfomaniakDI
+
+enum MacOSPermissionState: Sendable {
+    case neutral
+    case warning
+    case done
+}
 
 @MainActor
 final class PermissionsViewModel: ObservableObject {
-    @Published private(set) var permission: MacOSPermission = .endpointSecurityExtension
+    static let requiredPermissions: [MacOSPermission] = [.endpointSecurityExtension, .fullDiskAccess]
 
-    let flowCoordinator: OnboardingFlowCoordinator
+    @LazyInjectService private var permissionHander: MacOSPermissionHandling
+
+    @Published var currentPermission: MacOSPermission
+    @Published var currentState: MacOSPermissionState = .neutral
+
+    private let flowCoordinator: OnboardingFlowCoordinator
+
+    private var bindStore = Set<AnyCancellable>()
 
     init(flowCoordinator: OnboardingFlowCoordinator) {
         self.flowCoordinator = flowCoordinator
+
+        guard case .permissions(let permission) = flowCoordinator.currentStep else {
+            currentPermission = PermissionsViewModel.requiredPermissions[0]
+            return
+        }
+        currentPermission = permission
+
+        flowCoordinator.$currentStep
+            .receiveOnMain(store: &bindStore) { [weak self] newStep in
+                self?.updateCurrentPermission(from: newStep)
+            }
+    }
+
+    func updatePermissionStatus() {
+        Task {
+            let isAuthorized = await permissionHander.isAuthorized(for: currentPermission)
+            if isAuthorized {
+                currentState = .done
+            } else {
+                currentState = .warning
+            }
+        }
+    }
+
+    func navigateIfPossible() {
+        Task {
+            guard currentState == .done else { return }
+
+            switch currentPermission {
+            case .endpointSecurityExtension:
+                let nextPermission = MacOSPermission.fullDiskAccess
+                if await permissionHander.isAuthorized(for: nextPermission) {
+                    await flowCoordinator.navigateToNextStep()
+                } else {
+                    flowCoordinator.navigate(to: .permissions(nextPermission))
+                }
+            case .fullDiskAccess:
+                await flowCoordinator.navigateToNextStep()
+            }
+        }
+    }
+
+    private func updateCurrentPermission(from step: OnboardingStep) {
+        guard case .permissions(let permission) = step else { return }
+        currentPermission = permission
     }
 }

@@ -16,7 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import AppKit
+import Cocoa
 import Combine
 import Foundation
 import InfomaniakConcurrency
@@ -87,7 +87,7 @@ final class DriveSelectionViewModel: ObservableObject {
                 }
 
                 flowCoordinator.synchronizations = syncCandidates
-                flowCoordinator.navigateToNextStep()
+                await flowCoordinator.navigateToNextStep()
             } catch {
                 // TODO: Handle error
                 isLoading = false

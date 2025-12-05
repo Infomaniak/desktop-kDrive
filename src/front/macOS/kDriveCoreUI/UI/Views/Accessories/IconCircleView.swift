@@ -19,25 +19,47 @@
 import Cocoa
 import kDriveResources
 
-public final class DriveSquareView: NSView {
+public final class IconCircleView: NSView {
     static let iconSize = NSSize(width: 12, height: 12)
 
-    private let color: NSColor
+    public var color = NSColor.Tokens.Status.Medium.security {
+        didSet {
+            if #available(macOS 26.0, *) {
+                let backgroundView = self.backgroundView as? NSGlassEffectView
+                backgroundView?.tintColor = color
+            } else {
+                needsDisplay = true
+            }
+        }
+    }
 
-    private let iconView: NSImageView = {
-        let imageView = NSImageView(image: KDriveResources.kdriveFoldersStacked.image)
-        imageView.contentTintColor = .white
+    let icon: NSImage
+
+    private lazy var iconView: NSImageView = {
+        let imageView = NSImageView(image: icon)
         imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.contentTintColor = .white
         return imageView
     }()
 
-    public override var intrinsicContentSize: NSSize {
+    private lazy var backgroundView: NSView? = {
+        guard #available(macOS 26.0, *) else { return nil }
+
+        let backgroundView = NSGlassEffectView()
+        backgroundView.translatesAutoresizingMaskIntoConstraints = false
+        backgroundView.tintColor = color
+        backgroundView.cornerRadius = intrinsicContentSize.width / 2
+        return backgroundView
+    }()
+
+    override public var intrinsicContentSize: NSSize {
         return NSSize(width: 20, height: 20)
     }
 
-    public init(color: NSColor) {
-        self.color = color
+    public init(icon: NSImage) {
+        self.icon = icon
         super.init(frame: .zero)
+
         setupView()
     }
 
@@ -46,11 +68,9 @@ public final class DriveSquareView: NSView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    public override func draw(_ dirtyRect: NSRect) {
-        if #available(macOS 26.0, *) {
-            // Nothing to do, we use a NSGlassEffectView
-        } else {
-            let path = NSBezierPath(roundedRect: bounds, xRadius: AppRadius.radius4, yRadius: AppRadius.radius4)
+    override public func draw(_ dirtyRect: NSRect) {
+        if #unavailable(macOS 26.0) {
+            let path = NSBezierPath(ovalIn: NSRect(origin: .zero, size: intrinsicContentSize))
             color.setFill()
             path.fill()
         }
@@ -58,28 +78,27 @@ public final class DriveSquareView: NSView {
 
     private func setupView() {
         if #available(macOS 26.0, *) {
+            guard let backgroundView = backgroundView as? NSGlassEffectView else { return }
+
             let contentView = NSView()
             contentView.addSubview(iconView)
 
-            let backgroundView = NSGlassEffectView()
-            backgroundView.translatesAutoresizingMaskIntoConstraints = false
             backgroundView.contentView = contentView
-            backgroundView.tintColor = color
-            backgroundView.cornerRadius = AppRadius.radius4
             addSubview(backgroundView)
 
             NSLayoutConstraint.activate([
                 backgroundView.widthAnchor.constraint(equalTo: widthAnchor),
                 backgroundView.heightAnchor.constraint(equalTo: heightAnchor),
-                iconView.widthAnchor.constraint(equalToConstant: Self.iconSize.width),
-                iconView.heightAnchor.constraint(equalToConstant: Self.iconSize.height),
+                iconView.widthAnchor.constraint(equalToConstant: IconCircleView.iconSize.width),
+                iconView.heightAnchor.constraint(equalToConstant: IconCircleView.iconSize.height),
                 iconView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
                 iconView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
             ])
         } else {
+            addSubview(iconView)
             NSLayoutConstraint.activate([
-                iconView.widthAnchor.constraint(equalToConstant: Self.iconSize.width),
-                iconView.heightAnchor.constraint(equalToConstant: Self.iconSize.height),
+                iconView.widthAnchor.constraint(equalToConstant: IconCircleView.iconSize.width),
+                iconView.heightAnchor.constraint(equalToConstant: IconCircleView.iconSize.height),
                 iconView.centerXAnchor.constraint(equalTo: centerXAnchor),
                 iconView.centerYAnchor.constraint(equalTo: centerYAnchor)
             ])
@@ -89,6 +108,5 @@ public final class DriveSquareView: NSView {
 
 @available(macOS 14.0, *)
 #Preview {
-    let driveSquareView = DriveSquareView(color: NSColor(red: 0, green: 150, blue: 136, alpha: 1))
-    return driveSquareView
+    IconCircleView(icon: KDriveResources.checkmark.image)
 }
