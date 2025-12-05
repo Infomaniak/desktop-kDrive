@@ -25,6 +25,7 @@ public enum ObservationEvent<Some: Equatable>: Equatable {
     case removed
 }
 
+@MainActor
 @propertyWrapper
 public final class ObservedUser: ObservableObject {
     @Published public private(set) var wrappedValue: User?

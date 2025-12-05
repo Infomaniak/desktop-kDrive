@@ -19,18 +19,19 @@
 import Foundation
 @testable import InfomaniakDI
 @testable import kDriveCore
-import XCTest
+import Testing
 
-final class ObservedUserTests: XCTestCase {
-    func testSetObservedUser() async throws {
+@MainActor
+struct ObservedUserTests {
+    @Test func setObservedUser() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        XCTAssertNil(initialUser, "Cache should initially be empty")
+        #expect(initialUser == nil, "Cache should initially be empty")
 
         @ObservedUser(userDbId: ObservableData.expectedUserDbId, cacheObservation: cache) var observedUser: User?
         let receivedValues = $observedUser.receivedValues // Start to save the received values
-        XCTAssertNil(observedUser, "User should initially be nil")
+        #expect(observedUser == nil, "User should initially be nil")
 
         // WHEN
         let expectedUser = ObservableData.expectedUserWithAccounts
@@ -38,28 +39,28 @@ final class ObservedUserTests: XCTestCase {
 
         // THEN
         let lastReceivedObject = await receivedValues.first(where: { $0 != nil })
-        XCTAssertEqual(lastReceivedObject, expectedUser, "The object should be a received event")
+        #expect(lastReceivedObject == expectedUser, "The object should be a received event")
 
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        XCTAssertEqual(cachedUser, expectedUser, "The cache should have been updated")
-        XCTAssertEqual(observedUser, expectedUser, "The observed object should have been updated")
+        #expect(cachedUser == expectedUser, "The cache should have been updated")
+        #expect(observedUser == expectedUser, "The observed object should have been updated")
     }
 
-    func testUpdateObservedUser() async throws {
+    @Test func updateObservedUser() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        XCTAssertNil(initialUser, "Cache should initially be empty")
+        #expect(initialUser == nil, "Cache should initially be empty")
 
         @ObservedUser(userDbId: ObservableData.expectedUserDbId, cacheObservation: cache) var observedUser: User?
         let receivedValues = $observedUser.receivedValues
-        XCTAssertNil(observedUser, "User should initially be nil")
+        #expect(observedUser == nil, "User should initially be nil")
 
         let expectedUser = ObservableData.expectedUser
         await cache.addUser(expectedUser)
 
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        XCTAssertEqual(cachedUser, expectedUser, "The cache should have been updated")
+        #expect(cachedUser == expectedUser, "The cache should have been updated")
 
         // WHEN
         let updatedUser = ObservableData.updatedUser
@@ -69,25 +70,25 @@ final class ObservedUserTests: XCTestCase {
         _ = await receivedValues.dropFirst().first(where: { $0 != nil })
 
         let latestCachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        XCTAssertEqual(latestCachedUser, updatedUser, "The object should be in cache")
-        XCTAssertEqual(observedUser, updatedUser, "The observed object should be up to date")
+        #expect(latestCachedUser == updatedUser, "The object should be in cache")
+        #expect(observedUser == updatedUser, "The observed object should be up to date")
     }
 
-    func testUpdateObservedUserTwice() async throws {
+    @Test func updateObservedUserTwice() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        XCTAssertNil(initialUser, "Cache should initially be empty")
+        #expect(initialUser == nil, "Cache should initially be empty")
 
         @ObservedUser(userDbId: ObservableData.expectedUserDbId, cacheObservation: cache) var observedUser: User?
         let receivedValues = $observedUser.receivedValues
-        XCTAssertNil(observedUser, "User should initially be nil")
+        #expect(observedUser == nil, "User should initially be nil")
 
         let expectedUser = ObservableData.expectedUser
         await cache.addUser(expectedUser)
 
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        XCTAssertEqual(cachedUser, expectedUser, "The cache should have been updated")
+        #expect(cachedUser == expectedUser, "The cache should have been updated")
 
         // WHEN
         let updatedUser = ObservableData.updatedUser
@@ -98,34 +99,34 @@ final class ObservedUserTests: XCTestCase {
         _ = await receivedValues.dropFirst().dropFirst().first(where: { $0 != nil })
 
         let latestCachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        XCTAssertEqual(latestCachedUser, updatedUser, "The object should no longer be in cache")
-        XCTAssertEqual(observedUser, updatedUser, "The observed object should be up to date")
+        #expect(latestCachedUser == updatedUser, "The object should no longer be in cache")
+        #expect(observedUser == updatedUser, "The observed object should be up to date")
     }
 
-    func testRemoveObservedUser() async throws {
+    @Test func removeObservedUser() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
         let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        XCTAssertNil(initialUser, "Cache should initially be empty")
+        #expect(initialUser == nil, "Cache should initially be empty")
 
         @ObservedUser(userDbId: ObservableData.expectedUserDbId, cacheObservation: cache) var observedUser: User?
         let receivedValues = $observedUser.receivedValues
-        XCTAssertNil(observedUser, "User should initially be nil")
+        #expect(observedUser == nil, "User should initially be nil")
 
         let expectedUser = ObservableData.expectedUser
         await cache.addUser(expectedUser)
 
         let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        XCTAssertEqual(cachedUser, expectedUser, "The cache should have been updated")
+        #expect(cachedUser == expectedUser, "The cache should have been updated")
 
         // WHEN
         await cache.removeUser(dbId: ObservableData.expectedUserDbId)
 
         // THEN
-        _ = await receivedValues.first(where: { $0 == nil })
+        _ = await receivedValues.dropFirst().first(where: { $0 == nil })
 
         let latestCachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
-        XCTAssertNil(latestCachedUser, "The object should no longer be in cache")
-        XCTAssertNil(observedUser, "The observed object should be nil since the cache entry was deleted")
+        #expect(latestCachedUser == nil, "The object should no longer be in cache")
+        #expect(observedUser == nil, "The observed object should be nil since the cache entry was deleted")
     }
 }
