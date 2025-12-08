@@ -630,6 +630,41 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             await _commClient.SendRequestAsync(RequestNum.PARAMETERS_UPDATE, parms, cancellationToken);
         }
 
+        public async Task RefreshErrors(CancellationToken cancellationToken)
+        {
+            JsonObject parms = new()
+            {
+                [JsonKeys.Limit] = 1000
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.ERROR_INFOLIST, parms, cancellationToken);
+            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.ErrorInfoList))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.ErrorInfoList} not found in response.");
+                return;
+            }
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            options.Converters.Add(new Base64StringJsonConverter());
+            options.Converters.Add(new IntToDateTimeConverter());
+            List<ErrorInfo>? errorInfos = data.Params[JsonKeys.ErrorInfoList].Deserialize<List<ErrorInfo>>(options);
+            if (errorInfos is null)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to deserialize errorInfoList from ${data.Params[JsonKeys.ErrorInfoList]}.");
+                return;
+            }
+
+            await _viewModel.ClearAllErrorsAsync();
+            foreach (var errorInfo in errorInfos)
+            {
+                Error error = new();
+                CommStruct.ConversionHelper.copyToError(errorInfo, error);
+                await _viewModel.AddErrorAsync(error);
+            }
+        }
+
         // Signals
         public async void OnSignalReceived(object? sender, SignalEventArgs args)
         {
@@ -1000,7 +1035,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
 
             ConversionHelper.copyToError(errorInfo, error);
-            await _viewModel.AddError(error);
+            await _viewModel.AddErrorAsync(error);
         }
         public async Task HandleErrorRemovedAsync(object? sender, SignalEventArgs args)
         {
@@ -1017,7 +1052,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Logger.Log(Logger.Level.Error, "errorDbId is null.");
                 return;
             }
-            await _viewModel.RemoveErrorByDbId(errorDbId.Value);
+            await _viewModel.RemoveErrorByDbIdAsync(errorDbId.Value);
         }
 
         // Helpers

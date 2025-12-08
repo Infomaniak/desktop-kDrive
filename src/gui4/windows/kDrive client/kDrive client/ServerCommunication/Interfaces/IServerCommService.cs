@@ -66,8 +66,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task<List<NodeId>?> GetBlacklistedNodeIdList(DbId syncDbId, CancellationToken cancellationToken);
         Task SetBlacklistedNodeIdList(DbId syncDbId, List<NodeId> idList, CancellationToken cancellationToken);
 
-       // Setting-related requests
-       Task RefreshSettings(CancellationToken cancellationToken);
+        // Setting-related requests
+        Task RefreshSettings(CancellationToken cancellationToken);
 
         // Saves the settings provided in the Settings view model to the server.
         Task SaveSettings(CancellationToken cancellationToken);
@@ -76,6 +76,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task StartUpdate(CancellationToken cancellationToken);
         Task RefreshUpdaterVersionInfo(CancellationToken cancellationToken);
         Task ChangeUpdaterChannel(VersionChannel newChannel, CancellationToken cancellationToken);
+
+        // Error-related requests
+        Task RefreshErrors(CancellationToken cancellationToken);
 
         // Event handlers for user-related signals
         Task HandleUserUpdatedOrAddedAsync(object? sender, SignalEventArgs args);

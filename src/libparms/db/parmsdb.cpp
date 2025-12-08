@@ -485,7 +485,7 @@
     "syncDbId FROM "                                                                                                           \
     "error "                                                                                                                   \
     "ORDER BY time "                                                                                                           \
-    "LIMIT ?3;"
+    "LIMIT ?1;"
 
 #define SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST_ID "select_all_conflicts_by_syncdbid"
 #define SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST                                                                            \

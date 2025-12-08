@@ -53,7 +53,8 @@ namespace Infomaniak.kDrive.Types
         NODE_FOLDER_SIZE,
         NODE_CREATEMISSINGFOLDERS,
         ERROR_INFOLIST,
-        ERROR_GET_CONFLICTS,
+        ERROR_INFOLIST_LEGACY,
+        ERROR_GET_CONFLICTS_LEGACY,
         ERROR_DELETE_SERVER,
         ERROR_DELETE_SYNC,
         ERROR_DELETE_INVALIDTOKEN,
@@ -86,8 +87,7 @@ namespace Infomaniak.kDrive.Types
         UPDATER_VERSION_INFO,
         UPDATER_STATE,
         UPDATER_START_INSTALLER,
-        UPDATER_SKIP_VERSION,
-        EnumEnd
+        UPDATER_SKIP_VERSION
     };
 
     public enum SignalNum

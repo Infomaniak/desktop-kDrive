@@ -364,6 +364,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         public string? DestinationPath { get; set; }
         public ConflictType? ConflictType { get; set; }
         public InconsistencyType? InconsistencyType { get; set; }
+        public CancelType? CancelType { get; set; }
         public bool? AutoResolved { get; set; }
     }
 
@@ -382,6 +383,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             copyProperty(source, target, nameof(source.DestinationPath), nameof(target.DestinationPath));
             copyProperty(source, target, nameof(source.ConflictType), nameof(target.ConflictType));
             copyProperty(source, target, nameof(source.InconsistencyType), nameof(target.InconsistencyType));
+            copyProperty(source, target, nameof(source.CancelType), nameof(target.CancelType));
             copyProperty(source, target, nameof(source.AutoResolved), nameof(target.AutoResolved));
         }
     }

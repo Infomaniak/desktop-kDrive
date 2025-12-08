@@ -70,6 +70,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors
                 AddIfNotEmpty("Destination path:", Error.DestinationPath);
                 AddIfNotEmpty("Conflict type:", Error.ConflictType);
                 AddIfNotEmpty("Inconsistency type:", Error.InconsistencyType);
+                AddIfNotEmpty("Cancel Type:", Error.CancelType);
                 AddIfNotEmpty("Auto-resolved:", Error.AutoResolved);
 
                 string description = string.Join(Environment.NewLine, lines);

@@ -219,7 +219,8 @@ namespace Infomaniak.kDrive.ViewModels
             await serverCommService.RefreshDrives(new CancellationToken());
             await serverCommService.RefreshSyncs(new CancellationToken());
             await serverCommService.RefreshSettings(new CancellationToken());
-            Logger.Log(Logger.Level.Info, "All user data loaded successfully.");
+            await serverCommService.RefreshErrors(new CancellationToken());
+            Logger.Log(Logger.Level.Info, "All server data loaded successfully.");
             IsInitialized = true;
         }
 
@@ -229,7 +230,7 @@ namespace Infomaniak.kDrive.ViewModels
             await serverCommService.RemoveUser(userDbId, CancellationToken.None);
         }
 
-        public async Task AddError(Error error)
+        public async Task AddErrorAsync(Error error)
         {
             Logger.Log(Logger.Level.Info, $"AppModel: Adding error - {error}");
             if (error.ErrorLevel == Types.ErrorLevel.Server)
@@ -244,10 +245,10 @@ namespace Infomaniak.kDrive.ViewModels
                 Logger.Log(Logger.Level.Error, $"AppModel: Could not find sync with DbId {error.SyncDbId} for error {error}");
                 return;
             }
-            await sync.AddError(error);
+            await sync.AddErrorAsync(error);
         }
 
-        public async Task RemoveErrorByDbId(DbId errorDbId)
+        public async Task RemoveErrorByDbIdAsync(DbId errorDbId)
         {
             Logger.Log(Logger.Level.Info, $"AppModel: Removing error - {errorDbId}");
             var appError = AppErrors.FirstOrDefault(e => e.DbId == errorDbId);
@@ -262,12 +263,27 @@ namespace Infomaniak.kDrive.ViewModels
                 var syncError = sync.SyncErrors.FirstOrDefault(e => e.DbId == errorDbId);
                 if (syncError != null)
                 {
-                    await sync.RemoveError(syncError);
+                    // TODO: Check special errors and update related viewmodels if needed
+                    await sync.RemoveErrorAsync(syncError);
                     return;
                 }
             }
 
             Logger.Log(Logger.Level.Warning, $"AppModel: Could not find error with DbId {errorDbId} to remove.");
+        }
+
+        public async Task ClearAllErrorsAsync()
+        {
+            Logger.Log(Logger.Level.Info, "AppModel: Clearing all errors.");
+            foreach (var appError in AppErrors)
+            {
+                await RemoveErrorByDbIdAsync(appError.DbId);
+            }
+
+            foreach (var sync in AllSyncs)
+            {
+                await sync.ClearAllErrorsAsync();
+            }
         }
     }
 }

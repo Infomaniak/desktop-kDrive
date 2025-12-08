@@ -46,6 +46,7 @@
 #include "nodefoldersizejob.h"
 #include "blacklistednodelistjob.h"
 #include "blacklistednodesetlistjob.h"
+#include "errorinfolist.h"
 
 namespace KDC {
 
@@ -77,6 +78,7 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::NODE_FOLDER_SIZE, makeShared<NodeFolderSizeJob>},
                 {RequestNum::BLACKLISTED_NODE_LIST, makeShared<BlacklistedNodeListJob>},
                 {RequestNum::BLACKLISTED_NODE_SETLIST, makeShared<BlacklistedNodeSetListJob>},
+                {RequestNum::ERROR_INFOLIST, makeShared<ErrorInfolistJob>},
                 {RequestNum::NODE_INFO, makeShared<NodeInfoJob>}};
 }
 

@@ -34,6 +34,7 @@ namespace Infomaniak.kDrive.ViewModels
         private string _destinationPath = "";
         private ConflictType _conflictType = ConflictType.None;
         private InconsistencyType _inconsistencyType = InconsistencyType.None;
+        private CancelType _cancelType = CancelType.None;
         bool _autoResolved = false;
 
         public DbId DbId
@@ -100,6 +101,12 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _inconsistencyType;
             set => SetPropertyInUIThread(ref _inconsistencyType, value);
+        }
+
+        public CancelType CancelType
+        {
+            get => _cancelType;
+            set => SetPropertyInUIThread(ref _cancelType, value);
         }
 
         public bool AutoResolved

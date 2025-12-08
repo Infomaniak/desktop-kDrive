@@ -192,7 +192,7 @@ namespace Infomaniak.kDrive.ViewModels
 
         }
 
-        public async Task AddError(Error error)
+        public async Task AddErrorAsync(Error error)
         {
             if (error.ErrorLevel != Types.ErrorLevel.SyncPal && error.ErrorLevel != Types.ErrorLevel.Node)
             {
@@ -204,14 +204,26 @@ namespace Infomaniak.kDrive.ViewModels
             await Utility.RunOnUIThread(() => SyncErrors.Add(error));
         }
 
-        public async Task RemoveError(Error error)
+        public async Task RemoveErrorAsync(Error error)
         {
             Logger.Log(Logger.Level.Info, $"Sync {DbId}: Removing error {error.ExitCode} - {error.Path}");
             await Utility.RunOnUIThread(() =>
             {
+                // TODO: Check special errors and update related viewmodels if needed
                 if (!SyncErrors.Remove(error))
                     Logger.Log(Logger.Level.Warning, $"Sync {DbId}: Tried to remove non-existing error {error.ExitCode} - {error.Path}");
             });
         }
+
+        public async Task ClearAllErrorsAsync()
+        {
+            // Call RemoveError for each error to ensure proper handling (RemoveError is responsible for some viewmodel updates)
+            foreach (var error in SyncErrors)
+            {
+                Logger.Log(Logger.Level.Info, $"Sync {DbId}: Clearing error {error.ExitCode} - {error.Path}");
+                await RemoveErrorAsync(error);
+            }
+        }
+
     }
 }
