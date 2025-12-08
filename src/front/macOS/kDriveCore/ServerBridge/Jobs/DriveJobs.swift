@@ -20,13 +20,44 @@ import Foundation
 import InfomaniakConcurrency
 import InfomaniakDI
 
+public extension CoherentCache {
+    func addDriveResponse(_ driveResponse: DriveResponse) async throws {
+        let accountDbId = driveResponse.accountDbId
+        guard var account = await getAccount(accountDbId: accountDbId) else {
+            throw ServerCoherentCache.CacheError.accountNotFound(accountDbId)
+        }
+
+        let drive = driveResponse.asDrive(accountId: account.id,
+                                          userDbId: account.userDbId)
+        account.drives[drive.driveDbId] = drive
+
+        try await updateAccount(account)
+    }
+}
+
 public struct DriveJobs: Sendable {
     @LazyInjectService private var coherentCache: CoherentCache
     @LazyInjectService private var queryFetcher: XPCQueryFetcherProtocol
 
     public init() {}
 
-    public func availableDrives(userDbId: Int32) async throws -> [DriveResponse] {
+    public func driveInfoList() async throws -> [DriveResponse] {
+        IKLogger.data.log("Query for driveInfoList")
+        let query = EmptyQuery()
+        let request = await RequestMessage<EmptyQuery>(num: RequestNum.DRIVE_INFOLIST, body: query)
+
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<DriveInfoListResponse>.self)
+
+        try decodedMessage.validate()
+
+        let driveList = decodedMessage.body.driveInfoList
+
+        await driveList.asyncForEach { try? await coherentCache.addDriveResponse($0) }
+
+        return driveList
+    }
+
+    public func availableDrives(userDbId: Int32) async throws -> [AvailableDriveResponse] {
         IKLogger.data.log("Query for availableDrives list")
         let query = DriveListQuery(userDbId: userDbId)
         let request = await RequestMessage<DriveListQuery>(num: RequestNum.USER_AVAILABLEDRIVES, body: query)

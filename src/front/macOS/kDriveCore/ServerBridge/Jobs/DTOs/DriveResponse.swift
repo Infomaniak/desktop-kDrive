@@ -35,6 +35,54 @@ struct DriveSearchQuery: Codable, Sendable {
     let searchString: String
 }
 
+struct DriveInfoListResponse: Codable, Sendable {
+    let driveInfoList: [DriveResponse]
+}
+
+public struct DriveResponse: Codable, Sendable {
+    let driveDbId: Int32
+    let driveId: Int32
+    let accountDbId: Int32
+    @Base64CodedColor var color: HexColor
+    @Base64CodedString var name: String
+    let accessDenied: Bool
+    let admin: Bool
+    let locked: Bool
+    let maintenance: Bool
+    let notifications: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case driveDbId = "dbId"
+        case driveId = "id"
+        case accountDbId
+        case color
+        case name
+        case accessDenied
+        case admin
+        case locked
+        case maintenance
+        case notifications
+    }
+}
+
+extension DriveResponse {
+    func asDrive(accountId: Int32, userDbId: Int32, synchros: IndexedSynchros = [:]) -> Drive {
+        Drive(driveDbId: driveDbId,
+              driveId: driveId,
+              accountDbId: accountDbId,
+              accountId: accountId,
+              userDbId: userDbId,
+              name: name,
+              color: color,
+              accessDenied: accessDenied,
+              admin: admin,
+              locked: locked,
+              maintenance: maintenance,
+              notifications: notifications,
+              synchros: synchros)
+    }
+}
+
 struct DriveListResponse: Codable, Sendable {
     let driveAvailableInfoList: [AvailableDriveResponse]
 }

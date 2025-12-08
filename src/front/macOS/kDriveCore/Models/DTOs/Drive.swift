@@ -21,15 +21,14 @@ import Foundation
 public typealias IndexedDrives = [Int32: Drive]
 
 public enum DriveType: Equatable, Hashable, Sendable {
-    case available
-    case full(driveDbId: Int32, synchros: IndexedSynchros)
+    case available(userId: Int32)
+    case full(driveDbId: Int32, accountDbId: Int32, synchros: IndexedSynchros)
 }
 
 public protocol DriveRepresentation: Identifiable, Hashable, Sendable {
     var driveId: Int32 { get }
     var accountId: Int32 { get }
     var userDbId: Int32 { get }
-    var userId: Int32 { get }
     var name: String { get }
     var color: HexColor? { get }
     var type: DriveType { get }
@@ -37,21 +36,26 @@ public protocol DriveRepresentation: Identifiable, Hashable, Sendable {
 
 public struct Drive: DriveRepresentation {
     public var id: Int32 {
-        driveDbId
-    }
-
-    public var type: DriveType {
-        .full(driveDbId: driveDbId, synchros: synchros)
+        driveId
     }
 
     public let driveDbId: Int32
     public let driveId: Int32
+    public let accountDbId: Int32
     public let accountId: Int32
     public let userDbId: Int32
-    public let userId: Int32
     public let name: String
     public let color: HexColor?
+    public let accessDenied: Bool
+    public let admin: Bool
+    public let locked: Bool
+    public let maintenance: Bool
+    public let notifications: Bool
     public var synchros: IndexedSynchros
+
+    public var type: DriveType {
+        .full(driveDbId: driveDbId, accountDbId: accountDbId, synchros: synchros)
+    }
 }
 
 public typealias IndexedAvailableDrives = [Int32: AvailableDrive]
@@ -68,5 +72,7 @@ public struct AvailableDrive: DriveRepresentation {
     public let name: String
     public let color: HexColor?
 
-    public let type = DriveType.available
+    public var type: DriveType {
+        .available(userId: userId)
+    }
 }
