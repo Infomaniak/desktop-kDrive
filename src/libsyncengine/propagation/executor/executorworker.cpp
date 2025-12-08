@@ -534,7 +534,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
 
         } else {
             if (syncOp->affectedNode()->type() == NodeType::Directory) {
-                job = std::make_shared<LocalCreateDirJob>(absoluteLocalFilePath, syncOp->affectedNode()->isSpecialFolder());
+                job = std::make_shared<LocalCreateDirJob>(absoluteLocalFilePath, syncOp->affectedNode()->isSharedFolder());
             } else {
                 bool exists = false;
                 IoError ioError = IoError::Success;
