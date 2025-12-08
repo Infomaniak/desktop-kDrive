@@ -54,11 +54,11 @@ Poco::JSON::Object createParametersInfoObject() {
 
     Poco::JSON::Object proxyConfigInfoObj;
     (void) proxyConfigInfoObj.set("type", toInt(ProxyType::HTTP));
-    (void) proxyConfigInfoObj.set("hostName", toBase64("myHostName"));
+    (void) proxyConfigInfoObj.set("hostName", toBase64(Str("myHostName")));
     (void) proxyConfigInfoObj.set("port", 6666);
     (void) proxyConfigInfoObj.set("needsAuth", true);
-    (void) proxyConfigInfoObj.set("user", toBase64("john.doe"));
-    (void) proxyConfigInfoObj.set("pwd", toBase64("1234"));
+    (void) proxyConfigInfoObj.set("user", toBase64(Str("john.doe")));
+    (void) proxyConfigInfoObj.set("pwd", toBase64(Str("1234")));
 
     (void) parametersInfoObj.set("proxyConfigInfo", proxyConfigInfoObj);
 
@@ -66,8 +66,8 @@ Poco::JSON::Object createParametersInfoObject() {
     (void) parametersInfoObj.set("showShortcuts", false);
 
     Poco::JSON::Object dialogGeometryObj;
-    (void) dialogGeometryObj.set("preferencesWindow", toBase64("blob1234"));
-    (void) dialogGeometryObj.set("drivePreferencesPanel", toBase64("blob4567"));
+    (void) dialogGeometryObj.set("preferencesWindow", toBase64(Str("blob1234")));
+    (void) dialogGeometryObj.set("drivePreferencesPanel", toBase64(Str("blob4567")));
 
     (void) parametersInfoObj.set("dialogGeometry", dialogGeometryObj);
     (void) parametersInfoObj.set("maxAllowedCpu", 50);

@@ -39,15 +39,15 @@ CommString beautifulString(const Poco::JSON::Object &obj) {
     Poco::Dynamic::Var dynamicVar = parser.parse(answerStdStr);
     Poco::DynamicStruct paramsStruct = *dynamicVar.extract<Poco::JSON::Object::Ptr>();
 
-    return Poco::Dynamic::structToString(paramsStruct);
+    return CommonUtility::str2CommString(Poco::Dynamic::structToString(paramsStruct));
 }
 
 CommString stringifyQueryObj(const Poco::JSON::Object &obj) {
-    return CommonUtility::str2CommString(beautifulString(obj));
+    return beautifulString(obj);
 }
 
 CommString stringifyAnswerObj(const Poco::JSON::Object &obj) {
-    return CommonUtility::str2CommString(beautifulString(obj));
+    return beautifulString(obj);
 }
 
 CommString stringifyCbkAnswerObj(const Poco::JSON::Object &obj) {
