@@ -566,6 +566,15 @@ bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isM
     return true;
 }
 
+bool Utility::isLiteSyncExtError(const ExitInfo &exitInfo) {
+#if defined(KD_MACOS)
+    return (exitInfo.code() == ExitCode::SystemError &&
+            (exitInfo.cause() == ExitCause::LiteSyncNotAllowed || exitInfo.cause() == ExitCause::LiteSyncExtNotRunning));
+#else
+    return false;
+#endif
+}
+
 bool Utility::getLinuxDesktopType(std::string &currentDesktop) {
     const std::string xdgCurrentDesktop = CommonUtility::envVarValue("XDG_CURRENT_DESKTOP");
     if (xdgCurrentDesktop.empty()) {

@@ -68,21 +68,21 @@ ExitInfo VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &c
         installationDone = _connector->install(activationDone);
         if (!installationDone) {
             LOG_WARN(logger(), "Error in LiteSyncExtConnector::install!");
-            return {ExitCode::SystemError, ExitCause::UnableToCreateVfs};
+            return {ExitCode::SystemError, ExitCause::UnableToStartVfs};
         }
     }
 
     if (!activationDone) {
         LOG_INFO(logger(), "LiteSync extension activation pending");
         connectionDone = false;
-        return {ExitCode::SystemError, ExitCause::UnableToCreateVfs};
+        return {ExitCode::SystemError, ExitCause::UnableToStartVfs};
     }
 
     if (!connectionDone) {
         connectionDone = _connector->connect();
         if (!connectionDone) {
             LOG_WARN(logger(), "Error in LiteSyncExtConnector::connect!");
-            return {ExitCode::SystemError, ExitCause::UnableToCreateVfs};
+            return {ExitCode::SystemError, ExitCause::UnableToStartVfs};
         }
     }
 
@@ -96,7 +96,7 @@ ExitInfo VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &c
     if (!_connector->vfsStart(_vfsSetupParams.syncDbId, _vfsSetupParams.localPath, isPlaceholder, isSyncing)) {
         LOG_WARN(logger(), "Error in vfsStart!");
         resetLiteSyncConnector();
-        return {ExitCode::SystemError, ExitCause::UnableToCreateVfs};
+        return {ExitCode::SystemError, ExitCause::UnableToStartVfs};
     }
 
     if (std::list<SyncPath> filesToFix;
@@ -128,7 +128,7 @@ ExitInfo VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &c
                 ok = false;
             }
         }
-        return ok ? ExitInfo(ExitCode::Ok) : ExitInfo(ExitCode::SystemError, ExitCause::UnableToCreateVfs);
+        return ok ? ExitInfo(ExitCode::Ok) : ExitInfo(ExitCode::SystemError, ExitCause::UnableToStartVfs);
     }
 
     return ExitCode::Ok;
