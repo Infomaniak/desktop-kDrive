@@ -53,7 +53,6 @@ bool Utility::preventSleeping(bool enable) {
 }
 
 void runKillCommand(pid_t pid) {
-    if (pid < 0) return; // If pid == -1 a kill would be broadcasted to all processes belonging to the user
     NSString *killCommand = [NSString stringWithFormat:@"kill -9 %d", pid];
     LOG_DEBUG(Log::instance()->getLogger(), "Running kill command: " << killCommand.UTF8String);
     system(killCommand.UTF8String);
@@ -64,10 +63,7 @@ void Utility::restartFinderExtension() {
     NSString *processName = [NSString stringWithFormat:@"%@.Extension", bundleID];
     NSArray<NSRunningApplication *> *apps = [NSRunningApplication runningApplicationsWithBundleIdentifier:processName];
     LOG_DEBUG(Log::instance()->getLogger(), "Killing Finder Extension");
-    for (NSRunningApplication *app: apps) {
-        if (app.terminated) continue;
-        runKillCommand(app.processIdentifier);
-    }
+    for (NSRunningApplication *app: apps) runKillCommand(app.processIdentifier);
 
     // Before macOS 15.0, and when other Finder extension (e.g. Goggle Drive) were installed,
     // it was needed to got to "System Settings -> Privacy & Security -> Extensions -> Added Extensions"
