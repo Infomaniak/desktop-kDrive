@@ -1,8 +1,8 @@
 using Infomaniak.kDrive.Pages.Settings;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using System;
 using System.Collections.Generic;
@@ -23,14 +23,18 @@ namespace Infomaniak.kDrive.CustomControls
         private Dictionary<string, Type> _navigationPages = new Dictionary<string, Type>()
         {
             { "HomePage", typeof(Pages.HomePage) },
-            // { "ActivityPage", typeof(Pages.ActivityPage) },
-            { "ActivityPage", typeof(Pages.ErrorPage) },
+            { "ActivityPage", typeof(Pages.ActivityPage) },
             { "SettingsPage", typeof(Pages.Settings.SettingsPage) },
             { "StoragePage", typeof(Pages.StoragePage) }
         };
         public AppNavigationView()
         {
             InitializeComponent();
+            Loaded += AppNavigationView_Loaded;
+        }
+
+        private void AppNavigationView_Loaded(object sender, RoutedEventArgs e)
+        {
             Frame.Navigated += Frame_Navigated;
         }
 

@@ -34,11 +34,6 @@
                 <Run Text="{x:Bind ViewModel.SelectedSync.SyncErrors.Count, Mode=OneWay}" />
                 <Run Text=" erreurs de synchronisation à corriger." />
             </TextBlock>
-
-            <Button Grid.Column="1"
-                    HorizontalAlignment="Right"
-                    Content="Actualiser la liste" />
-
         </Grid>
 
         <ListView Grid.Row="2"
@@ -47,7 +42,7 @@
                   IsItemClickEnabled="False">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="viewmodels:Error">
-                    <errors:DefaultError Error="{x:Bind Mode=OneWay}" />
+                    <errors:ErrorPresenter Error="{x:Bind Mode=OneWay}" />
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>

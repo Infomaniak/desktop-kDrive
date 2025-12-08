@@ -239,13 +239,12 @@ namespace Infomaniak.kDrive.ViewModels
                 return;
             }
 
-            var sync = AllSyncs.FirstOrDefault(s => s.DbId == error.SyncDbId);
-            if (sync == null)
+            if (error.Sync == null)
             {
-                Logger.Log(Logger.Level.Error, $"AppModel: Could not find sync with DbId {error.SyncDbId} for error {error}");
+                Logger.Log(Logger.Level.Error, $"AppModel: Cannot add sync error without associated sync - {error}");
                 return;
             }
-            await sync.AddErrorAsync(error);
+            await error.Sync.AddErrorAsync(error);
         }
 
         public async Task RemoveErrorByDbIdAsync(DbId errorDbId)

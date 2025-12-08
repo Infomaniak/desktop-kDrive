@@ -661,6 +661,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 Error error = new();
                 CommStruct.ConversionHelper.copyToError(errorInfo, error);
+                error.Sync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == errorInfo.SyncDbId);
                 await _viewModel.AddErrorAsync(error);
             }
         }
@@ -1035,6 +1036,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
 
             ConversionHelper.copyToError(errorInfo, error);
+            error.Sync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == errorInfo.SyncDbId);
             await _viewModel.AddErrorAsync(error);
         }
         public async Task HandleErrorRemovedAsync(object? sender, SignalEventArgs args)

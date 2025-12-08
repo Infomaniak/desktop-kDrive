@@ -189,7 +189,8 @@
                                               Grid.Column="0"
                                               VerticalAlignment="Center"
                                               HorizontalAlignment="Left"
-                                              UriString="{x:Bind Status, Converter={StaticResource SyncActivityStatusToIconConverter}, Mode=OneWay}" />
+                                              UriString="{x:Bind Status, Converter={StaticResource SyncActivityStatusToIconConverter}, Mode=OneWay}" 
+                                              PointerPressed="ItemErrorIcon_PointerPressed"/>
                             <controls:SvgIcon Width="16"
                                               Grid.Column="1"
                                               VerticalAlignment="Center"

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="Infomaniak.kDrive.CustomControls.Errors.ForbiddenCharError"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:Infomaniak.kDrive.CustomControls.Errors"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converters="using:Infomaniak.kDrive.Converters"
+             mc:Ignorable="d">
+    <UserControl.Resources>
+        <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />
+        <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
+    </UserControl.Resources>
+    <local:ErrorCard x:Name="ErrorCard"
+                     Title="Charactère non supporté"
+                     Description="Le nom de ce fichier contient un ou plusieurs charactères non supportés par le système de fichiers."
+                     ItemIconUri="{x:Bind _error.Path, Converter={StaticResource FilePathToIconConverter}, Mode=OneWay}"
+                     ItemName="{x:Bind _error.Path, Converter={StaticResource StringPathToFileNameConverter}, Mode=OneWay}" />
+</UserControl>

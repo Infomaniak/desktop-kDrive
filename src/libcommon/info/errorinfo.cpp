@@ -35,6 +35,7 @@ static const auto outParamsDestinationPath = "destinationPath";
 static const auto outParamsConflictType = "conflictType";
 static const auto outParamsInconsistencyType = "inconsistencyType";
 static const auto outParamsCancelType = "cancelType";
+static const auto outParamsAutoResolved = "autoResolved";
 
 namespace KDC {
 
@@ -99,6 +100,7 @@ void ErrorInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, outParamsConflictType, _conflictType);
     CommonUtility::writeValueToStruct(dstruct, outParamsInconsistencyType, _inconsistencyType);
     CommonUtility::writeValueToStruct(dstruct, outParamsCancelType, _cancelType);
+    CommonUtility::writeValueToStruct(dstruct, outParamsAutoResolved, _autoResolved);
 }
 
 QDataStream &operator>>(QDataStream &in, ErrorInfo &errorInfo) {

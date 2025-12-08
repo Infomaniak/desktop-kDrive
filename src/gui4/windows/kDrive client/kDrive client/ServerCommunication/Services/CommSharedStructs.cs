@@ -375,7 +375,6 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             copyProperty(source, target, nameof(source.DbId), nameof(target.DbId));
             copyProperty(source, target, nameof(source.Time), nameof(target.Timestamp));
             copyProperty(source, target, nameof(source.Level), nameof(target.ErrorLevel));
-            copyProperty(source, target, nameof(source.SyncDbId), nameof(target.SyncDbId));
             copyProperty(source, target, nameof(source.ExitCode), nameof(target.ExitCode));
             copyProperty(source, target, nameof(source.ExitCause), nameof(target.ExitCause));
             copyProperty(source, target, nameof(source.NodeType), nameof(target.NodeType));

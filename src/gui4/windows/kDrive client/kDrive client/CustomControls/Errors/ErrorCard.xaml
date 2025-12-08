@@ -30,20 +30,21 @@
         <TextBlock Grid.Row="0"
                    Grid.Column="0"
                    Text="{x:Bind Title, Mode=OneWay}"
-                   Style="{StaticResource BodyStrongTextBlockStyle}" />
+                   Style="{StaticResource BodyTextBlockStyle}" />
 
         <!-- Item infos -->
         <StackPanel Grid.Row="1"
                     Grid.Column="0"
                     Orientation="Horizontal"
                     Spacing="{StaticResource Infomaniak.Style.Spacing.S}"
+                    Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.XS}"
                     Visibility="{x:Bind ItemName, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True'}">
             <controls:SvgIcon UriString="{x:Bind ItemIconUri, Mode=OneWay}"
                               Width="16"
                               Height="16" />
 
             <TextBlock Text="{x:Bind ItemName, Mode=OneWay}"
-                       Style="{StaticResource BodyStrongTextBlockStyle}" />
+                       Style="{StaticResource BodyTextBlockStyle}" />
         </StackPanel>
 
         <!-- Description -->

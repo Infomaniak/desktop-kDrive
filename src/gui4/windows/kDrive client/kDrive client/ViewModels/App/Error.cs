@@ -26,7 +26,7 @@ namespace Infomaniak.kDrive.ViewModels
         private DbId _DbId = -1;
         private DateTime _timestamp = DateTime.MinValue;
         private ErrorLevel _errorLevel = ErrorLevel.Unknown;
-        private DbId _syncDbId = -1;
+        private Sync? _sync;
         private ExitCode _exitCode = ExitCode.Unknown;
         private ExitCause _exitCause = ExitCause.Unknown;
         NodeType _nodeType = NodeType.Unknown;
@@ -55,10 +55,10 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _errorLevel, value);
         }
 
-        public DbId SyncDbId
+        public Sync? Sync
         {
-            get => _syncDbId;
-            set => SetPropertyInUIThread(ref _syncDbId, value);
+            get => _sync;
+            set => SetPropertyInUIThread(ref _sync, value);
         }
 
         public ExitCode ExitCode

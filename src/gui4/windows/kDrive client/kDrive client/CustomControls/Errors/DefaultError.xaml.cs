@@ -11,27 +11,13 @@ namespace Infomaniak.kDrive.CustomControls.Errors
 {
     public sealed partial class DefaultError : UserControl
     {
-        public DefaultError()
+        private Error _error;
+        public DefaultError(Error error)
         {
             this.InitializeComponent();
+            _error = error;
+            UpdateCard();
         }
-
-        public Error Error
-        {
-            get
-            {
-                return (Error)GetValue(ErrorProperty);
-            }
-            set
-            {
-                SetValue(ErrorProperty, value);
-                UpdateCard();
-            }
-        }
-
-        public static readonly DependencyProperty ErrorProperty =
-         DependencyProperty.Register(nameof(Error), typeof(Error), typeof(ErrorCard), new PropertyMetadata(null));
-
 
         private async void ErrorCard_ActionClick(object sender, RoutedEventArgs e)
         {
@@ -40,9 +26,9 @@ namespace Infomaniak.kDrive.CustomControls.Errors
 
         private void UpdateCard()
         {
-            if (Error != null)
+            if (_error != null)
             {
-                ErrorCard.Title = $"{Error.ExitCode.ToString()} - {Error.ExitCause.ToString()}";
+                ErrorCard.Title = $"{_error.ExitCode.ToString()} - {_error.ExitCause.ToString()}";
                 var lines = new List<string>
                 {
                     "An unexpected error has occurred.",
@@ -60,18 +46,18 @@ namespace Infomaniak.kDrive.CustomControls.Errors
 
                     lines.Add($"{label,-20} {text}");
                 }
-                AddIfNotEmpty("DbId:", Error.DbId);
-                AddIfNotEmpty("Timestamp:", Error.Timestamp);
-                AddIfNotEmpty("Error level:", Error.ErrorLevel);
-                AddIfNotEmpty("Exit code:", Error.ExitCode);
-                AddIfNotEmpty("Exit cause:", Error.ExitCause);
-                AddIfNotEmpty("Node type:", Error.NodeType);
-                AddIfNotEmpty("Path:", Error.Path);
-                AddIfNotEmpty("Destination path:", Error.DestinationPath);
-                AddIfNotEmpty("Conflict type:", Error.ConflictType);
-                AddIfNotEmpty("Inconsistency type:", Error.InconsistencyType);
-                AddIfNotEmpty("Cancel Type:", Error.CancelType);
-                AddIfNotEmpty("Auto-resolved:", Error.AutoResolved);
+                AddIfNotEmpty("DbId:", _error.DbId);
+                AddIfNotEmpty("Timestamp:", _error.Timestamp);
+                AddIfNotEmpty("Error level:", _error.ErrorLevel);
+                AddIfNotEmpty("Exit code:", _error.ExitCode);
+                AddIfNotEmpty("Exit cause:", _error.ExitCause);
+                AddIfNotEmpty("Node type:", _error.NodeType);
+                AddIfNotEmpty("Path:", _error.Path);
+                AddIfNotEmpty("Destination path:", _error.DestinationPath);
+                AddIfNotEmpty("Conflict type:", _error.ConflictType);
+                AddIfNotEmpty("Inconsistency type:", _error.InconsistencyType);
+                AddIfNotEmpty("Cancel Type:", _error.CancelType);
+                AddIfNotEmpty("Auto-resolved:", _error.AutoResolved);
 
                 string description = string.Join(Environment.NewLine, lines);
                 ErrorCard.Description = description;
