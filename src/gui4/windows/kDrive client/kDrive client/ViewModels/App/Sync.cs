@@ -84,29 +84,7 @@ namespace Infomaniak.kDrive.ViewModels
                 {
                     LastActivity = null;
                 }
-
             };
-
-            // Fake sync level error for testing
-            Error testSyncError = new();
-            testSyncError.DbId = 1;
-            testSyncError.SyncDbId = DbId;
-            testSyncError.Timestamp = DateTime.Now;
-            testSyncError.ErrorLevel = ErrorLevel.SyncPal;
-            testSyncError.ExitCode = ExitCode.SystemError;
-            testSyncError.ExitCause = ExitCause.SyncDirAccessError;
-            AddError(testSyncError);
-
-            // Fake node level error for testing
-            Error testNodeError = new();
-            testNodeError.DbId = 2;
-            testNodeError.SyncDbId = DbId;
-            testNodeError.Timestamp = DateTime.Now;
-            testNodeError.ErrorLevel = ErrorLevel.Node;
-            testNodeError.Path = "/path/to/error/file.txt";
-            testNodeError.ExitCode = ExitCode.SystemError;
-            testNodeError.ExitCause = ExitCause.FileAccessError;
-            AddError(testNodeError);
         }
 
         public DbId DbId
@@ -214,7 +192,7 @@ namespace Infomaniak.kDrive.ViewModels
 
         }
 
-        public void AddError(Error error)
+        public async Task AddError(Error error)
         {
             if (error.ErrorLevel != Types.ErrorLevel.SyncPal && error.ErrorLevel != Types.ErrorLevel.Node)
             {
@@ -223,15 +201,17 @@ namespace Infomaniak.kDrive.ViewModels
             }
 
             Logger.Log(Logger.Level.Info, $"Sync {DbId}: Adding error {error.ExitCode} - {error.Path}");
-            SyncErrors.Add(error);
+            await Utility.RunOnUIThread(() => SyncErrors.Add(error));
         }
 
-        public void RemoveError(Error error)
+        public async Task RemoveError(Error error)
         {
             Logger.Log(Logger.Level.Info, $"Sync {DbId}: Removing error {error.ExitCode} - {error.Path}");
-            if (!SyncErrors.Remove(error)){
-                Logger.Log(Logger.Level.Warning, $"Sync {DbId}: Tried to remove non-existing error {error.ExitCode} - {error.Path}");
-            }
+            await Utility.RunOnUIThread(() =>
+            {
+                if (!SyncErrors.Remove(error))
+                    Logger.Log(Logger.Level.Warning, $"Sync {DbId}: Tried to remove non-existing error {error.ExitCode} - {error.Path}");
+            });
         }
     }
 }

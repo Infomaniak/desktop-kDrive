@@ -121,7 +121,7 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool updateAllExclusionApps(bool def, const std::vector<ExclusionApp> &exclusionAppList);
 #endif
 
-        bool insertError(const Error &err);
+        bool insertError(Error &err);
         bool updateError(const Error &err, bool &found);
         bool deleteAllErrorsByExitCode(ExitCode exitCode);
         bool deleteAllErrorsByExitCause(ExitCause exitCause);

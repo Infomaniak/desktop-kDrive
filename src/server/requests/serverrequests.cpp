@@ -21,6 +21,7 @@
 #endif
 
 #include "serverrequests.h"
+#include "appserver.h"
 #include "config.h"
 #include "keychainmanager/keychainmanager.h"
 #include "jobs/network/kDrive_API/getrootfilelistjob.h"
@@ -43,6 +44,7 @@
 #include "libcommonserver/utility/utility.h"
 #include "libsyncengine/requests/parameterscache.h"
 #include "libsyncengine/requests/exclusiontemplatecache.h"
+#include "server/comm/guijobs/signalerrorremovedjob.h"
 
 #include <QDir>
 #include <QUuid>
@@ -1618,6 +1620,7 @@ ExitCode ServerRequests::deleteErrorsForSync(const int syncDbId, const bool auto
                 LOG_WARN(Log::instance()->getLogger(), "Error not found for dbId=" << error.dbId());
                 return ExitCode::DataError;
             }
+            AppServer::commManager()->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(error.dbId()));
         }
     }
 

@@ -999,7 +999,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
 
             ConversionHelper.copyToError(errorInfo, error);
-            _viewModel.AddError(error);
+            await _viewModel.AddError(error);
         }
         public async Task HandleErrorRemovedAsync(object? sender, SignalEventArgs args)
         {
@@ -1016,7 +1016,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Logger.Log(Logger.Level.Error, "errorDbId is null.");
                 return;
             }
-            _viewModel.RemoveErrorByDbId(errorDbId.Value);
+            await _viewModel.RemoveErrorByDbId(errorDbId.Value);
         }
 
         // Helpers

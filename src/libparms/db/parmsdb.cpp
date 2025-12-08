@@ -2806,12 +2806,12 @@ bool ParmsDb::updateAllExclusionApps(bool def, const std::vector<ExclusionApp> &
 }
 #endif
 
-bool ParmsDb::insertError(const Error &err) {
+bool ParmsDb::insertError(Error &err) {
     const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
-
+    int64_t dbId = -1;
     LOG_IF_FAIL(queryResetAndClearBindings(INSERT_ERROR_REQUEST_ID));
     LOG_IF_FAIL(queryBindValue(INSERT_ERROR_REQUEST_ID, 1, err.time()));
     LOG_IF_FAIL(queryBindValue(INSERT_ERROR_REQUEST_ID, 2, toInt(err.level())));
@@ -2829,11 +2829,11 @@ bool ParmsDb::insertError(const Error &err) {
     LOG_IF_FAIL(queryBindValue(INSERT_ERROR_REQUEST_ID, 14, toInt(err.inconsistencyType())));
     LOG_IF_FAIL(queryBindValue(INSERT_ERROR_REQUEST_ID, 15, toInt(err.cancelType())));
     LOG_IF_FAIL(queryBindValue(INSERT_ERROR_REQUEST_ID, 16, err.destinationPath()));
-    if (!queryExec(INSERT_ERROR_REQUEST_ID, errId, error)) {
+    if (!queryExecAndGetRowId(INSERT_ERROR_REQUEST_ID, dbId, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << INSERT_ERROR_REQUEST_ID);
         return false;
     }
-
+    err.setDbId(dbId);
     return true;
 }
 

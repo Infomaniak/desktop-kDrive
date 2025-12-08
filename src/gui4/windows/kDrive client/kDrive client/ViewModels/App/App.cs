@@ -32,6 +32,7 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Networking.Connectivity;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Infomaniak.kDrive.ViewModels
 
@@ -228,7 +229,7 @@ namespace Infomaniak.kDrive.ViewModels
             await serverCommService.RemoveUser(userDbId, CancellationToken.None);
         }
 
-        public void AddError(Error error)
+        public async Task AddError(Error error)
         {
             Logger.Log(Logger.Level.Info, $"AppModel: Adding error - {error}");
             if (error.ErrorLevel == Types.ErrorLevel.Server)
@@ -243,17 +244,16 @@ namespace Infomaniak.kDrive.ViewModels
                 Logger.Log(Logger.Level.Error, $"AppModel: Could not find sync with DbId {error.SyncDbId} for error {error}");
                 return;
             }
-
-            sync.AddError(error);
+            await sync.AddError(error);
         }
 
-        public void RemoveErrorByDbId(DbId errorDbId)
+        public async Task RemoveErrorByDbId(DbId errorDbId)
         {
             Logger.Log(Logger.Level.Info, $"AppModel: Removing error - {errorDbId}");
             var appError = AppErrors.FirstOrDefault(e => e.DbId == errorDbId);
             if (appError != null)
             {
-                AppErrors.Remove(appError);
+                await Utility.RunOnUIThread(void () => AppErrors.Remove(appError));
                 return;
             }
 
@@ -262,7 +262,7 @@ namespace Infomaniak.kDrive.ViewModels
                 var syncError = sync.SyncErrors.FirstOrDefault(e => e.DbId == errorDbId);
                 if (syncError != null)
                 {
-                    sync.RemoveError(syncError);
+                    await sync.RemoveError(syncError);
                     return;
                 }
             }

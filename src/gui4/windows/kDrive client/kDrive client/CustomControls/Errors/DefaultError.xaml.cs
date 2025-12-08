@@ -60,7 +60,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors
 
                     lines.Add($"{label,-20} {text}");
                 }
-
+                AddIfNotEmpty("DbId:", Error.DbId);
                 AddIfNotEmpty("Timestamp:", Error.Timestamp);
                 AddIfNotEmpty("Error level:", Error.ErrorLevel);
                 AddIfNotEmpty("Exit code:", Error.ExitCode);

@@ -355,7 +355,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
     {
         public DbId? DbId { get; set; }
         public DateTime? Timestamp { get; set; }
-        public ErrorLevel? ErrorLevel { get; set; }
+        public ErrorLevel? Level { get; set; }
         public DbId? SyncDbId { get; set; }
         public ExitCode? ExitCode { get; set; }
         public ExitCause? ExitCause { get; set; }
@@ -373,7 +373,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         {
             copyProperty(source, target, nameof(source.DbId), nameof(target.DbId));
             copyProperty(source, target, nameof(source.Timestamp), nameof(target.Timestamp));
-            copyProperty(source, target, nameof(source.ErrorLevel), nameof(target.ErrorLevel));
+            copyProperty(source, target, nameof(source.Level), nameof(target.ErrorLevel));
             copyProperty(source, target, nameof(source.SyncDbId), nameof(target.SyncDbId));
             copyProperty(source, target, nameof(source.ExitCode), nameof(target.ExitCode));
             copyProperty(source, target, nameof(source.ExitCause), nameof(target.ExitCause));
