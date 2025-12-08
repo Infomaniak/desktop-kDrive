@@ -78,7 +78,8 @@ enum class RequestNum {
     NODE_FOLDER_SIZE,
     NODE_CREATEMISSINGFOLDERS,
     ERROR_INFOLIST,
-    ERROR_GET_CONFLICTS,
+    ERROR_INFOLIST_LEGACY,
+    ERROR_GET_CONFLICTS_LEGACY,
     ERROR_DELETE_SERVER,
     ERROR_DELETE_SYNC,
     ERROR_DELETE_INVALIDTOKEN,
@@ -186,8 +187,10 @@ inline std::string toString(RequestNum e) {
             return "NODE_CREATEMISSINGFOLDERS";
         case RequestNum::ERROR_INFOLIST:
             return "ERROR_INFOLIST";
-        case RequestNum::ERROR_GET_CONFLICTS:
-            return "ERROR_GET_CONFLICTS";
+        case RequestNum::ERROR_INFOLIST_LEGACY:
+            return "ERROR_INFOLIST_LEGACY";
+        case RequestNum::ERROR_GET_CONFLICTS_LEGACY:
+            return "ERROR_GET_CONFLICTS_LEGACY";
         case RequestNum::ERROR_DELETE_SERVER:
             return "ERROR_DELETE_SERVER";
         case RequestNum::ERROR_DELETE_SYNC:

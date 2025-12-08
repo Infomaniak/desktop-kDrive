@@ -477,6 +477,16 @@
     "ORDER BY time "                                                                                                        \
     "LIMIT ?3;"
 
+#define SELECT_ALL_ERROR_ID "select_all_errors"
+#define SELECT_ALL_ERROR_REQUEST                                                                                               \
+    "SELECT dbId, time, "                                                                                                      \
+    "functionName, workerName, exitCode, exitCause, "                                                                          \
+    "localNodeId, remoteNodeId, nodeType, path, status, conflictType, inconsistencyType, cancelType, destinationPath, level, " \
+    "syncDbId FROM "                                                                                                           \
+    "error "                                                                                                                   \
+    "ORDER BY time "                                                                                                           \
+    "LIMIT ?3;"
+
 #define SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST_ID "select_all_conflicts_by_syncdbid"
 #define SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST                                                                            \
     "SELECT dbId, time, "                                                                                                   \
@@ -1038,6 +1048,7 @@ bool ParmsDb::prepare() {
     if (!createAndPrepareRequest(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID,
                                  SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST))
         return false;
+    if (!createAndPrepareRequest(SELECT_ALL_ERROR_ID, SELECT_ALL_ERROR_REQUEST)) return false;
     if (!createAndPrepareRequest(SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST_ID, SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST))
         return false;
     if (!createAndPrepareRequest(SELECT_FILTERED_CONFLICTS_BY_SYNCDBID_REQUEST_ID, SELECT_FILTERED_CONFLICTS_BY_SYNCDBID_REQUEST))
@@ -2893,6 +2904,70 @@ bool ParmsDb::deleteAllErrorsByExitCause(ExitCause exitCause) {
     return true;
 }
 
+bool ParmsDb::selectAllErrors(int limit, std::vector<Error> &errs) {
+    const std::scoped_lock lock(_mutex);
+
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_ERROR_ID));
+    LOG_IF_FAIL(queryBindValue(SELECT_ALL_ERROR_ID, 1, limit));
+    bool found;
+    for (;;) {
+        if (!queryNext(SELECT_ALL_ERROR_ID, found)) {
+            LOG_WARN(_logger, "Error getting query result: " << SELECT_ALL_ERROR_ID);
+            return false;
+        }
+        if (!found) {
+            break;
+        }
+
+        int64_t dbId;
+        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_ERROR_ID, 0, dbId));
+        int64_t time;
+        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_ERROR_ID, 1, time));
+        std::string functionName;
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_ERROR_ID, 2, functionName));
+        std::string workerName;
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_ERROR_ID, 3, workerName));
+        int exitCode;
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_ID, 4, exitCode));
+        int exitCause;
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_ID, 5, exitCause));
+        std::string localNodeId;
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_ERROR_ID, 6, localNodeId));
+        std::string remoteNodeId;
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_ERROR_ID, 7, remoteNodeId));
+        int nodeType;
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_ID, 8, nodeType));
+        SyncName path;
+        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_ERROR_ID, 9, path));
+        int status;
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_ID, 10, status));
+        int conflictType;
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_ID, 11, conflictType));
+        int inconsistencyType;
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_ID, 12, inconsistencyType));
+        int cancelType;
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_ID, 13, cancelType));
+        SyncName destinationPath;
+        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_ERROR_ID, 14, destinationPath));
+        int intLevel;
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_ID, 15, intLevel));
+        ErrorLevel level = fromInt<ErrorLevel>(intLevel);
+
+        int syncDbId;
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_ID, 16, syncDbId));
+
+
+        errs.push_back(Error(dbId, time, level, functionName, syncDbId, workerName,
+                             static_cast<ExitCode>(exitCode), static_cast<ExitCause>(exitCause), static_cast<NodeId>(localNodeId),
+                             static_cast<NodeId>(remoteNodeId), static_cast<NodeType>(nodeType), static_cast<SyncPath>(path),
+                             static_cast<ConflictType>(conflictType), static_cast<InconsistencyType>(inconsistencyType),
+                             static_cast<CancelType>(cancelType), static_cast<SyncPath>(destinationPath)));
+    }
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_ERROR_ID));
+
+    return true;
+}
+
 bool ParmsDb::selectAllErrors(ErrorLevel level, int syncDbId, int limit, std::vector<Error> &errs) {
     const std::scoped_lock lock(_mutex);
 
@@ -2941,7 +3016,7 @@ bool ParmsDb::selectAllErrors(ErrorLevel level, int syncDbId, int limit, std::ve
         SyncName destinationPath;
         LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 14, destinationPath));
 
-        errs.push_back(Error(dbId, time, static_cast<ErrorLevel>(level), functionName, syncDbId, workerName,
+        errs.push_back(Error(dbId, time, level, functionName, syncDbId, workerName,
                              static_cast<ExitCode>(exitCode), static_cast<ExitCause>(exitCause), static_cast<NodeId>(localNodeId),
                              static_cast<NodeId>(remoteNodeId), static_cast<NodeType>(nodeType), static_cast<SyncPath>(path),
                              static_cast<ConflictType>(conflictType), static_cast<InconsistencyType>(inconsistencyType),

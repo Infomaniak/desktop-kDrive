@@ -80,6 +80,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSyncNodeSetListJob);
          */
         CPPUNIT_TEST(testNodeSubFolders2Job);
+        CPPUNIT_TEST(testErrorInfoListJob);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -117,6 +118,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testNodeFolderSizeJob();
         void testSyncNodeListJob();
         void testSyncNodeSetListJob();
+        void testErrorInfoListJob();
 
     private:
         GuiJobFactory _guiJobFactory;

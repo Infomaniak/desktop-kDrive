@@ -25,6 +25,7 @@
 #include "comm/guijobs/accountinfolistjob.h"
 #include "comm/guijobs/driveinfolistjob.h"
 #include "comm/guijobs/drivesearchjob.h"
+#include "comm/guijobs/errorinfolist.h"
 #include "libcommon/comm.h"
 #include "log/log.h"
 
@@ -38,7 +39,7 @@ namespace KDC {
 
 uint64_t GuiCommChannelTest::readData(CommChar *data, uint64_t maxlen) {
     std::scoped_lock lock(_bufferMutex);
-    uint64_t toRead = (std::min)(maxlen, static_cast<uint64_t>(_buffer.size()));
+    uint64_t toRead = (std::min) (maxlen, static_cast<uint64_t>(_buffer.size()));
     if (toRead > 0) {
         std::memcpy(data, _buffer.data(), toRead * sizeof(CommChar));
         _buffer.erase(0, toRead);
@@ -659,6 +660,72 @@ void TestGuiCommChannel::testDriveSearchJob() {
 
         driveSearchJob->_searchInfoList = {si1, si2};
         driveSearchJob->_hasMore = false;
+    };
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+#else
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
+void TestGuiCommChannel::testErrorInfoListJob() {
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    const auto queryStr{R"({ "id": 1,)"
+                        R"( "num": )" +
+                        std::to_string(toInt(RequestNum::ERROR_INFOLIST)) +
+                        R"(,)"
+                        R"( "params": { "limit": 2 } })"};
+#else
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::ERROR_INFOLIST)) +
+                        R"(,)"
+                        R"( "params": { "limit": 2 } })"};
+    const auto cbkAnswerStr{
+            R"({"cause":0,"code":0,"id":1,"params":{"errorInfoList":[)"
+            R"({"autoResolved":false,"cancelType":0,"conflictType":0,"dbId":1,"destinationPath":"","exitCause":0,"exitCode":0,"functionName":"ZnVuYzE=","inconsistencyType":0,"localNodeId":"bG9jYWwx","nodeType":1,"path":"cGF0aDE=","remoteNodeId":"cmVtb3RlMS","syncDbId":10,"time":1000,"workerName":"d29ya2VyMQ=="}]}})"};
+#endif
+
+    const auto answerStr{
+            R"({ "cause": 0,)"
+            R"( "code": 0,)"
+            R"( "id": 1,)"
+            R"( "num": )" +
+            std::to_string(toInt(RequestNum::ERROR_INFOLIST)) +
+            R"(,)"
+            R"( "params": { "errorInfoList": [)"
+            R"( { "autoResolved": false, "cancelType": )" +
+            std::to_string(toInt(CancelType::None)) + R"(, "conflictType": )" + std::to_string(toInt(ConflictType::None)) +
+            R"(, "dbId": 1, "destinationPath": "", "exitCause": )" + std::to_string(toInt(ExitCause::DbEntryNotFound)) +
+            R"(, "exitCode": )" + std::to_string(toInt(ExitCode::DataError)) +
+            R"(, "functionName ": "ZnVuYzE =", "inconsistencyType ": )" + std::to_string(toInt(InconsistencyType::None)) +
+            R"(, "localNodeId": "bG9jYWwx", "nodeType": )" + std::to_string(toInt(NodeType::Unknown)) +
+            R"(, "path": "cGF0aDE=", "remoteNodeId": "cmVtb3RlMS", "syncDbId": 10, "time": 1000, "workerName": "d29ya2VyMQ==", "level": )" +
+            std::to_string(toInt(ErrorLevel::SyncPal)) +
+            R"( } ] },)"
+            R"( "type": )" +
+            std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto errorJob = std::dynamic_pointer_cast<ErrorInfolistJob>(job);
+        ErrorInfo e1;
+        e1.setDbId(1);
+        e1.setTime(1000);
+        e1.setLevel(ErrorLevel::SyncPal);
+        e1.setFunctionName("func1");
+        e1.setSyncDbId(10);
+        e1.setWorkerName("worker1");
+        e1.setExitCode(ExitCode::DataError);
+        e1.setExitCause(ExitCause::DbEntryNotFound);
+        e1.setLocalNodeId("local1");
+        e1.setRemoteNodeId("remote1");
+        e1.setNodeType(NodeType::Unknown);
+        e1.setPath("path1");
+        e1.setConflictType(ConflictType::None);
+        e1.setInconsistencyType(InconsistencyType::None);
+        e1.setCancelType(CancelType::None);
+        e1.setDestinationPath("");
+        e1.setAutoResolved(false);
+        errorJob->_errorInfoList = {e1};
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)

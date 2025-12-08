@@ -1514,6 +1514,25 @@ ExitCode ServerRequests::getErrorInfoList(ErrorLevel level, int syncDbId, int li
     return ExitCode::Ok;
 }
 
+ExitInfo ServerRequests::getErrorInfoList(int limit, std::vector<ErrorInfo> &list) {
+    std::vector<Error> errorList;
+    if (!ParmsDb::instance()->selectAllErrors(limit, errorList)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllErrors");
+        return ExitCode::DbError;
+    }
+
+    list.clear();
+    for (const Error &error: errorList) {
+        if (isDisplayableError(error)) {
+            ErrorInfo errorInfo;
+            errorToErrorInfo(error, errorInfo);
+            list.push_back(errorInfo);
+        }
+    }
+
+    return ExitCode::Ok;
+}
+
 ExitCode ServerRequests::getConflictList(int syncDbId, const std::unordered_set<ConflictType> &filter,
                                          std::vector<Error> &errorList) {
     if (filter.empty()) {

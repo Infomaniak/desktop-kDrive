@@ -903,7 +903,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             break;
         }
-        case RequestNum::ERROR_INFOLIST: {
+        case RequestNum::ERROR_INFOLIST_LEGACY: {
             ErrorLevel level{ErrorLevel::Unknown};
             int syncDbId{0};
             int limit{100};
@@ -920,7 +920,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << list;
             break;
         }
-        case RequestNum::ERROR_GET_CONFLICTS: {
+        case RequestNum::ERROR_GET_CONFLICTS_LEGACY: {
             int driveDbId;
             QList<ConflictType> filter;
             QDataStream paramsStream(params);
