@@ -19,24 +19,41 @@
 #pragma once
 
 #include "server/comm/guijobs/abstractguijob.h"
+#include "libcommon/info/driveinfo.h"
+
 namespace KDC {
 
-class SyncNodeListJob : public AbstractGuiJob {
+class NodeCreateMissingFoldersJob : public AbstractGuiJob {
     public:
-        SyncNodeListJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                    std::shared_ptr<AbstractCommChannel> channel);
+        NodeCreateMissingFoldersJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                                    std::shared_ptr<AbstractCommChannel> channel);
 
     private:
         // Input parameters
-        int _syncDbId = 0;
-        SyncNodeType _syncNodeType = SyncNodeType::Undefined;
+        int _driveDbId = 0;
+
+        struct FolderItem {
+                void fromDynamicStruct(const Poco::DynamicStruct &);
+
+                CommString name;
+                NodeId nodeId;
+        };
+        struct MissingFoldersInfo {
+                NodeId parentNodeId;
+                NodeId firstCreatedNodeId;
+        };
+
+        std::vector<FolderItem> _folderList;
 
         // Output parameters
-        std::vector<NodeId> _nodeIdList;
+        NodeId _parentNodeId;
+
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;
         ExitInfo process() override;
+
+        ExitInfo getMissingFoldersInfo(const FolderItem &folderItem, MissingFoldersInfo &info);
 
         friend class TestGuiCommChannel;
 };

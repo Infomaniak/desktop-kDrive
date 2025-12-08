@@ -38,14 +38,17 @@
 #include "syncdeletejob.h"
 #include "syncgetpubliclinkurljob.h"
 #include "syncgetprivatelinkurljob.h"
-#include "nodesubfoldersjob.h"
-#include "nodefoldersizejob.h"
-#include "syncnodelistjob.h"
-#include "syncnodesetlistjob.h"
+#include "syncsetsupportsvirtualfilesjob.h"
+#include "syncsetrootpinstatejob.h"
+#include "blacklistednodelistjob.h"
+#include "blacklistednodesetlistjob.h"
 #include "nodeinfojob.h"
+#include "nodesubfoldersjob.h"
+#include "nodesubfolders2job.h"
+#include "nodefoldersizejob.h"
+#include "nodecreatemissingfoldersjob.h"
 #include "parametersinfojob.h"
 #include "parametersupdatejob.h"
-
 
 namespace KDC {
 
@@ -69,12 +72,16 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::SYNC_START_AFTER_LOGIN, makeShared<SyncStartAfterLoginJob>},
                 {RequestNum::SYNC_DELETE, makeShared<SyncDeleteJob>},
                 {RequestNum::SYNC_GETPUBLICLINKURL, makeShared<SyncGetPublicLinkUrlJob>},
-                {RequestNum::NODE_SUBFOLDERS, makeShared<NodeSubFoldersJob>},
-                {RequestNum::NODE_FOLDER_SIZE, makeShared<NodeFolderSizeJob>},
-                {RequestNum::SYNCNODE_LIST, makeShared<SyncNodeListJob>},
-                {RequestNum::SYNCNODE_SETLIST, makeShared<SyncNodeSetListJob>},
-                {RequestNum::NODE_INFO, makeShared<NodeInfoJob>},
                 {RequestNum::SYNC_GETPRIVATELINKURL, makeShared<SyncGetPrivateLinkUrlJob>},
+                {RequestNum::SYNC_SETSUPPORTSVIRTUALFILES, makeShared<SyncSetSupportsVirtualFilesJob>},
+                {RequestNum::SYNC_SETROOTPINSTATE, makeShared<SyncSetRootPinStateJob>},
+                {RequestNum::BLACKLISTED_NODE_LIST, makeShared<BlacklistedNodeListJob>},
+                {RequestNum::BLACKLISTED_NODE_SETLIST, makeShared<BlacklistedNodeSetListJob>},
+                {RequestNum::NODE_INFO, makeShared<NodeInfoJob>},
+                {RequestNum::NODE_SUBFOLDERS, makeShared<NodeSubFoldersJob>},
+                {RequestNum::NODE_SUBFOLDERS2, makeShared<NodeSubFolders2Job>},
+                {RequestNum::NODE_FOLDER_SIZE, makeShared<NodeFolderSizeJob>},
+                {RequestNum::NODE_CREATEMISSINGFOLDERS, makeShared<NodeCreateMissingFoldersJob>},
                 {RequestNum::PARAMETERS_INFO, makeShared<ParametersInfoJob>},
                 {RequestNum::PARAMETERS_UPDATE, makeShared<ParametersUpdateJob>}};
 }

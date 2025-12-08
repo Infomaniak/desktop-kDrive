@@ -22,39 +22,25 @@ import kDriveCore
 import XCTest
 
 final class ObservedUserTests: XCTestCase {
-    static let expectedUserId: Int32 = 12345
-    static let expectedUserDbId: Int32 = 5678
-
     func testSetGetUserFromPropertyWrapper() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
-        let initialUser = await cache.getUser(dbId: Self.expectedUserDbId)
+        let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
         XCTAssertNil(initialUser, "Cache should initially be empty")
 
-        @ObservedUser(dbId: ObservedUserTests.expectedUserDbId, cacheObservation: cache) var observedUser: User?
+        @ObservedUser(dbId: ObservableData.expectedUserDbId, cacheObservation: cache) var observedUser: User?
         XCTAssertNil(observedUser, "User should initially be nil")
 
         // WHEN
-        let user = User(
-            dbId: Self.expectedUserDbId,
-            userId: Self.expectedUserId,
-            name: "appleseed",
-            email: "ja@apple.com",
-            accounts: [:],
-            availableDrives: [:],
-            avatar: Data(),
-            isConnected: true,
-            isStaff: true
-        )
-
-        await cache.addUser(user)
+        let expectedUser = ObservableData.expectedUser
+        await cache.addUser(expectedUser)
 
         // Give time for observation to propagate
-        try await Task.sleep(nanoseconds: 5_000_000_000)
+        try await Task.sleep(nanoseconds: 10_000_000_000)
 
         // THEN
-        let cachedUser = await cache.getUser(dbId: Self.expectedUserDbId)
-        XCTAssertEqual(cachedUser, user, "The cache should have been updated")
-        XCTAssertEqual(observedUser, user, "The observed object should have been updated")
+        let cachedUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
+        XCTAssertEqual(cachedUser, expectedUser, "The cache should have been updated")
+        XCTAssertEqual(observedUser, expectedUser, "The observed object should have been updated")
     }
 }

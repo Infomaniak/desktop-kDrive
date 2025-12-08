@@ -21,6 +21,7 @@
 
 static const auto accountInfoDbId = "dbId";
 static const auto accountInfoUserDbId = "userDbId";
+static const auto accountInfoAccountId = "accountId";
 
 namespace KDC {
 
@@ -35,11 +36,13 @@ AccountInfo::AccountInfo() :
 void AccountInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, accountInfoDbId, _dbId);
     CommonUtility::writeValueToStruct(dstruct, accountInfoUserDbId, _userDbId);
+    CommonUtility::writeValueToStruct(dstruct, accountInfoAccountId, _accountId);
 }
 
 void AccountInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, accountInfoDbId, _dbId);
     CommonUtility::readValueFromStruct(dstruct, accountInfoUserDbId, _userDbId);
+    CommonUtility::readValueFromStruct(dstruct, accountInfoAccountId, _accountId);
 }
 
 QDataStream &operator>>(QDataStream &in, AccountInfo &accountInfo) {

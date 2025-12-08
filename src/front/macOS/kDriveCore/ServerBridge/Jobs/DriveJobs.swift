@@ -37,7 +37,7 @@ public struct DriveJobs: Sendable {
 
         let driveList = decodedMessage.body.driveAvailableInfoList
         let availableDrives = driveList.map { $0.asAvailableDrive }
-        await coherentCache.updateAvailableDrives(availableDrives, forUserDbId: userDbId)
+        try? await coherentCache.updateAvailableDrives(availableDrives, forUserDbId: userDbId)
 
         return driveList
     }
@@ -51,7 +51,7 @@ public struct DriveJobs: Sendable {
 
         try decodedMessage.validate()
 
-        // TODO: Cache fixed in XPC6
+        // TODO: update cache by drive update signal
         // await coherentCache.updateDrive(drive: driveInfo.asDrive)
     }
 
@@ -65,7 +65,9 @@ public struct DriveJobs: Sendable {
 
         try decodedMessage.validate()
 
-        await coherentCache.removeDrive(driveDbId, fromAccount: accountId, userDbId: userDbId)
+        await coherentCache.removeDrive(driveDbId: driveDbId, accountDbId: accountId, userDbId: userDbId)
+
+        // TODO: also implement signal
     }
 
     public func driveSearch(driveDbId: Int32, searchString: String) async throws -> [FileResponse] {

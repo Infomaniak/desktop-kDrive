@@ -294,6 +294,11 @@ struct COMMON_EXPORT CommonUtility {
         static size_t strLen(const CommChar *const s) { return s ? strlen(s) : 0; }
 #endif
 
+        class InvalidEnumerationValue : public std::runtime_error {
+            public:
+                InvalidEnumerationValue() :
+                    std::runtime_error("Invalid enumeration value"){};
+        };
         //! Read an input built-in/std::string/std::wstring/CommBLOB parameter from a Poco::DynamicStruct.
         /*!
           \param parms is a Poco::DynamicStruct.
@@ -318,7 +323,7 @@ struct COMMON_EXPORT CommonUtility {
                 if (intValue >= 0 && intValue < static_cast<int>(T::EnumEnd)) {
                     value = static_cast<T>(intValue);
                 } else {
-                    throw std::runtime_error("Invalid enumeration value");
+                    throw InvalidEnumerationValue{};
                 }
             } else {
                 value = dstruct[key].convert<T>();

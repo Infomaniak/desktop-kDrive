@@ -130,16 +130,11 @@ void TestWorkers::setUp() {
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createProgressInfo();
 
-    // Setup and start CommManager
-    std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> syncPalMap;
-    syncPalMap[_sync.dbId()] = _syncPal;
-    std::unordered_map<int, std::shared_ptr<KDC::Vfs>> vfsMap;
-    vfsMap[_sync.dbId()] = _vfs;
-
 #if defined(KD_WINDOWS)
     // Initializes the COM library
     CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 #endif
+
     // Start Vfs
 #if defined(KD_MACOS)
     if (connectorsAreAlreadyInstalled) {

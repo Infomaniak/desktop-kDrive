@@ -64,7 +64,7 @@ void LocalFileSystemObserverWorker::stop() {
 
 ExitInfo LocalFileSystemObserverWorker::changesDetected(
         const std::list<std::pair<std::filesystem::path, OperationType>> &changes) {
-    const std::lock_guard lock(_recursiveMutex);
+    const std::scoped_lock lock(_recursiveMutex);
 
     // Warning: OperationType retrieved from FSEvent (macOS) seems to be unreliable in some cases. One event might contain
     // several operations. Only Delete event seems to be 100% reliable Move event from outside the synced dir to inside it will
@@ -269,8 +269,9 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
                 // happens for instance if a file is deleted while another file with the same path is created shortly
                 // afterward. Typically, editors of the MS suite (xlsx, docx) or Adobe suite (pdf) perform a
                 // Delete-followed-by-Create operation during a single edit.
-                NodeId itemId = _liveSnapshot.itemId(relativePath);
-                if (!itemId.empty() && _liveSnapshot.removeItem(itemId)) {
+                const NodeId itemId = _liveSnapshot.itemId(relativePath);
+                if (itemId.empty()) continue;
+                if (_liveSnapshot.removeItem(itemId)) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: " << Utility::formatSyncPath(absolutePath)
                                                                                       << L" (" << CommonUtility::s2ws(itemId)
                                                                                       << L")");
@@ -475,7 +476,7 @@ ExitInfo LocalFileSystemObserverWorker::generateInitialSnapshot() {
         mainExitInfo = exitInfo;
     }
 
-    const std::lock_guard<std::recursive_mutex> lock(_recursiveMutex);
+    const std::scoped_lock lock(_recursiveMutex);
     if (!_pendingFileEvents.empty()) {
         LOG_SYNCPAL_DEBUG(_logger, "Processing pending file events");
         if (const auto exitInfo = changesDetected(_pendingFileEvents); !exitInfo) {
@@ -553,7 +554,9 @@ void LocalFileSystemObserverWorker::sendAccessDeniedError(const SyncPath &absolu
     if (ExclusionTemplateCache::instance()->isExcluded(relativePath)) {
         return;
     }
-    (void) _syncPal->handleAccessDeniedItem(relativePath);
+    if (const auto exitInfo = _syncPal->handleAccessDeniedItem(relativePath, true); !exitInfo) {
+        // Do nothing, can happen if the sync is restarting
+    }
 }
 
 ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParentDirPath, bool fromChangeDetected) {

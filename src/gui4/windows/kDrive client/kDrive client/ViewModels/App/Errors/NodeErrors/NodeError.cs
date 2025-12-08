@@ -11,8 +11,8 @@ namespace Infomaniak.kDrive.ViewModels.Errors
     public abstract class NodeError : BaseError
     {
         private SyncPath _nodePath = "";
-        private NodeId _localNodeId = -1;
-        private NodeId _remoteNodeId = -1;
+        private NodeId _localNodeId ;
+        private NodeId _remoteNodeId;
         private NodeType _nodeType = NodeType.File;
         protected NodeError(DbId dbId) : base(dbId) { }
 

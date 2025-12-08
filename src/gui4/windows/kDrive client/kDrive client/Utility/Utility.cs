@@ -1,13 +1,11 @@
 ﻿using CommunityToolkit.WinUI;
-using Infomaniak.kDrive.Converters;
-using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
-
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -91,12 +89,12 @@ namespace Infomaniak.kDrive
             return true;
         }
 
-        public static string DefaultSyncPath(string DriveName)
+        public static string DefaultSyncPath(string DriveName, List<string>? reservedPaths = null)
         {
             string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             string defaultPath = Path.Combine(userProfile, $"kDrive {DriveName}");
 
-            if (!Utility.CheckSyncPathValidity(defaultPath, out string errorMessage))
+            if (!Utility.CheckSyncPathValidity(defaultPath, out string errorMessage, reservedPaths))
             {
                 Logger.Log(Logger.Level.Warning, $"Default sync path '{defaultPath}' is not valid: {errorMessage}. Falling back to numbered paths.");
                 int number = 1;
@@ -104,7 +102,7 @@ namespace Infomaniak.kDrive
                 {
                     defaultPath = Path.Combine(userProfile, number > 0 ? $"kDrive ({number})" : "kDrive");
                     number++;
-                } while (!Utility.CheckSyncPathValidity(defaultPath, out errorMessage) && number < 500);
+                } while (!Utility.CheckSyncPathValidity(defaultPath, out errorMessage, reservedPaths) && number < 500);
 
                 if (number >= 500)
                 {
@@ -116,8 +114,14 @@ namespace Infomaniak.kDrive
             return defaultPath;
         }
 
-        public static bool CheckSyncPathValidity(string path, out string errorMessage)
+        public static bool CheckSyncPathValidity(string path, out string errorMessage, List<string>? reservedPaths = null)
         {
+            if (reservedPaths?.Contains(path) ?? false)
+            {
+                errorMessage = "The path is already in use by another sync.";
+                return false;
+            }
+
             errorMessage = string.Empty;
             if (string.IsNullOrWhiteSpace(path))
             {
@@ -321,7 +325,7 @@ namespace Infomaniak.kDrive
                 }
             }
         }
- 
+
         public static async Task<ContentDialogResult> ShowContentDialog(XamlRoot xamlRoot, string xuid)
         {
             ContentDialog dialog = new ContentDialog();
@@ -334,6 +338,25 @@ namespace Infomaniak.kDrive
             dialog.Content = Utility.GetLocalizedString(xuid + "/Content");
             var result = await dialog.ShowAsync();
             return result;
+        }
+
+
+        public static string? ToBase64String(string? data)
+        {
+            if (data is null) return null;
+            return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(data));
+        }
+
+        public static bool IsSubPathOf(string path, string prefix)
+        {
+            if (!path.StartsWith(prefix))
+                return false;
+
+            if (path.Length == prefix.Length)
+                return true;
+
+            char nextChar = path[prefix.Length];
+            return nextChar == Path.DirectorySeparatorChar || nextChar == Path.AltDirectorySeparatorChar;
         }
     }
 }

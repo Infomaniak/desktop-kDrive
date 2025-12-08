@@ -72,12 +72,16 @@ set(server_SRCS
     comm/guijobs/syncdeletejob.h comm/guijobs/syncdeletejob.cpp
     comm/guijobs/syncgetpubliclinkurljob.h comm/guijobs/syncgetpubliclinkurljob.cpp
     comm/guijobs/syncgetprivatelinkurljob.h comm/guijobs/syncgetprivatelinkurljob.cpp
-    comm/guijobs/nodesubfoldersjob.h comm/guijobs/nodesubfoldersjob.cpp
-    comm/guijobs/nodefoldersizejob.h comm/guijobs/nodefoldersizejob.cpp
+    comm/guijobs/syncsetsupportsvirtualfilesjob.h comm/guijobs/syncsetsupportsvirtualfilesjob.cpp
+    comm/guijobs/syncsetrootpinstatejob.h comm/guijobs/syncsetrootpinstatejob.cpp
+    comm/guijobs/blacklistednodelistjob.h comm/guijobs/blacklistednodelistjob.cpp
+    comm/guijobs/blacklistednodesetlistjob.h comm/guijobs/blacklistednodesetlistjob.cpp
     comm/guijobs/nodeinfojob.h comm/guijobs/nodeinfojob.cpp
-    comm/guijobs/syncnodelistjob.h comm/guijobs/syncnodelistjob.cpp
-    comm/guijobs/syncnodesetlistjob.h comm/guijobs/syncnodesetlistjob.cpp
-    comm/guijobs/parametersinfojob.h comm/guijobs/parameterinfojob.cpp
+    comm/guijobs/nodesubfoldersjob.h comm/guijobs/nodesubfoldersjob.cpp
+    comm/guijobs/nodesubfolders2job.h comm/guijobs/nodesubfolders2job.cpp
+    comm/guijobs/nodefoldersizejob.h comm/guijobs/nodefoldersizejob.cpp
+    comm/guijobs/nodecreatemissingfoldersjob.h comm/guijobs/nodecreatemissingfoldersjob.cpp
+    comm/guijobs/parametersinfojob.h comm/guijobs/parametersinfojob.cpp
     comm/guijobs/parametersupdatejob.h comm/guijobs/parametersupdatejob.cpp
     comm/guijobs/signaluseraddedjob.h comm/guijobs/signaluseraddedjob.cpp
     comm/guijobs/signaluserupdatedjob.h comm/guijobs/signaluserupdatedjob.cpp
@@ -90,6 +94,7 @@ set(server_SRCS
     comm/guijobs/signalsyncremovedjob.h comm/guijobs/signalsyncremovedjob.cpp
     comm/guijobs/signalsyncprogressinfo.h comm/guijobs/signalsyncprogressinfo.cpp
     comm/guijobs/signalsynccompleteditem.h comm/guijobs/signalsynccompleteditem.cpp
+    comm/guijobs/signalsyncupdatedjob.h comm/guijobs/signalsyncupdatedjob.cpp
     migration/migrationparams.h migration/migrationparams.cpp
     requests/serverrequests.h requests/serverrequests.cpp
     requests/offlinefilessizeestimator.h requests/offlinefilessizeestimator.cpp

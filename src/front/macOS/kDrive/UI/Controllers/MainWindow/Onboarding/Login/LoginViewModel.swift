@@ -64,7 +64,10 @@ final class LoginViewModel: ObservableObject {
             return
         }
 
-        flowCoordinator.navigate(to: .drivesSelection)
+        Task {
+            flowCoordinator.targetUser = UIUser(user: user)
+            await flowCoordinator.navigateToNextStep()
+        }
     }
 }
 

@@ -16,11 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Infomaniak.kDrive.Pages.Settings;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 using System;
 
 namespace Infomaniak.kDrive.Pages
@@ -36,6 +38,10 @@ namespace Infomaniak.kDrive.Pages
             Logger.Log(Logger.Level.Debug, "HomePage components initialized");
         }
 
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        {
+            if (ViewModel.SelectedSync is null) AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(SettingsPage)));        
+        }
         private void SyncUpToDateHyperlinkButton_Click(object sender, RoutedEventArgs e)
         {
             ((App)Application.Current).CurrentWindow?.AppWindow.Hide();

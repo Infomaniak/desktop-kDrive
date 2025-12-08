@@ -17,26 +17,79 @@
  */
 
 import Combine
-import InfomaniakDI
 import Foundation
+import InfomaniakDI
 import kDriveCore
 
 enum OnboardingStep: Sendable {
     case login
     case drivesSelection
-    case permissions
+    case permissions(MacOSPermission)
     case synchronization
+    case appReady
 }
 
 @MainActor
 final class OnboardingFlowCoordinator: ObservableObject {
     @Published private(set) var currentStep: OnboardingStep
 
-    init(currentStep: OnboardingStep = .login) {
-        self.currentStep = currentStep
+    @Published var targetUser: UIUser?
+
+    var synchronizations = [NewSyncCandidate]()
+
+    init(initialStep: OnboardingStep?) {
+        currentStep = initialStep ?? .login
     }
 
     func navigate(to step: OnboardingStep) {
         currentStep = step
+    }
+
+    func navigateToNextStep() async {
+        guard let nextStep = await nextRequiredStep(from: currentStep) else {
+            return
+        }
+
+        navigate(to: nextStep)
+    }
+
+    func nextRequiredStep(from currentStep: OnboardingStep) async -> OnboardingStep? {
+        switch currentStep {
+        case .login:
+            return .drivesSelection
+
+        case .drivesSelection:
+            for permission in PermissionsViewModel.requiredPermissions {
+                @InjectService var permissionHandler: MacOSPermissionHandling
+                if await !permissionHandler.isAuthorized(for: permission) {
+                    return .permissions(permission)
+                }
+            }
+
+            return synchronizations.isEmpty ? .appReady : .synchronization
+
+        case .permissions:
+            return synchronizations.isEmpty ? .appReady : .synchronization
+
+        case .synchronization:
+            return .appReady
+
+        case .appReady:
+            return nil
+        }
+    }
+
+    func guessAndNavigateToInitialStep() {
+        Task {
+            @InjectService var coherentCache: CoherentCache
+            let user = await coherentCache.getFirstAvailableUser()
+
+            guard let user else {
+                return
+            }
+
+            targetUser = UIUser(user: user)
+            await navigateToNextStep()
+        }
     }
 }

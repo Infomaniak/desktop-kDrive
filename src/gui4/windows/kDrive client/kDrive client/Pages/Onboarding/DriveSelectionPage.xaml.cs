@@ -1,27 +1,14 @@
-using Infomaniak.kDrive.Pages.Onboarding;
-using Infomaniak.kDrive.ViewModels;
 using Infomaniak.kDrive.OnBoarding;
 using Infomaniak.kDrive.Types;
-using Microsoft.UI;
+using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI;
 using Windows.Storage.Pickers;
-using Microsoft.Extensions.DependencyInjection;
-using Infomaniak.kDrive.ServerCommunication.Interfaces;
 
 namespace Infomaniak.kDrive.Pages.Onboarding
 {
@@ -29,7 +16,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
     {
         private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         private ViewModels.Onboarding? _onBoardingViewModel;
-        private Dictionary<Sync, string> _previousSyncPaths = new Dictionary<Sync, string>(); // To store previous sync paths and allow reverting if needed in advanced settings
+        private Dictionary<NewSync, string> _previousSyncPaths = new Dictionary<NewSync, string>(); // To store previous sync paths and allow reverting if needed in advanced settings
         public AppModel ViewModel { get { return _viewModel; } }
         public ViewModels.Onboarding? ObViewModel { get => _onBoardingViewModel; }
         public DriveSelectionPage()
@@ -39,11 +26,26 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             Logger.Log(Logger.Level.Debug, "DriveSelectionPage components initialized");
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             if (e.Parameter is ViewModels.Onboarding obvm)
             {
                 _onBoardingViewModel = obvm;
+                if(ObViewModel?.SelectedUser is null)
+                {
+                    Logger.Log(Logger.Level.Error, "SelectedUser is null in OnBoardingViewModel when navigating to DriveSelectionPage");
+                    Frame.GoBack();
+                    return;
+                }
+                await ObViewModel.SelectedUser.RefreshAvailableDrives();
+                if (!ObViewModel.SelectedUser.AllDrives.Any())
+                {
+                    Logger.Log(Logger.Level.Info, "No drives found for user in DriveSelectionPage - Navigating to NoDrivePage");
+                    Frame.Navigate(typeof(NoDrivesPage), ObViewModel);
+                    return;
+                }
+                if ((App.Current as App)?.CurrentWindow is OnBoardingWindow onBoardingWindow)
+                    onBoardingWindow.UpdateLottieSource("Infomaniak.Custom.Animations.synchro-file", 219);
             }
             else
             {
@@ -54,14 +56,16 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
         private void DriveListCheckBox_Checked(object sender, RoutedEventArgs e)
         {
-            if (sender is CheckBox cb && cb.DataContext is Drive drive && _onBoardingViewModel != null)
+            if (sender is CheckBox cb && cb.DataContext is IDrive drive && _onBoardingViewModel != null)
             {
-                string localPath = Utility.DefaultSyncPath(drive.Name);
-                Sync newSync = new Sync(-1, drive)
+                string localPath = Utility.DefaultSyncPath(drive.Name, _onBoardingViewModel.NewSyncs.Select(s => s.LocalPath).ToList());
+                // TODO: Call ServerRequests::findGoodPathForNewSync once implemented
+                NewSync newSync = new NewSync()
                 {
                     LocalPath = localPath,
-                    SupportOnlineMode = true,
-                    SyncType = Utility.SupportOnlineSync(localPath) ? SyncType.Online : SyncType.Offline
+                    SupportOnlineMode = Utility.SupportOnlineSync(localPath),  // TODO: Call UTILITY_BESTVFSAVAILABLEMODE once implemented
+                    SyncType = /*Utility.SupportOnlineSync(localPath) ? SyncType.Online :*/ SyncType.Offline,
+                    Drive = drive
                 };
                 _onBoardingViewModel.NewSyncs.Add(newSync);
             }
@@ -69,7 +73,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
         private void DriveListCheckBox_Unchecked(object sender, RoutedEventArgs e)
         {
-            if (sender is CheckBox cb && cb.DataContext is Drive drive && _onBoardingViewModel != null)
+            if (sender is CheckBox cb && cb.DataContext is IDrive drive && _onBoardingViewModel != null)
             {
                 var syncToRemove = _onBoardingViewModel.NewSyncs.FirstOrDefault(s => s.Drive == drive);
                 if (syncToRemove != null)
@@ -129,7 +133,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             if (folder != null)
             {
                 Logger.Log(Logger.Level.Info, "Folder picked: " + folder.Path);
-                if (!Utility.CheckSyncPathValidity(folder.Path, out string errorMessage))
+                if (!Utility.CheckSyncPathValidity(folder.Path, out string errorMessage, _onBoardingViewModel?.NewSyncs.Select(s => s.LocalPath).ToList()))
                 {
                     Logger.Log(Logger.Level.Warning, $"Selected folder path '{folder.Path}' is not valid for syncing: {errorMessage}");
                     FolderSelectionError.IsOpen = true;
@@ -153,11 +157,11 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     return;
                 }
 
-                if (senderButton?.DataContext is Sync sync && _onBoardingViewModel != null)
+                if (senderButton?.DataContext is NewSync newSync && _onBoardingViewModel != null)
                 {
-                    sync.LocalPath = folder.Path;
-                    sync.SyncType = Utility.SupportOnlineSync(folder.Path) ? SyncType.Online : SyncType.Offline;
-                    Logger.Log(Logger.Level.Info, $"Sync path for drive '{sync.Drive.Name}' updated to '{sync.LocalPath}' with sync type '{sync.SyncType}'");
+                    newSync.LocalPath = folder.Path;
+                    newSync.SyncType = Utility.SupportOnlineSync(folder.Path) ? SyncType.Online : SyncType.Offline;
+                    Logger.Log(Logger.Level.Info, $"Sync path for drive '{newSync.Drive.Name}' updated to '{newSync.LocalPath}' with sync type '{newSync.SyncType}'");
                     RefreshAdvancedSettingsConfirmButtonIsEnabled();
                 }
                 else
@@ -197,23 +201,35 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                 return;
             }
             // Ensure at least one sync path has changed to enable the confirm button
-            var syncsWithChangedPaths = _onBoardingViewModel.NewSyncs.Where(s => _previousSyncPaths.ContainsKey(s) && _previousSyncPaths[s] != s.LocalPath).ToList();
-            AdvancedSettingsDialog.IsPrimaryButtonEnabled = syncsWithChangedPaths.Count > 0;
+            AdvancedSettingsDialog.IsPrimaryButtonEnabled = _onBoardingViewModel.NewSyncs.Where(s => _previousSyncPaths.ContainsKey(s) && _previousSyncPaths[s] != s.LocalPath).Any();
         }
 
         private void Finish_Click(object sender, RoutedEventArgs e)
         {
             Frame.Navigate(typeof(FinishingPage), _onBoardingViewModel);
         }
+    }
 
-        private async void StartFree_Click(object sender, RoutedEventArgs e)
-        {
-            await Windows.System.Launcher.LaunchUriAsync(new Uri(Utility.GetLocalizedString("Global_kDriveOffersUrl")));
-        }
+    public class DriveTemplateSelector : DataTemplateSelector
+    {
+        public DataTemplate? SingleAccountDriveTemplate { get; set; }
+        public DataTemplate? MultiAccountDriveTemplate { get; set; }
 
-        private async void OffersButton_Click(object sender, RoutedEventArgs e)
+        protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container)
         {
-            await Windows.System.Launcher.LaunchUriAsync(new Uri(Utility.GetLocalizedString("Global_kDriveOffersUrl")));
+            if (item is null || item is not IDrive)
+                return base.SelectTemplateCore(item, container);
+
+            IDrive drive = item as IDrive;
+
+            User? user = App.ServiceProvider.GetRequiredService<AppModel>().Users.FirstOrDefault(u => u.DbId == drive.UserDbId);
+            if (user is null)
+            {
+                Logger.Log(Logger.Level.Warning, "DriveTemplateSelector: User not found for drive");
+                return SingleAccountDriveTemplate; // Fallback to single account template
+            }
+
+            return user.AllDrives.Select(drive => drive.AccountId).Distinct().Count() > 1 ? MultiAccountDriveTemplate : SingleAccountDriveTemplate;
         }
     }
 }

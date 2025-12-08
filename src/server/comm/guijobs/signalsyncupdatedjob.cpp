@@ -16,27 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "signalsyncupdatedjob.h"
+#include "libcommon/utility/utility.h"
+#include "libcommon/comm.h"
 
-#include "server/comm/guijobs/abstractguijob.h"
+// Output parameters keys
+static const auto outParamsSyncInfo = "syncInfo";
+
 namespace KDC {
 
-class SyncNodeSetListJob : public AbstractGuiJob {
-    public:
-        SyncNodeSetListJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                    std::shared_ptr<AbstractCommChannel> channel);
+SignalSyncUpdatedJob::SignalSyncUpdatedJob(const SyncInfo &syncInfo) :
+    _syncInfo(syncInfo) {
+    _signalNum = SignalNum::SYNC_UPDATED;
+}
 
-    private:
-        // Input parameters
-        int _syncDbId = 0;
-        SyncNodeType _syncNodeType = SyncNodeType::Undefined;
-        std::vector<NodeId> _nodeIdList;
+ExitInfo SignalSyncUpdatedJob::serializeOutputParms() {
+    writeParamValue(outParamsSyncInfo, _syncInfo, info2DynamicVar<SyncInfo>);
 
-        ExitInfo deserializeInputParms() override;
-        ExitInfo serializeOutputParms() override { return ExitCode::Ok; }
-        ExitInfo process() override;
-
-        friend class TestGuiCommChannel;
-};
+    return ExitCode::Ok;
+}
 
 } // namespace KDC

@@ -30,7 +30,7 @@ public struct User: Identifiable, Hashable, Sendable {
     public var name: String
     public var email: String
     public var accounts: IndexedAccounts
-    public var availableDrives: IndexedAvailableDrives // The available drives do not have a db id
+    public var availableDrives: IndexedAvailableDrives
     public var avatar: Data?
     public var isConnected: Bool
     public var isStaff: Bool
@@ -72,13 +72,13 @@ extension User {
 
 public extension User {
     func updated(with other: User) -> User? {
-        guard other.id == id else {
+        guard other.dbId == dbId else {
             return nil
         }
 
         return User(
             dbId: dbId,
-            userId: userId,
+            userId: other.userId,
             name: other.name.isEmpty ? name : other.name,
             email: other.email.isEmpty ? email : other.email,
             accounts: other.accounts.isEmpty ? accounts : other.accounts,

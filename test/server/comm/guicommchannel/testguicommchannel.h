@@ -57,6 +57,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testAccountInfoListJob);
         CPPUNIT_TEST(testDriveInfoListJob);
         CPPUNIT_TEST(testDriveUpdateJob);
+        CPPUNIT_TEST(testDriveDeleteJob);
         CPPUNIT_TEST(testDriveSearchJob);
         CPPUNIT_TEST(testSyncInfoListJob);
         CPPUNIT_TEST(testStartSyncJob);
@@ -68,6 +69,18 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSyncDeleteJob);
         CPPUNIT_TEST(testSyncGetPublicLinkUrlJob);
         CPPUNIT_TEST(testSyncGetPrivateLinkUrlJob);
+        CPPUNIT_TEST(testSyncSetSupportsVirtualFilesJob);
+        CPPUNIT_TEST(testSyncSetRootPinStateJob);
+        /* Deactivated because string values are not yet base64-encoded
+         * in these tests.
+        CPPUNIT_TEST(testBlacklistedSyncNodeListJob);
+        CPPUNIT_TEST(testBlacklistedSyncNodeSetListJob);
+        CPPUNIT_TEST(testNodeInfoJob);
+        CPPUNIT_TEST(testNodeSubFolderJob);
+        CPPUNIT_TEST(testNodeFolderSizeJob);
+         */
+        CPPUNIT_TEST(testNodeSubFolders2Job);
+        CPPUNIT_TEST(testNodeCreateMissingFoldersJob);
         CPPUNIT_TEST(testParametersInfoJob);
         CPPUNIT_TEST(testParametersUpdateJob);
         CPPUNIT_TEST_SUITE_END();
@@ -98,14 +111,17 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testSyncDeleteJob();
         void testSyncGetPublicLinkUrlJob();
         void testSyncGetPrivateLinkUrlJob();
+        void testSyncSetSupportsVirtualFilesJob();
+        void testSyncSetRootPinStateJob();
+        void testBlacklistedSyncNodeListJob();
+        void testBlacklistedSyncNodeSetListJob();
+        void testNodeInfoJob();
         void testNodeSubFolderJob();
         void testNodeFolderSizeJob();
-        void testSyncNodeListJob();
-        void testSyncNodeSetListJob();
-        void testNodeInfoJob();
+        void testNodeSubFolders2Job();
+        void testNodeCreateMissingFoldersJob();
         void testParametersInfoJob();
         void testParametersUpdateJob();
-
 
     private:
         GuiJobFactory _guiJobFactory;

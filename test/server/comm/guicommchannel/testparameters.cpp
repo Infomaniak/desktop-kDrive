@@ -20,7 +20,7 @@
 #include "comm/guijobs/parametersupdatejob.h"
 
 #include "testguicommchannel.h"
-#include "testcommhelpers.h"
+#include "../testcommhelpers.h"
 
 namespace KDC {
 
