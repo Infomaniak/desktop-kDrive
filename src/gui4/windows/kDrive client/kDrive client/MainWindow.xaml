@@ -59,7 +59,7 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Left: Logo + App Name -->
-                <controls:AppTitleBarLogo Grid.Column="0" />
+                <controls:AppTitleBarLogo Grid.Column="0"/>
 
                 <StackPanel Grid.Column="0"
                             Grid.ColumnSpan="3"

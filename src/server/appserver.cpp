@@ -3471,12 +3471,25 @@ bool AppServer::startClient() {
 
     if (startClient) {
         // Start the client
-        QString pathToExecutable = QCoreApplication::applicationDirPath();
+        QString pathToExecutable;
 
 #if defined(KD_WINDOWS)
-        pathToExecutable += QString("/%1.exe").arg(APPLICATION_CLIENT_EXECUTABLE);
+        if (ParametersCache::instance()->parameters().distributionChannel() ==
+            VersionChannel::Internal) { // The WinUI3 GUI is currently only for internal builds
+            pathToExecutable =
+                    QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENTV4_EXECUTABLE);
+
+            IoError ioError = IoError::Success;
+            bool exists = false;
+            if (!IoHelper::checkIfPathExists(pathToExecutable.toStdString(), exists, ioError) || !exists || ioError != IoError::Success) {
+                pathToExecutable.clear();
+            }
+        }
+        if (pathToExecutable.isEmpty()) {
+            pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENT_EXECUTABLE);
+        }
 #else
-        pathToExecutable += QString("/%1").arg(APPLICATION_CLIENT_EXECUTABLE);
+        pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1").arg(APPLICATION_CLIENT_EXECUTABLE);
 #endif
 
         QStringList arguments;

@@ -18,6 +18,21 @@ else()
     add_compile_definitions(KD_LINUX)
 endif()
 
+if(WIN32)
+    foreach(CONFIG ${CMAKE_CONFIGURATION_TYPES})
+        # When using multi-configuration generators (like Visual Studio or Xcode),
+        # we need to set the output directories for each configuration to avoid
+        # the default behavior of placing the binaries in subdirectories named after the configuration.
+        # See https://cmake.org/cmake/help/latest/prop_tgt/RUNTIME_OUTPUT_DIRECTORY_CONFIG.html#prop_tgt:RUNTIME_OUTPUT_DIRECTORY_%3CCONFIG%3E
+
+        string(TOUPPER ${CONFIG} CONFIG_UPPER)
+        set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${CONFIG_UPPER} "${CMAKE_BINARY_DIR}/bin")
+        set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${CONFIG_UPPER} "${CMAKE_BINARY_DIR}/lib")
+        set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${CONFIG_UPPER} "${CMAKE_BINARY_DIR}/lib")
+    endforeach()
+endif()
+
+
 ##### Submodules
 
 # utf8proc
@@ -260,15 +275,10 @@ elseif(BUILD_CLIENT)
         configure_file(cmake/modules/NSIS.template.nsi.in ${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.nsi @ONLY)
 
         # Default sync exclude list
-        if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-            message(STATUS "sync-exclude-win.lst copied to ${CMAKE_BINARY_DIR}/bin")
-            file(COPY sync-exclude-win.lst DESTINATION ${CMAKE_BINARY_DIR}/bin)
-            file(RENAME ${CMAKE_BINARY_DIR}/bin/sync-exclude-win.lst ${CMAKE_BINARY_DIR}/bin/sync-exclude.lst)
-        else()
-            message(STATUS "sync-exclude-win.lst copied to ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}")
-            file(COPY sync-exclude-win.lst DESTINATION ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE})
-            file(RENAME ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/sync-exclude-win.lst ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/sync-exclude.lst)
-        endif()
+        message(STATUS "sync-exclude-win.lst copied to ${BIN_OUTPUT_DIRECTORY}")
+        file(COPY sync-exclude-win.lst DESTINATION ${BIN_OUTPUT_DIRECTORY})
+        file(RENAME ${BIN_OUTPUT_DIRECTORY}/sync-exclude-win.lst ${BIN_OUTPUT_DIRECTORY}/sync-exclude.lst)
+        install(FILES ${BIN_OUTPUT_DIRECTORY}/sync-exclude.lst DESTINATION ${CMAKE_INSTALL_BINDIR})
 
         # Vfs
         set(CMAKE_FIND_LIBRARY_SUFFIXES .dll)
@@ -285,11 +295,15 @@ elseif(BUILD_CLIENT)
         find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)
         message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
         install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+        # Client
+        install(DIRECTORY ${BIN_OUTPUT_DIRECTORY}/client DESTINATION ${CMAKE_INSTALL_BINDIR} OPTIONAL)
+
     else()
         # Default sync exclude list
         if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-            file(COPY sync-exclude-linux.lst DESTINATION ${CMAKE_BINARY_DIR}/bin)
-            file(RENAME ${CMAKE_BINARY_DIR}/bin/sync-exclude-linux.lst ${CMAKE_BINARY_DIR}/bin/sync-exclude.lst)
+            file(COPY sync-exclude-linux.lst DESTINATION ${BIN_OUTPUT_DIRECTORY})
+            file(RENAME ${BIN_OUTPUT_DIRECTORY}/sync-exclude-linux.lst ${BIN_OUTPUT_DIRECTORY}/sync-exclude.lst)
         else()
             install(FILES sync-exclude-linux.lst DESTINATION ${SYSCONFDIR}/${APPLICATION_SHORTNAME} RENAME sync-exclude.lst)
         endif()
@@ -305,7 +319,7 @@ elseif(BUILD_CLIENT)
             find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)
             message(STATUS "crashpad_handler found in ${CRASHPAD_HANDLER_PROGRAM}")
             if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-                file(COPY ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_BINARY_DIR}/bin)
+                file(COPY ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${BIN_OUTPUT_DIRECTORY})
             else()
                 install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${CMAKE_INSTALL_BINDIR})
             endif()
