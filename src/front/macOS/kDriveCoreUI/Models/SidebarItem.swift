@@ -22,7 +22,7 @@ import Cocoa
 public struct SidebarItem: Sendable, Equatable, Hashable {
     public enum ItemType: Sendable, Equatable {
         case navigation
-        case menu
+        case action
     }
 
     public let icon: NSImage

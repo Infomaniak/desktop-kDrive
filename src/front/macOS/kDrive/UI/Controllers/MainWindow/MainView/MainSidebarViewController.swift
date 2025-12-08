@@ -34,10 +34,10 @@ extension SidebarItem {
         icon: KDriveResources.hardDiskDrive.image,
         title: KDriveLocalizable.tabTitleStorage
     )
-    static let kDriveFolder = SidebarItem(
-        icon: KDriveResources.kdriveFoldersStacked.image,
-        title: KDriveLocalizable.sidebarItemKDriveTitle,
-        type: .menu
+    static let openInFinder = SidebarItem(
+        icon: KDriveResources.folderCircleArrowRight.image,
+        title: KDriveLocalizable.buttonOpenInFinder,
+        type: .action
     )
 }
 
@@ -46,11 +46,32 @@ final class MainSidebarViewController: NSViewController {
 
     weak var delegate: NavigableSidebarViewControllerDelegate?
 
-    private var scrollView: NSScrollView!
-    private var outlineView: ClickableOutlineView!
+    private lazy var scrollView: NSScrollView = {
+        let scrollView = NSScrollView()
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.hasVerticalScroller = true
+        scrollView.autohidesScrollers = true
+        scrollView.drawsBackground = false
+
+        return scrollView
+    }()
+
+    private lazy var outlineView: NSOutlineView = {
+        let outlineView = ClickableOutlineView()
+        outlineView.translatesAutoresizingMaskIntoConstraints = false
+        outlineView.dataSource = self
+        outlineView.delegate = self
+        outlineView.focusRingType = .none
+        outlineView.rowSizeStyle = .medium
+        outlineView.headerView = nil
+        outlineView.style = .sourceList
+
+        return outlineView
+    }()
+
     private var popUpButton: ColoredPopUpButton!
 
-    private let items: [SidebarItem] = [.home, .activity, .storage, .kDriveFolder]
+    private let items: [SidebarItem] = [.home, .activity, .storage, .openInFinder]
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -109,25 +130,11 @@ final class MainSidebarViewController: NSViewController {
     }
 
     private func setupScrollAndOutlineView() {
-        outlineView = ClickableOutlineView()
-        outlineView.translatesAutoresizingMaskIntoConstraints = false
-        outlineView.dataSource = self
-        outlineView.delegate = self
-        outlineView.focusRingType = .none
-        outlineView.rowSizeStyle = .medium
-        outlineView.headerView = nil
-        outlineView.style = .sourceList
-
         let singleColumn = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("SidebarColumn"))
         singleColumn.isEditable = false
         outlineView.addTableColumn(singleColumn)
         outlineView.outlineTableColumn = singleColumn
 
-        scrollView = NSScrollView()
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.hasVerticalScroller = true
-        scrollView.autohidesScrollers = true
-        scrollView.drawsBackground = false
         scrollView.documentView = outlineView
         view.addSubview(scrollView)
     }
@@ -147,6 +154,10 @@ final class MainSidebarViewController: NSViewController {
 
         let isDocumentViewSmallerThanScrollView = documentView.bounds.height <= scrollView.documentVisibleRect.height
         scrollView.verticalScrollElasticity = isDocumentViewSmallerThanScrollView ? .none : .automatic
+    }
+
+    private func openSyncInFolder() {
+
     }
 }
 
@@ -194,52 +205,15 @@ extension MainSidebarViewController: ClickableOutlineViewDelegate {
     }
 
     func outlineView(_ outlineView: NSOutlineView, didClick item: Any?) {
-        guard let item = item as? SidebarItem,
-              item.type == .menu,
-              let menu = createMenu(forItem: item)
-        else { return }
-
-        (outlineView as? ClickableOutlineView)?.showMenu(menu, at: item)
-    }
-}
-
-// MARK: - Menu actions
-
-extension MainSidebarViewController {
-    private func createMenu(forItem item: SidebarItem) -> NSMenu? {
-        guard item == .kDriveFolder else { return nil }
-
-        let menu = NSMenu()
-        menu.autoenablesItems = false
-
-        let openInFinder = NSMenuItem(
-            title: KDriveLocalizable.buttonOpenInFinder,
-            action: #selector(openInFinder),
-            keyEquivalent: ""
-        )
-        if #available(macOS 26.0, *) {
-            openInFinder.image = NSImage(systemSymbolName: "folder", accessibilityDescription: nil)
+        guard let item = item as? SidebarItem, item.type == .action else {
+            return
         }
-        menu.addItem(openInFinder)
 
-        let openInBrowser = NSMenuItem(
-            title: KDriveLocalizable.buttonOpenInBrowser,
-            action: #selector(openInBrowser),
-            keyEquivalent: ""
-        )
-        if #available(macOS 26.0, *) {
-            openInBrowser.image = NSImage(systemSymbolName: "network", accessibilityDescription: nil)
+        switch item {
+        case .openInFinder:
+            openSyncInFolder()
+        default:
+            break
         }
-        menu.addItem(openInBrowser)
-
-        return menu
-    }
-
-    @objc private func openInFinder() {
-        // TODO: Open Finder
-    }
-
-    @objc private func openInBrowser() {
-        // TODO: Open kDrive web
     }
 }
