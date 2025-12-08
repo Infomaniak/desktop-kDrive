@@ -990,6 +990,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
+            options.Converters.Add(new IntToDateTimeConverter());
             ErrorInfo? errorInfo = signalData[JsonKeys.ErrorInfo]?.Deserialize<ErrorInfo>(options);
             Error error = new Error();
             if (errorInfo == null)

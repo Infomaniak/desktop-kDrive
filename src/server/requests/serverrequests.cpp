@@ -1550,6 +1550,16 @@ ExitCode ServerRequests::getConflictErrorInfoList(int syncDbId, const std::unord
 }
 
 ExitCode ServerRequests::deleteErrorsServer() {
+    std::vector<Error> errorList;
+    if (!ParmsDb::instance()->selectAllErrors(ErrorLevel::Server, 0, INT_MAX, errorList)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllErrors");
+        return ExitCode::DbError;
+    }
+
+    for (const Error &error: errorList) {
+        AppServer::commManager()->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(error.dbId()));
+    }
+
     if (!ParmsDb::instance()->deleteErrors(ErrorLevel::Server)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteErrors");
         return ExitCode::DbError;
