@@ -159,7 +159,11 @@ final class MainSidebarViewController: NSViewController {
         scrollView.verticalScrollElasticity = isDocumentViewSmallerThanScrollView ? .none : .automatic
     }
 
-    private func openSyncInFolder() {}
+    private func openSyncInFolder() {
+        // TODO: Connect to real data
+        let sync = UISynchro(id: 42, localPath: "/Users/valentinperignon/kDriveTest/kDrive_2D6252DC-D21F-4402-9F67-D92EDAB11F42")
+        NSWorkspace.shared.open(URL(fileURLWithPath: sync.localPath))
+    }
 }
 
 // MARK: - NSOutlineViewDataSource
