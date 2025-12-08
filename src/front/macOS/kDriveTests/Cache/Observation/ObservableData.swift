@@ -61,6 +61,17 @@ public enum ObservableData {
                                           name: "The amazing test Drive",
                                           color: HexColor(hex: "#ffffff"), synchros: [:])
 
+    static let expectedDriveResponse = DriveResponse(driveDbId: expectedDriveDbId,
+                                                 driveId: expectedDriveId,
+                                                 accountDbId: expectedAccountDbId,
+                                                 color: HexColor(hex: "#ffffff")!,
+                                                 name: "The amazing test Drive",
+                                                 accessDenied: false,
+                                                 admin: true,
+                                                 locked: false,
+                                                 maintenance: false,
+                                                 notifications: true)
+    
     static let updatedDrive = Drive.some(driveDbId: expectedDriveDbId,
                                          driveId: expectedDriveId,
                                          accountDbId: expectedAccountDbId,
