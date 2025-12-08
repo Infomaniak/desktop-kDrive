@@ -13,16 +13,16 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
     [ErrorMetadata(
         Levels = new[] { ErrorLevel.Node },
         NodeTypes = new[] { NodeType.File, NodeType.Directory },
-        InconsistencyTypes = new[] { InconsistencyType.ForbiddenChar }
-    // CancelTypes = new[] { CancelType.None },
-    // ConflictTypes = new[] { ConflictType.None },
-    // ExitCodes = new[] { ExitCode.Unknown },
-    // ExitCauses = new[] { ExitCause.Unknown }
+        //InconsistencyTypes = new[] { InconsistencyType.None }
+        // CancelTypes = new[] { CancelType.None },
+        // ConflictTypes = new[] { ConflictType.None },
+        ExitCodes = new[] { ExitCode.SystemError },
+        ExitCauses = new[] { ExitCause.FileAccessError }
     )]
-    public sealed partial class ForbiddenCharError : UserControl
+    public sealed partial class LocalAccessError : UserControl
     {
         private Error _error;
-        public ForbiddenCharError(Error error)
+        public LocalAccessError(Error error)
         {
             this.InitializeComponent();
             _error = error;

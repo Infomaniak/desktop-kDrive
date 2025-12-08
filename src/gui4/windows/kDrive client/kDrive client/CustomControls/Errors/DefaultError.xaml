@@ -7,7 +7,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d">
     <local:ErrorCard x:Name="ErrorCard"
-                     Title="Erreur inconnue"
+                     Title="{x:Bind _error.Path}"
                      ActionText="Contacter le support"
                      ActionClick="ErrorCard_ActionClick" />
 </UserControl>

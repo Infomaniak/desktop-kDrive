@@ -10,7 +10,7 @@ namespace Infomaniak.kDrive.ServerCommunication.JsonConverters
         {
             // Expecting an integer Unix timestamp (seconds since epoch)
             long ms = reader.GetInt64();
-            return DateTimeOffset.FromUnixTimeSeconds(ms).UtcDateTime;
+            return DateTimeOffset.FromUnixTimeSeconds(ms).LocalDateTime;
         }
 
         public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)

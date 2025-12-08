@@ -11,6 +11,7 @@
 
     <UserControl.Resources>
         <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
+        <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
     </UserControl.Resources>
     <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}"
           Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.XXS}"
@@ -38,12 +39,16 @@
                     Orientation="Horizontal"
                     Spacing="{StaticResource Infomaniak.Style.Spacing.S}"
                     Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.XS}"
-                    Visibility="{x:Bind ItemName, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True'}">
+                    Visibility="{x:Bind ItemPath, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True'}">
+            <ToolTipService.ToolTip>
+                <ToolTip Content="{x:Bind ItemPath, Mode=OneWay}"
+                         Placement="Right" />
+            </ToolTipService.ToolTip>
             <controls:SvgIcon UriString="{x:Bind ItemIconUri, Mode=OneWay}"
                               Width="16"
                               Height="16" />
 
-            <TextBlock Text="{x:Bind ItemName, Mode=OneWay}"
+            <TextBlock Text="{x:Bind ItemPath, Converter={StaticResource StringPathToFileNameConverter}, Mode=OneWay}"
                        Style="{StaticResource BodyTextBlockStyle}" />
         </StackPanel>
 

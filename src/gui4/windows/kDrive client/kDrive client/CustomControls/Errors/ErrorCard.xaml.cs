@@ -25,10 +25,10 @@ namespace Infomaniak.kDrive.CustomControls.Errors
             set { SetValue(ItemIconUriProperty, value); }
         }
 
-        public string? ItemName
+        public string? ItemPath
         {
-            get { return (string?)GetValue(ItemNameProperty); }
-            set { SetValue(ItemNameProperty, value); }
+            get { return (string?)GetValue(ItemPathProperty); }
+            set { SetValue(ItemPathProperty, value); }
         }
 
         public string Description
@@ -52,8 +52,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors
         public static readonly DependencyProperty ItemIconUriProperty =
             DependencyProperty.Register(nameof(ItemIconUri), typeof(string), typeof(ErrorCard), new PropertyMetadata(string.Empty));
 
-        public static readonly DependencyProperty ItemNameProperty =
-            DependencyProperty.Register(nameof(ItemName), typeof(string), typeof(ErrorCard), new PropertyMetadata(null));
+        public static readonly DependencyProperty ItemPathProperty =
+            DependencyProperty.Register(nameof(ItemPath), typeof(string), typeof(ErrorCard), new PropertyMetadata(null));
 
         public static readonly DependencyProperty DescriptionProperty =
             DependencyProperty.Register(nameof(Description), typeof(string), typeof(ErrorCard), new PropertyMetadata(string.Empty));
