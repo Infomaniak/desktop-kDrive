@@ -51,8 +51,8 @@ struct GuiRequests {
         static ExitCode updateDrive(const DriveInfo &driveInfo);
         static ExitCode getSyncInfoList(QList<SyncInfo> &list);
         static ExitCode getSyncStatus(int syncDbId, SyncStatus &status);
-        static ExitCode getSyncIdSet(int syncDbId, SyncNodeType type, QSet<QString> &syncIdSet);
-        static ExitCode setSyncIdSet(int syncDbId, SyncNodeType type, const QSet<QString> &syncIdSet);
+        static ExitCode getBlacklistedNodeIdSet(int syncDbId, QSet<QString> &syncIdSet);
+        static ExitCode setBlacklistedNodeIdSet(int syncDbId, const QSet<QString> &syncIdSet);
         static ExitCode getParameters(ParametersInfo &parametersInfo);
         static ExitCode updateParameters(const ParametersInfo &parametersInfo);
         static ExitCode getNodePath(int syncDbId, const QString &nodeId, QString &path);
@@ -113,7 +113,6 @@ struct GuiRequests {
         static ExitCode searchItemInDrive(int driveDbId, const QString &searchString, QList<SearchInfo> &list, bool &hasMore,
                                           QString &cursor); // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitCode deleteSync(int syncDbId); // Asynchronous because it can be time consuming
-        static ExitCode propagateSyncListChange(int syncDbId, bool restartSync);
         static ExitCode bestAvailableVfsMode(VirtualFileMode &mode);
         static ExitCode propagateExcludeListChange(); // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitCode hasSystemLaunchOnStartup(bool &enabled);

@@ -1103,8 +1103,7 @@ void DrivePreferencesWidget::onValidateUpdate(int syncDbId) {
     QLOG_IF_FAIL(treeItemWidget->syncDbId() == syncDbId);
 
     QSet<QString> oldBlackSet;
-    if (const auto exitCode = GuiRequests::getSyncIdSet(syncDbId, SyncNodeType::BlackList, oldBlackSet);
-        exitCode != ExitCode::Ok) {
+    if (const auto exitCode = GuiRequests::getBlacklistedNodeIdSet(syncDbId, oldBlackSet); exitCode != ExitCode::Ok) {
         qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::getSyncIdSet";
         return;
     }
@@ -1112,12 +1111,10 @@ void DrivePreferencesWidget::onValidateUpdate(int syncDbId) {
     const QSet<QString> blackSet = treeItemWidget->createBlackSet();
     if (!GuiUtility::checkBlacklistSize(blackSet.size(), this)) return;
 
-    if (const auto exitCode = GuiRequests::setSyncIdSet(syncDbId, SyncNodeType::BlackList, blackSet); exitCode != ExitCode::Ok) {
+    if (const auto exitCode = GuiRequests::setBlacklistedNodeIdSet(syncDbId, blackSet); exitCode != ExitCode::Ok) {
         qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::setSyncIdSet";
         return;
     }
-
-    GuiRequests::propagateSyncListChange(syncDbId, true);
 
     // Hide update widget
     if (auto *itemWidget = (FolderItemWidget *) sender(); itemWidget) {

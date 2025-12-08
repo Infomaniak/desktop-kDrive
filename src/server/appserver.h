@@ -38,6 +38,7 @@
 #include <QApplication>
 #include <QElapsedTimer>
 #include <QPointer>
+#include <QProcess>
 #include <QQueue>
 #include <QTimer>
 
@@ -121,13 +122,15 @@ class AppServer : public SharedTools::QtSingleApplication {
           \return ExitCode::Ok if no unexpected error occurred.
         */
         [[nodiscard]] ExitInfo tryCreateAndStartVfs(const Sync &sync, bool &startPostponed) noexcept;
+        [[nodiscard]] static ExitInfo getVfs(int syncDbId, std::shared_ptr<Vfs> &vfs);
         [[nodiscard]] ExitInfo initSyncPal(const Sync &sync, const NodeSet &blackList = {}, bool start = true,
                                            const std::chrono::seconds &startDelay = std::chrono::seconds(0),
                                            bool resumedByUser = false, bool firstInit = false);
         [[nodiscard]] ExitInfo stopSyncPal(int syncDbId, bool pausedByUser = false, bool quit = false, bool clear = false);
         [[nodiscard]] ExitInfo stopVfs(int syncDbId, bool unregister);
         [[nodiscard]] ExitInfo startSyncs(User &user);
-        void stopSyncTask(int syncDbId); // Long task which can block GUI: post-poned in the event loop by means of timer
+        void stopSyncTask(int syncDbId);
+        [[nodiscard]] ExitInfo setSupportsVirtualFiles(int syncDbId, bool value);
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         static ExitCode getThumbnail(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) {
@@ -151,7 +154,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         std::unique_ptr<NavigationPaneHelper> _navigationPaneHelper;
 #endif
 
-        std::shared_ptr<CommManager> _commManager;
+        std::shared_ptr<CommManager> _commManager = nullptr;
         bool _appRestartRequired{false};
         Theme *_theme{nullptr};
         bool _helpAsked{false};
@@ -173,6 +176,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         QTimer _restartSyncsTimer;
         std::unordered_map<int, SyncCache> _syncCacheMap;
         std::unordered_map<int, NodeSet> _undecidedListCacheMap;
+        QProcess *_clientProcess = nullptr;
 
         static std::unique_ptr<UpdateManager> _updateManager;
 
@@ -198,7 +202,6 @@ class AppServer : public SharedTools::QtSingleApplication {
                                            bool resumedByUser = false, bool firstInit = false);
 
         [[nodiscard]] ExitInfo createAndStartVfs(const Sync &sync) noexcept;
-        [[nodiscard]] ExitInfo setSupportsVirtualFiles(int syncDbId, bool value);
 
         void startSyncsAndRetryOnError();
         [[nodiscard]] ExitInfo startSyncs();
@@ -234,8 +237,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         static void sendErrorAdded(bool serverLevel, ExitCode exitCode, int syncDbId);
         void addCompletedItem(int syncDbId, const SyncFileItem &item, bool notify);
         void sendSignal(SignalNum sigNum, int syncDbId, const SigValueType &val);
-
-        static ExitInfo getVfs(int syncDbId, std::shared_ptr<Vfs> &vfs);
 
         static void syncFileStatus(int syncDbId, const KDC::SyncPath &path, KDC::SyncFileStatus &status);
         static void syncFileSyncing(int syncDbId, const KDC::SyncPath &path, bool &syncing);

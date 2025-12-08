@@ -47,7 +47,7 @@ ExitInfo SyncAddJob::deserializeInputParms() {
         readParamValue(inParamsAccountId, _accountId);
         readParamValue(inParamsDriveId, _driveId);
     } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in AbstractGuiJob::readParamValue: error=" << e.what());
+        LOG_WARN(_logger, "Exception in SyncAddJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
     }
 
@@ -88,6 +88,9 @@ ExitInfo SyncAddJob::process() {
         auto signalDriveAddedJob = std::make_shared<SignalDriveAddedJob>(driveInfo);
         _commManager->sendGuiSignal(signalDriveAddedJob);
     }
+
+    auto signalSyncAddedJob = std::make_shared<SignalSyncAddedJob>(syncInfo);
+    _commManager->sendGuiSignal(signalSyncAddedJob);
 
     return AbstractSyncAddJob::process(syncInfo);
 }

@@ -377,14 +377,13 @@ ExitCode GuiRequests::getSyncStatus(const int syncDbId, SyncStatus &status) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getSyncIdSet(const int syncDbId, const SyncNodeType type, QSet<QString> &syncIdSet) {
+ExitCode GuiRequests::getBlacklistedNodeIdSet(const int syncDbId, QSet<QString> &syncIdSet) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << syncDbId;
-    paramsStream << type;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::SYNCNODE_LIST, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::BLACKLISTED_NODE_LIST, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -396,15 +395,14 @@ ExitCode GuiRequests::getSyncIdSet(const int syncDbId, const SyncNodeType type, 
     return exitCode;
 }
 
-ExitCode GuiRequests::setSyncIdSet(const int syncDbId, const SyncNodeType type, const QSet<QString> &syncIdSet) {
+ExitCode GuiRequests::setBlacklistedNodeIdSet(const int syncDbId, const QSet<QString> &syncIdSet) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << syncDbId;
-    paramsStream << type;
     paramsStream << syncIdSet;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::SYNCNODE_SETLIST, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::BLACKLISTED_NODE_SETLIST, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -668,24 +666,6 @@ ExitCode GuiRequests::deleteSync(const int syncDbId) {
 
     auto exitCode = ExitCode::Ok;
     ArgsWriter(results).write(exitCode);
-
-    return exitCode;
-}
-
-ExitCode GuiRequests::propagateSyncListChange(const int syncDbId, const bool restartSync) {
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << syncDbId;
-    paramsStream << restartSync;
-
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::SYNC_PROPAGATE_SYNCLIST_CHANGE, params, results)) {
-        return ExitCode::SystemError;
-    }
-
-    auto exitCode = ExitCode::Unknown;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
 
     return exitCode;
 }

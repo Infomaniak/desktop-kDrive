@@ -62,13 +62,19 @@ void UpdateTreeWorker::execute() {
     _updateTree->startUpdate();
 
     // Reset nodes working properties
-    for (const auto &[_, node]: _updateTree->nodes()) {
-        node->clearChangeEvents();
-        node->clearConflictAlreadyConsidered();
-        node->setInconsistencyType(InconsistencyType::None);
-        node->setPreviousId(std::nullopt);
-        node->setStatus(NodeStatus::Unprocessed);
-        node->clearMoveOriginInfos();
+    auto nodeIt = _updateTree->nodes().begin();
+    while (nodeIt != _updateTree->nodes().end()) {
+        if (nodeIt->second->status() == NodeStatus::ToDelete) {
+            nodeIt = _updateTree->nodes().erase(nodeIt);
+        } else {
+            nodeIt->second->clearChangeEvents();
+            nodeIt->second->clearConflictAlreadyConsidered();
+            nodeIt->second->setInconsistencyType(InconsistencyType::None);
+            nodeIt->second->setPreviousId(std::nullopt);
+            nodeIt->second->setStatus(NodeStatus::Unprocessed);
+            nodeIt->second->clearMoveOriginInfos();
+            ++nodeIt;
+        }
     }
 
     _updateTree->previousIdSet().clear();
@@ -158,22 +164,17 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
 
         const auto currentNodeIt = _updateTree->nodes().find(deleteOp->nodeId());
         if (currentNodeIt != _updateTree->nodes().end()) {
-            // Node exists
-            currentNodeIt->second->insertChangeEvent(OperationType::Delete);
+            currentNodeIt->second->setChangeEvents(OperationType::Delete);
             currentNodeIt->second->setCreatedAt(deleteOp->createdAt());
             currentNodeIt->second->setModificationTime(deleteOp->lastModified());
             currentNodeIt->second->setSize(deleteOp->size());
             currentNodeIt->second->setIsTmp(false);
             if (ParametersCache::isExtendedLogEnabled()) {
-                LOGW_SYNCPAL_DEBUG(
-                        _logger,
-                        _side << L" update tree: Node '" << SyncName2WStr(currentNodeIt->second->name()).c_str()
-                              << L"' (node ID: '"
-                              << CommonUtility::s2ws(currentNodeIt->second->id().has_value() ? *currentNodeIt->second->id()
-                                                                                             : NodeId())
-                                         .c_str()
-                              << L"', DB ID: '" << (currentNodeIt->second->idb().has_value() ? *currentNodeIt->second->idb() : -1)
-                              << L"') updated. Operation DELETE inserted in change events.");
+                LOGW_SYNCPAL_DEBUG(_logger, _side << L" update tree: Node '"
+                                                  << SyncName2WStr(currentNodeIt->second->name()).c_str() << L"' (node ID: '"
+                                                  << CommonUtility::s2ws(currentNodeIt->second->id().value_or(""))
+                                                  << L"', DB ID: '" << currentNodeIt->second->idb().value_or(-1)
+                                                  << L"') updated. Operation DELETE inserted in change events.");
             }
         } else {
             std::shared_ptr<Node> parentNode;
@@ -216,19 +217,25 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTreeWorker::updateNodeId");
                     return ExitCode::DataError;
                 }
+                if (existingNode->changeEvents() != OperationType::None) {
+                    assert(false);
+                    LOGW_SYNCPAL_WARN(_logger, _side << L" update tree: Node '" << SyncName2WStr(existingNode->name()).c_str()
+                                                     << L"' (node ID: '" << CommonUtility::s2ws(existingNode->id().value_or(""))
+                                                     << L"', DB ID: '" << existingNode->idb().value_or(-1)
+                                                     << L"') events is not empty: " << existingNode->changeEvents());
+                    return ExitCode::DataError;
+                }
                 existingNode->setCreatedAt(deleteOp->createdAt());
                 existingNode->setModificationTime(deleteOp->lastModified());
                 existingNode->setSize(deleteOp->size());
-                existingNode->insertChangeEvent(OperationType::Delete);
+                existingNode->setChangeEvents(OperationType::Delete);
                 existingNode->setIsTmp(false);
                 _updateTree->nodes()[deleteOp->nodeId()] = existingNode;
                 if (ParametersCache::isExtendedLogEnabled()) {
-                    LOGW_SYNCPAL_DEBUG(
-                            _logger,
-                            _side << L" update tree: Node '" << SyncName2WStr(existingNode->name()).c_str() << L"' (node ID: '"
-                                  << CommonUtility::s2ws(existingNode->id().has_value() ? *existingNode->id() : NodeId()).c_str()
-                                  << L"', DB ID: '" << (existingNode->idb().has_value() ? *existingNode->idb() : -1)
-                                  << L"') updated. Operation DELETE inserted in change events.");
+                    LOGW_SYNCPAL_DEBUG(_logger, _side << L" update tree: Node '" << SyncName2WStr(existingNode->name()).c_str()
+                                                      << L"' (node ID: '" << CommonUtility::s2ws(existingNode->id().value_or(""))
+                                                      << L"', DB ID: '" << existingNode->idb().value_or(-1)
+                                                      << L"') updated. Operation DELETE inserted in change events.");
                 }
             } else {
                 // create node
@@ -279,31 +286,38 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
         }
 
         FSOpPtr createOp;
-        _operationSet->getOp(createOpId, createOp);
+        (void) _operationSet->getOp(createOpId, createOp);
 
-        std::pair<FSOpPtrMap::iterator, bool> insertionResult;
+        bool insertionFailedBecausePathExists = false;
+        SyncPath path;
         switch (createOp->objectType()) {
             case NodeType::File: {
-                SyncPath normalizedPath;
-                if (!Utility::normalizedSyncPath(createOp->path(), normalizedPath)) {
-                    normalizedPath = createOp->path();
+                if (!Utility::normalizedSyncPath(createOp->path(), path)) {
+                    path = createOp->path();
                     LOGW_SYNCPAL_WARN(_logger, L"Failed to normalize: " << Utility::formatSyncPath(createOp->path()));
                 }
-                insertionResult = _createFileOperationSet.try_emplace(normalizedPath, createOp);
+                if (!_createFileOperationSet.try_emplace(path, createOp).second) {
+                    insertionFailedBecausePathExists = _createFileOperationSet.contains(
+                            path); // The insertion might have failed because of unsupported
+                                   // characters in `path` (e.g.: a file name finishing by a space or a dot).
+                }
                 break;
             }
             case NodeType::Directory:
-                insertionResult = createDirectoryOperationSet.try_emplace(createOp->path(), createOp);
+                if (!createDirectoryOperationSet.try_emplace(createOp->path(), createOp).second) {
+                    insertionFailedBecausePathExists = createDirectoryOperationSet.contains(
+                            path); // The insertion might have failed because of unsupported
+                                   // characters (e.g.: a folder name finishing by a space or a dot).
+                }
                 break;
             default:
                 break;
         }
 
-        if (!insertionResult.second) {
+        if (insertionFailedBecausePathExists) {
             // Failed to insert Create operation. A full rebuild of the snapshot is required.
             // The following issue has been identified: the operating system missed a delete operation, in which case a
             // liveSnapshot rebuild is both required and sufficient.
-
             LOGW_SYNCPAL_WARN(_logger, _side << L" update tree: Operation Create already exists on item with "
                                              << Utility::formatSyncPath(createOp->path()) << L", ID: "
                                              << CommonUtility::s2ws(createOp->nodeId()) << L", type " << createOp->objectType()

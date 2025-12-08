@@ -34,7 +34,7 @@ public actor XPCServerMock: XPCGuiProtocol, XPCConnectionProvider {
 
     let encoder = JSONEncoder()
     let decoder = JSONDecoder()
-    let cache = CoherentCache()
+    let cache = ServerCoherentCache()
     let requestCounter = AutoIncrementIDGenerator()
     let userDbIdGenerator = AutoIncrementIDGenerator()
 
@@ -86,6 +86,7 @@ public actor XPCServerMock: XPCGuiProtocol, XPCConnectionProvider {
                            name: "Jonh Appleseed",
                            email: "jonh.appleseed@apple.com",
                            accounts: [:],
+                           availableDrives: [:],
                            isConnected: true,
                            isStaff: true)
         await cache.addUser(newUser)

@@ -33,7 +33,6 @@ SignalSyncCompletedItem::SignalSyncCompletedItem(int syncDbId, const SyncFileIte
 }
 
 ExitInfo SignalSyncCompletedItem::serializeOutputParms() {
-    // Output parameters serialization
     writeParamValue(outParamsSyncDbId, _syncDbId);
     writeParamValue(outParamsItemInfo, _itemInfo, info2DynamicVar<SyncFileItemInfo>);
     return ExitCode::Ok;

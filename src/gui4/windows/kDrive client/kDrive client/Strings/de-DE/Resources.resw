@@ -123,6 +123,12 @@
   <data name="CC_TrayIcon_OpenApplicationCommand.Label" xml:space="preserve">
     <value />
   </data>
+  <data name="CC_SyncExclusionSelector_Header_Size.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncExclusionSelector_Header_Name.Text" xml:space="preserve">
+    <value />
+  </data>
   <data name="W_MainWindow_NavBar_Home.Content" xml:space="preserve">
     <value />
   </data>
@@ -136,9 +142,6 @@
     <value />
   </data>
   <data name="CC_SyncStatusBar_PausedStatus.Text" xml:space="preserve">
-    <value />
-  </data>
-  <data name="CC_SyncStatusBar_SyncingStatus.Text" xml:space="preserve">
     <value />
   </data>
   <data name="CC_SyncStatusBar_StartingStatus.Text" xml:space="preserve">
@@ -291,6 +294,9 @@
   <data name="Page_Onboarding_OAuthLoadingPage_Success_Title.Text" xml:space="preserve">
     <value />
   </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Error_Title.Text" xml:space="preserve">
+    <value />
+  </data>
   <data name="Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Subtitle.Text" xml:space="preserve">
     <value />
   </data>
@@ -298,6 +304,9 @@
     <value />
   </data>
   <data name="Page_Onboarding_OAuthLoadingPage_Success_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Error_Subtitle.Text" xml:space="preserve">
     <value />
   </data>
   <data name="Page_Onboarding_WelcomePage_Title.Text" xml:space="preserve">
@@ -355,6 +364,9 @@
     <value />
   </data>
   <data name="Global_kDriveOffersUrl" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_kDriveShopUrl" xml:space="preserve">
     <value />
   </data>
   <data name="Page_StoragePage_Title.Text" xml:space="preserve">
@@ -496,10 +508,16 @@
   <data name="Page_Settings_DriveManagementPage_FolderSelection.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
-  <data name="Page_Settings_DriveManagementPage_FolderSelection_Presentation.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+  <data name="Page_Settings_DriveManagementPage_FolderSelection_Presentation_Header.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
-  <data name="Page_Settings_DriveManagementPage_FolderSelection_Presentation.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+  <data name="Page_Settings_DriveManagementPage_FolderSelection_SaveButton.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_FolderSelection_CancelButton.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_FolderSelection_Presentation_Description.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncMode.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
@@ -745,9 +763,6 @@
   <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Title.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Description.Text" xml:space="preserve">
-    <value />
-  </data>
   <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_InfoBar.Message" xml:space="preserve">
     <value />
   </data>
@@ -785,6 +800,9 @@
     <value />
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="CC_SyncStatusBar_SyncingStatus.Text" xml:space="preserve">
     <value />
   </data>
 </root>

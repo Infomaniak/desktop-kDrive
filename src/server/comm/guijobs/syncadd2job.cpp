@@ -43,7 +43,7 @@ ExitInfo SyncAdd2Job::deserializeInputParms() {
     try {
         readParamValue(inParamsDriveDbId, _driveDbId);
     } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in AbstractGuiJob::readParamValue: error=" << e.what());
+        LOG_WARN(_logger, "Exception in SyncAdd2Job::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
     }
 
@@ -70,6 +70,9 @@ ExitInfo SyncAdd2Job::process() {
         AppServer::addError(Error(ERR_ID, exitCode));
         return exitCode;
     }
+
+    auto signalSyncAddedJob = std::make_shared<SignalSyncAddedJob>(syncInfo);
+    _commManager->sendGuiSignal(signalSyncAddedJob);
 
     return AbstractSyncAddJob::process(syncInfo);
 }

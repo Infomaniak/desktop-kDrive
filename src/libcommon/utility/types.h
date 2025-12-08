@@ -283,6 +283,7 @@ enum class NodeStatus {
     PartiallyProcessed,
     Processed,
     ConflictOpGenerated,
+    ToDelete,
     EnumEnd
 };
 

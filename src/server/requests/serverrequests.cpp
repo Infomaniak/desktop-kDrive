@@ -90,13 +90,13 @@ ExitCode ServerRequests::getUserInfoList(QList<UserInfo> &list) {
 }
 
 ExitCode ServerRequests::getUserInfoList(std::vector<UserInfo> &list) {
+    list.clear();
     std::vector<User> userList;
     if (!ParmsDb::instance()->selectAllUsers(userList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
         return ExitCode::DbError;
     }
 
-    list.clear();
     for (const User &user: userList) {
         UserInfo userInfo;
         userToUserInfo(user, userInfo);
@@ -390,6 +390,9 @@ ExitCode ServerRequests::requestToken(const QString &code, const QString &codeVe
     return requestToken(QStr2Str(code), QStr2Str(codeVerifier), userInfo, userCreated, error, errorDescr);
 }
 
+ExitInfo ServerRequests::getNodeInfo(int userDbId, int driveId, const std::string &nodeId, NodeInfo &nodeInfo, bool withPath) {
+    return getNodeInfo(userDbId, driveId, QString::fromStdString(nodeId), nodeInfo, withPath);
+}
 ExitInfo ServerRequests::getNodeInfo(int userDbId, int driveId, const QString &nodeId, NodeInfo &nodeInfo,
                                      bool withPath /*= false*/) {
     std::shared_ptr<GetFileInfoJob> job;
@@ -703,6 +706,14 @@ ExitCode ServerRequests::addSync(int driveDbId, const SyncPath &localFolderPath,
                                                                             << Path2WStr(localFolderPath) << L" serverFolderPath="
                                                                             << Path2WStr(serverFolderPath) << L" liteSync="
                                                                             << liteSync);
+    // Create the sync folder if it does not exist
+    IoError ioError = IoError::Success;
+    bool res = IoHelper::createDirectory(localFolderPath, true, ioError);
+    if ((!res || ioError != IoError::Success) && ioError != IoError::DirectoryExists) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error creating local sync folder - path=" << Path2WStr(localFolderPath) << L" ioError=" << ioError);
+        return ExitCode::SystemError;
+    }
 
 #ifndef Q_OS_WIN
     Q_UNUSED(showInNavigationPane)
@@ -723,9 +734,7 @@ ExitCode ServerRequests::addSync(int driveDbId, const SyncPath &localFolderPath,
 
     QUuid navigationPaneClsid;
 #ifdef Q_OS_WIN
-    if (showInNavigationPane) {
-        navigationPaneClsid = QUuid::createUuid();
-    }
+    navigationPaneClsid = QUuid::createUuid();
 #endif
 
     Sync sync;
@@ -758,7 +767,7 @@ ExitCode ServerRequests::addSync(int driveDbId, const SyncPath &localFolderPath,
     sync.setDbPath(std::filesystem::path());
     sync.setHasFullyCompleted(false);
     sync.setNavigationPaneClsid(navigationPaneClsid.toString().toStdString());
-    if (ExitCode exitCode = createSync(sync, syncInfo); exitCode != ExitCode::Ok) {
+    if (const auto exitCode = createSync(sync, syncInfo); exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in createSync");
         return exitCode;
     }
@@ -780,12 +789,27 @@ ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, 
 
 ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, const QString &nodeId, QList<NodeInfo> &list,
                                        const bool withPath /*= false*/) {
+    std::vector<NodeInfo> stdVector;
+    const ExitInfo exitInfo = getSubFolders(userDbId, driveId, nodeId.toStdString(), stdVector, withPath);
+    if (!exitInfo) {
+        return exitInfo;
+    }
+    list.clear();
+    for (const NodeInfo &nodeInfo: stdVector) {
+        list.push_back(nodeInfo);
+    }
+    return ExitCode::Ok;
+}
+
+
+ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, const NodeId &nodeId, std::vector<NodeInfo> &list,
+                                       const bool withPath /*= false*/) {
     list.clear();
     uint64_t page = 1;
     uint64_t totalPages = 0;
     do {
         std::shared_ptr<GetRootFileListJob> job = nullptr;
-        if (nodeId.isEmpty()) {
+        if (nodeId.empty()) {
             try {
                 job = std::make_shared<GetRootFileListJob>(userDbId, driveId, page, true);
             } catch (const std::exception &e) {
@@ -795,20 +819,20 @@ ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, co
             }
         } else {
             try {
-                job = std::make_shared<GetFileListJob>(userDbId, driveId, nodeId.toStdString(), page, true);
+                job = std::make_shared<GetFileListJob>(userDbId, driveId, nodeId, page, true);
             } catch (const std::exception &e) {
                 LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::GetFileListJob for userDbId="
-                                                               << userDbId << " driveId=" << driveId
-                                                               << " nodeId=" << nodeId.toStdString() << " error=" << e.what());
+                                                               << userDbId << " driveId=" << driveId << " nodeId=" << nodeId
+                                                               << " error=" << e.what());
                 return AbstractTokenNetworkJob::exception2ExitCode(e);
             }
         }
 
         job->setWithPath(withPath);
         if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::runSynchronously for userDbId="
-                                                           << userDbId << " driveId=" << driveId
-                                                           << " nodeId=" << nodeId.toStdString() << " error=" << exitInfo);
+            LOG_WARN(Log::instance()->getLogger(),
+                     "Error in GetFileListJob::runSynchronously for userDbId=" << userDbId << " driveId=" << driveId
+                                                                               << " nodeId=" << nodeId << " error=" << exitInfo);
             return exitInfo;
         }
 
@@ -870,7 +894,7 @@ ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, co
             NodeInfo nodeInfo(QString::fromStdString(nodeId2), SyncName2QStr(name),
                               -1, // Size is not set here as it can be very long to evaluate
                               parentId.c_str(), modTime, SyncName2QStr(path));
-            list << nodeInfo;
+            list.push_back(nodeInfo);
         }
 
         page++;
@@ -880,7 +904,7 @@ ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, co
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::getSubFolders(int driveDbId, const QString &nodeId, QList<NodeInfo> &list, bool withPath /*= false*/) {
+ExitInfo ServerRequests::getSubFolders(int driveDbId, const NodeId &nodeId, std::vector<NodeInfo> &list, bool withPath) {
     Drive drive;
     bool found = false;
     if (!ParmsDb::instance()->selectDrive(driveDbId, drive, found)) {
@@ -903,6 +927,22 @@ ExitInfo ServerRequests::getSubFolders(int driveDbId, const QString &nodeId, QLi
     }
 
     return getSubFolders(account.userDbId(), drive.driveId(), nodeId, list, withPath);
+}
+
+
+ExitInfo ServerRequests::getSubFolders(const int driveDbId, const QString &nodeId, QList<NodeInfo> &list,
+                                       bool withPath /*= false*/) {
+    list.clear();
+    std::vector<NodeInfo> stdVector;
+
+    const auto exitInfo = getSubFolders(driveDbId, NodeId{nodeId.toStdString()}, stdVector, withPath);
+    if (!exitInfo) return exitInfo;
+
+    for (NodeInfo &nodeInfo: stdVector) {
+        list.push_back(std::move(nodeInfo));
+    }
+
+    return ExitCode::Ok;
 }
 
 ExitCode ServerRequests::getNodeIdByPath(int userDbId, int driveId, const SyncPath &path, QString &nodeId) {
@@ -1208,41 +1248,45 @@ ExitCode ServerRequests::getUserFromSyncDbId(int syncDbId, User &user) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::createDir(int driveDbId, const QString &parentNodeId, const QString &dirName, QString &newNodeId) {
+ExitCode ServerRequests::createDir(const int driveDbId, const NodeId &parentNodeId, const CommString &dirName,
+                                   NodeId &newNodeId) {
     // Get drive data
     std::shared_ptr<CreateDirJob> job = nullptr;
     try {
-        job = std::make_shared<CreateDirJob>(nullptr, driveDbId, QStr2SyncName(dirName), parentNodeId.toStdString(),
-                                             QStr2SyncName(dirName));
+        job = std::make_shared<CreateDirJob>(nullptr, driveDbId, dirName, parentNodeId, dirName);
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in CreateDirJob::CreateDirJob for driveDbId=" << driveDbId << " error=" << e.what());
         return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
-    ExitCode exitCode = job->runSynchronously();
-    if (exitCode != ExitCode::Ok) {
+    if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in CreateDirJob::runSynchronously for driveDbId=" << driveDbId);
-        return exitCode;
+        return exitInfo.code();
     }
 
     // Extract file ID
     if (job->jsonRes()) {
-        Poco::JSON::Object::Ptr dataObj = job->jsonRes()->getObject(dataKey);
-        if (dataObj) {
-            std::string tmp;
-            if (!JsonParserUtility::extractValue(dataObj, idKey, tmp)) {
-                return ExitCode::BackError;
-            }
-            newNodeId = QString::fromStdString(tmp);
+        if (Poco::JSON::Object::Ptr dataObj = job->jsonRes()->getObject(dataKey); dataObj) {
+            NodeId tmp;
+            if (!JsonParserUtility::extractValue(dataObj, idKey, tmp)) return ExitCode::BackError;
+            newNodeId = tmp;
         }
     }
 
-    if (newNodeId.isEmpty()) {
-        return ExitCode::BackError;
-    }
+    if (newNodeId.empty()) return ExitCode::BackError;
 
     return ExitCode::Ok;
+}
+
+ExitCode ServerRequests::createDir(const int driveDbId, const QString &parentNodeId, const QString &dirName, QString &newNodeId) {
+    newNodeId = {};
+    NodeId newNodeIdStr;
+
+    const auto exitCode = createDir(driveDbId, parentNodeId.toStdString(), CommonUtility::qStr2CommString(dirName), newNodeIdStr);
+    newNodeId = QString::fromStdString(newNodeIdStr);
+
+    return exitCode;
 }
 
 ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const NodeId &nodeId, std::string &linkUrl) {
@@ -1302,8 +1346,18 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const NodeId &nodeId, s
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::getFolderSize(int userDbId, int driveId, const NodeId &nodeId,
-                                       std::function<void(const QString &, qint64)> callback) {
+ExitInfo ServerRequests::getFolderSizeWithCallback(int userDbId, int driveId, const NodeId &nodeId,
+                                                   std::function<void(const QString &, qint64)> callback) {
+    int64_t result = 0;
+    if (ExitInfo exitInfo = ServerRequests::getFolderSize(userDbId, driveId, nodeId, result); !exitInfo) {
+        return exitInfo;
+    }
+
+    callback(QString::fromStdString(nodeId), result);
+    return ExitCode::Ok;
+}
+
+ExitInfo ServerRequests::getFolderSize(int userDbId, int driveId, const NodeId &nodeId, int64_t &result) {
     if (nodeId.empty()) {
         LOG_WARN(Log::instance()->getLogger(), "Node ID is empty");
         return ExitCode::DataError;
@@ -1343,12 +1397,9 @@ ExitInfo ServerRequests::getFolderSize(int userDbId, int driveId, const NodeId &
         return ExitCode::BackError;
     }
 
-    qint64 size = 0;
-    if (!JsonParserUtility::extractValue(dataObj, sizeKey, size)) {
+    if (!JsonParserUtility::extractValue(dataObj, sizeKey, result)) {
         return ExitCode::BackError;
     }
-
-    callback(QString::fromStdString(nodeId), size);
 
     return ExitCode::Ok;
 }
@@ -1692,6 +1743,17 @@ ExitInfo ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &upd
             accountUpdated = true;
         }
 
+        std::string colorHex;
+        if (Poco::JSON::Object::Ptr prefObj = dataObj->getObject(preferencesKey)) {
+            if (!JsonParserUtility::extractValue(prefObj, colorKey, colorHex, false)) {
+                return ExitCode::BackError;
+            }
+            if (drive.color() != colorHex) {
+                drive.setColor(colorHex);
+                updated = true;
+            }
+        }
+
         // Non DB attributes
         bool inMaintenance = false;
         if (!JsonParserUtility::extractValue(dataObj, inMaintenanceKey, inMaintenance)) {
@@ -2021,6 +2083,7 @@ void ServerRequests::userToUserInfo(const User &user, UserInfo &userInfo) {
 void ServerRequests::accountToAccountInfo(const Account &account, AccountInfo &accountInfo) {
     accountInfo.setDbId(account.dbId());
     accountInfo.setUserDbId(account.userDbId());
+    accountInfo.setAccountId(account.accountId());
 }
 
 void ServerRequests::driveToDriveInfo(const Drive &drive, DriveInfo &driveInfo) {

@@ -22,6 +22,8 @@ import kDriveResources
 // swiftlint:disable nesting
 extension NSColor {
     public enum Tokens {
+        // MARK: - Tokens level 2
+
         public enum Action {
             public static let primary = NSColor(light: KDriveColors.drive600, dark: KDriveColors.drive400)
             public static let onPrimary = NSColor(light: KDriveColors.neutralBlue100, dark: KDriveColors.neutralBlue800)
@@ -30,10 +32,31 @@ extension NSColor {
         public enum Text {
             public static let primary = NSColor(light: KDriveColors.neutralBlue800, dark: KDriveColors.neutralBlue50)
             public static let secondary = NSColor(light: KDriveColors.neutralBlue600, dark: KDriveColors.neutralBlue200)
+            public static let tertiary = NSColor(light: KDriveColors.neutralBlue500, dark: KDriveColors.neutralBlue300)
         }
 
         public enum Surface {
-            public static let secondary = NSColor(light: KDriveColors.neutralBlue50, dark: KDriveColors.neutralBlue700)
+            public static let primary = NSColor(light: KDriveColors.neutralBlue50, dark: KDriveColors.neutralBlue800)
+            public static let secondary = NSColor(light: KDriveColors.neutralBlue100, dark: KDriveColors.neutralBlue700)
+            public static let tertiary = NSColor(light: KDriveColors.neutralBlue200, dark: KDriveColors.neutralBlue600)
+        }
+
+        public enum Status {
+            public enum Strong {
+                public static let warning = NSColor(light: KDriveColors.orange800, dark: KDriveColors.orange300)
+            }
+
+            public enum Medium {
+                public static let success = NSColor(light: KDriveColors.green500, dark: KDriveColors.green400)
+                public static let warning = NSColor(light: KDriveColors.orange500, dark: KDriveColors.orange400)
+                public static let security = NSColor(light: KDriveColors.drive500, dark: KDriveColors.drive400)
+            }
+        }
+
+        // MARK: - Tokens level 3
+
+        public enum Drive {
+            public static let defaultColor = KDriveColors.infomaniak.color
         }
     }
 }

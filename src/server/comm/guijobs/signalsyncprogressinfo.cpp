@@ -38,7 +38,6 @@ SignalSyncProgressInfo::SignalSyncProgressInfo(int syncDbId, SyncStatus syncStat
 }
 
 ExitInfo SignalSyncProgressInfo::serializeOutputParms() {
-    // Output parameters serialization
     writeParamValue(outParamsSyncDbId, _syncDbId);
     writeParamValue(outParamsSyncstatus, _syncStatus);
     writeParamValue(outParamsSyncStep, _syncStep);

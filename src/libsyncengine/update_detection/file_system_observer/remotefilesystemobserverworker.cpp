@@ -198,7 +198,7 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents() {
         }
 
         if (job->hasErrorApi()) {
-            if (getNetworkErrorCode(job->errorCode()) == NetworkErrorCode::ForbiddenError) {
+            if (getNetworkErrorCode(job->backError().code()) == NetworkErrorCode::ForbiddenError) {
                 LOG_SYNCPAL_WARN(_logger, "Access forbidden");
                 exitInfo = ExitCode::Ok;
                 break;

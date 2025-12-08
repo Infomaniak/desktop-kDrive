@@ -174,7 +174,7 @@ ExitInfo UploadJob::setData() {
     return ExitCode::Ok;
 }
 
-std::string UploadJob::getContentType() {
+std::string UploadJob::contentType() {
     switch (_linkType) {
         case LinkType::Symlink:
             return _targetType == NodeType::File ? mimeTypeSymlink : mimeTypeSymlinkFolder;

@@ -78,10 +78,17 @@ void ExclusionTemplateCache::populateUndeletedExclusionTemplates() {
 }
 
 void ExclusionTemplateCache::updateRegexPatterns() {
+#ifdef KD_WINDOWS
+    // Adding character '\n' to the regex pattern produce an infinite loop inside method 'std::regex_match'. Therefor, we removed
+    // in Windows only because character '\n' is forbidden on Windows anyway.
+    static const std::string anyCharacter =
+            ".*?"; // The question mark `?` is used for lazy matching, i.e. it matches as few characters as possible.
+#else
     static const std::string anyCharacter =
             "(.|\n)*?"; // The question mark `?` is used for lazy matching, i.e. it matches as few characters as possible.
+#endif
 
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock<std::mutex> lock(_mutex);
     _regexPatterns.clear();
 
     for (const auto &exclPattern: exclusionTemplates()) {

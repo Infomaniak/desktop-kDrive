@@ -20,8 +20,6 @@ using Infomaniak.kDrive.ServerCommunication.JsonConverters;
 using Infomaniak.kDrive.Types;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
@@ -42,7 +40,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         private long _requestIdCounter = 0;
         private string _inBuffer = "";
         private int _inBufferJsonBalance = 0;
-        private readonly ConcurrentDictionary<long, CommData?> _pendingRequests = new ConcurrentDictionary<long, CommData?>();
+        private readonly ConcurrentDictionary<long, TaskCompletionSource<CommData>> _pendingRequests
+            = new();
         private long NextId
         {
             get
@@ -68,18 +67,21 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         {
             // Fetch the port from the .comm file
             string homePath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + Path.DirectorySeparatorChar + "kDrive" + Path.DirectorySeparatorChar + ".comm";
-            int port = int.Parse((File.ReadAllText(homePath)).Trim());
-
-
-            Logger.Log(Logger.Level.Info, $"Connecting to port {port}");
+            
             try
             {
+                int port = int.Parse((File.ReadAllText(homePath)).Trim());
+                Logger.Log(Logger.Level.Info, $"Connecting to port {port}");
                 _client = new TcpClient("localhost", port);
                 Logger.Log(Logger.Level.Info, "Connected to server.");
             }
             catch (SocketException ex)
             {
                 Logger.Log(Logger.Level.Error, $"Socket connection error: {ex.Message}");
+                _client = null;
+            }catch (System.IO.FileNotFoundException)
+            {
+                Logger.Log(Logger.Level.Error, $".comm file not found at {homePath}");
                 _client = null;
             }
 
@@ -132,7 +134,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 }
 
                 long requestId = NextId;
-                _pendingRequests[requestId] = null;
+                _pendingRequests[requestId] = new TaskCompletionSource<CommData>(
+                    TaskCreationOptions.RunContinuationsAsynchronously);
 
                 // Create the JSON object
                 var requestObj = new JsonObject
@@ -140,7 +143,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     ["type"] = (int)CommMessageType.Request,
                     ["id"] = requestId,
                     ["num"] = (int)requestNum,
-                    ["params"] = parameters
+                    ["params"] = parameters?.Deserialize<JsonNode>()
                 };
 
                 // Convert to JSON
@@ -170,39 +173,28 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return new CommData();
             }
         }
-        private async Task<CommData> WaitForReplyAsync(long requestId, CancellationToken cancellationToken = default)
+        private Task<CommData> WaitForReplyAsync(long requestId, CancellationToken ct = default)
         {
-            var time = DateTime.UtcNow;
-            // Ensure the slot exists
-            _pendingRequests[requestId] = null;
 
-            while (true)
+            if (!_pendingRequests.TryGetValue(requestId, out var tcs))
             {
-                if (_pendingRequests.TryGetValue(requestId, out var reply))
-                {
-                    if (reply != null)
-                    {
-                        _pendingRequests.Remove(requestId, out _);
-                        var elapsed = DateTime.UtcNow - time;
-                        Logger.Log(Logger.Level.Extended, $"Respons for request (Id) {requestId} received after {elapsed.TotalMilliseconds} ms");
-                        return reply;
-                    }
-                }
-                else
-                {
-                    Logger.Log(Logger.Level.Error, $"No request(Id) found for {requestId}");
-                    return new CommData();
-                }
-                await Task.Delay(10).ConfigureAwait(false);
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    var elapsed = DateTime.UtcNow - time;
-                    Logger.Log(Logger.Level.Info, $"Request(Id) {requestId} canceled before completion after {elapsed.TotalMilliseconds} ms");
-                    _pendingRequests.Remove(requestId, out _);
-                    cancellationToken.ThrowIfCancellationRequested();
-                }
+                Logger.Log(Logger.Level.Error, $"RequestId {requestId} not found in pending requests.");
+                return Task.FromResult(new CommData());
             }
+
+            // Tie cancellation to the task
+            if (ct.CanBeCanceled)
+            {
+                ct.Register(() =>
+                {
+                    if (_pendingRequests.TryRemove(requestId, out var pending))
+                        pending.TrySetCanceled(ct);
+                });
+            }
+
+            return tcs.Task;
         }
+
 
         private async Task OnReadyReadAsync()
         {
@@ -224,13 +216,19 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
                 string str = Encoding.Unicode.GetString(jsonBytes, 0, bytesRead);
                 _inBuffer += str;
-
-                int endIndex = -1;
-                UpdateJsonBalance(str, ref _inBufferJsonBalance, ref endIndex);
-                if (endIndex != -1)
-                    jsonEndIndex = _inBuffer.Length - str.Length + endIndex;
+                if (_inBufferJsonBalance != 0)
+                {
+                    int endIndex = -1;
+                    UpdateJsonBalance(str, ref _inBufferJsonBalance, ref endIndex);
+                    if (endIndex != -1)
+                        jsonEndIndex = _inBuffer.Length - str.Length + endIndex;
+                    else
+                        jsonEndIndex = -1;
+                }
                 else
-                    jsonEndIndex = -1;
+                {
+                    UpdateJsonBalance(_inBuffer, ref _inBufferJsonBalance, ref jsonEndIndex);
+                }
             }
             else
             {
@@ -252,6 +250,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
 
             string jsonString = _inBuffer.Substring(0, jsonEndIndex + 1);
+            if (!jsonString.EndsWith("}"))
+            {
+                Logger.Log(Logger.Level.Error, "unexpected end character");
+            }
             _inBuffer = _inBuffer.Substring(jsonEndIndex + 1);
 
             // Parse JSON
@@ -260,6 +262,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
+            Logger.Log(Logger.Level.Debug, $"Deserializing: {jsonString}");
             var messageObj = JsonSerializer.Deserialize<CommData>(jsonString, options);
             if (messageObj == null)
             {
@@ -293,7 +296,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 case CommMessageType.Request:
                     Logger.Log(Logger.Level.Info, $"Received a reply for id {data.Id}");
-                    _pendingRequests[data.Id] = data;
+                    if (_pendingRequests.TryRemove(data.Id, out var tcs))
+                    {
+                        tcs.TrySetResult(data);
+                    }
+                    else
+                    {
+                        Logger.Log(Logger.Level.Warning, $"Received reply for unknown request ID {data.Id}");
+                    }
                     break;
                 case CommMessageType.Signal:
                     // Signal

@@ -38,7 +38,6 @@ ExitInfo UserDbIdListJob::deserializeInputParms() {
 }
 
 ExitInfo UserDbIdListJob::serializeOutputParms() {
-    // Output parameters serialization
     writeParamValue(outParamsUserDbIdList, _userDbIdList);
 
     return ExitCode::Ok;

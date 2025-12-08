@@ -20,45 +20,44 @@ import Combine
 import Foundation
 import InfomaniakDI
 
+// TODO: Extend observation with deletion _after_ signals are created
+public enum ObservationEvent<Some: Equatable>: Equatable {
+    case update(Some)
+    case removed
+}
+
 @propertyWrapper
 public final class ObservedUser: ObservableObject {
     @Published public private(set) var wrappedValue: User?
-
     private var cancellable: AnyCancellable?
 
-    public init(dbId: Int32, cacheObservation: CoherentCacheObservation? = nil) {
-        let cacheObservation = cacheObservation ?? InjectService<CoherentCacheObservation>().wrappedValue
-        let usersPublisher = cacheObservation.usersPublisher
+    public init(dbId: Int32, cacheObservation: CoherentCacheObservable? = nil) {
+        let cacheObservation = cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
 
-        cancellable = usersPublisher
+        cancellable = cacheObservation.usersPublisher
             .userPublisher(for: dbId)
             .receive(on: DispatchQueue.main)
-            .assign(to: \.wrappedValue, onWeak: self)
+            .sink { [weak self] user in
+                self?.wrappedValue = user
+            }
     }
 
-    deinit {
-        cancellable?.cancel()
-    }
+    deinit { cancellable?.cancel() }
 
     public var projectedValue: ObservedUser { self }
 }
 
-extension AnyPublisher where Output == IndexedUsers, Failure == Never {
+public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
     func userPublisher(for dbId: Int32) -> AnyPublisher<User?, Never> {
         map { $0[dbId] }
-            .removeDuplicates { $0 == $1 }
+            .scan((old: User?.none, new: User?.none)) { prev, newUser in
+                (old: prev.new, new: newUser)
+            }
+            .map { pair -> User? in
+                guard pair.old != pair.new else { return nil }
+                return pair.new
+            }
+            .compactMap { $0 }
             .eraseToAnyPublisher()
-    }
-}
-
-extension Publisher {
-    /// Assigns values to a property on a weakly captured object to avoid retain cycles
-    func assign<Root: AnyObject>(
-        to keyPath: ReferenceWritableKeyPath<Root, Output>,
-        onWeak object: Root
-    ) -> AnyCancellable where Failure == Never {
-        sink { [weak object] value in
-            object?[keyPath: keyPath] = value
-        }
     }
 }
