@@ -59,16 +59,6 @@ public final class ObservedSynchro: ObservableObject {
             }
     }
 
-    /// Async stream for testing
-    var receivedValues: AsyncStream<Synchro?> {
-        AsyncStream { continuation in
-            let c = $wrappedValue
-                .sink { value in continuation.yield(value) }
-
-            continuation.onTermination = { _ in c.cancel() }
-        }
-    }
-
     deinit { cancellable?.cancel() }
 
     public var projectedValue: ObservedSynchro { self }
