@@ -682,7 +682,14 @@ void TestGuiCommChannel::testErrorInfoListJob() {
                         R"( "params": { "limit": 2 } })"};
     const auto cbkAnswerStr{
             R"({"cause":0,"code":0,"id":1,"params":{"errorInfoList":[)"
-            R"({"autoResolved":false,"cancelType":0,"conflictType":0,"dbId":1,"destinationPath":"","exitCause":0,"exitCode":0,"functionName":"ZnVuYzE=","inconsistencyType":0,"localNodeId":"bG9jYWwx","nodeType":1,"path":"cGF0aDE=","remoteNodeId":"cmVtb3RlMS","syncDbId":10,"time":1000,"workerName":"d29ya2VyMQ=="}]}})"};
+            R"({"cancelType":)" +
+            std::to_string(toInt(CancelType::None)) + R"(,"conflictType":)" + std::to_string(toInt(ConflictType::None)) +
+            R"(,"dbId": 1,"destinationPath":"","exitCause":)" + std::to_string(toInt(ExitCause::DbEntryNotFound)) +
+            R"(,"exitCode":)" + std::to_string(toInt(ExitCode::DataError)) +
+            R"(,"functionName":"ZnVuYzE =","inconsistencyType":)" + std::to_string(toInt(InconsistencyType::None)) +
+            R"(,"level":)" + std::to_string(toInt(ErrorLevel::SyncPal)) + R"(,"localNodeId":"bG9jYWwx","nodeType":)" +
+            std::to_string(toInt(NodeType::Unknown)) +
+            R"(,"path":"cGF0aDE=","remoteNodeId":"cmVtb3RlMQ=="","syncDbId":10,"time":1000,"workerName":"d29ya2VyMQ==","autoResolved":false}]}})"};
 #endif
 
     const auto answerStr{
@@ -693,14 +700,14 @@ void TestGuiCommChannel::testErrorInfoListJob() {
             std::to_string(toInt(RequestNum::ERROR_INFOLIST)) +
             R"(,)"
             R"( "params": { "errorInfoList": [)"
-            R"( { "autoResolved": false, "cancelType": )" +
+            R"( { "cancelType": )" +
             std::to_string(toInt(CancelType::None)) + R"(, "conflictType": )" + std::to_string(toInt(ConflictType::None)) +
             R"(, "dbId": 1, "destinationPath": "", "exitCause": )" + std::to_string(toInt(ExitCause::DbEntryNotFound)) +
             R"(, "exitCode": )" + std::to_string(toInt(ExitCode::DataError)) +
-            R"(, "functionName ": "ZnVuYzE =", "inconsistencyType ": )" + std::to_string(toInt(InconsistencyType::None)) +
-            R"(, "localNodeId": "bG9jYWwx", "nodeType": )" + std::to_string(toInt(NodeType::Unknown)) +
-            R"(, "path": "cGF0aDE=", "remoteNodeId": "cmVtb3RlMS", "syncDbId": 10, "time": 1000, "workerName": "d29ya2VyMQ==", "level": )" +
-            std::to_string(toInt(ErrorLevel::SyncPal)) +
+            R"(, "functionName": "ZnVuYzE =", "inconsistencyType": )" + std::to_string(toInt(InconsistencyType::None)) +
+            R"(, "level": )" + std::to_string(toInt(ErrorLevel::SyncPal)) + R"(, "localNodeId": "bG9jYWwx", "nodeType": )" +
+            std::to_string(toInt(NodeType::Unknown)) +
+            R"(, "path": "cGF0aDE=", "remoteNodeId": "cmVtb3RlMQ=="", "syncDbId": 10, "time": 1000, "workerName": "d29ya2VyMQ==", "autoResolved": false)" +
             R"( } ] },)"
             R"( "type": )" +
             std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
