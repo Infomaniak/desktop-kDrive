@@ -16,10 +16,22 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Combine
 import Foundation
 @testable import InfomaniakDI
-@testable import kDriveCore
+import kDriveCore
 import Testing
+
+extension ObservedUser {
+    var receivedValues: AsyncStream<User?> {
+        AsyncStream { continuation in
+            let cancellable = $wrappedValue
+                .sink { value in continuation.yield(value) }
+
+            continuation.onTermination = { _ in cancellable.cancel() }
+        }
+    }
+}
 
 @MainActor
 struct ObservedUserTests {
