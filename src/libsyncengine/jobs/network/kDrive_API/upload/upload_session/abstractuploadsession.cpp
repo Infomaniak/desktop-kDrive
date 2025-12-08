@@ -124,9 +124,10 @@ void AbstractUploadSession::uploadChunkCallback(const UniqueId jobId) {
     const std::scoped_lock lock(_mutex);
     const auto jobInfo = _ongoingChunkJobs.extract(jobId);
     if (!jobInfo.empty() && jobInfo.mapped()) {
-        if (jobInfo.mapped()->hasHttpError() || jobInfo.mapped()->exitInfo().code() != ExitCode::Ok) {
+        if (jobInfo.mapped()->hasHttpError() || !jobInfo.mapped()->exitInfo()) {
             LOGW_WARN(_logger, L"Failed to upload chunk " << jobId << L" of file " << Path2WStr(_filePath.filename()));
             _jobExecutionError = true;
+            _chunkJobExitInfo = jobInfo.mapped()->exitInfo();
         }
 
         _threadCounter--;
@@ -273,7 +274,6 @@ ExitInfo AbstractUploadSession::sendChunks() {
         return ExitCode::SystemError;
     }
 
-    ExitInfo exitInfo;
     for (uint64_t chunkNb = 1; chunkNb <= _totalChunks; chunkNb++) {
         if (isAborted() || _jobExecutionError) {
             LOG_DEBUG(_logger, "Request " << jobId() << ": aborted");
@@ -346,7 +346,8 @@ ExitInfo AbstractUploadSession::sendChunks() {
         } else {
             LOG_INFO(_logger, "Session " << _sessionToken << ", thread " << chunkJob->jobId() << " start.");
 
-            if (exitInfo = chunkJob->runSynchronously(); exitInfo.code() != ExitCode::Ok || chunkJob->hasHttpError()) {
+            _chunkJobExitInfo = chunkJob->runSynchronously();
+            if (!_chunkJobExitInfo || chunkJob->hasHttpError()) {
                 LOGW_WARN(_logger, L"Failed to upload chunk " << chunkNb << L" of file " << Path2WStr(_filePath.filename()));
                 _jobExecutionError = true;
                 break;
@@ -387,7 +388,7 @@ ExitInfo AbstractUploadSession::sendChunks() {
         if (_jobExecutionError) {
             // Job execution issue
             // exitCode & exitCause are those of the chunk that has failed
-            return exitInfo;
+            return _chunkJobExitInfo;
         }
         if (readError) {
             // Read file issue
