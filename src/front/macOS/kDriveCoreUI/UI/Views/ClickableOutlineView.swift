@@ -18,6 +18,10 @@
 
 import Cocoa
 
+public protocol ClickableItem: Sendable {
+    var isClickable: Bool { get }
+}
+
 public protocol ClickableOutlineViewDelegate: NSOutlineViewDelegate {
     func outlineView(_ outlineView: NSOutlineView, didClick item: Any?)
     func outlineView(_ outlineView: NSOutlineView, canClick item: Any?) -> Bool
@@ -31,20 +35,28 @@ public extension ClickableOutlineViewDelegate {
 
 public final class ClickableOutlineView: NSOutlineView {
     override public func mouseDown(with event: NSEvent) {
-        guard window?.isKeyWindow == true, let item = detectClickedItem(from: event) else {
-            return
-        }
-
-        if (delegate as? ClickableOutlineViewDelegate)?.outlineView(self, canClick: item) != false {
-            toggleRow(of: item, toState: true)
-        }
+        handleClickItem(from: event)
 
         super.mouseDown(with: event)
 
-        toggleRow(of: item, toState: false)
+        toggleRow(from: event, toState: false)
     }
 
-    private func toggleRow(of item: Any, toState shouldEnable: Bool) {
+    private func handleClickItem(from event: NSEvent) {
+        guard window?.isKeyWindow == true,
+              let item = detectClickedItem(from: event), item.isClickable,
+              (delegate as? ClickableOutlineViewDelegate)?.outlineView(self, canClick: item) != false
+        else { return }
+
+        toggleRow(from: event, toState: true)
+        (delegate as? ClickableOutlineViewDelegate)?.outlineView(self, didClick: item)
+    }
+
+    private func toggleRow(from event: NSEvent, toState shouldEnable: Bool) {
+        guard let item = detectClickedItem(from: event), item.isClickable else {
+            return
+        }
+
         guard let row = rowView(for: item) else { return }
         markRowAsActivated(row.view, isActivated: shouldEnable)
     }
@@ -67,10 +79,10 @@ public final class ClickableOutlineView: NSOutlineView {
         row.alphaValue = isActivated ? 0.5 : 1.0
     }
 
-    private func detectClickedItem(from event: NSEvent) -> Any? {
+    private func detectClickedItem(from event: NSEvent) -> ClickableItem? {
         let locationInView = convert(event.locationInWindow, from: nil)
         let targetRow = row(at: locationInView)
 
-        return item(atRow: targetRow)
+        return item(atRow: targetRow) as? ClickableItem
     }
 }

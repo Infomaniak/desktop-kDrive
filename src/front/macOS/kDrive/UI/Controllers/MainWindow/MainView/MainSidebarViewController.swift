@@ -69,13 +69,30 @@ final class MainSidebarViewController: NSViewController {
         return outlineView
     }()
 
-    private var popUpButton: ColoredPopUpButton!
+    private lazy var popUpButton: ColoredPopUpButton = {
+        let popUpButton = ColoredPopUpButton()
+        popUpButton.translatesAutoresizingMaskIntoConstraints = false
+        popUpButton.target = self
+        popUpButton.action = #selector(didSelectDrive)
+
+        return popUpButton
+    }()
 
     private let items: [SidebarItem] = [.home, .activity, .storage, .openInFinder]
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupView()
+    }
+
+    override func viewWillAppear() {
+        super.viewWillAppear()
+        outlineView.selectRowIndexes(IndexSet(integer: 0), byExtendingSelection: false)
+    }
+
+    override func viewDidLayout() {
+        super.viewDidLayout()
+        updateScrollViewElasticity()
     }
 
     private func setupView() {
@@ -109,10 +126,6 @@ final class MainSidebarViewController: NSViewController {
     }
 
     private func setupPopUpButton() {
-        popUpButton = ColoredPopUpButton()
-        popUpButton.translatesAutoresizingMaskIntoConstraints = false
-        popUpButton.action = #selector(didSelectDrive)
-
         let drives = [
             UIDrive(dbId: 1, driveId: 1, name: "Infomaniak", color: .systemGreen),
             UIDrive(dbId: 2, driveId: 2, name: "Tim Cook et ses amis", color: .systemBlue)
@@ -139,16 +152,6 @@ final class MainSidebarViewController: NSViewController {
         view.addSubview(scrollView)
     }
 
-    override func viewWillAppear() {
-        super.viewWillAppear()
-        outlineView.selectRowIndexes(IndexSet(integer: 0), byExtendingSelection: false)
-    }
-
-    override func viewDidLayout() {
-        super.viewDidLayout()
-        updateScrollViewElasticity()
-    }
-
     private func updateScrollViewElasticity() {
         guard let documentView = scrollView.documentView else { return }
 
@@ -156,9 +159,7 @@ final class MainSidebarViewController: NSViewController {
         scrollView.verticalScrollElasticity = isDocumentViewSmallerThanScrollView ? .none : .automatic
     }
 
-    private func openSyncInFolder() {
-
-    }
+    private func openSyncInFolder() {}
 }
 
 // MARK: - NSOutlineViewDataSource

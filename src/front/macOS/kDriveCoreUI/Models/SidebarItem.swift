@@ -16,10 +16,10 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Foundation
 import Cocoa
+import Foundation
 
-public struct SidebarItem: Sendable, Equatable, Hashable {
+public struct SidebarItem: ClickableItem, Equatable, Hashable {
     public enum ItemType: Sendable, Equatable {
         case navigation
         case action
@@ -31,6 +31,10 @@ public struct SidebarItem: Sendable, Equatable, Hashable {
 
     public var canBeSelected: Bool {
         return type == .navigation
+    }
+
+    public var isClickable: Bool {
+        return type == .action
     }
 
     public init(icon: NSImage, title: String, type: ItemType = .navigation) {
