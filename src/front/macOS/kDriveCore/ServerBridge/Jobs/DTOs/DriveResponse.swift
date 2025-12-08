@@ -23,7 +23,7 @@ struct DriveListQuery: Codable, Sendable {
 }
 
 struct DriveUpdateQuery: Codable, Sendable {
-    let driveInfo: DriveResponse
+    let driveInfo: AvailableDriveResponse
 }
 
 struct DriveDeleteQuery: Codable, Sendable {
@@ -36,10 +36,10 @@ struct DriveSearchQuery: Codable, Sendable {
 }
 
 struct DriveListResponse: Codable, Sendable {
-    let driveAvailableInfoList: [DriveResponse]
+    let driveAvailableInfoList: [AvailableDriveResponse]
 }
 
-public struct DriveResponse: Codable, Sendable {
+public struct AvailableDriveResponse: Codable, Sendable {
     let accountId: Int32
     let driveId: Int32
     let userDbId: Int32
@@ -48,7 +48,7 @@ public struct DriveResponse: Codable, Sendable {
     @Base64CodedColor var color: HexColor
 }
 
-public extension DriveResponse {
+public extension AvailableDriveResponse {
     var asAvailableDrive: AvailableDrive {
         AvailableDrive(driveId: driveId,
                        accountId: accountId,
@@ -59,7 +59,7 @@ public extension DriveResponse {
     }
 }
 
-public extension Collection where Element == DriveResponse {
+public extension Collection where Element == AvailableDriveResponse {
     var asAvailableDrives: [AvailableDrive] {
         return map { $0.asAvailableDrive }
     }

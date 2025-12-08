@@ -42,7 +42,7 @@ public struct DriveJobs: Sendable {
         return driveList
     }
 
-    public func driveUpdate(driveInfo: DriveResponse) async throws {
+    public func driveUpdate(driveInfo: AvailableDriveResponse) async throws {
         IKLogger.data.log("Query to update drive: \(driveInfo.driveId)")
         let query = DriveUpdateQuery(driveInfo: driveInfo)
         let request = await RequestMessage<DriveUpdateQuery>(num: RequestNum.DRIVE_UPDATE, body: query)
