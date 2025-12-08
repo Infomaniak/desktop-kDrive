@@ -112,6 +112,8 @@ AppClient::AppClient(int &argc, char **argv) :
         return;
     }
 
+    setupLogging();
+
     // Connect to server
     if (connectToServer()) {
         qCInfo(lcAppClient) << "Connected to server";
@@ -125,9 +127,6 @@ AppClient::AppClient(int &argc, char **argv) :
         qCWarning(lcAppClient) << "Error in ParametersCache::instance";
         throw std::runtime_error("Unable to initialize parameters cache.");
     }
-
-    // Setup logging
-    setupLogging();
 
     // Set style
     KDC::GuiUtility::setStyle(qApp);
