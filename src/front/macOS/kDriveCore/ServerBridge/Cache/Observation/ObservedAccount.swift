@@ -57,16 +57,6 @@ public final class ObservedAccount: ObservableObject {
             }
     }
 
-    /// Async stream for testing
-    var receivedValues: AsyncStream<Account?> {
-        AsyncStream { continuation in
-            let c = $wrappedValue
-                .sink { value in continuation.yield(value) }
-
-            continuation.onTermination = { _ in c.cancel() }
-        }
-    }
-
     deinit { cancellable?.cancel() }
 
     public var projectedValue: ObservedAccount { self }
