@@ -2,8 +2,8 @@
 
 WinUI:
   - changed-files:
-   - any-glob-to-any-file: 'src/gui4/windows/**'
-
+    - any-glob-to-any-file: 'src/gui4/windows/**'
+    
 macOS UI:
  - changed-files:
-  - any-glob-to-any-file: 'src/front/macOS/**'
+   - any-glob-to-any-file: 'src/front/macOS/**'
