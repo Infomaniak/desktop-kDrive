@@ -683,7 +683,7 @@ void TestGuiCommChannel::testErrorInfoListJob() {
                         R"( "params": { "limit": 2 } })"};
     const auto cbkAnswerStr{
             R"({"cause":0,"code":0,"id":1,"params":{"errorInfoList":[)"
-            R"({"cancelType":)" +
+            R"({"autoResolved":false,"cancelType":)" +
             std::to_string(toInt(CancelType::None)) + R"(,"conflictType":)" + std::to_string(toInt(ConflictType::None)) +
             R"(,"dbId": 1,"destinationPath":"","exitCause":)" + std::to_string(toInt(ExitCause::DbEntryNotFound)) +
             R"(,"exitCode":)" + std::to_string(toInt(ExitCode::DataError)) +
@@ -701,7 +701,7 @@ void TestGuiCommChannel::testErrorInfoListJob() {
             std::to_string(toInt(RequestNum::ERROR_INFOLIST)) +
             R"(,)"
             R"( "params": { "errorInfoList": [)"
-            R"( { "cancelType": )" +
+            R"( { "autoResolved": false, "cancelType": )" +
             std::to_string(toInt(CancelType::None)) + R"(, "conflictType": )" + std::to_string(toInt(ConflictType::None)) +
             R"(, "dbId": 1, "destinationPath": "", "exitCause": )" + std::to_string(toInt(ExitCause::DbEntryNotFound)) +
             R"(, "exitCode": )" + std::to_string(toInt(ExitCode::DataError)) +
