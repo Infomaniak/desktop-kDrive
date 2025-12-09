@@ -36,6 +36,7 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         case unableToGetAccountDbIdFromSignal
         case unableToGetDriveFromSignal
         case unableToGetDriveDbIdFromSignal
+        case unableToGetSyncFromSignal
         case unsupported(_ num: SignalNum)
     }
 
@@ -95,12 +96,17 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         case .DRIVE_REMOVED:
             try await handleDriveRemoved(signal)
 
+        case .SYNC_ADDED:
+            try await handleSyncAdded(signal)
+
         default:
             throw SignalError.unsupported(signalNum)
         }
     }
 
     // MARK: - Specific signal handling
+
+    // MARK: User
 
     private func handleUserAdded(_ signal: Data) async throws {
         guard let userInfoSignal = try? decoder.decode(SignalMessage<UserInfoSignal>.self, from: signal),
@@ -110,6 +116,8 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
 
         await coherentCache.updateUser(user)
     }
+
+    // MARK: Account
 
     private func handleAccountAdded(_ signal: Data) async throws {
         guard let accountInfoSignal = try? decoder.decode(SignalMessage<AccountInfoSignal>.self, from: signal),
@@ -129,6 +137,8 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         await coherentCache.removeAccount(accountDbId: accountDbId)
     }
 
+    // MARK: Drive
+
     private func handleDriveUpdated(_ signal: Data) async throws {
         guard let driveInfoSignal = try? decoder.decode(SignalMessage<DriveInfoSignal>.self, from: signal),
               let driveInfo = driveInfoSignal.body else {
@@ -145,6 +155,17 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         }
 
         try await coherentCache.removeDrive(driveDbId: driveDbId)
+    }
+
+    // MARK: Synchro
+
+    private func handleSyncAdded(_ signal: Data) async throws {
+        guard let syncInfoSignal = try? decoder.decode(SignalMessage<SyncInfoSignal>.self, from: signal),
+              let syncInfo = syncInfoSignal.body else {
+            throw SignalError.unableToGetSyncFromSignal
+        }
+
+        try await coherentCache.addSynchro(syncInfo.asSynchro)
     }
 }
 
