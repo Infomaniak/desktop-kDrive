@@ -26,7 +26,7 @@ namespace KDC {
 
 SignalErrorRemovedJob::SignalErrorRemovedJob(const int &errorDbId) :
     _errorDbId(errorDbId) {
-    _signalNum = SignalNum::UTILITY_ERRORS_REMOVED;
+    _signalNum = SignalNum::UTILITY_ERROR_REMOVED;
 }
 
 ExitInfo SignalErrorRemovedJob::serializeOutputParms() {

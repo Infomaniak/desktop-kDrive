@@ -119,7 +119,7 @@ static const std::string showSynthesisMsg = "showSynthesis";
 static const std::string showSettingsMsg = "showSettings";
 static const std::string restartClientMsg = "restartClient";
 
-static const QString crashMsg = SharedTools::QtSingleApplication::tr("kDrive application will close due to a fatal errorCopy.");
+static const QString crashMsg = SharedTools::QtSingleApplication::tr("kDrive application will close due to a fatal error.");
 
 
 // Helpers for displaying messages. Note that there is no console on Windows.
@@ -395,7 +395,7 @@ void AppServer::init() {
             if (!IoHelper::checkIfPathExists(noUpdateFilePath, noUpdateFlagFileExists, ioError) || ioError != IoError::Success) {
                 std::string errorMsg = "Error in checkIfPathExists(noUpdateFilePath, ...): ioError=" + toString(ioError);
                 LOG_ERROR(_logger, errorMsg);
-                KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "noUpdateFilePath lookup errorCopy", errorMsg);
+                KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "noUpdateFilePath lookup error", errorMsg);
             }
             _noUpdate = noUpdateFlagFileExists;
         }
@@ -3231,7 +3231,7 @@ void AppServer::processInterruptedLogsUpload() {
         try {
             cancelJob = std::make_shared<UploadSessionCancelJob>(UploadSessionType::Log, logUploadToken);
         } catch (const std::exception &e) {
-            LOG_WARN(_logger, "Error in UploadSessionCancelJob::UploadSessionCancelJob errorCopy=" << e.what());
+            LOG_WARN(_logger, "Error in UploadSessionCancelJob::UploadSessionCancelJob error=" << e.what());
             return;
         }
         if (const ExitCode exitCode = cancelJob->runSynchronously(); exitCode != ExitCode::Ok) {
@@ -4011,10 +4011,10 @@ void AppServer::addError(const Error &error) {
 
     if (errorCopy.exitCode() == ExitCode::InvalidToken) {
         // Manage invalid token error
-        LOG_DEBUG(Log::instance()->getLogger(), "Manage invalid token errorCopy");
+        LOG_DEBUG(Log::instance()->getLogger(), "Manage invalid token error");
 
         if (!user.dbId()) {
-            LOG_WARN(Log::instance()->getLogger(), "Invalid errorCopy");
+            LOG_WARN(Log::instance()->getLogger(), "Invalid error");
             return;
         }
 
@@ -4035,9 +4035,9 @@ void AppServer::addError(const Error &error) {
         sendUserUpdated(userInfo);
     } else if (errorCopy.exitCode() == ExitCode::NetworkError && errorCopy.exitCause() == ExitCause::SocketsDefuncted) {
         // Manage sockets defuncted error
-        LOG_WARN(Log::instance()->getLogger(), "Manage sockets defuncted errorCopy");
+        LOG_WARN(Log::instance()->getLogger(), "Manage sockets defuncted error");
 
-        sentry::Handler::captureMessage(sentry::Level::Warning, "AppServer::addError", "Sockets defuncted errorCopy");
+        sentry::Handler::captureMessage(sentry::Level::Warning, "AppServer::addError", "Sockets defuncted error");
 
         // Decrease upload session max parallel jobs
         ParametersCache::instance()->decreaseUploadSessionParallelThreads();
@@ -4058,7 +4058,6 @@ void AppServer::addError(const Error &error) {
         for (auto errorId: toBeRemovedErrorIds) {
             bool found = false;
             if (!ParmsDb::instance()->deleteError(errorId, found)) {
-                _commManager->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(errorId));
                 LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteError");
                 return;
             }
@@ -4066,6 +4065,7 @@ void AppServer::addError(const Error &error) {
                 LOG_WARN(Log::instance()->getLogger(), "Error not found in Error table for dbId=" << errorId);
                 return;
             }
+            _commManager->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(errorId));
         }
         if (!toBeRemovedErrorIds.empty()) sendErrorsCleared(errorCopy.syncDbId());
     } else if (errorCopy.exitCode() == ExitCode::UpdateRequired) {
@@ -4075,7 +4075,7 @@ void AppServer::addError(const Error &error) {
     if (!ServerRequests::isAutoResolvedError(errorCopy) && !errorAlreadyExists) {
         // Send error to sentry only for technical errors
         SentryUser sentryUser(user.email(), user.name(), std::to_string(user.userId()));
-        sentry::Handler::captureMessage(sentry::Level::Warning, "AppServer::addError", errorCopy.errorString(), sentryUser);
+        sentry::Handler::captureMessage(sentry::Level::Warning, "AppServer::addError", error.errorString(), sentryUser);
     }
 }
 

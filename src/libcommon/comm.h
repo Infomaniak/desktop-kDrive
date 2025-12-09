@@ -305,7 +305,7 @@ enum class SignalNum {
     UTILITY_SHOW_NOTIFICATION,
     UTILITY_ERROR_ADDED_LEGACY,
     UTILITY_ERROR_ADDED,
-    UTILITY_ERRORS_REMOVED,
+    UTILITY_ERROR_REMOVED,
     UTILITY_ERRORS_CLEARED,
     UTILITY_SHOW_SETTINGS,
     UTILITY_SHOW_SYNTHESIS,
@@ -366,6 +366,10 @@ inline std::string toString(SignalNum e) {
             return "UTILITY_SHOW_NOTIFICATION";
         case SignalNum::UTILITY_ERROR_ADDED_LEGACY:
             return "UTILITY_ERROR_ADDED_LEGACY";
+        case SignalNum::UTILITY_ERROR_ADDED:
+            return "UTILITY_ERROR_ADDED";
+        case SignalNum::UTILITY_ERROR_REMOVED:
+            return "UTILITY_ERROR_ADDED";
         case SignalNum::UTILITY_ERRORS_CLEARED:
             return "UTILITY_ERRORS_CLEARED";
         case SignalNum::UTILITY_SHOW_SETTINGS:
