@@ -34,6 +34,8 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         case unableToGetUserFromSignal
         case unableToGetAccountFromSignal
         case unableToGetAccountDbIdFromSignal
+        case unableToGetDriveFromSignal
+        case unableToGetDriveDbIdFromSignal
         case unsupported(_ num: SignalNum)
     }
 
@@ -127,8 +129,7 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
     private func handleDriveUpdated(_ signal: Data) async throws {
         guard let driveInfoSignal = try? decoder.decode(SignalMessage<DriveInfoSignal>.self, from: signal),
               let driveInfo = driveInfoSignal.body else {
-            IKLogger.xpc.error("[KD] Unable to get driveInfo from signal")
-            return
+            throw SignalError.unableToGetDriveFromSignal
         }
 
         try await coherentCache.updateDriveSignal(driveInfo)
