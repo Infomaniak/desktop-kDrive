@@ -9,5 +9,21 @@
     <local:ErrorCard x:Name="ErrorCard"
                      Title="{x:Bind _error.Path}"
                      ActionText="Contacter le support"
-                     ActionClick="ErrorCard_ActionClick" />
+                     ActionClick="ErrorCard_ActionClick">
+        <local:ErrorCard.CustomContent>
+            <Expander x:Name="DetailsExpander"
+                      Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.XS}"
+                      IsExpanded="False"
+                      Header="Détails"
+                      HorizontalAlignment="Stretch">
+                <ScrollViewer MaxHeight="240"
+                              HorizontalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Auto">
+                    <TextBlock Text="{x:Bind DetailsText, Mode=OneWay}"
+                               FontFamily="Consolas"
+                               TextWrapping="NoWrap" />
+                </ScrollViewer>
+            </Expander>
+        </local:ErrorCard.CustomContent>
+    </local:ErrorCard>
 </UserControl>

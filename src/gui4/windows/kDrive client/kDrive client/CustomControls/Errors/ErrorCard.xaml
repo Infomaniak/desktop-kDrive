@@ -52,13 +52,16 @@
                        Style="{StaticResource BodyTextBlockStyle}" />
         </StackPanel>
 
-        <!-- Description -->
-        <TextBlock Grid.Row="2"
-                   Grid.Column="0"
-                   Text="{x:Bind Description, Mode=OneWay}"
-                   TextWrapping="Wrap"
-                   Style="{StaticResource BodyTextBlockStyle}"
-                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+        <!-- Description & CustomContent-->
+        <StackPanel Grid.Row="2"
+                    Grid.Column="0">
+            <TextBlock Text="{x:Bind Description, Mode=OneWay}"
+                       TextWrapping="Wrap"
+                       Style="{StaticResource BodyTextBlockStyle}"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
+            <ContentPresenter Content="{x:Bind CustomContent, Mode=OneWay}" />
+        </StackPanel>
 
         <!-- Action button -->
         <Button Grid.Row="0"

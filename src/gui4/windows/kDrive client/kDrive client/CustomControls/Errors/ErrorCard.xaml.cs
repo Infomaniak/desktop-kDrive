@@ -43,6 +43,12 @@ namespace Infomaniak.kDrive.CustomControls.Errors
             set { SetValue(ActionTextProperty, value); }
         }
 
+        public Control? CustomContent
+        {
+            get { return (Control?)GetValue(CustomContentProperty); }
+            set { SetValue(CustomContentProperty, value); }
+        }
+
         public delegate void ActionClickEventHandler(object sender, RoutedEventArgs e);
         public event ActionClickEventHandler? ActionClick;
 
@@ -60,6 +66,9 @@ namespace Infomaniak.kDrive.CustomControls.Errors
 
         public static readonly DependencyProperty ActionTextProperty =
             DependencyProperty.Register(nameof(ActionText), typeof(string), typeof(ErrorCard), new PropertyMetadata(null));
+
+        public static readonly DependencyProperty CustomContentProperty =
+            DependencyProperty.Register(nameof(CustomContent), typeof(Control), typeof(ErrorCard), new PropertyMetadata(null));
 
         private void ActionButton_Click(object sender, RoutedEventArgs e)
         {

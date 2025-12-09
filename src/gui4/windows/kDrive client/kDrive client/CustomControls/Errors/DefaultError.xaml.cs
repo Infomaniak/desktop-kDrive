@@ -4,14 +4,15 @@ using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace Infomaniak.kDrive.CustomControls.Errors
 {
     public sealed partial class DefaultError : UserControl
     {
         private Error _error;
+
+        // Texte affiché dans l'Expander (dropdown)
+        public string DetailsText { get; private set; } = string.Empty;
+
         public DefaultError(Error error)
         {
             this.InitializeComponent();
@@ -29,7 +30,9 @@ namespace Infomaniak.kDrive.CustomControls.Errors
         {
             if (_error != null)
             {
-                ErrorCard.Title = $"{_error.ExitCode.ToString()} - {_error.ExitCause.ToString()}";
+                ErrorCard.Title = $"{_error.ExitCode} - {_error.ExitCause}";
+
+                // Lignes détaillées affichées dans le dropdown
                 var lines = new List<string>
                 {
                     "An unexpected error has occurred.",
@@ -47,6 +50,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors
 
                     lines.Add($"{label,-20} {text}");
                 }
+
                 AddIfNotEmpty("DbId:", _error.DbId);
                 AddIfNotEmpty("Timestamp:", _error.Timestamp);
                 AddIfNotEmpty("Error level:", _error.ErrorLevel);
@@ -60,12 +64,15 @@ namespace Infomaniak.kDrive.CustomControls.Errors
                 AddIfNotEmpty("Cancel Type:", _error.CancelType);
                 AddIfNotEmpty("Auto-resolved:", _error.AutoResolved);
 
-                string description = string.Join(Environment.NewLine, lines);
-                ErrorCard.Description = description;
+                // Description courte sur la carte, détails complets dans le dropdown
+                ErrorCard.Description = "An unexpected error has occurred.";
+                DetailsText = string.Join(Environment.NewLine, lines);
             }
             else
             {
                 ErrorCard.Description = "An unexpected error has occurred.";
+                DetailsText = "An unexpected error has occurred.";
+                this.Bindings?.Update();
             }
         }
     }
