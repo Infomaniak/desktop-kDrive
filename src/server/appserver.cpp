@@ -799,6 +799,20 @@ void AppServer::setDistributionChannel(const VersionChannel versionChannel) {
     _updateManager->setDistributionChannel(versionChannel);
 };
 
+VersionInfo AppServer::getVersionInfo(const VersionChannel versionChannel) {
+    if (_noUpdate) {
+        VersionInfo versionInfo;
+        versionInfo.tag = CommonUtility::versionTag();
+        versionInfo.buildVersion = CommonUtility::versionBuild();
+
+        return versionInfo;
+    }
+
+    assert(_updateManager && "The update manager is not set.");
+
+    return _updateManager->versionInfo(versionChannel);
+};
+
 void AppServer::crash() const {
     // SIGSEGV crash
     CommonUtility::crash();
