@@ -299,9 +299,10 @@ void TestGuiCommChannel::testActivateLoadInfoJob() {
                          R"( "num": )" +
                          std::to_string(toInt(RequestNum::UTILITY_ACTIVATELOADINFO)) +
                          R"(,)"
-                         R"( "params": { })"};
+                         R"( "params": { }, "type": )" +
+                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
-    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) { };
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {};
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
