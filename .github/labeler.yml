@@ -1,9 +1,13 @@
-# Labeler configuration for PR file path rules
+﻿# Labeler configuration for PR file path rules
 
 WinUI:
   - changed-files:
-    - any-glob-to-any-file: 'src/gui4/windows/**'
-    
+      - any-glob-to-any-file: 'src/gui4/windows/**'
+
 macOS UI:
- - changed-files:
-   - any-glob-to-any-file: 'src/front/macOS/**'
+  - changed-files:
+      - any-glob-to-any-file: 'src/front/macOS/**'
+
+CI Free ⛓️‍💥⚠️:
+  - changed-files:
+      - any-glob-to-all-files: [ 'src/gui4/windows/**', 'src/front/macOS/**', 'release_notes/**', 'installer/**', 'infomaniak-build-tools/**', '.github/**' ]

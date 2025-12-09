@@ -1,9 +1,9 @@
-name: kDrive desktop CI
+﻿name: kDrive desktop CI
 
 on:
   pull_request:
     branches-ignore:
-        - 'release/**'
+      - 'release/**'
     types: [synchronize, opened]
 
 concurrency:
@@ -11,6 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  BYPASS_LABEL: "CI Free ⛓️‍💥⚠️"
   KDRIVE_TEST_CI_API_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
   KDRIVE_TEST_CI_ACCOUNT_ID: ${{ vars.KDRIVE_TEST_CI_ACCOUNT_ID }}
   KDRIVE_TEST_CI_USER_ID: ${{ vars.KDRIVE_TEST_CI_USER_ID }}
@@ -22,9 +23,25 @@ env:
   QT_QPA_PLATFORM: offscreen
 
 jobs:
+  check-label:
+    runs-on: ubuntu-latest
+    outputs:
+      bypass: ${{ steps.label-check.outputs.bypass }}
+    steps:
+      - name: Check if PR contains bypass label
+        id: label-check
+        run: |
+          PR_LABELS="${{ toJson(github.event.pull_request.labels.*.name) }}"
+          if echo "$PR_LABELS" | grep -q "\"${{ env.BYPASS_LABEL }}\""; then
+            echo "bypass=true" >> $GITHUB_OUTPUT
+          else
+            echo "bypass=false" >> $GITHUB_OUTPUT
+          fi  
 
 # Build apps
   build-Windows:
+    needs: check-label
+    if: needs.check-label.outputs.bypass == 'true'
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
     steps:
       - name: Checkout the PR
@@ -33,11 +50,13 @@ jobs:
           submodules: recursive
       - name: Build Windows
         uses: ./.github/actions/build_windows
-        with:  
+        with:
           virtual_cert: ${{ secrets.WINDOWS_VIRTUAL_CERT }}
           virtual_cert_pass: ${{ secrets.WINDOWS_VIRTUAL_CERT_PASSWORD }}
-    
+
   build-Linux:
+    needs: check-label
+    if: needs.check-label.outputs.bypass == 'true'
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
     steps:
       - name: Checkout the PR
@@ -48,6 +67,8 @@ jobs:
         uses: ./.github/actions/build_linux_amd
 
   build-MacOS:
+    needs: check-label
+    if: needs.check-label.outputs.bypass == 'true'
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
     steps:
       - name: Checkout the PR
@@ -56,12 +77,13 @@ jobs:
           submodules: recursive
       - name: Build macOS
         uses: ./.github/actions/build_macos
-        with:  
+        with:
           keychain_password: ${{ secrets.KEYCHAIN_PASSWORD }}
-    
+
 
 # Tests Windows
   Test-Windows:
+    if: needs.check-label.outputs.bypass == 'true'
     needs: build-Windows
     strategy:
       fail-fast: false
@@ -72,19 +94,20 @@ jobs:
       KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
       KDRIVE_SENTRY_ENVIRONMENT: "windows_ci_runner"
     steps:
-       - name: Checkout the PR
-         uses: actions/checkout@v4.1.1
-         with:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
           ref: ${{ github.head_ref }}
 
-       - name: Run test
-         uses: ./.github/actions/test_windows
-         with:  
-            test_name: ${{ matrix.test_name }}
-            test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+      - name: Run test
+        uses: ./.github/actions/test_windows
+        with:
+          test_name: ${{ matrix.test_name }}
+          test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
 # Tests Linux
   Test-Linux:
+    if: needs.check-label.outputs.bypass == 'true'
     needs: build-Linux
     strategy:
       fail-fast: false
@@ -95,19 +118,20 @@ jobs:
       KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
       KDRIVE_SENTRY_ENVIRONMENT: "linux_ci_runner"
     steps:
-       - name: Checkout the PR
-         uses: actions/checkout@v4.1.1
-         with:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
           ref: ${{ github.head_ref }}
 
-       - name: Run test
-         uses: ./.github/actions/test_linux
-         with:  
-            test_name: ${{ matrix.test_name }}
-            test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+      - name: Run test
+        uses: ./.github/actions/test_linux
+        with:
+          test_name: ${{ matrix.test_name }}
+          test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
 # Tests macOS
   Test-macOS:
+    if: needs.check-label.outputs.bypass == 'true'
     needs: build-MacOS
     strategy:
       fail-fast: false
@@ -118,22 +142,22 @@ jobs:
       KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
       KDRIVE_SENTRY_ENVIRONMENT: "macos_ci_runner"
     steps:
-       - name: Checkout the PR
-         uses: actions/checkout@v4.1.1
-         with:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
           ref: ${{ github.head_ref }}
 
-       - name: Run test
-         uses: ./.github/actions/test_macos
-         with:  
-            test_name: ${{ matrix.test_name }}
-            test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
+      - name: Run test
+        uses: ./.github/actions/test_macos
+        with:
+          test_name: ${{ matrix.test_name }}
+          test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
   Unit-Tests:
+    if: needs.check-label.outputs.bypass == 'true'
     runs-on: [self-hosted, Windows]
     needs: [Test-Windows, Test-Linux, Test-macOS]
     steps:
-     - name: Check if all tests passed
-       shell: powershell
-       run: exit 0
-    
+      - name: Check if all tests passed
+        shell: powershell
+        run: exit 0
