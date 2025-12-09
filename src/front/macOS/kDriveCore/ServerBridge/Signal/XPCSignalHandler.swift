@@ -81,4 +81,17 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
             await coherentCache.updateUser(user)
         }
     }
+
+    private func handleAccountAdded(_ signal: Data) {
+        guard let accountInfoSignal = try? decoder.decode(SignalMessage<AccountInfoSignal>.self, from: signal),
+              let accountInfo = accountInfoSignal.body else {
+            IKLogger.xpc.error("[KD] Unable to get account from signal")
+            return
+        }
+
+        Task {
+            @InjectService var coherentCache: CoherentCache
+            await coherentCache.addAccount(accountInfo.asAccount, userDbId: accountInfo.userDbId)
+        }
+    }
 }
