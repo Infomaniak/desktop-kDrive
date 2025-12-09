@@ -134,6 +134,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void setDistributionChannel(VersionChannel versionChannel);
         VersionInfo getVersionInfo(VersionChannel versionChannel) const;
         UpdateState getUpdateState() const;
+        void startInstaller();
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         static ExitCode getThumbnail(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) {

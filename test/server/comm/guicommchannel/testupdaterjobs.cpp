@@ -22,7 +22,7 @@
 #include "comm/guijobs/updaterchangechanneljob.h"
 #include "comm/guijobs/updaterversioninfojob.h"
 #include "comm/guijobs/updaterstatejob.h"
-
+#include "comm/guijobs/updaterstartinstallerjob.h"
 
 namespace KDC {
 
@@ -143,6 +143,42 @@ void TestGuiCommChannel::testUpdaterChangeChannelJob() {
             CPPUNIT_ASSERT(updaterStateJob);
 
             updaterStateJob->_updateState = UpdateState::Checking;
+        };
+
+        testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+    }
+
+    void TestGuiCommChannel::testUpdaterStartInstallerJob() {
+        Poco::JSON::Object queryObj;
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+        (void) queryObj.set("id", 1);
+#endif
+        (void) queryObj.set("num", toInt(RequestNum::UPDATER_START_INSTALLER));
+        Poco::JSON::Object queryParamsObj;
+        (void) queryObj.set("params", queryParamsObj);
+
+        const auto queryStr = stringifyQueryObj(queryObj);
+
+        // Answer
+        Poco::JSON::Object answerObj;
+        (void) answerObj.set("cause", 0);
+        (void) answerObj.set("code", 0);
+        (void) answerObj.set("id", 1);
+
+        Poco::JSON::Object paramsObj;
+        (void) answerObj.set("params", paramsObj);
+
+        Poco::JSON::Object answerObjWithNumAndType = answerObj;
+        (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UPDATER_START_INSTALLER));
+        (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+
+        // Job expected answers
+        const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+        const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
+
+        auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+            auto updaterStartInstallerJob = std::dynamic_pointer_cast<UpdaterStartInstallerJob>(job);
+            CPPUNIT_ASSERT(updaterStartInstallerJob);
         };
 
         testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);

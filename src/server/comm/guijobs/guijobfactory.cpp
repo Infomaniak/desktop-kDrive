@@ -49,6 +49,7 @@
 #include "updaterchangechanneljob.h"
 #include "updaterversioninfojob.h"
 #include "updaterstatejob.h"
+#include "updaterstartinstallerjob.h"
 
 namespace KDC {
 
@@ -83,7 +84,8 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::NODE_INFO, makeShared<NodeInfoJob>},
                 {RequestNum::UPDATER_CHANGE_CHANNEL, makeShared<UpdaterChangeChannelJob>},
                 {RequestNum::UPDATER_VERSION_INFO, makeShared<UpdaterVersionInfoJob>},
-                {RequestNum::UPDATER_STATE, makeShared<UpdaterStateJob>}};
+                {RequestNum::UPDATER_STATE, makeShared<UpdaterStateJob>},
+                {RequestNum::UPDATER_START_INSTALLER, makeShared<UpdaterStartInstallerJob>}};
 }
 
 std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::shared_ptr<CommManager> commManager,

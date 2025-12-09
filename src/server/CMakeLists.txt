@@ -83,6 +83,7 @@ set(server_SRCS
     comm/guijobs/updaterchangechanneljob.h comm/guijobs/updaterchangechanneljob.cpp
     comm/guijobs/updaterversioninfojob.h comm/guijobs/updaterversioninfojob.cpp
     comm/guijobs/updaterstatejob.h comm/guijobs/updaterstatejob.cpp
+    comm/guijobs/updaterstartinstallerjob.h comm/guijobs/updaterstartinstallerjob.cpp
     comm/guijobs/signaluseraddedjob.h comm/guijobs/signaluseraddedjob.cpp
     comm/guijobs/signaluserupdatedjob.h comm/guijobs/signaluserupdatedjob.cpp
     comm/guijobs/signaluserremovedjob.h comm/guijobs/signaluserremovedjob.cpp

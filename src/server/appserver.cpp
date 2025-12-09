@@ -821,6 +821,11 @@ UpdateState AppServer::getUpdateState() const {
     return _updateManager->state();
 }
 
+void AppServer::startInstaller() {
+    assert(_updateManager && "The update manager is not set.");
+    _updateManager->startInstaller();
+}
+
 void AppServer::crash() const {
     // SIGSEGV crash
     CommonUtility::crash();
