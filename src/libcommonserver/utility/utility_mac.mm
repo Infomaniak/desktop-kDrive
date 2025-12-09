@@ -53,7 +53,12 @@ bool Utility::preventSleeping(bool enable) {
 }
 
 void runKillCommand(pid_t pid) {
-    if (pid < 0) return; // If pid == -1 a kill would be broadcasted to all processes belonging to the user
+    // Filtering of dangerous cases:
+    // pid 1 is launchd
+    // pid -1 would broadcast a kill to all processes belonging to the user
+    assert(pid > 1);
+    if (pid <= 1) return;
+
     NSString *killCommand = [NSString stringWithFormat:@"kill -9 %d", pid];
     LOG_DEBUG(Log::instance()->getLogger(), "Running kill command: " << killCommand.UTF8String);
     system(killCommand.UTF8String);
