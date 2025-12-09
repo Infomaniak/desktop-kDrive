@@ -736,9 +736,7 @@ ExitCode ServerRequests::addSync(int driveDbId, const SyncPath &localFolderPath,
 
     QUuid navigationPaneClsid;
 #ifdef Q_OS_WIN
-    if (showInNavigationPane) {
-        navigationPaneClsid = QUuid::createUuid();
-    }
+    navigationPaneClsid = QUuid::createUuid();
 #endif
 
     Sync sync;
@@ -771,7 +769,7 @@ ExitCode ServerRequests::addSync(int driveDbId, const SyncPath &localFolderPath,
     sync.setDbPath(std::filesystem::path());
     sync.setHasFullyCompleted(false);
     sync.setNavigationPaneClsid(navigationPaneClsid.toString().toStdString());
-    if (ExitCode exitCode = createSync(sync, syncInfo); exitCode != ExitCode::Ok) {
+    if (const auto exitCode = createSync(sync, syncInfo); exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in createSync");
         return exitCode;
     }
@@ -1252,41 +1250,45 @@ ExitCode ServerRequests::getUserFromSyncDbId(int syncDbId, User &user) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::createDir(int driveDbId, const QString &parentNodeId, const QString &dirName, QString &newNodeId) {
+ExitCode ServerRequests::createDir(const int driveDbId, const NodeId &parentNodeId, const CommString &dirName,
+                                   NodeId &newNodeId) {
     // Get drive data
     std::shared_ptr<CreateDirJob> job = nullptr;
     try {
-        job = std::make_shared<CreateDirJob>(nullptr, driveDbId, QStr2SyncName(dirName), parentNodeId.toStdString(),
-                                             QStr2SyncName(dirName));
+        job = std::make_shared<CreateDirJob>(nullptr, driveDbId, dirName, parentNodeId, dirName);
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in CreateDirJob::CreateDirJob for driveDbId=" << driveDbId << " error=" << e.what());
         return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
-    ExitCode exitCode = job->runSynchronously();
-    if (exitCode != ExitCode::Ok) {
+    if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in CreateDirJob::runSynchronously for driveDbId=" << driveDbId);
-        return exitCode;
+        return exitInfo.code();
     }
 
     // Extract file ID
     if (job->jsonRes()) {
-        Poco::JSON::Object::Ptr dataObj = job->jsonRes()->getObject(dataKey);
-        if (dataObj) {
-            std::string tmp;
-            if (!JsonParserUtility::extractValue(dataObj, idKey, tmp)) {
-                return ExitCode::BackError;
-            }
-            newNodeId = QString::fromStdString(tmp);
+        if (Poco::JSON::Object::Ptr dataObj = job->jsonRes()->getObject(dataKey); dataObj) {
+            NodeId tmp;
+            if (!JsonParserUtility::extractValue(dataObj, idKey, tmp)) return ExitCode::BackError;
+            newNodeId = tmp;
         }
     }
 
-    if (newNodeId.isEmpty()) {
-        return ExitCode::BackError;
-    }
+    if (newNodeId.empty()) return ExitCode::BackError;
 
     return ExitCode::Ok;
+}
+
+ExitCode ServerRequests::createDir(const int driveDbId, const QString &parentNodeId, const QString &dirName, QString &newNodeId) {
+    newNodeId = {};
+    NodeId newNodeIdStr;
+
+    const auto exitCode = createDir(driveDbId, parentNodeId.toStdString(), CommonUtility::qStr2CommString(dirName), newNodeIdStr);
+    newNodeId = QString::fromStdString(newNodeIdStr);
+
+    return exitCode;
 }
 
 ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const NodeId &nodeId, std::string &linkUrl) {
@@ -1666,8 +1668,12 @@ ExitCode ServerRequests::deleteInvalidTokenErrors() {
 }
 
 #ifdef Q_OS_MAC
-ExitCode ServerRequests::deleteLiteSyncNotAllowedErrors() {
+ExitCode ServerRequests::deleteLiteSyncErrors() {
     if (!ParmsDb::instance()->deleteAllErrorsByExitCause(ExitCause::LiteSyncNotAllowed)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteAllErrorsByExitCause");
+        return ExitCode::DbError;
+    }
+    if (!ParmsDb::instance()->deleteAllErrorsByExitCause(ExitCause::LiteSyncExtNotRunning)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteAllErrorsByExitCause");
         return ExitCode::DbError;
     }

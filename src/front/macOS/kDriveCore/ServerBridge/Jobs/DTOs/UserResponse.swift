@@ -27,13 +27,13 @@ struct UserDbIdsListResponse: Codable, Sendable {
 }
 
 public struct UserInfoResponse: Codable, Sendable {
-    let dbId: Int32
-    let userId: Int32
-    @Base64CodedString var email: String
-    @Base64CodedString var name: String
-    @Base64CodedData var avatar: Data
-    let isConnected: Bool
-    let isStaff: Bool
+    public let dbId: Int32
+    public let userId: Int32
+    @Base64CodedString public var email: String
+    @Base64CodedString public var name: String
+    @Base64CodedData public var avatar: Data
+    public let isConnected: Bool
+    public let isStaff: Bool
 }
 
 extension UserInfoResponse {

@@ -649,12 +649,28 @@ ExitInfo DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::is
                         retryCount = 0;
                     }
 
+                    if (readSize == 0 && !istr->get().eof()) {
+                        if (retryCount < READ_RETRIES) {
+                            // Try to read again later
+                            LOG_WARN(_logger, "Request " << jobId() << ": empty buffer read after reading " << getProgress()
+                                                         << " bytes from input stream, retrying");
+                            retryCount++;
+                            Utility::msleep(READ_PAUSE_SLEEP_PERIOD);
+                            continue;
+                        }
+
+                        LOG_WARN(_logger, "Request " << jobId() << ": empty buffer read after reading " << getProgress()
+                                                     << " bytes from input stream");
+                        readError = true;
+                        break;
+                    }
+
                     if (istr->get().eof()) {
                         // End of stream
                         if (expectedSize == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH || getProgress() == expectedSize) {
                             done = true;
                         } else {
-                            // Expected size hasn't be read
+                            // Expected size hasn't been read
                             if (retryCount < READ_RETRIES) {
                                 // Try to read again later
                                 LOG_WARN(_logger, "Request " << jobId() << ": eof after reading " << getProgress()

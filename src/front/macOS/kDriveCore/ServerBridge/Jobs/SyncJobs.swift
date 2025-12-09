@@ -76,7 +76,8 @@ public struct SyncJobs: Sendable {
 
         let syncList = decodedMessage.body.syncInfoList
 
-        await syncList.asyncForEach { await coherentCache.updateSynchro($0.asSynchro) }
+        // TODO: new method to bump cache from SyncInfo
+        // await syncList.asyncForEach { await coherentCache.updateSynchro($0.asSynchro, driveDbId: <#Int32#>) }
 
         return syncList
     }
@@ -172,7 +173,7 @@ public struct SyncJobs: Sendable {
         try decodedMessage.validate()
 
         // TODO: clear cache based only on syncDbId
-        // coherentCache.removeSynchro(syncDbId, fromDrive: <#T##Int32#>, accountId: <#T##Int32#>, userId: <#T##Int32#>)
+        // coherentCache.removeSynchro(syncDbId, fromDrive: <#T##Int32#>, accountId: <#T##Int32#>, userDbId: <#T##Int32#>)
     }
 
     public func getPublicLinkUrl(driveDbId: Int32, nodeId: String) async throws {

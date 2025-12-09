@@ -16,7 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import AppKit
+import Cocoa
 
 extension NSFont.Weight {
     public static let emphasized = NSFont.Weight.semibold
@@ -31,6 +31,7 @@ public extension NSFont {
         public static let headline: NSFont = .preferredFont(forTextStyle: .headline)
 
         public static let body: NSFont = .preferredFont(forTextStyle: .body)
+        public static let bodyEmphasized: NSFont = .preferredFont(forTextStyle: .body, weight: .emphasized)
 
         public static let subheadline: NSFont = .preferredFont(forTextStyle: .subheadline)
     }

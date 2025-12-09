@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #pragma once
 
 namespace KDC {
@@ -110,12 +111,13 @@ enum class ExitCause {
     InconsistentPinState,
     FileSizeMismatch,
     UploadNotTerminated,
-    UnableToCreateVfs,
+    UnableToStartVfs,
     NotEnoughMemory,
     FileTooBig,
     MoveToTrashFailed,
     InvalidName,
     LiteSyncNotAllowed,
+    LiteSyncExtNotRunning,
     NotPlaceHolder,
     NetworkTimeout,
     SocketsDefuncted, // macOS: sockets defuncted by kernel

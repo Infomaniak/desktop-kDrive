@@ -87,7 +87,7 @@ namespace Infomaniak.kDrive
                 LegacyCommPort = Int32.Parse(arguments[1]);
             }
             // Register oAuth protocol handler
-            RegisterProtocol();
+            RegisterOAuthProtocol();
 
             // Start all singleton services
             foreach (var serviceDescriptor in _services.Where(sd => sd.Lifetime == ServiceLifetime.Singleton))
@@ -109,7 +109,7 @@ namespace Infomaniak.kDrive
 
         }
 
-        private void RegisterProtocol()
+        private void RegisterOAuthProtocol()
         {
             const string protocol = "kDrive";
             string exe = Environment.ProcessPath ?? "";

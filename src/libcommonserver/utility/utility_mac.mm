@@ -128,6 +128,14 @@ void Utility::restartLoginItemAgent() {
     }
 }
 
+bool Utility::isLiteSyncExtRunning() {
+    NSString *bundleID = NSBundle.mainBundle.bundleIdentifier;
+    NSString *processName = [NSString stringWithFormat:@"%@.LiteSyncExt", bundleID];
+    NSMutableArray *pids = getPIDsForProcessName(processName);
+    assert(pids.count <= 1);
+    return pids.count == 1;
+}
+
 bool Utility::hasLaunchOnStartup(const std::string &) {
     // this is quite some duplicate code with setLaunchOnStartup, at some point we should fix this FIXME.
     bool returnValue = false;
