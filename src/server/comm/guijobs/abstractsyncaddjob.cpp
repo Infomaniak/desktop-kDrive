@@ -28,6 +28,7 @@
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
 
+
 // Input parameters keys
 static const auto inParamsLocalFolderPath = "localFolderPath";
 static const auto inParamsServerFolderPath = "serverFolderPath";
