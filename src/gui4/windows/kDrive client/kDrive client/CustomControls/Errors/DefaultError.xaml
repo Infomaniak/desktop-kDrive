@@ -7,14 +7,12 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d">
     <local:ErrorCard x:Name="ErrorCard"
-                     Title="{x:Bind _error.Path}"
-                     ActionText="Contacter le support"
-                     ActionClick="ErrorCard_ActionClick">
+                     Title="{x:Bind _error.Path}">
         <local:ErrorCard.CustomContent>
             <Expander x:Name="DetailsExpander"
                       Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.XS}"
                       IsExpanded="False"
-                      Header="Détails"
+                      Header="+"
                       HorizontalAlignment="Stretch">
                 <ScrollViewer MaxHeight="240"
                               HorizontalScrollBarVisibility="Auto"

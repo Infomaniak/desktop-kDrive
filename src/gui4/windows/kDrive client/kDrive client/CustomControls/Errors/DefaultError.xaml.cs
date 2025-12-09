@@ -21,11 +21,6 @@ namespace Infomaniak.kDrive.CustomControls.Errors
             Logger.Log(Logger.Level.Error, $"DefaultError displayed: {_error?.ToString() ?? "null"}");
         }
 
-        private async void ErrorCard_ActionClick(object sender, RoutedEventArgs e)
-        {
-            await Windows.System.Launcher.LaunchUriAsync(App.Constants.GitHubRepoUrl);
-        }
-
         private void UpdateCard()
         {
             if (_error != null)
@@ -45,7 +40,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors
                         return;
 
                     string text = value.ToString();
-                    if (string.IsNullOrWhiteSpace(text))
+                    if (string.IsNullOrWhiteSpace(text) || text == "None" || text == "Unknown")
                         return;
 
                     lines.Add($"{label,-20} {text}");
