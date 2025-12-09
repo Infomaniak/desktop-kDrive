@@ -284,7 +284,7 @@ void TestGuiCommChannel::testActivateLoadInfoJob() {
                         R"( "params": { } })"};
 #else
     // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::NODE_CREATEMISSINGFOLDERS)) +
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::UTILITY_ACTIVATELOADINFO)) +
                         R"(,)"
                         R"( "params": { } })"};
 

@@ -40,9 +40,9 @@ ExitInfo ActivateLoadInfoJob::serializeOutputParms() {
 }
 
 ExitInfo ActivateLoadInfoJob::process() {
-    // Get syncs to delete
+    // Clear sync cache and reload user information
     _commManager->appServer().clearSyncCacheMap();
-    _commManager->appServer().LoadUsersInfo();
+    _commManager->appServer().loadUsersInfo();
     return ExitCode::Ok;
 }
 

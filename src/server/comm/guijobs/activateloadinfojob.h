@@ -28,9 +28,6 @@ class ActivateLoadInfoJob : public AbstractGuiJob {
                        std::shared_ptr<AbstractCommChannel> channel);
 
     private:
-        // Input parameters
-        int _driveDbId = 0;
-
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;
         ExitInfo process() override;
