@@ -797,9 +797,9 @@ void AppServer::setDistributionChannel(const VersionChannel versionChannel) {
     assert(_updateManager && "The update manager is not set.");
 
     _updateManager->setDistributionChannel(versionChannel);
-};
+}
 
-VersionInfo AppServer::getVersionInfo(const VersionChannel versionChannel) {
+VersionInfo AppServer::getVersionInfo(const VersionChannel versionChannel) const {
     if (_noUpdate) {
         VersionInfo versionInfo;
         versionInfo.tag = CommonUtility::versionTag();
@@ -811,7 +811,15 @@ VersionInfo AppServer::getVersionInfo(const VersionChannel versionChannel) {
     assert(_updateManager && "The update manager is not set.");
 
     return _updateManager->versionInfo(versionChannel);
-};
+}
+
+UpdateState AppServer::getUpdateState() const {
+    if (_noUpdate) return UpdateState::Unknown;
+
+    assert(_updateManager && "The update manager is not set.");
+
+    return _updateManager->state();
+}
 
 void AppServer::crash() const {
     // SIGSEGV crash

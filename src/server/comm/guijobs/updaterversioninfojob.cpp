@@ -18,7 +18,6 @@
 
 #include "updaterversioninfojob.h"
 #include "appserver.h"
-#include "requests/serverrequests.h"
 
 #include "libcommon/comm.h"
 

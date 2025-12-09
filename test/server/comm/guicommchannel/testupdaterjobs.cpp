@@ -21,6 +21,7 @@
 
 #include "comm/guijobs/updaterchangechanneljob.h"
 #include "comm/guijobs/updaterversioninfojob.h"
+#include "comm/guijobs/updaterstatejob.h"
 
 
 namespace KDC {
@@ -103,6 +104,45 @@ void TestGuiCommChannel::testUpdaterChangeChannelJob() {
             versionInfo.downloadUrl = "https://downloads/kDrive-3.8.2.3.pkg";
 
             updaterVersionInfoJob->_versionInfo = versionInfo;
+        };
+
+        testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+    }
+
+    void TestGuiCommChannel::testUpdaterStateJob() {
+        Poco::JSON::Object queryObj;
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+        (void) queryObj.set("id", 1);
+#endif
+        (void) queryObj.set("num", toInt(RequestNum::UPDATER_STATE));
+        Poco::JSON::Object queryParamsObj;
+        (void) queryObj.set("params", queryParamsObj);
+
+        const auto queryStr = stringifyQueryObj(queryObj);
+
+        // Answer
+        Poco::JSON::Object answerObj;
+        (void) answerObj.set("cause", 0);
+        (void) answerObj.set("code", 0);
+        (void) answerObj.set("id", 1);
+
+        Poco::JSON::Object paramsObj;
+        (void) paramsObj.set("updateState", toInt(UpdateState::Checking));
+        (void) answerObj.set("params", paramsObj);
+
+        Poco::JSON::Object answerObjWithNumAndType = answerObj;
+        (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UPDATER_STATE));
+        (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+
+        // Job expected answers
+        const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+        const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
+
+        auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+            auto updaterStateJob = std::dynamic_pointer_cast<UpdaterStateJob>(job);
+            CPPUNIT_ASSERT(updaterStateJob);
+
+            updaterStateJob->_updateState = UpdateState::Checking;
         };
 
         testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);

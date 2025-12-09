@@ -82,6 +82,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testNodeSubFolders2Job);
         CPPUNIT_TEST(testUpdaterChangeChannelJob);
         CPPUNIT_TEST(testUpdaterVersionInfoJob);
+        CPPUNIT_TEST(testUpdaterStateJob);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -121,6 +122,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testSyncNodeSetListJob();
         void testUpdaterChangeChannelJob();
         void testUpdaterVersionInfoJob();
+        void testUpdaterStateJob();
 
     private:
         GuiJobFactory _guiJobFactory;

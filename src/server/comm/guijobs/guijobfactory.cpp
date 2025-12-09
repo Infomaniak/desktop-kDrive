@@ -48,6 +48,7 @@
 #include "nodefoldersizejob.h"
 #include "updaterchangechanneljob.h"
 #include "updaterversioninfojob.h"
+#include "updaterstatejob.h"
 
 namespace KDC {
 
@@ -81,7 +82,8 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::NODE_FOLDER_SIZE, makeShared<NodeFolderSizeJob>},
                 {RequestNum::NODE_INFO, makeShared<NodeInfoJob>},
                 {RequestNum::UPDATER_CHANGE_CHANNEL, makeShared<UpdaterChangeChannelJob>},
-                {RequestNum::UPDATER_VERSION_INFO, makeShared<UpdaterVersionInfoJob>}};
+                {RequestNum::UPDATER_VERSION_INFO, makeShared<UpdaterVersionInfoJob>},
+                {RequestNum::UPDATER_STATE, makeShared<UpdaterStateJob>}};
 }
 
 std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::shared_ptr<CommManager> commManager,
