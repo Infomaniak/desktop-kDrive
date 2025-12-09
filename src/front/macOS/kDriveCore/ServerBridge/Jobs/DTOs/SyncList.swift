@@ -47,7 +47,6 @@ public struct SyncInfo: Codable, Sendable {
     public let dbId: Int32
     public let driveDbId: Int32
     @Base64CodedString public var localPath: String
-    @Base64CodedString public var navigationPaneClsid: String
     public let supportVfs: Bool
     @Base64CodedString public var targetNodeId: String
     @Base64CodedString public var targetPath: String
