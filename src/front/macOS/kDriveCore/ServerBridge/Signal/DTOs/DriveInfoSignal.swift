@@ -52,4 +52,3 @@ extension DriveInfoSignal {
 struct DriveRemoveSignal: Codable, Sendable {
     let driveDbId: Int32
 }
-
