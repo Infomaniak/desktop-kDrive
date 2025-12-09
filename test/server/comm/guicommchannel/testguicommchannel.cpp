@@ -687,10 +687,10 @@ void TestGuiCommChannel::testErrorInfoListJob() {
             std::to_string(toInt(CancelType::None)) + R"(,"conflictType":)" + std::to_string(toInt(ConflictType::None)) +
             R"(,"dbId": 1,"destinationPath":"","exitCause":)" + std::to_string(toInt(ExitCause::DbEntryNotFound)) +
             R"(,"exitCode":)" + std::to_string(toInt(ExitCode::DataError)) +
-            R"(,"functionName":"ZnVuYzE =","inconsistencyType":)" + std::to_string(toInt(InconsistencyType::None)) +
+            R"(,"functionName":"ZnVuYzE=","inconsistencyType":)" + std::to_string(toInt(InconsistencyType::None)) +
             R"(,"level":)" + std::to_string(toInt(ErrorLevel::SyncPal)) + R"(,"localNodeId":"bG9jYWwx","nodeType":)" +
             std::to_string(toInt(NodeType::Unknown)) +
-            R"(,"path":"cGF0aDE=","remoteNodeId":"cmVtb3RlMQ=="","syncDbId":10,"time":1000,"workerName":"d29ya2VyMQ==","autoResolved":false}]}})"};
+            R"(,"path":"cGF0aDE=","remoteNodeId":"cmVtb3RlMQ=="","syncDbId":10,"time":1000,"workerName":"d29ya2VyMQ=="}]}})"};
 #endif
 
     const auto answerStr{
@@ -705,10 +705,10 @@ void TestGuiCommChannel::testErrorInfoListJob() {
             std::to_string(toInt(CancelType::None)) + R"(, "conflictType": )" + std::to_string(toInt(ConflictType::None)) +
             R"(, "dbId": 1, "destinationPath": "", "exitCause": )" + std::to_string(toInt(ExitCause::DbEntryNotFound)) +
             R"(, "exitCode": )" + std::to_string(toInt(ExitCode::DataError)) +
-            R"(, "functionName": "ZnVuYzE =", "inconsistencyType": )" + std::to_string(toInt(InconsistencyType::None)) +
+            R"(, "functionName": "ZnVuYzE=", "inconsistencyType": )" + std::to_string(toInt(InconsistencyType::None)) +
             R"(, "level": )" + std::to_string(toInt(ErrorLevel::SyncPal)) + R"(, "localNodeId": "bG9jYWwx", "nodeType": )" +
             std::to_string(toInt(NodeType::Unknown)) +
-            R"(, "path": "cGF0aDE=", "remoteNodeId": "cmVtb3RlMQ=="", "syncDbId": 10, "time": 1000, "workerName": "d29ya2VyMQ==", "autoResolved": false)" +
+            R"(, "path": "cGF0aDE=", "remoteNodeId": "cmVtb3RlMQ=="", "syncDbId": 10, "time": 1000, "workerName": "d29ya2VyMQ==")" +
             R"( } ] },)"
             R"( "type": )" +
             std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
