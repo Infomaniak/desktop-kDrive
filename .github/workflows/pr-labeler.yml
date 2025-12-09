@@ -17,6 +17,7 @@ jobs:
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           configuration-path: .github/labeler.yml
+          sync-labels: true
 
   quick-fix-label:
     runs-on: self-hosted
