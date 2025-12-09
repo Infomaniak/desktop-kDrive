@@ -31,12 +31,14 @@ jobs:
       - name: Check if PR contains bypass label
         id: label-check
         run: |
-          PR_LABELS="${{ toJson(github.event.pull_request.labels.*.name) }}"
+          PR_LABELS='${{ toJson(github.event.pull_request.labels.*.name) }}'
+          echo "PR_LABELS: $PR_LABELS"
           if echo "$PR_LABELS" | grep -q "\"${{ env.BYPASS_LABEL }}\""; then
             echo "bypass=true" >> $GITHUB_OUTPUT
           else
             echo "bypass=false" >> $GITHUB_OUTPUT
-          fi  
+          fi
+
 
 # Build apps
   build-Windows:
