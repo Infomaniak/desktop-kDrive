@@ -85,7 +85,7 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::BLACKLISTED_NODE_LIST, makeShared<BlacklistedNodeListJob>},
                 {RequestNum::BLACKLISTED_NODE_SETLIST, makeShared<BlacklistedNodeSetListJob>},
                 {RequestNum::ERROR_INFOLIST, makeShared<ErrorInfolistJob>},
-                {RequestNum::NODE_INFO, makeShared<NodeInfoJob>}
+                {RequestNum::NODE_INFO, makeShared<NodeInfoJob>},
                 {RequestNum::NODE_CREATEMISSINGFOLDERS, makeShared<NodeCreateMissingFoldersJob>}};
 }
 
