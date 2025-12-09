@@ -77,6 +77,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task RefreshUpdaterVersionInfo(CancellationToken cancellationToken);
         Task ChangeUpdaterChannel(VersionChannel newChannel, CancellationToken cancellationToken);
 
+        // App settings-related requests
+        Task ActivateLoadInfo(CancellationToken cancellationToken);
+        
         // Error-related requests
         Task RefreshErrors(CancellationToken cancellationToken);
 

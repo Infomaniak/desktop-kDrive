@@ -1477,7 +1477,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::SYNC_ASKFORSTATUS: {
-            _syncCacheMap.clear();
+            clearSyncCacheMap();
 
             resultStream << ExitCode::Ok;
             break;
@@ -2002,7 +2002,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 QTimer::singleShot(100, this, &AppServer::onLoadInfo);
 
                 // Clear sync update progress cache
-                _syncCacheMap.clear();
+                clearSyncCacheMap();
             }
 
             resultStream << ExitCode::Ok;
@@ -3482,12 +3482,12 @@ bool AppServer::startClient() {
 #if defined(KD_WINDOWS)
         if (ParametersCache::instance()->parameters().distributionChannel() ==
             VersionChannel::Internal) { // The WinUI3 GUI is currently only for internal builds
-            pathToExecutable =
-                    QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENTV4_EXECUTABLE);
+            pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENTV4_EXECUTABLE);
 
             IoError ioError = IoError::Success;
             bool exists = false;
-            if (!IoHelper::checkIfPathExists(pathToExecutable.toStdString(), exists, ioError) || !exists || ioError != IoError::Success) {
+            if (!IoHelper::checkIfPathExists(pathToExecutable.toStdString(), exists, ioError) || !exists ||
+                ioError != IoError::Success) {
                 pathToExecutable.clear();
             }
         }

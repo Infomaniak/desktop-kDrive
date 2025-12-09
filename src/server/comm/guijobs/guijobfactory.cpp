@@ -52,6 +52,7 @@
 #include "nodecreatemissingfoldersjob.h"
 #include "parametersinfojob.h"
 #include "parametersupdatejob.h"
+#include "activateloadinfojob.h"
 
 namespace KDC {
 
@@ -92,7 +93,9 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::NODE_INFO, makeShared<NodeInfoJob>},
                 {RequestNum::NODE_CREATEMISSINGFOLDERS, makeShared<NodeCreateMissingFoldersJob>},
                 {RequestNum::PARAMETERS_INFO, makeShared<ParametersInfoJob>},
-                {RequestNum::PARAMETERS_UPDATE, makeShared<ParametersUpdateJob>}};
+                {RequestNum::PARAMETERS_UPDATE, makeShared<ParametersUpdateJob>},
+                {RequestNum::UTILITY_ACTIVATELOADINFO, makeShared<ActivateLoadInfoJob>},
+                {RequestNum::NODE_CREATEMISSINGFOLDERS, makeShared<NodeCreateMissingFoldersJob>}};
 }
 
 std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::shared_ptr<CommManager> commManager,

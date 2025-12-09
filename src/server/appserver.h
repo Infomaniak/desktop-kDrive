@@ -127,6 +127,9 @@ class AppServer : public SharedTools::QtSingleApplication {
                                            const std::chrono::seconds &startDelay = std::chrono::seconds(0),
                                            bool resumedByUser = false, bool firstInit = false);
         [[nodiscard]] ExitInfo stopSyncPal(int syncDbId, bool pausedByUser = false, bool quit = false, bool clear = false);
+        void clearSyncCacheMap() { _syncCacheMap.clear(); }
+        void LoadUsersInfo() { onLoadInfo(); }
+
         [[nodiscard]] ExitInfo stopVfs(int syncDbId, bool unregister);
         [[nodiscard]] ExitInfo startSyncs(User &user);
         void stopSyncTask(int syncDbId);
