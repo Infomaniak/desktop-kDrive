@@ -19,16 +19,7 @@ namespace Infomaniak.kDrive.CustomControls
            App.ServiceProvider.GetRequiredService<AppModel>();
 
         public Frame Frame { get { return ContentFrame; } }
-
-        private Dictionary<string, Type> _navigationItemToPage = new Dictionary<string, Type>()
-        {
-            { "HomePage", typeof(Pages.HomePage) },
-            { "ActivityPage", typeof(Pages.ActivityPage) },
-            { "SettingsPage", typeof(Pages.Settings.SettingsPage) },
-            { "StoragePage", typeof(Pages.StoragePage) }
-        };
-
-        private Dictionary<string, List<Type>> _PageToNavigationItems = new Dictionary<string, List<Type>>()
+        private Dictionary<string, List<Type>> _navigationItemToPage = new Dictionary<string, List<Type>>()
         {
             { "HomePage", new List<Type>() { typeof(Pages.HomePage) } },
             { "ActivityPage", new List<Type>() { typeof(Pages.ActivityPage), typeof(Pages.ErrorPage) } },
@@ -68,9 +59,9 @@ namespace Infomaniak.kDrive.CustomControls
             if (item != null)
             {
                 // Navigate to the selected page
-                if (_navigationItemToPage.TryGetValue(item.Tag.ToString() ?? "", out Type? pageType))
+                if (_navigationItemToPage.TryGetValue(item.Tag.ToString() ?? "", out List<Type>? pageTypes))
                 {
-                    ContentFrame.Navigate(pageType);
+                    ContentFrame.Navigate(pageTypes.FirstOrDefault());
                     return;
                 }
 
@@ -82,7 +73,7 @@ namespace Infomaniak.kDrive.CustomControls
         private void UpdateSelectedItem()
         {
             var newSelectedItem = MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item =>
-                _PageToNavigationItems.TryGetValue(item.Tag.ToString() ?? "", out List<Type>? pageTypes) &&
+                _navigationItemToPage.TryGetValue(item.Tag.ToString() ?? "", out List<Type>? pageTypes) &&
                 pageTypes.Contains(ContentFrame.Content.GetType()));
             if (newSelectedItem is null)
                 newSelectedItem = SettingsItem as NavigationViewItem;

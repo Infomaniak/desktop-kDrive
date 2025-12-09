@@ -7,7 +7,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d">
     <local:ErrorCard x:Name="ErrorCard"
-                     Title="{x:Bind _error.Path}">
+                     Title="{x:Bind _error.Path}"
+                     Description="An unexpected error has occurred.">
+        <!-- TODO: Translate once the UI is ready -->
         <local:ErrorCard.CustomContent>
             <Expander x:Name="DetailsExpander"
                       Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.XS}"

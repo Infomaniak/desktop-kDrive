@@ -1,5 +1,4 @@
 using Infomaniak.kDrive.ViewModels;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
@@ -10,7 +9,6 @@ namespace Infomaniak.kDrive.CustomControls.Errors
     {
         private Error _error;
 
-        // Texte affiché dans l'Expander (dropdown)
         public string DetailsText { get; private set; } = string.Empty;
 
         public DefaultError(Error error)
@@ -25,9 +23,6 @@ namespace Infomaniak.kDrive.CustomControls.Errors
         {
             if (_error != null)
             {
-                ErrorCard.Title = $"{_error.ExitCode} - {_error.ExitCause}";
-
-                // Lignes détaillées affichées dans le dropdown
                 var lines = new List<string>
                 {
                     "An unexpected error has occurred.",
@@ -59,15 +54,11 @@ namespace Infomaniak.kDrive.CustomControls.Errors
                 AddIfNotEmpty("Cancel Type:", _error.CancelType);
                 AddIfNotEmpty("Auto-resolved:", _error.AutoResolved);
 
-                // Description courte sur la carte, détails complets dans le dropdown
-                ErrorCard.Description = "An unexpected error has occurred.";
                 DetailsText = string.Join(Environment.NewLine, lines);
             }
             else
             {
-                ErrorCard.Description = "An unexpected error has occurred.";
                 DetailsText = "An unexpected error has occurred.";
-                this.Bindings?.Update();
             }
         }
     }
