@@ -34,14 +34,44 @@ public enum ObservableData {
                                      name: "The amazing test Drive",
                                      color: HexColor(hex: "#ffffff"), synchros: [:])
 
-    static let expectedAccount = Account(dbId: expectedAccountDbId, name: "3", drives: [expectedDriveDbId: expectedDrive])
+    static let updatedDrive = Drive(driveDbId: expectedDriveDbId,
+                                    driveId: expectedDriveId,
+                                    accountId: expectedAccountId,
+                                    userDbId: expectedUserDbId,
+                                    userId: expectedUserId,
+                                    name: "The amazing UPDATED test Drive",
+                                    color: HexColor(hex: "#0a0a0a"), synchros: [:])
+
+    static let expectedAccount = Account(dbId: expectedAccountDbId,
+                                         userDbId: expectedUserDbId,
+                                         name: "Some account",
+                                         drives: [expectedDriveDbId: expectedDrive])
+
+    static let updatedAccount = Account(dbId: expectedAccountDbId,
+                                        userDbId: expectedUserDbId,
+                                        name: "Some UPDATED account",
+                                        drives: [expectedDriveDbId: updatedDrive])
+
     static let indexedAccounts: IndexedAccounts = [
-        1: Account(dbId: 1, name: "1", drives: [:]),
-        2: Account(dbId: 2, name: "2", drives: [:]),
+        1: Account(dbId: 1, userDbId: expectedUserDbId, name: "1", drives: [:]),
+        2: Account(dbId: 2, userDbId: expectedUserDbId, name: "2", drives: [:]),
         expectedAccountDbId: expectedAccount,
-        4: Account(dbId: 4, name: "4", drives: [:])
+        4: Account(dbId: 4, userDbId: expectedUserDbId, name: "4", drives: [:])
     ]
+
     static let expectedUser = User(
+        dbId: expectedUserDbId,
+        userId: expectedUserId,
+        name: "appleseed",
+        email: "ja@apple.com",
+        accounts: [:],
+        availableDrives: [:],
+        avatar: Data(),
+        isConnected: true,
+        isStaff: false
+    )
+
+    static let expectedUserWithAccounts = User(
         dbId: expectedUserDbId,
         userId: expectedUserId,
         name: "appleseed",
@@ -50,6 +80,29 @@ public enum ObservableData {
         availableDrives: [:],
         avatar: Data(),
         isConnected: true,
+        isStaff: false
+    )
+
+    static let updatedUser = User(
+        dbId: expectedUserDbId,
+        userId: expectedUserId,
+        name: "appleseed UPDATE",
+        email: "ja@apple.com",
+        accounts: indexedAccounts,
+        availableDrives: [:],
+        avatar: Data(),
+        isConnected: true,
         isStaff: true
     )
+
+    static let expectedSynchroDbId = Int32.random(in: 0 ... 1000)
+    static let expectedSynchroPath = "/dev/null"
+    static let expectedSynchro = Synchro(dbId: expectedSynchroDbId,
+                                         driveDbId: expectedDriveDbId,
+                                         localPath: expectedSynchroPath)
+
+    static let updatedSynchroPath = "C:\\Windows\\System32"
+    static let updatedSynchro = Synchro(dbId: expectedSynchroDbId,
+                                        driveDbId: expectedDriveDbId,
+                                        localPath: updatedSynchroPath)
 }
