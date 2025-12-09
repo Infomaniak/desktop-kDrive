@@ -49,7 +49,7 @@ jobs:
 
             core.info(`Total changed lines: ${changed}`);
 
-            if (changed < 4) {
+            if (changed <= 20) {
               try {
                 await github.rest.issues.addLabels({
                   owner,
