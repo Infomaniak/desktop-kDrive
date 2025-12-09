@@ -64,8 +64,10 @@ final class LoginViewModel: ObservableObject {
             return
         }
 
-        flowCoordinator.targetUser = UIUser(user: user)
-        flowCoordinator.navigateToNextStep()
+        Task {
+            flowCoordinator.targetUser = UIUser(user: user)
+            await flowCoordinator.navigateToNextStep()
+        }
     }
 }
 

@@ -31,7 +31,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         let testing = AppDelegate.isRunningTests
-        DriveTargetAssembly.setupDI(testing: false)
+        DriveTargetAssembly.setupDI(testing: testing)
         guard !testing else {
             return
         }
