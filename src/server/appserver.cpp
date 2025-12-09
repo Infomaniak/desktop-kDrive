@@ -2559,11 +2559,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 
@@ -4072,7 +4072,7 @@ void AppServer::sendUserAdded(const UserInfo &userInfo) {
     paramsStream << userInfo;
 
     OldCommServer::instance()->sendSignal(SignalNum::USER_ADDED, params, id);
-    _commManager->sendGuiSignal(std::make_shared<SignalUserAddedJob>(userInfo));
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalUserAddedJob>(userInfo));
 }
 
 void AppServer::sendUserUpdated(const UserInfo &userInfo) {
@@ -4083,7 +4083,8 @@ void AppServer::sendUserUpdated(const UserInfo &userInfo) {
     paramsStream << userInfo;
 
     OldCommServer::instance()->sendSignal(SignalNum::USER_UPDATED, params, id);
-    // _commManager->sendGuiSignal(std::make_shared<SignalUserUpdatedJob>(userInfo)); -> sendUserUpdated should not be static
+    // if(_commManager) _commManager->sendGuiSignal(std::make_shared<SignalUserUpdatedJob>(userInfo)); -> sendUserUpdated should
+    // not be static
 }
 
 void AppServer::sendUserStatusChanged(int userDbId, bool connected, QString connexionError) {
@@ -4106,7 +4107,7 @@ void AppServer::sendUserRemoved(int userDbId) {
     paramsStream << userDbId;
 
     OldCommServer::instance()->sendSignal(SignalNum::USER_REMOVED, params, id);
-    _commManager->sendGuiSignal(std::make_shared<SignalUserRemovedJob>(userDbId));
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalUserRemovedJob>(userDbId));
 }
 
 void AppServer::sendAccountAdded(const AccountInfo &accountInfo) {
@@ -4117,7 +4118,7 @@ void AppServer::sendAccountAdded(const AccountInfo &accountInfo) {
     paramsStream << accountInfo;
 
     OldCommServer::instance()->sendSignal(SignalNum::ACCOUNT_ADDED, params, id);
-    _commManager->sendGuiSignal(std::make_shared<SignalAccountAddedJob>(accountInfo));
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalAccountAddedJob>(accountInfo));
 }
 
 void AppServer::sendAccountUpdated(const AccountInfo &accountInfo) {
@@ -4138,7 +4139,7 @@ void AppServer::sendAccountRemoved(int accountDbId) {
     paramsStream << accountDbId;
 
     OldCommServer::instance()->sendSignal(SignalNum::ACCOUNT_REMOVED, params, id);
-    _commManager->sendGuiSignal(std::make_shared<SignalAccountRemovedJob>(accountDbId));
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalAccountRemovedJob>(accountDbId));
 }
 
 void AppServer::sendDriveAdded(const DriveInfo &driveInfo) {
@@ -4149,7 +4150,7 @@ void AppServer::sendDriveAdded(const DriveInfo &driveInfo) {
     paramsStream << driveInfo;
 
     OldCommServer::instance()->sendSignal(SignalNum::DRIVE_ADDED, params, id);
-    _commManager->sendGuiSignal(std::make_shared<SignalDriveAddedJob>(driveInfo));
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalDriveAddedJob>(driveInfo));
 }
 
 void AppServer::sendDriveUpdated(const DriveInfo &driveInfo) {
@@ -4182,7 +4183,7 @@ void AppServer::sendDriveRemoved(int driveDbId) {
     paramsStream << driveDbId;
 
     OldCommServer::instance()->sendSignal(SignalNum::DRIVE_REMOVED, params, id);
-    _commManager->sendGuiSignal(std::make_shared<SignalDriveRemovedJob>(driveDbId));
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalDriveRemovedJob>(driveDbId));
 }
 
 void AppServer::sendSyncUpdated(const SyncInfo &syncInfo) {
@@ -4193,7 +4194,7 @@ void AppServer::sendSyncUpdated(const SyncInfo &syncInfo) {
     paramsStream << syncInfo;
 
     OldCommServer::instance()->sendSignal(SignalNum::SYNC_UPDATED, params, id);
-    _commManager->sendGuiSignal(std::make_shared<SignalSyncUpdatedJob>(syncInfo));
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalSyncUpdatedJob>(syncInfo));
 }
 
 void AppServer::sendSyncRemoved(int syncDbId) {
@@ -4204,7 +4205,7 @@ void AppServer::sendSyncRemoved(int syncDbId) {
     paramsStream << syncDbId;
 
     OldCommServer::instance()->sendSignal(SignalNum::SYNC_REMOVED, params, id);
-    _commManager->sendGuiSignal(std::make_shared<SignalSyncRemovedJob>(syncDbId));
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalSyncRemovedJob>(syncDbId));
 }
 
 void AppServer::sendSyncDeletionFailed(int syncDbId) {
@@ -4250,7 +4251,7 @@ void AppServer::sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep s
     OldCommServer::instance()->sendSignal(SignalNum::SYNC_PROGRESSINFO, params, id);
 
     // Send to the new comm layer
-    _commManager->sendGuiSignal(std::make_shared<SignalSyncProgressInfo>(syncDbId, status, step, progress));
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalSyncProgressInfo>(syncDbId, status, step, progress));
 }
 
 void AppServer::sendSyncCompletedItem(int syncDbId, const SyncFileItemInfo &itemInfo) {
@@ -4261,7 +4262,7 @@ void AppServer::sendSyncCompletedItem(int syncDbId, const SyncFileItemInfo &item
     paramsStream << syncDbId;
     paramsStream << itemInfo;
     OldCommServer::instance()->sendSignal(SignalNum::SYNC_COMPLETEDITEM, params, id);
-    _commManager->sendGuiSignal(std::make_shared<SignalSyncCompletedItem>(syncDbId, itemInfo));
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalSyncCompletedItem>(syncDbId, itemInfo));
 }
 
 void AppServer::sendVfsConversionCompleted(int syncDbId) {
@@ -4281,7 +4282,7 @@ void AppServer::sendSyncAdded(const SyncInfo &syncInfo) {
     paramsStream << syncInfo;
 
     OldCommServer::instance()->sendSignal(SignalNum::SYNC_ADDED, params, id);
-    _commManager->sendGuiSignal(std::make_shared<SignalSyncAddedJob>(syncInfo));
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalSyncAddedJob>(syncInfo));
 }
 
 void AppServer::onLoadInfo() {

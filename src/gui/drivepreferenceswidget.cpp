@@ -1103,8 +1103,7 @@ void DrivePreferencesWidget::onValidateUpdate(int syncDbId) {
     QLOG_IF_FAIL(treeItemWidget->syncDbId() == syncDbId);
 
     QSet<QString> oldBlackSet;
-    if (const auto exitCode = GuiRequests::getBlacklistedNodeIdSet(syncDbId, oldBlackSet);
-        exitCode != ExitCode::Ok) {
+    if (const auto exitCode = GuiRequests::getBlacklistedNodeIdSet(syncDbId, oldBlackSet); exitCode != ExitCode::Ok) {
         qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::getSyncIdSet";
         return;
     }

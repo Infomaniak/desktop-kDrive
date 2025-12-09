@@ -165,20 +165,4 @@ using AbstractGuiJobSharedConst = std::function<std::shared_ptr<AbstractGuiJob>(
         std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
         std::shared_ptr<AbstractCommChannel> channel)>;
 
-template<class C>
-std::function<Poco::Dynamic::Var(const C &)> info2DynamicVar = [](const C &value) {
-    Poco::DynamicStruct structValue;
-    value.toDynamicStruct(structValue);
-    return structValue;
-};
-
-template<class C>
-std::function<C(const Poco::Dynamic::Var &)> dynamicVar2Struct = [](const Poco::Dynamic::Var &value) {
-    assert(value.isStruct());
-    const auto &structValue = value.extract<Poco::DynamicStruct>();
-    C c;
-    c.fromDynamicStruct(structValue);
-    return c;
-};
-
 } // namespace KDC

@@ -31,7 +31,8 @@ static const auto inParamsNodeIdList = "nodeIdList";
 namespace KDC {
 
 BlacklistedNodeSetListJob::BlacklistedNodeSetListJob(std::shared_ptr<CommManager> commManager, int requestId,
-                                       const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel) :
+                                                     const Poco::DynamicStruct &inParams,
+                                                     std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
     _requestNum = RequestNum::BLACKLISTED_NODE_SETLIST;
 }
