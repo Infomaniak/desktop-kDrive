@@ -41,9 +41,14 @@ jobs:
 # Build apps
   build-Windows:
     needs: check-label
-    if: needs.check-label.outputs.bypass == 'true'
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
     steps:
+      - name: Check for bypass label
+        if: needs.check-label.outputs.bypass == 'true'
+        run: |
+          echo "Bypass label present, skipping build."
+          exit 0
+
       - name: Checkout the PR
         uses: actions/checkout@v4
         with:
@@ -56,9 +61,14 @@ jobs:
 
   build-Linux:
     needs: check-label
-    if: needs.check-label.outputs.bypass == 'true'
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
     steps:
+      - name: Check for bypass label
+        if: needs.check-label.outputs.bypass == 'true'
+        run: |
+          echo "Bypass label present, skipping build."
+          exit 0
+
       - name: Checkout the PR
         uses: actions/checkout@v4
         with:
@@ -68,9 +78,14 @@ jobs:
 
   build-MacOS:
     needs: check-label
-    if: needs.check-label.outputs.bypass == 'true'
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
     steps:
+      - name: Check for bypass label
+        if: needs.check-label.outputs.bypass == 'true'
+        run: |
+          echo "Bypass label present, skipping build."
+          exit 0
+
       - name: Checkout the PR
         uses: actions/checkout@v4
         with:
@@ -83,7 +98,6 @@ jobs:
 
 # Tests Windows
   Test-Windows:
-    if: needs.check-label.outputs.bypass == 'true'
     needs: build-Windows
     strategy:
       fail-fast: false
@@ -94,6 +108,11 @@ jobs:
       KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
       KDRIVE_SENTRY_ENVIRONMENT: "windows_ci_runner"
     steps:
+      - name: Check for bypass label
+        run: |
+          echo "Bypass label present, skipping build."
+          exit 0
+          
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
         with:
@@ -107,7 +126,6 @@ jobs:
 
 # Tests Linux
   Test-Linux:
-    if: needs.check-label.outputs.bypass == 'true'
     needs: build-Linux
     strategy:
       fail-fast: false
@@ -118,6 +136,12 @@ jobs:
       KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
       KDRIVE_SENTRY_ENVIRONMENT: "linux_ci_runner"
     steps:
+      - name: Check for bypass label
+        if: needs.check-label.outputs.bypass == 'true'
+        run: |
+          echo "Bypass label present, skipping build."
+          exit 0
+          
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
         with:
@@ -131,7 +155,6 @@ jobs:
 
 # Tests macOS
   Test-macOS:
-    if: needs.check-label.outputs.bypass == 'true'
     needs: build-MacOS
     strategy:
       fail-fast: false
@@ -142,6 +165,12 @@ jobs:
       KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
       KDRIVE_SENTRY_ENVIRONMENT: "macos_ci_runner"
     steps:
+      - name: Check for bypass label
+        if: needs.check-label.outputs.bypass == 'true'
+        run: |
+          echo "Bypass label present, skipping build."
+          exit 0
+
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
         with:
@@ -152,12 +181,3 @@ jobs:
         with:
           test_name: ${{ matrix.test_name }}
           test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
-
-  Unit-Tests:
-    if: needs.check-label.outputs.bypass == 'true'
-    runs-on: [self-hosted, Windows]
-    needs: [Test-Windows, Test-Linux, Test-macOS]
-    steps:
-      - name: Check if all tests passed
-        shell: powershell
-        run: exit 0
