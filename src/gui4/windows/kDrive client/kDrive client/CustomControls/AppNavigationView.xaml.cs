@@ -20,13 +20,22 @@ namespace Infomaniak.kDrive.CustomControls
 
         public Frame Frame { get { return ContentFrame; } }
 
-        private Dictionary<string, Type> _navigationPages = new Dictionary<string, Type>()
+        private Dictionary<string, Type> _navigationItemToPage = new Dictionary<string, Type>()
         {
             { "HomePage", typeof(Pages.HomePage) },
             { "ActivityPage", typeof(Pages.ActivityPage) },
             { "SettingsPage", typeof(Pages.Settings.SettingsPage) },
             { "StoragePage", typeof(Pages.StoragePage) }
         };
+
+        private Dictionary<string, List<Type>> _PageToNavigationItems = new Dictionary<string, List<Type>>()
+        {
+            { "HomePage", new List<Type>() { typeof(Pages.HomePage) } },
+            { "ActivityPage", new List<Type>() { typeof(Pages.ActivityPage), typeof(Pages.ErrorPage) } },
+            { "SettingsPage", new List<Type>() { typeof(Pages.Settings.SettingsPage), typeof(Pages.Settings.DriveManagementPage) } },
+            { "StoragePage", new List<Type>() { typeof(Pages.StoragePage) } }
+        };
+
         public AppNavigationView()
         {
             InitializeComponent();
@@ -59,7 +68,7 @@ namespace Infomaniak.kDrive.CustomControls
             if (item != null)
             {
                 // Navigate to the selected page
-                if (_navigationPages.TryGetValue(item.Tag.ToString() ?? "", out Type? pageType))
+                if (_navigationItemToPage.TryGetValue(item.Tag.ToString() ?? "", out Type? pageType))
                 {
                     ContentFrame.Navigate(pageType);
                     return;
@@ -72,8 +81,9 @@ namespace Infomaniak.kDrive.CustomControls
 
         private void UpdateSelectedItem()
         {
-            string pageName = ((Frame)ContentFrame).Content.GetType().Name;
-            var newSelectedItem = MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item => item.Tag.ToString() == pageName);
+            var newSelectedItem = MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item =>
+                _PageToNavigationItems.TryGetValue(item.Tag.ToString() ?? "", out List<Type>? pageTypes) &&
+                pageTypes.Contains(ContentFrame.Content.GetType()));
             if (newSelectedItem is null)
                 newSelectedItem = SettingsItem as NavigationViewItem;
             SelectedItem = newSelectedItem;
