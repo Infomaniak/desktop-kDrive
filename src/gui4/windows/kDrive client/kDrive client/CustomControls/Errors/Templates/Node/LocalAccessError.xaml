@@ -11,8 +11,7 @@
         <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />
     </UserControl.Resources>
     <local:ErrorCard x:Name="ErrorCard"
-                     Title="Fichier inaccessible"
-                     Description="Impossible d’accéder à ce fichier sur votre ordinateur. Vérifiez qu’il existe toujours et que vous disposez des droits pour y accéder."
+                     x:Uid="ERR_FrobiddenChar"
                      ItemIconUri="{x:Bind _error.Path, Converter={StaticResource FilePathToIconConverter}}"
                      ItemPath="{x:Bind _error.Path}" />
 </UserControl>

@@ -11,8 +11,7 @@
         <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />
     </UserControl.Resources>
     <local:ErrorCard x:Name="ErrorCard"
-                     Title="Charactère non supporté"
-                     Description="Le nom de ce fichier contient un ou plusieurs charactères non supportés par le système de fichiers."
+                     x:Uid="ERR_LocalFileAccessError"                    
                      ItemIconUri="{x:Bind _error.Path, Converter={StaticResource FilePathToIconConverter}}"
                      ItemPath="{x:Bind _error.Path}" />
 </UserControl>

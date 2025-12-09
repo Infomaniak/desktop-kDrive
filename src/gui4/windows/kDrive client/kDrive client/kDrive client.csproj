@@ -206,11 +206,6 @@
 		</Page>
 	</ItemGroup>
 	<ItemGroup>
-		<PRIResource Update="Strings\fr-FR\SyncErrors.resw">
-			<Generator></Generator>
-		</PRIResource>
-	</ItemGroup>
-	<ItemGroup>
 		<Content Include="Server\**\*.*">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<PackageCopyToOutput>true</PackageCopyToOutput>

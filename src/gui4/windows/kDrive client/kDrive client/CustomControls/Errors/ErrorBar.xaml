@@ -13,13 +13,13 @@
         <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
         <converters:IntegerToBooleanConverter x:Key="IntegerToBooleanConverter" />
     </UserControl.Resources>
-    <InfoBar Title="Certains fichiers n'ont pas pu être synchronisés."
+    <InfoBar x:Uid="CC_ErrorBar"
              Severity="Warning"
              IsOpen="{x:Bind ViewModel.SelectedSync.SyncErrors.Count, Converter={StaticResource IntegerToBooleanConverter}, Mode=OneWay}"
              IsClosable="False"
              >
         <InfoBar.ActionButton>
-            <Button Content="Vérifier les erreurs"
+            <Button x:Uid="CC_ErrorBar_Button"
                     HorizontalAlignment="Right"
                     Click="InfoBarButton_Click" />
         </InfoBar.ActionButton>

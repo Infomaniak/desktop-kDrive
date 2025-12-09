@@ -121,8 +121,7 @@
     </Page.Resources>
 
     <Grid Margin="24"
-          RowSpacing="24"
-          ColumnSpacing="24">
+          RowSpacing="{StaticResource Infomaniak.Style.Spacing.S}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />

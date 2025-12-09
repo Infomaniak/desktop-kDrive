@@ -17,6 +17,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors
             this.InitializeComponent();
             _error = error;
             UpdateCard();
+            Logger.Log(Logger.Level.Error, $"DefaultError displayed: {_error?.ToString() ?? "null"}");
         }
 
         private async void ErrorCard_ActionClick(object sender, RoutedEventArgs e)
