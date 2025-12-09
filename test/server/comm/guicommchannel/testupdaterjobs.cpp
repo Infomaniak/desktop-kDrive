@@ -23,6 +23,7 @@
 #include "comm/guijobs/updaterversioninfojob.h"
 #include "comm/guijobs/updaterstatejob.h"
 #include "comm/guijobs/updaterstartinstallerjob.h"
+#include "comm/guijobs/updaterskipversionjob.h"
 
 namespace KDC {
 
@@ -106,7 +107,11 @@ void TestGuiCommChannel::testUpdaterChangeChannelJob() {
             updaterVersionInfoJob->_versionInfo = versionInfo;
         };
 
-        testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+        testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+#else
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
     }
 
     void TestGuiCommChannel::testUpdaterStateJob() {
@@ -145,7 +150,11 @@ void TestGuiCommChannel::testUpdaterChangeChannelJob() {
             updaterStateJob->_updateState = UpdateState::Checking;
         };
 
-        testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+        testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+#else
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
     }
 
     void TestGuiCommChannel::testUpdaterStartInstallerJob() {
@@ -181,7 +190,53 @@ void TestGuiCommChannel::testUpdaterChangeChannelJob() {
             CPPUNIT_ASSERT(updaterStartInstallerJob);
         };
 
-        testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+        testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+#else
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+    }
+
+    void TestGuiCommChannel::testUpdaterSkipVersionJob() {
+        Poco::JSON::Object queryObj;
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+        (void) queryObj.set("id", 1);
+#endif
+        (void) queryObj.set("num", toInt(RequestNum::UPDATER_SKIP_VERSION));
+        Poco::JSON::Object queryParamsObj;
+        (void) queryParamsObj.set("skippedVersion", toBase64(Str("3.8.2 (build 1)")));
+        (void) queryObj.set("params", queryParamsObj);
+
+        const auto queryStr = stringifyQueryObj(queryObj);
+
+        // Answer
+        Poco::JSON::Object answerObj;
+        (void) answerObj.set("cause", 0);
+        (void) answerObj.set("code", 0);
+        (void) answerObj.set("id", 1);
+
+        Poco::JSON::Object paramsObj;
+        (void) answerObj.set("params", paramsObj);
+
+        Poco::JSON::Object answerObjWithNumAndType = answerObj;
+        (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UPDATER_SKIP_VERSION));
+        (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+
+        // Job expected answers
+        const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+        const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
+
+        auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+            auto updaterSkipVersionJob = std::dynamic_pointer_cast<UpdaterSkipVersionJob>(job);
+            CPPUNIT_ASSERT(updaterSkipVersionJob);
+            CPPUNIT_ASSERT_EQUAL(std::string{"3.8.2 (build 1)"}, updaterSkipVersionJob->_skippedVersion);
+        };
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+        testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+#else
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
     }
 
 } // namespace KDC

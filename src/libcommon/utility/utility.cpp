@@ -1414,8 +1414,11 @@ void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::stri
     value.clear();
     std::istringstream istr(base64Str);
     Poco::Base64Decoder b64in(istr);
-    b64in >> std::noskipws; // Does not stop decoding on space characters
-    b64in >> value;
+
+    std::ostringstream ostr;
+    Poco::StreamCopier::copyStream(b64in, ostr);
+
+    value = ostr.str();
 }
 
 void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::wstring &value) {
