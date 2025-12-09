@@ -87,11 +87,17 @@ class OnboardingAnimationsView: NSView {
             return .kDriveLoader
         case .drivesSelection:
             return .kDriveSynchronizeFiles
-        case .permissions:
-            // TODO: Fix it later
-            return .kDriveLoader
+        case .permissions(let permission):
+            switch permission {
+            case .endpointSecurityExtension:
+                return .permissionLightSyncExtension
+            case .fullDiskAccess:
+                return .permissionFullDiskAccess
+            }
         case .synchronization:
-            fatalError("Not Implemented Yet")
+            return .kDriveSynchronizeFiles
+        case .appReady:
+            return .kDriveLoader
         }
     }
 }

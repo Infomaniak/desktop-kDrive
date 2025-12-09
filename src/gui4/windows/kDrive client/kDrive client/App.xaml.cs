@@ -23,6 +23,7 @@ using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Security.Authentication.OAuth;
 using Microsoft.UI.Xaml;
+using Microsoft.Win32;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -33,6 +34,7 @@ namespace Infomaniak.kDrive
     public partial class App : Application
     {
         private Window? _currentWindow;
+        public int LegacyCommPort { get; private set; } = -1;
         public Window? CurrentWindow
         {
             get => _currentWindow;
@@ -80,8 +82,12 @@ namespace Infomaniak.kDrive
                     }
                     Process current = Process.GetCurrentProcess();
                     current.Kill();
+                    return;
                 }
+                LegacyCommPort = Int32.Parse(arguments[1]);
             }
+            // Register oAuth protocol handler
+            RegisterOAuthProtocol();
 
             // Start all singleton services
             foreach (var serviceDescriptor in _services.Where(sd => sd.Lifetime == ServiceLifetime.Singleton))
@@ -102,6 +108,28 @@ namespace Infomaniak.kDrive
             });
 
         }
+
+        private void RegisterOAuthProtocol()
+        {
+            const string protocol = "kDrive";
+            string exe = Environment.ProcessPath ?? "";
+            if (exe == "")
+            {
+                Logger.Log(Logger.Level.Error, "Failed to register oauth protocol handler: unable to determine executable path.");
+                return;
+            }
+
+            using var key = Registry.CurrentUser.CreateSubKey($@"Software\Classes\{protocol}");
+            key.SetValue("", $"URL:{protocol} protocol");
+            key.SetValue("URL Protocol", "");
+
+            using var icon = Registry.CurrentUser.CreateSubKey($@"Software\Classes\{protocol}\DefaultIcon");
+            icon.SetValue("", $"{exe},1");
+
+            using var command = Registry.CurrentUser.CreateSubKey($@"Software\Classes\{protocol}\shell\open\command");
+            command.SetValue("", $"\"{exe}\" \"%1\"");
+        }
+
 
         public void StartOnboarding()
         {

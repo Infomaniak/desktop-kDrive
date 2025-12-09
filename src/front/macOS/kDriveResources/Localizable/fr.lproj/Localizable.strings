@@ -4,7 +4,7 @@
  * Locale: fr, French
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Wed, 26 Nov 2025 16:37:39 +0100
+ * Exported at: Thu, 04 Dec 2025 16:15:08 +0100
  */
 
 /* loco:691deb2291b20ac7fd045012 */
@@ -16,6 +16,12 @@
 /* loco:68e673c48af12c42e80027c8 */
 "buttonCreateAccount" = "Créer un compte";
 
+/* loco:6930506962426d4ff30af473 */
+"buttonFinishInstallation" = "Terminer l’installation";
+
+/* loco:69304d546385bb9cfc03e524 */
+"buttonKDriveIsActivated" = "J’ai activé kDrive";
+
 /* loco:68e673b2042a15d8470f9452 */
 "buttonLogin" = "Se connecter";
 
@@ -25,11 +31,68 @@
 /* loco:68b04d5a63085b7ab90cea63 */
 "buttonOpenInFinder" = "Ouvrir dans Finder";
 
+/* loco:6931a5687031691272002314 */
+"buttonOpenKDrive" = "Ouvrir kDrive";
+
 /* loco:69240f7b15d05a975c07dc13 */
 "buttonShowOffers" = "Voir les offres";
 
 /* loco:69240f6d4433e24658054fd4 */
 "buttonStartForFree" = "Commencer gratuitement";
+
+/* loco:6930595e7664999c6a08c8a4 */
+"instructionEnableKDrive" = "Activez kDrive.app";
+
+/* loco:693059768c31ab63990a0c82 */
+"instructionEnableKDriveArgument" = "kDrive.app";
+
+/* loco:69314c10606d30eb26081742 */
+"instructionEnableKDriveHint" = "Vous devez activer kDrive.app avant de continuer";
+
+/* loco:69314cfb358e5c25a50b1fb3 */
+"instructionFullDisk" = "Activez kDrive et kDrive LiteSync Extension";
+
+/* loco:69314c248389940c6c08d902 */
+"instructionFullDiskHint" = "Vous devez activer les autorisations avant de continuer";
+
+/* loco:69314c4aba85c2962d068dc2 */
+"instructionOpenPrivacySecurity" = "Allez dans Confidentialité et sécurité > Accès complet au disque";
+
+/* loco:69314c54606d30eb26081743 */
+"instructionOpenPrivacySecurityArgument" = "Accès complet au disque";
+
+/* loco:69314c62739c205c410aa082 */
+"instructionOpenPrivacySecurityLink" = "Confidentialité et sécurité";
+
+/* loco:69305911b203efcf750e7bb4 */
+"instructionOpenSecurityExtensions" = "Sélectionnez Ouverture et extensions > Extensions de sécurité";
+
+/* loco:6930592bfd6c86f6690db6d5 */
+"instructionOpenSecurityExtensionsArgument" = "Extensions de sécurité";
+
+/* loco:693059483fc5023f6a0f86b3 */
+"instructionOpenSecurityExtensionsLink" = "Ouverture et extensions";
+
+/* loco:69305849f1fb5be2c7093fa2 */
+"instructionOpenSystemSettings" = "Ouvrez les Réglages système > Général";
+
+/* loco:6930588953221ff00608e983 */
+"instructionOpenSystemSettingsLink" = "Réglages système";
+
+/* loco:69314d1a739c205c410aa087 */
+"instructionRestartIfNecessary" = "Redémarrez l’application si demandé";
+
+/* loco:693050ed6a0836d25507da22 */
+"onboardingAuthorizationExtensionDescription" = "Autorisez kDrive dans les réglages macOS :";
+
+/* loco:6930509e14b396d6fc04b0f2 */
+"onboardingAuthorizationExtensionTitle" = "Activez kDrive sur votre Mac";
+
+/* loco:6930510648920a67910d1094 */
+"onboardingAuthorizationFullDiskDescription" = "Pour terminer l’installation, vous devez autoriser kDrive à accéder à vos dossiers :";
+
+/* loco:693050bab2a2c1990a0d2f04 */
+"onboardingAuthorizationFullDiskTitle" = "Autorisez l’accès aux dossiers";
 
 /* loco:692406b0258f5599bf01d113 */
 "onboardingDriveSelectionNoDriveDescription" = "Commencez gratuitement avec my kSuite, \nou choisissez une offre adaptée à vos besoins.";
@@ -63,6 +126,18 @@
 
 /* loco:68e673754d80559c460bdf02 */
 "onboardingLoginTitle" = "Bienvenue dans kDrive !";
+
+/* loco:6931a1769dc60cb1820f5fe3 */
+"onboardingSynchronizationAppReadyDescription" = "Vos fichiers sont prêts à être synchronisés en toute sécurité sur votre ordinateur.";
+
+/* loco:6931a16c3498d5205b0380d3 */
+"onboardingSynchronizationAppReadyTitle" = "Tout est prêt !";
+
+/* loco:6931a1582ee1a869eb0303f4 */
+"onboardingSynchronizationInProgressDescription" = "Vos fichiers kDrive sont en cours de synchronisation.\nNous vous invitons à patienter quelques instants.";
+
+/* loco:6931a14fa4031f6161097f42 */
+"onboardingSynchronizationInProgressTitle" = "Synchronisation en cours…";
 
 /* loco:68e8fa27d09187683c0679b2 */
 "onboardingWindowTitle" = "Bienvenue dans kDrive";

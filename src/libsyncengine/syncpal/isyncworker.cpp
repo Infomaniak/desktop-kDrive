@@ -100,9 +100,15 @@ void ISyncWorker::sleepUntilStartDelay(bool &awakenByStop) {
     }
 }
 
-void ISyncWorker::setDone(ExitCode exitCode) {
+void ISyncWorker::setDone(const ExitCode exitCode) {
     std::stringstream logStream;
     logStream << "Worker " << _name << " has finished with code=" << exitCode << " cause=" << _exitCause;
+
+    if (exitCode == ExitCode::Unknown) { // Workers should never exit with an "Unknown" exit code.
+        LOG_ERROR(_logger, "Worker " << _name << " exited with Unknown exit code.");
+        assert(false);
+        sentry::Handler::captureMessage(sentry::Level::Warning, "Unknown exit code", "Worker exited with Unknown exit code.");
+    }
 
     if (exitCode == ExitCode::Ok) {
         LOG_SYNCPAL_DEBUG(_logger, logStream.str());

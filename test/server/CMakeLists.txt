@@ -60,6 +60,9 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/nodesubfoldersjob.h ${server_srcs_path}/comm/guijobs/nodesubfoldersjob.cpp
     ${server_srcs_path}/comm/guijobs/nodesubfolders2job.h ${server_srcs_path}/comm/guijobs/nodesubfolders2job.cpp
     ${server_srcs_path}/comm/guijobs/nodefoldersizejob.h ${server_srcs_path}/comm/guijobs/nodefoldersizejob.cpp
+    ${server_srcs_path}/comm/guijobs/nodecreatemissingfoldersjob.h ${server_srcs_path}/comm/guijobs/nodecreatemissingfoldersjob.cpp
+    ${server_srcs_path}/comm/guijobs/parametersinfojob.h ${server_srcs_path}/comm/guijobs/parametersinfojob.cpp
+    ${server_srcs_path}/comm/guijobs/parametersupdatejob.h ${server_srcs_path}/comm/guijobs/parametersupdatejob.cpp
     ${server_srcs_path}/comm/guijobs/updaterchangechanneljob.h ${server_srcs_path}/comm/guijobs/updaterchangechanneljob.cpp
     ${server_srcs_path}/comm/guijobs/updaterversioninfojob.h ${server_srcs_path}/comm/guijobs/updaterversioninfojob.cpp
     ${server_srcs_path}/comm/guijobs/updaterstatejob.h ${server_srcs_path}/comm/guijobs/updaterstatejob.cpp
@@ -153,10 +156,12 @@ set(testserver_SRCS
     requests/testserverrequests.h requests/testserverrequests.cpp
     appserver/testappserver.h appserver/testappserver.cpp
     comm/testsocketcomm.h comm/testsocketcomm.cpp
+
     comm/testcommhelpers.h comm/testcommhelpers.cpp 
     comm/guicommchannel/testguicommchannel.h comm/guicommchannel/testguicommchannel.cpp 
     comm/guicommchannel/testsyncjobs.cpp comm/guicommchannel/testnodejobs.cpp 
-    comm/guicommchannel/testupdaterjobs.cpp
+    comm/guicommchannel/testparameters.cpp comm/guicommchannel/testupdaterjobs.cpp
+
     comm/guijobs/testabstractguijob.h comm/guijobs/testabstractguijob.cpp
 )
 

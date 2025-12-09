@@ -324,6 +324,9 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
   <data name="Page_Onboarding_OAuthLoadingPage_Success_Title.Text" xml:space="preserve">
     <value>Connexion réussie !</value>
   </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Error_Title.Text" xml:space="preserve">
+    <value>Erreur de connexion</value>
+  </data>
   <data name="Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Subtitle.Text" xml:space="preserve">
     <value>Une fois connecté, vous pourrez passer à l’étape suivante.</value>
   </data>
@@ -334,11 +337,16 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
     <value />
     <comment>Empty</comment>
   </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Error_Subtitle.Text" xml:space="preserve">
+    <value>Une erreur est survenue, veuillez réessayer.</value>
+  </data>
   <data name="Page_Onboarding_WelcomePage_Title.Text" xml:space="preserve">
     <value>Bienvenue dans kDrive</value>
   </data>
   <data name="Page_Onboarding_WelcomePage_Subtitle.Text" xml:space="preserve">
-    <value>Connectez-vous pour commencer à utiliser kDrive, le cloud éthique et sécurisé, hébergé en Suisse.</value>
+    <value>Le cloud privé, rapide et sécurisé, hébergé en Suisse.
+
+Connectez-vous et gardez vos documents synchronisés  sur tous vos appareils.</value>
   </data>
   <data name="Page_Onboarding_WelcomePage_SigninButton.Content" xml:space="preserve">
     <value>Connexion</value>
@@ -380,7 +388,8 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
     <value>Vous n’avez pas encore de kDrive.</value>
   </data>
   <data name="Page_Onboarding_DriveSelectionPage_NoDrive_Text.Text" xml:space="preserve">
-    <value>Commencez gratuitement avec my kSuite, ou choisissez une offre adaptée à vos besoins.</value>
+    <value>Commencez gratuitement avec my kSuite, 
+ou choisissez une offre adaptée à vos besoins.</value>
   </data>
   <data name="Page_Onboarding_DriveSelectionPage_StartFreeButton.Content" xml:space="preserve">
     <value>Commencer gratuitement</value>
@@ -389,7 +398,10 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
     <value>Voir les offres</value>
   </data>
   <data name="Global_kDriveOffersUrl" xml:space="preserve">
-    <value>https://www.infomaniak.com/fr/ksuite/kdrive</value>
+    <value>https://www.infomaniak.com/fr/ksuite/kdrive/tarifs</value>
+  </data>
+  <data name="Global_kDriveShopUrl" xml:space="preserve">
+    <value>http://shop.infomaniak.com/order/select/drive</value>
   </data>
   <data name="Page_StoragePage_Title.Text" xml:space="preserve">
     <value>Stockage</value>
@@ -805,9 +817,6 @@ Le code source de cette application peut être vérifié, les informations réco
     <value>Confirmer</value>
   </data>
   <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Title.Text" xml:space="preserve">
-    <value>Paramètres avancés</value>
-  </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Description.Text" xml:space="preserve">
     <value>Personnalisez l’emplacement de vos dossiers kDrive</value>
   </data>
   <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_InfoBar.Message" xml:space="preserve">

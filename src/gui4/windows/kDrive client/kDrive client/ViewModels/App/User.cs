@@ -159,7 +159,7 @@ namespace Infomaniak.kDrive.ViewModels
             return bitmap;
         }
 
-        public async Task RefreshAvailableDrives()
+        public async Task RefreshAvailableDrives(CancellationToken cancellationToken = default)
         {
             if (DriveRefreshInProgress)
             {
@@ -167,7 +167,7 @@ namespace Infomaniak.kDrive.ViewModels
                 return;
             }
             SetPropertyInUIThread(ref _driveRefreshInProgress, true, nameof(DriveRefreshInProgress));
-            await App.ServiceProvider.GetRequiredService<IServerCommService>().RefreshUserDrivesAvailable(this.DbId, CancellationToken.None);
+            await App.ServiceProvider.GetRequiredService<IServerCommService>().RefreshUserDrivesAvailable(this.DbId, cancellationToken);
             MergeDrives();
             SetPropertyInUIThread(ref _driveRefreshInProgress, false, nameof(DriveRefreshInProgress));
         }
@@ -196,6 +196,15 @@ namespace Infomaniak.kDrive.ViewModels
             foreach (var drive in drives)
                 if (AllDrives.FirstOrDefault(d => d == drive) is null)
                     AllDrives.Add(drive);
+
+            var orderedDrives = AllDrives.OrderBy(d => d is Drive ? 0 : 1).ThenBy(d => d.Name).ToList();
+            for (int i = 0; i < orderedDrives.Count; i++)
+            {
+                var drive = orderedDrives[i];
+                var currentIndex = AllDrives.IndexOf(drive);
+                if (currentIndex != i)
+                    AllDrives.Move(currentIndex, i);
+            }
         }
     }
 }

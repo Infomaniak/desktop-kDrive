@@ -46,6 +46,9 @@
 #include "nodesubfoldersjob.h"
 #include "nodesubfolders2job.h"
 #include "nodefoldersizejob.h"
+#include "nodecreatemissingfoldersjob.h"
+#include "parametersinfojob.h"
+#include "parametersupdatejob.h"
 #include "updaterchangechanneljob.h"
 #include "updaterversioninfojob.h"
 #include "updaterstatejob.h"
@@ -79,10 +82,13 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::SYNC_SETROOTPINSTATE, makeShared<SyncSetRootPinStateJob>},
                 {RequestNum::BLACKLISTED_NODE_LIST, makeShared<BlacklistedNodeListJob>},
                 {RequestNum::BLACKLISTED_NODE_SETLIST, makeShared<BlacklistedNodeSetListJob>},
+                {RequestNum::NODE_INFO, makeShared<NodeInfoJob>},
                 {RequestNum::NODE_SUBFOLDERS, makeShared<NodeSubFoldersJob>},
                 {RequestNum::NODE_SUBFOLDERS2, makeShared<NodeSubFolders2Job>},
                 {RequestNum::NODE_FOLDER_SIZE, makeShared<NodeFolderSizeJob>},
-                {RequestNum::NODE_INFO, makeShared<NodeInfoJob>},
+                {RequestNum::NODE_CREATEMISSINGFOLDERS, makeShared<NodeCreateMissingFoldersJob>},
+                {RequestNum::PARAMETERS_INFO, makeShared<ParametersInfoJob>},
+                {RequestNum::PARAMETERS_UPDATE, makeShared<ParametersUpdateJob>},
                 {RequestNum::UPDATER_CHANGE_CHANNEL, makeShared<UpdaterChangeChannelJob>},
                 {RequestNum::UPDATER_VERSION_INFO, makeShared<UpdaterVersionInfoJob>},
                 {RequestNum::UPDATER_STATE, makeShared<UpdaterStateJob>},

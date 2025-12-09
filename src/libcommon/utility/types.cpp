@@ -182,8 +182,8 @@ std::string toString(const ExitCause e) {
             return "FileSizeMismatch";
         case ExitCause::UploadNotTerminated:
             return "UploadNotTerminated";
-        case ExitCause::UnableToCreateVfs:
-            return "UnableToCreateVfs";
+        case ExitCause::UnableToStartVfs:
+            return "UnableToStartVfs";
         case ExitCause::NotEnoughMemory:
             return "NotEnoughMemory";
         case ExitCause::FileTooBig:
@@ -194,6 +194,8 @@ std::string toString(const ExitCause e) {
             return "InvalidName";
         case ExitCause::LiteSyncNotAllowed:
             return "LiteSyncNotAllowed";
+        case ExitCause::LiteSyncExtNotRunning:
+            return "LiteSyncExtNotRunning";
         case ExitCause::NotPlaceHolder:
             return "NotPlaceHolder";
         case ExitCause::NetworkTimeout:

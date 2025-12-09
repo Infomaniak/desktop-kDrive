@@ -57,6 +57,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task StartSync(DbId syncDbId, CancellationToken cancellationToken);
         Task PauseSync(DbId syncDbId, CancellationToken cancellationToken);
         Task RemoveSync(DbId syncDbId, CancellationToken cancellationToken);
+        Task<bool> AddSync(NewSync newSync, CancellationToken cancellationToken);
 
         // Node-related requests
         Task<List<Node>?> GetSubFolders(DbId userDbId, DriveId driveId, NodeId parentNodeId /*Leave empty for root node*/, CancellationToken cancellationToken);

@@ -128,7 +128,9 @@ final class OnboardingViewController: NSViewController {
         case .permissions:
             return PermissionsViewController(flowCoordinator: flowCoordinator)
         case .synchronization:
-            fatalError("Not Implemented Yet")
+            return SynchronizationViewController(flowCoordinator: flowCoordinator)
+        case .appReady:
+            return AppReadyViewController()
         }
     }
 

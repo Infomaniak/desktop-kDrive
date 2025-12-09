@@ -73,13 +73,16 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSyncSetRootPinStateJob);
         /* Deactivated because string values are not yet base64-encoded
          * in these tests.
+        CPPUNIT_TEST(testBlacklistedSyncNodeListJob);
+        CPPUNIT_TEST(testBlacklistedSyncNodeSetListJob);
         CPPUNIT_TEST(testNodeInfoJob);
         CPPUNIT_TEST(testNodeSubFolderJob);
         CPPUNIT_TEST(testNodeFolderSizeJob);
-        CPPUNIT_TEST(testSyncNodeListJob);
-        CPPUNIT_TEST(testSyncNodeSetListJob);
          */
         CPPUNIT_TEST(testNodeSubFolders2Job);
+        CPPUNIT_TEST(testNodeCreateMissingFoldersJob);
+        CPPUNIT_TEST(testParametersInfoJob);
+        CPPUNIT_TEST(testParametersUpdateJob);
         CPPUNIT_TEST(testUpdaterChangeChannelJob);
         CPPUNIT_TEST(testUpdaterVersionInfoJob);
         CPPUNIT_TEST(testUpdaterStateJob);
@@ -90,7 +93,6 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
     public:
         void setUp() final;
         void tearDown() final;
-
         void testSendMessage();
         void testReadMessage();
         void testCanReadMessage();
@@ -116,12 +118,15 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testSyncGetPrivateLinkUrlJob();
         void testSyncSetSupportsVirtualFilesJob();
         void testSyncSetRootPinStateJob();
+        void testBlacklistedSyncNodeListJob();
+        void testBlacklistedSyncNodeSetListJob();
         void testNodeInfoJob();
-        void testNodeSubFolders2Job();
         void testNodeSubFolderJob();
+        void testNodeSubFolders2Job();
         void testNodeFolderSizeJob();
-        void testSyncNodeListJob();
-        void testSyncNodeSetListJob();
+        void testNodeCreateMissingFoldersJob();
+        void testParametersInfoJob();
+        void testParametersUpdateJob();
         void testUpdaterChangeChannelJob();
         void testUpdaterVersionInfoJob();
         void testUpdaterStateJob();

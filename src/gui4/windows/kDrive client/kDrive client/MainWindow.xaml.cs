@@ -16,12 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using System;
+using System.IO;
 using System.Linq;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -31,8 +33,7 @@ namespace Infomaniak.kDrive
 {
     public sealed partial class MainWindow : Window
     {
-        public readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
-        public AppModel ViewModel { get { return _viewModel; } }
+        public AppNavigationView AppNavView { get { return NavView; } }
         public MainWindow()
         {
             InitializeComponent();
@@ -40,46 +41,6 @@ namespace Infomaniak.kDrive
             this.SetTitleBar(AppTitleBar);
             Utility.SetWindowProperties(this, 900, 530, true);
             AppModel.UIThreadDispatcher = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread(); // Save the UI thread dispatcher for later use in view models
-        }
-        private void navView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
-        {
-            var selectedItem = args.SelectedItem as NavigationViewItem;
-            if (selectedItem != null)
-            {
-                // Navigate to the selected page
-                switch (selectedItem.Tag)
-                {
-                    case "HomePage":
-                        contentFrame.Navigate(typeof(Pages.HomePage));
-                        break;
-                    case "ActivityPage":
-                        contentFrame.Navigate(typeof(Pages.ActivityPage));
-                        break;
-                    case "Settings":
-                        contentFrame.Navigate(typeof(Pages.Settings.SettingsPage));
-                        break;
-                    case "StoragePage":
-                        contentFrame.Navigate(typeof(Pages.StoragePage));
-                        break;
-                    default:
-                        Logger.Log(Logger.Level.Warning, $"Unknown navigation tag: {selectedItem.Tag}... Going to HomePage");
-                        contentFrame.Navigate(typeof(Pages.HomePage));
-                        break;
-                }
-            }
-        }
-
-        private void navView_BackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
-        {
-            if (contentFrame.CanGoBack)
-            {
-                contentFrame.GoBack();
-                navView.SelectedItem = navView.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item => item.Tag.ToString() == ((Frame)contentFrame).Content.GetType().Name);
-            }
-        }
-        private void NavigationViewItem_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            Utility.OpenFolderSecurely(ViewModel.SelectedSync?.LocalPath);
         }
     }
 }

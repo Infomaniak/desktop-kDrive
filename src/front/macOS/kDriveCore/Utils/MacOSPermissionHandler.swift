@@ -20,18 +20,18 @@ import Cocoa
 import Foundation
 
 public enum MacOSPermission: Sendable {
-    case fullDiskAccess
     case endpointSecurityExtension
+    case fullDiskAccess
 }
 
 protocol AuthorizationChecker: Sendable {
+    var systemPreferencesURL: URL { get }
     func hasAccess() async -> Bool
-    func openSystemPreferences() async
 }
 
 public protocol MacOSPermissionHandling: Sendable {
     func isAuthorized(for permission: MacOSPermission) async -> Bool
-    func openSystemPreferences(for permission: MacOSPermission) async
+    func systemPreferencesURL(for permission: MacOSPermission) -> URL?
 }
 
 public final class MacOSPermissionHandler: MacOSPermissionHandling {
@@ -39,8 +39,8 @@ public final class MacOSPermissionHandler: MacOSPermissionHandling {
 
     init(authorizationCheckers: [MacOSPermission: AuthorizationChecker]? = nil) {
         self.authorizationCheckers = authorizationCheckers ?? [
+            .endpointSecurityExtension: EndpointSecurityExtensionChecker(),
             .fullDiskAccess: FullDiskChecker(),
-            .endpointSecurityExtension: EndpointSecurityExtensionChecker()
         ]
     }
 
@@ -51,8 +51,8 @@ public final class MacOSPermissionHandler: MacOSPermissionHandling {
         return await checker.hasAccess()
     }
 
-    public func openSystemPreferences(for permission: MacOSPermission) async {
-        await authorizationCheckers[permission]?.openSystemPreferences()
+    public func systemPreferencesURL(for permission: MacOSPermission) -> URL? {
+        return authorizationCheckers[permission]?.systemPreferencesURL
     }
 }
 
@@ -65,6 +65,8 @@ final class FullDiskChecker: AuthorizationChecker {
         "/Library/Application Support/com.apple.TCC"
     ]
 
+    let systemPreferencesURL = SystemPreferencesURL.fullDiskAccess
+
     func hasAccess() async -> Bool {
         for testableFile in FullDiskChecker.testableFiles {
             if canAccess(toFile: testableFile) {
@@ -73,11 +75,6 @@ final class FullDiskChecker: AuthorizationChecker {
         }
 
         return false
-    }
-
-    func openSystemPreferences() async {
-        let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles")!
-        NSWorkspace.shared.open(url)
     }
 
     private func canAccess(toFile file: String) -> Bool {
@@ -94,6 +91,8 @@ final class FullDiskChecker: AuthorizationChecker {
 // MARK: - Endpoint Security Extension
 
 final class EndpointSecurityExtensionChecker: AuthorizationChecker {
+    let systemPreferencesURL = SystemPreferencesURL.endpointSecurityExtension
+
     func hasAccess() async -> Bool {
         let command = "systemextensionsctl list | grep \(Constants.lightSyncBundleID) | grep enabled | wc -l"
         guard let result = try? ShellExecutor().execute(command: command) else {
@@ -105,10 +104,5 @@ final class EndpointSecurityExtensionChecker: AuthorizationChecker {
         }
 
         return true
-    }
-
-    func openSystemPreferences() async {
-        let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Security")!
-        NSWorkspace.shared.open(url)
     }
 }

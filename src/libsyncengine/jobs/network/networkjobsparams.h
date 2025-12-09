@@ -70,6 +70,7 @@ static const std::string cursorKey = "cursor";
 static const std::string hasMoreKey = "has_more";
 static const std::string tokenKey = "token";
 static const std::string preferenceKey = "preference";
+static const std::string preferencesKey = "preferences";
 
 static const std::string changesKey = "changes";
 static const std::string actionsKey = "actions";

@@ -85,7 +85,7 @@ ExitInfo VfsWin::startImpl(bool &, bool &, bool &) {
                  std::to_wstring(_vfsSetupParams.syncDbId).c_str(), _vfsSetupParams.localPath.filename().native().c_str(),
                  _vfsSetupParams.localPath.lexically_normal().native().c_str(), clsid, &clsidSize) != S_OK) {
         LOG_WARN(logger(), "Error in vfsStart: syncDbId=" << _vfsSetupParams.syncDbId);
-        return {ExitCode::SystemError, ExitCause::UnableToCreateVfs};
+        return {ExitCode::SystemError, ExitCause::UnableToStartVfs};
     }
 
     _vfsSetupParams.namespaceCLSID = CommonUtility::ws2s(std::wstring(clsid));

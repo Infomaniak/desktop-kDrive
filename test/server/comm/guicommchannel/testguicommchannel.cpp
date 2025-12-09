@@ -25,6 +25,7 @@
 #include "comm/guijobs/accountinfolistjob.h"
 #include "comm/guijobs/driveinfolistjob.h"
 #include "comm/guijobs/drivesearchjob.h"
+
 #include "libcommon/comm.h"
 #include "log/log.h"
 
@@ -408,8 +409,8 @@ void TestGuiCommChannel::testAccountInfoListJob() {
 
     // Callback expected answer
     const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"accountInfoList":[)"
-                            R"({"dbId":1,"userDbId":1},)"
-                            R"({"dbId":2,"userDbId":1}]}})"};
+                            R"({"accountId":1111,"dbId":1,"userDbId":1},)"
+                            R"({"accountId":2222,"dbId":2,"userDbId":1}]}})"};
 #endif
 
     // Job expected answer
@@ -421,16 +422,18 @@ void TestGuiCommChannel::testAccountInfoListJob() {
                          R"(,)"
                          R"( "params": {)"
                          R"( "accountInfoList": [)"
-                         R"( { "dbId": 1, "userDbId": 1 },)"
-                         R"( { "dbId": 2, "userDbId": 1 } ] },)"
+                         R"( { "accountId": 1111, "dbId": 1, "userDbId": 1 },)"
+                         R"( { "accountId": 2222, "dbId": 2, "userDbId": 1 } ] },)"
                          R"( "type": )" +
                          std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto accountInfoListJob = std::dynamic_pointer_cast<AccountInfoListJob>(job);
 
-        const AccountInfo ai1(1, 1);
-        const AccountInfo ai2(2, 1);
+        AccountInfo ai1(1, 1);
+        ai1.setAccountId(1111);
+        AccountInfo ai2(2, 1);
+        ai2.setAccountId(2222);
 
         accountInfoListJob->_accountInfoList = {ai1, ai2};
     };
@@ -709,7 +712,7 @@ void TestGuiCommChannel::testGenericJob(const CommString &query, const CommStrin
             // (QImage.save() gives different results depending on the machine)
             CommString s{answer};
             assert(job->_outputParamsStr == answer);
-            CPPUNIT_ASSERT(job->_outputParamsStr == answer);
+            CPPUNIT_ASSERT_MESSAGE(CommonUtility::commString2Str(job->_outputParamsStr).c_str(), job->_outputParamsStr == answer);
         }
 
         CPPUNIT_ASSERT(testChannel->sendMessage(job->_outputParamsStr));
@@ -733,7 +736,7 @@ void TestGuiCommChannel::testGenericJob(const CommString &query, const CommStrin
     auto answerCbk = [=](const CommString &answer) {
         CommString s{answer};
         assert(answer == CommString(cbkAnswer));
-        CPPUNIT_ASSERT(answer == CommString(cbkAnswer));
+        CPPUNIT_ASSERT_MESSAGE(answer, answer == CommString(cbkAnswer));
     };
 
     GuiCommChannel::runProcessQuery(query, readyReadCbk, answerCbk);

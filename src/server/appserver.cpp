@@ -1242,7 +1242,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             bool startPostponed = false;
             if (const auto exitInfo = tryCreateAndStartVfs(sync, startPostponed); !exitInfo) {
                 LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " : " << exitInfo);
-                if (!(exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::LiteSyncNotAllowed)) {
+                if (!Utility::isLiteSyncExtError(exitInfo)) {
                     resultStream << toInt(exitInfo.code());
                     break;
                 }
@@ -1394,7 +1394,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 bool startPostponed = false;
                 if (const auto exitInfo = tryCreateAndStartVfs(sync, startPostponed); !exitInfo) {
                     LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " : " << exitInfo);
-                    if (!(exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::LiteSyncNotAllowed)) {
+                    if (!Utility::isLiteSyncExtError(exitInfo)) {
                         return;
                     }
                 }
@@ -2658,9 +2658,6 @@ ExitCode AppServer::updateUserInfo(User &user) {
     }
 
     for (auto &account: accounts) {
-        QHash<int, DriveAvailableInfo> userDriveInfoList;
-        ServerRequests::getUserAvailableDrives(account.userDbId(), userDriveInfoList);
-
         std::vector<Drive> drives;
         if (!ParmsDb::instance()->selectAllDrives(account.dbId(), drives)) {
             LOG_WARN(_logger, "Error in ParmsDb::selectAllDrives");
@@ -2700,15 +2697,6 @@ ExitCode AppServer::updateUserInfo(User &user) {
                             exitCause = ExitCause::DriveMaintenance;
                     }
                     addError(Error(sync.dbId(), ERR_ID, ExitCode::BackError, exitCause));
-                }
-            }
-
-            if (userDriveInfoList.contains(drive.driveId())) {
-                const DriveAvailableInfo &userDriveInfo = userDriveInfoList[drive.driveId()];
-                std::string strColor = userDriveInfo.color().name().toStdString();
-                if (strColor != drive.color()) {
-                    drive.setColor(strColor);
-                    updated = true;
                 }
             }
 
@@ -2931,7 +2919,7 @@ ExitInfo AppServer::startSyncs(User &user) {
                 if (const auto exitInfo = tryCreateAndStartVfs(sync, startPostponed); !exitInfo) {
                     LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " : " << exitInfo);
                     mainExitInfo.merge(exitInfo, {ExitCode::SystemError});
-                    if (!(exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::LiteSyncNotAllowed)) {
+                    if (!Utility::isLiteSyncExtError(exitInfo)) {
                         continue;
                     }
                 }
@@ -3517,12 +3505,25 @@ bool AppServer::startClient() {
 
     if (startClient) {
         // Start the client
-        QString pathToExecutable = QCoreApplication::applicationDirPath();
+        QString pathToExecutable;
 
 #if defined(KD_WINDOWS)
-        pathToExecutable += QString("/%1.exe").arg(APPLICATION_CLIENT_EXECUTABLE);
+        if (ParametersCache::instance()->parameters().distributionChannel() ==
+            VersionChannel::Internal) { // The WinUI3 GUI is currently only for internal builds
+            pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENTV4_EXECUTABLE);
+
+            IoError ioError = IoError::Success;
+            bool exists = false;
+            if (!IoHelper::checkIfPathExists(pathToExecutable.toStdString(), exists, ioError) || !exists ||
+                ioError != IoError::Success) {
+                pathToExecutable.clear();
+            }
+        }
+        if (pathToExecutable.isEmpty()) {
+            pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENT_EXECUTABLE);
+        }
 #else
-        pathToExecutable += QString("/%1").arg(APPLICATION_CLIENT_EXECUTABLE);
+        pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1").arg(APPLICATION_CLIENT_EXECUTABLE);
 #endif
 
         QStringList arguments;
@@ -3765,7 +3766,7 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
         if (!vfs) {
             LOG_WARN(_logger,
                      "Error in Vfs::createVfsFromPlugin for mode " << sync.virtualFileMode() << " : " << error.toStdString());
-            return {ExitCode::SystemError, ExitCause::UnableToCreateVfs};
+            return {ExitCode::SystemError, ExitCause::UnableToStartVfs};
         }
         vfsMap[sync.dbId()] = vfs;
         vfsMapIt = vfsMap.find(sync.dbId());
@@ -3787,6 +3788,10 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
             // Check LiteSync ext authorizations
             if (!areMacVfsAuthsOk()) {
                 return {ExitCode::SystemError, ExitCause::LiteSyncNotAllowed};
+            }
+            // Check LiteSync ext process
+            if (!Utility::isLiteSyncExtRunning()) {
+                return {ExitCode::SystemError, ExitCause::LiteSyncExtNotRunning};
             }
         }
 #endif
@@ -3930,7 +3935,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
         bool startPostponed = false;
         if (const auto exitInfo = tryCreateAndStartVfs(sync, startPostponed); !exitInfo) {
             LOG_WARN(_logger, "Error in tryCreateAndStartVfs: " << exitInfo);
-            if (!(exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::LiteSyncNotAllowed)) {
+            if (!Utility::isLiteSyncExtError(exitInfo)) {
                 return exitInfo;
             }
             mainExitInfo = exitInfo;
@@ -4112,7 +4117,8 @@ void AppServer::sendUserUpdated(const UserInfo &userInfo) {
     paramsStream << userInfo;
 
     OldCommServer::instance()->sendSignal(SignalNum::USER_UPDATED, params, id);
-    // _commManager->sendGuiSignal(std::make_shared<SignalUserUpdatedJob>(userInfo)); -> sendUserUpdated should not be static
+    // if(_commManager) _commManager->sendGuiSignal(std::make_shared<SignalUserUpdatedJob>(userInfo)); -> sendUserUpdated should
+    // not be static
 }
 
 void AppServer::sendUserStatusChanged(int userDbId, bool connected, QString connexionError) {
@@ -4383,15 +4389,13 @@ void AppServer::onSendFilesNotifications() {
 void AppServer::onRestartSyncs() {
 #if defined(KD_MACOS)
     if (!noMacVfsSync() && _vfsInstallationDone && !_vfsActivationDone && areMacVfsAuthsOk()) {
-        // Check LiteSync ext authorizations
         LOG_INFO(Log::instance()->getLogger(), "LiteSync extension activation done");
         _vfsActivationDone = true;
 
-        // Clear LiteSyncNotAllowed error
-        ExitCode exitCode = ServerRequests::deleteLiteSyncNotAllowedErrors();
+        // Clear LiteSync errors
+        ExitCode exitCode = ServerRequests::deleteLiteSyncErrors();
         if (exitCode != ExitCode::Ok) {
-            LOG_WARN(Log::instance()->getLogger(),
-                     "Error in ServerRequests::deleteLiteSyncNotAllowedErrors: " << toInt(exitCode));
+            LOG_WARN(Log::instance()->getLogger(), "Error in ServerRequests::deleteLiteSyncErrors: " << toInt(exitCode));
         }
 
         const std::scoped_lock lock(syncPalMapMutex);

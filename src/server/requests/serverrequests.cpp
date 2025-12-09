@@ -706,6 +706,14 @@ ExitCode ServerRequests::addSync(int driveDbId, const SyncPath &localFolderPath,
                                                                             << Path2WStr(localFolderPath) << L" serverFolderPath="
                                                                             << Path2WStr(serverFolderPath) << L" liteSync="
                                                                             << liteSync);
+    // Create the sync folder if it does not exist
+    IoError ioError = IoError::Success;
+    bool res = IoHelper::createDirectory(localFolderPath, true, ioError);
+    if ((!res || ioError != IoError::Success) && ioError != IoError::DirectoryExists) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error creating local sync folder - path=" << Path2WStr(localFolderPath) << L" ioError=" << ioError);
+        return ExitCode::SystemError;
+    }
 
 #ifndef Q_OS_WIN
     Q_UNUSED(showInNavigationPane)
@@ -1240,41 +1248,45 @@ ExitCode ServerRequests::getUserFromSyncDbId(int syncDbId, User &user) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::createDir(int driveDbId, const QString &parentNodeId, const QString &dirName, QString &newNodeId) {
+ExitCode ServerRequests::createDir(const int driveDbId, const NodeId &parentNodeId, const CommString &dirName,
+                                   NodeId &newNodeId) {
     // Get drive data
     std::shared_ptr<CreateDirJob> job = nullptr;
     try {
-        job = std::make_shared<CreateDirJob>(nullptr, driveDbId, QStr2SyncName(dirName), parentNodeId.toStdString(),
-                                             QStr2SyncName(dirName));
+        job = std::make_shared<CreateDirJob>(nullptr, driveDbId, dirName, parentNodeId, dirName);
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in CreateDirJob::CreateDirJob for driveDbId=" << driveDbId << " error=" << e.what());
         return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
-    ExitCode exitCode = job->runSynchronously();
-    if (exitCode != ExitCode::Ok) {
+    if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in CreateDirJob::runSynchronously for driveDbId=" << driveDbId);
-        return exitCode;
+        return exitInfo.code();
     }
 
     // Extract file ID
     if (job->jsonRes()) {
-        Poco::JSON::Object::Ptr dataObj = job->jsonRes()->getObject(dataKey);
-        if (dataObj) {
-            std::string tmp;
-            if (!JsonParserUtility::extractValue(dataObj, idKey, tmp)) {
-                return ExitCode::BackError;
-            }
-            newNodeId = QString::fromStdString(tmp);
+        if (Poco::JSON::Object::Ptr dataObj = job->jsonRes()->getObject(dataKey); dataObj) {
+            NodeId tmp;
+            if (!JsonParserUtility::extractValue(dataObj, idKey, tmp)) return ExitCode::BackError;
+            newNodeId = tmp;
         }
     }
 
-    if (newNodeId.isEmpty()) {
-        return ExitCode::BackError;
-    }
+    if (newNodeId.empty()) return ExitCode::BackError;
 
     return ExitCode::Ok;
+}
+
+ExitCode ServerRequests::createDir(const int driveDbId, const QString &parentNodeId, const QString &dirName, QString &newNodeId) {
+    newNodeId = {};
+    NodeId newNodeIdStr;
+
+    const auto exitCode = createDir(driveDbId, parentNodeId.toStdString(), CommonUtility::qStr2CommString(dirName), newNodeIdStr);
+    newNodeId = QString::fromStdString(newNodeIdStr);
+
+    return exitCode;
 }
 
 ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const NodeId &nodeId, std::string &linkUrl) {
@@ -1624,8 +1636,12 @@ ExitCode ServerRequests::deleteInvalidTokenErrors() {
 }
 
 #ifdef Q_OS_MAC
-ExitCode ServerRequests::deleteLiteSyncNotAllowedErrors() {
+ExitCode ServerRequests::deleteLiteSyncErrors() {
     if (!ParmsDb::instance()->deleteAllErrorsByExitCause(ExitCause::LiteSyncNotAllowed)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteAllErrorsByExitCause");
+        return ExitCode::DbError;
+    }
+    if (!ParmsDb::instance()->deleteAllErrorsByExitCause(ExitCause::LiteSyncExtNotRunning)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteAllErrorsByExitCause");
         return ExitCode::DbError;
     }
@@ -1707,6 +1723,17 @@ ExitInfo ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &upd
         if (account.accountId() != accountId) {
             account.setAccountId(accountId);
             accountUpdated = true;
+        }
+
+        std::string colorHex;
+        if (Poco::JSON::Object::Ptr prefObj = dataObj->getObject(preferencesKey)) {
+            if (!JsonParserUtility::extractValue(prefObj, colorKey, colorHex, false)) {
+                return ExitCode::BackError;
+            }
+            if (drive.color() != colorHex) {
+                drive.setColor(colorHex);
+                updated = true;
+            }
         }
 
         // Non DB attributes
@@ -2038,6 +2065,7 @@ void ServerRequests::userToUserInfo(const User &user, UserInfo &userInfo) {
 void ServerRequests::accountToAccountInfo(const Account &account, AccountInfo &accountInfo) {
     accountInfo.setDbId(account.dbId());
     accountInfo.setUserDbId(account.userDbId());
+    accountInfo.setAccountId(account.accountId());
 }
 
 void ServerRequests::driveToDriveInfo(const Drive &drive, DriveInfo &driveInfo) {

@@ -116,7 +116,7 @@ class Vfs : public QObject {
          * The plugin-specific work is done in startImpl().
          * Possible return values are:
          * - ExitCode::Ok: Everything went fine.
-         * - ExitCode::LiteSyncError, ExitCause::UnableToCreateVfs: The VFS provider could not be started.
+         * - ExitCode::LiteSyncError, ExitCause::UnableToStartVfs: The VFS provider could not be started.
          */
         ExitInfo start(bool &installationDone, bool &activationDone, bool &connectionDone);
 
@@ -428,18 +428,24 @@ class VfsOff : public Vfs {
         ExitInfo setThumbnail(const SyncPath &, const QPixmap &) override { return ExitCode::Ok; }
         ExitInfo setAppExcludeList() override { return ExitCode::Ok; }
         ExitInfo getFetchingAppList(QHash<QString, QString> &) override { return ExitCode::Ok; }
-        void exclude(const SyncPath &) override { /*VfsOff*/ }
+        void exclude(const SyncPath &) override { /*VfsOff*/
+        }
         bool isExcluded(const SyncPath &) override { return false; }
         bool fileStatusChanged(const SyncPath &, const SyncFileStatus) override { return true; }
 
-        void clearFileAttributes(const SyncPath &) override { /*VfsOff*/ }
-        void dehydrate(const SyncPath &) override { /*VfsOff*/ }
-        void hydrate(const SyncPath &) override { /*VfsOff*/ }
-        void cancelHydrate(const SyncPath &) override { /*VfsOff*/ }
+        void clearFileAttributes(const SyncPath &) override { /*VfsOff*/
+        }
+        void dehydrate(const SyncPath &) override { /*VfsOff*/
+        }
+        void hydrate(const SyncPath &) override { /*VfsOff*/
+        }
+        void cancelHydrate(const SyncPath &) override { /*VfsOff*/
+        }
 
     protected:
         ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
-        void stopImpl(bool /*unregister*/) override { /*VfsOff*/ }
+        void stopImpl(bool /*unregister*/) override { /*VfsOff*/
+        }
 
         friend class TestWorkers;
 };

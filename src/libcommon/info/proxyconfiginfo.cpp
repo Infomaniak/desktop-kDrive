@@ -18,16 +18,53 @@
 
 #include "libcommon/info/proxyconfiginfo.h"
 
+#include "libcommon/utility/utility.h"
+
 namespace KDC {
 
-ProxyConfigInfo::ProxyConfigInfo(ProxyType type, const QString &hostName, int port, bool needsAuth, const QString &user,
-                                 const QString &pwd) :
+static const auto proxyConfigInfoType = "type";
+static const auto proxyConfigInfoHostName = "hostName";
+static const auto proxyConfigInfoPort = "port";
+static const auto proxyConfigInfoNeedsAuth = "needsAuth";
+static const auto proxyConfigInfoUser = "user";
+static const auto proxyConfigInfoPwd = "pwd";
+
+ProxyConfigInfo::ProxyConfigInfo(const ProxyType type, QString hostName, const int port, const bool needsAuth, QString user,
+                                 QString pwd) :
     _type(type),
-    _hostName(hostName),
+    _hostName(std::move(hostName)),
     _port(port),
     _needsAuth(needsAuth),
-    _user(user),
-    _pwd(pwd) {}
+    _user(std::move(user)),
+    _pwd(std::move(pwd)) {}
+
+void ProxyConfigInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
+    CommonUtility::writeValueToStruct(dstruct, proxyConfigInfoType, _type);
+    CommonUtility::writeValueToStruct(dstruct, proxyConfigInfoHostName, CommonUtility::qStr2CommString(_hostName));
+    CommonUtility::writeValueToStruct(dstruct, proxyConfigInfoPort, _port);
+    CommonUtility::writeValueToStruct(dstruct, proxyConfigInfoNeedsAuth, _needsAuth);
+    CommonUtility::writeValueToStruct(dstruct, proxyConfigInfoUser, CommonUtility::qStr2CommString(_user));
+    CommonUtility::writeValueToStruct(dstruct, proxyConfigInfoPwd, CommonUtility::qStr2CommString(_pwd));
+}
+
+void ProxyConfigInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
+    CommonUtility::readValueFromStruct(dstruct, proxyConfigInfoType, _type);
+
+    CommString hostNameCommStr;
+    CommonUtility::readValueFromStruct(dstruct, proxyConfigInfoHostName, hostNameCommStr);
+    _hostName = CommonUtility::commString2QStr(hostNameCommStr);
+
+    CommonUtility::readValueFromStruct(dstruct, proxyConfigInfoPort, _port);
+    CommonUtility::readValueFromStruct(dstruct, proxyConfigInfoNeedsAuth, _needsAuth);
+
+    CommString userCommStr;
+    CommonUtility::readValueFromStruct(dstruct, proxyConfigInfoUser, userCommStr);
+    _user = CommonUtility::commString2QStr(userCommStr);
+
+    CommString pwdCommStr;
+    CommonUtility::readValueFromStruct(dstruct, proxyConfigInfoPwd, pwdCommStr);
+    _pwd = CommonUtility::commString2QStr(pwdCommStr);
+}
 
 QDataStream &operator>>(QDataStream &in, ProxyConfigInfo &proxyConfigInfo) {
     in >> proxyConfigInfo._type >> proxyConfigInfo._hostName >> proxyConfigInfo._port >> proxyConfigInfo._needsAuth >>
