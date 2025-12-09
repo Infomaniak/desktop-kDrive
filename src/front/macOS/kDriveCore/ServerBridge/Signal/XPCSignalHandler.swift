@@ -66,6 +66,9 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         case .ACCOUNT_UPDATED:
             IKLogger.xpc.error("[KD] TODO - ACCOUNT_UPDATED not available")
 
+        case .ACCOUNT_REMOVED:
+            await handleAccountRemoved(signal)
+
         case .DRIVE_ADDED, .DRIVE_UPDATED:
             IKLogger.xpc.log("[KD] TODO - drive signal")
 
@@ -94,5 +97,15 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         }
 
         await coherentCache.addAccount(accountInfo.asAccount, userDbId: accountInfo.userDbId)
+    }
+
+    private func handleAccountRemoved(_ signal: Data) async {
+        guard let accountInfoSignal = try? decoder.decode(SignalMessage<AccountRemoveSignal>.self, from: signal),
+              let accountDbId = accountInfoSignal.body?.accountDbId else {
+            IKLogger.xpc.error("[KD] Unable to get accountDbId from signal")
+            return
+        }
+
+        await coherentCache.removeAccount(accountDbId: accountDbId)
     }
 }

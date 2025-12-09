@@ -29,3 +29,7 @@ extension AccountInfoSignal {
         Account(dbId: dbId, userDbId: userDbId, name: "", drives: [:])
     }
 }
+
+struct AccountRemoveSignal: Codable, Sendable {
+    let accountDbId: Int32
+}
