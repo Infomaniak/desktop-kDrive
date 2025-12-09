@@ -27,27 +27,39 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
     let decoder = JSONDecoder()
     @LazyInjectService var coherentCache: CoherentCache
 
+    enum SignalError: Error {
+        case nilData
+        case unableToParseMetadata(_ signal: String)
+        case serverError(_ code: KDC.ExitCode?, _ cause: KDC.ExitCause?)
+        case unableToGetUserFromSignal
+        case unableToGetAccountFromSignal
+        case unableToGetAccountDbIdFromSignal
+        case unsupported(_ num: SignalNum)
+    }
+
     func handleServerSignal(_ signal: Data?) {
         Task {
-            await handleServerSignal(signal)
+            do {
+                try await handleServerSignal(signal)
+            } catch {
+                IKLogger.xpc.error("[KD] signal error :\(error)")
+                // TODO: Sentry
+            }
         }
     }
 
-    private func handleServerSignal(_ signal: Data?) async {
+    private func handleServerSignal(_ signal: Data?) async throws {
         guard let signal else {
-            IKLogger.xpc.error("[KD] recv sendSignal with nil data")
-            return
+            throw SignalError.nilData
         }
 
         guard let signalMetadata = try? decoder.decode(SignalMetadata.self, from: signal) else {
-            let output = String(data: signal, encoding: .utf8)
-            IKLogger.xpc.error("[KD] recv unable to parse signal \(String(describing: output))")
-            return
+            let output = String(data: signal, encoding: .utf8) ?? ""
+            throw SignalError.unableToParseMetadata(output)
         }
 
         guard signalMetadata.code == nil, signalMetadata.cause == nil else {
-            IKLogger.xpc.error("[KD] recv error code:\(String(describing: signalMetadata.code)) cause:\(String(describing: signalMetadata.cause))")
-            return
+            throw SignalError.serverError(signalMetadata.code, signalMetadata.cause)
         }
 
         let signalNum = signalMetadata.num
@@ -55,71 +67,71 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
 
         switch signalNum {
         case .USER_ADDED:
-            await handleUserAdded(signal)
+            try await handleUserAdded(signal)
 
         case .USER_UPDATED:
             IKLogger.xpc.error("[KD] TODO - USER_UPDATED not available")
+            throw SignalError.unsupported(signalNum)
 
         case .ACCOUNT_ADDED:
-            await handleAccountAdded(signal)
+            try await handleAccountAdded(signal)
 
         case .ACCOUNT_UPDATED:
             IKLogger.xpc.error("[KD] TODO - ACCOUNT_UPDATED not available")
+            throw SignalError.unsupported(signalNum)
 
         case .ACCOUNT_REMOVED:
-            await handleAccountRemoved(signal)
+            try await handleAccountRemoved(signal)
 
         case .DRIVE_UPDATED:
-            await handleDriveUpdated(signal)
+            try await handleDriveUpdated(signal)
 
         case .DRIVE_ADDED:
-            IKLogger.xpc.log("[KD] TODO - drive signal")
+            IKLogger.xpc.log("[KD] TODO - DRIVE_ADDED not available")
+            throw SignalError.unsupported(signalNum)
 
         default:
-            IKLogger.xpc.error("[KD] recv error code:\(String(describing: signalMetadata.code)) cause:\(String(describing: signalMetadata.cause))")
+            throw SignalError.unsupported(signalNum)
         }
     }
 
     // MARK: - Specific signal handling
 
-    private func handleUserAdded(_ signal: Data) async {
+    private func handleUserAdded(_ signal: Data) async throws {
         guard let userInfoSignal = try? decoder.decode(SignalMessage<UserInfoSignal>.self, from: signal),
               let user = userInfoSignal.body?.asUser else {
-            IKLogger.xpc.error("[KD] Unable to get user from signal")
-            return
+            throw SignalError.unableToGetUserFromSignal
         }
 
         await coherentCache.updateUser(user)
     }
 
-    private func handleAccountAdded(_ signal: Data) async {
+    private func handleAccountAdded(_ signal: Data) async throws {
         guard let accountInfoSignal = try? decoder.decode(SignalMessage<AccountInfoSignal>.self, from: signal),
               let accountInfo = accountInfoSignal.body else {
-            IKLogger.xpc.error("[KD] Unable to get account from signal")
-            return
+            throw SignalError.unableToGetAccountFromSignal
         }
 
         await coherentCache.addAccount(accountInfo.asAccount, userDbId: accountInfo.userDbId)
     }
 
-    private func handleAccountRemoved(_ signal: Data) async {
+    private func handleAccountRemoved(_ signal: Data) async throws {
         guard let accountInfoSignal = try? decoder.decode(SignalMessage<AccountRemoveSignal>.self, from: signal),
               let accountDbId = accountInfoSignal.body?.accountDbId else {
-            IKLogger.xpc.error("[KD] Unable to get accountDbId from signal")
-            return
+            throw SignalError.unableToGetAccountDbIdFromSignal
         }
 
         await coherentCache.removeAccount(accountDbId: accountDbId)
     }
 
-    private func handleDriveUpdated(_ signal: Data) async {
+    private func handleDriveUpdated(_ signal: Data) async throws {
         guard let driveInfoSignal = try? decoder.decode(SignalMessage<DriveInfoSignal>.self, from: signal),
               let driveInfo = driveInfoSignal.body else {
             IKLogger.xpc.error("[KD] Unable to get driveInfo from signal")
             return
         }
 
-        try? await coherentCache.updateDriveSignal(driveInfo)
+        try await coherentCache.updateDriveSignal(driveInfo)
     }
 }
 
