@@ -48,3 +48,8 @@ extension DriveInfoSignal {
               synchros: [:])
     }
 }
+
+struct DriveRemoveSignal: Codable, Sendable {
+    let driveDbId: Int32
+}
+

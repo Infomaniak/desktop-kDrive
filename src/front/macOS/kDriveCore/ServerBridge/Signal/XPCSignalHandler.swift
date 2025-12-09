@@ -85,12 +85,15 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         case .ACCOUNT_REMOVED:
             try await handleAccountRemoved(signal)
 
-        case .DRIVE_UPDATED:
-            try await handleDriveUpdated(signal)
-
         case .DRIVE_ADDED:
             IKLogger.xpc.log("[KD] TODO - DRIVE_ADDED not available")
             throw SignalError.unsupported(signalNum)
+
+        case .DRIVE_UPDATED:
+            try await handleDriveUpdated(signal)
+
+        case .DRIVE_REMOVED:
+            try await handleDriveRemoved(signal)
 
         default:
             throw SignalError.unsupported(signalNum)
@@ -133,6 +136,15 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         }
 
         try await coherentCache.updateDriveSignal(driveInfo)
+    }
+
+    private func handleDriveRemoved(_ signal: Data) async throws {
+        guard let driveInfoSignal = try? decoder.decode(SignalMessage<DriveRemoveSignal>.self, from: signal),
+              let driveDbId = driveInfoSignal.body?.driveDbId else {
+            throw SignalError.unableToGetDriveDbIdFromSignal
+        }
+
+        try await coherentCache.removeDrive(driveDbId: driveDbId)
     }
 }
 
