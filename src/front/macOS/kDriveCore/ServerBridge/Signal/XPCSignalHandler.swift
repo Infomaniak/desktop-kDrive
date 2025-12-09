@@ -20,20 +20,20 @@ import Foundation
 import InfomaniakDI
 
 public protocol XPCSignalHandlerProtocol {
-    func handleServerSignal(_ msg: Data?)
+    func handleServerSignal(_ signal: Data?)
 }
 
 struct XPCSignalHandler: XPCSignalHandlerProtocol {
     let decoder = JSONDecoder()
 
-    public func handleServerSignal(_ msg: Data?) {
-        guard let msg else {
+    func handleServerSignal(_ signal: Data?) {
+        guard let signal else {
             IKLogger.xpc.error("[KD] recv sendSignal with nil data")
             return
         }
 
-        guard let signalMetadata = try? decoder.decode(SignalMetadata.self, from: msg) else {
-            let output = String(data: msg, encoding: .utf8)
+        guard let signalMetadata = try? decoder.decode(SignalMetadata.self, from: signal) else {
+            let output = String(data: signal, encoding: .utf8)
             IKLogger.xpc.error("[KD] recv unable to parse signal \(String(describing: output))")
             return
         }
@@ -47,26 +47,38 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         IKLogger.xpc.log("[KD] recv signal: \(signalNum)")
 
         switch signalNum {
-        case .USER_UPDATED, .USER_ADDED:
-            guard let userInfoSignal = try? decoder.decode(SignalMessage<UserInfoSignal>.self, from: msg),
-                  let user = userInfoSignal.body?.asUser else {
-                IKLogger.xpc.error("[KD] Unable to get user from signal")
-                return
-            }
+        case .USER_ADDED:
+            handleUserAdded(signal)
 
-            Task {
-                @InjectService var coherentCache: CoherentCache
-                await coherentCache.updateUser(user)
-            }
+        case .USER_UPDATED:
+            IKLogger.xpc.error("[KD] TODO - USER_UPDATED not available")
 
-        case .ACCOUNT_ADDED, .ACCOUNT_UPDATED:
-            IKLogger.xpc.log("[KD] TODO - account signal")
+        case .ACCOUNT_ADDED:
+            handleAccountAdded(signal)
+
+        case .ACCOUNT_UPDATED:
+            IKLogger.xpc.error("[KD] TODO - ACCOUNT_UPDATED not available")
 
         case .DRIVE_ADDED, .DRIVE_UPDATED:
             IKLogger.xpc.log("[KD] TODO - drive signal")
 
         default:
             IKLogger.xpc.error("[KD] recv error code:\(String(describing: signalMetadata.code)) cause:\(String(describing: signalMetadata.cause))")
+        }
+    }
+
+    // MARK: - Specific signal handling
+
+    private func handleUserAdded(_ signal: Data) {
+        guard let userInfoSignal = try? decoder.decode(SignalMessage<UserInfoSignal>.self, from: signal),
+              let user = userInfoSignal.body?.asUser else {
+            IKLogger.xpc.error("[KD] Unable to get user from signal")
+            return
+        }
+
+        Task {
+            @InjectService var coherentCache: CoherentCache
+            await coherentCache.updateUser(user)
         }
     }
 }
