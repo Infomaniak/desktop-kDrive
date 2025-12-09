@@ -25,8 +25,15 @@ public protocol XPCSignalHandlerProtocol {
 
 struct XPCSignalHandler: XPCSignalHandlerProtocol {
     let decoder = JSONDecoder()
+    @LazyInjectService var coherentCache: CoherentCache
 
     func handleServerSignal(_ signal: Data?) {
+        Task {
+            await handleServerSignal(signal)
+        }
+    }
+
+    private func handleServerSignal(_ signal: Data?) async {
         guard let signal else {
             IKLogger.xpc.error("[KD] recv sendSignal with nil data")
             return
@@ -48,13 +55,13 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
 
         switch signalNum {
         case .USER_ADDED:
-            handleUserAdded(signal)
+            await handleUserAdded(signal)
 
         case .USER_UPDATED:
             IKLogger.xpc.error("[KD] TODO - USER_UPDATED not available")
 
         case .ACCOUNT_ADDED:
-            handleAccountAdded(signal)
+            await handleAccountAdded(signal)
 
         case .ACCOUNT_UPDATED:
             IKLogger.xpc.error("[KD] TODO - ACCOUNT_UPDATED not available")
@@ -69,29 +76,23 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
 
     // MARK: - Specific signal handling
 
-    private func handleUserAdded(_ signal: Data) {
+    private func handleUserAdded(_ signal: Data) async {
         guard let userInfoSignal = try? decoder.decode(SignalMessage<UserInfoSignal>.self, from: signal),
               let user = userInfoSignal.body?.asUser else {
             IKLogger.xpc.error("[KD] Unable to get user from signal")
             return
         }
 
-        Task {
-            @InjectService var coherentCache: CoherentCache
-            await coherentCache.updateUser(user)
-        }
+        await coherentCache.updateUser(user)
     }
 
-    private func handleAccountAdded(_ signal: Data) {
+    private func handleAccountAdded(_ signal: Data) async {
         guard let accountInfoSignal = try? decoder.decode(SignalMessage<AccountInfoSignal>.self, from: signal),
               let accountInfo = accountInfoSignal.body else {
             IKLogger.xpc.error("[KD] Unable to get account from signal")
             return
         }
 
-        Task {
-            @InjectService var coherentCache: CoherentCache
-            await coherentCache.addAccount(accountInfo.asAccount, userDbId: accountInfo.userDbId)
-        }
+        await coherentCache.addAccount(accountInfo.asAccount, userDbId: accountInfo.userDbId)
     }
 }
