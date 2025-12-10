@@ -873,4 +873,23 @@ Avant de continuer, assurez-vous que tout vos fichiers sont bien à jour et sync
   <data name="CC_SyncStatusBar_SyncingStatus.Text" xml:space="preserve">
     <value>Synchronisation en cours...</value>
   </data>
+  <data name="CC_ErrorBar.Title" xml:space="preserve">
+    <value>Certains fichiers n’ont pas pu être synchronisés.</value>
+  </data>
+  <data name="CC_ErrorBar_Button.Content" xml:space="preserve">
+    <value>Corriger les erreurs</value>
+  </data>
+  <data name="ERR_FrobiddenChar.Title" xml:space="preserve">
+    <value>Charactère non supporté</value>
+  </data>
+  <data name="ERR_LocalFileAccessError.Title" xml:space="preserve">
+    <value>Fichier inaccessible</value>
+  </data>
+  <data name="ERR_FrobiddenChar.Description" xml:space="preserve">
+    <value>Le nom de ce fichier contient un ou plusieurs charactères non supportés par votre appareil</value>
+  </data>
+  <data name="ERR_LocalFileAccessError.Description" xml:space="preserve">
+    <value>Impossible d’accéder à ce fichier sur votre ordinateur. 
+Vérifiez qu’il existe toujours et que vous disposez des droits pour y accéder.</value>
+  </data>
 </root>

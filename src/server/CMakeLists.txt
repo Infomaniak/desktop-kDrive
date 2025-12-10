@@ -80,6 +80,8 @@ set(server_SRCS
     comm/guijobs/nodesubfoldersjob.h comm/guijobs/nodesubfoldersjob.cpp
     comm/guijobs/nodesubfolders2job.h comm/guijobs/nodesubfolders2job.cpp
     comm/guijobs/nodefoldersizejob.h comm/guijobs/nodefoldersizejob.cpp
+    comm/guijobs/nodeinfojob.h comm/guijobs/nodeinfojob.cpp
+    comm/guijobs/errorinfolistjob.h comm/guijobs/errorinfolistjob.cpp
     comm/guijobs/nodecreatemissingfoldersjob.h comm/guijobs/nodecreatemissingfoldersjob.cpp
     comm/guijobs/parametersinfojob.h comm/guijobs/parametersinfojob.cpp
     comm/guijobs/parametersupdatejob.h comm/guijobs/parametersupdatejob.cpp
@@ -95,6 +97,8 @@ set(server_SRCS
     comm/guijobs/signalsyncprogressinfo.h comm/guijobs/signalsyncprogressinfo.cpp
     comm/guijobs/signalsynccompleteditem.h comm/guijobs/signalsynccompleteditem.cpp
     comm/guijobs/signalsyncupdatedjob.h comm/guijobs/signalsyncupdatedjob.cpp
+    comm/guijobs/signalerroraddedjob.h comm/guijobs/signalerroraddedjob.cpp
+    comm/guijobs/signalerrorremovedjob.h comm/guijobs/signalerrorremovedjob.cpp
     migration/migrationparams.h migration/migrationparams.cpp
     requests/serverrequests.h requests/serverrequests.cpp
     requests/offlinefilessizeestimator.h requests/offlinefilessizeestimator.cpp

@@ -106,7 +106,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     { "isStaff", user.IsStaff }
                 }}
             };
-            EnqueueSignal(SignalNum.UserAdded, userData);
+            EnqueueSignal(SignalNum.USER_ADDED, userData);
 
             return Task.FromResult(new CommData
             {
