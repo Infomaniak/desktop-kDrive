@@ -49,7 +49,7 @@ void TestGuiCommChannel::testActivateLoadInfoJob() {
                          R"( "num": )" +
                          std::to_string(toInt(RequestNum::UTILITY_ACTIVATELOADINFO)) +
                          R"(,)"
-                         R"( "params": { }, "type": )" +
+                         R"( "params": {  }, "type": )" +
                          std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
