@@ -24,6 +24,8 @@ extension NSToolbarItem.Identifier {
 }
 
 final class MainViewController: IKSplitViewController {
+    private let viewModel = MainViewModel()
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupSplitView()
@@ -48,7 +50,7 @@ final class MainViewController: IKSplitViewController {
         splitView.autosaveName = "MainSplitViewAutoSave"
         splitView.isVertical = true
 
-        let sidebarViewController = MainSidebarViewController()
+        let sidebarViewController = MainSidebarViewController(mainViewModel: viewModel)
         sidebarViewController.delegate = self
         let sidebarItem = NSSplitViewItem(sidebarWithViewController: sidebarViewController)
         sidebarItem.minimumThickness = 150
