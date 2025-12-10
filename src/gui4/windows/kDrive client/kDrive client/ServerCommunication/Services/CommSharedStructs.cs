@@ -232,7 +232,6 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public void copyToSettings(ParmsInfo source, Settings target)
         {
             copyProperty(source, target, nameof(source.Language), nameof(target.Language));
-            // copyProperty(source, target, nameof(source.MonoIcons), nameof(target.MonoIcons)); -> Not implemented
             copyProperty(source, target, nameof(source.AutoStart), nameof(target.AutoStart));
             copyProperty(source, target, nameof(source.MoveToTrash), nameof(target.MoveToTrash));
             copyProperty(source, target, nameof(source.NotificationsDisabled), nameof(target.NotificationsDisabled));
@@ -269,6 +268,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
 
             if (target.ProxyConfigInfo is null)
                 target.ProxyConfigInfo = new();
+
             copyToProxyConfigInfo(source.ProxyConfig, target.ProxyConfigInfo);
 
             if (source.LogLevel == Logger.Level.None)

@@ -89,7 +89,7 @@ void ParametersInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
 
 void ParametersInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, parametersInfoInfoLanguage, _language);
-    if (dstruct.contains(parametersInfoInfoMonoIcons)) // Deprecated
+    if (dstruct.contains(parametersInfoInfoMonoIcons)) // Not used by the new clients
         CommonUtility::readValueFromStruct(dstruct, parametersInfoInfoMonoIcons, _monoIcons);
     CommonUtility::readValueFromStruct(dstruct, parametersInfoInfoAutoStart, _autoStart);
     CommonUtility::readValueFromStruct(dstruct, parametersInfoInfoMoveToTrash, _moveToTrash);
@@ -107,7 +107,7 @@ void ParametersInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
 
     CommonUtility::readValueFromStruct(dstruct, parametersInfoShowShortcuts, _showShortcuts);
 
-    if (dstruct.contains(parametersInfoDialogGeometry)) // Deprecated
+    if (dstruct.contains(parametersInfoDialogGeometry)) // Not used by the new clients
     {
         const std::function<DialogGeometry(const Poco::Dynamic::Var &)> dynamicVar2DialogGeometry =
                 [](const Poco::Dynamic::Var &value) {
@@ -128,7 +128,7 @@ void ParametersInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
         CommonUtility::readValueFromStruct(dstruct, parametersInfoDialogGeometry, _dialogGeometry, dynamicVar2DialogGeometry);
     }
 
-    if (dstruct.contains(parametersInfoMaxAllowedCpu)) // Not required
+    if (dstruct.contains(parametersInfoMaxAllowedCpu)) // Not used by the clients
         CommonUtility::readValueFromStruct(dstruct, parametersInfoMaxAllowedCpu, _maxAllowedCpu);
     CommonUtility::readValueFromStruct(dstruct, parametersInfoVersionChannel, _distributionChannel);
 };
