@@ -9,7 +9,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates
     {
         // You can specify multiple values for each property to indicate that the error control
         // can handle multiple types/levels/etc.
-        // If a property left empty is equivalent to None/Unknown
+        // A property left empty is equivalent to None/Unknown
         public ErrorLevel[] Levels { get; set; } = new[] { ErrorLevel.Unknown };
         public NodeType[] NodeTypes { get; set; } = new[] { NodeType.Unknown };
         public CancelType[] CancelTypes { get; set; } = new[] { CancelType.None };

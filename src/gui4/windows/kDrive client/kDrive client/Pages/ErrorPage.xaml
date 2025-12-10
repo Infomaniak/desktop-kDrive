@@ -20,9 +20,10 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
+        <!-- TODO: Localize when implementing UI/UX designs -->
         <TextBlock Grid.Row="0"
                    Text="Erreurs à corriger"
-                   Style="{StaticResource TitleTextBlockStyle}" />
+                   Style="{StaticResource TitleTextBlockStyle}" /> 
 
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
@@ -30,9 +31,10 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <TextBlock Grid.Column="0">
+                <!-- TODO: Localize when implementing UI/UX designs -->
                 <Run Text="Vous avez " />
                 <Run Text="{x:Bind ViewModel.SelectedSync.SyncErrors.Count, Mode=OneWay}" />
-                <Run Text=" erreurs de synchronisation à corriger." />
+                <Run Text=" erreurs de synchronisation à corriger." /> 
             </TextBlock>
         </Grid>
 

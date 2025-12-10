@@ -39,7 +39,7 @@
 
 namespace KDC {
 
-/* #if defined (KD_MACOS)
+#if defined (KD_MACOS)
 CPPUNIT_TEST_SUITE_REGISTRATION(TestVfsMac);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLiteSyncCommClient);
 #endif
@@ -54,7 +54,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestAppServer);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSocketComm);
 #if defined(KD_WINDOWS)
 CPPUNIT_TEST_SUITE_REGISTRATION(TestPipeComm);
-#endi*/
+#endif
 CPPUNIT_TEST_SUITE_REGISTRATION(TestGuiCommChannel);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractGuiJob);
 

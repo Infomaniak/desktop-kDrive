@@ -2909,7 +2909,7 @@ bool ParmsDb::selectAllErrors(int limit, std::vector<Error> &errs) {
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_ERROR_ID));
     LOG_IF_FAIL(queryBindValue(SELECT_ALL_ERROR_ID, 1, limit));
-    bool found;
+    bool found = false;
     for (;;) {
         if (!queryNext(SELECT_ALL_ERROR_ID, found)) {
             LOG_WARN(_logger, "Error getting query result: " << SELECT_ALL_ERROR_ID);
@@ -2919,17 +2919,17 @@ bool ParmsDb::selectAllErrors(int limit, std::vector<Error> &errs) {
             break;
         }
 
-        int64_t dbId;
+        int64_t dbId = 0;
         LOG_IF_FAIL(queryInt64Value(SELECT_ALL_ERROR_ID, 0, dbId));
-        int64_t time;
+        int64_t time = 0;
         LOG_IF_FAIL(queryInt64Value(SELECT_ALL_ERROR_ID, 1, time));
         std::string functionName;
         LOG_IF_FAIL(queryStringValue(SELECT_ALL_ERROR_ID, 2, functionName));
         std::string workerName;
         LOG_IF_FAIL(queryStringValue(SELECT_ALL_ERROR_ID, 3, workerName));
-        int exitCode;
+        int exitCode = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_ID, 4, exitCode));
-        int exitCause;
+        int exitCause = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_ID, 5, exitCause));
         std::string localNodeId;
         LOG_IF_FAIL(queryStringValue(SELECT_ALL_ERROR_ID, 6, localNodeId));
@@ -2949,11 +2949,11 @@ bool ParmsDb::selectAllErrors(int limit, std::vector<Error> &errs) {
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_ID, 13, cancelType));
         SyncName destinationPath;
         LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_ERROR_ID, 14, destinationPath));
-        int intLevel;
+        int intLevel = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_ID, 15, intLevel));
         ErrorLevel level = fromInt<ErrorLevel>(intLevel);
 
-        int syncDbId;
+        int syncDbId = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_ID, 16, syncDbId));
 
 
