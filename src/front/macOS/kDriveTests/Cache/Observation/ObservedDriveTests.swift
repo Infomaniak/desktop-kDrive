@@ -62,6 +62,30 @@ struct ObservedDriveTests_driveDbIdOnly {
     }
 
     @Test(.timeLimit(.minutes(1)))
+    func setDriveResponse() async throws {
+        // GIVEN
+        let cache = ServerCoherentCache()
+        let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
+        #expect(initialUser == nil, "Cache should initially be empty")
+
+        @ObservedDrive(driveDbId: ObservableData.expectedDriveDbId, cacheObservation: cache) var observedDrive: Drive?
+        let receivedValues = $observedDrive.receivedValues
+        #expect(observedDrive == nil, "Drive should initially be nil")
+
+        await cache.addUser(ObservableData.expectedUserWithAccounts)
+
+        // WHEN
+        try await cache.addDriveResponse(ObservableData.expectedDriveResponse)
+
+        // THEN
+        _ = await receivedValues.first(where: { $0 != nil })
+
+        let cachedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
+        #expect(cachedDrive?.driveDbId == ObservableData.expectedDriveDbId, "The cache should have been updated")
+        #expect(observedDrive?.driveDbId == ObservableData.expectedDriveDbId, "The observed object should have been updated")
+    }
+
+    @Test(.timeLimit(.minutes(1)))
     func updateObservedDrive() async throws {
         // GIVEN
         let cache = ServerCoherentCache()
@@ -184,6 +208,33 @@ struct ObservedDriveTests_allIds {
         let cachedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
         #expect(cachedDrive == expectedDrive, "The cache should have been updated")
         #expect(observedDrive == expectedDrive, "The observed object should have been updated")
+    }
+
+    @Test(.timeLimit(.minutes(1)))
+    func setDriveResponse() async throws {
+        // GIVEN
+        let cache = ServerCoherentCache()
+        let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
+        #expect(initialUser == nil, "Cache should initially be empty")
+
+        @ObservedDrive(userDbId: ObservableData.expectedUserDbId,
+                       accountDbId: ObservableData.expectedAccountDbId,
+                       driveDbId: ObservableData.expectedDriveDbId,
+                       cacheObservation: cache) var observedDrive: Drive?
+        let receivedValues = $observedDrive.receivedValues
+        #expect(observedDrive == nil, "Drive should initially be nil")
+
+        await cache.addUser(ObservableData.expectedUserWithAccounts)
+
+        // WHEN
+        try await cache.addDriveResponse(ObservableData.expectedDriveResponse)
+
+        // THEN
+        _ = await receivedValues.first(where: { $0 != nil })
+
+        let cachedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
+        #expect(cachedDrive?.driveDbId == ObservableData.expectedDriveDbId, "The cache should have been updated")
+        #expect(observedDrive?.driveDbId == ObservableData.expectedDriveDbId, "The observed object should have been updated")
     }
 
     @Test(.timeLimit(.minutes(1)))

@@ -38,7 +38,6 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
     public enum CacheError: Error {
         case userNotFound(_ dbId: Int32)
         case accountNotFound(_ dbId: Int32)
-        case accountNotFoundContainingDrive(_ driveDbId: Int32)
         case driveNotFound(_ dbId: Int32)
         case synchroNotFound(_ dbId: Int32)
     }
@@ -167,7 +166,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
             throw CacheError.accountNotFound(accountDbId)
         }
 
-        account.drives[drive.id] = drive
+        account.drives[drive.driveDbId] = drive
         user.accounts[accountDbId] = account
         users[userDbId] = user
 
@@ -187,25 +186,16 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
     }
 
     public func updateDrive(drive: Drive) throws {
-        let userDbId = drive.userDbId
-        let driveDbId = drive.driveDbId
-
-        guard var user = users[userDbId] else {
-            throw CacheError.userNotFound(userDbId)
-        }
-
-        guard var account = user.accounts.values.first(where: { $0.drives[driveDbId] != nil }) else {
-            throw CacheError.accountNotFoundContainingDrive(driveDbId)
+        let accountDbId = drive.accountDbId
+        guard var account = getAccount(accountDbId: accountDbId) else {
+            throw CacheError.accountNotFound(accountDbId)
         }
 
         var indexedDrives = account.drives
-        indexedDrives[driveDbId] = drive
-
+        indexedDrives[drive.driveDbId] = drive
         account.drives = indexedDrives
-        user.accounts[account.dbId] = account
-        users[userDbId] = user
 
-        notifyUpdate()
+        try updateAccount(account)
     }
 
     // MARK: - SYNCHRO
