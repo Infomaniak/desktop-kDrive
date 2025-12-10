@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Cocoa
 import Combine
 import Foundation
 import InfomaniakDI
@@ -38,5 +39,12 @@ final class MainViewModel {
                 guard let newSynchro else { return }
                 self?.currentSynchro = UISynchro(synchro: newSynchro)
             }
+    }
+
+    func openCurrentSyncInFinder() {
+        guard let currentSynchro else { return }
+
+        let synchroURL = URL(fileURLWithPath: currentSynchro.localPath)
+        NSWorkspace.shared.open(synchroURL)
     }
 }

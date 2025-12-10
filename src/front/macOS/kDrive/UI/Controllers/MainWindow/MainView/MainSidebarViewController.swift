@@ -46,6 +46,9 @@ final class MainSidebarViewController: NSViewController {
 
     weak var delegate: NavigableSidebarViewControllerDelegate?
 
+    private let mainViewModel: MainViewModel
+    private let items: [SidebarItem] = [.home, .activity, .storage, .openInFinder]
+
     private lazy var scrollView: NSScrollView = {
         let scrollView = NSScrollView()
         scrollView.translatesAutoresizingMaskIntoConstraints = false
@@ -78,7 +81,15 @@ final class MainSidebarViewController: NSViewController {
         return popUpButton
     }()
 
-    private let items: [SidebarItem] = [.home, .activity, .storage, .openInFinder]
+    init(mainViewModel: MainViewModel) {
+        self.mainViewModel = mainViewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -160,13 +171,7 @@ final class MainSidebarViewController: NSViewController {
     }
 
     private func openSyncInFolder() {
-        // TODO: Connect to real data
-        let synchro = UISynchro(
-            dbId: 42,
-            driveDbId: 42,
-            localPath: "/Users/valentinperignon/kDriveTest/kDrive_2D6252DC-D21F-4402-9F67-D92EDAB11F42"
-        )
-        NSWorkspace.shared.open(URL(fileURLWithPath: synchro.localPath))
+        mainViewModel.openCurrentSyncInFinder()
     }
 }
 
