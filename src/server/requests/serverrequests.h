@@ -77,6 +77,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode getExclusionAppList(bool def, std::vector<ExclusionAppInfo> &list);
         static ExitCode setExclusionAppList(bool def, const QList<ExclusionAppInfo> &list);
         static ExitCode getErrorInfoList(ErrorLevel level, int syncDbId, int limit, QList<ErrorInfo> &list);
+        static ExitInfo getErrorInfoList(int limit, std::vector<ErrorInfo> &list);
         static ExitCode getConflictList(int syncDbId, const std::unordered_set<ConflictType> &filter,
                                         std::vector<Error> &errorLis);
         static ExitCode getConflictErrorInfoList(int driveDbId, const std::unordered_set<ConflictType> &filter,

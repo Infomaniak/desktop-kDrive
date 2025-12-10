@@ -1,8 +1,8 @@
 using Infomaniak.kDrive.Pages.Settings;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using System;
 using System.Collections.Generic;
@@ -19,17 +19,22 @@ namespace Infomaniak.kDrive.CustomControls
            App.ServiceProvider.GetRequiredService<AppModel>();
 
         public Frame Frame { get { return ContentFrame; } }
-
-        private Dictionary<string, Type> _navigationPages = new Dictionary<string, Type>()
+        private Dictionary<string, List<Type>> _navigationItemToPage = new Dictionary<string, List<Type>>()
         {
-            { "HomePage", typeof(Pages.HomePage) },
-            { "ActivityPage", typeof(Pages.ActivityPage) },
-            { "SettingsPage", typeof(Pages.Settings.SettingsPage) },
-            { "StoragePage", typeof(Pages.StoragePage) }
+            { "HomePage", new List<Type>() { typeof(Pages.HomePage) } },
+            { "ActivityPage", new List<Type>() { typeof(Pages.ActivityPage), typeof(Pages.ErrorPage) } },
+            { "SettingsPage", new List<Type>() { typeof(Pages.Settings.SettingsPage), typeof(Pages.Settings.DriveManagementPage) } },
+            { "StoragePage", new List<Type>() { typeof(Pages.StoragePage) } }
         };
+
         public AppNavigationView()
         {
             InitializeComponent();
+            Loaded += AppNavigationView_Loaded;
+        }
+
+        private void AppNavigationView_Loaded(object sender, RoutedEventArgs e)
+        {
             Frame.Navigated += Frame_Navigated;
         }
 
@@ -54,9 +59,9 @@ namespace Infomaniak.kDrive.CustomControls
             if (item != null)
             {
                 // Navigate to the selected page
-                if (_navigationPages.TryGetValue(item.Tag.ToString() ?? "", out Type? pageType))
+                if (_navigationItemToPage.TryGetValue(item.Tag.ToString() ?? "", out List<Type>? pageTypes))
                 {
-                    ContentFrame.Navigate(pageType);
+                    ContentFrame.Navigate(pageTypes.FirstOrDefault());
                     return;
                 }
 
@@ -67,8 +72,9 @@ namespace Infomaniak.kDrive.CustomControls
 
         private void UpdateSelectedItem()
         {
-            string pageName = ((Frame)ContentFrame).Content.GetType().Name;
-            var newSelectedItem = MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item => item.Tag.ToString() == pageName);
+            var newSelectedItem = MenuItems.OfType<NavigationViewItem>().FirstOrDefault(item =>
+                _navigationItemToPage.TryGetValue(item.Tag.ToString() ?? "", out List<Type>? pageTypes) &&
+                pageTypes.Contains(ContentFrame.Content.GetType()));
             if (newSelectedItem is null)
                 newSelectedItem = SettingsItem as NavigationViewItem;
             SelectedItem = newSelectedItem;

@@ -17,6 +17,25 @@
  */
 
 #include "errorinfo.h"
+#include "utility/utility.h"
+
+static const auto outParamsDbId = "dbId";
+static const auto outParamsTime = "time";
+static const auto outParamsLevel = "level";
+static const auto outParamsFunctionName = "functionName";
+static const auto outParamsSyncDbId = "syncDbId";
+static const auto outParamsWorkerName = "workerName";
+static const auto outParamsExitCode = "exitCode";
+static const auto outParamsExitCause = "exitCause";
+static const auto outParamsLocalNodeId = "localNodeId";
+static const auto outParamsRemoteNodeId = "remoteNodeId";
+static const auto outParamsNodeType = "nodeType";
+static const auto outParamsPath = "path";
+static const auto outParamsDestinationPath = "destinationPath";
+static const auto outParamsConflictType = "conflictType";
+static const auto outParamsInconsistencyType = "inconsistencyType";
+static const auto outParamsCancelType = "cancelType";
+static const auto outParamsAutoResolved = "autoResolved";
 
 namespace KDC {
 
@@ -63,6 +82,26 @@ ErrorInfo::ErrorInfo(int64_t dbId, qint64 time, ErrorLevel level, const QString 
     _conflictType(conflictType),
     _inconsistencyType(inconsistencyType),
     _cancelType(cancelType) {}
+
+void ErrorInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
+    CommonUtility::writeValueToStruct(dstruct, outParamsDbId, _dbId);
+    CommonUtility::writeValueToStruct(dstruct, outParamsTime, _time);
+    CommonUtility::writeValueToStruct(dstruct, outParamsLevel, _level);
+    CommonUtility::writeValueToStruct(dstruct, outParamsFunctionName, _functionName.toStdString());
+    CommonUtility::writeValueToStruct(dstruct, outParamsSyncDbId, _syncDbId);
+    CommonUtility::writeValueToStruct(dstruct, outParamsWorkerName, _workerName.toStdString());
+    CommonUtility::writeValueToStruct(dstruct, outParamsExitCode, _exitCode);
+    CommonUtility::writeValueToStruct(dstruct, outParamsExitCause, _exitCause);
+    CommonUtility::writeValueToStruct(dstruct, outParamsLocalNodeId, _localNodeId.toStdString());
+    CommonUtility::writeValueToStruct(dstruct, outParamsRemoteNodeId, _remoteNodeId.toStdString());
+    CommonUtility::writeValueToStruct(dstruct, outParamsNodeType, _nodeType);
+    CommonUtility::writeValueToStruct(dstruct, outParamsPath, _path.toStdString());
+    CommonUtility::writeValueToStruct(dstruct, outParamsDestinationPath, _destinationPath.toStdString());
+    CommonUtility::writeValueToStruct(dstruct, outParamsConflictType, _conflictType);
+    CommonUtility::writeValueToStruct(dstruct, outParamsInconsistencyType, _inconsistencyType);
+    CommonUtility::writeValueToStruct(dstruct, outParamsCancelType, _cancelType);
+    CommonUtility::writeValueToStruct(dstruct, outParamsAutoResolved, _autoResolved);
+}
 
 QDataStream &operator>>(QDataStream &in, ErrorInfo &errorInfo) {
     qint64 dbId = 0;
