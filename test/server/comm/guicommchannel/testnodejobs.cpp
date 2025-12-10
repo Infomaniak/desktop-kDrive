@@ -25,7 +25,6 @@
 #include "comm/guijobs/nodesubfolders2job.h"
 #include "comm/guijobs/nodefoldersizejob.h"
 #include "comm/guijobs/nodecreatemissingfoldersjob.h"
-#include "comm/guijobs/utilityactivateloadinfojob.h"
 
 namespace KDC {
 
