@@ -30,213 +30,226 @@ namespace KDC {
 using namespace testcommhelpers;
 
 void TestGuiCommChannel::testUpdaterChangeChannelJob() {
+    Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr {
-        R"({ "id": 1, "num": )" + std::to_string(toInt(RequestNum::UPDATER_CHANGE_CHANNEL)) + R"(, "params": { "channel": )" +
-                std::to_string(toInt(VersionChannel::Prod)) + R"( } })";
-#else
-    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::UPDATER_CHANGE_CHANNEL)) +
-                        R"(, "params": { "channel": )" + std::to_string(toInt(VersionChannel::Prod)) + R"( } })"};
-    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{}})"};
+    (void) queryObj.set("id", 1);
 #endif
-        const auto answerStr{R"({ "cause": 0, "code": 0, "id": 1, "num": )" +
-                             std::to_string(toInt(RequestNum::UPDATER_CHANGE_CHANNEL)) + R"(, "params": {  }, "type": )" +
-                             std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+    (void) queryObj.set("num", toInt(RequestNum::UPDATER_CHANGE_CHANNEL));
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("channel", toInt(VersionChannel::Prod));
+    (void) queryObj.set("params", queryParamsObj);
 
-        auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-            auto updaterChangeChannelJob = std::dynamic_pointer_cast<UpdaterChangeChannelJob>(job);
-            CPPUNIT_ASSERT(updaterChangeChannelJob);
-            CPPUNIT_ASSERT_EQUAL(VersionChannel::Prod, updaterChangeChannelJob->_channel);
-        };
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+
+    Poco::JSON::Object paramsObj;
+    (void) answerObj.set("params", paramsObj);
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UPDATER_CHANGE_CHANNEL));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+
+    // Job expected answers
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto updaterChangeChannelJob = std::dynamic_pointer_cast<UpdaterChangeChannelJob>(job);
+        CPPUNIT_ASSERT(updaterChangeChannelJob);
+        CPPUNIT_ASSERT_EQUAL(VersionChannel::Prod, updaterChangeChannelJob->_channel);
+    };
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-        testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
-    }
+}
 
 
-    void TestGuiCommChannel::testUpdaterVersionInfoJob() {
-        Poco::JSON::Object queryObj;
+void TestGuiCommChannel::testUpdaterVersionInfoJob() {
+    Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-        (void) queryObj.set("id", 1);
+    (void) queryObj.set("id", 1);
 #endif
-        (void) queryObj.set("num", toInt(RequestNum::UPDATER_VERSION_INFO));
-        Poco::JSON::Object queryParamsObj;
-        (void) queryParamsObj.set("channel", toInt(VersionChannel::Prod));
-        (void) queryObj.set("params", queryParamsObj);
+    (void) queryObj.set("num", toInt(RequestNum::UPDATER_VERSION_INFO));
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("channel", toInt(VersionChannel::Prod));
+    (void) queryObj.set("params", queryParamsObj);
 
-        const auto queryStr = stringifyQueryObj(queryObj);
+    const auto queryStr = stringifyQueryObj(queryObj);
 
-        // Answer
-        Poco::JSON::Object answerObj;
-        (void) answerObj.set("cause", 0);
-        (void) answerObj.set("code", 0);
-        (void) answerObj.set("id", 1);
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
 
-        Poco::JSON::Object versionInfoObj;
-        (void) versionInfoObj.set("channel", toInt(VersionChannel::Prod));
-        (void) versionInfoObj.set("tag", toBase64(Str("3.8.2")));
-        (void) versionInfoObj.set("buildVersion", 3);
-        (void) versionInfoObj.set("buildMinOsVersion", toBase64(Str("10.15")));
-        (void) versionInfoObj.set("downloadUrl", toBase64(Str("https://downloads/kDrive-3.8.2.3.pkg")));
+    Poco::JSON::Object versionInfoObj;
+    (void) versionInfoObj.set("channel", toInt(VersionChannel::Prod));
+    (void) versionInfoObj.set("tag", toBase64(Str("3.8.2")));
+    (void) versionInfoObj.set("buildVersion", 3);
+    (void) versionInfoObj.set("buildMinOsVersion", toBase64(Str("10.15")));
+    (void) versionInfoObj.set("downloadUrl", toBase64(Str("https://downloads/kDrive-3.8.2.3.pkg")));
 
-        Poco::JSON::Object paramsObj;
-        (void) paramsObj.set("versionInfo", versionInfoObj);
-        (void) answerObj.set("params", paramsObj);
+    Poco::JSON::Object paramsObj;
+    (void) paramsObj.set("versionInfo", versionInfoObj);
+    (void) answerObj.set("params", paramsObj);
 
-        Poco::JSON::Object answerObjWithNumAndType = answerObj;
-        (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UPDATER_VERSION_INFO));
-        (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UPDATER_VERSION_INFO));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-        // Job expected answers
-        const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
-        const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
+    // Job expected answers
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
 
-        auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-            auto updaterVersionInfoJob = std::dynamic_pointer_cast<UpdaterVersionInfoJob>(job);
-            CPPUNIT_ASSERT(updaterVersionInfoJob);
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto updaterVersionInfoJob = std::dynamic_pointer_cast<UpdaterVersionInfoJob>(job);
+        CPPUNIT_ASSERT(updaterVersionInfoJob);
 
-            VersionInfo versionInfo;
-            versionInfo.channel = VersionChannel::Prod;
-            versionInfo.tag = "3.8.2";
-            versionInfo.buildVersion = 3;
-            versionInfo.buildMinOsVersion = "10.15";
-            versionInfo.downloadUrl = "https://downloads/kDrive-3.8.2.3.pkg";
+        VersionInfo versionInfo;
+        versionInfo.channel = VersionChannel::Prod;
+        versionInfo.tag = "3.8.2";
+        versionInfo.buildVersion = 3;
+        versionInfo.buildMinOsVersion = "10.15";
+        versionInfo.downloadUrl = "https://downloads/kDrive-3.8.2.3.pkg";
 
-            updaterVersionInfoJob->_versionInfo = versionInfo;
-        };
+        updaterVersionInfoJob->_versionInfo = versionInfo;
+    };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-        testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
-    }
+}
 
-    void TestGuiCommChannel::testUpdaterStateJob() {
-        Poco::JSON::Object queryObj;
+void TestGuiCommChannel::testUpdaterStateJob() {
+    Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-        (void) queryObj.set("id", 1);
+    (void) queryObj.set("id", 1);
 #endif
-        (void) queryObj.set("num", toInt(RequestNum::UPDATER_STATE));
-        Poco::JSON::Object queryParamsObj;
-        (void) queryObj.set("params", queryParamsObj);
+    (void) queryObj.set("num", toInt(RequestNum::UPDATER_STATE));
+    Poco::JSON::Object queryParamsObj;
+    (void) queryObj.set("params", queryParamsObj);
 
-        const auto queryStr = stringifyQueryObj(queryObj);
+    const auto queryStr = stringifyQueryObj(queryObj);
 
-        // Answer
-        Poco::JSON::Object answerObj;
-        (void) answerObj.set("cause", 0);
-        (void) answerObj.set("code", 0);
-        (void) answerObj.set("id", 1);
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
 
-        Poco::JSON::Object paramsObj;
-        (void) paramsObj.set("updateState", toInt(UpdateState::Checking));
-        (void) answerObj.set("params", paramsObj);
+    Poco::JSON::Object paramsObj;
+    (void) paramsObj.set("updateState", toInt(UpdateState::Checking));
+    (void) answerObj.set("params", paramsObj);
 
-        Poco::JSON::Object answerObjWithNumAndType = answerObj;
-        (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UPDATER_STATE));
-        (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UPDATER_STATE));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-        // Job expected answers
-        const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
-        const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
+    // Job expected answers
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
 
-        auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-            auto updaterStateJob = std::dynamic_pointer_cast<UpdaterStateJob>(job);
-            CPPUNIT_ASSERT(updaterStateJob);
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto updaterStateJob = std::dynamic_pointer_cast<UpdaterStateJob>(job);
+        CPPUNIT_ASSERT(updaterStateJob);
 
-            updaterStateJob->_updateState = UpdateState::Checking;
-        };
+        updaterStateJob->_updateState = UpdateState::Checking;
+    };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-        testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
-    }
+}
 
-    void TestGuiCommChannel::testUpdaterStartInstallerJob() {
-        Poco::JSON::Object queryObj;
+void TestGuiCommChannel::testUpdaterStartInstallerJob() {
+    Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-        (void) queryObj.set("id", 1);
+    (void) queryObj.set("id", 1);
 #endif
-        (void) queryObj.set("num", toInt(RequestNum::UPDATER_START_INSTALLER));
-        Poco::JSON::Object queryParamsObj;
-        (void) queryObj.set("params", queryParamsObj);
+    (void) queryObj.set("num", toInt(RequestNum::UPDATER_START_INSTALLER));
+    Poco::JSON::Object queryParamsObj;
+    (void) queryObj.set("params", queryParamsObj);
 
-        const auto queryStr = stringifyQueryObj(queryObj);
+    const auto queryStr = stringifyQueryObj(queryObj);
 
-        // Answer
-        Poco::JSON::Object answerObj;
-        (void) answerObj.set("cause", 0);
-        (void) answerObj.set("code", 0);
-        (void) answerObj.set("id", 1);
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
 
-        Poco::JSON::Object paramsObj;
-        (void) answerObj.set("params", paramsObj);
+    Poco::JSON::Object paramsObj;
+    (void) answerObj.set("params", paramsObj);
 
-        Poco::JSON::Object answerObjWithNumAndType = answerObj;
-        (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UPDATER_START_INSTALLER));
-        (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UPDATER_START_INSTALLER));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-        // Job expected answers
-        const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
-        const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
-
-        auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-            auto updaterStartInstallerJob = std::dynamic_pointer_cast<UpdaterStartInstallerJob>(job);
-            CPPUNIT_ASSERT(updaterStartInstallerJob);
-        };
+    // Job expected answers
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto updaterStartInstallerJob = std::dynamic_pointer_cast<UpdaterStartInstallerJob>(job);
+        CPPUNIT_ASSERT(updaterStartInstallerJob);
+    };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-        testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
-    }
+}
 
-    void TestGuiCommChannel::testUpdaterSkipVersionJob() {
-        Poco::JSON::Object queryObj;
+void TestGuiCommChannel::testUpdaterSkipVersionJob() {
+    Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-        (void) queryObj.set("id", 1);
+    (void) queryObj.set("id", 1);
 #endif
-        (void) queryObj.set("num", toInt(RequestNum::UPDATER_SKIP_VERSION));
-        Poco::JSON::Object queryParamsObj;
-        (void) queryParamsObj.set("skippedVersion", toBase64(Str("3.8.2 (build 1)")));
-        (void) queryObj.set("params", queryParamsObj);
+    (void) queryObj.set("num", toInt(RequestNum::UPDATER_SKIP_VERSION));
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("skippedVersion", toBase64(Str("3.8.2 (build 1)")));
+    (void) queryObj.set("params", queryParamsObj);
 
-        const auto queryStr = stringifyQueryObj(queryObj);
+    const auto queryStr = stringifyQueryObj(queryObj);
 
-        // Answer
-        Poco::JSON::Object answerObj;
-        (void) answerObj.set("cause", 0);
-        (void) answerObj.set("code", 0);
-        (void) answerObj.set("id", 1);
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
 
-        Poco::JSON::Object paramsObj;
-        (void) answerObj.set("params", paramsObj);
+    Poco::JSON::Object paramsObj;
+    (void) answerObj.set("params", paramsObj);
 
-        Poco::JSON::Object answerObjWithNumAndType = answerObj;
-        (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UPDATER_SKIP_VERSION));
-        (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UPDATER_SKIP_VERSION));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-        // Job expected answers
-        const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
-        const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
-
-        auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-            auto updaterSkipVersionJob = std::dynamic_pointer_cast<UpdaterSkipVersionJob>(job);
-            CPPUNIT_ASSERT(updaterSkipVersionJob);
-            CPPUNIT_ASSERT_EQUAL(std::string{"3.8.2 (build 1)"}, updaterSkipVersionJob->_skippedVersion);
-        };
+    // Job expected answers
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto updaterSkipVersionJob = std::dynamic_pointer_cast<UpdaterSkipVersionJob>(job);
+        CPPUNIT_ASSERT(updaterSkipVersionJob);
+        CPPUNIT_ASSERT_EQUAL(std::string{"3.8.2 (build 1)"}, updaterSkipVersionJob->_skippedVersion);
+    };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-        testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
-    }
+}
 
 } // namespace KDC
