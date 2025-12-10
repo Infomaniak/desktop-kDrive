@@ -46,6 +46,7 @@ namespace Infomaniak.kDrive.Pages.Settings
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             await RefreshAvailableDrivesForAllUsers();
+            await ViewModel.Settings.Refresh();
         }
 
         private void CreateAccountButton_Click(object sender, RoutedEventArgs e)

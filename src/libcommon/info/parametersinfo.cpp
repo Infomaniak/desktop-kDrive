@@ -89,7 +89,8 @@ void ParametersInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
 
 void ParametersInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, parametersInfoInfoLanguage, _language);
-    CommonUtility::readValueFromStruct(dstruct, parametersInfoInfoMonoIcons, _monoIcons);
+    if (dstruct.contains(parametersInfoInfoMonoIcons)) // Deprecated
+        CommonUtility::readValueFromStruct(dstruct, parametersInfoInfoMonoIcons, _monoIcons);
     CommonUtility::readValueFromStruct(dstruct, parametersInfoInfoAutoStart, _autoStart);
     CommonUtility::readValueFromStruct(dstruct, parametersInfoInfoMoveToTrash, _moveToTrash);
     CommonUtility::readValueFromStruct(dstruct, parametersInfoNotificationsDisabled, _notificationsDisabled);
@@ -100,28 +101,35 @@ void ParametersInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
 
     CommonUtility::readValueFromStruct(dstruct, parametersInfoProxyConfigInfo, _proxyConfigInfo,
                                        dynamicVar2Struct<ProxyConfigInfo>);
-
+#ifdef KD_MACOS
     CommonUtility::readValueFromStruct(dstruct, parametersInfoDarkTheme, _darkTheme);
+#endif // KD_MACOS
+
     CommonUtility::readValueFromStruct(dstruct, parametersInfoShowShortcuts, _showShortcuts);
 
-    const std::function<DialogGeometry(const Poco::Dynamic::Var &)> dynamicVar2DialogGeometry =
-            [](const Poco::Dynamic::Var &value) {
-                assert(value.isStruct());
-                const auto &structValue = value.extract<Poco::DynamicStruct>();
-                DialogGeometry dialogGeometry;
+    if (dstruct.contains(parametersInfoDialogGeometry)) // Deprecated
+    {
+        const std::function<DialogGeometry(const Poco::Dynamic::Var &)> dynamicVar2DialogGeometry =
+                [](const Poco::Dynamic::Var &value) {
+                    assert(value.isStruct());
+                    const auto &structValue = value.extract<Poco::DynamicStruct>();
+                    DialogGeometry dialogGeometry;
 
-                for (const auto &[key, blob64]: structValue) {
-                    const auto blob64Str = blob64.convert<std::string>();
-                    CommString commStr;
-                    CommonUtility::convertFromBase64Str(blob64Str, commStr);
-                    std::string str = CommonUtility::commString2Str(commStr);
-                    dialogGeometry.insert(QString::fromStdString(key), QByteArray(str.data()));
-                }
-                return dialogGeometry;
-            };
+                    for (const auto &[key, blob64]: structValue) {
+                        const auto blob64Str = blob64.convert<std::string>();
+                        CommString commStr;
+                        CommonUtility::convertFromBase64Str(blob64Str, commStr);
+                        std::string str = CommonUtility::commString2Str(commStr);
+                        dialogGeometry.insert(QString::fromStdString(key), QByteArray(str.data()));
+                    }
+                    return dialogGeometry;
+                };
 
-    CommonUtility::readValueFromStruct(dstruct, parametersInfoDialogGeometry, _dialogGeometry, dynamicVar2DialogGeometry);
-    CommonUtility::readValueFromStruct(dstruct, parametersInfoMaxAllowedCpu, _maxAllowedCpu);
+        CommonUtility::readValueFromStruct(dstruct, parametersInfoDialogGeometry, _dialogGeometry, dynamicVar2DialogGeometry);
+    }
+
+    if (dstruct.contains(parametersInfoMaxAllowedCpu)) // Not required
+        CommonUtility::readValueFromStruct(dstruct, parametersInfoMaxAllowedCpu, _maxAllowedCpu);
     CommonUtility::readValueFromStruct(dstruct, parametersInfoVersionChannel, _distributionChannel);
 };
 
