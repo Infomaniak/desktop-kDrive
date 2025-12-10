@@ -38,10 +38,10 @@
 #include "syncdeletejob.h"
 #include "syncgetpubliclinkurljob.h"
 #include "syncgetprivatelinkurljob.h"
-#include "blacklistednodelistjob.h"
-#include "blacklistednodesetlistjob.h"
 #include "syncsetsupportsvirtualfilesjob.h"
 #include "syncsetrootpinstatejob.h"
+#include "blacklistednodelistjob.h"
+#include "blacklistednodesetlistjob.h"
 #include "nodeinfojob.h"
 #include "nodesubfoldersjob.h"
 #include "nodesubfolders2job.h"
@@ -50,6 +50,8 @@
 #include "blacklistednodesetlistjob.h"
 #include "errorinfolist.h"
 #include "nodecreatemissingfoldersjob.h"
+#include "parametersinfojob.h"
+#include "parametersupdatejob.h"
 
 namespace KDC {
 
@@ -86,7 +88,10 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::BLACKLISTED_NODE_SETLIST, makeShared<BlacklistedNodeSetListJob>},
                 {RequestNum::ERROR_INFOLIST, makeShared<ErrorInfolistJob>},
                 {RequestNum::NODE_INFO, makeShared<NodeInfoJob>},
-                {RequestNum::NODE_CREATEMISSINGFOLDERS, makeShared<NodeCreateMissingFoldersJob>}};
+                {RequestNum::NODE_CREATEMISSINGFOLDERS, makeShared<NodeCreateMissingFoldersJob>},
+                {RequestNum::NODE_CREATEMISSINGFOLDERS, makeShared<NodeCreateMissingFoldersJob>},
+                {RequestNum::PARAMETERS_INFO, makeShared<ParametersInfoJob>},
+                {RequestNum::PARAMETERS_UPDATE, makeShared<ParametersUpdateJob>}};
 }
 
 std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::shared_ptr<CommManager> commManager,

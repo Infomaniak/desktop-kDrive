@@ -3035,7 +3035,9 @@ bool ParmsDb::selectConflicts(int syncDbId, ConflictType filter, std::vector<Err
 
     LOG_IF_FAIL(queryResetAndClearBindings(requestId));
     LOG_IF_FAIL(queryBindValue(requestId, 1, syncDbId));
-    LOG_IF_FAIL(queryBindValue(requestId, 2, std::to_string(toInt(filter))));
+    if (filter != ConflictType::None) {
+        LOG_IF_FAIL(queryBindValue(requestId, 2, std::to_string(toInt(filter))));
+    }
 
     bool found = false;
     for (;;) {

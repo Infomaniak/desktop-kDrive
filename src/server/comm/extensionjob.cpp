@@ -96,26 +96,27 @@ ExtensionJob::ExtensionJob(std::shared_ptr<CommManager> commManager, const CommS
     _commManager(commManager),
     _commandLineStr(commandLineStr),
     _channels(channels) {
-    _commands = {{"REGISTER_PATH", std::bind_front(&ExtensionJob::commandRegisterFolder, this)},
-                 {"UNREGISTER_PATH", std::bind_front(&ExtensionJob::commandUnregisterFolder, this)},
-                 {"GET_STRINGS", std::bind_front(&ExtensionJob::commandGetStrings, this)},
-                 {"STATUS", std::bind_front(&ExtensionJob::commandForceStatus, this)},
-                 {"GET_MENU_ITEMS", std::bind_front(&ExtensionJob::commandGetMenuItems, this)},
-                 {"COPY_PUBLIC_LINK", std::bind_front(&ExtensionJob::commandCopyPublicLink, this)},
-                 {"COPY_PRIVATE_LINK", std::bind_front(&ExtensionJob::commandCopyPrivateLink, this)},
-                 {"OPEN_PRIVATE_LINK", std::bind_front(&ExtensionJob::commandOpenPrivateLink, this)},
-                 {"MAKE_AVAILABLE_LOCALLY_DIRECT", std::bind_front(&ExtensionJob::commandMakeAvailableLocallyDirect, this)},
-                 {"RETRIEVE_FILE_STATUS", std::bind_front(&ExtensionJob::commandRetrieveFileStatus, this)},
+    _commands = {
+        {"REGISTER_PATH", std::bind_front(&ExtensionJob::commandRegisterFolder, this)},
+        {"UNREGISTER_PATH", std::bind_front(&ExtensionJob::commandUnregisterFolder, this)},
+        {"GET_STRINGS", std::bind_front(&ExtensionJob::commandGetStrings, this)},
+        {"STATUS", std::bind_front(&ExtensionJob::commandForceStatus, this)},
+        {"GET_MENU_ITEMS", std::bind_front(&ExtensionJob::commandGetMenuItems, this)},
+        {"COPY_PUBLIC_LINK", std::bind_front(&ExtensionJob::commandCopyPublicLink, this)},
+        {"COPY_PRIVATE_LINK", std::bind_front(&ExtensionJob::commandCopyPrivateLink, this)},
+        {"OPEN_PRIVATE_LINK", std::bind_front(&ExtensionJob::commandOpenPrivateLink, this)},
+        {"MAKE_AVAILABLE_LOCALLY_DIRECT", std::bind_front(&ExtensionJob::commandMakeAvailableLocallyDirect, this)},
+        {"RETRIEVE_FILE_STATUS", std::bind_front(&ExtensionJob::commandRetrieveFileStatus, this)},
 #if defined(KD_WINDOWS)
-                 {"GET_ALL_MENU_ITEMS", std::bind_front(&ExtensionJob::commandGetAllMenuItems, this)},
-                 {"GET_THUMBNAIL", std::bind_front(&ExtensionJob::commandGetThumbnail, this)},
+        {"GET_ALL_MENU_ITEMS", std::bind_front(&ExtensionJob::commandGetAllMenuItems, this)},
+        {"GET_THUMBNAIL", std::bind_front(&ExtensionJob::commandGetThumbnail, this)},
 #endif
 #if defined(KD_MACOS)
-                 {"RETRIEVE_FOLDER_STATUS", std::bind_front(&ExtensionJob::commandRetrieveFolderStatus, this)},
-                 {"MAKE_ONLINE_ONLY_DIRECT", std::bind_front(&ExtensionJob::commandMakeOnlineOnlyDirect, this)},
-                 {"CANCEL_DEHYDRATION_DIRECT", std::bind_front(&ExtensionJob::commandCancelDehydrationDirect, this)},
-                 {"CANCEL_HYDRATION_DIRECT", std::bind_front(&ExtensionJob::commandCancelHydrationDirect, this)},
-                 {"SET_THUMBNAIL", std::bind_front(&ExtensionJob::commandSetThumbnail, this)}
+        {"RETRIEVE_FOLDER_STATUS", std::bind_front(&ExtensionJob::commandRetrieveFolderStatus, this)},
+        {"MAKE_ONLINE_ONLY_DIRECT", std::bind_front(&ExtensionJob::commandMakeOnlineOnlyDirect, this)},
+        {"CANCEL_DEHYDRATION_DIRECT", std::bind_front(&ExtensionJob::commandCancelDehydrationDirect, this)},
+        {"CANCEL_HYDRATION_DIRECT", std::bind_front(&ExtensionJob::commandCancelHydrationDirect, this)},
+        {"SET_THUMBNAIL", std::bind_front(&ExtensionJob::commandSetThumbnail, this)}
 #endif
     };
 }

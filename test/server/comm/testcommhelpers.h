@@ -16,28 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "libcommon/utility/types.h"
+#include <Poco/JSON/Object.h>
 
-#include "server/comm/guijobs/abstractguijob.h"
-namespace KDC {
+namespace KDC::testcommhelpers {
+std::string toBase64(const CommString &input);
 
-class BlacklistedNodeListJob : public AbstractGuiJob {
-    public:
-        BlacklistedNodeListJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                               std::shared_ptr<AbstractCommChannel> channel);
-
-    private:
-        // Input parameters
-        int _syncDbId = 0;
-
-        // Output parameters
-        std::vector<NodeId> _nodeIdList;
-
-        ExitInfo deserializeInputParms() override;
-        ExitInfo serializeOutputParms() override;
-        ExitInfo process() override;
-
-        friend class TestGuiCommChannel;
-};
-
-} // namespace KDC
+CommString beautifulString(const Poco::JSON::Object &obj);
+CommString stringifyQueryObj(const Poco::JSON::Object &obj);
+CommString stringifyAnswerObj(const Poco::JSON::Object &obj);
+CommString stringifyCbkAnswerObj(const Poco::JSON::Object &obj);
+} // namespace KDC::testcommhelpers
