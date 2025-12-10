@@ -2559,11 +2559,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 
@@ -3476,12 +3476,12 @@ bool AppServer::startClient() {
 #if defined(KD_WINDOWS)
         if (ParametersCache::instance()->parameters().distributionChannel() ==
             VersionChannel::Internal) { // The WinUI3 GUI is currently only for internal builds
-            pathToExecutable =
-                    QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENTV4_EXECUTABLE);
+            pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENTV4_EXECUTABLE);
 
             IoError ioError = IoError::Success;
             bool exists = false;
-            if (!IoHelper::checkIfPathExists(pathToExecutable.toStdString(), exists, ioError) || !exists || ioError != IoError::Success) {
+            if (!IoHelper::checkIfPathExists(pathToExecutable.toStdString(), exists, ioError) || !exists ||
+                ioError != IoError::Success) {
                 pathToExecutable.clear();
             }
         }
@@ -3656,11 +3656,6 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
 
     if (!exists) {
         LOGW_WARN(_logger, L"Sync localpath " << Utility::formatSyncPath(sync.localPath()) << L" doesn't exist.");
-        auto tmpSync(sync);
-        tmpSync.setPaused(true);
-        if (bool found = false; !ParmsDb::instance()->updateSync(tmpSync, found) || !found) {
-            LOG_WARN(_logger, "Failed to update sync status!");
-        }
         return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
     }
 
@@ -4305,8 +4300,14 @@ void AppServer::onUpdateSyncsProgress() {
         const std::scoped_lock lock(syncPalMapMutex);
         if (const auto syncPalMapIt = syncPalMap.find(sync.dbId()); syncPalMapIt == syncPalMap.end()) {
             // No SyncPal for this sync
-            sendSyncProgressInfo(sync.dbId(), sync.paused() ? SyncStatus::Paused : SyncStatus::Error, SyncStep::None,
-                                 SyncProgress());
+
+            // Check that the sync folder exists.
+            bool exists = false;
+            if (auto ioError = IoError::Unknown; !IoHelper::checkIfPathExists(sync.localPath(), exists, ioError)) {
+                LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists " << Utility::formatIoError(sync.localPath(), ioError));
+            }
+            // Show the sync paused if the local path does not exist. It is most likely that an external drive is not plugged in.
+            sendSyncProgressInfo(sync.dbId(), exists ? SyncStatus::Error : SyncStatus::Paused, SyncStep::None, SyncProgress());
         } else {
             if (!syncPalMapIt->second) {
                 assert(false);
