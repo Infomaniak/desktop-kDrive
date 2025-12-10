@@ -28,6 +28,6 @@ public struct AccountInfoResponse: Codable, Sendable {
 
 extension AccountInfoResponse {
     var asAccount: Account {
-        Account(dbId: dbId, name: "", drives: [:])
+        Account(dbId: dbId, userDbId: userDbId, name: "", drives: [:])
     }
 }

@@ -22,104 +22,109 @@ import InfomaniakDI
 
 @MainActor
 @propertyWrapper
-public final class ObservedAccount: ObservableObject {
-    @Published public private(set) var wrappedValue: Account?
+public final class ObservedDrive: ObservableObject {
+    @Published public private(set) var wrappedValue: Drive?
     private var cancellable: AnyCancellable?
 
     public init(
         userDbId: Int32,
         accountDbId: Int32,
+        driveDbId: Int32,
         cacheObservation: CoherentCacheObservable? = nil
     ) {
         let cacheObservation =
             cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
 
         cancellable = cacheObservation.usersPublisher
-            .accountPublisher(userDbId: userDbId, accountDbId: accountDbId)
+            .drivePublisher(
+                userDbId: userDbId,
+                accountDbId: accountDbId,
+                driveDbId: driveDbId
+            )
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] account in
-                self?.wrappedValue = account
+            .sink { [weak self] drive in
+                self?.wrappedValue = drive
             }
     }
 
     public init(
-        accountDbId: Int32,
+        driveDbId: Int32,
         cacheObservation: CoherentCacheObservable? = nil
     ) {
         let cacheObservation =
             cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
 
         cancellable = cacheObservation.usersPublisher
-            .accountPublisher(accountDbId: accountDbId)
+            .drivePublisher(driveDbId: driveDbId)
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] account in
-                self?.wrappedValue = account
+            .sink { [weak self] drive in
+                self?.wrappedValue = drive
             }
     }
 
     deinit { cancellable?.cancel() }
 
-    public var projectedValue: ObservedAccount { self }
+    public var projectedValue: ObservedDrive { self }
 }
 
 public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
-    func accountEventPublisher(
+    func driveEventPublisher(
         userDbId: Int32,
-        accountDbId: Int32
-    ) -> AnyPublisher<ObservationEvent<Account>, Never> {
-        map { usersDict -> Account? in
-            usersDict[userDbId]?.accounts[accountDbId]
+        accountDbId: Int32,
+        driveDbId: Int32
+    ) -> AnyPublisher<ObservationEvent<Drive>, Never> {
+        map { usersDict -> Drive? in
+            usersDict[userDbId]?
+                .accounts[accountDbId]?
+                .drives[driveDbId]
         }
-        .map { account in
-            account.map(ObservationEvent.update) ?? .removed
+        .map { drive -> ObservationEvent<Drive> in
+            if let drive { return .update(drive) }
+            return .removed
         }
         .removeDuplicates()
         .eraseToAnyPublisher()
     }
 
-    func accountEventPublisher(
-        accountDbId: Int32
-    ) -> AnyPublisher<ObservationEvent<Account>, Never> {
-        map { usersDict -> Account? in
+    func driveEventPublisher(driveDbId: Int32) -> AnyPublisher<ObservationEvent<Drive>, Never> {
+        map { usersDict -> Drive? in
             for user in usersDict.values {
-                if let account = user.accounts[accountDbId] {
-                    return account
+                for account in user.accounts.values {
+                    if let drive = account.drives[driveDbId] {
+                        return drive
+                    }
                 }
             }
             return nil
         }
-        .map { account in
-            account.map(ObservationEvent.update) ?? .removed
+        .map { drive -> ObservationEvent<Drive> in
+            drive.map(ObservationEvent.update) ?? .removed
         }
         .removeDuplicates()
         .eraseToAnyPublisher()
     }
 
-    func accountPublisher(
+    func drivePublisher(
         userDbId: Int32,
-        accountDbId: Int32
-    ) -> AnyPublisher<Account?, Never> {
-        accountEventPublisher(
-            userDbId: userDbId,
-            accountDbId: accountDbId
-        )
-        .map { event -> Account? in
-            switch event {
-            case let .update(account): return account
-            case .removed: return nil
+        accountDbId: Int32,
+        driveDbId: Int32
+    ) -> AnyPublisher<Drive?, Never> {
+        driveEventPublisher(userDbId: userDbId, accountDbId: accountDbId, driveDbId: driveDbId)
+            .map { event -> Drive? in
+                switch event {
+                case let .update(drive): return drive
+                case .removed: return nil
+                }
             }
-        }
-        .removeDuplicates()
-        .eraseToAnyPublisher()
+            .removeDuplicates()
+            .eraseToAnyPublisher()
     }
 
-    func accountPublisher(
-        accountDbId: Int32
-    ) -> AnyPublisher<Account?, Never> {
-        accountEventPublisher(accountDbId: accountDbId)
-            .map { event -> Account? in
+    func drivePublisher(driveDbId: Int32) -> AnyPublisher<Drive?, Never> {
+        driveEventPublisher(driveDbId: driveDbId)
+            .map { event -> Drive? in
                 switch event {
-                case let .update(account): return account
+                case let .update(drive): return drive
                 case .removed: return nil
                 }
             }
