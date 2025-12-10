@@ -101,7 +101,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             {
                 if (_previousSyncPaths.TryGetValue(sync, out string? previousPath) && previousPath != sync.LocalPath)
                 {
-                    Logger.Log(Logger.Level.Info, $"Reverting sync path for drive '{sync.Drive.Name}' from '{sync.LocalPath}' to '{previousPath}'");
+                    Logger.Log(Logger.Level.Info, $"Reverting sync path for drive '{sync.Drive?.Name ?? "unknown" }' from '{sync.LocalPath}' to '{previousPath}'");
                     sync.LocalPath = previousPath;
                 }
             }
@@ -157,11 +157,11 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     return;
                 }
 
-                if (senderButton?.DataContext is NewSync newSync && _onBoardingViewModel != null)
+                if (_onBoardingViewModel is not null && senderButton?.DataContext is NewSync newSync)
                 {
                     newSync.LocalPath = folder.Path;
                     newSync.SyncType = Utility.SupportOnlineSync(folder.Path) ? SyncType.Online : SyncType.Offline;
-                    Logger.Log(Logger.Level.Info, $"Sync path for drive '{newSync.Drive.Name}' updated to '{newSync.LocalPath}' with sync type '{newSync.SyncType}'");
+                    Logger.Log(Logger.Level.Info, $"Sync path for drive '{newSync?.Drive.Name ?? "unknown"}' updated to '{newSync.LocalPath}' with sync type '{newSync.SyncType}'");
                     RefreshAdvancedSettingsConfirmButtonIsEnabled();
                 }
                 else
@@ -217,10 +217,8 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
         protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container)
         {
-            if (item is null || item is not IDrive)
+            if (item is not IDrive drive)
                 return base.SelectTemplateCore(item, container);
-
-            IDrive drive = item as IDrive;
 
             User? user = App.ServiceProvider.GetRequiredService<AppModel>().Users.FirstOrDefault(u => u.DbId == drive.UserDbId);
             if (user is null)

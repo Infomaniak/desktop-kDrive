@@ -19,7 +19,7 @@
                 <ScrollViewer MaxHeight="240"
                               HorizontalScrollBarVisibility="Auto"
                               VerticalScrollBarVisibility="Auto">
-                    <TextBlock Text="{x:Bind DetailsText, Mode=OneWay}"
+                    <TextBlock x:Name="DetailsTextBlock"
                                FontFamily="Consolas"
                                TextWrapping="NoWrap" />
                 </ScrollViewer>

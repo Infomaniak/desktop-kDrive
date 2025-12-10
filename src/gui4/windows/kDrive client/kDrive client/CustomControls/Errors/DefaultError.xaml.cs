@@ -9,8 +9,6 @@ namespace Infomaniak.kDrive.CustomControls.Errors
     {
         private Error _error;
 
-        public string DetailsText { get; private set; } = string.Empty;
-
         public DefaultError(Error error)
         {
             this.InitializeComponent();
@@ -31,7 +29,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors
 
                 void AddIfNotEmpty(string label, object value)
                 {
-                    if (value == null)
+                    if (value is null)
                         return;
 
                     string text = value.ToString();
@@ -54,11 +52,11 @@ namespace Infomaniak.kDrive.CustomControls.Errors
                 AddIfNotEmpty("Cancel Type:", _error.CancelType);
                 AddIfNotEmpty("Auto-resolved:", _error.AutoResolved);
 
-                DetailsText = string.Join(Environment.NewLine, lines);
+                DetailsTextBlock.Text = string.Join(Environment.NewLine, lines);
             }
             else
             {
-                DetailsText = "An unexpected error has occurred.";
+                DetailsTextBlock.Text = "An unexpected error has occurred.";
             }
         }
     }

@@ -143,7 +143,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     ["type"] = (int)CommMessageType.Request,
                     ["id"] = requestId,
                     ["num"] = (int)requestNum,
-                    ["params"] = parameters?.Deserialize<JsonNode>()
+                    ["params"] = parameters.Deserialize<JsonNode>()
                 };
 
                 // Convert to JSON
