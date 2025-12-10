@@ -39,7 +39,7 @@ void TestGuiCommChannel::testActivateLoadInfoJob() {
                         R"( "params": { } })"};
 
     // Callback expected answer
-    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{})"};
+    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{}})"};
 #endif
 
     // Job expected answer
