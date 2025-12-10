@@ -161,8 +161,12 @@ final class MainSidebarViewController: NSViewController {
 
     private func openSyncInFolder() {
         // TODO: Connect to real data
-        let sync = UISynchro(id: 42, localPath: "/Users/valentinperignon/kDriveTest/kDrive_2D6252DC-D21F-4402-9F67-D92EDAB11F42")
-        NSWorkspace.shared.open(URL(fileURLWithPath: sync.localPath))
+        let synchro = UISynchro(
+            dbId: 42,
+            driveDbId: 42,
+            localPath: "/Users/valentinperignon/kDriveTest/kDrive_2D6252DC-D21F-4402-9F67-D92EDAB11F42"
+        )
+        NSWorkspace.shared.open(URL(fileURLWithPath: synchro.localPath))
     }
 }
 
