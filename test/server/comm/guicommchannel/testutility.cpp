@@ -53,7 +53,7 @@ void TestGuiCommChannel::testUtilityCheckCommStatusJob() {
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-        auto utilityCheckCommStatusJob = std::dynamic_pointer_cast<UtilityCheckCommStatusJob>(job);
+        const auto utilityCheckCommStatusJob = std::dynamic_pointer_cast<UtilityCheckCommStatusJob>(job);
         CPPUNIT_ASSERT(utilityCheckCommStatusJob);
     };
 
