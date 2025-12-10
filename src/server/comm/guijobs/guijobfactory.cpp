@@ -46,10 +46,8 @@
 #include "nodesubfoldersjob.h"
 #include "nodesubfolders2job.h"
 #include "nodefoldersizejob.h"
-#include "blacklistednodelistjob.h"
-#include "blacklistednodesetlistjob.h"
-#include "errorinfolistjob.h"
 #include "nodecreatemissingfoldersjob.h"
+#include "errorinfolistjob.h"
 #if defined(KD_MACOS)
 #include "exclappgetlistjob.h"
 #include "exclappsetlistjob.h"
@@ -91,6 +89,7 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::NODE_SUBFOLDERS2, makeShared<NodeSubFolders2Job>},
                 {RequestNum::NODE_FOLDER_SIZE, makeShared<NodeFolderSizeJob>},
                 {RequestNum::NODE_CREATEMISSINGFOLDERS, makeShared<NodeCreateMissingFoldersJob>},
+                {RequestNum::ERROR_INFOLIST, makeShared<ErrorInfolistJob>},
 #if defined(KD_MACOS)
                 {RequestNum::EXCLAPP_GETLIST, makeShared<ExclAppGetListJob>},
                 {RequestNum::EXCLAPP_SETLIST, makeShared<ExclAppSetListJob>},
