@@ -48,7 +48,7 @@
 #include "nodefoldersizejob.h"
 #include "blacklistednodelistjob.h"
 #include "blacklistednodesetlistjob.h"
-#include "errorinfolist.h"
+#include "errorinfolistjob.h"
 #include "nodecreatemissingfoldersjob.h"
 #include "parametersinfojob.h"
 #include "parametersupdatejob.h"

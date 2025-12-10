@@ -25,7 +25,6 @@
 #include "comm/guijobs/accountinfolistjob.h"
 #include "comm/guijobs/driveinfolistjob.h"
 #include "comm/guijobs/drivesearchjob.h"
-#include "comm/guijobs/errorinfolist.h"
 
 #include "libcommon/comm.h"
 #include "log/log.h"
@@ -671,92 +670,8 @@ void TestGuiCommChannel::testDriveSearchJob() {
 #endif
 }
 
-void TestGuiCommChannel::testErrorInfoListJob() {
-    Poco::JSON::Object queryObj;
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    (void) queryObj.set("id", 1);
-#endif
-    (void) queryObj.set("num", toInt(RequestNum::ERROR_INFOLIST));
-
-    Poco::JSON::Object errorInfoObj;
-    (void) errorInfoObj.set("dbId", 1);
-    (void) errorInfoObj.set("time", 1000);
-    (void) errorInfoObj.set("level", toInt(ErrorLevel::SyncPal));
-    (void) errorInfoObj.set("functionName", "func1");
-    (void) errorInfoObj.set("syncDbId", 10);
-    (void) errorInfoObj.set("workerName", "worker1");
-    (void) errorInfoObj.set("exitCause", toInt(ExitCode::DataError));
-    (void) errorInfoObj.set("exitCause", toInt(ExitCause::DbEntryNotFound));
-    (void) errorInfoObj.set("localNodeId", "local1");
-    (void) errorInfoObj.set("remoteNodeId", "remote1");
-    (void) errorInfoObj.set("nodeType", toInt(NodeType::Unknown));
-    (void) errorInfoObj.set("path", "path1");
-    (void) errorInfoObj.set("destinationPath", toInt(ConflictType::None));
-    (void) errorInfoObj.set("conflictType", toInt(InconsistencyType::None));
-    (void) errorInfoObj.set("inconsistencyType", toInt(CancelType::None));
-    (void) errorInfoObj.set("cancelType", "");
-    (void) errorInfoObj.set("autoResolved", false);
-
-    Poco::JSON::Array errorInfoListArr;
-    (void) errorInfoListArr.add(errorInfoObj);
-
-    Poco::JSON::Object queryParamsObj;
-    (void) queryParamsObj.set("errorInfoList", errorInfoListArr);
-    (void) queryObj.set("params", queryParamsObj);
-
-    const auto queryStr = testcommhelpers::stringifyQueryObj(queryObj);
-
-    // Answer
-    Poco::JSON::Object answerObj;
-    (void) answerObj.set("cause", 0);
-    (void) answerObj.set("code", 0);
-    (void) answerObj.set("id", 1);
-
-    Poco::JSON::Object paramsObj;
-    (void) answerObj.set("params", paramsObj);
-
-    Poco::JSON::Object answerObjWithNumAndType = answerObj;
-    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::ERROR_INFOLIST));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
-
-    // Job expected answers
-    const auto answerStr = testcommhelpers::stringifyAnswerObj(answerObjWithNumAndType);
-    const auto cbkAnswerStr = testcommhelpers::stringifyCbkAnswerObj(answerObj);
-
-    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-        auto errorJob = std::dynamic_pointer_cast<ErrorInfolistJob>(job);
-        ErrorInfo e1;
-        e1.setDbId(1);
-        e1.setTime(1000);
-        e1.setLevel(ErrorLevel::SyncPal);
-        e1.setFunctionName("func1");
-        e1.setSyncDbId(10);
-        e1.setWorkerName("worker1");
-        e1.setExitCode(ExitCode::DataError);
-        e1.setExitCause(ExitCause::DbEntryNotFound);
-        e1.setLocalNodeId("local1");
-        e1.setRemoteNodeId("remote1");
-        e1.setNodeType(NodeType::Unknown);
-        e1.setPath("path1");
-        e1.setConflictType(ConflictType::None);
-        e1.setInconsistencyType(InconsistencyType::None);
-        e1.setCancelType(CancelType::None);
-        e1.setDestinationPath("");
-        e1.setAutoResolved(false);
-        errorJob->_errorInfoList = {e1};
-    };
-
-    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
-}
-
 void TestGuiCommChannel::testGenericJob(const CommString &query, const CommString &answer, const CommString &cbkAnswer,
                                         const std::function<void(std::shared_ptr<AbstractGuiJob>)> &processFct) {
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    assert(cbkAnswer.empty());
-#else
-    assert(!cbkAnswer.empty());
-#endif
-
     auto test = [&](const CommString &testQuery, std::shared_ptr<AbstractCommChannel> testChannel) {
         //  Deserialize generic parameters
         int requestId = 0;

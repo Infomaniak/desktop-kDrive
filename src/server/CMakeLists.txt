@@ -81,7 +81,7 @@ set(server_SRCS
     comm/guijobs/nodesubfolders2job.h comm/guijobs/nodesubfolders2job.cpp
     comm/guijobs/nodefoldersizejob.h comm/guijobs/nodefoldersizejob.cpp
     comm/guijobs/nodeinfojob.h comm/guijobs/nodeinfojob.cpp
-    comm/guijobs/errorinfolist.h comm/guijobs/errorinfolist.cpp
+    comm/guijobs/errorinfolistjob.h comm/guijobs/errorinfolistjob.cpp
     comm/guijobs/nodecreatemissingfoldersjob.h comm/guijobs/nodecreatemissingfoldersjob.cpp
     comm/guijobs/parametersinfojob.h comm/guijobs/parametersinfojob.cpp
     comm/guijobs/parametersupdatejob.h comm/guijobs/parametersupdatejob.cpp

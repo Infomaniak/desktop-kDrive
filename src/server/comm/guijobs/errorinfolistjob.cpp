@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "errorinfolist.h"
+#include "errorinfolistjob.h"
 #include "appserver.h"
 #include "requests/serverrequests.h"
 #include "libcommon/utility/utility.h"
