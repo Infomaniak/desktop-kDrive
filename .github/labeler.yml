@@ -10,4 +10,4 @@ macOS UI:
 
 GUI job:
  - changed-files:
-   - any-glob-to-any-file: 'src/server/comm/guijobs**'
+   - any-glob-to-any-file: 'src/server/comm/guijobs/**'
