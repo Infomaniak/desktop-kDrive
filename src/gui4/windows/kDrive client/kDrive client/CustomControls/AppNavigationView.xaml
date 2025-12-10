@@ -59,7 +59,7 @@
         </NavigationViewItem>
     </NavigationView.MenuItems>
 
-    <NavigationView.PaneFooter>
+    <NavigationView.FooterMenuItems>
         <NavigationViewItem x:Uid="W_MainWindow_PaneFooter_Folder"
                             Tapped="NavigationViewItem_Tapped"
                             MinHeight="30"
@@ -68,7 +68,7 @@
                 <SymbolIcon Symbol="Folder" />
             </NavigationViewItem.Icon>
         </NavigationViewItem>
-    </NavigationView.PaneFooter>
+    </NavigationView.FooterMenuItems>
 
     <Frame x:Name="ContentFrame" />
 </NavigationView>

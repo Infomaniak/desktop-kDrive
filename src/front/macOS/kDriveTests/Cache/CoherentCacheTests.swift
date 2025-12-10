@@ -50,24 +50,26 @@ enum CacheData {
     )
 
     static let expectedAccountDbId = Int32.random(in: 0 ... 10000)
+    static let expectedAccountId = Int32.random(in: 0 ... 10000)
     static let expectedAccountName = "myAccount"
     static var expectedAccount = Account(
-        dbId: expectedAccountDbId, name: expectedAccountName, drives: [:]
+        dbId: expectedAccountDbId, userDbId: expectedUserDbId, name: expectedAccountName, drives: [:]
     )
 
     static let updatedAccountName = "myUpdatedAccount"
     static var updatedAccount = Account(
-        dbId: expectedAccountDbId, name: updatedAccountName, drives: [:]
+        dbId: expectedAccountDbId, userDbId: expectedUserDbId, name: updatedAccountName, drives: [:]
     )
 
     static let expectedDriveDbId = Int32.random(in: 0 ... 10000)
     static let expectedDriveId = Int32.random(in: 0 ... 10000)
     static let expectedDriveName: String = "My Drive"
     static let expectedDriveColor: HexColor = .init(hex: "9de4ec")!
-    static var expectedDrive = Drive(
+    static var expectedDrive = Drive.some(
         driveDbId: expectedDriveDbId,
         driveId: expectedDriveId,
-        accountId: expectedAccountDbId,
+        accountDbId: expectedAccountDbId,
+        accountId: expectedAccountId,
         userDbId: expectedUserDbId,
         userId: expectedUserDbId,
         name: expectedDriveName,
@@ -78,10 +80,11 @@ enum CacheData {
     static let updatedDriveId = Int32.random(in: 0 ... 10000)
     static let updatedDriveName: String = "My Drive Pro Max"
     static let updatedDriveColor: HexColor = .init(hex: "#aabbcc")!
-    static var updatedDrive = Drive(
+    static var updatedDrive = Drive.some(
         driveDbId: expectedDriveDbId,
         driveId: updatedDriveId,
-        accountId: expectedAccountDbId,
+        accountDbId: expectedAccountDbId,
+        accountId: expectedAccountId,
         userDbId: expectedUserDbId,
         userId: expectedUserDbId,
         name: updatedDriveName,
@@ -102,7 +105,8 @@ enum CacheData {
 }
 
 struct CoherentCacheUserTests {
-    @Test func getUserInCache() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func getUserInCache() async throws {
         // GIVEN
         let user = CacheData.expectedUser
         let cache = ServerCoherentCache()
@@ -116,7 +120,8 @@ struct CoherentCacheUserTests {
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
     }
 
-    @Test func removeUserInCacheFromDbId() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func removeUserInCacheFromDbId() async throws {
         // GIVEN
         let user = CacheData.expectedUser
         let cache = ServerCoherentCache()
@@ -131,7 +136,8 @@ struct CoherentCacheUserTests {
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == nil)
     }
 
-    @Test func updateUserInCache() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func updateUserInCache() async throws {
         // GIVEN
         let user = CacheData.expectedUser
         let cache = ServerCoherentCache()
@@ -162,7 +168,8 @@ struct CoherentCacheUserTests {
 }
 
 struct CoherentCacheAccountTests {
-    @Test func getAccountInCache() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func getAccountInCache() async throws {
         // GIVEN
         let user = CacheData.expectedUser
         let cache = ServerCoherentCache()
@@ -178,7 +185,8 @@ struct CoherentCacheAccountTests {
         #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId) == CacheData.expectedAccount)
     }
 
-    @Test func removeAccountInCacheFromDbId() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func removeAccountInCacheFromDbId() async throws {
         // GIVEN
         let user = CacheData.expectedUser
         let cache = ServerCoherentCache()
@@ -197,7 +205,8 @@ struct CoherentCacheAccountTests {
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == CacheData.expectedUser)
     }
 
-    @Test func updateAccountInCache() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func updateAccountInCache() async throws {
         // GIVEN
         let user = CacheData.expectedUser
         let cache = ServerCoherentCache()
@@ -228,7 +237,8 @@ struct CoherentCacheAccountTests {
 }
 
 struct CoherentCacheDriveTests {
-    @Test func getDriveInCache() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func getDriveInCache() async throws {
         // GIVEN
         let user = CacheData.expectedUser
         let cache = ServerCoherentCache()
@@ -238,13 +248,14 @@ struct CoherentCacheDriveTests {
         #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId) == CacheData.expectedAccount)
 
         // WHEN
-        await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId)
+        try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
 
         // THEN
         #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == CacheData.expectedDrive)
     }
 
-    @Test func removeDriveInCacheFromDbId() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func removeDriveInCacheFromDbId() async throws {
         // GIVEN
         let user = CacheData.expectedUser
         let cache = ServerCoherentCache()
@@ -252,7 +263,7 @@ struct CoherentCacheDriveTests {
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
         await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
         #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId) == CacheData.expectedAccount)
-        await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId)
+        try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
         #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == CacheData.expectedDrive)
 
         // WHEN
@@ -264,7 +275,8 @@ struct CoherentCacheDriveTests {
         #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == nil)
     }
 
-    @Test func updateDriveInCache() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func updateDriveInCache() async throws {
         // GIVEN
         let user = CacheData.expectedUser
         let cache = ServerCoherentCache()
@@ -272,7 +284,7 @@ struct CoherentCacheDriveTests {
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
         await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
         #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId) == CacheData.expectedAccount)
-        await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId)
+        try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
         #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == CacheData.expectedDrive)
 
         // WHEN
@@ -289,7 +301,8 @@ struct CoherentCacheDriveTests {
 }
 
 struct CoherentCacheSynchroTests {
-    @Test func getSynchroInCache() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func getSynchroInCache() async throws {
         // GIVEN
         let user = CacheData.expectedUser
         let cache = ServerCoherentCache()
@@ -297,14 +310,11 @@ struct CoherentCacheSynchroTests {
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
         await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
         #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId) == CacheData.expectedAccount)
-        await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId)
+        try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
         #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == CacheData.expectedDrive)
 
         // WHEN
-        await cache.addSynchro(CacheData.expectedSynchro,
-                               toDrive: CacheData.expectedDriveDbId,
-                               accountDbId: CacheData.expectedAccountDbId,
-                               userDbId: CacheData.expectedUserDbId)
+        try await cache.addSynchro(CacheData.expectedSynchro)
 
         // THEN
         #expect(await cache.getSynchro(synchroDbId: CacheData.expectedSynchroDbId) == CacheData.expectedSynchro)
@@ -316,7 +326,8 @@ struct CoherentCacheSynchroTests {
         ) == CacheData.expectedSynchro)
     }
 
-    @Test func removeSynchroInCacheFromDbId() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func removeSynchroInCacheFromDbId() async throws {
         // GIVEN
         let user = CacheData.expectedUser
         let cache = ServerCoherentCache()
@@ -324,20 +335,15 @@ struct CoherentCacheSynchroTests {
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
         await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
         #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId) == CacheData.expectedAccount)
-        await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId)
+        try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
         #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == CacheData.expectedDrive)
-        await cache.addSynchro(CacheData.expectedSynchro,
-                               toDrive: CacheData.expectedDriveDbId,
-                               accountDbId: CacheData.expectedAccountDbId,
-                               userDbId: CacheData.expectedUserDbId)
+        try await cache.addSynchro(CacheData.expectedSynchro)
         #expect(await cache.getSynchro(synchroDbId: CacheData.expectedSynchroDbId) == CacheData.expectedSynchro)
 
         // WHEN
-        await cache.removeSynchro(
+        try await cache.removeSynchro(
             synchroDbId: CacheData.expectedSynchroDbId,
-            driveDbId: CacheData.expectedDriveDbId,
-            accountDbId: CacheData.expectedAccountDbId,
-            userDbId: CacheData.expectedUserDbId
+            driveDbId: CacheData.expectedDriveDbId
         )
 
         // THEN
@@ -350,7 +356,8 @@ struct CoherentCacheSynchroTests {
         ) == nil)
     }
 
-    @Test func updateSynchroInCache() async throws {
+    @Test(.timeLimit(.minutes(1)))
+    func updateSynchroInCache() async throws {
         // GIVEN
         let user = CacheData.expectedUser
         let cache = ServerCoherentCache()
@@ -358,12 +365,9 @@ struct CoherentCacheSynchroTests {
         #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
         await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
         #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId) == CacheData.expectedAccount)
-        await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId)
+        try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
         #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == CacheData.expectedDrive)
-        await cache.addSynchro(CacheData.expectedSynchro,
-                               toDrive: CacheData.expectedDriveDbId,
-                               accountDbId: CacheData.expectedAccountDbId,
-                               userDbId: CacheData.expectedUserDbId)
+        try await cache.addSynchro(CacheData.expectedSynchro)
         #expect(await cache.getSynchro(synchroDbId: CacheData.expectedSynchroDbId) == CacheData.expectedSynchro)
 
         // WHEN

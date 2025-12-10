@@ -85,7 +85,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode deleteErrorsForSync(int syncDbId, bool autoResolved);
         static ExitCode deleteInvalidTokenErrors();
 #ifdef Q_OS_MAC
-        static ExitCode deleteLiteSyncNotAllowedErrors();
+        static ExitCode deleteLiteSyncErrors();
 #endif
 
         // C/S requests (access to network)
