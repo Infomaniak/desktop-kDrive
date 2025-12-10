@@ -154,7 +154,7 @@ set(testserver_SRCS
     comm/testsocketcomm.h comm/testsocketcomm.cpp
     comm/guicommchannel/testguicommchannel.h comm/guicommchannel/testguicommchannel.cpp
     comm/guicommchannel/testsyncjobs.cpp comm/guicommchannel/testnodejobs.cpp
-    comm/guicommchannel/testparameters.cpp
+    comm/guicommchannel/testparameters.cpp comm/guicommchannel/testutility.cpp
     comm/testcommhelpers.h comm/testcommhelpers.cpp
     comm/guijobs/testabstractguijob.h comm/guijobs/testabstractguijob.cpp
 )

@@ -83,6 +83,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testNodeCreateMissingFoldersJob);
         CPPUNIT_TEST(testParametersInfoJob);
         CPPUNIT_TEST(testParametersUpdateJob);
+        CPPUNIT_TEST(testUtilityCheckCommStatusJob);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -122,6 +123,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testNodeCreateMissingFoldersJob();
         void testParametersInfoJob();
         void testParametersUpdateJob();
+        void testUtilityCheckCommStatusJob();
 
     private:
         GuiJobFactory _guiJobFactory;
