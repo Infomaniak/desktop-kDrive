@@ -22,9 +22,9 @@
 
 namespace KDC {
 
-class ActivateLoadInfoJob : public AbstractGuiJob {
+class UtilityActivateLoadInfoJob : public AbstractGuiJob {
     public:
-        ActivateLoadInfoJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+        UtilityActivateLoadInfoJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
                        std::shared_ptr<AbstractCommChannel> channel);
 
     private:

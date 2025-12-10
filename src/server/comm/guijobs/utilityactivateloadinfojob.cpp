@@ -16,31 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "activateloadinfojob.h"
+#include "utilityactivateloadinfojob.h"
 #include "appserver.h"
-#include "requests/serverrequests.h"
-#include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
-#include "libcommonserver/log/log.h"
 
 namespace KDC {
 
-ActivateLoadInfoJob::ActivateLoadInfoJob(std::shared_ptr<CommManager> commManager, int requestId,
+UtilityActivateLoadInfoJob::UtilityActivateLoadInfoJob(std::shared_ptr<CommManager> commManager, int requestId,
                                          const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
     _requestNum = RequestNum::UTILITY_ACTIVATELOADINFO;
 }
 
-ExitInfo ActivateLoadInfoJob::deserializeInputParms() {
+ExitInfo UtilityActivateLoadInfoJob::deserializeInputParms() {
     return ExitCode::Ok;
 }
 
-ExitInfo ActivateLoadInfoJob::serializeOutputParms() {
+ExitInfo UtilityActivateLoadInfoJob::serializeOutputParms() {
     return ExitCode::Ok;
 }
 
-ExitInfo ActivateLoadInfoJob::process() {
-    // Clear sync cache and reload user information
+ExitInfo UtilityActivateLoadInfoJob::process() {
     _commManager->appServer().clearSyncCacheMap();
     _commManager->appServer().loadUsersInfo();
     return ExitCode::Ok;

@@ -61,9 +61,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/nodesubfolders2job.h ${server_srcs_path}/comm/guijobs/nodesubfolders2job.cpp
     ${server_srcs_path}/comm/guijobs/nodefoldersizejob.h ${server_srcs_path}/comm/guijobs/nodefoldersizejob.cpp
     ${server_srcs_path}/comm/guijobs/nodecreatemissingfoldersjob.h ${server_srcs_path}/comm/guijobs/nodecreatemissingfoldersjob.cpp
-    ${server_srcs_path}/comm/guijobs/blacklistednodelistjob.h ${server_srcs_path}/comm/guijobs/blacklistednodelistjob.cpp
-    ${server_srcs_path}/comm/guijobs/blacklistednodesetlistjob.h ${server_srcs_path}/comm/guijobs/blacklistednodesetlistjob.cpp
-    ${server_srcs_path}/comm/guijobs/activateloadinfojob.h ${server_srcs_path}/comm/guijobs/activateloadinfojob.cpp
+    ${server_srcs_path}/comm/guijobs/utilityactivateloadinfojob.h ${server_srcs_path}/comm/guijobs/utilityactivateloadinfojob.cpp
     ${server_srcs_path}/comm/guijobs/parametersinfojob.h ${server_srcs_path}/comm/guijobs/parametersinfojob.cpp
     ${server_srcs_path}/comm/guijobs/parametersupdatejob.h ${server_srcs_path}/comm/guijobs/parametersupdatejob.cpp
     ${server_srcs_path}/comm/guijobs/blacklistednodelistjob.h ${server_srcs_path}/comm/guijobs/blacklistednodelistjob.cpp
@@ -163,6 +161,7 @@ set(testserver_SRCS
     comm/guicommchannel/testsyncjobs.cpp comm/guicommchannel/testnodejobs.cpp
     comm/guicommchannel/testparameters.cpp
     comm/guicommchannel/testerrorjobs.cpp
+    comm/guicommchannel/testutility.cpp
     comm/testcommhelpers.h comm/testcommhelpers.cpp
     comm/guijobs/testabstractguijob.h comm/guijobs/testabstractguijob.cpp
 )

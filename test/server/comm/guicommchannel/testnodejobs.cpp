@@ -25,6 +25,7 @@
 #include "comm/guijobs/nodesubfolders2job.h"
 #include "comm/guijobs/nodefoldersizejob.h"
 #include "comm/guijobs/nodecreatemissingfoldersjob.h"
+#include "comm/guijobs/utilityactivateloadinfojob.h"
 
 namespace KDC {
 
@@ -274,41 +275,4 @@ void TestGuiCommChannel::testNodeCreateMissingFoldersJob() {
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
-
-void TestGuiCommChannel::testActivateLoadInfoJob() {
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{R"({ "id": 1,)"
-                        R"( "num": )" +
-                        std::to_string(toInt(RequestNum::UTILITY_ACTIVATELOADINFO)) +
-                        R"(,)"
-                        R"( "params": { } })"};
-#else
-    // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::UTILITY_ACTIVATELOADINFO)) +
-                        R"(,)"
-                        R"( "params": { } })"};
-
-    // Callback expected answer
-    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{})"};
-#endif
-
-    // Job expected answer
-    const auto answerStr{R"({ "cause": 0,)"
-                         R"( "code": 0,)"
-                         R"( "id": 1,)"
-                         R"( "num": )" +
-                         std::to_string(toInt(RequestNum::UTILITY_ACTIVATELOADINFO)) +
-                         R"(,)"
-                         R"( "params": { }, "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
-
-    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {};
-
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
-#else
-    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
-#endif
-}
-
 } // namespace KDC
