@@ -4300,14 +4300,8 @@ void AppServer::onUpdateSyncsProgress() {
         const std::scoped_lock lock(syncPalMapMutex);
         if (const auto syncPalMapIt = syncPalMap.find(sync.dbId()); syncPalMapIt == syncPalMap.end()) {
             // No SyncPal for this sync
-
-            // Check that the sync folder exists.
-            bool exists = false;
-            if (auto ioError = IoError::Unknown; !IoHelper::checkIfPathExists(sync.localPath(), exists, ioError)) {
-                LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists " << Utility::formatIoError(sync.localPath(), ioError));
-            }
-            // Show the sync paused if the local path does not exist. It is most likely that an external drive is not plugged in.
-            sendSyncProgressInfo(sync.dbId(), exists ? SyncStatus::Error : SyncStatus::Paused, SyncStep::None, SyncProgress());
+            // Show the sync paused anyway. It is most likely that an external drive is not plugged in.
+            sendSyncProgressInfo(sync.dbId(), SyncStatus::Paused, SyncStep::None, SyncProgress());
         } else {
             if (!syncPalMapIt->second) {
                 assert(false);
