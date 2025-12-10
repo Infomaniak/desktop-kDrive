@@ -19,21 +19,22 @@
 #pragma once
 
 #include "server/comm/guijobs/abstractguijob.h"
+
+#include "libcommon/info/parametersinfo.h"
+
 namespace KDC {
 
-class BlacklistedNodeListJob : public AbstractGuiJob {
+class ParametersInfoJob : public AbstractGuiJob {
     public:
-        BlacklistedNodeListJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                               std::shared_ptr<AbstractCommChannel> channel);
+        ParametersInfoJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                          std::shared_ptr<AbstractCommChannel> channel);
 
     private:
-        // Input parameters
-        int _syncDbId = 0;
-
         // Output parameters
-        std::vector<NodeId> _nodeIdList;
+        ParametersInfo _parametersInfo;
 
-        ExitInfo deserializeInputParms() override;
+
+        ExitInfo deserializeInputParms() override { return ExitCode::Ok; };
         ExitInfo serializeOutputParms() override;
         ExitInfo process() override;
 
