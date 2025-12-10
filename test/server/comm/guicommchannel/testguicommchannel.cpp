@@ -35,12 +35,13 @@
 
 #include <qbytearray.h>
 #include <qbuffer.h>
+#include <server/comm/testcommhelpers.h>
 
 namespace KDC {
 
 uint64_t GuiCommChannelTest::readData(CommChar *data, uint64_t maxlen) {
     std::scoped_lock lock(_bufferMutex);
-    uint64_t toRead = (std::min)(maxlen, static_cast<uint64_t>(_buffer.size()));
+    uint64_t toRead = (std::min) (maxlen, static_cast<uint64_t>(_buffer.size()));
     if (toRead > 0) {
         std::memcpy(data, _buffer.data(), toRead * sizeof(CommChar));
         _buffer.erase(0, toRead);
@@ -671,47 +672,56 @@ void TestGuiCommChannel::testDriveSearchJob() {
 }
 
 void TestGuiCommChannel::testErrorInfoListJob() {
+    Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{R"({ "id": 1,)"
-                        R"( "num": )" +
-                        std::to_string(toInt(RequestNum::ERROR_INFOLIST)) +
-                        R"(,)"
-                        R"( "params": { "limit": 2 } })"};
-#else
-    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::ERROR_INFOLIST)) +
-                        R"(,)"
-                        R"( "params": { "limit": 2 } })"};
-    const auto cbkAnswerStr{
-            R"({"cause":0,"code":0,"id":1,"params":{"errorInfoList":[)"
-            R"({"autoResolved":false,"cancelType":)" +
-            std::to_string(toInt(CancelType::None)) + R"(,"conflictType":)" + std::to_string(toInt(ConflictType::None)) +
-            R"(,"dbId": 1,"destinationPath":"","exitCause":)" + std::to_string(toInt(ExitCause::DbEntryNotFound)) +
-            R"(,"exitCode":)" + std::to_string(toInt(ExitCode::DataError)) +
-            R"(,"functionName":"ZnVuYzE=","inconsistencyType":)" + std::to_string(toInt(InconsistencyType::None)) +
-            R"(,"level":)" + std::to_string(toInt(ErrorLevel::SyncPal)) + R"(,"localNodeId":"bG9jYWwx","nodeType":)" +
-            std::to_string(toInt(NodeType::Unknown)) +
-            R"(,"path":"cGF0aDE=","remoteNodeId":"cmVtb3RlMQ=="","syncDbId":10,"time":1000,"workerName":"d29ya2VyMQ=="}]}})"};
+    (void) queryObj.set("id", 1);
 #endif
+    (void) queryObj.set("num", toInt(RequestNum::ERROR_INFOLIST));
 
-    const auto answerStr{
-            R"({ "cause": 0,)"
-            R"( "code": 0,)"
-            R"( "id": 1,)"
-            R"( "num": )" +
-            std::to_string(toInt(RequestNum::ERROR_INFOLIST)) +
-            R"(,)"
-            R"( "params": { "errorInfoList": [)"
-            R"( { "autoResolved": false, "cancelType": )" +
-            std::to_string(toInt(CancelType::None)) + R"(, "conflictType": )" + std::to_string(toInt(ConflictType::None)) +
-            R"(, "dbId": 1, "destinationPath": "", "exitCause": )" + std::to_string(toInt(ExitCause::DbEntryNotFound)) +
-            R"(, "exitCode": )" + std::to_string(toInt(ExitCode::DataError)) +
-            R"(, "functionName": "ZnVuYzE=", "inconsistencyType": )" + std::to_string(toInt(InconsistencyType::None)) +
-            R"(, "level": )" + std::to_string(toInt(ErrorLevel::SyncPal)) + R"(, "localNodeId": "bG9jYWwx", "nodeType": )" +
-            std::to_string(toInt(NodeType::Unknown)) +
-            R"(, "path": "cGF0aDE=", "remoteNodeId": "cmVtb3RlMQ=="", "syncDbId": 10, "time": 1000, "workerName": "d29ya2VyMQ==")" +
-            R"( } ] },)"
-            R"( "type": )" +
-            std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+    Poco::JSON::Object errorInfoObj;
+    (void) errorInfoObj.set("dbId", 1);
+    (void) errorInfoObj.set("time", 1000);
+    (void) errorInfoObj.set("level", toInt(ErrorLevel::SyncPal));
+    (void) errorInfoObj.set("functionName", "func1");
+    (void) errorInfoObj.set("syncDbId", 10);
+    (void) errorInfoObj.set("workerName", "worker1");
+    (void) errorInfoObj.set("exitCause", toInt(ExitCode::DataError));
+    (void) errorInfoObj.set("exitCause", toInt(ExitCause::DbEntryNotFound));
+    (void) errorInfoObj.set("localNodeId", "local1");
+    (void) errorInfoObj.set("remoteNodeId", "remote1");
+    (void) errorInfoObj.set("nodeType", toInt(NodeType::Unknown));
+    (void) errorInfoObj.set("path", "path1");
+    (void) errorInfoObj.set("destinationPath", toInt(ConflictType::None));
+    (void) errorInfoObj.set("conflictType", toInt(InconsistencyType::None));
+    (void) errorInfoObj.set("inconsistencyType", toInt(CancelType::None));
+    (void) errorInfoObj.set("cancelType", "");
+    (void) errorInfoObj.set("autoResolved", false);
+
+    Poco::JSON::Array errorInfoListArr;
+    (void) errorInfoListArr.add(errorInfoObj);
+
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("errorInfoList", errorInfoListArr);
+    (void) queryObj.set("params", queryParamsObj);
+
+    const auto queryStr = testcommhelpers::stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+
+    Poco::JSON::Object paramsObj;
+    (void) answerObj.set("params", paramsObj);
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::ERROR_INFOLIST));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+
+    // Job expected answers
+    const auto answerStr = testcommhelpers::stringifyAnswerObj(answerObjWithNumAndType);
+    const auto cbkAnswerStr = testcommhelpers::stringifyCbkAnswerObj(answerObj);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto errorJob = std::dynamic_pointer_cast<ErrorInfolistJob>(job);
@@ -736,11 +746,7 @@ void TestGuiCommChannel::testErrorInfoListJob() {
         errorJob->_errorInfoList = {e1};
     };
 
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
-#else
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
-#endif
 }
 
 void TestGuiCommChannel::testGenericJob(const CommString &query, const CommString &answer, const CommString &cbkAnswer,
