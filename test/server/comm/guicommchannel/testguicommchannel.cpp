@@ -34,12 +34,13 @@
 
 #include <qbytearray.h>
 #include <qbuffer.h>
+#include <server/comm/testcommhelpers.h>
 
 namespace KDC {
 
 uint64_t GuiCommChannelTest::readData(CommChar *data, uint64_t maxlen) {
     std::scoped_lock lock(_bufferMutex);
-    uint64_t toRead = (std::min)(maxlen, static_cast<uint64_t>(_buffer.size()));
+    uint64_t toRead = (std::min) (maxlen, static_cast<uint64_t>(_buffer.size()));
     if (toRead > 0) {
         std::memcpy(data, _buffer.data(), toRead * sizeof(CommChar));
         _buffer.erase(0, toRead);
@@ -671,12 +672,6 @@ void TestGuiCommChannel::testDriveSearchJob() {
 
 void TestGuiCommChannel::testGenericJob(const CommString &query, const CommString &answer, const CommString &cbkAnswer,
                                         const std::function<void(std::shared_ptr<AbstractGuiJob>)> &processFct) {
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    assert(cbkAnswer.empty());
-#else
-    assert(!cbkAnswer.empty());
-#endif
-
     auto test = [&](const CommString &testQuery, std::shared_ptr<AbstractCommChannel> testChannel) {
         //  Deserialize generic parameters
         int requestId = 0;

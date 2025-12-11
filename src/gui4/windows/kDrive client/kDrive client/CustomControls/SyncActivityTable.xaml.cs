@@ -134,6 +134,20 @@ namespace Infomaniak.kDrive.CustomControls
         {
             ((App)Application.Current).CurrentWindow?.AppWindow.Hide();
         }
+        private void ItemErrorIcon_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            Frame? frame = Utility.GetFrame(this);
+            if (frame is not null)
+            {
+                Logger.Log(Logger.Level.Info, "Navigating to ErrorPage.");
+                frame.Navigate(typeof(Pages.ErrorPage));
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Error, "Could not find Frame in visual tree to navigate to error page");
+            }
+
+        }
     }
     public class ItemTypeDataTemplateSelector : DataTemplateSelector
     {
