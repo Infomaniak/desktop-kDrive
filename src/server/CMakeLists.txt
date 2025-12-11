@@ -85,6 +85,7 @@ set(server_SRCS
     comm/guijobs/parametersupdatejob.h comm/guijobs/parametersupdatejob.cpp
     comm/guijobs/utilitycheckcommstatusjob.h comm/guijobs/utilitycheckcommstatusjob.cpp
     comm/guijobs/utilityhassystemlaunchonstartupjob.h comm/guijobs/utilityhassystemlaunchonstartupjob.cpp
+    comm/guijobs/utilityquitjob.h comm/guijobs/utilityquitjob.cpp
     comm/guijobs/signaluseraddedjob.h comm/guijobs/signaluseraddedjob.cpp
     comm/guijobs/signaluserupdatedjob.h comm/guijobs/signaluserupdatedjob.cpp
     comm/guijobs/signaluserremovedjob.h comm/guijobs/signaluserremovedjob.cpp

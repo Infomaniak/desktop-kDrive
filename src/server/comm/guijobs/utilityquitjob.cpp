@@ -16,18 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "libcommon/utility/types.h"
-#include <Poco/JSON/Object.h>
+#include "utilityquitjob.h"
 
-namespace KDC::testcommhelpers {
-std::string toBase64(const CommString &input);
+#include "appserver.h"
+#include "libcommon/comm.h"
 
-CommString beautifulString(const Poco::JSON::Object &obj);
-CommString stringifyQueryObj(const Poco::JSON::Object &obj);
-CommString stringifyAnswerObj(const Poco::JSON::Object &obj);
-CommString stringifyCbkAnswerObj(const Poco::JSON::Object &obj);
 
-// Poco::JSON::Object simpleQueryObj(RequestNum requestEnum);
-// Poco::JSON::Object simpleAnswerObj(RequestNum requestEnum);
+namespace KDC {
 
-} // namespace KDC::testcommhelpers
+UtilityQuitJob::UtilityQuitJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                               std::shared_ptr<AbstractCommChannel> channel) :
+    AbstractGuiJob(commManager, requestId, inParams, channel) {
+    _requestNum = RequestNum::UTILITY_QUIT;
+}
+
+ExitInfo UtilityQuitJob::process() {
+    AppServer::quit();
+
+    return ExitCode::Ok;
+}
+
+} // namespace KDC
