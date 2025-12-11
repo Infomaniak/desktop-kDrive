@@ -67,7 +67,9 @@ void ParametersInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, parametersInfoExtendedLog, _extendedLog);
     CommonUtility::writeValueToStruct(dstruct, parametersInfoPurgeOldLogs, _purgeOldLogs);
     CommonUtility::writeValueToStruct(dstruct, parametersInfoProxyConfigInfo, _proxyConfigInfo, info2DynamicVar<ProxyConfigInfo>);
+#ifdef KD_MACOS
     CommonUtility::writeValueToStruct(dstruct, parametersInfoDarkTheme, _darkTheme);
+#endif // KD_MACOS
     CommonUtility::writeValueToStruct(dstruct, parametersInfoShowShortcuts, _showShortcuts);
 
     const std::function<Poco::Dynamic::Var(const DialogGeometry &)> dialogGeometry2DynamicVar = [](const DialogGeometry &value) {
@@ -89,8 +91,9 @@ void ParametersInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
 
 void ParametersInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, parametersInfoInfoLanguage, _language);
-    if (dstruct.contains(parametersInfoInfoMonoIcons)) // Not used by the new clients
+    if (dstruct.contains(parametersInfoInfoMonoIcons)) { // Not used by the new clients
         CommonUtility::readValueFromStruct(dstruct, parametersInfoInfoMonoIcons, _monoIcons);
+    }
     CommonUtility::readValueFromStruct(dstruct, parametersInfoInfoAutoStart, _autoStart);
     CommonUtility::readValueFromStruct(dstruct, parametersInfoInfoMoveToTrash, _moveToTrash);
     CommonUtility::readValueFromStruct(dstruct, parametersInfoNotificationsDisabled, _notificationsDisabled);
