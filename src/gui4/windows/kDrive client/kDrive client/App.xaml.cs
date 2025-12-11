@@ -171,7 +171,7 @@ namespace Infomaniak.kDrive
             Logger.Log(Logger.Level.Info, "Exiting application.");
             if(shutdownServer) App.ServiceProvider.GetRequiredService<IServerCommService>().Exit();
             (Current as App)!.CurrentWindow?.Close();
-            Current.Exit();
+            Environment.Exit(0);
         }
     }
 }
