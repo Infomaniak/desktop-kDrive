@@ -204,28 +204,10 @@
   <data name="Global_Minute" xml:space="preserve">
     <value />
   </data>
-  <data name="Page_ErrorPage_Title.Text" xml:space="preserve">
-    <value />
-  </data>
-  <data name="Page_ErrorPage_Application_HowTosolve.Text" xml:space="preserve">
-    <value />
-  </data>
-  <data name="Page_ErrorPage_Application_Title.Text" xml:space="preserve">
-    <value />
-  </data>
-  <data name="Page_ErrorPage_Synchronisation_Header.Text" xml:space="preserve">
-    <value />
-  </data>
   <data name="Global_SupportUrl" xml:space="preserve">
     <value />
   </data>
   <data name="Global_FAQUrl" xml:space="preserve">
-    <value />
-  </data>
-  <data name="Page_ErrorPage_NoErrors_Line1.Text" xml:space="preserve">
-    <value />
-  </data>
-  <data name="Page_ErrorPage_NoErrors_Line2.Text" xml:space="preserve">
     <value />
   </data>
   <data name="Global_UpgradeOfferMy_Url" xml:space="preserve">
@@ -235,9 +217,6 @@
     <value />
   </data>
   <data name="Global_LearnMoreButton.Content" xml:space="preserve">
-    <value />
-  </data>
-  <data name="Page_ErrorPage_Application_SolveButton.Content" xml:space="preserve">
     <value />
   </data>
   <data name="  /!\  Ressource naming convention" xml:space="preserve">
@@ -270,7 +249,22 @@
   <data name="CC_KSuiteUpgradeBar_message.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="Page_ErrorPage_Application_Header.Text" xml:space="preserve">
+  <data name="ERR_LocalFileAccessError.Title" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_ErrorBar.Title" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_ErrorBar_Button.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="ERR_FrobiddenChar.Description" xml:space="preserve">
+    <value />
+  </data>
+  <data name="ERR_FrobiddenChar.Title" xml:space="preserve">
+    <value />
+  </data>
+  <data name="ERR_LocalFileAccessError.Description" xml:space="preserve">
     <value />
   </data>
   <data name="CC_UpdateAvailableBar_message.Text" xml:space="preserve">
