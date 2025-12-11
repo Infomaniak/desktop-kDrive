@@ -137,6 +137,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
 #endif
         void testParametersInfoJob();
         void testParametersUpdateJob();
+        void testUtilityActivateLoadInfoJob();
 
     private:
         GuiJobFactory _guiJobFactory;
