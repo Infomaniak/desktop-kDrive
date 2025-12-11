@@ -19,7 +19,7 @@
     - [Using Qt Creator](#using-qt-creator)
         - [Additionnal Requirements](#additionnal-requirements)
         - [CMake Parameters](#cmake-parameters)
-    - [VS2019](#using-Visual-Studio-2019)
+    - [VS2019/2022](#using-Visual-Studio-2019)
         - [Windows extension](#windows-Extension)
         - [Project setup](#project-Setup)
         - [CMake configuration](#cmake-Configuration)
@@ -46,7 +46,8 @@ cd desktop-kDrive && git submodule update --init --recursive
 
 Once `Visual Studio 2019` is installed, **all** commands should to be run using the `x64 Native Tools Command Prompt` with administrator permissions.  
 
-## Visual Studio 2019
+## Visual Studio 2019/2022/2025
+You must install both `Visual Studio 2019` and either `Visual Studio 2022` or `Visual Studio 2025` to build the project.
 
 When installing `Visual Studio 2019`, select the following components:
 
@@ -59,6 +60,13 @@ When installing `Visual Studio 2019`, select the following components:
 - Windows 11 SDK (10.0.22000.0)
 - Windows 10 SDK (10.0.17763.0)
 - Windows 10 SDK (10.0.20348.0)
+
+When installing `Visual Studio 2022 or 2025`, select the following components:
+- Desktop development with C++
+- Desktop development with .NET
+- WinUI development with .NET
+- .NET 9.0 Runtime
+
 ## Qt 6.2.3
 
 From the [Qt Installer](https://www.qt.io/download-qt-installer-oss?hsCtaTracking=99d9dd4f-5681-48d2-b096-470725510d34%7C074ddad0-fdef-4e53-8aa8-5e8a876d6ab4), 
@@ -297,6 +305,7 @@ The project requires additional CMake variables for a correct build. To inject t
    set(KDRIVE_THEME_DIR "F:/Projects/desktop-kDrive/infomaniak")
    set(BUILD_UNIT_TESTS "ON")      # Set to "OFF" to skip tests
    set(CMAKE_PREFIX_PATH "C:/Qt/6.2.3/msvc2019_64")
+   set(CMAKE_BUILD_TYPE "Debug")
    set(CMAKE_INSTALL_PREFIX "F:/Projects/cmake-build-release_CLion")
    set(ZLIB_INCLUDE_DIR "C:/Program Files (x86)/zlib-1.2.11/include")
    set(ZLIB_LIBRARY_RELEASE "C:/Program Files (x86)/zlib-1.2.11/lib/zlib.lib")

@@ -23,7 +23,7 @@ struct DriveListQuery: Codable, Sendable {
 }
 
 struct DriveUpdateQuery: Codable, Sendable {
-    let driveInfo: DriveResponse
+    let driveInfo: AvailableDriveResponse
 }
 
 struct DriveDeleteQuery: Codable, Sendable {
@@ -35,11 +35,59 @@ struct DriveSearchQuery: Codable, Sendable {
     let searchString: String
 }
 
-struct DriveListResponse: Codable, Sendable {
-    let driveAvailableInfoList: [DriveResponse]
+struct DriveInfoListResponse: Codable, Sendable {
+    let driveInfoList: [DriveResponse]
 }
 
 public struct DriveResponse: Codable, Sendable {
+    let driveDbId: Int32
+    let driveId: Int32
+    let accountDbId: Int32
+    @Base64CodedColor var color: HexColor
+    @Base64CodedString var name: String
+    let accessDenied: Bool
+    let admin: Bool
+    let locked: Bool
+    let maintenance: Bool
+    let notifications: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case driveDbId = "dbId"
+        case driveId = "id"
+        case accountDbId
+        case color
+        case name
+        case accessDenied
+        case admin
+        case locked
+        case maintenance
+        case notifications
+    }
+}
+
+extension DriveResponse {
+    func asDrive(accountId: Int32, userDbId: Int32, synchros: IndexedSynchros = [:]) -> Drive {
+        Drive(driveDbId: driveDbId,
+              driveId: driveId,
+              accountDbId: accountDbId,
+              accountId: accountId,
+              userDbId: userDbId,
+              name: name,
+              color: color,
+              accessDenied: accessDenied,
+              admin: admin,
+              locked: locked,
+              maintenance: maintenance,
+              notifications: notifications,
+              synchros: synchros)
+    }
+}
+
+struct DriveListResponse: Codable, Sendable {
+    let driveAvailableInfoList: [AvailableDriveResponse]
+}
+
+public struct AvailableDriveResponse: Codable, Sendable {
     let accountId: Int32
     let driveId: Int32
     let userDbId: Int32
@@ -48,7 +96,7 @@ public struct DriveResponse: Codable, Sendable {
     @Base64CodedColor var color: HexColor
 }
 
-public extension DriveResponse {
+public extension AvailableDriveResponse {
     var asAvailableDrive: AvailableDrive {
         AvailableDrive(driveId: driveId,
                        accountId: accountId,
@@ -59,7 +107,7 @@ public extension DriveResponse {
     }
 }
 
-public extension Collection where Element == DriveResponse {
+public extension Collection where Element == AvailableDriveResponse {
     var asAvailableDrives: [AvailableDrive] {
         return map { $0.asAvailableDrive }
     }

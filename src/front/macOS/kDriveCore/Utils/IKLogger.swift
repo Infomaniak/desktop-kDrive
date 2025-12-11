@@ -20,7 +20,7 @@ import Foundation
 import OSLog
 
 public extension IKLogger {
-    private static let subsystem = Bundle.main.bundleIdentifier ?? "com.infomaniak.drive"
+    private static let subsystem = Constants.bundleID
 
     static let view = IKLogger(subsystem: subsystem, category: "view")
     static let xpc = IKLogger(subsystem: subsystem, category: "XPC")

@@ -16,13 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
+
 #include "libcommonserver/vfs/vfs.h"
 
 #include <sys/stat.h>
 
 namespace KDC {
-
-using AppTable = std::unordered_map<std::string, std::string, StringHashFunction, std::equal_to<>>;
 
 class LiteSyncCommClientPrivate;
 

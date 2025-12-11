@@ -73,10 +73,13 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode getExclusionTemplateList(bool def, std::vector<ExclusionTemplateInfo> &list);
         static ExitCode getExclusionTemplateList(bool def, QList<ExclusionTemplateInfo> &list);
         static ExitCode setExclusionTemplateList(const bool def, const std::vector<ExclusionTemplateInfo> &list);
+        static ExitCode setExclusionAppList(const bool def, const std::vector<ExclusionAppInfo> &list);
         static ExitCode setExclusionTemplateList(bool def, const QList<ExclusionTemplateInfo> &list);
         static ExitCode getExclusionAppList(bool def, QList<ExclusionAppInfo> &list);
+        static ExitCode getExclusionAppList(bool def, std::vector<ExclusionAppInfo> &list);
         static ExitCode setExclusionAppList(bool def, const QList<ExclusionAppInfo> &list);
         static ExitCode getErrorInfoList(ErrorLevel level, int syncDbId, int limit, QList<ErrorInfo> &list);
+        static ExitInfo getErrorInfoList(int limit, std::vector<ErrorInfo> &list);
         static ExitCode getConflictList(int syncDbId, const std::unordered_set<ConflictType> &filter,
                                         std::vector<Error> &errorLis);
         static ExitCode getConflictErrorInfoList(int driveDbId, const std::unordered_set<ConflictType> &filter,
@@ -85,7 +88,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode deleteErrorsForSync(int syncDbId, bool autoResolved);
         static ExitCode deleteInvalidTokenErrors();
 #ifdef Q_OS_MAC
-        static ExitCode deleteLiteSyncNotAllowedErrors();
+        static ExitCode deleteLiteSyncErrors();
 #endif
 
         // C/S requests (access to network)
@@ -107,14 +110,18 @@ struct SYNCENGINE_EXPORT ServerRequests {
                                 const NodeId &serverFolderNodeId, bool liteSync, bool showInNavigationPane, SyncInfo &syncInfo);
         static ExitCode addSync(int driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
                                 const QString &serverFolderNodeId, bool liteSync, bool showInNavigationPane, SyncInfo &syncInfo);
-        static ExitInfo getNodeInfo(int userDbId, int driveId, const QString &nodeId, NodeInfo &nodeInfo, bool withPath = false);
         static ExitInfo getNodeInfo(int userDbId, int driveId, const std::string &nodeId, NodeInfo &nodeInfo,
                                     bool withPath = false);
+        static ExitInfo getNodeInfo(int userDbId, int driveId, const QString &nodeId, NodeInfo &nodeInfo, bool withPath = false);
+
+        static ExitInfo getSubFolders(const int userDbId, const int driveId, const NodeId &nodeId, std::vector<NodeInfo> &list,
+                                      const bool withPath = false);
+
         static ExitInfo getSubFolders(int userDbId, int driveId, const QString &nodeId, QList<NodeInfo> &list,
                                       bool withPath = false); // TODO: Delete after switching to the new comm layer
-        static ExitInfo getSubFolders(int userDbId, int driveId, const NodeId &nodeId, std::vector<NodeInfo> &list,
-                                      bool withPath = false);
+        static ExitInfo getSubFolders(int driveDbId, const NodeId &nodeId, std::vector<NodeInfo> &list, bool withPath = false);
         static ExitInfo getSubFolders(int driveDbId, const QString &nodeId, QList<NodeInfo> &list, bool withPath = false);
+        static ExitCode createDir(int driveDbId, const NodeId &parentNodeId, const CommString &dirName, NodeId &newNodeId);
         static ExitCode createDir(int driveDbId, const QString &parentNodeId, const QString &dirName, QString &newNodeId);
         static ExitCode getPublicLinkUrl(int driveDbId, const NodeId &nodeId, std::string &linkUrl);
         static ExitInfo getFolderSizeWithCallback(int userDbId, int driveId, const NodeId &nodeId,

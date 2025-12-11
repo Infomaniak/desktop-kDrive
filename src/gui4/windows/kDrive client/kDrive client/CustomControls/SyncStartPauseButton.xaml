@@ -28,7 +28,7 @@
                                                 LoadingButtonTemplate="{StaticResource LoadingButtonTemplate}" />
 
         <!-- Converter to enable/disable the button based on sync status -->
-        <local:SyncStatusToButtonEnabledConverter x:Key="SyncStatusToButtonEnabledConverter" />
+        <local:SyncToButtonEnabledConverter x:Key="SyncToButtonEnabledConverter" />
     </UserControl.Resources>
 
     <StackPanel Orientation="Horizontal">
@@ -36,7 +36,7 @@
                 Click="StartPauseButton_Click"
                 ContentTemplateSelector="{StaticResource StartPauseButtonTemplateSelector}"
                 Content="{x:Bind ViewModel.SelectedSync.SyncStatus, Mode=OneWay}"
-                IsEnabled="{x:Bind ViewModel.SelectedSync.SyncStatus, Converter={StaticResource SyncStatusToButtonEnabledConverter}, Mode=OneWay}"
+                IsEnabled="{x:Bind ViewModel.SelectedSync, Converter={StaticResource SyncToButtonEnabledConverter}, Mode=OneWay}"
                 Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}" />
     </StackPanel>
 </UserControl>

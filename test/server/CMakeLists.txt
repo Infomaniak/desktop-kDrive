@@ -52,15 +52,22 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/syncdeletejob.h ${server_srcs_path}/comm/guijobs/syncdeletejob.cpp
     ${server_srcs_path}/comm/guijobs/syncgetpubliclinkurljob.h ${server_srcs_path}/comm/guijobs/syncgetpubliclinkurljob.cpp
     ${server_srcs_path}/comm/guijobs/syncgetprivatelinkurljob.h ${server_srcs_path}/comm/guijobs/syncgetprivatelinkurljob.cpp
-    ${server_srcs_path}/comm/guijobs/nodesubfoldersjob.h ${server_srcs_path}/comm/guijobs/nodesubfoldersjob.cpp
-    ${server_srcs_path}/comm/guijobs/nodefoldersizejob.h ${server_srcs_path}/comm/guijobs/nodefoldersizejob.cpp
-    ${server_srcs_path}/comm/guijobs/syncnodelistjob.h ${server_srcs_path}/comm/guijobs/syncnodelistjob.cpp
-    ${server_srcs_path}/comm/guijobs/syncnodesetlistjob.h ${server_srcs_path}/comm/guijobs/syncnodesetlistjob.cpp
+    ${server_srcs_path}/comm/guijobs/syncsetsupportsvirtualfilesjob.h ${server_srcs_path}/comm/guijobs/syncsetsupportsvirtualfilesjob.cpp
+    ${server_srcs_path}/comm/guijobs/syncsetrootpinstatejob.h ${server_srcs_path}/comm/guijobs/syncsetrootpinstatejob.cpp
+    ${server_srcs_path}/comm/guijobs/blacklistednodelistjob.h ${server_srcs_path}/comm/guijobs/blacklistednodelistjob.cpp
+    ${server_srcs_path}/comm/guijobs/blacklistednodesetlistjob.h ${server_srcs_path}/comm/guijobs/blacklistednodesetlistjob.cpp
     ${server_srcs_path}/comm/guijobs/nodeinfojob.h ${server_srcs_path}/comm/guijobs/nodeinfojob.cpp
+    ${server_srcs_path}/comm/guijobs/nodesubfoldersjob.h ${server_srcs_path}/comm/guijobs/nodesubfoldersjob.cpp
+    ${server_srcs_path}/comm/guijobs/nodesubfolders2job.h ${server_srcs_path}/comm/guijobs/nodesubfolders2job.cpp
+    ${server_srcs_path}/comm/guijobs/nodefoldersizejob.h ${server_srcs_path}/comm/guijobs/nodefoldersizejob.cpp
+    ${server_srcs_path}/comm/guijobs/nodecreatemissingfoldersjob.h ${server_srcs_path}/comm/guijobs/nodecreatemissingfoldersjob.cpp
+    ${server_srcs_path}/comm/guijobs/errorinfolistjob.h ${server_srcs_path}/comm/guijobs/errorinfolistjob.cpp
     ${server_srcs_path}/comm/guijobs/excltemplgetexcludedjob.h ${server_srcs_path}/comm/guijobs/excltemplgetexcludedjob.cpp
     ${server_srcs_path}/comm/guijobs/excltemplgetlistjob.h ${server_srcs_path}/comm/guijobs/excltemplgetlistjob.cpp
     ${server_srcs_path}/comm/guijobs/excltemplsetlistjob.h ${server_srcs_path}/comm/guijobs/excltemplsetlistjob.cpp
     ${server_srcs_path}/comm/guijobs/excltemplpropagatechangejob.h ${server_srcs_path}/comm/guijobs/excltemplpropagatechangejob.cpp
+    ${server_srcs_path}/comm/guijobs/parametersinfojob.h ${server_srcs_path}/comm/guijobs/parametersinfojob.cpp
+    ${server_srcs_path}/comm/guijobs/parametersupdatejob.h ${server_srcs_path}/comm/guijobs/parametersupdatejob.cpp
     ${server_srcs_path}/comm/guijobs/signaluseraddedjob.h ${server_srcs_path}/comm/guijobs/signaluseraddedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.h ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserremovedjob.h ${server_srcs_path}/comm/guijobs/signaluserremovedjob.cpp
@@ -72,6 +79,9 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/signalsyncremovedjob.h ${server_srcs_path}/comm/guijobs/signalsyncremovedjob.cpp
     ${server_srcs_path}/comm/guijobs/signalsyncprogressinfo.h ${server_srcs_path}/comm/guijobs/signalsyncprogressinfo.cpp
     ${server_srcs_path}/comm/guijobs/signalsynccompleteditem.h ${server_srcs_path}/comm/guijobs/signalsynccompleteditem.cpp
+    ${server_srcs_path}/comm/guijobs/signalsyncupdatedjob.h ${server_srcs_path}/comm/guijobs/signalsyncupdatedjob.cpp
+    ${server_srcs_path}/comm/guijobs/signalerroraddedjob.h ${server_srcs_path}/comm/guijobs/signalerroraddedjob.cpp
+    ${server_srcs_path}/comm/guijobs/signalerrorremovedjob.h ${server_srcs_path}/comm/guijobs/signalerrorremovedjob.cpp
     ${server_srcs_path}/migration/migrationparams.h ${server_srcs_path}/migration/migrationparams.cpp
     ${server_srcs_path}/requests/serverrequests.h ${server_srcs_path}/requests/serverrequests.cpp
     ${server_srcs_path}/updater/abstractupdater.h ${server_srcs_path}/updater/abstractupdater.cpp
@@ -93,6 +103,10 @@ if(APPLE)
     list(APPEND server_SRCS ${server_srcs_path}/comm/extcommserver_mac.mm)
     list(APPEND server_SRCS ${server_srcs_path}/comm/guicommserver_mac.mm)
     list(APPEND server_SRCS ${server_srcs_path}/comm/litesynccommclient_mac.h ${server_srcs_path}/comm/litesynccommclient_mac.mm)
+    list(APPEND server_SRCS ${server_srcs_path}/comm/guijobs/exclappgetlistjob.h ${server_srcs_path}/comm/guijobs/exclappgetlistjob.cpp)
+    list(APPEND server_SRCS ${server_srcs_path}/comm/guijobs/exclappsetlistjob.h ${server_srcs_path}/comm/guijobs/exclappsetlistjob.cpp)
+    list(APPEND server_SRCS ${server_srcs_path}/comm/guijobs/exclappgetfetchingapplistjob.h ${server_srcs_path}/comm/guijobs/exclappgetfetchingapplistjob.cpp)
+
     set_property(SOURCE ${server_srcs_path}/comm/abstractcommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
     set_property(SOURCE ${server_srcs_path}/comm/xpccommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
     set_property(SOURCE ${server_srcs_path}/comm/extcommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
@@ -148,7 +162,14 @@ set(testserver_SRCS
     requests/testserverrequests.h requests/testserverrequests.cpp
     appserver/testappserver.h appserver/testappserver.cpp
     comm/testsocketcomm.h comm/testsocketcomm.cpp
-    comm/testguicommchannel.h comm/testguicommchannel.cpp comm/testcommhelpers.h comm/testcommhelpers.cpp comm/testexcltempl.cpp
+
+    comm/testcommhelpers.h comm/testcommhelpers.cpp
+    comm/guicommchannel/testguicommchannel.h comm/guicommchannel/testguicommchannel.cpp
+    comm/guicommchannel/testsyncjobs.cpp comm/guicommchannel/testnodejobs.cpp
+    comm/guicommchannel/testerrorjobs.cpp
+    comm/guicommchannel/testexclapp.cpp comm/guicommchannel/testexcltempl.cpp 
+    comm/guicommchannel/testparameters.cpp
+
     comm/guijobs/testabstractguijob.h comm/guijobs/testabstractguijob.cpp
 )
 

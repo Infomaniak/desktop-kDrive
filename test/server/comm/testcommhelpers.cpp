@@ -34,12 +34,12 @@ CommString beautifulString(const Poco::JSON::Object &obj) {
     std::ostringstream oss;
     Poco::JSON::Stringifier::stringify(obj, oss, 1, 0);
 
-    const CommString _answerStr = oss.str();
+    const auto answerStdStr = oss.str();
     Poco::JSON::Parser parser;
-    Poco::Dynamic::Var dynamicVar = parser.parse(CommonUtility::commString2Str(_answerStr));
+    Poco::Dynamic::Var dynamicVar = parser.parse(answerStdStr);
     Poco::DynamicStruct paramsStruct = *dynamicVar.extract<Poco::JSON::Object::Ptr>();
 
-    return Poco::Dynamic::structToString(paramsStruct);
+    return CommonUtility::str2CommString(Poco::Dynamic::structToString(paramsStruct));
 }
 
 CommString stringifyQueryObj(const Poco::JSON::Object &obj) {
@@ -54,6 +54,7 @@ CommString stringifyCbkAnswerObj(const Poco::JSON::Object &obj) {
     std::ostringstream json;
     Poco::JSON::Stringifier::stringify(obj, json, 0); // compact form
 
-    return json.str();
+    return CommonUtility::str2CommString(json.str());
 }
+
 } // namespace KDC::testcommhelpers

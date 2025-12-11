@@ -85,15 +85,15 @@ ExitInfo AbstractSyncAddJob::process(SyncInfo &syncInfo) {
     bool startPostponed = false;
     if (const auto exitInfo = _commManager->appServer().tryCreateAndStartVfs(sync, startPostponed); !exitInfo) {
         LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " : " << exitInfo);
-        if (!(exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::LiteSyncNotAllowed)) {
+        if (!Utility::isLiteSyncExtError(exitInfo)) {
             return exitInfo;
         }
     }
 
     // Create and start SyncPal
     NodeSet blackList(std::make_move_iterator(_blackList.begin()), std::make_move_iterator(_blackList.end()));
-    if (const auto exitInfo = _commManager->appServer().initSyncPal(sync, blackList, !startPostponed,
-                                                                    std::chrono::seconds(0), false, true);
+    if (const auto exitInfo =
+                _commManager->appServer().initSyncPal(sync, blackList, !startPostponed, std::chrono::seconds(0), false, true);
         !exitInfo) {
         _commManager->appServer().stopSyncTask(syncInfo.dbId());
 
@@ -105,9 +105,6 @@ ExitInfo AbstractSyncAddJob::process(SyncInfo &syncInfo) {
 
         return exitInfo;
     }
-
-    auto signalSyncAddedJob = std::make_shared<SignalSyncAddedJob>(syncInfo);
-    _commManager->sendGuiSignal(signalSyncAddedJob);
 
 #if defined(KD_MACOS)
     Utility::restartFinderExtension();

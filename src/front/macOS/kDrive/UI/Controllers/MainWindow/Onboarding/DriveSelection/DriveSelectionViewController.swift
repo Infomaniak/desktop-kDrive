@@ -28,8 +28,9 @@ enum OnboardingLinks {
     static let myKSuiteOffers = URL(string: "https://www.infomaniak.com/gtl/myksuite#prices")!
 }
 
-class DriveSelectionViewController: OnboardingStepViewController {
-    private let viewModel = DriveSelectionViewModel()
+final class DriveSelectionViewController: OnboardingStepViewController {
+    private let viewModel: DriveSelectionViewModel
+    private let flowCoordinator: OnboardingFlowCoordinator
 
     private var bindStore = Set<AnyCancellable>()
 
@@ -51,6 +52,17 @@ class DriveSelectionViewController: OnboardingStepViewController {
         drivesListView.toggleDrive = viewModel.toggleDriveSelection
         return drivesListView
     }()
+
+    init(flowCoordinator: OnboardingFlowCoordinator) {
+        viewModel = DriveSelectionViewModel(flowCoordinator: flowCoordinator)
+        self.flowCoordinator = flowCoordinator
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -92,7 +104,7 @@ class DriveSelectionViewController: OnboardingStepViewController {
     }
 
     private func bindViewModel() {
-        viewModel.$currentUser
+        flowCoordinator.$targetUser
             .receiveOnMain(store: &bindStore) { [weak self] user in
                 guard let user else { return }
                 self?.labeledUserView.user = user

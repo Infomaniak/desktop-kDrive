@@ -69,8 +69,8 @@ enum class RequestNum {
     SYNC_ASKFORSTATUS,
     SYNC_SETSUPPORTSVIRTUALFILES,
     SYNC_SETROOTPINSTATE,
-    SYNCNODE_LIST,
-    SYNCNODE_SETLIST,
+    BLACKLISTED_NODE_LIST,
+    BLACKLISTED_NODE_SETLIST,
     NODE_PATH,
     NODE_INFO,
     NODE_SUBFOLDERS,
@@ -78,7 +78,8 @@ enum class RequestNum {
     NODE_FOLDER_SIZE,
     NODE_CREATEMISSINGFOLDERS,
     ERROR_INFOLIST,
-    ERROR_GET_CONFLICTS,
+    ERROR_INFOLIST_LEGACY,
+    ERROR_GET_CONFLICTS_LEGACY,
     ERROR_DELETE_SERVER,
     ERROR_DELETE_SYNC,
     ERROR_DELETE_INVALIDTOKEN,
@@ -168,10 +169,10 @@ inline std::string toString(RequestNum e) {
             return "SYNC_SETSUPPORTSVIRTUALFILES";
         case RequestNum::SYNC_SETROOTPINSTATE:
             return "SYNC_SETROOTPINSTATE";
-        case RequestNum::SYNCNODE_LIST:
-            return "SYNCNODE_LIST";
-        case RequestNum::SYNCNODE_SETLIST:
-            return "SYNCNODE_SETLIST";
+        case RequestNum::BLACKLISTED_NODE_LIST:
+            return "BLACKLISTED_NODE_LIST";
+        case RequestNum::BLACKLISTED_NODE_SETLIST:
+            return "BLACKLISTED_NODE_SETLIST";
         case RequestNum::NODE_PATH:
             return "NODE_PATH";
         case RequestNum::NODE_INFO:
@@ -186,8 +187,10 @@ inline std::string toString(RequestNum e) {
             return "NODE_CREATEMISSINGFOLDERS";
         case RequestNum::ERROR_INFOLIST:
             return "ERROR_INFOLIST";
-        case RequestNum::ERROR_GET_CONFLICTS:
-            return "ERROR_GET_CONFLICTS";
+        case RequestNum::ERROR_INFOLIST_LEGACY:
+            return "ERROR_INFOLIST_LEGACY";
+        case RequestNum::ERROR_GET_CONFLICTS_LEGACY:
+            return "ERROR_GET_CONFLICTS_LEGACY";
         case RequestNum::ERROR_DELETE_SERVER:
             return "ERROR_DELETE_SERVER";
         case RequestNum::ERROR_DELETE_SYNC:
@@ -300,7 +303,9 @@ enum class SignalNum {
     UPDATER_STATE_CHANGED,
     // Utility
     UTILITY_SHOW_NOTIFICATION,
+    UTILITY_ERROR_ADDED_LEGACY,
     UTILITY_ERROR_ADDED,
+    UTILITY_ERROR_REMOVED,
     UTILITY_ERRORS_CLEARED,
     UTILITY_SHOW_SETTINGS,
     UTILITY_SHOW_SYNTHESIS,
@@ -359,7 +364,11 @@ inline std::string toString(SignalNum e) {
             return "UPDATER_STATE_CHANGED";
         case SignalNum::UTILITY_SHOW_NOTIFICATION:
             return "UTILITY_SHOW_NOTIFICATION";
+        case SignalNum::UTILITY_ERROR_ADDED_LEGACY:
+            return "UTILITY_ERROR_ADDED_LEGACY";
         case SignalNum::UTILITY_ERROR_ADDED:
+            return "UTILITY_ERROR_ADDED";
+        case SignalNum::UTILITY_ERROR_REMOVED:
             return "UTILITY_ERROR_ADDED";
         case SignalNum::UTILITY_ERRORS_CLEARED:
             return "UTILITY_ERRORS_CLEARED";

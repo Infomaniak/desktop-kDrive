@@ -11,7 +11,8 @@
     <StackPanel Grid.Column="0"
                 Orientation="Horizontal"
                 VerticalAlignment="Center"
-                Spacing="8">
+                Spacing="8"
+                PointerPressed="AppTitleBarLogo_PointerPressed">
         <Image Source="/Assets/kdrive.png"
                Height="28"
                Width="28" />

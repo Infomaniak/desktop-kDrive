@@ -1,0 +1,13 @@
+# Labeler configuration for PR file path rules
+
+WinUI:
+  - changed-files:
+    - any-glob-to-any-file: 'src/gui4/windows/**'
+    
+macOS UI:
+ - changed-files:
+   - any-glob-to-any-file: 'src/front/macOS/**'
+
+GUI job:
+ - changed-files:
+   - any-glob-to-any-file: 'src/server/comm/guijobs/**'

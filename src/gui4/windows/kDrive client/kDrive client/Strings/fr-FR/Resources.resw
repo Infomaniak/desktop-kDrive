@@ -125,6 +125,14 @@
     <value>Ouvrir kDrive</value>
     <comment>Name of the open button in the TrayIcon menu</comment>
   </data>
+  <data name="CC_SyncExclusionSelector_Header_Size.Text" xml:space="preserve">
+    <value>Taille</value>
+    <comment>Name of the open button in the TrayIcon menu</comment>
+  </data>
+  <data name="CC_SyncExclusionSelector_Header_Name.Text" xml:space="preserve">
+    <value>Nom</value>
+    <comment>Name of the open button in the TrayIcon menu</comment>
+  </data>
   <data name="W_MainWindow_NavBar_Home.Content" xml:space="preserve">
     <value>Accueil</value>
   </data>
@@ -139,9 +147,6 @@
   </data>
   <data name="CC_SyncStatusBar_PausedStatus.Text" xml:space="preserve">
     <value>Synchronisation en pause</value>
-  </data>
-  <data name="CC_SyncStatusBar_SyncingStatus.Text" xml:space="preserve">
-    <value>Synchronisation en cours...</value>
   </data>
   <data name="CC_SyncStatusBar_StartingStatus.Text" xml:space="preserve">
     <value>Démarrage de la synchronisation...</value>
@@ -319,6 +324,9 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
   <data name="Page_Onboarding_OAuthLoadingPage_Success_Title.Text" xml:space="preserve">
     <value>Connexion réussie !</value>
   </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Error_Title.Text" xml:space="preserve">
+    <value>Erreur de connexion</value>
+  </data>
   <data name="Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Subtitle.Text" xml:space="preserve">
     <value>Une fois connecté, vous pourrez passer à l’étape suivante.</value>
   </data>
@@ -329,11 +337,16 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
     <value />
     <comment>Empty</comment>
   </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Error_Subtitle.Text" xml:space="preserve">
+    <value>Une erreur est survenue, veuillez réessayer.</value>
+  </data>
   <data name="Page_Onboarding_WelcomePage_Title.Text" xml:space="preserve">
     <value>Bienvenue dans kDrive</value>
   </data>
   <data name="Page_Onboarding_WelcomePage_Subtitle.Text" xml:space="preserve">
-    <value>Connectez-vous pour commencer à utiliser kDrive, le cloud éthique et sécurisé, hébergé en Suisse.</value>
+    <value>Le cloud privé, rapide et sécurisé, hébergé en Suisse.
+
+Connectez-vous et gardez vos documents synchronisés  sur tous vos appareils.</value>
   </data>
   <data name="Page_Onboarding_WelcomePage_SigninButton.Content" xml:space="preserve">
     <value>Connexion</value>
@@ -375,7 +388,8 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
     <value>Vous n’avez pas encore de kDrive.</value>
   </data>
   <data name="Page_Onboarding_DriveSelectionPage_NoDrive_Text.Text" xml:space="preserve">
-    <value>Commencez gratuitement avec my kSuite, ou choisissez une offre adaptée à vos besoins.</value>
+    <value>Commencez gratuitement avec my kSuite, 
+ou choisissez une offre adaptée à vos besoins.</value>
   </data>
   <data name="Page_Onboarding_DriveSelectionPage_StartFreeButton.Content" xml:space="preserve">
     <value>Commencer gratuitement</value>
@@ -384,7 +398,10 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
     <value>Voir les offres</value>
   </data>
   <data name="Global_kDriveOffersUrl" xml:space="preserve">
-    <value>https://www.infomaniak.com/fr/ksuite/kdrive</value>
+    <value>https://www.infomaniak.com/fr/ksuite/kdrive/tarifs</value>
+  </data>
+  <data name="Global_kDriveShopUrl" xml:space="preserve">
+    <value>http://shop.infomaniak.com/order/select/drive</value>
   </data>
   <data name="Page_StoragePage_Title.Text" xml:space="preserve">
     <value>Stockage</value>
@@ -533,10 +550,16 @@ Version {0} (build {1}), compilée le {2}
   <data name="Page_Settings_DriveManagementPage_FolderSelection.Header" xml:space="preserve">
     <value>Synchronisation</value>
   </data>
-  <data name="Page_Settings_DriveManagementPage_FolderSelection_Presentation.Header" xml:space="preserve">
+  <data name="Page_Settings_DriveManagementPage_FolderSelection_Presentation_Header.Text" xml:space="preserve">
     <value>Sélectionnez les dossiers à synchroniser sur cet ordinateur.</value>
   </data>
-  <data name="Page_Settings_DriveManagementPage_FolderSelection_Presentation.Description" xml:space="preserve">
+  <data name="Page_Settings_DriveManagementPage_FolderSelection_SaveButton.Content" xml:space="preserve">
+    <value>Sauvegarder mes choix</value>
+  </data>
+  <data name="Page_Settings_DriveManagementPage_FolderSelection_CancelButton.Content" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="Page_Settings_DriveManagementPage_FolderSelection_Presentation_Description.Text" xml:space="preserve">
     <value>Les dossiers non sélectionnés resteront disponibles en ligne, sans utiliser d’espace disque.</value>
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncMode.Header" xml:space="preserve">
@@ -794,9 +817,6 @@ Le code source de cette application peut être vérifié, les informations réco
     <value>Confirmer</value>
   </data>
   <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Title.Text" xml:space="preserve">
-    <value>Paramètres avancés</value>
-  </data>
-  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Description.Text" xml:space="preserve">
     <value>Personnalisez l’emplacement de vos dossiers kDrive</value>
   </data>
   <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_InfoBar.Message" xml:space="preserve">
@@ -837,17 +857,39 @@ Le code source de cette application peut être vérifié, les informations réco
   <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.SecondaryButtonText" xml:space="preserve">
     <value>Annuler</value>
   </data>
-    <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.Content" xml:space="preserve">
+  <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.Content" xml:space="preserve">
     <value>Le dossier local restera sur votre ordinateur, mais il ne sera plus synchronisé avec kDrive.
 Cette action est définitive. 
 Pour synchroniser à nouveau votre drive, vous devrez le reconnecter ultérieurement.
 
 Avant de continuer, assurez-vous que tout vos fichiers sont bien à jour et synchronisées.</value>
-      </data>
+  </data>
   <data name="Page_SettingsPage_Proxy_ComoBox_HTTP.Content" xml:space="preserve">
     <value>Configuration manuelle</value>
   </data>
   <data name="Page_SettingsPage_Proxy_ComoBox_NONE.Content" xml:space="preserve">
     <value>Desactivé</value>
+  </data>
+  <data name="CC_SyncStatusBar_SyncingStatus.Text" xml:space="preserve">
+    <value>Synchronisation en cours...</value>
+  </data>
+  <data name="CC_ErrorBar.Title" xml:space="preserve">
+    <value>Certains fichiers n’ont pas pu être synchronisés.</value>
+  </data>
+  <data name="CC_ErrorBar_Button.Content" xml:space="preserve">
+    <value>Corriger les erreurs</value>
+  </data>
+  <data name="ERR_FrobiddenChar.Title" xml:space="preserve">
+    <value>Charactère non supporté</value>
+  </data>
+  <data name="ERR_LocalFileAccessError.Title" xml:space="preserve">
+    <value>Fichier inaccessible</value>
+  </data>
+  <data name="ERR_FrobiddenChar.Description" xml:space="preserve">
+    <value>Le nom de ce fichier contient un ou plusieurs charactères non supportés par votre appareil</value>
+  </data>
+  <data name="ERR_LocalFileAccessError.Description" xml:space="preserve">
+    <value>Impossible d’accéder à ce fichier sur votre ordinateur. 
+Vérifiez qu’il existe toujours et que vous disposez des droits pour y accéder.</value>
   </data>
 </root>

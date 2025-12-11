@@ -48,6 +48,8 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
                 _onBoardingTask = _onboardingViewModel.ConnectUser(_oauthCts.Token);
                 ScheduleRestartButtonEnableAsync();
+                if ((App.Current as App)?.CurrentWindow is OnBoardingWindow onBoardingWindow)
+                    onBoardingWindow.UpdateLottieSource("Infomaniak.Custom.Animations.loader-stroke", 130);
             }
             else
             {
@@ -81,44 +83,43 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     break;
 
                 case OAuth2State.WaitingForUserAction:
-                    LoadingProgressBar.ShowError = false;
-                    LoadingProgressBar.IsIndeterminate = true;
-                    LoadingProgressBar.Foreground = new SolidColorBrush(Colors.Blue);
                     TitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Title/Text");
                     SubtitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Subtitle/Text");
                     RestartOAuthButton.Visibility = Visibility.Visible;
                     break;
 
                 case OAuth2State.ProcessingResponse:
-                    LoadingProgressBar.ShowError = false;
-                    LoadingProgressBar.IsIndeterminate = true;
-                    LoadingProgressBar.Foreground = new SolidColorBrush(Colors.Blue);
                     TitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_Processing_Title/Text");
                     SubtitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_Processing_Subtitle/Text");
                     RestartOAuthButton.Visibility = Visibility.Collapsed;
                     break;
 
                 case OAuth2State.Success:
-                    LoadingProgressBar.ShowError = false;
-                    LoadingProgressBar.Value = 100;
-                    LoadingProgressBar.IsIndeterminate = false;
-                    LoadingProgressBar.Foreground = new SolidColorBrush(Colors.LimeGreen);
                     TitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_Success_Title/Text");
                     SubtitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_Success_Subtitle/Text");
                     RestartOAuthButton.Visibility = Visibility.Collapsed;
-
-                    AppModel.UIThreadDispatcher.TryEnqueue(() =>
+                    if (_onboardingViewModel?.SelectedUser is not null)
                     {
-                        Frame.Navigate(typeof(DriveSelectionPage), _onboardingViewModel);
-                    });
+                        await _onboardingViewModel.SelectedUser.RefreshAvailableDrives();
+                        if (_onboardingViewModel.SelectedUser.AllDrives.Any())
+                        {
+                            Frame.Navigate(typeof(DriveSelectionPage), _onboardingViewModel);
+                        }
+                        else
+                        {
+                            Frame.Navigate(typeof(NoDrivesPage), _onboardingViewModel);
+                        }
+                    }
+                    else
+                    {
+                        Logger.Log(Logger.Level.Error, "SelectedUser is not set after a successful oAuth");
+                        HandleOAuth2StateChanged(OAuth2State.Error);
+                    }
                     break;
 
                 case OAuth2State.Error:
-                    // TODO: Change this behavior once UX/UI is defined
-                    LoadingProgressBar.ShowError = true;
-                    LoadingProgressBar.IsIndeterminate = false;
-                    TitleTextBlock.Text = "Erreur de connexion";
-                    SubtitleTextBlock.Text = "Une erreur est survenue lors de la connexion. Veuillez réessayer.";
+                    TitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_Error_Title/Text");
+                    SubtitleTextBlock.Text = Utility.GetLocalizedString("Page_Onboarding_OAuthLoadingPage_Error_Subtitle/Text");
                     RestartOAuthButton.IsEnabled = true;
                     RestartOAuthButton.Visibility = Visibility.Visible;
                     await _enableRestartCts.CancelAsync();

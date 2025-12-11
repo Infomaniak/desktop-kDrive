@@ -83,7 +83,7 @@ void Utility::restartFinderExtension() {
     });
 }
 
-NSArray *getPIDsForProcessName(NSString *processName) {
+NSMutableArray *getPIDsForProcessName(NSString *processName) {
     NSTask *task = [[NSTask alloc] init];
     [task setLaunchPath:@"/bin/ps"];
     [task setArguments:@[ @"-axo", @"pid,comm" ]];
@@ -99,7 +99,7 @@ NSArray *getPIDsForProcessName(NSString *processName) {
     NSArray *lines = [output componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
 
     for (NSString *line in lines) {
-        if ([line rangeOfString:processName].location != NSNotFound && ![line rangeOfString:@"grep"].location != NSNotFound) {
+        if ([line rangeOfString:processName].location != NSNotFound && [line rangeOfString:@"grep"].location == NSNotFound) {
             NSArray *fields = [line componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
             for (NSString *field in fields) {
                 if (!field || [field length] == 0 || [field isEqualToString:processName]) continue;
@@ -126,6 +126,14 @@ void Utility::restartLoginItemAgent() {
         pid_t pid = [pidNumber longValue];
         runKillCommand(pid);
     }
+}
+
+bool Utility::isLiteSyncExtRunning() {
+    NSString *bundleID = NSBundle.mainBundle.bundleIdentifier;
+    NSString *processName = [NSString stringWithFormat:@"%@.LiteSyncExt", bundleID];
+    NSMutableArray *pids = getPIDsForProcessName(processName);
+    assert(pids.count <= 1);
+    return pids.count == 1;
 }
 
 bool Utility::hasLaunchOnStartup(const std::string &) {

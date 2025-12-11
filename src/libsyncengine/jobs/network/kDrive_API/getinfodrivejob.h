@@ -32,6 +32,7 @@ class GetInfoDriveJob : public AbstractTokenNetworkJob {
 
     private:
         inline ExitInfo setData() override { return ExitCode::Ok; }
+        void setQueryParameters(Poco::URI &uri) override;
 };
 
 } // namespace KDC

@@ -84,6 +84,12 @@ if ($OutputDir) {
     Log "No custom output directory provided. Using default: $OutputDir"
 }
 
+# Remove previous CMakeUserPresets.json if it exists
+if (Test-Path -Path ".\CMakeUserPresets.json") {
+    Log "Removing previous CMakeUserPresets.json file."
+    Remove-Item -Path ".\CMakeUserPresets.json" -Force
+}
+
 
 
 function Get-ConanExePath {

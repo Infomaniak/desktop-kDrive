@@ -64,7 +64,10 @@ final class LoginViewModel: ObservableObject {
             return
         }
 
-        flowCoordinator.navigate(to: .drivesSelection)
+        Task {
+            flowCoordinator.targetUser = UIUser(user: user)
+            await flowCoordinator.navigateToNextStep()
+        }
     }
 }
 
@@ -76,7 +79,7 @@ extension LoginViewModel: InfomaniakLoginDelegate {
                 let userDbId = try await LoginJob().login(code: code, verifier: verifier)
 
                 @InjectService var coherentCacheObservable: CoherentCacheObservable
-                coherentCacheObservable.usersPublisher.userPublisher(for: userDbId)
+                coherentCacheObservable.usersPublisher.userPublisher(userDbId: userDbId)
                     .receiveOnMain(store: &bindStore) { [weak self] user in
                         self?.handleConnectedUser(user)
                     }

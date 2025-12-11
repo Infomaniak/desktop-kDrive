@@ -29,7 +29,7 @@ std::mutex AbstractJob::_nextJobIdMutex;
 
 AbstractJob::AbstractJob() :
     _logger(Log::instance()->getLogger()) {
-    const std::lock_guard lock(_nextJobIdMutex);
+    const std::scoped_lock lock(_nextJobIdMutex);
     _jobId = _nextJobId++;
 
     if (ParametersCache::isExtendedLogEnabled()) {
