@@ -29,11 +29,13 @@ namespace KDC {
 using namespace testcommhelpers;
 
 void TestGuiCommChannel::testExclTemplGetExcludedJob() {
-    // Query. No need to pass a request id as the response is via a callback.
     Poco::JSON::Object queryObj;
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    (void) queryObj.set("id", 1);
+#endif
     (void) queryObj.set("num", toInt(RequestNum::EXCLTEMPL_GETEXCLUDED));
     Poco::JSON::Object queryParamsObj;
-    (void) queryParamsObj.set("name", toBase64("templateName"));
+    (void) queryParamsObj.set("name", toBase64(Str("templateName")));
     (void) queryObj.set("params", queryParamsObj);
 
     const auto queryStr = stringifyQueryObj(queryObj);
@@ -68,8 +70,10 @@ void TestGuiCommChannel::testExclTemplGetExcludedJob() {
 }
 
 void TestGuiCommChannel::testExclTemplGetListJob() {
-    // Query. No need to pass a request id as the response is via a callback.
     Poco::JSON::Object queryObj;
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    (void) queryObj.set("id", 1);
+#endif
     (void) queryObj.set("num", toInt(RequestNum::EXCLTEMPL_GETLIST));
     Poco::JSON::Object queryParamsObj;
     (void) queryParamsObj.set("default", true);
@@ -84,13 +88,13 @@ void TestGuiCommChannel::testExclTemplGetListJob() {
     (void) answerObj.set("id", 1);
 
     Poco::JSON::Object exclusionTemplateInfo1;
-    (void) exclusionTemplateInfo1.set("template", toBase64("template1"));
+    (void) exclusionTemplateInfo1.set("template", toBase64(Str("template1")));
     (void) exclusionTemplateInfo1.set("warning", true);
     (void) exclusionTemplateInfo1.set("default", true);
     (void) exclusionTemplateInfo1.set("deleted", true);
 
     Poco::JSON::Object exclusionTemplateInfo2;
-    (void) exclusionTemplateInfo2.set("template", toBase64("template2"));
+    (void) exclusionTemplateInfo2.set("template", toBase64(Str("template2")));
     (void) exclusionTemplateInfo2.set("warning", false);
     (void) exclusionTemplateInfo2.set("default", true);
     (void) exclusionTemplateInfo2.set("deleted", false);
@@ -124,20 +128,22 @@ void TestGuiCommChannel::testExclTemplGetListJob() {
 }
 
 void TestGuiCommChannel::testExclTemplSetListJob() {
-    // Query. No need to pass a request id as the response is via a callback.
     Poco::JSON::Object queryObj;
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    (void) queryObj.set("id", 1);
+#endif
     (void) queryObj.set("num", toInt(RequestNum::EXCLTEMPL_SETLIST));
     Poco::JSON::Object queryParamsObj;
     (void) queryParamsObj.set("default", true);
 
     Poco::JSON::Object exclusionTemplateInfo1;
-    (void) exclusionTemplateInfo1.set("template", toBase64("template1"));
+    (void) exclusionTemplateInfo1.set("template", toBase64(Str("template1")));
     (void) exclusionTemplateInfo1.set("warning", true);
     (void) exclusionTemplateInfo1.set("default", true);
     (void) exclusionTemplateInfo1.set("deleted", true);
 
     Poco::JSON::Object exclusionTemplateInfo2;
-    (void) exclusionTemplateInfo2.set("template", toBase64("template2"));
+    (void) exclusionTemplateInfo2.set("template", toBase64(Str("template2")));
     (void) exclusionTemplateInfo2.set("warning", false);
     (void) exclusionTemplateInfo2.set("default", true);
     (void) exclusionTemplateInfo2.set("deleted", false);
@@ -182,8 +188,10 @@ void TestGuiCommChannel::testExclTemplSetListJob() {
 }
 
 void TestGuiCommChannel::testExclTemplPropagateChangeJob() {
-    // Query. No need to pass a request id as the response is via a callback.
     Poco::JSON::Object queryObj;
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    (void) queryObj.set("id", 1);
+#endif
     (void) queryObj.set("num", toInt(RequestNum::EXCLTEMPL_PROPAGATE_CHANGE));
     Poco::JSON::Object queryParamsObj;
     (void) queryObj.set("params", queryParamsObj);
@@ -214,6 +222,5 @@ void TestGuiCommChannel::testExclTemplPropagateChangeJob() {
 
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 }
-
 
 } // namespace KDC
