@@ -285,7 +285,8 @@
                             <toolKit:SettingsCard x:Uid="Page_SettingsPage_Privacy_Matomo"
                                                   Background="{ThemeResource LayerFillColorDefault}"
                                                   IsClickEnabled="True"
-                                                  Click="MatomoButton_Click" />
+                                                  Click="MatomoButton_Click"
+                                                  IsEnabled="False" />
                             <controls:ConsentDialog x:Name="MatomoContentDialog"
                                                     x:Uid="Page_SettingsPage_Privacy_Matomo_ConsentDialog"
                                                     LogoUriStr="{StaticResource Infomaniak.Custom.Icons.logo-matomo}"
@@ -295,7 +296,8 @@
                             <toolKit:SettingsCard x:Uid="Page_SettingsPage_Privacy_Sentry"
                                                   Background="{ThemeResource LayerFillColorDefault}"
                                                   IsClickEnabled="True"
-                                                  Click="SentryButton_Click" />
+                                                  Click="SentryButton_Click"
+                                                  IsEnabled="False" />
                             <controls:ConsentDialog x:Name="SentryContentDialog"
                                                     x:Uid="Page_SettingsPage_Privacy_Sentry_ConsentDialog"
                                                     LogoUriStr="{StaticResource Infomaniak.Custom.Icons.logo-sentry}"
@@ -470,7 +472,8 @@
                     </toolKit:SettingsExpander>
 
                     <!-- Advanced - Send log -->
-                    <toolKit:SettingsCard Header="Support infomaniak">
+                    <toolKit:SettingsCard Header="Support infomaniak"
+                                          IsEnabled="False">
                         <toolKit:SettingsCard.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Devices.headphones}"
                                               Height="32"

@@ -35,7 +35,7 @@ namespace Infomaniak.kDrive.ViewModels
         private DriveId _driveId = -1;
         private string _name = "";
         private Color _color = Color.Blue;
-        private bool _isPaidOffer = false; // Indicates if the drive is a paid offer (i.e. myKsuite+/pro +, ...)
+        private bool _isPaidOffer = true; // Indicates if the drive is a paid offer (i.e. myKsuite+/pro +, ...)
         private ObservableCollection<Sync> _syncs = new ObservableCollection<Sync>();
         private Sync? _mainSync;
         private bool _isConfigured = false; // Indicates if at least one sync (which is not an advanced sync) is set up for this drive
