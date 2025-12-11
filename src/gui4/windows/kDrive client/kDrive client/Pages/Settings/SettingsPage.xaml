@@ -260,7 +260,8 @@
                     <!-- Advanced - Sync rules -->
                     <toolKit:SettingsCard x:Uid="Page_SettingsPage_SyncRules"
                                           IsClickEnabled="True"
-                                          Click="SyncRulesCard_Clicked">
+                                          Click="SyncRulesCard_Clicked"
+                                          IsEnabled="False">
                         <toolKit:SettingsCard.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Edition.list-bullets}"
                                               Height="32"
