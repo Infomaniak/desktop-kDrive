@@ -19,10 +19,10 @@ namespace Infomaniak.kDrive.CustomControls
 {
     public sealed partial class SyncActivityTable : UserControl
     {
-        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+        private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel => _viewModel;
 
-        private readonly ObservableCollection<SyncFileItem> _outGoingActivities = new();
+        private readonly ObservableCollection<SyncFileItem> _outGoingActivities = [];
         private IDisposable? _activitySubscription;
 
         public SyncActivityTable()
@@ -149,7 +149,7 @@ namespace Infomaniak.kDrive.CustomControls
 
         }
     }
-    public class ItemTypeDataTemplateSelector : DataTemplateSelector
+    public partial class ItemTypeDataTemplateSelector : DataTemplateSelector
     {
         public DataTemplate? FileTemplate { get; set; }
         public DataTemplate? DirectoryTemplate { get; set; }
@@ -170,13 +170,11 @@ namespace Infomaniak.kDrive.CustomControls
                 return null;
             }
 
-            switch (nodeType)
+            return nodeType switch
             {
-                case Types.NodeType.Directory:
-                    return DirectoryTemplate;
-                default:
-                    return FileTemplate;
-            }
+                Types.NodeType.Directory => DirectoryTemplate,
+                _ => FileTemplate,
+            };
         }
     }
 }

@@ -7,7 +7,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors
 {
     public sealed partial class DefaultError : UserControl
     {
-        private Error _error;
+        private readonly Error? _error;
 
         public DefaultError(Error error)
         {
@@ -19,7 +19,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors
 
         private void UpdateCard()
         {
-            if (_error != null)
+            if (_error is not null)
             {
                 var lines = new List<string>
                 {
@@ -32,7 +32,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors
                     if (value is null)
                         return;
 
-                    string text = value.ToString();
+                    string text = value.ToString() ?? "";
                     if (string.IsNullOrWhiteSpace(text) || text == "None" || text == "Unknown")
                         return;
 

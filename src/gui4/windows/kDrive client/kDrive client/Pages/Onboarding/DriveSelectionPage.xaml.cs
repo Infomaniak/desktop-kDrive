@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Windows.Storage.Pickers;
 
@@ -14,9 +15,9 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 {
     public sealed partial class DriveSelectionPage : Page
     {
-        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+        private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         private ViewModels.Onboarding? _onBoardingViewModel;
-        private Dictionary<NewSync, string> _previousSyncPaths = new Dictionary<NewSync, string>(); // To store previous sync paths and allow reverting if needed in advanced settings
+        private readonly Dictionary<NewSync, string> _previousSyncPaths = []; // To store previous sync paths and allow reverting if needed in advanced settings
         public AppModel ViewModel { get { return _viewModel; } }
         public ViewModels.Onboarding? ObViewModel { get => _onBoardingViewModel; }
         public DriveSelectionPage()
@@ -44,7 +45,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     Frame.Navigate(typeof(NoDrivesPage), ObViewModel);
                     return;
                 }
-                if ((App.Current as App)?.CurrentWindow is OnBoardingWindow onBoardingWindow)
+                if (App.Current is App { CurrentWindow: OnBoardingWindow onBoardingWindow })
                     onBoardingWindow.UpdateLottieSource("Infomaniak.Custom.Animations.synchro-file", 219);
             }
             else
@@ -58,9 +59,9 @@ namespace Infomaniak.kDrive.Pages.Onboarding
         {
             if (sender is CheckBox cb && cb.DataContext is IDrive drive && _onBoardingViewModel != null)
             {
-                string localPath = Utility.DefaultSyncPath(drive.Name, _onBoardingViewModel.NewSyncs.Select(s => s.LocalPath).ToList());
+                string localPath = Utility.DefaultSyncPath(drive.Name, [.. _onBoardingViewModel.NewSyncs.Select(s => s.LocalPath)]);
                 // TODO: Call ServerRequests::findGoodPathForNewSync once implemented
-                NewSync newSync = new NewSync()
+                NewSync newSync = new()
                 {
                     LocalPath = localPath,
                     SupportOnlineMode = Utility.SupportOnlineSync(localPath),  // TODO: Call UTILITY_BESTVFSAVAILABLEMODE once implemented
@@ -123,7 +124,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                 senderButton.IsEnabled = false;
 
             // Create a folder picker
-            FolderPicker openPicker = new Windows.Storage.Pickers.FolderPicker();
+            FolderPicker openPicker = new();
             var window = ((App)Application.Current)?.CurrentWindow;
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
             WinRT.Interop.InitializeWithWindow.Initialize(openPicker, hWnd);
@@ -161,7 +162,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                 {
                     newSync.LocalPath = folder.Path;
                     newSync.SyncType = Utility.SupportOnlineSync(folder.Path) ? SyncType.Online : SyncType.Offline;
-                    Logger.Log(Logger.Level.Info, $"Sync path for drive '{newSync?.Drive.Name ?? "unknown"}' updated to '{newSync.LocalPath}' with sync type '{newSync.SyncType}'");
+                    Logger.Log(Logger.Level.Info, $"Sync path for drive '{newSync!.Drive?.Name ?? "unknown"}' updated to '{newSync!.LocalPath}' with sync type '{newSync.SyncType}'");
                     RefreshAdvancedSettingsConfirmButtonIsEnabled();
                 }
                 else
@@ -210,7 +211,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
         }
     }
 
-    public class DriveTemplateSelector : DataTemplateSelector
+    public partial class DriveTemplateSelector : DataTemplateSelector
     {
         public DataTemplate? SingleAccountDriveTemplate { get; set; }
         public DataTemplate? MultiAccountDriveTemplate { get; set; }

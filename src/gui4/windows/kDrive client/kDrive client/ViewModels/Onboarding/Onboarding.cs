@@ -84,7 +84,7 @@ namespace Infomaniak.kDrive.ViewModels
             foreach (NewSync sync in NewSyncs)
             {
                 Logger.Log(Logger.Level.Debug, $"Setting up new sync: LocalPath={sync.LocalPath}, RemotePath={sync.RemotePath}, Drive={sync?.Drive?.Name ?? "unknown"}");
-                await _serverCommService.AddSync(sync, CancellationToken.None);
+                await _serverCommService.AddSync(sync!, CancellationToken.None);
             }
 
             Logger.Log(Logger.Level.Info, $"Onboarding finished for user {SelectedUser.Name}.");
