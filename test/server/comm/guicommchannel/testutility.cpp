@@ -19,6 +19,7 @@
 #include "comm/guijobs/utilitycheckcommstatusjob.h"
 #include "comm/guijobs/utilityhassystemlaunchonstartupjob.h"
 #include "comm/guijobs/utilityquitjob.h"
+#include "comm/guijobs/utilitydisplayclientreportjob.h"
 
 #include "testguicommchannel.h"
 #include "../testcommhelpers.h"
@@ -105,5 +106,25 @@ void TestGuiCommChannel::testUtilityQuitJob() {
 #endif
 }
 
+void TestGuiCommChannel::testUtilityDisplayClientReportJob() {
+    const Poco::JSON::Object query = createSimpleQuery(RequestNum::UTILITY_DISPLAY_CLIENT_REPORT);
+    const auto queryStr = stringifyQueryObj(query);
+
+    // Job expected answers
+    const SimpleAnswers simpleAnswers = createSimpleAnswers(RequestNum::UTILITY_DISPLAY_CLIENT_REPORT);
+    const auto answerStr = stringifyAnswerObj(simpleAnswers.answerWithNumAndType);
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        const auto utilityDisplayClientReportJob = std::dynamic_pointer_cast<UtilityDisplayClientReportJob>(job);
+        CPPUNIT_ASSERT(utilityDisplayClientReportJob);
+    };
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+#else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(simpleAnswers.answer);
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
 
 } // namespace KDC

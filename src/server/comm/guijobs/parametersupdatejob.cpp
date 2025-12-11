@@ -24,7 +24,6 @@
 // Output parameters keys
 static const auto inParamsParametersInfo = "parametersInfo";
 
-
 namespace KDC {
 
 ParametersUpdateJob::ParametersUpdateJob(std::shared_ptr<CommManager> commManager, int requestId,

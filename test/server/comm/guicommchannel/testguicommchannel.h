@@ -86,6 +86,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testUtilityCheckCommStatusJob);
         CPPUNIT_TEST(testUtilityHasSystemLaunchOnStartupJob);
         CPPUNIT_TEST(testUtilityQuitJob);
+        CPPUNIT_TEST(testUtilityDisplayClientReportJob);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -128,6 +129,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testUtilityCheckCommStatusJob();
         void testUtilityHasSystemLaunchOnStartupJob();
         void testUtilityQuitJob();
+        void testUtilityDisplayClientReportJob();
 
     private:
         GuiJobFactory _guiJobFactory;

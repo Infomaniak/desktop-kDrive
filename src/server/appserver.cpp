@@ -739,6 +739,22 @@ ExitInfo AppServer::updateParametersAndPropagateChanges(const ParametersInfo &ne
     return exitCode;
 }
 
+ExitInfo AppServer::displaySentryClientReport() {
+    if (_clientManuallyRestarted) {
+        // If the client initially started by the server never sends the UTILITY_DISPLAY_CLIENT_REPORT,
+        // we consider the client's startup aborted, and the user was forced to manually start the client again.
+        if (!_appStartPTraceStopped) {
+            sentry::pTraces::basic::AppStart().stop(sentry::PTraceStatus::Aborted);
+            _appStartPTraceStopped = true;
+        }
+    }
+
+    if (!_appStartPTraceStopped) {
+        _appStartPTraceStopped = true;
+        sentry::pTraces::basic::AppStart().stop();
+    }
+}
+
 void AppServer::updateSentryUser() {
     User user;
     bool found = false;

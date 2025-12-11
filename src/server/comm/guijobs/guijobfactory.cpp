@@ -52,6 +52,7 @@
 #include "utilitycheckcommstatusjob.h"
 #include "utilityhassystemlaunchonstartupjob.h"
 #include "utilityquitjob.h"
+#include "utilitydisplayclientreportjob.h"
 
 namespace KDC {
 
@@ -89,7 +90,8 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::PARAMETERS_UPDATE, makeShared<ParametersUpdateJob>},
                 {RequestNum::UTILITY_CHECKCOMMSTATUS, makeShared<UtilityCheckCommStatusJob>},
                 {RequestNum::UTILITY_HASSYSTEMLAUNCHONSTARTUP, makeShared<UtilityHasSystemLaunchOnStartupJob>},
-                {RequestNum::UTILITY_QUIT, makeShared<UtilityQuitJob>}};
+                {RequestNum::UTILITY_QUIT, makeShared<UtilityQuitJob>},
+                {RequestNum::UTILITY_DISPLAY_CLIENT_REPORT, makeShared<UtilityDisplayClientReportJob>}};
 }
 
 std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::shared_ptr<CommManager> commManager,
