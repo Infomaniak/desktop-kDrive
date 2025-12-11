@@ -49,7 +49,12 @@ ExitInfo UtilityGetAppStateJob::deserializeInputParms() {
 }
 
 ExitInfo UtilityGetAppStateJob::serializeOutputParms() {
-    writeParamValue(outParamsValue, std::get<std::string>(_value));
+    std::visit(
+            [this](auto &&arg) {
+                using T = std::decay_t<decltype(arg)>;
+                writeParamValue(outParamsValue, std::get<T>(_value));
+            },
+            _value);
 
     return ExitCode::Ok;
 }
