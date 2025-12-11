@@ -127,6 +127,9 @@ class AppServer : public SharedTools::QtSingleApplication {
                                            const std::chrono::seconds &startDelay = std::chrono::seconds(0),
                                            bool resumedByUser = false, bool firstInit = false);
         [[nodiscard]] ExitInfo stopSyncPal(int syncDbId, bool pausedByUser = false, bool quit = false, bool clear = false);
+        void clearSyncCacheMap() { _syncCacheMap.clear(); }
+        void loadUsersInfo() { onLoadInfo(); }
+
         [[nodiscard]] ExitInfo stopVfs(int syncDbId, bool unregister);
         [[nodiscard]] ExitInfo startSyncs(User &user);
         void stopSyncTask(int syncDbId);
@@ -148,6 +151,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 #endif
 
         static std::shared_ptr<CommManager> commManager() { return _commManager; }
+
     private:
         QStringList _arguments;
         log4cplus::Logger _logger;

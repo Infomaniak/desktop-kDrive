@@ -19,24 +19,15 @@
 #pragma once
 
 #include "server/comm/guijobs/abstractguijob.h"
-#include "libcommon/info/nodeinfo.h"
+
 namespace KDC {
 
-class NodeSubFoldersJob : public AbstractGuiJob {
+class UtilityActivateLoadInfoJob : public AbstractGuiJob {
     public:
-        NodeSubFoldersJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                          std::shared_ptr<AbstractCommChannel> channel);
+        UtilityActivateLoadInfoJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                                   std::shared_ptr<AbstractCommChannel> channel);
 
     private:
-        // Input parameters
-        int _userDbId = 0;
-        int _driveId = 0;
-        NodeId _nodeId;
-        bool _withPath = false;
-
-        // Output parameters
-        std::vector<NodeInfo> _nodeSubFolderInfoList;
-
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;
         ExitInfo process() override;

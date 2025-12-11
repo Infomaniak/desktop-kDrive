@@ -102,7 +102,6 @@ void TestGuiCommChannel::testParametersInfoJob() {
     (void) answerObj.set("code", 0);
     (void) answerObj.set("id", 1);
 
-
     Poco::JSON::Object paramsObj;
     (void) paramsObj.set("parametersInfo", createParametersInfoObject());
     (void) answerObj.set("params", paramsObj);
@@ -113,7 +112,6 @@ void TestGuiCommChannel::testParametersInfoJob() {
 
     // Job expected answers
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
-    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto parametersInfoJob = std::dynamic_pointer_cast<ParametersInfoJob>(job);
@@ -121,7 +119,12 @@ void TestGuiCommChannel::testParametersInfoJob() {
         parametersInfoJob->_parametersInfo = getExpectedParametersInfo();
     };
 
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(queryStr, answerStr, {}, processFct);
+#else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
 }
 
 void TestGuiCommChannel::testParametersUpdateJob() {
@@ -151,7 +154,6 @@ void TestGuiCommChannel::testParametersUpdateJob() {
 
     // Job expected answers
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
-    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto parametersUpdateJob = std::dynamic_pointer_cast<ParametersUpdateJob>(job);
@@ -160,7 +162,12 @@ void TestGuiCommChannel::testParametersUpdateJob() {
         CPPUNIT_ASSERT(res == parametersUpdateJob->_parametersInfo);
     };
 
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(queryStr, answerStr, {}, processFct);
+#else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
 }
 
 } // namespace KDC

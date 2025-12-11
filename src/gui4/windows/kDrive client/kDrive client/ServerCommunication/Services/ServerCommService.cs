@@ -616,6 +616,11 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             CommStruct.ConversionHelper.copyToSettings(parametersInfo, _viewModel.Settings);
         }
+        
+        public async Task ActivateLoadInfo(CancellationToken cancellationToken)
+        {
+            await _commClient.SendRequestAsync(RequestNum.UTILITY_ACTIVATELOADINFO, new JsonObject { } , cancellationToken);
+        }
 
         public async Task SaveSettings(CancellationToken cancellationToken)
         {

@@ -157,6 +157,11 @@ class AbstractGuiJob : public AbstractJob {
             CommonUtility::writeValuesToStruct(_outParams, key, values);
         }
 
+        template<typename T, typename H, typename A = std::allocator<T>>
+        void writeParamValues(const std::string &key, const std::unordered_map<std::string, T, H, std::equal_to<>, A> &values) {
+            CommonUtility::writeValuesToStruct(_outParams, key, values);
+        }
+
         friend class TestAbstractGuiJob;
         friend class TestGuiCommChannel;
 };

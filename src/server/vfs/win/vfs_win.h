@@ -65,6 +65,7 @@ class VFS_EXPORT VfsWin : public Vfs {
         ExitInfo setThumbnail(const SyncPath &, const QPixmap &) final { return ExitCode::Ok; };
         ExitInfo setAppExcludeList() final { return ExitCode::Ok; }
         ExitInfo getFetchingAppList(QHash<QString, QString> &) final { return ExitCode::Ok; }
+        ExitInfo getFetchingAppList(AppTable &) final { return ExitCode::Ok; }
 
         bool isExcluded(const SyncPath &) override { return false; }
         virtual bool setCreationDate(const QString &, time_t) { return false; }

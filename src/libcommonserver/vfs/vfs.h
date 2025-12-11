@@ -292,6 +292,14 @@ class Vfs : public QObject {
          */
         virtual ExitInfo getFetchingAppList(QHash<QString, QString> &appTable) = 0;
 
+        /** Set the list of applications that should not be hydrated.
+         *
+         * * Possible return values are:
+         * - ExitCode::Ok: Everything went fine, the list was set.
+         * - ExitCode::LogicError, ExitCause::Unknown: An unknown error occurred.
+         */
+        virtual ExitInfo getFetchingAppList(AppTable &appTable) = 0;
+
         virtual void exclude(const SyncPath &) = 0;
         virtual bool isExcluded(const SyncPath &filePath) = 0;
 
@@ -427,19 +435,26 @@ class VfsOff : public Vfs {
         }
         ExitInfo setThumbnail(const SyncPath &, const QPixmap &) override { return ExitCode::Ok; }
         ExitInfo setAppExcludeList() override { return ExitCode::Ok; }
+        ExitInfo getFetchingAppList(AppTable &) override { return ExitCode::Ok; }
         ExitInfo getFetchingAppList(QHash<QString, QString> &) override { return ExitCode::Ok; }
-        void exclude(const SyncPath &) override { /*VfsOff*/ }
+        void exclude(const SyncPath &) override { /*VfsOff*/
+        }
         bool isExcluded(const SyncPath &) override { return false; }
         bool fileStatusChanged(const SyncPath &, const SyncFileStatus) override { return true; }
 
-        void clearFileAttributes(const SyncPath &) override { /*VfsOff*/ }
-        void dehydrate(const SyncPath &) override { /*VfsOff*/ }
-        void hydrate(const SyncPath &) override { /*VfsOff*/ }
-        void cancelHydrate(const SyncPath &) override { /*VfsOff*/ }
+        void clearFileAttributes(const SyncPath &) override { /*VfsOff*/
+        }
+        void dehydrate(const SyncPath &) override { /*VfsOff*/
+        }
+        void hydrate(const SyncPath &) override { /*VfsOff*/
+        }
+        void cancelHydrate(const SyncPath &) override { /*VfsOff*/
+        }
 
     protected:
         ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
-        void stopImpl(bool /*unregister*/) override { /*VfsOff*/ }
+        void stopImpl(bool /*unregister*/) override { /*VfsOff*/
+        }
 
         friend class TestWorkers;
 };

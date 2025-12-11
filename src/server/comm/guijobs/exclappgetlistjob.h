@@ -19,23 +19,22 @@
 #pragma once
 
 #include "server/comm/guijobs/abstractguijob.h"
-#include "libcommon/info/nodeinfo.h"
+
+#include "libcommon/info/exclusionappinfo.h"
+
 namespace KDC {
 
-class NodeSubFoldersJob : public AbstractGuiJob {
+class ExclAppGetListJob : public AbstractGuiJob {
     public:
-        NodeSubFoldersJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+        ExclAppGetListJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
                           std::shared_ptr<AbstractCommChannel> channel);
 
     private:
         // Input parameters
-        int _userDbId = 0;
-        int _driveId = 0;
-        NodeId _nodeId;
-        bool _withPath = false;
+        bool _default;
 
         // Output parameters
-        std::vector<NodeInfo> _nodeSubFolderInfoList;
+        std::vector<ExclusionAppInfo> _applicationList;
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;

@@ -46,12 +46,17 @@
 #include "nodesubfoldersjob.h"
 #include "nodesubfolders2job.h"
 #include "nodefoldersizejob.h"
-#include "blacklistednodelistjob.h"
-#include "blacklistednodesetlistjob.h"
-#include "errorinfolistjob.h"
 #include "nodecreatemissingfoldersjob.h"
+#include "errorinfolistjob.h"
+#if defined(KD_MACOS)
+#include "exclappgetlistjob.h"
+#include "exclappsetlistjob.h"
+#include "exclappgetfetchingapplistjob.h"
+#endif
 #include "parametersinfojob.h"
 #include "parametersupdatejob.h"
+#include "utilityactivateloadinfojob.h"
+
 
 namespace KDC {
 
@@ -84,15 +89,17 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::NODE_SUBFOLDERS, makeShared<NodeSubFoldersJob>},
                 {RequestNum::NODE_SUBFOLDERS2, makeShared<NodeSubFolders2Job>},
                 {RequestNum::NODE_FOLDER_SIZE, makeShared<NodeFolderSizeJob>},
+                {RequestNum::NODE_CREATEMISSINGFOLDERS, makeShared<NodeCreateMissingFoldersJob>},
+                {RequestNum::ERROR_INFOLIST, makeShared<ErrorInfolistJob>},
+#if defined(KD_MACOS)
+                {RequestNum::EXCLAPP_GETLIST, makeShared<ExclAppGetListJob>},
+                {RequestNum::EXCLAPP_SETLIST, makeShared<ExclAppSetListJob>},
+                {RequestNum::EXCLAPP_GET_FETCHING_APP_LIST, makeShared<ExclAppGetFetchingAppListJob>},
+#endif
                 {RequestNum::PARAMETERS_INFO, makeShared<ParametersInfoJob>},
                 {RequestNum::PARAMETERS_UPDATE, makeShared<ParametersUpdateJob>},
-                {RequestNum::BLACKLISTED_NODE_LIST, makeShared<BlacklistedNodeListJob>},
-                {RequestNum::BLACKLISTED_NODE_SETLIST, makeShared<BlacklistedNodeSetListJob>},
-                {RequestNum::ERROR_INFOLIST, makeShared<ErrorInfolistJob>},
-                {RequestNum::NODE_INFO, makeShared<NodeInfoJob>},
-                {RequestNum::NODE_CREATEMISSINGFOLDERS, makeShared<NodeCreateMissingFoldersJob>},
-                {RequestNum::PARAMETERS_INFO, makeShared<ParametersInfoJob>},
-                {RequestNum::PARAMETERS_UPDATE, makeShared<ParametersUpdateJob>}};
+                {RequestNum::UTILITY_ACTIVATELOADINFO, makeShared<UtilityActivateLoadInfoJob>},
+                {RequestNum::NODE_CREATEMISSINGFOLDERS, makeShared<NodeCreateMissingFoldersJob>}};
 }
 
 std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::shared_ptr<CommManager> commManager,
