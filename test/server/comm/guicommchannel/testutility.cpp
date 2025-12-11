@@ -28,31 +28,12 @@ namespace KDC {
 using namespace testcommhelpers;
 
 void TestGuiCommChannel::testUtilityCheckCommStatusJob() {
-    Poco::JSON::Object queryObj;
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    (void) queryObj.set("id", 1);
-#endif
-    (void) queryObj.set("num", toInt(RequestNum::UTILITY_CHECKCOMMSTATUS));
-    Poco::JSON::Object queryParamsObj;
-    (void) queryObj.set("params", queryParamsObj);
-
-    const auto queryStr = stringifyQueryObj(queryObj);
-
-    // Answer
-    Poco::JSON::Object answerObj;
-    (void) answerObj.set("cause", 0);
-    (void) answerObj.set("code", 0);
-    (void) answerObj.set("id", 1);
-
-    Poco::JSON::Object paramsObj;
-    (void) answerObj.set("params", paramsObj);
-
-    Poco::JSON::Object answerObjWithNumAndType = answerObj;
-    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UTILITY_CHECKCOMMSTATUS));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    const Poco::JSON::Object query = createSimpleQuery(RequestNum::UTILITY_CHECKCOMMSTATUS);
+    const auto queryStr = stringifyQueryObj(query);
 
     // Job expected answers
-    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+    const SimpleAnswers simpleAnswers = createSimpleAnswers(RequestNum::UTILITY_CHECKCOMMSTATUS);
+    const auto answerStr = stringifyAnswerObj(simpleAnswers.answerWithNumAndType);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         const auto utilityCheckCommStatusJob = std::dynamic_pointer_cast<UtilityCheckCommStatusJob>(job);
@@ -62,21 +43,14 @@ void TestGuiCommChannel::testUtilityCheckCommStatusJob() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else
-    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(simpleAnswers.answer);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
 
 void TestGuiCommChannel::testUtilityHasSystemLaunchOnStartupJob() {
-    Poco::JSON::Object queryObj;
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    (void) queryObj.set("id", 1);
-#endif
-    (void) queryObj.set("num", toInt(RequestNum::UTILITY_HASSYSTEMLAUNCHONSTARTUP));
-    Poco::JSON::Object queryParamsObj;
-    (void) queryObj.set("params", queryParamsObj);
-
-    const auto queryStr = stringifyQueryObj(queryObj);
+    const auto query = createSimpleQuery(RequestNum::UTILITY_HASSYSTEMLAUNCHONSTARTUP);
+    const auto queryStr = stringifyQueryObj(query);
 
     // Answer
     Poco::JSON::Object answerObj;
@@ -111,31 +85,12 @@ void TestGuiCommChannel::testUtilityHasSystemLaunchOnStartupJob() {
 }
 
 void TestGuiCommChannel::testUtilityQuitJob() {
-    Poco::JSON::Object queryObj;
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    (void) queryObj.set("id", 1);
-#endif
-    (void) queryObj.set("num", toInt(RequestNum::UTILITY_QUIT));
-    Poco::JSON::Object queryParamsObj;
-    (void) queryObj.set("params", queryParamsObj);
-
-    const auto queryStr = stringifyQueryObj(queryObj);
-
-    // Answer
-    Poco::JSON::Object answerObj;
-    (void) answerObj.set("cause", 0);
-    (void) answerObj.set("code", 0);
-    (void) answerObj.set("id", 1);
-
-    Poco::JSON::Object paramsObj;
-    (void) answerObj.set("params", paramsObj);
-
-    Poco::JSON::Object answerObjWithNumAndType = answerObj;
-    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UTILITY_QUIT));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    const Poco::JSON::Object query = createSimpleQuery(RequestNum::UTILITY_QUIT);
+    const auto queryStr = stringifyQueryObj(query);
 
     // Job expected answers
-    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+    const SimpleAnswers simpleAnswers = createSimpleAnswers(RequestNum::UTILITY_QUIT);
+    const auto answerStr = stringifyAnswerObj(simpleAnswers.answerWithNumAndType);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         const auto utilityQuitJob = std::dynamic_pointer_cast<UtilityQuitJob>(job);
@@ -145,7 +100,7 @@ void TestGuiCommChannel::testUtilityQuitJob() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else
-    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(simpleAnswers.answer);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }

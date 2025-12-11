@@ -56,4 +56,34 @@ CommString stringifyCbkAnswerObj(const Poco::JSON::Object &obj) {
 
     return CommonUtility::str2CommString(json.str());
 }
+
+Poco::JSON::Object createSimpleQuery(const RequestNum requestNum) {
+    Poco::JSON::Object queryObj;
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    (void) queryObj.set("id", 1);
+#endif
+    (void) queryObj.set("num", toInt(requestNum));
+    Poco::JSON::Object queryParamsObj;
+    (void) queryObj.set("params", queryParamsObj);
+
+    return queryObj;
+}
+
+SimpleAnswers createSimpleAnswers(const RequestNum requestEnum) {
+    SimpleAnswers simpleAnswers;
+
+    (void) simpleAnswers.answer.set("cause", 0);
+    (void) simpleAnswers.answer.set("code", 0);
+    (void) simpleAnswers.answer.set("id", 1);
+
+    Poco::JSON::Object paramsObj;
+    (void) simpleAnswers.answer.set("params", paramsObj);
+
+    simpleAnswers.answerWithNumAndType = simpleAnswers.answer;
+    (void) simpleAnswers.answerWithNumAndType.set("num", toInt(requestEnum));
+    (void) simpleAnswers.answerWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+
+    return simpleAnswers;
+}
+
 } // namespace KDC::testcommhelpers

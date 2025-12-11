@@ -21,7 +21,6 @@
 #include "appserver.h"
 #include "libcommon/comm.h"
 
-
 namespace KDC {
 
 UtilityQuitJob::UtilityQuitJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
