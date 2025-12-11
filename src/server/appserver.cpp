@@ -758,6 +758,8 @@ ExitInfo AppServer::displaySentryClientReport() {
         _appStartPTraceStopped = true;
         sentry::pTraces::basic::AppStart().stop();
     }
+
+    return ExitCode::Ok;
 }
 
 void AppServer::updateSentryUser() {
@@ -2192,19 +2194,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::UTILITY_DISPLAY_CLIENT_REPORT: {
-            if (_clientManuallyRestarted) {
-                // If the client initially started by the server never sends the UTILITY_DISPLAY_CLIENT_REPORT,
-                // we consider the client's startup aborted, and the user was forced to manually start the client again.
-                if (!_appStartPTraceStopped) {
-                    sentry::pTraces::basic::AppStart().stop(sentry::PTraceStatus::Aborted);
-                    _appStartPTraceStopped = true;
-                }
-            }
-
-            if (!_appStartPTraceStopped) {
-                _appStartPTraceStopped = true;
-                sentry::pTraces::basic::AppStart().stop();
-            }
+            (void) displaySentryClientReport();
             break;
         }
         case RequestNum::SYNC_SETSUPPORTSVIRTUALFILES: {
@@ -2637,11 +2627,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 

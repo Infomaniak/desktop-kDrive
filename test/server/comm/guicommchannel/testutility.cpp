@@ -67,7 +67,7 @@ void TestGuiCommChannel::testUtilityActivateLoadInfoJob() {
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
-  
+
 void TestGuiCommChannel::testUtilityCheckCommStatusJob() {
     const Poco::JSON::Object query = createSimpleQuery(RequestNum::UTILITY_CHECKCOMMSTATUS);
     const auto queryStr = stringifyQueryObj(query);
@@ -157,6 +157,7 @@ void TestGuiCommChannel::testUtilityDisplayClientReportJob() {
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         const auto utilityDisplayClientReportJob = std::dynamic_pointer_cast<UtilityDisplayClientReportJob>(job);
         CPPUNIT_ASSERT(utilityDisplayClientReportJob);
+    };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
