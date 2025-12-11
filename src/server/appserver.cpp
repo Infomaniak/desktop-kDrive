@@ -1477,7 +1477,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::SYNC_ASKFORSTATUS: {
-            _syncCacheMap.clear();
+            clearSyncCacheMap();
 
             resultStream << ExitCode::Ok;
             break;
@@ -2002,7 +2002,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 QTimer::singleShot(100, this, &AppServer::onLoadInfo);
 
                 // Clear sync update progress cache
-                _syncCacheMap.clear();
+                clearSyncCacheMap();
             }
 
             resultStream << ExitCode::Ok;
