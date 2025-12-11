@@ -53,8 +53,8 @@ void TestGuiCommChannel::testActivateLoadInfoJob() {
                          std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-        auto activateLoadJobJob = std::dynamic_pointer_cast<UtilityActivateLoadInfoJob>(job);
-        CPPUNIT_ASSERT(activateLoadJobJob);
+        auto activateLoadInfoJob = std::dynamic_pointer_cast<UtilityActivateLoadInfoJob>(job);
+        CPPUNIT_ASSERT(activateLoadInfoJob);
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)

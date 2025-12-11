@@ -25,7 +25,7 @@ namespace KDC {
 class UtilityActivateLoadInfoJob : public AbstractGuiJob {
     public:
         UtilityActivateLoadInfoJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                       std::shared_ptr<AbstractCommChannel> channel);
+                                   std::shared_ptr<AbstractCommChannel> channel);
 
     private:
         ExitInfo deserializeInputParms() override;
