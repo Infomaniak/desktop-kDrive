@@ -21,6 +21,7 @@
 #endif
 
 #include "serverrequests.h"
+#include "appserver.h"
 #include "config.h"
 #include "keychainmanager/keychainmanager.h"
 #include "jobs/network/kDrive_API/getrootfilelistjob.h"
@@ -43,6 +44,7 @@
 #include "libcommonserver/utility/utility.h"
 #include "libsyncengine/requests/parameterscache.h"
 #include "libsyncengine/requests/exclusiontemplatecache.h"
+#include "server/comm/guijobs/signalerrorremovedjob.h"
 
 #include <QDir>
 #include <QUuid>
@@ -1463,23 +1465,38 @@ ExitCode ServerRequests::setExclusionTemplateList(bool def, const QList<Exclusio
 }
 
 #if defined(KD_MACOS)
-ExitCode ServerRequests::getExclusionAppList(bool def, QList<ExclusionAppInfo> &list) {
+ExitCode ServerRequests::getExclusionAppList(const bool def, std::vector<ExclusionAppInfo> &list) {
+    list.clear();
     std::vector<ExclusionApp> exclusionList;
+
     if (!ParmsDb::instance()->selectAllExclusionApps(def, exclusionList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllExclusionApps");
         return ExitCode::DbError;
     }
-    list.clear();
+
     for (const ExclusionApp &exclusionApp: exclusionList) {
         ExclusionAppInfo exclusionAppInfo;
         ServerRequests::exclusionAppToExclusionAppInfo(exclusionApp, exclusionAppInfo);
-        list << exclusionAppInfo;
+        list.emplace_back(std::move(exclusionAppInfo));
     }
 
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::setExclusionAppList(bool def, const QList<ExclusionAppInfo> &list) {
+ExitCode ServerRequests::getExclusionAppList(const bool def, QList<ExclusionAppInfo> &list) {
+    list.clear();
+    std::vector<ExclusionAppInfo> stdVectorAppInfo;
+
+    const auto exitInfo = getExclusionAppList(def, stdVectorAppInfo);
+
+    for (auto &appInfo: stdVectorAppInfo) {
+        list.append(std::move(appInfo));
+    }
+
+    return exitInfo;
+}
+
+ExitCode ServerRequests::setExclusionAppList(const bool def, const std::vector<ExclusionAppInfo> &list) {
     std::vector<ExclusionApp> exclusionList;
     for (const ExclusionAppInfo &exclusionAppInfo: list) {
         ExclusionApp exclusionApp;
@@ -1492,6 +1509,13 @@ ExitCode ServerRequests::setExclusionAppList(bool def, const QList<ExclusionAppI
     }
 
     return ExitCode::Ok;
+}
+
+ExitCode ServerRequests::setExclusionAppList(const bool def, const QList<ExclusionAppInfo> &list) {
+    std::vector<ExclusionAppInfo> stdVector;
+    for (const ExclusionAppInfo &exclusionAppInfo: list) stdVector.push_back(exclusionAppInfo);
+
+    return setExclusionAppList(def, stdVector);
 }
 #endif
 
@@ -1508,6 +1532,25 @@ ExitCode ServerRequests::getErrorInfoList(ErrorLevel level, int syncDbId, int li
             ErrorInfo errorInfo;
             errorToErrorInfo(error, errorInfo);
             list << errorInfo;
+        }
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitInfo ServerRequests::getErrorInfoList(int limit, std::vector<ErrorInfo> &list) {
+    std::vector<Error> errorList;
+    if (!ParmsDb::instance()->selectAllErrors(limit, errorList)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllErrors");
+        return ExitCode::DbError;
+    }
+
+    list.clear();
+    for (const Error &error: errorList) {
+        if (isDisplayableError(error)) {
+            ErrorInfo errorInfo;
+            errorToErrorInfo(error, errorInfo);
+            list.push_back(errorInfo);
         }
     }
 
@@ -1550,6 +1593,16 @@ ExitCode ServerRequests::getConflictErrorInfoList(int syncDbId, const std::unord
 }
 
 ExitCode ServerRequests::deleteErrorsServer() {
+    std::vector<Error> errorList;
+    if (!ParmsDb::instance()->selectAllErrors(ErrorLevel::Server, 0, INT_MAX, errorList)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllErrors");
+        return ExitCode::DbError;
+    }
+
+    for (const Error &error: errorList) {
+        AppServer::commManager()->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(error.dbId()));
+    }
+
     if (!ParmsDb::instance()->deleteErrors(ErrorLevel::Server)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteErrors");
         return ExitCode::DbError;
@@ -1620,6 +1673,7 @@ ExitCode ServerRequests::deleteErrorsForSync(const int syncDbId, const bool auto
                 LOG_WARN(Log::instance()->getLogger(), "Error not found for dbId=" << error.dbId());
                 return ExitCode::DataError;
             }
+            AppServer::commManager()->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(error.dbId()));
         }
     }
 

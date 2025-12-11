@@ -120,7 +120,8 @@ class AbstractNetworkJob : public SyncJob {
         Poco::JSON::Object::Ptr _jsonRes{nullptr};
         std::string _octetStreamRes;
 
-        virtual void setQueryParameters(Poco::URI &) { /* Empty by default */ }
+        virtual void setQueryParameters(Poco::URI &) { /* Empty by default */
+        }
         virtual ExitInfo setData() { return ExitCode::Ok; }
         virtual std::string contentType() { return {}; }
         virtual std::string acceptHeader() { return contentType(); }

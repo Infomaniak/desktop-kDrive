@@ -63,10 +63,12 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/nodecreatemissingfoldersjob.h ${server_srcs_path}/comm/guijobs/nodecreatemissingfoldersjob.cpp
     ${server_srcs_path}/comm/guijobs/parametersinfojob.h ${server_srcs_path}/comm/guijobs/parametersinfojob.cpp
     ${server_srcs_path}/comm/guijobs/parametersupdatejob.h ${server_srcs_path}/comm/guijobs/parametersupdatejob.cpp
+    ${server_srcs_path}/comm/guijobs/utilityactivateloadinfojob.h ${server_srcs_path}/comm/guijobs/utilityactivateloadinfojob.cpp
     ${server_srcs_path}/comm/guijobs/utilitycheckcommstatusjob.h ${server_srcs_path}/comm/guijobs/utilitycheckcommstatusjob.cpp
     ${server_srcs_path}/comm/guijobs/utilityhassystemlaunchonstartupjob.h ${server_srcs_path}/comm/guijobs/utilityhassystemlaunchonstartupjob.cpp
     ${server_srcs_path}/comm/guijobs/utilityquitjob.h ${server_srcs_path}/comm/guijobs/utilityquitjob.cpp
     ${server_srcs_path}/comm/guijobs/utilitydisplayclientreportjob.h ${server_srcs_path}/comm/guijobs/utilitydisplayclientreportjob.cpp
+    ${server_srcs_path}/comm/guijobs/errorinfolistjob.h ${server_srcs_path}/comm/guijobs/errorinfolistjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluseraddedjob.h ${server_srcs_path}/comm/guijobs/signaluseraddedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.h ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserremovedjob.h ${server_srcs_path}/comm/guijobs/signaluserremovedjob.cpp
@@ -79,6 +81,8 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/signalsyncprogressinfo.h ${server_srcs_path}/comm/guijobs/signalsyncprogressinfo.cpp
     ${server_srcs_path}/comm/guijobs/signalsynccompleteditem.h ${server_srcs_path}/comm/guijobs/signalsynccompleteditem.cpp
     ${server_srcs_path}/comm/guijobs/signalsyncupdatedjob.h ${server_srcs_path}/comm/guijobs/signalsyncupdatedjob.cpp
+    ${server_srcs_path}/comm/guijobs/signalerroraddedjob.h ${server_srcs_path}/comm/guijobs/signalerroraddedjob.cpp
+    ${server_srcs_path}/comm/guijobs/signalerrorremovedjob.h ${server_srcs_path}/comm/guijobs/signalerrorremovedjob.cpp
     ${server_srcs_path}/migration/migrationparams.h ${server_srcs_path}/migration/migrationparams.cpp
     ${server_srcs_path}/requests/serverrequests.h ${server_srcs_path}/requests/serverrequests.cpp
     ${server_srcs_path}/updater/abstractupdater.h ${server_srcs_path}/updater/abstractupdater.cpp
@@ -100,6 +104,10 @@ if(APPLE)
     list(APPEND server_SRCS ${server_srcs_path}/comm/extcommserver_mac.mm)
     list(APPEND server_SRCS ${server_srcs_path}/comm/guicommserver_mac.mm)
     list(APPEND server_SRCS ${server_srcs_path}/comm/litesynccommclient_mac.h ${server_srcs_path}/comm/litesynccommclient_mac.mm)
+    list(APPEND server_SRCS ${server_srcs_path}/comm/guijobs/exclappgetlistjob.h ${server_srcs_path}/comm/guijobs/exclappgetlistjob.cpp)
+    list(APPEND server_SRCS ${server_srcs_path}/comm/guijobs/exclappsetlistjob.h ${server_srcs_path}/comm/guijobs/exclappsetlistjob.cpp)
+    list(APPEND server_SRCS ${server_srcs_path}/comm/guijobs/exclappgetfetchingapplistjob.h ${server_srcs_path}/comm/guijobs/exclappgetfetchingapplistjob.cpp)
+
     set_property(SOURCE ${server_srcs_path}/comm/abstractcommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
     set_property(SOURCE ${server_srcs_path}/comm/xpccommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
     set_property(SOURCE ${server_srcs_path}/comm/extcommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
@@ -154,11 +162,15 @@ set(testserver_SRCS
     workers/testworkers.h workers/testworkers.cpp
     requests/testserverrequests.h requests/testserverrequests.cpp
     appserver/testappserver.h appserver/testappserver.cpp
+    
     comm/testsocketcomm.h comm/testsocketcomm.cpp
+    comm/testcommhelpers.h comm/testcommhelpers.cpp
+    
     comm/guicommchannel/testguicommchannel.h comm/guicommchannel/testguicommchannel.cpp
     comm/guicommchannel/testsyncjobs.cpp comm/guicommchannel/testnodejobs.cpp
-    comm/guicommchannel/testparameters.cpp comm/guicommchannel/testutility.cpp
-    comm/testcommhelpers.h comm/testcommhelpers.cpp
+    comm/guicommchannel/testparameters.cpp comm/guicommchannel/testexclapp.cpp 
+    comm/guicommchannel/testerrorjobs.cpp comm/guicommchannel/testutility.cpp
+
     comm/guijobs/testabstractguijob.h comm/guijobs/testabstractguijob.cpp
 )
 

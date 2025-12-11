@@ -274,5 +274,4 @@ void TestGuiCommChannel::testNodeCreateMissingFoldersJob() {
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
-
 } // namespace KDC

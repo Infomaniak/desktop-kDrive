@@ -80,6 +80,8 @@ set(server_SRCS
     comm/guijobs/nodesubfoldersjob.h comm/guijobs/nodesubfoldersjob.cpp
     comm/guijobs/nodesubfolders2job.h comm/guijobs/nodesubfolders2job.cpp
     comm/guijobs/nodefoldersizejob.h comm/guijobs/nodefoldersizejob.cpp
+    comm/guijobs/nodeinfojob.h comm/guijobs/nodeinfojob.cpp
+    comm/guijobs/errorinfolistjob.h comm/guijobs/errorinfolistjob.cpp
     comm/guijobs/nodecreatemissingfoldersjob.h comm/guijobs/nodecreatemissingfoldersjob.cpp
     comm/guijobs/parametersinfojob.h comm/guijobs/parametersinfojob.cpp
     comm/guijobs/parametersupdatejob.h comm/guijobs/parametersupdatejob.cpp
@@ -87,6 +89,7 @@ set(server_SRCS
     comm/guijobs/utilityhassystemlaunchonstartupjob.h comm/guijobs/utilityhassystemlaunchonstartupjob.cpp
     comm/guijobs/utilityquitjob.h comm/guijobs/utilityquitjob.cpp
     comm/guijobs/utilitydisplayclientreportjob.h comm/guijobs/utilitydisplayclientreportjob.cpp
+    comm/guijobs/utilityactivateloadinfojob.h comm/guijobs/utilityactivateloadinfojob.cpp
     comm/guijobs/signaluseraddedjob.h comm/guijobs/signaluseraddedjob.cpp
     comm/guijobs/signaluserupdatedjob.h comm/guijobs/signaluserupdatedjob.cpp
     comm/guijobs/signaluserremovedjob.h comm/guijobs/signaluserremovedjob.cpp
@@ -99,6 +102,8 @@ set(server_SRCS
     comm/guijobs/signalsyncprogressinfo.h comm/guijobs/signalsyncprogressinfo.cpp
     comm/guijobs/signalsynccompleteditem.h comm/guijobs/signalsynccompleteditem.cpp
     comm/guijobs/signalsyncupdatedjob.h comm/guijobs/signalsyncupdatedjob.cpp
+    comm/guijobs/signalerroraddedjob.h comm/guijobs/signalerroraddedjob.cpp
+    comm/guijobs/signalerrorremovedjob.h comm/guijobs/signalerrorremovedjob.cpp
     migration/migrationparams.h migration/migrationparams.cpp
     requests/serverrequests.h requests/serverrequests.cpp
     requests/offlinefilessizeestimator.h requests/offlinefilessizeestimator.cpp
@@ -123,6 +128,10 @@ if(APPLE)
     list(APPEND server_SRCS comm/xpccommserver_mac.h comm/xpccommserver_mac.mm)
     list(APPEND server_SRCS comm/extcommserver_mac.mm)
     list(APPEND server_SRCS comm/guicommserver_mac.mm)
+    list(APPEND server_SRCS comm/guijobs/exclappgetlistjob.h comm/guijobs/exclappgetlistjob.cpp)
+    list(APPEND server_SRCS comm/guijobs/exclappsetlistjob.h comm/guijobs/exclappsetlistjob.cpp)
+    list(APPEND server_SRCS comm/guijobs/exclappgetfetchingapplistjob.h comm/guijobs/exclappgetfetchingapplistjob.cpp)
+
     set_property(SOURCE ../common/utility_mac.cpp APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
     set_property(SOURCE comm/abstractcommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
     set_property(SOURCE comm/xpccommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")

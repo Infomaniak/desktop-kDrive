@@ -7,3 +7,7 @@ WinUI:
 macOS UI:
  - changed-files:
    - any-glob-to-any-file: 'src/front/macOS/**'
+
+GUI job:
+ - changed-files:
+   - any-glob-to-any-file: 'src/server/comm/guijobs/**'

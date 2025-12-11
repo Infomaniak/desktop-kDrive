@@ -112,9 +112,10 @@ void ParametersInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
 
                 for (const auto &[key, blob64]: structValue) {
                     const auto blob64Str = blob64.convert<std::string>();
-                    CommBLOB blob;
-                    CommonUtility::convertFromBase64Str(blob64Str, blob);
-                    dialogGeometry.insert(QString::fromStdString(key), QByteArray(blob.data()));
+                    CommString commStr;
+                    CommonUtility::convertFromBase64Str(blob64Str, commStr);
+                    std::string str = CommonUtility::commString2Str(commStr);
+                    dialogGeometry.insert(QString::fromStdString(key), QByteArray(str.data()));
                 }
                 return dialogGeometry;
             };

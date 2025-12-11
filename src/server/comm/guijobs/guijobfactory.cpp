@@ -47,8 +47,15 @@
 #include "nodesubfolders2job.h"
 #include "nodefoldersizejob.h"
 #include "nodecreatemissingfoldersjob.h"
+#include "errorinfolistjob.h"
+#if defined(KD_MACOS)
+#include "exclappgetlistjob.h"
+#include "exclappsetlistjob.h"
+#include "exclappgetfetchingapplistjob.h"
+#endif
 #include "parametersinfojob.h"
 #include "parametersupdatejob.h"
+#include "utilityactivateloadinfojob.h"
 #include "utilitycheckcommstatusjob.h"
 #include "utilityhassystemlaunchonstartupjob.h"
 #include "utilityquitjob.h"
@@ -86,8 +93,15 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::NODE_SUBFOLDERS2, makeShared<NodeSubFolders2Job>},
                 {RequestNum::NODE_FOLDER_SIZE, makeShared<NodeFolderSizeJob>},
                 {RequestNum::NODE_CREATEMISSINGFOLDERS, makeShared<NodeCreateMissingFoldersJob>},
+                {RequestNum::ERROR_INFOLIST, makeShared<ErrorInfolistJob>},
+#if defined(KD_MACOS)
+                {RequestNum::EXCLAPP_GETLIST, makeShared<ExclAppGetListJob>},
+                {RequestNum::EXCLAPP_SETLIST, makeShared<ExclAppSetListJob>},
+                {RequestNum::EXCLAPP_GET_FETCHING_APP_LIST, makeShared<ExclAppGetFetchingAppListJob>},
+#endif
                 {RequestNum::PARAMETERS_INFO, makeShared<ParametersInfoJob>},
                 {RequestNum::PARAMETERS_UPDATE, makeShared<ParametersUpdateJob>},
+                {RequestNum::UTILITY_ACTIVATELOADINFO, makeShared<UtilityActivateLoadInfoJob>},
                 {RequestNum::UTILITY_CHECKCOMMSTATUS, makeShared<UtilityCheckCommStatusJob>},
                 {RequestNum::UTILITY_HASSYSTEMLAUNCHONSTARTUP, makeShared<UtilityHasSystemLaunchOnStartupJob>},
                 {RequestNum::UTILITY_QUIT, makeShared<UtilityQuitJob>},

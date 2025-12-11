@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="Infomaniak.kDrive.CustomControls.Errors.DefaultError"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:Infomaniak.kDrive.CustomControls.Errors"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+    <local:ErrorCard x:Name="ErrorCard"
+                     Title="{x:Bind _error.Path}"
+                     Description="An unexpected error has occurred.">
+        <!-- TODO: Translate once the UI is ready -->
+        <local:ErrorCard.CustomContent>
+            <Expander x:Name="DetailsExpander"
+                      Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.XS}"
+                      IsExpanded="False"
+                      Header="+"
+                      HorizontalAlignment="Stretch">
+                <ScrollViewer MaxHeight="240"
+                              HorizontalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Auto">
+                    <TextBlock Text="{x:Bind DetailsText, Mode=OneWay}"
+                               FontFamily="Consolas"
+                               TextWrapping="NoWrap" />
+                </ScrollViewer>
+            </Expander>
+        </local:ErrorCard.CustomContent>
+    </local:ErrorCard>
+</UserControl>

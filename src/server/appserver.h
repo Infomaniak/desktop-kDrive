@@ -127,6 +127,9 @@ class AppServer : public SharedTools::QtSingleApplication {
                                            const std::chrono::seconds &startDelay = std::chrono::seconds(0),
                                            bool resumedByUser = false, bool firstInit = false);
         [[nodiscard]] ExitInfo stopSyncPal(int syncDbId, bool pausedByUser = false, bool quit = false, bool clear = false);
+        void clearSyncCacheMap() { _syncCacheMap.clear(); }
+        void loadUsersInfo() { onLoadInfo(); }
+
         [[nodiscard]] ExitInfo stopVfs(int syncDbId, bool unregister);
         [[nodiscard]] ExitInfo startSyncs(User &user);
         void stopSyncTask(int syncDbId);
@@ -148,6 +151,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         auto &navigationPaneHelper() { return _navigationPaneHelper; }
 #endif
 
+        static std::shared_ptr<CommManager> commManager() { return _commManager; }
+
     private:
         QStringList _arguments;
         log4cplus::Logger _logger;
@@ -157,7 +162,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         std::unique_ptr<NavigationPaneHelper> _navigationPaneHelper;
 #endif
 
-        std::shared_ptr<CommManager> _commManager = nullptr;
+        static std::shared_ptr<CommManager> _commManager;
         bool _appRestartRequired{false};
         Theme *_theme{nullptr};
         bool _helpAsked{false};
@@ -236,8 +241,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void sendLogUploadStatusUpdated(LogUploadState status, int percent);
 
         void deleteAccount(int accountDbId);
-
-        static void sendErrorAdded(bool serverLevel, ExitCode exitCode, int syncDbId);
+        static void sendErrorAdded(const ErrorInfo &errorInfo);
         void addCompletedItem(int syncDbId, const SyncFileItem &item, bool notify);
         void sendSignal(SignalNum sigNum, int syncDbId, const SigValueType &val);
 

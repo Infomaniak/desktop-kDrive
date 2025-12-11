@@ -17,16 +17,16 @@
  */
 
 using H.NotifyIcon;
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using System;
 using System.Drawing;
 using System.IO;
-using Windows.System;
-using Microsoft.UI.Windowing;
-using Infomaniak.kDrive.OnBoarding;
+using System.Threading;
 
 namespace Infomaniak.kDrive.TrayIcon
 {
@@ -112,7 +112,7 @@ namespace Infomaniak.kDrive.TrayIcon
             SetIcon("state-neutral.ico");
         }
 
-        private void ShowWindowCommand_ExecuteRequested(object? sender, ExecuteRequestedEventArgs args)
+        private async void ShowWindowCommand_ExecuteRequested(object? sender, ExecuteRequestedEventArgs args)
         {
             // Bring to front
             Logger.Log(Logger.Level.Info, "ShowWindowCommand executed - showing and activating main window");
@@ -127,8 +127,9 @@ namespace Infomaniak.kDrive.TrayIcon
 
             (Application.Current as App)?.CurrentWindow?.Show();
             (Application.Current as App)?.CurrentWindow?.Activate();
-            SetIcon_ok();
+            await App.ServiceProvider.GetRequiredService<IServerCommService>().ActivateLoadInfo(CancellationToken.None);
 
+            SetIcon_ok();
         }
 
         private void ExitApplicationCommand_ExecuteRequested(object? sender, ExecuteRequestedEventArgs args)

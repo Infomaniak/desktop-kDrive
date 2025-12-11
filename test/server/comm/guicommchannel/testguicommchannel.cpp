@@ -34,6 +34,7 @@
 
 #include <qbytearray.h>
 #include <qbuffer.h>
+#include <server/comm/testcommhelpers.h>
 
 namespace KDC {
 
@@ -671,12 +672,6 @@ void TestGuiCommChannel::testDriveSearchJob() {
 
 void TestGuiCommChannel::testGenericJob(const CommString &query, const CommString &answer, const CommString &cbkAnswer,
                                         const std::function<void(std::shared_ptr<AbstractGuiJob>)> &processFct) {
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    assert(cbkAnswer.empty());
-#else
-    assert(!cbkAnswer.empty());
-#endif
-
     auto test = [&](const CommString &testQuery, std::shared_ptr<AbstractCommChannel> testChannel) {
         //  Deserialize generic parameters
         int requestId = 0;

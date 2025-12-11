@@ -4,6 +4,7 @@ using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -343,7 +344,8 @@ namespace Infomaniak.kDrive
 
         public static string? ToBase64String(string? data)
         {
-            if (data is null) return null;
+            if (data is null)
+                return null;
             return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(data));
         }
 
@@ -357,6 +359,19 @@ namespace Infomaniak.kDrive
 
             char nextChar = path[prefix.Length];
             return nextChar == Path.DirectorySeparatorChar || nextChar == Path.AltDirectorySeparatorChar;
+        }
+
+        public static Frame? GetFrame(Control control)
+        {
+            DependencyObject? parent = control;
+            while (parent is not null)
+            {
+                if (parent is Frame frame)
+                    return frame;
+
+                parent = VisualTreeHelper.GetParent(parent);
+            }
+            return null;
         }
     }
 }

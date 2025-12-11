@@ -71,6 +71,8 @@
 #include "server/comm/guijobs/signalsyncremovedjob.h"
 #include "server/comm/guijobs/signalsynccompleteditem.h"
 #include "server/comm/guijobs/signalsyncupdatedjob.h"
+#include "server/comm/guijobs/signalerroraddedjob.h"
+#include "server/comm/guijobs/signalerrorremovedjob.h"
 
 #include "server/comm/guijobs/signalsyncprogressinfo.h"
 
@@ -136,6 +138,9 @@ static void displayHelpText(const QString &t) {
     std::cout << qUtf8Printable(t);
 }
 #endif
+
+std::shared_ptr<CommManager> AppServer::_commManager = nullptr;
+
 
 AppServer::AppServer(int &argc, char **argv) :
     SharedTools::QtSingleApplication(QString::fromStdString(Theme::instance()->appName()), argc, argv) {
@@ -970,7 +975,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             break;
         }
-        case RequestNum::ERROR_INFOLIST: {
+        case RequestNum::ERROR_INFOLIST_LEGACY: {
             ErrorLevel level{ErrorLevel::Unknown};
             int syncDbId{0};
             int limit{100};
@@ -987,7 +992,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << list;
             break;
         }
-        case RequestNum::ERROR_GET_CONFLICTS: {
+        case RequestNum::ERROR_GET_CONFLICTS_LEGACY: {
             int driveDbId;
             QList<ConflictType> filter;
             QDataStream paramsStream(params);
@@ -1544,7 +1549,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::SYNC_ASKFORSTATUS: {
-            _syncCacheMap.clear();
+            clearSyncCacheMap();
 
             resultStream << ExitCode::Ok;
             break;
@@ -2069,7 +2074,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 QTimer::singleShot(100, this, &AppServer::onLoadInfo);
 
                 // Clear sync update progress cache
-                _syncCacheMap.clear();
+                clearSyncCacheMap();
             }
 
             resultStream << ExitCode::Ok;
@@ -2491,15 +2496,16 @@ void AppServer::sendShowNotification(const QString &title, const QString &messag
     OldCommServer::instance()->sendSignal(SignalNum::UTILITY_SHOW_NOTIFICATION, params, id);
 }
 
-void AppServer::sendErrorAdded(bool serverLevel, ExitCode exitCode, int syncDbId) {
+void AppServer::sendErrorAdded(const ErrorInfo &errorInfo) {
     int id = 0;
 
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << serverLevel;
-    paramsStream << toInt(exitCode);
-    paramsStream << syncDbId;
-    OldCommServer::instance()->sendSignal(SignalNum::UTILITY_ERROR_ADDED, params, id);
+    paramsStream << (errorInfo.level() == ErrorLevel::Server);
+    paramsStream << toInt(errorInfo.exitCode());
+    paramsStream << errorInfo.syncDbId();
+    OldCommServer::instance()->sendSignal(SignalNum::UTILITY_ERROR_ADDED_LEGACY, params, id);
+    _commManager->sendGuiSignal(std::make_shared<SignalErrorAddedJob>(errorInfo));
 }
 
 void AppServer::addCompletedItem(int syncDbId, const SyncFileItem &item, bool notify) {
@@ -2631,11 +2637,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 
@@ -3728,11 +3734,6 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
 
     if (!exists) {
         LOGW_WARN(_logger, L"Sync localpath " << Utility::formatSyncPath(sync.localPath()) << L" doesn't exist.");
-        auto tmpSync(sync);
-        tmpSync.setPaused(true);
-        if (bool found = false; !ParmsDb::instance()->updateSync(tmpSync, found) || !found) {
-            LOG_WARN(_logger, "Failed to update sync status!");
-        }
         return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
     }
 
@@ -4022,9 +4023,10 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
 }
 
 void AppServer::addError(const Error &error) {
+    Error errorCopy = error;
     // Fetch all errors.
     std::vector<Error> errorList;
-    if (!ParmsDb::instance()->selectAllErrors(error.level(), error.syncDbId(), INT_MAX, errorList)) {
+    if (!ParmsDb::instance()->selectAllErrors(errorCopy.level(), errorCopy.syncDbId(), INT_MAX, errorList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllErrors");
         return;
     }
@@ -4032,9 +4034,9 @@ void AppServer::addError(const Error &error) {
     // Check if a similar error already exists.
     bool errorAlreadyExists = false;
     for (Error &existingError: errorList) {
-        if (!existingError.isSimilarTo(error)) continue;
+        if (!existingError.isSimilarTo(errorCopy)) continue;
         // Update existing error time
-        existingError.setTime(error.time());
+        existingError.setTime(errorCopy.time());
         bool found = false;
         if (!ParmsDb::instance()->updateError(existingError, found)) {
             LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateError");
@@ -4044,30 +4046,37 @@ void AppServer::addError(const Error &error) {
             LOG_WARN(Log::instance()->getLogger(), "Error not found in Error table for dbId=" << existingError.dbId());
             return;
         }
-
+        errorCopy.setDbId(existingError.dbId());
         errorAlreadyExists = true;
         break;
     }
 
-    if (!errorAlreadyExists && !ParmsDb::instance()->insertError(error)) { // Insert new error
+    if (!errorAlreadyExists && !ParmsDb::instance()->insertError(errorCopy)) { // Insert new error
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::insertError");
         return;
     }
-    if (!errorAlreadyExists) errorList.push_back(error);
+    if (!errorAlreadyExists) errorList.push_back(errorCopy);
 
 
     User user;
-    if (error.syncDbId() && ServerRequests::getUserFromSyncDbId(error.syncDbId(), user) != ExitCode::Ok) {
+    if (errorCopy.syncDbId() && ServerRequests::getUserFromSyncDbId(errorCopy.syncDbId(), user) != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ServerRequests::getUserFromSyncDbId");
         return;
     }
 
-    if (ServerRequests::isDisplayableError(error)) {
+    if (ServerRequests::isDisplayableError(errorCopy)) {
         // Notify the client
-        sendErrorAdded(error.level() == ErrorLevel::Server, error.exitCode(), error.syncDbId());
+        if (errorAlreadyExists) {
+            // First remove the existing error
+            _commManager->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(errorCopy.dbId()));
+        }
+
+        ErrorInfo errorInfo;
+        ServerRequests::errorToErrorInfo(errorCopy, errorInfo);
+        sendErrorAdded(errorInfo);
     }
 
-    if (error.exitCode() == ExitCode::InvalidToken) {
+    if (errorCopy.exitCode() == ExitCode::InvalidToken) {
         // Manage invalid token error
         LOG_DEBUG(Log::instance()->getLogger(), "Manage invalid token error");
 
@@ -4091,7 +4100,7 @@ void AppServer::addError(const Error &error) {
         UserInfo userInfo;
         ServerRequests::userToUserInfo(user, userInfo);
         sendUserUpdated(userInfo);
-    } else if (error.exitCode() == ExitCode::NetworkError && error.exitCause() == ExitCause::SocketsDefuncted) {
+    } else if (errorCopy.exitCode() == ExitCode::NetworkError && errorCopy.exitCause() == ExitCause::SocketsDefuncted) {
         // Manage sockets defuncted error
         LOG_WARN(Log::instance()->getLogger(), "Manage sockets defuncted error");
 
@@ -4102,7 +4111,7 @@ void AppServer::addError(const Error &error) {
 
         // Decrease JobManager pool capacity
         SyncJobManagerSingleton::instance()->decreasePoolCapacity();
-    } else if (error.exitCode() == ExitCode::SystemError && error.exitCause() == ExitCause::FileAccessError) {
+    } else if (errorCopy.exitCode() == ExitCode::SystemError && errorCopy.exitCause() == ExitCause::FileAccessError) {
         // Remove child errors
         std::unordered_set<int64_t> toBeRemovedErrorIds;
         for (const Error &parentError: errorList) {
@@ -4123,13 +4132,14 @@ void AppServer::addError(const Error &error) {
                 LOG_WARN(Log::instance()->getLogger(), "Error not found in Error table for dbId=" << errorId);
                 return;
             }
+            _commManager->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(errorId));
         }
-        if (!toBeRemovedErrorIds.empty()) sendErrorsCleared(error.syncDbId());
-    } else if (error.exitCode() == ExitCode::UpdateRequired) {
+        if (!toBeRemovedErrorIds.empty()) sendErrorsCleared(errorCopy.syncDbId());
+    } else if (errorCopy.exitCode() == ExitCode::UpdateRequired) {
         AbstractUpdater::unskipVersion();
     }
 
-    if (!ServerRequests::isAutoResolvedError(error) && !errorAlreadyExists) {
+    if (!ServerRequests::isAutoResolvedError(errorCopy) && !errorAlreadyExists) {
         // Send error to sentry only for technical errors
         SentryUser sentryUser(user.email(), user.name(), std::to_string(user.userId()));
         sentry::Handler::captureMessage(sentry::Level::Warning, "AppServer::addError", error.errorString(), sentryUser);
@@ -4377,8 +4387,8 @@ void AppServer::onUpdateSyncsProgress() {
         const std::scoped_lock lock(syncPalMapMutex);
         if (const auto syncPalMapIt = syncPalMap.find(sync.dbId()); syncPalMapIt == syncPalMap.end()) {
             // No SyncPal for this sync
-            sendSyncProgressInfo(sync.dbId(), sync.paused() ? SyncStatus::Paused : SyncStatus::Error, SyncStep::None,
-                                 SyncProgress());
+            // Show the sync paused anyway. It is most likely that an external drive is not plugged in.
+            sendSyncProgressInfo(sync.dbId(), SyncStatus::Paused, SyncStep::None, SyncProgress());
         } else {
             if (!syncPalMapIt->second) {
                 assert(false);

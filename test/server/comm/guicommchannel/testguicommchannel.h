@@ -80,9 +80,17 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testNodeFolderSizeJob);
          */
         CPPUNIT_TEST(testNodeSubFolders2Job);
+        CPPUNIT_TEST(testErrorInfoListJob);
         CPPUNIT_TEST(testNodeCreateMissingFoldersJob);
+#if defined(KD_MACOS)
+        CPPUNIT_TEST(testExclAppGetListJob);
+        CPPUNIT_TEST(testExclAppSetListJob);
+        CPPUNIT_TEST(testExclAppGetFetchingAppListJob);
+#endif
         CPPUNIT_TEST(testParametersInfoJob);
         CPPUNIT_TEST(testParametersUpdateJob);
+  
+        CPPUNIT_TEST(testUtilityActivateLoadInfoJob);
         CPPUNIT_TEST(testUtilityCheckCommStatusJob);
         CPPUNIT_TEST(testUtilityHasSystemLaunchOnStartupJob);
         CPPUNIT_TEST(testUtilityQuitJob);
@@ -122,10 +130,19 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testNodeInfoJob();
         void testNodeSubFolderJob();
         void testNodeFolderSizeJob();
+        void testSyncNodeListJob();
+        void testSyncNodeSetListJob();
+        void testErrorInfoListJob();
         void testNodeSubFolders2Job();
         void testNodeCreateMissingFoldersJob();
+#if defined(KD_MACOS)
+        void testExclAppGetListJob();
+        void testExclAppSetListJob();
+        void testExclAppGetFetchingAppListJob();
+#endif
         void testParametersInfoJob();
         void testParametersUpdateJob();
+        void testUtilityActivateLoadInfoJob();
         void testUtilityCheckCommStatusJob();
         void testUtilityHasSystemLaunchOnStartupJob();
         void testUtilityQuitJob();

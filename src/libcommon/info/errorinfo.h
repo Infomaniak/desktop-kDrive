@@ -23,6 +23,7 @@
 #include <QDataStream>
 #include <QString>
 #include <QList>
+#include <Poco/Dynamic/Struct.h>
 
 namespace KDC {
 
@@ -73,6 +74,8 @@ class ErrorInfo {
         inline void setCancelType(CancelType newCancelType) { _cancelType = newCancelType; }
         inline bool autoResolved() const { return _autoResolved; }
         inline void setAutoResolved(bool newAutoResolved) { _autoResolved = newAutoResolved; }
+
+        void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
 
         friend QDataStream &operator>>(QDataStream &in, ErrorInfo &errorInfo);
         friend QDataStream &operator<<(QDataStream &out, const ErrorInfo &errorInfo);

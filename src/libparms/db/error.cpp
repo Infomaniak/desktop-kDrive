@@ -21,6 +21,7 @@
 
 #include <ctime>
 #include <sstream>
+#include <chrono>
 
 namespace KDC {
 
@@ -28,27 +29,31 @@ Error::Error(const std::string &functionName, ExitCode exitCode, ExitCause exitC
     _level(ErrorLevel::Server),
     _functionName(functionName),
     _exitCode(exitCode),
-    _exitCause(exitCause) {}
+    _exitCause(exitCause),
+    _time(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now())) {}
 
 Error::Error(const std::string &functionName, const ExitInfo &exitInfo) :
     _level(ErrorLevel::Server),
     _functionName(functionName),
     _exitCode(exitInfo.code()),
-    _exitCause(exitInfo.cause()) {}
+    _exitCause(exitInfo.cause()),
+    _time(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now())) {}
 
 Error::Error(int syncDbId, const std::string &workerName, ExitCode exitCode, ExitCause exitCause) :
     _level(ErrorLevel::SyncPal),
     _syncDbId(syncDbId),
     _workerName(workerName),
     _exitCode(exitCode),
-    _exitCause(exitCause) {}
+    _exitCause(exitCause),
+    _time(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now())) {}
 
 Error::Error(int syncDbId, const std::string &workerName, const ExitInfo &exitInfo) :
     _level(ErrorLevel::SyncPal),
     _syncDbId(syncDbId),
     _workerName(workerName),
     _exitCode(exitInfo.code()),
-    _exitCause(exitInfo.cause()) {}
+    _exitCause(exitInfo.cause()),
+    _time(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now())) {}
 
 Error::Error(int syncDbId, const NodeId &localNodeId, const NodeId &remoteNodeId, NodeType nodeType, const SyncPath &path,
              ConflictType conflictType, InconsistencyType inconsistencyType /*= InconsistencyType::None */,
@@ -65,7 +70,8 @@ Error::Error(int syncDbId, const NodeId &localNodeId, const NodeId &remoteNodeId
     _conflictType(conflictType),
     _inconsistencyType(inconsistencyType),
     _cancelType(cancelType),
-    _destinationPath(destinationPath) {}
+    _destinationPath(destinationPath),
+    _time(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now())) {}
 
 Error::Error(int64_t dbId, int64_t time, ErrorLevel level, const std::string &functionName, int syncDbId,
              const std::string &workerName, ExitCode exitCode, ExitCause exitCause, const NodeId &localNodeId,
