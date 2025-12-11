@@ -82,6 +82,11 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testNodeSubFolders2Job);
         CPPUNIT_TEST(testErrorInfoListJob);
         CPPUNIT_TEST(testNodeCreateMissingFoldersJob);
+#if defined(KD_MACOS)
+        CPPUNIT_TEST(testExclAppGetListJob);
+        CPPUNIT_TEST(testExclAppSetListJob);
+        CPPUNIT_TEST(testExclAppGetFetchingAppListJob);
+#endif
         CPPUNIT_TEST(testParametersInfoJob);
         CPPUNIT_TEST(testParametersUpdateJob);
         CPPUNIT_TEST_SUITE_END();
@@ -124,6 +129,11 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testErrorInfoListJob();
         void testNodeSubFolders2Job();
         void testNodeCreateMissingFoldersJob();
+#if defined(KD_MACOS)
+        void testExclAppGetListJob();
+        void testExclAppSetListJob();
+        void testExclAppGetFetchingAppListJob();
+#endif
         void testParametersInfoJob();
         void testParametersUpdateJob();
 

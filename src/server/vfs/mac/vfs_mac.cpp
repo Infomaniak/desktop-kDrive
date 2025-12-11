@@ -615,14 +615,22 @@ ExitInfo VfsMac::setAppExcludeList() {
     return ExitCode::Ok;
 }
 
-ExitInfo VfsMac::getFetchingAppList(QHash<QString, QString> &appTable) {
-    AppTable tmpTable;
-    if (!_connector->vfsGetFetchingAppList(tmpTable)) {
+ExitInfo VfsMac::getFetchingAppList(AppTable &appTable) {
+    appTable.clear();
+    if (!_connector->vfsGetFetchingAppList(appTable)) {
         LOG_WARN(logger(), "Error in vfsGetFetchingAppList!");
         return ExitCode::LogicError;
     }
 
-    for (auto &[id, name]: tmpTable) {
+    return ExitCode::Ok;
+}
+
+ExitInfo VfsMac::getFetchingAppList(QHash<QString, QString> &appTable) {
+    appTable.clear();
+    AppTable tmpTable;
+    if (const auto exitInfo = getFetchingAppList(tmpTable); !exitInfo) return exitInfo;
+
+    for (const auto &[id, name]: tmpTable) {
         appTable.emplace(QString::fromStdString(id), QString::fromStdString(name));
     }
 

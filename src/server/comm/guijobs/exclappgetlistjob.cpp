@@ -16,48 +16,53 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "errorinfolistjob.h"
+#include "exclappgetlistjob.h"
 #include "appserver.h"
 #include "requests/serverrequests.h"
+
+#include "libcommon/info/userinfo.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
 
 // Input parameters keys
-static const auto inParmsLimit = "limit";
+static const auto inParamsDefault = "default";
 
 // Output parameters keys
-static const auto outParamsErrorInfo = "errorInfoList";
+static const auto outParamsApplicationList = "applicationList";
+
 
 namespace KDC {
 
-ErrorInfolistJob::ErrorInfolistJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                                   std::shared_ptr<AbstractCommChannel> channel) :
+ExclAppGetListJob::ExclAppGetListJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                                     std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
-    _requestNum = RequestNum::ERROR_INFOLIST;
+    _requestNum = RequestNum::EXCLAPP_GETLIST;
 }
 
-ExitInfo ErrorInfolistJob::deserializeInputParms() {
+ExitInfo ExclAppGetListJob::deserializeInputParms() {
     try {
-        readParamValue(inParmsLimit, _limit);
+        readParamValue(inParamsDefault, _default);
     } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in ErrorInfolistJob::readParamValue: error=" << e.what());
+        LOG_WARN(_logger, "Exception in ExclAppGetListJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
     }
+
     return ExitCode::Ok;
 }
 
-ExitInfo ErrorInfolistJob::serializeOutputParms() {
-    writeParamValues(outParamsErrorInfo, _errorInfoList, info2DynamicVar<ErrorInfo>);
+ExitInfo ExclAppGetListJob::serializeOutputParms() {
+    writeParamValues(outParamsApplicationList, _applicationList, info2DynamicVar<ExclusionAppInfo>);
+
     return ExitCode::Ok;
 }
 
-ExitInfo ErrorInfolistJob::process() {
-    ExitInfo exitInfo = ServerRequests::getErrorInfoList(_limit, _errorInfoList);
-    if (!exitInfo) {
-        LOG_WARN(_logger, "Error in ServerRequests::getErrorInfoList: " << exitInfo);
-        AppServer::addError(Error(ERR_ID, exitInfo));
-        return exitInfo;
+ExitInfo ExclAppGetListJob::process() {
+    if (const auto exitCode = ServerRequests::getExclusionAppList(_default, _applicationList); exitCode != ExitCode::Ok) {
+        LOG_WARN(_logger, "Error in Requests::getExclusionAppList: code=" << exitCode);
+        AppServer::addError(Error(ERR_ID, exitCode));
+
+        return exitCode;
     }
 
     return ExitCode::Ok;
