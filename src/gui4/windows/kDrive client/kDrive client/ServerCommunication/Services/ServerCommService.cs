@@ -616,6 +616,11 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             _viewModel.Settings.UpdateManager.CurrentChannel = newChannel;
         }
 
+        public async Task ActivateLoadInfo(CancellationToken cancellationToken)
+        {
+            await _commClient.SendRequestAsync(RequestNum.UTILITY_ACTIVATELOADINFO, new JsonObject { } , cancellationToken);
+        }
+
         public async Task SaveSettings(CancellationToken cancellationToken)
         {
             ParmsInfo ParmsInfo = new();

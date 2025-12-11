@@ -68,6 +68,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/excltemplpropagatechangejob.h ${server_srcs_path}/comm/guijobs/excltemplpropagatechangejob.cpp
     ${server_srcs_path}/comm/guijobs/parametersinfojob.h ${server_srcs_path}/comm/guijobs/parametersinfojob.cpp
     ${server_srcs_path}/comm/guijobs/parametersupdatejob.h ${server_srcs_path}/comm/guijobs/parametersupdatejob.cpp
+    ${server_srcs_path}/comm/guijobs/utilityactivateloadinfojob.h ${server_srcs_path}/comm/guijobs/utilityactivateloadinfojob.cpp
     ${server_srcs_path}/comm/guijobs/signaluseraddedjob.h ${server_srcs_path}/comm/guijobs/signaluseraddedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.h ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserremovedjob.h ${server_srcs_path}/comm/guijobs/signaluserremovedjob.cpp
@@ -168,7 +169,8 @@ set(testserver_SRCS
     comm/guicommchannel/testsyncjobs.cpp comm/guicommchannel/testnodejobs.cpp
     comm/guicommchannel/testerrorjobs.cpp
     comm/guicommchannel/testexclapp.cpp comm/guicommchannel/testexcltempl.cpp 
-    comm/guicommchannel/testparameters.cpp
+    comm/guicommchannel/testparameters.cpp comm/guicommchannel/testutility.cpp
+    comm/testcommhelpers.h comm/testcommhelpers.cpp
 
     comm/guijobs/testabstractguijob.h comm/guijobs/testabstractguijob.cpp
 )

@@ -94,6 +94,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
 #endif
         CPPUNIT_TEST(testParametersInfoJob);
         CPPUNIT_TEST(testParametersUpdateJob);
+        CPPUNIT_TEST(testUtilityActivateLoadInfoJob);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -145,6 +146,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
 #endif
         void testParametersInfoJob();
         void testParametersUpdateJob();
+        void testUtilityActivateLoadInfoJob();
 
 
     private:

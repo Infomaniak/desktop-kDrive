@@ -59,6 +59,7 @@
 #include "excltemplpropagatechangejob.h"
 #include "parametersinfojob.h"
 #include "parametersupdatejob.h"
+#include "utilityactivateloadinfojob.h"
 
 namespace KDC {
 
@@ -105,8 +106,8 @@ GuiJobFactory::GuiJobFactory() {
         {RequestNum::EXCLTEMPL_SETLIST, makeShared<ExclTemplSetListJob>},
         {RequestNum::EXCLTEMPL_PROPAGATE_CHANGE, makeShared<ExclTemplPropagateChangeJob>},
         {RequestNum::PARAMETERS_INFO, makeShared<ParametersInfoJob>},
-        {RequestNum::PARAMETERS_UPDATE, makeShared<ParametersUpdateJob>}
-    };
+        {RequestNum::PARAMETERS_UPDATE, makeShared<ParametersUpdateJob>},
+        {RequestNum::UTILITY_ACTIVATELOADINFO, makeShared<UtilityActivateLoadInfoJob>}};
 }
 
 
