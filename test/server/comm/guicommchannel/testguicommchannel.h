@@ -90,6 +90,9 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testParametersInfoJob);
         CPPUNIT_TEST(testParametersUpdateJob);
         CPPUNIT_TEST(testUtilityActivateLoadInfoJob);
+        CPPUNIT_TEST(testUtilityCancelLogToSupportJob);
+        CPPUNIT_TEST(testUtilityGetLogEstimatedSizeJob);
+        CPPUNIT_TEST(testUtilitySendLogToSupportJob);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -138,6 +141,9 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testParametersInfoJob();
         void testParametersUpdateJob();
         void testUtilityActivateLoadInfoJob();
+        void testUtilityCancelLogToSupportJob();
+        void testUtilityGetLogEstimatedSizeJob();
+        void testUtilitySendLogToSupportJob();
 
     private:
         GuiJobFactory _guiJobFactory;
