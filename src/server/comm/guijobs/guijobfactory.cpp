@@ -50,6 +50,7 @@
 #include "parametersinfojob.h"
 #include "parametersupdatejob.h"
 #include "utilitycheckcommstatusjob.h"
+#include "utilityhassystemlaunchonstartupjob.h"
 
 namespace KDC {
 
@@ -85,7 +86,8 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::NODE_CREATEMISSINGFOLDERS, makeShared<NodeCreateMissingFoldersJob>},
                 {RequestNum::PARAMETERS_INFO, makeShared<ParametersInfoJob>},
                 {RequestNum::PARAMETERS_UPDATE, makeShared<ParametersUpdateJob>},
-                {RequestNum::UTILITY_CHECKCOMMSTATUS, makeShared<UtilityCheckCommStatusJob>}};
+                {RequestNum::UTILITY_CHECKCOMMSTATUS, makeShared<UtilityCheckCommStatusJob>},
+                {RequestNum::UTILITY_HASSYSTEMLAUNCHONSTARTUP, makeShared<UtilityHasSystemLaunchOnStartupJob>}};
 }
 
 std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::shared_ptr<CommManager> commManager,

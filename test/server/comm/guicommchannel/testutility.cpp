@@ -17,6 +17,7 @@
  */
 
 #include "comm/guijobs/utilitycheckcommstatusjob.h"
+#include "comm/guijobs/utilityhassystemlaunchonstartupjob.h"
 
 #include "testguicommchannel.h"
 #include "../testcommhelpers.h"
@@ -55,6 +56,49 @@ void TestGuiCommChannel::testUtilityCheckCommStatusJob() {
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         const auto utilityCheckCommStatusJob = std::dynamic_pointer_cast<UtilityCheckCommStatusJob>(job);
         CPPUNIT_ASSERT(utilityCheckCommStatusJob);
+    };
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+#else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
+void TestGuiCommChannel::testUtilityHasSystemLaunchOnStartupJob() {
+    Poco::JSON::Object queryObj;
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    (void) queryObj.set("id", 1);
+#endif
+    (void) queryObj.set("num", toInt(RequestNum::UTILITY_HASSYSTEMLAUNCHONSTARTUP));
+    Poco::JSON::Object queryParamsObj;
+    (void) queryObj.set("params", queryParamsObj);
+
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+
+    Poco::JSON::Object paramsObj;
+    (void) paramsObj.set("enabled", true);
+    (void) answerObj.set("params", paramsObj);
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UTILITY_HASSYSTEMLAUNCHONSTARTUP));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+
+    // Job expected answers
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto utilityHasSystemLaunchOnStartupJob = std::dynamic_pointer_cast<UtilityHasSystemLaunchOnStartupJob>(job);
+        CPPUNIT_ASSERT(utilityHasSystemLaunchOnStartupJob);
+
+        utilityHasSystemLaunchOnStartupJob->_enabled = true;
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)

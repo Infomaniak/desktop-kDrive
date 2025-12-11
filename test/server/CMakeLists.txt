@@ -64,6 +64,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/parametersinfojob.h ${server_srcs_path}/comm/guijobs/parametersinfojob.cpp
     ${server_srcs_path}/comm/guijobs/parametersupdatejob.h ${server_srcs_path}/comm/guijobs/parametersupdatejob.cpp
     ${server_srcs_path}/comm/guijobs/utilitycheckcommstatusjob.h ${server_srcs_path}/comm/guijobs/utilitycheckcommstatusjob.cpp
+    ${server_srcs_path}/comm/guijobs/utilityhassystemlaunchonstartupjob.h ${server_srcs_path}/comm/guijobs/utilityhassystemlaunchonstartupjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluseraddedjob.h ${server_srcs_path}/comm/guijobs/signaluseraddedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.h ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserremovedjob.h ${server_srcs_path}/comm/guijobs/signaluserremovedjob.cpp

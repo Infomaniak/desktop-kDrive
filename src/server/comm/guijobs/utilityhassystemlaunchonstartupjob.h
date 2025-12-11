@@ -20,16 +20,21 @@
 
 #include "server/comm/guijobs/abstractguijob.h"
 
+#include "libcommon/info/parametersinfo.h"
+
 namespace KDC {
 
-class UtilityCheckCommStatusJob : public AbstractGuiJob {
+class UtilityHasSystemLaunchOnStartupJob : public AbstractGuiJob {
     public:
-        UtilityCheckCommStatusJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                                  std::shared_ptr<AbstractCommChannel> channel);
+        UtilityHasSystemLaunchOnStartupJob(std::shared_ptr<CommManager> commManager, int requestId,
+                                           const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel);
 
     private:
+        // Output parameter
+        bool _enabled{false};
+
         ExitInfo deserializeInputParms() override { return ExitCode::Ok; };
-        ExitInfo serializeOutputParms() override { return ExitCode::Ok; };
+        ExitInfo serializeOutputParms() override;
         ExitInfo process() override;
 
         friend class TestGuiCommChannel;
