@@ -42,7 +42,7 @@
                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                     <TextBlock Text="{Binding Drive.Name}"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
-                               Foreground="{ThemeResource TextFillColorDisabledBrush}" />
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </StackPanel>
             </StackPanel>
         </DataTemplate>
