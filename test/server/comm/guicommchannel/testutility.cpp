@@ -25,7 +25,7 @@ namespace KDC {
 
 using namespace testcommhelpers;
 
-void TestGuiCommChannel::testActivateLoadInfoJob() {
+void TestGuiCommChannel::testUtilityActivateLoadInfoJob() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     const auto queryStr{R"({ "id": 1,)"
                         R"( "num": )" +
