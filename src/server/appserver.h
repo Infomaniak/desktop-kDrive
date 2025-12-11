@@ -133,6 +133,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         [[nodiscard]] ExitInfo setSupportsVirtualFiles(int syncDbId, bool value);
 
         void logExtendedLogActivationMessage(bool isExtendedLogEnabled) noexcept;
+        [[nodiscard]] ExitInfo updateParametersAndPropagateChanges(const ParametersInfo &);
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         static ExitCode getThumbnail(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) {

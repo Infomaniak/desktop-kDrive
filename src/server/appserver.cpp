@@ -683,6 +683,62 @@ void AppServer::logExtendedLogActivationMessage(bool isExtendedLogEnabled) noexc
     LOG_INFO(_logger, msg);
 }
 
+ExitInfo AppServer::updateParametersAndPropagateChanges(const ParametersInfo &newParametersInfo) {
+    // Retrieve current settings
+    const Parameters oldParametersInfo = ParametersCache::instance()->parameters();
+    std::string pwd;
+    if (oldParametersInfo.proxyConfig().needsAuth()) {
+        // Read pwd from keystore
+        bool found = false;
+        if (!KeyChainManager::instance()->readDataFromKeystore(oldParametersInfo.proxyConfig().token(), pwd, found)) {
+            LOG_WARN(_logger, "Failed to read proxy pwd from keychain");
+        }
+        if (!found) {
+            LOG_DEBUG(_logger, "Proxy pwd not found for keychainKey=" << oldParametersInfo.proxyConfig().token());
+        }
+    }
+
+    // Update parameters
+    const ExitCode exitCode = ServerRequests::updateParameters(newParametersInfo);
+    if (exitCode != ExitCode::Ok) {
+        LOG_WARN(_logger, "Error in Requests::updateParameters");
+        AppServer::addError(Error(ERR_ID, exitCode));
+    }
+
+    // extendedLog change propagation
+    if (oldParametersInfo.extendedLog() != newParametersInfo.extendedLog()) {
+        logExtendedLogActivationMessage(newParametersInfo.extendedLog());
+        const std::scoped_lock lock(AppServer::vfsMapMutex);
+        for (const auto &[_, vfs]: AppServer::vfsMap) {
+            vfs->setExtendedLog(newParametersInfo.extendedLog());
+        }
+    }
+
+    // Language change propagation
+    if (oldParametersInfo.language() != newParametersInfo.language()) {
+        CommonUtility::setupTranslations(this, newParametersInfo.language());
+    }
+
+    // ProxyConfig change propagation
+    if (oldParametersInfo.proxyConfig().type() != newParametersInfo.proxyConfigInfo().type() ||
+        oldParametersInfo.proxyConfig().hostName() != newParametersInfo.proxyConfigInfo().hostName().toStdString() ||
+        oldParametersInfo.proxyConfig().port() != newParametersInfo.proxyConfigInfo().port() ||
+        oldParametersInfo.proxyConfig().needsAuth() != newParametersInfo.proxyConfigInfo().needsAuth() ||
+        oldParametersInfo.proxyConfig().user() != newParametersInfo.proxyConfigInfo().user().toStdString() ||
+        pwd != newParametersInfo.proxyConfigInfo().pwd().toStdString()) {
+        // Note: The parameters cache has been updated with the parameters new values.
+        Proxy::instance()->setProxyConfig(ParametersCache::instance()->parameters().proxyConfig());
+    }
+
+    // Autostart change propagation
+    if (oldParametersInfo.autoStart() != newParametersInfo.autoStart()) {
+        auto *theme = Theme::instance();
+        (void) Utility::setLaunchOnStartup(theme->appName(), theme->appName(), newParametersInfo.autoStart());
+    }
+
+    return exitCode;
+}
+
 void AppServer::updateSentryUser() {
     User user;
     bool found = false;
@@ -3476,12 +3532,12 @@ bool AppServer::startClient() {
 #if defined(KD_WINDOWS)
         if (ParametersCache::instance()->parameters().distributionChannel() ==
             VersionChannel::Internal) { // The WinUI3 GUI is currently only for internal builds
-            pathToExecutable =
-                    QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENTV4_EXECUTABLE);
+            pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENTV4_EXECUTABLE);
 
             IoError ioError = IoError::Success;
             bool exists = false;
-            if (!IoHelper::checkIfPathExists(pathToExecutable.toStdString(), exists, ioError) || !exists || ioError != IoError::Success) {
+            if (!IoHelper::checkIfPathExists(pathToExecutable.toStdString(), exists, ioError) || !exists ||
+                ioError != IoError::Success) {
                 pathToExecutable.clear();
             }
         }
