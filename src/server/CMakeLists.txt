@@ -74,8 +74,6 @@ set(server_SRCS
     comm/guijobs/syncgetprivatelinkurljob.h comm/guijobs/syncgetprivatelinkurljob.cpp
     comm/guijobs/syncsetsupportsvirtualfilesjob.h comm/guijobs/syncsetsupportsvirtualfilesjob.cpp
     comm/guijobs/syncsetrootpinstatejob.h comm/guijobs/syncsetrootpinstatejob.cpp
-    comm/guijobs/blacklistednodelistjob.h comm/guijobs/blacklistednodelistjob.cpp
-    comm/guijobs/blacklistednodesetlistjob.h comm/guijobs/blacklistednodesetlistjob.cpp
     comm/guijobs/nodeinfojob.h comm/guijobs/nodeinfojob.cpp
     comm/guijobs/nodesubfoldersjob.h comm/guijobs/nodesubfoldersjob.cpp
     comm/guijobs/nodesubfolders2job.h comm/guijobs/nodesubfolders2job.cpp
@@ -88,6 +86,9 @@ set(server_SRCS
     comm/guijobs/utilitysendlogtosupportjob.h comm/guijobs/utilitysendlogtosupportjob.cpp
     comm/guijobs/utilitycancellogtosupportjob.h comm/guijobs/utilitycancellogtosupportjob.cpp
     comm/guijobs/utilitygetlogestimatedsizejob.h comm/guijobs/utilitygetlogestimatedsizejob.cpp
+    comm/guijobs/blacklistednodelistjob.h comm/guijobs/blacklistednodelistjob.cpp
+    comm/guijobs/blacklistednodesetlistjob.h comm/guijobs/blacklistednodesetlistjob.cpp
+    comm/guijobs/utilityactivateloadinfojob.h comm/guijobs/utilityactivateloadinfojob.cpp
     comm/guijobs/signaluseraddedjob.h comm/guijobs/signaluseraddedjob.cpp
     comm/guijobs/signaluserupdatedjob.h comm/guijobs/signaluserupdatedjob.cpp
     comm/guijobs/signaluserremovedjob.h comm/guijobs/signaluserremovedjob.cpp
@@ -126,6 +127,10 @@ if(APPLE)
     list(APPEND server_SRCS comm/xpccommserver_mac.h comm/xpccommserver_mac.mm)
     list(APPEND server_SRCS comm/extcommserver_mac.mm)
     list(APPEND server_SRCS comm/guicommserver_mac.mm)
+    list(APPEND server_SRCS comm/guijobs/exclappgetlistjob.h comm/guijobs/exclappgetlistjob.cpp)
+    list(APPEND server_SRCS comm/guijobs/exclappsetlistjob.h comm/guijobs/exclappsetlistjob.cpp)
+    list(APPEND server_SRCS comm/guijobs/exclappgetfetchingapplistjob.h comm/guijobs/exclappgetfetchingapplistjob.cpp)
+
     set_property(SOURCE ../common/utility_mac.cpp APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
     set_property(SOURCE comm/abstractcommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
     set_property(SOURCE comm/xpccommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")

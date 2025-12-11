@@ -2957,8 +2957,8 @@ bool ParmsDb::selectAllErrors(int limit, std::vector<Error> &errs) {
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_ID, 16, syncDbId));
 
 
-        errs.push_back(Error(dbId, time, level, functionName, syncDbId, workerName,
-                             static_cast<ExitCode>(exitCode), static_cast<ExitCause>(exitCause), static_cast<NodeId>(localNodeId),
+        errs.push_back(Error(dbId, time, level, functionName, syncDbId, workerName, static_cast<ExitCode>(exitCode),
+                             static_cast<ExitCause>(exitCause), static_cast<NodeId>(localNodeId),
                              static_cast<NodeId>(remoteNodeId), static_cast<NodeType>(nodeType), static_cast<SyncPath>(path),
                              static_cast<ConflictType>(conflictType), static_cast<InconsistencyType>(inconsistencyType),
                              static_cast<CancelType>(cancelType), static_cast<SyncPath>(destinationPath)));
@@ -3016,8 +3016,8 @@ bool ParmsDb::selectAllErrors(ErrorLevel level, int syncDbId, int limit, std::ve
         SyncName destinationPath;
         LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 14, destinationPath));
 
-        errs.push_back(Error(dbId, time, level, functionName, syncDbId, workerName,
-                             static_cast<ExitCode>(exitCode), static_cast<ExitCause>(exitCause), static_cast<NodeId>(localNodeId),
+        errs.push_back(Error(dbId, time, level, functionName, syncDbId, workerName, static_cast<ExitCode>(exitCode),
+                             static_cast<ExitCause>(exitCause), static_cast<NodeId>(localNodeId),
                              static_cast<NodeId>(remoteNodeId), static_cast<NodeType>(nodeType), static_cast<SyncPath>(path),
                              static_cast<ConflictType>(conflictType), static_cast<InconsistencyType>(inconsistencyType),
                              static_cast<CancelType>(cancelType), static_cast<SyncPath>(destinationPath)));

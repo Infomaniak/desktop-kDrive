@@ -1465,23 +1465,38 @@ ExitCode ServerRequests::setExclusionTemplateList(bool def, const QList<Exclusio
 }
 
 #if defined(KD_MACOS)
-ExitCode ServerRequests::getExclusionAppList(bool def, QList<ExclusionAppInfo> &list) {
+ExitCode ServerRequests::getExclusionAppList(const bool def, std::vector<ExclusionAppInfo> &list) {
+    list.clear();
     std::vector<ExclusionApp> exclusionList;
+
     if (!ParmsDb::instance()->selectAllExclusionApps(def, exclusionList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllExclusionApps");
         return ExitCode::DbError;
     }
-    list.clear();
+
     for (const ExclusionApp &exclusionApp: exclusionList) {
         ExclusionAppInfo exclusionAppInfo;
         ServerRequests::exclusionAppToExclusionAppInfo(exclusionApp, exclusionAppInfo);
-        list << exclusionAppInfo;
+        list.emplace_back(std::move(exclusionAppInfo));
     }
 
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::setExclusionAppList(bool def, const QList<ExclusionAppInfo> &list) {
+ExitCode ServerRequests::getExclusionAppList(const bool def, QList<ExclusionAppInfo> &list) {
+    list.clear();
+    std::vector<ExclusionAppInfo> stdVectorAppInfo;
+
+    const auto exitInfo = getExclusionAppList(def, stdVectorAppInfo);
+
+    for (auto &appInfo: stdVectorAppInfo) {
+        list.append(std::move(appInfo));
+    }
+
+    return exitInfo;
+}
+
+ExitCode ServerRequests::setExclusionAppList(const bool def, const std::vector<ExclusionAppInfo> &list) {
     std::vector<ExclusionApp> exclusionList;
     for (const ExclusionAppInfo &exclusionAppInfo: list) {
         ExclusionApp exclusionApp;
@@ -1494,6 +1509,13 @@ ExitCode ServerRequests::setExclusionAppList(bool def, const QList<ExclusionAppI
     }
 
     return ExitCode::Ok;
+}
+
+ExitCode ServerRequests::setExclusionAppList(const bool def, const QList<ExclusionAppInfo> &list) {
+    std::vector<ExclusionAppInfo> stdVector;
+    for (const ExclusionAppInfo &exclusionAppInfo: list) stdVector.push_back(exclusionAppInfo);
+
+    return setExclusionAppList(def, stdVector);
 }
 #endif
 

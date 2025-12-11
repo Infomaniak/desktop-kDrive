@@ -100,6 +100,7 @@ namespace Infomaniak.kDrive
             TrayIcoManager.Initialize();
             AppModel appModel = ServiceProvider.GetRequiredService<AppModel>();
             await appModel.InitializeAsync();
+            (CurrentWindow as MainWindow)?.AppNavView.Frame.Navigate(typeof(Pages.HomePage));
             StartOnboardingIfNeeded();
             appModel.AllSyncs.AsObservableChangeSet()
             .Subscribe(_ =>
