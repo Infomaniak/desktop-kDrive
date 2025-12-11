@@ -53,6 +53,7 @@
 #include "parametersinfojob.h"
 #include "parametersupdatejob.h"
 #include "utilitysendlogtosupportjob.h"
+#include "utilitycancellogtosupportjob.h"
 
 namespace KDC {
 
@@ -94,7 +95,8 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::NODE_CREATEMISSINGFOLDERS, makeShared<NodeCreateMissingFoldersJob>},
                 {RequestNum::PARAMETERS_INFO, makeShared<ParametersInfoJob>},
                 {RequestNum::PARAMETERS_UPDATE, makeShared<ParametersUpdateJob>},
-                {RequestNum::UTILITY_SEND_LOG_TO_SUPPORT, makeShared<UtilitySendLogToSupportJob>}};
+                {RequestNum::UTILITY_SEND_LOG_TO_SUPPORT, makeShared<UtilitySendLogToSupportJob>},
+                {RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT, makeShared<UtilityCancelLogToSupportJob>}};
 }
 
 std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::shared_ptr<CommManager> commManager,
