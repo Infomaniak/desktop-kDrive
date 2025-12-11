@@ -18,6 +18,7 @@
 
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using Sentry;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -76,15 +77,20 @@ namespace Infomaniak.kDrive
 
         public static void Log(Level level, string message, [CallerFilePath] string filePath = "?", [CallerLineNumber] int lineNumber = -1, [CallerMemberName] string memberName = "?")
         {
+
+            string shortLogEntry = $"{Path.GetFileName(filePath)}:{lineNumber} - {memberName}: {message}";
+            string logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [{level}] {shortLogEntry}";
+            SentrySdk.AddBreadcrumb(shortLogEntry, level: LoggerLevelToBreadcrumbLevel(level));
 #if !DEBUG
             if (LogLevel > level || _logStream is null)
                 return;
 #endif
-            string logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [{level}] ({Path.GetFileName(filePath)}:{lineNumber}) {memberName}: {message}";
             try
             {
                 _logStream?.WriteLine(logEntry);
-            }catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 System.Diagnostics.Debug.WriteLine($"Failed to write log entry: {ex.Message}");
                 // Reset the log stream to avoid further errors
                 _logStream = new StreamWriter(_logFilePath, append: true) { AutoFlush = true };
@@ -94,8 +100,37 @@ namespace Infomaniak.kDrive
             if (level > Level.Info)
             {
                 System.Diagnostics.Debug.WriteLine(logEntry);
+                SentrySdk.CaptureMessage(shortLogEntry, LoggerLevelToSentryLevel(level));
             }
 #endif
+        }
+
+        private static BreadcrumbLevel LoggerLevelToBreadcrumbLevel(Level level)
+        {
+            return level switch
+            {
+                Level.Extended => BreadcrumbLevel.Debug,
+                Level.Debug => BreadcrumbLevel.Debug,
+                Level.Info => BreadcrumbLevel.Info,
+                Level.Warning => BreadcrumbLevel.Warning,
+                Level.Error => BreadcrumbLevel.Error,
+                Level.Fatal => BreadcrumbLevel.Fatal,
+                _ => BreadcrumbLevel.Info,
+            };
+        }
+
+        private static SentryLevel LoggerLevelToSentryLevel(Level level)
+        {
+            return level switch
+            {
+                Level.Extended => SentryLevel.Debug,
+                Level.Debug => SentryLevel.Debug,
+                Level.Info => SentryLevel.Info,
+                Level.Warning => SentryLevel.Warning,
+                Level.Error => SentryLevel.Error,
+                Level.Fatal => SentryLevel.Fatal,
+                _ => SentryLevel.Info,
+            };
         }
     }
 }

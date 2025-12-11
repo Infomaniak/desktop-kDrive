@@ -65,7 +65,7 @@ namespace Infomaniak.kDrive.CustomControls
                     return;
                 }
 
-                Logger.Log(Logger.Level.Warning, $"Unknown navigation tag: {item.Tag}... Going to HomePage");
+                Logger.Log(Logger.Level.Info, $"Unknown navigation tag: {item.Tag}... Going to HomePage");
                 ContentFrame.Navigate(typeof(SettingsPage));
             }
         }
