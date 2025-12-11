@@ -1090,6 +1090,10 @@ void TestUtility::testWriteValueToStruct() {
     const std::vector<Dummy> dummyValues{{4444, "poiuz"}, {3333, "lkjhg"}};
     CommonUtility::writeValuesToStruct(dstruct, "dummyValues", dummyValues, dummy2DynamicVar);
 
+    const std::unordered_map<std::string, std::string, StringHashFunction, std::equal_to<>> table = {{"first_name", "john"},
+                                                                                                     {"family_name", "does"}};
+    CommonUtility::writeValuesToStruct(dstruct, "table", table);
+
     // Read data
     CPPUNIT_ASSERT(dstruct["intValue"] == 555);
     CPPUNIT_ASSERT(dstruct["floatValue"] == 111.222f);
@@ -1137,6 +1141,20 @@ void TestUtility::testWriteValueToStruct() {
     CPPUNIT_ASSERT(dummyStruct["intValue"] == 3333);
     CommonUtility::convertToBase64Str("lkjhg", base64StrValue);
     CPPUNIT_ASSERT(dummyStruct["strValue"] == base64StrValue);
+
+    CPPUNIT_ASSERT(dstruct["table"].isStruct());
+    CPPUNIT_ASSERT(dstruct["table"].size() == 2);
+    Poco::DynamicStruct tableStruct = dstruct["table"].extract<Poco::DynamicStruct>();
+
+    auto toBase64 = [](const std::string &str) {
+        std::string base64StrValue;
+        CommonUtility::convertToBase64Str(str, base64StrValue);
+
+        return base64StrValue;
+    };
+
+    CPPUNIT_ASSERT(tableStruct["first_name"] == toBase64("john"));
+    CPPUNIT_ASSERT(tableStruct["family_name"] == toBase64("does"));
 }
 
 void TestUtility::testConvertFromBase64Str() {

@@ -151,6 +151,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 #endif
 
         static std::shared_ptr<CommManager> commManager() { return _commManager; }
+
     private:
         QStringList _arguments;
         log4cplus::Logger _logger;

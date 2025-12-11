@@ -2565,11 +2565,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 
@@ -3662,11 +3662,6 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
 
     if (!exists) {
         LOGW_WARN(_logger, L"Sync localpath " << Utility::formatSyncPath(sync.localPath()) << L" doesn't exist.");
-        auto tmpSync(sync);
-        tmpSync.setPaused(true);
-        if (bool found = false; !ParmsDb::instance()->updateSync(tmpSync, found) || !found) {
-            LOG_WARN(_logger, "Failed to update sync status!");
-        }
         return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
     }
 
@@ -4320,8 +4315,8 @@ void AppServer::onUpdateSyncsProgress() {
         const std::scoped_lock lock(syncPalMapMutex);
         if (const auto syncPalMapIt = syncPalMap.find(sync.dbId()); syncPalMapIt == syncPalMap.end()) {
             // No SyncPal for this sync
-            sendSyncProgressInfo(sync.dbId(), sync.paused() ? SyncStatus::Paused : SyncStatus::Error, SyncStep::None,
-                                 SyncProgress());
+            // Show the sync paused anyway. It is most likely that an external drive is not plugged in.
+            sendSyncProgressInfo(sync.dbId(), SyncStatus::Paused, SyncStep::None, SyncProgress());
         } else {
             if (!syncPalMapIt->second) {
                 assert(false);

@@ -83,10 +83,10 @@ void TestGuiCommChannel::testErrorInfoListJob() {
 
     // Job expected answers
     const auto answerStr = testcommhelpers::stringifyAnswerObj(answerObjWithNumAndType);
-    const auto cbkAnswerStr = testcommhelpers::stringifyCbkAnswerObj(answerObj);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto errorJob = std::dynamic_pointer_cast<ErrorInfolistJob>(job);
+        CPPUNIT_ASSERT(errorJob);
         ErrorInfo e1;
         e1.setDbId(1);
         e1.setTime(1000);
@@ -108,7 +108,12 @@ void TestGuiCommChannel::testErrorInfoListJob() {
         errorJob->_errorInfoList = {e1};
     };
 
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(queryStr, answerStr, {}, processFct);
+#else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
 }
 
 } // namespace KDC

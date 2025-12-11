@@ -26,7 +26,7 @@ namespace KDC {
 class ErrorInfolistJob : public AbstractGuiJob {
     public:
         ErrorInfolistJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                       std::shared_ptr<AbstractCommChannel> channel);
+                         std::shared_ptr<AbstractCommChannel> channel);
 
     private:
         // Input parameters
