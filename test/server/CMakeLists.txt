@@ -68,6 +68,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/errorinfolistjob.h ${server_srcs_path}/comm/guijobs/errorinfolistjob.cpp
     ${server_srcs_path}/comm/guijobs/utilitysendlogtosupportjob.h ${server_srcs_path}/comm/guijobs/utilitysendlogtosupportjob.cpp
     ${server_srcs_path}/comm/guijobs/utilitycancellogtosupportjob.h ${server_srcs_path}/comm/guijobs/utilitycancellogtosupportjob.cpp
+    ${server_srcs_path}/comm/guijobs/utilitygetlogestimatedsizejob.h ${server_srcs_path}/comm/guijobs/utilitygetlogestimatedsizejob.cpp
     ${server_srcs_path}/comm/guijobs/signaluseraddedjob.h ${server_srcs_path}/comm/guijobs/signaluseraddedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.h ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserremovedjob.h ${server_srcs_path}/comm/guijobs/signaluserremovedjob.cpp

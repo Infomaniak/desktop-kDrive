@@ -54,6 +54,7 @@
 #include "parametersupdatejob.h"
 #include "utilitysendlogtosupportjob.h"
 #include "utilitycancellogtosupportjob.h"
+#include "utilitygetlogestimatedsizejob.h"
 
 namespace KDC {
 
@@ -96,7 +97,8 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::PARAMETERS_INFO, makeShared<ParametersInfoJob>},
                 {RequestNum::PARAMETERS_UPDATE, makeShared<ParametersUpdateJob>},
                 {RequestNum::UTILITY_SEND_LOG_TO_SUPPORT, makeShared<UtilitySendLogToSupportJob>},
-                {RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT, makeShared<UtilityCancelLogToSupportJob>}};
+                {RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT, makeShared<UtilityCancelLogToSupportJob>},
+                {RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE, makeShared<UtilityGetLogEstimatedSizeJob>}};
 }
 
 std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::shared_ptr<CommManager> commManager,
