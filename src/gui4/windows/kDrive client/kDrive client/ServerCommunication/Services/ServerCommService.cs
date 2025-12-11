@@ -618,7 +618,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task ActivateLoadInfo(CancellationToken cancellationToken)
         {
-            await _commClient.SendRequestAsync(RequestNum.UTILITY_ACTIVATELOADINFO, new JsonObject { } , cancellationToken);
+            await _commClient.SendRequestAsync(RequestNum.UTILITY_ACTIVATELOADINFO, new JsonObject { }, cancellationToken);
+        }
+
+        public async Task Exit()
+        {
+            await _commClient.SendRequestAsync(RequestNum.UTILITY_QUIT, new JsonObject { }, CancellationToken.None);
         }
 
         public async Task SaveSettings(CancellationToken cancellationToken)
