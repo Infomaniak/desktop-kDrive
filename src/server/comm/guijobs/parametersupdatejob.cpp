@@ -17,17 +17,9 @@
  */
 
 #include "parametersupdatejob.h"
+
 #include "appserver.h"
-
-#include "keychainmanager/keychainmanager.h"
-#include "requests/parameterscache.h"
-
 #include "libcommon/comm.h"
-#include "libcommonserver/log/log.h"
-#include "libcommonserver/network/proxy.h"
-
-#include "theme/theme.h"
-
 
 // Output parameters keys
 static const auto inParamsParametersInfo = "parametersInfo";
@@ -57,7 +49,6 @@ ExitInfo ParametersUpdateJob::deserializeInputParms() {
 
     return ExitCode::Ok;
 }
-
 
 ExitInfo ParametersUpdateJob::process() {
     return _commManager->appServer().updateParametersAndPropagateChanges(_parametersInfo);
