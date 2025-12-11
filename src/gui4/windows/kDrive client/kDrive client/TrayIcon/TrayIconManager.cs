@@ -66,7 +66,7 @@ namespace Infomaniak.kDrive.TrayIcon
                 _trayIcon.ForceCreate();
 
                 // Set initial icon
-                SetIcon_ok();
+                SetIcon_neutral();
             }
             else
             {
@@ -129,7 +129,7 @@ namespace Infomaniak.kDrive.TrayIcon
             (Application.Current as App)?.CurrentWindow?.Activate();
             await App.ServiceProvider.GetRequiredService<IServerCommService>().ActivateLoadInfo(CancellationToken.None);
 
-            SetIcon_ok();
+            SetIcon_neutral();
         }
 
         private void ExitApplicationCommand_ExecuteRequested(object? sender, ExecuteRequestedEventArgs args)
