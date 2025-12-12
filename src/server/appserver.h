@@ -140,6 +140,9 @@ class AppServer : public SharedTools::QtSingleApplication {
         // Ask the Finder/File explorer Extension to register the folder
         void registerSync(std::shared_ptr<SyncPal> syncPal);
 
+        // Ask the Finder/File explorer Extension to unregister the folder
+        void unregisterSync(std::shared_ptr<SyncPal> syncPal);
+
         static void uploadLog(bool includeArchivedLogs);
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
