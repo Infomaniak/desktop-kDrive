@@ -539,7 +539,7 @@ void TestGuiCommChannel::testSyncTriggerProgressUpdateJob() {
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+    testGenericJob(queryStr, answerStr, {}, processFct);
 #else
     const auto cbkAnswerStr = stringifyCbkAnswerObj(simpleAnswers.answer);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
