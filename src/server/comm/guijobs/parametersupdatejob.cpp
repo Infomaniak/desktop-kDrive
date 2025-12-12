@@ -96,6 +96,11 @@ ExitInfo ParametersUpdateJob::process() {
         Proxy::instance()->setProxyConfig(ParametersCache::instance()->parameters().proxyConfig());
     }
 
+    // Sentry activation change propagation
+    if (parameters.sentryEnabled() != _parametersInfo.sentryEnabled()) {
+        sentry::Handler::instance()->setIsSentryActivated(_parametersInfo.sentryEnabled());
+    }
+
     return exitCode;
 }
 

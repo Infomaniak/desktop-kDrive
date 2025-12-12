@@ -272,6 +272,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         // Ask the Finder/File explorer Extension to unregister the folder
         void unregisterSync(std::shared_ptr<SyncPal> syncPal);
 
+        std::string appUID() const;
+
         // For testing purpose
         void crash() const;
 

@@ -273,6 +273,10 @@ void AppServer::init() {
     // Setup translations
     CommonUtility::setupTranslations(this, ParametersCache::instance()->parameters().language());
 
+    // Configure Sentry
+    sentry::Handler::instance()->setAppUUID(appUID());
+    sentry::Handler::instance()->setIsSentryActivated(ParametersCache::instance()->parameters().sentryEnabled());
+
     // Configure logger
     if (!Log::instance()->configure(ParametersCache::instance()->parameters().useLog(),
                                     ParametersCache::instance()->parameters().logLevel(),
@@ -770,6 +774,17 @@ void AppServer::unregisterSync(std::shared_ptr<SyncPal> syncPal) {
 #else
     (void) syncPal;
 #endif
+}
+
+std::string AppServer::appUID() const {
+    AppStateValue appStateValue = "";
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::AppUid, appStateValue, found)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAppState");
+        addError(Error(ERR_ID, ExitCode::DbError, ExitCause::DbAccessError));
+    } else if (!found) {
+        LOG_WARN(Log::instance()->getLogger(), AppStateKey::AppUid << " key not found in appstate table");
+    }
+    return std::get<std::string>(appStateValue);
 }
 
 #if defined(KD_MACOS)
@@ -3041,17 +3056,14 @@ void AppServer::logUsefulInformation() const {
     LOGW_INFO(_logger, L"free space for cache: " << Utility::getFreeDiskSpace(cachePath) << L" bytes");
 
     // Log app ID
-    AppStateValue appStateValue = "";
+    LOG_INFO(Log::instance()->getLogger(), "App ID: " << appUID());
 
-    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::AppUid, appStateValue, found)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAppState");
-        addError(Error(ERR_ID, ExitCode::DbError, ExitCause::DbAccessError));
-    } else if (!found) {
-        LOG_WARN(Log::instance()->getLogger(), AppStateKey::AppUid << " key not found in appstate table");
-    }
-    const auto &appUid = std::get<std::string>(appStateValue);
-    LOG_INFO(Log::instance()->getLogger(), "App ID: " << appUid);
-    sentry::Handler::instance()->setAppUUID(appUid);
+    // Log Sentry activation status
+    LOG_INFO(Log::instance()->getLogger(), "Sentry enabled: " << ParametersCache::instance()->parameters().sentryEnabled());
+
+    // Log Matomo activation status
+    LOG_INFO(Log::instance()->getLogger(), "Matomo enabled: " << ParametersCache::instance()->parameters().matomoEnabled());
+
     // Log user IDs
     std::vector<User> userList;
     if (!ParmsDb::instance()->selectAllUsers(userList)) {
