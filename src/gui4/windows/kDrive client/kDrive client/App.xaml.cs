@@ -24,6 +24,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Security.Authentication.OAuth;
 using Microsoft.UI.Xaml;
 using Microsoft.Win32;
+using Sentry;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -54,6 +55,15 @@ namespace Infomaniak.kDrive
         internal static IAppConstants Constants => new ProductionConstants();
         internal App()
         {
+            SentrySdk.Init(options =>
+            {
+                options.Dsn = Constants.SentryDSN;
+                options.Debug = true;
+                options.SendDefaultPii = true;
+                options.AutoSessionTracking = true;
+                options.IsGlobalModeEnabled = true;
+                options.Environment = "production";
+            });
             InitializeComponent();
             TrayIcoManager = new TrayIcon.TrayIconManager();
             _services.AddSingleton<AppModel>();
