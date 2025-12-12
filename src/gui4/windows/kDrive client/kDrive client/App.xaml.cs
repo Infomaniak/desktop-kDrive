@@ -56,26 +56,13 @@ namespace Infomaniak.kDrive
         {
             SentrySdk.Init(options =>
             {
-                // A Sentry Data Source Name (DSN) is required.
-                // See https://docs.sentry.io/concepts/key-terms/dsn-explainer/
-                // You can set it in the SENTRY_DSN environment variable, or you can set it in code here.
-                options.Dsn = "https://c6ee7ba768d4f7fcd3a6f787f8cc569e@sentry-desktop.infomaniak.com/5";
-                // When debug is enabled, the Sentry client will emit detailed debugging information to the console.
-                // This might be helpful, or might interfere with the normal operation of your application.
-                // We enable it here for demonstration purposes when first trying Sentry.
-                // You shouldn't do this in your applications unless you're troubleshooting issues with Sentry.
+                options.Dsn = Constants.SentryDSN;
                 options.Debug = true;
-                // Adds request URL and headers, IP and name for users, etc.
                 options.SendDefaultPii = true;
-                // This option is recommended. It enables Sentry's "Release Health" feature.
                 options.AutoSessionTracking = true;
-                // Enabling this option is recommended for client applications only. It ensures all threads use the same global scope.
                 options.IsGlobalModeEnabled = true;
-                // Example sample rate for your transactions: captures 10% of transactions
-                options.TracesSampleRate = 0.1;
-                options.Environment = "test_dev_herve";
+                options.Environment = "production";
             });
-
             InitializeComponent();
             TrayIcoManager = new TrayIcon.TrayIconManager();
             _services.AddSingleton<AppModel>();
