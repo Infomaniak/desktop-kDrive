@@ -85,6 +85,8 @@ set(server_SRCS
     comm/guijobs/parametersupdatejob.h comm/guijobs/parametersupdatejob.cpp
     comm/guijobs/blacklistednodelistjob.h comm/guijobs/blacklistednodelistjob.cpp
     comm/guijobs/blacklistednodesetlistjob.h comm/guijobs/blacklistednodesetlistjob.cpp
+    comm/guijobs/utilitysetappstatejob.h comm/guijobs/utilitysetappstatejob.cpp
+    comm/guijobs/utilitygetappstatejob.h comm/guijobs/utilitygetappstatejob.cpp
     comm/guijobs/utilityactivateloadinfojob.h comm/guijobs/utilityactivateloadinfojob.cpp
     comm/guijobs/signaluseraddedjob.h comm/guijobs/signaluseraddedjob.cpp
     comm/guijobs/signaluserupdatedjob.h comm/guijobs/signaluserupdatedjob.cpp
@@ -222,7 +224,9 @@ if(NOT BUILD_KDRIVE_OSX_BUNDLE)
     add_executable(${APPLICATION_EXECUTABLE} WIN32 mainserver.cpp ${final_src})
 else()
     # we must add MACOSX_BUNDLE only if building a bundle
-    add_executable(${APPLICATION_EXECUTABLE} WIN32 MACOSX_BUNDLE mainserver.cpp ${final_src})
+    add_executable(${APPLICATION_EXECUTABLE} WIN32 MACOSX_BUNDLE mainserver.cpp ${final_src}
+        comm/guijobs/utilitygetappstatejob.h
+        comm/guijobs/utilitygetappstatejob.cpp)
 
     get_target_property(_qmake Qt6::qmake LOCATION)
     execute_process(COMMAND ${_qmake} -query QT_INSTALL_TRANSLATIONS

@@ -55,8 +55,9 @@
 #endif
 #include "parametersinfojob.h"
 #include "parametersupdatejob.h"
+#include "utilitysetappstatejob.h"
+#include "utilitygetappstatejob.h"
 #include "utilityactivateloadinfojob.h"
-
 
 namespace KDC {
 
@@ -99,7 +100,8 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::PARAMETERS_INFO, makeShared<ParametersInfoJob>},
                 {RequestNum::PARAMETERS_UPDATE, makeShared<ParametersUpdateJob>},
                 {RequestNum::UTILITY_ACTIVATELOADINFO, makeShared<UtilityActivateLoadInfoJob>},
-                {RequestNum::NODE_CREATEMISSINGFOLDERS, makeShared<NodeCreateMissingFoldersJob>}};
+                {RequestNum::UTILITY_SET_APPSTATE, makeShared<UtilitySetAppStateJob>},
+                {RequestNum::UTILITY_GET_APPSTATE, makeShared<UtilityGetAppStateJob>}};
 }
 
 std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::shared_ptr<CommManager> commManager,
