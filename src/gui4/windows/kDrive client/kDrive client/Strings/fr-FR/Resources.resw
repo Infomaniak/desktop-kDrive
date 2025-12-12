@@ -143,7 +143,7 @@
     <value>Stockage</value>
   </data>
   <data name="W_MainWindow_TitleBar_SearchBox.PlaceholderText" xml:space="preserve">
-    <value>Rechercher dans {{ TODO }}</value>
+    <value>Rechercher dans mon drive</value>
   </data>
   <data name="CC_SyncStatusBar_PausedStatus.Text" xml:space="preserve">
     <value>Synchronisation en pause</value>
