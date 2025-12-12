@@ -32,13 +32,13 @@ namespace Infomaniak.kDrive
     {
         public enum Level
         {
-            Extended,
             Debug,
             Info,
             Warning,
             Error,
             Fatal,
-            None
+            None,
+            Extended
         }
 
         private static string _logFilePath;

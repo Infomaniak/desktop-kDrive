@@ -61,10 +61,12 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/nodesubfolders2job.h ${server_srcs_path}/comm/guijobs/nodesubfolders2job.cpp
     ${server_srcs_path}/comm/guijobs/nodefoldersizejob.h ${server_srcs_path}/comm/guijobs/nodefoldersizejob.cpp
     ${server_srcs_path}/comm/guijobs/nodecreatemissingfoldersjob.h ${server_srcs_path}/comm/guijobs/nodecreatemissingfoldersjob.cpp
-    ${server_srcs_path}/comm/guijobs/utilityactivateloadinfojob.h ${server_srcs_path}/comm/guijobs/utilityactivateloadinfojob.cpp
     ${server_srcs_path}/comm/guijobs/parametersinfojob.h ${server_srcs_path}/comm/guijobs/parametersinfojob.cpp
     ${server_srcs_path}/comm/guijobs/parametersupdatejob.h ${server_srcs_path}/comm/guijobs/parametersupdatejob.cpp
     ${server_srcs_path}/comm/guijobs/errorinfolistjob.h ${server_srcs_path}/comm/guijobs/errorinfolistjob.cpp
+    ${server_srcs_path}/comm/guijobs/utilityactivateloadinfojob.h ${server_srcs_path}/comm/guijobs/utilityactivateloadinfojob.cpp
+    ${server_srcs_path}/comm/guijobs/utilitysetappstatejob.h ${server_srcs_path}/comm/guijobs/utilitysetappstatejob.cpp
+    ${server_srcs_path}/comm/guijobs/utilitygetappstatejob.h ${server_srcs_path}/comm/guijobs/utilitygetappstatejob.cpp
     ${server_srcs_path}/comm/guijobs/utilitysendlogtosupportjob.h ${server_srcs_path}/comm/guijobs/utilitysendlogtosupportjob.cpp
     ${server_srcs_path}/comm/guijobs/utilitycancellogtosupportjob.h ${server_srcs_path}/comm/guijobs/utilitycancellogtosupportjob.cpp
     ${server_srcs_path}/comm/guijobs/utilitygetlogestimatedsizejob.h ${server_srcs_path}/comm/guijobs/utilitygetlogestimatedsizejob.cpp

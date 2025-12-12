@@ -56,10 +56,10 @@ namespace Infomaniak.kDrive.CustomControls
 
         private void GoToNavigationViewItemPage(NavigationViewItem? item)
         {
-            if (item != null)
+            if (item is not null)
             {
                 // Navigate to the selected page
-                if (_navigationItemToPage.TryGetValue(item.Tag.ToString() ?? "", out List<Type>? pageTypes))
+                if (_navigationItemToPage.TryGetValue(item?.Tag?.ToString() ?? "", out List<Type>? pageTypes))
                 {
                     ContentFrame.Navigate(pageTypes.FirstOrDefault());
                     return;

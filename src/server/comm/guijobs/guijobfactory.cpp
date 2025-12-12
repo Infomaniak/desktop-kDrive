@@ -55,10 +55,12 @@
 #endif
 #include "parametersinfojob.h"
 #include "parametersupdatejob.h"
+#include "utilityactivateloadinfojob.h"
+#include "utilitysetappstatejob.h"
+#include "utilitygetappstatejob.h"
 #include "utilitysendlogtosupportjob.h"
 #include "utilitycancellogtosupportjob.h"
 #include "utilitygetlogestimatedsizejob.h"
-#include "utilityactivateloadinfojob.h"
 
 namespace KDC {
 
@@ -100,10 +102,12 @@ GuiJobFactory::GuiJobFactory() {
 #endif
                 {RequestNum::PARAMETERS_INFO, makeShared<ParametersInfoJob>},
                 {RequestNum::PARAMETERS_UPDATE, makeShared<ParametersUpdateJob>},
+                {RequestNum::UTILITY_ACTIVATELOADINFO, makeShared<UtilityActivateLoadInfoJob>},
+                {RequestNum::UTILITY_SET_APPSTATE, makeShared<UtilitySetAppStateJob>},
+                {RequestNum::UTILITY_GET_APPSTATE, makeShared<UtilityGetAppStateJob>},
                 {RequestNum::UTILITY_SEND_LOG_TO_SUPPORT, makeShared<UtilitySendLogToSupportJob>},
                 {RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT, makeShared<UtilityCancelLogToSupportJob>},
-                {RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE, makeShared<UtilityGetLogEstimatedSizeJob>},
-                {RequestNum::UTILITY_ACTIVATELOADINFO, makeShared<UtilityActivateLoadInfoJob>}};
+                {RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE, makeShared<UtilityGetLogEstimatedSizeJob>}};
 }
 
 std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::shared_ptr<CommManager> commManager,
