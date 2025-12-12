@@ -27,7 +27,7 @@ namespace KDC {
 int Parameters::_uploadSessionParallelJobsDefault = UPLOAD_SESSION_PARALLEL_THREADS;
 
 Parameters::Parameters() {
-    _uploadSessionParallelJobs = UPLOAD_SESSION_PARALLEL_THREADS;
+    _uploadSessionParallelJobs = Parameters::_uploadSessionParallelJobsDefault;
 }
 
 } // namespace KDC

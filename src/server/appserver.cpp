@@ -17,6 +17,7 @@
  */
 
 #include "appserver.h"
+#include "version.h"
 #include "migration/migrationparams.h"
 #include "keychainmanager/keychainmanager.h"
 #include "requests/syncnodecache.h"
@@ -24,6 +25,25 @@
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
 #include "comm/extjobmanager.h"
 #endif
+#include "jobs/network/kDrive_API/searchjob.h"
+#include "jobs/network/kDrive_API/upload/loguploadjob.h"
+#include "jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.h"
+#include "requests/offlinefilessizeestimator.h"
+#include "updater/updatemanager.h"
+#include "server/comm/guijobs/signalaccountaddedjob.h"
+#include "server/comm/guijobs/signaluseraddedjob.h"
+#include "server/comm/guijobs/signaluserupdatedjob.h"
+#include "server/comm/guijobs/signaluserremovedjob.h"
+#include "server/comm/guijobs/signalaccountremovedjob.h"
+#include "server/comm/guijobs/signaldriveaddedjob.h"
+#include "server/comm/guijobs/signaldriveremovedjob.h"
+#include "server/comm/guijobs/signalsyncaddedjob.h"
+#include "server/comm/guijobs/signalsyncremovedjob.h"
+#include "server/comm/guijobs/signalsynccompleteditem.h"
+#include "server/comm/guijobs/signalsyncupdatedjob.h"
+#include "server/comm/guijobs/signalerroraddedjob.h"
+#include "server/comm/guijobs/signalerrorremovedjob.h"
+#include "server/comm/guijobs/signalsyncprogressinfo.h"
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
@@ -43,6 +63,7 @@
 #include "libsyncengine/requests/parameterscache.h"
 #include "libsyncengine/requests/exclusiontemplatecache.h"
 #include "libsyncengine/jobs/syncjobmanager.h"
+
 #include <iostream>
 #include <fstream>
 #include <filesystem>
@@ -53,28 +74,6 @@
 #if defined(KD_WINDOWS)
 #include <windows.h>
 #endif
-
-#include "jobs/network/kDrive_API/searchjob.h"
-#include "jobs/network/kDrive_API/upload/loguploadjob.h"
-#include "jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.h"
-#include "requests/offlinefilessizeestimator.h"
-#include "updater/updatemanager.h"
-
-#include "server/comm/guijobs/signalaccountaddedjob.h"
-#include "server/comm/guijobs/signaluseraddedjob.h"
-#include "server/comm/guijobs/signaluserupdatedjob.h"
-#include "server/comm/guijobs/signaluserremovedjob.h"
-#include "server/comm/guijobs/signalaccountremovedjob.h"
-#include "server/comm/guijobs/signaldriveaddedjob.h"
-#include "server/comm/guijobs/signaldriveremovedjob.h"
-#include "server/comm/guijobs/signalsyncaddedjob.h"
-#include "server/comm/guijobs/signalsyncremovedjob.h"
-#include "server/comm/guijobs/signalsynccompleteditem.h"
-#include "server/comm/guijobs/signalsyncupdatedjob.h"
-#include "server/comm/guijobs/signalerroraddedjob.h"
-#include "server/comm/guijobs/signalerrorremovedjob.h"
-
-#include "server/comm/guijobs/signalsyncprogressinfo.h"
 
 #include <QDesktopServices>
 #include <QDir>
@@ -270,12 +269,13 @@ void AppServer::init() {
         throw std::runtime_error("Unable to initialize parameters cache.");
     }
 
+    // Update Sentry configuration
+    sentry::Handler::instance()->setAppUUID(appUID());
+    sentry::Handler::instance()->setIsSentryActivated(
+            KDRIVE_VERSION_MAJOR < 4 ? true : ParametersCache::instance()->parameters().sentryEnabled());
+
     // Setup translations
     CommonUtility::setupTranslations(this, ParametersCache::instance()->parameters().language());
-
-    // Configure Sentry
-    sentry::Handler::instance()->setAppUUID(appUID());
-    sentry::Handler::instance()->setIsSentryActivated(ParametersCache::instance()->parameters().sentryEnabled());
 
     // Configure logger
     if (!Log::instance()->configure(ParametersCache::instance()->parameters().useLog(),
@@ -3058,11 +3058,13 @@ void AppServer::logUsefulInformation() const {
     // Log app ID
     LOG_INFO(Log::instance()->getLogger(), "App ID: " << appUID());
 
-    // Log Sentry activation status
-    LOG_INFO(Log::instance()->getLogger(), "Sentry enabled: " << ParametersCache::instance()->parameters().sentryEnabled());
+    if (KDRIVE_VERSION_MAJOR >= 4) {
+        // Log Sentry activation status
+        LOG_INFO(Log::instance()->getLogger(), "Sentry enabled: " << ParametersCache::instance()->parameters().sentryEnabled());
 
-    // Log Matomo activation status
-    LOG_INFO(Log::instance()->getLogger(), "Matomo enabled: " << ParametersCache::instance()->parameters().matomoEnabled());
+        // Log Matomo activation status
+        LOG_INFO(Log::instance()->getLogger(), "Matomo enabled: " << ParametersCache::instance()->parameters().matomoEnabled());
+    }
 
     // Log user IDs
     std::vector<User> userList;
@@ -3733,7 +3735,7 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
 #endif
         vfsSetupParams.localPath = sync.localPath();
         vfsSetupParams.targetPath = sync.targetPath();
-        vfsSetupParams.executeCommand = [this]([[maybe_unused]] const CommString &command, [[maybe_unused]] bool broadcast) {
+        vfsSetupParams.executeCommand = []([[maybe_unused]] const CommString &command, [[maybe_unused]] bool broadcast) {
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
             _commManager->executeCommandDirect(command, broadcast);
 #endif

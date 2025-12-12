@@ -18,10 +18,9 @@
 
 #include "parametersupdatejob.h"
 #include "appserver.h"
-
+#include "version.h"
 #include "keychainmanager/keychainmanager.h"
 #include "requests/parameterscache.h"
-
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/network/proxy.h"
@@ -98,7 +97,7 @@ ExitInfo ParametersUpdateJob::process() {
 
     // Sentry activation change propagation
     if (parameters.sentryEnabled() != _parametersInfo.sentryEnabled()) {
-        sentry::Handler::instance()->setIsSentryActivated(_parametersInfo.sentryEnabled());
+        sentry::Handler::instance()->setIsSentryActivated(KDRIVE_VERSION_MAJOR < 4 ? true : _parametersInfo.sentryEnabled());
     }
 
     return exitCode;
