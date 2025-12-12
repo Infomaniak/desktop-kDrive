@@ -81,10 +81,10 @@ namespace Infomaniak.kDrive.ViewModels
 
             Logger.Log(Logger.Level.Info, $"Finishing onboarding for user {SelectedUser.Name} with {NewSyncs.Count} new syncs.");
             var commService = _serverCommService;
-            foreach (var sync in NewSyncs)
+            foreach (NewSync sync in NewSyncs)
             {
-                Logger.Log(Logger.Level.Debug, $"Setting up new sync: LocalPath={sync.LocalPath}, RemotePath={sync.RemotePath}, Drive={sync.Drive.Name}");
-                await _serverCommService.AddSync(sync, CancellationToken.None);
+                Logger.Log(Logger.Level.Debug, $"Setting up new sync: LocalPath={sync.LocalPath}, RemotePath={sync.RemotePath}, Drive={sync?.Drive?.Name ?? "unknown"}");
+                await _serverCommService.AddSync(sync!, CancellationToken.None);
             }
 
             Logger.Log(Logger.Level.Info, $"Onboarding finished for user {SelectedUser.Name}.");

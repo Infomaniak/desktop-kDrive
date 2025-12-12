@@ -150,17 +150,17 @@
                                 <ToolTipService.ToolTip>
                                     <ToolTip x:Uid="Page_Onboarding_DriveSelectionPage_DriveAlreadyConfigured"
                                              VerticalOffset="-80"
-                                             IsEnabled="{x:Bind IsConfigured, Mode=OneWay}" />
+                                             IsEnabled="{x:Bind IsConfigured}" />
                                 </ToolTipService.ToolTip>
                                 <Border Style="{StaticResource Infomaniak.Style.Border.WithContent}"
                                         Background="{ThemeResource LayerFillColorDefaultBrush}"
                                         MinHeight="44"
                                         MinWidth="280"
                                         Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.XS}">
-                                    <ContentControl Content="{x:Bind Mode=OneWay}"
+                                    <ContentControl Content="{x:Bind}"
                                                     ContentTemplateSelector="{StaticResource DriveTemplateSelector}"
                                                     VerticalContentAlignment="Center"
-                                                    IsEnabled="{x:Bind IsConfigured, Converter={StaticResource BooleanToInvertedBooleanConverter}, Mode=OneWay}" />
+                                                    IsEnabled="{x:Bind IsConfigured, Converter={StaticResource BooleanToInvertedBooleanConverter}}" />
                                 </Border>
 
                             </Grid>

@@ -17,7 +17,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
         private ViewModels.Onboarding? _onboardingViewModel;
         public AppModel AppModel => _appModel;
         public ViewModels.Onboarding? OnboardingViewModel => _onboardingViewModel;
-        private Task _driveAvailableWatcherTask;
+        private Task? _driveAvailableWatcherTask;
         private CancellationTokenSource _driveAvailableWatcherCts = new();
         public NoDrivesPage()
         {
@@ -82,6 +82,12 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
         private async Task CheckAvailableDrives(CancellationToken cancellationToken)
         {
+            if(OnboardingViewModel?.SelectedUser is null)
+            {
+                Logger.Log(Logger.Level.Warning, "SelectedUser is null or OnboardingViewModel is null - Cannot check available drives");
+                return;
+            }
+
             await OnboardingViewModel.SelectedUser.RefreshAvailableDrives(cancellationToken);
             if (!cancellationToken.IsCancellationRequested && OnboardingViewModel.SelectedUser.AllDrives.Any())
             {

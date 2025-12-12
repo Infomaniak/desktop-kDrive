@@ -212,30 +212,11 @@
   <data name="Global_Minute" xml:space="preserve">
     <value>min</value>
   </data>
-  <data name="Page_ErrorPage_Title.Text" xml:space="preserve">
-    <value>Éléments à vérifier</value>
-  </data>
-  <data name="Page_ErrorPage_Application_HowTosolve.Text" xml:space="preserve">
-    <value>Veuillez contacter notre support client.</value>
-  </data>
-  <data name="Page_ErrorPage_Application_Title.Text" xml:space="preserve">
-    <value>Assistance technique</value>
-  </data>
-  <data name="Page_ErrorPage_Synchronisation_Header.Text" xml:space="preserve">
-    <value>Synchronisation (</value>
-    <comment>must end with "(" </comment>
-  </data>
   <data name="Global_SupportUrl" xml:space="preserve">
     <value>https://www.infomaniak.com/fr/support</value>
   </data>
   <data name="Global_FAQUrl" xml:space="preserve">
     <value>https://www.infomaniak.com/fr/support/faq/admin2/kdrive</value>
-  </data>
-  <data name="Page_ErrorPage_NoErrors_Line1.Text" xml:space="preserve">
-    <value>Aucun fichier n’est à vérifier.</value>
-  </data>
-  <data name="Page_ErrorPage_NoErrors_Line2.Text" xml:space="preserve">
-    <value>Profitez de votre journée !</value>
   </data>
   <data name="Global_UpgradeOfferMy_Url" xml:space="preserve">
     <value>https://www.infomaniak.com/fr/ksuite/myksuite/tarifs</value>
@@ -245,9 +226,6 @@
   </data>
   <data name="Global_LearnMoreButton.Content" xml:space="preserve">
     <value>En savoir plus</value>
-  </data>
-  <data name="Page_ErrorPage_Application_SolveButton.Content" xml:space="preserve">
-    <value>Contacter le support</value>
   </data>
   <data name="  /!\  Ressource naming convention" xml:space="preserve">
     <value>-</value>
@@ -298,8 +276,24 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
     <value>Plus d’espace, plus de fonctionnalités, avec my kSuite+</value>
     <comment>A message prompting the user to upgrade his offer</comment>
   </data>
-  <data name="Page_ErrorPage_Application_Header.Text" xml:space="preserve">
-    <value>Application</value>
+  <data name="ERR_LocalFileAccessError.Title" xml:space="preserve">
+    <value>Fichier inaccessible</value>
+  </data>
+  <data name="CC_ErrorBar.Title" xml:space="preserve">
+    <value>Certains fichiers n’ont pas pu être synchronisés.</value>
+  </data>
+  <data name="CC_ErrorBar_Button.Content" xml:space="preserve">
+    <value>Corriger les erreurs</value>
+  </data>
+  <data name="ERR_FrobiddenChar.Description" xml:space="preserve">
+    <value>Le nom de ce fichier contient un ou plusieurs charactères non supportés par votre appareil</value>
+  </data>
+  <data name="ERR_FrobiddenChar.Title" xml:space="preserve">
+    <value>Charactère non supporté</value>
+  </data>
+  <data name="ERR_LocalFileAccessError.Description" xml:space="preserve">
+    <value>Impossible d’accéder à ce fichier sur votre ordinateur. 
+Vérifiez qu’il existe toujours et que vous disposez des droits pour y accéder.</value>
   </data>
   <data name="CC_UpdateAvailableBar_message.Text" xml:space="preserve">
     <value>Une mise à jour de kDrive est disponible</value>
@@ -872,24 +866,5 @@ Avant de continuer, assurez-vous que tout vos fichiers sont bien à jour et sync
   </data>
   <data name="CC_SyncStatusBar_SyncingStatus.Text" xml:space="preserve">
     <value>Synchronisation en cours...</value>
-  </data>
-  <data name="CC_ErrorBar.Title" xml:space="preserve">
-    <value>Certains fichiers n’ont pas pu être synchronisés.</value>
-  </data>
-  <data name="CC_ErrorBar_Button.Content" xml:space="preserve">
-    <value>Corriger les erreurs</value>
-  </data>
-  <data name="ERR_FrobiddenChar.Title" xml:space="preserve">
-    <value>Charactère non supporté</value>
-  </data>
-  <data name="ERR_LocalFileAccessError.Title" xml:space="preserve">
-    <value>Fichier inaccessible</value>
-  </data>
-  <data name="ERR_FrobiddenChar.Description" xml:space="preserve">
-    <value>Le nom de ce fichier contient un ou plusieurs charactères non supportés par votre appareil</value>
-  </data>
-  <data name="ERR_LocalFileAccessError.Description" xml:space="preserve">
-    <value>Impossible d’accéder à ce fichier sur votre ordinateur. 
-Vérifiez qu’il existe toujours et que vous disposez des droits pour y accéder.</value>
   </data>
 </root>
