@@ -80,8 +80,8 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testNodeFolderSizeJob);
          */
         CPPUNIT_TEST(testNodeSubFolders2Job);
-        CPPUNIT_TEST(testErrorInfoListJob);
         CPPUNIT_TEST(testNodeCreateMissingFoldersJob);
+        CPPUNIT_TEST(testErrorInfoListJob);
 #if defined(KD_MACOS)
         CPPUNIT_TEST(testExclAppGetListJob);
         CPPUNIT_TEST(testExclAppSetListJob);
@@ -131,11 +131,9 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testNodeInfoJob();
         void testNodeSubFolderJob();
         void testNodeFolderSizeJob();
-        void testSyncNodeListJob();
-        void testSyncNodeSetListJob();
-        void testErrorInfoListJob();
         void testNodeSubFolders2Job();
         void testNodeCreateMissingFoldersJob();
+        void testErrorInfoListJob();
 #if defined(KD_MACOS)
         void testExclAppGetListJob();
         void testExclAppSetListJob();
@@ -157,5 +155,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
 
         void testGenericJob(const CommString &query, const CommString &answer, const CommString &cbkAnswer,
                             const std::function<void(std::shared_ptr<AbstractGuiJob>)> &processFct);
+
+        void checkSignalCommonMethods(AbstractGuiJob &guiJob, const SignalNum signalNum);
 };
 } // namespace KDC

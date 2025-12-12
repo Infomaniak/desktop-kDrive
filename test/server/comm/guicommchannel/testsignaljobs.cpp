@@ -29,45 +29,42 @@ namespace KDC {
 
 using namespace testcommhelpers;
 
+void TestGuiCommChannel::checkSignalCommonMethods(AbstractGuiJob &guiJob, const SignalNum signalNum) {
+    CPPUNIT_ASSERT_EQUAL(signalNum, guiJob.signalNum());
+    CPPUNIT_ASSERT(guiJob.deserializeInputParms());
+    CPPUNIT_ASSERT(guiJob.process());
+    CPPUNIT_ASSERT(guiJob.serializeOutputParms());
+}
+
 void TestGuiCommChannel::testSignalUtilityShowNotificationJob() {
     const CommString title = Str("Notification title");
     const CommString message = Str("Message: the item 'C:/Users/kDrive/item/côté_au_carré.pdf' has been updated");
     SignalUtilityShowNotificationJob job(title, message);
-    CPPUNIT_ASSERT_EQUAL(SignalNum::UTILITY_SHOW_NOTIFICATION, job.signalNum());
-    CPPUNIT_ASSERT(job.deserializeInputParms());
-    CPPUNIT_ASSERT(job.serializeOutputParms());
+    checkSignalCommonMethods(job, SignalNum::UTILITY_SHOW_NOTIFICATION);
     CPPUNIT_ASSERT_EQUAL(title, job._title);
     CPPUNIT_ASSERT_EQUAL(message, job._message);
 }
 
 void TestGuiCommChannel::testSignalUtilityShowSettingsJob() {
     SignalUtilityShowSettingsJob job;
-    CPPUNIT_ASSERT_EQUAL(SignalNum::UTILITY_SHOW_SETTINGS, job.signalNum());
-    CPPUNIT_ASSERT(job.deserializeInputParms());
-    CPPUNIT_ASSERT(job.serializeOutputParms());
+    checkSignalCommonMethods(job, SignalNum::UTILITY_SHOW_SETTINGS);
 }
 
 void TestGuiCommChannel::testSignalUtilityShowSynthesisJob() {
     SignalUtilityShowSynthesisJob job;
-    CPPUNIT_ASSERT_EQUAL(SignalNum::UTILITY_SHOW_SYNTHESIS, job.signalNum());
-    CPPUNIT_ASSERT(job.deserializeInputParms());
-    CPPUNIT_ASSERT(job.serializeOutputParms());
+    checkSignalCommonMethods(job, SignalNum::UTILITY_SHOW_SYNTHESIS);
 }
 
 void TestGuiCommChannel::testSignalUtilityLogUploadStateJob() {
     SignalUtilityLogUploadStateJob job(LogUploadState::Success, 100);
-    CPPUNIT_ASSERT_EQUAL(SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED, job.signalNum());
-    CPPUNIT_ASSERT(job.deserializeInputParms());
-    CPPUNIT_ASSERT(job.serializeOutputParms());
+    checkSignalCommonMethods(job, SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED);
     CPPUNIT_ASSERT_EQUAL(LogUploadState::Success, job._state);
     CPPUNIT_ASSERT_EQUAL(int32_t{100}, job._percentage);
 }
 
 void TestGuiCommChannel::testSignalUtilityQuitJob() {
     SignalUtilityQuitJob job;
-    CPPUNIT_ASSERT_EQUAL(SignalNum::UTILITY_QUIT, job.signalNum());
-    CPPUNIT_ASSERT(job.deserializeInputParms());
-    CPPUNIT_ASSERT(job.serializeOutputParms());
+    checkSignalCommonMethods(job, SignalNum::UTILITY_QUIT);
 }
 
 } // namespace KDC
