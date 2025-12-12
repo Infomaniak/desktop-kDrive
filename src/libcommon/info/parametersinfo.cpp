@@ -22,10 +22,10 @@
 
 namespace KDC {
 
-static const auto parametersInfoInfoLanguage = "language";
-static const auto parametersInfoInfoMonoIcons = "monoIcons";
-static const auto parametersInfoInfoAutoStart = "autoStart";
-static const auto parametersInfoInfoMoveToTrash = "moveToTrash";
+static const auto parametersInfoLanguage = "language";
+static const auto parametersInfoMonoIcons = "monoIcons";
+static const auto parametersInfoAutoStart = "autoStart";
+static const auto parametersInfoMoveToTrash = "moveToTrash";
 static const auto parametersInfoNotificationsDisabled = "notificationsDisabled";
 static const auto parametersInfoUseLog = "useLog";
 static const auto parametersInfoLogLevel = "logLevel";
@@ -57,10 +57,10 @@ ParametersInfo::ParametersInfo(Language language, bool monoIcons, bool autoStart
     _maxAllowedCpu(maxAllowedCpu) {}
 
 void ParametersInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
-    CommonUtility::writeValueToStruct(dstruct, parametersInfoInfoLanguage, _language);
-    CommonUtility::writeValueToStruct(dstruct, parametersInfoInfoMonoIcons, _monoIcons);
-    CommonUtility::writeValueToStruct(dstruct, parametersInfoInfoAutoStart, _autoStart);
-    CommonUtility::writeValueToStruct(dstruct, parametersInfoInfoMoveToTrash, _moveToTrash);
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoLanguage, _language);
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoMonoIcons, _monoIcons);
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoAutoStart, _autoStart);
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoMoveToTrash, _moveToTrash);
     CommonUtility::writeValueToStruct(dstruct, parametersInfoNotificationsDisabled, _notificationsDisabled);
     CommonUtility::writeValueToStruct(dstruct, parametersInfoUseLog, _useLog);
     CommonUtility::writeValueToStruct(dstruct, parametersInfoLogLevel, _logLevel);
@@ -90,12 +90,12 @@ void ParametersInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
 };
 
 void ParametersInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
-    CommonUtility::readValueFromStruct(dstruct, parametersInfoInfoLanguage, _language);
-    if (dstruct.contains(parametersInfoInfoMonoIcons)) { // Not used by the new clients
-        CommonUtility::readValueFromStruct(dstruct, parametersInfoInfoMonoIcons, _monoIcons);
+    CommonUtility::readValueFromStruct(dstruct, parametersInfoLanguage, _language);
+    if (dstruct.contains(parametersInfoMonoIcons)) { // Not used by the new clients
+        CommonUtility::readValueFromStruct(dstruct, parametersInfoMonoIcons, _monoIcons);
     }
-    CommonUtility::readValueFromStruct(dstruct, parametersInfoInfoAutoStart, _autoStart);
-    CommonUtility::readValueFromStruct(dstruct, parametersInfoInfoMoveToTrash, _moveToTrash);
+    CommonUtility::readValueFromStruct(dstruct, parametersInfoAutoStart, _autoStart);
+    CommonUtility::readValueFromStruct(dstruct, parametersInfoMoveToTrash, _moveToTrash);
     CommonUtility::readValueFromStruct(dstruct, parametersInfoNotificationsDisabled, _notificationsDisabled);
     CommonUtility::readValueFromStruct(dstruct, parametersInfoUseLog, _useLog);
     CommonUtility::readValueFromStruct(dstruct, parametersInfoLogLevel, _logLevel);
