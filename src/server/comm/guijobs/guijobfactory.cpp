@@ -38,6 +38,7 @@
 #include "syncdeletejob.h"
 #include "syncgetpubliclinkurljob.h"
 #include "syncgetprivatelinkurljob.h"
+#include "synctriggerprogressupdatejob.h"
 #include "syncsetsupportsvirtualfilesjob.h"
 #include "syncsetrootpinstatejob.h"
 #include "blacklistednodelistjob.h"
@@ -61,45 +62,48 @@
 namespace KDC {
 
 GuiJobFactory::GuiJobFactory() {
-    _makeMap = {{RequestNum::LOGIN_REQUESTTOKEN, makeShared<LoginRequestTokenJob>},
-                {RequestNum::USER_DBIDLIST, makeShared<UserDbIdListJob>},
-                {RequestNum::USER_INFOLIST, makeShared<UserInfoListJob>},
-                {RequestNum::USER_DELETE, makeShared<UserDeleteJob>},
-                {RequestNum::USER_AVAILABLEDRIVES, makeShared<UserAvailableDrivesJob>},
-                {RequestNum::ACCOUNT_INFOLIST, makeShared<AccountInfoListJob>},
-                {RequestNum::DRIVE_INFOLIST, makeShared<DriveInfoListJob>},
-                {RequestNum::DRIVE_UPDATE, makeShared<DriveUpdateJob>},
-                {RequestNum::DRIVE_DELETE, makeShared<DriveDeleteJob>},
-                {RequestNum::DRIVE_SEARCH, makeShared<DriveSearchJob>},
-                {RequestNum::SYNC_INFOLIST, makeShared<SyncInfoListJob>},
-                {RequestNum::SYNC_START, makeShared<SyncStartJob>},
-                {RequestNum::SYNC_STOP, makeShared<SyncStopJob>},
-                {RequestNum::SYNC_STATUS, makeShared<SyncStatusJob>},
-                {RequestNum::SYNC_ADD, makeShared<SyncAddJob>},
-                {RequestNum::SYNC_ADD2, makeShared<SyncAdd2Job>},
-                {RequestNum::SYNC_START_AFTER_LOGIN, makeShared<SyncStartAfterLoginJob>},
-                {RequestNum::SYNC_DELETE, makeShared<SyncDeleteJob>},
-                {RequestNum::SYNC_GETPUBLICLINKURL, makeShared<SyncGetPublicLinkUrlJob>},
-                {RequestNum::SYNC_GETPRIVATELINKURL, makeShared<SyncGetPrivateLinkUrlJob>},
-                {RequestNum::SYNC_SETSUPPORTSVIRTUALFILES, makeShared<SyncSetSupportsVirtualFilesJob>},
-                {RequestNum::SYNC_SETROOTPINSTATE, makeShared<SyncSetRootPinStateJob>},
-                {RequestNum::BLACKLISTED_NODE_LIST, makeShared<BlacklistedNodeListJob>},
-                {RequestNum::BLACKLISTED_NODE_SETLIST, makeShared<BlacklistedNodeSetListJob>},
-                {RequestNum::NODE_INFO, makeShared<NodeInfoJob>},
-                {RequestNum::NODE_SUBFOLDERS, makeShared<NodeSubFoldersJob>},
-                {RequestNum::NODE_SUBFOLDERS2, makeShared<NodeSubFolders2Job>},
-                {RequestNum::NODE_FOLDER_SIZE, makeShared<NodeFolderSizeJob>},
-                {RequestNum::NODE_CREATEMISSINGFOLDERS, makeShared<NodeCreateMissingFoldersJob>},
-                {RequestNum::ERROR_INFOLIST, makeShared<ErrorInfolistJob>},
+    _makeMap = {
+        {RequestNum::LOGIN_REQUESTTOKEN, makeShared<LoginRequestTokenJob>},
+        {RequestNum::USER_DBIDLIST, makeShared<UserDbIdListJob>},
+        {RequestNum::USER_INFOLIST, makeShared<UserInfoListJob>},
+        {RequestNum::USER_DELETE, makeShared<UserDeleteJob>},
+        {RequestNum::USER_AVAILABLEDRIVES, makeShared<UserAvailableDrivesJob>},
+        {RequestNum::ACCOUNT_INFOLIST, makeShared<AccountInfoListJob>},
+        {RequestNum::DRIVE_INFOLIST, makeShared<DriveInfoListJob>},
+        {RequestNum::DRIVE_UPDATE, makeShared<DriveUpdateJob>},
+        {RequestNum::DRIVE_DELETE, makeShared<DriveDeleteJob>},
+        {RequestNum::DRIVE_SEARCH, makeShared<DriveSearchJob>},
+        {RequestNum::SYNC_INFOLIST, makeShared<SyncInfoListJob>},
+        {RequestNum::SYNC_START, makeShared<SyncStartJob>},
+        {RequestNum::SYNC_STOP, makeShared<SyncStopJob>},
+        {RequestNum::SYNC_STATUS, makeShared<SyncStatusJob>},
+        {RequestNum::SYNC_ADD, makeShared<SyncAddJob>},
+        {RequestNum::SYNC_ADD2, makeShared<SyncAdd2Job>},
+        {RequestNum::SYNC_START_AFTER_LOGIN, makeShared<SyncStartAfterLoginJob>},
+        {RequestNum::SYNC_DELETE, makeShared<SyncDeleteJob>},
+        {RequestNum::SYNC_GETPUBLICLINKURL, makeShared<SyncGetPublicLinkUrlJob>},
+        {RequestNum::SYNC_GETPRIVATELINKURL, makeShared<SyncGetPrivateLinkUrlJob>},
+        {RequestNum::SYNC_ASKFORSTATUS, makeShared<SyncTriggerProgressUpdateJob>},
+        {RequestNum::SYNC_SETSUPPORTSVIRTUALFILES, makeShared<SyncSetSupportsVirtualFilesJob>},
+        {RequestNum::SYNC_SETROOTPINSTATE, makeShared<SyncSetRootPinStateJob>},
+        {RequestNum::BLACKLISTED_NODE_LIST, makeShared<BlacklistedNodeListJob>},
+        {RequestNum::BLACKLISTED_NODE_SETLIST, makeShared<BlacklistedNodeSetListJob>},
+        {RequestNum::NODE_INFO, makeShared<NodeInfoJob>},
+        {RequestNum::NODE_SUBFOLDERS, makeShared<NodeSubFoldersJob>},
+        {RequestNum::NODE_SUBFOLDERS2, makeShared<NodeSubFolders2Job>},
+        {RequestNum::NODE_FOLDER_SIZE, makeShared<NodeFolderSizeJob>},
+        {RequestNum::NODE_CREATEMISSINGFOLDERS, makeShared<NodeCreateMissingFoldersJob>},
+        {RequestNum::ERROR_INFOLIST, makeShared<ErrorInfolistJob>},
 #if defined(KD_MACOS)
-                {RequestNum::EXCLAPP_GETLIST, makeShared<ExclAppGetListJob>},
-                {RequestNum::EXCLAPP_SETLIST, makeShared<ExclAppSetListJob>},
-                {RequestNum::EXCLAPP_GET_FETCHING_APP_LIST, makeShared<ExclAppGetFetchingAppListJob>},
+        {RequestNum::EXCLAPP_GETLIST, makeShared<ExclAppGetListJob>},
+        {RequestNum::EXCLAPP_SETLIST, makeShared<ExclAppSetListJob>},
+        {RequestNum::EXCLAPP_GET_FETCHING_APP_LIST, makeShared<ExclAppGetFetchingAppListJob>},
 #endif
-                {RequestNum::PARAMETERS_INFO, makeShared<ParametersInfoJob>},
-                {RequestNum::PARAMETERS_UPDATE, makeShared<ParametersUpdateJob>},
-                {RequestNum::UTILITY_ACTIVATELOADINFO, makeShared<UtilityActivateLoadInfoJob>},
-                {RequestNum::NODE_CREATEMISSINGFOLDERS, makeShared<NodeCreateMissingFoldersJob>}};
+        {RequestNum::PARAMETERS_INFO, makeShared<ParametersInfoJob>},
+        {RequestNum::PARAMETERS_UPDATE, makeShared<ParametersUpdateJob>},
+        {RequestNum::UTILITY_ACTIVATELOADINFO, makeShared<UtilityActivateLoadInfoJob>},
+        {RequestNum::NODE_CREATEMISSINGFOLDERS, makeShared<NodeCreateMissingFoldersJob>}
+    };
 }
 
 std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::shared_ptr<CommManager> commManager,

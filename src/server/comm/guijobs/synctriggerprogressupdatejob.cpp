@@ -16,30 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "utilityactivateloadinfojob.h"
+#include "synctriggerprogressupdatejob.h"
+
 #include "appserver.h"
+
 #include "libcommon/comm.h"
+
 
 namespace KDC {
 
-UtilityActivateLoadInfoJob::UtilityActivateLoadInfoJob(std::shared_ptr<CommManager> commManager, int requestId,
-                                                       const Poco::DynamicStruct &inParams,
-                                                       std::shared_ptr<AbstractCommChannel> channel) :
+SyncTriggerProgressUpdateJob::SyncTriggerProgressUpdateJob(std::shared_ptr<CommManager> commManager, int requestId,
+                                                           const Poco::DynamicStruct &inParams,
+                                                           std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
-    _requestNum = RequestNum::UTILITY_ACTIVATELOADINFO;
+    _requestNum = RequestNum::SYNC_ASKFORSTATUS;
 }
 
-ExitInfo UtilityActivateLoadInfoJob::deserializeInputParms() {
-    return ExitCode::Ok;
-}
 
-ExitInfo UtilityActivateLoadInfoJob::serializeOutputParms() {
-    return ExitCode::Ok;
-}
-
-ExitInfo UtilityActivateLoadInfoJob::process() {
+ExitInfo SyncTriggerProgressUpdateJob::process() {
     _commManager->appServer().triggerSyncProgressUpdate();
-    _commManager->appServer().loadUsersInfo();
+
     return ExitCode::Ok;
 }
 
