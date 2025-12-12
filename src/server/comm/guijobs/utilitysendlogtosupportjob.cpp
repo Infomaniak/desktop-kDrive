@@ -35,10 +35,16 @@ UtilitySendLogToSupportJob::UtilitySendLogToSupportJob(std::shared_ptr<CommManag
 }
 
 ExitInfo UtilitySendLogToSupportJob::deserializeInputParms() {
+    constexpr auto logMessage = "Exception in UtilitySendLogToSupportJob::readParamValue: error=";
     try {
         readParamValue(inParamsIncludeArchivedLogs, _includeArchivedLogs);
-    } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in UtilitySendLogToSupportJob::readParamValue: error=" << e.what());
+    } catch (const Poco::Exception &pocoException) {
+        LOG_WARN(_logger, logMessage << pocoException.message());
+
+        return ExitCode::LogicError;
+    } catch (const CommonUtility::InvalidEnumerationValue &cuException) {
+        LOG_WARN(_logger, logMessage << cuException.what());
+
         return ExitCode::LogicError;
     }
 
