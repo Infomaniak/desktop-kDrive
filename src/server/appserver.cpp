@@ -74,6 +74,7 @@
 #include "server/comm/guijobs/signalerroraddedjob.h"
 #include "server/comm/guijobs/signalerrorremovedjob.h"
 
+#include "server/comm/guijobs/signalutilityshownotificationjob.h"
 #include "server/comm/guijobs/signalutilityquitjob.h"
 
 #include "server/comm/guijobs/signalsyncprogressinfo.h"
@@ -2425,6 +2426,9 @@ void AppServer::sendShowNotification(const QString &title, const QString &messag
     paramsStream << title;
     paramsStream << message;
     OldCommServer::instance()->sendSignal(SignalNum::UTILITY_SHOW_NOTIFICATION, params, id);
+    if (_commManager)
+        _commManager->sendGuiSignal(std::make_shared<SignalUtilityShowNotificationJob>(CommonUtility::qStr2CommString(title),
+                                                                                       CommonUtility::qStr2CommString(message)));
 }
 
 void AppServer::sendErrorAdded(const ErrorInfo &errorInfo) {
@@ -2436,7 +2440,7 @@ void AppServer::sendErrorAdded(const ErrorInfo &errorInfo) {
     paramsStream << toInt(errorInfo.exitCode());
     paramsStream << errorInfo.syncDbId();
     OldCommServer::instance()->sendSignal(SignalNum::UTILITY_ERROR_ADDED_LEGACY, params, id);
-    _commManager->sendGuiSignal(std::make_shared<SignalErrorAddedJob>(errorInfo));
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalErrorAddedJob>(errorInfo));
 }
 
 void AppServer::addCompletedItem(int syncDbId, const SyncFileItem &item, bool notify) {

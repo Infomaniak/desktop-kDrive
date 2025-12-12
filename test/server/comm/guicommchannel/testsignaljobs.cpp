@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "comm/guijobs/signalutilityshownotificationjob.h"
 #include "comm/guijobs/signalutilityquitjob.h"
 
 #include "testguicommchannel.h"
@@ -30,6 +31,17 @@ void TestGuiCommChannel::testSignalUtilityQuitJob() {
     CPPUNIT_ASSERT_EQUAL(SignalNum::UTILITY_QUIT, job.signalNum());
     CPPUNIT_ASSERT(job.deserializeInputParms());
     CPPUNIT_ASSERT(job.serializeOutputParms());
+}
+
+void TestGuiCommChannel::testSignalUtilityShowNotificationJob() {
+    const CommString title = Str("Notification title");
+    const CommString message = Str("Message: the item 'C:/Users/kDrive/item/côté_au_carré.pdf' has been updated");
+    SignalUtilityShowNotificationJob job(title, message);
+    CPPUNIT_ASSERT_EQUAL(SignalNum::UTILITY_SHOW_NOTIFICATION, job.signalNum());
+    CPPUNIT_ASSERT(job.deserializeInputParms());
+    CPPUNIT_ASSERT(job.serializeOutputParms());
+    CPPUNIT_ASSERT_EQUAL(title, job._title);
+    CPPUNIT_ASSERT_EQUAL(message, job._message);
 }
 
 } // namespace KDC

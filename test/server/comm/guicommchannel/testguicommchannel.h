@@ -92,6 +92,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testUtilityActivateLoadInfoJob);
 
         CPPUNIT_TEST(testSignalUtilityQuitJob);
+        CPPUNIT_TEST(testSignalUtilityShowNotificationJob);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -142,6 +143,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testUtilityActivateLoadInfoJob();
 
         void testSignalUtilityQuitJob();
+        void testSignalUtilityShowNotificationJob();
 
     private:
         GuiJobFactory _guiJobFactory;

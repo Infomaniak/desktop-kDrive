@@ -101,6 +101,7 @@ set(server_SRCS
     comm/guijobs/signalerroraddedjob.h comm/guijobs/signalerroraddedjob.cpp
     comm/guijobs/signalerrorremovedjob.h comm/guijobs/signalerrorremovedjob.cpp
     comm/guijobs/signalutilityquitjob.h comm/guijobs/signalutilityquitjob.cpp
+    comm/guijobs/signalutilityshownotificationjob.h comm/guijobs/signalutilityshownotificationjob.cpp
     migration/migrationparams.h migration/migrationparams.cpp
     requests/serverrequests.h requests/serverrequests.cpp
     requests/offlinefilessizeestimator.h requests/offlinefilessizeestimator.cpp
