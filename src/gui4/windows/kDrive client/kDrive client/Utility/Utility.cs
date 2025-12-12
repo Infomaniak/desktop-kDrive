@@ -295,7 +295,13 @@ namespace Infomaniak.kDrive
         public static string GetLocalizedString(string key, params object?[]? args)
         {
             var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
-            string localizedString = resourceLoader.GetString(key) ?? string.Empty;
+            string? localizedString = resourceLoader.GetString(key);
+
+            if(localizedString is null || localizedString.Length == 0)
+            {
+                Logger.Log(Logger.Level.Warning, $"Missing localization for key: {key} in current culture {System.Globalization.CultureInfo.CurrentUICulture.Name}");
+                localizedString = key; // Fallback to the key itself if not found
+            }
 
             // Replace literal \r\n with real newlines
             localizedString = localizedString.Replace("\\r\\n", Environment.NewLine);
