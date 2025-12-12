@@ -271,8 +271,11 @@ void AppServer::init() {
 
     // Update Sentry configuration
     sentry::Handler::instance()->setAppUUID(appUID());
-    sentry::Handler::instance()->setIsSentryActivated(
-            KDRIVE_VERSION_MAJOR < 4 ? true : ParametersCache::instance()->parameters().sentryEnabled());
+    if (KDRIVE_VERSION_MAJOR < 4) {
+        sentry::Handler::instance()->setIsSentryActivated(true);
+    } else {
+        sentry::Handler::instance()->setIsSentryActivated(ParametersCache::instance()->parameters().sentryEnabled());
+    }
 
     // Setup translations
     CommonUtility::setupTranslations(this, ParametersCache::instance()->parameters().language());
