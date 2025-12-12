@@ -76,7 +76,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         private async Task ReconnectLoop()
         {
-            string homePath = Path.Combine(
+            string commPortFilePath = Path.Combine(
                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                "kDrive",
                ".comm"
@@ -88,7 +88,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 {
                     try
                     {
-                        int port = int.Parse(File.ReadAllText(homePath).Trim());
+                        int port = int.Parse(File.ReadAllText(commPortFilePath).Trim());
 
                         Logger.Log(Logger.Level.Info, $"Attempting to connect to localhost:{port}");
                         _client?.Dispose();
@@ -105,7 +105,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     }
                     catch (FileNotFoundException)
                     {
-                        Logger.Log(Logger.Level.Error, $".comm file not found at {homePath}. Retrying in 2 seconds...");
+                        Logger.Log(Logger.Level.Error, $".comm file not found at {commPortFilePath}. Retrying in 2 seconds...");
                         await Task.Delay(2000).ConfigureAwait(false);
                         continue;
                     }
