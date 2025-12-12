@@ -138,7 +138,7 @@ namespace Infomaniak.kDrive.TrayIcon
             Logger.Log(Logger.Level.Info, "ExitApplicationCommand executed - exiting application");
             _handleClosedEvents = false;
             _trayIcon?.Dispose();
-            App.ExitApplication();
+            App.ExitApplicationAndShutdownServer();
         }
 
         private void SetIcon(string fileName)

@@ -166,12 +166,18 @@ namespace Infomaniak.kDrive
             }
         }
 
-        public static void ExitApplication(bool shutdownServer = true)
+        public static void ExitApplication()
         {
             Logger.Log(Logger.Level.Info, "Exiting application.");
-            if(shutdownServer) App.ServiceProvider.GetRequiredService<IServerCommService>().Exit();
             (Current as App)!.CurrentWindow?.Close();
             Environment.Exit(0);
+        }
+
+        public static void ExitApplicationAndShutdownServer()
+        {
+            Logger.Log(Logger.Level.Info, "Sending exit command to server.");
+            App.ServiceProvider.GetRequiredService<IServerCommService>().Exit();
+            ExitApplication();
         }
     }
 }

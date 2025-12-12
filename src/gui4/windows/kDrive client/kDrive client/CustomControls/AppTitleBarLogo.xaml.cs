@@ -31,7 +31,7 @@ namespace Infomaniak.kDrive.CustomControls
                     System.Diagnostics.Process.Start("kDrive_client.exe", legacyCommPort.ToString());
                 }
 
-                App.ExitApplication(false); // If the legacy client starts successfully, exit the current application
+                App.ExitApplication(); // If the legacy client starts successfully, exit the current application
             }
             catch (Exception ex)
             {
