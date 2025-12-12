@@ -18,8 +18,6 @@
 
 #include "utilitysetappstatejob.h"
 #include "appserver.h"
-#include "requests/serverrequests.h"
-#include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
 
@@ -36,11 +34,17 @@ UtilitySetAppStateJob::UtilitySetAppStateJob(std::shared_ptr<CommManager> commMa
 }
 
 ExitInfo UtilitySetAppStateJob::deserializeInputParms() {
+    constexpr auto logMessage = "Exception in UtilitySetAppStateJob::readParamValue: error=";
     try {
         readParamValue(inParamsKey, _key);
         readParamValue(inParamsValue, _value);
-    } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in UtilitySetAppStateJob::readParamValue: error=" << e.what());
+    } catch (const Poco::Exception &pocoException) {
+        LOG_WARN(_logger, logMessage << pocoException.message());
+
+        return ExitCode::LogicError;
+    } catch (const CommonUtility::InvalidEnumerationValue &cuException) {
+        LOG_WARN(_logger, logMessage << cuException.what());
+
         return ExitCode::LogicError;
     }
 
