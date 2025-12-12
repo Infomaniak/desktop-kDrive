@@ -68,7 +68,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             _ = Task.Run(ReconnectLoop);
         }
 
-
         ~SocketServerCommProtocol()
         {
             _client?.Dispose();

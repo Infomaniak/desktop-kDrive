@@ -123,6 +123,9 @@
 		<Page Update="CustomControls\Errors\Templates\Node\ForbiddenCharError.xaml">
 		  <SubType>Designer</SubType>
 		</Page>
+		<Page Update="CustomControls\SplashScreen.xaml">
+		  <SubType>Designer</SubType>
+		</Page>
 		<Page Update="CustomControls\SyncExclusionSelector.xaml">
 			<SubType>Designer</SubType>
 		</Page>
