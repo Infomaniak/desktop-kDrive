@@ -81,6 +81,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/signalsyncupdatedjob.h ${server_srcs_path}/comm/guijobs/signalsyncupdatedjob.cpp
     ${server_srcs_path}/comm/guijobs/signalerroraddedjob.h ${server_srcs_path}/comm/guijobs/signalerroraddedjob.cpp
     ${server_srcs_path}/comm/guijobs/signalerrorremovedjob.h ${server_srcs_path}/comm/guijobs/signalerrorremovedjob.cpp
+    ${server_srcs_path}/comm/guijobs/signalutilityquitjob.h ${server_srcs_path}/comm/guijobs/signalutilityquitjob.cpp
     ${server_srcs_path}/migration/migrationparams.h ${server_srcs_path}/migration/migrationparams.cpp
     ${server_srcs_path}/requests/serverrequests.h ${server_srcs_path}/requests/serverrequests.cpp
     ${server_srcs_path}/updater/abstractupdater.h ${server_srcs_path}/updater/abstractupdater.cpp
@@ -160,13 +161,16 @@ set(testserver_SRCS
     workers/testworkers.h workers/testworkers.cpp
     requests/testserverrequests.h requests/testserverrequests.cpp
     appserver/testappserver.h appserver/testappserver.cpp
+
     comm/testsocketcomm.h comm/testsocketcomm.cpp
+    comm/testcommhelpers.h comm/testcommhelpers.cpp
+
     comm/guicommchannel/testguicommchannel.h comm/guicommchannel/testguicommchannel.cpp
     comm/guicommchannel/testsyncjobs.cpp comm/guicommchannel/testnodejobs.cpp
     comm/guicommchannel/testexclapp.cpp comm/guicommchannel/testparameters.cpp
-    comm/guicommchannel/testerrorjobs.cpp
-    comm/guicommchannel/testutility.cpp
-    comm/testcommhelpers.h comm/testcommhelpers.cpp
+    comm/guicommchannel/testerrorjobs.cpp comm/guicommchannel/testutility.cpp
+
+    comm/guicommchannel/testsignaljobs.cpp
 
     comm/guijobs/testabstractguijob.h comm/guijobs/testabstractguijob.cpp
 )

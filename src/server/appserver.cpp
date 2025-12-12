@@ -74,6 +74,8 @@
 #include "server/comm/guijobs/signalerroraddedjob.h"
 #include "server/comm/guijobs/signalerrorremovedjob.h"
 
+#include "server/comm/guijobs/signalutilityquitjob.h"
+
 #include "server/comm/guijobs/signalsyncprogressinfo.h"
 
 #include <QDesktopServices>
@@ -2274,6 +2276,7 @@ void AppServer::sendQuit() {
     int id = 0;
 
     OldCommServer::instance()->sendSignal(SignalNum::UTILITY_QUIT, QByteArray(), id);
+    _commManager->sendGuiSignal(std::make_shared<SignalUtilityQuitJob>());
 }
 
 void AppServer::sendLogUploadStatusUpdated(LogUploadState status, int percent) {
@@ -2565,11 +2568,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 
