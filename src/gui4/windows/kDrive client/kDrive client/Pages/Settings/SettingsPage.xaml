@@ -44,7 +44,7 @@
             <TextBlock x:Uid="Page_SettingsPage_Drive_Configured"
                        VerticalAlignment="Center"
                        Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
-                       Foreground="{ThemeResource TextFillColorDisabled}" />
+                       Foreground="{ThemeResource TextFillColorSecondary}" />
 
         </DataTemplate>
         <DataTemplate x:Key="UnconfiguredDriveTemplate"
@@ -52,7 +52,7 @@
             <TextBlock x:Uid="Page_SettingsPage_Drive_Unconfigured"
                        VerticalAlignment="Center"
                        Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
-                       Foreground="{ThemeResource TextFillColorDisabled}" />
+                       Foreground="{ThemeResource TextFillColorSecondary}" />
         </DataTemplate>
         <local:DriveDataTemplateSelector x:Key="DriveDataTemplateSelector"
                                          ConfiguredTemplate="{StaticResource ConfiguredDriveTemplate}"
@@ -217,7 +217,7 @@
                                                            Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
                                                 <TextBlock Text="{x:Bind Email, Mode=OneWay}"
                                                            Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
-                                                           Foreground="{ThemeResource TextFillColorDisabled}" />
+                                                           Foreground="{ThemeResource TextFillColorSecondary}" />
                                             </StackPanel>
                                         </StackPanel>
                                     </toolKit:SettingsExpander.Header>
@@ -528,41 +528,24 @@
                         </StackPanel>
 
                     </toolKit:SettingsCard>
-                </StackPanel>
-
-                <!-- About kDrive -->
-                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                    <TextBlock Text="Avancé"
-                               Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
 
                     <!-- About - Privacy -->
-                    <toolKit:SettingsExpander Header="Version et informations légales">
+                    <toolKit:SettingsExpander Header="À propos de kDrive">
                         <toolKit:SettingsExpander.HeaderIcon>
-                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Books.book}"
+                            <controls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom}"
                                               Height="32"
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                         </toolKit:SettingsExpander.HeaderIcon>
                         <toolKit:SettingsExpander.Items>
                             <!-- General -->
                             <toolKit:SettingsCard Header="kDrive"
-                                                  Background="{ThemeResource LayerFillColorDefault}"
-                                                  Foreground="{ThemeResource TextFillColorDisabled}">
-                                <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
-                                           TextWrapping="WrapWholeWords"
-                                           Text="Swiss Made cloud, open source et hébergé exclusivement en Suisse dans nos datacenters certifiés ISO (sécurité et environnement). kDrive allie transparence, souveraineté et respect de la vie privée." />
-                            </toolKit:SettingsCard>
-                            <toolKit:SettingsCard Header="kDrive"
-                                                  Background="{ThemeResource LayerFillColorDefault}"
-                                                  Foreground="{ThemeResource TextFillColorDisabled}">
-                                <toolKit:SettingsCard.HeaderIcon>
-                                    <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Arrows.arrow-loop}"
-                                                      Height="32"
-                                                      Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                                </toolKit:SettingsCard.HeaderIcon>
-
-                                <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
-                                           TextWrapping="WrapWholeWords"
-                                           Text="Version 3.7.3 (build 20250728), compilée le 28 juillet 2025 © 2019–2025 Infomaniak Network SA — Licence LGPL v3 — Sources Git" />
+                                                  Background="{ThemeResource LayerFillColorDefault}">
+                                <toolKit:SettingsCard.Description>
+                                    <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                                        <TextBlock Text="Développé et hébergé exclusivement en Suisse, kDrive assure une protection totale de vos données, sans revente ni espionnage, dans des centres certifiés ISO, avec chiffrement et sauvegarde sur plusieurs supports." />
+                                        <controls:LicensesHyperlink DisplayedVersion="{x:Bind ViewModel.Settings.AppVersion, Mode=OneWay}" />
+                                    </StackPanel>
+                                </toolKit:SettingsCard.Description>
                             </toolKit:SettingsCard>
                         </toolKit:SettingsExpander.Items>
                     </toolKit:SettingsExpander>

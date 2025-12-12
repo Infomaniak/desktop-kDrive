@@ -462,10 +462,10 @@
   <data name="CC_UpdateExpander_UpToDate_Description.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="CC_UpdateExpander_UpdateAvailable_UpdateDetails.TextTemplate" xml:space="preserve">
+  <data name="CC_UpdateExpander_UpdateAvailable_UpdateDetails.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="CC_UpdateExpander_UpToDate_UpdateDetails.TextTemplate" xml:space="preserve">
+  <data name="CC_LicensesHyperLink_Text.TextTemplate" xml:space="preserve">
     <value />
   </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
@@ -481,7 +481,10 @@
   <data name="Page_SettingsPage_Notifications.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
-  <data name="CC_UpdateExpander_LicensesHyperLink.Content" xml:space="preserve">
+  <data name="CC_LicensesHyperLink_HyperLinkButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_LicensesHyperLink_HyperLinkButton.NavigateUri" xml:space="preserve">
     <value />
   </data>
   <data name="CC_UpdateExpander_ChangeLogHyperLink.Content" xml:space="preserve">
