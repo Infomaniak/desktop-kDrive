@@ -25,10 +25,16 @@ ExclTemplGetExcludedJob::ExclTemplGetExcludedJob(std::shared_ptr<CommManager> co
 }
 
 ExitInfo ExclTemplGetExcludedJob::deserializeInputParms() {
+    constexpr auto logMessage = "Exception in ExclTemplGetExcludedJob::readParamValue: error=";
     try {
         readParamValue(inParamsName, _name);
-    } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in ExclTemplGetExcludedJob::readParamValue: error=" << e.what());
+    } catch (const Poco::Exception &pocoException) {
+        LOG_WARN(_logger, logMessage << pocoException.message());
+
+        return ExitCode::LogicError;
+    } catch (const CommonUtility::InvalidEnumerationValue &cuException) {
+        LOG_WARN(_logger, logMessage << cuException.what());
+
         return ExitCode::LogicError;
     }
 

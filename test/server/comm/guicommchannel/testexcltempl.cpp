@@ -100,8 +100,8 @@ void TestGuiCommChannel::testExclTemplGetListJob() {
     (void) exclusionTemplateInfo2.set("deleted", false);
 
     Poco::JSON::Array exclusionTemplateList;
-    exclusionTemplateList.add(exclusionTemplateInfo1);
-    exclusionTemplateList.add(exclusionTemplateInfo2);
+    (void) exclusionTemplateList.add(exclusionTemplateInfo1);
+    (void) exclusionTemplateList.add(exclusionTemplateInfo2);
 
     Poco::JSON::Object paramsObj;
     (void) paramsObj.set("exclusionTemplateList", exclusionTemplateList);
@@ -149,8 +149,8 @@ void TestGuiCommChannel::testExclTemplSetListJob() {
     (void) exclusionTemplateInfo2.set("deleted", false);
 
     Poco::JSON::Array exclusionTemplateList;
-    exclusionTemplateList.add(exclusionTemplateInfo1);
-    exclusionTemplateList.add(exclusionTemplateInfo2);
+    (void) exclusionTemplateList.add(exclusionTemplateInfo1);
+    (void) exclusionTemplateList.add(exclusionTemplateInfo2);
 
     (void) queryParamsObj.set("exclusionTemplateList", exclusionTemplateList);
     (void) queryObj.set("params", queryParamsObj);

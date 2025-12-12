@@ -19,11 +19,17 @@ ExclTemplSetListJob::ExclTemplSetListJob(std::shared_ptr<CommManager> commManage
 }
 
 ExitInfo ExclTemplSetListJob::deserializeInputParms() {
+    constexpr auto logMessage = "Exception in ExclTemplSetListJob::readParamValue: error=";
     try {
         readParamValue(inParamsDefault, _default);
         readParamValues(inParamsExclusionTemplateList, _exclusionTemplateList, dynamicVar2Struct<ExclusionTemplateInfo>);
-    } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in ExclTemplSetListJob::readParamValue: error=" << e.what());
+    } catch (const Poco::Exception &pocoException) {
+        LOG_WARN(_logger, logMessage << pocoException.message());
+
+        return ExitCode::LogicError;
+    } catch (const CommonUtility::InvalidEnumerationValue &cuException) {
+        LOG_WARN(_logger, logMessage << cuException.what());
+
         return ExitCode::LogicError;
     }
 
