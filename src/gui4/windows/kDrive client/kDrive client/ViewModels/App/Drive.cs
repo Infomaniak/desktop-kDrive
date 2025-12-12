@@ -44,9 +44,9 @@ namespace Infomaniak.kDrive.ViewModels
         private Account _account;
         public Drive(DbId dbId, Account account)
         {
-            DbId = dbId;
-            Account = account;
-            Syncs.CollectionChanged += (s, e) => RefreshAdvancedSyncsMap();
+            _dbId = dbId;
+            _account = account;
+            _syncs.CollectionChanged += (s, e) => RefreshAdvancedSyncsMap();
 
         }
         public DbId UserDbId { get => _account.User.DbId; }

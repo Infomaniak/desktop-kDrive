@@ -27,6 +27,7 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.TrayIcon
 {
@@ -66,7 +67,7 @@ namespace Infomaniak.kDrive.TrayIcon
                 _trayIcon.ForceCreate();
 
                 // Set initial icon
-                SetIcon_ok();
+                SetIcon_neutral();
             }
             else
             {
@@ -129,7 +130,7 @@ namespace Infomaniak.kDrive.TrayIcon
             (Application.Current as App)?.CurrentWindow?.Activate();
             await App.ServiceProvider.GetRequiredService<IServerCommService>().ActivateLoadInfo(CancellationToken.None);
 
-            SetIcon_ok();
+            SetIcon_neutral();
         }
 
         private void ExitApplicationCommand_ExecuteRequested(object? sender, ExecuteRequestedEventArgs args)
@@ -137,14 +138,7 @@ namespace Infomaniak.kDrive.TrayIcon
             Logger.Log(Logger.Level.Info, "ExitApplicationCommand executed - exiting application");
             _handleClosedEvents = false;
             _trayIcon?.Dispose();
-
-            (Application.Current as App)?.CurrentWindow?.Close();
-
-            // If window was never created, exit directly
-            if ((Application.Current as App)?.CurrentWindow == null)
-            {
-                Environment.Exit(0);
-            }
+            App.ExitApplicationAndShutdownServer();
         }
 
         private void SetIcon(string fileName)

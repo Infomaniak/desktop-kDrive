@@ -140,8 +140,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         // Ask the Finder/File explorer Extension to register the folder
         void registerSync(std::shared_ptr<SyncPal> syncPal);
 
-        // Ask the Finder/File explorer Extension to unregister the folder
-        void unregisterSync(std::shared_ptr<SyncPal> syncPal);
+        static void uploadLog(bool includeArchivedLogs);
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         static ExitCode getThumbnail(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) {
@@ -242,8 +241,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         static void sendErrorsCleared(int syncDbId);
         void sendQuit(); // Ask client to quit
 
-        void uploadLog(bool includeArchivedLogs);
-        void sendLogUploadStatusUpdated(LogUploadState status, int percent);
+        static void sendLogUploadStatusUpdated(LogUploadState status, int percent);
 
         void deleteAccount(int accountDbId);
         static void sendErrorAdded(const ErrorInfo &errorInfo);

@@ -27,6 +27,7 @@ using Microsoft.Win32;
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 
 
 namespace Infomaniak.kDrive
@@ -163,6 +164,20 @@ namespace Infomaniak.kDrive
                 Logger.Log(Logger.Level.Info, "No users available after initialization, starting onboarding process.");
                 StartOnboarding();
             }
+        }
+
+        public static void ExitApplication()
+        {
+            Logger.Log(Logger.Level.Info, "Exiting application.");
+            (Current as App)!.CurrentWindow?.Close();
+            Environment.Exit(0);
+        }
+
+        public static void ExitApplicationAndShutdownServer()
+        {
+            Logger.Log(Logger.Level.Info, "Sending exit command to server.");
+            App.ServiceProvider.GetRequiredService<IServerCommService>().Exit();
+            ExitApplication();
         }
     }
 }

@@ -33,7 +33,14 @@ ParametersInfo getExpectedParametersInfo() {
                                                            {"drivePreferencesPanel", "blob4567"}};
 
     ParametersInfo parametersInfo(Language::Default, false, true, true, NotificationsDisabled::Never, true, LogLevel::Debug, true,
-                                  true, true, false, dialogGeometry, 50);
+                                  true,
+#ifdef KD_MACOS // darkTheme only on macOS
+                                  true
+#else
+                                  false
+#endif
+                                  ,
+                                  false, dialogGeometry, 50);
 
     parametersInfo.setProxyConfigInfo(proxyConfigInfo);
 
@@ -61,8 +68,9 @@ Poco::JSON::Object createParametersInfoObject() {
     (void) proxyConfigInfoObj.set("pwd", toBase64(Str("1234")));
 
     (void) parametersInfoObj.set("proxyConfigInfo", proxyConfigInfoObj);
-
+#ifdef KD_MACOS
     (void) parametersInfoObj.set("darkTheme", true);
+#endif
     (void) parametersInfoObj.set("showShortcuts", false);
 
     Poco::JSON::Object dialogGeometryObj;
@@ -150,7 +158,8 @@ void TestGuiCommChannel::testParametersUpdateJob() {
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto parametersUpdateJob = std::dynamic_pointer_cast<ParametersUpdateJob>(job);
         CPPUNIT_ASSERT(parametersUpdateJob);
-        CPPUNIT_ASSERT(getExpectedParametersInfo() == parametersUpdateJob->_parametersInfo);
+        ParametersInfo res = getExpectedParametersInfo();
+        CPPUNIT_ASSERT(res == parametersUpdateJob->_parametersInfo);
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)

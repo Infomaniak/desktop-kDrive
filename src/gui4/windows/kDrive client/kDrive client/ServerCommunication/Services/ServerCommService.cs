@@ -441,27 +441,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
         }
 
-        public async Task RefreshSettings(CancellationToken cancellationToken)
-        {
-            CommData data = await _commClient.SendRequestAsync(RequestNum.PARAMETERS_INFO, new JsonObject(), cancellationToken);
-            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.ParmsInfo))
-            {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.ParmsInfo} not found in response.");
-                return;
-            }
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            };
-            options.Converters.Add(new Base64StringJsonConverter());
-            ParmsInfo? parametersInfo = data.Params[JsonKeys.ParmsInfo].Deserialize<ParmsInfo>(options);
-            if (parametersInfo == null)
-            {
-                Logger.Log(Logger.Level.Error, $"Failed to deserialize parmsInfo from ${data.Params["parmsInfo"]}.");
-                return;
-            }
-            CommStruct.ConversionHelper.copyToSettings(parametersInfo, _viewModel.Settings);
-        }
 
         public async Task<List<Node>?> GetSubFolders(DbId userDbId, DriveId driveId, NodeId parentNodeId, CancellationToken cancellationToken)
         {
@@ -616,9 +595,36 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             _viewModel.Settings.UpdateManager.CurrentChannel = newChannel;
         }
 
+        public async Task RefreshSettings(CancellationToken cancellationToken)
+        {
+            CommData data = await _commClient.SendRequestAsync(RequestNum.PARAMETERS_INFO, new JsonObject(), cancellationToken);
+            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.ParmsInfo))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.ParmsInfo} not found in response.");
+                return;
+            }
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            options.Converters.Add(new Base64StringJsonConverter());
+            ParmsInfo? parametersInfo = data.Params[JsonKeys.ParmsInfo].Deserialize<ParmsInfo>(options);
+            if (parametersInfo == null)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to deserialize parmsInfo from ${data.Params["parmsInfo"]}.");
+                return;
+            }
+            CommStruct.ConversionHelper.copyToSettings(parametersInfo, _viewModel.Settings);
+        }
+        
         public async Task ActivateLoadInfo(CancellationToken cancellationToken)
         {
-            await _commClient.SendRequestAsync(RequestNum.UTILITY_ACTIVATELOADINFO, new JsonObject { } , cancellationToken);
+            await _commClient.SendRequestAsync(RequestNum.UTILITY_ACTIVATELOADINFO, new JsonObject { }, cancellationToken);
+        }
+
+        public async Task Exit()
+        {
+            await _commClient.SendRequestAsync(RequestNum.UTILITY_QUIT, new JsonObject { }, CancellationToken.None);
         }
 
         public async Task SaveSettings(CancellationToken cancellationToken)
@@ -630,7 +636,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.ParmsInfo] = new JsonObject()
             };
 
-            string ParmsInfoJson = JsonSerializer.Serialize(ParmsInfo);
+            var options = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+            options.Converters.Add(new Base64StringJsonConverter());
+
+            string ParmsInfoJson = JsonSerializer.Serialize(ParmsInfo, options);
             parms[JsonKeys.ParmsInfo] = JsonNode.Parse(ParmsInfoJson) ?? new JsonObject();
             await _commClient.SendRequestAsync(RequestNum.PARAMETERS_UPDATE, parms, cancellationToken);
         }
