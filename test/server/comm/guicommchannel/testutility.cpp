@@ -213,7 +213,8 @@ void TestGuiCommChannel::testUtilityGetLogEstimatedSizeJob() {
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto utilityGetLogEstimatedSizeJob = std::dynamic_pointer_cast<UtilityGetLogEstimatedSizeJob>(job);
         utilityGetLogEstimatedSizeJob->_logSize = 99999;
-      
+    };
+
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else
