@@ -79,7 +79,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 
         // App-related requests
         Task ActivateLoadInfo(CancellationToken cancellationToken);
-        
+        Task Exit(); // Notify the server that the application is exiting. No cancellation token is required as the app is closing.
+
         // Error-related requests
         Task RefreshErrors(CancellationToken cancellationToken);
 
