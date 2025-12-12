@@ -77,6 +77,7 @@
 #include "server/comm/guijobs/signalutilityshownotificationjob.h"
 #include "server/comm/guijobs/signalutilityshowsettingsjob.h"
 #include "server/comm/guijobs/signalutilityshowsynthesisjob.h"
+#include "server/comm/guijobs/signalutilityloguploadstatejob.h"
 #include "server/comm/guijobs/signalutilityquitjob.h"
 
 #include "server/comm/guijobs/signalsyncprogressinfo.h"
@@ -2279,7 +2280,7 @@ void AppServer::sendQuit() {
     int id = 0;
 
     OldCommServer::instance()->sendSignal(SignalNum::UTILITY_QUIT, QByteArray(), id);
-    _commManager->sendGuiSignal(std::make_shared<SignalUtilityQuitJob>());
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalUtilityQuitJob>());
 }
 
 void AppServer::sendLogUploadStatusUpdated(LogUploadState status, int percent) {
@@ -2290,6 +2291,10 @@ void AppServer::sendLogUploadStatusUpdated(LogUploadState status, int percent) {
     paramsStream << status;
     paramsStream << percent;
     OldCommServer::instance()->sendSignal(SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED, params, id);
+
+    if (_commManager)
+        _commManager->sendGuiSignal(
+                std::make_shared<SignalUtilityLogUploadStateJob>(status, reinterpret_cast<std::int32_t>(percent)));
 
     if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, status, found)) {
         LOG_WARN(_logger, "Error in ParmsDb::updateAppState");

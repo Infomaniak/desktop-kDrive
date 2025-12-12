@@ -19,6 +19,7 @@
 #include "comm/guijobs/signalutilityshownotificationjob.h"
 #include "comm/guijobs/signalutilityshowsettingsjob.h"
 #include "comm/guijobs/signalutilityshowsynthesisjob.h"
+#include "comm/guijobs/signalutilityloguploadstatejob.h"
 #include "comm/guijobs/signalutilityquitjob.h"
 
 #include "testguicommchannel.h"
@@ -53,6 +54,14 @@ void TestGuiCommChannel::testSignalUtilityShowSynthesisJob() {
     CPPUNIT_ASSERT(job.serializeOutputParms());
 }
 
+void TestGuiCommChannel::testSignalUtilityLogUploadStateJob() {
+    SignalUtilityLogUploadStateJob job(LogUploadState::Success, 100);
+    CPPUNIT_ASSERT_EQUAL(SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED, job.signalNum());
+    CPPUNIT_ASSERT(job.deserializeInputParms());
+    CPPUNIT_ASSERT(job.serializeOutputParms());
+    CPPUNIT_ASSERT_EQUAL(LogUploadState::Success, job._state);
+    CPPUNIT_ASSERT_EQUAL(int32_t{100}, job._percentage);
+}
 
 void TestGuiCommChannel::testSignalUtilityQuitJob() {
     SignalUtilityQuitJob job;

@@ -94,6 +94,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSignalUtilityShowNotificationJob);
         CPPUNIT_TEST(testSignalUtilityShowSettingsJob);
         CPPUNIT_TEST(testSignalUtilityShowSynthesisJob);
+        CPPUNIT_TEST(testSignalUtilityLogUploadStateJob);
         CPPUNIT_TEST(testSignalUtilityQuitJob);
         CPPUNIT_TEST_SUITE_END();
 
@@ -147,6 +148,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testSignalUtilityShowNotificationJob();
         void testSignalUtilityShowSettingsJob();
         void testSignalUtilityShowSynthesisJob();
+        void testSignalUtilityLogUploadStateJob();
         void testSignalUtilityQuitJob();
 
 

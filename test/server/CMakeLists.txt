@@ -84,6 +84,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/signalutilityshownotificationjob.h ${server_srcs_path}/comm/guijobs/signalutilityshownotificationjob.cpp
     ${server_srcs_path}/comm/guijobs/signalutilityshowsettingsjob.h ${server_srcs_path}/comm/guijobs/signalutilityshowsettingsjob.cpp
     ${server_srcs_path}/comm/guijobs/signalutilityshowsynthesisjob.h ${server_srcs_path}/comm/guijobs/signalutilityshowsynthesisjob.cpp
+    ${server_srcs_path}/comm/guijobs/signalutilityloguploadstatejob.h ${server_srcs_path}/comm/guijobs/signalutilityloguploadstatejob.cpp
     ${server_srcs_path}/comm/guijobs/signalutilityquitjob.h ${server_srcs_path}/comm/guijobs/signalutilityquitjob.cpp
     ${server_srcs_path}/migration/migrationparams.h ${server_srcs_path}/migration/migrationparams.cpp
     ${server_srcs_path}/requests/serverrequests.h ${server_srcs_path}/requests/serverrequests.cpp

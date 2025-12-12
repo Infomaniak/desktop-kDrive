@@ -104,6 +104,7 @@ set(server_SRCS
     comm/guijobs/signalutilityshownotificationjob.h comm/guijobs/signalutilityshownotificationjob.cpp
     comm/guijobs/signalutilityshowsettingsjob.h comm/guijobs/signalutilityshowsettingsjob.cpp
     comm/guijobs/signalutilityshowsynthesisjob.h comm/guijobs/signalutilityshowsynthesisjob.cpp
+    comm/guijobs/signalutilityloguploadstatejob.h comm/guijobs/signalutilityloguploadstatejob.cpp
     comm/guijobs/signalutilityquitjob.h comm/guijobs/signalutilityquitjob.cpp
     migration/migrationparams.h migration/migrationparams.cpp
     requests/serverrequests.h requests/serverrequests.cpp
