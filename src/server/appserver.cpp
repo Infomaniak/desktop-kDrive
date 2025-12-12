@@ -74,8 +74,9 @@
 #include "server/comm/guijobs/signalerroraddedjob.h"
 #include "server/comm/guijobs/signalerrorremovedjob.h"
 
-#include "server/comm/guijobs/signalutilityshowsettingsjob.h"
 #include "server/comm/guijobs/signalutilityshownotificationjob.h"
+#include "server/comm/guijobs/signalutilityshowsettingsjob.h"
+#include "server/comm/guijobs/signalutilityshowsynthesisjob.h"
 #include "server/comm/guijobs/signalutilityquitjob.h"
 
 #include "server/comm/guijobs/signalsyncprogressinfo.h"
@@ -3357,6 +3358,7 @@ void AppServer::showSettings() {
 void AppServer::showSynthesis() {
     int id = 0;
     OldCommServer::instance()->sendSignal(SignalNum::UTILITY_SHOW_SYNTHESIS, QByteArray(), id);
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalUtilityShowSynthesisJob>());
 }
 
 void AppServer::clearKeychainKeys() {
