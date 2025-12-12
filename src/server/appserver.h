@@ -137,6 +137,8 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         void logExtendedLogActivationMessage(bool isExtendedLogEnabled) noexcept;
 
+        static void uploadLog(bool includeArchivedLogs);
+
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         static ExitCode getThumbnail(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) {
             return ServerRequests::getThumbnail(driveDbId, nodeId, width, thumbnail);
@@ -236,8 +238,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         static void sendErrorsCleared(int syncDbId);
         void sendQuit(); // Ask client to quit
 
-        void uploadLog(bool includeArchivedLogs);
-        void sendLogUploadStatusUpdated(LogUploadState status, int percent);
+        static void sendLogUploadStatusUpdated(LogUploadState status, int percent);
 
         void deleteAccount(int accountDbId);
         static void sendErrorAdded(const ErrorInfo &errorInfo);
