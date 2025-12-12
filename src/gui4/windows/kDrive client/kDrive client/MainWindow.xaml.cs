@@ -41,6 +41,7 @@ namespace Infomaniak.kDrive
             this.SetTitleBar(AppTitleBar);
             Utility.SetWindowProperties(this, 900, 530, true);
             AppModel.UIThreadDispatcher = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread(); // Save the UI thread dispatcher for later use in view models
+            AppWindow.TitleBar.PreferredTheme = Microsoft.UI.Windowing.TitleBarTheme.UseDefaultAppMode;
         }
     }
 }
