@@ -80,7 +80,7 @@
                     <TextBlock x:Uid="Page_SettingsPage_Global"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
                     <!-- General - Update -->
-                    <controls:UpdateExpander />
+                    <controls:UpdateExpander IsEnabled="False"/>
 
                     <!-- General - Language -->
                     <toolKit:SettingsCard x:Uid="Page_SettingsPage_Language"
