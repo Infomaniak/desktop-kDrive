@@ -13,7 +13,15 @@
                 ItemInvoked="OnItemInvoked"
                 IsBackEnabled="{x:Bind ContentFrame.CanGoBack, Mode=OneWay}"
                 BackRequested="OnBackRequested"
-                OpenPaneLength="280">
+                OpenPaneLength="280"
+                CompactPaneLength="52">
+    <!--
+    CompactPaneLength must be overridden (default is 48px) due to the following issue:
+    https://github.com/microsoft/microsoft-ui-xaml/issues/10415
+
+    Once the issue is resolved, we will be able to revert to the original value.
+    -->
+
     <NavigationView.Resources>
         <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
@@ -57,16 +65,16 @@
         </NavigationViewItem>
     </NavigationView.MenuItems>
 
-    <NavigationView.FooterMenuItems>
+    <NavigationView.PaneFooter>
         <NavigationViewItem x:Uid="W_MainWindow_PaneFooter_Folder"
                             Tapped="NavigationViewItem_Tapped"
-                            MinHeight="30"
+                            MinHeight="30" 
                             IsEnabled="{x:Bind ViewModel.SelectedSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
             <NavigationViewItem.Icon>
                 <SymbolIcon Symbol="Folder" />
             </NavigationViewItem.Icon>
         </NavigationViewItem>
-    </NavigationView.FooterMenuItems>
+    </NavigationView.PaneFooter>
 
     <Frame x:Name="ContentFrame" />
 </NavigationView>
