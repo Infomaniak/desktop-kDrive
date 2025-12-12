@@ -44,10 +44,6 @@
             <NavigationViewItem.Icon>
                 <SymbolIcon Symbol="Sync" />
             </NavigationViewItem.Icon>
-            <NavigationViewItem.InfoBadge>
-                <InfoBadge x:Name="infoBadge1"
-                           Value="4" />
-            </NavigationViewItem.InfoBadge>
         </NavigationViewItem>
         <NavigationViewItem x:Uid="W_MainWindow_NavBar_Storage"
                             Tag="StoragePage"
