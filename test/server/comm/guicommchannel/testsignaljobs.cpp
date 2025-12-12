@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "comm/guijobs/signalutilityshowsettingsjob.h"
 #include "comm/guijobs/signalutilityshownotificationjob.h"
 #include "comm/guijobs/signalutilityquitjob.h"
 
@@ -26,9 +27,9 @@ namespace KDC {
 
 using namespace testcommhelpers;
 
-void TestGuiCommChannel::testSignalUtilityQuitJob() {
-    SignalUtilityQuitJob job;
-    CPPUNIT_ASSERT_EQUAL(SignalNum::UTILITY_QUIT, job.signalNum());
+void TestGuiCommChannel::testSignalUtilityShowSettingsJob() {
+    SignalUtilityShowSettingsJob job;
+    CPPUNIT_ASSERT_EQUAL(SignalNum::UTILITY_SHOW_SETTINGS, job.signalNum());
     CPPUNIT_ASSERT(job.deserializeInputParms());
     CPPUNIT_ASSERT(job.serializeOutputParms());
 }
@@ -42,6 +43,13 @@ void TestGuiCommChannel::testSignalUtilityShowNotificationJob() {
     CPPUNIT_ASSERT(job.serializeOutputParms());
     CPPUNIT_ASSERT_EQUAL(title, job._title);
     CPPUNIT_ASSERT_EQUAL(message, job._message);
+}
+
+void TestGuiCommChannel::testSignalUtilityQuitJob() {
+    SignalUtilityQuitJob job;
+    CPPUNIT_ASSERT_EQUAL(SignalNum::UTILITY_QUIT, job.signalNum());
+    CPPUNIT_ASSERT(job.deserializeInputParms());
+    CPPUNIT_ASSERT(job.serializeOutputParms());
 }
 
 } // namespace KDC

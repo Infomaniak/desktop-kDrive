@@ -74,6 +74,7 @@
 #include "server/comm/guijobs/signalerroraddedjob.h"
 #include "server/comm/guijobs/signalerrorremovedjob.h"
 
+#include "server/comm/guijobs/signalutilityshowsettingsjob.h"
 #include "server/comm/guijobs/signalutilityshownotificationjob.h"
 #include "server/comm/guijobs/signalutilityquitjob.h"
 
@@ -3350,6 +3351,7 @@ void AppServer::sendRestartClientMsg() {
 void AppServer::showSettings() {
     int id = 0;
     OldCommServer::instance()->sendSignal(SignalNum::UTILITY_SHOW_SETTINGS, QByteArray(), id);
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalUtilityShowSettingsJob>());
 }
 
 void AppServer::showSynthesis() {
