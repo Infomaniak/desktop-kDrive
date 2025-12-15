@@ -27,6 +27,14 @@
 
 namespace KDC {
 
+std::string CommonUtility::generateUUID() {
+    uuid_t uuid;
+    char uuidStr[37]; // 36 caractères + '\0'
+    uuid_generate(uuid);
+    uuid_unparse(uuid, uuidStr);
+    return uuidStr;
+}
+
 SyncPath CommonUtility::getAppDir() {
     NSError *error;
     NSURL *appDirUrl = [[NSFileManager defaultManager] URLForDirectory:NSApplicationDirectory
