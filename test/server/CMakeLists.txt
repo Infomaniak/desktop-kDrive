@@ -104,7 +104,6 @@ if(APPLE OR WIN32)
 endif()
 
 if(APPLE)
-    list(APPEND server_SRCS ${server_srcs_path}/../common/utility_mac.cpp)
     list(APPEND server_SRCS ${server_srcs_path}/comm/abstractcommserver_mac.h ${server_srcs_path}/comm/abstractcommserver_mac.mm)
     list(APPEND server_SRCS ${server_srcs_path}/comm/xpccommserver_mac.h ${server_srcs_path}/comm/xpccommserver_mac.mm)
     list(APPEND server_SRCS ${server_srcs_path}/comm/extcommserver_mac.mm)
@@ -134,8 +133,6 @@ elseif(WIN32)
     list(APPEND server_SRCS ${server_srcs_path}/navigationpanehelper.h ${server_srcs_path}/navigationpanehelper.cpp)
     list(APPEND server_SRCS ${server_srcs_path}/comm/pipecommserver.h ${server_srcs_path}/comm/pipecommserver.cpp)
     list(APPEND server_SRCS ${server_srcs_path}/updater/windowsupdater.h ${server_srcs_path}/updater/windowsupdater.cpp ${server_srcs_path}/../common/utility_win.cpp)
-else()
-    list(APPEND server_SRCS ${server_srcs_path}/updater/linuxupdater.h ${server_srcs_path}/updater/linuxupdater.cpp ${server_srcs_path}/../common/utility_linux.cpp)
 endif()
 
 set(3rdparty_SRC
