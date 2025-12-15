@@ -92,6 +92,7 @@ ExitInfo SyncStartJob::process() {
 #if defined(KD_MACOS)
     Utility::restartFinderExtension();
 #endif
+    (void) _commManager->appServer().clearSyncCacheMap();
 
     return mainExitInfo;
 }

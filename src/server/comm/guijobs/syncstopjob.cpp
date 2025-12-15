@@ -56,6 +56,7 @@ ExitInfo SyncStopJob::process() {
         LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << _syncDbId << " : " << exitInfo);
         return exitInfo;
     }
+    (void) _commManager->appServer().clearSyncCacheMap();
 
     // Note: we do not Stop Vfs in case of a pause
 
