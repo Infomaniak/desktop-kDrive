@@ -32,6 +32,17 @@ namespace Infomaniak.kDrive.Types
         Offline
     };
 
+    public enum SyncErrorStates
+    {
+        Undefined,
+        Asleep,
+        WakingUp,
+        NotRenew,
+        Maintenance,
+        AccessDenied,
+        LoggedOut
+    };
+
     public enum SyncFileInstruction
     {
         None,

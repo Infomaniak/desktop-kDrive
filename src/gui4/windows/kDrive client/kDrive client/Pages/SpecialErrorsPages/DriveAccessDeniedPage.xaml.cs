@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using Infomaniak.kDrive.Pages.Settings;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,6 +23,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
+using System.ComponentModel;
 
 namespace Infomaniak.kDrive.Pages
 {
@@ -35,31 +35,66 @@ namespace Infomaniak.kDrive.Pages
         {
             Logger.Log(Logger.Level.Info, "Navigated to HomePage - Initializing HomePage components");
             InitializeComponent();
+            Unloaded += (_, _) => DetachHandlers();
             Logger.Log(Logger.Level.Debug, "HomePage components initialized");
         }
 
-        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            if (ViewModel.SelectedSync is null) AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(SettingsPage)));        
-        }
-        private void SyncUpToDateHyperlinkButton_Click(object sender, RoutedEventArgs e)
-        {
-            ((App)Application.Current).CurrentWindow?.AppWindow.Hide();
+            ViewModel.SelectedSyncChanged += OnSelectedSyncChanged;
+            OnSelectedSyncChanged(null, new(null, ViewModel.SelectedSync));
+            RedirectToHomePageIfNeeded();
         }
 
-        private void SyncInProgressHyperlinkButton_Click(object sender, RoutedEventArgs e)
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            Frame.Navigate(typeof(ActivityPage));
+            DetachHandlers();
         }
 
-        private void SyncInPauseHyperlinkButton_Click(object sender, RoutedEventArgs e)
+        private void DetachHandlers()
         {
-            if (ViewModel.SelectedSync == null)
+            ViewModel.SelectedSyncChanged -= OnSelectedSyncChanged;
+
+            if (ViewModel.SelectedSync is not null)
+                ViewModel.SelectedSync.PropertyChanged -= OnSelectedSyncPropertyChanged;
+        }
+
+        private void OnSelectedSyncChanged(object? sender, AppModel.SelectedSyncChangedEventArgs e)
+        {
+            if (e.OldValue is not null)
+                e.OldValue.PropertyChanged -= OnSelectedSyncPropertyChanged;
+
+            if (e.NewValue is not null)
+                e.NewValue.PropertyChanged += OnSelectedSyncPropertyChanged;
+        }
+
+        private void OnSelectedSyncPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Sync.SyncErrorState))
             {
-                Logger.Log(Logger.Level.Warning, "No sync is selected, cannot resume sync.");
-                return;
+                RedirectToHomePageIfNeeded();
             }
-            ViewModel.SelectedSync.SyncStatus = SyncStatus.Running; // Todo: Replace with actual resume logic
+        }
+
+        private void RedirectToHomePageIfNeeded()
+        {
+            if (ViewModel?.SelectedSync is null || ViewModel.SelectedSync.SyncErrorState != SyncErrorStates.AccessDenied)
+            {
+                DetachHandlers();
+                AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(HomePage)));
+            }
+        }
+
+        private async void RetryButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (ViewModel?.SelectedSync is null)
+            {
+                Logger.Log(Logger.Level.Warning, "");
+                DetachHandlers();
+                Frame.Navigate(typeof(HomePage));
+            }
+
+            await ViewModel.SelectedSync.Start();
         }
     }
 }
