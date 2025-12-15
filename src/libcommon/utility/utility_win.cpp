@@ -26,7 +26,7 @@
 #include <shlguid.h>
 #include <string>
 #include <stdio.h>
-#include <rpcdce.h> // Pour UuidCreate et UuidToString
+#include <rpcdce.h>
 
 #include <QLibrary>
 #include <QFile>
