@@ -43,11 +43,17 @@ NodePathJob::NodePathJob(std::shared_ptr<CommManager> commManager, int requestId
 }
 
 ExitInfo NodePathJob::deserializeInputParms() {
+    const auto logMessage = "Exception in NodePathJob::readParamValue: error=";
     try {
         readParamValue(inParamsSyncDbId, _syncDbId);
         readParamValue(inParamsNodeId, _nodeId);
-    } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in NodePathJob::readParamValue: error=" << e.what());
+    } catch (const Poco::Exception &pocoException) {
+        LOG_WARN(_logger, logMessage << pocoException.message());
+
+        return ExitCode::LogicError;
+    } catch (const CommonUtility::InvalidEnumerationValue &cuException) {
+        LOG_WARN(_logger, logMessage << cuException.what());
+
         return ExitCode::LogicError;
     }
 
@@ -61,33 +67,7 @@ ExitInfo NodePathJob::serializeOutputParms() {
 }
 
 ExitInfo NodePathJob::process() {
-    const std::scoped_lock lock(AppServer::syncPalMapMutex);
-    auto syncPalMapIt = _commManager->appServer().syncPalMap.find(_syncDbId);
-
-    if (syncPalMapIt == _commManager->appServer().syncPalMap.end()) {
-        LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << _syncDbId);
-
-        return ExitCode::DataError;
-    }
-
-    if (!syncPalMapIt->second) {
-        LOG_WARN(_logger, "SyncPal not set in syncPalMap for syncDbId=" << _syncDbId);
-
-        return ExitCode::DataError;
-    }
-
-    if (const auto exitInfo = ServerRequests::getPathByNodeId(syncPalMapIt->second->userDbId(), syncPalMapIt->second->driveId(),
-                                                              _nodeId, _path);
-        !exitInfo) {
-        if (exitInfo.cause() == ExitCause::NotFound) {
-            (void) SyncNodeCache::instance()->deleteSyncNode(_syncDbId, _nodeId);
-        } else {
-            LOG_WARN(_logger, "Error in ServerRequests::getPathByNodeId: " << exitInfo);
-            AppServer::addError(Error(ERR_ID, exitInfo));
-        }
-    }
-
-    return ExitCode::Ok;
+    return _commManager->appServer().getNodePath(_syncDbId, _nodeId, _path);
 }
 
 } // namespace KDC
