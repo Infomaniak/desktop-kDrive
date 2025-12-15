@@ -38,6 +38,7 @@
 #include "jobs/network/infomaniak_API/getappversionjob.h"
 #include "jobs/network/directdownloadjob.h"
 #include "jobs/network/kDrive_API/createdirjob.h"
+#include "jobs/network/kDrive_API/fileexistsjob.h"
 #include "jobs/network/kDrive_API/searchjob.h"
 #include "jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.h"
 #include "jobs/network/kDrive_API/listing/initfilelistwithcursorjob.h"
@@ -1558,7 +1559,7 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
         public:
             explicit GetInfoUserJobMock(const int32_t userDbId, const ApiToken &apiToken) :
                 GetInfoUserJob(userDbId),
-                _apiToken(apiToken){};
+                _apiToken(apiToken) {};
 
             [[nodiscard]] Poco::Net::HTTPResponse httpResponse() const override {
                 return Poco::Net::HTTPResponse(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
@@ -1584,6 +1585,17 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
         CPPUNIT_ASSERT_EQUAL(ExitCode::InvalidToken, exitInfo.code());
         CPPUNIT_ASSERT_EQUAL(0, job.trials());
     }
+}
+
+void TestNetworkJobs::testExists() {
+    const NodeId dummyId("1234567890");
+    const auto ids = {pictureDirRemoteId, picture1RemoteId, dummyId};
+    FileExistsJob job(_driveDbId, ids);
+    job.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(FileExistsJob::EXISTS, job.exists(pictureDirRemoteId));
+    CPPUNIT_ASSERT_EQUAL(FileExistsJob::EXISTS, job.exists(picture1RemoteId));
+    CPPUNIT_ASSERT_EQUAL(FileExistsJob::NOT_FOUND, job.exists(dummyId));
+    CPPUNIT_ASSERT_EQUAL(FileExistsJob::UNHANDLED, job.exists("0987654321"));
 }
 
 } // namespace KDC

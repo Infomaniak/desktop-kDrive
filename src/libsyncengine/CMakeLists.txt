@@ -75,6 +75,7 @@ set(syncengine_SRCS
     jobs/network/kDrive_API/getfilelinkjob.h jobs/network/kDrive_API/getfilelinkjob.cpp
     jobs/network/kDrive_API/getsizejob.h jobs/network/kDrive_API/getsizejob.cpp
     jobs/network/kDrive_API/searchjob.h jobs/network/kDrive_API/searchjob.cpp
+    jobs/network/kDrive_API/fileexistsjob.h jobs/network/kDrive_API/fileexistsjob.cpp
     ## Local jobs
     jobs/local/localmovejob.h jobs/local/localmovejob.cpp
     jobs/local/localcopyjob.h jobs/local/localcopyjob.cpp
