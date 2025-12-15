@@ -134,9 +134,13 @@ target_link_libraries(${libcommon_NAME}
 if(UNIX)
     target_link_libraries(${libcommon_NAME}
         utf8proc)
+    if(NOT APPLE)
+        target_link_libraries(${libcommon_NAME}
+                "uuid")   # For UUID generation
+    endif()
 elseif(WIN32)
     target_link_libraries(${libcommon_NAME}
-            "rpcrt4.lib")
+            "rpcrt4.lib")   # For UUID generation
 endif()
 
 if(APPLE)
