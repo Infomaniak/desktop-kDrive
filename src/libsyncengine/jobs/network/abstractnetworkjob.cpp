@@ -107,7 +107,7 @@ bool AbstractNetworkJob::isManagedError(const ExitInfo exitInfo) noexcept {
 
 void AbstractNetworkJob::logRequestInfo() {
     if (!isExtendedLog()) { // If not in extended mode, log only the request ID.
-        LOG_DEBUG(_logger, "X-Request-ID: " << acceptHeader());
+        LOG_DEBUG(_logger, "X-Request-ID: " << _requestUuid);
         return;
     }
 
