@@ -131,9 +131,9 @@ class AbstractNetworkJob : public SyncJob {
 
         void logRequestInfo();
 
-        std::string _requestUuid;
+        const std::string _requestUuid;
 
-        static std::string _userAgent;
+        static const std::string _userAgent;
         static Poco::Net::Context::Ptr _context;
         static TimeoutHelper _timeoutHelper;
 

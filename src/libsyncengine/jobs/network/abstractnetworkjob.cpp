@@ -46,15 +46,12 @@
 
 namespace KDC {
 
-std::string AbstractNetworkJob::_userAgent = std::string();
+const std::string AbstractNetworkJob::_userAgent = KDC::CommonUtility::userAgentString();
 Poco::Net::Context::Ptr AbstractNetworkJob::_context = nullptr;
 AbstractNetworkJob::TimeoutHelper AbstractNetworkJob::_timeoutHelper;
 
-AbstractNetworkJob::AbstractNetworkJob() {
-    if (_userAgent.empty()) {
-        _userAgent = KDC::CommonUtility::userAgentString();
-    }
-
+AbstractNetworkJob::AbstractNetworkJob() :
+    _requestUuid(CommonUtility::generateUUID()) {
     if (!_context) {
         for (int trials = 1; trials <= std::min(_trials, MAX_TRIALS); trials++) {
             try {
@@ -349,7 +346,6 @@ ExitInfo AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
     req.set("User-Agent", _userAgent);
     req.setContentType(contentType());
     req.add("Accept", acceptHeader());
-    _requestUuid = CommonUtility::generateUUID();
     req.add("X-Request-ID", _requestUuid);
     for (const auto &[headerKey, headerValue]: _rawHeaders) {
         req.add(headerKey, headerValue);
