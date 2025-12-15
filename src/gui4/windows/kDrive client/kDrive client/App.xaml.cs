@@ -23,6 +23,7 @@ using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Security.Authentication.OAuth;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.Win32;
 using Sentry;
 using System;
@@ -108,9 +109,15 @@ namespace Infomaniak.kDrive
             }
 
             CurrentWindow = new MainWindow();
+            var currentWindowContent = CurrentWindow.Content;
+
+            // Affiche le spinning wheel
+            CurrentWindow.Content = new CustomControls.SplashScreen();
+
             TrayIcoManager.Initialize();
             AppModel appModel = ServiceProvider.GetRequiredService<AppModel>();
             await appModel.InitializeAsync();
+            CurrentWindow.Content = currentWindowContent;
             (CurrentWindow as MainWindow)?.AppNavView.Frame.Navigate(typeof(Pages.HomePage));
             StartOnboardingIfNeeded();
             appModel.AllSyncs.AsObservableChangeSet()
@@ -118,7 +125,6 @@ namespace Infomaniak.kDrive
             {
                 StartOnboardingIfNeeded();
             });
-
         }
 
         private void RegisterOAuthProtocol()
