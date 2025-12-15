@@ -274,6 +274,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         bool areMacVfsAuthsOk() const;
 #endif
 
+        std::string appUID() const;
+
         // For testing purpose
         void crash() const;
 

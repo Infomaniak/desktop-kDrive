@@ -784,8 +784,11 @@ std::string AppServer::appUID() const {
     if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::AppUid, appStateValue, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAppState");
         addError(Error(ERR_ID, ExitCode::DbError, ExitCause::DbAccessError));
+        return "";
     } else if (!found) {
         LOG_WARN(Log::instance()->getLogger(), AppStateKey::AppUid << " key not found in appstate table");
+        addError(Error(ERR_ID, ExitCode::DataError, ExitCause::DbEntryNotFound));
+        return "";
     }
     return std::get<std::string>(appStateValue);
 }
