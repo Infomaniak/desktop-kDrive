@@ -37,6 +37,8 @@ static const auto parametersInfoShowShortcuts = "showShortcuts";
 static const auto parametersInfoDialogGeometry = "dialogGeometry";
 static const auto parametersInfoMaxAllowedCpu = "maxAllowedCpu";
 static const auto parametersInfoVersionChannel = "distributionChannel";
+static const auto parametersInfoSentryEnabled = "sentryEnabled";
+static const auto parametersInfoMatomoEnabled = "matomoEnabled";
 
 ParametersInfo::ParametersInfo(Language language, bool monoIcons, bool autoStart, bool moveToTrash,
                                NotificationsDisabled notificationsDisabled, bool useLog, LogLevel logLevel, bool extendedLog,
@@ -87,6 +89,8 @@ void ParametersInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
 
     CommonUtility::writeValueToStruct(dstruct, parametersInfoMaxAllowedCpu, _maxAllowedCpu);
     CommonUtility::writeValueToStruct(dstruct, parametersInfoVersionChannel, _distributionChannel);
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoSentryEnabled, _sentryEnabled);
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoMatomoEnabled, _matomoEnabled);
 };
 
 void ParametersInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
@@ -134,6 +138,8 @@ void ParametersInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     if (dstruct.contains(parametersInfoMaxAllowedCpu)) // Not used by the clients
         CommonUtility::readValueFromStruct(dstruct, parametersInfoMaxAllowedCpu, _maxAllowedCpu);
     CommonUtility::readValueFromStruct(dstruct, parametersInfoVersionChannel, _distributionChannel);
+    CommonUtility::readValueFromStruct(dstruct, parametersInfoSentryEnabled, _sentryEnabled);
+    CommonUtility::readValueFromStruct(dstruct, parametersInfoMatomoEnabled, _matomoEnabled);
 };
 
 QDataStream &operator>>(QDataStream &in, ParametersInfo &parametersInfo) {

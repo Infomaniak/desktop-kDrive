@@ -17,6 +17,7 @@
  */
 
 #include "appserver.h"
+#include "version.h"
 #include "migration/migrationparams.h"
 #include "keychainmanager/keychainmanager.h"
 #include "requests/syncnodecache.h"
@@ -24,6 +25,25 @@
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
 #include "comm/extjobmanager.h"
 #endif
+#include "jobs/network/kDrive_API/searchjob.h"
+#include "jobs/network/kDrive_API/upload/loguploadjob.h"
+#include "jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.h"
+#include "requests/offlinefilessizeestimator.h"
+#include "updater/updatemanager.h"
+#include "server/comm/guijobs/signalaccountaddedjob.h"
+#include "server/comm/guijobs/signaluseraddedjob.h"
+#include "server/comm/guijobs/signaluserupdatedjob.h"
+#include "server/comm/guijobs/signaluserremovedjob.h"
+#include "server/comm/guijobs/signalaccountremovedjob.h"
+#include "server/comm/guijobs/signaldriveaddedjob.h"
+#include "server/comm/guijobs/signaldriveremovedjob.h"
+#include "server/comm/guijobs/signalsyncaddedjob.h"
+#include "server/comm/guijobs/signalsyncremovedjob.h"
+#include "server/comm/guijobs/signalsynccompleteditem.h"
+#include "server/comm/guijobs/signalsyncupdatedjob.h"
+#include "server/comm/guijobs/signalerroraddedjob.h"
+#include "server/comm/guijobs/signalerrorremovedjob.h"
+#include "server/comm/guijobs/signalsyncprogressinfo.h"
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
@@ -43,6 +63,7 @@
 #include "libsyncengine/requests/parameterscache.h"
 #include "libsyncengine/requests/exclusiontemplatecache.h"
 #include "libsyncengine/jobs/syncjobmanager.h"
+
 #include <iostream>
 #include <fstream>
 #include <filesystem>
@@ -53,28 +74,6 @@
 #if defined(KD_WINDOWS)
 #include <windows.h>
 #endif
-
-#include "jobs/network/kDrive_API/searchjob.h"
-#include "jobs/network/kDrive_API/upload/loguploadjob.h"
-#include "jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.h"
-#include "requests/offlinefilessizeestimator.h"
-#include "updater/updatemanager.h"
-
-#include "server/comm/guijobs/signalaccountaddedjob.h"
-#include "server/comm/guijobs/signaluseraddedjob.h"
-#include "server/comm/guijobs/signaluserupdatedjob.h"
-#include "server/comm/guijobs/signaluserremovedjob.h"
-#include "server/comm/guijobs/signalaccountremovedjob.h"
-#include "server/comm/guijobs/signaldriveaddedjob.h"
-#include "server/comm/guijobs/signaldriveremovedjob.h"
-#include "server/comm/guijobs/signalsyncaddedjob.h"
-#include "server/comm/guijobs/signalsyncremovedjob.h"
-#include "server/comm/guijobs/signalsynccompleteditem.h"
-#include "server/comm/guijobs/signalsyncupdatedjob.h"
-#include "server/comm/guijobs/signalerroraddedjob.h"
-#include "server/comm/guijobs/signalerrorremovedjob.h"
-
-#include "server/comm/guijobs/signalsyncprogressinfo.h"
 
 #include <QDesktopServices>
 #include <QDir>
@@ -268,6 +267,14 @@ void AppServer::init() {
     if (!ParametersCache::instance()) {
         LOG_WARN(_logger, "Error in ParametersCache::instance");
         throw std::runtime_error("Unable to initialize parameters cache.");
+    }
+
+    // Update Sentry configuration
+    sentry::Handler::instance()->setAppUUID(appUID());
+    if (KDRIVE_VERSION_MAJOR < 4) {
+        sentry::Handler::instance()->setIsSentryActivated(true);
+    } else {
+        sentry::Handler::instance()->setIsSentryActivated(ParametersCache::instance()->parameters().sentryEnabled());
     }
 
     // Setup translations
@@ -770,6 +777,20 @@ void AppServer::unregisterSync(std::shared_ptr<SyncPal> syncPal) {
 #else
     (void) syncPal;
 #endif
+}
+
+std::string AppServer::appUID() const {
+    AppStateValue appStateValue = "";
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::AppUid, appStateValue, found)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAppState");
+        addError(Error(ERR_ID, ExitCode::DbError, ExitCause::DbAccessError));
+        return {};
+    } else if (!found) {
+        LOG_WARN(Log::instance()->getLogger(), AppStateKey::AppUid << " key not found in appstate table");
+        addError(Error(ERR_ID, ExitCode::DataError, ExitCause::DbEntryNotFound));
+        return {};
+    }
+    return std::get<std::string>(appStateValue);
 }
 
 #if defined(KD_MACOS)
@@ -3041,17 +3062,16 @@ void AppServer::logUsefulInformation() const {
     LOGW_INFO(_logger, L"free space for cache: " << Utility::getFreeDiskSpace(cachePath) << L" bytes");
 
     // Log app ID
-    AppStateValue appStateValue = "";
+    LOG_INFO(Log::instance()->getLogger(), "App ID: " << appUID());
 
-    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::AppUid, appStateValue, found)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAppState");
-        addError(Error(ERR_ID, ExitCode::DbError, ExitCause::DbAccessError));
-    } else if (!found) {
-        LOG_WARN(Log::instance()->getLogger(), AppStateKey::AppUid << " key not found in appstate table");
+    if (KDRIVE_VERSION_MAJOR >= 4) {
+        // Log Sentry activation status
+        LOG_INFO(Log::instance()->getLogger(), "Sentry enabled: " << ParametersCache::instance()->parameters().sentryEnabled());
+
+        // Log Matomo activation status
+        LOG_INFO(Log::instance()->getLogger(), "Matomo enabled: " << ParametersCache::instance()->parameters().matomoEnabled());
     }
-    const auto &appUid = std::get<std::string>(appStateValue);
-    LOG_INFO(Log::instance()->getLogger(), "App ID: " << appUid);
-    sentry::Handler::instance()->setAppUUID(appUid);
+
     // Log user IDs
     std::vector<User> userList;
     if (!ParmsDb::instance()->selectAllUsers(userList)) {
