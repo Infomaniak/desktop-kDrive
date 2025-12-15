@@ -62,16 +62,16 @@ public enum ObservableData {
                                           color: HexColor(hex: "#ffffff"), synchros: [:])
 
     static let expectedDriveResponse = DriveResponse(driveDbId: expectedDriveDbId,
-                                                 driveId: expectedDriveId,
-                                                 accountDbId: expectedAccountDbId,
-                                                 color: HexColor(hex: "#ffffff")!,
-                                                 name: "The amazing test Drive",
-                                                 accessDenied: false,
-                                                 admin: true,
-                                                 locked: false,
-                                                 maintenance: false,
-                                                 notifications: true)
-    
+                                                     driveId: expectedDriveId,
+                                                     accountDbId: expectedAccountDbId,
+                                                     color: HexColor(hex: "#ffffff")!,
+                                                     name: "The amazing test Drive",
+                                                     accessDenied: false,
+                                                     admin: true,
+                                                     locked: false,
+                                                     maintenance: false,
+                                                     notifications: true)
+
     static let updatedDrive = Drive.some(driveDbId: expectedDriveDbId,
                                          driveId: expectedDriveId,
                                          accountDbId: expectedAccountDbId,
@@ -136,12 +136,24 @@ public enum ObservableData {
 
     static let expectedSynchroDbId = Int32.random(in: 0 ... 1000)
     static let expectedSynchroPath = "/dev/null"
+    static let expectedTargetPath = "dev/bin"
+    static let expectedTargetNodeId = UUID().uuidString
+    static let expectedSupportVFS = true
+    static let expectedVirtualFileMode = KDC.VirtualFileMode.Mac
     static let expectedSynchro = Synchro(dbId: expectedSynchroDbId,
                                          driveDbId: expectedDriveDbId,
-                                         localPath: expectedSynchroPath)
+                                         localPath: expectedSynchroPath,
+                                         targetPath: expectedTargetPath,
+                                         targetNodeId: expectedTargetNodeId,
+                                         supportVfs: expectedSupportVFS,
+                                         virtualFileMode: expectedVirtualFileMode)
 
     static let updatedSynchroPath = "C:\\Windows\\System32"
     static let updatedSynchro = Synchro(dbId: expectedSynchroDbId,
                                         driveDbId: expectedDriveDbId,
-                                        localPath: updatedSynchroPath)
+                                        localPath: updatedSynchroPath,
+                                        targetPath: expectedTargetPath,
+                                        targetNodeId: expectedTargetNodeId,
+                                        supportVfs: expectedSupportVFS,
+                                        virtualFileMode: expectedVirtualFileMode)
 }
