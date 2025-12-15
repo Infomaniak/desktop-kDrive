@@ -87,9 +87,6 @@ class AbstractNetworkJob : public SyncJob {
         BackError _backError;
 
     private:
-        ExitInfo receiveResponse(const Poco::URI &uri);
-        ExitInfo handleError(std::istream &inputStream, const Poco::URI &uri);
-
         struct TimeoutHelper {
                 void add(std::chrono::duration<double> duration);
 
@@ -112,22 +109,13 @@ class AbstractNetworkJob : public SyncJob {
                 unsigned int count();
         };
 
-        static std::string _userAgent;
-        static Poco::Net::Context::Ptr _context;
-        static TimeoutHelper _timeoutHelper;
+        ExitInfo receiveResponse(const Poco::URI &uri);
+        ExitInfo handleError(std::istream &inputStream, const Poco::URI &uri);
 
-        Poco::Net::HTTPResponse _httpResponse;
-        Poco::JSON::Object::Ptr _jsonRes{nullptr};
-        std::string _octetStreamRes;
-
-        virtual void setQueryParameters(Poco::URI &) { /* Empty by default */
-        }
+        virtual void setQueryParameters(Poco::URI &) { /* Empty by default */ }
         virtual ExitInfo setData() { return ExitCode::Ok; }
         virtual std::string contentType() { return {}; }
         virtual std::string acceptHeader() { return contentType(); }
-
-        std::unique_ptr<Poco::Net::HTTPSClientSession> _session;
-        std::recursive_mutex _mutexSession;
 
         void createSession(const Poco::URI &uri);
         void clearSession();
@@ -140,6 +128,21 @@ class AbstractNetworkJob : public SyncJob {
         ExitInfo processSocketError(const std::string &msg, UniqueId jobId, int err, const std::string &errMsg);
         bool ioOrLogicalErrorOccurred(std::ios &stream);
         static bool isManagedError(ExitInfo exitInfo) noexcept;
+
+        void logRequestInfo();
+
+        std::string _requestUuid;
+
+        static std::string _userAgent;
+        static Poco::Net::Context::Ptr _context;
+        static TimeoutHelper _timeoutHelper;
+
+        Poco::Net::HTTPResponse _httpResponse;
+        Poco::JSON::Object::Ptr _jsonRes{nullptr};
+        std::string _octetStreamRes;
+
+        std::unique_ptr<Poco::Net::HTTPSClientSession> _session;
+        std::recursive_mutex _mutexSession;
 
         std::unordered_map<std::string, std::string, StringHashFunction, std::equal_to<>> _rawHeaders;
 };
