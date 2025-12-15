@@ -98,6 +98,7 @@ set(server_SRCS
     comm/guijobs/signaluserupdatedjob.h comm/guijobs/signaluserupdatedjob.cpp
     comm/guijobs/signaluserremovedjob.h comm/guijobs/signaluserremovedjob.cpp
     comm/guijobs/signalaccountaddedjob.h comm/guijobs/signalaccountaddedjob.cpp
+    comm/guijobs/signalaccountupdatedjob.h comm/guijobs/signalaccountupdatedjob.cpp
     comm/guijobs/signalaccountremovedjob.h comm/guijobs/signalaccountremovedjob.cpp
     comm/guijobs/signaldriveaddedjob.h comm/guijobs/signaldriveaddedjob.cpp
     comm/guijobs/signaldriveremovedjob.h comm/guijobs/signaldriveremovedjob.cpp

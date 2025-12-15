@@ -100,6 +100,8 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testUtilityCancelLogToSupportJob);
         CPPUNIT_TEST(testUtilityGetLogEstimatedSizeJob);
         CPPUNIT_TEST(testUtilitySendLogToSupportJob);
+
+        CPPUNIT_TEST(testSignalAccountUpdatedJob);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -158,11 +160,14 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testUtilityGetLogEstimatedSizeJob();
         void testUtilitySendLogToSupportJob();
 
+        void testSignalAccountUpdatedJob();
 
     private:
         GuiJobFactory _guiJobFactory;
 
         void testGenericJob(const CommString &query, const CommString &answer, const CommString &cbkAnswer,
                             const std::function<void(std::shared_ptr<AbstractGuiJob>)> &processFct);
+
+        static void checkSignalCommonMethods(AbstractGuiJob &guiJob, SignalNum signalNum);
 };
 } // namespace KDC

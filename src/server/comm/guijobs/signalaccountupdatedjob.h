@@ -16,27 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "libcommon/utility/types.h"
+#pragma once
 
-#include "libcommon/comm.h"
 #include "server/comm/guijobs/abstractguijob.h"
+#include "libcommon/info/accountinfo.h"
 
-#include <Poco/JSON/Object.h>
+namespace KDC {
 
-namespace KDC::testcommhelpers {
-std::string toBase64(const CommString &input);
+class SignalAccountUpdatedJob : public AbstractGuiJob {
+    public:
+        explicit SignalAccountUpdatedJob(const AccountInfo &accountInfo);
 
-CommString beautifulString(const Poco::JSON::Object &obj);
-CommString stringifyQueryObj(const Poco::JSON::Object &obj);
-CommString stringifyAnswerObj(const Poco::JSON::Object &obj);
-CommString stringifyCbkAnswerObj(const Poco::JSON::Object &obj);
+    private:
+        // Output parameters
+        AccountInfo _accountInfo;
 
-struct SimpleAnswers {
-        Poco::JSON::Object answer;
-        Poco::JSON::Object answerWithNumAndType;
+        ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
+        ExitInfo serializeOutputParms() override;
+        ExitInfo process() override { return ExitCode::Ok; }
+
+        friend class TestGuiCommChannel;
 };
 
-Poco::JSON::Object createSimpleQuery(RequestNum requestEnum);
-SimpleAnswers createSimpleAnswers(RequestNum requestEnum);
-
-} // namespace KDC::testcommhelpers
+} // namespace KDC

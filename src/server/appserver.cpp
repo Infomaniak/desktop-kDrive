@@ -31,10 +31,11 @@
 #include "requests/offlinefilessizeestimator.h"
 #include "updater/updatemanager.h"
 #include "server/comm/guijobs/signalaccountaddedjob.h"
+#include "server/comm/guijobs/signalaccountupdatedjob.h"
+#include "server/comm/guijobs/signalaccountremovedjob.h"
 #include "server/comm/guijobs/signaluseraddedjob.h"
 #include "server/comm/guijobs/signaluserupdatedjob.h"
 #include "server/comm/guijobs/signaluserremovedjob.h"
-#include "server/comm/guijobs/signalaccountremovedjob.h"
 #include "server/comm/guijobs/signaldriveaddedjob.h"
 #include "server/comm/guijobs/signaldriveremovedjob.h"
 #include "server/comm/guijobs/signalsyncaddedjob.h"
@@ -4159,6 +4160,7 @@ void AppServer::sendAccountUpdated(const AccountInfo &accountInfo) {
     paramsStream << accountInfo;
 
     OldCommServer::instance()->sendSignal(SignalNum::ACCOUNT_UPDATED, params, id);
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalAccountUpdatedJob>(accountInfo));
 }
 
 void AppServer::sendAccountRemoved(int accountDbId) {

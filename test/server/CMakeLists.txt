@@ -79,6 +79,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.h ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserremovedjob.h ${server_srcs_path}/comm/guijobs/signaluserremovedjob.cpp
     ${server_srcs_path}/comm/guijobs/signalaccountaddedjob.h ${server_srcs_path}/comm/guijobs/signalaccountaddedjob.cpp
+    ${server_srcs_path}/comm/guijobs/signalaccountupdatedjob.h ${server_srcs_path}/comm/guijobs/signalaccountupdatedjob.cpp
     ${server_srcs_path}/comm/guijobs/signalaccountremovedjob.h ${server_srcs_path}/comm/guijobs/signalaccountremovedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaldriveaddedjob.h ${server_srcs_path}/comm/guijobs/signaldriveaddedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaldriveremovedjob.h ${server_srcs_path}/comm/guijobs/signaldriveremovedjob.cpp
@@ -173,7 +174,7 @@ set(testserver_SRCS
     comm/guicommchannel/testerrorjobs.cpp
     comm/guicommchannel/testexclapp.cpp comm/guicommchannel/testexcltempl.cpp 
     comm/guicommchannel/testparameters.cpp comm/guicommchannel/testutility.cpp
-    comm/testcommhelpers.h comm/testcommhelpers.cpp
+    comm/guicommchannel/testsignaljobs.cpp
 
     comm/guijobs/testabstractguijob.h comm/guijobs/testabstractguijob.cpp
 )
