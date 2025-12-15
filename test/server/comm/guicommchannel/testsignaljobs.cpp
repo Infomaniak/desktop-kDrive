@@ -18,6 +18,7 @@
 
 
 #include "comm/guijobs/signalaccountupdatedjob.h"
+#include "comm/guijobs/signaldriveupdatedjob.h"
 
 #include "testguicommchannel.h"
 #include "../testcommhelpers.h"
@@ -39,6 +40,19 @@ void TestGuiCommChannel::testSignalAccountUpdatedJob() {
     SignalAccountUpdatedJob job(accountInfo);
     checkSignalCommonMethods(job, SignalNum::ACCOUNT_UPDATED);
     CPPUNIT_ASSERT(accountInfo == job._accountInfo);
+}
+
+void TestGuiCommChannel::testSignalDriveUpdatedJob() {
+    DriveInfo driveInfo;
+    driveInfo.setDbId(1);
+    driveInfo.setId(2);
+    driveInfo.setAccountDbId(3);
+    driveInfo.setAdmin(true);
+    driveInfo.setAccessDenied(true);
+    driveInfo.setMaintenance(true);
+    SignalDriveUpdatedJob job(driveInfo);
+    checkSignalCommonMethods(job, SignalNum::DRIVE_UPDATED);
+    CPPUNIT_ASSERT(driveInfo == job._driveInfo);
 }
 
 } // namespace KDC

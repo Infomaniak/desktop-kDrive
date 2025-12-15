@@ -37,6 +37,7 @@
 #include "server/comm/guijobs/signaluserupdatedjob.h"
 #include "server/comm/guijobs/signaluserremovedjob.h"
 #include "server/comm/guijobs/signaldriveaddedjob.h"
+#include "server/comm/guijobs/signaldriveupdatedjob.h"
 #include "server/comm/guijobs/signaldriveremovedjob.h"
 #include "server/comm/guijobs/signalsyncaddedjob.h"
 #include "server/comm/guijobs/signalsyncremovedjob.h"
@@ -4193,6 +4194,7 @@ void AppServer::sendDriveUpdated(const DriveInfo &driveInfo) {
     paramsStream << driveInfo;
 
     OldCommServer::instance()->sendSignal(SignalNum::DRIVE_UPDATED, params, id);
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalDriveUpdatedJob>(driveInfo));
 }
 
 void AppServer::sendDriveQuotaUpdated(int driveDbId, qint64 total, qint64 used) {

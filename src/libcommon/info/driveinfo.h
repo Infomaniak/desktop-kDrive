@@ -29,7 +29,7 @@ namespace KDC {
 
 class DriveInfo {
     public:
-        DriveInfo();
+        DriveInfo() = default;
 
         void setDbId(const int driveDbId) { _dbId = driveDbId; }
         int dbId() const { return _dbId; }
@@ -56,6 +56,13 @@ class DriveInfo {
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
         void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
 
+        friend bool operator==(const DriveInfo &lhs, const DriveInfo &rhs) {
+            return lhs.dbId() == rhs.dbId() && lhs.id() == rhs.id() && lhs.accountDbId() == rhs.accountDbId() &&
+                   lhs.name() == rhs.name() && lhs.color() == rhs.color() && lhs.notifications() == rhs.notifications() &&
+                   lhs.admin() == rhs.admin() && lhs.maintenance() == rhs.maintenance() && lhs.locked() == rhs.locked() &&
+                   lhs.accessDenied() == rhs.accessDenied();
+        }
+
     protected:
         int _dbId{0};
         int _id{0};
@@ -76,5 +83,6 @@ QDataStream &operator<<(QDataStream &out, const DriveInfo &info);
 
 void operator>>(QDataStream &in, QList<DriveInfo> &list);
 QDataStream &operator<<(QDataStream &out, const QList<DriveInfo> &list);
+
 
 } // namespace KDC

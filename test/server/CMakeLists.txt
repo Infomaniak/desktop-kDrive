@@ -82,6 +82,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/signalaccountupdatedjob.h ${server_srcs_path}/comm/guijobs/signalaccountupdatedjob.cpp
     ${server_srcs_path}/comm/guijobs/signalaccountremovedjob.h ${server_srcs_path}/comm/guijobs/signalaccountremovedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaldriveaddedjob.h ${server_srcs_path}/comm/guijobs/signaldriveaddedjob.cpp
+    ${server_srcs_path}/comm/guijobs/signaldriveupdatedjob.h ${server_srcs_path}/comm/guijobs/signaldriveupdatedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaldriveremovedjob.h ${server_srcs_path}/comm/guijobs/signaldriveremovedjob.cpp
     ${server_srcs_path}/comm/guijobs/signalsyncaddedjob.h ${server_srcs_path}/comm/guijobs/signalsyncaddedjob.cpp
     ${server_srcs_path}/comm/guijobs/signalsyncremovedjob.h ${server_srcs_path}/comm/guijobs/signalsyncremovedjob.cpp
