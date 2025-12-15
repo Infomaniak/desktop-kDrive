@@ -231,17 +231,17 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
         }
         const auto appimageDir = CommonUtility::envVarValue("APPIMAGE");
         LOG_DEBUG(logger(), "APPIMAGE=" << appimageDir);
-        autoStartFile << L"[Desktop Entry]" << std::endl;
-        autoStartFile << L"Name=" << CommonUtility::s2ws(guiName) << std::endl;
-        autoStartFile << L"GenericName=File Synchronizer" << std::endl;
-        autoStartFile << L"Exec=" << L"'" << CommonUtility::s2ws(appimageDir) << L"'" << std::endl;
-        autoStartFile << L"Terminal=false" << std::endl;
-        autoStartFile << L"Icon=" << CommonUtility::s2ws(CommonUtility::toLower(appName)) << std::endl;
-        autoStartFile << L"Categories=Network" << std::endl;
-        autoStartFile << L"Type=Application" << std::endl;
-        autoStartFile << L"StartupNotify=false" << std::endl;
-        autoStartFile << L"X-GNOME-Autostart-enabled=true" << std::endl;
-        autoStartFile << L"X-GNOME-Autostart-Delay=10" << std::endl;
+        autoStartFile << "[Desktop Entry]" << std::endl;
+        autoStartFile << "Name=" << guiName << std::endl;
+        autoStartFile << "GenericName=File Synchronizer" << std::endl;
+        autoStartFile << "Exec=" << "'" << appimageDir << "'" << std::endl;
+        autoStartFile << "Terminal=false" << std::endl;
+        autoStartFile << "Icon=" << CommonUtility::toLower(appName) << std::endl;
+        autoStartFile << "Categories=Network" << std::endl;
+        autoStartFile << "Type=Application" << std::endl;
+        autoStartFile << "StartupNotify=false" << std::endl;
+        autoStartFile << "X-GNOME-Autostart-enabled=true" << std::endl;
+        autoStartFile << "X-GNOME-Autostart-Delay=10" << std::endl;
         autoStartFile.close();
     } else {
         IoError ioError = IoError::Unknown;
