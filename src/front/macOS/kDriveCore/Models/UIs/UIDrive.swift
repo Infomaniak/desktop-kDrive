@@ -19,7 +19,7 @@
 import Cocoa
 import Foundation
 
-public protocol UIDriveRepresentation: Sendable {
+public protocol UIDriveRepresentation: Sendable, Hashable {
     var id: Int { get }
     var name: String { get }
     var color: NSColor? { get }

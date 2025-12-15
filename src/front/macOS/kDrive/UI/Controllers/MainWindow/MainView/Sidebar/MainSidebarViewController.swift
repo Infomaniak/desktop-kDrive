@@ -17,6 +17,7 @@
  */
 
 import Cocoa
+import Combine
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
@@ -46,7 +47,11 @@ final class MainSidebarViewController: NSViewController {
 
     weak var delegate: NavigableSidebarViewControllerDelegate?
 
+    private let viewModel = MainSidebarViewModel()
     private let mainViewModel: MainViewModel
+
+    private var bindStore = Set<AnyCancellable>()
+
     private let items: [SidebarItem] = [.home, .activity, .storage, .openInFinder]
 
     private lazy var scrollView: NSScrollView = {
@@ -99,11 +104,20 @@ final class MainSidebarViewController: NSViewController {
     override func viewWillAppear() {
         super.viewWillAppear()
         outlineView.selectRowIndexes(IndexSet(integer: 0), byExtendingSelection: false)
+
+        viewModel.fetchAvailableSynchros()
     }
 
     override func viewDidLayout() {
         super.viewDidLayout()
         updateScrollViewElasticity()
+    }
+    
+    private func bindValues() {
+        viewModel.$availableSynchors
+            .receiveOnMain(store: &bindStore) { [weak self] synchros in
+                self?.updateSynchrosList()
+            }
     }
 
     private func setupView() {
@@ -111,7 +125,7 @@ final class MainSidebarViewController: NSViewController {
         headerView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(headerView)
 
-        setupPopUpButton()
+        view.addSubview(popUpButton)
         setupScrollAndOutlineView()
 
         NSLayoutConstraint.activate([
@@ -134,19 +148,6 @@ final class MainSidebarViewController: NSViewController {
             scrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
         ])
-    }
-
-    private func setupPopUpButton() {
-        let drives = [
-            UIDrive(dbId: 1, driveId: 1, name: "Infomaniak", color: .systemGreen),
-            UIDrive(dbId: 2, driveId: 2, name: "Tim Cook et ses amis", color: .systemBlue)
-        ]
-
-        for drive in drives {
-            popUpButton.addItem(withTitle: drive.name, image: KDriveResources.kdriveFoldersStacked.image, color: drive.color)
-        }
-
-        view.addSubview(popUpButton)
     }
 
     @objc func didSelectDrive() {
@@ -172,6 +173,13 @@ final class MainSidebarViewController: NSViewController {
 
     private func openSyncInFolder() {
         mainViewModel.openCurrentSyncInFinder()
+    }
+    
+    private func updateSynchrosList() {
+        popUpButton.removeAllItems()
+        for synchro in viewModel.synchros {
+            popUpButton.addItem(withTitle: synchro.localPath)
+        }
     }
 }
 
