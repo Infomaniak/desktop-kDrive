@@ -27,9 +27,11 @@
 #if defined(KD_MACOS)
 #include <sys/statvfs.h>
 #include <sys/mount.h>
+#include <uuid/uuid.h>
 #elif defined(KD_LINUX)
 #include <sys/statvfs.h>
 #include <sys/statfs.h>
+#include <uuid/uuid.h>
 #elif defined(KD_WINDOWS)
 #include <fileapi.h>
 #endif
@@ -141,6 +143,16 @@ std::string CommonUtility::generateRandomStringPKCE(const int length /*= 10*/) {
 
     return generateRandomString(charArray, distrib, length);
 }
+
+#if defined(KD_MACOS) || defined(KD_LINUX)
+std::string CommonUtility::generateUUID() {
+    uuid_t uuid;
+    char uuidStr[37]; // 36 characters + '\0'
+    uuid_generate(uuid);
+    uuid_unparse(uuid, uuidStr);
+    return uuidStr;
+}
+#endif
 
 void CommonUtility::crash() {
     volatile int *a = (int *) (NULL);
