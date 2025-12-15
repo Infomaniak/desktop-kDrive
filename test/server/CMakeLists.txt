@@ -61,12 +61,20 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/nodesubfolders2job.h ${server_srcs_path}/comm/guijobs/nodesubfolders2job.cpp
     ${server_srcs_path}/comm/guijobs/nodefoldersizejob.h ${server_srcs_path}/comm/guijobs/nodefoldersizejob.cpp
     ${server_srcs_path}/comm/guijobs/nodecreatemissingfoldersjob.h ${server_srcs_path}/comm/guijobs/nodecreatemissingfoldersjob.cpp
-    ${server_srcs_path}/comm/guijobs/utilityactivateloadinfojob.h ${server_srcs_path}/comm/guijobs/utilityactivateloadinfojob.cpp
+    ${server_srcs_path}/comm/guijobs/errorinfolistjob.h ${server_srcs_path}/comm/guijobs/errorinfolistjob.cpp
+    ${server_srcs_path}/comm/guijobs/excltemplgetexcludedjob.h ${server_srcs_path}/comm/guijobs/excltemplgetexcludedjob.cpp
+    ${server_srcs_path}/comm/guijobs/excltemplgetlistjob.h ${server_srcs_path}/comm/guijobs/excltemplgetlistjob.cpp
+    ${server_srcs_path}/comm/guijobs/excltemplsetlistjob.h ${server_srcs_path}/comm/guijobs/excltemplsetlistjob.cpp
+    ${server_srcs_path}/comm/guijobs/excltemplpropagatechangejob.h ${server_srcs_path}/comm/guijobs/excltemplpropagatechangejob.cpp
     ${server_srcs_path}/comm/guijobs/parametersinfojob.h ${server_srcs_path}/comm/guijobs/parametersinfojob.cpp
     ${server_srcs_path}/comm/guijobs/parametersupdatejob.h ${server_srcs_path}/comm/guijobs/parametersupdatejob.cpp
-    ${server_srcs_path}/comm/guijobs/blacklistednodelistjob.h ${server_srcs_path}/comm/guijobs/blacklistednodelistjob.cpp
-    ${server_srcs_path}/comm/guijobs/blacklistednodesetlistjob.h ${server_srcs_path}/comm/guijobs/blacklistednodesetlistjob.cpp
     ${server_srcs_path}/comm/guijobs/errorinfolistjob.h ${server_srcs_path}/comm/guijobs/errorinfolistjob.cpp
+    ${server_srcs_path}/comm/guijobs/utilityactivateloadinfojob.h ${server_srcs_path}/comm/guijobs/utilityactivateloadinfojob.cpp
+    ${server_srcs_path}/comm/guijobs/utilitysetappstatejob.h ${server_srcs_path}/comm/guijobs/utilitysetappstatejob.cpp
+    ${server_srcs_path}/comm/guijobs/utilitygetappstatejob.h ${server_srcs_path}/comm/guijobs/utilitygetappstatejob.cpp
+    ${server_srcs_path}/comm/guijobs/utilitysendlogtosupportjob.h ${server_srcs_path}/comm/guijobs/utilitysendlogtosupportjob.cpp
+    ${server_srcs_path}/comm/guijobs/utilitycancellogtosupportjob.h ${server_srcs_path}/comm/guijobs/utilitycancellogtosupportjob.cpp
+    ${server_srcs_path}/comm/guijobs/utilitygetlogestimatedsizejob.h ${server_srcs_path}/comm/guijobs/utilitygetlogestimatedsizejob.cpp
     ${server_srcs_path}/comm/guijobs/signaluseraddedjob.h ${server_srcs_path}/comm/guijobs/signaluseraddedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.h ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserremovedjob.h ${server_srcs_path}/comm/guijobs/signaluserremovedjob.cpp
@@ -161,11 +169,13 @@ set(testserver_SRCS
     requests/testserverrequests.h requests/testserverrequests.cpp
     appserver/testappserver.h appserver/testappserver.cpp
     comm/testsocketcomm.h comm/testsocketcomm.cpp
+
+    comm/testcommhelpers.h comm/testcommhelpers.cpp
     comm/guicommchannel/testguicommchannel.h comm/guicommchannel/testguicommchannel.cpp
     comm/guicommchannel/testsyncjobs.cpp comm/guicommchannel/testnodejobs.cpp
-    comm/guicommchannel/testexclapp.cpp comm/guicommchannel/testparameters.cpp
     comm/guicommchannel/testerrorjobs.cpp
-    comm/guicommchannel/testutility.cpp
+    comm/guicommchannel/testexclapp.cpp comm/guicommchannel/testexcltempl.cpp 
+    comm/guicommchannel/testparameters.cpp comm/guicommchannel/testutility.cpp
     comm/testcommhelpers.h comm/testcommhelpers.cpp
 
     comm/guijobs/testabstractguijob.h comm/guijobs/testabstractguijob.cpp

@@ -80,8 +80,13 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testNodeFolderSizeJob);
          */
         CPPUNIT_TEST(testNodeSubFolders2Job);
-        CPPUNIT_TEST(testErrorInfoListJob);
         CPPUNIT_TEST(testNodeCreateMissingFoldersJob);
+        CPPUNIT_TEST(testErrorInfoListJob);
+        CPPUNIT_TEST(testExclTemplGetExcludedJob);
+        CPPUNIT_TEST(testExclTemplGetListJob);
+        CPPUNIT_TEST(testExclTemplSetListJob);
+        CPPUNIT_TEST(testExclTemplPropagateChangeJob);
+
 #if defined(KD_MACOS)
         CPPUNIT_TEST(testExclAppGetListJob);
         CPPUNIT_TEST(testExclAppSetListJob);
@@ -90,6 +95,11 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testParametersInfoJob);
         CPPUNIT_TEST(testParametersUpdateJob);
         CPPUNIT_TEST(testUtilityActivateLoadInfoJob);
+        CPPUNIT_TEST(testUtilityGetAppStateJob);
+        CPPUNIT_TEST(testUtilitySetAppStateJob);
+        CPPUNIT_TEST(testUtilityCancelLogToSupportJob);
+        CPPUNIT_TEST(testUtilityGetLogEstimatedSizeJob);
+        CPPUNIT_TEST(testUtilitySendLogToSupportJob);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -127,9 +137,13 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testNodeFolderSizeJob();
         void testSyncNodeListJob();
         void testSyncNodeSetListJob();
-        void testErrorInfoListJob();
         void testNodeSubFolders2Job();
         void testNodeCreateMissingFoldersJob();
+        void testErrorInfoListJob();
+        void testExclTemplGetExcludedJob();
+        void testExclTemplGetListJob();
+        void testExclTemplSetListJob();
+        void testExclTemplPropagateChangeJob();
 #if defined(KD_MACOS)
         void testExclAppGetListJob();
         void testExclAppSetListJob();
@@ -138,6 +152,12 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testParametersInfoJob();
         void testParametersUpdateJob();
         void testUtilityActivateLoadInfoJob();
+        void testUtilityGetAppStateJob();
+        void testUtilitySetAppStateJob();
+        void testUtilityCancelLogToSupportJob();
+        void testUtilityGetLogEstimatedSizeJob();
+        void testUtilitySendLogToSupportJob();
+
 
     private:
         GuiJobFactory _guiJobFactory;

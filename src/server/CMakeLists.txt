@@ -74,18 +74,26 @@ set(server_SRCS
     comm/guijobs/syncgetprivatelinkurljob.h comm/guijobs/syncgetprivatelinkurljob.cpp
     comm/guijobs/syncsetsupportsvirtualfilesjob.h comm/guijobs/syncsetsupportsvirtualfilesjob.cpp
     comm/guijobs/syncsetrootpinstatejob.h comm/guijobs/syncsetrootpinstatejob.cpp
+    comm/guijobs/blacklistednodelistjob.h comm/guijobs/blacklistednodelistjob.cpp
+    comm/guijobs/blacklistednodesetlistjob.h comm/guijobs/blacklistednodesetlistjob.cpp
     comm/guijobs/nodeinfojob.h comm/guijobs/nodeinfojob.cpp
     comm/guijobs/nodesubfoldersjob.h comm/guijobs/nodesubfoldersjob.cpp
     comm/guijobs/nodesubfolders2job.h comm/guijobs/nodesubfolders2job.cpp
     comm/guijobs/nodefoldersizejob.h comm/guijobs/nodefoldersizejob.cpp
-    comm/guijobs/nodeinfojob.h comm/guijobs/nodeinfojob.cpp
-    comm/guijobs/errorinfolistjob.h comm/guijobs/errorinfolistjob.cpp
     comm/guijobs/nodecreatemissingfoldersjob.h comm/guijobs/nodecreatemissingfoldersjob.cpp
+    comm/guijobs/errorinfolistjob.h comm/guijobs/errorinfolistjob.cpp
+    comm/guijobs/excltemplgetexcludedjob.h comm/guijobs/excltemplgetexcludedjob.cpp
+    comm/guijobs/excltemplgetlistjob.h comm/guijobs/excltemplgetlistjob.cpp
+    comm/guijobs/excltemplsetlistjob.h comm/guijobs/excltemplsetlistjob.cpp
+    comm/guijobs/excltemplpropagatechangejob.h comm/guijobs/excltemplpropagatechangejob.cpp
     comm/guijobs/parametersinfojob.h comm/guijobs/parametersinfojob.cpp
     comm/guijobs/parametersupdatejob.h comm/guijobs/parametersupdatejob.cpp
-    comm/guijobs/blacklistednodelistjob.h comm/guijobs/blacklistednodelistjob.cpp
-    comm/guijobs/blacklistednodesetlistjob.h comm/guijobs/blacklistednodesetlistjob.cpp
     comm/guijobs/utilityactivateloadinfojob.h comm/guijobs/utilityactivateloadinfojob.cpp
+    comm/guijobs/utilitysetappstatejob.h comm/guijobs/utilitysetappstatejob.cpp
+    comm/guijobs/utilitygetappstatejob.h comm/guijobs/utilitygetappstatejob.cpp
+    comm/guijobs/utilitysendlogtosupportjob.h comm/guijobs/utilitysendlogtosupportjob.cpp
+    comm/guijobs/utilitycancellogtosupportjob.h comm/guijobs/utilitycancellogtosupportjob.cpp
+    comm/guijobs/utilitygetlogestimatedsizejob.h comm/guijobs/utilitygetlogestimatedsizejob.cpp
     comm/guijobs/signaluseraddedjob.h comm/guijobs/signaluseraddedjob.cpp
     comm/guijobs/signaluserupdatedjob.h comm/guijobs/signaluserupdatedjob.cpp
     comm/guijobs/signaluserremovedjob.h comm/guijobs/signaluserremovedjob.cpp
@@ -222,7 +230,9 @@ if(NOT BUILD_KDRIVE_OSX_BUNDLE)
     add_executable(${APPLICATION_EXECUTABLE} WIN32 mainserver.cpp ${final_src})
 else()
     # we must add MACOSX_BUNDLE only if building a bundle
-    add_executable(${APPLICATION_EXECUTABLE} WIN32 MACOSX_BUNDLE mainserver.cpp ${final_src})
+    add_executable(${APPLICATION_EXECUTABLE} WIN32 MACOSX_BUNDLE mainserver.cpp ${final_src}
+        comm/guijobs/utilitygetappstatejob.h
+        comm/guijobs/utilitygetappstatejob.cpp)
 
     get_target_property(_qmake Qt6::qmake LOCATION)
     execute_process(COMMAND ${_qmake} -query QT_INSTALL_TRANSLATIONS
