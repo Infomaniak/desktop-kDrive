@@ -40,7 +40,7 @@ public protocol CoherentCache: Sendable {
 
     // MARK: - Drive
 
-    func getAllDrives() -> [Drive]
+    func getAllDrives() async -> [Drive]
     func getDrive(driveDbId: Int32, accountDbId: Int32, userDbId: Int32) async -> Drive?
     func getDrive(driveDbId: Int32) async -> Drive?
     func addDrive(_ drive: Drive, accountDbId: Int32) async throws

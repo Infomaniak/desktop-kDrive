@@ -28,62 +28,43 @@ final class MainViewModel {
     @LazyInjectService private var cacheObservable: CoherentCacheObservable
 
     @Published private(set) var currentUser: UIUser?
-    private var userSubscription: AnyCancellable?
-
-    @Published private(set) var currentDrive: UIDrive?
-    private var driveSubscription: AnyCancellable?
-
     @Published private(set) var currentSynchro: UISynchro?
-    private var synchroSubscription: AnyCancellable?
 
-    init() {}
+    @Published private(set) var availableUsers = [Int: UIUser]()
+
+    private var bindStore = Set<AnyCancellable>()
+
+    init() {
+        cacheObservable.usersPublisher
+            .receiveOnMain(store: &bindStore) { [weak self] indexedUser in
+                self?.handleUpdatedUsers(indexedUser)
+            }
+    }
+
+    func fetchAvailableDrives() {
+        Task {
+            _ = try await UserJobs().userInfoList()
+            _ = try await AccountJobs().accountInfoList()
+            _ = try await DriveJobs().driveInfoList()
+            _ = try await SyncJobs().availableSync()
+        }
+    }
 
     func selectNewSynchro(_ synchro: UISynchro) {
-        subscribeToSynchro(synchro)
-
-        if currentDrive == nil || currentDrive?.dbId != synchro.driveDbId {
-            subscribeToDriveAndUser(driveDbId: synchro.driveDbId)
+        Task {
+            currentSynchro = synchro
         }
     }
 
     func openCurrentSyncInFinder() {
         guard let currentSynchro else { return }
-
-        let synchroURL = URL(fileURLWithPath: currentSynchro.localPath)
-        NSWorkspace.shared.open(synchroURL)
+        NSWorkspace.shared.open(currentSynchro.localPath)
     }
 
-    private func subscribeToSynchro(_ synchro: UISynchro) {
-        synchroSubscription?.cancel()
-        synchroSubscription = cacheObservable.usersPublisher.synchroPublisher(dbId: Int32(synchro.dbId))
-            .receive(on: RunLoop.main)
-            .sink { [weak self] synchro in
-                guard let synchro else { return }
-                self?.currentSynchro = UISynchro(synchro: synchro)
-            }
-    }
-
-    private func subscribeToDriveAndUser(driveDbId: Int) {
-        Task {
-            guard let drive = await coherentCache.getDrive(driveDbId: Int32(driveDbId)) else {
-                return
-            }
-
-            driveSubscription?.cancel()
-            driveSubscription = cacheObservable.usersPublisher.drivePublisher(driveDbId: drive.driveDbId)
-                .receive(on: RunLoop.main)
-                .sink { [weak self] drive in
-                    guard let drive else { return }
-                    self?.currentDrive = UIDrive(drive: drive)
-                }
-
-            userSubscription?.cancel()
-            userSubscription = cacheObservable.usersPublisher.userPublisher(userDbId: drive.userDbId)
-                .receive(on: RunLoop.main)
-                .sink { [weak self] user in
-                    guard let user else { return }
-                    self?.currentUser = UIUser(user: user)
-                }
-        }
+    private func handleUpdatedUsers(_ users: IndexedUsers) {
+        availableUsers = Dictionary(uniqueKeysWithValues: users.map { userDbId, user in
+            (Int(userDbId), UIUser(user: user))
+        })
+        print("Did Change")
     }
 }

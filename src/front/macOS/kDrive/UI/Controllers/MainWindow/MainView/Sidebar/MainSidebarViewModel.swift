@@ -24,19 +24,4 @@ import kDriveCore
 @MainActor
 final class MainSidebarViewModel {
     @LazyInjectService private var coherentCache: CoherentCache
-
-    @Published private(set) var availableSynchors = [UIDrive: [UISynchro]]()
-
-    func fetchAvailableSynchros() {
-        Task {
-            let allDrives = coherentCache.getAllDrives()
-
-            var synchrosByDrive = [UIDrive: [UISynchro]]()
-            for drive in allDrives {
-                let uiDrive = UIDrive(drive: drive)
-                synchrosByDrive[uiDrive] = drive.synchros.map { _, synchro in UISynchro(synchro: synchro) }
-            }
-            availableSynchors = synchrosByDrive
-        }
-    }
 }

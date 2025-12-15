@@ -38,6 +38,11 @@ final class MainViewController: IKSplitViewController {
         splitView.setPosition(200, ofDividerAt: 0)
     }
 
+    override func viewWillAppear() {
+        super.viewWillAppear()
+        viewModel.fetchAvailableDrives()
+    }
+
     private func configureWindowAppearance() {
         guard let window = view.window else { return }
 

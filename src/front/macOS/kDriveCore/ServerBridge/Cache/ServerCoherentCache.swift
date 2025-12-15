@@ -129,7 +129,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
     }
 
     public func updateAccount(_ account: Account) throws {
-        guard var user = users.values.first(where: { $0.accounts.keys.contains(account.dbId) }) else {
+        guard var user = users.values.first(where: { $0.dbId == account.userDbId }) else {
             throw CacheError.accountNotFound(account.dbId)
         }
 
@@ -258,6 +258,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
     // MARK: - Observation
 
     private func notifyUpdate() {
+        print("DEBUG - notify")
         usersSubject.send(users)
     }
 

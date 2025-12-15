@@ -18,16 +18,16 @@
 
 import Foundation
 
-public struct UISynchro: Sendable {
+public struct UISynchro: Sendable, Equatable, Hashable {
     public var id: Int {
         dbId
     }
 
     public let dbId: Int
     public let driveDbId: Int
-    public let localPath: String
+    public let localPath: URL
 
-    public init(dbId: Int, driveDbId: Int, localPath: String) {
+    public init(dbId: Int, driveDbId: Int, localPath: URL) {
         self.dbId = dbId
         self.driveDbId = driveDbId
         self.localPath = localPath
@@ -39,7 +39,7 @@ public extension UISynchro {
         self.init(
             dbId: Int(synchro.dbId),
             driveDbId: Int(synchro.driveDbId),
-            localPath: synchro.localPath
+            localPath: URL(fileURLWithPath: synchro.localPath)
         )
     }
 }

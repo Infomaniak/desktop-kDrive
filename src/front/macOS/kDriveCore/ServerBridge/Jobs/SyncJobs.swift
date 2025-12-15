@@ -75,9 +75,7 @@ public struct SyncJobs: Sendable {
         try decodedMessage.validate()
 
         let syncList = decodedMessage.body.syncInfoList
-
-        // TODO: new method to bump cache from SyncInfo
-        // await syncList.asyncForEach { await coherentCache.updateSynchro($0.asSynchro, driveDbId: <#Int32#>) }
+        await syncList.asyncForEach { try? await coherentCache.updateSynchro($0.asSynchro) }
 
         return syncList
     }
