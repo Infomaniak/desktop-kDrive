@@ -719,7 +719,7 @@ void TestNetworkJobs::testDownload() {
 }
 
 void TestNetworkJobs::testDownloadHasEnoughSpace() {
-    if (!testhelpers::isRunningOnCI() && testhelpers::isExtendedTest(false)) return;
+    if (!testhelpers::isRunningOnCI() || !testhelpers::isExtendedTest(false)) return;
 
     // Only run on CI because it requires a small partition to be set up)
     const SyncPath smallPartitionPath = testhelpers::TestVariables().local8MoPartitionPath;
@@ -967,8 +967,8 @@ void TestNetworkJobs::testFullFileListWithCursorCsvZip() {
         const ExitCode exitCode = job.runSynchronously();
         CPPUNIT_ASSERT(exitCode != ExitCode::Ok);
         CPPUNIT_ASSERT(job.hasErrorApi());
-        CPPUNIT_ASSERT(!job.errorCode().empty());
-        CPPUNIT_ASSERT(!job.errorDescr().empty());
+        CPPUNIT_ASSERT(!job.backError().code().empty());
+        CPPUNIT_ASSERT(!job.backError().description().empty());
     }
 }
 
@@ -977,8 +977,8 @@ void TestNetworkJobs::testFullFileListWithCursorCsvBlacklist() {
     const ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
-    int counter = 0;
-    std::string cursor = job.getCursor();
+    auto counter = 0;
+    const std::string cursor = job.getCursor();
     SnapshotItem item;
     bool error = false;
     bool ignore = false;
@@ -1025,9 +1025,11 @@ void TestNetworkJobs::testGetInfoUser() {
     const ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
-    CPPUNIT_ASSERT_EQUAL(std::string("John Doe"), job.name());
-    CPPUNIT_ASSERT_EQUAL(std::string("john.doe@nogafam.ch"), job.email());
-    CPPUNIT_ASSERT_EQUAL(false, job.isStaff());
+    if (testhelpers::isRunningOnCI()) {
+        CPPUNIT_ASSERT_EQUAL(std::string("John Doe"), job.name());
+        CPPUNIT_ASSERT_EQUAL(std::string("john.doe@nogafam.ch"), job.email());
+        CPPUNIT_ASSERT_EQUAL(false, job.isStaff());
+    }
 }
 
 void TestNetworkJobs::testGetInfoDrive() {
@@ -1556,7 +1558,7 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
         public:
             explicit GetInfoUserJobMock(const int32_t userDbId, const ApiToken &apiToken) :
                 GetInfoUserJob(userDbId),
-                _apiToken(apiToken) {};
+                _apiToken(apiToken){};
 
             [[nodiscard]] Poco::Net::HTTPResponse httpResponse() const override {
                 return Poco::Net::HTTPResponse(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);

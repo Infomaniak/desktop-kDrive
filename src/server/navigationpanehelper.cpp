@@ -95,9 +95,6 @@ void NavigationPaneHelper::updateCloudStorageRegistry() {
 
     for (KDC::Sync &sync: syncList) {
         if (sync.virtualFileMode() != KDC::VirtualFileMode::Win) {
-            if (sync.navigationPaneClsid().empty()) {
-                sync.setNavigationPaneClsid(QUuid::createUuid().toString().toStdString());
-            }
             Utility::addLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()), sync.localPath(),
                                            _showInExplorerNavigationPane);
         }

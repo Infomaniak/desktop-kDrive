@@ -1486,21 +1486,6 @@ KDC--ActionWidget#displayInfosWidget QLabel#textLabel
     font-size: 13px;
 }
 
-KDC--ActionWidget#displayBigFoldersWarningWidget
-{
-    qproperty-background_color: #FFFFFF;
-    qproperty-left_icon_color: #FF8500;
-    qproperty-action_icon_color: #666666;
-}
-
-KDC--ActionWidget#displayBigFoldersWarningWidget QLabel#textLabel
-{
-    color: #333333;
-    font-family: "Suisse Int'l";
-    font-weight: $$medium_font$$;
-    font-size: 12px;
-}
-
 KDC--ActionWidget#sendLogsWidget
 {
     qproperty-background_color: #FFFFFF;
@@ -2072,45 +2057,6 @@ KDC--AddDriveConfirmationWidget QProgressBar::chunk
     background-color: #0098FF;
     border: 0px;
     border-radius: 2px;
-}
-
-/*************************/
-/* KDC--BigFoldersDialog */
-/*************************/
-
-KDC--BigFoldersDialog
-{
-    min-width: 625px;
-    max-width: 625px;
-    min-height: 295px;
-    max-height: 425px;
-    qproperty-folder_icon_color: #9F9F9F;
-    qproperty-folder_icon_size: 18px;
-}
-
-KDC--BigFoldersDialog QWidget#undecidedListWidget
-{
-    background-color: transparent;
-}
-
-KDC--BigFoldersDialog QScrollArea
-{
-    background-color: #F4F6FD;
-    border: 0px;
-    border-radius: 10px;
-}
-
-KDC--BigFoldersDialog QScrollBar:vertical
-{
-    margin: 10px 0px 10px 0px;
-}
-
-KDC--BigFoldersDialog QLabel#folderPathLabel
-{
-    color: #0098FF;
-    font-family: "Suisse Int'l";
-    font-weight: $$normal_font$$;
-    font-size: 12px;
 }
 
 /***************************/

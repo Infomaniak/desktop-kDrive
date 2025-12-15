@@ -56,7 +56,6 @@ class ParametersDialog : public CustomDialog {
     signals:
         void addDrive();
         void setStyle(bool darkTheme);
-        void newBigFolder(int syncDbId, const QString &path);
         void removeDrive(int driveDbId);
         void removeSync(int syncDbId);
         void executeSyncAction(ActionType type, ActionTarget target, int dbId);

@@ -69,9 +69,9 @@ ExitInfo AbstractGuiJob::runJob() {
             LOG_WARN(_logger, "Error in process for job=" << jobId() << " : " << exitInfo);
         }
     }
-
-    if (exitInfo = serializeOutputParms(); !exitInfo) {
-        LOG_WARN(_logger, "Error in serializeOutputParms for job=" << jobId() << " : " << exitInfo);
+    auto serializeExitInfo = ExitInfo(ExitCode::Ok);
+    if (serializeExitInfo = serializeOutputParms(); !serializeExitInfo) {
+        LOG_WARN(_logger, "Error in serializeOutputParms for job=" << jobId() << " : " << serializeExitInfo);
     }
 
     if (_type == GuiJobType::Signal && !exitInfo) return exitInfo;

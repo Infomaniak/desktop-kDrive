@@ -175,6 +175,7 @@ struct SyncNameHashFunction {
 using NodeSet = std::unordered_set<NodeId, StringHashFunction, std::equal_to<>>;
 using SyncNameSet = std::unordered_set<SyncName, SyncNameHashFunction, std::equal_to<>>;
 using StrSet = std::unordered_set<std::string, StringHashFunction, std::equal_to<>>;
+using AppTable = std::unordered_map<std::string, std::string, StringHashFunction, std::equal_to<>>;
 
 //
 // Enums
@@ -282,6 +283,7 @@ enum class NodeStatus {
     PartiallyProcessed,
     Processed,
     ConflictOpGenerated,
+    ToDelete,
     EnumEnd
 };
 
@@ -343,13 +345,10 @@ enum class SignalType {
 
 enum class SyncNodeType {
     Undefined = 0,
-    BlackList, // Nodes that are excluded from sync
-    WhiteList, // Explicitly whitelisted nodes (e.g. folder size above limit but user want to sync anyway). Note: all
-               // nodes in none of those lists are implicitly whitelisted
-    UndecidedList, // Considered as blacklisted until user action
-    TmpRemoteBlacklist, // Blacklisted temporarily
-    TmpLocalBlacklist, // Blacklisted temporarily
-    EnumEnd
+    BlackList = 1, // Nodes that are excluded from sync
+    TmpRemoteBlacklist = 4, // Blacklisted temporarily
+    TmpLocalBlacklist = 5, // Blacklisted temporarily
+    EnumEnd = 6
 };
 
 enum class SyncStatus {

@@ -93,8 +93,8 @@ final class MainSidebarViewController: NSViewController {
         popUpButton.action = #selector(didSelectDrive)
 
         let drives = [
-            UIDrive(id: 1, name: "Infomaniak", color: .systemGreen),
-            UIDrive(id: 2, name: "Tim Cook et ses amis", color: .systemBlue)
+            UIDrive(dbId: 1, driveId: 1, name: "Infomaniak", color: .systemGreen),
+            UIDrive(dbId: 2, driveId: 2, name: "Tim Cook et ses amis", color: .systemBlue)
         ]
 
         for drive in drives {

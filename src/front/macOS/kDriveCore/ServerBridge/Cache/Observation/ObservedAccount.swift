@@ -20,39 +20,110 @@ import Combine
 import Foundation
 import InfomaniakDI
 
+@MainActor
 @propertyWrapper
 public final class ObservedAccount: ObservableObject {
     @Published public private(set) var wrappedValue: Account?
-
     private var cancellable: AnyCancellable?
 
-    public init(userDbId: Int32, accountDbId: Int32, cacheObservation: CoherentCacheObservation? = nil) {
-        let cacheObservation = cacheObservation ?? InjectService<CoherentCacheObservation>().wrappedValue
-        let accountsPublisher = cacheObservation.accountsPublisher
+    public init(
+        userDbId: Int32,
+        accountDbId: Int32,
+        cacheObservation: CoherentCacheObservable? = nil
+    ) {
+        let cacheObservation =
+            cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
 
-        cancellable = accountsPublisher
-            .accountPublisher(forUserDbId: userDbId, accountDbId: accountDbId)
+        cancellable = cacheObservation.usersPublisher
+            .accountPublisher(userDbId: userDbId, accountDbId: accountDbId)
             .receive(on: DispatchQueue.main)
-            .assign(to: \.wrappedValue, onWeak: self)
+            .sink { [weak self] account in
+                self?.wrappedValue = account
+            }
     }
 
-    deinit {
-        cancellable?.cancel()
+    public init(
+        accountDbId: Int32,
+        cacheObservation: CoherentCacheObservable? = nil
+    ) {
+        let cacheObservation =
+            cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
+
+        cancellable = cacheObservation.usersPublisher
+            .accountPublisher(accountDbId: accountDbId)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] account in
+                self?.wrappedValue = account
+            }
     }
+
+    deinit { cancellable?.cancel() }
 
     public var projectedValue: ObservedAccount { self }
 }
 
-extension AnyPublisher where Output == UserAccounts, Failure == Never {
-    func accountPublisher(forUserDbId userDbId: Int32, accountDbId: Int32) -> AnyPublisher<Account?, Never> {
-        map { userAccounts in
-            let receivedUserDbId = userAccounts.0
-            let receivedAccounts = userAccounts.1
-            guard receivedUserDbId == userDbId else { return nil }
-            guard let account = receivedAccounts[accountDbId] else { return nil }
-            return account
+public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
+    func accountEventPublisher(
+        userDbId: Int32,
+        accountDbId: Int32
+    ) -> AnyPublisher<ObservationEvent<Account>, Never> {
+        map { usersDict -> Account? in
+            usersDict[userDbId]?.accounts[accountDbId]
         }
-        .removeDuplicates { $0 == $1 }
+        .map { account in
+            account.map(ObservationEvent.update) ?? .removed
+        }
+        .removeDuplicates()
         .eraseToAnyPublisher()
+    }
+
+    func accountEventPublisher(
+        accountDbId: Int32
+    ) -> AnyPublisher<ObservationEvent<Account>, Never> {
+        map { usersDict -> Account? in
+            for user in usersDict.values {
+                if let account = user.accounts[accountDbId] {
+                    return account
+                }
+            }
+            return nil
+        }
+        .map { account in
+            account.map(ObservationEvent.update) ?? .removed
+        }
+        .removeDuplicates()
+        .eraseToAnyPublisher()
+    }
+
+    func accountPublisher(
+        userDbId: Int32,
+        accountDbId: Int32
+    ) -> AnyPublisher<Account?, Never> {
+        accountEventPublisher(
+            userDbId: userDbId,
+            accountDbId: accountDbId
+        )
+        .map { event -> Account? in
+            switch event {
+            case let .update(account): return account
+            case .removed: return nil
+            }
+        }
+        .removeDuplicates()
+        .eraseToAnyPublisher()
+    }
+
+    func accountPublisher(
+        accountDbId: Int32
+    ) -> AnyPublisher<Account?, Never> {
+        accountEventPublisher(accountDbId: accountDbId)
+            .map { event -> Account? in
+                switch event {
+                case let .update(account): return account
+                case .removed: return nil
+                }
+            }
+            .removeDuplicates()
+            .eraseToAnyPublisher()
     }
 }

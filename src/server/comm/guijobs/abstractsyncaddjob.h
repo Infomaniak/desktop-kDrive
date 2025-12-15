@@ -40,7 +40,6 @@ class AbstractSyncAddJob : public AbstractGuiJob {
         auto serverFolderNodeId() const { return _serverFolderNodeId; }
         auto liteSync() const { return _liteSync; }
         auto blackList() const { return _blackList; }
-        auto whiteList() const { return _whiteList; }
 
         auto &syncInfo() { return _syncInfo; }
 
@@ -51,7 +50,6 @@ class AbstractSyncAddJob : public AbstractGuiJob {
         NodeId _serverFolderNodeId;
         bool _liteSync = false;
         std::vector<NodeId> _blackList;
-        std::vector<NodeId> _whiteList;
 
         // Output parameters
         SyncInfo _syncInfo;

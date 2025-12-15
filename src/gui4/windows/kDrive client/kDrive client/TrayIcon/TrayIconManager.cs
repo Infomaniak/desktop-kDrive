@@ -17,16 +17,17 @@
  */
 
 using H.NotifyIcon;
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using System;
 using System.Drawing;
 using System.IO;
-using Windows.System;
-using Microsoft.UI.Windowing;
-using Infomaniak.kDrive.OnBoarding;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.TrayIcon
 {
@@ -66,7 +67,7 @@ namespace Infomaniak.kDrive.TrayIcon
                 _trayIcon.ForceCreate();
 
                 // Set initial icon
-                SetIcon_ok();
+                SetIcon_neutral();
             }
             else
             {
@@ -112,7 +113,7 @@ namespace Infomaniak.kDrive.TrayIcon
             SetIcon("state-neutral.ico");
         }
 
-        private void ShowWindowCommand_ExecuteRequested(object? sender, ExecuteRequestedEventArgs args)
+        private async void ShowWindowCommand_ExecuteRequested(object? sender, ExecuteRequestedEventArgs args)
         {
             // Bring to front
             Logger.Log(Logger.Level.Info, "ShowWindowCommand executed - showing and activating main window");
@@ -127,8 +128,9 @@ namespace Infomaniak.kDrive.TrayIcon
 
             (Application.Current as App)?.CurrentWindow?.Show();
             (Application.Current as App)?.CurrentWindow?.Activate();
-            SetIcon_ok();
+            await App.ServiceProvider.GetRequiredService<IServerCommService>().ActivateLoadInfo(CancellationToken.None);
 
+            SetIcon_neutral();
         }
 
         private void ExitApplicationCommand_ExecuteRequested(object? sender, ExecuteRequestedEventArgs args)
@@ -136,14 +138,7 @@ namespace Infomaniak.kDrive.TrayIcon
             Logger.Log(Logger.Level.Info, "ExitApplicationCommand executed - exiting application");
             _handleClosedEvents = false;
             _trayIcon?.Dispose();
-
-            (Application.Current as App)?.CurrentWindow?.Close();
-
-            // If window was never created, exit directly
-            if ((Application.Current as App)?.CurrentWindow == null)
-            {
-                Environment.Exit(0);
-            }
+            App.ExitApplicationAndShutdownServer();
         }
 
         private void SetIcon(string fileName)

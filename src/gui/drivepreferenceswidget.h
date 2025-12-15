@@ -59,8 +59,6 @@ class DrivePreferencesWidget : public LargeWidgetWithCustomToolTip {
         void errorAdded();
         void openFolder(const QString &filePath);
         void removeDrive(int driveDbId);
-        void newBigFolderDiscovered(int syncDbId, const QString &path);
-        void undecidedListsCleared();
         void pauseSync(int syncDbId);
         void resumeSync(int syncDbId);
 
@@ -78,7 +76,6 @@ class DrivePreferencesWidget : public LargeWidgetWithCustomToolTip {
 
         QVBoxLayout *_mainVBox{nullptr};
         ActionWidget *_displayErrorsWidget{nullptr};
-        ActionWidget *_displayBigFoldersWarningWidget{nullptr};
         QLabel *_userAvatarLabel{nullptr};
         QLabel *_userNameLabel{nullptr};
         QLabel *_userMailLabel{nullptr};
@@ -124,7 +121,6 @@ class DrivePreferencesWidget : public LargeWidgetWithCustomToolTip {
 
         void showEvent(QShowEvent *event) override;
 
-        bool existUndecidedSet();
         void updateUserInfo();
         void askEnableLiteSync(const std::function<void(bool enable)> &callback);
         void askDisableLiteSync(const std::function<void(bool enable, bool diskSpaceWarning)> &callback, int syncDbId);
@@ -138,14 +134,12 @@ class DrivePreferencesWidget : public LargeWidgetWithCustomToolTip {
         static QFrame *blocSeparatorFrame(PreferencesBlocWidget const *folderBloc);
         bool addSync(const QString &localFolderPath, bool liteSync, const QString &serverFolderPath,
                      const QString &serverFolderNodeId, const QSet<QString> &blackSet, const QSet<QString> &whiteSet);
-        static bool updateSelectiveSyncList(const QHash<int, QHash<const QString, bool>> &mapUndefinedFolders);
         void updateGuardedFoldersBlocs();
 
         void initializeSearchBloc();
 
     private slots:
         void onErrorsWidgetClicked();
-        void onBigFoldersWarningWidgetClicked();
         void onAddLocalFolder(bool checked = false);
         void onLiteSyncSwitchSyncChanged(int syncDbId, bool activate);
         void onNotificationsSwitchClicked(bool checked = false);
@@ -158,8 +152,6 @@ class DrivePreferencesWidget : public LargeWidgetWithCustomToolTip {
         void onNeedToSave(bool isFolderItemBlackListed) const;
         void onCancelUpdate(int syncDbId) const;
         void onValidateUpdate(int syncDbId);
-        void onNewBigFolderDiscovered(int syncDbId, const QString &path);
-        void onUndecidedListsCleared();
         void retranslateUi();
         void onVfsConversionCompleted(int syncDbId);
         void onDriveBeingRemoved();

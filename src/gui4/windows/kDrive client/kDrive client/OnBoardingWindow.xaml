@@ -61,8 +61,9 @@
         </Border>
         <controls:AppTitleBarLogo Grid.Column="0"
                                   Margin="8,8,0,0" />
-        
-        <controls:LottiePlayer Grid.Row="1"
+
+        <controls:LottiePlayer x:Name="LottiePlayer"
+                               Grid.Row="1"
                                Grid.Column="2"
                                Height="120"
                                UriSource="{ThemeResource Infomaniak.Custom.Animations.loader-stroke}" />

@@ -21,17 +21,17 @@ namespace Infomaniak.kDrive.Types
     public enum RequestNum
     {
         Unknown = 0,
-        LoginRequestToken,
-        UserDbIds,
-        UserInfoList,
+        LOGIN_REQUESTTOKEN,
+        USER_DBIDLIST,
+        USER_INFOLIST,
         USER_DELETE,
         USER_AVAILABLEDRIVES,
-        AccountInfoList,
-        DriveInfoList,
+        ACCOUNT_INFOLIST,
+        DRIVE_INFOLIST,
         DRIVE_UPDATE,
         DRIVE_DELETE,
         DRIVE_SEARCH,
-        SyncInfoList,
+        SYNC_INFOLIST,
         SYNC_START,
         SYNC_STOP,
         SYNC_STATUS,
@@ -44,9 +44,8 @@ namespace Infomaniak.kDrive.Types
         SYNC_ASKFORSTATUS,
         SYNC_SETSUPPORTSVIRTUALFILES,
         SYNC_SETROOTPINSTATE,
-        SYNC_PROPAGATE_SYNCLIST_CHANGE,
-        SYNCNODE_LIST,
-        SYNCNODE_SETLIST,
+        BLACKLISTED_NODE_LIST,
+        BLACKLISTED_NODE_SETLIST,
         NODE_PATH,
         NODE_INFO,
         NODE_SUBFOLDERS,
@@ -54,7 +53,8 @@ namespace Infomaniak.kDrive.Types
         NODE_FOLDER_SIZE,
         NODE_CREATEMISSINGFOLDERS,
         ERROR_INFOLIST,
-        ERROR_GET_CONFLICTS,
+        ERROR_INFOLIST_LEGACY,
+        ERROR_GET_CONFLICTS_LEGACY,
         ERROR_DELETE_SERVER,
         ERROR_DELETE_SYNC,
         ERROR_DELETE_INVALIDTOKEN,
@@ -87,15 +87,15 @@ namespace Infomaniak.kDrive.Types
         UPDATER_VERSION_INFO,
         UPDATER_STATE,
         UPDATER_START_INSTALLER,
-        UPDATER_SKIP_VERSION,
-        EnumEnd
+        UPDATER_SKIP_VERSION
     };
+
     public enum SignalNum
     {
         Unknown = 0,
         // User
-        UserAdded,
-        UserUpdated,
+        USER_ADDED,
+        USER_UPDATED,
         USER_STATUSCHANGED,
         USER_REMOVED,
         // Account
@@ -124,8 +124,9 @@ namespace Infomaniak.kDrive.Types
         UPDATER_STATE_CHANGED,
         // Utility
         UTILITY_SHOW_NOTIFICATION,
-        UTILITY_NEW_BIG_FOLDER,
+        UTILITY_ERROR_ADDED_LEGACY,
         UTILITY_ERROR_ADDED,
+        UTILITY_ERRORS_REMOVED,
         UTILITY_ERRORS_CLEARED,
         UTILITY_SHOW_SETTINGS,
         UTILITY_SHOW_SYNTHESIS,
@@ -157,4 +158,147 @@ namespace Infomaniak.kDrive.Types
         Request = 1,
         Signal = 2,
     }
+
+    public enum SyncNodeType
+    {
+        Undefined = 0,
+        BlackList, // Nodes that are excluded from sync
+        WhiteList, // Explicitly whitelisted nodes (e.g. folder size above limit but user want to sync anyway). Note: all
+                   // nodes in none of those lists are implicitly whitelisted
+        UndecidedList, // Considered as blacklisted until user action
+        TmpRemoteBlacklist, // Blacklisted temporarily
+        TmpLocalBlacklist // Blacklisted temporarily
+    }
+
+    public enum ErrorLevel
+    {
+        Unknown,
+        Server,
+        SyncPal,
+        Node
+    };
+
+
+    public enum ExitCode
+    {
+        Ok,
+        Unknown,
+        NetworkError,
+        InvalidToken,
+        DataError, // Corruption of data
+        DbError, // Error in a DB function
+        BackError, // Error in an API call
+        SystemError, // IO error etc.
+        FatalError, // SyncPal fatal error
+        LogicError, // Consequence of faulty logic within the program such as violating logical preconditions or class
+                    // invariants and may be preventable
+        TokenRefreshed,
+        RateLimited,
+        InvalidSync, // The sync configuration is not valid
+        InvalidOperation,
+        OperationCanceled,
+        UpdateRequired,
+        LogUploadFailed,
+        UpdateFailed,
+    };
+
+
+    public enum ExitCause
+    {
+        Unknown,
+        WorkerExited, // The SyncPal worker exits because a sub worker has exited
+        DbAccessError,
+        DbEntryNotFound,
+        InvalidSnapshot,
+        SyncDirDoesntExist,
+        SyncDirAccessError,
+        SyncDirNestingError,
+        SyncDirChanged,
+        HttpErr,
+        HttpErrForbidden,
+        RedirectionError,
+        ApiErr,
+        InvalidSize,
+        FileExists,
+        FileAccessError,
+        FileLocked,
+        NotEnoughDiskSpace,
+        DriveAccessError,
+        LoginError,
+        DriveMaintenance,
+        DriveNotRenew,
+        MigrationError,
+        MigrationProxyNotImplemented,
+        InconsistentPinState,
+        FileSizeMismatch,
+        UploadNotTerminated,
+        UnableToCreateVfs,
+        NotEnoughMemory,
+        FileTooBig,
+        MoveToTrashFailed,
+        InvalidName,
+        LiteSyncNotAllowed,
+        NotPlaceHolder,
+        NetworkTimeout,
+        SocketsDefuncted, // macOS: sockets defuncted by kernel
+        NotFound,
+        QuotaExceeded,
+        FullListParsingError,
+        OperationCanceled,
+        ShareLinkAlreadyExists,
+        InvalidArgument,
+        InvalidDestination,
+        DriveAsleep,
+        DriveWakingUp,
+        Http5xx,
+        NotEnoughINotifyWatches,
+        FileOrDirectoryCorrupted,
+        TmpDirAccessError,
+        UpdateTreeIntegrityCheckFailed
+    };
+
+    public enum ConflictType
+    {
+        None,
+        EditDelete,
+        MoveDelete,
+        MoveParentDelete,
+        CreateParentDelete,
+        MoveMoveSource,
+        MoveMoveDest,
+        MoveCreate,
+        CreateCreate,
+        EditEdit,
+        MoveMoveCycle
+    };
+
+    public enum CancelType
+    {
+        None,
+        Create,
+        Edit,
+        Move,
+        Delete,
+        AlreadyExistRemote,
+        MoveToBinFailed,
+        AlreadyExistLocal,
+        TmpBlacklisted,
+        ExcludedByTemplate,
+        Hardlink,
+        FileRescued
+    };
+
+    public enum InconsistencyType
+    {
+        None = 0x000,
+        Case = 0x001,
+        ForbiddenChar = 0x002, // Char unsupported by OS
+        ReservedName = 0x004,
+        NameLength = 0x008,
+        PathLength = 0x010,
+        NotYetSupportedChar = 0x020, // Char not yet supported, ie recent Unicode char (ex: U+1FA77 on pre macOS 13.4)
+        DuplicateNames = 0x040, // Two items have the same standardized paths with possibly different encodings (Windows 10 and 11).
+        ForbiddenCharOnlySpaces = 0x080, // The name contains only spaces (not supported by back end)
+        ForbiddenCharEndWithSpace = 0x100, // The name ends with a space
+    };
 }

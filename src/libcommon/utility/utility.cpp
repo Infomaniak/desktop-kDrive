@@ -106,7 +106,7 @@ static std::default_random_engine gen(rd());
 
 std::string CommonUtility::generateRandomString(const char *charArray, std::uniform_int_distribution<int> &distrib,
                                                 const int length /*= 10*/) {
-    const std::lock_guard<std::mutex> lock(_generateRandomStringMutex);
+    const std::scoped_lock lock(_generateRandomStringMutex);
 
     std::string tmp;
     tmp.reserve(static_cast<size_t>(length));
@@ -1375,12 +1375,6 @@ ReplicaSide CommonUtility::syncNodeTypeSide(SyncNodeType type) {
         case KDC::SyncNodeType::BlackList:
             // List of remote directories excluded from sync.
             return ReplicaSide::Remote;
-        case KDC::SyncNodeType::WhiteList:
-            // List of large remote directories explicitly approved by the user.
-            return ReplicaSide::Remote;
-        case KDC::SyncNodeType::UndecidedList:
-            // List of large remote directories not yet approved by the user.
-            return ReplicaSide::Remote;
         case KDC::SyncNodeType::TmpRemoteBlacklist:
             // List of remote items temporarily excluded from sync.
             return ReplicaSide::Remote;
@@ -1421,7 +1415,7 @@ void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::stri
     std::istringstream istr(base64Str);
     Poco::Base64Decoder b64in(istr);
     b64in >> std::noskipws; // Does not stop decoding on space characters
-    b64in >> value;
+    (void) std::copy(std::istream_iterator<char>(b64in), std::istream_iterator<char>(), std::back_inserter(value));
 }
 
 void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::wstring &value) {

@@ -115,6 +115,23 @@ void TestUpdateTree::testClear() {
     CPPUNIT_ASSERT(node111.use_count() == 1); // Referenced by node111
 }
 
+void TestUpdateTree::testDelete() {
+    CPPUNIT_ASSERT(_myTree->_nodes.empty());
+    auto node1 = std::make_shared<Node>(_myTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::None, "l1", 0, 0,
+                                        12345, _myTree->rootNode());
+    _myTree->insertNode(node1);
+    CPPUNIT_ASSERT(_myTree->_nodes.size() == 1);
+
+    // Delete node later
+    CPPUNIT_ASSERT(_myTree->deleteNode(*node1->id(), true));
+    CPPUNIT_ASSERT(_myTree->_nodes.size() == 1);
+    CPPUNIT_ASSERT(node1->status() == NodeStatus::ToDelete);
+
+    // Delete node now
+    CPPUNIT_ASSERT(_myTree->deleteNode(*node1->id()));
+    CPPUNIT_ASSERT(_myTree->_nodes.size() == 0);
+}
+
 void TestUpdateTree::testAll() {
     CPPUNIT_ASSERT(_myTree->_nodes.empty());
     auto node1 = std::make_shared<Node>(_myTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::None, "l1", 0, 0,

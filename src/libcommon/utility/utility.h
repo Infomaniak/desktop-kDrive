@@ -294,6 +294,11 @@ struct COMMON_EXPORT CommonUtility {
         static size_t strLen(const CommChar *const s) { return s ? strlen(s) : 0; }
 #endif
 
+        class InvalidEnumerationValue : public std::runtime_error {
+            public:
+                InvalidEnumerationValue() :
+                    std::runtime_error("Invalid enumeration value"){};
+        };
         //! Read an input built-in/std::string/std::wstring/CommBLOB parameter from a Poco::DynamicStruct.
         /*!
           \param parms is a Poco::DynamicStruct.
@@ -318,7 +323,7 @@ struct COMMON_EXPORT CommonUtility {
                 if (intValue >= 0 && intValue < static_cast<int>(T::EnumEnd)) {
                     value = static_cast<T>(intValue);
                 } else {
-                    throw std::runtime_error("Invalid enumeration value");
+                    throw InvalidEnumerationValue{};
                 }
             } else {
                 value = dstruct[key].convert<T>();
@@ -367,7 +372,7 @@ struct COMMON_EXPORT CommonUtility {
             readValuesFromStruct(dstruct, key, values, dynamicVar2T);
         }
 
-        //! Write an output built-in/std::string/std::wstring/CommBLOB parameter to a Poco::DynamicStruct..
+        //! Write an output built-in/std::string/std::wstring/CommBLOB parameter to a Poco::DynamicStruct.
         /*!
           \param parms is a Poco::DynamicStruct.
           \param key is the key of the JSON pair.
@@ -415,6 +420,18 @@ struct COMMON_EXPORT CommonUtility {
             Poco::Dynamic::Array arrValues;
             (void) std::transform(values.begin(), values.end(), std::back_inserter(arrValues), t2DynamicVar);
             (void) dstruct.insert(key, arrValues);
+        }
+
+        //! Write an output std::unordered_map values to a a Poco::DynamicStruct.
+        template<typename T, typename H, typename A = std::allocator<T>>
+        static void writeValuesToStruct(Poco::DynamicStruct &dstruct, const std::string &key,
+                                        const std::unordered_map<std::string, T, H, std::equal_to<>, A> &table) {
+            Poco::DynamicStruct tableValues;
+            for (const auto &[keyStr, value]: table) {
+                writeValueToStruct(tableValues, keyStr, value);
+            }
+
+            (void) dstruct.insert(key, tableValues);
         }
 
         template<template<typename, typename> class C, typename T, typename A = std::allocator<T>>
@@ -548,4 +565,21 @@ struct ArgsWriter {
 
         QDataStream stream;
 };
+
+template<class C>
+static const std::function<Poco::Dynamic::Var(const C &)> info2DynamicVar = [](const C &value) {
+    Poco::DynamicStruct structValue;
+    value.toDynamicStruct(structValue);
+    return structValue;
+};
+
+template<class C>
+static const std::function<C(const Poco::Dynamic::Var &)> dynamicVar2Struct = [](const Poco::Dynamic::Var &value) {
+    assert(value.isStruct());
+    const auto &structValue = value.extract<Poco::DynamicStruct>();
+    C c;
+    c.fromDynamicStruct(structValue);
+    return c;
+};
+
 } // namespace KDC

@@ -22,48 +22,17 @@ import InfomaniakDI
 public struct LoginJob: Sendable {
     @LazyInjectService private var queryFetcher: XPCQueryFetcherProtocol
 
-    public enum LoginJobError: Error {
-        case userNotFound
-        case noReplyMessage
-        case serverError(code: KDC.ExitCode, cause: KDC.ExitCause)
-    }
-
     public init() {}
 
-    /// Login job
-    /// - Parameters:
-    ///   - code: auth code
-    ///   - verifier: auth verifier
-    @discardableResult
     public func login(code: String, verifier: String) async throws -> Int32 {
-        try await loginUserQuery(code: code, verifier: verifier)
-    }
-
-    /// Login _query_ only
-    /// - Parameters:
-    ///   - code: auth code
-    ///   - verifier: auth verifier
-    /// - Returns: userDbId
-    @discardableResult
-    private func loginUserQuery(code: String, verifier: String) async throws -> Int32 {
         IKLogger.data.log("Query for login token")
         let userQuery = LoginQuery(code: code, codeVerifier: verifier)
         let request = await RequestMessage<LoginQuery>(num: RequestNum.LOGIN_REQUESTTOKEN, body: userQuery)
 
-        do {
-            let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<LoginResponse>.self)
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<LoginResponse>.self)
 
-            guard let decodedMessage else {
-                throw LoginJobError.noReplyMessage
-            }
+        try decodedMessage.validate()
 
-            guard decodedMessage.code == .Ok, decodedMessage.cause == .Unknown else {
-                throw LoginJobError.serverError(code: decodedMessage.code, cause: decodedMessage.cause)
-            }
-
-            return decodedMessage.body.userDbId
-        } catch XPCQueryFetcher.QueryError.noReplyData {
-            throw LoginJobError.userNotFound
-        }
+        return decodedMessage.body.userDbId
     }
 }

@@ -477,6 +477,16 @@
     "ORDER BY time "                                                                                                        \
     "LIMIT ?3;"
 
+#define SELECT_ALL_ERROR_ID "select_all_errors"
+#define SELECT_ALL_ERROR_REQUEST                                                                                               \
+    "SELECT dbId, time, "                                                                                                      \
+    "functionName, workerName, exitCode, exitCause, "                                                                          \
+    "localNodeId, remoteNodeId, nodeType, path, status, conflictType, inconsistencyType, cancelType, destinationPath, level, " \
+    "syncDbId FROM "                                                                                                           \
+    "error "                                                                                                                   \
+    "ORDER BY time "                                                                                                           \
+    "LIMIT ?1;"
+
 #define SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST_ID "select_all_conflicts_by_syncdbid"
 #define SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST                                                                            \
     "SELECT dbId, time, "                                                                                                   \
@@ -597,8 +607,8 @@ bool ParmsDb::insertDefaultParameters() {
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 13, parameters.proxyConfig().needsAuth()));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 14, parameters.proxyConfig().user()));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 15, parameters.proxyConfig().token()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 16, parameters.useBigFolderSizeLimit()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 17, parameters.bigFolderSizeLimit()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 16, false)); // useBigFolderSizeLimit : not used anymore
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 17, 0)); // bigFolderSizeLimit : not used anymore
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 18, parameters.darkTheme()));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 19, parameters.showShortcuts()));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 20, parameters.updateFileAvailable()));
@@ -1038,6 +1048,7 @@ bool ParmsDb::prepare() {
     if (!createAndPrepareRequest(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID,
                                  SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST))
         return false;
+    if (!createAndPrepareRequest(SELECT_ALL_ERROR_ID, SELECT_ALL_ERROR_REQUEST)) return false;
     if (!createAndPrepareRequest(SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST_ID, SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST))
         return false;
     if (!createAndPrepareRequest(SELECT_FILTERED_CONFLICTS_BY_SYNCDBID_REQUEST_ID, SELECT_FILTERED_CONFLICTS_BY_SYNCDBID_REQUEST))
@@ -1208,8 +1219,8 @@ bool ParmsDb::updateParameters(const Parameters &parameters, bool &found) {
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 13, parameters.proxyConfig().needsAuth()));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 14, parameters.proxyConfig().user()));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 15, parameters.proxyConfig().token()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 16, parameters.useBigFolderSizeLimit()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 17, parameters.bigFolderSizeLimit()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 16, false)); // useBigFolderSizeLimit : not used anymore
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 17, 0)); // bigFolderSizeLimit : not used anymore
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 18, parameters.darkTheme()));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 19, parameters.showShortcuts()));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, 20, parameters.updateFileAvailable()));
@@ -1293,14 +1304,8 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
     LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, 14, token));
     parameters.setProxyConfig(ProxyConfig(proxyType, hostName, port, needsAuth, user, token));
 
-    bool useBigFolderSizeLimit = false;
-    LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 15, intResult));
-    useBigFolderSizeLimit = static_cast<bool>(intResult);
-    parameters.setUseBigFolderSizeLimit(useBigFolderSizeLimit);
-
-    int64_t int64Result = 0;
-    LOG_IF_FAIL(queryInt64Value(SELECT_PARAMETERS_REQUEST_ID, 16, int64Result));
-    parameters.setBigFolderSizeLimit(int64Result);
+    // 15: useBigFolderSizeLimit : not used anymore
+    // 16: bigFolderSizeLimit : not used anymore
 
     LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, 17, intResult));
     parameters.setDarkTheme(intResult);
@@ -2812,12 +2817,12 @@ bool ParmsDb::updateAllExclusionApps(bool def, const std::vector<ExclusionApp> &
 }
 #endif
 
-bool ParmsDb::insertError(const Error &err) {
+bool ParmsDb::insertError(Error &err) {
     const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
-
+    int64_t dbId = -1;
     LOG_IF_FAIL(queryResetAndClearBindings(INSERT_ERROR_REQUEST_ID));
     LOG_IF_FAIL(queryBindValue(INSERT_ERROR_REQUEST_ID, 1, err.time()));
     LOG_IF_FAIL(queryBindValue(INSERT_ERROR_REQUEST_ID, 2, toInt(err.level())));
@@ -2835,11 +2840,11 @@ bool ParmsDb::insertError(const Error &err) {
     LOG_IF_FAIL(queryBindValue(INSERT_ERROR_REQUEST_ID, 14, toInt(err.inconsistencyType())));
     LOG_IF_FAIL(queryBindValue(INSERT_ERROR_REQUEST_ID, 15, toInt(err.cancelType())));
     LOG_IF_FAIL(queryBindValue(INSERT_ERROR_REQUEST_ID, 16, err.destinationPath()));
-    if (!queryExec(INSERT_ERROR_REQUEST_ID, errId, error)) {
+    if (!queryExecAndGetRowId(INSERT_ERROR_REQUEST_ID, dbId, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << INSERT_ERROR_REQUEST_ID);
         return false;
     }
-
+    err.setDbId(dbId);
     return true;
 }
 
@@ -2899,6 +2904,70 @@ bool ParmsDb::deleteAllErrorsByExitCause(ExitCause exitCause) {
     return true;
 }
 
+bool ParmsDb::selectAllErrors(int limit, std::vector<Error> &errs) {
+    const std::scoped_lock lock(_mutex);
+
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_ERROR_ID));
+    LOG_IF_FAIL(queryBindValue(SELECT_ALL_ERROR_ID, 1, limit));
+    bool found = false;
+    for (;;) {
+        if (!queryNext(SELECT_ALL_ERROR_ID, found)) {
+            LOG_WARN(_logger, "Error getting query result: " << SELECT_ALL_ERROR_ID);
+            return false;
+        }
+        if (!found) {
+            break;
+        }
+
+        int64_t dbId = 0;
+        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_ERROR_ID, 0, dbId));
+        int64_t time = 0;
+        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_ERROR_ID, 1, time));
+        std::string functionName;
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_ERROR_ID, 2, functionName));
+        std::string workerName;
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_ERROR_ID, 3, workerName));
+        int exitCode = 0;
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_ID, 4, exitCode));
+        int exitCause = 0;
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_ID, 5, exitCause));
+        std::string localNodeId;
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_ERROR_ID, 6, localNodeId));
+        std::string remoteNodeId;
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_ERROR_ID, 7, remoteNodeId));
+        int nodeType;
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_ID, 8, nodeType));
+        SyncName path;
+        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_ERROR_ID, 9, path));
+        int status;
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_ID, 10, status));
+        int conflictType;
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_ID, 11, conflictType));
+        int inconsistencyType;
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_ID, 12, inconsistencyType));
+        int cancelType;
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_ID, 13, cancelType));
+        SyncName destinationPath;
+        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_ERROR_ID, 14, destinationPath));
+        int intLevel = 0;
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_ID, 15, intLevel));
+        ErrorLevel level = fromInt<ErrorLevel>(intLevel);
+
+        int syncDbId = 0;
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_ERROR_ID, 16, syncDbId));
+
+
+        errs.push_back(Error(dbId, time, level, functionName, syncDbId, workerName, static_cast<ExitCode>(exitCode),
+                             static_cast<ExitCause>(exitCause), static_cast<NodeId>(localNodeId),
+                             static_cast<NodeId>(remoteNodeId), static_cast<NodeType>(nodeType), static_cast<SyncPath>(path),
+                             static_cast<ConflictType>(conflictType), static_cast<InconsistencyType>(inconsistencyType),
+                             static_cast<CancelType>(cancelType), static_cast<SyncPath>(destinationPath)));
+    }
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_ERROR_ID));
+
+    return true;
+}
+
 bool ParmsDb::selectAllErrors(ErrorLevel level, int syncDbId, int limit, std::vector<Error> &errs) {
     const std::scoped_lock lock(_mutex);
 
@@ -2947,8 +3016,8 @@ bool ParmsDb::selectAllErrors(ErrorLevel level, int syncDbId, int limit, std::ve
         SyncName destinationPath;
         LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 14, destinationPath));
 
-        errs.push_back(Error(dbId, time, static_cast<ErrorLevel>(level), functionName, syncDbId, workerName,
-                             static_cast<ExitCode>(exitCode), static_cast<ExitCause>(exitCause), static_cast<NodeId>(localNodeId),
+        errs.push_back(Error(dbId, time, level, functionName, syncDbId, workerName, static_cast<ExitCode>(exitCode),
+                             static_cast<ExitCause>(exitCause), static_cast<NodeId>(localNodeId),
                              static_cast<NodeId>(remoteNodeId), static_cast<NodeType>(nodeType), static_cast<SyncPath>(path),
                              static_cast<ConflictType>(conflictType), static_cast<InconsistencyType>(inconsistencyType),
                              static_cast<CancelType>(cancelType), static_cast<SyncPath>(destinationPath)));
@@ -2966,7 +3035,9 @@ bool ParmsDb::selectConflicts(int syncDbId, ConflictType filter, std::vector<Err
 
     LOG_IF_FAIL(queryResetAndClearBindings(requestId));
     LOG_IF_FAIL(queryBindValue(requestId, 1, syncDbId));
-    LOG_IF_FAIL(queryBindValue(requestId, 2, std::to_string(toInt(filter))));
+    if (filter != ConflictType::None) {
+        LOG_IF_FAIL(queryBindValue(requestId, 2, std::to_string(toInt(filter))));
+    }
 
     bool found = false;
     for (;;) {

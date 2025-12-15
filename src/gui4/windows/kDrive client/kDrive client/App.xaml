@@ -30,6 +30,7 @@
                 <ResourceDictionary Source="/Styles/InfomaniakStyles.xaml" />
                 <ResourceDictionary Source="/Styles/DS/InfomaniakStylesStatic.xaml" />
                 <ResourceDictionary Source="/Styles/Custom/InfomaniakStylesStatic.xaml" />
+                <ResourceDictionary Source="ms-appx:///CommunityToolkit.WinUI.Controls.SettingsControls/SettingsCard/SettingsCard.xaml" />
                 <ResourceDictionary Source="ms-appx:///CommunityToolkit.WinUI.Controls.SettingsControls/SettingsExpander/SettingsExpander.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <ResourceDictionary.ThemeDictionaries>

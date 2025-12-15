@@ -263,6 +263,13 @@ std::string Utility::formatGenericServerError(const std::string &replyBody, cons
     return errorStream.str(); // str() return a copy of the underlying string
 }
 
+std::wstring Utility::formatSystemError(const std::system_error &exception) {
+    std::wstringstream ss;
+    ss << L"code=" << exception.code() << L", error=" << exception.what();
+
+    return ss.str();
+}
+
 void Utility::logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle, const std::string &replyBody,
                                     const Poco::Net::HTTPResponse &httpResponse) {
     std::string errorMsg = formatGenericServerError(replyBody, httpResponse);
@@ -557,6 +564,15 @@ bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isM
     isManaged = true;
 
     return true;
+}
+
+bool Utility::isLiteSyncExtError(const ExitInfo &exitInfo) {
+#if defined(KD_MACOS)
+    return (exitInfo.code() == ExitCode::SystemError &&
+            (exitInfo.cause() == ExitCause::LiteSyncNotAllowed || exitInfo.cause() == ExitCause::LiteSyncExtNotRunning));
+#else
+    return false;
+#endif
 }
 
 bool Utility::getLinuxDesktopType(std::string &currentDesktop) {

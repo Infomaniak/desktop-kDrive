@@ -6,7 +6,5 @@
 	<array>
 		<string>864VDCS2QY.com.infomaniak.drive</string>
 	</array>
-	<key>com.apple.security.app-sandbox</key>
-	<true/>
 </dict>
 </plist>

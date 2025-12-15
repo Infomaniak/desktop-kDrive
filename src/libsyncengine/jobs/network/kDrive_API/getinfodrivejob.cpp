@@ -41,4 +41,8 @@ ExitInfo GetInfoDriveJob::handleError(const std::string &replyBody, const Poco::
     return AbstractTokenNetworkJob::handleError(replyBody, uri);
 }
 
+void GetInfoDriveJob::setQueryParameters(Poco::URI &uri) {
+    uri.addQueryParameter("with", "preferences");
+}
+
 } // namespace KDC

@@ -39,7 +39,7 @@ ExitInfo SyncStartJob::deserializeInputParms() {
     try {
         readParamValue(inParamsSyncDbId, _syncDbId);
     } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in AbstractGuiJob::readParamValue: error=" << e.what());
+        LOG_WARN(_logger, "Exception in SyncStartJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
     }
 
@@ -76,14 +76,14 @@ ExitInfo SyncStartJob::process() {
     bool startPostponed = false;
     if (const auto exitInfo = _commManager->appServer().tryCreateAndStartVfs(sync, startPostponed); !exitInfo) {
         LOG_WARN(_logger, "Error in tryCreateAndStartVfs for syncDbId=" << sync.dbId() << " : " << exitInfo);
-        if (!(exitInfo.code() == ExitCode::SystemError && exitInfo.cause() == ExitCause::LiteSyncNotAllowed)) {
+        if (!Utility::isLiteSyncExtError(exitInfo)) {
             return exitInfo;
         }
         mainExitInfo = exitInfo;
     }
 
-    if (const auto exitInfo = _commManager->appServer().initSyncPal(sync, NodeSet(), NodeSet(), NodeSet(), !startPostponed,
-                                                                    std::chrono::seconds(0), true, false);
+    if (const auto exitInfo =
+                _commManager->appServer().initSyncPal(sync, NodeSet(), !startPostponed, std::chrono::seconds(0), true, false);
         !exitInfo) {
         LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " : " << exitInfo);
         AppServer::addError(Error(ERR_ID, exitInfo));

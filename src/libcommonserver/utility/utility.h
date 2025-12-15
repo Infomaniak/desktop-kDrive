@@ -77,6 +77,7 @@ struct COMMONSERVER_EXPORT Utility {
         static std::wstring formatSyncName(const SyncName &name);
         static std::wstring formatSyncPath(const SyncPath &path);
         static std::wstring formatPath(const QString &path);
+        static std::wstring formatSystemError(const std::system_error &exception);
 
         static std::string formatRequest(const Poco::URI &uri, const std::string &code, const std::string &description);
 
@@ -115,7 +116,10 @@ struct COMMONSERVER_EXPORT Utility {
         static bool preventSleeping(bool enable);
         static void restartFinderExtension();
         static void restartLoginItemAgent();
+        static bool isLiteSyncExtRunning();
 #endif
+        static bool isLiteSyncExtError(const ExitInfo &exitInfo);
+
         static bool getLinuxDesktopType(std::string &currentDesktop);
 
         static void str2hexstr(const std::string &str, std::string &hexstr, bool capital = false);

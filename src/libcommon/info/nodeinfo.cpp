@@ -17,7 +17,14 @@
  */
 
 #include "nodeinfo.h"
+#include "libcommon/utility/utility.h"
 
+static const auto nodeInfoNodeId = "nodeId";
+static const auto nodeInfoName = "name";
+static const auto nodeInfoSize = "size";
+static const auto nodeInfoParentNodeId = "parentNodeId";
+static const auto nodeInfoModtime = "modtime";
+static const auto nodeInfoPath = "path";
 namespace KDC {
 
 NodeInfo::NodeInfo(QString nodeId, QString name, qint64 size, QString parentNodeId, SyncTime modtime, QString path /*= ""*/) :
@@ -31,9 +38,18 @@ NodeInfo::NodeInfo(QString nodeId, QString name, qint64 size, QString parentNode
 NodeInfo::NodeInfo() :
     _nodeId(QString()),
     _name(QString()),
-    _size(0),
+    _size(-1),
     _parentNodeId(QString()),
     _modtime(0) {}
+
+void NodeInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
+    CommonUtility::writeValueToStruct(dstruct, nodeInfoNodeId, CommonUtility::qStr2CommString(_nodeId));
+    CommonUtility::writeValueToStruct(dstruct, nodeInfoName, CommonUtility::qStr2CommString(_name));
+    CommonUtility::writeValueToStruct(dstruct, nodeInfoSize, _size);
+    CommonUtility::writeValueToStruct(dstruct, nodeInfoParentNodeId, CommonUtility::qStr2CommString(_parentNodeId));
+    CommonUtility::writeValueToStruct(dstruct, nodeInfoModtime, _modtime);
+    CommonUtility::writeValueToStruct(dstruct, nodeInfoPath, CommonUtility::qStr2CommString(_path));
+}
 
 QDataStream &operator>>(QDataStream &in, NodeInfo &info) {
     in >> info._nodeId >> info._name >> info._size >> info._parentNodeId >> info._modtime >> info._path;

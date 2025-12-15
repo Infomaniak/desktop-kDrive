@@ -23,6 +23,8 @@ extension XPCGuiProtocol {
     func sendQueryAsync(_ requestData: Data) async -> Data? {
         await withCheckedContinuation { continuation in
             self.processQuery(requestData) { data in
+                //IKLogger.xpc.log("[KD] recv raw callback string: \(String(data: data, encoding: .utf8))")
+                IKLogger.xpc.log("[KD] recv raw callback len: \(data.count)")
                 continuation.resume(returning: data)
             }
         }

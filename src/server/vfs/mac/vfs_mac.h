@@ -62,6 +62,7 @@ class VfsMac : public Vfs {
         bool isExcluded(const SyncPath &filePath) override;
         ExitInfo setThumbnail(const SyncPath &absoluteFilePath, const QPixmap &pixmap) override;
         ExitInfo setAppExcludeList() override;
+        ExitInfo getFetchingAppList(AppTable &appTable) override;
         ExitInfo getFetchingAppList(QHash<QString, QString> &appTable) override;
         bool fileStatusChanged(const SyncPath &absoluteFilepath, SyncFileStatus status) override;
 

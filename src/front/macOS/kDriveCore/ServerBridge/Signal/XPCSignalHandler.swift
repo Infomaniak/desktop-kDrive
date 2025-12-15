@@ -55,7 +55,7 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
             }
 
             Task {
-                @InjectService var coherentCache: CoherentCacheProtocol
+                @InjectService var coherentCache: CoherentCache
                 await coherentCache.updateUser(user)
             }
 

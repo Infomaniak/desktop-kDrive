@@ -457,8 +457,8 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string &toVersio
     int errId = -1;
     std::string error;
 
-    if (dbFromVersionNumber == "3.4.0") {
-        LOG_DEBUG(_logger, "Upgrade 3.4.0 Sync DB");
+    if (dbFromVersionNumber == "3.4.0.0") {
+        LOG_DEBUG(_logger, "Upgrade 3.4.0.0 Sync DB");
 
         // Upload session token table
         if (!createAndPrepareRequest(CREATE_UPLOAD_SESSION_TOKEN_TABLE_ID, CREATE_UPLOAD_SESSION_TOKEN_TABLE)) return false;
@@ -469,8 +469,8 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string &toVersio
         queryFree(CREATE_UPLOAD_SESSION_TOKEN_TABLE_ID);
     }
 
-    if (CommonUtility::isVersionLower(dbFromVersionNumber, "3.4.4")) {
-        LOG_DEBUG(_logger, "Upgrade < 3.4.4 Sync DB");
+    if (CommonUtility::isVersionLower(dbFromVersionNumber, "3.4.4.0")) {
+        LOG_DEBUG(_logger, "Upgrade < 3.4.4.0 Sync DB");
 
         if (!createAndPrepareRequest(PRAGMA_WRITABLE_SCHEMA_ID, PRAGMA_WRITABLE_SCHEMA)) return false;
         bool hasData = false;
@@ -490,6 +490,60 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string &toVersio
 
     if (!reinstateEncodingOfLocalNames(dbFromVersionNumber)) return false;
 
+    if (CommonUtility::isVersionLower(dbFromVersionNumber, "3.8.2.0")) {
+        LOG_DEBUG(_logger, "Upgrade < 3.8.2.0 Sync DB - Removing Undecided list");
+
+        if (!createAndPrepareRequest(SELECT_ALL_SYNC_NODE_REQUEST_ID, SELECT_ALL_SYNC_NODE_REQUEST)) {
+            LOG_ERROR(_logger, "Error preparing select all sync node request");
+            return false;
+        }
+
+        if (!createAndPrepareRequest(INSERT_SYNC_NODE_REQUEST_ID, INSERT_SYNC_NODE_REQUEST)) {
+            LOG_ERROR(_logger, "Error preparing insert sync node request");
+            return false;
+        }
+        if (!createAndPrepareRequest(DELETE_ALL_SYNC_NODE_BY_TYPE_REQUEST_ID, DELETE_ALL_SYNC_NODE_BY_TYPE_REQUEST)) {
+            LOG_ERROR(_logger, "Error preparing delete all sync node by type request");
+            return false;
+        }
+
+        std::function freeRequests = [this]() {
+            queryFree(SELECT_ALL_SYNC_NODE_REQUEST_ID);
+            queryFree(INSERT_SYNC_NODE_REQUEST_ID);
+            queryFree(DELETE_ALL_SYNC_NODE_BY_TYPE_REQUEST_ID);
+        };
+
+        NodeSet blacklistedNodes;
+        NodeSet undecidedNodes;
+        if (!selectAllSyncNodes(SyncNodeType::BlackList, blacklistedNodes)) {
+            LOG_ERROR(_logger, "Error selecting blacklisted sync nodes");
+            freeRequests();
+            return false;
+        }
+        if (!selectAllSyncNodes(fromInt<SyncNodeType>(3), undecidedNodes)) {
+            LOG_ERROR(_logger, "Error selecting undecided sync nodes");
+            freeRequests();
+            return false;
+        }
+        blacklistedNodes.insert(undecidedNodes.begin(), undecidedNodes.end());
+        if (!updateAllSyncNodes(SyncNodeType::BlackList, blacklistedNodes)) {
+            LOG_ERROR(_logger, "Error updating blacklisted sync nodes");
+            freeRequests();
+            return false;
+        }
+        if (!updateAllSyncNodes(fromInt<SyncNodeType>(3), NodeSet())) { // Clear undecided nodes
+            LOG_ERROR(_logger, "Error clearing undecided sync nodes");
+            freeRequests();
+            return false;
+        }
+        if (!updateAllSyncNodes(fromInt<SyncNodeType>(2), NodeSet())) { // Clear WhiteList nodes
+            LOG_ERROR(_logger, "Error clearing whitelisted sync nodes");
+            freeRequests();
+            return false;
+        }
+
+        freeRequests();
+    }
     LOG_DEBUG(_logger, "Upgrade of Sync DB successfully completed.");
 
     return true;
