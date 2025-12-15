@@ -17,6 +17,6 @@ namespace Infomaniak.kDrive.CustomControls
             set => SetValue(IconUriProperty, value);
         }
 
-        public static readonly DependencyProperty IconUriProperty = DependencyProperty.Register(nameof(IconUri), typeof(string), typeof(LottiePlayer), new PropertyMetadata(null));
+        public static readonly DependencyProperty IconUriProperty = DependencyProperty.Register(nameof(IconUri), typeof(string), typeof(StatusBadge), new PropertyMetadata(null));
     }
 }
