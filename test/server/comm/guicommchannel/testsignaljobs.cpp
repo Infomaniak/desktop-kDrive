@@ -50,7 +50,10 @@ void TestGuiCommChannel::testSignalDriveUpdatedJob() {
     driveInfo.setAdmin(true);
     driveInfo.setAccessDenied(true);
     driveInfo.setMaintenance(true);
+    driveInfo.setSize(1000000000);
+    driveInfo.setUsedSize(50000000);
     SignalDriveUpdatedJob job(driveInfo);
+
     checkSignalCommonMethods(job, SignalNum::DRIVE_UPDATED);
     CPPUNIT_ASSERT(driveInfo == job._driveInfo);
 }

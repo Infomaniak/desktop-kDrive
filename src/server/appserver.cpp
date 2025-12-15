@@ -2753,7 +2753,7 @@ ExitCode AppServer::updateUserInfo(User &user) {
                         return ExitCode::DbError;
                     }
 
-                    if (driveList.size() == 0) {
+                    if (driveList.empty()) {
                         exitCode = ServerRequests::deleteAccount(account.dbId());
                         if (exitCode != ExitCode::Ok) {
                             LOG_WARN(_logger, "Error in Requests::deleteAccount: code=" << exitCode);
@@ -2765,10 +2765,11 @@ ExitCode AppServer::updateUserInfo(User &user) {
                 }
             }
 
-            if (updated) {
+            if (updated || quotaUpdated) {
                 DriveInfo driveInfo;
                 ServerRequests::driveToDriveInfo(drive, driveInfo);
-                sendDriveUpdated(driveInfo);
+                if (updated && !quotaUpdated) sendDriveUpdated(driveInfo);
+                if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalDriveUpdatedJob>(driveInfo));
             }
 
             if (accountRemoved) {
