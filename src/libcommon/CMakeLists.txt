@@ -134,6 +134,9 @@ target_link_libraries(${libcommon_NAME}
 if(UNIX)
     target_link_libraries(${libcommon_NAME}
         utf8proc)
+elseif(WIN32)
+    target_link_libraries(${libcommon_NAME}
+            "rpcrt4.lib")
 endif()
 
 if(APPLE)
