@@ -167,7 +167,7 @@ void TestGuiCommChannel::testNodePathJob() {
         CPPUNIT_ASSERT_EQUAL(1, nodePathJob->_syncDbId);
         CPPUNIT_ASSERT_EQUAL(NodeId{"1111"}, nodePathJob->_nodeId);
 
-        nodePathJob->_path = CommString{"/home/kDrive/Documents/presentation.doc"};
+        nodePathJob->_path = CommString{Str("/home/kDrive/Documents/presentation.doc")};
     };
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(queryStr, answerStr, {}, processFct);
