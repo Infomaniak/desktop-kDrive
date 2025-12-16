@@ -33,10 +33,10 @@ namespace Infomaniak.kDrive.Pages
         public AppModel ViewModel => _viewModel;
         public DriveAccessDeniedPage()
         {
-            Logger.Log(Logger.Level.Info, "Navigated to HomePage - Initializing HomePage components");
+            Logger.Log(Logger.Level.Info, "Navigated to DriveAccessDeniedPage - Initializing DriveAccessDeniedPage components");
             InitializeComponent();
             Unloaded += (_, _) => DetachHandlers();
-            Logger.Log(Logger.Level.Debug, "HomePage components initialized");
+            Logger.Log(Logger.Level.Debug, "DriveAccessDeniedPage components initialized");
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
