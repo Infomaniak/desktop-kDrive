@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "comm/guijobs/signaluserupdatedjob.h"
 
 #include "comm/guijobs/signalaccountupdatedjob.h"
 #include "comm/guijobs/signaldriveupdatedjob.h"
@@ -61,7 +62,7 @@ void TestGuiCommChannel::testSignalDriveUpdatedJob() {
     CPPUNIT_ASSERT(driveInfo == job._driveInfo);
 }
 
-void TestGuiCommChannel::testSignaUpdaterShowDialogJob() {
+void TestGuiCommChannel::testSignalUpdaterShowDialogJob() {
     VersionInfo versionInfo;
     versionInfo.channel = VersionChannel::Beta;
     versionInfo.tag = "4.0.0";
@@ -75,13 +76,28 @@ void TestGuiCommChannel::testSignaUpdaterShowDialogJob() {
     CPPUNIT_ASSERT(versionInfo == job._versionInfo);
 }
 
-void TestGuiCommChannel::testSignaUpdaterStateChangedJob() {
+void TestGuiCommChannel::testSignalUpdaterStateChangedJob() {
     const auto state = UpdateState::Checking;
 
     SignalUpdaterStateChangedJob job(state);
 
     checkSignalCommonMethods(job, SignalNum::UPDATER_STATE_CHANGED);
     CPPUNIT_ASSERT(state == job._updateState);
+}
+
+void TestGuiCommChannel::testSignalUserUpdatedJob() {
+    UserInfo userInfo;
+    userInfo.setDbId(1);
+    userInfo.setUserId(2);
+    userInfo.setAvatar(QImage{});
+    userInfo.setConnected(true);
+    userInfo.setCredentialsAsked(true);
+    userInfo.setIsStaff(true);
+
+    SignalUserUpdatedJob job(userInfo);
+
+    checkSignalCommonMethods(job, SignalNum::USER_UPDATED);
+    CPPUNIT_ASSERT(userInfo == job._userInfo);
 }
 
 } // namespace KDC

@@ -101,10 +101,11 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testUtilityGetLogEstimatedSizeJob);
         CPPUNIT_TEST(testUtilitySendLogToSupportJob);
 
+        CPPUNIT_TEST(testSignalUserUpdatedJob);
         CPPUNIT_TEST(testSignalAccountUpdatedJob);
         CPPUNIT_TEST(testSignalDriveUpdatedJob);
-        CPPUNIT_TEST(testSignaUpdaterShowDialogJob);
-        CPPUNIT_TEST(testSignaUpdaterStateChangedJob);
+        CPPUNIT_TEST(testSignalUpdaterShowDialogJob);
+        CPPUNIT_TEST(testSignalUpdaterStateChangedJob);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -163,10 +164,12 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testUtilityGetLogEstimatedSizeJob();
         void testUtilitySendLogToSupportJob();
 
+        void testSignalUserUpdatedJob();
         void testSignalAccountUpdatedJob();
         void testSignalDriveUpdatedJob();
-        void testSignaUpdaterShowDialogJob();
-        void testSignaUpdaterStateChangedJob();
+        void testSignalUpdaterShowDialogJob();
+        void testSignalUpdaterStateChangedJob();
+
 
     private:
         GuiJobFactory _guiJobFactory;
