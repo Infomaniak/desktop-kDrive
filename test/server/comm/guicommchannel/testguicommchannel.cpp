@@ -246,7 +246,8 @@ void TestGuiCommChannel::testUserInfoListJob() {
     (void) queryObj.set("id", 1);
 #endif
     (void) queryObj.set("num", toInt(RequestNum::USER_INFOLIST));
-    (void) queryObj.set("params", {});
+    const Poco::JSON::Object queryParamsObj;
+    (void) queryObj.set("params", queryParamsObj);
     const auto queryStr = stringifyQueryObj(queryObj);
 
     // Answer
@@ -291,6 +292,8 @@ void TestGuiCommChannel::testUserInfoListJob() {
 
     auto processFct = [avatarBase64StdStr](std::shared_ptr<AbstractGuiJob> job) {
         auto userInfoListJob = std::dynamic_pointer_cast<UserInfoListJob>(job);
+        CPPUNIT_ASSERT(userInfoListJob);
+
         CommBLOB avatarBLOB;
         CommonUtility::convertFromBase64Str(avatarBase64StdStr, avatarBLOB);
         QByteArray avatarQBA;
@@ -538,7 +541,8 @@ void TestGuiCommChannel::testDriveInfoListJob() {
     (void) queryObj.set("id", 1);
 #endif
     (void) queryObj.set("num", toInt(RequestNum::DRIVE_INFOLIST));
-    (void) queryObj.set("params", {});
+    const Poco::JSON::Object queryParamsObj;
+    (void) queryObj.set("params", queryParamsObj);
     const auto queryStr = stringifyQueryObj(queryObj);
 
     // Answer

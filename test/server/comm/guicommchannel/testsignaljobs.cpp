@@ -20,6 +20,8 @@
 #include "comm/guijobs/signalaccountupdatedjob.h"
 #include "comm/guijobs/signaldriveupdatedjob.h"
 
+#include "comm/guijobs/signalupdatershowdialogjob.h"
+
 #include "testguicommchannel.h"
 #include "../testcommhelpers.h"
 
@@ -56,6 +58,20 @@ void TestGuiCommChannel::testSignalDriveUpdatedJob() {
 
     checkSignalCommonMethods(job, SignalNum::DRIVE_UPDATED);
     CPPUNIT_ASSERT(driveInfo == job._driveInfo);
+}
+
+void TestGuiCommChannel::testSignaUpdaterShowDialogJob() {
+    VersionInfo versionInfo;
+    versionInfo.channel = VersionChannel::Beta;
+    versionInfo.tag = "4.0.0";
+    versionInfo.buildVersion = 1;
+    versionInfo.buildMinOsVersion = "15.1";
+    versionInfo.downloadUrl = "https://downloads/kDrive/latest";
+
+    SignalUpdaterShowDialogJob job(versionInfo);
+
+    checkSignalCommonMethods(job, SignalNum::UPDATER_SHOW_DIALOG);
+    CPPUNIT_ASSERT(versionInfo == job._versionInfo);
 }
 
 } // namespace KDC

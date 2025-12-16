@@ -93,7 +93,8 @@ void TestGuiCommChannel::testParametersInfoJob() {
     (void) queryObj.set("id", 1);
 #endif
     (void) queryObj.set("num", toInt(RequestNum::PARAMETERS_INFO));
-    (void) queryObj.set("params", {});
+    const Poco::JSON::Object queryParamsObj;
+    (void) queryObj.set("params", queryParamsObj);
 
     const auto queryStr = stringifyQueryObj(queryObj);
 
