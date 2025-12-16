@@ -56,7 +56,7 @@
 #include <sys/mount.h>
 #include <mach-o/dyld.h>
 #elif defined(KD_LINUX)
-#include <sys/statvfs.h>
+#include <sys/statfs.h>
 #elif defined(KD_WINDOWS)
 #include <fileapi.h>
 #include <Poco/Util/WinRegistryKey.h>
