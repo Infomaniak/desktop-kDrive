@@ -138,9 +138,6 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testNodePathJob();
         void testNodeInfoJob();
         void testNodeSubFolderJob();
-        void testNodeFolderSizeJob();
-        void testSyncNodeListJob();
-        void testSyncNodeSetListJob();
         void testNodeSubFolders2Job();
         void testNodeFolderSizeJob();
         void testNodeCreateMissingFoldersJob();
