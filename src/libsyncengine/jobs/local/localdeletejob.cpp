@@ -18,6 +18,7 @@
 
 #include "localdeletejob.h"
 
+#include "jobs/network/kDrive_API/fileexistsjob.h"
 #include "jobs/network/kDrive_API/getfileinfojob.h"
 #include "libcommonserver/io/permissionsholder.h"
 #include "libcommonserver/io/iohelper.h"
@@ -73,15 +74,12 @@ LocalDeleteJob::LocalDeleteJob(const SyncPath &absolutePath) :
     setBypassCheck(true);
 }
 
-LocalDeleteJob::~LocalDeleteJob() {}
-
-
 bool LocalDeleteJob::findRemoteItem(SyncPath &remoteItemPath) const {
     bool found = true;
     remoteItemPath.clear();
 
     // The item must be absent of remote replica for the job to run
-    GetFileInfoJob job(syncInfo().driveDbId, _remoteNodeId);
+    GetFileInfoJob job(_syncInfo.driveDbId, _remoteNodeId);
     job.setWithPath(true);
     job.runSynchronously();
 
@@ -126,15 +124,16 @@ ExitInfo LocalDeleteJob::canRun() {
     }
 
     // Check if the item we want to delete locally has a remote counterpart.
-
-    SyncPath remoteRelativePath;
-    const bool remoteItemIsFound = findRemoteItem(remoteRelativePath);
-    if (!remoteItemIsFound) return ExitCode::Ok; // Safe deletion.
+    FileExistsJob existsJob(_syncInfo.driveDbId, {_remoteNodeId});
+    existsJob.runSynchronously();
+    if (!existsJob.exists(_remoteNodeId)) return ExitCode::Ok; // Safe deletion.
 
     // Check whether the remote item has been moved.
     // If the remote item has been moved into a blacklisted folder, then this Delete job is created and
     // the local item should be deleted.
-    // Note: the other remote move operations are not relevant: they generate Move jobs.
+    SyncPath remoteRelativePath;
+    const bool remoteItemIsFound = findRemoteItem(remoteRelativePath);
+    if (!remoteItemIsFound) return ExitCode::Ok; // Safe deletion.
 
     SyncPath normalizedPath;
     if (!Utility::normalizedSyncPath(_relativePath, normalizedPath)) {
@@ -142,14 +141,14 @@ ExitInfo LocalDeleteJob::canRun() {
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
-    if (matchRelativePaths(syncInfo().targetPath, normalizedPath, remoteRelativePath)) {
+    if (matchRelativePaths(_syncInfo.targetPath, normalizedPath, remoteRelativePath)) {
         // Item is found at the same path on remote
         LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(_absolutePath).c_str()
                                           << L" still exists on remote replica. Aborting current sync and restarting.");
         return {ExitCode::DataError, ExitCause::InvalidSnapshot}; // We need to rebuild the remote snapshot from scratch
     }
 
-    return ExitCode::Ok;
+    return ExitCode::Ok; // Safe deletion.
 }
 
 ExitInfo LocalDeleteJob::hardDelete(const SyncPath &path) {

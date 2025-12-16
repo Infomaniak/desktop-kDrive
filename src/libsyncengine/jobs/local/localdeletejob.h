@@ -21,7 +21,6 @@
 #include "jobs/syncjob.h"
 #include "syncpal/syncpal.h"
 
-
 namespace KDC {
 
 class LocalDeleteJob : public SyncJob {
@@ -29,9 +28,6 @@ class LocalDeleteJob : public SyncJob {
         LocalDeleteJob(const SyncPalInfo &syncInfo, const SyncPath &relativePath, bool liteSyncIsEnabled, const NodeId &remoteId,
                        bool forceToTrash = false); // Check existence of remote counterpart and abort if needed.
         LocalDeleteJob(const SyncPath &absolutePath); // Delete without checks
-        ~LocalDeleteJob();
-
-        const SyncPalInfo &syncInfo() const { return _syncInfo; }
 
         //! Returns `true` if `localRelativePath` and `remoteRelativePath` indicate the same synchronised item.
         /*!
@@ -42,7 +38,6 @@ class LocalDeleteJob : public SyncJob {
         */
         static bool matchRelativePaths(const SyncPath &targetPath, const SyncPath &localRelativePath,
                                        const SyncPath &remoteRelativePath);
-
 
     protected:
         SyncPath _absolutePath;
