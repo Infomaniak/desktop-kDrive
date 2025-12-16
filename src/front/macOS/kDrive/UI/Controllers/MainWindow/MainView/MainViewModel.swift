@@ -43,7 +43,7 @@ final class MainViewModel {
             }
     }
 
-    func fetchAvailableDrives() {
+    func refreshCache() {
         Task {
             _ = try await UserJobs().userInfoList()
             _ = try await AccountJobs().accountInfoList()

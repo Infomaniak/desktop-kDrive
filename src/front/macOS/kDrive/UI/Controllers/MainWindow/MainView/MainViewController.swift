@@ -28,7 +28,9 @@ final class MainViewController: IKSplitViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+
         setupSplitView()
+        viewModel.refreshCache()
     }
 
     override func viewDidAppear() {
@@ -36,11 +38,6 @@ final class MainViewController: IKSplitViewController {
 
         configureWindowAppearance()
         splitView.setPosition(200, ofDividerAt: 0)
-    }
-
-    override func viewWillAppear() {
-        super.viewWillAppear()
-        viewModel.fetchAvailableDrives()
     }
 
     private func configureWindowAppearance() {
