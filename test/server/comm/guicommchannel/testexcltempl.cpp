@@ -193,8 +193,7 @@ void TestGuiCommChannel::testExclTemplPropagateChangeJob() {
     (void) queryObj.set("id", 1);
 #endif
     (void) queryObj.set("num", toInt(RequestNum::EXCLTEMPL_PROPAGATE_CHANGE));
-    Poco::JSON::Object queryParamsObj;
-    (void) queryObj.set("params", queryParamsObj);
+    (void) queryObj.set("params", {});
 
     const auto queryStr = stringifyQueryObj(queryObj);
 
