@@ -17,72 +17,19 @@
  */
 
 using Infomaniak.kDrive.Types;
-using Infomaniak.kDrive.ViewModels;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Navigation;
 using System;
-using System.ComponentModel;
 
 namespace Infomaniak.kDrive.Pages
 {
-    public sealed partial class DriveAccessDeniedPage : Page
+    public sealed partial class DriveAccessDeniedPage : SpecialErroBasePage
     {
-        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
-        public AppModel ViewModel => _viewModel;
-        public DriveAccessDeniedPage()
+        public DriveAccessDeniedPage() : base([SyncErrorStates.AccessDenied])
         {
             Logger.Log(Logger.Level.Info, "Navigated to DriveAccessDeniedPage - Initializing DriveAccessDeniedPage components");
             InitializeComponent();
-            Unloaded += (_, _) => DetachHandlers();
             Logger.Log(Logger.Level.Debug, "DriveAccessDeniedPage components initialized");
-        }
-
-        protected override void OnNavigatedTo(NavigationEventArgs e)
-        {
-            ViewModel.SelectedSyncChanged += OnSelectedSyncChanged;
-            OnSelectedSyncChanged(null, new(null, ViewModel.SelectedSync));
-            RedirectToHomePageIfNeeded();
-        }
-
-        protected override void OnNavigatedFrom(NavigationEventArgs e)
-        {
-            DetachHandlers();
-        }
-
-        private void DetachHandlers()
-        {
-            ViewModel.SelectedSyncChanged -= OnSelectedSyncChanged;
-
-            if (ViewModel.SelectedSync is not null)
-                ViewModel.SelectedSync.PropertyChanged -= OnSelectedSyncPropertyChanged;
-        }
-
-        private void OnSelectedSyncChanged(object? sender, AppModel.SelectedSyncChangedEventArgs e)
-        {
-            if (e.OldValue is not null)
-                e.OldValue.PropertyChanged -= OnSelectedSyncPropertyChanged;
-
-            if (e.NewValue is not null)
-                e.NewValue.PropertyChanged += OnSelectedSyncPropertyChanged;
-        }
-
-        private void OnSelectedSyncPropertyChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(Sync.SyncErrorState))
-            {
-                RedirectToHomePageIfNeeded();
-            }
-        }
-
-        private void RedirectToHomePageIfNeeded()
-        {
-            if (ViewModel?.SelectedSync is null || ViewModel.SelectedSync.SyncErrorState != SyncErrorStates.AccessDenied)
-            {
-                DetachHandlers();
-                AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(HomePage)));
-            }
         }
 
         private async void RetryButton_Click(object sender, RoutedEventArgs e)
@@ -93,8 +40,10 @@ namespace Infomaniak.kDrive.Pages
                 DetachHandlers();
                 Frame.Navigate(typeof(HomePage));
             }
-
-            await ViewModel.SelectedSync.Start();
+            else
+            {
+                await ViewModel.SelectedSync.Start();
+            }
         }
     }
 }
