@@ -67,11 +67,6 @@ final class MainViewModel {
         }
     }
 
-    func openCurrentSyncInFinder() {
-        guard let currentSynchro else { return }
-        
-    }
-
     private func handleUpdatedUsers(_ users: IndexedUsers) {
         availableUsers = Dictionary(uniqueKeysWithValues: users.map { userDbId, user in
             (Int(userDbId), UIUser(user: user))

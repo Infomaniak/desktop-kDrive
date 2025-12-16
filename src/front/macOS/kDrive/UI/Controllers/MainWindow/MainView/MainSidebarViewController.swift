@@ -175,7 +175,8 @@ final class MainSidebarViewController: NSViewController {
     }
 
     private func openSyncInFolder() {
-        mainViewModel.openCurrentSyncInFinder()
+        guard let currentSynchro = mainViewModel.currentSynchro else { return }
+        NSWorkspace.shared.open(currentSynchro.localPath)
     }
 
     private func updateSynchrosList(_ users: [Int: UIUser]) {
