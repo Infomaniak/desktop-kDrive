@@ -47,6 +47,7 @@
 #include "server/comm/guijobs/signalerrorremovedjob.h"
 #include "server/comm/guijobs/signalsyncprogressinfo.h"
 #include "server/comm/guijobs/signalupdatershowdialogjob.h"
+#include "server/comm/guijobs/signalupdaterstatechangedjob.h"
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
@@ -2390,6 +2391,7 @@ void AppServer::onUpdateStateChanged(const UpdateState state) {
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << state;
     OldCommServer::instance()->sendSignal(SignalNum::UPDATER_STATE_CHANGED, params);
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalUpdaterStateChangedJob>(state));
 }
 
 void AppServer::onCleanup() {

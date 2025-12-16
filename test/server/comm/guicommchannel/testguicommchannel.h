@@ -104,6 +104,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSignalAccountUpdatedJob);
         CPPUNIT_TEST(testSignalDriveUpdatedJob);
         CPPUNIT_TEST(testSignaUpdaterShowDialogJob);
+        CPPUNIT_TEST(testSignaUpdaterStateChangedJob);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -165,6 +166,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testSignalAccountUpdatedJob();
         void testSignalDriveUpdatedJob();
         void testSignaUpdaterShowDialogJob();
+        void testSignaUpdaterStateChangedJob();
 
     private:
         GuiJobFactory _guiJobFactory;

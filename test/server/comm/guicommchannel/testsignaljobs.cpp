@@ -21,6 +21,7 @@
 #include "comm/guijobs/signaldriveupdatedjob.h"
 
 #include "comm/guijobs/signalupdatershowdialogjob.h"
+#include "comm/guijobs/signalupdaterstatechangedjob.h"
 
 #include "testguicommchannel.h"
 #include "../testcommhelpers.h"
@@ -72,6 +73,15 @@ void TestGuiCommChannel::testSignaUpdaterShowDialogJob() {
 
     checkSignalCommonMethods(job, SignalNum::UPDATER_SHOW_DIALOG);
     CPPUNIT_ASSERT(versionInfo == job._versionInfo);
+}
+
+void TestGuiCommChannel::testSignaUpdaterStateChangedJob() {
+    const auto state = UpdateState::Checking;
+
+    SignalUpdaterStateChangedJob job(state);
+
+    checkSignalCommonMethods(job, SignalNum::UPDATER_STATE_CHANGED);
+    CPPUNIT_ASSERT(state == job._updateState);
 }
 
 } // namespace KDC
