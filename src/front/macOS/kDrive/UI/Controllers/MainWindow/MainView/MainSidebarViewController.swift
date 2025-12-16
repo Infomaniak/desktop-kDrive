@@ -79,7 +79,7 @@ final class MainSidebarViewController: NSViewController {
         let popUpButton = ColoredPopUpButton()
         popUpButton.translatesAutoresizingMaskIntoConstraints = false
         popUpButton.target = self
-        popUpButton.action = #selector(didSelectDrive)
+        popUpButton.action = #selector(didSelectSynchro)
 
         return popUpButton
     }()
@@ -148,15 +148,6 @@ final class MainSidebarViewController: NSViewController {
         ])
     }
 
-    @objc func didSelectDrive() {
-        guard let selectedItem = popUpButton.selectedItem,
-              let synchro = selectedItem.representedObject as? UISynchro else {
-            return
-        }
-
-        mainViewModel.selectNewSynchro(synchro)
-    }
-
     private func setupScrollAndOutlineView() {
         let singleColumn = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("SidebarColumn"))
         singleColumn.isEditable = false
@@ -172,6 +163,15 @@ final class MainSidebarViewController: NSViewController {
 
         let isDocumentViewSmallerThanScrollView = documentView.bounds.height <= scrollView.documentVisibleRect.height
         scrollView.verticalScrollElasticity = isDocumentViewSmallerThanScrollView ? .none : .automatic
+    }
+
+    @objc func didSelectSynchro() {
+        guard let selectedItem = popUpButton.selectedItem,
+              let synchro = selectedItem.representedObject as? UISynchro else {
+            return
+        }
+
+        mainViewModel.selectNewSynchro(synchro)
     }
 
     private func openSyncInFolder() {
