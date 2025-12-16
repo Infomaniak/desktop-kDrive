@@ -18,7 +18,7 @@
 
 #include "localdeletejob.h"
 
-#include "jobs/network/kDrive_API/fileexistsjob.h"
+#include "jobs/network/kDrive_API/itemsexistjob.h"
 #include "jobs/network/kDrive_API/getfileinfojob.h"
 #include "libcommonserver/io/permissionsholder.h"
 #include "libcommonserver/io/iohelper.h"
@@ -124,9 +124,9 @@ ExitInfo LocalDeleteJob::canRun() {
     }
 
     // Check if the item we want to delete locally has a remote counterpart.
-    FileExistsJob existsJob(_syncInfo.driveDbId, {_remoteNodeId});
+    ItemsExistJob existsJob(_syncInfo.driveDbId, {_remoteNodeId});
     existsJob.runSynchronously();
-    if (!existsJob.exists(_remoteNodeId)) return ExitCode::Ok; // Safe deletion.
+    if (existsJob.exists(_remoteNodeId).cause() == ExitCause::NotFound) return ExitCode::Ok; // Safe deletion.
 
     // Check whether the remote item has been moved.
     // If the remote item has been moved into a blacklisted folder, then this Delete job is created and

@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "fileexistsjob.h"
+#include "itemsexistjob.h"
 
 #include "utility/jsonparserutility.h"
 
@@ -24,7 +24,7 @@
 
 namespace KDC {
 
-FileExistsJob::FileExistsJob(int driveDbId, const NodeSet &ids) :
+ItemsExistJob::ItemsExistJob(int driveDbId, const NodeSet &ids) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
     for (const auto &id: ids) {
@@ -32,12 +32,13 @@ FileExistsJob::FileExistsJob(int driveDbId, const NodeSet &ids) :
     }
 }
 
-FileExistsJob::Status FileExistsJob::exists(const NodeId &id) {
-    if (!_itemInfo.contains(id)) return UNHANDLED;
-    return _itemInfo[id] ? EXISTS : NOT_FOUND;
+ExitInfo ItemsExistJob::exists(const NodeId &id) {
+    if (!_itemInfo.contains(id)) return ExitCode::LogicError;
+    if (_itemInfo[id]) return ExitCode::Ok;
+    return {ExitCode::SystemError, ExitCause::NotFound};
 }
 
-ExitInfo FileExistsJob::setData() {
+ExitInfo ItemsExistJob::setData() {
     Poco::JSON::Object obj;
     Poco::JSON::Array ids;
     for (const auto &[id, exists]: _itemInfo) {
@@ -49,7 +50,6 @@ ExitInfo FileExistsJob::setData() {
     try {
         obj.stringify(ss);
     } catch (Poco::Exception &e) {
-        // Not an issue
         LOG_ERROR(_logger, "Failed to convert JSON object to string: " << e.message());
         return ExitCode::LogicError;
     }
@@ -58,11 +58,11 @@ ExitInfo FileExistsJob::setData() {
     return ExitCode::Ok;
 }
 
-std::string FileExistsJob::getSpecificUrl() {
+std::string ItemsExistJob::getSpecificUrl() {
     return AbstractTokenNetworkJob::getSpecificUrl() + "/files/exists";
 }
 
-ExitInfo FileExistsJob::handleResponse(std::istream &is) {
+ExitInfo ItemsExistJob::handleResponse(std::istream &is) {
     if (const auto exitCode = AbstractTokenNetworkJob::handleResponse(is); !exitCode) return exitCode;
     if (!jsonRes()) {
         LOG_ERROR(_logger, "No valid JSON object.");

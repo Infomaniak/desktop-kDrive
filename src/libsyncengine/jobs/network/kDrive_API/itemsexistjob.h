@@ -22,16 +22,11 @@
 
 namespace KDC {
 
-class FileExistsJob : public AbstractTokenNetworkJob {
+class ItemsExistJob : public AbstractTokenNetworkJob {
     public:
-        enum Status {
-            EXISTS = 0,
-            NOT_FOUND,
-            UNHANDLED
-        };
-        FileExistsJob(int driveDbId, const NodeSet &ids = {});
+        ItemsExistJob(int driveDbId, const NodeSet &ids = {});
 
-        Status exists(const NodeId &id);
+        ExitInfo exists(const NodeId &id);
 
     private:
         ExitInfo setData() override;

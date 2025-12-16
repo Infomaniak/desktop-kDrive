@@ -38,7 +38,7 @@
 #include "jobs/network/infomaniak_API/getappversionjob.h"
 #include "jobs/network/directdownloadjob.h"
 #include "jobs/network/kDrive_API/createdirjob.h"
-#include "jobs/network/kDrive_API/fileexistsjob.h"
+#include "jobs/network/kDrive_API/itemsexistjob.h"
 #include "jobs/network/kDrive_API/searchjob.h"
 #include "jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.h"
 #include "jobs/network/kDrive_API/listing/initfilelistwithcursorjob.h"
@@ -1590,12 +1590,12 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
 void TestNetworkJobs::testExists() {
     const NodeId dummyId("1234567890");
     const auto ids = {pictureDirRemoteId, picture1RemoteId, dummyId};
-    FileExistsJob job(_driveDbId, ids);
+    ItemsExistJob job(_driveDbId, ids);
     job.runSynchronously();
-    CPPUNIT_ASSERT_EQUAL(FileExistsJob::EXISTS, job.exists(pictureDirRemoteId));
-    CPPUNIT_ASSERT_EQUAL(FileExistsJob::EXISTS, job.exists(picture1RemoteId));
-    CPPUNIT_ASSERT_EQUAL(FileExistsJob::NOT_FOUND, job.exists(dummyId));
-    CPPUNIT_ASSERT_EQUAL(FileExistsJob::UNHANDLED, job.exists("0987654321"));
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.exists(pictureDirRemoteId).code());
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.exists(picture1RemoteId).code());
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::NotFound), job.exists(dummyId));
+    CPPUNIT_ASSERT_EQUAL(ExitCode::LogicError, job.exists("0987654321").code());
 }
 
 } // namespace KDC
