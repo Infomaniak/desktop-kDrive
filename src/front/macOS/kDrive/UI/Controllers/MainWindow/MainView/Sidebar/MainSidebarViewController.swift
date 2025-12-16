@@ -151,7 +151,12 @@ final class MainSidebarViewController: NSViewController {
     }
 
     @objc func didSelectDrive() {
-        // TODO: Handle updated drive
+        guard let selectedItem = popUpButton.selectedItem,
+              let synchro = selectedItem.representedObject as? UISynchro else {
+            return
+        }
+
+        mainViewModel.selectNewSynchro(synchro)
     }
 
     private func setupScrollAndOutlineView() {
@@ -181,11 +186,12 @@ final class MainSidebarViewController: NSViewController {
         for (_, user) in users {
             for (_, account) in user.accounts {
                 for (_, drive) in account.drives {
-                    if drive.synchros.count == 1 {
+                    if drive.synchros.count == 1, let synchro = drive.synchros.values.first {
                         popUpButton.addItem(
                             withTitle: drive.name,
                             image: KDriveResources.kdriveFoldersStacked.image,
-                            color: drive.color
+                            color: drive.color,
+                            representedObject: synchro
                         )
                     } else {
                         for (_, synchro) in drive.synchros {
@@ -193,7 +199,8 @@ final class MainSidebarViewController: NSViewController {
                             popUpButton.addItem(
                                 withTitle: title,
                                 image: KDriveResources.kdriveFoldersStacked.image,
-                                color: drive.color
+                                color: drive.color,
+                                representedObject: synchro
                             )
                         }
                     }
