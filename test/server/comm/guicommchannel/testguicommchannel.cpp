@@ -27,6 +27,7 @@
 #include "comm/guijobs/accountinfolistjob.h"
 #include "comm/guijobs/driveinfolistjob.h"
 #include "comm/guijobs/drivesearchjob.h"
+#include "comm/guijobs/driveupdatejob.h"
 
 #include "libcommon/comm.h"
 #include "log/log.h"
@@ -37,6 +38,8 @@
 #include <qbytearray.h>
 #include <qbuffer.h>
 #include <server/comm/testcommhelpers.h>
+
+#include <Poco/DynamicStruct.h>
 
 namespace KDC {
 
@@ -461,23 +464,40 @@ void TestGuiCommChannel::testAccountInfoListJob() {
 #endif
 }
 
-void TestGuiCommChannel::testDriveInfoListJob() {
-    // Query
-    Poco::JSON::Object queryObj;
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    (void) queryObj.set("id", 1);
-#endif
-    (void) queryObj.set("num", toInt(RequestNum::DRIVE_INFOLIST));
-    Poco::JSON::Object queryParamsObj;
-    (void) queryObj.set("params", queryParamsObj);
-    const auto queryStr = stringifyQueryObj(queryObj);
+namespace {
+std::vector<DriveInfo> createDriveInfoList() {
+    DriveInfo di1;
+    di1.setDbId(1);
+    di1.setId(1111);
+    di1.setAccountDbId(1);
+    di1.setName("drive1111");
+    di1.setColor("#aabbcc");
+    di1.setNotifications(true);
+    di1.setAdmin(true);
+    di1.setMaintenance(false);
+    di1.setLocked(false);
+    di1.setAccessDenied(false);
+    di1.setSize(1000000000);
+    di1.setUsedSize(50000000);
 
-    // Answer
-    Poco::JSON::Object answerObj;
-    (void) answerObj.set("cause", 0);
-    (void) answerObj.set("code", 0);
-    (void) answerObj.set("id", 1);
+    DriveInfo di2;
+    di2.setDbId(2);
+    di2.setId(2222);
+    di2.setAccountDbId(1);
+    di2.setName("drive2222");
+    di2.setColor("#ddeeff");
+    di2.setNotifications(false);
+    di2.setAdmin(false);
+    di2.setMaintenance(true);
+    di2.setLocked(true);
+    di2.setAccessDenied(true);
+    di2.setSize(2000000000);
+    di2.setUsedSize(60000000);
 
+    return {di1, di2};
+}
+
+Poco::JSON::Array createDriveInfoObjList() {
     Poco::JSON::Object driveInfoObj1;
     (void) driveInfoObj1.set("accessDenied", false);
     (void) driveInfoObj1.set("accountDbId", 1);
@@ -506,9 +526,34 @@ void TestGuiCommChannel::testDriveInfoListJob() {
     (void) driveInfoObj2.set("size", 2000000000);
     (void) driveInfoObj2.set("usedSize", 60000000);
 
-    Poco::JSON::Array driveInfoListObj;
-    (void) driveInfoListObj.add(driveInfoObj1);
-    (void) driveInfoListObj.add(driveInfoObj2);
+    Poco::JSON::Array driveInfoObjList;
+
+    (void) driveInfoObjList.add(driveInfoObj1);
+    (void) driveInfoObjList.add(driveInfoObj2);
+
+    return driveInfoObjList;
+}
+
+} // namespace
+
+void TestGuiCommChannel::testDriveInfoListJob() {
+    // Query
+    Poco::JSON::Object queryObj;
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    (void) queryObj.set("id", 1);
+#endif
+    (void) queryObj.set("num", toInt(RequestNum::DRIVE_INFOLIST));
+    Poco::JSON::Object queryParamsObj;
+    (void) queryObj.set("params", queryParamsObj);
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+
+    const Poco::JSON::Array driveInfoListObj = createDriveInfoObjList();
 
     Poco::JSON::Object paramsObj;
     (void) paramsObj.set("driveInfoList", driveInfoListObj);
@@ -524,36 +569,9 @@ void TestGuiCommChannel::testDriveInfoListJob() {
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto driveInfoListJob = std::dynamic_pointer_cast<DriveInfoListJob>(job);
+        CPPUNIT_ASSERT(driveInfoListJob);
 
-        DriveInfo di1;
-        di1.setDbId(1);
-        di1.setId(1111);
-        di1.setAccountDbId(1);
-        di1.setName("drive1111");
-        di1.setColor("#aabbcc");
-        di1.setNotifications(true);
-        di1.setAdmin(true);
-        di1.setMaintenance(false);
-        di1.setLocked(false);
-        di1.setAccessDenied(false);
-        di1.setSize(1000000000);
-        di1.setUsedSize(50000000);
-
-        DriveInfo di2;
-        di2.setDbId(2);
-        di2.setId(2222);
-        di2.setAccountDbId(1);
-        di2.setName("drive2222");
-        di2.setColor("#ddeeff");
-        di2.setNotifications(false);
-        di2.setAdmin(false);
-        di2.setMaintenance(true);
-        di2.setLocked(true);
-        di2.setAccessDenied(true);
-        di2.setSize(2000000000);
-        di2.setUsedSize(60000000);
-
-        driveInfoListJob->_driveInfoList = {di1, di2};
+        driveInfoListJob->_driveInfoList = createDriveInfoList();
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
@@ -564,45 +582,43 @@ void TestGuiCommChannel::testDriveInfoListJob() {
 }
 
 void TestGuiCommChannel::testDriveUpdateJob() {
-    // Base64 conversions
-    // "#aabbcc" <=> "I2FhYmJjYw=="
-    // "#ddeeff" <=> "I2RkZWVmZg=="
-    // "drive1111" <=> "ZHJpdmUxMTEx"
-    // "drive2222" <=> "ZHJpdmUyMjIy"
-
+    // Query
+    Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{
-            R"({ "id": 1,)"
-            R"( "num": )" +
-            std::to_string(toInt(RequestNum::DRIVE_UPDATE)) +
-            R"(,)"
-            R"( "params": {)"
-            R"( "driveInfo": { "accessDenied": false, "accountDbId": 1, "admin": true, "color": "I2FhYmJjYw==", "dbId": 1, "id": 1111, "locked": false, "maintenance": false, "name": "ZHJpdmUxMTEx", "notifications": true } } })"};
-#else
-    // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{
-            R"({ "num": )" + std::to_string(toInt(RequestNum::DRIVE_UPDATE)) +
-            R"(,)"
-            R"( "params": {)"
-            R"( "driveInfo": { "accessDenied": false, "accountDbId": 1, "admin": true, "color": "I2FhYmJjYw==", "dbId": 1, "id": 1111, "locked": false, "maintenance": false, "name": "ZHJpdmUxMTEx", "notifications": true } } })"};
-
-    // Callback expected answer
-    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{}})"};
+    (void) queryObj.set("id", 1);
 #endif
+    (void) queryObj.set("num", toInt(RequestNum::DRIVE_UPDATE));
 
-    // Job expected answer
-    const auto answerStr{R"({ "cause": 0,)"
-                         R"( "code": 0,)"
-                         R"( "id": 1,)"
-                         R"( "num": )" +
-                         std::to_string(toInt(RequestNum::DRIVE_UPDATE)) +
-                         R"(,)"
-                         R"( "params": {  },)"
-                         R"( "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+    const Poco::Dynamic::Array driveInfoListObj = createDriveInfoObjList();
+    const Poco::JSON::Object driveInfoObj = driveInfoListObj[0].extract<Poco::JSON::Object>();
 
-    auto processFct = [](std::shared_ptr<AbstractGuiJob>) {
-        // No output parameters
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("driveInfo", driveInfoObj);
+    (void) queryObj.set("params", queryParamsObj);
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+
+    Poco::JSON::Object paramsObj;
+    (void) answerObj.set("params", paramsObj);
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::DRIVE_UPDATE));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+
+    // Job expected answers
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        const auto driveInfoListJob = std::dynamic_pointer_cast<DriveUpdateJob>(job);
+        CPPUNIT_ASSERT(driveInfoListJob);
+
+        CPPUNIT_ASSERT(createDriveInfoList().at(0) == driveInfoListJob->_driveInfo);
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
