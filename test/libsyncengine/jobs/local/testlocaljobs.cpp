@@ -24,6 +24,7 @@
 #include "jobs/local/localmovejob.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "jobs/local/localcopyjob.h"
+#include "mocks/libcommonserver/db/mockdb.h"
 #include "requests/parameterscache.h"
 #include "test_utility/testhelpers.h"
 
@@ -59,6 +60,10 @@ void KDC::TestLocalJobs::setUp() {
     TestBase::start();
     // Setup parameters cache in test mode
     ParametersCache::instance(true);
+    // Create parmsDb
+    bool alreadyExists = false;
+    const auto parmsDbPath = MockDb::makeDbName(alreadyExists);
+    (void) ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
 }
 
 void TestLocalJobs::tearDown() {
