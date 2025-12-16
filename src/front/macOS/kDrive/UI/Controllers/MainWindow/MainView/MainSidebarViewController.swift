@@ -182,30 +182,35 @@ final class MainSidebarViewController: NSViewController {
     private func updateSynchrosList(_ users: [Int: UIUser]) {
         popUpButton.removeAllItems()
 
-        for (_, user) in users {
-            for (_, account) in user.accounts {
-                for (_, drive) in account.drives {
+        for user in users.values {
+            for account in user.accounts.values {
+                for drive in account.drives.values {
                     if drive.synchros.count == 1, let synchro = drive.synchros.values.first {
-                        popUpButton.addItem(
-                            withTitle: drive.name,
-                            image: KDriveResources.kdriveFoldersStacked.image,
-                            color: drive.color,
-                            representedObject: synchro
-                        )
+                        addPopUpItem(forSynchro: synchro, drive: drive, displaySynchroPath: false)
                     } else {
-                        for (_, synchro) in drive.synchros {
-                            let title = "\(drive.name) › \(synchro.localPath.lastPathComponent)"
-                            popUpButton.addItem(
-                                withTitle: title,
-                                image: KDriveResources.kdriveFoldersStacked.image,
-                                color: drive.color,
-                                representedObject: synchro
-                            )
+                        for synchro in drive.synchros.values {
+                            addPopUpItem(forSynchro: synchro, drive: drive, displaySynchroPath: true)
                         }
                     }
                 }
             }
         }
+    }
+
+    private func addPopUpItem(forSynchro synchro: UISynchro, drive: UIDrive, displaySynchroPath: Bool) {
+        var title: String
+        if displaySynchroPath {
+            title = "\(drive.name) › \(synchro.localPath.lastPathComponent)"
+        } else {
+            title = "\(drive.name)"
+        }
+
+        popUpButton.addItem(
+            withTitle: title,
+            image: KDriveResources.kdriveFoldersStacked.image,
+            color: drive.color,
+            representedObject: synchro
+        )
     }
 }
 
