@@ -141,11 +141,6 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
 
     // MARK: - DRIVE
 
-    public func getAllDrives() -> [Drive] {
-        let allDrives: [Drive] = users.values.flatMap { $0.accounts.values.flatMap { $0.drives.values } }
-        return allDrives
-    }
-
     public func getDrive(driveDbId: Int32, accountDbId: Int32, userDbId: Int32) -> Drive? {
         users[userDbId]?.accounts[accountDbId]?.drives[driveDbId]
     }

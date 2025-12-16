@@ -171,7 +171,7 @@ final class MainSidebarViewController: NSViewController {
             return
         }
 
-        mainViewModel.selectNewSynchro(synchro)
+        mainViewModel.setCurrentSynchro(synchro)
     }
 
     private func openSyncInFolder() {

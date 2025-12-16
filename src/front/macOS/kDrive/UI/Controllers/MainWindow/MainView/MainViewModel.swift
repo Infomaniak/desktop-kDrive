@@ -52,7 +52,7 @@ final class MainViewModel {
         }
     }
 
-    func selectNewSynchro(_ synchro: UISynchro) {
+    func setCurrentSynchro(_ synchro: UISynchro) {
         Task {
             currentSynchro = synchro
             UserDefaults.standard.selectedSynchroDbId = synchro.dbId
@@ -60,7 +60,6 @@ final class MainViewModel {
             guard let selectedValues = getSelectedValuesFromSynchro(synchro) else {
                 return
             }
-
             currentUser = selectedValues.user
             currentAccount = selectedValues.account
             currentDrive = selectedValues.drive
@@ -108,7 +107,7 @@ final class MainViewModel {
                 return
             }
 
-            selectNewSynchro(UISynchro(synchro: syncho))
+            setCurrentSynchro(UISynchro(synchro: syncho))
         }
     }
 
