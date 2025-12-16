@@ -47,9 +47,7 @@ final class MainSidebarViewController: NSViewController {
 
     weak var delegate: NavigableSidebarViewControllerDelegate?
 
-    private let viewModel = MainSidebarViewModel()
     private let mainViewModel: MainViewModel
-
     private var bindStore = Set<AnyCancellable>()
 
     private let items: [SidebarItem] = [.home, .activity, .storage, .openInFinder]

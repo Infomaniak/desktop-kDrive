@@ -69,7 +69,7 @@ final class MainViewModel {
 
     func openCurrentSyncInFinder() {
         guard let currentSynchro else { return }
-        NSWorkspace.shared.open(currentSynchro.localPath)
+        
     }
 
     private func handleUpdatedUsers(_ users: IndexedUsers) {
