@@ -40,7 +40,7 @@ namespace Infomaniak.kDrive.Types
         NotRenew,
         Maintenance,
         AccessDenied,
-        LoggedOut
+        LoggingError
     };
 
     public enum SyncFileInstruction

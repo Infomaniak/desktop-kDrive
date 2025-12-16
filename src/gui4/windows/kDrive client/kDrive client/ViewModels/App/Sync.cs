@@ -255,12 +255,12 @@ namespace Infomaniak.kDrive.ViewModels
                     Types.ExitCause.DriveWakingUp => SyncErrorStates.WakingUp,
                     Types.ExitCause.DriveMaintenance => SyncErrorStates.Maintenance,
                     Types.ExitCause.DriveNotRenew => SyncErrorStates.NotRenew,
-                    Types.ExitCause.LoginError => SyncErrorStates.LoggedOut,
+                    Types.ExitCause.LoginError => SyncErrorStates.LoggingError,
                     _ => SyncErrorStates.Undefined
                 };
                 if (error.ExitCode == ExitCode.InvalidToken)
                 {
-                    SyncErrorState = SyncErrorStates.AccessDenied;
+                    SyncErrorState = SyncErrorStates.LoggingError;
                 }
 
                 if (SyncErrorState != SyncErrorStates.Undefined)
