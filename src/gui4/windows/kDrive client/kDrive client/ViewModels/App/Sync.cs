@@ -160,7 +160,7 @@ namespace Infomaniak.kDrive.ViewModels
         public SyncErrorStates SyncErrorState
         {
             get => _syncErrorState;
-            set => SetPropertyInUIThread(ref _syncErrorState, value);
+            private set => SetPropertyInUIThread(ref _syncErrorState, value);
         }
 
         public Drive Drive
@@ -233,7 +233,7 @@ namespace Infomaniak.kDrive.ViewModels
             foreach (var error in SyncErrors)
             {
                 Logger.Log(Logger.Level.Info, $"Sync {DbId}: Clearing error {error.ExitCode} - {error.Path}");
-                await RemoveErrorAsync(error);
+                await RemoveErrorAsync(error, false);
             }
             RefreshErrorState();
         }
@@ -258,7 +258,7 @@ namespace Infomaniak.kDrive.ViewModels
                     Types.ExitCause.LoginError => SyncErrorStates.LoggedOut,
                     _ => SyncErrorStates.Undefined
                 };
-                if(error.ExitCode == ExitCode.InvalidToken)
+                if (error.ExitCode == ExitCode.InvalidToken)
                 {
                     SyncErrorState = SyncErrorStates.AccessDenied;
                 }

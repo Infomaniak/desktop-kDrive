@@ -25,8 +25,6 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:controls="using:Infomaniak.kDrive.CustomControls"
       xmlns:converters="using:Infomaniak.kDrive.Converters"
-      xmlns:viewmodel="using:Infomaniak.kDrive.ViewModels"
-      xmlns:templateSelectors="using:Infomaniak.kDrive.TemplateSelectors"
       mc:Ignorable="d">
     <Page.Resources>
         <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />

@@ -6,14 +6,12 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:converters="using:Infomaniak.kDrive.Converters"
-             xmlns:lottie="using:CommunityToolkit.WinUI.Lottie"
              mc:Ignorable="d">
     <UserControl.Resources>
         <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />
     </UserControl.Resources>
     <Grid HorizontalAlignment="Center"
           VerticalAlignment="Center">
-        <!-- Drive Name & icon -->
         <Border BorderBrush="{ThemeResource CardStrokeColorDefault}"
                 Background="{ThemeResource LayerFillColorDefault}"
                 BorderThickness="1"
@@ -26,13 +24,11 @@
                                Foreground="{x:Bind Drive.Color, Mode=OneWay, Converter={StaticResource ColorToBrushConverter}}"
                                Height="16" />
 
-                <!-- Text -->
                 <TextBlock Text="{x:Bind Drive.Name, Mode=OneWay}"
                            VerticalAlignment="Center" />
             </StackPanel>
         </Border>
 
-        <!-- Warning badge -->
         <local:StatusBadge Width="40"
                            Height="40"
                            Foreground="{x:Bind IconForegroundBrush, Mode=OneWay}"
