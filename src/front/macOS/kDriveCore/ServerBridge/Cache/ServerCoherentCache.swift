@@ -258,7 +258,6 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
     // MARK: - Observation
 
     private func notifyUpdate() {
-        print("DEBUG - notify")
         usersSubject.send(users)
     }
 
