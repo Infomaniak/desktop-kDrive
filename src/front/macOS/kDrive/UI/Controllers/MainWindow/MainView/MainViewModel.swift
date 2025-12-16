@@ -55,6 +55,14 @@ final class MainViewModel {
     func selectNewSynchro(_ synchro: UISynchro) {
         Task {
             currentSynchro = synchro
+
+            guard let selectedValues = getSelectedValuesFromSynchro(synchro) else {
+                return
+            }
+
+            currentUser = selectedValues.us·er
+            currentAccount = selectedValues.account
+            currentDrive = selectedValues.drive
         }
     }
 
@@ -95,5 +103,17 @@ final class MainViewModel {
             return
         }
         currentSynchro = updatedSynchro
+    }
+
+    private func getSelectedValuesFromSynchro(_ synchro: UISynchro) -> (user: UIUser, account: UIAccount, drive: UIDrive)? {
+        for user in availableUsers.values {
+            for account in user.accounts.values {
+                for drive in account.drives.values {
+                    return (user, account, drive)
+                }
+            }
+        }
+
+        return nil
     }
 }
