@@ -36,10 +36,6 @@
 #include "test_utility/testhelpers.h"
 
 #include <qbytearray.h>
-#include <qbuffer.h>
-#include <server/comm/testcommhelpers.h>
-
-#include <Poco/DynamicStruct.h>
 
 namespace KDC {
 
