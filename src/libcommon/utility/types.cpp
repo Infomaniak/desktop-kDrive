@@ -18,6 +18,9 @@
 
 #include <string>
 #include "types.h"
+
+#include "libcommon/utility/utility.h"
+
 #include <Poco/UnicodeConverter.h>
 
 namespace KDC {
@@ -889,6 +892,28 @@ long ExitInfo::indexInList(const ExitCode &exitCode, const std::vector<ExitCode>
     const auto it = std::find(exitCodeList.begin(), exitCodeList.end(), exitCode);
     const long index = it - exitCodeList.begin();
     return index;
+}
+
+const std::string VersionInfo::versionInfoChannel = "channel";
+const std::string VersionInfo::versionInfoTag = "tag";
+const std::string VersionInfo::versionInfoBuildVersion = "buildVersion";
+const std::string VersionInfo::versionInfoBuildMinOsVersion = "buildMinOsVersion";
+const std::string VersionInfo::versionInfoDownloadUrl = "buildMinOsVersion";
+
+void VersionInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
+    CommonUtility::writeValueToStruct(dstruct, versionInfoChannel, channel);
+    CommonUtility::writeValueToStruct(dstruct, versionInfoTag, tag);
+    CommonUtility::writeValueToStruct(dstruct, versionInfoBuildVersion, buildVersion);
+    CommonUtility::writeValueToStruct(dstruct, versionInfoBuildMinOsVersion, buildMinOsVersion);
+    CommonUtility::writeValueToStruct(dstruct, versionInfoDownloadUrl, downloadUrl);
+}
+
+void VersionInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
+    CommonUtility::readValueFromStruct(dstruct, versionInfoChannel, channel);
+    CommonUtility::readValueFromStruct(dstruct, versionInfoTag, tag);
+    CommonUtility::readValueFromStruct(dstruct, versionInfoBuildVersion, buildVersion);
+    CommonUtility::readValueFromStruct(dstruct, versionInfoBuildMinOsVersion, buildMinOsVersion);
+    CommonUtility::readValueFromStruct(dstruct, versionInfoDownloadUrl, downloadUrl);
 }
 
 } // namespace KDC

@@ -38,6 +38,8 @@
 
 #include <QDebug>
 
+#include <Poco/DynamicStruct.h>
+
 namespace KDC {
 
 //
@@ -664,6 +666,15 @@ struct VersionInfo {
             buildMinOsVersion.clear();
             downloadUrl.clear();
         }
+
+        static const std::string versionInfoChannel;
+        static const std::string versionInfoTag;
+        static const std::string versionInfoBuildVersion;
+        static const std::string versionInfoBuildMinOsVersion;
+        static const std::string versionInfoDownloadUrl;
+
+        void toDynamicStruct(Poco::DynamicStruct &) const;
+        void fromDynamicStruct(const Poco::DynamicStruct &);
 
         friend QDataStream &operator>>(QDataStream &in, VersionInfo &versionInfo) {
             QString tmpTag;

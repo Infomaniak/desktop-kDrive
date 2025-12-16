@@ -46,6 +46,7 @@
 #include "server/comm/guijobs/signalerroraddedjob.h"
 #include "server/comm/guijobs/signalerrorremovedjob.h"
 #include "server/comm/guijobs/signalsyncprogressinfo.h"
+#include "server/comm/guijobs/signalupdatershowdialogjob.h"
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
@@ -2375,8 +2376,10 @@ void AppServer::onShowWindowsUpdateDialog() {
     if (_updateManager) {
         QByteArray params;
         QDataStream paramsStream(&params, QIODevice::WriteOnly);
-        paramsStream << _updateManager.get()->versionInfo();
+        paramsStream << _updateManager->versionInfo();
         OldCommServer::instance()->sendSignal(SignalNum::UPDATER_SHOW_DIALOG, params);
+        if (_commManager)
+            _commManager->sendGuiSignal(std::make_shared<SignalUpdaterShowDialogJob>(_updateManager->versionInfo()));
     } else {
         assert(false);
     }
