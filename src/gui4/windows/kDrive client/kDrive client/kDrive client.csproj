@@ -53,6 +53,7 @@
 		<PackageReference Include="Microsoft.Graphics.Win2D" Version="1.3.2" />
 		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.6584" />
 		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.250916003" />
+		<PackageReference Include="Sentry" Version="6.0.0" />
 		<PackageReference Include="Svg" Version="3.4.7" />
 	</ItemGroup>
 
@@ -108,6 +109,24 @@
 		<Page Update="CustomControls\DynamicTextBlock.xaml">
 			<SubType>Designer</SubType>
 		</Page>
+		<Page Update="CustomControls\Errors\ErrorPresenter.xaml">
+		  <SubType>Designer</SubType>
+		</Page>
+		<Page Update="CustomControls\Errors\DefaultError.xaml">
+		  <SubType>Designer</SubType>
+		</Page>
+		<Page Update="CustomControls\Errors\ErrorBar.xaml">
+		  <SubType>Designer</SubType>
+		</Page>
+		<Page Update="CustomControls\Errors\Templates\Node\LocalAccessError.xaml">
+		  <SubType>Designer</SubType>
+		</Page>
+		<Page Update="CustomControls\Errors\Templates\Node\ForbiddenCharError.xaml">
+		  <SubType>Designer</SubType>
+		</Page>
+		<Page Update="CustomControls\SplashScreen.xaml">
+		  <SubType>Designer</SubType>
+		</Page>
 		<Page Update="CustomControls\SyncExclusionSelector.xaml">
 			<SubType>Designer</SubType>
 		</Page>
@@ -118,9 +137,6 @@
 			<SubType>Designer</SubType>
 		</Page>
 		<Page Update="CustomControls\QuickAccess.xaml">
-			<SubType>Designer</SubType>
-		</Page>
-		<Page Update="CustomControls\ErrorItem.xaml">
 			<SubType>Designer</SubType>
 		</Page>
 		<Page Update="HomePage.xaml">
@@ -165,6 +181,8 @@
 	<ItemGroup>
 		<Folder Include="AnimatedElements\" />
 		<Folder Include="Assets\DS\Icons\Communication\" />
+		<Folder Include="CustomControls\Errors\Templates\Server\" />
+		<Folder Include="CustomControls\Errors\Templates\SyncPal\" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Update="Pages\Onboarding\NoDrivesPage.xaml">
@@ -173,11 +191,6 @@
 	</ItemGroup>
 	<ItemGroup>
 		<Page Update="CustomControls\AppTitleBarLogo.xaml">
-			<Generator>MSBuild:Compile</Generator>
-		</Page>
-	</ItemGroup>
-	<ItemGroup>
-		<Page Update="CustomControls\SyncErrorBar.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</Page>
 	</ItemGroup>
@@ -197,11 +210,6 @@
 		</Page>
 	</ItemGroup>
 	<ItemGroup>
-		<PRIResource Update="Strings\fr-FR\SyncErrors.resw">
-			<Generator></Generator>
-		</PRIResource>
-	</ItemGroup>
-	<ItemGroup>
 		<Content Include="Server\**\*.*">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<PackageCopyToOutput>true</PackageCopyToOutput>
@@ -217,14 +225,7 @@
 
 		<ItemGroup>
 			<!-- Keep only fr-FR, en-US, es-ES, it-IT, de-DE -->
-			<RemovingFiles
-				Include="$(OutDir)*\*.mui"
-				Exclude="
-            $(OutDir)fr-FR\*.mui;
-            $(OutDir)en-US\*.mui;
-            $(OutDir)es-ES\*.mui;
-            $(OutDir)it-IT\*.mui;
-            $(OutDir)de-DE\*.mui" />
+			<RemovingFiles Include="$(OutDir)*\*.mui" Exclude="&#xD;&#xA;            $(OutDir)fr-FR\*.mui;&#xD;&#xA;            $(OutDir)en-US\*.mui;&#xD;&#xA;            $(OutDir)es-ES\*.mui;&#xD;&#xA;            $(OutDir)it-IT\*.mui;&#xD;&#xA;            $(OutDir)de-DE\*.mui" />
 
 			<RemovingFolders Include="@(RemovingFiles->'%(RootDir)%(Directory)')" />
 		</ItemGroup>

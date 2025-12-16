@@ -51,6 +51,7 @@ set(server_SRCS
     comm/guijobs/abstractguijob.h comm/guijobs/abstractguijob.cpp
     comm/guijobs/guijobfactory.h comm/guijobs/guijobfactory.cpp
     comm/guijobs/loginrequesttokenjob.h comm/guijobs/loginrequesttokenjob.cpp
+    comm/guijobs/nodepathjob.h comm/guijobs/nodepathjob.cpp
     comm/guijobs/unknownrequestjob.h comm/guijobs/unknownrequestjob.cpp
     comm/guijobs/userdbidlistjob.h comm/guijobs/userdbidlistjob.cpp
     comm/guijobs/userinfolistjob.h comm/guijobs/userinfolistjob.cpp
@@ -84,15 +85,27 @@ set(server_SRCS
     comm/guijobs/nodefoldersizejob.h comm/guijobs/nodefoldersizejob.cpp
     comm/guijobs/nodecreatemissingfoldersjob.h comm/guijobs/nodecreatemissingfoldersjob.cpp
 
+    comm/guijobs/errorinfolistjob.h comm/guijobs/errorinfolistjob.cpp
+    
+    comm/guijobs/excltemplgetexcludedjob.h comm/guijobs/excltemplgetexcludedjob.cpp
+    comm/guijobs/excltemplgetlistjob.h comm/guijobs/excltemplgetlistjob.cpp
+    comm/guijobs/excltemplsetlistjob.h comm/guijobs/excltemplsetlistjob.cpp
+    comm/guijobs/excltemplpropagatechangejob.h comm/guijobs/excltemplpropagatechangejob.cpp
+    
     comm/guijobs/parametersinfojob.h comm/guijobs/parametersinfojob.cpp
     comm/guijobs/parametersupdatejob.h comm/guijobs/parametersupdatejob.cpp
-
+    comm/guijobs/utilityactivateloadinfojob.h comm/guijobs/utilityactivateloadinfojob.cpp
+    comm/guijobs/utilitysetappstatejob.h comm/guijobs/utilitysetappstatejob.cpp
+    comm/guijobs/utilitygetappstatejob.h comm/guijobs/utilitygetappstatejob.cpp
+    comm/guijobs/utilitysendlogtosupportjob.h comm/guijobs/utilitysendlogtosupportjob.cpp
+    comm/guijobs/utilitycancellogtosupportjob.h comm/guijobs/utilitycancellogtosupportjob.cpp
+    comm/guijobs/utilitygetlogestimatedsizejob.h comm/guijobs/utilitygetlogestimatedsizejob.cpp
     comm/guijobs/updaterchangechanneljob.h comm/guijobs/updaterchangechanneljob.cpp
     comm/guijobs/updaterversioninfojob.h comm/guijobs/updaterversioninfojob.cpp
     comm/guijobs/updaterstatejob.h comm/guijobs/updaterstatejob.cpp
     comm/guijobs/updaterstartinstallerjob.h comm/guijobs/updaterstartinstallerjob.cpp
     comm/guijobs/updaterskipversionjob.h comm/guijobs/updaterskipversionjob.cpp
-
+    
     comm/guijobs/signaluseraddedjob.h comm/guijobs/signaluseraddedjob.cpp
     comm/guijobs/signaluserupdatedjob.h comm/guijobs/signaluserupdatedjob.cpp
     comm/guijobs/signaluserremovedjob.h comm/guijobs/signaluserremovedjob.cpp
@@ -105,6 +118,8 @@ set(server_SRCS
     comm/guijobs/signalsyncprogressinfo.h comm/guijobs/signalsyncprogressinfo.cpp
     comm/guijobs/signalsynccompleteditem.h comm/guijobs/signalsynccompleteditem.cpp
     comm/guijobs/signalsyncupdatedjob.h comm/guijobs/signalsyncupdatedjob.cpp
+    comm/guijobs/signalerroraddedjob.h comm/guijobs/signalerroraddedjob.cpp
+    comm/guijobs/signalerrorremovedjob.h comm/guijobs/signalerrorremovedjob.cpp
     migration/migrationparams.h migration/migrationparams.cpp
     requests/serverrequests.h requests/serverrequests.cpp
     requests/offlinefilessizeestimator.h requests/offlinefilessizeestimator.cpp
@@ -124,12 +139,14 @@ if(APPLE OR WIN32)
 endif()
 
 if(APPLE)
-    list(APPEND server_SRCS ../common/utility_mac.cpp)
     list(APPEND server_SRCS comm/abstractcommserver_mac.h comm/abstractcommserver_mac.mm)
     list(APPEND server_SRCS comm/xpccommserver_mac.h comm/xpccommserver_mac.mm)
     list(APPEND server_SRCS comm/extcommserver_mac.mm)
     list(APPEND server_SRCS comm/guicommserver_mac.mm)
-    set_property(SOURCE ../common/utility_mac.cpp APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+    list(APPEND server_SRCS comm/guijobs/exclappgetlistjob.h comm/guijobs/exclappgetlistjob.cpp)
+    list(APPEND server_SRCS comm/guijobs/exclappsetlistjob.h comm/guijobs/exclappsetlistjob.cpp)
+    list(APPEND server_SRCS comm/guijobs/exclappgetfetchingapplistjob.h comm/guijobs/exclappgetfetchingapplistjob.cpp)
+
     set_property(SOURCE comm/abstractcommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
     set_property(SOURCE comm/xpccommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
     set_property(SOURCE comm/extcommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
@@ -157,7 +174,6 @@ elseif(WIN32)
     list(APPEND server_SRCS comm/pipecommserver.h comm/pipecommserver.cpp)
     list(APPEND updater_SRCS updater/windowsupdater.h updater/windowsupdater.cpp)
 else()
-    list(APPEND server_SRCS ../common/utility_linux.cpp)
     list(APPEND server_SRCS comm/socketcommserver.h comm/socketcommserver.cpp)
     list(APPEND updater_SRCS updater/linuxupdater.h updater/linuxupdater.cpp)
 endif()
@@ -223,7 +239,9 @@ if(NOT BUILD_KDRIVE_OSX_BUNDLE)
     add_executable(${APPLICATION_EXECUTABLE} WIN32 mainserver.cpp ${final_src})
 else()
     # we must add MACOSX_BUNDLE only if building a bundle
-    add_executable(${APPLICATION_EXECUTABLE} WIN32 MACOSX_BUNDLE mainserver.cpp ${final_src})
+    add_executable(${APPLICATION_EXECUTABLE} WIN32 MACOSX_BUNDLE mainserver.cpp ${final_src}
+        comm/guijobs/utilitygetappstatejob.h
+        comm/guijobs/utilitygetappstatejob.cpp)
 
     get_target_property(_qmake Qt6::qmake LOCATION)
     execute_process(COMMAND ${_qmake} -query QT_INSTALL_TRANSLATIONS

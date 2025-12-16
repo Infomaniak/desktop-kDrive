@@ -408,13 +408,15 @@ void LocalFileSystemObserverWorker::execute() {
             break;
         }
 
-        if (exitInfo = _syncPal->isRootFolderValid(); !exitInfo) {
+        exitInfo = _syncPal->isRootFolderValid();
+        if (!exitInfo) {
             LOG_SYNCPAL_WARN(_logger, "Error in isRootFolderValid: " << exitInfo);
             invalidateSnapshot();
             break;
         }
 
-        if (exitInfo = _folderWatcher->exitInfo(); !exitInfo) {
+        exitInfo = _folderWatcher->exitInfo();
+        if (!exitInfo) {
             LOG_SYNCPAL_WARN(_logger, "Error in FolderWatcher: " << _folderWatcher->exitInfo());
             tryToInvalidateSnapshot();
             break;
@@ -430,11 +432,12 @@ void LocalFileSystemObserverWorker::execute() {
 
         // Wait 1 sec after the last update
         if (_updating) {
-            auto diff_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() -
-                                                                                 _needUpdateTimerStart);
+            const auto diff_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() -
+                                                                                       _needUpdateTimerStart);
             if (diff_ms.count() > waitForUpdateDelay) {
                 // Check if root folder is still valid
-                if (exitInfo = _syncPal->isRootFolderValid(); !exitInfo) {
+                exitInfo = _syncPal->isRootFolderValid();
+                if (!exitInfo) {
                     LOG_SYNCPAL_WARN(_logger, "Error in isRootFolderValid: " << exitInfo);
                     invalidateSnapshot();
                     break;

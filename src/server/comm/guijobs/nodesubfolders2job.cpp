@@ -31,7 +31,7 @@ static const auto inParamsNodeId = "nodeId";
 static const auto inParamsWithPath = "withPath";
 
 // Output parameters keys
-static const auto outParamsSubfoldersList = "subfoldersList";
+static const auto outParamsNodeSubFolderInfoList = "nodeSubFolderInfoList";
 
 namespace KDC {
 
@@ -61,13 +61,13 @@ ExitInfo NodeSubFolders2Job::deserializeInputParms() {
 }
 
 ExitInfo NodeSubFolders2Job::serializeOutputParms() {
-    writeParamValues(outParamsSubfoldersList, _subfoldersList, info2DynamicVar<NodeInfo>);
+    writeParamValues(outParamsNodeSubFolderInfoList, _nodeSubFolderInfoList, info2DynamicVar<NodeInfo>);
 
     return ExitCode::Ok;
 }
 
 ExitInfo NodeSubFolders2Job::process() {
-    if (const auto exitInfo = ServerRequests::getSubFolders(_driveDbId, _nodeId, _subfoldersList, _withPath);
+    if (const auto exitInfo = ServerRequests::getSubFolders(_driveDbId, _nodeId, _nodeSubFolderInfoList, _withPath);
         exitInfo.code() != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in Requests::getSubFolders");
         AppServer::addError(Error(ERR_ID, exitInfo));

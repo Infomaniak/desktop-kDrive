@@ -30,6 +30,8 @@ namespace Infomaniak.kDrive.CustomControls
                     Logger.Log(Logger.Level.Info, $"Starting legacy kDrive client with communication port: {legacyCommPort}");
                     System.Diagnostics.Process.Start("kDrive_client.exe", legacyCommPort.ToString());
                 }
+
+                App.ExitApplication(); // If the legacy client starts successfully, exit the current application
             }
             catch (Exception ex)
             {

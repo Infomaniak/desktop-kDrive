@@ -42,7 +42,6 @@ namespace Infomaniak.kDrive.ViewModels
         private SyncType _syncType = SyncType.Unknown;
         private bool _isTypeOnline = false;
         private bool _syncTypeMigrationInProgress = false;
-        private ObservableCollection<Errors.BaseError> _syncErrors = new();
         private SyncFileItem? _lastActivity;
 
         // Sync UI properties
@@ -85,7 +84,6 @@ namespace Infomaniak.kDrive.ViewModels
                 {
                     LastActivity = null;
                 }
-
             };
         }
 
@@ -131,12 +129,13 @@ namespace Infomaniak.kDrive.ViewModels
         public SyncType SyncType
         {
             get => _syncType;
-            set {
+            set
+            {
                 SetPropertyInUIThread(ref _syncType, value);
                 SetPropertyInUIThread(ref _isTypeOnline, value == SyncType.Online, nameof(IsTypeOnline));
             }
         }
-     
+
         public bool SyncTypeMigrationInProgress
         {
             get => _syncTypeMigrationInProgress;
@@ -152,15 +151,12 @@ namespace Infomaniak.kDrive.ViewModels
             get => _syncActivities;
         }
 
+        // The list of sync and node errors
+        public ObservableCollection<Error> SyncErrors = new();
+
         public Drive Drive
         {
             get => _drive;
-        }
-
-        public ObservableCollection<Errors.BaseError> SyncErrors
-        {
-            get => _syncErrors;
-            set => SetPropertyInUIThread(ref _syncErrors, value);
         }
 
         public SyncFileItem? LastActivity
@@ -195,5 +191,39 @@ namespace Infomaniak.kDrive.ViewModels
             SetPropertyInUIThread(ref _syncTypeMigrationInProgress, false, nameof(SyncTypeMigrationInProgress));
 
         }
+
+        public async Task AddErrorAsync(Error error)
+        {
+            if (error.ErrorLevel != Types.ErrorLevel.SyncPal && error.ErrorLevel != Types.ErrorLevel.Node)
+            {
+                Logger.Log(Logger.Level.Error, $"Sync {DbId}: Ignoring error {error.ExitCode} - {error.Path} with level {error.ErrorLevel}");
+                return;
+            }
+
+            Logger.Log(Logger.Level.Info, $"Sync {DbId}: Adding error {error.ExitCode} - {error.Path}");
+            await Utility.RunOnUIThread(() => SyncErrors.Add(error));
+        }
+
+        public async Task RemoveErrorAsync(Error error)
+        {
+            Logger.Log(Logger.Level.Info, $"Sync {DbId}: Removing error {error.ExitCode} - {error.Path}");
+            await Utility.RunOnUIThread(() =>
+            {
+                // TODO: Check special errors and update related viewmodels if needed
+                if (!SyncErrors.Remove(error))
+                    Logger.Log(Logger.Level.Warning, $"Sync {DbId}: Tried to remove non-existing error {error.ExitCode} - {error.Path}");
+            });
+        }
+
+        public async Task ClearAllErrorsAsync()
+        {
+            // Call RemoveError for each error to ensure proper handling (RemoveError is responsible for some viewmodel updates)
+            foreach (var error in SyncErrors)
+            {
+                Logger.Log(Logger.Level.Info, $"Sync {DbId}: Clearing error {error.ExitCode} - {error.Path}");
+                await RemoveErrorAsync(error);
+            }
+        }
+
     }
 }

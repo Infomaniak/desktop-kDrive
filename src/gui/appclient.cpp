@@ -126,6 +126,9 @@ AppClient::AppClient(int &argc, char **argv) :
         throw std::runtime_error("Unable to initialize parameters cache.");
     }
 
+    // Update Sentry configuration
+    sentry::Handler::instance()->setIsSentryActivated(true);
+
     // Setup logging
     setupLogging();
 
@@ -408,7 +411,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             emit showNotification(title, message);
             break;
         }
-        case SignalNum::UTILITY_ERROR_ADDED: {
+        case SignalNum::UTILITY_ERROR_ADDED_LEGACY: {
             bool serverLevel;
             ExitCode exitCode;
             int syncDbId;

@@ -51,6 +51,10 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string SyncFileItemInfo = "itemInfo";
         static public string RestartSync = "restartSync";
 
+        static public string ErrorDbId = "errorDbId";
+        static public string ErrorInfo = "errorInfo";
+        static public string ErrorInfoList = "errorInfoList";
+
         static public string NodeId = "nodeId";
         static public string NodeInfo = "nodeInfo";
         static public string NodeIdList = "nodeIdList";
@@ -63,7 +67,9 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string NodeSubFolderInfoList = "nodeSubFolderInfoList";
         static public string FolderSize = "folderSize";
         static public string WithPath = "withPath";
-        static public string ParmsInfo = "parmsInfo";
+        static public string ParmsInfo = "parametersInfo";
+
+        static public string Limit = "limit";
 
         static public string VersionInfo = "versionInfo";
         static public string DriveAvailableInfoList = "driveAvailableInfoList";

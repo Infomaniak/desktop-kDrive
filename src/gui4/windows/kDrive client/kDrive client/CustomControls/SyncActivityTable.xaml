@@ -72,25 +72,25 @@
                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                                VerticalAlignment="Center"
                                Padding="{StaticResource Infomaniak.Style.Thickness.Left.S}"
-                               Foreground="{ThemeResource TextFillColorDisabled}" />
+                               Foreground="{ThemeResource TextFillColorSecondary}" />
                     <TextBlock x:Uid="CC_SyncActivityTable_Header_LastLocation"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                                Grid.Column="1"
                                VerticalAlignment="Center"
                                Padding="{StaticResource Infomaniak.Style.Thickness.Left.S}"
-                               Foreground="{ThemeResource TextFillColorDisabled}" />
+                               Foreground="{ThemeResource TextFillColorSecondary}" />
 
                     <TextBlock x:Uid="CC_SyncActivityTable_Header_Size"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                                Grid.Column="2"
                                VerticalAlignment="Center"
-                               Foreground="{ThemeResource TextFillColorDisabled}" />
+                               Foreground="{ThemeResource TextFillColorSecondary}" />
 
                     <TextBlock x:Uid="CC_SyncActivityTable_Header_State"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                                Grid.Column="3"
                                VerticalAlignment="Center"
-                               Foreground="{ThemeResource TextFillColorDisabled}" />
+                               Foreground="{ThemeResource TextFillColorSecondary}" />
 
                 </Grid>
             </ListView.Header>
@@ -189,13 +189,14 @@
                                               Grid.Column="0"
                                               VerticalAlignment="Center"
                                               HorizontalAlignment="Left"
-                                              UriString="{x:Bind Status, Converter={StaticResource SyncActivityStatusToIconConverter}, Mode=OneWay}" />
+                                              UriString="{x:Bind Status, Converter={StaticResource SyncActivityStatusToIconConverter}, Mode=OneWay}" 
+                                              PointerPressed="ItemErrorIcon_PointerPressed"/>
                             <controls:SvgIcon Width="16"
                                               Grid.Column="1"
                                               VerticalAlignment="Center"
                                               HorizontalAlignment="Left"
                                               UriString="{x:Bind Direction, Converter={StaticResource SyncActivityDirectionToIconConverter}, Mode=OneWay}"
-                                              Foreground="{ThemeResource TextFillColorDisabledBrush}">
+                                              Foreground="{ThemeResource TextFillColorSecondaryBrush}">
                                 <ToolTipService.ToolTip>
                                     <ToolTip Content="{x:Bind Direction, Converter={StaticResource SyncDirectionToToolTipConverter}, Mode=OneWay}" />
                                 </ToolTipService.ToolTip>

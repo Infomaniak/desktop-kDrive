@@ -6,6 +6,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+      xmlns:controlsErrors="using:Infomaniak.kDrive.CustomControls.Errors"
       xmlns:converters="using:Infomaniak.kDrive.Converters"
       xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
       xmlns:templateSelectors="using:Infomaniak.kDrive.TemplateSelectors"
@@ -55,8 +56,8 @@
                     <TextBlock Text="Synchronisation en pause"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
                     <controls:SvgIcon Height="16"
-                                      UriString="{StaticResource Infomaniak.DS.Icons.Media.pause}" 
-                                      Foreground="{ThemeResource SystemAccentColor}"/>
+                                      UriString="{StaticResource Infomaniak.DS.Icons.Media.pause}"
+                                      Foreground="{ThemeResource SystemAccentColor}" />
                 </StackPanel>
                 <TextBlock Text="{x:Bind LastActivity.Timestamp, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Since', Mode=OneWay}"
                            Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
@@ -120,8 +121,7 @@
     </Page.Resources>
 
     <Grid Margin="24"
-          RowSpacing="24"
-          ColumnSpacing="24">
+          RowSpacing="{StaticResource Infomaniak.Style.Spacing.S}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
@@ -169,8 +169,15 @@
         </ComboBox>
 
         <!-- Left main pane -->
-        <controls:SyncActivityTable Grid.Row="2"
-                                    Grid.ColumnSpan="2"
-                                    ShowIncomingActivity="{x:Bind ViewModel.SelectedSync.ShowIncomingActivity, Mode=OneWay}" />
+        <Grid Grid.Row="2"
+              Grid.ColumnSpan="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <controlsErrors:ErrorBar Grid.Row="0" />
+            <controls:SyncActivityTable Grid.Row="1"
+                                        ShowIncomingActivity="{x:Bind ViewModel.SelectedSync.ShowIncomingActivity, Mode=OneWay}" />
+        </Grid>
     </Grid>
 </Page>

@@ -56,4 +56,5 @@ CommString stringifyCbkAnswerObj(const Poco::JSON::Object &obj) {
 
     return CommonUtility::str2CommString(json.str());
 }
+
 } // namespace KDC::testcommhelpers

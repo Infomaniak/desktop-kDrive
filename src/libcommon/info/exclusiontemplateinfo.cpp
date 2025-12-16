@@ -18,6 +18,13 @@
 
 #include "exclusiontemplateinfo.h"
 
+#include "libcommon/utility/utility.h"
+
+static const auto exclusionTemplateInfoString = "template";
+static const auto exclusionTemplateInfoWarning = "warning";
+static const auto exclusionTemplateInfoDefault = "default";
+static const auto exclusionTemplateInfoDeleted = "deleted";
+
 namespace KDC {
 
 ExclusionTemplateInfo::ExclusionTemplateInfo(const QString &templ, bool warning, bool def, bool deleted) :
@@ -26,11 +33,23 @@ ExclusionTemplateInfo::ExclusionTemplateInfo(const QString &templ, bool warning,
     _def(def),
     _deleted(deleted) {}
 
-ExclusionTemplateInfo::ExclusionTemplateInfo() :
-    _templ(QString()),
-    _warning(false),
-    _def(false),
-    _deleted(false) {}
+
+void ExclusionTemplateInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
+    CommonUtility::writeValueToStruct(dstruct, exclusionTemplateInfoString, CommonUtility::qStr2CommString(_templ));
+    CommonUtility::writeValueToStruct(dstruct, exclusionTemplateInfoWarning, _warning);
+    CommonUtility::writeValueToStruct(dstruct, exclusionTemplateInfoDefault, _def);
+    CommonUtility::writeValueToStruct(dstruct, exclusionTemplateInfoDeleted, _deleted);
+}
+
+void ExclusionTemplateInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
+    CommString templateCommStr;
+    CommonUtility::readValueFromStruct(dstruct, exclusionTemplateInfoString, templateCommStr);
+    _templ = CommonUtility::commString2QStr(templateCommStr);
+
+    CommonUtility::readValueFromStruct(dstruct, exclusionTemplateInfoWarning, _warning);
+    CommonUtility::readValueFromStruct(dstruct, exclusionTemplateInfoDefault, _def);
+    CommonUtility::readValueFromStruct(dstruct, exclusionTemplateInfoDeleted, _deleted);
+}
 
 QDataStream &operator>>(QDataStream &in, ExclusionTemplateInfo &exclusionTemplateInfo) {
     in >> exclusionTemplateInfo._templ >> exclusionTemplateInfo._warning >> exclusionTemplateInfo._def >>

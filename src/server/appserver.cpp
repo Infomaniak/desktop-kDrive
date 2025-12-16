@@ -17,6 +17,7 @@
  */
 
 #include "appserver.h"
+#include "version.h"
 #include "migration/migrationparams.h"
 #include "keychainmanager/keychainmanager.h"
 #include "requests/syncnodecache.h"
@@ -24,6 +25,25 @@
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
 #include "comm/extjobmanager.h"
 #endif
+#include "jobs/network/kDrive_API/searchjob.h"
+#include "jobs/network/kDrive_API/upload/loguploadjob.h"
+#include "jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.h"
+#include "requests/offlinefilessizeestimator.h"
+#include "updater/updatemanager.h"
+#include "server/comm/guijobs/signalaccountaddedjob.h"
+#include "server/comm/guijobs/signaluseraddedjob.h"
+#include "server/comm/guijobs/signaluserupdatedjob.h"
+#include "server/comm/guijobs/signaluserremovedjob.h"
+#include "server/comm/guijobs/signalaccountremovedjob.h"
+#include "server/comm/guijobs/signaldriveaddedjob.h"
+#include "server/comm/guijobs/signaldriveremovedjob.h"
+#include "server/comm/guijobs/signalsyncaddedjob.h"
+#include "server/comm/guijobs/signalsyncremovedjob.h"
+#include "server/comm/guijobs/signalsynccompleteditem.h"
+#include "server/comm/guijobs/signalsyncupdatedjob.h"
+#include "server/comm/guijobs/signalerroraddedjob.h"
+#include "server/comm/guijobs/signalerrorremovedjob.h"
+#include "server/comm/guijobs/signalsyncprogressinfo.h"
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
@@ -43,6 +63,7 @@
 #include "libsyncengine/requests/parameterscache.h"
 #include "libsyncengine/requests/exclusiontemplatecache.h"
 #include "libsyncengine/jobs/syncjobmanager.h"
+
 #include <iostream>
 #include <fstream>
 #include <filesystem>
@@ -53,26 +74,6 @@
 #if defined(KD_WINDOWS)
 #include <windows.h>
 #endif
-
-#include "jobs/network/kDrive_API/searchjob.h"
-#include "jobs/network/kDrive_API/upload/loguploadjob.h"
-#include "jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.h"
-#include "requests/offlinefilessizeestimator.h"
-#include "updater/updatemanager.h"
-
-#include "server/comm/guijobs/signalaccountaddedjob.h"
-#include "server/comm/guijobs/signaluseraddedjob.h"
-#include "server/comm/guijobs/signaluserupdatedjob.h"
-#include "server/comm/guijobs/signaluserremovedjob.h"
-#include "server/comm/guijobs/signalaccountremovedjob.h"
-#include "server/comm/guijobs/signaldriveaddedjob.h"
-#include "server/comm/guijobs/signaldriveremovedjob.h"
-#include "server/comm/guijobs/signalsyncaddedjob.h"
-#include "server/comm/guijobs/signalsyncremovedjob.h"
-#include "server/comm/guijobs/signalsynccompleteditem.h"
-#include "server/comm/guijobs/signalsyncupdatedjob.h"
-
-#include "server/comm/guijobs/signalsyncprogressinfo.h"
 
 #include <QDesktopServices>
 #include <QDir>
@@ -136,6 +137,9 @@ static void displayHelpText(const QString &t) {
     std::cout << qUtf8Printable(t);
 }
 #endif
+
+std::shared_ptr<CommManager> AppServer::_commManager = nullptr;
+
 
 AppServer::AppServer(int &argc, char **argv) :
     SharedTools::QtSingleApplication(QString::fromStdString(Theme::instance()->appName()), argc, argv) {
@@ -263,6 +267,14 @@ void AppServer::init() {
     if (!ParametersCache::instance()) {
         LOG_WARN(_logger, "Error in ParametersCache::instance");
         throw std::runtime_error("Unable to initialize parameters cache.");
+    }
+
+    // Update Sentry configuration
+    sentry::Handler::instance()->setAppUUID(appUID());
+    if (KDRIVE_VERSION_MAJOR < 4) {
+        sentry::Handler::instance()->setIsSentryActivated(true);
+    } else {
+        sentry::Handler::instance()->setIsSentryActivated(ParametersCache::instance()->parameters().sentryEnabled());
     }
 
     // Setup translations
@@ -767,6 +779,20 @@ void AppServer::unregisterSync(std::shared_ptr<SyncPal> syncPal) {
 #endif
 }
 
+std::string AppServer::appUID() const {
+    AppStateValue appStateValue = "";
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::AppUid, appStateValue, found)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAppState");
+        addError(Error(ERR_ID, ExitCode::DbError, ExitCause::DbAccessError));
+        return {};
+    } else if (!found) {
+        LOG_WARN(Log::instance()->getLogger(), AppStateKey::AppUid << " key not found in appstate table");
+        addError(Error(ERR_ID, ExitCode::DataError, ExitCause::DbEntryNotFound));
+        return {};
+    }
+    return std::get<std::string>(appStateValue);
+}
+
 #if defined(KD_MACOS)
 bool AppServer::noMacVfsSync() const {
     const std::scoped_lock lock(vfsMapMutex);
@@ -932,7 +958,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             break;
         }
-        case RequestNum::ERROR_INFOLIST: {
+        case RequestNum::ERROR_INFOLIST_LEGACY: {
             ErrorLevel level{ErrorLevel::Unknown};
             int syncDbId{0};
             int limit{100};
@@ -949,7 +975,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << list;
             break;
         }
-        case RequestNum::ERROR_GET_CONFLICTS: {
+        case RequestNum::ERROR_GET_CONFLICTS_LEGACY: {
             int driveDbId;
             QList<ConflictType> filter;
             QDataStream paramsStream(params);
@@ -1506,7 +1532,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::SYNC_ASKFORSTATUS: {
-            _syncCacheMap.clear();
+            clearSyncCacheMap();
 
             resultStream << ExitCode::Ok;
             break;
@@ -2031,7 +2057,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 QTimer::singleShot(100, this, &AppServer::onLoadInfo);
 
                 // Clear sync update progress cache
-                _syncCacheMap.clear();
+                clearSyncCacheMap();
             }
 
             resultStream << ExitCode::Ok;
@@ -2078,7 +2104,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 break;
             } else if (!found) {
                 LOG_WARN(_logger, key << " not found in appState table");
-                resultStream << ExitCode::DbError;
+                resultStream << ExitCode::DataError;
                 break;
             }
 
@@ -2099,7 +2125,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 break;
             } else if (!found) {
                 LOG_WARN(_logger, key << " not found in appState table");
-                resultStream << ExitCode::DbError;
+                resultStream << ExitCode::DataError;
                 break;
             }
             std::string appStateValueStr = std::get<std::string>(appStateValue);
@@ -2315,17 +2341,17 @@ void AppServer::sendLogUploadStatusUpdated(LogUploadState status, int percent) {
     OldCommServer::instance()->sendSignal(SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED, params, id);
 
     if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, status, found)) {
-        LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
         addError(Error(ERR_ID, ExitCode::DbError, ExitCause::DbAccessError));
     } else if (!found) {
-        LOG_WARN(_logger, AppStateKey::LogUploadState << " not found in appState table");
+        LOG_WARN(Log::instance()->getLogger(), AppStateKey::LogUploadState << " not found in appState table");
     }
 
     if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadPercent, std::to_string(percent), found)) {
-        LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
         addError(Error(ERR_ID, ExitCode::DbError, ExitCause::DbAccessError));
     } else if (!found) {
-        LOG_WARN(_logger, AppStateKey::LogUploadPercent << " not found in appState table");
+        LOG_WARN(Log::instance()->getLogger(), AppStateKey::LogUploadPercent << " not found in appState table");
     }
 }
 
@@ -2333,14 +2359,14 @@ void AppServer::uploadLog(const bool includeArchivedLogs) {
     /* See AppStateKey::LogUploadState for status values
      * The return value of progressFunc is true if the upload should continue, false if the user canceled the upload
      */
-    const std::function<void(LogUploadState, int)> jobProgressCallBack = [this](LogUploadState status, int progress) {
+    const std::function<void(LogUploadState, int)> jobProgressCallBack = [](LogUploadState status, int progress) {
         sendLogUploadStatusUpdated(status, progress); // Send progress to the client
     };
     const auto logUploadJob = std::make_shared<LogUploadJob>(includeArchivedLogs, jobProgressCallBack, &addError);
 
-    const std::function<void(UniqueId)> jobResultCallback = [this, logUploadJob]([[maybe_unused]] const UniqueId id) {
+    const std::function<void(UniqueId)> jobResultCallback = [logUploadJob]([[maybe_unused]] const UniqueId id) {
         if (const ExitInfo exitInfo = logUploadJob->exitInfo(); !exitInfo && exitInfo.code() != ExitCode::OperationCanceled) {
-            LOG_WARN(_logger, "Error in LogArchiverHelper::sendLogToSupport: " << exitInfo);
+            LOG_WARN(Log::instance()->getLogger(), "Error in LogArchiverHelper::sendLogToSupport: " << exitInfo);
             addError(Error(ERR_ID, ExitCode::LogUploadFailed, exitInfo.cause()));
         }
     };
@@ -2453,15 +2479,16 @@ void AppServer::sendShowNotification(const QString &title, const QString &messag
     OldCommServer::instance()->sendSignal(SignalNum::UTILITY_SHOW_NOTIFICATION, params, id);
 }
 
-void AppServer::sendErrorAdded(bool serverLevel, ExitCode exitCode, int syncDbId) {
+void AppServer::sendErrorAdded(const ErrorInfo &errorInfo) {
     int id = 0;
 
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << serverLevel;
-    paramsStream << toInt(exitCode);
-    paramsStream << syncDbId;
-    OldCommServer::instance()->sendSignal(SignalNum::UTILITY_ERROR_ADDED, params, id);
+    paramsStream << (errorInfo.level() == ErrorLevel::Server);
+    paramsStream << toInt(errorInfo.exitCode());
+    paramsStream << errorInfo.syncDbId();
+    OldCommServer::instance()->sendSignal(SignalNum::UTILITY_ERROR_ADDED_LEGACY, params, id);
+    _commManager->sendGuiSignal(std::make_shared<SignalErrorAddedJob>(errorInfo));
 }
 
 void AppServer::addCompletedItem(int syncDbId, const SyncFileItem &item, bool notify) {
@@ -3069,17 +3096,16 @@ void AppServer::logUsefulInformation() const {
     LOGW_INFO(_logger, L"free space for cache: " << Utility::getFreeDiskSpace(cachePath) << L" bytes");
 
     // Log app ID
-    AppStateValue appStateValue = "";
+    LOG_INFO(Log::instance()->getLogger(), "App ID: " << appUID());
 
-    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::AppUid, appStateValue, found)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAppState");
-        addError(Error(ERR_ID, ExitCode::DbError, ExitCause::DbAccessError));
-    } else if (!found) {
-        LOG_WARN(Log::instance()->getLogger(), AppStateKey::AppUid << " key not found in appstate table");
+    if (KDRIVE_VERSION_MAJOR >= 4) {
+        // Log Sentry activation status
+        LOG_INFO(Log::instance()->getLogger(), "Sentry enabled: " << ParametersCache::instance()->parameters().sentryEnabled());
+
+        // Log Matomo activation status
+        LOG_INFO(Log::instance()->getLogger(), "Matomo enabled: " << ParametersCache::instance()->parameters().matomoEnabled());
     }
-    const auto &appUid = std::get<std::string>(appStateValue);
-    LOG_INFO(Log::instance()->getLogger(), "App ID: " << appUid);
-    sentry::Handler::instance()->setAppUUID(appUid);
+
     // Log user IDs
     std::vector<User> userList;
     if (!ParmsDb::instance()->selectAllUsers(userList)) {
@@ -3690,11 +3716,6 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
 
     if (!exists) {
         LOGW_WARN(_logger, L"Sync localpath " << Utility::formatSyncPath(sync.localPath()) << L" doesn't exist.");
-        auto tmpSync(sync);
-        tmpSync.setPaused(true);
-        if (bool found = false; !ParmsDb::instance()->updateSync(tmpSync, found) || !found) {
-            LOG_WARN(_logger, "Failed to update sync status!");
-        }
         return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
     }
 
@@ -3754,7 +3775,7 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
 #endif
         vfsSetupParams.localPath = sync.localPath();
         vfsSetupParams.targetPath = sync.targetPath();
-        vfsSetupParams.executeCommand = [this]([[maybe_unused]] const CommString &command, [[maybe_unused]] bool broadcast) {
+        vfsSetupParams.executeCommand = []([[maybe_unused]] const CommString &command, [[maybe_unused]] bool broadcast) {
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
             _commManager->executeCommandDirect(command, broadcast);
 #endif
@@ -3983,10 +4004,43 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
     return ExitCode::Ok;
 }
 
+ExitInfo AppServer::getNodePath(const int syncDbId, const NodeId &nodeId, CommString &path) {
+    const std::scoped_lock lock(AppServer::syncPalMapMutex);
+    auto syncPalMapIt = _commManager->appServer().syncPalMap.find(syncDbId);
+
+    if (syncPalMapIt == _commManager->appServer().syncPalMap.end()) {
+        LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << syncDbId);
+
+        return ExitCode::DataError;
+    }
+
+    if (!syncPalMapIt->second) {
+        LOG_WARN(_logger, "SyncPal not set in syncPalMap for syncDbId=" << syncDbId);
+
+        return ExitCode::DataError;
+    }
+
+    if (const auto exitInfo =
+                ServerRequests::getPathByNodeId(syncPalMapIt->second->userDbId(), syncPalMapIt->second->driveId(), nodeId, path);
+        !exitInfo) {
+        if (exitInfo.cause() == ExitCause::NotFound) {
+            (void) SyncNodeCache::instance()->deleteSyncNode(syncDbId, nodeId);
+        } else {
+            LOG_WARN(_logger, "Error in ServerRequests::getPathByNodeId: " << exitInfo);
+            AppServer::addError(Error(ERR_ID, exitInfo));
+        }
+
+        return exitInfo;
+    }
+
+    return ExitCode::Ok;
+}
+
 void AppServer::addError(const Error &error) {
+    Error errorCopy = error;
     // Fetch all errors.
     std::vector<Error> errorList;
-    if (!ParmsDb::instance()->selectAllErrors(error.level(), error.syncDbId(), INT_MAX, errorList)) {
+    if (!ParmsDb::instance()->selectAllErrors(errorCopy.level(), errorCopy.syncDbId(), INT_MAX, errorList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllErrors");
         return;
     }
@@ -3994,9 +4048,9 @@ void AppServer::addError(const Error &error) {
     // Check if a similar error already exists.
     bool errorAlreadyExists = false;
     for (Error &existingError: errorList) {
-        if (!existingError.isSimilarTo(error)) continue;
+        if (!existingError.isSimilarTo(errorCopy)) continue;
         // Update existing error time
-        existingError.setTime(error.time());
+        existingError.setTime(errorCopy.time());
         bool found = false;
         if (!ParmsDb::instance()->updateError(existingError, found)) {
             LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateError");
@@ -4006,30 +4060,37 @@ void AppServer::addError(const Error &error) {
             LOG_WARN(Log::instance()->getLogger(), "Error not found in Error table for dbId=" << existingError.dbId());
             return;
         }
-
+        errorCopy.setDbId(existingError.dbId());
         errorAlreadyExists = true;
         break;
     }
 
-    if (!errorAlreadyExists && !ParmsDb::instance()->insertError(error)) { // Insert new error
+    if (!errorAlreadyExists && !ParmsDb::instance()->insertError(errorCopy)) { // Insert new error
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::insertError");
         return;
     }
-    if (!errorAlreadyExists) errorList.push_back(error);
+    if (!errorAlreadyExists) errorList.push_back(errorCopy);
 
 
     User user;
-    if (error.syncDbId() && ServerRequests::getUserFromSyncDbId(error.syncDbId(), user) != ExitCode::Ok) {
+    if (errorCopy.syncDbId() && ServerRequests::getUserFromSyncDbId(errorCopy.syncDbId(), user) != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ServerRequests::getUserFromSyncDbId");
         return;
     }
 
-    if (ServerRequests::isDisplayableError(error)) {
+    if (ServerRequests::isDisplayableError(errorCopy)) {
         // Notify the client
-        sendErrorAdded(error.level() == ErrorLevel::Server, error.exitCode(), error.syncDbId());
+        if (errorAlreadyExists) {
+            // First remove the existing error
+            _commManager->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(errorCopy.dbId()));
+        }
+
+        ErrorInfo errorInfo;
+        ServerRequests::errorToErrorInfo(errorCopy, errorInfo);
+        sendErrorAdded(errorInfo);
     }
 
-    if (error.exitCode() == ExitCode::InvalidToken) {
+    if (errorCopy.exitCode() == ExitCode::InvalidToken) {
         // Manage invalid token error
         LOG_DEBUG(Log::instance()->getLogger(), "Manage invalid token error");
 
@@ -4053,7 +4114,7 @@ void AppServer::addError(const Error &error) {
         UserInfo userInfo;
         ServerRequests::userToUserInfo(user, userInfo);
         sendUserUpdated(userInfo);
-    } else if (error.exitCode() == ExitCode::NetworkError && error.exitCause() == ExitCause::SocketsDefuncted) {
+    } else if (errorCopy.exitCode() == ExitCode::NetworkError && errorCopy.exitCause() == ExitCause::SocketsDefuncted) {
         // Manage sockets defuncted error
         LOG_WARN(Log::instance()->getLogger(), "Manage sockets defuncted error");
 
@@ -4064,7 +4125,7 @@ void AppServer::addError(const Error &error) {
 
         // Decrease JobManager pool capacity
         SyncJobManagerSingleton::instance()->decreasePoolCapacity();
-    } else if (error.exitCode() == ExitCode::SystemError && error.exitCause() == ExitCause::FileAccessError) {
+    } else if (errorCopy.exitCode() == ExitCode::SystemError && errorCopy.exitCause() == ExitCause::FileAccessError) {
         // Remove child errors
         std::unordered_set<int64_t> toBeRemovedErrorIds;
         for (const Error &parentError: errorList) {
@@ -4085,13 +4146,14 @@ void AppServer::addError(const Error &error) {
                 LOG_WARN(Log::instance()->getLogger(), "Error not found in Error table for dbId=" << errorId);
                 return;
             }
+            _commManager->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(errorId));
         }
-        if (!toBeRemovedErrorIds.empty()) sendErrorsCleared(error.syncDbId());
-    } else if (error.exitCode() == ExitCode::UpdateRequired) {
+        if (!toBeRemovedErrorIds.empty()) sendErrorsCleared(errorCopy.syncDbId());
+    } else if (errorCopy.exitCode() == ExitCode::UpdateRequired) {
         AbstractUpdater::unskipVersion();
     }
 
-    if (!ServerRequests::isAutoResolvedError(error) && !errorAlreadyExists) {
+    if (!ServerRequests::isAutoResolvedError(errorCopy) && !errorAlreadyExists) {
         // Send error to sentry only for technical errors
         SentryUser sentryUser(user.email(), user.name(), std::to_string(user.userId()));
         sentry::Handler::captureMessage(sentry::Level::Warning, "AppServer::addError", error.errorString(), sentryUser);
@@ -4339,8 +4401,8 @@ void AppServer::onUpdateSyncsProgress() {
         const std::scoped_lock lock(syncPalMapMutex);
         if (const auto syncPalMapIt = syncPalMap.find(sync.dbId()); syncPalMapIt == syncPalMap.end()) {
             // No SyncPal for this sync
-            sendSyncProgressInfo(sync.dbId(), sync.paused() ? SyncStatus::Paused : SyncStatus::Error, SyncStep::None,
-                                 SyncProgress());
+            // Show the sync paused anyway. It is most likely that an external drive is not plugged in.
+            sendSyncProgressInfo(sync.dbId(), SyncStatus::Paused, SyncStep::None, SyncProgress());
         } else {
             if (!syncPalMapIt->second) {
                 assert(false);

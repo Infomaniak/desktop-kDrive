@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="Infomaniak.kDrive.CustomControls.Errors.Templates.Node.ForbiddenCharError"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:Infomaniak.kDrive.CustomControls.Errors"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converters="using:Infomaniak.kDrive.Converters"
+             mc:Ignorable="d">
+    <UserControl.Resources>
+        <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />
+    </UserControl.Resources>
+    <local:ErrorCard x:Name="ErrorCard"
+                     x:Uid="ERR_FrobiddenChar"                    
+                     ItemIconUri="{x:Bind _error.Path, Converter={StaticResource FilePathToIconConverter}}"
+                     ItemPath="{x:Bind _error.Path}" />
+</UserControl>

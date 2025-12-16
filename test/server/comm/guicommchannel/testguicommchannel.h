@@ -71,18 +71,33 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSyncGetPrivateLinkUrlJob);
         CPPUNIT_TEST(testSyncSetSupportsVirtualFilesJob);
         CPPUNIT_TEST(testSyncSetRootPinStateJob);
-        /* Deactivated because string values are not yet base64-encoded
-         * in these tests.
         CPPUNIT_TEST(testBlacklistedSyncNodeListJob);
         CPPUNIT_TEST(testBlacklistedSyncNodeSetListJob);
         CPPUNIT_TEST(testNodeInfoJob);
+        CPPUNIT_TEST(testNodePathJob);
         CPPUNIT_TEST(testNodeSubFolderJob);
-        CPPUNIT_TEST(testNodeFolderSizeJob);
-         */
         CPPUNIT_TEST(testNodeSubFolders2Job);
+        CPPUNIT_TEST(testNodeFolderSizeJob);
         CPPUNIT_TEST(testNodeCreateMissingFoldersJob);
+        CPPUNIT_TEST(testErrorInfoListJob);
+        CPPUNIT_TEST(testExclTemplGetExcludedJob);
+        CPPUNIT_TEST(testExclTemplGetListJob);
+        CPPUNIT_TEST(testExclTemplSetListJob);
+        CPPUNIT_TEST(testExclTemplPropagateChangeJob);
+
+#if defined(KD_MACOS)
+        CPPUNIT_TEST(testExclAppGetListJob);
+        CPPUNIT_TEST(testExclAppSetListJob);
+        CPPUNIT_TEST(testExclAppGetFetchingAppListJob);
+#endif
         CPPUNIT_TEST(testParametersInfoJob);
         CPPUNIT_TEST(testParametersUpdateJob);
+        CPPUNIT_TEST(testUtilityActivateLoadInfoJob);
+        CPPUNIT_TEST(testUtilityGetAppStateJob);
+        CPPUNIT_TEST(testUtilitySetAppStateJob);
+        CPPUNIT_TEST(testUtilityCancelLogToSupportJob);
+        CPPUNIT_TEST(testUtilityGetLogEstimatedSizeJob);
+        CPPUNIT_TEST(testUtilitySendLogToSupportJob);
         CPPUNIT_TEST(testUpdaterChangeChannelJob);
         CPPUNIT_TEST(testUpdaterVersionInfoJob);
         CPPUNIT_TEST(testUpdaterStateJob);
@@ -120,13 +135,33 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testSyncSetRootPinStateJob();
         void testBlacklistedSyncNodeListJob();
         void testBlacklistedSyncNodeSetListJob();
+        void testNodePathJob();
         void testNodeInfoJob();
         void testNodeSubFolderJob();
+        void testNodeFolderSizeJob();
+        void testSyncNodeListJob();
+        void testSyncNodeSetListJob();
         void testNodeSubFolders2Job();
         void testNodeFolderSizeJob();
         void testNodeCreateMissingFoldersJob();
+        void testErrorInfoListJob();
+        void testExclTemplGetExcludedJob();
+        void testExclTemplGetListJob();
+        void testExclTemplSetListJob();
+        void testExclTemplPropagateChangeJob();
+#if defined(KD_MACOS)
+        void testExclAppGetListJob();
+        void testExclAppSetListJob();
+        void testExclAppGetFetchingAppListJob();
+#endif
         void testParametersInfoJob();
         void testParametersUpdateJob();
+        void testUtilityActivateLoadInfoJob();
+        void testUtilityGetAppStateJob();
+        void testUtilitySetAppStateJob();
+        void testUtilityCancelLogToSupportJob();
+        void testUtilityGetLogEstimatedSizeJob();
+        void testUtilitySendLogToSupportJob();
         void testUpdaterChangeChannelJob();
         void testUpdaterVersionInfoJob();
         void testUpdaterStateJob();

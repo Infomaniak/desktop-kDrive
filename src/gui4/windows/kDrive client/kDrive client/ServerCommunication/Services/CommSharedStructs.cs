@@ -44,8 +44,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
                     {
                         targetPropType = Nullable.GetUnderlyingType(targetPropType)!;
                     }
-                    var newObj = Activator.CreateInstance(targetPropType);
-                    targetProp.SetValue(target, newObj);
+                    object newObj = targetPropType == typeof(string) ? string.Empty : Activator.CreateInstance(targetPropType);
                 }
 
                 targetProp.SetValue(target, sourceValue);
@@ -215,7 +214,6 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
     public class ParmsInfo
     {
         public Language? Language { get; set; }
-        public bool? MonoIcons { get; set; }
         public bool? AutoStart { get; set; }
         public bool? MoveToTrash { get; set; }
         public NotificationsDisabled? NotificationsDisabled { get; set; }
@@ -225,8 +223,8 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         public bool? PurgeOldLogs { get; set; }
         public ProxyConfigInfo? ProxyConfigInfo { get; set; }
         public bool? ShowShortcuts { get; set; }
-        public bool MatomoEnabled { get; set; }
-        public bool SentryEnabled { get; set; }
+        public bool? MatomoEnabled { get; set; }
+        public bool? SentryEnabled { get; set; }
         public VersionChannel? DistributionChannel { get; set; }
     }
     public static partial class ConversionHelper
@@ -234,7 +232,6 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public void copyToSettings(ParmsInfo source, Settings target)
         {
             copyProperty(source, target, nameof(source.Language), nameof(target.Language));
-            // copyProperty(source, target, nameof(source.MonoIcons), nameof(target.MonoIcons)); -> Not implemented
             copyProperty(source, target, nameof(source.AutoStart), nameof(target.AutoStart));
             copyProperty(source, target, nameof(source.MoveToTrash), nameof(target.MoveToTrash));
             copyProperty(source, target, nameof(source.NotificationsDisabled), nameof(target.NotificationsDisabled));
@@ -260,7 +257,6 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public void copyToParmsInfo(Settings source, ParmsInfo target)
         {
             copyProperty(source, target, nameof(source.Language), nameof(target.Language));
-            // copyProperty(source, target, nameof(source.MonoIcons), nameof(target.MonoIcons)); -> Not implemented
             copyProperty(source, target, nameof(source.AutoStart), nameof(target.AutoStart));
             copyProperty(source, target, nameof(source.MoveToTrash), nameof(target.MoveToTrash));
             copyProperty(source, target, nameof(source.NotificationsDisabled), nameof(target.NotificationsDisabled));
@@ -270,8 +266,10 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             copyProperty(source, target, nameof(source.MatomoEnabled), nameof(target.MatomoEnabled));
             copyProperty(source, target, nameof(source.SentryEnabled), nameof(target.SentryEnabled));
 
-            if (source.ProxyConfig is ProxyConfig proxyConfig && target.ProxyConfigInfo is ProxyConfigInfo proxyConfigInfo)
-                copyToProxyConfigInfo(proxyConfig, proxyConfigInfo);
+            if (target.ProxyConfigInfo is null)
+                target.ProxyConfigInfo = new();
+
+            copyToProxyConfigInfo(source.ProxyConfig, target.ProxyConfigInfo);
 
             if (source.LogLevel == Logger.Level.None)
             {
@@ -348,6 +346,42 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             copyProperty(source, target, nameof(source.Size), nameof(target.Size));
             copyProperty(source, target, nameof(source.ParentNodeId), nameof(target.ParentNodeId));
             copyProperty(source, target, nameof(source.Path), nameof(target.Path));
+        }
+    }
+
+    public class ErrorInfo
+    {
+        public DbId? DbId { get; set; }
+        public DateTime? Time { get; set; }
+        public ErrorLevel? Level { get; set; }
+        public DbId? SyncDbId { get; set; }
+        public ExitCode? ExitCode { get; set; }
+        public ExitCause? ExitCause { get; set; }
+        public NodeType? NodeType { get; set; }
+        public string? Path { get; set; }
+        public string? DestinationPath { get; set; }
+        public ConflictType? ConflictType { get; set; }
+        public InconsistencyType? InconsistencyType { get; set; }
+        public CancelType? CancelType { get; set; }
+        public bool? AutoResolved { get; set; }
+    }
+
+    public static partial class ConversionHelper
+    {
+        static public void copyToError(ErrorInfo source, Error target)
+        {
+            copyProperty(source, target, nameof(source.DbId), nameof(target.DbId));
+            copyProperty(source, target, nameof(source.Time), nameof(target.Timestamp));
+            copyProperty(source, target, nameof(source.Level), nameof(target.ErrorLevel));
+            copyProperty(source, target, nameof(source.ExitCode), nameof(target.ExitCode));
+            copyProperty(source, target, nameof(source.ExitCause), nameof(target.ExitCause));
+            copyProperty(source, target, nameof(source.NodeType), nameof(target.NodeType));
+            copyProperty(source, target, nameof(source.Path), nameof(target.Path));
+            copyProperty(source, target, nameof(source.DestinationPath), nameof(target.DestinationPath));
+            copyProperty(source, target, nameof(source.ConflictType), nameof(target.ConflictType));
+            copyProperty(source, target, nameof(source.InconsistencyType), nameof(target.InconsistencyType));
+            copyProperty(source, target, nameof(source.CancelType), nameof(target.CancelType));
+            copyProperty(source, target, nameof(source.AutoResolved), nameof(target.AutoResolved));
         }
     }
 }

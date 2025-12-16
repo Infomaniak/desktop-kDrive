@@ -64,7 +64,7 @@ ExitCode GuiRequests::getErrorInfoList(const ErrorLevel level, const int syncDbI
     paramsStream << limit;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::ERROR_INFOLIST, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::ERROR_INFOLIST_LEGACY, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -83,7 +83,7 @@ ExitCode GuiRequests::getConflictList(const int driveDbId, const QList<ConflictT
     paramsStream << filter;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::ERROR_GET_CONFLICTS, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::ERROR_GET_CONFLICTS_LEGACY, params, results)) {
         return ExitCode::SystemError;
     }
 

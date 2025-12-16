@@ -21,6 +21,7 @@
 #endif
 
 #include "serverrequests.h"
+#include "appserver.h"
 #include "config.h"
 #include "keychainmanager/keychainmanager.h"
 #include "jobs/network/kDrive_API/getrootfilelistjob.h"
@@ -43,6 +44,7 @@
 #include "libcommonserver/utility/utility.h"
 #include "libsyncengine/requests/parameterscache.h"
 #include "libsyncengine/requests/exclusiontemplatecache.h"
+#include "server/comm/guijobs/signalerrorremovedjob.h"
 
 #include <QDir>
 #include <QUuid>
@@ -987,6 +989,16 @@ ExitCode ServerRequests::getNodeIdByPath(int userDbId, int driveId, const SyncPa
     return ExitCode::Ok;
 }
 
+ExitInfo ServerRequests::getPathByNodeId(const int userDbId, const int driveId, const NodeId &nodeId, CommString &path) {
+    path = {};
+    QString pathQString;
+
+    const auto exitInfo = getPathByNodeId(userDbId, driveId, QString::fromStdString(nodeId), pathQString);
+    path = CommonUtility::qStr2CommString(pathQString);
+
+    return exitInfo;
+}
+
 ExitInfo ServerRequests::getPathByNodeId(int userDbId, int driveId, const QString &nodeId, QString &path) {
     NodeInfo nodeInfo;
 
@@ -1435,26 +1447,39 @@ ExitCode ServerRequests::getPrivateLinkUrl(const int driveDbId, const QString &f
     return exitCode;
 }
 
-ExitCode ServerRequests::getExclusionTemplateList(bool def, QList<ExclusionTemplateInfo> &list) {
+ExitCode ServerRequests::getExclusionTemplateList(const bool def, std::vector<ExclusionTemplateInfo> &list) {
     list.clear();
     for (const ExclusionTemplate &exclusionTemplate: ExclusionTemplateCache::instance()->exclusionTemplates(def)) {
         ExclusionTemplateInfo exclusionTemplateInfo;
         ServerRequests::exclusionTemplateToExclusionTemplateInfo(exclusionTemplate, exclusionTemplateInfo);
-        list << exclusionTemplateInfo;
+        list.push_back(std::move(exclusionTemplateInfo));
     }
 
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::setExclusionTemplateList(bool def, const QList<ExclusionTemplateInfo> &list) {
+ExitCode ServerRequests::getExclusionTemplateList(const bool def, QList<ExclusionTemplateInfo> &list) {
+    list.clear();
+    std::vector<ExclusionTemplateInfo> stdVector;
+
+    if (const auto exitCode = getExclusionTemplateList(def, stdVector); exitCode != ExitCode::Ok) return exitCode;
+
+    for (auto &exclusionTemplateInfo: stdVector) {
+        list.append(std::move(exclusionTemplateInfo));
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitCode ServerRequests::setExclusionTemplateList(const bool def, const std::vector<ExclusionTemplateInfo> &list) {
     std::vector<ExclusionTemplate> exclusionList;
     for (const ExclusionTemplateInfo &exclusionTemplateInfo: list) {
         ExclusionTemplate exclusionTemplate;
         ServerRequests::exclusionTemplateInfoToExclusionTemplate(exclusionTemplateInfo, exclusionTemplate);
-        exclusionList.push_back(exclusionTemplate);
+        exclusionList.push_back(std::move(exclusionTemplate));
     }
-    ExitCode exitCode = ExclusionTemplateCache::instance()->update(def, exclusionList);
-    if (exitCode != ExitCode::Ok) {
+
+    if (const auto exitCode = ExclusionTemplateCache::instance()->update(def, exclusionList); exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ExclusionTemplateCache::save");
         return exitCode;
     }
@@ -1462,24 +1487,46 @@ ExitCode ServerRequests::setExclusionTemplateList(bool def, const QList<Exclusio
     return ExitCode::Ok;
 }
 
+ExitCode ServerRequests::setExclusionTemplateList(bool def, const QList<ExclusionTemplateInfo> &list) {
+    std::vector<ExclusionTemplateInfo> exclusionStdVector;
+    for (const auto &exclusionTemplateInfo: list) exclusionStdVector.push_back(exclusionTemplateInfo);
+
+    return setExclusionTemplateList(def, exclusionStdVector);
+}
+
 #if defined(KD_MACOS)
-ExitCode ServerRequests::getExclusionAppList(bool def, QList<ExclusionAppInfo> &list) {
+ExitCode ServerRequests::getExclusionAppList(const bool def, std::vector<ExclusionAppInfo> &list) {
+    list.clear();
     std::vector<ExclusionApp> exclusionList;
+
     if (!ParmsDb::instance()->selectAllExclusionApps(def, exclusionList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllExclusionApps");
         return ExitCode::DbError;
     }
-    list.clear();
+
     for (const ExclusionApp &exclusionApp: exclusionList) {
         ExclusionAppInfo exclusionAppInfo;
         ServerRequests::exclusionAppToExclusionAppInfo(exclusionApp, exclusionAppInfo);
-        list << exclusionAppInfo;
+        list.emplace_back(std::move(exclusionAppInfo));
     }
 
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::setExclusionAppList(bool def, const QList<ExclusionAppInfo> &list) {
+ExitCode ServerRequests::getExclusionAppList(const bool def, QList<ExclusionAppInfo> &list) {
+    list.clear();
+    std::vector<ExclusionAppInfo> stdVectorAppInfo;
+
+    const auto exitInfo = getExclusionAppList(def, stdVectorAppInfo);
+
+    for (auto &appInfo: stdVectorAppInfo) {
+        list.append(std::move(appInfo));
+    }
+
+    return exitInfo;
+}
+
+ExitCode ServerRequests::setExclusionAppList(const bool def, const std::vector<ExclusionAppInfo> &list) {
     std::vector<ExclusionApp> exclusionList;
     for (const ExclusionAppInfo &exclusionAppInfo: list) {
         ExclusionApp exclusionApp;
@@ -1492,6 +1539,13 @@ ExitCode ServerRequests::setExclusionAppList(bool def, const QList<ExclusionAppI
     }
 
     return ExitCode::Ok;
+}
+
+ExitCode ServerRequests::setExclusionAppList(const bool def, const QList<ExclusionAppInfo> &list) {
+    std::vector<ExclusionAppInfo> stdVector;
+    for (const ExclusionAppInfo &exclusionAppInfo: list) stdVector.push_back(exclusionAppInfo);
+
+    return setExclusionAppList(def, stdVector);
 }
 #endif
 
@@ -1508,6 +1562,25 @@ ExitCode ServerRequests::getErrorInfoList(ErrorLevel level, int syncDbId, int li
             ErrorInfo errorInfo;
             errorToErrorInfo(error, errorInfo);
             list << errorInfo;
+        }
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitInfo ServerRequests::getErrorInfoList(int limit, std::vector<ErrorInfo> &list) {
+    std::vector<Error> errorList;
+    if (!ParmsDb::instance()->selectAllErrors(limit, errorList)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllErrors");
+        return ExitCode::DbError;
+    }
+
+    list.clear();
+    for (const Error &error: errorList) {
+        if (isDisplayableError(error)) {
+            ErrorInfo errorInfo;
+            errorToErrorInfo(error, errorInfo);
+            list.push_back(errorInfo);
         }
     }
 
@@ -1550,6 +1623,16 @@ ExitCode ServerRequests::getConflictErrorInfoList(int syncDbId, const std::unord
 }
 
 ExitCode ServerRequests::deleteErrorsServer() {
+    std::vector<Error> errorList;
+    if (!ParmsDb::instance()->selectAllErrors(ErrorLevel::Server, 0, INT_MAX, errorList)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllErrors");
+        return ExitCode::DbError;
+    }
+
+    for (const Error &error: errorList) {
+        AppServer::commManager()->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(error.dbId()));
+    }
+
     if (!ParmsDb::instance()->deleteErrors(ErrorLevel::Server)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteErrors");
         return ExitCode::DbError;
@@ -1620,6 +1703,7 @@ ExitCode ServerRequests::deleteErrorsForSync(const int syncDbId, const bool auto
                 LOG_WARN(Log::instance()->getLogger(), "Error not found for dbId=" << error.dbId());
                 return ExitCode::DataError;
             }
+            AppServer::commManager()->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(error.dbId()));
         }
     }
 

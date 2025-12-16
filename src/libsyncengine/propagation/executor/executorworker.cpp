@@ -352,7 +352,7 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
             ignored = true;
             LOGW_SYNCPAL_INFO(_logger,
                               L"Forbidden destination, operation ignored: " << Utility::formatSyncPath(absoluteLocalFilePath));
-            return ExitCode::Ok;
+            return {ExitCode::Ok, ExitCause::OperationCanceled};
         }
 
         if (ExitInfo exitInfo = generateCreateJob(syncOp, job, hydrating); !exitInfo) {

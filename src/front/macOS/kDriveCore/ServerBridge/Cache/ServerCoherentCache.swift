@@ -35,10 +35,11 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
             .eraseToAnyPublisher()
     }
 
-    enum CacheError: Error {
+    public enum CacheError: Error {
         case userNotFound(_ dbId: Int32)
         case accountNotFound(_ dbId: Int32)
         case driveNotFound(_ dbId: Int32)
+        case synchroNotFound(_ dbId: Int32)
     }
 
     public init() {}
@@ -156,12 +157,16 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         return nil
     }
 
-    public func addDrive(_ drive: Drive, accountDbId: Int32, userDbId: Int32) {
-        guard var user = users[userDbId],
-              var account = user.accounts[accountDbId]
-        else { return }
+    public func addDrive(_ drive: Drive, accountDbId: Int32) throws {
+        let userDbId = drive.userDbId
+        guard var user = users[userDbId] else {
+            throw CacheError.userNotFound(userDbId)
+        }
+        guard var account = user.accounts[accountDbId] else {
+            throw CacheError.accountNotFound(accountDbId)
+        }
 
-        account.drives[drive.id] = drive
+        account.drives[drive.driveDbId] = drive
         user.accounts[accountDbId] = account
         users[userDbId] = user
 
@@ -181,24 +186,16 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
     }
 
     public func updateDrive(drive: Drive) throws {
-        let userDbId = drive.userDbId
-        let accountId = drive.accountId
-
-        guard var user = users[userDbId] else {
-            throw CacheError.userNotFound(userDbId)
-        }
-        guard var account = user.accounts[accountId] else {
-            throw CacheError.accountNotFound(accountId)
+        let accountDbId = drive.accountDbId
+        guard var account = getAccount(accountDbId: accountDbId) else {
+            throw CacheError.accountNotFound(accountDbId)
         }
 
         var indexedDrives = account.drives
-        indexedDrives[drive.id] = drive
-
+        indexedDrives[drive.driveDbId] = drive
         account.drives = indexedDrives
-        user.accounts[accountId] = account
-        users[userDbId] = user
 
-        notifyUpdate()
+        try updateAccount(account)
     }
 
     // MARK: - SYNCHRO
@@ -210,7 +207,6 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
             .synchros[synchroDbId]
     }
 
-    // TODO: If synchro has driveDbId, reuse getDrive
     public func getSynchro(synchroDbId: Int32) -> Synchro? {
         for user in users.values {
             for account in user.accounts.values {
@@ -224,32 +220,26 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         return nil
     }
 
-    public func addSynchro(_ synchro: Synchro, toDrive driveDbId: Int32, accountDbId: Int32, userDbId: Int32) {
-        guard var user = users[userDbId],
-              var account = user.accounts[accountDbId],
-              var drive = account.drives[driveDbId]
-        else { return }
+    public func addSynchro(_ synchro: Synchro) throws {
+        let driveDbId = synchro.driveDbId
+        guard var drive = getDrive(driveDbId: driveDbId) else {
+            throw CacheError.driveNotFound(driveDbId)
+        }
 
-        drive.synchros[synchro.id] = synchro
-        account.drives[driveDbId] = drive
-        user.accounts[accountDbId] = account
-        users[userDbId] = user
-
-        notifyUpdate()
+        drive.synchros[synchro.dbId] = synchro
+        try updateDrive(drive: drive)
     }
 
-    public func removeSynchro(synchroDbId: Int32, driveDbId: Int32, accountDbId: Int32, userDbId: Int32) {
-        guard var user = users[userDbId],
-              var account = user.accounts[accountDbId],
-              var drive = account.drives[driveDbId]
-        else { return }
+    public func removeSynchro(synchroDbId: Int32, driveDbId: Int32) throws {
+        guard var drive = getDrive(driveDbId: driveDbId) else {
+            throw CacheError.driveNotFound(driveDbId)
+        }
 
-        drive.synchros.removeValue(forKey: synchroDbId)
-        account.drives[driveDbId] = drive
-        user.accounts[accountDbId] = account
-        users[userDbId] = user
+        guard drive.synchros.removeValue(forKey: synchroDbId) != nil else {
+            throw CacheError.synchroNotFound(synchroDbId)
+        }
 
-        notifyUpdate()
+        try updateDrive(drive: drive)
     }
 
     public func updateSynchro(_ synchro: Synchro) throws {
@@ -259,8 +249,6 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
 
         drive.synchros[synchro.dbId] = synchro
         try updateDrive(drive: drive)
-
-        notifyUpdate()
     }
 
     // MARK: - Observation

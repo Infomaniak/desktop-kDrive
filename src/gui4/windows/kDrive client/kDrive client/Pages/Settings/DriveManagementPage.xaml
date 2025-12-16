@@ -150,7 +150,8 @@
                                                  HorizontalAlignment="Stretch"
                                                  IsChecked="{x:Bind ManagedDrive.MainSync.IsTypeOnline, Mode=OneWay}"
                                                  Checked="LiteSyncRadioButtonChecked"
-                                                 Unchecked="LiteSyncRadioButtonUnchecked" />
+                                                 Unchecked="LiteSyncRadioButtonUnchecked"
+                                                 IsEnabled="False" />
                                 </Grid>
                             </toolKit:SettingsCard>
 
@@ -177,7 +178,8 @@
                                                  GroupName="SyncModeRadioGroup"
                                                  MinWidth="0"
                                                  IsChecked="{x:Bind ManagedDrive.MainSync.IsTypeOnline, Converter={StaticResource BooleanToInvertedBooleanConverter}, Mode=OneWay}"
-                                                 HorizontalAlignment="Stretch" />
+                                                 HorizontalAlignment="Stretch"
+                                                 IsEnabled="False" />
                                 </Grid>
                             </toolKit:SettingsCard>
 

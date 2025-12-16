@@ -20,6 +20,7 @@ import Combine
 import Foundation
 import InfomaniakDI
 
+@MainActor
 @propertyWrapper
 public final class ObservedAccount: ObservableObject {
     @Published public private(set) var wrappedValue: Account?
@@ -62,24 +63,23 @@ public final class ObservedAccount: ObservableObject {
 }
 
 public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
-    func accountPublisher(userDbId: Int32,
-                          accountDbId: Int32)
-        -> AnyPublisher<Account?, Never> {
+    func accountEventPublisher(
+        userDbId: Int32,
+        accountDbId: Int32
+    ) -> AnyPublisher<ObservationEvent<Account>, Never> {
         map { usersDict -> Account? in
             usersDict[userDbId]?.accounts[accountDbId]
         }
-        .scan((old: Account?.none, new: Account?.none)) { prev, newAccount in
-            (old: prev.new, new: newAccount)
+        .map { account in
+            account.map(ObservationEvent.update) ?? .removed
         }
-        .map { pair -> Account? in
-            guard pair.old != pair.new else { return nil }
-            return pair.new
-        }
-        .compactMap { $0 }
+        .removeDuplicates()
         .eraseToAnyPublisher()
     }
 
-    func accountPublisher(accountDbId: Int32) -> AnyPublisher<Account?, Never> {
+    func accountEventPublisher(
+        accountDbId: Int32
+    ) -> AnyPublisher<ObservationEvent<Account>, Never> {
         map { usersDict -> Account? in
             for user in usersDict.values {
                 if let account = user.accounts[accountDbId] {
@@ -88,14 +88,42 @@ public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
             }
             return nil
         }
-        .scan((old: Account?.none, new: Account?.none)) { prev, newAccount in
-            (old: prev.new, new: newAccount)
+        .map { account in
+            account.map(ObservationEvent.update) ?? .removed
         }
-        .map { pair -> Account? in
-            guard pair.old != pair.new else { return nil }
-            return pair.new
-        }
-        .compactMap { $0 }
+        .removeDuplicates()
         .eraseToAnyPublisher()
+    }
+
+    func accountPublisher(
+        userDbId: Int32,
+        accountDbId: Int32
+    ) -> AnyPublisher<Account?, Never> {
+        accountEventPublisher(
+            userDbId: userDbId,
+            accountDbId: accountDbId
+        )
+        .map { event -> Account? in
+            switch event {
+            case let .update(account): return account
+            case .removed: return nil
+            }
+        }
+        .removeDuplicates()
+        .eraseToAnyPublisher()
+    }
+
+    func accountPublisher(
+        accountDbId: Int32
+    ) -> AnyPublisher<Account?, Never> {
+        accountEventPublisher(accountDbId: accountDbId)
+            .map { event -> Account? in
+                switch event {
+                case let .update(account): return account
+                case .removed: return nil
+                }
+            }
+            .removeDuplicates()
+            .eraseToAnyPublisher()
     }
 }

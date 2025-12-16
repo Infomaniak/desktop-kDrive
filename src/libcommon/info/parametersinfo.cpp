@@ -22,10 +22,10 @@
 
 namespace KDC {
 
-static const auto parametersInfoInfoLanguage = "language";
-static const auto parametersInfoInfoMonoIcons = "monoIcons";
-static const auto parametersInfoInfoAutoStart = "autoStart";
-static const auto parametersInfoInfoMoveToTrash = "moveToTrash";
+static const auto parametersInfoLanguage = "language";
+static const auto parametersInfoMonoIcons = "monoIcons";
+static const auto parametersInfoAutoStart = "autoStart";
+static const auto parametersInfoMoveToTrash = "moveToTrash";
 static const auto parametersInfoNotificationsDisabled = "notificationsDisabled";
 static const auto parametersInfoUseLog = "useLog";
 static const auto parametersInfoLogLevel = "logLevel";
@@ -37,6 +37,8 @@ static const auto parametersInfoShowShortcuts = "showShortcuts";
 static const auto parametersInfoDialogGeometry = "dialogGeometry";
 static const auto parametersInfoMaxAllowedCpu = "maxAllowedCpu";
 static const auto parametersInfoVersionChannel = "distributionChannel";
+static const auto parametersInfoSentryEnabled = "sentryEnabled";
+static const auto parametersInfoMatomoEnabled = "matomoEnabled";
 
 ParametersInfo::ParametersInfo(Language language, bool monoIcons, bool autoStart, bool moveToTrash,
                                NotificationsDisabled notificationsDisabled, bool useLog, LogLevel logLevel, bool extendedLog,
@@ -57,17 +59,19 @@ ParametersInfo::ParametersInfo(Language language, bool monoIcons, bool autoStart
     _maxAllowedCpu(maxAllowedCpu) {}
 
 void ParametersInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
-    CommonUtility::writeValueToStruct(dstruct, parametersInfoInfoLanguage, _language);
-    CommonUtility::writeValueToStruct(dstruct, parametersInfoInfoMonoIcons, _monoIcons);
-    CommonUtility::writeValueToStruct(dstruct, parametersInfoInfoAutoStart, _autoStart);
-    CommonUtility::writeValueToStruct(dstruct, parametersInfoInfoMoveToTrash, _moveToTrash);
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoLanguage, _language);
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoMonoIcons, _monoIcons);
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoAutoStart, _autoStart);
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoMoveToTrash, _moveToTrash);
     CommonUtility::writeValueToStruct(dstruct, parametersInfoNotificationsDisabled, _notificationsDisabled);
     CommonUtility::writeValueToStruct(dstruct, parametersInfoUseLog, _useLog);
     CommonUtility::writeValueToStruct(dstruct, parametersInfoLogLevel, _logLevel);
     CommonUtility::writeValueToStruct(dstruct, parametersInfoExtendedLog, _extendedLog);
     CommonUtility::writeValueToStruct(dstruct, parametersInfoPurgeOldLogs, _purgeOldLogs);
     CommonUtility::writeValueToStruct(dstruct, parametersInfoProxyConfigInfo, _proxyConfigInfo, info2DynamicVar<ProxyConfigInfo>);
+#ifdef KD_MACOS
     CommonUtility::writeValueToStruct(dstruct, parametersInfoDarkTheme, _darkTheme);
+#endif // KD_MACOS
     CommonUtility::writeValueToStruct(dstruct, parametersInfoShowShortcuts, _showShortcuts);
 
     const std::function<Poco::Dynamic::Var(const DialogGeometry &)> dialogGeometry2DynamicVar = [](const DialogGeometry &value) {
@@ -85,13 +89,17 @@ void ParametersInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
 
     CommonUtility::writeValueToStruct(dstruct, parametersInfoMaxAllowedCpu, _maxAllowedCpu);
     CommonUtility::writeValueToStruct(dstruct, parametersInfoVersionChannel, _distributionChannel);
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoSentryEnabled, _sentryEnabled);
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoMatomoEnabled, _matomoEnabled);
 };
 
 void ParametersInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
-    CommonUtility::readValueFromStruct(dstruct, parametersInfoInfoLanguage, _language);
-    CommonUtility::readValueFromStruct(dstruct, parametersInfoInfoMonoIcons, _monoIcons);
-    CommonUtility::readValueFromStruct(dstruct, parametersInfoInfoAutoStart, _autoStart);
-    CommonUtility::readValueFromStruct(dstruct, parametersInfoInfoMoveToTrash, _moveToTrash);
+    CommonUtility::readValueFromStruct(dstruct, parametersInfoLanguage, _language);
+    if (dstruct.contains(parametersInfoMonoIcons)) { // Not used by the new clients
+        CommonUtility::readValueFromStruct(dstruct, parametersInfoMonoIcons, _monoIcons);
+    }
+    CommonUtility::readValueFromStruct(dstruct, parametersInfoAutoStart, _autoStart);
+    CommonUtility::readValueFromStruct(dstruct, parametersInfoMoveToTrash, _moveToTrash);
     CommonUtility::readValueFromStruct(dstruct, parametersInfoNotificationsDisabled, _notificationsDisabled);
     CommonUtility::readValueFromStruct(dstruct, parametersInfoUseLog, _useLog);
     CommonUtility::readValueFromStruct(dstruct, parametersInfoLogLevel, _logLevel);
@@ -100,28 +108,38 @@ void ParametersInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
 
     CommonUtility::readValueFromStruct(dstruct, parametersInfoProxyConfigInfo, _proxyConfigInfo,
                                        dynamicVar2Struct<ProxyConfigInfo>);
-
+#ifdef KD_MACOS
     CommonUtility::readValueFromStruct(dstruct, parametersInfoDarkTheme, _darkTheme);
+#endif // KD_MACOS
+
     CommonUtility::readValueFromStruct(dstruct, parametersInfoShowShortcuts, _showShortcuts);
 
-    const std::function<DialogGeometry(const Poco::Dynamic::Var &)> dynamicVar2DialogGeometry =
-            [](const Poco::Dynamic::Var &value) {
-                assert(value.isStruct());
-                const auto &structValue = value.extract<Poco::DynamicStruct>();
-                DialogGeometry dialogGeometry;
+    if (dstruct.contains(parametersInfoDialogGeometry)) // Not used by the new clients
+    {
+        const std::function<DialogGeometry(const Poco::Dynamic::Var &)> dynamicVar2DialogGeometry =
+                [](const Poco::Dynamic::Var &value) {
+                    assert(value.isStruct());
+                    const auto &structValue = value.extract<Poco::DynamicStruct>();
+                    DialogGeometry dialogGeometry;
 
-                for (const auto &[key, blob64]: structValue) {
-                    const auto blob64Str = blob64.convert<std::string>();
-                    CommBLOB blob;
-                    CommonUtility::convertFromBase64Str(blob64Str, blob);
-                    dialogGeometry.insert(QString::fromStdString(key), QByteArray(blob.data()));
-                }
-                return dialogGeometry;
-            };
+                    for (const auto &[key, blob64]: structValue) {
+                        const auto blob64Str = blob64.convert<std::string>();
+                        CommString commStr;
+                        CommonUtility::convertFromBase64Str(blob64Str, commStr);
+                        std::string str = CommonUtility::commString2Str(commStr);
+                        dialogGeometry.insert(QString::fromStdString(key), QByteArray(str.data()));
+                    }
+                    return dialogGeometry;
+                };
 
-    CommonUtility::readValueFromStruct(dstruct, parametersInfoDialogGeometry, _dialogGeometry, dynamicVar2DialogGeometry);
-    CommonUtility::readValueFromStruct(dstruct, parametersInfoMaxAllowedCpu, _maxAllowedCpu);
+        CommonUtility::readValueFromStruct(dstruct, parametersInfoDialogGeometry, _dialogGeometry, dynamicVar2DialogGeometry);
+    }
+
+    if (dstruct.contains(parametersInfoMaxAllowedCpu)) // Not used by the clients
+        CommonUtility::readValueFromStruct(dstruct, parametersInfoMaxAllowedCpu, _maxAllowedCpu);
     CommonUtility::readValueFromStruct(dstruct, parametersInfoVersionChannel, _distributionChannel);
+    CommonUtility::readValueFromStruct(dstruct, parametersInfoSentryEnabled, _sentryEnabled);
+    CommonUtility::readValueFromStruct(dstruct, parametersInfoMatomoEnabled, _matomoEnabled);
 };
 
 QDataStream &operator>>(QDataStream &in, ParametersInfo &parametersInfo) {
