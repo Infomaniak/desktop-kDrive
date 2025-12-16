@@ -141,7 +141,7 @@ std::string CommonUtility::generateRandomStringPKCE(const int length /*= 10*/) {
 #if defined(KD_MACOS) || defined(KD_LINUX)
 std::string CommonUtility::generateUUID() {
     uuid_t uuid;
-    char uuidStr[37]; // 36 characters + '\0'
+    char uuidStr[37] = {0}; // 36 characters + '\0'
     uuid_generate(uuid);
     uuid_unparse(uuid, uuidStr);
     return uuidStr;
