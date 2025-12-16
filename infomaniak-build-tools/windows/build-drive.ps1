@@ -804,7 +804,7 @@ if ($LASTEXITCODE -ne 0) {
 #                                                                                               #
 #################################################################################################
 
-Prepare-Archive -BuildType $buildType -BuildPath $buildPath -VfsDir $vfsDir -ArchivePath $archivePath -Upload $upload -Ci $ci -NewGuiDir "$buildpath/bin/client" -NewGui $newGui
+Prepare-Archive -BuildType $buildType -BuildPath $buildPath -VfsDir $vfsDir -ArchivePath $archivePath -Upload $upload -Ci $ci -NewGuiDir "$buildPath/bin/client" -NewGui $newGui
 if ($LASTEXITCODE -ne 0)
 {
     Write-Host "Archive preparation failed. Aborting." -f Red
