@@ -42,6 +42,7 @@
 #include "syncsetrootpinstatejob.h"
 #include "blacklistednodelistjob.h"
 #include "blacklistednodesetlistjob.h"
+#include "nodepathjob.h"
 #include "nodeinfojob.h"
 #include "nodesubfoldersjob.h"
 #include "nodesubfolders2job.h"
@@ -94,6 +95,7 @@ GuiJobFactory::GuiJobFactory() {
         {RequestNum::SYNC_SETROOTPINSTATE, makeShared<SyncSetRootPinStateJob>},
         {RequestNum::BLACKLISTED_NODE_LIST, makeShared<BlacklistedNodeListJob>},
         {RequestNum::BLACKLISTED_NODE_SETLIST, makeShared<BlacklistedNodeSetListJob>},
+        {RequestNum::NODE_PATH, makeShared<NodePathJob>},
         {RequestNum::NODE_INFO, makeShared<NodeInfoJob>},
         {RequestNum::SYNC_GETPRIVATELINKURL, makeShared<SyncGetPrivateLinkUrlJob>},
         {RequestNum::NODE_SUBFOLDERS, makeShared<NodeSubFoldersJob>},
@@ -117,7 +119,8 @@ GuiJobFactory::GuiJobFactory() {
         {RequestNum::UTILITY_GET_APPSTATE, makeShared<UtilityGetAppStateJob>},
         {RequestNum::UTILITY_SEND_LOG_TO_SUPPORT, makeShared<UtilitySendLogToSupportJob>},
         {RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT, makeShared<UtilityCancelLogToSupportJob>},
-        {RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE, makeShared<UtilityGetLogEstimatedSizeJob>}};
+        {RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE, makeShared<UtilityGetLogEstimatedSizeJob>}
+    };
 }
 
 

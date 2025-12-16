@@ -16,37 +16,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "nodesubfolders2job.h"
+#include "nodepathjob.h"
 #include "appserver.h"
+
 #include "requests/serverrequests.h"
+#include "requests/syncnodecache.h"
+
 #include "server/comm/guijobmanager.h"
-#include "libcommon/info/userinfo.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
 
 // Input parameters keys
-static const auto inParamsDriveDbId = "driveDbId";
+static const auto inParamsSyncDbId = "syncDbId";
 static const auto inParamsNodeId = "nodeId";
-static const auto inParamsWithPath = "withPath";
 
 // Output parameters keys
-static const auto outParamsNodeSubFolderInfoList = "nodeSubFolderInfoList";
+static const auto outParamsPath = "path";
 
 namespace KDC {
 
-NodeSubFolders2Job::NodeSubFolders2Job(std::shared_ptr<CommManager> commManager, int requestId,
-                                       const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel) :
+NodePathJob::NodePathJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                         std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
-    _requestNum = RequestNum::NODE_SUBFOLDERS2;
+    _requestNum = RequestNum::NODE_PATH;
 }
 
-ExitInfo NodeSubFolders2Job::deserializeInputParms() {
-    constexpr auto logMessage = "Exception in NodeSubFolders2Job::readParamValue: error=";
+ExitInfo NodePathJob::deserializeInputParms() {
+    const auto logMessage = "Exception in NodePathJob::readParamValue: error=";
     try {
-        readParamValue(inParamsDriveDbId, _driveDbId);
+        readParamValue(inParamsSyncDbId, _syncDbId);
         readParamValue(inParamsNodeId, _nodeId);
-        readParamValue(inParamsWithPath, _withPath);
     } catch (const Poco::Exception &pocoException) {
         LOG_WARN(_logger, logMessage << pocoException.message());
 
@@ -60,22 +60,14 @@ ExitInfo NodeSubFolders2Job::deserializeInputParms() {
     return ExitCode::Ok;
 }
 
-ExitInfo NodeSubFolders2Job::serializeOutputParms() {
-    writeParamValues(outParamsNodeSubFolderInfoList, _nodeSubFolderInfoList, info2DynamicVar<NodeInfo>);
+ExitInfo NodePathJob::serializeOutputParms() {
+    writeParamValue(outParamsPath, _path);
 
     return ExitCode::Ok;
 }
 
-ExitInfo NodeSubFolders2Job::process() {
-    if (const auto exitInfo = ServerRequests::getSubFolders(_driveDbId, _nodeId, _nodeSubFolderInfoList, _withPath);
-        exitInfo.code() != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in Requests::getSubFolders");
-        AppServer::addError(Error(ERR_ID, exitInfo));
-
-        return exitInfo;
-    }
-
-    return ExitCode::Ok;
+ExitInfo NodePathJob::process() {
+    return _commManager->appServer().getNodePath(_syncDbId, _nodeId, _path);
 }
 
 } // namespace KDC

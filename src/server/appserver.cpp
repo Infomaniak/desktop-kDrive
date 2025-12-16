@@ -3970,6 +3970,38 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
     return ExitCode::Ok;
 }
 
+ExitInfo AppServer::getNodePath(const int syncDbId, const NodeId &nodeId, CommString &path) {
+    const std::scoped_lock lock(AppServer::syncPalMapMutex);
+    auto syncPalMapIt = _commManager->appServer().syncPalMap.find(syncDbId);
+
+    if (syncPalMapIt == _commManager->appServer().syncPalMap.end()) {
+        LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << syncDbId);
+
+        return ExitCode::DataError;
+    }
+
+    if (!syncPalMapIt->second) {
+        LOG_WARN(_logger, "SyncPal not set in syncPalMap for syncDbId=" << syncDbId);
+
+        return ExitCode::DataError;
+    }
+
+    if (const auto exitInfo =
+                ServerRequests::getPathByNodeId(syncPalMapIt->second->userDbId(), syncPalMapIt->second->driveId(), nodeId, path);
+        !exitInfo) {
+        if (exitInfo.cause() == ExitCause::NotFound) {
+            (void) SyncNodeCache::instance()->deleteSyncNode(syncDbId, nodeId);
+        } else {
+            LOG_WARN(_logger, "Error in ServerRequests::getPathByNodeId: " << exitInfo);
+            AppServer::addError(Error(ERR_ID, exitInfo));
+        }
+
+        return exitInfo;
+    }
+
+    return ExitCode::Ok;
+}
+
 void AppServer::addError(const Error &error) {
     Error errorCopy = error;
     // Fetch all errors.
