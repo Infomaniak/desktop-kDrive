@@ -19,12 +19,12 @@
 import Foundation
 
 public struct UIAccount: Sendable, Equatable, Hashable {
-    public let id: Int
+    public let dbId: Int
     public let name: String
     public let drives: [Int: UIDrive]
 
-    public init(id: Int, name: String, drives: [Int: UIDrive]) {
-        self.id = id
+    public init(dbId: Int, name: String, drives: [Int: UIDrive]) {
+        self.dbId = dbId
         self.name = name
         self.drives = drives
     }
@@ -35,7 +35,7 @@ public extension UIAccount {
         let drives = Dictionary(uniqueKeysWithValues: account.drives.map { key, value in (Int(key), UIDrive(drive: value)) })
 
         self.init(
-            id: Int(account.id),
+            dbId: Int(account.dbId),
             name: account.name,
             drives: drives
         )

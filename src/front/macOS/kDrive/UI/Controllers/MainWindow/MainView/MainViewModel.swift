@@ -28,6 +28,8 @@ final class MainViewModel {
     @LazyInjectService private var cacheObservable: CoherentCacheObservable
 
     @Published private(set) var currentUser: UIUser?
+    @Published private(set) var currentAccount: UIAccount?
+    @Published private(set) var currentDrive: UIDrive?
     @Published private(set) var currentSynchro: UISynchro?
 
     @Published private(set) var availableUsers = [Int: UIUser]()
@@ -65,6 +67,33 @@ final class MainViewModel {
         availableUsers = Dictionary(uniqueKeysWithValues: users.map { userDbId, user in
             (Int(userDbId), UIUser(user: user))
         })
-        print("Did Change")
+
+        updateSelectedItems()
+    }
+
+    private func updateSelectedItems() {
+        guard let currentUserDbId = currentUser?.dbId,
+              let updatedUser = availableUsers[currentUserDbId] else {
+            return
+        }
+        currentUser = updatedUser
+
+        guard let currentAccountDbId = currentAccount?.dbId,
+              let updatedAccount = updatedUser.accounts[currentAccountDbId] else {
+            return
+        }
+        currentAccount = updatedAccount
+
+        guard let currentDriveDbId = currentDrive?.dbId,
+              let updatedDrive = updatedAccount.drives[currentDriveDbId] else {
+            return
+        }
+        currentDrive = updatedDrive
+
+        guard let currentSynchroDbId = currentSynchro?.dbId,
+              let updatedSynchro = updatedDrive.synchros[currentSynchroDbId] else {
+            return
+        }
+        currentSynchro = updatedSynchro
     }
 }
