@@ -21,6 +21,7 @@ using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Threading;
 
@@ -37,13 +38,25 @@ namespace Infomaniak.kDrive.Pages
 
         private async void ConnectionButton_Click(object sender, RoutedEventArgs e)
         {
+            Control? control = sender as Control;
+            if (control is not null)
+            {
+                control.Visibility = Visibility.Collapsed;
+                OAuthProgressRing.Visibility = Visibility.Visible;
+            }
+
             try
             {
-                var OAutCodes = await OAuthHelper.GetCode(CancellationToken.None);
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(120));
+                var OAutCodes = await OAuthHelper.GetCode(cts.Token);
                 if (OAutCodes.Code != "")
                 {
                     Logger.Log(Logger.Level.Debug, "Successfully obtained user code.");
                     User? user = await App.ServiceProvider.GetRequiredService<IServerCommService>().AddOrRelogUser(OAutCodes.Code, OAutCodes.CodeVerifier, CancellationToken.None);
+                    if (user is not null && user.DbId == ViewModel.SelectedSync?.Drive.Account.User.DbId)
+                    {
+                        ViewModel.SelectedSync?.Start();
+                    }
                 }
                 else
                 {
@@ -57,6 +70,14 @@ namespace Infomaniak.kDrive.Pages
             catch (Exception ex)
             {
                 Logger.Log(Logger.Level.Error, $"Authentication process failed {ex.Message}");
+            }
+            finally
+            {
+                if (control is not null)
+                {
+                    control.Visibility = Visibility.Visible;
+                    OAuthProgressRing.Visibility = Visibility.Collapsed;
+                }
             }
         }
     }
