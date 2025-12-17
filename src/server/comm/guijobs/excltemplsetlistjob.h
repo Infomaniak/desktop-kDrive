@@ -29,6 +29,13 @@ class ExclTemplSetListJob : public AbstractGuiJob {
         ExclTemplSetListJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
                             std::shared_ptr<AbstractCommChannel> channel);
 
+        // Setters for compatibility with legacy comm layer
+        void setInParms(bool def, const std::vector<ExclusionTemplateInfo> &exclusionTemplateList) {
+            _default = def;
+            _exclusionTemplateList = exclusionTemplateList;
+        }
+        ExitInfo process() override;
+
     private:
         // Input parameters
         bool _default = false;
@@ -39,8 +46,10 @@ class ExclTemplSetListJob : public AbstractGuiJob {
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override { return ExitCode::Ok; };
-        ExitInfo process() override;
 
+        std::vector<ExclusionTemplateInfo> computeNormalizations(const std::vector<ExclusionTemplateInfo> &templateList);
+        static std::unordered_set<SyncName> computeNormalizations(const SyncName &templateString);
+        static bool canNormalize(const SyncName &template_);
         friend class TestGuiCommChannel;
 };
 
