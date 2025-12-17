@@ -115,7 +115,9 @@ final class MainViewModel {
         for user in availableUsers.values {
             for account in user.accounts.values {
                 for drive in account.drives.values {
-                    return (user, account, drive)
+                    if drive.dbId == synchro.driveDbId {
+                        return (user, account, drive)
+                    }
                 }
             }
         }
