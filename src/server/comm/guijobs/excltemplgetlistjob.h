@@ -28,13 +28,10 @@ class ExclTemplGetListJob : public AbstractGuiJob {
     public:
         ExclTemplGetListJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
                             std::shared_ptr<AbstractCommChannel> channel);
-        
+
         // Setters for compatibility with legacy comm layer
-        void setInParms(bool def) {
-            _default = def;
-        }
-        std::vector<ExclusionTemplateInfo> getOutParmsExclusionTemplateList() const {
-            return _exclusionTemplateList; }
+        void setInParms(bool def) { _default = def; }
+        std::vector<ExclusionTemplateInfo> getOutParmsExclusionTemplateList() const { return _exclusionTemplateList; }
         ExitInfo process() override;
 
     private:

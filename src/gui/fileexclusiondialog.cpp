@@ -361,15 +361,21 @@ void FileExclusionDialog::onAddFileButtonTriggered(bool checked) {
     const QString &template_ = dialog.templ();
 
     SyncName normalizedTemplate;
-    CommonUtility::normalizedSyncName(QStr2SyncName(template_), normalizedTemplate, UnicodeNormalization::NFC);
+    if (!CommonUtility::normalizedSyncName(QStr2SyncName(template_), normalizedTemplate, UnicodeNormalization::NFC)) {
+        qCWarning(lcFileExclusionDialog()) << "Failed to NFC-normalize the template, might cause duplicates: " << template_;
+        normalizedTemplate = QStr2SyncName(template_);
+    }
 
     const auto predicate = [&normalizedTemplate](const ExclusionTemplateInfo &templateInfo) {
         SyncName existingNormalizedTemplate;
-        CommonUtility::normalizedSyncName(QStr2SyncName(templateInfo.templ()), existingNormalizedTemplate,
-                                         UnicodeNormalization::NFC);
+        if (!CommonUtility::normalizedSyncName(QStr2SyncName(templateInfo.templ()), existingNormalizedTemplate,
+                                               UnicodeNormalization::NFC)) {
+            qCWarning(lcFileExclusionDialog())
+                    << "Failed to NFC-normalize the template, might cause duplicates: " << templateInfo.templ();
+            existingNormalizedTemplate = QStr2SyncName(templateInfo.templ());
+        }
         return existingNormalizedTemplate == normalizedTemplate;
     };
-   
 
     // Insert `template_` only if it cannot be found in the default and user lists.
     const auto userTemplateListIt = std::find_if(_userTemplateList.cbegin(), _userTemplateList.cend(), predicate);

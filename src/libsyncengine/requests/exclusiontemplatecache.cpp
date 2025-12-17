@@ -204,7 +204,7 @@ bool ExclusionTemplateCache::isExcluded(const SyncPath &relativePath) noexcept {
     return isExcluded(relativePath, dummy);
 }
 
-bool ExclusionTemplateCache::isExcluded(const SyncPath & , bool &isWarning) noexcept {
+bool ExclusionTemplateCache::isExcluded(const SyncPath &relativePath, bool &isWarning) noexcept {
     const std::scoped_lock lock(_mutex);
     const std::string fileName = SyncName2Str(relativePath.filename().native());
     for (const auto &[regex, exclusionTemplate]: _regexPatterns) {

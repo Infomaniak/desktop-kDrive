@@ -62,7 +62,7 @@ std::vector<ExclusionTemplateInfo> ExclTemplSetListJob::computeNormalizations(
     std::vector<ExclusionTemplateInfo> result;
 
     for (const auto &templateInfo: templateList) {
-        const auto normalizations = computeNormalizations(Str2SyncName(templateInfo.templ().toStdString()));
+        const auto normalizations = computeNormalizations(QStr2SyncName(templateInfo.templ()));
         for (const auto &normalization: normalizations)
             result.push_back(ExclusionTemplateInfo{QString::fromStdString(SyncName2Str(normalization))});
     }

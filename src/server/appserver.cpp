@@ -1810,11 +1810,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> def;
             paramsStream >> list;
             ExclTemplSetListJob exclTemplSetListJob(_commManager, -1, Poco::DynamicStruct(), nullptr);
-            std::vector<ExclusionTemplateInfo> _exclTemplList;
+            std::vector<ExclusionTemplateInfo> exclTemplList;
             for (auto &info: list) {
-                _exclTemplList.push_back(info);
+                exclTemplList.push_back(info);
             }
-            exclTemplSetListJob.setInParms(def, _exclTemplList);
+            exclTemplSetListJob.setInParms(def, exclTemplList);
             ExitInfo exitInfo = exclTemplSetListJob.process();
             resultStream << toInt(exitInfo.code());
             break;
