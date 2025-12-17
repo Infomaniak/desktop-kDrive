@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.WinUI;
+using H.NotifyIcon;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
@@ -14,6 +15,7 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Threading.Tasks;
 using Windows.Graphics;
+using WinRT.Interop;
 
 namespace Infomaniak.kDrive
 {
@@ -297,7 +299,7 @@ namespace Infomaniak.kDrive
             var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
             string? localizedString = resourceLoader.GetString(key);
 
-            if(localizedString is null || localizedString.Length == 0)
+            if (localizedString is null || localizedString.Length == 0)
             {
                 Logger.Log(Logger.Level.Warning, $"Missing localization for key: {key} in current culture {System.Globalization.CultureInfo.CurrentUICulture.Name}");
                 localizedString = key; // Fallback to the key itself if not found
@@ -378,6 +380,33 @@ namespace Infomaniak.kDrive
                 parent = VisualTreeHelper.GetParent(parent);
             }
             return null;
+        }
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        public static void BringCurrentWindowToFront()
+        {
+            Logger.Log(Logger.Level.Info, "Bringing current window to front");
+
+            App? app = Application.Current as App;
+
+            if (app?.CurrentWindow is null)
+            {
+                Logger.Log(Logger.Level.Warning, "Cannot bring window to front: Application?.Current?.CurrentWindow is null");
+                return;
+            }
+            app.CurrentWindow.Show();
+            app.CurrentWindow.Activate();
+            var hWnd = WindowNative.GetWindowHandle(app.CurrentWindow);
+            if (hWnd == IntPtr.Zero)
+            {
+                Logger.Log(Logger.Level.Warning, "Cannot bring window to front: hWnd is zero");
+                return;
+            }
+
+            SetForegroundWindow(hWnd);
         }
     }
 }
