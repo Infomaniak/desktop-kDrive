@@ -850,6 +850,9 @@
   <data name="Page_DriveManagement_Title.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
+  <data name="Page_TemplateExclusionPage_Title.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
   <data name="Page_Settings_DriveManagementPage_AdvancedSyncs.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>

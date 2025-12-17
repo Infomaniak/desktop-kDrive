@@ -900,6 +900,9 @@ Le code source de cette application peut être vérifié, les informations réco
   <data name="Page_DriveManagement_Title.Text" xml:space="preserve">
     <value>Gestion du kDrive</value>
   </data>
+  <data name="Page_TemplateExclusionPage_Title.Text" xml:space="preserve">
+    <value>Fichiers à exclure</value>
+  </data>
   <data name="Page_Settings_DriveManagementPage_AdvancedSyncs.Header" xml:space="preserve">
     <value>Synchronisations avancées</value>
   </data>

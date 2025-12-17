@@ -175,7 +175,7 @@ namespace Infomaniak.kDrive.Pages.Settings
         private void SyncRulesCard_Clicked(object sender, RoutedEventArgs e)
         {
             Logger.Log(Logger.Level.Info, "Navigating to Sync Rules Page from Settings Page");
-            // TODO: Implement navigation to Sync Rules Page
+            Frame.Navigate(typeof(TemplateExclusionPage));
         }
 
         private async void MatomoButton_Click(object sender, RoutedEventArgs e)
