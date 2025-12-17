@@ -85,8 +85,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         }
 
         let indexedDrives: IndexedAvailableDrives = Dictionary(uniqueKeysWithValues:
-            drives.map { drive in (drive.driveId, drive) }
-        )
+            drives.map { drive in (drive.driveId, drive) })
 
         user.availableDrives = indexedDrives
 
@@ -130,7 +129,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
     }
 
     public func updateAccount(_ account: Account) throws {
-        guard var user = users.values.first(where: { $0.accounts.keys.contains(account.dbId) }) else {
+        guard var user = users.values.first(where: { $0.dbId == account.userDbId }) else {
             throw CacheError.accountNotFound(account.dbId)
         }
 

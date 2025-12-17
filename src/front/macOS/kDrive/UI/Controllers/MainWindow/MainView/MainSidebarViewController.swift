@@ -17,6 +17,7 @@
  */
 
 import Cocoa
+import Combine
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
@@ -34,10 +35,10 @@ extension SidebarItem {
         icon: KDriveResources.hardDiskDrive.image,
         title: KDriveLocalizable.tabTitleStorage
     )
-    static let kDriveFolder = SidebarItem(
-        icon: KDriveResources.kdriveFoldersStacked.image,
-        title: KDriveLocalizable.sidebarItemKDriveTitle,
-        type: .menu
+    static let openInFinder = SidebarItem(
+        icon: KDriveResources.folderCircleArrowRight.image,
+        title: KDriveLocalizable.buttonOpenInFinder,
+        type: .action
     )
 }
 
@@ -46,15 +47,75 @@ final class MainSidebarViewController: NSViewController {
 
     weak var delegate: NavigableSidebarViewControllerDelegate?
 
-    private var scrollView: NSScrollView!
-    private var outlineView: ClickableOutlineView!
-    private var popUpButton: ColoredPopUpButton!
+    private let mainViewModel: MainViewModel
+    private var bindStore = Set<AnyCancellable>()
 
-    private let items: [SidebarItem] = [.home, .activity, .storage, .kDriveFolder]
+    private let items: [SidebarItem] = [.home, .activity, .storage, .openInFinder]
+
+    private lazy var scrollView: NSScrollView = {
+        let scrollView = NSScrollView()
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.hasVerticalScroller = true
+        scrollView.autohidesScrollers = true
+        scrollView.drawsBackground = false
+
+        return scrollView
+    }()
+
+    private lazy var outlineView: NSOutlineView = {
+        let outlineView = ClickableOutlineView()
+        outlineView.translatesAutoresizingMaskIntoConstraints = false
+        outlineView.dataSource = self
+        outlineView.delegate = self
+        outlineView.focusRingType = .none
+        outlineView.rowSizeStyle = .medium
+        outlineView.headerView = nil
+        outlineView.style = .sourceList
+
+        return outlineView
+    }()
+
+    private lazy var popUpButton: ColoredPopUpButton = {
+        let popUpButton = ColoredPopUpButton()
+        popUpButton.translatesAutoresizingMaskIntoConstraints = false
+        popUpButton.target = self
+        popUpButton.action = #selector(didSelectSynchro)
+
+        return popUpButton
+    }()
+
+    init(mainViewModel: MainViewModel) {
+        self.mainViewModel = mainViewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
+
         setupView()
+        bindViewModel()
+    }
+
+    override func viewWillAppear() {
+        super.viewWillAppear()
+        outlineView.selectRowIndexes(IndexSet(integer: 0), byExtendingSelection: false)
+    }
+
+    override func viewDidLayout() {
+        super.viewDidLayout()
+        updateScrollViewElasticity()
+    }
+
+    private func bindViewModel() {
+        mainViewModel.$availableUsers
+            .receiveOnMain(store: &bindStore) { [weak self] indexedUsers in
+                self?.updateSynchrosList(indexedUsers)
+            }
     }
 
     private func setupView() {
@@ -62,7 +123,7 @@ final class MainSidebarViewController: NSViewController {
         headerView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(headerView)
 
-        setupPopUpButton()
+        view.addSubview(popUpButton)
         setupScrollAndOutlineView()
 
         NSLayoutConstraint.activate([
@@ -87,59 +148,14 @@ final class MainSidebarViewController: NSViewController {
         ])
     }
 
-    private func setupPopUpButton() {
-        popUpButton = ColoredPopUpButton()
-        popUpButton.translatesAutoresizingMaskIntoConstraints = false
-        popUpButton.action = #selector(didSelectDrive)
-
-        let drives = [
-            UIDrive(dbId: 1, driveId: 1, name: "Infomaniak", color: .systemGreen),
-            UIDrive(dbId: 2, driveId: 2, name: "Tim Cook et ses amis", color: .systemBlue)
-        ]
-
-        for drive in drives {
-            popUpButton.addItem(withTitle: drive.name, image: KDriveResources.kdriveFoldersStacked.image, color: drive.color)
-        }
-
-        view.addSubview(popUpButton)
-    }
-
-    @objc func didSelectDrive() {
-        // TODO: Handle updated drive
-    }
-
     private func setupScrollAndOutlineView() {
-        outlineView = ClickableOutlineView()
-        outlineView.translatesAutoresizingMaskIntoConstraints = false
-        outlineView.dataSource = self
-        outlineView.delegate = self
-        outlineView.focusRingType = .none
-        outlineView.rowSizeStyle = .medium
-        outlineView.headerView = nil
-        outlineView.style = .sourceList
-
         let singleColumn = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("SidebarColumn"))
         singleColumn.isEditable = false
         outlineView.addTableColumn(singleColumn)
         outlineView.outlineTableColumn = singleColumn
 
-        scrollView = NSScrollView()
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.hasVerticalScroller = true
-        scrollView.autohidesScrollers = true
-        scrollView.drawsBackground = false
         scrollView.documentView = outlineView
         view.addSubview(scrollView)
-    }
-
-    override func viewWillAppear() {
-        super.viewWillAppear()
-        outlineView.selectRowIndexes(IndexSet(integer: 0), byExtendingSelection: false)
-    }
-
-    override func viewDidLayout() {
-        super.viewDidLayout()
-        updateScrollViewElasticity()
     }
 
     private func updateScrollViewElasticity() {
@@ -147,6 +163,54 @@ final class MainSidebarViewController: NSViewController {
 
         let isDocumentViewSmallerThanScrollView = documentView.bounds.height <= scrollView.documentVisibleRect.height
         scrollView.verticalScrollElasticity = isDocumentViewSmallerThanScrollView ? .none : .automatic
+    }
+
+    @objc func didSelectSynchro() {
+        guard let selectedItem = popUpButton.selectedItem,
+              let synchro = selectedItem.representedObject as? UISynchro else {
+            return
+        }
+
+        mainViewModel.setCurrentSynchro(synchro)
+    }
+
+    private func openSyncInFolder() {
+        guard let currentSynchro = mainViewModel.currentSynchro else { return }
+        NSWorkspace.shared.open(currentSynchro.localPath)
+    }
+
+    private func updateSynchrosList(_ users: [Int: UIUser]) {
+        popUpButton.removeAllItems()
+
+        for user in users.values {
+            for account in user.accounts.values {
+                for drive in account.drives.values {
+                    if drive.synchros.count == 1, let synchro = drive.synchros.values.first {
+                        addPopUpItem(forSynchro: synchro, drive: drive, displaySynchroPath: false)
+                    } else {
+                        for synchro in drive.synchros.values {
+                            addPopUpItem(forSynchro: synchro, drive: drive, displaySynchroPath: true)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func addPopUpItem(forSynchro synchro: UISynchro, drive: UIDrive, displaySynchroPath: Bool) {
+        var title: String
+        if displaySynchroPath {
+            title = "\(drive.name) › \(synchro.localPath.lastPathComponent)"
+        } else {
+            title = "\(drive.name)"
+        }
+
+        popUpButton.addItem(
+            withTitle: title,
+            image: KDriveResources.kdriveFoldersStacked.image,
+            color: drive.color,
+            representedObject: synchro
+        )
     }
 }
 
@@ -194,52 +258,15 @@ extension MainSidebarViewController: ClickableOutlineViewDelegate {
     }
 
     func outlineView(_ outlineView: NSOutlineView, didClick item: Any?) {
-        guard let item = item as? SidebarItem,
-              item.type == .menu,
-              let menu = createMenu(forItem: item)
-        else { return }
-
-        (outlineView as? ClickableOutlineView)?.showMenu(menu, at: item)
-    }
-}
-
-// MARK: - Menu actions
-
-extension MainSidebarViewController {
-    private func createMenu(forItem item: SidebarItem) -> NSMenu? {
-        guard item == .kDriveFolder else { return nil }
-
-        let menu = NSMenu()
-        menu.autoenablesItems = false
-
-        let openInFinder = NSMenuItem(
-            title: KDriveLocalizable.buttonOpenInFinder,
-            action: #selector(openInFinder),
-            keyEquivalent: ""
-        )
-        if #available(macOS 26.0, *) {
-            openInFinder.image = NSImage(systemSymbolName: "folder", accessibilityDescription: nil)
+        guard let item = item as? SidebarItem, item.type == .action else {
+            return
         }
-        menu.addItem(openInFinder)
 
-        let openInBrowser = NSMenuItem(
-            title: KDriveLocalizable.buttonOpenInBrowser,
-            action: #selector(openInBrowser),
-            keyEquivalent: ""
-        )
-        if #available(macOS 26.0, *) {
-            openInBrowser.image = NSImage(systemSymbolName: "network", accessibilityDescription: nil)
+        switch item {
+        case .openInFinder:
+            openSyncInFolder()
+        default:
+            break
         }
-        menu.addItem(openInBrowser)
-
-        return menu
-    }
-
-    @objc private func openInFinder() {
-        // TODO: Open Finder
-    }
-
-    @objc private func openInBrowser() {
-        // TODO: Open kDrive web
     }
 }
