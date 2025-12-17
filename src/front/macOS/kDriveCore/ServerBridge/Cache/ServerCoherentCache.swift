@@ -184,6 +184,21 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         notifyUpdate()
     }
 
+    public func removeDrive(driveDbId: Int32) throws {
+        for user in users.values {
+            for var account in user.accounts.values {
+                guard account.drives.removeValue(forKey: driveDbId) != nil else {
+                    continue
+                }
+
+                try updateAccount(account)
+                return
+            }
+        }
+
+        throw CacheError.driveNotFound(driveDbId)
+    }
+
     public func updateDrive(drive: Drive) throws {
         let accountDbId = drive.accountDbId
         guard var account = getAccount(accountDbId: accountDbId) else {

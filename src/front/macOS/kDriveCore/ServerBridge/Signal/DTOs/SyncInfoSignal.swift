@@ -18,19 +18,24 @@
 
 import Foundation
 
-public typealias IndexedSynchros = [Int32: Synchro]
+struct SyncInfoSignal: Codable, Sendable {
+    let dbId: Int32
+    let driveDbId: Int32
+    @Base64CodedString var localPath: String
+    @Base64CodedString var targetPath: String
+    @Base64CodedString var targetNodeId: String
+    let supportVfs: Bool
+    let virtualFileMode: KDC.VirtualFileMode
+}
 
-public struct Synchro: Identifiable, Hashable, Sendable {
-    public var id: Int32 {
-        dbId
+extension SyncInfoSignal {
+    var asSynchro: Synchro {
+        Synchro(dbId: dbId,
+                driveDbId: driveDbId,
+                localPath: localPath,
+                targetPath: targetPath,
+                targetNodeId: targetNodeId,
+                supportVfs: supportVfs,
+                virtualFileMode: virtualFileMode)
     }
-
-    public let dbId: Int32
-    public let driveDbId: Int32
-    public let localPath: String
-
-    public let targetPath: String
-    public let targetNodeId: String
-    public let supportVfs: Bool
-    public let virtualFileMode: KDC.VirtualFileMode
 }
