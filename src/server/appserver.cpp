@@ -848,8 +848,8 @@ UpdateState AppServer::getUpdateState() const {
 }
 
 void AppServer::startInstaller() {
-    assert(_updateManager && "The update manager is not set.");
-    _updateManager->startInstaller();
+    LOG_IF_FAIL(_logger, _updateManager && "The update manager is not set.");
+    if(_updateManager) _updateManager->startInstaller();
 }
 
 void AppServer::crash() const {
