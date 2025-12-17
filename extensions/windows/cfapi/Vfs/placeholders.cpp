@@ -52,10 +52,10 @@ bool Placeholders::create(const PCWSTR fileId, const PCWSTR relativePath, const 
     }
 
     try {
-        TRACE_DEBUG(L"Creating placeholder : path = %ls", fullPath.native().c_str());
+        TRACE_DEBUG(L"Creating placeholder: path='%ls'", fullPath.native().c_str());
         winrt::check_hresult(CfCreatePlaceholders(dirPath.c_str(), &cloudEntry, 1, CF_CREATE_FLAG_NONE, nullptr));
     } catch (winrt::hresult_error const &ex) {
-        TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
+        TRACE_ERROR(L"WinRT error caught: %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
         return false;
     }
 
@@ -68,12 +68,12 @@ bool Placeholders::convert(const PCWSTR fileId, const PCWSTR filePath) {
     DWORD dwFlagsAndAttributes = 0;
     bool exists = true;
     if (!Utilities::getCreateFileFlagsAndAttributes(filePath, dwFlagsAndAttributes, exists)) {
-        TRACE_ERROR(L"Error in Utilities::getCreateFileFlagsAndAttributes: %ls", filePath);
+        TRACE_ERROR(L"Error in Utilities::getCreateFileFlagsAndAttributes: '%ls'", filePath);
         return false;
     }
 
     if (!exists) {
-        TRACE_WARNING(L"File/directory doesn't exist anymore : %ls", filePath);
+        TRACE_WARNING(L"File or directory does not exist anymore: '%ls'.", filePath);
         return true;
     }
 
@@ -84,16 +84,16 @@ bool Placeholders::convert(const PCWSTR fileId, const PCWSTR filePath) {
 
     winrt::handle fileHandle(CreateFile(filePath, WRITE_DAC, 0, nullptr, OPEN_EXISTING, dwFlagsAndAttributes, nullptr));
     if (fileHandle.get() == INVALID_HANDLE_VALUE) {
-        TRACE_ERROR(L"Error in CreateFile : %ls", Utilities::getLastErrorMessage().c_str());
+        TRACE_ERROR(L"Error in CreateFile: '%ls'", Utilities::getLastErrorMessage().c_str());
         return false;
     }
 
     try {
-        TRACE_DEBUG(L"Converting to placeholder : path = %ls", filePath);
+        TRACE_DEBUG(L"Converting to placeholder: path='%ls'", filePath);
         winrt::check_hresult(CfConvertToPlaceholder(fileHandle.get(), fileId, (USHORT) (wcslen(fileId) + 1) * sizeof(WCHAR),
                                                     CF_CONVERT_FLAG_MARK_IN_SYNC, nullptr, nullptr));
     } catch (winrt::hresult_error const &ex) {
-        TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
+        TRACE_ERROR(L"WinRT error caught: %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
         return false;
     }
 
@@ -104,12 +104,12 @@ bool Placeholders::revert(const PCWSTR filePath) {
     DWORD dwFlagsAndAttributes = 0;
     bool exists = true;
     if (!Utilities::getCreateFileFlagsAndAttributes(filePath, dwFlagsAndAttributes, exists)) {
-        TRACE_ERROR(L"Error in Utilities::getCreateFileFlagsAndAttributes: %ls", filePath);
+        TRACE_ERROR(L"Error in Utilities::getCreateFileFlagsAndAttributes: '%ls'", filePath);
         return false;
     }
 
     if (!exists) {
-        TRACE_WARNING(L"File/directory doesn't exist anymore : %ls", filePath);
+        TRACE_WARNING(L"File or directory does not exist anymore: '%ls'", filePath);
         return true;
     }
 
@@ -120,12 +120,12 @@ bool Placeholders::revert(const PCWSTR filePath) {
 
     winrt::handle fileHandle(CreateFile(filePath, WRITE_DAC, 0, nullptr, OPEN_EXISTING, dwFlagsAndAttributes, nullptr));
     if (fileHandle.get() == INVALID_HANDLE_VALUE) {
-        TRACE_ERROR(L"Error in CreateFile : %ls", Utilities::getLastErrorMessage().c_str());
+        TRACE_ERROR(L"Error in CreateFile: '%ls'", Utilities::getLastErrorMessage().c_str());
         return false;
     }
 
     try {
-        TRACE_DEBUG(L"Reverting placeholder : path = %ls", filePath);
+        TRACE_DEBUG(L"Reverting placeholder : path='%ls'", filePath);
         winrt::check_hresult(CfRevertPlaceholder(fileHandle.get(), CF_REVERT_FLAG_NONE, nullptr));
     } catch (winrt::hresult_error const &ex) {
         TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
@@ -139,12 +139,12 @@ bool Placeholders::update(const PCWSTR filePath, const WIN32_FIND_DATA *findData
     DWORD dwFlagsAndAttributes = 0;
     bool exists = true;
     if (!Utilities::getCreateFileFlagsAndAttributes(filePath, dwFlagsAndAttributes, exists)) {
-        TRACE_ERROR(L"Error in Utilities::getCreateFileFlagsAndAttributes: %ls", filePath);
+        TRACE_ERROR(L"Error in Utilities::getCreateFileFlagsAndAttributes: '%ls'", filePath);
         return false;
     }
 
     if (!exists) {
-        TRACE_WARNING(L"File/directory doesn't exist anymore : %ls", filePath);
+        TRACE_WARNING(L"File or directory does not exist anymore: '%ls'", filePath);
         return true;
     }
 
@@ -155,20 +155,20 @@ bool Placeholders::update(const PCWSTR filePath, const WIN32_FIND_DATA *findData
 
     winrt::handle fileHandle(CreateFile(filePath, WRITE_DAC, 0, nullptr, OPEN_EXISTING, dwFlagsAndAttributes, nullptr));
     if (fileHandle.get() == INVALID_HANDLE_VALUE) {
-        TRACE_ERROR(L"Error in CreateFile : %ls", Utilities::getLastErrorMessage().c_str());
+        TRACE_ERROR(L"Error in CreateFile: '%ls'", Utilities::getLastErrorMessage().c_str());
         return false;
     }
 
     bool res = true;
     CF_PLACEHOLDER_STANDARD_INFO info;
     try {
-        TRACE_DEBUG(L"Get placeholder info : path = %ls", filePath);
+        TRACE_DEBUG(L"Get placeholder info: path='%ls'", filePath);
         DWORD retLength = 0;
         winrt::check_hresult(
                 CfGetPlaceholderInfo(fileHandle.get(), CF_PLACEHOLDER_INFO_STANDARD, &info, sizeof(info), &retLength));
     } catch (winrt::hresult_error const &ex) {
         if (ex.code() != HRESULT_FROM_WIN32(ERROR_MORE_DATA)) {
-            TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
+            TRACE_ERROR(L"WinRT error caught: %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
             res = false;
         }
     }
@@ -182,7 +182,7 @@ bool Placeholders::update(const PCWSTR filePath, const WIN32_FIND_DATA *findData
         fsMetadata.BasicInfo.ChangeTime = Utilities::fileTimeToLargeInteger(findData->ftLastWriteTime);
         fsMetadata.FileSize.QuadPart = ((ULONGLONG) findData->nFileSizeHigh << 32) + findData->nFileSizeLow;
 
-        TRACE_DEBUG(L"Update placeholder : path = %ls", filePath);
+        TRACE_DEBUG(L"Update placeholder: path='%ls'", filePath);
         winrt::check_hresult(CfUpdatePlaceholder(fileHandle.get(), &fsMetadata, info.FileIdentity, info.FileIdentityLength,
                                                  nullptr, 0, CF_UPDATE_FLAG_VERIFY_IN_SYNC, nullptr, nullptr));
     } catch (winrt::hresult_error const &ex) {
@@ -197,12 +197,12 @@ bool Placeholders::getStatus(const PCWSTR filePath, bool *isPlaceholder, bool *i
     DWORD dwFlagsAndAttributes = 0;
     bool exists = true;
     if (!Utilities::getCreateFileFlagsAndAttributes(filePath, dwFlagsAndAttributes, exists)) {
-        TRACE_ERROR(L"Error in Utilities::getCreateFileFlagsAndAttributes: %ls", filePath);
+        TRACE_ERROR(L"Error in Utilities::getCreateFileFlagsAndAttributes: '%ls'", filePath);
         return false;
     }
 
     if (!exists) {
-        TRACE_WARNING(L"File/directory doesn't exist anymore : %ls", filePath);
+        TRACE_WARNING(L"File or directory does not exist anymore: '%ls'", filePath);
         return true;
     }
 
@@ -222,19 +222,19 @@ bool Placeholders::getStatus(const PCWSTR filePath, bool *isPlaceholder, bool *i
 
     winrt::handle fileHandle(CreateFile(filePath, WRITE_DAC, 0, nullptr, OPEN_EXISTING, dwFlagsAndAttributes, nullptr));
     if (fileHandle.get() == INVALID_HANDLE_VALUE) {
-        TRACE_ERROR(L"Error in CreateFile : %ls", Utilities::getLastErrorMessage().c_str());
+        TRACE_ERROR(L"Error in CreateFile: '%ls'", Utilities::getLastErrorMessage().c_str());
         return false;
     }
 
     FILE_ATTRIBUTE_TAG_INFO fileInformation;
     if (!GetFileInformationByHandleEx(fileHandle.get(), FileAttributeTagInfo, &fileInformation, sizeof(fileInformation))) {
-        TRACE_ERROR(L"Error in GetFileInformationByHandleEx : %ls", Utilities::getLastErrorMessage().c_str());
+        TRACE_ERROR(L"Error in GetFileInformationByHandleEx: '%ls'", Utilities::getLastErrorMessage().c_str());
         return false;
     }
 
     CF_PLACEHOLDER_STATE state = CfGetPlaceholderStateFromFileInfo(&fileInformation, FileAttributeTagInfo);
     if (state == CF_PLACEHOLDER_STATE_INVALID) {
-        TRACE_ERROR(L"Error in CfGetPlaceholderStateFromFileInfo : %ls", Utilities::getLastErrorMessage().c_str());
+        TRACE_ERROR(L"Error in CfGetPlaceholderStateFromFileInfo: '%ls'", Utilities::getLastErrorMessage().c_str());
         return false;
     }
 
@@ -255,12 +255,12 @@ bool Placeholders::setStatus(const PCWSTR path, bool syncOngoing) {
     DWORD dwFlagsAndAttributes = 0;
     bool exists = true;
     if (!Utilities::getCreateFileFlagsAndAttributes(path, dwFlagsAndAttributes, exists)) {
-        TRACE_ERROR(L"Error in Utilities::getCreateFileFlagsAndAttributes: %ls", path);
+        TRACE_ERROR(L"Error in Utilities::getCreateFileFlagsAndAttributes: '%ls'", path);
         return false;
     }
 
     if (!exists) {
-        TRACE_WARNING(L"File/directory doesn't exist anymore : %ls", path);
+        TRACE_WARNING(L"File or directory does not exist anymore: '%ls'", path);
         return true;
     }
 
@@ -271,12 +271,12 @@ bool Placeholders::setStatus(const PCWSTR path, bool syncOngoing) {
 
     winrt::handle fileHandle(CreateFile(path, WRITE_DAC, 0, nullptr, OPEN_EXISTING, dwFlagsAndAttributes, nullptr));
     if (fileHandle.get() == INVALID_HANDLE_VALUE) {
-        TRACE_ERROR(L"Error in CreateFile : %ls", Utilities::getLastErrorMessage().c_str());
+        TRACE_ERROR(L"Error in CreateFile: '%ls'", Utilities::getLastErrorMessage().c_str());
         return false;
     }
 
     try {
-        TRACE_DEBUG(L"Set placeholder status : syncOngoing = %d, path = %ls", syncOngoing, path);
+        TRACE_DEBUG(L"Set placeholder status: syncOngoing='%d', path='%ls'", syncOngoing, path);
         winrt::check_hresult(CfSetInSyncState(fileHandle.get(),
                                               syncOngoing ? CF_IN_SYNC_STATE_NOT_IN_SYNC : CF_IN_SYNC_STATE_IN_SYNC,
                                               CF_SET_IN_SYNC_FLAG_NONE, nullptr));
@@ -292,12 +292,12 @@ bool Placeholders::getInfo(const PCWSTR path, CF_PLACEHOLDER_STANDARD_INFO &info
     DWORD dwFlagsAndAttributes = 0;
     bool exists = true;
     if (!Utilities::getCreateFileFlagsAndAttributes(path, dwFlagsAndAttributes, exists)) {
-        TRACE_ERROR(L"Error in Utilities::getCreateFileFlagsAndAttributes: %ls", path);
+        TRACE_ERROR(L"Error in Utilities::getCreateFileFlagsAndAttributes: '%ls'", path);
         return false;
     }
 
     if (!exists) {
-        TRACE_WARNING(L"File/directory doesn't exist anymore : %ls", path);
+        TRACE_WARNING(L"File or directory does not exist anymore: '%ls'", path);
         return true;
     }
 
@@ -309,12 +309,12 @@ bool Placeholders::getInfo(const PCWSTR path, CF_PLACEHOLDER_STANDARD_INFO &info
 
     winrt::handle fileHandle(CreateFile(path, WRITE_DAC, 0, nullptr, OPEN_EXISTING, dwFlagsAndAttributes, nullptr));
     if (fileHandle.get() == INVALID_HANDLE_VALUE) {
-        TRACE_ERROR(L"Error in CreateFile : %ls", Utilities::getLastErrorMessage().c_str());
+        TRACE_ERROR(L"Error in CreateFile: '%ls'", Utilities::getLastErrorMessage().c_str());
         return false;
     }
 
     try {
-        TRACE_DEBUG(L"Get placeholder info : path = %ls", path);
+        TRACE_DEBUG(L"Get placeholder info: path='%ls'", path);
         DWORD retLength = 0;
         HRESULT res = CfGetPlaceholderInfo(fileHandle.get(), CF_PLACEHOLDER_INFO_STANDARD, &info, sizeof(info), &retLength);
         if (res == HRESULT_FROM_WIN32(ERROR_MORE_DATA)) {
@@ -324,7 +324,7 @@ bool Placeholders::getInfo(const PCWSTR path, CF_PLACEHOLDER_STANDARD_INFO &info
         }
     } catch (winrt::hresult_error const &ex) {
         if (ex.code() != HRESULT_FROM_WIN32(ERROR_MORE_DATA)) {
-            TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
+            TRACE_ERROR(L"WinRT error caught: %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
             return false;
         }
     }
@@ -336,12 +336,12 @@ bool Placeholders::setPinState(const PCWSTR path, CF_PIN_STATE state) {
     DWORD dwFlagsAndAttributes = 0;
     bool exists = true;
     if (!Utilities::getCreateFileFlagsAndAttributes(path, dwFlagsAndAttributes, exists)) {
-        TRACE_ERROR(L"Error in Utilities::getCreateFileFlagsAndAttributes: %ls", path);
+        TRACE_ERROR(L"Error in Utilities::getCreateFileFlagsAndAttributes: '%ls'", path);
         return false;
     }
 
     if (!exists) {
-        TRACE_WARNING(L"File/directory doesn't exist anymore : %ls", path);
+        TRACE_WARNING(L"File or directory does not exist anymore: '%ls'", path);
         return true;
     }
 
@@ -352,12 +352,12 @@ bool Placeholders::setPinState(const PCWSTR path, CF_PIN_STATE state) {
 
     winrt::handle fileHandle(CreateFile(path, WRITE_DAC, 0, nullptr, OPEN_EXISTING, dwFlagsAndAttributes, nullptr));
     if (fileHandle.get() == INVALID_HANDLE_VALUE) {
-        TRACE_ERROR(L"Error in CreateFile : %ls", Utilities::getLastErrorMessage().c_str());
+        TRACE_ERROR(L"Error in CreateFile: '%ls'", Utilities::getLastErrorMessage().c_str());
         return false;
     }
 
     try {
-        TRACE_DEBUG(L"Set pin state to placeholder : state = %ld, path = %ls", static_cast<int>(state), path);
+        TRACE_DEBUG(L"Set pin state to placeholder: state='%ld', path='%ls'", static_cast<int>(state), path);
         winrt::check_hresult(CfSetPinState(fileHandle.get(), state, CF_SET_PIN_FLAG_RECURSE, nullptr));
     } catch (winrt::hresult_error const &ex) {
         TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
