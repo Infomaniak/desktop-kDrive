@@ -18,12 +18,38 @@
 
 import Combine
 import Foundation
+import InfomaniakDI
 
 public struct SynchroContext: Sendable, Equatable {
     let synchro: Synchro
     let drive: Drive
     let account: Account
     let user: User
+}
+
+@MainActor
+@propertyWrapper
+public final class ObservedSynchros: ObservableObject {
+    @Published public private(set) var wrappedValue: [SynchroContext] = []
+    private var cancellable: AnyCancellable?
+
+    public init(
+        cacheObservation: CoherentCacheObservable? = nil
+    ) {
+        let cacheObservation =
+            cacheObservation ?? InjectService<CoherentCacheObservable>().wrappedValue
+
+        cancellable = cacheObservation.usersPublisher
+            .allSynchrosPublisher()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] synchros in
+                self?.wrappedValue = synchros
+            }
+    }
+
+    deinit { cancellable?.cancel() }
+
+    public var projectedValue: ObservedSynchros { self }
 }
 
 public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
