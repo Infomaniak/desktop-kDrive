@@ -21,7 +21,7 @@ import Cocoa
 import kDriveCore
 import kDriveCoreUI
 
-class SelectedUserAndDriveView: NSView {
+final class SelectedUserAndDriveView: NSView {
     var user: UIUser {
         didSet {
             updateUser()
