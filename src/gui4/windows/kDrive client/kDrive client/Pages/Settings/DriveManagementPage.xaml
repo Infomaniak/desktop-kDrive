@@ -73,34 +73,35 @@
 
                         </toolKit:SettingsExpander.HeaderIcon>
                         <toolKit:SettingsExpander.Items>
-                            <!-- Presentation -->
-                            <Grid Padding="{StaticResource SettingsCardPadding}"
-                                  Background="{ThemeResource LayerFillColorDefault}"
-                                  RowSpacing="{StaticResource Infomaniak.Style.Spacing.M}">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="auto" />
-                                    <RowDefinition Height="*" />
-                                </Grid.RowDefinitions>
-                                <StackPanel Grid.Row="0"
-                                            Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
-                                    <TextBlock x:Uid="Page_Settings_DriveManagementPage_FolderSelection_Presentation_Header"
-                                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
-                                               TextWrapping="Wrap" />
+                            <toolKit:SettingsCard HorizontalAlignment="Stretch"
+                                                  HorizontalContentAlignment="Stretch"
+                                                  ContentAlignment="Vertical">
+                                <!-- Presentation -->
+                                <Grid RowSpacing="{StaticResource Infomaniak.Style.Spacing.M}">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <StackPanel Grid.Row="0"
+                                                Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
+                                        <TextBlock x:Uid="Page_Settings_DriveManagementPage_FolderSelection_Presentation_Header"
+                                                   Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                                                   TextWrapping="Wrap" />
 
-                                    <TextBlock x:Uid="Page_Settings_DriveManagementPage_FolderSelection_Presentation_Description"
-                                               Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
-                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                               TextWrapping="Wrap" />
-                                </StackPanel>
-                                <controls:SyncExclusionSelector x:Name="ExclSelector"
-                                                                Grid.Row="1"
-                                                                DriveId="{x:Bind ManagedDrive.DriveId, Mode=OneWay}"
-                                                                UserDbId="{x:Bind ManagedDrive.Account.User.DbId}"
-                                                                SyncDbId="{x:Bind ManagedDrive.MainSync.DbId, Mode=OneWay}"
-                                                                HorizontalAlignment="Stretch" />
-                            </Grid>
-                            <toolKit:SettingsCard Background="{ThemeResource LayerFillColorDefault}"
-                                                  Visibility="{x:Bind ExclSelector.HasPendingChanges, Mode=OneWay}">
+                                        <TextBlock x:Uid="Page_Settings_DriveManagementPage_FolderSelection_Presentation_Description"
+                                                   Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
+                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                   TextWrapping="Wrap" />
+                                    </StackPanel>
+                                    <controls:SyncExclusionSelector x:Name="ExclSelector"
+                                                                    Grid.Row="1"
+                                                                    DriveId="{x:Bind ManagedDrive.DriveId, Mode=OneWay}"
+                                                                    UserDbId="{x:Bind ManagedDrive.Account.User.DbId}"
+                                                                    SyncDbId="{x:Bind ManagedDrive.MainSync.DbId, Mode=OneWay}"
+                                                                    HorizontalAlignment="Stretch" />
+                                </Grid>
+                            </toolKit:SettingsCard>
+                            <toolKit:SettingsCard Visibility="{x:Bind ExclSelector.HasPendingChanges, Mode=OneWay}">
                                 <StackPanel Orientation="Horizontal"
                                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
                                     <Button x:Uid="Page_Settings_DriveManagementPage_FolderSelection_CancelButton"
