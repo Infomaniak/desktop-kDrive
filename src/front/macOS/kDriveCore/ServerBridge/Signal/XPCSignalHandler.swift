@@ -18,6 +18,7 @@
 
 import Foundation
 import InfomaniakDI
+import Sentry
 
 public protocol XPCSignalHandlerProtocol {
     func handleServerSignal(_ signal: Data?)
@@ -48,7 +49,14 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
                 try await handleServerSignal(signal)
             } catch {
                 IKLogger.xpc.error("[KD] signal error :\(error)")
-                // TODO: Sentry
+
+                SentrySDK.capture(message: "Error processing Signal") { scope in
+                    scope.setLevel(.error)
+                    scope.setContext(
+                        value: ["error": error, "description": error.localizedDescription],
+                        key: "underlying error"
+                    )
+                }
             }
         }
     }
