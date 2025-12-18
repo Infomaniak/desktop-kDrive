@@ -21,10 +21,10 @@ import Foundation
 import InfomaniakDI
 
 public struct SynchroContext: Sendable, Equatable {
-    let synchro: Synchro
-    let drive: Drive
-    let account: Account
-    let user: User
+    public let synchro: Synchro
+    public let drive: Drive
+    public let account: Account
+    public let user: User
 }
 
 @MainActor
