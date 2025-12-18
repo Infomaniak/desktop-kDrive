@@ -256,6 +256,23 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         try updateDrive(drive: drive)
     }
 
+    public func removeSynchro(synchroDbId: Int32) throws {
+        for user in users.values {
+            for account in user.accounts.values {
+                for var drive in account.drives.values {
+                    guard drive.synchros.removeValue(forKey: synchroDbId) != nil else {
+                        continue
+                    }
+
+                    try updateDrive(drive: drive)
+                    return
+                }
+            }
+        }
+
+        throw CacheError.synchroNotFound(synchroDbId)
+    }
+
     public func updateSynchro(_ synchro: Synchro) throws {
         guard var drive = getDrive(driveDbId: synchro.driveDbId) else {
             throw CacheError.driveNotFound(synchro.driveDbId)
