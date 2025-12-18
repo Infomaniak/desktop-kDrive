@@ -86,12 +86,8 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         case .ACCOUNT_REMOVED:
             try await handleAccountRemoved(signal)
 
-        case .DRIVE_ADDED:
-            IKLogger.xpc.log("[KD] TODO - DRIVE_ADDED not available")
-            throw SignalError.unsupported(signalNum)
-
-        case .DRIVE_UPDATED:
-            try await handleDriveUpdated(signal)
+        case .DRIVE_ADDED, .DRIVE_UPDATED:
+            try await handleDrive(signal)
 
         case .DRIVE_REMOVED:
             try await handleDriveRemoved(signal)
@@ -148,13 +144,13 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
 
     // MARK: Drive
 
-    private func handleDriveUpdated(_ signal: Data) async throws {
+    private func handleDrive(_ signal: Data) async throws {
         guard let driveInfoSignal = try? decoder.decode(SignalMessage<DriveInfoSignal>.self, from: signal),
               let driveInfo = driveInfoSignal.body else {
             throw SignalError.unableToGetDriveFromSignal
         }
 
-        try await coherentCache.updateDriveSignal(driveInfo)
+        try await coherentCache.addOrUpdateDriveSignal(driveInfo)
     }
 
     private func handleDriveRemoved(_ signal: Data) async throws {
@@ -179,7 +175,7 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
 }
 
 extension CoherentCache {
-    func updateDriveSignal(_ driveSignal: DriveInfoSignal) async throws {
+    func addOrUpdateDriveSignal(_ driveSignal: DriveInfoSignal) async throws {
         let accountDbId = driveSignal.accountDbId
         guard var account = await getAccount(accountDbId: accountDbId) else {
             throw ServerCoherentCache.CacheError.accountNotFound(accountDbId)
