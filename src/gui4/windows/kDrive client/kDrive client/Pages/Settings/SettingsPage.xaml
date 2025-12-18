@@ -80,7 +80,7 @@
                     <TextBlock x:Uid="Page_SettingsPage_Global"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
                     <!-- General - Update -->
-                    <controls:UpdateExpander IsEnabled="False"/>
+                    <controls:UpdateExpander IsEnabled="False" />
 
                     <!-- General - Language -->
                     <toolKit:SettingsCard x:Uid="Page_SettingsPage_Language"
@@ -270,7 +270,8 @@
                     </toolKit:SettingsCard>
 
                     <!-- Advanced - Privacy -->
-                    <toolKit:SettingsExpander x:Uid="Page_SettingsPage_Privacy">
+                    <toolKit:SettingsExpander x:Uid="Page_SettingsPage_Privacy"
+                                              IsEnabled="False">
                         <toolKit:SettingsExpander.HeaderIcon>
                             <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Users.user-cog}"
                                               Height="32"
