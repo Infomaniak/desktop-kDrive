@@ -503,11 +503,11 @@ SectionEnd
 
 		!insertmacro CheckAndConfirmEndProcesse1 "${EXTENSION_NAME}"
 		${PowerShellExecLog} "Add-AppxPackage -Path '$INSTDIR\shellext\AppX\${VFS_APPX_BUNDLE}' -ForceApplicationShutdown -ForceUpdateFromAnyVersion"
+		SetOutPath "$INSTDIR"
 	${MementoSectionEnd}
 !endif
 
 SectionGroup $SectionGroup_Shortcuts
-
 !ifdef OPTION_SECTION_SC_START_MENU
 	${MementoSection} $OPTION_SECTION_SC_START_MENU_SECTION SEC_START_MENU
 		SectionIn 1 2 3
