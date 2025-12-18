@@ -38,6 +38,7 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         case unableToGetDriveFromSignal
         case unableToGetDriveDbIdFromSignal
         case unableToGetSyncFromSignal
+        case unableToGetSyncDbIdFromSignal
         case unsupported(_ num: SignalNum)
     }
 
@@ -92,8 +93,11 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         case .DRIVE_REMOVED:
             try await handleDriveRemoved(signal)
 
-        case .SYNC_ADDED:
-            try await handleSyncAdded(signal)
+        case .SYNC_ADDED, .SYNC_UPDATED:
+            try await handleSync(signal)
+
+        case .SYNC_REMOVED:
+            try await handleSyncRemoved(signal)
 
         default:
             throw SignalError.unsupported(signalNum)
@@ -164,13 +168,22 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
 
     // MARK: Synchro
 
-    private func handleSyncAdded(_ signal: Data) async throws {
+    private func handleSync(_ signal: Data) async throws {
         guard let syncInfoSignal = try? decoder.decode(SignalMessage<SyncInfoSignal>.self, from: signal),
               let syncInfo = syncInfoSignal.body else {
             throw SignalError.unableToGetSyncFromSignal
         }
 
         try await coherentCache.addSynchro(syncInfo.asSynchro)
+    }
+
+    private func handleSyncRemoved(_ signal: Data) async throws {
+        guard let syncRemoveSignal = try? decoder.decode(SignalMessage<SyncRemoveSignal>.self, from: signal),
+              let syncDbId = syncRemoveSignal.body?.syncDbId else {
+            throw SignalError.unableToGetSyncDbIdFromSignal
+        }
+
+        try await coherentCache.removeSynchro(synchroDbId: syncDbId)
     }
 }
 

@@ -18,6 +18,10 @@
 
 import Foundation
 
+struct SyncRemoveSignal: Codable, Sendable {
+    let syncDbId: Int32
+}
+
 struct SyncInfoSignal: Codable, Sendable {
     let dbId: Int32
     let driveDbId: Int32
