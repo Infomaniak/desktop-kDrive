@@ -84,6 +84,7 @@ class PipeCommServer : public AbstractCommServer {
         bool isListening() const { return _isListening; }
         bool isRunning() const { return _isRunning; }
 
+        static SyncPath pipePath();
     protected:
         virtual std::shared_ptr<PipeCommChannel> makeCommChannel() const = 0;
 
@@ -100,7 +101,6 @@ class PipeCommServer : public AbstractCommServer {
         void waitForExit();
 
         static void executeFunc(PipeCommServer *server);
-        static SyncPath pipePath();
 
 #if defined(KD_WINDOWS)
         std::recursive_mutex _channelsMutex;

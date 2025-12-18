@@ -62,7 +62,6 @@ class TestWorkers : public CppUnit::TestFixture, public TestBase {
 #else
         static std::shared_ptr<VfsOff> _vfs;
 #endif
-        std::shared_ptr<CommManager> _commManager;
 
         static bool _vfsInstallationDone;
         static bool _vfsActivationDone;
