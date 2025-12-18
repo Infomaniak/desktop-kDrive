@@ -32,6 +32,7 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         case unableToParseMetadata(_ signal: String)
         case serverError(_ code: KDC.ExitCode?, _ cause: KDC.ExitCause?)
         case unableToGetUserFromSignal
+        case unableToGetUserDbIdFromSignal
         case unableToGetAccountFromSignal
         case unableToGetAccountDbIdFromSignal
         case unableToGetDriveFromSignal
@@ -69,12 +70,11 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         IKLogger.xpc.log("[KD] recv signal: \(signalNum)")
 
         switch signalNum {
-        case .USER_ADDED:
-            try await handleUserAdded(signal)
+        case .USER_ADDED, .USER_UPDATED:
+            try await handleUser(signal)
 
-        case .USER_UPDATED:
-            IKLogger.xpc.error("[KD] TODO - USER_UPDATED not available")
-            throw SignalError.unsupported(signalNum)
+        case .USER_REMOVED:
+            try await handleUserRemoved(signal)
 
         case .ACCOUNT_ADDED:
             try await handleAccountAdded(signal)
@@ -108,13 +108,22 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
 
     // MARK: User
 
-    private func handleUserAdded(_ signal: Data) async throws {
+    private func handleUser(_ signal: Data) async throws {
         guard let userInfoSignal = try? decoder.decode(SignalMessage<UserInfoSignal>.self, from: signal),
               let user = userInfoSignal.body?.asUser else {
             throw SignalError.unableToGetUserFromSignal
         }
 
         await coherentCache.updateUser(user)
+    }
+
+    private func handleUserRemoved(_ signal: Data) async throws {
+        guard let userRemoveSignal = try? decoder.decode(SignalMessage<UserRemoveSignal>.self, from: signal),
+              let userDbId = userRemoveSignal.body?.userDbId else {
+            throw SignalError.unableToGetUserDbIdFromSignal
+        }
+
+        await coherentCache.removeUser(dbId: userDbId)
     }
 
     // MARK: Account

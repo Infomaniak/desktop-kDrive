@@ -18,6 +18,10 @@
 
 import Foundation
 
+struct UserRemoveSignal: Codable, Sendable {
+    let userDbId: Int32
+}
+
 struct UserInfoSignal: Codable, Sendable {
     let dbId: Int32
     let userId: Int32
