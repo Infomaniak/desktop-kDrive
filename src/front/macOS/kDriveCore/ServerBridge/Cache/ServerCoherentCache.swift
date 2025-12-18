@@ -271,9 +271,18 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         usersSubject.send(users)
     }
 
-    // MARK: - Cleanup
+    // MARK: - Management
 
-    public func clearOnServerRestart() {
+    public func refresh() async throws {
+        try await UserJobs().userInfoList()
+        try await AccountJobs().accountInfoList()
+        try await DriveJobs().driveInfoList()
+        try await SyncJobs().availableSync()
+    }
+
+    // TODO: Call on XPC reset
+    public func clearAndRefresh() async throws {
         users = [:]
+        try await refresh()
     }
 }

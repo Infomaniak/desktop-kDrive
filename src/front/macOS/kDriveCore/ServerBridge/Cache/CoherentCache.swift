@@ -55,7 +55,8 @@ public protocol CoherentCache: Sendable {
     func removeSynchro(synchroDbId: Int32, driveDbId: Int32) async throws
     func updateSynchro(_ synchro: Synchro) async throws
 
-    // MARK: - Cleanup
+    // MARK: - Management
 
-    func clearOnServerRestart() async
+    func refresh() async throws
+    func clearAndRefresh() async throws
 }
