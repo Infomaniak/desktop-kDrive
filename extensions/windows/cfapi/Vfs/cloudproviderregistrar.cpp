@@ -37,6 +37,15 @@ using namespace Windows::Security::Cryptography;
 #define REGKEY_AUMID L"AUMID"
 #define REGKEY_ICONRESOURCE L"IconResource"
 
+void updateRegistryEntry(const HKEY &hKey, const std::wstring & name, const std::wstring &value) {
+    TRACE_INFO(L"%s value: %s", name.c_str(), value.c_str());
+
+    if (RegSetValueEx(hKey, name.c_str(), 0, REG_SZ, (BYTE*)value.c_str(),
+        (DWORD)(value.size() + 1) * sizeof(wchar_t)) != ERROR_SUCCESS) {
+        TRACE_ERROR(L"Could not set registry value %s=%s", name.c_str(), value.c_str());
+    }
+}
+
 std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInfo, wchar_t *namespaceCLSID,
                                                        DWORD *namespaceCLSIDSize) {
     std::wstring syncRootID;
@@ -80,28 +89,17 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
                 std::wstring name(REGKEY_AUMID);
                 const std::wstring aumidValue = KDC_AUMID;
                 std::wstring value = L"Infomaniak.kDrive.Extension_" + aumidValue + L"!App";
-
-                TRACE_INFO(L"AUMID value: %s", aumidValue.c_str());
-
-                if (RegSetValueEx(hKey, name.c_str(), 0, REG_SZ, (BYTE *) value.c_str(),
-                                  (DWORD) (value.size() + 1) * sizeof(wchar_t)) != ERROR_SUCCESS) {
-                    TRACE_ERROR(L"Could not set registry value %s=%s", name.c_str(), value.c_str());
-                }
+                updateRegistryEntry(hKey, name, value);
 
                 // Update IconResource
                 name = REGKEY_ICONRESOURCE;
                 WCHAR exePath[MAX_FULL_PATH];
                 if (!GetModuleFileNameW(nullptr, exePath, MAX_FULL_PATH)) {
                     TRACE_ERROR(L"Error in GetModuleFileNameW");
-                    return std::wstring();
                 }
                 value = exePath;
-
-                TRACE_INFO(L"%s value: %s", REGKEY_ICONRESOURCE, aumidValue.c_str());
-
-                if (RegSetValueEx(hKey, name.c_str(), 0, REG_SZ, (BYTE*)value.c_str(),
-                    (DWORD)(value.size() + 1) * sizeof(wchar_t)) != ERROR_SUCCESS) {
-                    TRACE_ERROR(L"Could not set registry value %s=%s", name.c_str(), value.c_str());
+                if (!value.empty()) {
+                    updateRegistryEntry(hKey, name, value);
                 }
 
                 if (RegCloseKey(hKey) != ERROR_SUCCESS) {
