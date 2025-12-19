@@ -158,20 +158,19 @@ LONG setRegistryStringValue(const HKEY &key, const std::wstring &subKey, const s
 LONG setRegistryBinaryValue(const HKEY &key, const std::wstring &subKey, const std::wstring &valueName, const BYTE *valueData,
                             const uint length) {
     // Open or create the key with write access
-    HKEY hKey;
-
-    if (LONG result = RegCreateKeyExW(key, subKey.c_str(), 0, nullptr, 0, KEY_WRITE, nullptr, &hKey, nullptr);
+    HKEY hKey = nullptr;
+    if (const LONG result = RegCreateKeyExW(key, subKey.c_str(), 0, nullptr, 0, KEY_WRITE, nullptr, &hKey, nullptr);
         result != ERROR_SUCCESS) {
         return result;
     }
 
     // Set the value
-    if (LONG result = RegSetValueExW(hKey, valueName.c_str(), 0, REG_BINARY, valueData, length); result != ERROR_SUCCESS) {
+    if (const LONG result = RegSetValueExW(hKey, valueName.c_str(), 0, REG_BINARY, valueData, length); result != ERROR_SUCCESS) {
         RegCloseKey(hKey);
         return result;
     }
 
-    RegCloseKey(hKey);
+    (void) RegCloseKey(hKey);
     return ERROR_SUCCESS;
 }
 
