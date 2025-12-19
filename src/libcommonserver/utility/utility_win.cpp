@@ -155,6 +155,26 @@ LONG setRegistryStringValue(const HKEY &key, const std::wstring &subKey, const s
     return ERROR_SUCCESS;
 }
 
+LONG setRegistryBinaryValue(const HKEY &key, const std::wstring &subKey, const std::wstring &valueName, const BYTE *valueData,
+                            const uint length) {
+    // Open or create the key with write access
+    HKEY hKey;
+
+    if (LONG result = RegCreateKeyExW(key, subKey.c_str(), 0, nullptr, 0, KEY_WRITE, nullptr, &hKey, nullptr);
+        result != ERROR_SUCCESS) {
+        return result;
+    }
+
+    // Set the value
+    if (LONG result = RegSetValueExW(hKey, valueName.c_str(), 0, REG_BINARY, valueData, length); result != ERROR_SUCCESS) {
+        RegCloseKey(hKey);
+        return result;
+    }
+
+    RegCloseKey(hKey);
+    return ERROR_SUCCESS;
+}
+
 LONG deleteRegistryValue(const HKEY &key, const std::wstring &subKey, const std::wstring &valueName) {
     // Open the key with write access
     HKEY hKey;
@@ -187,6 +207,7 @@ bool Utility::hasSystemLaunchOnStartup(const std::string &appName) {
 }
 
 static const wchar_t runPath[] = L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
+static const wchar_t startupApprovedPath[] = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run";
 
 bool Utility::hasLaunchOnStartup(const std::string &appName) {
     std::unordered_map<std::wstring, std::wstring> map;
@@ -204,13 +225,27 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
         if (const auto result = setRegistryStringValue(HKEY_CURRENT_USER, runPath, CommonUtility::s2ws(appName),
                                                        serverFilePath.make_preferred().native());
             result != ERROR_SUCCESS) {
-            LOGW_WARN(logger(), L"Failed to set registry value for: " << systemRunPath << L", error: " << result);
+            LOGW_WARN(logger(), L"Failed to set registry value for: " << runPath << L", error: " << result);
+            return false;
+        }
+        const uint16_t binaryValueLength = 12;
+        BYTE binaryValue[binaryValueLength] = {0x02, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                               0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; // Auto start approved
+        if (const auto result = setRegistryBinaryValue(HKEY_CURRENT_USER, startupApprovedPath, CommonUtility::s2ws(appName),
+                                                       binaryValue, binaryValueLength);
+            result != ERROR_SUCCESS) {
+            LOGW_WARN(logger(), L"Failed to set registry value for: " << startupApprovedPath << L", error: " << result);
             return false;
         }
     } else {
         if (const auto result = deleteRegistryValue(HKEY_CURRENT_USER, runPath, CommonUtility::s2ws(appName));
             result != ERROR_SUCCESS) {
-            LOGW_WARN(logger(), L"Failed to remove registry value for: " << systemRunPath << L", error: " << result);
+            LOGW_WARN(logger(), L"Failed to remove registry value for: " << runPath << L", error: " << result);
+            return false;
+        }
+        if (const auto result = deleteRegistryValue(HKEY_CURRENT_USER, startupApprovedPath, CommonUtility::s2ws(appName));
+            result != ERROR_SUCCESS) {
+            LOGW_WARN(logger(), L"Failed to remove registry value for: " << startupApprovedPath << L", error: " << result);
             return false;
         }
     }
