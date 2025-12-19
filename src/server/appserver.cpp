@@ -307,8 +307,11 @@ void AppServer::init() {
 
     // Setup auto start
 #ifdef NDEBUG
+#if defined(KD_WINDOWS)
     (void) Utility::setLaunchOnStartup(_theme->appName(), _theme->appClientName(),
                                        false); // Disable it first to make sure the path is updated in registry
+#endif
+
 #if defined(KD_LINUX)
     // On Linux, override the auto startup file on every app launch to make sure it points to the correct executable.
     if (ParametersCache::instance()->parameters().autoStart()) {
