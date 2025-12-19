@@ -44,8 +44,8 @@ using namespace Windows::Security::Cryptography;
 void updateRegistryEntry(const HKEY &hKey, const std::wstring &name, const std::wstring &value) {
     TRACE_INFO(L"%s value: %s", name.c_str(), value.c_str());
 
-    if (RegSetValueEx(hKey, name.c_str(), 0, REG_SZ, (BYTE *) value.c_str(), (DWORD) (value.size() + 1) * sizeof(wchar_t)) !=
-        ERROR_SUCCESS) {
+    if (RegSetValueEx(hKey, name.c_str(), 0, REG_SZ, (BYTE*)value.c_str(),
+        (DWORD)(value.size() + 1) * sizeof(wchar_t)) != ERROR_SUCCESS) {
         TRACE_ERROR(L"Could not set registry value %s=%s", name.c_str(), value.c_str());
     }
 }
@@ -110,31 +110,33 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
                     TRACE_ERROR(L"Could not close key %s", subKey.c_str());
                 }
 
-                // Update DefaultIcon keys
-                // A list of all the key to edit
-                struct RegKeyInfo {
-                        HKEY rootKey;
-                        std::wstring subKey;
-                };
-                std::vector<RegKeyInfo> regKeys = {
-                        {HKEY_CLASSES_ROOT, REGPATH_HKEY_CLASSES_ROOT_CLSID + std::wstring(namespaceCLSID) + L"\\" +
-                                                    std::wstring(REGKEY_DEFAULTICON)},
-                        {HKEY_CLASSES_ROOT, REGPATH_HKEY_CLASSES_ROOT_WOW6432_CLSID + std::wstring(namespaceCLSID) + L"\\" +
-                                                    std::wstring(REGKEY_DEFAULTICON)},
-                        {HKEY_CURRENT_USER, REGPATH_HKEY_CURRENT_USER_CLSID + std::wstring(namespaceCLSID) + L"\\" +
-                                                    std::wstring(REGKEY_DEFAULTICON)},
-                        {HKEY_CURRENT_USER, REGPATH_HKEY_CURRENT_USER_WOW6432_CLSID + std::wstring(namespaceCLSID) + L"\\" +
-                                                    std::wstring(REGKEY_DEFAULTICON)}};
+                if (namespaceCLSID) {
+                    // Update DefaultIcon keys
+                    struct RegKeyInfo {
+                            HKEY rootKey;
+                            std::wstring subKey;
+                    };
+                    std::vector<RegKeyInfo> regKeys = {
+                            {HKEY_CLASSES_ROOT, REGPATH_HKEY_CLASSES_ROOT_CLSID + std::wstring(namespaceCLSID) + L"\\" +
+                                                        std::wstring(REGKEY_DEFAULTICON)},
+                            {HKEY_CLASSES_ROOT, REGPATH_HKEY_CLASSES_ROOT_WOW6432_CLSID + std::wstring(namespaceCLSID) + L"\\" +
+                                                        std::wstring(REGKEY_DEFAULTICON)},
+                            {HKEY_CURRENT_USER, REGPATH_HKEY_CURRENT_USER_CLSID + std::wstring(namespaceCLSID) + L"\\" +
+                                                        std::wstring(REGKEY_DEFAULTICON)},
+                            {HKEY_CURRENT_USER, REGPATH_HKEY_CURRENT_USER_WOW6432_CLSID + std::wstring(namespaceCLSID) + L"\\" +
+                                                        std::wstring(REGKEY_DEFAULTICON)}};
 
-                for (const auto &regKeyInfo: regKeys) {
-                    if (RegOpenKeyEx(regKeyInfo.rootKey, regKeyInfo.subKey.c_str(), 0, KEY_ALL_ACCESS, &hKey) == ERROR_SUCCESS) {
-                        // Update DefaultIcon value
-                        updateRegistryEntry(hKey, L"", value);
-                        if (RegCloseKey(hKey) != ERROR_SUCCESS) {
-                            TRACE_ERROR(L"Could not close key %s", regKeyInfo.subKey.c_str());
+                    for (const auto &regKeyInfo: regKeys) {
+                        if (RegOpenKeyEx(regKeyInfo.rootKey, regKeyInfo.subKey.c_str(), 0, KEY_ALL_ACCESS, &hKey) ==
+                            ERROR_SUCCESS) {
+                            // Update DefaultIcon value
+                            updateRegistryEntry(hKey, L"", value);
+                            if (RegCloseKey(hKey) != ERROR_SUCCESS) {
+                                TRACE_ERROR(L"Could not close key %s", regKeyInfo.subKey.c_str());
+                            }
+                        } else {
+                            TRACE_ERROR(L"Could not open key %s", regKeyInfo.subKey.c_str());
                         }
-                    } else {
-                        TRACE_ERROR(L"Could not open key %s", regKeyInfo.subKey.c_str());
                     }
                 }
 
