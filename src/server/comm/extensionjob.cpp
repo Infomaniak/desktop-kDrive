@@ -435,13 +435,11 @@ void ExtensionJob::commandGetAllMenuItems(const CommString &argument, std::share
         return;
     }
 
-    {
-        CommString msgId = argumentList[0];
-        CommString response(msgId);
-        response.append(responseToFinderArgSeparator);
-        response.append(CommonUtility::str2CommString(Theme::instance()->appName()));
-        channel->sendMessage(response);
-    }
+
+    CommString msgId = argumentList[0];
+    CommString response(msgId);
+    response.append(responseToFinderArgSeparator);
+    response.append(CommonUtility::str2CommString(Theme::instance()->appName()));
 
     // Find the common sync
     std::vector<SyncPath> paths;
@@ -455,7 +453,6 @@ void ExtensionJob::commandGetAllMenuItems(const CommString &argument, std::share
 
         if (syncPalMapIt != AppServer::syncPalMap.end() && syncPalMapIt->second && vfsMapIt != AppServer::vfsMap.end() &&
             vfsMapIt->second) {
-            CommString response;
             response.append(responseToFinderArgSeparator);
             response.append(sync.dbId() ? Vfs::modeToString(vfsMapIt->second->mode()) : Str(""));
 
@@ -467,6 +464,7 @@ void ExtensionJob::commandGetAllMenuItems(const CommString &argument, std::share
                 if (exitCode != ExitCode::Ok) {
                     LOGW_WARN(Log::instance()->getLogger(),
                               L"Error in SyncPal::itemId - " << Utility::formatSyncPath(fileData.relativePath));
+                    channel->sendMessage(response);
                     return;
                 }
                 bool isOnTheServer = !nodeId.empty();
@@ -499,10 +497,9 @@ void ExtensionJob::commandGetAllMenuItems(const CommString &argument, std::share
                 response.append(responseToFinderArgSeparator);
                 response.append(cancelHydrationText());
             }
-
-            channel->sendMessage(response);
         }
     }
+    channel->sendMessage(response);
 }
 
 void ExtensionJob::commandGetThumbnail(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
