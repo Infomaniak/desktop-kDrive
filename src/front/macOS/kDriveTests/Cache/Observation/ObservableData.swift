@@ -46,10 +46,10 @@ extension Drive {
 
 public enum ObservableData {
     static let expectedUserId = Int32.random(in: 0 ... 1000)
-    static let expectedUserDbId = Int32.random(in: 0 ... 1000)
-    static let expectedAccountDbId = Int32.random(in: 0 ... 1000)
+    static let expectedUserDbId = Int32(1)
+    static let expectedAccountDbId = Int32(2)
     static let expectedAccountId = Int32.random(in: 0 ... 1000)
-    static let expectedDriveDbId = Int32.random(in: 0 ... 1000)
+    static let expectedDriveDbId = Int32(3)
     static let expectedDriveId = Int32.random(in: 0 ... 1000)
 
     static let expectedDrive = Drive.some(driveDbId: expectedDriveDbId,
@@ -59,7 +59,20 @@ public enum ObservableData {
                                           userDbId: expectedUserDbId,
                                           userId: expectedUserId,
                                           name: "The amazing test Drive",
-                                          color: HexColor(hex: "#ffffff"), synchros: [:])
+                                          color: HexColor(hex: "#ffffff"),
+                                          synchros: [:])
+
+    static let secondaryDriveDbId = Int32(4)
+    static let secondaryDriveId = Int32.random(in: 0 ... 1000)
+    static let secondaryDrive = Drive.some(driveDbId: secondaryDriveDbId,
+                                           driveId: secondaryDriveId,
+                                           accountDbId: expectedAccountDbId,
+                                           accountId: expectedAccountId,
+                                           userDbId: expectedUserDbId,
+                                           userId: expectedUserId,
+                                           name: "Secondary  amazing test Drive",
+                                           color: HexColor(hex: "#aaaaaa"),
+                                           synchros: [:])
 
     static let expectedDriveResponse = DriveResponse(driveDbId: expectedDriveDbId,
                                                      driveId: expectedDriveId,
@@ -79,7 +92,8 @@ public enum ObservableData {
                                          userDbId: expectedUserDbId,
                                          userId: expectedUserId,
                                          name: "The amazing UPDATED test Drive",
-                                         color: HexColor(hex: "#0a0a0a"), synchros: [:])
+                                         color: HexColor(hex: "#0a0a0a"),
+                                         synchros: [:])
 
     static let expectedAccount = Account(dbId: expectedAccountDbId,
                                          userDbId: expectedUserDbId,
@@ -92,10 +106,10 @@ public enum ObservableData {
                                         drives: [expectedDriveDbId: updatedDrive])
 
     static let indexedAccounts: IndexedAccounts = [
-        1: Account(dbId: 1, userDbId: expectedUserDbId, name: "1", drives: [:]),
-        2: Account(dbId: 2, userDbId: expectedUserDbId, name: "2", drives: [:]),
+        10: Account(dbId: 10, userDbId: expectedUserDbId, name: "10", drives: [:]),
+        20: Account(dbId: 20, userDbId: expectedUserDbId, name: "20", drives: [:]),
         expectedAccountDbId: expectedAccount,
-        4: Account(dbId: 4, userDbId: expectedUserDbId, name: "4", drives: [:])
+        40: Account(dbId: 40, userDbId: expectedUserDbId, name: "40", drives: [:])
     ]
 
     static let expectedUser = User(
@@ -125,7 +139,7 @@ public enum ObservableData {
     static let updatedUser = User(
         dbId: expectedUserDbId,
         userId: expectedUserId,
-        name: "appleseed UPDATE",
+        name: "appleseed  UPDATE",
         email: "ja@apple.com",
         accounts: indexedAccounts,
         availableDrives: [:],
@@ -134,7 +148,7 @@ public enum ObservableData {
         isStaff: true
     )
 
-    static let expectedSynchroDbId = Int32.random(in: 0 ... 1000)
+    static let expectedSynchroDbId = Int32(5)
     static let expectedSynchroPath = "/dev/null"
     static let expectedTargetPath = "dev/bin"
     static let expectedTargetNodeId = UUID().uuidString
@@ -156,4 +170,18 @@ public enum ObservableData {
                                         targetNodeId: expectedTargetNodeId,
                                         supportVfs: expectedSupportVFS,
                                         virtualFileMode: expectedVirtualFileMode)
+
+    static let secondarySynchroDbId = Int32(6)
+    static let secondarySynchroPath = "/root/you-shall-not-pass"
+    static let secondaryTargetPath = "/etc/shadow.d/definitely-readable"
+    static let secondaryTargetNodeId = UUID().uuidString
+    static let secondarySupportVFS = true
+    static let secondaryVirtualFileMode = KDC.VirtualFileMode.Mac
+    static let secondarySynchro = Synchro(dbId: secondarySynchroDbId,
+                                          driveDbId: secondaryDriveDbId,
+                                          localPath: secondarySynchroPath,
+                                          targetPath: secondaryTargetPath,
+                                          targetNodeId: secondaryTargetNodeId,
+                                          supportVfs: secondarySupportVFS,
+                                          virtualFileMode: secondaryVirtualFileMode)
 }

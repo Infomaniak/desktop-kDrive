@@ -65,6 +65,7 @@ public struct SyncJobs: Sendable {
 
     public init() {}
 
+    @discardableResult
     public func availableSync() async throws -> [SyncInfo] {
         IKLogger.data.log("Query for availableSync list")
         let query = EmptyQuery()

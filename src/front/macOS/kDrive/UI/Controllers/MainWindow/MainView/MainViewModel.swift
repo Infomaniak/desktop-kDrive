@@ -45,10 +45,7 @@ final class MainViewModel {
 
     func refreshCache() {
         Task {
-            _ = try await UserJobs().userInfoList()
-            _ = try await AccountJobs().accountInfoList()
-            _ = try await DriveJobs().driveInfoList()
-            _ = try await SyncJobs().availableSync()
+            try await coherentCache.refresh()
         }
     }
 
