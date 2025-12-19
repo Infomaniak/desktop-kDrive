@@ -24,20 +24,28 @@ import kDriveCoreUI
 final class SelectedUserAndDriveView: NSView {
     var user: UIUser {
         didSet {
-            updateUser()
+            updateUser(for: user)
         }
     }
 
     var drive: UIDrive {
         didSet {
-            updateDrive()
+            updateDrive(for: drive)
         }
     }
+
+    private lazy var avatarView: UserAvatarAndDriveView = {
+        let avatarView = UserAvatarAndDriveView(user: user, drive: drive)
+        avatarView.translatesAutoresizingMaskIntoConstraints = false
+        return avatarView
+    }()
 
     init(user: UIUser, drive: UIDrive) {
         self.user = user
         self.drive = drive
         super.init(frame: .zero)
+
+        setupView()
     }
 
     @available(*, unavailable)
@@ -46,15 +54,25 @@ final class SelectedUserAndDriveView: NSView {
     }
 
     private func setupView() {
+        wantsLayer = true
+        layer?.backgroundColor = NSColor.Tokens.Surface.secondary.cgColor
+        layer?.cornerRadius = AppRadius.radius16
 
+        addSubview(avatarView)
+        NSLayoutConstraint.activate([
+            avatarView.centerXAnchor.constraint(equalTo: centerXAnchor),
+            avatarView.topAnchor.constraint(equalTo: topAnchor, constant: AppPadding.padding24),
+            avatarView.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: AppPadding.padding16),
+            avatarView.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -AppPadding.padding16)
+        ])
     }
 
-    private func updateUser() {
-
+    private func updateUser(for user: UIUser) {
+        avatarView.user = user
     }
 
-    private func updateDrive() {
-
+    private func updateDrive(for drive: UIDrive) {
+        avatarView.drive = drive
     }
 }
 
