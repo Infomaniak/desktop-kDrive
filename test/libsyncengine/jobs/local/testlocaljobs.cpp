@@ -24,7 +24,12 @@
 #include "jobs/local/localmovejob.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "jobs/local/localcopyjob.h"
+#include "keychainmanager/apitoken.h"
+#include "keychainmanager/keychainmanager.h"
+#include "mocks/libcommonserver/db/mockdb.h"
+#include "network/proxy.h"
 #include "requests/parameterscache.h"
+#include "test_classes/syncpaltest.h"
 #include "test_utility/testhelpers.h"
 
 using namespace CppUnit;
@@ -57,8 +62,44 @@ class LocalDeleteJobMockingTrash : public LocalDeleteJob {
 
 void KDC::TestLocalJobs::setUp() {
     TestBase::start();
-    // Setup parameters cache in test mode
-    ParametersCache::instance(true);
+    const testhelpers::TestVariables testVariables;
+    // Insert api token into keystore
+    ApiToken apiToken;
+    apiToken.setAccessToken(testVariables.apiToken);
+
+    const std::string keychainKey("123");
+    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+
+    // Create parmsDb
+    (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
+
+    // Insert user, account, drive & sync
+    int userId(12321);
+    User user(1, userId, keychainKey);
+    (void) ParmsDb::instance()->insertUser(user);
+
+    int accountId(atoi(testVariables.accountId.c_str()));
+    Account account(1, accountId, user.dbId());
+    (void) ParmsDb::instance()->insertAccount(account);
+
+    int driveId = atoi(testVariables.driveId.c_str());
+    Drive drive(1, driveId, account.dbId(), std::string(), 0, std::string());
+    (void) ParmsDb::instance()->insertDrive(drive);
+
+    const auto sync = Sync(1, drive.dbId(), _localTempDir.path(), "", testVariables.remotePath);
+    (void) ParmsDb::instance()->insertSync(sync);
+
+    // Setup proxy
+    Parameters parameters;
+    if (bool found = false; ParmsDb::instance()->selectParameters(parameters, found) && found) {
+        Proxy::instance(parameters.proxyConfig());
+    }
+
+    _syncPal = std::make_shared<SyncPalTest>(1, KDRIVE_VERSION_STRING);
+    _syncPal->createSharedObjects();
+    _syncPal->createWorkers(std::chrono::seconds(0));
+    _syncPal->syncDb()->setAutoDelete(true);
 }
 
 void TestLocalJobs::tearDown() {
@@ -67,39 +108,38 @@ void TestLocalJobs::tearDown() {
 }
 
 void KDC::TestLocalJobs::testLocalJobs() {
-    const LocalTemporaryDirectory temporaryDirectory("testLocalJobs_testLocalJobs");
-    const SyncPath localDirPath = temporaryDirectory.path() / _localTempDirName;
-
     // Create
-    LocalCreateDirJob createJob(localDirPath);
+    const SyncName testDirName = "testLocalJobs";
+    const SyncPath testDirPath = _localTempDir.path() / testDirName;
+    LocalCreateDirJob createJob(testDirPath);
     createJob.runSynchronously();
 
-    CPPUNIT_ASSERT(std::filesystem::exists(localDirPath));
+    CPPUNIT_ASSERT(std::filesystem::exists(testDirPath));
 
     // Add a file in `localDirPath`
     const SyncPath picturesPath = testhelpers::localTestDirPath() / SyncPath("test_pictures");
-    std::filesystem::copy(picturesPath / "picture-1.jpg", localDirPath / "tmp_picture.jpg");
+    std::filesystem::copy(picturesPath / "picture-1.jpg", testDirPath / "tmp_picture.jpg");
 
     // Copy
     const auto suffix = CommonUtility::generateRandomStringAlphaNum(10);
-    const SyncPath copyDirPath = temporaryDirectory.path() / (_localTempDirName + "_copy_" + suffix);
-    LocalCopyJob copyJob(localDirPath, copyDirPath);
+    const SyncPath copyDirPath = _localTempDir.path() / (testDirName + "_copy_" + suffix);
+    LocalCopyJob copyJob(testDirPath, copyDirPath);
     copyJob.runSynchronously();
 
     CPPUNIT_ASSERT(std::filesystem::exists(copyDirPath));
     CPPUNIT_ASSERT(std::filesystem::exists(copyDirPath / "tmp_picture.jpg"));
 
     // Move
-    LocalMoveJob moveJob(localDirPath, copyDirPath / _localTempDirName);
+    LocalMoveJob moveJob(testDirPath, copyDirPath / testDirName);
     moveJob.runSynchronously();
 
-    CPPUNIT_ASSERT(std::filesystem::exists(copyDirPath / _localTempDirName));
-    CPPUNIT_ASSERT(std::filesystem::exists(copyDirPath / _localTempDirName / "tmp_picture.jpg"));
+    CPPUNIT_ASSERT(std::filesystem::exists(copyDirPath / testDirName));
+    CPPUNIT_ASSERT(std::filesystem::exists(copyDirPath / testDirName / "tmp_picture.jpg"));
 
     // Delete
     LocalDeleteJobMockingTrash deleteJob(copyDirPath);
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
-    testhelpers::createFileWithDehydratedStatus(copyDirPath / _localTempDirName / "dehydrated_placeholder.jpg");
+    testhelpers::createFileWithDehydratedStatus(copyDirPath / testDirName / "dehydrated_placeholder.jpg");
     deleteJob.setLiteSyncEnabled(true);
 #endif
     deleteJob.setMockMoveToTrash(false);
@@ -112,8 +152,8 @@ void KDC::TestLocalJobs::testLocalJobs() {
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
     // testhelpers::isInTrash is not reliable on Linux if previous tests have failed and have left a polluted trash.
     CPPUNIT_ASSERT(testhelpers::isInTrash(copyDirPath.filename()));
-    CPPUNIT_ASSERT(testhelpers::isInTrash(SyncPath{copyDirPath.filename()} / _localTempDirName / "tmp_picture.jpg"));
-    CPPUNIT_ASSERT(!testhelpers::isInTrash(SyncPath{copyDirPath.filename()} / _localTempDirName / "dehydrated_placeholder.jpg"));
+    CPPUNIT_ASSERT(testhelpers::isInTrash(SyncPath{copyDirPath.filename()} / testDirName / "tmp_picture.jpg"));
+    CPPUNIT_ASSERT(!testhelpers::isInTrash(SyncPath{copyDirPath.filename()} / testDirName / "dehydrated_placeholder.jpg"));
 #endif
 #if defined(KD_MACOS) || defined(KD_LINUX)
     testhelpers::eraseFromTrash(copyDirPath.filename());
@@ -124,7 +164,7 @@ void KDC::TestLocalJobs::testDeleteFilesWithDuplicateNames() {
     ParametersCache::instance()->parameters().setMoveToTrash(false);
 
     const LocalTemporaryDirectory temporaryDirectory("testLocalJobs_testDeleteFilesWithDuplicateNames");
-    const SyncPath localDirPath = temporaryDirectory.path() / _localTempDirName;
+    const SyncPath localDirPath = temporaryDirectory.path() / _localTempDir.path().filename();
 
     // Create two files with the same name but distinct encodings.
     {
@@ -191,15 +231,18 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
 
 
     const LocalTemporaryDirectory temporaryDirectory("testLocalJobs_testLocalDeleteJob");
-    const SyncPath localDirPath = temporaryDirectory.path() / _localTempDirName;
+    const SyncPath localDirPath = temporaryDirectory.path() / _localTempDir.path().filename();
     std::filesystem::create_directories(localDirPath);
 
     class LocalDeleteJobMock : public LocalDeleteJob {
         public:
-            LocalDeleteJobMock(const SyncPalInfo &syncInfo, const SyncPath &relativePath, bool isDehydratedPlaceholder,
+            LocalDeleteJobMock(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, bool isDehydratedPlaceholder,
                                NodeId remoteId, bool forceToTrash = false) :
-                LocalDeleteJob(syncInfo, relativePath, isDehydratedPlaceholder, remoteId, forceToTrash) {};
+                LocalDeleteJob(syncPal, relativePath, isDehydratedPlaceholder, remoteId, forceToTrash) {
+
+                };
             void setReturnedItemPath(const SyncPath &remoteItemPath) { _remoteItemPath = remoteItemPath; }
+            void setTargetPath(const SyncPath &targetPath) { _syncPal->_syncInfo.targetPath = targetPath; }
 
         protected:
             virtual bool findRemoteItem(SyncPath &remoteItemPath) const {
@@ -209,53 +252,50 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
             SyncPath _remoteItemPath;
     };
 
+    _syncPal->setLocalPath(temporaryDirectory.path());
     {
-        SyncPalInfo syncInfo(1, temporaryDirectory.path());
-        LocalDeleteJobMock deleteJob(syncInfo, SyncPath{_localTempDirName}, false, NodeId{});
+        LocalDeleteJobMock deleteJob(_syncPal, SyncPath{_localTempDir.path().filename()}, false, NodeId{});
 
         CPPUNIT_ASSERT(!deleteJob.canRun()); // Empty node ID.
     }
 
     // Local and remote item paths are different: can run
     {
-        SyncPalInfo syncInfo(1, temporaryDirectory.path());
-        LocalDeleteJobMock deleteJob(syncInfo, SyncPath{_localTempDirName}, false, NodeId{"1234"});
+        LocalDeleteJobMock deleteJob(_syncPal, SyncPath{_localTempDir.path().filename()}, false, NodeId{"1234"});
 
         CPPUNIT_ASSERT(deleteJob.canRun());
     }
     // Local and remote item paths are the same: cannot run
     {
-        SyncPalInfo syncInfo(1, temporaryDirectory.path());
-        LocalDeleteJobMock deleteJob(syncInfo, SyncPath{_localTempDirName}, false, NodeId{"1234"});
-        deleteJob.setReturnedItemPath(SyncPath{_localTempDirName});
+        LocalDeleteJobMock deleteJob(_syncPal, SyncPath{_localTempDir.path().filename()}, false, NodeId{"1234"});
+        deleteJob.setReturnedItemPath(SyncPath{_localTempDir.path().filename()});
 
         CPPUNIT_ASSERT(!deleteJob.canRun());
     }
 
     // Advanced synchronisation, local and remote item paths are the same: cannot run
+    _syncPal->_syncInfo.targetPath = "/";
     {
-        SyncPalInfo syncInfo(1, temporaryDirectory.path(), SyncPath{"/"});
-        LocalDeleteJobMock deleteJob(syncInfo, SyncPath{_localTempDirName}, false, NodeId{"1234"});
-        deleteJob.setReturnedItemPath(SyncPath{_localTempDirName});
+        LocalDeleteJobMock deleteJob(_syncPal, SyncPath{_localTempDir.path().filename()}, false, NodeId{"1234"});
+        deleteJob.setReturnedItemPath(SyncPath{_localTempDir.path().filename()});
 
         CPPUNIT_ASSERT(!deleteJob.canRun());
     }
 
     // Advanced synchronisation, local and remote item paths are different: cannot run
     {
-        SyncPalInfo syncInfo(1, temporaryDirectory.path(), SyncPath{"/"});
-        LocalDeleteJobMock deleteJob(syncInfo, SyncPath{_localTempDirName}, false, NodeId{"1234"});
+        LocalDeleteJobMock deleteJob(_syncPal, SyncPath{_localTempDir.path().filename()}, false, NodeId{"1234"});
         deleteJob.setReturnedItemPath(SyncPath{"tmp_dir_diff"});
 
         CPPUNIT_ASSERT(deleteJob.canRun());
 
         deleteJob.runSynchronously();
 
-        CPPUNIT_ASSERT(!std::filesystem::exists(temporaryDirectory.path() / _localTempDirName));
+        CPPUNIT_ASSERT(!std::filesystem::exists(temporaryDirectory.path() / _localTempDir.path().filename()));
     }
 
 #if defined(KD_MACOS) || defined(KD_LINUX)
-    testhelpers::eraseFromTrash(_localTempDirName);
+    testhelpers::eraseFromTrash(_localTempDir.path().filename());
 #endif
 }
 

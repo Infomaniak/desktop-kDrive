@@ -59,11 +59,11 @@ bool LocalDeleteJob::matchRelativePaths(const SyncPath &targetPath, const SyncPa
     return Path(remoteRelativePath).endsWith(SyncPath(targetPath.filename()) / localRelativePath);
 }
 
-LocalDeleteJob::LocalDeleteJob(const SyncPalInfo &syncPalInfo, const SyncPath &relativePath, bool liteSyncIsEnabled,
+LocalDeleteJob::LocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, bool liteSyncIsEnabled,
                                const NodeId &remoteId, bool forceToTrash /* = false */) :
-    _absolutePath(syncPalInfo.localPath / relativePath),
+    _absolutePath(syncPal ? syncPal->localPath() / relativePath : ""),
     _liteSyncIsEnabled(liteSyncIsEnabled),
-    _syncInfo(syncPalInfo),
+    _syncPal(syncPal),
     _relativePath(relativePath),
     _remoteNodeId(remoteId),
     _forceToTrash(forceToTrash) {}
@@ -81,7 +81,7 @@ bool LocalDeleteJob::findRemoteItem(SyncPath &remoteItemPath) const {
     remoteItemPath.clear();
 
     // The item must be absent of remote replica for the job to run
-    GetFileInfoJob job(syncInfo().driveDbId, _remoteNodeId);
+    GetFileInfoJob job(_syncPal->driveDbId(), _remoteNodeId);
     job.setWithPath(true);
     job.runSynchronously();
 
@@ -142,7 +142,7 @@ ExitInfo LocalDeleteJob::canRun() {
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
-    if (matchRelativePaths(syncInfo().targetPath, normalizedPath, remoteRelativePath)) {
+    if (matchRelativePaths(_syncPal->syncInfo().targetPath, normalizedPath, remoteRelativePath)) {
         // Item is found at the same path on remote
         LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(_absolutePath).c_str()
                                           << L" still exists on remote replica. Aborting current sync and restarting.");
@@ -193,6 +193,35 @@ ExitInfo LocalDeleteJob::handleLiteSyncFile(const SyncPath &path) {
     return moveToTrashOrHardDeleteIfNeeded(path);
 }
 
+ExitInfo LocalDeleteJob::deleteFromDB(const SyncPath &path) {
+    bool found = false;
+    DbNodeId dbId = 0;
+    if (!_syncPal->syncDb()->dbId(ReplicaSide::Local, path, dbId, found)) {
+        LOGW_ERROR(_logger, L"Failed to get DB ID for " << Utility::formatSyncPath(path));
+        return {ExitCode::DbError, ExitCause::DbAccessError};
+    }
+    if (!found) {
+        LOGW_ERROR(_logger, L"Node DB ID not found for " << Utility::formatSyncPath(path));
+        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
+    }
+
+    // Remove item (and children by cascade) from DB
+    if (!_syncPal->syncDb()->deleteNode(dbId, found)) {
+        LOG_ERROR(_logger, "Failed to remove node " << dbId << " from DB");
+        return {ExitCode::DbError, ExitCause::DbAccessError};
+    }
+    if (!found) {
+        LOG_ERROR(_logger, "Node DB ID " << dbId << " not found");
+        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
+    }
+
+    if (ParametersCache::isExtendedLogEnabled()) {
+        LOGW_DEBUG(_logger, L"Item removed from DB: " << Utility::formatSyncPath(path));
+    }
+
+    return ExitCode::Ok;
+}
+
 ExitInfo LocalDeleteJob::hardDeleteDehydratedPlaceholders() {
     IoError ioError = IoError::Success;
     IoHelper::DirectoryIterator dir;
@@ -205,7 +234,10 @@ ExitInfo LocalDeleteJob::hardDeleteDehydratedPlaceholders() {
     bool endOfDirectory = false;
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
         if ((entry.is_symlink() || entry.is_regular_file()) && isFileDehydrated(entry.path(), _logger)) {
-            const auto exitInfo = hardDelete(entry.path());
+            auto exitInfo = hardDelete(entry.path());
+            if (!exitInfo) return exitInfo;
+
+            exitInfo = deleteFromDB(entry.path());
             if (!exitInfo) return exitInfo;
         }
     }
@@ -257,7 +289,8 @@ ExitInfo LocalDeleteJob::runJob() {
     PermissionsHolder permsHolder(_absolutePath.parent_path(), _logger);
     PermissionsHolder permsHolder2(_absolutePath, _logger);
 
-    if (const bool tryMoveToTrash = ParametersCache::instance()->parameters().moveToTrash(); tryMoveToTrash || _forceToTrash)
+    if (const bool tryMoveToTrash = ParametersCache::instance()->parameters().moveToTrash();
+        _syncPal && (tryMoveToTrash || _forceToTrash))
         return moveToTrash();
 
     return hardDelete(_absolutePath);

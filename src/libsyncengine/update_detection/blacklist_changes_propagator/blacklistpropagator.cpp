@@ -231,7 +231,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
                                                                      << L") on local replica because it is blacklisted.");
         }
 
-        LocalDeleteJob job(_syncPal->syncInfo(), localPath, liteSyncActivated, remoteNodeId);
+        LocalDeleteJob job(_syncPal, localPath, liteSyncActivated, remoteNodeId);
         job.setBypassCheck(true);
         job.runSynchronously();
         if (!job.exitInfo()) {

@@ -26,12 +26,11 @@ namespace KDC {
 
 class LocalDeleteJob : public SyncJob {
     public:
-        LocalDeleteJob(const SyncPalInfo &syncInfo, const SyncPath &relativePath, bool liteSyncIsEnabled, const NodeId &remoteId,
+        LocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, bool liteSyncIsEnabled,
+                       const NodeId &remoteId,
                        bool forceToTrash = false); // Check existence of remote counterpart and abort if needed.
         LocalDeleteJob(const SyncPath &absolutePath); // Delete without checks
         ~LocalDeleteJob();
-
-        const SyncPalInfo &syncInfo() const { return _syncInfo; }
 
         //! Returns `true` if `localRelativePath` and `remoteRelativePath` indicate the same synchronised item.
         /*!
@@ -59,7 +58,9 @@ class LocalDeleteJob : public SyncJob {
         ExitInfo hardDeleteDehydratedPlaceholders();
         ExitInfo handleLiteSyncFile(const SyncPath &path);
 
-        SyncPalInfo _syncInfo;
+        ExitInfo deleteFromDB(const SyncPath &path);
+
+        const std::shared_ptr<SyncPal> _syncPal;
         SyncPath _relativePath;
         NodeId _remoteNodeId;
         bool _forceToTrash = false;
