@@ -109,7 +109,7 @@ void TestLocalJobs::tearDown() {
 
 void KDC::TestLocalJobs::testLocalJobs() {
     // Create
-    const SyncName testDirName = "testLocalJobs";
+    const SyncName testDirName = Str("testLocalJobs");
     const SyncPath testDirPath = _localTempDir.path() / testDirName;
     LocalCreateDirJob createJob(testDirPath);
     createJob.runSynchronously();
@@ -122,7 +122,7 @@ void KDC::TestLocalJobs::testLocalJobs() {
 
     // Copy
     const auto suffix = CommonUtility::generateRandomStringAlphaNum(10);
-    const SyncPath copyDirPath = _localTempDir.path() / (testDirName + "_copy_" + suffix);
+    const SyncPath copyDirPath = _localTempDir.path() / (testDirName + Str("_copy_") + Str2SyncName(suffix));
     LocalCopyJob copyJob(testDirPath, copyDirPath);
     copyJob.runSynchronously();
 
@@ -139,13 +139,13 @@ void KDC::TestLocalJobs::testLocalJobs() {
     // Delete
     LocalDeleteJobMockingTrash deleteJob(copyDirPath, _syncPal);
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
-    const SyncName dehydratedPlaceholderName = "dehydrated_placeholder.jpg";
+    const SyncName dehydratedPlaceholderName = Str("dehydrated_placeholder.jpg");
     testhelpers::createFileWithDehydratedStatus(copyDirPath / testDirName / dehydratedPlaceholderName);
     deleteJob.setLiteSyncEnabled(true);
 
-    DbNode copyDirDbNode(0, 1, copyDirPath.filename().string(), copyDirPath.filename().string(), "0123", "4567",
-                         testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
-                         testhelpers::defaultDirSize);
+    DbNode copyDirDbNode(0, 1, Str2SyncName(copyDirPath.filename().string()), Str2SyncName(copyDirPath.filename().string()),
+                         "0123", "4567", testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime,
+                         NodeType::Directory, testhelpers::defaultDirSize);
     bool constraintError = false;
     DbNodeId copyDirDbNodeId = 0;
     (void) _syncPal->syncDb()->insertNode(copyDirDbNode, copyDirDbNodeId, constraintError);
