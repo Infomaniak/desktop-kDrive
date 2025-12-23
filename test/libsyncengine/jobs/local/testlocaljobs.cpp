@@ -104,6 +104,13 @@ void KDC::TestLocalJobs::setUp() {
 
 void TestLocalJobs::tearDown() {
     ParametersCache::reset();
+
+    ParmsDb::instance()->close();
+    ParmsDb::reset();
+    if (_syncPal && _syncPal->syncDb()) {
+        _syncPal->syncDb()->close();
+    }
+
     TestBase::stop();
 }
 
@@ -171,8 +178,8 @@ void KDC::TestLocalJobs::testLocalJobs() {
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
     // testhelpers::isInTrash is not reliable on Linux if previous tests have failed and have left a polluted trash.
     CPPUNIT_ASSERT(testhelpers::isInTrash(copyDirPath.filename()));
-    CPPUNIT_ASSERT(testhelpers::isInTrash(SyncPath{copyDirPath.filename()} / testDirName / "tmp_picture.jpg"));
-    CPPUNIT_ASSERT(!testhelpers::isInTrash(SyncPath{copyDirPath.filename()} / testDirName / "dehydrated_placeholder.jpg"));
+    CPPUNIT_ASSERT(testhelpers::isInTrash(copyDirPath.filename() / testDirName / "tmp_picture.jpg"));
+    CPPUNIT_ASSERT(!testhelpers::isInTrash(copyDirPath.filename() / testDirName / "dehydrated_placeholder.jpg"));
 #endif
 #if defined(KD_MACOS) || defined(KD_LINUX)
     testhelpers::eraseFromTrash(copyDirPath.filename());
@@ -261,7 +268,6 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
 
                 };
             void setReturnedItemPath(const SyncPath &remoteItemPath) { _remoteItemPath = remoteItemPath; }
-            void setTargetPath(const SyncPath &targetPath) { _syncPal->_syncInfo.targetPath = targetPath; }
 
         protected:
             virtual bool findRemoteItem(SyncPath &remoteItemPath) const {
