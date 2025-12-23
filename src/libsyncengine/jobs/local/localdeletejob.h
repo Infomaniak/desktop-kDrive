@@ -29,7 +29,7 @@ class LocalDeleteJob : public SyncJob {
         LocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, bool liteSyncIsEnabled,
                        const NodeId &remoteId,
                        bool forceToTrash = false); // Check existence of remote counterpart and abort if needed.
-        LocalDeleteJob(const SyncPath &absolutePath); // Delete without checks
+        LocalDeleteJob(const SyncPath &absolutePath, const std::shared_ptr<SyncPal> syncPal = nullptr); // Delete without checks
         ~LocalDeleteJob();
 
         //! Returns `true` if `localRelativePath` and `remoteRelativePath` indicate the same synchronised item.

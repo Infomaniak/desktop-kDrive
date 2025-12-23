@@ -68,8 +68,9 @@ LocalDeleteJob::LocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, const Syn
     _remoteNodeId(remoteId),
     _forceToTrash(forceToTrash) {}
 
-LocalDeleteJob::LocalDeleteJob(const SyncPath &absolutePath) :
-    _absolutePath(absolutePath) {
+LocalDeleteJob::LocalDeleteJob(const SyncPath &absolutePath, const std::shared_ptr<SyncPal> syncPal /*= nullptr*/) :
+    _absolutePath(absolutePath),
+    _syncPal(syncPal) {
     setBypassCheck(true);
 }
 
@@ -237,7 +238,8 @@ ExitInfo LocalDeleteJob::hardDeleteDehydratedPlaceholders() {
             auto exitInfo = hardDelete(entry.path());
             if (!exitInfo) return exitInfo;
 
-            exitInfo = deleteFromDB(entry.path());
+            const auto relativePath = CommonUtility::relativePath(_syncPal->localPath(), entry.path());
+            exitInfo = deleteFromDB(relativePath);
             if (!exitInfo) return exitInfo;
         }
     }

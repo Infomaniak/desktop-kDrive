@@ -38,8 +38,8 @@ namespace KDC {
 
 class LocalDeleteJobMockingTrash : public LocalDeleteJob {
     public:
-        explicit LocalDeleteJobMockingTrash(const SyncPath &absolutePath) :
-            LocalDeleteJob(absolutePath) {};
+        explicit LocalDeleteJobMockingTrash(const SyncPath &absolutePath, const std::shared_ptr<SyncPal> syncPal = nullptr) :
+            LocalDeleteJob(absolutePath, syncPal) {};
         void setMoveToTrashFailed(const bool failed) { _moveToTrashFailed = failed; };
         void setLiteSyncEnabled(const bool enabled) { _liteSyncIsEnabled = enabled; };
         void setMockMoveToTrash(const bool mocked) { _moveToTrashIsMocked = mocked; }
@@ -137,10 +137,29 @@ void KDC::TestLocalJobs::testLocalJobs() {
     CPPUNIT_ASSERT(std::filesystem::exists(copyDirPath / testDirName / "tmp_picture.jpg"));
 
     // Delete
-    LocalDeleteJobMockingTrash deleteJob(copyDirPath);
+    LocalDeleteJobMockingTrash deleteJob(copyDirPath, _syncPal);
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
-    testhelpers::createFileWithDehydratedStatus(copyDirPath / testDirName / "dehydrated_placeholder.jpg");
+    const SyncName dehydratedPlaceholderName = "dehydrated_placeholder.jpg";
+    testhelpers::createFileWithDehydratedStatus(copyDirPath / testDirName / dehydratedPlaceholderName);
     deleteJob.setLiteSyncEnabled(true);
+
+    DbNode copyDirDbNode(0, 1, copyDirPath.filename().string(), copyDirPath.filename().string(), "0123", "4567",
+                         testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
+                         testhelpers::defaultDirSize);
+    bool constraintError = false;
+    DbNodeId copyDirDbNodeId = 0;
+    _syncPal->syncDb()->insertNode(copyDirDbNode, copyDirDbNodeId, constraintError);
+
+    DbNode testDirDbNode(0, copyDirDbNodeId, testDirName, testDirName, "8910", "1112", testhelpers::defaultTime,
+                         testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultDirSize);
+    DbNodeId testDirDbNodeId = 0;
+    _syncPal->syncDb()->insertNode(testDirDbNode, testDirDbNodeId, constraintError);
+
+    DbNode dehydratedPlaceholderDbNode(0, testDirDbNodeId, dehydratedPlaceholderName, dehydratedPlaceholderName, "1314", "1516",
+                                       testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime,
+                                       NodeType::File, testhelpers::defaultFileSize);
+    DbNodeId dehydratedPlaceholderDbNodeId = 0;
+    _syncPal->syncDb()->insertNode(dehydratedPlaceholderDbNode, dehydratedPlaceholderDbNodeId, constraintError);
 #endif
     deleteJob.setMockMoveToTrash(false);
     deleteJob.runSynchronously();
