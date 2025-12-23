@@ -93,7 +93,7 @@ void KDC::TestLocalJobs::setUp() {
     // Setup proxy
     Parameters parameters;
     if (bool found = false; ParmsDb::instance()->selectParameters(parameters, found) && found) {
-        Proxy::instance(parameters.proxyConfig());
+        (void) Proxy::instance(parameters.proxyConfig());
     }
 
     _syncPal = std::make_shared<SyncPalTest>(1, KDRIVE_VERSION_STRING);
@@ -148,18 +148,18 @@ void KDC::TestLocalJobs::testLocalJobs() {
                          testhelpers::defaultDirSize);
     bool constraintError = false;
     DbNodeId copyDirDbNodeId = 0;
-    _syncPal->syncDb()->insertNode(copyDirDbNode, copyDirDbNodeId, constraintError);
+    (void) _syncPal->syncDb()->insertNode(copyDirDbNode, copyDirDbNodeId, constraintError);
 
     DbNode testDirDbNode(0, copyDirDbNodeId, testDirName, testDirName, "8910", "1112", testhelpers::defaultTime,
                          testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultDirSize);
     DbNodeId testDirDbNodeId = 0;
-    _syncPal->syncDb()->insertNode(testDirDbNode, testDirDbNodeId, constraintError);
+    (void) _syncPal->syncDb()->insertNode(testDirDbNode, testDirDbNodeId, constraintError);
 
     DbNode dehydratedPlaceholderDbNode(0, testDirDbNodeId, dehydratedPlaceholderName, dehydratedPlaceholderName, "1314", "1516",
                                        testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime,
                                        NodeType::File, testhelpers::defaultFileSize);
     DbNodeId dehydratedPlaceholderDbNodeId = 0;
-    _syncPal->syncDb()->insertNode(dehydratedPlaceholderDbNode, dehydratedPlaceholderDbNodeId, constraintError);
+    (void) _syncPal->syncDb()->insertNode(dehydratedPlaceholderDbNode, dehydratedPlaceholderDbNodeId, constraintError);
 #endif
     deleteJob.setMockMoveToTrash(false);
     deleteJob.runSynchronously();
