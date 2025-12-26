@@ -226,6 +226,8 @@ std::string toString(const ExitCause e) {
             return "TmpDirAccessError";
         case ExitCause::UpdateTreeIntegrityCheckFailed:
             return "UpdateTreeIntegrityCheckFailed";
+        case ExitCause::InvalidReply:
+            return "InvalidReply";
         default:
             return noConversionStr;
     }
