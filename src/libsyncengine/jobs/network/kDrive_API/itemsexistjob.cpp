@@ -28,7 +28,7 @@ ItemsExistJob::ItemsExistJob(int driveDbId, const NodeSet &ids) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
     for (const auto &id: ids) {
-        _itemInfo.emplace(id, false);
+        (void) _itemInfo.try_emplace(id, false);
     }
 }
 

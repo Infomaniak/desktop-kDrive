@@ -24,13 +24,13 @@ namespace KDC {
 
 class ItemsExistJob : public AbstractTokenNetworkJob {
     public:
-        ItemsExistJob(int driveDbId, const NodeSet &ids = {});
+        explicit ItemsExistJob(int driveDbId, const NodeSet &ids = {});
 
         ExitInfo exists(const NodeId &id);
 
     private:
         ExitInfo setData() override;
-        virtual std::string getSpecificUrl() override;
+        std::string getSpecificUrl() override;
 
         ExitInfo handleResponse(std::istream &is) override;
 
