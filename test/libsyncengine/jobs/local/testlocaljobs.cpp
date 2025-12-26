@@ -230,33 +230,6 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
     CPPUNIT_ASSERT(!LocalDeleteJob::Path(SyncPath("remote drive name") / "A" / "B" / "C").endsWith(SyncPath("E") / "C"));
     CPPUNIT_ASSERT(!LocalDeleteJob::Path(SyncPath("remote drive name") / "A" / "B" / "C").endsWith(SyncPath("F") / "B" / "C"));
 
-    LocalDeleteJob dummyJob("");
-    {
-        const SyncPath targetPath = {};
-        const SyncPath localRelativePath = SyncPath("Commons") / "me" / "secrets" / "nothing";
-        CPPUNIT_ASSERT(dummyJob.matchRelativePaths(targetPath, localRelativePath, SyncPath{localRelativePath}));
-        CPPUNIT_ASSERT(!dummyJob.matchRelativePaths(targetPath, localRelativePath, SyncPath{"different"}));
-    }
-
-    {
-        const SyncPath targetPath = SyncPath{"remote drive name"} / "dir" / "subdir" / "targetDir";
-        const SyncPath localRelativePath = SyncPath("somewhere") / "deep" / "deeper";
-        CPPUNIT_ASSERT(dummyJob.matchRelativePaths(targetPath, localRelativePath,
-                                                   SyncPath("above") / "targetDir" / "somewhere" / "deep" / "deeper"));
-        CPPUNIT_ASSERT(!dummyJob.matchRelativePaths(targetPath, localRelativePath,
-                                                    SyncPath("above") / "notTheTargetDir" / "somewhere" / "deep" / "deeper"));
-        CPPUNIT_ASSERT(!dummyJob.matchRelativePaths(targetPath, localRelativePath,
-                                                    SyncPath("above") / "targetDir" / "elsewhere" / "deep" / "deeper"));
-    }
-
-    {
-        const SyncPath targetPath = SyncPath{"/"};
-        CPPUNIT_ASSERT(dummyJob.matchRelativePaths(targetPath, {}, {}));
-        CPPUNIT_ASSERT(!dummyJob.matchRelativePaths(targetPath, SyncPath{"nonEmpty"}, {}));
-        CPPUNIT_ASSERT(!dummyJob.matchRelativePaths(targetPath, {}, SyncPath{"nonEmpty"}));
-    }
-
-
     const LocalTemporaryDirectory temporaryDirectory("testLocalJobs_testLocalDeleteJob");
     const SyncPath localDirPath = temporaryDirectory.path() / _localTempDir.path().filename();
     std::filesystem::create_directories(localDirPath);

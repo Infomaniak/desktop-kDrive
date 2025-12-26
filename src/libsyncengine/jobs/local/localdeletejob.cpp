@@ -51,24 +51,12 @@ bool LocalDeleteJob::Path::endsWith(SyncPath &&ending) const {
     return !path.empty() || ending.empty();
 };
 
-bool LocalDeleteJob::matchRelativePaths(const SyncPath &targetPath, const SyncPath &localRelativePath,
-                                        const SyncPath &remoteRelativePath) {
-    LOGW_DEBUG(_logger, L"TEST_CK: targetPath:" << Utility::formatSyncPath(targetPath) << L" localRelativePath:"
-                                                << Utility::formatSyncPath(localRelativePath) << L" remoteRelativePath:"
-                                                << Utility::formatSyncPath(remoteRelativePath));
-
-    if (targetPath.empty()) return localRelativePath == remoteRelativePath;
-
-    // Case of an advanced synchronization
-    return Path(remoteRelativePath).endsWith(SyncPath(targetPath.filename()) / localRelativePath);
-}
-
 LocalDeleteJob::LocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, bool liteSyncIsEnabled,
                                const NodeId &remoteId, bool forceToTrash /* = false */) :
     _absolutePath(syncPal ? syncPal->localPath() / relativePath : ""),
     _liteSyncIsEnabled(liteSyncIsEnabled),
     _syncPal(syncPal),
-    _relativePath(relativePath),
+    _relativeLocalPath(relativePath),
     _remoteNodeId(remoteId),
     _forceToTrash(forceToTrash) {}
 
@@ -141,13 +129,13 @@ ExitInfo LocalDeleteJob::canRun() {
     // the local item should be deleted.
     // Note: the other remote move operations are not relevant: they generate Move jobs.
 
-    SyncPath normalizedPath;
-    if (!Utility::normalizedSyncPath(_relativePath, normalizedPath)) {
-        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(_relativePath));
+    SyncPath normalizedRelativeLocalPath;
+    if (!Utility::normalizedSyncPath(_relativeLocalPath, normalizedRelativeLocalPath)) {
+        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(_relativeLocalPath));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
-    if (matchRelativePaths(_syncPal->syncInfo().targetPath, normalizedPath, remoteRelativePath)) {
+    if (normalizedRelativeLocalPath == remoteRelativePath) {
         // Item is found at the same path on remote
         LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(_absolutePath).c_str()
                                           << L" still exists on remote replica. Aborting current sync and restarting.");
