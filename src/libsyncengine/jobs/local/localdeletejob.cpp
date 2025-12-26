@@ -53,6 +53,10 @@ bool LocalDeleteJob::Path::endsWith(SyncPath &&ending) const {
 
 bool LocalDeleteJob::matchRelativePaths(const SyncPath &targetPath, const SyncPath &localRelativePath,
                                         const SyncPath &remoteRelativePath) {
+    LOGW_DEBUG(_logger, L"TEST_CK: targetPath:" << Utility::formatSyncPath(targetPath) << L" localRelativePath:"
+                                                << Utility::formatSyncPath(localRelativePath) << L" remoteRelativePath:"
+                                                << Utility::formatSyncPath(remoteRelativePath));
+
     if (targetPath.empty()) return localRelativePath == remoteRelativePath;
 
     // Case of an advanced synchronization

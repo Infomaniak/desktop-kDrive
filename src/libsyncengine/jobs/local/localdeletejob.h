@@ -32,17 +32,6 @@ class LocalDeleteJob : public SyncJob {
         LocalDeleteJob(const SyncPath &absolutePath, const std::shared_ptr<SyncPal> syncPal = nullptr); // Delete without checks
         ~LocalDeleteJob();
 
-        //! Returns `true` if `localRelativePath` and `remoteRelativePath` indicate the same synchronised item.
-        /*!
-          \param targetPath is the path of the remote sync folder if the sync is advanced; it is empty otherwise.
-          \param localRelativePath is the path of the item relative to the local sync folder.
-          \param remoteRelativePath is the path of the item relative to the remote drive root folder.
-          \return true if the two relative paths indicate the same synchronised item.
-        */
-        static bool matchRelativePaths(const SyncPath &targetPath, const SyncPath &localRelativePath,
-                                       const SyncPath &remoteRelativePath);
-
-
     protected:
         SyncPath _absolutePath;
         bool _liteSyncIsEnabled = false;
@@ -59,6 +48,16 @@ class LocalDeleteJob : public SyncJob {
         ExitInfo handleLiteSyncFile(const SyncPath &path);
 
         ExitInfo deleteFromDB(const SyncPath &path);
+
+        //! Returns `true` if `localRelativePath` and `remoteRelativePath` indicate the same synchronised item.
+        /*!
+          \param targetPath is the path of the remote sync folder if the sync is advanced; it is empty otherwise.
+          \param localRelativePath is the path of the item relative to the local sync folder.
+          \param remoteRelativePath is the path of the item relative to the remote drive root folder.
+          \return true if the two relative paths indicate the same synchronised item.
+        */
+        bool matchRelativePaths(const SyncPath &targetPath, const SyncPath &localRelativePath,
+                                const SyncPath &remoteRelativePath);
 
         const std::shared_ptr<SyncPal> _syncPal;
         SyncPath _relativePath;
