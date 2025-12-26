@@ -1594,7 +1594,7 @@ void TestNetworkJobs::testExists() {
     job.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.exists(pictureDirRemoteId).code());
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.exists(picture1RemoteId).code());
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::NotFound), job.exists(dummyId));
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::BackError, ExitCause::NotFound), job.exists(dummyId));
     CPPUNIT_ASSERT_EQUAL(ExitCode::LogicError, job.exists("0987654321").code());
 }
 

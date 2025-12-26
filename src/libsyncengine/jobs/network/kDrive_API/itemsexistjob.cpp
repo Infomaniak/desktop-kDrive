@@ -35,7 +35,7 @@ ItemsExistJob::ItemsExistJob(int driveDbId, const NodeSet &ids) :
 ExitInfo ItemsExistJob::exists(const NodeId &id) {
     if (!_itemInfo.contains(id)) return ExitCode::LogicError;
     if (_itemInfo[id]) return ExitCode::Ok;
-    return {ExitCode::SystemError, ExitCause::NotFound};
+    return {ExitCode::BackError, ExitCause::NotFound};
 }
 
 ExitInfo ItemsExistJob::setData() {

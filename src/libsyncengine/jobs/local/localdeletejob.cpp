@@ -126,7 +126,8 @@ ExitInfo LocalDeleteJob::canRun() {
     // Check if the item we want to delete locally has a remote counterpart.
     ItemsExistJob existsJob(_syncInfo.driveDbId, {_remoteNodeId});
     existsJob.runSynchronously();
-    if (existsJob.exists(_remoteNodeId).cause() == ExitCause::NotFound) return ExitCode::Ok; // Safe deletion.
+    if (existsJob.exists(_remoteNodeId) == ExitInfo(ExitCode::BackError, ExitCause::NotFound))
+        return ExitCode::Ok; // Safe deletion.
 
     // Check whether the remote item has been moved.
     // If the remote item has been moved into a blacklisted folder, then this Delete job is created and
