@@ -687,7 +687,7 @@ bool Utility::isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode
 IoError Utility::tryCreateTmpDir(const SyncName &name /*= Str("testDir")*/) {
 #if defined(KD_MACOS)
     SyncPath tmpDirPath;
-    if (auto ioError = IoError::Unknown; !IoHelper::tempDirectoryPath(tmpDirPath, ioError)) {
+    if (auto ioError = IoError::Unknown; !IoHelper::kDriveTempDirectoryPath(tmpDirPath, ioError)) {
         return ioError;
     }
 
@@ -710,7 +710,7 @@ IoError Utility::tryCreateTmpDir(const SyncName &name /*= Str("testDir")*/) {
 
 IoError Utility::tryCreateTmpFile(const SyncName &name /*= Str("testFile")*/) {
     SyncPath tmpDirPath;
-    if (auto ioError = IoError::Unknown; !IoHelper::tempDirectoryPath(tmpDirPath, ioError)) {
+    if (auto ioError = IoError::Unknown; !IoHelper::kDriveTempDirectoryPath(tmpDirPath, ioError)) {
         return ioError;
     }
 
