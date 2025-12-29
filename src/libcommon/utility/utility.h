@@ -65,6 +65,7 @@ struct COMMON_EXPORT CommonUtility {
 
         static std::string generateRandomStringAlphaNum(int length = 10);
         static std::string generateRandomStringPKCE(int length = 10);
+        static std::string generateUUID();
 
         // File system type
         static bool isNTFS(const SyncPath &targetPath);
@@ -297,7 +298,7 @@ struct COMMON_EXPORT CommonUtility {
         class InvalidEnumerationValue : public std::runtime_error {
             public:
                 InvalidEnumerationValue() :
-                    std::runtime_error("Invalid enumeration value"){};
+                    std::runtime_error("Invalid enumeration value") {};
         };
         //! Read an input built-in/std::string/std::wstring/CommBLOB parameter from a Poco::DynamicStruct.
         /*!
