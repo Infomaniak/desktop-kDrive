@@ -66,7 +66,7 @@ ExitInfo UtilityGetAppStateJob::serializeOutputParms() {
 ExitInfo UtilityGetAppStateJob::process() {
     if (bool found = false; !ParmsDb::instance()->selectAppState(_key, _value, found)) {
         LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
-        AppServer::addError(Error(ERR_ID, ExitCode::DbError, ExitCause::DbAccessError));
+        addError(Error(ERR_ID, ExitCode::DbError, ExitCause::DbAccessError));
         return ExitCode::DbError;
     } else if (!found) {
         LOG_WARN(_logger, _key << " not found in appState table");

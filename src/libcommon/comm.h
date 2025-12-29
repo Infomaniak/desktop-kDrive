@@ -292,6 +292,7 @@ enum class SignalNum {
     SYNC_UPDATED,
     SYNC_REMOVED,
     SYNC_PROGRESSINFO,
+    SYNC_FILEPROGRESSINFO,
     SYNC_COMPLETEDITEM,
     SYNC_VFS_CONVERSION_COMPLETED,
     SYNC_DELETE_FAILED,
@@ -348,6 +349,8 @@ inline std::string toString(SignalNum e) {
             return "SYNC_REMOVED";
         case SignalNum::SYNC_PROGRESSINFO:
             return "SYNC_PROGRESSINFO";
+        case SignalNum::SYNC_FILEPROGRESSINFO:
+            return "SYNC_FILEPROGRESSINFO";
         case SignalNum::SYNC_COMPLETEDITEM:
             return "SYNC_COMPLETEDITEM";
         case SignalNum::SYNC_VFS_CONVERSION_COMPLETED:

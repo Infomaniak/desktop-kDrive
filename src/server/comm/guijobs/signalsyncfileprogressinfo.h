@@ -19,23 +19,24 @@
 #pragma once
 
 #include "server/comm/guijobs/abstractguijob.h"
+#include "libcommon/info/syncfileiteminfo.h"
 
 namespace KDC {
 
-class ExclAppGetFetchingAppListJob : public AbstractGuiJob {
+class SignalSyncFileProgressInfo : public AbstractGuiJob {
     public:
-        ExclAppGetFetchingAppListJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                                     std::shared_ptr<AbstractCommChannel> channel);
+        SignalSyncFileProgressInfo() = default;
+        explicit SignalSyncFileProgressInfo(int syncDbId, const SyncFileItemInfo &itemInfo, int progress);
 
     private:
         // Output parameters
-        AppTable _applicationTable;
+        int _syncDbId = -1;
+        SyncFileItemInfo _itemInfo;
+        int _progress = 0;
 
         ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
         ExitInfo serializeOutputParms() override;
-        ExitInfo process() override;
-
-        friend class TestGuiCommChannel;
+        ExitInfo process() override { return ExitCode::Ok; }
 };
 
 } // namespace KDC

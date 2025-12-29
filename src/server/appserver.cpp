@@ -349,18 +349,22 @@ void AppServer::init() {
 #endif
     if (KDC::isVfsPluginAvailable(VirtualFileMode::Suffix, error)) LOG_INFO(_logger, "VFS suffix plugin is available");
 
-    // Init CommManager
-    _commManager = std::make_shared<CommManager>(*this);
-    _commManager->start();
-
-    // Init OldCommServer instance
-    if (!OldCommServer::instance()) {
-        LOG_WARN(_logger, "Error in CommServer::instance");
-        throw std::runtime_error("Unable to initialize CommServer.");
+    if (useCommManager()) {
+        // Init CommManager
+        _commManager = std::make_shared<CommManager>(*this);
+        _commManager->start();
     }
 
-    connect(OldCommServer::instance().get(), &OldCommServer::requestReceived, this, &AppServer::onRequestReceived);
-    connect(OldCommServer::instance().get(), &OldCommServer::restartClient, this, &AppServer::onRestartClientReceived);
+    if (useOldCommServer()) {
+        // Init OldCommServer instance
+        if (!OldCommServer::instance()) {
+            LOG_WARN(_logger, "Error in OldCommServer::instance");
+            throw std::runtime_error("Unable to initialize OldCommServer.");
+        }
+
+        connect(OldCommServer::instance().get(), &OldCommServer::requestReceived, this, &AppServer::onRequestReceived);
+        connect(OldCommServer::instance().get(), &OldCommServer::restartClient, this, &AppServer::onRestartClientReceived);
+    }
 
     // Update users/accounts/drives info
     ExitCode exitCode = updateAllUsersInfo();
@@ -2115,7 +2119,9 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::UTILITY_QUIT: {
-            OldCommServer::instance()->setHasQuittedProperly(true);
+            if (useOldCommServer()) {
+                OldCommServer::instance()->setHasQuittedProperly(true);
+            }
             QTimer::singleShot(QUIT_DELAY, []() { quit(); });
             break;
         }
@@ -2255,35 +2261,50 @@ ExitCode AppServer::clearErrors(int syncDbId, bool autoResolved /*= false*/) {
     }
 
     if (exitCode == ExitCode::Ok) {
-        QTimer::singleShot(100, [=]() { sendErrorsCleared(syncDbId); });
+        QTimer::singleShot(100, [=, this]() { sendErrorsCleared(syncDbId); });
     }
 
     return exitCode;
 }
 
 void AppServer::sendErrorsCleared(int syncDbId) {
-    int id = 0;
+    if (useOldCommServer()) {
+        int id = 0;
 
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << syncDbId;
-    OldCommServer::instance()->sendSignal(SignalNum::UTILITY_ERRORS_CLEARED, params, id);
+        QByteArray params;
+        QDataStream paramsStream(&params, QIODevice::WriteOnly);
+        paramsStream << syncDbId;
+        OldCommServer::instance()->sendSignal(SignalNum::UTILITY_ERRORS_CLEARED, params, id);
+    }
+    if (useCommManager()) {
+        // TODO
+    }
 }
 
 void AppServer::sendQuit() {
-    int id = 0;
+    if (useOldCommServer()) {
+        int id = 0;
 
-    OldCommServer::instance()->sendSignal(SignalNum::UTILITY_QUIT, QByteArray(), id);
+        OldCommServer::instance()->sendSignal(SignalNum::UTILITY_QUIT, QByteArray(), id);
+    }
+    if (useCommManager()) {
+        // TODO
+    }
 }
 
 void AppServer::sendLogUploadStatusUpdated(LogUploadState status, int percent) {
-    int id = 0;
+    if (useOldCommServer()) {
+        int id = 0;
 
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << status;
-    paramsStream << percent;
-    OldCommServer::instance()->sendSignal(SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED, params, id);
+        QByteArray params;
+        QDataStream paramsStream(&params, QIODevice::WriteOnly);
+        paramsStream << status;
+        paramsStream << percent;
+        OldCommServer::instance()->sendSignal(SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED, params, id);
+    }
+    if (useCommManager()) {
+        // TODO
+    }
 
     if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, status, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
@@ -2304,15 +2325,16 @@ void AppServer::uploadLog(const bool includeArchivedLogs) {
     /* See AppStateKey::LogUploadState for status values
      * The return value of progressFunc is true if the upload should continue, false if the user canceled the upload
      */
-    const std::function<void(LogUploadState, int)> jobProgressCallBack = [](LogUploadState status, int progress) {
+    const std::function<void(LogUploadState, int)> jobProgressCallBack = [this](LogUploadState status, int progress) {
         sendLogUploadStatusUpdated(status, progress); // Send progress to the client
     };
-    const auto logUploadJob = std::make_shared<LogUploadJob>(includeArchivedLogs, jobProgressCallBack, &addError);
+    const auto logUploadJob =
+            std::make_shared<LogUploadJob>(includeArchivedLogs, jobProgressCallBack, std::bind_front(&AppServer::addError, this));
 
     const std::function<void(UniqueId)> jobResultCallback = [logUploadJob]([[maybe_unused]] const UniqueId id) {
         if (const ExitInfo exitInfo = logUploadJob->exitInfo(); !exitInfo && exitInfo.code() != ExitCode::OperationCanceled) {
             LOG_WARN(Log::instance()->getLogger(), "Error in LogArchiverHelper::sendLogToSupport: " << exitInfo);
-            addError(Error(ERR_ID, ExitCode::LogUploadFailed, exitInfo.cause()));
+            logUploadJob->addErrorCallback(Error(ERR_ID, ExitCode::LogUploadFailed, exitInfo.cause()));
         }
     };
     logUploadJob->setAdditionalCallback(jobResultCallback);
@@ -2349,21 +2371,31 @@ void AppServer::onScheduleAppRestart() {
 }
 
 void AppServer::onShowWindowsUpdateDialog() {
-    if (_updateManager) {
-        QByteArray params;
-        QDataStream paramsStream(&params, QIODevice::WriteOnly);
-        paramsStream << _updateManager.get()->versionInfo();
-        OldCommServer::instance()->sendSignal(SignalNum::UPDATER_SHOW_DIALOG, params);
-    } else {
-        assert(false);
+    if (useOldCommServer()) {
+        if (_updateManager) {
+            QByteArray params;
+            QDataStream paramsStream(&params, QIODevice::WriteOnly);
+            paramsStream << _updateManager.get()->versionInfo();
+            OldCommServer::instance()->sendSignal(SignalNum::UPDATER_SHOW_DIALOG, params);
+        } else {
+            assert(false);
+        }
+    }
+    if (useCommManager()) {
+        // TODO
     }
 }
 
 void AppServer::onUpdateStateChanged(const UpdateState state) {
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << state;
-    OldCommServer::instance()->sendSignal(SignalNum::UPDATER_STATE_CHANGED, params);
+    if (useOldCommServer()) {
+        QByteArray params;
+        QDataStream paramsStream(&params, QIODevice::WriteOnly);
+        paramsStream << state;
+        OldCommServer::instance()->sendSignal(SignalNum::UPDATER_STATE_CHANGED, params);
+    }
+    if (useCommManager()) {
+        // TODO
+    }
 }
 
 void AppServer::onCleanup() {
@@ -2415,25 +2447,34 @@ void AppServer::onSendNotifAsked(const QString &title, const QString &message) {
 
 void AppServer::sendShowNotification(const QString &title, const QString &message) {
     // Notify client
-    int id = 0;
+    if (useOldCommServer()) {
+        int id = 0;
 
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << title;
-    paramsStream << message;
-    OldCommServer::instance()->sendSignal(SignalNum::UTILITY_SHOW_NOTIFICATION, params, id);
+        QByteArray params;
+        QDataStream paramsStream(&params, QIODevice::WriteOnly);
+        paramsStream << title;
+        paramsStream << message;
+        OldCommServer::instance()->sendSignal(SignalNum::UTILITY_SHOW_NOTIFICATION, params, id);
+    }
+    if (useCommManager()) {
+        // TODO
+    }
 }
 
 void AppServer::sendErrorAdded(const ErrorInfo &errorInfo) {
-    int id = 0;
+    if (useOldCommServer()) {
+        int id = 0;
 
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << (errorInfo.level() == ErrorLevel::Server);
-    paramsStream << toInt(errorInfo.exitCode());
-    paramsStream << errorInfo.syncDbId();
-    OldCommServer::instance()->sendSignal(SignalNum::UTILITY_ERROR_ADDED_LEGACY, params, id);
-    _commManager->sendGuiSignal(std::make_shared<SignalErrorAddedJob>(errorInfo));
+        QByteArray params;
+        QDataStream paramsStream(&params, QIODevice::WriteOnly);
+        paramsStream << (errorInfo.level() == ErrorLevel::Server);
+        paramsStream << toInt(errorInfo.exitCode());
+        paramsStream << errorInfo.syncDbId();
+        OldCommServer::instance()->sendSignal(SignalNum::UTILITY_ERROR_ADDED_LEGACY, params, id);
+    }
+    if (useCommManager()) {
+        _commManager->sendGuiSignal(std::make_shared<SignalErrorAddedJob>(errorInfo));
+    }
 }
 
 void AppServer::addCompletedItem(int syncDbId, const SyncFileItem &item, bool notify) {
@@ -2454,13 +2495,18 @@ void AppServer::addCompletedItem(int syncDbId, const SyncFileItem &item, bool no
 }
 
 void AppServer::sendSignal(SignalNum sigNum, int syncDbId, const SigValueType &val) {
-    int id = 0;
+    if (useOldCommServer()) {
+        int id = 0;
 
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << syncDbId;
-    paramsStream << QVariant::fromStdVariant(val);
-    OldCommServer::instance()->sendSignal(sigNum, params, id);
+        QByteArray params;
+        QDataStream paramsStream(&params, QIODevice::WriteOnly);
+        paramsStream << syncDbId;
+        paramsStream << QVariant::fromStdVariant(val);
+        OldCommServer::instance()->sendSignal(sigNum, params, id);
+    }
+    if (useCommManager()) {
+        // TODO
+    }
 }
 
 ExitInfo AppServer::getVfs(int syncDbId, std::shared_ptr<Vfs> &vfs) {
@@ -3022,7 +3068,7 @@ bool AppServer::initLogging() noexcept {
     return true;
 }
 
-void AppServer::logUsefulInformation() const {
+void AppServer::logUsefulInformation() {
     LOG_INFO(_logger, "***** APP INFO *****");
 
     LOG_INFO(_logger, "version: " << _theme->version());
@@ -3341,13 +3387,23 @@ void AppServer::sendRestartClientMsg() {
 }
 
 void AppServer::showSettings() {
-    int id = 0;
-    OldCommServer::instance()->sendSignal(SignalNum::UTILITY_SHOW_SETTINGS, QByteArray(), id);
+    if (useOldCommServer()) {
+        int id = 0;
+        OldCommServer::instance()->sendSignal(SignalNum::UTILITY_SHOW_SETTINGS, QByteArray(), id);
+    }
+    if (useCommManager()) {
+        // TODO
+    }
 }
 
 void AppServer::showSynthesis() {
-    int id = 0;
-    OldCommServer::instance()->sendSignal(SignalNum::UTILITY_SHOW_SYNTHESIS, QByteArray(), id);
+    if (useOldCommServer()) {
+        int id = 0;
+        OldCommServer::instance()->sendSignal(SignalNum::UTILITY_SHOW_SYNTHESIS, QByteArray(), id);
+    }
+    if (useCommManager()) {
+        // TODO
+    }
 }
 
 void AppServer::clearKeychainKeys() {
@@ -3462,11 +3518,13 @@ void AppServer::showHint(std::string errorHint) {
 }
 
 bool AppServer::startClient() {
-    OldCommServer::instance()->setHasQuittedProperly(false);
+    if (useOldCommServer()) {
+        OldCommServer::instance()->setHasQuittedProperly(false);
 
-    if (!OldCommServer::instance()->isListening()) {
-        LOG_WARN(_logger, "Failed to start kDrive client (comm server isn't started)");
-        return false;
+        if (!OldCommServer::instance()->isListening()) {
+            LOG_WARN(_logger, "Failed to start kDrive client (comm server isn't started)");
+            return false;
+        }
     }
 
     bool startClient = false;
@@ -3499,14 +3557,20 @@ bool AppServer::startClient() {
 #endif
 
         QStringList arguments;
-        arguments << QString::number(OldCommServer::instance()->commPort());
+        if (useOldCommServer()) {
+            arguments << QString::number(OldCommServer::instance()->commPort());
 
-        LOGW_INFO(_logger, L"Starting kDrive client - path=" << Path2WStr(QStr2Path(pathToExecutable)) << L" args="
-                                                             << arguments[0].toStdWString());
+            LOGW_INFO(_logger, L"Starting kDrive client - path=" << Path2WStr(QStr2Path(pathToExecutable)) << L" args="
+                                                                 << arguments[0].toStdWString());
+        }
 
         _clientProcess = new QProcess(this);
         _clientProcess->setProgram(pathToExecutable);
-        _clientProcess->setArguments(arguments);
+
+        if (useOldCommServer()) {
+            _clientProcess->setArguments(arguments);
+        }
+
         _clientProcess->start();
         if (!_clientProcess->waitForStarted()) {
             LOG_WARN(_logger, "Failed to start kDrive client");
@@ -3574,7 +3638,7 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, bool
 
         // Set callbacks
         syncPalMapIt = syncPalMap.find(sync.dbId());
-        syncPalMapIt->second->setAddErrorCallback(std::bind_front(AppServer::addError));
+        syncPalMapIt->second->setAddErrorCallback(std::bind_front(&AppServer::addError, this));
         syncPalMapIt->second->setAddCompletedItemCallback(std::bind_front(&AppServer::addCompletedItem, this));
         syncPalMapIt->second->setSendSignalCallback(std::bind_front(&AppServer::sendSignal, this));
 
@@ -3740,11 +3804,11 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
         vfsMapIt->second->setExtendedLog(ParametersCache::isExtendedLogEnabled());
 
         // Set callbacks
-        vfsMapIt->second->setSyncFileStatusCallback(&syncFileStatus);
-        vfsMapIt->second->setSyncFileSyncingCallback(&syncFileSyncing);
-        vfsMapIt->second->setSetSyncFileSyncingCallback(&setSyncFileSyncing);
+        vfsMapIt->second->setSyncFileStatusCallback(std::bind_front(&AppServer::syncFileStatus, this));
+        vfsMapIt->second->setSyncFileSyncingCallback(std::bind_front(&AppServer::syncFileSyncing, this));
+        vfsMapIt->second->setSetSyncFileSyncingCallback(std::bind_front(&AppServer::setSyncFileSyncing, this));
 #if defined(KD_MACOS)
-        vfsMapIt->second->setExclusionAppListCallback(&exclusionAppList);
+        vfsMapIt->second->setExclusionAppListCallback(std::bind_front(&AppServer::exclusionAppList, this));
 #endif
     }
 
@@ -4075,224 +4139,308 @@ void AppServer::addError(const Error &error) {
 }
 
 void AppServer::sendUserAdded(const UserInfo &userInfo) {
-    int id = 0;
+    if (useOldCommServer()) {
+        int id = 0;
 
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << userInfo;
+        QByteArray params;
+        QDataStream paramsStream(&params, QIODevice::WriteOnly);
+        paramsStream << userInfo;
 
-    OldCommServer::instance()->sendSignal(SignalNum::USER_ADDED, params, id);
-    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalUserAddedJob>(userInfo));
+        OldCommServer::instance()->sendSignal(SignalNum::USER_ADDED, params, id);
+    }
+    if (useCommManager()) {
+        _commManager->sendGuiSignal(std::make_shared<SignalUserAddedJob>(userInfo));
+    }
 }
 
 void AppServer::sendUserUpdated(const UserInfo &userInfo) {
-    int id = 0;
+    if (useOldCommServer()) {
+        int id = 0;
 
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << userInfo;
+        QByteArray params;
+        QDataStream paramsStream(&params, QIODevice::WriteOnly);
+        paramsStream << userInfo;
 
-    OldCommServer::instance()->sendSignal(SignalNum::USER_UPDATED, params, id);
-    // if(_commManager) _commManager->sendGuiSignal(std::make_shared<SignalUserUpdatedJob>(userInfo)); -> sendUserUpdated should
-    // not be static
+        OldCommServer::instance()->sendSignal(SignalNum::USER_UPDATED, params, id);
+    }
+    if (useCommManager()) {
+        _commManager->sendGuiSignal(std::make_shared<SignalUserUpdatedJob>(userInfo));
+    }
 }
 
 void AppServer::sendUserStatusChanged(int userDbId, bool connected, QString connexionError) {
-    int id = 0;
+    if (useOldCommServer()) {
+        int id = 0;
 
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << userDbId;
-    paramsStream << connected;
-    paramsStream << connexionError;
+        QByteArray params;
+        QDataStream paramsStream(&params, QIODevice::WriteOnly);
+        paramsStream << userDbId;
+        paramsStream << connected;
+        paramsStream << connexionError;
 
-    OldCommServer::instance()->sendSignal(SignalNum::USER_STATUSCHANGED, params, id);
+        OldCommServer::instance()->sendSignal(SignalNum::USER_STATUSCHANGED, params, id);
+    }
+    if (useCommManager()) {
+        // TODO
+    }
 }
 
 void AppServer::sendUserRemoved(int userDbId) {
-    int id = 0;
+    if (useOldCommServer()) {
+        int id = 0;
 
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << userDbId;
+        QByteArray params;
+        QDataStream paramsStream(&params, QIODevice::WriteOnly);
+        paramsStream << userDbId;
 
-    OldCommServer::instance()->sendSignal(SignalNum::USER_REMOVED, params, id);
-    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalUserRemovedJob>(userDbId));
+        OldCommServer::instance()->sendSignal(SignalNum::USER_REMOVED, params, id);
+    }
+    if (useCommManager()) {
+        _commManager->sendGuiSignal(std::make_shared<SignalUserRemovedJob>(userDbId));
+    }
 }
 
 void AppServer::sendAccountAdded(const AccountInfo &accountInfo) {
-    int id = 0;
+    if (useOldCommServer()) {
+        int id = 0;
 
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << accountInfo;
+        QByteArray params;
+        QDataStream paramsStream(&params, QIODevice::WriteOnly);
+        paramsStream << accountInfo;
 
-    OldCommServer::instance()->sendSignal(SignalNum::ACCOUNT_ADDED, params, id);
-    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalAccountAddedJob>(accountInfo));
+        OldCommServer::instance()->sendSignal(SignalNum::ACCOUNT_ADDED, params, id);
+    }
+    if (useCommManager()) {
+        _commManager->sendGuiSignal(std::make_shared<SignalAccountAddedJob>(accountInfo));
+    }
 }
 
 void AppServer::sendAccountUpdated(const AccountInfo &accountInfo) {
-    int id = 0;
+    if (useOldCommServer()) {
+        int id = 0;
 
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << accountInfo;
+        QByteArray params;
+        QDataStream paramsStream(&params, QIODevice::WriteOnly);
+        paramsStream << accountInfo;
 
-    OldCommServer::instance()->sendSignal(SignalNum::ACCOUNT_UPDATED, params, id);
+        OldCommServer::instance()->sendSignal(SignalNum::ACCOUNT_UPDATED, params, id);
+    }
+    if (useCommManager()) {
+        // TODO
+    }
 }
 
 void AppServer::sendAccountRemoved(int accountDbId) {
-    int id = 0;
+    if (useOldCommServer()) {
+        int id = 0;
 
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << accountDbId;
+        QByteArray params;
+        QDataStream paramsStream(&params, QIODevice::WriteOnly);
+        paramsStream << accountDbId;
 
-    OldCommServer::instance()->sendSignal(SignalNum::ACCOUNT_REMOVED, params, id);
-    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalAccountRemovedJob>(accountDbId));
+        OldCommServer::instance()->sendSignal(SignalNum::ACCOUNT_REMOVED, params, id);
+    }
+    if (useCommManager()) {
+        _commManager->sendGuiSignal(std::make_shared<SignalAccountRemovedJob>(accountDbId));
+    }
 }
 
 void AppServer::sendDriveAdded(const DriveInfo &driveInfo) {
-    int id = 0;
+    if (useOldCommServer()) {
+        int id = 0;
 
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << driveInfo;
+        QByteArray params;
+        QDataStream paramsStream(&params, QIODevice::WriteOnly);
+        paramsStream << driveInfo;
 
-    OldCommServer::instance()->sendSignal(SignalNum::DRIVE_ADDED, params, id);
-    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalDriveAddedJob>(driveInfo));
+        OldCommServer::instance()->sendSignal(SignalNum::DRIVE_ADDED, params, id);
+    }
+    if (useCommManager()) {
+        _commManager->sendGuiSignal(std::make_shared<SignalDriveAddedJob>(driveInfo));
+    }
 }
 
 void AppServer::sendDriveUpdated(const DriveInfo &driveInfo) {
-    int id = 0;
+    if (useOldCommServer()) {
+        int id = 0;
 
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << driveInfo;
+        QByteArray params;
+        QDataStream paramsStream(&params, QIODevice::WriteOnly);
+        paramsStream << driveInfo;
 
-    OldCommServer::instance()->sendSignal(SignalNum::DRIVE_UPDATED, params, id);
+        OldCommServer::instance()->sendSignal(SignalNum::DRIVE_UPDATED, params, id);
+    }
+    if (useCommManager()) {
+        // TODO
+    }
 }
 
 void AppServer::sendDriveQuotaUpdated(int driveDbId, qint64 total, qint64 used) {
-    int id = 0;
+    if (useOldCommServer()) {
+        int id = 0;
 
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << driveDbId;
-    paramsStream << total;
-    paramsStream << used;
+        QByteArray params;
+        QDataStream paramsStream(&params, QIODevice::WriteOnly);
+        paramsStream << driveDbId;
+        paramsStream << total;
+        paramsStream << used;
 
-    OldCommServer::instance()->sendSignal(SignalNum::DRIVE_QUOTAUPDATED, params, id);
+        OldCommServer::instance()->sendSignal(SignalNum::DRIVE_QUOTAUPDATED, params, id);
+    }
+    if (useCommManager()) {
+        // TODO
+    }
 }
 
 void AppServer::sendDriveRemoved(int driveDbId) {
-    int id = 0;
+    if (useOldCommServer()) {
+        int id = 0;
 
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << driveDbId;
+        QByteArray params;
+        QDataStream paramsStream(&params, QIODevice::WriteOnly);
+        paramsStream << driveDbId;
 
-    OldCommServer::instance()->sendSignal(SignalNum::DRIVE_REMOVED, params, id);
-    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalDriveRemovedJob>(driveDbId));
+        OldCommServer::instance()->sendSignal(SignalNum::DRIVE_REMOVED, params, id);
+    }
+    if (useCommManager()) {
+        _commManager->sendGuiSignal(std::make_shared<SignalDriveRemovedJob>(driveDbId));
+    }
 }
 
 void AppServer::sendSyncUpdated(const SyncInfo &syncInfo) {
-    int id = 0;
+    if (useOldCommServer()) {
+        int id = 0;
 
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << syncInfo;
+        QByteArray params;
+        QDataStream paramsStream(&params, QIODevice::WriteOnly);
+        paramsStream << syncInfo;
 
-    OldCommServer::instance()->sendSignal(SignalNum::SYNC_UPDATED, params, id);
-    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalSyncUpdatedJob>(syncInfo));
+        OldCommServer::instance()->sendSignal(SignalNum::SYNC_UPDATED, params, id);
+    }
+    if (useCommManager()) {
+        _commManager->sendGuiSignal(std::make_shared<SignalSyncUpdatedJob>(syncInfo));
+    }
 }
 
 void AppServer::sendSyncRemoved(int syncDbId) {
-    int id = 0;
+    if (useOldCommServer()) {
+        int id = 0;
 
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << syncDbId;
+        QByteArray params;
+        QDataStream paramsStream(&params, QIODevice::WriteOnly);
+        paramsStream << syncDbId;
 
-    OldCommServer::instance()->sendSignal(SignalNum::SYNC_REMOVED, params, id);
-    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalSyncRemovedJob>(syncDbId));
+        OldCommServer::instance()->sendSignal(SignalNum::SYNC_REMOVED, params, id);
+    }
+    if (useCommManager()) {
+        _commManager->sendGuiSignal(std::make_shared<SignalSyncRemovedJob>(syncDbId));
+    }
 }
 
 void AppServer::sendSyncDeletionFailed(int syncDbId) {
-    int id = 0;
-    const auto params = QByteArray(ArgsReader(syncDbId));
+    if (useOldCommServer()) {
+        int id = 0;
+        const auto params = QByteArray(ArgsReader(syncDbId));
 
-    OldCommServer::instance()->sendSignal(SignalNum::SYNC_DELETE_FAILED, params, id);
+        OldCommServer::instance()->sendSignal(SignalNum::SYNC_DELETE_FAILED, params, id);
+    }
+    if (useCommManager()) {
+        // TODO
+    }
 }
 
 
 void AppServer::sendDriveDeletionFailed(int driveDbId) {
-    int id = 0;
-    const auto params = QByteArray(ArgsReader(driveDbId));
+    if (useOldCommServer()) {
+        int id = 0;
+        const auto params = QByteArray(ArgsReader(driveDbId));
 
-    OldCommServer::instance()->sendSignal(SignalNum::DRIVE_DELETE_FAILED, params, id);
+        OldCommServer::instance()->sendSignal(SignalNum::DRIVE_DELETE_FAILED, params, id);
+    }
+    if (useCommManager()) {
+        // TODO
+    }
 }
 
 
 void AppServer::sendGetFolderSizeCompleted(const QString &nodeId, qint64 size) {
-    int id = 0;
+    if (useOldCommServer()) {
+        int id = 0;
 
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << nodeId;
-    paramsStream << size;
+        QByteArray params;
+        QDataStream paramsStream(&params, QIODevice::WriteOnly);
+        paramsStream << nodeId;
+        paramsStream << size;
 
-    OldCommServer::instance()->sendSignal(SignalNum::NODE_FOLDER_SIZE_COMPLETED, params, id);
+        OldCommServer::instance()->sendSignal(SignalNum::NODE_FOLDER_SIZE_COMPLETED, params, id);
+    }
+    if (useCommManager()) {
+        // TODO
+    }
 }
 
 void AppServer::sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep step, const SyncProgress &progress) {
-    // Send to old comm layer (To remove once deprecated).
-    int id = 0;
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << syncDbId;
-    paramsStream << status;
-    paramsStream << step;
-    paramsStream << static_cast<qint64>(progress._currentFile);
-    paramsStream << static_cast<qint64>(progress._totalFiles);
-    paramsStream << static_cast<qint64>(progress._completedSize);
-    paramsStream << static_cast<qint64>(progress._totalSize);
-    paramsStream << static_cast<qint64>(progress._estimatedRemainingTime);
-    OldCommServer::instance()->sendSignal(SignalNum::SYNC_PROGRESSINFO, params, id);
-
-    // Send to the new comm layer
-    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalSyncProgressInfo>(syncDbId, status, step, progress));
+    if (useOldCommServer()) {
+        int id = 0;
+        QByteArray params;
+        QDataStream paramsStream(&params, QIODevice::WriteOnly);
+        paramsStream << syncDbId;
+        paramsStream << status;
+        paramsStream << step;
+        paramsStream << static_cast<qint64>(progress._currentFile);
+        paramsStream << static_cast<qint64>(progress._totalFiles);
+        paramsStream << static_cast<qint64>(progress._completedSize);
+        paramsStream << static_cast<qint64>(progress._totalSize);
+        paramsStream << static_cast<qint64>(progress._estimatedRemainingTime);
+        OldCommServer::instance()->sendSignal(SignalNum::SYNC_PROGRESSINFO, params, id);
+    }
+    if (useCommManager()) {
+        _commManager->sendGuiSignal(std::make_shared<SignalSyncProgressInfo>(syncDbId, status, step, progress));
+    }
 }
 
 void AppServer::sendSyncCompletedItem(int syncDbId, const SyncFileItemInfo &itemInfo) {
-    int id = 0;
+    if (useOldCommServer()) {
+        int id = 0;
 
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << syncDbId;
-    paramsStream << itemInfo;
-    OldCommServer::instance()->sendSignal(SignalNum::SYNC_COMPLETEDITEM, params, id);
-    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalSyncCompletedItem>(syncDbId, itemInfo));
+        QByteArray params;
+        QDataStream paramsStream(&params, QIODevice::WriteOnly);
+        paramsStream << syncDbId;
+        paramsStream << itemInfo;
+        OldCommServer::instance()->sendSignal(SignalNum::SYNC_COMPLETEDITEM, params, id);
+    }
+    if (useCommManager()) {
+        _commManager->sendGuiSignal(std::make_shared<SignalSyncCompletedItem>(syncDbId, itemInfo));
+    }
 }
 
 void AppServer::sendVfsConversionCompleted(int syncDbId) {
-    int id = 0;
+    if (useOldCommServer()) {
+        int id = 0;
 
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << syncDbId;
-    OldCommServer::instance()->sendSignal(SignalNum::SYNC_VFS_CONVERSION_COMPLETED, params, id);
+        QByteArray params;
+        QDataStream paramsStream(&params, QIODevice::WriteOnly);
+        paramsStream << syncDbId;
+        OldCommServer::instance()->sendSignal(SignalNum::SYNC_VFS_CONVERSION_COMPLETED, params, id);
+    }
+    if (useCommManager()) {
+        // TODO
+    }
 }
 
 void AppServer::sendSyncAdded(const SyncInfo &syncInfo) {
-    int id = 0;
+    if (useOldCommServer()) {
+        int id = 0;
 
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << syncInfo;
+        QByteArray params;
+        QDataStream paramsStream(&params, QIODevice::WriteOnly);
+        paramsStream << syncInfo;
 
-    OldCommServer::instance()->sendSignal(SignalNum::SYNC_ADDED, params, id);
-    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalSyncAddedJob>(syncInfo));
+        OldCommServer::instance()->sendSignal(SignalNum::SYNC_ADDED, params, id);
+    }
+    if (useCommManager()) {
+        _commManager->sendGuiSignal(std::make_shared<SignalSyncAddedJob>(syncInfo));
+    }
 }
 
 void AppServer::onLoadInfo() {

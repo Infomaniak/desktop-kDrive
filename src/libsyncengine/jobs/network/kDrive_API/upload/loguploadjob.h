@@ -40,6 +40,10 @@ class LogUploadJob : public SyncJob, public std::enable_shared_from_this<LogUplo
          */
         static bool getLogDirEstimatedSize(uint64_t &size, IoError &ioError);
 
+        void addErrorCallback(const Error &error) {
+            if (_addErrorCallback) _addErrorCallback(error);
+        }
+
     protected:
         virtual ExitInfo init();
         virtual ExitInfo archive(SyncPath &generatedArchivePath);

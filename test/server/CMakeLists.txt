@@ -85,6 +85,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/signalsyncaddedjob.h ${server_srcs_path}/comm/guijobs/signalsyncaddedjob.cpp
     ${server_srcs_path}/comm/guijobs/signalsyncremovedjob.h ${server_srcs_path}/comm/guijobs/signalsyncremovedjob.cpp
     ${server_srcs_path}/comm/guijobs/signalsyncprogressinfo.h ${server_srcs_path}/comm/guijobs/signalsyncprogressinfo.cpp
+    ${server_srcs_path}/comm/guijobs/signalsyncfileprogressinfo.h ${server_srcs_path}/comm/guijobs/signalsyncfileprogressinfo.cpp
     ${server_srcs_path}/comm/guijobs/signalsynccompleteditem.h ${server_srcs_path}/comm/guijobs/signalsynccompleteditem.cpp
     ${server_srcs_path}/comm/guijobs/signalsyncupdatedjob.h ${server_srcs_path}/comm/guijobs/signalsyncupdatedjob.cpp
     ${server_srcs_path}/comm/guijobs/signalerroraddedjob.h ${server_srcs_path}/comm/guijobs/signalerroraddedjob.cpp

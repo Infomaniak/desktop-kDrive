@@ -68,7 +68,7 @@ ExitInfo SyncStartJob::process() {
 
     if (const auto exitInfo = _commManager->appServer().checkIfSyncIsValid(sync); !exitInfo) {
         LOG_WARN(_logger, "Error in checkIfSyncIsValid for syncDbId=" << sync.dbId() << " : " << exitInfo);
-        AppServer::addError(Error(sync.dbId(), ERR_ID, exitInfo));
+        addError(Error(sync.dbId(), ERR_ID, exitInfo));
         return exitInfo;
     }
 
@@ -86,7 +86,7 @@ ExitInfo SyncStartJob::process() {
                 _commManager->appServer().initSyncPal(sync, NodeSet(), !startPostponed, std::chrono::seconds(0), true, false);
         !exitInfo) {
         LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " : " << exitInfo);
-        AppServer::addError(Error(ERR_ID, exitInfo));
+        addError(Error(ERR_ID, exitInfo));
         mainExitInfo.merge(exitInfo, {ExitCode::SystemError});
     }
 #if defined(KD_MACOS)

@@ -23,6 +23,7 @@
 #include "navigationpanehelper.h"
 #endif
 #include "config.h"
+#include "version.h"
 #include "requests/serverrequests.h"
 #include "comm/oldcommserver.h"
 #include "comm/commmanager.h"
@@ -107,7 +108,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         void stopAllSyncsTask(const std::vector<int> &syncDbIdList);
 
-        static void addError(const Error &error);
+        void addError(const Error &error);
         static void updateSentryUser();
         void deleteDrive(int driveDbId);
         void deleteSync(int syncDbId);
@@ -143,7 +144,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         // Ask the Finder/File explorer Extension to unregister the folder
         void unregisterSync(std::shared_ptr<SyncPal> syncPal);
 
-        static void uploadLog(bool includeArchivedLogs);
+        void uploadLog(bool includeArchivedLogs);
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         static ExitCode getThumbnail(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) {
@@ -201,7 +202,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         void parseOptions(const QStringList &options);
         bool initLogging() noexcept;
-        void logUsefulInformation() const;
+        void logUsefulInformation();
         bool setupProxy() noexcept;
         void handleCrashRecovery(bool &shouldQuit); // Sets `shouldQuit` with true if the crash recovery is successful, false if
                                                     // the application should exit.
@@ -224,7 +225,7 @@ class AppServer : public SharedTools::QtSingleApplication {
                                                                 bool &syncUpdated);
 
         void sendUserAdded(const UserInfo &userInfo);
-        static void sendUserUpdated(const UserInfo &userInfo);
+        void sendUserUpdated(const UserInfo &userInfo);
         void sendUserStatusChanged(int userDbId, bool connected, QString connexionError);
         void sendUserRemoved(int userDbId);
         void sendAccountAdded(const AccountInfo &accountInfo);
@@ -241,27 +242,27 @@ class AppServer : public SharedTools::QtSingleApplication {
         void sendSyncRemoved(int syncDbId);
         void sendSyncDeletionFailed(int syncDbId);
         void sendGetFolderSizeCompleted(const QString &nodeId, qint64 size);
-        static void sendErrorsCleared(int syncDbId);
+        void sendErrorsCleared(int syncDbId);
         void sendQuit(); // Ask client to quit
 
-        static void sendLogUploadStatusUpdated(LogUploadState status, int percent);
+        void sendLogUploadStatusUpdated(LogUploadState status, int percent);
 
         void deleteAccount(int accountDbId);
-        static void sendErrorAdded(const ErrorInfo &errorInfo);
+        void sendErrorAdded(const ErrorInfo &errorInfo);
         void addCompletedItem(int syncDbId, const SyncFileItem &item, bool notify);
         void sendSignal(SignalNum sigNum, int syncDbId, const SigValueType &val);
 
-        static void syncFileStatus(int syncDbId, const KDC::SyncPath &path, KDC::SyncFileStatus &status);
-        static void syncFileSyncing(int syncDbId, const KDC::SyncPath &path, bool &syncing);
-        static void setSyncFileSyncing(int syncDbId, const KDC::SyncPath &path, bool syncing);
+        void syncFileStatus(int syncDbId, const KDC::SyncPath &path, KDC::SyncFileStatus &status);
+        void syncFileSyncing(int syncDbId, const KDC::SyncPath &path, bool &syncing);
+        void setSyncFileSyncing(int syncDbId, const KDC::SyncPath &path, bool syncing);
 #if defined(KD_MACOS)
-        static void exclusionAppList(QString &appList);
+        void exclusionAppList(QString &appList);
 #endif
         void sendSyncCompletedItem(int syncDbId, const SyncFileItemInfo &item);
-        static void sendVfsConversionCompleted(int syncDbId);
-        static ExitCode sendShowFileNotification(int syncDbId, const QString &filename, const QString &renameTarget,
-                                                 SyncFileInstruction status, int count);
-        static void sendShowNotification(const QString &title, const QString &message);
+        void sendVfsConversionCompleted(int syncDbId);
+        ExitCode sendShowFileNotification(int syncDbId, const QString &filename, const QString &renameTarget,
+                                          SyncFileInstruction status, int count);
+        void sendShowNotification(const QString &title, const QString &message);
 
         void showSettings();
         void showSynthesis();
@@ -276,6 +277,22 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         // For testing purpose
         void crash() const;
+
+        bool useOldCommServer() const {
+#if defined(KD_WINDOWS) || defined(KD_MACOS)
+            return (KDRIVE_VERSION_MAJOR < 4);
+#else
+            return true;
+#endif
+        }
+
+        bool useCommManager() const {
+#if defined(KD_WINDOWS) || defined(KD_MACOS)
+            return (_commManager != nullptr);
+#else
+            return false;
+#endif
+        }
 
         friend class TestAppServer;
 

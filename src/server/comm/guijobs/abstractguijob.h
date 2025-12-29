@@ -65,7 +65,7 @@ class AbstractGuiJob : public AbstractJob {
     protected:
         static int _lastSignalId;
 
-        std::shared_ptr<CommManager> _commManager;
+        std::shared_ptr<CommManager> _commManager = nullptr;
 
         // Requests
         int _requestId = 0;
@@ -88,6 +88,8 @@ class AbstractGuiJob : public AbstractJob {
         virtual ExitInfo serializeOutputParms() = 0;
         // Process the input object to generate an output object
         virtual ExitInfo process() = 0;
+
+        void addError(const Error &error);
 
         //! Read an input parameter from _inParams.
         /*!

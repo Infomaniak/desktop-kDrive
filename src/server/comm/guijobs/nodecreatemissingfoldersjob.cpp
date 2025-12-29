@@ -79,7 +79,7 @@ ExitInfo NodeCreateMissingFoldersJob::getMissingFoldersInfo(const FolderItem &fo
     if (const auto exitCode = ServerRequests::createDir(_driveDbId, info.parentNodeId, folderItem.name, info.parentNodeId);
         exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in Requests::createDir for driveDbId=" << _driveDbId << " parentNodeId=" << info.parentNodeId);
-        AppServer::addError(Error(ERR_ID, exitCode));
+        addError(Error(ERR_ID, exitCode));
 
         return exitCode;
     }
@@ -115,7 +115,7 @@ ExitInfo NodeCreateMissingFoldersJob::process() {
         NodeSet nodeIdSet;
         if (const auto exitCode = syncPal->syncIdSet(SyncNodeType::BlackList, nodeIdSet); exitCode != ExitCode::Ok) {
             LOG_WARN(_logger, "Error in SyncPal::syncIdSet for syncDbId=" << syncPalId);
-            AppServer::addError(Error(ERR_ID, exitCode));
+            addError(Error(ERR_ID, exitCode));
 
             return exitCode;
         }
@@ -124,7 +124,7 @@ ExitInfo NodeCreateMissingFoldersJob::process() {
         (void) nodeIdSet.insert(foldersInfo.firstCreatedNodeId);
         if (const auto exitCode = syncPal->setSyncIdSet(SyncNodeType::BlackList, nodeIdSet); exitCode != ExitCode::Ok) {
             LOG_WARN(_logger, "Error in SyncPal::setSyncIdSet for syncDbId=" << syncPalId);
-            AppServer::addError(Error(ERR_ID, exitCode));
+            addError(Error(ERR_ID, exitCode));
 
             return exitCode;
         }

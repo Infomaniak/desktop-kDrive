@@ -72,7 +72,7 @@ ExitInfo UserDeleteJob::process() {
         _commManager->sendGuiSignal(signalUserRemovedJob);
     } else {
         LOG_WARN(_logger, "Error in ServerRequests::deleteUser: code=" << exitCode);
-        AppServer::addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+        addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
         return exitCode;
     }
 

@@ -53,7 +53,7 @@ class AbstractNetworkJob : public SyncJob {
 
         [[nodiscard]] const BackError &backError() const { return _backError; }
 
-        int32_t trials() const noexcept { return _trials; };
+        int32_t trials() const noexcept { return _trials; }
 
     protected:
         ExitInfo runJob() noexcept override;

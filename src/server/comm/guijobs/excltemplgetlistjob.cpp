@@ -47,7 +47,7 @@ ExitInfo ExclTemplGetListJob::process() {
     if (const auto exitCode = ServerRequests::getExclusionTemplateList(_default, _exclusionTemplateList);
         exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in Requests::getExclusionTemplateList: code=" << exitCode);
-        AppServer::addError(Error(ERR_ID, exitCode));
+        addError(Error(ERR_ID, exitCode));
 
         return exitCode;
     }

@@ -75,7 +75,7 @@ ExitInfo SyncAddJob::process() {
                                    << Utility::formatSyncPath(serverFolderPath()) << L" serverFolderNodeId="
                                    << Utility::v2ws(serverFolderNodeId()) << L" liteSync=" << liteSync()
                                    << L" showInNavigationPane=" << showInNavigationPane);
-        AppServer::addError(Error(ERR_ID, exitCode));
+        addError(Error(ERR_ID, exitCode));
         return exitCode;
     }
 

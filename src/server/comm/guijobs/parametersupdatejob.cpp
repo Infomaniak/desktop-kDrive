@@ -69,7 +69,7 @@ ExitInfo ParametersUpdateJob::process() {
     const ExitCode exitCode = ServerRequests::updateParameters(_parametersInfo);
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in Requests::updateParameters");
-        AppServer::addError(Error(ERR_ID, exitCode));
+        addError(Error(ERR_ID, exitCode));
     }
 
     // extendedLog change propagation

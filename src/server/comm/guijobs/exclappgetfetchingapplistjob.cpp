@@ -50,7 +50,7 @@ ExitInfo ExclAppGetFetchingAppListJob::process() {
                                      [](const auto &pair) { return pair.second->mode() == VirtualFileMode::Mac; });
         it != AppServer::vfsMap.cend() && !it->second->getFetchingAppList(_applicationTable)) {
         LOG_WARN(_logger, "Error in Vfs::getFetchingAppList!");
-        AppServer::addError(Error(ERR_ID, ExitCode::SystemError));
+        addError(Error(ERR_ID, ExitCode::SystemError));
 
         return ExitCode::SystemError;
     }

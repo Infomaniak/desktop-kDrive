@@ -50,7 +50,7 @@ ExitInfo ExclAppSetListJob::deserializeInputParms() {
 ExitInfo ExclAppSetListJob::process() {
     if (const auto exitCode = ServerRequests::setExclusionAppList(_default, _applicationList); exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in Requests::setExclusionAppList: code=" << exitCode);
-        AppServer::addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+        addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
 
         return exitCode;
     }
@@ -60,7 +60,7 @@ ExitInfo ExclAppSetListJob::process() {
                                  [](const auto &pair) { return pair.second->mode() == VirtualFileMode::Mac; });
     if (it != AppServer::vfsMap.cend() && !it->second->setAppExcludeList()) {
         LOG_WARN(_logger, "Error in Vfs::setAppExcludeList!");
-        AppServer::addError(Error(ERR_ID, ExitCode::SystemError));
+        addError(Error(ERR_ID, ExitCode::SystemError));
 
         return ExitCode::SystemError;
     }
