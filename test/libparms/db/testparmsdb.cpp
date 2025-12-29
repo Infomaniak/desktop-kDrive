@@ -63,6 +63,8 @@ void TestParmsDb::testParameters() {
     CPPUNIT_ASSERT(parameters.darkTheme() == defaultParameters.darkTheme());
     CPPUNIT_ASSERT(parameters.showShortcuts() == defaultParameters.showShortcuts());
     CPPUNIT_ASSERT(parameters.dialogGeometry() == defaultParameters.dialogGeometry());
+    CPPUNIT_ASSERT(parameters.sentryEnabled() == defaultParameters.sentryEnabled());
+    CPPUNIT_ASSERT(parameters.matomoEnabled() == defaultParameters.matomoEnabled());
 
     Parameters parameters2;
     parameters2.setLanguage(Language::French);
@@ -78,6 +80,8 @@ void TestParmsDb::testParameters() {
     std::string geometryStr("XXXXXXXXXX");
     parameters2.setDialogGeometry(
             std::shared_ptr<std::vector<char>>(new std::vector<char>(geometryStr.begin(), geometryStr.end())));
+    parameters2.setSentryEnabled(true);
+    parameters2.setMatomoEnabled(true);
     CPPUNIT_ASSERT(ParmsDb::instance()->updateParameters(parameters2, found) && found);
 
     CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parameters, found) && found);
@@ -98,6 +102,8 @@ void TestParmsDb::testParameters() {
     CPPUNIT_ASSERT(parameters.darkTheme() == parameters2.darkTheme());
     CPPUNIT_ASSERT(parameters.showShortcuts() == parameters2.showShortcuts());
     CPPUNIT_ASSERT(*parameters.dialogGeometry() == *parameters2.dialogGeometry());
+    CPPUNIT_ASSERT(parameters.sentryEnabled() == parameters2.sentryEnabled());
+    CPPUNIT_ASSERT(parameters.matomoEnabled() == parameters2.matomoEnabled());
 }
 
 void TestParmsDb::testUser() {

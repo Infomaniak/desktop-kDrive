@@ -51,6 +51,9 @@ ExitInfo SyncStartJob::serializeOutputParms() {
 }
 
 ExitInfo SyncStartJob::process() {
+    _commManager->appServer().clearSyncCacheMap();
+
+
     Sync sync;
     bool found = false;
     if (!ParmsDb::instance()->selectSync(_syncDbId, sync, found)) {

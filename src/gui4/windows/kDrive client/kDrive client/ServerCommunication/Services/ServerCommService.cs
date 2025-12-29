@@ -891,6 +891,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return;
             }
             await AddOrUpdateSyncInModel(syncInfo);
+
+            if (args.SignalNum == SignalNum.SYNC_ADDED)
+                _viewModel.SelectedSync = _viewModel.AllSyncs.FirstOrDefault(s => s?.DbId == syncInfo.DbId, _viewModel.SelectedSync);
         }
 
         public async Task HandleSyncRemovedAsync(object? sender, SignalEventArgs args)

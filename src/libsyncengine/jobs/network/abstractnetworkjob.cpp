@@ -46,15 +46,12 @@
 
 namespace KDC {
 
-std::string AbstractNetworkJob::_userAgent = std::string();
+const std::string AbstractNetworkJob::_userAgent = KDC::CommonUtility::userAgentString();
 Poco::Net::Context::Ptr AbstractNetworkJob::_context = nullptr;
 AbstractNetworkJob::TimeoutHelper AbstractNetworkJob::_timeoutHelper;
 
-AbstractNetworkJob::AbstractNetworkJob() {
-    if (_userAgent.empty()) {
-        _userAgent = KDC::CommonUtility::userAgentString();
-    }
-
+AbstractNetworkJob::AbstractNetworkJob() :
+    _requestUuid(CommonUtility::generateUUID()) {
     if (!_context) {
         for (int trials = 1; trials <= std::min(_trials, MAX_TRIALS); trials++) {
             try {
@@ -103,6 +100,31 @@ bool AbstractNetworkJob::isManagedError(const ExitInfo exitInfo) noexcept {
         default:
             return false;
     }
+}
+
+void AbstractNetworkJob::logRequestInfo() {
+    if (!isExtendedLog()) { // If not in extended mode, log only the request ID.
+        LOG_DEBUG(_logger, "X-Request-ID: " << _requestUuid);
+        return;
+    }
+
+    LOG_DEBUG(_logger, "*** Headers: ***");
+    LOG_DEBUG(_logger, "User-Agent: " << _userAgent);
+    LOG_DEBUG(_logger, "Content-Type: " << contentType());
+    LOG_DEBUG(_logger, "Accept: " << acceptHeader());
+    LOG_DEBUG(_logger, "X-Request-ID: " << _requestUuid);
+    for (const auto &[headerKey, headerValue]: _rawHeaders) {
+        if (headerKey == "Authorization") continue;
+        LOG_DEBUG(_logger, headerKey << ": " << headerValue);
+    }
+    if (!_data.empty()) {
+        LOG_DEBUG(_logger, "Content-Length: " << static_cast<std::streamsize>(_data.size()));
+    }
+
+    if (contentType() != mimeTypeJson) return; // Log the body only for JSON MIME type
+
+    LOG_DEBUG(_logger, "*** Body: ***");
+    LOG_DEBUG(_logger, _data);
 }
 
 ExitInfo AbstractNetworkJob::runJob() noexcept {
@@ -324,6 +346,7 @@ ExitInfo AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
     req.set("User-Agent", _userAgent);
     req.setContentType(contentType());
     req.add("Accept", acceptHeader());
+    req.add("X-Request-ID", _requestUuid);
     for (const auto &[headerKey, headerValue]: _rawHeaders) {
         req.add(headerKey, headerValue);
     }
@@ -331,6 +354,7 @@ ExitInfo AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
     if (!_data.empty()) {
         req.setContentLength(static_cast<std::streamsize>(_data.size()));
     }
+    logRequestInfo();
 
     // Send request, retrieve an open stream
     std::vector<std::reference_wrapper<std::ostream>> stream;

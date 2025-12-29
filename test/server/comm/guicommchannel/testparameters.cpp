@@ -80,6 +80,8 @@ Poco::JSON::Object createParametersInfoObject() {
     (void) parametersInfoObj.set("dialogGeometry", dialogGeometryObj);
     (void) parametersInfoObj.set("maxAllowedCpu", 50);
     (void) parametersInfoObj.set("distributionChannel", toInt(VersionChannel::Prod));
+    (void) parametersInfoObj.set("sentryEnabled", false);
+    (void) parametersInfoObj.set("matomoEnabled", false);
 
     return parametersInfoObj;
 };

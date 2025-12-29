@@ -26,25 +26,8 @@ namespace KDC {
 
 int Parameters::_uploadSessionParallelJobsDefault = UPLOAD_SESSION_PARALLEL_THREADS;
 
-Parameters::Parameters() :
-    _language(Language::Default),
-    _monoIcons(false),
-    _autoStart(true),
-    _moveToTrash(true),
-    _notificationsDisabled(NotificationsDisabled::Never),
-    _useLog(true),
-    _logLevel(LogLevel::Debug),
-    _extendedLog(false),
-    _purgeOldLogs(true),
-    _proxyConfig(ProxyConfig()),
-    _darkTheme(false),
-    _showShortcuts(true),
-    _updateFileAvailable(std::string()),
-    _updateTargetVersion(std::string()),
-    _autoUpdateAttempted(false),
-    _seenVersion(std::string()),
-    _dialogGeometry(std::shared_ptr<std::vector<char>>()),
-    _maxAllowedCpu(50),
-    _uploadSessionParallelJobs(UPLOAD_SESSION_PARALLEL_THREADS) {}
+Parameters::Parameters() {
+    _uploadSessionParallelJobs = Parameters::_uploadSessionParallelJobsDefault;
+}
 
 } // namespace KDC

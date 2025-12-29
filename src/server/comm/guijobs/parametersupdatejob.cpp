@@ -18,10 +18,9 @@
 
 #include "parametersupdatejob.h"
 #include "appserver.h"
-
+#include "version.h"
 #include "keychainmanager/keychainmanager.h"
 #include "requests/parameterscache.h"
-
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/network/proxy.h"
@@ -94,6 +93,13 @@ ExitInfo ParametersUpdateJob::process() {
         parameters.proxyConfig().user() != _parametersInfo.proxyConfigInfo().user().toStdString() ||
         pwd != _parametersInfo.proxyConfigInfo().pwd().toStdString()) {
         Proxy::instance()->setProxyConfig(ParametersCache::instance()->parameters().proxyConfig());
+    }
+
+    if (KDRIVE_VERSION_MAJOR >= 4) {
+        // Sentry activation change propagation
+        if (parameters.sentryEnabled() != _parametersInfo.sentryEnabled()) {
+            sentry::Handler::instance()->setIsSentryActivated(_parametersInfo.sentryEnabled());
+        }
     }
 
     return exitCode;

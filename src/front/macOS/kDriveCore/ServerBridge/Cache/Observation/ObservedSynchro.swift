@@ -84,9 +84,7 @@ public extension AnyPublisher where Output == [Int32: User], Failure == Never {
         .eraseToAnyPublisher()
     }
 
-    func synchroEventPublisher(
-        synchroDbId: Int32
-    ) -> AnyPublisher<ObservationEvent<Synchro>, Never> {
+    func synchroEventPublisher(synchroDbId: Int32) -> AnyPublisher<ObservationEvent<Synchro>, Never> {
         map { usersDict -> Synchro? in
             for user in usersDict.values {
                 for account in user.accounts.values {
@@ -120,7 +118,7 @@ public extension AnyPublisher where Output == [Int32: User], Failure == Never {
         )
         .map { event -> Synchro? in
             switch event {
-            case let .update(synchro): return synchro
+            case .update(let synchro): return synchro
             case .removed: return nil
             }
         }
@@ -128,13 +126,11 @@ public extension AnyPublisher where Output == [Int32: User], Failure == Never {
         .eraseToAnyPublisher()
     }
 
-    func synchroPublisher(
-        dbId synchroDbId: Int32
-    ) -> AnyPublisher<Synchro?, Never> {
+    func synchroPublisher(dbId synchroDbId: Int32) -> AnyPublisher<Synchro?, Never> {
         synchroEventPublisher(synchroDbId: synchroDbId)
             .map { event -> Synchro? in
                 switch event {
-                case let .update(synchro): return synchro
+                case .update(let synchro): return synchro
                 case .removed: return nil
                 }
             }

@@ -94,14 +94,27 @@ enum CacheData {
 
     static let expectedSynchroDbId = Int32.random(in: 0 ... 10000)
     static let expectedSynchroLocalPath = "/dev/null"
-    static let expectedSynchro = Synchro(
-        dbId: expectedSynchroDbId, driveDbId: expectedDriveDbId, localPath: expectedSynchroLocalPath
-    )
+    static let expectedSynchroPath = "/dev/null"
+    static let expectedTargetPath = "dev/bin"
+    static let expectedTargetNodeId = UUID().uuidString
+    static let expectedSupportVFS = true
+    static let expectedVirtualFileMode = KDC.VirtualFileMode.Mac
+    static let expectedSynchro = Synchro(dbId: expectedSynchroDbId,
+                                         driveDbId: expectedDriveDbId,
+                                         localPath: expectedSynchroLocalPath,
+                                         targetPath: expectedTargetPath,
+                                         targetNodeId: expectedTargetNodeId,
+                                         supportVfs: expectedSupportVFS,
+                                         virtualFileMode: expectedVirtualFileMode)
 
     static let updatedSynchroLocalPath = "C:/Windows/System32"
-    static let updatedSynchro = Synchro(
-        dbId: expectedSynchroDbId, driveDbId: expectedDriveDbId, localPath: updatedSynchroLocalPath
-    )
+    static let updatedSynchro = Synchro(dbId: expectedSynchroDbId,
+                                        driveDbId: expectedDriveDbId,
+                                        localPath: updatedSynchroLocalPath,
+                                        targetPath: expectedTargetPath,
+                                        targetNodeId: expectedTargetNodeId,
+                                        supportVfs: expectedSupportVFS,
+                                        virtualFileMode: expectedVirtualFileMode)
 }
 
 struct CoherentCacheUserTests {

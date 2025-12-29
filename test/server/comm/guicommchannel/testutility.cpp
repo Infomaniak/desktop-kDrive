@@ -90,7 +90,8 @@ void TestGuiCommChannel::testUtilitySetAppStateJob() {
     const auto answerStr{R"({ "cause": 0,)"
                          R"( "code": 0,)"
                          R"( "id": 1,)"
-                         R"( "num": )" + std::to_string(toInt(RequestNum::UTILITY_SET_APPSTATE)) +
+                         R"( "num": )" +
+                         std::to_string(toInt(RequestNum::UTILITY_SET_APPSTATE)) +
                          R"(,)"
                          R"( "params": {  }, "type": )" +
                          std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
@@ -128,7 +129,8 @@ void TestGuiCommChannel::testUtilityGetAppStateJob() {
     const auto answerStr{R"({ "cause": 0,)"
                          R"( "code": 0,)"
                          R"( "id": 1,)"
-                         R"( "num": )" + std::to_string(toInt(RequestNum::UTILITY_GET_APPSTATE)) +
+                         R"( "num": )" +
+                         std::to_string(toInt(RequestNum::UTILITY_GET_APPSTATE)) +
                          R"(,)"
                          R"( "params": { "value": 123 }, "type": )" +
                          std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
@@ -205,7 +207,8 @@ void TestGuiCommChannel::testUtilityGetLogEstimatedSizeJob() {
     const auto answerStr{R"({ "cause": 0,)"
                          R"( "code": 0,)"
                          R"( "id": 1,)"
-                         R"( "num": )" + std::to_string(toInt(RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE)) +
+                         R"( "num": )" +
+                         std::to_string(toInt(RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE)) +
                          R"(,)"
                          R"( "params": { "logSize": 99999 }, "type": )" +
                          std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
@@ -221,7 +224,7 @@ void TestGuiCommChannel::testUtilityGetLogEstimatedSizeJob() {
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
-      
+
 void TestGuiCommChannel::testUtilitySendLogToSupportJob() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     const auto queryStr{R"({ "id": 1,)"
@@ -234,7 +237,7 @@ void TestGuiCommChannel::testUtilitySendLogToSupportJob() {
     const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::UTILITY_SEND_LOG_TO_SUPPORT)) +
                         R"(,)"
                         R"( "params": { "includeArchivedLogs": 1 } })"};
-  
+
     // Callback expected answer
     const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{}})"};
 #endif
@@ -243,7 +246,8 @@ void TestGuiCommChannel::testUtilitySendLogToSupportJob() {
     const auto answerStr{R"({ "cause": 0,)"
                          R"( "code": 0,)"
                          R"( "id": 1,)"
-                         R"( "num": )" + std::to_string(toInt(RequestNum::UTILITY_SEND_LOG_TO_SUPPORT)) +
+                         R"( "num": )" +
+                         std::to_string(toInt(RequestNum::UTILITY_SEND_LOG_TO_SUPPORT)) +
                          R"(,)"
                          R"( "params": {  }, "type": )" +
                          std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};

@@ -17,6 +17,7 @@
  */
 
 #include "utility.h"
+#include "utility_base.h"
 #include "libcommon/log/sentry/handler.h"
 #include "config.h"
 #include "version.h"
@@ -24,35 +25,11 @@
 #include <system_error>
 #include <sys/types.h>
 
-#if defined(KD_MACOS)
-#include <sys/statvfs.h>
-#include <sys/mount.h>
-#elif defined(KD_LINUX)
-#include <sys/statvfs.h>
-#include <sys/statfs.h>
-#elif defined(KD_WINDOWS)
-#include <fileapi.h>
-#endif
-
 #include <fstream>
 #include <random>
 #include <regex>
 #include <sstream>
 #include <signal.h>
-
-#if defined(KD_WINDOWS)
-#include <Poco/Util/WinRegistryKey.h>
-#endif
-
-#ifndef KD_WINDOWS
-#include <utf8proc.h>
-#endif
-
-#ifdef ZLIB_FOUND
-#include <zlib.h>
-#endif
-
-#include "utility_base.h"
 
 #include <QDir>
 #include <QTranslator>
@@ -65,14 +42,33 @@
 #include <QSqlQuery>
 #include <QOperatingSystemVersion>
 
-#if defined(Q_OS_MAC)
-#include <mach-o/dyld.h>
-#endif
-
 #include <Poco/UnicodeConverter.h>
 #include <Poco/Base64Decoder.h>
 #include <Poco/Base64Encoder.h>
 #include <Poco/StreamCopier.h>
+
+#if defined(KD_MACOS) || defined(KD_LINUX)
+#include <sys/statvfs.h>
+#include <uuid/uuid.h>
+#endif
+
+#if defined(KD_MACOS)
+#include <sys/mount.h>
+#include <mach-o/dyld.h>
+#elif defined(KD_LINUX)
+#include <sys/statfs.h>
+#elif defined(KD_WINDOWS)
+#include <fileapi.h>
+#include <Poco/Util/WinRegistryKey.h>
+#endif
+
+#ifndef KD_WINDOWS
+#include <utf8proc.h>
+#endif
+
+#ifdef ZLIB_FOUND
+#include <zlib.h>
+#endif
 
 #define MAX_PATH_LENGTH_WIN_LONG 32767
 #define MAX_PATH_LENGTH_WIN_SHORT 259
@@ -141,6 +137,16 @@ std::string CommonUtility::generateRandomStringPKCE(const int length /*= 10*/) {
 
     return generateRandomString(charArray, distrib, length);
 }
+
+#if defined(KD_MACOS) || defined(KD_LINUX)
+std::string CommonUtility::generateUUID() {
+    uuid_t uuid = {0};
+    char uuidStr[37] = {0}; // 36 characters + '\0'
+    uuid_generate(uuid);
+    uuid_unparse(uuid, uuidStr);
+    return uuidStr;
+}
+#endif
 
 void CommonUtility::crash() {
     volatile int *a = (int *) (NULL);

@@ -32,6 +32,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/guijobfactory.h ${server_srcs_path}/comm/guijobs/guijobfactory.cpp
     ${server_srcs_path}/comm/guijobs/unknownrequestjob.h ${server_srcs_path}/comm/guijobs/unknownrequestjob.cpp
     ${server_srcs_path}/comm/guijobs/loginrequesttokenjob.h ${server_srcs_path}/comm/guijobs/loginrequesttokenjob.cpp
+    ${server_srcs_path}/comm/guijobs/nodepathjob.h ${server_srcs_path}/comm/guijobs/nodepathjob.cpp
     ${server_srcs_path}/comm/guijobs/userdbidlistjob.h ${server_srcs_path}/comm/guijobs/userdbidlistjob.cpp
     ${server_srcs_path}/comm/guijobs/userinfolistjob.h ${server_srcs_path}/comm/guijobs/userinfolistjob.cpp
     ${server_srcs_path}/comm/guijobs/userdeletejob.h ${server_srcs_path}/comm/guijobs/userdeletejob.cpp
@@ -105,7 +106,6 @@ if(APPLE OR WIN32)
 endif()
 
 if(APPLE)
-    list(APPEND server_SRCS ${server_srcs_path}/../common/utility_mac.cpp)
     list(APPEND server_SRCS ${server_srcs_path}/comm/abstractcommserver_mac.h ${server_srcs_path}/comm/abstractcommserver_mac.mm)
     list(APPEND server_SRCS ${server_srcs_path}/comm/xpccommserver_mac.h ${server_srcs_path}/comm/xpccommserver_mac.mm)
     list(APPEND server_SRCS ${server_srcs_path}/comm/extcommserver_mac.mm)
@@ -135,8 +135,6 @@ elseif(WIN32)
     list(APPEND server_SRCS ${server_srcs_path}/navigationpanehelper.h ${server_srcs_path}/navigationpanehelper.cpp)
     list(APPEND server_SRCS ${server_srcs_path}/comm/pipecommserver.h ${server_srcs_path}/comm/pipecommserver.cpp)
     list(APPEND server_SRCS ${server_srcs_path}/updater/windowsupdater.h ${server_srcs_path}/updater/windowsupdater.cpp ${server_srcs_path}/../common/utility_win.cpp)
-else()
-    list(APPEND server_SRCS ${server_srcs_path}/updater/linuxupdater.h ${server_srcs_path}/updater/linuxupdater.cpp ${server_srcs_path}/../common/utility_linux.cpp)
 endif()
 
 set(3rdparty_SRC
@@ -173,6 +171,7 @@ set(testserver_SRCS
 
     comm/testcommhelpers.h comm/testcommhelpers.cpp
     comm/guicommchannel/testguicommchannel.h comm/guicommchannel/testguicommchannel.cpp
+    comm/guicommchannel/testgenericjob.cpp
     comm/guicommchannel/testsyncjobs.cpp comm/guicommchannel/testnodejobs.cpp
     comm/guicommchannel/testerrorjobs.cpp
     comm/guicommchannel/testexclapp.cpp comm/guicommchannel/testexcltempl.cpp 
