@@ -121,6 +121,7 @@
 				Cache/Observation/ObservableCoherentCacheTests.swift,
 				Cache/Observation/ObservableData.swift,
 				Cache/Observation/ObservedAccountTests.swift,
+				Cache/Observation/ObservedDrivesTests.swift,
 				Cache/Observation/ObservedDriveTests.swift,
 				Cache/Observation/ObservedSynchrosTests.swift,
 				Cache/Observation/ObservedSynchroTests.swift,
