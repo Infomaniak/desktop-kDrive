@@ -107,6 +107,9 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         case .SYNC_REMOVED:
             try await handleSyncRemoved(signal)
 
+        case .SYNC_PROGRESSINFO:
+            try await handleSyncProgress(signal)
+
         default:
             throw SignalError.unsupported(signalNum)
         }
@@ -192,6 +195,28 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         }
 
         try await coherentCache.removeSynchro(synchroDbId: syncDbId)
+    }
+
+    private func handleSyncProgress(_ signal: Data) async throws {
+        guard let syncProgressSignal = try? decoder.decode(SignalMessage<SyncProgressInfoSignal>.self, from: signal),
+              let syncProgress = syncProgressSignal.body else {
+            throw SignalError.unableToGetSyncDbIdFromSignal
+        }
+
+        try await coherentCache.updateSyncProgressInfoSignal(syncProgress)
+    }
+}
+
+extension CoherentCache {
+    func updateSyncProgressInfoSignal(_ syncSignal: SyncProgressInfoSignal) async throws {
+        let syncDbId = syncSignal.syncDbId
+        guard var synchro = await getSynchro(synchroDbId: syncDbId) else {
+            throw ServerCoherentCache.CacheError.synchroNotFound(syncDbId)
+        }
+
+        synchro.progress = syncSignal.asSynchroProgressInfo
+
+        try await updateSynchro(synchro)
     }
 }
 

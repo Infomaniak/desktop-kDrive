@@ -33,4 +33,11 @@ public struct Synchro: Identifiable, Hashable, Sendable {
     public let targetNodeId: String
     public let supportVfs: Bool
     public let virtualFileMode: KDC.VirtualFileMode
+    public var progress: SynchroProgressInfo?
+}
+
+public struct SynchroProgressInfo: Hashable, Sendable {
+    let syncStatus: Int32 // TODO use SyncStatus enum
+    let syncStep: Int32 // TODO use SyncStep enum
+    let syncProgress: Int32 // TODO SyncProgress enum
 }

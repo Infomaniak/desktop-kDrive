@@ -18,6 +18,21 @@
 
 import Foundation
 
+struct SyncProgressInfoSignal: Codable, Sendable {
+    let syncDbId: Int32
+    let syncStatus: Int32 // TODO: use SyncStatus enum
+    let syncStep: Int32 // TODO: use SyncStep enum
+    let syncProgress: Int32 // TODO: SyncProgress enum
+}
+
+extension SyncProgressInfoSignal {
+    var asSynchroProgressInfo: SynchroProgressInfo {
+        SynchroProgressInfo(syncStatus: syncStatus,
+                            syncStep: syncStep,
+                            syncProgress: syncProgress)
+    }
+}
+
 struct SyncRemoveSignal: Codable, Sendable {
     let syncDbId: Int32
 }
