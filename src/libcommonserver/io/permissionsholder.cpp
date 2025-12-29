@@ -36,15 +36,11 @@ PermissionsHolder::PermissionsHolder(const SyncPath &path, const log4cplus::Logg
     AccessRightsInfo accessRights;
     if (const auto ioError = IoHelper::getRights(path, accessRights.read, accessRights.write, accessRights.exec);
         ioError != IoError::Success) {
-        log(std::wstringstream() << L"Failed to get rights for " << Utility::formatSyncPath(path) << L" - error: "
-                                 << Utility::formatIoError(ioError),
-            LogLevel::Error);
+        LOGW_ERROR(_logger, L"Failed to get rights - " << Utility::formatIoError(path, ioError));
         return;
     }
     if (const auto ioError = IoHelper::isLocked(path, accessRights.locked); ioError != IoError::Success) {
-        log(std::wstringstream() << L"Failed to check if file is locked for " << Utility::formatSyncPath(path) << L" - error: "
-                                 << Utility::formatIoError(ioError),
-            LogLevel::Error);
+        LOGW_ERROR(_logger, L"Failed to check if file is locked - " << Utility::formatIoError(path, ioError));
         return;
     }
 
@@ -56,15 +52,12 @@ PermissionsHolder::PermissionsHolder(const SyncPath &path, const log4cplus::Logg
     }
 
     if (const auto ioError = IoHelper::setFullAccess(_path); ioError != IoError::Success) {
-        log(std::wstringstream() << L"Failed to set full access rights: " << Utility::formatSyncPath(_path) << L" - error: "
-                                 << Utility::formatIoError(ioError),
-            LogLevel::Error);
+        LOGW_ERROR(_logger, L"Failed to set full access rights - " << Utility::formatIoError(path, ioError));
     }
     (void) heldPermissions.try_emplace(_path, accessRights);
     heldPermissions[_path].count++;
-    log(std::wstringstream() << L"PermissionsHolder set full access rights: " << Utility::formatSyncPath(_path) << L" / count:"
-                             << heldPermissions[_path].count,
-        LogLevel::Debug);
+    LOGW_DEBUG(_logger, L"PermissionsHolder set full access rights: " << Utility::formatSyncPath(_path) << L" / count:"
+                                                                      << heldPermissions[_path].count);
 }
 
 PermissionsHolder::~PermissionsHolder() {
@@ -76,54 +69,24 @@ PermissionsHolder::~PermissionsHolder() {
         heldPermissions[_path].count--;
         accessRights = heldPermissions[_path];
     } catch (...) {
-        log(std::wstringstream() << L"PermissionsHolder failed to get value for: " << Utility::formatSyncPath(_path),
-            LogLevel::Error);
+        LOGW_ERROR(_logger, L"PermissionsHolder failed to get value for: " << Utility::formatSyncPath(_path));
         return;
     }
 
-    log(std::wstringstream() << L"PermissionsHolder value: " << Utility::formatSyncPath(_path) << L" / count:"
-                             << accessRights.count,
-        LogLevel::Debug);
+    LOGW_DEBUG(_logger, L"PermissionsHolder value: " << Utility::formatSyncPath(_path) << L" / count:" << accessRights.count);
     if (accessRights.count > 0) return; // Do not put back read-only rights yet.
 
-    log(std::wstringstream() << L"PermissionsHolder setting back initial rights: " << Utility::formatSyncPath(_path),
-        LogLevel::Debug);
+    LOGW_DEBUG(_logger, L"PermissionsHolder setting back initial rights: " << Utility::formatSyncPath(_path));
     if (const auto ioError = IoHelper::setRights(_path, accessRights.read, accessRights.write, accessRights.exec);
         ioError != IoError::Success) {
-        log(std::wstringstream() << L"Failed to set rights for " << Utility::formatSyncPath(_path) << L" - error: "
-                                 << Utility::formatIoError(ioError),
-            LogLevel::Error);
+        LOGW_ERROR(_logger, L"Failed to set rights - " << Utility::formatIoError(_path, ioError));
     }
     if (accessRights.locked) {
         if (const auto ioError = IoHelper::lock(_path); ioError != IoError::Success) {
-            log(std::wstringstream() << L"Failed to lock item for " << Utility::formatSyncPath(_path) << L" - error: "
-                                     << Utility::formatIoError(ioError),
-                LogLevel::Error);
+            LOGW_ERROR(_logger, L"Failed to lock item - " << Utility::formatIoError(_path, ioError));
         }
     }
     (void) heldPermissions.erase(_path);
-}
-
-void PermissionsHolder::log(const std::wstringstream &ss, const LogLevel logLevel /*= LogLevel::Debug*/) const noexcept {
-    switch (logLevel) {
-        case LogLevel::Debug:
-            LOGW_DEBUG(_logger, ss.str())
-            break;
-        case LogLevel::Info:
-            LOGW_INFO(_logger, ss.str())
-            break;
-        case LogLevel::Warning:
-            LOGW_WARN(_logger, ss.str())
-            break;
-        case LogLevel::Error:
-            LOGW_ERROR(_logger, ss.str())
-            break;
-        case LogLevel::Fatal:
-            LOGW_FATAL(_logger, ss.str())
-            break;
-        default:
-            break;
-    }
 }
 
 } // namespace KDC
