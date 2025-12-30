@@ -160,4 +160,45 @@ struct ObservedDrivesTests {
         #expect(firstDrive.account.dbId == ObservableData.expectedAccount.dbId, "The account should match the one we just added")
         #expect(firstDrive.user.dbId == ObservableData.expectedUser.dbId, "The user should match the one we just added")
     }
+
+    @Test(.timeLimit(.minutes(1)))
+    func deleteObservedDrive() async throws {
+        // GIVEN
+        let cache = ServerCoherentCache()
+        let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
+        #expect(initialUser == nil, "Cache should initially be empty")
+
+        @ObservedDrives(cacheObservation: cache) var observedDrives: [DriveContext]
+        let receivedValues = $observedDrives.receivedValues // Start to save the received values
+
+        #expect(observedDrives == [], "Drives should initially be empty")
+        await cache.addUser(ObservableData.expectedUserWithAccounts)
+
+        let expectedDrive = ObservableData.expectedDrive
+        try await cache.addDrive(expectedDrive, accountDbId: ObservableData.expectedAccountDbId)
+
+        let cachedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
+        #expect(cachedDrive == expectedDrive, "The cache should have been updated with a Drive")
+
+        // WHEN
+        try await cache.removeDrive(driveDbId: ObservableData.expectedDriveDbId)
+
+        // THEN
+        _ = await receivedValues.dropFirst().first(where: { $0 == [] })
+
+        let latestFetchedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
+        #expect(latestFetchedDrive == nil, "Object should no longer be available in cache")
+        #expect(observedDrives.isEmpty, "Drives should be empty once the object is deleted")
+    }
+
+         // WHEN
+         try await cache.removeDrive(driveDbId: ObservableData.expectedDriveDbId)
+
+         // THEN
+         _ = await receivedValues.dropFirst().first(where: { $0 == [] })
+
+         let latestFetchedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
+         #expect(latestFetchedDrive == nil, "Object should no longer be available in cache")
+         #expect(observedDrives.isEmpty, "Drives should be empty once the object is deleted")
+     }
 }
