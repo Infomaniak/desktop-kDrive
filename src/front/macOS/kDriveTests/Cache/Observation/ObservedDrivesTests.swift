@@ -191,14 +191,45 @@ struct ObservedDrivesTests {
         #expect(observedDrives.isEmpty, "Drives should be empty once the object is deleted")
     }
 
-         // WHEN
-         try await cache.removeDrive(driveDbId: ObservableData.expectedDriveDbId)
+    @Test(.timeLimit(.minutes(1)))
+    func testRemoveDrive() async throws {
+        // GIVEN
+        let cache = ServerCoherentCache()
+        let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
+        #expect(initialUser == nil, "Cache should initially be empty")
 
-         // THEN
-         _ = await receivedValues.dropFirst().first(where: { $0 == [] })
+        @ObservedDrives(cacheObservation: cache) var observedDrives: [DriveContext]
+        let receivedValues = $observedDrives.receivedValues // Start to save the received values
 
-         let latestFetchedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
-         #expect(latestFetchedDrive == nil, "Object should no longer be available in cache")
-         #expect(observedDrives.isEmpty, "Drives should be empty once the object is deleted")
-     }
+        #expect(observedDrives == [], "Drives should initially be empty")
+        await cache.addUser(ObservableData.expectedUserWithAccounts)
+
+        let expectedDrive = ObservableData.expectedDrive
+        try await cache.addDrive(expectedDrive, accountDbId: ObservableData.expectedAccountDbId)
+
+        let secondaryDrive = ObservableData.secondaryDrive
+        try await cache.addDrive(secondaryDrive, accountDbId: ObservableData.expectedAccountDbId)
+
+        let cachedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
+        #expect(cachedDrive == expectedDrive, "The cache should have been updated with a Drive")
+        let secondaryCachedDrive = await cache.getDrive(driveDbId: ObservableData.secondaryDriveDbId)
+        #expect(secondaryCachedDrive == secondaryDrive, "The cache should have been updated with another Drive")
+
+        // WHEN
+        try await cache.removeDrive(driveDbId: ObservableData.secondaryDriveDbId)
+
+        // THEN
+        _ = await receivedValues.dropFirst().dropFirst().first(where: { _ in true })
+
+        #expect(observedDrives.count == 1, "We should have one Drive after the deletion of a drive")
+
+        guard let firstObservedDrive = observedDrives.first(where: { $0.drive.driveDbId == ObservableData.expectedDriveDbId }) else {
+            Issue.record("Failed to unwrap the first Drive")
+            return
+        }
+
+        #expect(firstObservedDrive.drive.driveDbId == expectedDrive.driveDbId, "The drive should match")
+        #expect(firstObservedDrive.account.dbId == ObservableData.expectedAccount.dbId, "The account should match")
+        #expect(firstObservedDrive.user.dbId == ObservableData.expectedUser.dbId, "The user should match")
+    }
 }
