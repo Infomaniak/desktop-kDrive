@@ -40,6 +40,7 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         case unableToGetDriveDbIdFromSignal
         case unableToGetSyncFromSignal
         case unableToGetSyncDbIdFromSignal
+        case unableToGetSyncProgressFromSignal
         case unsupported(_ num: SignalNum)
     }
 
@@ -200,7 +201,7 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
     private func handleSyncProgress(_ signal: Data) async throws {
         guard let syncProgressSignal = try? decoder.decode(SignalMessage<SyncProgressInfoSignal>.self, from: signal),
               let syncProgress = syncProgressSignal.body else {
-            throw SignalError.unableToGetSyncDbIdFromSignal
+            throw SignalError.unableToGetSyncProgressFromSignal
         }
 
         try await coherentCache.updateSyncProgressInfoSignal(syncProgress)
