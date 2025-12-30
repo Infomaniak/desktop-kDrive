@@ -18,28 +18,17 @@
 
 import Foundation
 
-struct SyncRemoveSignal: Codable, Sendable {
+struct SyncProgressInfoSignal: Codable, Sendable {
     let syncDbId: Int32
+    let syncStatus: Int32 // TODO: use SyncStatus enum
+    let syncStep: Int32 // TODO: use SyncStep enum
+    let syncProgress: Int32 // TODO: SyncProgress enum
 }
 
-struct SyncInfoSignal: Codable, Sendable {
-    let dbId: Int32
-    let driveDbId: Int32
-    @Base64CodedString var localPath: String
-    @Base64CodedString var targetPath: String
-    @Base64CodedString var targetNodeId: String
-    let supportVfs: Bool
-    let virtualFileMode: KDC.VirtualFileMode
-}
-
-extension SyncInfoSignal {
-    var asSynchro: Synchro {
-        Synchro(dbId: dbId,
-                driveDbId: driveDbId,
-                localPath: localPath,
-                targetPath: targetPath,
-                targetNodeId: targetNodeId,
-                supportVfs: supportVfs,
-                virtualFileMode: virtualFileMode)
+extension SyncProgressInfoSignal {
+    var asSynchroProgressInfo: SynchroProgressInfo {
+        SynchroProgressInfo(syncStatus: syncStatus,
+                            syncStep: syncStep,
+                            syncProgress: syncProgress)
     }
 }
