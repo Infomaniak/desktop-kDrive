@@ -41,6 +41,7 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         case unableToGetSyncFromSignal
         case unableToGetSyncDbIdFromSignal
         case unableToGetSyncProgressFromSignal
+        case unableToGetSyncFileItemFromSignal
         case unsupported(_ num: SignalNum)
     }
 
@@ -110,6 +111,9 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
 
         case .SYNC_PROGRESSINFO:
             try await handleSyncProgress(signal)
+
+        case .SYNC_COMPLETEDITEM:
+            try await handleSyncCompleted(signal)
 
         default:
             throw SignalError.unsupported(signalNum)
@@ -206,6 +210,15 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
 
         try await coherentCache.updateSyncProgressInfoSignal(syncProgress)
     }
+
+    private func handleSyncCompleted(_ signal: Data) async throws {
+        guard let syncFileItemInfo = try? decoder.decode(SignalMessage<SyncFileItemInfoSignal>.self, from: signal),
+              let syncFileItem = syncFileItemInfo.body else {
+            throw SignalError.unableToGetSyncFileItemFromSignal
+        }
+
+        try await coherentCache.updateSyncFileItemInfoSignal(syncFileItem)
+    }
 }
 
 extension CoherentCache {
@@ -216,6 +229,20 @@ extension CoherentCache {
         }
 
         synchro.progress = syncSignal.asSynchroProgressInfo
+
+        try await updateSynchro(synchro)
+    }
+}
+
+extension CoherentCache {
+    func updateSyncFileItemInfoSignal(_ syncSignal: SyncFileItemInfoSignal) async throws {
+        let syncDbId = syncSignal.syncDbId
+        let itemInfo = syncSignal.itemInfo
+        guard var synchro = await getSynchro(synchroDbId: syncDbId) else {
+            throw ServerCoherentCache.CacheError.synchroNotFound(syncDbId)
+        }
+
+        synchro.synchNodes[itemInfo.localNodeId] = itemInfo.toSynchroFile
 
         try await updateSynchro(synchro)
     }
