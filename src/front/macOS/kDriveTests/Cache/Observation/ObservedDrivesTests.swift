@@ -117,4 +117,47 @@ struct ObservedDrivesTests {
         #expect(secondaryObservedDrive.account.dbId == ObservableData.expectedAccount.dbId, "The account should match")
         #expect(secondaryObservedDrive.user.dbId == ObservableData.expectedUser.dbId, "The user should match")
     }
+
+    @Test(.timeLimit(.minutes(1)))
+    func updateObservedDrive() async throws {
+        // GIVEN
+        let cache = ServerCoherentCache()
+        let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
+        #expect(initialUser == nil, "Cache should initially be empty")
+
+        @ObservedDrives(cacheObservation: cache) var observedDrives: [DriveContext]
+        let receivedValues = $observedDrives.receivedValues // Start to save the received values
+
+        #expect(observedDrives == [], "Drives should initially be empty")
+        await cache.addUser(ObservableData.expectedUserWithAccounts)
+
+        let expectedDrive = ObservableData.expectedDrive
+        try await cache.addDrive(expectedDrive, accountDbId: ObservableData.expectedAccountDbId)
+
+        let cachedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
+        #expect(cachedDrive == expectedDrive, "The cache should have been updated with a Drive")
+
+        // WHEN
+        let updatedDrive = ObservableData.updatedDrive
+        try await cache.updateDrive(drive: updatedDrive)
+
+        // THEN
+        _ = await receivedValues.dropFirst().first(where: { _ in true })
+
+        let latestFetchedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
+        #expect(latestFetchedDrive == ObservableData.updatedDrive, "We should find the object in cache updated")
+        #expect(observedDrives.count == 1, "We should have one object in the array")
+
+        guard let firstDrive = observedDrives.first else {
+            Issue.record("Failed to unwrap the first object")
+            return
+        }
+
+        #expect(firstDrive.drive != expectedDrive, "The Drive in the array should not match the old one")
+        #expect(firstDrive.drive == updatedDrive, "The Drive in the array should match the updated one")
+
+        #expect(firstDrive.drive.driveDbId == expectedDrive.driveDbId, "The drive should match the one we just added")
+        #expect(firstDrive.account.dbId == ObservableData.expectedAccount.dbId, "The account should match the one we just added")
+        #expect(firstDrive.user.dbId == ObservableData.expectedUser.dbId, "The user should match the one we just added")
+    }
 }
