@@ -37,3 +37,20 @@ struct SyncFileItemInfo: Codable, Sendable {
     let cancelType: KDC.CancelType
     @Base64CodedString var error: String
 }
+
+extension SyncFileItemInfo {
+    var toSynchroFile: SynchroNode {
+        SynchroNode(type: type,
+                    path: path,
+                    newPath: newPath,
+                    localNodeId: localNodeId,
+                    remoteNodeId: remoteNodeId,
+                    direction: direction,
+                    instruction: instruction,
+                    status: status,
+                    conflict: conflict,
+                    inconsistency: inconsistency,
+                    cancelType: cancelType,
+                    error: error)
+    }
+}
