@@ -19,6 +19,7 @@
 import Foundation
 
 public typealias IndexedSynchros = [Int32: Synchro]
+public typealias IndexedSynchroNode = [String: SynchroNode]
 
 public struct Synchro: Identifiable, Hashable, Sendable {
     public var id: Int32 {
@@ -34,10 +35,30 @@ public struct Synchro: Identifiable, Hashable, Sendable {
     public let supportVfs: Bool
     public let virtualFileMode: KDC.VirtualFileMode
     public var progress: SynchroProgressInfo?
+    public var synchNodes: IndexedSynchroNode = [:]
 }
 
 public struct SynchroProgressInfo: Hashable, Sendable {
-    let syncStatus: Int32 // TODO use SyncStatus enum
-    let syncStep: Int32 // TODO use SyncStep enum
-    let syncProgress: Int32 // TODO SyncProgress enum
+    public let syncStatus: Int32 // TODO: use SyncStatus enum
+    public let syncStep: Int32 // TODO: use SyncStep enum
+    public let syncProgress: Int32 // TODO: SyncProgress enum
+}
+
+public struct SynchroNode: Identifiable, Codable, Hashable, Sendable {
+    public var id: String {
+        localNodeId // validate that this is a correct way to uniquely identify a node
+    }
+
+    public let type: KDC.NodeType
+    public let path: String // Sync folder relative filesystem path
+    public let newPath: String
+    public let localNodeId: String
+    public let remoteNodeId: String
+    public let direction: KDC.SyncDirection
+    public let instruction: KDC.SyncFileInstruction
+    public let status: KDC.SyncFileStatus
+    public let conflict: KDC.ConflictType
+    public let inconsistency: KDC.InconsistencyType
+    public let cancelType: KDC.CancelType
+    public let error: String
 }
