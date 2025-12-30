@@ -24,5 +24,10 @@ extension KDC.ExitCode: Codable {}
 extension KDC.NodeType: Codable {}
 extension KDC.VirtualFileMode: Codable {}
 extension KDC.SyncFileStatus: Codable {}
+extension KDC.SyncDirection: Codable {}
+extension KDC.SyncFileInstruction: Codable {}
+extension KDC.ConflictType: Codable {}
+extension KDC.InconsistencyType: Codable {}
+extension KDC.CancelType: Codable {}
 extension SignalNum: Codable {}
 extension RequestNum: Codable {}
