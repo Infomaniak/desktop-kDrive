@@ -5,26 +5,39 @@ using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.Pages.Settings
 {
     public sealed partial class TemplateExclusionPage : Page
     {
         private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
-        public AppModel ViewModel { get { return _viewModel; } }
+        public AppModel ViewModel { get => _viewModel; }
+        private ExclusionTemplateListModel? _templateList;
         public Drive? ManagedDrive { get; set; }
+
 
         public TemplateExclusionPage()
         {
-            Logger.Log(Logger.Level.Info, "Navigated to DriveManagementPage - Initializing DriveManagementPage components");
+            Logger.Log(Logger.Level.Info, "Navigated to TemplateExclusionPage - Initializing TemplateExclusionPage components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "DriveManagementPage components initialized");
+            Logger.Log(Logger.Level.Debug, "TemplateExclusionPage components initialized");
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             SetupNavBar();
+            _templateList = new ExclusionTemplateListModel();
+            _templateList.AddTemplate(new ExclusionTemplate("*.tmp", true, false));
+            _templateList.AddTemplate(new ExclusionTemplate("*.test", true, false));
+            _templateList.AddTemplate(new ExclusionTemplate("abc*.tmp", true, true));
+            _templateList.AddTemplate(new ExclusionTemplate("efg*.hij", true, true));
+        }
+
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            Logger.Log(Logger.Level.Info, "Navigating away from TemplateExclusionPage");
+            _templateList?.Dispose();
+            _templateList = null;
         }
 
         private void SetupNavBar()
@@ -36,134 +49,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             Logger.Log(Logger.Level.Debug, "Navigating to SettingsPage");
             Frame.Navigate(typeof(SettingsPage));
         }
-
-        private void LocationHyperLinkButton_Clicked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-        {
-            string? path = ManagedDrive?.MainSync?.LocalPath ?? null;
-            if (path is null)
-            {
-                Logger.Log(Logger.Level.Error, "Cannot open local folder: MainSync or LocalPath is null");
-                return;
-            }
-            Utility.OpenFolderSecurely(path);
-        }
-
-        private async void LiteSyncRadioButtonChecked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-        {
-            if (!IsLoaded || !OnlineRadioButton.IsEnabled)
-                return;
-            OnlineRadioButton.IsEnabled = false;
-            OfflineRadioButton.IsEnabled = false;
-            bool succeed = false;
-            if (await Utility.ShowContentDialog(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncMode_WarningDialog") == ContentDialogResult.Primary)
-            {
-                Logger.Log(Logger.Level.Info, "User confirmed to change to online Sync mode");
-                if (ManagedDrive?.MainSync is not null)
-                {
-                    await ManagedDrive.MainSync.ChangeSyncType(Types.SyncType.Online);
-                    succeed = true; // TODO: Check actual success of the operation
-                }
-            }
-
-            if (!succeed)
-            {
-                Logger.Log(Logger.Level.Info, "User canceled the change to online Sync mode");
-                OnlineRadioButton.IsChecked = false;
-                OfflineRadioButton.IsChecked = true;
-            }
-            OnlineRadioButton.IsEnabled = true;
-            OfflineRadioButton.IsEnabled = true;
-        }
-
-        private async void LiteSyncRadioButtonUnchecked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-        {
-            if (!IsLoaded || !OnlineRadioButton.IsEnabled)
-                return;
-            OnlineRadioButton.IsEnabled = false;
-            OfflineRadioButton.IsEnabled = false;
-            bool succeed = false;
-
-            if (await Utility.ShowContentDialog(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncMode_WarningDialog") == ContentDialogResult.Primary)
-            {
-                Logger.Log(Logger.Level.Info, "User confirmed to change to offline Sync mode");
-                if (ManagedDrive?.MainSync is not null)
-                {
-                    await ManagedDrive.MainSync.ChangeSyncType(Types.SyncType.Offline);
-                    succeed = true; // TODO: Check actual success of the operation
-                }
-            }
-
-            if (!succeed)
-            {
-                Logger.Log(Logger.Level.Info, "User canceled the change to offline Sync mode");
-                OnlineRadioButton.IsChecked = true;
-                OfflineRadioButton.IsChecked = false;
-            }
-            OnlineRadioButton.IsEnabled = true;
-            OfflineRadioButton.IsEnabled = true;
-
-        }
-
-        private void FixForegroundOnPointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
-        {
-            if (sender is Control control)
-            {
-                var curentForeground = control.Foreground;
-                control.Foreground = null;
-                control.Foreground = curentForeground;
-            }
-        }
-
-        private async void RemoveSyncSettingsCard_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-        {
-            if (ManagedDrive is not null && ManagedDrive.MainSync is not null)
-            {
-                var control = sender as Control;
-                if (control is not null)
-                    control.IsEnabled = false;
-                bool goBackOnceDone = ManagedDrive.Syncs.Count() == 1; // If we are removing the last sync of the drive, go back to settings page once done.
-                var dialogResult = await Utility.ShowContentDialog(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog");
-                if (dialogResult == ContentDialogResult.Primary)
-                {
-                    Logger.Log(Logger.Level.Info, "User confirmed sync removal");
-                    await ManagedDrive.RemoveSync(ManagedDrive.MainSync, CancellationToken.None);
-                    if (goBackOnceDone)
-                    {
-                        Frame.Navigate(typeof(SettingsPage));
-                    }
-                }
-                else
-                {
-                    Logger.Log(Logger.Level.Info, "User canceled sync removal");
-                }
-                if (control is not null)
-                    control.IsEnabled = true;
-            }
-            else
-            {
-                Logger.Log(Logger.Level.Error, "Cannot remove sync: ManagedDrive or MainSync is null");
-            }
-        }
-
-        private async void SaveSyncSelection_click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-        {
-            Control? control = sender as Control;
-            if (control is not null)
-                control.IsEnabled = false;
-            await ExclSelector.SaveChanges();
-            if (control is not null)
-                control.IsEnabled = true;
-
-        }
-
-        private async void CancelSyncSelection_click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-        {
-            Control? control = sender as Control;
-            if (control is not null)
-                control.IsEnabled = false;
-            await ExclSelector.CancelChanges();
-            if (control is not null)
-                control.IsEnabled = true;
-        }
     }
+
+
 }
