@@ -229,12 +229,12 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
             LOGW_WARN(logger(), L"Could not create autostart desktop file: " << Utility::formatSyncPath(userAutoStartFilePath));
             return false;
         }
-        const auto appimageDir = CommonUtility::envVarValue("APPIMAGE");
-        LOG_DEBUG(logger(), "APPIMAGE=" << appimageDir);
+        const SyncPath appimageDir = SyncPath(CommonUtility::envVarValue("APPIMAGE"));
+        LOGW_DEBUG(logger(), "APPIMAGE: " << Utility::formatSyncPath(appimageDir));
         autoStartFile << "[Desktop Entry]" << std::endl;
         autoStartFile << "Name=" << guiName << std::endl;
         autoStartFile << "GenericName=File Synchronizer" << std::endl;
-        autoStartFile << "Exec=" << "'" << appimageDir << "'" << std::endl;
+        autoStartFile << "Exec=" << "'" << appimageDir.native() << "'" << std::endl;
         autoStartFile << "Terminal=false" << std::endl;
         autoStartFile << "Icon=" << CommonUtility::toLower(appName) << std::endl;
         autoStartFile << "Categories=Network" << std::endl;
