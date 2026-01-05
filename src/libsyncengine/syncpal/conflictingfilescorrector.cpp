@@ -75,7 +75,7 @@ ExitInfo ConflictingFilesCorrector::runJob() {
 bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
     // Delete remote version locally
     SyncPath originalAbsolutePath = _syncPal->localPath() / error.destinationPath().parent_path() / error.path().filename();
-    LocalDeleteJob deleteJob(originalAbsolutePath);
+    LocalDeleteJob deleteJob(originalAbsolutePath, _syncPal);
     deleteJob.runSynchronously();
     if (deleteJob.exitInfo().code() != ExitCode::Ok) {
         return false;
@@ -97,7 +97,7 @@ bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
 
 bool ConflictingFilesCorrector::keepRemoteVersion(const Error &error) {
     // Delete local version
-    LocalDeleteJob deleteJob(_syncPal->localPath() / error.destinationPath());
+    LocalDeleteJob deleteJob(_syncPal->localPath() / error.destinationPath(), _syncPal);
     deleteJob.runSynchronously();
     if (deleteJob.exitInfo().code() != ExitCode::Ok) {
         return false;
