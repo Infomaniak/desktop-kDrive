@@ -29,8 +29,8 @@ final class LargeButtonCell: NSButtonCell {
 
         static let radius = AppRadius.radius8
 
-        static let backgroundColor = NSColor.Tokens.Surface.secondary
-        static let highlightedBackgroundColor = NSColor.Tokens.Surface.primary
+        static let backgroundColor = NSColor.Tokens.Surface.primary
+        static let highlightedBackgroundColor = NSColor.Tokens.Surface.primary.withAlphaComponent(0.5)
         static let accentColor = NSColor.Tokens.Action.primary
     }
 
@@ -68,22 +68,36 @@ final class LargeButtonCell: NSButtonCell {
         drawImage(at: NSPoint(x: insetRect.minX, y: insetRect.midY), image: icon)
         drawTitle(cellFrame: insetRect)
         if let accessory {
-            drawImage(at: NSPoint(x: insetRect.maxX - ComponentTokens.iconSize, y: insetRect.midY), image: accessory)
+            drawImage(
+                at: NSPoint(x: insetRect.maxX - ComponentTokens.iconSize, y: insetRect.midY),
+                image: accessory,
+                size: CGSize(width: 12, height: 12)
+            )
         }
     }
 
-    private func drawImage(at point: NSPoint, image: NSImage) {
+    private func drawImage(at point: NSPoint, image: NSImage, size: CGSize = CGSize(width: 16, height: 16)) {
+        let tintedImage = NSImage(size: size, flipped: true) { rect in
+            ComponentTokens.accentColor.setFill()
+            rect.fill()
+
+            image.draw(
+                in: rect,
+                from: NSRect(origin: .zero, size: size),
+                operation: .destinationIn,
+                fraction: 1.0
+            )
+
+            return true
+        }
+
         let iconRect = NSRect(
             x: point.x,
             y: point.y - ComponentTokens.iconSize / 2,
-            width: ComponentTokens.iconSize,
-            height: ComponentTokens.iconSize
+            width: size.width,
+            height: size.height
         )
-
-        NSGraphicsContext.saveGraphicsState()
-        ComponentTokens.accentColor.set()
-        image.draw(in: iconRect, from: .zero, operation: .sourceOver, fraction: 1.0)
-        NSGraphicsContext.restoreGraphicsState()
+        tintedImage.draw(in: iconRect, from: .zero, operation: .sourceAtop, fraction: 1.0)
     }
 
     private func drawTitle(cellFrame: NSRect) {

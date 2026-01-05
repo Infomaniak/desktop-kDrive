@@ -20,6 +20,7 @@
 import Cocoa
 import kDriveCore
 import kDriveCoreUI
+import kDriveResources
 
 final class SelectedUserAndDrivePanelView: NSView {
     var user: UIUser {
@@ -58,13 +59,50 @@ final class SelectedUserAndDrivePanelView: NSView {
         layer?.backgroundColor = NSColor.Tokens.Surface.secondary.cgColor
         layer?.cornerRadius = AppRadius.radius16
 
+        let favoriteFolderButton = generateLargeButton(
+            icon: KDriveResources.star.image,
+            title: "Favoris",
+            action: #selector(openRemoteFavoriteFolder)
+        )
+        let sharedWithMeFolderButton = generateLargeButton(
+            icon: KDriveResources.folderShare.image,
+            title: "Partages",
+            action: #selector(openRemoteSharedWithMeFolder)
+        )
+        let kDriveHomeFolderButton = generateLargeButton(
+            icon: KDriveResources.kdriveFoldersStacked.image,
+            title: "kDrive en ligne",
+            action: #selector(openRemoteHomeFolder)
+        )
+
+        let buttonsStackView = NSStackView(views: [
+            favoriteFolderButton,
+            sharedWithMeFolderButton,
+            kDriveHomeFolderButton
+        ])
+        buttonsStackView.translatesAutoresizingMaskIntoConstraints = false
+        buttonsStackView.orientation = .vertical
+        buttonsStackView.spacing = 8
+        addSubview(buttonsStackView)
+
         addSubview(avatarView)
         NSLayoutConstraint.activate([
             avatarView.centerXAnchor.constraint(equalTo: centerXAnchor),
             avatarView.topAnchor.constraint(equalTo: topAnchor, constant: AppPadding.padding24),
             avatarView.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: AppPadding.padding16),
-            avatarView.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -AppPadding.padding16)
+            avatarView.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -AppPadding.padding16),
+
+            buttonsStackView.topAnchor.constraint(equalTo: avatarView.bottomAnchor, constant: AppPadding.padding16),
+            buttonsStackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: AppPadding.padding16),
+            buttonsStackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -AppPadding.padding16)
         ])
+    }
+
+    private func generateLargeButton(icon: NSImage, title: String, action: Selector) -> LargeButton {
+        let button = LargeButton(icon: icon, title: title, accessory: KDriveResources.share.image)
+        button.target = self
+        button.action = action
+        return button
     }
 
     private func updateUser(for user: UIUser) {
@@ -74,6 +112,18 @@ final class SelectedUserAndDrivePanelView: NSView {
     private func updateDrive(for drive: UIDrive) {
         avatarView.drive = drive
     }
+}
+
+// MARK: - Actions
+
+extension SelectedUserAndDrivePanelView {
+    @objc private func openRemoteFavoriteFolder() {}
+
+    @objc private func openRemoteSharedWithMeFolder() {}
+
+    @objc private func openRemoteHomeFolder() {}
+
+    @objc private func openRemoteTrashFolder() {}
 }
 
 @available(macOS 14.0, *)
