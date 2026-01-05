@@ -193,15 +193,15 @@ ExitInfo LocalDeleteJob::handleLiteSyncFile(const SyncPath &path) {
     return moveToTrashOrHardDeleteIfNeeded(path);
 }
 
-ExitInfo LocalDeleteJob::deleteFromDB(const SyncPath &path) {
+ExitInfo LocalDeleteJob::deleteFromDB(const SyncPath &relativeLocalPath) {
     bool found = false;
     DbNodeId dbId = 0;
-    if (!_syncPal->syncDb()->dbId(ReplicaSide::Local, path, dbId, found)) {
-        LOGW_ERROR(_logger, L"Failed to get DB ID for " << Utility::formatSyncPath(path));
+    if (!_syncPal->syncDb()->dbId(ReplicaSide::Local, relativeLocalPath, dbId, found)) {
+        LOGW_ERROR(_logger, L"Failed to get DB ID for " << Utility::formatSyncPath(relativeLocalPath));
         return {ExitCode::DbError, ExitCause::DbAccessError};
     }
     if (!found) {
-        LOGW_ERROR(_logger, L"Node DB ID not found for " << Utility::formatSyncPath(path));
+        LOGW_ERROR(_logger, L"Node DB ID not found for " << Utility::formatSyncPath(relativeLocalPath));
         return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
@@ -216,7 +216,7 @@ ExitInfo LocalDeleteJob::deleteFromDB(const SyncPath &path) {
     }
 
     if (ParametersCache::isExtendedLogEnabled()) {
-        LOGW_DEBUG(_logger, L"Item removed from DB: " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(_logger, L"Item removed from DB: " << Utility::formatSyncPath(relativeLocalPath));
     }
 
     return ExitCode::Ok;
@@ -237,8 +237,8 @@ ExitInfo LocalDeleteJob::hardDeleteDehydratedPlaceholders() {
             auto exitInfo = hardDelete(entry.path());
             if (!exitInfo) return exitInfo;
 
-            const auto relativePath = CommonUtility::relativePath(_syncPal->localPath(), entry.path());
-            exitInfo = deleteFromDB(relativePath);
+            const auto relativeLocalPath = CommonUtility::relativePath(_syncPal->localPath(), entry.path());
+            exitInfo = deleteFromDB(relativeLocalPath);
             if (!exitInfo) return exitInfo;
         }
     }
