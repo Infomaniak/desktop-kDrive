@@ -277,7 +277,7 @@ class QtConan(ConanFile):
         self.run(f"{quoted_installer} {' '.join(args)}")
 
         find_wrap_open_gl = pjoin(self.build_folder, "install", self.version, self._subfolder_install(), "lib", "cmake", "Qt6", "FindWrapOpenGL.cmake")
-        if os.path.exists(find_wrap_open_gl) and self.settings.os == "Macos":
+        if os.path.exists(find_wrap_open_gl) and self.settings.os == "Macos" and self.version in ("6.2.3", "6.7.3"):
             self.output.highlight("Patching Qt installation...")
             from conan.tools.files import replace_in_file
             """
