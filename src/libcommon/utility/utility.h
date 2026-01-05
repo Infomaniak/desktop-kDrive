@@ -24,6 +24,7 @@
 
 #include "libcommon/libcommon.h"
 #include "types.h"
+#include "../info/exclusiontemplateinfo.h"
 
 #include <string>
 #include <thread>
@@ -118,7 +119,7 @@ struct COMMON_EXPORT CommonUtility {
         static SyncPath getAppDir();
         static SyncPath getAppSupportDir();
         static SyncPath getAppWorkingDir();
-#ifdef __APPLE__
+#if defined(KD_MACOS)
         static SyncPath getExtensionPath();
 #endif
 
@@ -203,6 +204,10 @@ struct COMMON_EXPORT CommonUtility {
 
         static bool normalizedSyncName(const SyncName &name, SyncName &normalizedName,
                                        UnicodeNormalization normalization = UnicodeNormalization::NFC) noexcept;
+
+
+        static void normalizeExclusionTemplateInfoList(std::vector<ExclusionTemplateInfo> &templateList);
+
         /**
          * Split the input path into a vector of file and directory names.
          * @param path the path to split.
@@ -298,7 +303,7 @@ struct COMMON_EXPORT CommonUtility {
         class InvalidEnumerationValue : public std::runtime_error {
             public:
                 InvalidEnumerationValue() :
-                    std::runtime_error("Invalid enumeration value") {};
+                    std::runtime_error("Invalid enumeration value") {}
         };
         //! Read an input built-in/std::string/std::wstring/CommBLOB parameter from a Poco::DynamicStruct.
         /*!

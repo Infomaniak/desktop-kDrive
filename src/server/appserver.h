@@ -108,7 +108,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         void stopAllSyncsTask(const std::vector<int> &syncDbIdList);
 
-        void addError(const Error &error);
+        void addError(const Error &error) const;
         static void updateSentryUser();
         void deleteDrive(int driveDbId);
         void deleteSync(int syncDbId);
@@ -161,6 +161,25 @@ class AppServer : public SharedTools::QtSingleApplication {
 #endif
 
         static std::shared_ptr<CommManager> commManager() { return _commManager; }
+
+        static bool useOldCommServer() {
+#if defined(KD_WINDOWS) || defined(KD_MACOS)
+            return (KDRIVE_VERSION_MAJOR < 4);
+#else
+            return true;
+#endif
+        }
+
+        static bool useCommManager(bool checkIfInitialized = true) {
+#if defined(KD_WINDOWS) || defined(KD_MACOS)
+            if (checkIfInitialized)
+                return _commManager != nullptr;
+            else
+                return true;
+#else
+            return false;
+#endif
+        }
 
     private:
         QStringList _arguments;
@@ -226,7 +245,7 @@ class AppServer : public SharedTools::QtSingleApplication {
                                                                 bool &syncUpdated);
 
         void sendUserAdded(const UserInfo &userInfo);
-        void sendUserUpdated(const UserInfo &userInfo);
+        void sendUserUpdated(const UserInfo &userInfo) const;
         void sendUserStatusChanged(int userDbId, bool connected, QString connexionError);
         void sendUserRemoved(int userDbId);
         void sendAccountAdded(const AccountInfo &accountInfo);
@@ -243,13 +262,14 @@ class AppServer : public SharedTools::QtSingleApplication {
         void sendSyncRemoved(int syncDbId);
         void sendSyncDeletionFailed(int syncDbId);
         void sendGetFolderSizeCompleted(const QString &nodeId, qint64 size);
-        void sendErrorsCleared(int syncDbId);
+        void sendErrorsCleared(int syncDbId) const;
         void sendQuit(); // Ask client to quit
 
         void sendLogUploadStatusUpdated(LogUploadState status, int percent);
 
         void deleteAccount(int accountDbId);
-        void sendErrorAdded(const ErrorInfo &errorInfo);
+        void sendErrorAdded(const ErrorInfo &errorInfo) const;
+        void sendErrorRemoved(int64_t dbId) const;
         void addCompletedItem(int syncDbId, const SyncFileItem &item, bool notify);
         void sendSignal(SignalNum sigNum, int syncDbId, const SigValueType &val);
 
@@ -281,21 +301,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         // For testing purpose
         void crash() const;
 
-        bool useOldCommServer() const {
-#if defined(KD_WINDOWS) || defined(KD_MACOS)
-            return (KDRIVE_VERSION_MAJOR < 4);
-#else
-            return true;
-#endif
-        }
-
-        bool useCommManager() const {
-#if defined(KD_WINDOWS) || defined(KD_MACOS)
-            return (_commManager != nullptr);
-#else
-            return false;
-#endif
-        }
 
         friend class TestAppServer;
 

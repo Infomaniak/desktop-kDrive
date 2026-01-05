@@ -51,35 +51,10 @@ ExitInfo ExclTemplGetListJob::process() {
 
         return exitCode;
     }
-    _exclusionTemplateList = filterOutTemplatesWrtNfcNormalization(_exclusionTemplateList);
+
+    CommonUtility::normalizeExclusionTemplateInfoList(_exclusionTemplateList);
 
     return ExitCode::Ok;
-}
-
-std::vector<ExclusionTemplateInfo> ExclTemplGetListJob::filterOutTemplatesWrtNfcNormalization(
-        const std::vector<ExclusionTemplateInfo> &templateList) {
-    std::vector<ExclusionTemplateInfo> result;
-
-    SyncNameSet uniqueTemplateNames; // Unique template names up to NFC-encoding.
-    for (const auto &templateInfo: templateList) {
-        SyncName normalizedName;
-        SyncName insertedName = QStr2SyncName(templateInfo.templ());
-        std::string insertedString;
-
-        if (const bool nfcSuccess = CommonUtility::normalizedSyncName(insertedName, normalizedName, UnicodeNormalization::NFC);
-            !nfcSuccess) {
-            LOG_WARN(_logger, "Failed to NFC-normalize the template " << templateInfo.templ().toStdString());
-            insertedString = templateInfo.templ().toStdString();
-        } else {
-            insertedName = normalizedName;
-            insertedString = SyncName2Str(normalizedName);
-        }
-
-        const bool isNew = uniqueTemplateNames.emplace(insertedName).second;
-        if (isNew) result.push_back(ExclusionTemplateInfo{QString::fromStdString(insertedString)});
-    }
-
-    return result;
 }
 
 } // namespace KDC

@@ -1630,7 +1630,9 @@ ExitCode ServerRequests::deleteErrorsServer() {
     }
 
     for (const Error &error: errorList) {
-        AppServer::commManager()->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(error.dbId()));
+        if (AppServer::useCommManager()) {
+            AppServer::commManager()->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(error.dbId()));
+        }
     }
 
     if (!ParmsDb::instance()->deleteErrors(ErrorLevel::Server)) {
@@ -1703,7 +1705,9 @@ ExitCode ServerRequests::deleteErrorsForSync(const int syncDbId, const bool auto
                 LOG_WARN(Log::instance()->getLogger(), "Error not found for dbId=" << error.dbId());
                 return ExitCode::DataError;
             }
-            AppServer::commManager()->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(error.dbId()));
+            if (AppServer::useCommManager()) {
+                AppServer::commManager()->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(error.dbId()));
+            }
         }
     }
 

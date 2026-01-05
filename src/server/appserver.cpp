@@ -358,14 +358,16 @@ void AppServer::init() {
 #endif
     if (KDC::isVfsPluginAvailable(VirtualFileMode::Suffix, error)) LOG_INFO(_logger, "VFS suffix plugin is available");
 
-    if (useCommManager()) {
+    if (useCommManager(false)) {
         // Init CommManager
+        LOG_DEBUG(_logger, "Init CommManager");
         _commManager = std::make_shared<CommManager>(*this);
         _commManager->start();
     }
 
     if (useOldCommServer()) {
         // Init OldCommServer instance
+        LOG_DEBUG(_logger, "Init OldCommServer");
         if (!OldCommServer::instance()) {
             LOG_WARN(_logger, "Error in OldCommServer::instance");
             throw std::runtime_error("Unable to initialize OldCommServer.");
@@ -459,6 +461,7 @@ void AppServer::init() {
     // Check if temp directory is accessible.
     if (Utility::tryCreateTmpFile() == IoError::Success) {
         // Start syncs
+        LOG_DEBUG(_logger, "Start syncs");
         QTimer::singleShot(0, [=, this]() { startSyncsAndRetryOnError(); });
     } else {
         addError(Error(ERR_ID, ExitCode::SystemError, ExitCause::TmpDirAccessError));
@@ -506,7 +509,7 @@ void AppServer::cleanup() {
     LOG_DEBUG(_logger, "AppServer::cleanup");
 
     // Stop CommManager
-    if (_commManager) {
+    if (useCommManager()) {
         _commManager->stop();
         LOG_DEBUG(_logger, "CommManager stopped");
     }
@@ -546,7 +549,9 @@ void AppServer::cleanup() {
     LOG_DEBUG(_logger, "Vfs(s) stopped");
 
     // Clear CommManager
-    _commManager.reset();
+    if (useCommManager()) {
+        _commManager.reset();
+    }
 
     // Clear JobManager(s)
     GuiJobManagerSingleton::clear();
@@ -764,7 +769,7 @@ void AppServer::handleClientCrash(bool &quit) {
 void AppServer::registerSync(std::shared_ptr<SyncPal> syncPal) {
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
     if (CommonUtility::isMac() || (CommonUtility::isWindows() && syncPal->vfsMode() == VirtualFileMode::Off)) {
-        if (_commManager) {
+        if (useCommManager()) {
             _commManager->registerSync(syncPal->localPath().native());
         }
     }
@@ -776,7 +781,7 @@ void AppServer::registerSync(std::shared_ptr<SyncPal> syncPal) {
 void AppServer::unregisterSync(std::shared_ptr<SyncPal> syncPal) {
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
     if (CommonUtility::isMac() || (CommonUtility::isWindows() && syncPal->vfsMode() == VirtualFileMode::Off)) {
-        if (_commManager) {
+        if (useCommManager()) {
             _commManager->unregisterSync(syncPal->localPath().native());
         }
     }
@@ -1796,14 +1801,21 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QDataStream paramsStream(params);
             paramsStream >> def;
 
-            ExclTemplGetListJob exclTemplGetListJob(_commManager, -1, Poco::DynamicStruct(), nullptr);
-            exclTemplGetListJob.setInParms(def);
-            ExitInfo exitInfo = exclTemplGetListJob.process();
-            QList<ExclusionTemplateInfo> list;
-            for (auto &exclTemp: exclTemplGetListJob.getOutParmsExclusionTemplateList()) {
-                list.push_back(exclTemp);
+            std::vector<ExclusionTemplateInfo> exclusionTemplateList;
+            if (auto exitCode = ServerRequests::getExclusionTemplateList(def, exclusionTemplateList); exitCode != ExitCode::Ok) {
+                LOG_WARN(_logger, "Error in Requests::getExclusionTemplateList: code=" << exitCode);
+                addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+                resultStream << toInt(exitCode);
+                break;
             }
-            resultStream << toInt(exitInfo.code());
+
+            CommonUtility::normalizeExclusionTemplateInfoList(exclusionTemplateList);
+
+            QList<ExclusionTemplateInfo> list;
+            std::for_each(exclusionTemplateList.begin(), exclusionTemplateList.end(),
+                          [&](const ExclusionTemplateInfo &templateInfo) { list.append(templateInfo); });
+
+            resultStream << toInt(ExitCode::Ok);
             resultStream << list;
             break;
         }
@@ -1813,14 +1825,16 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QDataStream paramsStream(params);
             paramsStream >> def;
             paramsStream >> list;
-            ExclTemplSetListJob exclTemplSetListJob(_commManager, -1, Poco::DynamicStruct(), nullptr);
-            std::vector<ExclusionTemplateInfo> exclTemplList;
-            for (auto &info: list) {
-                exclTemplList.push_back(info);
+
+            ExitCode exitCode = ServerRequests::setExclusionTemplateList(def, list);
+            if (exitCode != ExitCode::Ok) {
+                LOG_WARN(_logger, "Error in Requests::setExclusionTemplateList: code=" << exitCode);
+                addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+                resultStream << toInt(exitCode);
+                break;
             }
-            exclTemplSetListJob.setInParms(def, exclTemplList);
-            ExitInfo exitInfo = exclTemplSetListJob.process();
-            resultStream << toInt(exitInfo.code());
+
+            resultStream << toInt(exitCode);
             break;
         }
         case RequestNum::EXCLTEMPL_PROPAGATE_CHANGE: {
@@ -2288,7 +2302,7 @@ ExitCode AppServer::clearErrors(int syncDbId, bool autoResolved /*= false*/) {
     return exitCode;
 }
 
-void AppServer::sendErrorsCleared(int syncDbId) {
+void AppServer::sendErrorsCleared(int syncDbId) const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -2482,7 +2496,7 @@ void AppServer::sendShowNotification(const QString &title, const QString &messag
     }
 }
 
-void AppServer::sendErrorAdded(const ErrorInfo &errorInfo) {
+void AppServer::sendErrorAdded(const ErrorInfo &errorInfo) const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -2495,6 +2509,12 @@ void AppServer::sendErrorAdded(const ErrorInfo &errorInfo) {
     }
     if (useCommManager()) {
         _commManager->sendGuiSignal(std::make_shared<SignalErrorAddedJob>(errorInfo));
+    }
+}
+
+void AppServer::sendErrorRemoved(int64_t dbId) const {
+    if (useCommManager()) {
+        _commManager->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(dbId));
     }
 }
 
@@ -3586,10 +3606,7 @@ bool AppServer::startClient() {
 
         _clientProcess = new QProcess(this);
         _clientProcess->setProgram(pathToExecutable);
-
-        if (useOldCommServer()) {
-            _clientProcess->setArguments(arguments);
-        }
+        _clientProcess->setArguments(arguments);
 
         _clientProcess->start();
         if (!_clientProcess->waitForStarted()) {
@@ -3805,9 +3822,11 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
 #endif
         vfsSetupParams.localPath = sync.localPath();
         vfsSetupParams.targetPath = sync.targetPath();
-        vfsSetupParams.executeCommand = []([[maybe_unused]] const CommString &command, [[maybe_unused]] bool broadcast) {
+        vfsSetupParams.executeCommand = [this]([[maybe_unused]] const CommString &command, [[maybe_unused]] bool broadcast) {
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
-            _commManager->executeCommandDirect(command, broadcast);
+            if (useCommManager()) {
+                _commManager->executeCommandDirect(command, broadcast);
+            }
 #endif
         };
         vfsSetupParams.logger = _logger;
@@ -4036,9 +4055,9 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
 
 ExitInfo AppServer::getNodePath(const int syncDbId, const NodeId &nodeId, CommString &path) {
     const std::scoped_lock lock(AppServer::syncPalMapMutex);
-    auto syncPalMapIt = _commManager->appServer().syncPalMap.find(syncDbId);
+    auto syncPalMapIt = syncPalMap.find(syncDbId);
 
-    if (syncPalMapIt == _commManager->appServer().syncPalMap.end()) {
+    if (syncPalMapIt == syncPalMap.end()) {
         LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << syncDbId);
 
         return ExitCode::DataError;
@@ -4066,7 +4085,7 @@ ExitInfo AppServer::getNodePath(const int syncDbId, const NodeId &nodeId, CommSt
     return ExitCode::Ok;
 }
 
-void AppServer::addError(const Error &error) {
+void AppServer::addError(const Error &error) const {
     Error errorCopy = error;
     // Fetch all errors.
     std::vector<Error> errorList;
@@ -4112,7 +4131,7 @@ void AppServer::addError(const Error &error) {
         // Notify the client
         if (errorAlreadyExists) {
             // First remove the existing error
-            _commManager->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(errorCopy.dbId()));
+            sendErrorRemoved(errorCopy.dbId());
         }
 
         ErrorInfo errorInfo;
@@ -4176,7 +4195,7 @@ void AppServer::addError(const Error &error) {
                 LOG_WARN(Log::instance()->getLogger(), "Error not found in Error table for dbId=" << errorId);
                 return;
             }
-            _commManager->sendGuiSignal(std::make_shared<SignalErrorRemovedJob>(errorId));
+            sendErrorRemoved(errorId);
         }
         if (!toBeRemovedErrorIds.empty()) sendErrorsCleared(errorCopy.syncDbId());
     } else if (errorCopy.exitCode() == ExitCode::UpdateRequired) {
@@ -4205,7 +4224,7 @@ void AppServer::sendUserAdded(const UserInfo &userInfo) {
     }
 }
 
-void AppServer::sendUserUpdated(const UserInfo &userInfo) {
+void AppServer::sendUserUpdated(const UserInfo &userInfo) const {
     if (useOldCommServer()) {
         int id = 0;
 
