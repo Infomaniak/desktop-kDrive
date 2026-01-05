@@ -943,6 +943,18 @@ Avant de continuer, assurez-vous que tout vos fichiers sont bien à jour et sync
   <data name="CC_SyncStatusBar_SyncingStatus.Text" xml:space="preserve">
     <value>Synchronisation en cours...</value>
   </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion_AddContentDialog.Title" xml:space="preserve">
+    <value>Nouvelle règle</value>
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion_AddContentDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Ajouter</value>
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion_AddContentDialog.CloseButtonText" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="Page_Settings_ExclusionManagementPage_UserExclusion_DeleteMenuFlyout.Text" xml:space="preserve">
+    <value>Supprimer</value>
+  </data>
   <data name="CC_SyncStatusBar_PausedStatus.Text" xml:space="preserve">
     <value>Synchronisation en pause</value>
   </data>

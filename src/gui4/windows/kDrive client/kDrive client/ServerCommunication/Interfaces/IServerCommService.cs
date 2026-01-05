@@ -88,6 +88,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         // Saves the settings provided in the Settings view model to the server.
         Task SaveSettings(CancellationToken cancellationToken);
 
+        // Exclusion template-related requests
+        Task<List<ExclusionTemplate>?> GetExclusionTemplates(CancellationToken cancellationToken);
+        Task SetUserExclusionTemplates(List<ExclusionTemplate> templates, CancellationToken cancellationToken);
+
         // Update-related requests
         Task StartUpdate(CancellationToken cancellationToken);
         Task RefreshUpdaterVersionInfo(CancellationToken cancellationToken);

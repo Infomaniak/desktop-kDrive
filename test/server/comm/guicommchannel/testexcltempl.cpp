@@ -132,29 +132,28 @@ void TestGuiCommChannel::testExclTemplGetListJob() {
 #endif
 }
 
-void TestGuiCommChannel::testExclTemplSetUserListJob() {
+void TestGuiCommChannel::testExclTemplSetListJob() {
     Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     (void) queryObj.set("id", 1);
 #endif
     (void) queryObj.set("num", toInt(RequestNum::EXCLTEMPL_SETUSERLIST));
-    Poco::JSON::Object queryParamsObj;
-    (void) queryParamsObj.set("default", true);
 
     Poco::JSON::Object exclusionTemplateInfo1;
     (void) exclusionTemplateInfo1.set("template", toBase64(Str("template1")));
     (void) exclusionTemplateInfo1.set("warning", true);
-    (void) exclusionTemplateInfo1.set("default", true);
+    (void) exclusionTemplateInfo1.set("default", false);
 
     Poco::JSON::Object exclusionTemplateInfo2;
     (void) exclusionTemplateInfo2.set("template", toBase64(Str("template2")));
     (void) exclusionTemplateInfo2.set("warning", false);
-    (void) exclusionTemplateInfo2.set("default", true);
+    (void) exclusionTemplateInfo2.set("default", false);
 
     Poco::JSON::Array exclusionTemplateList;
     (void) exclusionTemplateList.add(exclusionTemplateInfo1);
     (void) exclusionTemplateList.add(exclusionTemplateInfo2);
 
+    Poco::JSON::Object queryParamsObj;
     (void) queryParamsObj.set("exclusionTemplateList", exclusionTemplateList);
     (void) queryObj.set("params", queryParamsObj);
 
@@ -179,10 +178,9 @@ void TestGuiCommChannel::testExclTemplSetUserListJob() {
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto exclTemplSetListJob = std::dynamic_pointer_cast<ExclTemplSetUserListJob>(job);
         CPPUNIT_ASSERT(exclTemplSetListJob);
-        CPPUNIT_ASSERT(exclTemplSetListJob->_default);
         CPPUNIT_ASSERT_EQUAL(size_t{2}, exclTemplSetListJob->_exclusionTemplateList.size());
-        CPPUNIT_ASSERT(ExclusionTemplateInfo("template1", true, true) == exclTemplSetListJob->_exclusionTemplateList.at(0));
-        CPPUNIT_ASSERT(ExclusionTemplateInfo("template2", false, true) ==
+        CPPUNIT_ASSERT(ExclusionTemplateInfo("template1", true, false) == exclTemplSetListJob->_exclusionTemplateList.at(0));
+        CPPUNIT_ASSERT(ExclusionTemplateInfo("template2", false, false) ==
                        exclTemplSetListJob->_exclusionTemplateList.at(1));
     };
 

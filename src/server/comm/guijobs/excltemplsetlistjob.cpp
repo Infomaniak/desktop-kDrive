@@ -7,7 +7,6 @@
 #include "libcommon/log/log.h"
 
 // Input parameters keys
-static const auto inParamsDefault = "default";
 static const auto inParamsExclusionTemplateList = "exclusionTemplateList";
 
 namespace KDC {
@@ -22,7 +21,6 @@ ExclTemplSetUserListJob::ExclTemplSetUserListJob(std::shared_ptr<CommManager> co
 ExitInfo ExclTemplSetUserListJob::deserializeInputParms() {
     constexpr auto logMessage = "Exception in ExclTemplSetUserListJob::readParamValue: error=";
     try {
-        readParamValue(inParamsDefault, _default);
         readParamValues(inParamsExclusionTemplateList, _exclusionTemplateList, dynamicVar2Struct<ExclusionTemplateInfo>);
     } catch (const Poco::Exception &pocoException) {
         LOG_WARN(_logger, logMessage << pocoException.message());
@@ -38,12 +36,10 @@ ExitInfo ExclTemplSetUserListJob::deserializeInputParms() {
 }
 
 
-ExitInfo ExclTemplSetListJob::process() {
-    if (!_default) {
-        ExclusionTemplateInfo::updateExclusionTemplateInfoList(_exclusionTemplateList);
-    }
+ExitInfo ExclTemplSetUserListJob::process() {
+    ExclusionTemplateInfo::updateExclusionTemplateInfoList(_exclusionTemplateList);
 
-    if (const auto exitCode = ServerRequests::setExclusionTemplateList(_default, _exclusionTemplateList);
+    if (const auto exitCode = ServerRequests::setExclusionTemplateList(false, _exclusionTemplateList);
         exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in Requests::setExclusionTemplateList: code=" << exitCode);
         addError(Error(ERR_ID, exitCode));

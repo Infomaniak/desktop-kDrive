@@ -9,27 +9,27 @@ namespace Infomaniak.kDrive.ViewModels
 {
     public class ExclusionTemplate : UISafeObservableObject
     {
-        private bool _isActive;
-        private bool _isDefault; // True if the template is a default one, false if it's user-defined
+        private bool _warning;
+        private bool _default; // True if the template is a default one, false if it's user-defined
         private string _template;
 
         public ExclusionTemplate(string template, bool isActive = true, bool isDefault = false)
         {
             _template = template;
-            _isActive = isActive;
-            _isDefault = isDefault;
+            _warning = isActive;
+            _default = isDefault;
         }
 
-        public bool IsActive
+        public bool Warning
         {
-            get => _isActive;
-            set => SetPropertyInUIThread(ref _isActive, value);
+            get => _warning;
+            set => SetPropertyInUIThread(ref _warning, value);
         }
 
-        public bool IsDefault
+        public bool Default
         {
-            get => _isDefault;
-            set => SetPropertyInUIThread(ref _isDefault, value);
+            get => _default;
+            set => SetPropertyInUIThread(ref _default, value);
         }
 
         public string Template

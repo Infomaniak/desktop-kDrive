@@ -1,14 +1,13 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using DynamicData;
 using DynamicData.Binding;
-using DynamicData;
-using Microsoft.Extensions.DependencyInjection;
+using DynamicData.Kernel;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.ObjectModel;
+using System.Threading;
+using System.Threading.Tasks;
+using Windows.ApplicationModel.VoiceCommands;
 
 namespace Infomaniak.kDrive.ViewModels
 {
@@ -24,8 +23,8 @@ namespace Infomaniak.kDrive.ViewModels
         private IDisposable _userDefinedTemplatesSubscription;
         public ExclusionTemplateListModel()
         {
-            _defaultTemplatesSubscription = _templates.ToObservableChangeSet().Filter(t => t.IsDefault).Bind(out _defaultTemplates).Subscribe();
-            _userDefinedTemplatesSubscription = _templates.ToObservableChangeSet().Filter(t => !t.IsDefault).Bind(out _userDefinedTemplates).Subscribe();
+            _defaultTemplatesSubscription = _templates.ToObservableChangeSet().Filter(t => t.Default).Bind(out _defaultTemplates).Subscribe();
+            _userDefinedTemplatesSubscription = _templates.ToObservableChangeSet().Filter(t => !t.Default).Bind(out _userDefinedTemplates).Subscribe();
         }
 
         public void Dispose()
@@ -45,18 +44,38 @@ namespace Infomaniak.kDrive.ViewModels
         public ReadOnlyObservableCollection<ExclusionTemplate> UserDefinedTemplates => _userDefinedTemplates;
 
 
-        // Method to add/remove templates
-        public void AddTemplate(ExclusionTemplate template)
+        // Method to load/add/remove templates
+        public async Task LoadTemplates()
+        {
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            var res = await commService.GetExclusionTemplates(CancellationToken.None);
+            if (res is not null)
+            {
+                _templates.Clear();
+                _templates.AddRange(res);
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Error, "Failed to load exclusion templates from server.");
+            }
+        }
+
+        public async Task AddTemplate(ExclusionTemplate template)
         {
             _templates.Add(template);
-            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            // TODO: Notify server about the new template if needed
+            await SaveUserTemplates();
         }
-        public void RemoveTemplate(ExclusionTemplate template)
+
+        public async Task RemoveTemplate(ExclusionTemplate template)
         {
             _templates.Remove(template);
+            await SaveUserTemplates();
+        }
+
+        private async Task SaveUserTemplates()
+        {
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            // TODO: Notify server about the removed template if needed
+            await commService.SetUserExclusionTemplates(UserDefinedTemplates.AsList(), CancellationToken.None);
         }
     }
 }

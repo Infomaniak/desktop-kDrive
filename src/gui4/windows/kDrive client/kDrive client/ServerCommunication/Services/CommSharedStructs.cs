@@ -26,7 +26,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
 {
     public static partial class ConversionHelper
     {
-        static void copyProperty(object source, object target, string sourcepropertyName, string targetpropertyName)
+        static void CopyProperty(object source, object target, string sourcepropertyName, string targetpropertyName)
         {
             var sourceProp = source.GetType().GetProperty(sourcepropertyName);
             var targetProp = target.GetType().GetProperty(targetpropertyName);
@@ -69,14 +69,14 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
 
     public static partial class ConversionHelper
     {
-        static public void copyToUser(UserInfo source, User target)
+        static public void CopyToUser(UserInfo source, User target)
         {
-            copyProperty(source, target, nameof(source.DbId), nameof(target.DbId));
-            copyProperty(source, target, nameof(source.UserId), nameof(target.UserId));
-            copyProperty(source, target, nameof(source.Name), nameof(target.Name));
-            copyProperty(source, target, nameof(source.Email), nameof(target.Email));
-            copyProperty(source, target, nameof(source.IsConnected), nameof(target.IsConnected));
-            copyProperty(source, target, nameof(source.IsStaff), nameof(target.IsStaff));
+            CopyProperty(source, target, nameof(source.DbId), nameof(target.DbId));
+            CopyProperty(source, target, nameof(source.UserId), nameof(target.UserId));
+            CopyProperty(source, target, nameof(source.Name), nameof(target.Name));
+            CopyProperty(source, target, nameof(source.Email), nameof(target.Email));
+            CopyProperty(source, target, nameof(source.IsConnected), nameof(target.IsConnected));
+            CopyProperty(source, target, nameof(source.IsStaff), nameof(target.IsStaff));
 
             if (source.Avatar is null)
             {
@@ -103,10 +103,10 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
 
     public static partial class ConversionHelper
     {
-        static public void copyToAccount(AccountInfo source, Account target)
+        static public void CopyToAccount(AccountInfo source, Account target)
         {
-            copyProperty(source, target, nameof(source.DbId), nameof(target.DbId));
-            copyProperty(source, target, nameof(source.AccountId), nameof(target.AccountId));
+            CopyProperty(source, target, nameof(source.DbId), nameof(target.DbId));
+            CopyProperty(source, target, nameof(source.AccountId), nameof(target.AccountId));
         }
     }
 
@@ -135,7 +135,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
     }
     public static partial class ConversionHelper
     {
-        static public void copyToDrive(DriveInfo source, Drive target)
+        static public void CopyToDrive(DriveInfo source, Drive target)
         {
             copyProperty(source, target, nameof(source.DbId), nameof(target.DbId));
             copyProperty(source, target, nameof(source.Id), nameof(target.DriveId));
@@ -159,14 +159,14 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
     }
     public static partial class ConversionHelper
     {
-        static public void copyToDriveAvailable(DriveAvailableInfo source, DriveAvailable target)
+        static public void CopyToDriveAvailable(DriveAvailableInfo source, DriveAvailable target)
         {
-            copyProperty(source, target, nameof(source.DriveId), nameof(target.DriveId));
-            copyProperty(source, target, nameof(source.UserId), nameof(target.UserId));
-            copyProperty(source, target, nameof(source.AccountId), nameof(target.AccountId));
-            copyProperty(source, target, nameof(source.Name), nameof(target.Name));
-            copyProperty(source, target, nameof(source.Color), nameof(target.Color));
-            copyProperty(source, target, nameof(source.UserDbId), nameof(target.UserDbId));
+            CopyProperty(source, target, nameof(source.DriveId), nameof(target.DriveId));
+            CopyProperty(source, target, nameof(source.UserId), nameof(target.UserId));
+            CopyProperty(source, target, nameof(source.AccountId), nameof(target.AccountId));
+            CopyProperty(source, target, nameof(source.Name), nameof(target.Name));
+            CopyProperty(source, target, nameof(source.Color), nameof(target.Color));
+            CopyProperty(source, target, nameof(source.UserDbId), nameof(target.UserDbId));
         }
     }
 
@@ -182,7 +182,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
     }
     public static partial class ConversionHelper
     {
-        static public void copyToSync(SyncInfo source, Sync target)
+        static public void CopyToSync(SyncInfo source, Sync target)
         {
             copyProperty(source, target, nameof(source.DbId), nameof(target.DbId));
             copyProperty(source, target, nameof(source.TargetPath), nameof(target.RemotePath));
@@ -209,23 +209,23 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
     }
     public static partial class ConversionHelper
     {
-        static public void copyToProxyConfig(ProxyConfigInfo source, ProxyConfig target)
+        static public void CopyToProxyConfig(ProxyConfigInfo source, ProxyConfig target)
         {
-            copyProperty(source, target, nameof(source.Type), nameof(target.Type));
-            copyProperty(source, target, nameof(source.HostName), nameof(target.HostName));
-            copyProperty(source, target, nameof(source.Port), nameof(target.Port));
-            copyProperty(source, target, nameof(source.NeedsAuth), nameof(target.NeedsAuth));
-            copyProperty(source, target, nameof(source.User), nameof(target.User));
-            copyProperty(source, target, nameof(source.Pwd), nameof(target.Pwd));
+            CopyProperty(source, target, nameof(source.Type), nameof(target.Type));
+            CopyProperty(source, target, nameof(source.HostName), nameof(target.HostName));
+            CopyProperty(source, target, nameof(source.Port), nameof(target.Port));
+            CopyProperty(source, target, nameof(source.NeedsAuth), nameof(target.NeedsAuth));
+            CopyProperty(source, target, nameof(source.User), nameof(target.User));
+            CopyProperty(source, target, nameof(source.Pwd), nameof(target.Pwd));
         }
-        static public void copyToProxyConfigInfo(ProxyConfig source, ProxyConfigInfo target)
+        static public void CopyToProxyConfigInfo(ProxyConfig source, ProxyConfigInfo target)
         {
-            copyProperty(source, target, nameof(source.Type), nameof(target.Type));
-            copyProperty(source, target, nameof(source.HostName), nameof(target.HostName));
-            copyProperty(source, target, nameof(source.Port), nameof(target.Port));
-            copyProperty(source, target, nameof(source.NeedsAuth), nameof(target.NeedsAuth));
-            copyProperty(source, target, nameof(source.User), nameof(target.User));
-            copyProperty(source, target, nameof(source.Pwd), nameof(target.Pwd));
+            CopyProperty(source, target, nameof(source.Type), nameof(target.Type));
+            CopyProperty(source, target, nameof(source.HostName), nameof(target.HostName));
+            CopyProperty(source, target, nameof(source.Port), nameof(target.Port));
+            CopyProperty(source, target, nameof(source.NeedsAuth), nameof(target.NeedsAuth));
+            CopyProperty(source, target, nameof(source.User), nameof(target.User));
+            CopyProperty(source, target, nameof(source.Pwd), nameof(target.Pwd));
         }
     }
 
@@ -246,7 +246,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
     }
     public static partial class ConversionHelper
     {
-        static public void copyToSettings(ParmsInfo source, Settings target)
+        static public void CopyToSettings(ParmsInfo source, Settings target)
         {
             copyProperty(source, target, nameof(source.Language), nameof(target.Language));
             copyProperty(source, target, nameof(source.AutoStart), nameof(target.AutoStart));
@@ -258,7 +258,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             copyProperty(source, target, nameof(source.SentryEnabled), nameof(target.SentryEnabled));
 
             if (source.ProxyConfigInfo is ProxyConfigInfo proxyConfigInfo)
-                copyToProxyConfig(proxyConfigInfo, target.ProxyConfig);
+                CopyToProxyConfig(proxyConfigInfo, target.ProxyConfig);
 
             if (source.UseLog is null)
                 source.UseLog = target.LogLevel != Logger.Level.None;
@@ -268,9 +268,9 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             else if (source.ExtendedLog == true)
                 target.LogLevel = Logger.Level.Extended;
             else
-                copyProperty(source, target, nameof(source.LogLevel), nameof(target.LogLevel));
+                CopyProperty(source, target, nameof(source.LogLevel), nameof(target.LogLevel));
         }
-        static public void copyToParmsInfo(Settings source, ParmsInfo target)
+        static public void CopyToParmsInfo(Settings source, ParmsInfo target)
         {
             copyProperty(source, target, nameof(source.Language), nameof(target.Language));
             copyProperty(source, target, nameof(source.AutoStart), nameof(target.AutoStart));
@@ -284,7 +284,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             if (target.ProxyConfigInfo is null)
                 target.ProxyConfigInfo = new();
 
-            copyToProxyConfigInfo(source.ProxyConfig, target.ProxyConfigInfo);
+            CopyToProxyConfigInfo(source.ProxyConfig, target.ProxyConfigInfo);
 
             if (source.LogLevel == Logger.Level.None)
             {
@@ -327,7 +327,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
 
     public static partial class ConversionHelper
     {
-        static public void copyToSyncFileItem(SyncFileItemInfo source, SyncFileItem target)
+        static public void CopyToSyncFileItem(SyncFileItemInfo source, SyncFileItem target)
         {
             copyProperty(source, target, nameof(source.Type), nameof(target.Type));
             copyProperty(source, target, nameof(source.Path), nameof(target.Path));
@@ -357,7 +357,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
 
     public static partial class ConversionHelper
     {
-        static public void copyToNode(NodeInfo source, Node target)
+        static public void CopyToNode(NodeInfo source, Node target)
         {
             copyProperty(source, target, nameof(source.NodeId), nameof(target.NodeId));
             copyProperty(source, target, nameof(source.Name), nameof(target.Name));
@@ -387,20 +387,46 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
 
     public static partial class ConversionHelper
     {
-        static public void copyToError(ErrorInfo source, Error target)
+        static public void CopyToError(ErrorInfo source, Error target)
         {
-            copyProperty(source, target, nameof(source.DbId), nameof(target.DbId));
-            copyProperty(source, target, nameof(source.Time), nameof(target.Timestamp));
-            copyProperty(source, target, nameof(source.Level), nameof(target.ErrorLevel));
-            copyProperty(source, target, nameof(source.ExitCode), nameof(target.ExitCode));
-            copyProperty(source, target, nameof(source.ExitCause), nameof(target.ExitCause));
-            copyProperty(source, target, nameof(source.NodeType), nameof(target.NodeType));
-            copyProperty(source, target, nameof(source.Path), nameof(target.Path));
-            copyProperty(source, target, nameof(source.DestinationPath), nameof(target.DestinationPath));
-            copyProperty(source, target, nameof(source.ConflictType), nameof(target.ConflictType));
-            copyProperty(source, target, nameof(source.InconsistencyType), nameof(target.InconsistencyType));
-            copyProperty(source, target, nameof(source.CancelType), nameof(target.CancelType));
-            copyProperty(source, target, nameof(source.AutoResolved), nameof(target.AutoResolved));
+            CopyProperty(source, target, nameof(source.DbId), nameof(target.DbId));
+            CopyProperty(source, target, nameof(source.Time), nameof(target.Timestamp));
+            CopyProperty(source, target, nameof(source.Level), nameof(target.ErrorLevel));
+            CopyProperty(source, target, nameof(source.ExitCode), nameof(target.ExitCode));
+            CopyProperty(source, target, nameof(source.ExitCause), nameof(target.ExitCause));
+            CopyProperty(source, target, nameof(source.NodeType), nameof(target.NodeType));
+            CopyProperty(source, target, nameof(source.Path), nameof(target.Path));
+            CopyProperty(source, target, nameof(source.DestinationPath), nameof(target.DestinationPath));
+            CopyProperty(source, target, nameof(source.ConflictType), nameof(target.ConflictType));
+            CopyProperty(source, target, nameof(source.InconsistencyType), nameof(target.InconsistencyType));
+            CopyProperty(source, target, nameof(source.CancelType), nameof(target.CancelType));
+            CopyProperty(source, target, nameof(source.AutoResolved), nameof(target.AutoResolved));
+        }
+    }
+
+    public class ExclusionTemplateInfo
+    {
+        public string? Template { get; set; }
+        public bool? Default { get; set; }
+        public bool? Warning { get; set; }
+    }
+
+    public static partial class ConversionHelper
+    {
+        static public ExclusionTemplate FromExclusionTemplateInfo(ExclusionTemplateInfo source)
+        {
+            return new ExclusionTemplate(
+                template: source.Template ?? string.Empty,
+                isActive: source.Warning ?? false,
+                isDefault: source.Default ?? false
+            );
+        }
+
+        static public void CopyToExclusionTemplateInfo(ExclusionTemplate source, ExclusionTemplateInfo target)
+        {
+            CopyProperty(source, target, nameof(source.Template), nameof(target.Template));
+            CopyProperty(source, target, nameof(source.Default), nameof(target.Default));
+            CopyProperty(source, target, nameof(source.Warning), nameof(target.Warning));
         }
     }
 

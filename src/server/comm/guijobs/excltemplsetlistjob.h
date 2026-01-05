@@ -31,15 +31,11 @@ class ExclTemplSetUserListJob : public AbstractGuiJob {
 
         // Setters for compatibility with legacy comm layer
         void setInParms(bool def, const std::vector<ExclusionTemplateInfo> &exclusionTemplateList) {
-            _default = def;
             _exclusionTemplateList = exclusionTemplateList;
         }
         ExitInfo process() override;
 
     private:
-        // Input parameters
-        bool _default = false;
-
         // Output parameters
         std::vector<ExclusionTemplateInfo> _exclusionTemplateList;
 

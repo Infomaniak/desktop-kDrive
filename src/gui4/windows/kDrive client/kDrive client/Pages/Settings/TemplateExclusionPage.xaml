@@ -92,22 +92,47 @@
                                           Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
 
                     </toolKit:SettingsExpander.HeaderIcon>
+                    <Grid>
+                        <Button x:Uid="Page_Settings_ExclusionManagementPage_UserExclusion_AddButton"
+                                Click="AddRuleButton_Click" />
+                        <ContentDialog x:Name="AddTemplateContentDialog"
+                                       x:Uid="Page_Settings_ExclusionManagementPage_UserExclusion_AddContentDialog"
+                                       DefaultButton="Primary">
+                            <TextBox x:Name="NewTemplateTextBox"
+                                     PlaceholderText="*.log" />
+
+                        </ContentDialog>
+                    </Grid>
                     <toolKit:SettingsExpander.Items>
-                        <toolKit:SettingsCard ContentAlignment="Left">
+                        <toolKit:SettingsCard HorizontalAlignment="Stretch"
+                                              HorizontalContentAlignment="Stretch"
+                                              ContentAlignment="Vertical">
                             <ListView ItemsSource="{x:Bind _templateList.UserDefinedTemplates, Mode=OneWay}"
                                       HorizontalAlignment="Stretch"
-                                      SelectionMode="Multiple">
+                                      SelectionMode="None"
+                                      Foreground="{ThemeResource SystemControlErrorTextForegroundBrush}">
                                 <ListView.ItemTemplate>
                                     <DataTemplate x:DataType="viewmodels:ExclusionTemplate">
-                                        <StackPanel Orientation="Horizontal"
-                                                    Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
-                                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Documents.file-text}"
+                                        <Grid HorizontalAlignment="Stretch"
+                                              ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.ContextFlyout>
+                                                <MenuFlyout>
+                                                    <MenuFlyoutItem x:Uid="Page_Settings_ExclusionManagementPage_UserExclusion_DeleteMenuFlyout"
+                                                                    Click="TemplateDeleteMenuItem_Click" />
+                                                </MenuFlyout>
+                                            </Grid.ContextFlyout>
+                                            <controls:SvgIcon Grid.Column="0"
+                                                              UriString="{StaticResource Infomaniak.DS.Icons.Documents.file-text}"
                                                               Height="12"
                                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                                             <TextBlock Grid.Column="1"
                                                        VerticalAlignment="Center"
                                                        Text="{x:Bind Template, Mode=OneWay}" />
-                                        </StackPanel>
+                                        </Grid>
                                     </DataTemplate>
                                 </ListView.ItemTemplate>
                             </ListView>
