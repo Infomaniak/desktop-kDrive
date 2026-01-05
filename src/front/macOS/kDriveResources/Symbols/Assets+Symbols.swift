@@ -31,6 +31,7 @@ public enum KDriveResources {
   public static let kdriveFoldersStacked = ImageAsset(name: "kdrive-folders-stacked")
   public static let persons = ImageAsset(name: "persons")
   public static let settings = ImageAsset(name: "settings")
+  public static let share = ImageAsset(name: "share")
   public static let kdriveAppIcon = ImageAsset(name: "kdrive-app-icon")
   public static let onboardingGradient = ImageAsset(name: "OnboardingGradient")
 }
