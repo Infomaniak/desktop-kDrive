@@ -24,10 +24,40 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <!-- Static ressources -->
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
-                <ResourceDictionary Source="TrayIcon/TrayIconResources.xaml" />
-                <ResourceDictionary Source="Styles/InfomaniakStyles.xaml" />
+                <ResourceDictionary Source="/TrayIcon/TrayIconResources.xaml" />
+                <ResourceDictionary Source="/Styles/InfomaniakStyles.xaml" />
+                <ResourceDictionary Source="/Styles/DS/InfomaniakStylesStatic.xaml" />
+                <ResourceDictionary Source="/Styles/Custom/InfomaniakStylesStatic.xaml" />
+                <ResourceDictionary Source="ms-appx:///CommunityToolkit.WinUI.Controls.SettingsControls/SettingsExpander/SettingsExpander.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary.ThemeDictionaries>
+                <!-- Theme specific ressources -->
+                <!-- Light -->
+                <ResourceDictionary x:Key="Light">
+                    <ResourceDictionary.MergedDictionaries>
+                        <ResourceDictionary Source="/Styles/Custom/InfomaniakStylesLight.xaml" />
+                        <ResourceDictionary Source="/Styles/DS/InfomaniakStylesLight.xaml" />
+                    </ResourceDictionary.MergedDictionaries>
+                </ResourceDictionary>
+
+                <!-- Dark -->
+                <ResourceDictionary x:Key="Dark">
+                    <ResourceDictionary.MergedDictionaries>
+                        <ResourceDictionary Source="/Styles/Custom/InfomaniakStylesDark.xaml" />
+                        <ResourceDictionary Source="/Styles/DS/InfomaniakStylesDark.xaml" />
+                    </ResourceDictionary.MergedDictionaries>
+                </ResourceDictionary>
+
+                <!-- High Contrast -->
+                <ResourceDictionary x:Key="HighContrast">
+                    <ResourceDictionary.MergedDictionaries>
+                        <ResourceDictionary Source="/Styles/Custom/InfomaniakStylesLight.xaml" />
+                        <ResourceDictionary Source="/Styles/DS/InfomaniakStylesLight.xaml" />
+                    </ResourceDictionary.MergedDictionaries>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

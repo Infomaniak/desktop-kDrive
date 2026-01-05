@@ -54,6 +54,17 @@
 namespace KDC {
 
 ExitCode ServerRequests::getUserDbIdList(QList<int> &list) {
+    std::vector<int> userList;
+    if (ExitCode exitCode = getUserDbIdList(userList); exitCode != ExitCode::Ok) {
+        return exitCode;
+    }
+
+    (void) std::copy(userList.begin(), userList.end(), std::back_inserter(list));
+
+    return ExitCode::Ok;
+}
+
+ExitCode ServerRequests::getUserDbIdList(std::vector<int> &list) {
     std::vector<User> userList;
     if (!ParmsDb::instance()->selectAllUsers(userList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
@@ -62,13 +73,24 @@ ExitCode ServerRequests::getUserDbIdList(QList<int> &list) {
 
     list.clear();
     for (const User &user: userList) {
-        list << user.dbId();
+        list.push_back(user.dbId());
     }
 
     return ExitCode::Ok;
 }
 
 ExitCode ServerRequests::getUserInfoList(QList<UserInfo> &list) {
+    std::vector<UserInfo> userInfoList;
+    if (ExitCode exitCode = getUserInfoList(userInfoList); exitCode != ExitCode::Ok) {
+        return exitCode;
+    }
+
+    (void) std::copy(userInfoList.begin(), userInfoList.end(), std::back_inserter(list));
+
+    return ExitCode::Ok;
+}
+
+ExitCode ServerRequests::getUserInfoList(std::vector<UserInfo> &list) {
     std::vector<User> userList;
     if (!ParmsDb::instance()->selectAllUsers(userList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
@@ -79,25 +101,8 @@ ExitCode ServerRequests::getUserInfoList(QList<UserInfo> &list) {
     for (const User &user: userList) {
         UserInfo userInfo;
         userToUserInfo(user, userInfo);
-        list << userInfo;
+        list.push_back(userInfo);
     }
-
-    return ExitCode::Ok;
-}
-
-ExitCode KDC::ServerRequests::getUserIdFromUserDbId(int userDbId, int &userId) {
-    User user;
-    bool found;
-    if (!ParmsDb::instance()->selectUser(userDbId, user, found)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectUser");
-        return ExitCode::DbError;
-    }
-    if (!found) {
-        LOG_WARN(Log::instance()->getLogger(), "User with id=" << userDbId << " not found");
-        return ExitCode::DataError;
-    }
-
-    userId = user.userId();
 
     return ExitCode::Ok;
 }
@@ -168,6 +173,17 @@ ExitCode ServerRequests::deleteSync(int syncDbId) {
 }
 
 ExitCode ServerRequests::getAccountInfoList(QList<AccountInfo> &list) {
+    std::vector<AccountInfo> accountInfoList;
+    if (ExitCode exitCode = getAccountInfoList(accountInfoList); exitCode != ExitCode::Ok) {
+        return exitCode;
+    }
+
+    (void) std::copy(accountInfoList.begin(), accountInfoList.end(), std::back_inserter(list));
+
+    return ExitCode::Ok;
+}
+
+ExitCode ServerRequests::getAccountInfoList(std::vector<AccountInfo> &list) {
     std::vector<Account> accountList;
     if (!ParmsDb::instance()->selectAllAccounts(accountList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllAccounts");
@@ -178,13 +194,24 @@ ExitCode ServerRequests::getAccountInfoList(QList<AccountInfo> &list) {
     for (const Account &account: accountList) {
         AccountInfo accountInfo;
         accountToAccountInfo(account, accountInfo);
-        list << accountInfo;
+        list.push_back(accountInfo);
     }
 
     return ExitCode::Ok;
 }
 
 ExitCode ServerRequests::getDriveInfoList(QList<DriveInfo> &list) {
+    std::vector<DriveInfo> driveInfoList;
+    if (ExitCode exitCode = getDriveInfoList(driveInfoList); exitCode != ExitCode::Ok) {
+        return exitCode;
+    }
+
+    (void) std::copy(driveInfoList.begin(), driveInfoList.end(), std::back_inserter(list));
+
+    return ExitCode::Ok;
+}
+
+ExitCode ServerRequests::getDriveInfoList(std::vector<DriveInfo> &list) {
     std::vector<Drive> driveList;
     if (!ParmsDb::instance()->selectAllDrives(driveList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllDrives");
@@ -195,7 +222,7 @@ ExitCode ServerRequests::getDriveInfoList(QList<DriveInfo> &list) {
     for (const Drive &drive: driveList) {
         DriveInfo driveInfo;
         driveToDriveInfo(drive, driveInfo);
-        list << driveInfo;
+        list.push_back(driveInfo);
     }
 
     return ExitCode::Ok;
@@ -214,50 +241,6 @@ ExitCode ServerRequests::getDriveInfo(int driveDbId, DriveInfo &driveInfo) {
     }
 
     driveToDriveInfo(drive, driveInfo);
-
-    return ExitCode::Ok;
-}
-
-ExitCode ServerRequests::getDriveIdFromDriveDbId(int driveDbId, int &driveId) {
-    Drive drive;
-    bool found;
-    if (!ParmsDb::instance()->selectDrive(driveDbId, drive, found)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectDrive");
-        return ExitCode::DbError;
-    }
-    if (!found) {
-        LOG_WARN(Log::instance()->getLogger(), "Drive with id=" << driveDbId << " not found");
-        return ExitCode::DataError;
-    }
-
-    driveId = drive.driveId();
-
-    return ExitCode::Ok;
-}
-
-ExitCode KDC::ServerRequests::getDriveIdFromSyncDbId(int syncDbId, int &driveId) {
-    Sync sync;
-    bool found;
-    if (!ParmsDb::instance()->selectSync(syncDbId, sync, found)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectSync");
-        return ExitCode::DbError;
-    }
-    if (!found) {
-        LOG_WARN(Log::instance()->getLogger(), "Sync with id=" << syncDbId << " not found");
-        return ExitCode::DataError;
-    }
-
-    Drive drive;
-    if (!ParmsDb::instance()->selectDrive(sync.driveDbId(), drive, found)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectDrive");
-        return ExitCode::DbError;
-    }
-    if (!found) {
-        LOG_WARN(Log::instance()->getLogger(), "Drive with id=" << sync.driveDbId() << " not found");
-        return ExitCode::DataError;
-    }
-
-    driveId = drive.driveId();
 
     return ExitCode::Ok;
 }
@@ -289,6 +272,17 @@ ExitCode ServerRequests::updateDrive(const DriveInfo &driveInfo) {
 }
 
 ExitCode ServerRequests::getSyncInfoList(QList<SyncInfo> &list) {
+    std::vector<SyncInfo> syncInfoList;
+    if (ExitCode exitCode = getSyncInfoList(syncInfoList); exitCode != ExitCode::Ok) {
+        return exitCode;
+    }
+
+    (void) std::copy(syncInfoList.begin(), syncInfoList.end(), std::back_inserter(list));
+
+    return ExitCode::Ok;
+}
+
+ExitCode ServerRequests::getSyncInfoList(std::vector<SyncInfo> &list) {
     std::vector<Sync> syncList;
     if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
@@ -298,7 +292,7 @@ ExitCode ServerRequests::getSyncInfoList(QList<SyncInfo> &list) {
     SyncInfo syncInfo;
     for (const Sync &sync: syncList) {
         syncToSyncInfo(sync, syncInfo);
-        list << syncInfo;
+        list.push_back(syncInfo);
     }
 
     return ExitCode::Ok;
@@ -371,15 +365,12 @@ ExitCode ServerRequests::findGoodPathForNewSync(int driveDbId, const QString &ba
 
 ExitCode ServerRequests::requestToken(const std::string &code, const std::string &codeVerifier, UserInfo &userInfo,
                                       bool &userCreated, std::string &error, std::string &errorDescr) {
-    ExitCode exitCode;
-
     // Generate keychainKey
     std::string keychainKey(Utility::computeMd5Hash(std::to_string(std::time(nullptr))));
 
     // Create Login instance and request token
     Login login(keychainKey);
-    exitCode = login.requestToken(code, codeVerifier);
-    if (exitCode != ExitCode::Ok) {
+    if (ExitCode exitCode = login.requestToken(code, codeVerifier); exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in Login::requestToken: code=" << exitCode);
         error = login.error();
         errorDescr = login.errorDescr();
@@ -387,13 +378,12 @@ ExitCode ServerRequests::requestToken(const std::string &code, const std::string
     }
 
     // Create or update user
-    exitCode = processRequestTokenFinished(login, userInfo, userCreated);
-    if (exitCode != ExitCode::Ok) {
+    if (ExitCode exitCode = processRequestTokenFinished(login, userInfo, userCreated); exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in processRequestTokenFinished: code=" << exitCode);
         return exitCode;
     }
 
-    return exitCode;
+    return ExitCode::Ok;
 }
 
 ExitCode ServerRequests::requestToken(const QString &code, const QString &codeVerifier, UserInfo &userInfo, bool &userCreated,
@@ -548,6 +538,245 @@ ExitCode ServerRequests::getUserAvailableDrives(int userDbId, QHash<int, DriveAv
     }
 
     return ExitCode::Ok;
+}
+
+ExitCode ServerRequests::getUserAvailableDrives(int userDbId, std::vector<DriveAvailableInfo> &list) {
+    std::shared_ptr<GetDrivesListJob> job = nullptr;
+    try {
+        job = std::make_shared<GetDrivesListJob>(userDbId);
+    } catch (const std::exception &e) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in GetDrivesListJob::GetDrivesListJob for userDbId=" << userDbId << " error=" << e.what());
+        return AbstractTokenNetworkJob::exception2ExitCode(e);
+    }
+
+    ExitCode exitCode = job->runSynchronously();
+    if (exitCode != ExitCode::Ok) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in GetDrivesListJob::runSynchronously for userDbId=" << userDbId << " code=" << exitCode);
+        return exitCode;
+    }
+
+    Poco::JSON::Object::Ptr resObj = job->jsonRes();
+    if (!resObj) {
+        LOG_WARN(Log::instance()->getLogger(), "GetDrivesListJob failed for userDbId=" << userDbId);
+        return ExitCode::BackError;
+    }
+
+    Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
+    if (!dataArray) {
+        LOG_WARN(Log::instance()->getLogger(), "GetDrivesListJob failed for userDbId=" << userDbId);
+        return ExitCode::BackError;
+    }
+
+    list.clear();
+    for (size_t i = 0; i < dataArray->size(); i++) {
+        Poco::JSON::Object::Ptr obj = dataArray->getObject(static_cast<unsigned int>(i));
+        if (!obj) {
+            continue;
+        }
+
+        int driveId = -1;
+        if (!JsonParserUtility::extractValue(obj, driveIdKey, driveId)) {
+            return ExitCode::BackError;
+        }
+
+        int userId = -1;
+        if (!JsonParserUtility::extractValue(obj, idKey, userId)) {
+            return ExitCode::BackError;
+        }
+
+        int accountId = -1;
+        if (!JsonParserUtility::extractValue(obj, accountIdKey, accountId)) {
+            return ExitCode::BackError;
+        }
+
+        std::string driveName;
+        if (!JsonParserUtility::extractValue(obj, driveNameKey, driveName)) {
+            return ExitCode::BackError;
+        }
+
+        std::string colorHex;
+        if (Poco::JSON::Object::Ptr prefObj = obj->getObject(preferenceKey)) {
+            if (!JsonParserUtility::extractValue(prefObj, colorKey, colorHex, false)) {
+                return ExitCode::BackError;
+            }
+        }
+        DriveAvailableInfo driveInfo(driveId, userId, accountId, QString::fromStdString(driveName),
+                                     QString::fromStdString(colorHex));
+
+        // Search user in DB
+        User user;
+        bool found = false;
+        if (!ParmsDb::instance()->selectUserByUserId(userId, user, found)) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectUserByUserId");
+            return ExitCode::DbError;
+        }
+        if (found) {
+            driveInfo.setUserDbId(user.dbId());
+        }
+
+        list.push_back(driveInfo);
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitCode ServerRequests::addSync(int userDbId, int accountId, int driveId, const SyncPath &localFolderPath,
+                                 const SyncPath &serverFolderPath, const NodeId &serverFolderNodeId, bool liteSync,
+                                 bool showInNavigationPane, AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo) {
+    LOGW_INFO(Log::instance()->getLogger(), L"Adding new sync - userDbId="
+                                                    << userDbId << L" accountId=" << accountId << L" driveId=" << driveId
+                                                    << L" localFolderPath=" << Path2WStr(localFolderPath).c_str()
+                                                    << L" serverFolderPath=" << Path2WStr(serverFolderPath).c_str()
+                                                    << L" liteSync=" << liteSync);
+
+#ifndef Q_OS_WIN
+    Q_UNUSED(showInNavigationPane)
+#endif
+
+    // Create Account in DB if needed
+    int accountDbId;
+    if (!ParmsDb::instance()->accountDbId(userDbId, accountId, accountDbId)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::accountDbId");
+        return ExitCode::DbError;
+    }
+
+    if (!accountDbId) {
+        if (!ParmsDb::instance()->getNewAccountDbId(accountDbId)) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::getNewAccountDbId");
+            return ExitCode::DbError;
+        }
+
+        Account account;
+        account.setDbId(accountDbId);
+        account.setAccountId(accountId);
+        account.setUserDbId(userDbId);
+        if (ExitCode exitCode = createAccount(account, accountInfo); exitCode != ExitCode::Ok) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in createAccount");
+            return exitCode;
+        }
+
+        LOG_INFO(Log::instance()->getLogger(), "New account created in DB - accountDbId=" << accountDbId
+                                                                                          << " accountId= " << accountId
+                                                                                          << " userDbId= " << userDbId);
+    }
+
+    // Create Drive in DB if needed
+    int driveDbId;
+    if (!ParmsDb::instance()->driveDbId(accountDbId, driveId, driveDbId)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::driveDbId");
+        return ExitCode::DbError;
+    }
+
+    if (!driveDbId) {
+        if (!ParmsDb::instance()->getNewDriveDbId(driveDbId)) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::getNewDriveDbId");
+            return ExitCode::DbError;
+        }
+
+        Drive drive;
+        drive.setDbId(driveDbId);
+        drive.setDriveId(driveId);
+        drive.setAccountDbId(accountDbId);
+        if (ExitCode exitCode = createDrive(drive, driveInfo); exitCode != ExitCode::Ok) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in createDrive");
+            return exitCode;
+        }
+
+        LOGW_INFO(Log::instance()->getLogger(), L"New drive created in DB - driveDbId=" << driveDbId << L" driveId=" << driveId
+                                                                                        << L" accountDbId=" << accountDbId);
+    }
+
+    return addSync(driveDbId, localFolderPath, serverFolderPath, serverFolderNodeId, liteSync, showInNavigationPane, syncInfo);
+}
+
+ExitCode ServerRequests::addSync(int userDbId, int accountId, int driveId, const QString &localFolderPath,
+                                 const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
+                                 bool showInNavigationPane, AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo) {
+    return addSync(userDbId, accountId, driveId, QStr2Path(localFolderPath), QStr2Path(serverFolderPath),
+                   serverFolderNodeId.toStdString(), liteSync, showInNavigationPane, accountInfo, driveInfo, syncInfo);
+}
+
+ExitCode ServerRequests::addSync(int driveDbId, const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
+                                 const NodeId &serverFolderNodeId, bool liteSync, bool showInNavigationPane, SyncInfo &syncInfo) {
+    LOGW_INFO(Log::instance()->getLogger(), L"Adding new sync - driveDbId=" << driveDbId << L" localFolderPath="
+                                                                            << Path2WStr(localFolderPath) << L" serverFolderPath="
+                                                                            << Path2WStr(serverFolderPath) << L" liteSync="
+                                                                            << liteSync);
+
+#ifndef Q_OS_WIN
+    Q_UNUSED(showInNavigationPane)
+#endif
+
+#if !defined(Q_OS_MAC) && !defined(Q_OS_WIN)
+    Q_UNUSED(liteSync)
+#endif
+
+    // Create Sync in DB
+    int syncDbId;
+    if (!ParmsDb::instance()->getNewSyncDbId(syncDbId)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::getNewSyncDbId");
+        return ExitCode::DbError;
+    }
+
+    LOGW_INFO(Log::instance()->getLogger(), L"New sync DB ID retrieved - syncDbId=" << syncDbId);
+
+    QUuid navigationPaneClsid;
+#ifdef Q_OS_WIN
+    if (showInNavigationPane) {
+        navigationPaneClsid = QUuid::createUuid();
+    }
+#endif
+
+    Sync sync;
+    sync.setDbId(syncDbId);
+    sync.setDriveDbId(driveDbId);
+    auto localPath(localFolderPath);
+#if defined(KD_MACOS)
+    // On macOS, the special characters in file names are NFD encoded. However, we use QFileDialog::getExistingDirectory to
+    // retrieve the selected sync path which return a NFC encoded path.
+    (void) Utility::normalizedSyncPath(localFolderPath, localPath, UnicodeNormalization::NFD);
+#endif
+    sync.setLocalPath(localPath);
+    sync.setTargetPath(serverFolderPath);
+    sync.setTargetNodeId(serverFolderNodeId);
+    sync.setPaused(false);
+
+    // Check vfs support
+    const bool supportVfs = CommonUtility::isNTFS(sync.localPath()) || CommonUtility::isAPFS(sync.localPath());
+    sync.setSupportVfs(supportVfs);
+
+#if defined(KD_MACOS)
+    sync.setVirtualFileMode(liteSync ? VirtualFileMode::Mac : VirtualFileMode::Off);
+#elif defined(KD_WINDOWS)
+    sync.setVirtualFileMode(liteSync ? VirtualFileMode::Win : VirtualFileMode::Off);
+#else
+    sync.setVirtualFileMode(VirtualFileMode::Off);
+#endif
+
+    sync.setNotificationsDisabled(false);
+    sync.setDbPath(std::filesystem::path());
+    sync.setHasFullyCompleted(false);
+    sync.setNavigationPaneClsid(navigationPaneClsid.toString().toStdString());
+    if (ExitCode exitCode = createSync(sync, syncInfo); exitCode != ExitCode::Ok) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in createSync");
+        return exitCode;
+    }
+
+    LOGW_INFO(Log::instance()->getLogger(), L"New sync created in DB - syncDbId="
+                                                    << syncDbId << L" driveDbId=" << driveDbId << L" localFolderPath="
+                                                    << Path2WStr(sync.localPath()) << L" serverFolderPath="
+                                                    << Path2WStr(sync.targetPath()) << L" dbPath=" << Path2WStr(sync.dbPath()));
+
+    return ExitCode::Ok;
+}
+
+ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
+                                 const QString &serverFolderNodeId, bool liteSync, bool showInNavigationPane,
+                                 SyncInfo &syncInfo) {
+    return addSync(driveDbId, QStr2Path(localFolderPath), QStr2Path(serverFolderPath), serverFolderNodeId.toStdString(), liteSync,
+                   showInNavigationPane, syncInfo);
 }
 
 ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, const QString &nodeId, QList<NodeInfo> &list,
@@ -917,6 +1146,7 @@ bool ServerRequests::isDisplayableError(const Error &error) {
                     return false;
             }
         }
+        case ExitCode::InvalidOperation:
         case ExitCode::LogicError: {
             return true;
         }
@@ -1404,157 +1634,6 @@ ExitCode ServerRequests::deleteLiteSyncNotAllowedErrors() {
     return ExitCode::Ok;
 }
 #endif
-
-ExitCode ServerRequests::addSync(int userDbId, int accountId, int driveId, const QString &localFolderPath,
-                                 const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
-                                 bool showInNavigationPane, AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo) {
-    LOGW_INFO(Log::instance()->getLogger(), L"Adding new sync - userDbId="
-                                                    << userDbId << L" accountId=" << accountId << L" driveId=" << driveId
-                                                    << L" localFolderPath=" << Path2WStr(QStr2Path(localFolderPath)).c_str()
-                                                    << L" serverFolderPath=" << Path2WStr(QStr2Path(serverFolderPath)).c_str()
-                                                    << L" liteSync=" << liteSync);
-
-#ifndef Q_OS_WIN
-    Q_UNUSED(showInNavigationPane)
-#endif
-
-    ExitCode exitCode;
-
-    // Create Account in DB if needed
-    int accountDbId;
-    if (!ParmsDb::instance()->accountDbId(userDbId, accountId, accountDbId)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::accountDbId");
-        return ExitCode::DbError;
-    }
-
-    if (!accountDbId) {
-        if (!ParmsDb::instance()->getNewAccountDbId(accountDbId)) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::getNewAccountDbId");
-            return ExitCode::DbError;
-        }
-
-        Account account;
-        account.setDbId(accountDbId);
-        account.setAccountId(accountId);
-        account.setUserDbId(userDbId);
-        exitCode = createAccount(account, accountInfo);
-        if (exitCode != ExitCode::Ok) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in createAccount");
-            return exitCode;
-        }
-
-        LOG_INFO(Log::instance()->getLogger(), "New account created in DB - accountDbId=" << accountDbId
-                                                                                          << " accountId= " << accountId
-                                                                                          << " userDbId= " << userDbId);
-    }
-
-    // Create Drive in DB if needed
-    int driveDbId;
-    if (!ParmsDb::instance()->driveDbId(accountDbId, driveId, driveDbId)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::driveDbId");
-        return ExitCode::DbError;
-    }
-
-    if (!driveDbId) {
-        if (!ParmsDb::instance()->getNewDriveDbId(driveDbId)) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::getNewDriveDbId");
-            return ExitCode::DbError;
-        }
-
-        Drive drive;
-        drive.setDbId(driveDbId);
-        drive.setDriveId(driveId);
-        drive.setAccountDbId(accountDbId);
-        exitCode = createDrive(drive, driveInfo);
-        if (exitCode != ExitCode::Ok) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in createDrive");
-            return exitCode;
-        }
-
-        LOGW_INFO(Log::instance()->getLogger(), L"New drive created in DB - driveDbId=" << driveDbId << L" driveId=" << driveId
-                                                                                        << L" accountDbId=" << accountDbId);
-    }
-
-    return addSync(driveDbId, localFolderPath, serverFolderPath, serverFolderNodeId, liteSync, showInNavigationPane, syncInfo);
-}
-
-ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
-                                 const QString &serverFolderNodeId, bool liteSync, bool showInNavigationPane,
-                                 SyncInfo &syncInfo) {
-    LOGW_INFO(Log::instance()->getLogger(), L"Adding new sync - driveDbId="
-                                                    << driveDbId << L" localFolderPath=" << Path2WStr(QStr2Path(localFolderPath))
-                                                    << L" serverFolderPath=" << Path2WStr(QStr2Path(serverFolderPath))
-                                                    << L" liteSync=" << liteSync);
-
-#ifndef Q_OS_WIN
-    Q_UNUSED(showInNavigationPane)
-#endif
-
-#if !defined(Q_OS_MAC) && !defined(Q_OS_WIN)
-    Q_UNUSED(liteSync)
-#endif
-
-    ExitCode exitCode;
-
-    // Create Sync in DB
-    int syncDbId;
-    if (!ParmsDb::instance()->getNewSyncDbId(syncDbId)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::getNewSyncDbId");
-        return ExitCode::DbError;
-    }
-
-    LOGW_INFO(Log::instance()->getLogger(), L"New sync DB ID retrieved - syncDbId=" << syncDbId);
-
-    QUuid navigationPaneClsid;
-#ifdef Q_OS_WIN
-    if (showInNavigationPane) {
-        navigationPaneClsid = QUuid::createUuid();
-    }
-#endif
-
-    Sync sync;
-    sync.setDbId(syncDbId);
-    sync.setDriveDbId(driveDbId);
-    auto localPath = QStr2Path(localFolderPath);
-#if defined(KD_MACOS)
-    // On macOS, the special characters in file names are NFD encoded. However, we use QFileDialog::getExistingDirectory to
-    // retrieve the selected sync path which return a NFC encoded path.
-    (void) Utility::normalizedSyncPath(localFolderPath.toStdString(), localPath, UnicodeNormalization::NFD);
-#endif
-    sync.setLocalPath(localPath);
-    sync.setTargetPath(QStr2Path(serverFolderPath));
-    sync.setTargetNodeId(serverFolderNodeId.toStdString());
-    sync.setPaused(false);
-
-    // Check vfs support
-    const bool supportVfs = CommonUtility::isNTFS(sync.localPath()) || CommonUtility::isAPFS(sync.localPath());
-    sync.setSupportVfs(supportVfs);
-
-#if defined(KD_MACOS)
-    sync.setVirtualFileMode(liteSync ? VirtualFileMode::Mac : VirtualFileMode::Off);
-#elif defined(KD_WINDOWS)
-    sync.setVirtualFileMode(liteSync ? VirtualFileMode::Win : VirtualFileMode::Off);
-#else
-    sync.setVirtualFileMode(VirtualFileMode::Off);
-#endif
-
-    sync.setNotificationsDisabled(false);
-    sync.setDbPath(std::filesystem::path());
-    sync.setHasFullyCompleted(false);
-    sync.setNavigationPaneClsid(navigationPaneClsid.toString().toStdString());
-    exitCode = createSync(sync, syncInfo);
-    if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in createSync");
-        return exitCode;
-    }
-
-    LOGW_INFO(Log::instance()->getLogger(), L"New sync created in DB - syncDbId="
-                                                    << syncDbId << L" driveDbId=" << driveDbId << L" localFolderPath="
-                                                    << Path2WStr(sync.localPath()) << L" serverFolderPath="
-                                                    << Path2WStr(sync.targetPath()) << L" dbPath=" << Path2WStr(sync.dbPath()));
-
-    return ExitCode::Ok;
-}
 
 ExitInfo ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &updated, bool &quotaUpdated, bool &accountUpdated) {
     updated = false;

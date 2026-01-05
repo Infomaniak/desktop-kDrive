@@ -2,26 +2,15 @@ using DynamicData;
 using DynamicData.Binding;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
-using Microsoft.UI;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
+using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using System.Reactive.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using WinRT;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -30,17 +19,49 @@ namespace Infomaniak.kDrive.CustomControls
 {
     public sealed partial class SyncActivityTable : UserControl
     {
-        private AppModel _viewModel = ((App)Application.Current).Data;
+        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel => _viewModel;
 
-        private ObservableCollection<SyncActivity> _outGoingActivities = new();
-        private Int64 _insertionCounter = 0;
+        private readonly ObservableCollection<SyncFileItem> _outGoingActivities = new();
+        private IDisposable? _activitySubscription;
 
         public SyncActivityTable()
         {
             InitializeComponent();
-            ViewModel.SelectedSync?
-                    .SyncActivities.ToObservableChangeSet().OnItemAdded(a => { if (a.Direction == SyncDirection.Incoming) _outGoingActivities.Insert(0, a); }).Subscribe();
+
+            ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+
+            if (ViewModel.SelectedSync != null)
+            {
+                SubscribeToActivities(ViewModel.SelectedSync);
+            }
+            RefreshFilteredActivities();
+        }
+
+        ~SyncActivityTable()
+        {
+            _activitySubscription?.Dispose();
+            ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+        }
+
+        private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(ViewModel.SelectedSync) && ViewModel.SelectedSync is not null)
+            {
+                RefreshFilteredActivities();
+            }
+        }
+
+        private void SubscribeToActivities(Sync sync)
+        {
+            _activitySubscription?.Dispose();
+            _outGoingActivities.Clear();
+            _activitySubscription = sync.SyncActivities
+                .ToObservableChangeSet()
+                .Filter(a => a.Direction == SyncDirection.Up)
+                .Sort(SortExpressionComparer<SyncFileItem>.Ascending(a => a.Timestamp))
+                .OnItemAdded(a => _outGoingActivities.Insert(0, a))
+                .Subscribe();
         }
 
         public bool? ShowIncomingActivity
@@ -70,20 +91,26 @@ namespace Infomaniak.kDrive.CustomControls
 
         private void RefreshFilteredActivities()
         {
-            if (ActivityList == null) return;
+            if (ActivityList == null)
+                return;
             if (ShowIncomingActivity == null || ShowIncomingActivity == true)
             {
                 ActivityList.ItemsSource = ViewModel.SelectedSync?.SyncActivities;
             }
+            else if (ViewModel.SelectedSync is not null)
+            {
+                SubscribeToActivities(ViewModel.SelectedSync);
+                ActivityList.ItemsSource = _outGoingActivities;
+            }
             else
             {
-                ActivityList.ItemsSource = _outGoingActivities;
+                ActivityList.ItemsSource = null;
             }
         }
 
         private async void SyncActivityParent_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is HyperlinkButton btn && btn.DataContext is SyncActivity activity)
+            if (sender is HyperlinkButton btn && btn.DataContext is SyncFileItem activity)
             {
                 if (Directory.Exists(activity.ParentFolderPath))
                 {
@@ -103,17 +130,38 @@ namespace Infomaniak.kDrive.CustomControls
             }
         }
 
-        private void Grid_Loading(FrameworkElement sender, object args)
+        private void UpToDateLink_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Grid grid)
+            ((App)Application.Current).CurrentWindow?.AppWindow.Hide();
+        }
+    }
+    public class ItemTypeDataTemplateSelector : DataTemplateSelector
+    {
+        public DataTemplate? FileTemplate { get; set; }
+        public DataTemplate? DirectoryTemplate { get; set; }
+
+        protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container)
+        {
+            if (item == null)
+                return null;
+
+            Types.NodeType nodeType;
+            if (item is SyncFileItem syncActivity)
             {
-                grid.Background = (_insertionCounter++ % 2 == 0)
-                        ? new SolidColorBrush(Colors.Transparent)
-                        : new SolidColorBrush(Colors.WhiteSmoke);
+                nodeType = syncActivity.Type;
             }
             else
             {
-                Logger.Log(Logger.Level.Warning, $"Unexpected call, sender is not a Grid");
+                Logger.Log(Logger.Level.Error, "Unexpected type in SelectTemplateCore");
+                return null;
+            }
+
+            switch (nodeType)
+            {
+                case Types.NodeType.Directory:
+                    return DirectoryTemplate;
+                default:
+                    return FileTemplate;
             }
         }
     }

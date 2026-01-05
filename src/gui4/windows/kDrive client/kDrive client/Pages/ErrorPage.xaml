@@ -12,7 +12,6 @@
       mc:Ignorable="d">
     <Page.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        <converters:BooleanToInvertedVisibilityConverter  x:Key="BooleanToInvertedVisibilityConverter" />
         <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
     </Page.Resources>
 
@@ -73,13 +72,10 @@
                 <StackPanel Orientation="Horizontal"
                             Grid.Row="1"
                             Margin="16,0,0,0">
-                    <ImageIcon Height="16"
-                               VerticalAlignment="Top"
-                               Margin="0,16,0,0">
-                        <ImageIcon.Source>
-                            <SvgImageSource UriSource="ms-appx:///Assets/Icons/headphones.svg" />
-                        </ImageIcon.Source>
-                    </ImageIcon>
+                    <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Devices.headphones}"
+                                      Height="16"
+                                      VerticalAlignment="Top"
+                                      Foreground="{ThemeResource TextFillColorSecondaryBrush}" /> 
                     <StackPanel Orientation="Vertical"
                                 Grid.Row="1"
                                 Margin="16,14,0,0">
@@ -89,7 +85,7 @@
                                    Margin="0,0,0,4" />
                         <TextBlock x:Uid="Page_ErrorPage_Application_HowTosolve"
                                    VerticalAlignment="Center"
-                                   Style="{StaticResource CaptionSemiBoldTextBlockStyle}"
+                                   Style="{StaticResource Infomaniak.Style.TextBlock.CaptionStrong}"
                                    Margin="0,0,0,2"
                                    Foreground="#666666" />
                         <ListView SelectionMode="None"
@@ -113,7 +109,7 @@
                                 <DataTemplate x:DataType="viewmodels_error:AppError">
                                     <TextBlock Text="{x:Bind Cause, Mode=OneWay}"
                                                TextWrapping="WrapWholeWords"
-                                               Style="{StaticResource CaptionTextBlockStyle}"
+                                               Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                                                Foreground="#666666" />
                                 </DataTemplate>
                             </ListView.ItemTemplate>
@@ -125,7 +121,7 @@
                             <Button x:Uid="Page_ErrorPage_Application_SolveButton"
                                     VerticalAlignment="Center"
                                     Click="SupportButton_Click" />
-                            <HyperlinkButton x:Uid="Page_ErrorPage_Application_LearnMoreButton"
+                            <HyperlinkButton x:Uid="Global_LearnMoreButton"
                                              VerticalAlignment="Center"
                                              Click="LearnMoreButton_Click" />
                         </StackPanel>
@@ -193,7 +189,7 @@
         <!-- Empty list-->
         <Grid CornerRadius="8"
               Grid.Row="3"
-              Visibility="{x:Bind ViewModel.HasErrors, Converter={StaticResource BooleanToInvertedVisibilityConverter}, Mode=OneWay}">
+              Visibility="{x:Bind ViewModel.HasErrors, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True',Mode=OneWay}">
             <Border CornerRadius="8">
                 <Border.Background>
                     <AcrylicBrush TintColor="White"
@@ -214,20 +210,13 @@
                                 Grid.Column="1"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Center">
-                        <Image Width="200"
-                               Stretch="Uniform"
-                               HorizontalAlignment="Center"
-                               Margin="20">
-                            <Image.Source>
-                                <SvgImageSource UriSource="ms-appx:///Assets/Images/no-errors.svg" />
-                            </Image.Source>
-                        </Image>
+                       
                         <TextBlock x:Uid="Page_ErrorPage_NoErrors_Line1"
-                                   Style="{StaticResource CaptionTextBlockStyle}"
+                                   Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                                    Opacity="0.6"
                                    HorizontalAlignment="Center" />
                         <TextBlock x:Uid="Page_ErrorPage_NoErrors_Line2"
-                                   Style="{StaticResource CaptionTextBlockStyle}"
+                                   Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                                    Opacity="0.6"
                                    HorizontalAlignment="Center" />
                     </StackPanel>

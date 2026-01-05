@@ -1,4 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Infomaniak.kDrive.ServerCommunication;
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
+using Infomaniak.kDrive.Types;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -6,13 +10,13 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Infomaniak.kDrive.Types;
 
 namespace Infomaniak.kDrive.ViewModels
 {
-    public class Onboarding : ObservableObject
+    public class Onboarding : UISafeObservableObject
     {
-        
+        private readonly IServerCommService _serverCommService;
+
         private OAuth2State _currentOAuth2State = OAuth2State.None;
 
         private User? _selectedUser = null;
@@ -21,7 +25,7 @@ namespace Infomaniak.kDrive.ViewModels
             get => _currentOAuth2State;
             set
             {
-                SetProperty(ref _currentOAuth2State, value);
+                SetPropertyInUIThread(ref _currentOAuth2State, value);
             }
         }
 
@@ -30,25 +34,28 @@ namespace Infomaniak.kDrive.ViewModels
             get => _selectedUser;
             set
             {
-                SetProperty(ref _selectedUser, value);
+                SetPropertyInUIThread(ref _selectedUser, value);
             }
         }
 
         public ObservableCollection<Sync> NewSyncs { get; } = new();
 
+        internal Onboarding(IServerCommService serverCommService)
+        {
+            _serverCommService = serverCommService;
+        }
         public async Task ConnectUser(CancellationToken cancelationToken)
         {
             CurrentOAuth2State = OAuth2State.WaitingForUserAction;
             try
             {
-                string newUserToken = await OAuthHelper.GetToken(cancelationToken);
-                if (newUserToken != "")
+                var OAutCodes = await OAuthHelper.GetCode(cancelationToken);
+                if (OAutCodes.Code != "")
                 {
-                    Logger.Log(Logger.Level.Debug, "Successfully obtained user token.");
+                    Logger.Log(Logger.Level.Debug, "Successfully obtained user code.");
                     CurrentOAuth2State = OAuth2State.ProcessingResponse;
-                    // TODO: Add user to the app
-                    await Task.Delay(3000, cancelationToken); // Simulate processing time
-                    SelectedUser = (App.Current as App)?.Data.Users.FirstOrDefault(u => u.IsConnected);
+                    User? user = await _serverCommService.AddOrRelogUser(OAutCodes.Code, OAutCodes.CodeVerifier, cancelationToken);
+                    SelectedUser = user;
                     CurrentOAuth2State = OAuth2State.Success;
                 }
                 else
@@ -61,6 +68,11 @@ namespace Infomaniak.kDrive.ViewModels
             {
                 CurrentOAuth2State = OAuth2State.Error;
                 Logger.Log(Logger.Level.Warning, "Authentication process canceled by user.");
+            }
+            catch (Exception ex)
+            {
+                CurrentOAuth2State = OAuth2State.Error;
+                Logger.Log(Logger.Level.Warning, $"Authentication process failed {ex.Message}");
             }
         }
 

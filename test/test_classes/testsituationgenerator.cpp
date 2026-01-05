@@ -38,8 +38,8 @@ class TestSituationGeneratorException final : public std::runtime_error {
 
 TestSituationGenerator::TestSituationGenerator() {
     const auto syncDbPath = _temporaryDirectory.path() / ("dummySyncDb_" + CommonUtility::generateRandomStringAlphaNum());
-    _syncDb = std::make_shared<SyncDb>(syncDbPath.string(), "3.6.10");
-    (void) _syncDb->init("3.6.10");
+    _syncDb = std::make_shared<SyncDb>(syncDbPath.string(), KDRIVE_VERSION_STRING);
+    (void) _syncDb->init(KDRIVE_VERSION_STRING);
     _syncDb->setAutoDelete(true);
 
     _localUpdateTree = std::make_shared<UpdateTree>(ReplicaSide::Local, SyncDb::driveRootNode());

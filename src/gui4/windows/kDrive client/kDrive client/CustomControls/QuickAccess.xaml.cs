@@ -1,4 +1,5 @@
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
@@ -10,7 +11,7 @@ namespace Infomaniak.kDrive.CustomControls
 {
     public sealed partial class QuickAccess : UserControl
     {
-        private AppModel _viewModel = ((App)Application.Current).Data;
+        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel => _viewModel;
 
         public QuickAccess()
@@ -58,6 +59,20 @@ namespace Infomaniak.kDrive.CustomControls
             else
             {
                 Logger.Log(Logger.Level.Error, "No sync selected or unable to get shared URL.");
+            }
+        }
+
+        private async void OpenDriveOnlineButton_Click(object sender, RoutedEventArgs e)
+        {
+            Uri? onlineDriveUrl = ViewModel.SelectedSync?.Drive.GetWebUri();
+            if (onlineDriveUrl != null)
+            {
+                Logger.Log(Logger.Level.Debug, $"Launching URL: {onlineDriveUrl}");
+                await Windows.System.Launcher.LaunchUriAsync(onlineDriveUrl);
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Error, "No sync selected or unable to get URL.");
             }
         }
     }

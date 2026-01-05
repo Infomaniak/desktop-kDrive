@@ -145,7 +145,7 @@ class ExtensionJob : public AbstractJob {
          */
         void executeCommand(const CommString &commandLineStr, std::shared_ptr<AbstractCommChannel> channel);
 
-        void manageActionsOnSingleFile(std::shared_ptr<AbstractCommChannel> channel, const std::vector<CommString> &files,
+        void manageActionsOnSingleFile(std::shared_ptr<AbstractCommChannel> channel, const SyncPath &path,
                                        SyncPalMap::const_iterator syncPalMapIt, VfsMap::const_iterator vfsMapIt,
                                        const Sync &sync);
 

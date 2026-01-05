@@ -16,21 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using CommunityToolkit.Mvvm.Collections;
-using CommunityToolkit.Mvvm.ComponentModel;
-using Infomaniak.kDrive.ServerCommunication;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Drawing;
-using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.ViewModels.Errors
 {
-    public abstract class BaseError : ObservableObject
+    public abstract class BaseError : UISafeObservableObject
     {
         public class ButtonData
         {
@@ -59,25 +50,25 @@ namespace Infomaniak.kDrive.ViewModels.Errors
         public DbId DbId
         {
             get => _dbId;
-            set => SetProperty(ref _dbId, value);
+            set => SetPropertyInUIThread(ref _dbId, value);
         }
 
         public DateTime Time
         {
             get => _time;
-            set => SetProperty(ref _time, value);
+            set => SetPropertyInUIThread(ref _time, value);
         }
 
         public ExitCode ExitCode
         {
             get => _exitCode;
-            set => SetProperty(ref _exitCode, value);
+            set => SetPropertyInUIThread(ref _exitCode, value);
         }
 
         public ExitCause ExitCause
         {
             get => _exitCause;
-            set => SetProperty(ref _exitCause, value);
+            set => SetPropertyInUIThread(ref _exitCause, value);
         }
 
         public string Title
@@ -103,7 +94,7 @@ namespace Infomaniak.kDrive.ViewModels.Errors
         public ButtonData? SolveButton
         {
             get => _solveButton;
-            set => SetProperty(ref _solveButton, value);
+            set => SetPropertyInUIThread(ref _solveButton, value);
         }
 
         public bool HasSolveButton
@@ -114,7 +105,7 @@ namespace Infomaniak.kDrive.ViewModels.Errors
         public ButtonData? InfoHyperLink
         {
             get => _infoHyperLink;
-            set => SetProperty(ref _infoHyperLink, value);
+            set => SetPropertyInUIThread(ref _infoHyperLink, value);
         }
 
         public bool HasInfoHyperLink
@@ -127,7 +118,7 @@ namespace Infomaniak.kDrive.ViewModels.Errors
         abstract public string CauseStr();
         abstract public Uri IconUri();
 
-        protected static string GetLocalizedString(string key)
+        protected static string GetLocalizedSyncErrorString(string key)
         {
             var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse("SyncErrors");
             return resourceLoader.GetString(key);

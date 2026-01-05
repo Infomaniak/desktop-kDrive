@@ -19,8 +19,6 @@
 #include "utility.h"
 
 #include "libcommon/utility/utility.h"
-#include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/io/iohelper_win.h"
 #include "log/log.h"
 
 #include <filesystem>
@@ -31,6 +29,8 @@
 #include <windows.h>
 #include <Shobjidl.h> //Required for IFileOperation Interface
 #include <shellapi.h> //Required for Flags set in "SetOperationFlags"
+#include <shlobj_core.h> // SHCreateItemFromIDList
+#include <atlbase.h> // CComPtr
 #include <objbase.h>
 #include <objidl.h>
 #include <shlguid.h>
@@ -51,136 +51,6 @@
 constexpr int userNameBufLen = 4096;
 
 namespace KDC {
-
-bool Utility::moveItemToTrash(const SyncPath &itemPath) {
-    if (CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED) != S_OK) {
-        LOGW_INFO(Log::instance()->getLogger(),
-                  L"Error in CoInitializeEx in moveItemToTrash. Might be already initialized. Check if next call to "
-                  L"CoCreateInstance is failing.");
-    }
-
-    // Create the IFileOperation object
-    IFileOperation *fileOperation = nullptr;
-    HRESULT hr = CoCreateInstance(__uuidof(FileOperation), nullptr, CLSCTX_ALL, IID_PPV_ARGS(&fileOperation));
-    if (FAILED(hr)) {
-        // Couldn't CoCreateInstance - clean up and return
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in CoCreateInstance - path="
-                                                        << Path2WStr(itemPath) << L" err="
-                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
-
-        std::wstringstream errorStream;
-        errorStream << L"Move to trash failed for item with " << Utility::formatSyncPath(itemPath)
-                    << L" - CoCreateInstance failed with error: " << CommonUtility::s2ws(std::system_category().message(hr));
-        std::wstring errorStr = errorStream.str();
-        LOGW_WARN(Log::instance()->getLogger(), errorStr);
-        sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "CoCreateInstance failed");
-        CoUninitialize();
-        return false;
-    }
-
-    hr = fileOperation->SetOperationFlags(FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT);
-    if (FAILED(hr)) {
-        // Couldn't add flags - clean up and return
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in SetOperationFlags path="
-                                                        << Path2WStr(itemPath) << L" err="
-                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
-
-        std::wstringstream errorStream;
-        errorStream << L"Move to trash failed for item " << Path2WStr(itemPath) << L" - SetOperationFlags failed with error: "
-                    << CommonUtility::s2ws(std::system_category().message(hr));
-        std::wstring errorStr = errorStream.str();
-        LOGW_WARN(Log::instance()->getLogger(), errorStr);
-
-        sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "SetOperationFlags failed");
-        fileOperation->Release();
-        CoUninitialize();
-        return false;
-    }
-
-    SyncPath itemPathPreferred(itemPath);
-    IShellItem *fileOrFolderItem = nullptr;
-    hr = SHCreateItemFromParsingName(itemPathPreferred.make_preferred().native().c_str(), nullptr,
-                                     IID_PPV_ARGS(&fileOrFolderItem));
-    if (FAILED(hr)) {
-        // Couldn't get file into an item - cleanup and return (maybe the file doesn't exist?)
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in SHCreateItemFromParsingName - path="
-                                                        << Path2WStr(itemPath) << L" err="
-                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
-
-        std::wstringstream errorStream;
-        errorStream << L"Move to trash failed for item " << Path2WStr(itemPath)
-                    << L" - SHCreateItemFromParsingName failed with error: "
-                    << CommonUtility::s2ws(std::system_category().message(hr));
-        std::wstring errorStr = errorStream.str();
-        LOGW_WARN(Log::instance()->getLogger(), errorStr);
-
-        sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "SHCreateItemFromParsingName failed");
-        fileOperation->Release();
-        CoUninitialize();
-        return false;
-    }
-
-    hr = fileOperation->DeleteItem(fileOrFolderItem, nullptr);
-    if (FAILED(hr)) {
-        // Failed to mark file/folder item for deletion - cleanup and return
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in DeleteItem - path="
-                                                        << Path2WStr(itemPath) << L" err="
-                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
-
-        std::wstringstream errorStream;
-        errorStream << L"Move to trash failed for item " << Path2WStr(itemPath) << L" - DeleteItem failed with error: "
-                    << CommonUtility::s2ws(std::system_category().message(hr));
-        std::wstring errorStr = errorStream.str();
-        LOGW_WARN(Log::instance()->getLogger(), errorStr);
-        sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "DeleteItem failed");
-
-        fileOrFolderItem->Release();
-        fileOperation->Release();
-        CoUninitialize();
-        return false;
-    }
-
-    hr = fileOperation->PerformOperations();
-    if (FAILED(hr)) {
-        // failed to carry out delete - return
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in PerformOperations - path="
-                                                        << Path2WStr(itemPath) << L" err="
-                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
-
-        std::wstringstream errorStream;
-        errorStream << L"Move to trash failed for item " << Path2WStr(itemPath) << L" - PerformOperations failed with error: "
-                    << CommonUtility::s2ws(std::system_category().message(hr));
-        std::wstring errorStr = errorStream.str();
-        LOGW_WARN(Log::instance()->getLogger(), errorStr);
-
-        sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "PerformOperations failed");
-        fileOrFolderItem->Release();
-        fileOperation->Release();
-        CoUninitialize();
-        return false;
-    }
-
-    BOOL aborted = false;
-    BOOL result = true;
-    hr = fileOperation->GetAnyOperationsAborted(&aborted);
-    if (FAILED(hr)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in GetAnyOperationsAborted - "
-                                                        << Utility::formatSyncPath(itemPath) << L" err="
-                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
-        result = false;
-    } else if (aborted) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Move to trash aborted for item with " << Utility::formatSyncPath(itemPath));
-        result = false;
-    } else {
-        // MISRA Coding Guideline
-    }
-
-    fileOrFolderItem->Release();
-    fileOperation->Release();
-    CoUninitialize();
-
-    return result;
-}
 
 bool Utility::totalRamAvailable(uint64_t &ram, int &errorCode) {
     return true;
@@ -285,6 +155,25 @@ LONG setRegistryStringValue(const HKEY &key, const std::wstring &subKey, const s
     return ERROR_SUCCESS;
 }
 
+LONG setRegistryBinaryValue(const HKEY &key, const std::wstring &subKey, const std::wstring &valueName, const BYTE *valueData,
+                            const uint length) {
+    // Open or create the key with write access
+    HKEY hKey = nullptr;
+    if (const LONG result = RegCreateKeyExW(key, subKey.c_str(), 0, nullptr, 0, KEY_WRITE, nullptr, &hKey, nullptr);
+        result != ERROR_SUCCESS) {
+        return result;
+    }
+
+    // Set the value
+    if (const LONG result = RegSetValueExW(hKey, valueName.c_str(), 0, REG_BINARY, valueData, length); result != ERROR_SUCCESS) {
+        RegCloseKey(hKey);
+        return result;
+    }
+
+    (void) RegCloseKey(hKey);
+    return ERROR_SUCCESS;
+}
+
 LONG deleteRegistryValue(const HKEY &key, const std::wstring &subKey, const std::wstring &valueName) {
     // Open the key with write access
     HKEY hKey;
@@ -317,6 +206,7 @@ bool Utility::hasSystemLaunchOnStartup(const std::string &appName) {
 }
 
 static const wchar_t runPath[] = L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
+static const wchar_t startupApprovedPath[] = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run";
 
 bool Utility::hasLaunchOnStartup(const std::string &appName) {
     std::unordered_map<std::wstring, std::wstring> map;
@@ -334,13 +224,27 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
         if (const auto result = setRegistryStringValue(HKEY_CURRENT_USER, runPath, CommonUtility::s2ws(appName),
                                                        serverFilePath.make_preferred().native());
             result != ERROR_SUCCESS) {
-            LOGW_WARN(logger(), L"Failed to set registry value for: " << systemRunPath << L", error: " << result);
+            LOGW_WARN(logger(), L"Failed to set registry value for: " << runPath << L", error: " << result);
+            return false;
+        }
+        const uint16_t binaryValueLength = 12;
+        BYTE binaryValue[binaryValueLength] = {0x02, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                               0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; // Auto start approved
+        if (const auto result = setRegistryBinaryValue(HKEY_CURRENT_USER, startupApprovedPath, CommonUtility::s2ws(appName),
+                                                       binaryValue, binaryValueLength);
+            result != ERROR_SUCCESS) {
+            LOGW_WARN(logger(), L"Failed to set registry value for: " << startupApprovedPath << L", error: " << result);
             return false;
         }
     } else {
         if (const auto result = deleteRegistryValue(HKEY_CURRENT_USER, runPath, CommonUtility::s2ws(appName));
             result != ERROR_SUCCESS) {
-            LOGW_WARN(logger(), L"Failed to remove registry value for: " << systemRunPath << L", error: " << result);
+            LOGW_WARN(logger(), L"Failed to remove registry value for: " << runPath << L", error: " << result);
+            return false;
+        }
+        if (const auto result = deleteRegistryValue(HKEY_CURRENT_USER, startupApprovedPath, CommonUtility::s2ws(appName));
+            result != ERROR_SUCCESS) {
+            LOGW_WARN(logger(), L"Failed to remove registry value for: " << startupApprovedPath << L", error: " << result);
             return false;
         }
     }
@@ -680,5 +584,4 @@ void Utility::unixTimeToFiletime(time_t t, FILETIME *filetime) {
     filetime->dwLowDateTime = (DWORD) ll;
     filetime->dwHighDateTime = ll >> 32;
 }
-
 } // namespace KDC

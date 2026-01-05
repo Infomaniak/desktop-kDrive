@@ -72,6 +72,7 @@
 #include <Poco/UnicodeConverter.h>
 #include <Poco/Base64Decoder.h>
 #include <Poco/Base64Encoder.h>
+#include <Poco/StreamCopier.h>
 
 #define MAX_PATH_LENGTH_WIN_LONG 32767
 #define MAX_PATH_LENGTH_WIN_SHORT 259
@@ -312,54 +313,86 @@ void CommonUtility::resetTranslations() {
 }
 
 bool CommonUtility::startsWith(const std::string &str, const std::string &prefix) {
+    if (prefix.empty()) return false;
     return str.size() >= prefix.size() &&
            std::equal(prefix.begin(), prefix.end(), str.begin(), [](char c1, char c2) { return c1 == c2; });
 }
 
 bool CommonUtility::startsWithInsensitive(const std::string &str, const std::string &prefix) {
+    if (prefix.empty()) return false;
     return str.size() >= prefix.size() && std::equal(prefix.begin(), prefix.end(), str.begin(), [](char c1, char c2) {
                return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale());
            });
 }
 
-bool CommonUtility::endsWith(const std::string &str, const std::string &suffix) {
-    return str.size() >= suffix.size() && std::equal(str.begin() + static_cast<long>(str.length() - suffix.length()), str.end(),
-                                                     suffix.begin(), [](char c1, char c2) { return c1 == c2; });
-}
-
 bool CommonUtility::endsWithInsensitive(const std::string &str, const std::string &suffix) {
+    if (suffix.empty()) return false;
     return str.size() >= suffix.size() &&
            std::equal(str.begin() + static_cast<long>(str.length() - suffix.length()), str.end(), suffix.begin(),
                       [](char c1, char c2) { return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale()); });
 }
 
+bool CommonUtility::endsWith(const std::string &str, const std::string &suffix) {
+    if (suffix.empty()) return false;
+    return str.size() >= suffix.size() && std::equal(str.begin() + static_cast<long>(str.length() - suffix.length()), str.end(),
+                                                     suffix.begin(), [](const char c1, const char c2) { return c1 == c2; });
+}
+
+bool CommonUtility::contains(const std::string &str, const std::string &substr) {
+    if (substr.empty()) return false;
+    return str.find(substr) != std::string::npos;
+}
+
+bool CommonUtility::containsInsensitive(const std::string &str, const std::string &substr) {
+    if (substr.empty()) return false;
+    if (str.size() < substr.size()) return false;
+    const auto it = std::search(str.begin(), str.end(), substr.begin(), substr.end(), [](const char c1, const char c2) {
+        return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale());
+    });
+    return it != str.end();
+}
+
 #if defined(KD_WINDOWS)
 bool CommonUtility::startsWithInsensitive(const SyncName &str, const SyncName &prefix) {
+    if (prefix.empty()) return false;
     return str.size() >= prefix.size() && std::equal(prefix.begin(), prefix.end(), str.begin(), [](SyncChar c1, SyncChar c2) {
                return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale());
            });
 }
 
 bool CommonUtility::startsWith(const SyncName &str, const SyncName &prefix) {
+    if (prefix.empty()) return false;
     return str.size() >= prefix.size() &&
            std::equal(prefix.begin(), prefix.end(), str.begin(), [](SyncChar c1, SyncChar c2) { return c1 == c2; });
 }
 
 bool CommonUtility::endsWith(const SyncName &str, const SyncName &suffix) {
+    if (suffix.empty()) return false;
     return str.size() >= suffix.size() && std::equal(str.begin() + str.length() - suffix.length(), str.end(), suffix.begin(),
                                                      [](char c1, char c2) { return c1 == c2; });
 }
 
 bool CommonUtility::endsWithInsensitive(const SyncName &str, const SyncName &suffix) {
+    if (suffix.empty()) return false;
     return str.size() >= suffix.size() &&
            std::equal(str.begin() + str.length() - suffix.length(), str.end(), suffix.begin(),
                       [](char c1, char c2) { return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale()); });
 }
-#endif
 
-bool CommonUtility::contains(const std::string &str, const std::string &substr) {
+bool CommonUtility::contains(const SyncName &str, const SyncName &substr) {
+    if (substr.empty()) return false;
     return str.find(substr) != std::string::npos;
 }
+
+bool CommonUtility::containsInsensitive(const SyncName &str, const SyncName &substr) {
+    if (substr.empty()) return false;
+    if (str.size() < substr.size()) return false;
+    const auto it = std::search(str.begin(), str.end(), substr.begin(), substr.end(), [](const char c1, const char c2) {
+        return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale());
+    });
+    return it != str.end();
+}
+#endif
 
 std::string CommonUtility::toUpper(const std::string &str) {
     std::string upperStr(str);
@@ -1384,39 +1417,49 @@ bool CommonUtility::isLinux() {
 }
 
 void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::string &value) {
+    value.clear();
     std::istringstream istr(base64Str);
     Poco::Base64Decoder b64in(istr);
+    b64in >> std::noskipws; // Does not stop decoding on space characters
     b64in >> value;
 }
 
 void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::wstring &value) {
+    value.clear();
     std::string strValue;
     convertFromBase64Str(base64Str, strValue);
     value = s2ws(strValue);
 }
 
 void CommonUtility::convertFromBase64Str(const std::string &base64Str, CommBLOB &value) {
+    value.clear();
     std::istringstream istr(base64Str);
     Poco::Base64Decoder b64in(istr);
+    b64in >> std::noskipws; // Does not stop decoding on space characters
     (void) std::copy(std::istream_iterator<char>(b64in), std::istream_iterator<char>(), std::back_inserter(value));
 }
 
 void CommonUtility::convertToBase64Str(const std::string &str, std::string &base64Str) {
+    base64Str.clear();
     std::ostringstream ostr;
     Poco::Base64Encoder b64out(ostr);
+    b64out.rdbuf()->setLineLength(0); // Does not insert line breaks
     b64out << str;
     (void) b64out.close();
     base64Str = ostr.str();
 }
 
 void CommonUtility::convertToBase64Str(const std::wstring &wstr, std::string &base64Str) {
+    base64Str.clear();
     const std::string str = ws2s(wstr);
     convertToBase64Str(str, base64Str);
 }
 
 void CommonUtility::convertToBase64Str(const CommBLOB &blob, std::string &base64Str) {
+    base64Str.clear();
     std::ostringstream ostr;
     Poco::Base64Encoder b64out(ostr);
+    b64out.rdbuf()->setLineLength(0); // Does not insert line breaks
     (void) std::copy(blob.begin(), blob.end(), std::ostream_iterator<char>(b64out));
     (void) b64out.close();
     base64Str = ostr.str();

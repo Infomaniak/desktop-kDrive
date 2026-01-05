@@ -48,6 +48,11 @@ void OperationSorterWorker::execute() {
     setDone(ExitCode::Ok);
 }
 
+bool hasMoveOperation(const std::shared_ptr<SyncOperationList> &syncOps) {
+    return !syncOps->opListIdByType(OperationType::Move).empty() || !syncOps->opListIdByType(OperationType::MoveEdit).empty() ||
+           !syncOps->opListIdByType(OperationType::MoveOut).empty();
+}
+
 void OperationSorterWorker::sortOperations() {
     _syncPal->_syncOps->startUpdate();
     SyncOperationList completeCycle;
@@ -69,12 +74,16 @@ void OperationSorterWorker::sortOperations() {
         fixEditBeforeMove();
         fixMoveBeforeMoveHierarchyFlip();
 
-        CycleFinder cycleFinder(_reorderings);
-        cycleFinder.findCompleteCycle();
-        if (cycleFinder.hasCompleteCycle()) {
-            completeCycle = cycleFinder.completeCycle();
-            cycleFound = true;
-            break;
+        // Cycles can occur only in presence of at least 1 Move operation.
+        if (hasMoveOperation(_syncPal->_syncOps)) {
+            // Check for cycles.
+            CycleFinder cycleFinder(_reorderings);
+            cycleFinder.findCompleteCycle();
+            if (cycleFinder.hasCompleteCycle()) {
+                completeCycle = cycleFinder.completeCycle();
+                cycleFound = true;
+                break;
+            }
         }
     }
 
@@ -102,8 +111,11 @@ void OperationSorterWorker::fixDeleteBeforeMove() {
 
         const auto deleteNode = deleteOp->affectedNode();
         LOG_IF_FAIL(deleteNode)
+        const auto parentPath = deleteNode->parentNode()->hasChangeEvent(OperationType::Move)
+                                        ? deleteNode->parentNode()->moveOriginInfos().path()
+                                        : deleteNode->parentNode()->getPath();
         NodeId deleteNodeParentId;
-        if (!getIdFromDb(deleteNode->side(), deleteNode->getPath().parent_path(), deleteNodeParentId)) {
+        if (!getIdFromDb(deleteNode->side(), parentPath, deleteNodeParentId)) {
             continue;
         }
 
@@ -188,8 +200,11 @@ void OperationSorterWorker::fixDeleteBeforeCreate() {
 
         const auto deleteNode = deleteOp->affectedNode();
         LOG_IF_FAIL(deleteNode)
+        const auto parentPath = deleteNode->parentNode()->hasChangeEvent(OperationType::Move)
+                                        ? deleteNode->parentNode()->moveOriginInfos().path()
+                                        : deleteNode->parentNode()->getPath();
         NodeId deleteNodeParentId;
-        if (!getIdFromDb(deleteNode->side(), deleteNode->getPath().parent_path(), deleteNodeParentId)) {
+        if (!getIdFromDb(deleteNode->side(), parentPath, deleteNodeParentId)) {
             continue;
         }
 
@@ -277,8 +292,8 @@ SyncOpPtr OperationSorterWorker::getAncestorOpWithHighestIndex(const std::unorde
     std::shared_ptr<const Node> ancestorNode = node->parentNode();
     depth = ancestorNode ? 1 : 0;
 
-    while (ancestorNode && ancestorNode != _syncPal->updateTree(ancestorNode->side())->rootNode()) {
-        for (const auto parentOpIdList = _syncPal->_syncOps->getOpIdsFromNodeId(*ancestorNode->id());
+    while (ancestorNode && ancestorNode != _syncPal->updateTree(node->side())->rootNode()) {
+        for (const auto parentOpIdList = _syncPal->_syncOps->getOpIdsFromNodeId(*ancestorNode->id(), node->side());
              const auto &parentOpId: parentOpIdList) {
             const auto parentOp = _syncPal->_syncOps->getOp(parentOpId);
             if (parentOp->type() != OperationType::Create) {
@@ -387,7 +402,7 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
     int32_t lowestIndex = INT32_MAX;
     SyncOpPtr selectedOp = nullptr;
     for (const auto &n: moveDirectoryList) {
-        for (const auto opIds = _syncPal->_syncOps->getOpIdsFromNodeId(*n->id()); const auto opId: opIds) {
+        for (const auto opIds = _syncPal->_syncOps->getOpIdsFromNodeId(*n->id(), n->side()); const auto opId: opIds) {
             const auto op = _syncPal->_syncOps->getOp(opId);
             LOG_IF_FAIL(op)
             if (op->type() != OperationType::Move) {

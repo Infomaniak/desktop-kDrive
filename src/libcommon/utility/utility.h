@@ -172,13 +172,17 @@ struct COMMON_EXPORT CommonUtility {
         static bool startsWithInsensitive(const std::string &str, const std::string &prefix);
         static bool endsWith(const std::string &str, const std::string &suffix);
         static bool endsWithInsensitive(const std::string &str, const std::string &suffix);
+        static bool contains(const std::string &str, const std::string &substr);
+        static bool containsInsensitive(const std::string &str, const std::string &substr);
 #if defined(KD_WINDOWS)
         static bool startsWithInsensitive(const SyncName &str, const SyncName &prefix);
         static bool startsWith(const SyncName &str, const SyncName &prefix);
         static bool endsWith(const SyncName &str, const SyncName &suffix);
         static bool endsWithInsensitive(const SyncName &str, const SyncName &suffix);
+        static bool contains(const SyncName &str, const SyncName &substr);
+        static bool containsInsensitive(const SyncName &str, const SyncName &substr);
 #endif
-        static bool contains(const std::string &str, const std::string &substr);
+
         static std::string toUpper(const std::string &str);
         static std::string toLower(const std::string &str);
         static std::wstring s2ws(const std::string &str);

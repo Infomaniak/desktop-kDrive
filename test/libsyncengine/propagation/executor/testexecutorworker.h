@@ -63,11 +63,11 @@ class TestExecutorWorker : public CppUnit::TestFixture, public TestBase {
         SyncOpPtr generateSyncOperationWithNestedNodes(const DbNodeId dbNodeId, const SyncName &filename,
                                                        const OperationType opType, const NodeType nodeType);
 
-        std::shared_ptr<SyncPal> _syncPal;
-        std::shared_ptr<MockVfs<VfsOff>> _mockVfs;
-        int _driveDbId;
+        std::shared_ptr<SyncPal> _syncPal = nullptr;
+        std::shared_ptr<MockVfs<VfsOff>> _mockVfs = nullptr;
+        int _driveDbId = 0;
         Sync _sync;
-        std::shared_ptr<ExecutorWorker> _executorWorker;
+        std::shared_ptr<ExecutorWorker> _executorWorker = nullptr;
         LocalTemporaryDirectory _localTempDir{"TestExecutorWorker"};
 };
 

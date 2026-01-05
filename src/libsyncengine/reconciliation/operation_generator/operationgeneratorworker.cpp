@@ -63,9 +63,12 @@ void OperationGeneratorWorker::execute() {
             continue;
         }
 
+        assert(currentNode->id().has_value());
+
         // Explore children even if node is processed
         for (const auto &child: currentNode->children()) {
             _queuedToExplore.push(child.second);
+            assert(child.second->parentNode() == currentNode);
         }
 
         if (currentNode->status() == NodeStatus::Processed) {
@@ -73,7 +76,7 @@ void OperationGeneratorWorker::execute() {
         }
 
         std::shared_ptr<Node> correspondingNode = correspondingNodeInOtherTree(currentNode);
-        if (!correspondingNode && !currentNode->hasChangeEvent(OperationType::Create) &&
+        if (!correspondingNode &&
             (currentNode->hasChangeEvent(OperationType::Delete) || currentNode->hasChangeEvent(OperationType::Edit) ||
              currentNode->hasChangeEvent(OperationType::Move))) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to get corresponding node: " << SyncName2WStr(currentNode->name()));
@@ -286,8 +289,12 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
 
     assert(correspondingNode);
 
+    if (!currentNode->parentNode() || !currentNode->parentNode()->id().has_value()) {
+        LOGW_SYNCPAL_WARN(_logger, L"Missing parent for node: " << SyncName2WStr(currentNode->name()));
+        return;
+    }
+
     // Do not generate delete operation if parent already deleted
-    assert(currentNode->parentNode() && currentNode->parentNode()->id().has_value());
     if (_deletedNodes.contains(*currentNode->parentNode()->id())) {
         return;
     }

@@ -28,25 +28,28 @@
 #include <stdio.h>
 #include <tchar.h>
 #include <strsafe.h>
-#include <QFileInfo>
-#include <QDir>
-
-#define PIPE_INSTANCES 10
-#define PIPE_TIMEOUT 5000
-#define EVENT_WAIT_TIMEOUT 100
 #endif
 
 namespace KDC {
 
 #if defined(KD_WINDOWS)
+constexpr int pipeInstances = 10;
+constexpr int pipeTimeOut = 5000; // ms
+constexpr int eventWaitTimeout = 100; // ms
+
 constexpr auto connectIndex = toInt(PipeCommChannel::Action::Connect);
 constexpr auto readIndex = toInt(PipeCommChannel::Action::Read);
+constexpr auto writeIndex = toInt(PipeCommChannel::Action::Write);
+
+int PipeCommServer::nbrOfpipeInstances() {
+    return pipeInstances;
+}
 #endif
 
 uint64_t PipeCommChannel::readData(CommChar *data, uint64_t maxSize) {
     if (!_connected) return 0;
 
-    auto size = _inBuffer.copy(data, maxSize);
+    const auto size = _inBuffer.copy(data, maxSize);
     _inBuffer.erase(0, size);
     return size;
 }
@@ -59,15 +62,14 @@ uint64_t PipeCommChannel::writeData(const CommChar *data, uint64_t size) {
         LOG_DEBUG(Log::instance()->getLogger(), "Try to write on inst:" << _instance);
     }
     DWORD bytesWritten = 0;
-    auto index = toInt(Action::Write);
-    BOOL fSuccess = WriteFile(_pipeInst, data, size * sizeof(TCHAR), &bytesWritten, &_overlap[index]);
+    const BOOL fSuccess = WriteFile(_pipeInst, data, size * sizeof(TCHAR), &bytesWritten, &_overlap[writeIndex]);
 
     // The write operation completed successfully
     if (fSuccess && bytesWritten == size * sizeof(TCHAR)) {
         if (ParametersCache::isExtendedLogEnabled()) {
             LOG_DEBUG(Log::instance()->getLogger(), "Write done on inst:" << _instance);
         }
-        _pendingIO[index] = FALSE;
+        _pendingIO[writeIndex] = FALSE;
         return size;
     }
 
@@ -77,8 +79,8 @@ uint64_t PipeCommChannel::writeData(const CommChar *data, uint64_t size) {
         if (ParametersCache::isExtendedLogEnabled()) {
             LOG_DEBUG(Log::instance()->getLogger(), "Write pending on inst:" << _instance);
         }
-        _size[index] = size * sizeof(TCHAR);
-        _pendingIO[index] = TRUE;
+        _size[writeIndex] = size * sizeof(TCHAR);
+        _pendingIO[writeIndex] = TRUE;
         return size;
     }
 
@@ -100,16 +102,23 @@ uint64_t PipeCommChannel::bytesAvailable() const {
 
 PipeCommServer::PipeCommServer(const std::string &name) :
     AbstractCommServer(name) {
-    _pipePath = createPipe();
+    _pipePath = pipePath();
 }
 
-PipeCommServer::~PipeCommServer() = default;
+PipeCommServer::~PipeCommServer() {
+    if (_isRunning) {
+        stop();
+    }
+    waitForExit();
+    log4cplus::threadCleanup();
+}
 
 void PipeCommServer::close() {
     if (_isRunning) {
         stop();
     }
     waitForExit();
+    _isRunning = false;
 }
 
 bool PipeCommServer::listen() {
@@ -134,12 +143,14 @@ bool PipeCommServer::listen() {
 }
 
 std::shared_ptr<AbstractCommChannel> PipeCommServer::nextPendingConnection() {
+    const std::scoped_lock lock(_channelsMutex);
     return _channels.back();
 }
 
 std::list<std::shared_ptr<AbstractCommChannel>> PipeCommServer::connections() {
+    const std::scoped_lock lock(_channelsMutex);
     std::list<std::shared_ptr<AbstractCommChannel>> channelList;
-    for (auto &channel: _channels) {
+    for (auto channel: _channels) {
         if (channel->_connected) {
             channelList.push_back(channel);
         }
@@ -154,29 +165,29 @@ void PipeCommServer::executeFunc(PipeCommServer *server) {
 
 void PipeCommServer::execute() {
 #if defined(KD_WINDOWS)
-    HANDLE events[PIPE_INSTANCES * toInt(PipeCommChannel::Action::EnumEnd)];
+    HANDLE events[pipeInstances * toInt(PipeCommChannel::Action::EnumEnd)] = {nullptr};
 
-    for (DWORD inst = 0; inst < PIPE_INSTANCES; inst++) {
+    for (DWORD inst = 0; inst < pipeInstances; inst++) {
         // Creates an instance of a named pipe
+        const std::scoped_lock lock(_channelsMutex);
         auto channel = makeCommChannel();
         _channels.push_back(channel);
-        newConnectionCbk();
+        channel->_instance = inst;
 
         for (auto action = 0; action < toInt(PipeCommChannel::Action::EnumEnd); action++) {
             // Create an event object
             const auto index = inst * toInt(PipeCommChannel::Action::EnumEnd) + action;
-            events[index] = CreateEvent(NULL, // default security attribute
+            events[index] = CreateEvent(nullptr, // default security attribute
                                         TRUE, // manual-reset event
                                         FALSE, // initial state = not signaled
-                                        NULL); // unnamed event object
+                                        nullptr); // unnamed event object
 
-            if (events[index] == NULL) {
+            if (events[index] == nullptr) {
                 LOG_WARN(Log::instance()->getLogger(), "Error in CreateEvent: err=" << GetLastError());
                 _exitInfo = ExitInfo(ExitCode::SystemError, ExitCause::Unknown);
                 return;
             }
 
-            channel->_instance = inst;
             channel->_overlap[action].hEvent = events[index];
             channel->_overlap[action].Offset = 0;
             channel->_overlap[action].OffsetHigh = 0;
@@ -190,11 +201,11 @@ void PipeCommServer::execute() {
                                              PIPE_TYPE_BYTE | // message-type pipe
                                                      PIPE_READMODE_BYTE | // message-read mode
                                                      PIPE_WAIT, // blocking mode
-                                             PIPE_INSTANCES, // number of instances
+                                             pipeInstances, // number of instances
                                              BUFSIZE * sizeof(TCHAR), // output buffer size
                                              BUFSIZE * sizeof(TCHAR), // input buffer size
-                                             PIPE_TIMEOUT, // client time-out (ms)
-                                             NULL); // default security attributes
+                                             pipeTimeOut, // client time-out (ms)
+                                             nullptr); // default security attributes
 
         if (channel->_pipeInst == INVALID_HANDLE_VALUE) {
             LOG_WARN(Log::instance()->getLogger(), "Error in CreateNamedPipe: err=" << GetLastError());
@@ -215,13 +226,17 @@ void PipeCommServer::execute() {
 
         channel->_connected = channel->_pendingIO[connectIndex] ? FALSE // still connecting
                                                                 : TRUE; // ready to read
+
+        channel->setLostConnectionCbk([this](std::shared_ptr<AbstractCommChannel> ch) { lostConnectionCbk(ch); });
+        newConnectionCbk();
     }
 
+    _isListening = true;
     while (!_stopAsked) {
         // Wait for the event object to be signaled, indicating completion of an overlapped read, write, or connect operation
-        const auto eventCount = PIPE_INSTANCES * toInt(PipeCommChannel::Action::EnumEnd);
+        const auto eventCount = pipeInstances * toInt(PipeCommChannel::Action::EnumEnd);
         const auto dwWait = WaitForMultipleObjects(eventCount, events, FALSE,
-                                                   EVENT_WAIT_TIMEOUT); // wait time (ms)
+                                                   eventWaitTimeout); // wait time (ms)
 
         DWORD index = 0;
         if (dwWait == WAIT_TIMEOUT) {
@@ -232,7 +247,7 @@ void PipeCommServer::execute() {
         } else {
             LOG_WARN(Log::instance()->getLogger(), "Error in WaitForSingleObject: err=" << GetLastError());
             _exitInfo = ExitInfo(ExitCode::SystemError, ExitCause::Unknown);
-            return;
+            break;
         }
 
         ResetEvent(events[index]);
@@ -243,6 +258,7 @@ void PipeCommServer::execute() {
             LOG_DEBUG(Log::instance()->getLogger(), "Event received for inst:" << inst << " action:" << action);
         }
 
+        const std::scoped_lock lock(_channelsMutex);
         if (_channels[inst]->_pendingIO[action]) {
             DWORD size;
             const auto fSuccess = GetOverlappedResult(_channels[inst]->_pipeInst, // handle to pipe
@@ -342,6 +358,13 @@ void PipeCommServer::execute() {
             disconnectAndReconnect(_channels[inst]);
         }
     }
+    _isListening = false;
+
+    for (auto &channel: _channels) {
+        (void) DisconnectNamedPipe(channel->_pipeInst);
+        (void) CloseHandle(channel->_pipeInst); // Needed to be able to reuse the pipe (avoid ERROR_PIPE_BUSY)
+    }
+    _channels.clear();
 
     _exitInfo = ExitInfo(ExitCode::Ok, ExitCause::Unknown);
 #endif
@@ -351,6 +374,8 @@ void PipeCommServer::execute() {
 // This function is called when an error occurs or when the client closes its handle to the pipe
 // Disconnect from this client, then call ConnectNamedPipe to wait for another client to connect
 void PipeCommServer::disconnectAndReconnect(std::shared_ptr<PipeCommChannel> channel) {
+    channel->lostConnectionCbk();
+
     // Disconnect the pipe instance.
     if (ParametersCache::isExtendedLogEnabled()) {
         LOG_DEBUG(Log::instance()->getLogger(), "Disconnect pipe inst:" << channel->_instance);
@@ -380,7 +405,7 @@ bool PipeCommServer::connectToPipe(HANDLE hPipe, LPOVERLAPPED lpo) {
     bool fPendingIO = false;
 
     // Start an overlapped connection for this pipe instance
-    BOOL fConnected = ConnectNamedPipe(hPipe, lpo);
+    const BOOL fConnected = ConnectNamedPipe(hPipe, lpo);
 
     // Overlapped ConnectNamedPipe should return zero
     if (fConnected) {
@@ -432,7 +457,7 @@ void PipeCommServer::waitForExit() {
     }
 }
 
-SyncPath PipeCommServer::createPipe() {
+SyncPath PipeCommServer::pipePath() {
     // Get pipe file path
     std::string name(Theme::instance()->appName());
     name.append("-");
@@ -440,20 +465,7 @@ SyncPath PipeCommServer::createPipe() {
 
     const SyncPath pipePath = SyncPath(R"(\\.\pipe\)") / Str2SyncName(name);
 
-    // Delete/create pipe file
-    std::error_code ec;
-    /* std::filesystem::remove(pipePath, ec);
-    if (const QFileInfo info(Path2QStr(pipePath)); !info.dir().exists()) {
-        if (info.dir().mkpath(".")) {
-            QFile::setPermissions(Path2QStr(pipePath),
-                                  QFile::Permissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner));
-            LOGW_DEBUG(Log::instance()->getLogger(), L"Pipe created: " << Utility::formatSyncPath(pipePath));
-        } else {
-            LOGW_WARN(Log::instance()->getLogger(), L"Failed to create pipe: " << Utility::formatSyncPath(pipePath));
-        }
-    }
-*/
-
     return pipePath;
 }
+
 } // namespace KDC

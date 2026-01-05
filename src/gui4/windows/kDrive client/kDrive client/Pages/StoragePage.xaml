@@ -28,9 +28,8 @@
       mc:Ignorable="d">
     <Page.Resources>
         <converters:BooleanToVisibilityConverter  x:Key="BooleanToVisibilityConverter" />
-        <converters:BooleanToInvertedVisibilityConverter  x:Key="BooleanToInvertedVisibilityConverter" />
         <converters:BytesToHumanReadableStringConverter x:Key="BytesToHumanReadableStringConverter" />
-        <converters:IsNullToVisibilityConverter x:Key="IsNullToVisibilityConverter" />
+        <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
     </Page.Resources>
     <Grid Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.L}"
           RowSpacing="{StaticResource Infomaniak.Style.Spacing.L}">
@@ -55,7 +54,7 @@
                  IsOpen="True"
                  IsClosable="False"
                  Message="{x:Bind PageViewModel.DiskRoot, Mode=OneWay}"
-                 Visibility="{x:Bind PageViewModel.IsDiskConnected, Mode=OneWay, Converter={StaticResource BooleanToInvertedVisibilityConverter}}">
+                 Visibility="{x:Bind PageViewModel.IsDiskConnected, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True'}">
             <!-- TODO: Replace this infobar once the page is ready on the UI/UX side-->
             <InfoBar.ActionButton>
                 <Button Content="Réessayer"
@@ -130,7 +129,7 @@
                     <ProgressRing Height="8"
                                   Width="8"
                                   Foreground="{StaticResource Infomaniak.Style.Color.Product.DefaultBrush}"
-                                  Visibility="{x:Bind PageViewModel.HydratedFileSize, Mode=OneWay, Converter={StaticResource IsNullToVisibilityConverter}}" />
+                                  Visibility="{x:Bind PageViewModel.HydratedFileSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}}" />
                     <TextBlock Grid.Column="2"
                                Text="{x:Bind PageViewModel.HydratedFileSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}}"
                                HorizontalAlignment="Right"
@@ -155,7 +154,7 @@
                     <ProgressRing Height="8"
                                   Width="8"
                                   Foreground="#BA68C8"
-                                  Visibility="{x:Bind PageViewModel.OtherFileSize, Mode=OneWay, Converter={StaticResource IsNullToVisibilityConverter}}" />
+                                  Visibility="{x:Bind PageViewModel.OtherFileSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}}" />
 
                     <TextBlock x:Uid="Page_StoragePage_OtherFiles"
                                Grid.Column="1"
@@ -184,7 +183,7 @@
                     <ProgressRing Height="8"
                                   Width="8"
                                   Foreground="#E0E0E0"
-                                  Visibility="{x:Bind PageViewModel.DiskFreeSize, Mode=OneWay, Converter={StaticResource IsNullToVisibilityConverter}}" />
+                                  Visibility="{x:Bind PageViewModel.DiskFreeSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}}" />
                     <TextBlock x:Uid="Page_StoragePage_FreeSpace"
                                Grid.Column="1"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />

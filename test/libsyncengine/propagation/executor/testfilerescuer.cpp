@@ -40,10 +40,7 @@ void TestFileRescuer::setUp() {
     KeyChainManager::instance()->writeToken(keychainKey, testVariables.apiToken);
 
     // Create parmsDb
-    bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
-    std::filesystem::remove(parmsDbPath);
-    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
+    (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
 
     // Insert user, account, drive & sync
     int userId(12321);
@@ -138,11 +135,11 @@ void TestFileRescuer::testGetDestinationPath() {
 
 #ifdef _WIN32
     // Test with a file name with special characters
-    fileName = WStr2SyncName(L"°.txt");
+    fileName = WStr2SyncName(L"ï¿½.txt");
     res = fileRescuer.getDestinationPath(fileName);
-    CPPUNIT_ASSERT(res.filename().native() == L"°.txt");
+    CPPUNIT_ASSERT(res.filename().native() == L"ï¿½.txt");
     res = fileRescuer.getDestinationPath(fileName, 1);
-    CPPUNIT_ASSERT(res.filename().native() == L"° (1).txt");
+    CPPUNIT_ASSERT(res.filename().native() == L"ï¿½ (1).txt");
 #endif // _WIN32
 }
 } // namespace KDC

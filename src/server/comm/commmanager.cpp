@@ -17,11 +17,13 @@
  */
 
 #include "commmanager.h"
+#include "appserver.h"
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
 #include "extjobmanager.h"
 #include "extensionjob.h"
 #endif
 #include "guijobmanager.h"
+#include "guijobs/abstractguijob.h"
 #include "guijobs/guijobfactory.h"
 #include "config.h"
 #include "libcommon/utility/logiffail.h"
@@ -56,9 +58,8 @@
 #include <log4cplus/loggingmacros.h>
 
 namespace KDC {
-CommManager::CommManager(const SyncPalMap &syncPalMap, const VfsMap &vfsMap) :
-    _syncPalMap(syncPalMap),
-    _vfsMap(vfsMap) {
+CommManager::CommManager(AppServer &appServer) :
+    _appServer(appServer) {
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
     _extCommServer = std::make_shared<ExtCommServer>("Extension Comm Server");
 #endif
@@ -85,14 +86,16 @@ CommManager::CommManager(const SyncPalMap &syncPalMap, const VfsMap &vfsMap) :
 
     // Set CommServer(s) callbacks
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
-    _extCommServer->setNewConnectionCbk(std::bind(&CommManager::onNewExtConnection, this));
-    _extCommServer->setLostConnectionCbk(std::bind(&CommManager::onLostExtConnection, this, std::placeholders::_1));
+    _extCommServer->setNewConnectionCbk(std::bind_front(&CommManager::onNewExtConnection, this));
+    _extCommServer->setLostConnectionCbk(std::bind_front(&CommManager::onLostExtConnection, this));
 #endif
-    _guiCommServer->setNewConnectionCbk(std::bind(&CommManager::onNewGuiConnection, this));
-    _guiCommServer->setLostConnectionCbk(std::bind(&CommManager::onLostGuiConnection, this, std::placeholders::_1));
+    _guiCommServer->setNewConnectionCbk(std::bind_front(&CommManager::onNewGuiConnection, this));
+    _guiCommServer->setLostConnectionCbk(std::bind_front(&CommManager::onLostGuiConnection, this));
 }
 
 CommManager::~CommManager() {
+    const std::scoped_lock lock(_mutex);
+
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
     _extCommServer.reset();
 #endif
@@ -106,21 +109,25 @@ CommManager::~CommManager() {
 }
 
 void CommManager::start() {
+    const std::scoped_lock lock(_mutex);
+    if (!_guiCommServer) return;
+
     // Start Gui CommServer
     LOGW_INFO(Log::instance()->getLogger(), L"Starting " << CommonUtility::s2ws(_guiCommServer->name()));
     if (!_guiCommServer->listen()) {
         LOGW_WARN(Log::instance()->getLogger(), L"Can't start " << CommonUtility::s2ws(_guiCommServer->name()));
-        _addErrorCbk(Error(ERR_ID, ExitCode::SystemError, ExitCause::Unknown));
+        AppServer::addError(Error(ERR_ID, ExitCode::SystemError, ExitCause::Unknown));
     } else {
         LOGW_INFO(Log::instance()->getLogger(), CommonUtility::s2ws(_guiCommServer->name()) << L" started");
     }
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
     // Start Ext CommServer
+    if (!_extCommServer) return;
     LOGW_INFO(Log::instance()->getLogger(), L"Starting " << CommonUtility::s2ws(_extCommServer->name()));
     if (!_extCommServer->listen()) {
         LOGW_WARN(Log::instance()->getLogger(), L"Can't start " << CommonUtility::s2ws(_extCommServer->name()));
-        _addErrorCbk(Error(ERR_ID, ExitCode::SystemError, ExitCause::Unknown));
+        AppServer::addError(Error(ERR_ID, ExitCode::SystemError, ExitCause::Unknown));
     } else {
         LOGW_INFO(Log::instance()->getLogger(), CommonUtility::s2ws(_extCommServer->name()) << L" started");
     }
@@ -128,13 +135,19 @@ void CommManager::start() {
 }
 
 void CommManager::stop() {
+    const std::scoped_lock lock(_mutex);
+
+    if (!_guiCommServer) return;
+    _guiCommServer->close();
+
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
+    if (!_extCommServer) return;
     _extCommServer->close();
 #endif
-    _guiCommServer->close();
 }
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
+
 void CommManager::registerSync(const SyncPath &localPath) {
     CommString command(Str("REGISTER_PATH"));
     command.append(messageCdeSeparator);
@@ -158,7 +171,7 @@ void CommManager::executeCommandDirect(const CommString &commandLineStr, bool br
 }
 
 void CommManager::executeExtCommand(const CommString &commandLineStr) {
-    LOGW_DEBUG(Log::instance()->getLogger(), L"Execute command - cmd=" << CommonUtility::commString2WStr(commandLineStr));
+    LOGW_DEBUG(Log::instance()->getLogger(), L"Execute command: cmd=" << CommonUtility::commString2WStr(commandLineStr));
 
     auto job =
             std::make_shared<ExtensionJob>(shared_from_this(), commandLineStr, std::list<std::shared_ptr<AbstractCommChannel>>());
@@ -168,7 +181,7 @@ void CommManager::executeExtCommand(const CommString &commandLineStr) {
 }
 
 void CommManager::executeExtCommand(const CommString &commandLineStr, std::shared_ptr<AbstractCommChannel> channel) {
-    LOGW_DEBUG(Log::instance()->getLogger(), L"Execute command - cmd=" << CommonUtility::commString2WStr(commandLineStr));
+    LOGW_DEBUG(Log::instance()->getLogger(), L"Execute command: cmd=" << CommonUtility::commString2WStr(commandLineStr));
 
     if (channel) {
         auto job = std::make_shared<ExtensionJob>(shared_from_this(), commandLineStr,
@@ -180,7 +193,10 @@ void CommManager::executeExtCommand(const CommString &commandLineStr, std::share
 }
 
 void CommManager::broadcastExtCommand(const CommString &commandLineStr) {
-    LOGW_DEBUG(Log::instance()->getLogger(), L"Broadcast command - cmd=" << CommonUtility::commString2WStr(commandLineStr));
+    const std::scoped_lock lock(_mutex);
+    if (!_extCommServer) return;
+
+    LOGW_DEBUG(Log::instance()->getLogger(), L"Broadcast command: cmd=" << CommonUtility::commString2WStr(commandLineStr));
 
     if (!_extCommServer->connections().empty()) {
         auto job = std::make_shared<ExtensionJob>(shared_from_this(), commandLineStr, _extCommServer->connections());
@@ -191,17 +207,20 @@ void CommManager::broadcastExtCommand(const CommString &commandLineStr) {
 }
 
 void CommManager::onNewExtConnection() {
+    const std::scoped_lock lock(_mutex);
+    if (!_extCommServer) return;
+
     std::shared_ptr<AbstractCommChannel> channel = _extCommServer->nextPendingConnection();
     if (!channel) return;
 
-    LOG_INFO(Log::instance()->getLogger(), "New ext connection - channel=" << channel->id());
-    channel->setReadyReadCbk(std::bind(&CommManager::onExtQueryReceived, this, std::placeholders::_1));
+    LOG_INFO(Log::instance()->getLogger(), "New ext connection: channel=" << channel->id());
+    channel->setReadyReadCbk(std::bind_front(&CommManager::onExtQueryReceived, this));
 
     // Load sync list
     std::vector<Sync> syncList;
     if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
-        _addErrorCbk(Error(ERR_ID, ExitCode::DbError, ExitCause::Unknown));
+        AppServer::addError(Error(ERR_ID, ExitCode::DbError, ExitCause::Unknown));
         return;
     }
 
@@ -221,26 +240,29 @@ void CommManager::onExtQueryReceived(std::shared_ptr<AbstractCommChannel> channe
             LOG_WARN(Log::instance()->getLogger(), "Failed to read message or empty message");
             break;
         }
-        LOGW_INFO(Log::instance()->getLogger(), L"Received Extension message - msg=" << CommonUtility::commString2WStr(query)
-                                                                                     << L" channel="
-                                                                                     << CommonUtility::s2ws(channel->id()));
+        LOGW_INFO(Log::instance()->getLogger(), L"Received Extension message: msg=" << CommonUtility::commString2WStr(query)
+                                                                                    << L" channel="
+                                                                                    << CommonUtility::s2ws(channel->id()));
         executeExtCommand(query, channel);
     }
 }
 
 void CommManager::onLostExtConnection(std::shared_ptr<AbstractCommChannel> channel) {
-    LOG_INFO(Log::instance()->getLogger(), "Lost ext connection - channel=" << channel->id());
+    LOG_INFO(Log::instance()->getLogger(), "Lost ext connection: channel=" << channel->id());
 }
 
 #endif
 
 void CommManager::executeGuiQuery(const CommString &commandLineStr, std::shared_ptr<AbstractCommChannel> channel) {
+    const std::scoped_lock lock(_mutex);
+    if (!_guiJobFactory) return;
+
     // Deserialize generic parameters
     int requestId = 0;
     RequestNum requestNum = RequestNum::Unknown;
     Poco::DynamicStruct inParams;
     if (!AbstractGuiJob::deserializeGenericInputParms(commandLineStr, requestId, requestNum, inParams)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in AbstractGuiJob::deserializeGenericInputParms - query="
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in AbstractGuiJob::deserializeGenericInputParms: query="
                                                         << CommonUtility::commString2WStr(commandLineStr));
         return;
     }
@@ -256,12 +278,30 @@ void CommManager::executeGuiQuery(const CommString &commandLineStr, std::shared_
     GuiJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
 }
 
+void CommManager::sendGuiSignal(std::shared_ptr<AbstractGuiJob> signal) {
+    const std::scoped_lock lock(_mutex);
+    if (!_guiCommServer) return;
+
+    assert(signal->type() == AbstractGuiJob::GuiJobType::Signal);
+
+    LOG_DEBUG(Log::instance()->getLogger(), "Send signal: id=" << signal->id() << " num=" << signal->signalNum());
+
+    signal->setCommManager(shared_from_this());
+    signal->setChannels(_guiCommServer->connections());
+
+    // Add job to JobManager pool
+    GuiJobManagerSingleton::instance()->queueAsyncJob(signal, Poco::Thread::PRIO_NORMAL);
+}
+
 void CommManager::onNewGuiConnection() {
+    const std::scoped_lock lock(_mutex);
+    if (!_guiCommServer) return;
+
     std::shared_ptr<AbstractCommChannel> channel = _guiCommServer->nextPendingConnection();
     if (!channel) return;
 
-    LOG_INFO(Log::instance()->getLogger(), "New gui connection - channel=" << channel->id());
-    channel->setReadyReadCbk(std::bind(&CommManager::onGuiQueryReceived, this, std::placeholders::_1));
+    LOG_INFO(Log::instance()->getLogger(), "New gui connection: channel=" << channel->id());
+    channel->setReadyReadCbk(std::bind_front(&CommManager::onGuiQueryReceived, this));
 }
 
 void CommManager::onGuiQueryReceived(std::shared_ptr<AbstractCommChannel> channel) {
@@ -274,14 +314,14 @@ void CommManager::onGuiQueryReceived(std::shared_ptr<AbstractCommChannel> channe
             LOG_WARN(Log::instance()->getLogger(), "Failed to read message or empty message");
             break;
         }
-        LOGW_INFO(Log::instance()->getLogger(), L"Received GUI message - msg=" << CommonUtility::commString2WStr(query)
-                                                                               << L" channel="
-                                                                               << CommonUtility::s2ws(channel->id()));
+        LOGW_INFO(Log::instance()->getLogger(), L"Received GUI message: msg=" << CommonUtility::commString2WStr(query)
+                                                                              << L" channel="
+                                                                              << CommonUtility::s2ws(channel->id()));
         executeGuiQuery(query, channel);
     }
 }
 
 void CommManager::onLostGuiConnection(std::shared_ptr<AbstractCommChannel> channel) {
-    LOG_INFO(Log::instance()->getLogger(), "Lost gui connection - sender=" << channel->id());
+    LOG_INFO(Log::instance()->getLogger(), "Lost gui connection: sender=" << channel->id());
 }
 } // namespace KDC

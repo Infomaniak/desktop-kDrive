@@ -18,6 +18,8 @@
 
 #include "testincludes.h"
 #include "server/comm/guicommserver.h"
+#include "server/comm/guijobs/guijobfactory.h"
+
 #include <log4cplus/logger.h>
 
 namespace KDC {
@@ -47,7 +49,24 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSendMessage);
         CPPUNIT_TEST(testReadMessage);
         CPPUNIT_TEST(testCanReadMessage);
-        CPPUNIT_TEST(testLoginRequestToken);
+        CPPUNIT_TEST(testLoginRequestTokenJob);
+        CPPUNIT_TEST(testUserDbIdListJob);
+        CPPUNIT_TEST(testUserInfoListJob);
+        CPPUNIT_TEST(testUserDeleteJob);
+        CPPUNIT_TEST(testUserAvailableDrivesJob);
+        CPPUNIT_TEST(testAccountInfoListJob);
+        CPPUNIT_TEST(testDriveInfoListJob);
+        CPPUNIT_TEST(testDriveUpdateJob);
+        CPPUNIT_TEST(testDriveSearchJob);
+        CPPUNIT_TEST(testSyncInfoListJob);
+        CPPUNIT_TEST(testStartSyncJob);
+        CPPUNIT_TEST(testStopSyncJob);
+        CPPUNIT_TEST(testSyncStatusJob);
+        CPPUNIT_TEST(testSyncAddJob);
+        CPPUNIT_TEST(testSyncAdd2Job);
+        CPPUNIT_TEST(testSyncStartAfterLoginJob);
+        CPPUNIT_TEST(testSyncDeleteJob);
+        CPPUNIT_TEST(testSyncGetPublicLinkUrlJob);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -57,6 +76,30 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testSendMessage();
         void testReadMessage();
         void testCanReadMessage();
-        void testLoginRequestToken();
+        void testLoginRequestTokenJob();
+        void testUserDbIdListJob();
+        void testUserInfoListJob();
+        void testUserDeleteJob();
+        void testUserAvailableDrivesJob();
+        void testAccountInfoListJob();
+        void testDriveInfoListJob();
+        void testDriveUpdateJob();
+        void testDriveDeleteJob();
+        void testDriveSearchJob();
+        void testSyncInfoListJob();
+        void testStartSyncJob();
+        void testStopSyncJob();
+        void testSyncStatusJob();
+        void testSyncAddJob();
+        void testSyncAdd2Job();
+        void testSyncStartAfterLoginJob();
+        void testSyncDeleteJob();
+        void testSyncGetPublicLinkUrlJob();
+
+    private:
+        GuiJobFactory _guiJobFactory;
+
+        void testGenericJob(const CommString &query, const CommString &answer, const CommString &cbkAnswer,
+                            const std::function<void(std::shared_ptr<AbstractGuiJob>)> &processFct);
 };
 } // namespace KDC

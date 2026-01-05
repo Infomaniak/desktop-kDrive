@@ -25,15 +25,16 @@ set(testcommonserver_SRCS
         db/testdb.h db/testdb.cpp
         # io
         io/testio.h io/testio.cpp io/testgetitemtype.cpp io/testgetfilesize.cpp io/testcheckifpathexists.cpp io/testgetnodeid.cpp io/testgetfilestat.cpp io/testgetrights.cpp io/testisfileaccessible.cpp io/testfilechanged.cpp
-        io/testcheckifisdirectory.cpp io/testcreatesymlink.cpp io/testcheckifdehydrated.cpp io/testcheckdirectoryiterator.cpp io/testchecksetgetrights.cpp io/testopenfile.cpp io/testgetdirectorysize.cpp
+        io/testcheckifisdirectory.cpp io/testcreatesymlink.cpp io/testcheckifdehydrated.cpp io/testcheckdirectoryiterator.cpp io/testrights.cpp io/testopenfile.cpp io/testgetdirectorysize.cpp
+        io/testmoveitemtotrash.cpp
 )
 
 if(APPLE)
-    list(APPEND testcommonserver_SRCS io/testcreatealias.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp io/testremovexattr.cpp)
-endif()
-
-if(WIN32)
-    list(APPEND testcommonserver_SRCS io/testcreatejunction.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp io/testgetlongpathname.cpp)
+    list(APPEND testcommonserver_SRCS io/testcreatealias.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp io/testremovexattr.cpp ../test_utility/testhelpers_mac.cpp)
+elseif(UNIX)
+    list(APPEND testcommonserver_SRCS ../test_utility/testhelpers_linux.cpp)
+elseif(WIN32)
+    list(APPEND testcommonserver_SRCS io/testcreatejunction.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp io/testgetlongpathname.cpp ../test_utility/testhelpers_win.cpp)
 endif()
 
 if(WIN32)

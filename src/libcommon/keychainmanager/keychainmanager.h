@@ -41,7 +41,7 @@ class COMMON_EXPORT KeyChainManager : public QObject {
 
         bool writeToken(const std::string &keychainKey, const std::string &rawData);
         bool readApiToken(const std::string &keychainKey, ApiToken &apiToken, bool &found);
-        bool deleteToken(const std::string &keychainKey);
+        bool deleteToken(const std::string &keychainKey) const;
 
         bool readDataFromKeystore(const std::string &keychainKey, std::string &data, bool &found);
 

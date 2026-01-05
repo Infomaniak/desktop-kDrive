@@ -1,5 +1,6 @@
 using ABI.System;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -22,14 +23,13 @@ namespace Infomaniak.kDrive.Pages
 {
     public sealed partial class ErrorPage : Page
     {
-        private AppModel _viewModel = ((App)Application.Current).Data;
+        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel { get { return _viewModel; } }
         public ErrorPage()
         {
             Logger.Log(Logger.Level.Info, "Navigated to ErrorPage - Initializing ErrorPage components");
             InitializeComponent();
-            var resourceLoader = new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader();
-            NavBar.ItemsSource = new string[] { resourceLoader.GetString("W_MainWindow_NavBar_Activity/Content"), resourceLoader.GetString("Page_ErrorPage_Title/Text") };
+            NavBar.ItemsSource = new string[] { Utility.GetLocalizedString("W_MainWindow_NavBar_Activity/Content"), Utility.GetLocalizedString("Page_ErrorPage_Title/Text") };
             Logger.Log(Logger.Level.Debug, "ErrorPage components initialized");
         }
 
@@ -45,16 +45,14 @@ namespace Infomaniak.kDrive.Pages
         private async void SupportButton_Click(object sender, RoutedEventArgs e)
         {
             Logger.Log(Logger.Level.Info, "Support button clicked, opening support URL");
-            var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
-            await Windows.System.Launcher.LaunchUriAsync(new System.Uri(resourceLoader.GetString("Global_SupportUrl")));
+            await Windows.System.Launcher.LaunchUriAsync(new System.Uri(Utility.GetLocalizedString("Global_SupportUrl")));
             Logger.Log(Logger.Level.Debug, "Support URL opened");
         }
 
         private async void LearnMoreButton_Click(object sender, RoutedEventArgs e)
         {
             Logger.Log(Logger.Level.Info, "Learn more button clicked, opening support URL");
-            var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
-            await Windows.System.Launcher.LaunchUriAsync(new System.Uri(resourceLoader.GetString("Global_FAQUrl")));
+            await Windows.System.Launcher.LaunchUriAsync(new System.Uri(Utility.GetLocalizedString("Global_FAQUrl")));
             Logger.Log(Logger.Level.Debug, "Learn more Support URL opened");
         }
     }

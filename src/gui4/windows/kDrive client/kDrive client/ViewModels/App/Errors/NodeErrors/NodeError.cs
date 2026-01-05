@@ -19,32 +19,25 @@ namespace Infomaniak.kDrive.ViewModels.Errors
         public SyncPath NodePath
         {
             get => _nodePath;
-            set
-            {
-                SetProperty(ref _nodePath, value);
-                if (_nodeType == NodeType.File)
-                {
-                    SetProperty(ref _nodeType, Utility.DeduceNodeTypeFromFilePath(_nodePath));
-                }
-            }
+            set => SetPropertyInUIThread(ref _nodePath, value);
         }
 
         public NodeId LocalNodeId
         {
             get => _localNodeId;
-            set => SetProperty(ref _localNodeId, value);
+            set => SetPropertyInUIThread(ref _localNodeId, value);
         }
 
         public NodeId RemoteNodeId
         {
             get => _remoteNodeId;
-            set => SetProperty(ref _remoteNodeId, value);
+            set => SetPropertyInUIThread(ref _remoteNodeId, value);
         }
 
         public NodeType NodeType
         {
             get => _nodeType;
-            set => SetProperty(ref _nodeType, value);
+            set => SetPropertyInUIThread(ref _nodeType, value);
         }
 
         public override sealed string TitleStr()
@@ -54,8 +47,8 @@ namespace Infomaniak.kDrive.ViewModels.Errors
 
         public override sealed Uri IconUri()
         {
-            Converters.NodeTypeToSvgUriConverter converter = new();
-            return (Uri)converter.Convert(NodeType, typeof(Uri), null!, "");
+
+            return new Uri("");
         }
     }
 }

@@ -23,6 +23,7 @@
 #include <QDataStream>
 #include <QString>
 #include <QList>
+#include <Poco/Dynamic/Struct.h>
 
 namespace KDC {
 
@@ -64,6 +65,7 @@ class SyncFileItemInfo {
         friend QDataStream &operator>>(QDataStream &in, QList<SyncFileItemInfo> &list);
         friend QDataStream &operator<<(QDataStream &out, const QList<SyncFileItemInfo> &list);
 
+        void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
 
     private:
         NodeType _type;

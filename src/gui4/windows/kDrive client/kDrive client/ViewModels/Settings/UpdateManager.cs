@@ -1,44 +1,49 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Linq;
-using System.Text;
+﻿using Infomaniak.kDrive.ServerCommunication.Interfaces;
+using Infomaniak.kDrive.Types;
+using Microsoft.Extensions.DependencyInjection;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.ViewModels
 {
-    public class UpdateManager : ObservableObject
+    public class UpdateManager : UISafeObservableObject
     {
-        public enum ReleaseChannel
-        {
-            Production,
-            Beta,
-            Internal
-        }
-
-        private bool _isUpdateAvailable = false;
-        private bool _autoUpdateEnabled = true;
-        private ReleaseChannel _currentChannel = ReleaseChannel.Production;
-
-        public bool IsUpdateAvailable
-        {
-            get => _isUpdateAvailable;
-            set => SetProperty(ref _isUpdateAvailable, value);
-        }
+        private bool _autoUpdateEnabled = false;
+        private VersionChannel _currentChannel = VersionChannel.Beta;
+        private AppVersion? _updateData;
 
         public bool AutoUpdateEnabled
         {
             get => _autoUpdateEnabled;
-            set => SetProperty(ref _autoUpdateEnabled, value);
+            set => SetPropertyInUIThread(ref _autoUpdateEnabled, value);
         }
 
-        public ReleaseChannel CurrentChannel
+        public VersionChannel CurrentChannel
         {
             get => _currentChannel;
-            set => SetProperty(ref _currentChannel, value);
+            set => SetPropertyInUIThread(ref _currentChannel, value);
         }
-        public UpdateData? AvailableUpdate { get; set; } = null;
+        public AppVersion? AvailableUpdate
+        {
+            get => _updateData;
+            set => SetPropertyInUIThread(ref _updateData, value);
+        }
 
+        public async Task<bool> StartUpdate()
+        {
+            await App.ServiceProvider.GetRequiredService<IServerCommService>().StartUpdate(CancellationToken.None);
+            return true;
+        }
+
+        public async Task ChangeChannel(VersionChannel newChannel)
+        {
+            await App.ServiceProvider.GetRequiredService<IServerCommService>().ChangeUpdaterChannel(newChannel, CancellationToken.None);
+        }
+
+        public async Task ChangeAutoUpdate(bool activated)
+        {
+            AutoUpdateEnabled = activated;
+            await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None);
+        }
     }
 }

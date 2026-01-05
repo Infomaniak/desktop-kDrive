@@ -17,7 +17,6 @@
  */
 
 #include "testworkers.h"
-
 #include "propagation/executor/executorworker.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommonserver/network/proxy.h"
@@ -28,16 +27,17 @@
 
 #if defined(KD_WINDOWS)
 #include <combaseapi.h>
+#include "comm/pipecommserver.h"
 #endif
 
 namespace KDC {
 
 #if defined(KD_MACOS)
-std::shared_ptr<VfsMac> TestWorkers::_vfsPtr = nullptr;
+std::shared_ptr<VfsMac> TestWorkers::_vfs = nullptr;
 #elif defined(KD_WINDOWS)
-std::shared_ptr<VfsWin> TestWorkers::_vfsPtr = nullptr;
+std::shared_ptr<VfsWin> TestWorkers::_vfs = nullptr;
 #else
-std::shared_ptr<VfsOff> TestWorkers::_vfsPtr = nullptr;
+std::shared_ptr<VfsOff> TestWorkers::_vfs = nullptr;
 #endif
 
 bool TestWorkers::_vfsInstallationDone = false;
@@ -58,19 +58,13 @@ void TestWorkers::setUp() {
 
     const testhelpers::TestVariables testVariables;
 
-    const std::string localPathStr = _localTempDir.path().string();
-
     // Insert api token into keystore
     std::string keychainKey("123");
     (void) KeyChainManager::instance(true);
     KeyChainManager::instance()->writeToken(keychainKey, testVariables.apiToken);
 
     // Create parmsDb
-    bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
-    std::error_code ec;
-    (void) std::filesystem::remove(parmsDbPath, ec);
-    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
+    (void) ParmsDb::instance(_localParmsDbTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
 
     // Insert user, account, drive & sync
     int userId(12321);
@@ -86,6 +80,7 @@ void TestWorkers::setUp() {
     Drive drive(driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
 
+    const std::string localPathStr = _localTempDir.path().string();
     _sync = Sync(1, drive.dbId(), localPathStr, "", testVariables.remotePath);
 #if defined(KD_MACOS)
     _sync.setVirtualFileMode(VirtualFileMode::Mac);
@@ -117,35 +112,47 @@ void TestWorkers::setUp() {
     vfsSetupParams.executeCommand = [](const CommString &, bool) {};
 
 #if defined(KD_MACOS)
-    _vfsPtr = std::shared_ptr<VfsMac>(new VfsMac(vfsSetupParams));
+    _vfs = std::shared_ptr<VfsMac>(new VfsMac(vfsSetupParams));
 #elif defined(KD_WINDOWS)
-    _vfsPtr = std::shared_ptr<VfsWin>(new VfsWin(vfsSetupParams));
+    _vfs = std::shared_ptr<VfsWin>(new VfsWin(vfsSetupParams));
 #else
-    _vfsPtr = std::shared_ptr<VfsOff>(new VfsOff(vfsSetupParams));
+    _vfs = std::shared_ptr<VfsOff>(new VfsOff(vfsSetupParams));
 #endif
 
 #if defined(KD_MACOS)
-    _vfsPtr->setExclusionAppListCallback([](QString &) {});
+    _vfs->setExclusionAppListCallback([](QString &) {});
 #endif
 
     // Setup SyncPal
-    _syncPal = std::make_shared<SyncPal>(_vfsPtr, _sync.dbId(), KDRIVE_VERSION_STRING);
+    _syncPal = std::make_shared<SyncPal>(_vfs, _sync.dbId(), KDRIVE_VERSION_STRING);
     _syncPal->createSharedObjects();
     _syncPal->createWorkers(std::chrono::seconds(0));
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createProgressInfo();
 
-    // Setup and start CommManager
     std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> syncPalMap;
     syncPalMap[_sync.dbId()] = _syncPal;
     std::unordered_map<int, std::shared_ptr<KDC::Vfs>> vfsMap;
-    vfsMap[_sync.dbId()] = _vfsPtr;
-    _commManager = std::make_unique<CommManager>(syncPalMap, vfsMap);
-    _commManager->start();
+    vfsMap[_sync.dbId()] = _vfs;
 
 #if defined(KD_WINDOWS)
     // Initializes the COM library
     CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+
+    // Initialize server pipe for VFS communication (no need to listen, just create the named pipe is enough for the vfs to start)
+    SyncPath pipePath = PipeCommServer::pipePath();
+    CreateNamedPipe(pipePath.native().c_str(), // pipe name
+                    PIPE_ACCESS_DUPLEX | // read/write access
+                            FILE_FLAG_OVERLAPPED, // overlapped mode
+                    PIPE_TYPE_BYTE | // message-type pipe
+                            PIPE_READMODE_BYTE | // message-read mode
+                            PIPE_WAIT, // blocking mode
+                    10, // number of instances
+                    BUFSIZE * sizeof(TCHAR), // output buffer size
+                    BUFSIZE * sizeof(TCHAR), // input buffer size
+                    5000, // client time-out (ms)
+                    nullptr); // default security attributes
+
 #endif
     // Start Vfs
 #if defined(KD_MACOS)
@@ -166,12 +173,11 @@ void TestWorkers::tearDown() {
     if (_syncPal && _syncPal->syncDb()) {
         _syncPal->syncDb()->close();
     }
-    if (_vfsPtr) {
+    if (_vfs) {
         // Stop Vfs
-        _vfsPtr->stopImpl(true);
-        _vfsPtr = nullptr;
+        _vfs->stopImpl(true);
+        _vfs = nullptr;
     }
-    _commManager->stop();
     TestBase::stop();
 }
 
@@ -375,7 +381,7 @@ void TestWorkers::testConvertToPlaceholder() {
 }
 
 bool TestWorkers::startVfs() {
-    return _vfsPtr->startImpl(_vfsInstallationDone, _vfsActivationDone, _vfsConnectionDone);
+    return _vfs->startImpl(_vfsInstallationDone, _vfsActivationDone, _vfsConnectionDone);
 }
 
 } // namespace KDC

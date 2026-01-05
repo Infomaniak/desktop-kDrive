@@ -51,22 +51,15 @@ enum class RequestNum {
     USER_INFOLIST,
     USER_DELETE,
     USER_AVAILABLEDRIVES,
-    USER_ID_FROM_USERDBID,
     ACCOUNT_INFOLIST,
     DRIVE_INFOLIST,
-    DRIVE_INFO,
-    DRIVE_ID_FROM_DRIVEDBID,
-    DRIVE_ID_FROM_SYNCDBID,
-    DRIVE_DEFAULTCOLOR,
     DRIVE_UPDATE,
     DRIVE_DELETE,
-    DRIVE_GET_OFFLINE_FILES_TOTAL_SIZE,
     DRIVE_SEARCH,
     SYNC_INFOLIST,
     SYNC_START,
     SYNC_STOP,
     SYNC_STATUS,
-    SYNC_ISRUNNING,
     SYNC_ADD,
     SYNC_ADD2,
     SYNC_START_AFTER_LOGIN,
@@ -142,20 +135,10 @@ inline std::string toString(RequestNum e) {
             return "USER_DELETE";
         case RequestNum::USER_AVAILABLEDRIVES:
             return "USER_AVAILABLEDRIVES";
-        case RequestNum::USER_ID_FROM_USERDBID:
-            return "USER_ID_FROM_USERDBID";
         case RequestNum::ACCOUNT_INFOLIST:
             return "ACCOUNT_INFOLIST";
         case RequestNum::DRIVE_INFOLIST:
             return "DRIVE_INFOLIST";
-        case RequestNum::DRIVE_INFO:
-            return "DRIVE_INFO";
-        case RequestNum::DRIVE_ID_FROM_DRIVEDBID:
-            return "DRIVE_ID_FROM_DRIVEDBID";
-        case RequestNum::DRIVE_ID_FROM_SYNCDBID:
-            return "DRIVE_ID_FROM_SYNCDBID";
-        case RequestNum::DRIVE_DEFAULTCOLOR:
-            return "DRIVE_DEFAULTCOLOR";
         case RequestNum::DRIVE_UPDATE:
             return "DRIVE_UPDATE";
         case RequestNum::DRIVE_DELETE:
@@ -168,8 +151,6 @@ inline std::string toString(RequestNum e) {
             return "SYNC_STOP";
         case RequestNum::SYNC_STATUS:
             return "SYNC_STATUS";
-        case RequestNum::SYNC_ISRUNNING:
-            return "SYNC_ISRUNNING";
         case RequestNum::SYNC_ADD:
             return "SYNC_ADD";
         case RequestNum::SYNC_ADD2:
@@ -234,7 +215,7 @@ inline std::string toString(RequestNum e) {
         case RequestNum::EXCLAPP_SETLIST:
             return "EXCLAPP_SETLIST";
         case RequestNum::EXCLAPP_GET_FETCHING_APP_LIST:
-            return "GET_FETCHING_APP_LIST";
+            return "EXCLAPP_GET_FETCHING_APP_LIST";
 #endif
         case RequestNum::PARAMETERS_INFO:
             return "PARAMETERS_INFO";

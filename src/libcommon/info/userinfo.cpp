@@ -20,12 +20,15 @@
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
 
+#include <QImageWriter>
+#include <QBuffer>
+
 static const auto userInfoDbId = "dbId";
 static const auto userInfoUserId = "userId";
 static const auto userInfoName = "name";
 static const auto userInfoEmail = "email";
 static const auto userInfoAvatar = "avatar";
-static const auto userInfoConnected = "connected";
+static const auto userInfoConnected = "isConnected";
 static const auto userInfoIsStaff = "isStaff";
 
 namespace KDC {
@@ -47,9 +50,13 @@ void UserInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, userInfoName, CommonUtility::qStr2CommString(_name));
     CommonUtility::writeValueToStruct(dstruct, userInfoEmail, CommonUtility::qStr2CommString(_email));
 
-    QByteArray avatarQBA = QByteArray::fromRawData((const char *) _avatar.bits(), _avatar.sizeInBytes());
-    CommBLOB avatarBLOB(avatarQBA.begin(), avatarQBA.end());
-    CommonUtility::writeValueToStruct(dstruct, userInfoAvatar, avatarBLOB);
+    QByteArray avatarQBA;
+    QBuffer buffer(&avatarQBA);
+    if (buffer.open(QIODevice::WriteOnly) && _avatar.save(&buffer, "PNG")) {
+        buffer.close();
+        CommBLOB avatarBLOB(avatarQBA.begin(), avatarQBA.end());
+        CommonUtility::writeValueToStruct(dstruct, userInfoAvatar, avatarBLOB);
+    }
 
     CommonUtility::writeValueToStruct(dstruct, userInfoConnected, _connected);
     CommonUtility::writeValueToStruct(dstruct, userInfoIsStaff, _isStaff);
@@ -66,6 +73,12 @@ void UserInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommString email;
     CommonUtility::readValueFromStruct(dstruct, userInfoEmail, email);
     _email = CommonUtility::commString2QStr(email);
+
+    CommBLOB avatarBLOB;
+    CommonUtility::readValueFromStruct(dstruct, userInfoAvatar, avatarBLOB);
+    QByteArray avatarQBA;
+    (void) std::copy(avatarBLOB.begin(), avatarBLOB.end(), std::back_inserter(avatarQBA));
+    (void) _avatar.loadFromData(avatarQBA);
 
     CommonUtility::readValueFromStruct(dstruct, userInfoConnected, _connected);
     CommonUtility::readValueFromStruct(dstruct, userInfoIsStaff, _isStaff);

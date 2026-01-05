@@ -16,189 +16,133 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using CommunityToolkit.Mvvm.Collections;
-using CommunityToolkit.Mvvm.ComponentModel;
-using Infomaniak.kDrive.ServerCommunication;
+using DynamicData;
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
+using Infomaniak.kDrive.Types;
+using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
-using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.ViewModels
 {
-    public class Drive : ObservableObject
+    public class Drive : UISafeObservableObject, IDrive
     {
         private DbId _dbId = -1;
-        private DriveId _id = -1;
+        private DriveId _driveId = -1;
         private string _name = "";
         private Color _color = Color.Blue;
-        private long _size = 0;
-        private long _usedSize = 0;
-        private bool _isActive = false; // Indicates if the user configured this drive on the current device.
         private bool _isPaidOffer = false; // Indicates if the drive is a paid offer (i.e. myKsuite+/pro +, ...)
         private ObservableCollection<Sync> _syncs = new ObservableCollection<Sync>();
-        private bool _hasError = false; // Indicate if any of the syncs has an error
+        private Sync? _mainSync;
+        private ObservableCollection<Sync> _advancedSyncs = new ObservableCollection<Sync>();
 
-        public Drive(DbId dbId)
+        private Account _account;
+        public Drive(DbId dbId, Account account)
         {
             DbId = dbId;
+            Account = account;
+            Syncs.CollectionChanged += (s, e) => RefreshAdvancedSyncsMap();
+
         }
 
-        public async Task Reload()
+        private void RefreshAdvancedSyncsMap()
         {
-            Logger.Log(Logger.Level.Info, $"Reloading Drive properties for DbId {DbId}...");
-            Task[] tasks = new Task[]
+            var advancedSyncs = Syncs.Where(s => s != MainSync);
+            foreach (int i in Enumerable.Range(0, _advancedSyncs.Count).Reverse())
             {
-               CommRequests.GetDriveId(DbId).ContinueWith(t => { if (t.Result != null) Id = t.Result.Value; }, TaskScheduler.FromCurrentSynchronizationContext()),
-               CommRequests.GetDriveName(DbId).ContinueWith(t => { if (t.Result != null) Name = t.Result; }, TaskScheduler.FromCurrentSynchronizationContext()),
-               CommRequests.GetDriveColor(DbId).ContinueWith(t => { if (t.Result != null) Color = t.Result.Value; }, TaskScheduler.FromCurrentSynchronizationContext()),
-               CommRequests.GetDriveSize(DbId).ContinueWith(t => { if (t.Result != null) Size = t.Result.Value; }, TaskScheduler.FromCurrentSynchronizationContext()),
-               CommRequests.GetDriveUsedSize(DbId).ContinueWith(t => { if (t.Result != null) UsedSize = t.Result.Value; }, TaskScheduler.FromCurrentSynchronizationContext()),
-               CommRequests.GetDriveIsActive(DbId).ContinueWith(t => { if (t.Result != null) IsActive = t.Result.Value; }, TaskScheduler.FromCurrentSynchronizationContext()),
-               CommRequests.GetDriveIsPaidOffer(DbId).ContinueWith(t => { if (t.Result != null) IsPaidOffer = t.Result.Value; }, TaskScheduler.FromCurrentSynchronizationContext()),
-               CommRequests.GetDriveSyncsDbIds(DbId).ContinueWith(async t =>
-                {
-                     if (t.Result != null)
-                     {
-                          ObservableCollection<Sync> syncs = new ObservableCollection<Sync>();
-                          Logger.Log(Logger.Level.Debug, $"Drive (DbId: {DbId}) has {t.Result.Count} sync(s). Reloading sync data...");
-                          List<Task> syncTasks = new List<Task>();
-                          foreach (var syncDbId in t.Result)
-                          {
-                            Sync? sync = new Sync(syncDbId, this);
-                            Syncs.Add(sync);
-                            syncTasks.Add(sync.Reload());
-                          }
-                          await Task.WhenAll(syncTasks);
-                        InitWatchers();
-                     }
-                }, TaskScheduler.FromCurrentSynchronizationContext()).Unwrap()
-            };
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-            Logger.Log(Logger.Level.Info, $"Drive properties reloaded for DbId {DbId}.");
+                Sync? sync = _advancedSyncs.ElementAt(i);
+                if (!advancedSyncs.Contains(sync))
+                    _advancedSyncs.Remove(sync);
+            }
+
+            foreach (var sync in advancedSyncs)
+                if (!_advancedSyncs.Contains(sync))
+                    _advancedSyncs.Add(sync);
+
+            MainSync = Syncs.FirstOrDefault(s => s.RemotePath == "/" || s.RemotePath == "");
         }
+
         public DbId DbId
         {
             get => _dbId;
-            set => SetProperty(ref _dbId, value);
+            set => SetPropertyInUIThread(ref _dbId, value);
         }
 
-        public DriveId Id
+        public DriveId DriveId
         {
-            get => _id;
-            set => SetProperty(ref _id, value);
+            get => _driveId;
+            set => SetPropertyInUIThread(ref _driveId, value);
         }
 
         public string Name
         {
             get => _name;
-            set => SetProperty(ref _name, value);
+            set => SetPropertyInUIThread(ref _name, value);
         }
 
         public Color Color
         {
             get => _color;
-            set => SetProperty(ref _color, value);
-        }
-        public long Size
-        {
-            get => _size;
-            set => SetProperty(ref _size, value);
-        }
-
-        public long UsedSize
-        {
-            get => _usedSize;
-            set => SetProperty(ref _usedSize, value);
-        }
-
-        public bool IsActive
-        {
-            get => _isActive;
-            set
-            {
-                SetProperty(ref _isActive, value);
-            }
+            set => SetPropertyInUIThread(ref _color, value);
         }
 
         public bool IsPaidOffer
         {
             get => _isPaidOffer;
-            set => SetProperty(ref _isPaidOffer, value);
+            set => SetPropertyInUIThread(ref _isPaidOffer, value);
         }
 
         public ObservableCollection<Sync> Syncs
         {
             get { return _syncs; }
-            set => SetProperty(ref _syncs, value);
+        }
+
+        public Sync? MainSync
+        {
+            get => _mainSync;
+            set => SetPropertyInUIThread(ref _mainSync, value);
+        }
+
+        public ObservableCollection<Sync> AdvancedSyncs
+        {
+            get => _advancedSyncs;
+        }
+
+        public Uri GetWebUri()
+        {
+            return new Uri($"https://ksuite.infomaniak.com/kdrive/app/drive/{DriveId}");
         }
 
         public Uri GetWebTrashUri()
         {
-            return new Uri($"https://ksuite.infomaniak.com/kdrive/app/drive/{Id}/trash");
+            return new Uri($"https://ksuite.infomaniak.com/kdrive/app/drive/{DriveId}/trash");
         }
 
         public Uri GetWebFavoritesUri()
         {
-            return new Uri($"https://ksuite.infomaniak.com/kdrive/app/drive/{Id}/favorites");
+            return new Uri($"https://ksuite.infomaniak.com/kdrive/app/drive/{DriveId}/favorites");
         }
 
         public Uri GetWebSharedUri()
         {
-            return new Uri($"https://ksuite.infomaniak.com/kdrive/app/drive/{Id}/shared-with-me");
+            return new Uri($"https://ksuite.infomaniak.com/kdrive/app/drive/{DriveId}/shared-with-me");
         }
 
-        public bool HasError
+        public Account Account
         {
-            get => _hasError;
-            set => SetProperty(ref _hasError, value);
+            get => _account;
+            set => SetPropertyInUIThread(ref _account, value);
         }
 
-        private void Sync_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        public async Task RemoveSync(Sync sync, CancellationToken cancellationToken)
         {
-            if (e.PropertyName == nameof(Sync.SyncErrors))
-            {
-                HasError = Syncs.Any(s => s.SyncErrors.Count > 0);
-            }
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            await commService.RemoveSync(sync.DbId, cancellationToken);
         }
 
-        private void RefreshHasError()
-        {
-            foreach (var sync in Syncs)
-            {
-                if (sync.SyncErrors.Any())
-                {
-                    HasError = true;
-                    return;
-                }
-            }
-            HasError = false;
-        }
-
-        private void InitWatchers()
-        {
-            _syncs.CollectionChanged += (s, e) =>
-            {
-                if (e.NewItems != null)
-                {
-                    foreach (Sync sync in e.NewItems)
-                    {
-                        sync.PropertyChanged += Sync_PropertyChanged;
-                    }
-                }
-                if (e.OldItems != null)
-                {
-                    foreach (Sync sync in e.OldItems)
-                    {
-                        sync.PropertyChanged -= Sync_PropertyChanged;
-                    }
-                }
-                RefreshHasError();
-            };
-        }
     }
 }

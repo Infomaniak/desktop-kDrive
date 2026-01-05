@@ -907,11 +907,14 @@ void DrivePreferencesWidget::onAddLocalFolder(bool checked) {
 
         if (nextStep == Confirm) {
             MatomoClient::sendVisit(MatomoNameField::PG_Parameters_NewSync_Summary);
-            int driveId{0};
-            if (const auto exitCode = GuiRequests::getDriveIdFromDriveDbId(_driveDbId, driveId); exitCode != ExitCode::Ok) {
-                qCWarning(lcDrivePreferencesWidget()) << "Error in GuiRequests::getDriveIdFromDriveDbId";
+
+            const auto &driveInfoMapIt = _gui->driveInfoMap().find(_driveDbId);
+            if (driveInfoMapIt == _gui->driveInfoMap().end()) {
+                qCWarning(lcDrivePreferencesWidget()) << "Drive not found in drive map for driveDbId=" << _driveDbId;
                 return;
             }
+
+            int driveId{driveInfoMapIt->second.id()};
 
             ConfirmSynchronizationDialog confirmSynchronizationDialog(_gui, _userDbId, driveId, serverFolderNodeId,
                                                                       localFolderName, localFolderSize, serverFolderName,
@@ -1081,12 +1084,14 @@ void DrivePreferencesWidget::onSearch() {
 
 void DrivePreferencesWidget::onSearchItemDoubleClicked(const QModelIndex &index) {
     const auto id = _searchResultModel.id(index.row());
-    int driveId = 0;
 
-    if (const auto exitCode = GuiRequests::getDriveIdFromDriveDbId(_driveDbId, driveId); exitCode != ExitCode::Ok) {
-        qCWarning(lcDrivePreferencesWidget()) << "Error in GuiRequests::getDriveIdFromDriveDbId";
+    const auto &driveInfoMapIt = _gui->driveInfoMap().find(_driveDbId);
+    if (driveInfoMapIt == _gui->driveInfoMap().end()) {
+        qCWarning(lcDrivePreferencesWidget()) << "Drive not found in drive map for driveDbId=" << _driveDbId;
         return;
     }
+
+    int driveId{driveInfoMapIt->second.id()};
 
     NodeInfo nodeInfo;
     if (const auto exitCode = GuiRequests::getNodeInfo(_userDbId, driveId, QString::fromStdString(id), nodeInfo, true);

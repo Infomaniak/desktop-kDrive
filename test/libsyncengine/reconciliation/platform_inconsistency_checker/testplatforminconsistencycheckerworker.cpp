@@ -46,9 +46,7 @@ namespace KDC {
 void TestPlatformInconsistencyCheckerWorker::setUp() {
     TestBase::start();
     // Create parmsDb
-    bool alreadyExists = false;
-    const auto parmsDbPath = MockDb::makeDbName(alreadyExists);
-    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
+    (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
 
     // Insert user, account, drive & sync
     const User user(1, 1, "dummy");

@@ -23,6 +23,8 @@
 #include <QList>
 #include <QColor>
 
+#include <Poco/Dynamic/Struct.h>
+
 namespace KDC {
 
 class DriveAvailableInfo {
@@ -42,6 +44,9 @@ class DriveAvailableInfo {
         inline QString name() const { return _name; }
         inline void setUserDbId(int dbId) { _userDbId = dbId; }
         inline int userDbId() const { return _userDbId; }
+
+        void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
+        void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
 
         friend QDataStream &operator>>(QDataStream &in, DriveAvailableInfo &info);
         friend QDataStream &operator<<(QDataStream &out, const DriveAvailableInfo &info);

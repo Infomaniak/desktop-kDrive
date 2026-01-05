@@ -116,11 +116,22 @@ std::shared_ptr<Node> Node::getChildExcept(const SyncName &normalizedName, const
 void Node::setChangeEvents(const OperationType ops) {
     _changeEvents = ops;
     LOG_IF_FAIL(Log::instance()->getLogger(), (!hasChangeEvent(OperationType::Move) || _moveOriginInfos.isValid()));
+    // LOG_IF_FAIL(Log::instance()->getLogger(), !hasInvalidEvents());
 }
 
 void Node::insertChangeEvent(const OperationType op) {
     _changeEvents |= op;
     LOG_IF_FAIL(Log::instance()->getLogger(), (!hasChangeEvent(OperationType::Move) || _moveOriginInfos.isValid()));
+    // LOG_IF_FAIL(Log::instance()->getLogger(), !hasInvalidEvents());
+}
+
+bool Node::hasInvalidEvents() const {
+    const bool res = (hasChangeEvent(OperationType::Create) && _changeEvents != OperationType::Create) ||
+                     (hasChangeEvent(OperationType::Delete) && _changeEvents != OperationType::Delete) ||
+                     ((hasChangeEvent(OperationType::Move) || hasChangeEvent(OperationType::Edit)) &&
+                      _changeEvents != OperationType::Move && _changeEvents != OperationType::Edit &&
+                      _changeEvents != OperationType::MoveEdit);
+    return res;
 }
 
 std::shared_ptr<Node> Node::findChildren(const SyncName &name, const NodeId &nodeId /*= ""*/) {
@@ -213,6 +224,10 @@ bool Node::isSharedFolder() const {
         return true;
     }
     return false;
+}
+
+bool Node::isSpecialFolder() const {
+    return isCommonDocumentsFolder() || isSharedFolder();
 }
 
 SyncPath Node::getPath() const {
