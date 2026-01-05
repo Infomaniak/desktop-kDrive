@@ -51,6 +51,9 @@ ExitInfo SyncStartJob::serializeOutputParms() {
 }
 
 ExitInfo SyncStartJob::process() {
+    _commManager->appServer().clearSyncCacheMap();
+
+
     Sync sync;
     bool found = false;
     if (!ParmsDb::instance()->selectSync(_syncDbId, sync, found)) {
@@ -92,7 +95,6 @@ ExitInfo SyncStartJob::process() {
 #if defined(KD_MACOS)
     Utility::restartFinderExtension();
 #endif
-    (void) _commManager->appServer().clearSyncCacheMap();
 
     return mainExitInfo;
 }

@@ -129,6 +129,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitInfo getFolderSize(int userDbId, int driveId, const NodeId &nodeId, int64_t &result);
         static ExitCode getNodeIdByPath(int userDbId, int driveId, const SyncPath &path, QString &nodeId);
         static ExitInfo getPathByNodeId(int userDbId, int driveId, const QString &nodeId, QString &path);
+        static ExitInfo getPathByNodeId(int userDbId, int driveId, const NodeId &nodeId, CommString &path);
 
         // C/S requests (others)
         static ExitCode deleteUser(int userDbId); // !!! Use COMM_LONG_TIMEOUT !!!

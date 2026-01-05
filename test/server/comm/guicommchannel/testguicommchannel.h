@@ -71,15 +71,13 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSyncGetPrivateLinkUrlJob);
         CPPUNIT_TEST(testSyncSetSupportsVirtualFilesJob);
         CPPUNIT_TEST(testSyncSetRootPinStateJob);
-        /* Deactivated because string values are not yet base64-encoded
-         * in these tests.
         CPPUNIT_TEST(testBlacklistedSyncNodeListJob);
         CPPUNIT_TEST(testBlacklistedSyncNodeSetListJob);
         CPPUNIT_TEST(testNodeInfoJob);
+        CPPUNIT_TEST(testNodePathJob);
         CPPUNIT_TEST(testNodeSubFolderJob);
-        CPPUNIT_TEST(testNodeFolderSizeJob);
-         */
         CPPUNIT_TEST(testNodeSubFolders2Job);
+        CPPUNIT_TEST(testNodeFolderSizeJob);
         CPPUNIT_TEST(testNodeCreateMissingFoldersJob);
         CPPUNIT_TEST(testErrorInfoListJob);
         CPPUNIT_TEST(testExclTemplGetExcludedJob);
@@ -132,6 +130,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testSyncSetRootPinStateJob();
         void testBlacklistedSyncNodeListJob();
         void testBlacklistedSyncNodeSetListJob();
+        void testNodePathJob();
         void testNodeInfoJob();
         void testNodeSubFolderJob();
         void testNodeFolderSizeJob();
@@ -157,7 +156,6 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testUtilityCancelLogToSupportJob();
         void testUtilityGetLogEstimatedSizeJob();
         void testUtilitySendLogToSupportJob();
-
 
     private:
         GuiJobFactory _guiJobFactory;

@@ -177,6 +177,34 @@ struct ObservedDriveTests_driveDbIdOnly {
 
         #expect(observedDrive == nil, "The observed object should have been updated to nil to reflect deletion")
     }
+
+    @Test(.timeLimit(.minutes(1)))
+    func removeObservedDriveDbId() async throws {
+        // GIVEN
+        let cache = ServerCoherentCache()
+        let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
+        #expect(initialUser == nil, "Cache should initially be empty")
+
+        @ObservedDrive(driveDbId: ObservableData.expectedDriveDbId, cacheObservation: cache) var observedDrive: Drive?
+        let receivedValues = $observedDrive.receivedValues
+        #expect(observedDrive == nil, "Drive should initially be nil")
+
+        await cache.addUser(ObservableData.expectedUserWithAccounts)
+
+        let expectedDrive = ObservableData.expectedDrive
+        try await cache.addDrive(expectedDrive, accountDbId: ObservableData.expectedAccountDbId)
+
+        let cachedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
+        #expect(cachedDrive == expectedDrive, "The cache should have been updated")
+
+        // WHEN
+        try await cache.removeDrive(driveDbId: ObservableData.expectedDrive.driveDbId)
+
+        // THEN
+        _ = await receivedValues.dropFirst().first(where: { $0 == nil })
+
+        #expect(observedDrive == nil, "The observed object should have been updated to nil to reflect deletion")
+    }
 }
 
 @MainActor
@@ -332,6 +360,37 @@ struct ObservedDriveTests_allIds {
         await cache.removeDrive(driveDbId: ObservableData.expectedDrive.driveDbId,
                                 accountDbId: ObservableData.expectedAccountDbId,
                                 userDbId: ObservableData.expectedUserDbId)
+
+        // THEN
+        _ = await receivedValues.dropFirst().first(where: { $0 == nil })
+
+        #expect(observedDrive == nil, "The observed object should have been updated to nil to reflect deletion")
+    }
+
+    @Test(.timeLimit(.minutes(1)))
+    func removeObservedDriveDbId() async throws {
+        // GIVEN
+        let cache = ServerCoherentCache()
+        let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
+        #expect(initialUser == nil, "Cache should initially be empty")
+
+        @ObservedDrive(userDbId: ObservableData.expectedUserDbId,
+                       accountDbId: ObservableData.expectedAccountDbId,
+                       driveDbId: ObservableData.expectedDriveDbId,
+                       cacheObservation: cache) var observedDrive: Drive?
+        let receivedValues = $observedDrive.receivedValues
+        #expect(observedDrive == nil, "Drive should initially be nil")
+
+        await cache.addUser(ObservableData.expectedUserWithAccounts)
+
+        let expectedDrive = ObservableData.expectedDrive
+        try await cache.addDrive(expectedDrive, accountDbId: ObservableData.expectedAccountDbId)
+
+        let cachedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
+        #expect(cachedDrive == expectedDrive, "The cache should have been updated")
+
+        // WHEN
+        try await cache.removeDrive(driveDbId: ObservableData.expectedDrive.driveDbId)
 
         // THEN
         _ = await receivedValues.dropFirst().first(where: { $0 == nil })

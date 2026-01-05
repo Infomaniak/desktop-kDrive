@@ -18,21 +18,26 @@
 
 import Foundation
 
-public struct UIAccount: Sendable {
-    public let id: Int
+public struct UIAccount: Sendable, Equatable, Hashable {
+    public let dbId: Int
     public let name: String
+    public let drives: [Int: UIDrive]
 
-    public init(id: Int, name: String) {
-        self.id = id
+    public init(dbId: Int, name: String, drives: [Int: UIDrive]) {
+        self.dbId = dbId
         self.name = name
+        self.drives = drives
     }
 }
 
 public extension UIAccount {
     init(account: Account) {
+        let drives = Dictionary(uniqueKeysWithValues: account.drives.map { key, value in (Int(key), UIDrive(drive: value)) })
+
         self.init(
-            id: Int(account.id),
-            name: account.name
+            dbId: Int(account.dbId),
+            name: account.name,
+            drives: drives
         )
     }
 }

@@ -20,7 +20,7 @@
 import Cocoa
 import Foundation
 
-public struct UIUser: Sendable {
+public struct UIUser: Sendable, Equatable, Hashable {
     public var id: Int {
         dbId
     }
@@ -30,29 +30,34 @@ public struct UIUser: Sendable {
     public let name: String
     public let email: String
     public let avatar: NSImage?
+    public let accounts: [Int: UIAccount]
 
-    public init(dbId: Int, userId: Int, name: String, email: String, avatar: NSImage?) {
+    public init(dbId: Int, userId: Int, name: String, email: String, avatar: NSImage?, accounts: [Int: UIAccount]) {
         self.dbId = dbId
         self.userId = userId
         self.name = name
         self.email = email
         self.avatar = avatar
+        self.accounts = accounts
     }
 }
 
 public extension UIUser {
     init(user: User) {
-        var avatar: NSImage? = nil
+        var avatar: NSImage?
         if let avatarData = user.avatar {
             avatar = NSImage(data: avatarData)
         }
+
+        let accounts = Dictionary(uniqueKeysWithValues: user.accounts.map { key, value in (Int(key), UIAccount(account: value)) })
 
         self.init(
             dbId: Int(user.dbId),
             userId: Int(user.userId),
             name: user.name,
             email: user.email,
-            avatar: avatar
+            avatar: avatar,
+            accounts: accounts
         )
     }
 }

@@ -85,6 +85,8 @@
 #include <QStandardPaths>
 #include <QTimer>
 #include <QUuid>
+#include <comm/guijobs/excltemplsetlistjob.h>
+#include <comm/guijobs/excltemplgetlistjob.h>
 
 #define QUIT_DELAY 1000 // ms
 #define LOAD_PROGRESS_INTERVAL 1000 // ms
@@ -1790,14 +1792,14 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QDataStream paramsStream(params);
             paramsStream >> def;
 
+            ExclTemplGetListJob exclTemplGetListJob(_commManager, -1, Poco::DynamicStruct(), nullptr);
+            exclTemplGetListJob.setInParms(def);
+            ExitInfo exitInfo = exclTemplGetListJob.process();
             QList<ExclusionTemplateInfo> list;
-            ExitCode exitCode = ServerRequests::getExclusionTemplateList(def, list);
-            if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::getExclusionTemplateList: code=" << exitCode);
-                addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+            for (auto &exclTemp: exclTemplGetListJob.getOutParmsExclusionTemplateList()) {
+                list.push_back(exclTemp);
             }
-
-            resultStream << toInt(exitCode);
+            resultStream << toInt(exitInfo.code());
             resultStream << list;
             break;
         }
@@ -1807,16 +1809,14 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QDataStream paramsStream(params);
             paramsStream >> def;
             paramsStream >> list;
-
-            ExitCode exitCode = ServerRequests::setExclusionTemplateList(def, list);
-            if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::setExclusionTemplateList: code=" << exitCode);
-                addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
-                resultStream << toInt(exitCode);
-                break;
+            ExclTemplSetListJob exclTemplSetListJob(_commManager, -1, Poco::DynamicStruct(), nullptr);
+            std::vector<ExclusionTemplateInfo> exclTemplList;
+            for (auto &info: list) {
+                exclTemplList.push_back(info);
             }
-
-            resultStream << toInt(exitCode);
+            exclTemplSetListJob.setInParms(def, exclTemplList);
+            ExitInfo exitInfo = exclTemplSetListJob.process();
+            resultStream << toInt(exitInfo.code());
             break;
         }
         case RequestNum::EXCLTEMPL_PROPAGATE_CHANGE: {
@@ -2586,11 +2586,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 
@@ -3965,6 +3965,38 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
         });
 
         return mainExitInfo;
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitInfo AppServer::getNodePath(const int syncDbId, const NodeId &nodeId, CommString &path) {
+    const std::scoped_lock lock(AppServer::syncPalMapMutex);
+    auto syncPalMapIt = _commManager->appServer().syncPalMap.find(syncDbId);
+
+    if (syncPalMapIt == _commManager->appServer().syncPalMap.end()) {
+        LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << syncDbId);
+
+        return ExitCode::DataError;
+    }
+
+    if (!syncPalMapIt->second) {
+        LOG_WARN(_logger, "SyncPal not set in syncPalMap for syncDbId=" << syncDbId);
+
+        return ExitCode::DataError;
+    }
+
+    if (const auto exitInfo =
+                ServerRequests::getPathByNodeId(syncPalMapIt->second->userDbId(), syncPalMapIt->second->driveId(), nodeId, path);
+        !exitInfo) {
+        if (exitInfo.cause() == ExitCause::NotFound) {
+            (void) SyncNodeCache::instance()->deleteSyncNode(syncDbId, nodeId);
+        } else {
+            LOG_WARN(_logger, "Error in ServerRequests::getPathByNodeId: " << exitInfo);
+            AppServer::addError(Error(ERR_ID, exitInfo));
+        }
+
+        return exitInfo;
     }
 
     return ExitCode::Ok;

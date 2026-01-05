@@ -134,6 +134,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         [[nodiscard]] ExitInfo startSyncs(User &user);
         void stopSyncTask(int syncDbId);
         [[nodiscard]] ExitInfo setSupportsVirtualFiles(int syncDbId, bool value);
+        [[nodiscard]] ExitInfo getNodePath(int syncDbId, const NodeId &nodeId, CommString &path);
 
         void logExtendedLogActivationMessage(bool isExtendedLogEnabled) noexcept;
 

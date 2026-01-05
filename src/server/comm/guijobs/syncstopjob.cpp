@@ -51,12 +51,13 @@ ExitInfo SyncStopJob::serializeOutputParms() {
 }
 
 ExitInfo SyncStopJob::process() {
+    _commManager->appServer().clearSyncCacheMap();
+
     // Stop SyncPal
     if (const auto exitInfo = _commManager->appServer().stopSyncPal(_syncDbId, true); !exitInfo) {
         LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << _syncDbId << " : " << exitInfo);
         return exitInfo;
     }
-    (void) _commManager->appServer().clearSyncCacheMap();
 
     // Note: we do not Stop Vfs in case of a pause
 
