@@ -10,6 +10,7 @@ from conan.tools.microsoft import unix_path
 
 class OpenSSLMacos(ConanFile):
     name = "openssl-macos"
+    provides = "openssl"
     package_type = "library"
     settings = "os", "arch", "compiler", "build_type"
     options = {
@@ -135,6 +136,10 @@ class OpenSSLMacos(ConanFile):
         self.cpp_info.components["crypto"].includedirs = ["include"]
         self.cpp_info.components["crypto"].set_property("cmake_target_name", "OpenSSL::Crypto")
         self.cpp_info.components["crypto"].set_property("pkg_config_name", "libcrypto")
+
+        # Add a root component that aggregates ssl and crypto
+        self.cpp_info.components["openssl"].requires = ["ssl", "crypto"]
+        self.cpp_info.components["openssl"].set_property("cmake_target_name", "openssl::openssl")
 
         self.cpp_info.set_property("cmake_build_modules", [self._module_file_rel_path])
 

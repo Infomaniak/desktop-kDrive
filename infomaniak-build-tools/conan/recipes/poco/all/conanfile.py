@@ -124,7 +124,10 @@ class PocoConan(ConanFile):
         if self.options.enable_xml:
             self.requires("expat/[>=2.6.2 <3]", transitive_headers=True)
         if self.options.enable_netssl or self.options.enable_crypto:
-            self.requires("openssl/3.2.4", options={"shared": self.options.shared})
+            if self.settings.os == "Macos":
+                self.requires("openssl-macos/3.2.4", options={ "shared": True })
+            else:
+                self.requires("openssl/3.2.4", options={ "shared": True })
 
     def package_id(self):
         del self.info.options.enable_active_record
@@ -208,7 +211,11 @@ class PocoConan(ConanFile):
         for compname, comp in self._poco_component_tree.items():
             if comp.option is None or self.options.get_safe(comp.option):
                 conan_component = f"poco_{compname.lower()}"
-                requires = [f"poco_{dependency.lower()}" for dependency in comp.dependencies] + comp.external_dependencies
+                # Replace openssl::openssl with openssl-macos::openssl on macOS
+                external_deps = comp.external_dependencies
+                if self.settings.os == "Macos":
+                    external_deps = [dep.replace("openssl::", "openssl-macos::") if dep.startswith("openssl::") else dep for dep in external_deps]
+                requires = [f"poco_{dependency.lower()}" for dependency in comp.dependencies] + external_deps
                 self.cpp_info.components[conan_component].set_property("cmake_target_name", f"Poco::{compname}")
                 self.cpp_info.components[conan_component].set_property("cmake_file_name", compname)
                 if comp.is_lib:
