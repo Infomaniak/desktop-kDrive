@@ -713,7 +713,7 @@ bool ParmsDb::updateExclusionTemplates() {
 
         // Add template as a DB default template.
         if (bool constraintError = false;
-            !insertExclusionTemplate(ExclusionTemplate(templateFromFile, false, true, false), constraintError)) {
+            !insertExclusionTemplate(ExclusionTemplate(templateFromFile, false, true), constraintError)) {
             LOG_WARN(_logger, "Error in insertExclusionTemplate");
             return false;
         }
@@ -2516,7 +2516,7 @@ bool ParmsDb::insertExclusionTemplate(const ExclusionTemplate &exclusionTemplate
     LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 1, exclusionTemplate.templ()));
     LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 2, exclusionTemplate.warning()));
     LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 3, exclusionTemplate.def()));
-    LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 4, exclusionTemplate.deleted()));
+    // LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 4, exclusionTemplate.deleted())); Not used anymore
     if (!queryExec(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << INSERT_EXCLUSION_TEMPLATE_REQUEST_ID);
         constraintError = (errId == SQLITE_CONSTRAINT);
@@ -2535,7 +2535,7 @@ bool ParmsDb::updateExclusionTemplate(const ExclusionTemplate &exclusionTemplate
     LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID));
     LOG_IF_FAIL(queryBindValue(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID, 1, exclusionTemplate.warning()));
     LOG_IF_FAIL(queryBindValue(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID, 2, exclusionTemplate.def()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID, 3, exclusionTemplate.deleted()));
+    // LOG_IF_FAIL(queryBindValue(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID, 3, exclusionTemplate.deleted())); Not used anymore
     LOG_IF_FAIL(queryBindValue(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID, 4, exclusionTemplate.templ()));
     if (!queryExec(UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << UPDATE_EXCLUSION_TEMPLATE_REQUEST_ID);
@@ -2595,11 +2595,10 @@ bool ParmsDb::selectAllExclusionTemplates(std::vector<ExclusionTemplate> &exclus
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, 1, warning));
         int def;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, 2, def));
-        int deleted;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, 3, deleted));
+        // int deleted;
+        // LOG_IF_FAIL(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, 3, deleted)); Not used anymore
 
-        (void) exclusionTemplateList.emplace_back(template_, static_cast<bool>(warning), static_cast<bool>(def),
-                                                  static_cast<bool>(deleted));
+        (void) exclusionTemplateList.emplace_back(template_, static_cast<bool>(warning), static_cast<bool>(def));
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID));
 
@@ -2627,11 +2626,10 @@ bool ParmsDb::selectAllExclusionTemplates(bool defaultTemplates, std::vector<Exc
         LOG_IF_FAIL(queryStringValue(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 0, templ));
         int warning;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 1, warning));
-        int deleted;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 2, deleted));
+        // int deleted;
+        // LOG_IF_FAIL(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, 2, deleted)); Not used anymore
 
-        (void) exclusionTemplateList.emplace_back(templ, static_cast<bool>(warning), defaultTemplates,
-                                                  static_cast<bool>(deleted));
+        (void) exclusionTemplateList.emplace_back(templ, static_cast<bool>(warning), defaultTemplates);
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID));
 
@@ -2661,7 +2659,7 @@ bool ParmsDb::updateAllExclusionTemplates(bool defaultTemplates, const std::vect
         LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 1, exclusionTemplate.templ()));
         LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 2, exclusionTemplate.warning()));
         LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 3, exclusionTemplate.def()));
-        LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 4, exclusionTemplate.deleted()));
+        // LOG_IF_FAIL(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 4, exclusionTemplate.deleted())); Not used anymore
         if (!queryExec(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, errId, error)) {
             LOG_WARN(_logger, "Error running query: " << INSERT_EXCLUSION_TEMPLATE_REQUEST_ID);
             rollbackTransaction();

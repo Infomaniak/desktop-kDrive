@@ -27,7 +27,7 @@ namespace KDC {
 class ExclusionTemplate {
     public:
         ExclusionTemplate();
-        ExclusionTemplate(const std::string &templ, bool warning = false, bool def = false, bool deleted = false);
+        ExclusionTemplate(const std::string &templ, bool warning = false, bool def = false);
 
         inline void setTempl(const std::string &templ) {
             _templ = templ;
@@ -38,15 +38,12 @@ class ExclusionTemplate {
         inline bool warning() const { return _warning; }
         inline void setDef(bool def) { _def = def; }
         inline bool def() const { return _def; }
-        inline void setDeleted(bool deleted) { _deleted = deleted; }
-        inline bool deleted() const { return _deleted; }
         inline ExclusionTemplateComplexity complexity() const { return _complexity; }
 
     private:
         std::string _templ;
         bool _warning{false};
         bool _def{false};
-        bool _deleted{false};
         ExclusionTemplateComplexity _complexity = ExclusionTemplateComplexity::Complex;
 
         void evaluateComplexity();

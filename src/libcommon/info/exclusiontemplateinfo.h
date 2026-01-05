@@ -28,7 +28,7 @@ namespace KDC {
 
 class ExclusionTemplateInfo {
     public:
-        ExclusionTemplateInfo(const QString &templ, bool warning = false, bool def = false, bool deleted = false);
+        ExclusionTemplateInfo(const QString &templ, bool warning = false, bool def = false);
         ExclusionTemplateInfo() = default;
 
         inline void setTempl(const QString &templ) { _templ = templ; }
@@ -37,12 +37,8 @@ class ExclusionTemplateInfo {
         inline bool warning() const { return _warning; }
         inline void setDef(bool def) { _def = def; }
         inline bool def() const { return _def; }
-        inline void setDeleted(bool deleted) { _deleted = deleted; }
-        inline bool deleted() const { return _deleted; }
-
         friend bool operator==(const ExclusionTemplateInfo &lhs, const ExclusionTemplateInfo &rhs) {
-            return (lhs.templ() == rhs.templ()) && (lhs.warning() == rhs.warning()) && (lhs.def() == rhs.def()) &&
-                   (lhs.deleted() == rhs.deleted());
+            return (lhs.templ() == rhs.templ()) && (lhs.warning() == rhs.warning()) && (lhs.def() == rhs.def());
         }
 
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
@@ -79,7 +75,6 @@ class ExclusionTemplateInfo {
         QString _templ;
         bool _warning = false;
         bool _def = false;
-        bool _deleted = false;
 };
 
 } // namespace KDC

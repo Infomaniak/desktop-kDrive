@@ -23,22 +23,19 @@
 static const auto exclusionTemplateInfoString = "template";
 static const auto exclusionTemplateInfoWarning = "warning";
 static const auto exclusionTemplateInfoDefault = "default";
-static const auto exclusionTemplateInfoDeleted = "deleted";
 
 namespace KDC {
 
-ExclusionTemplateInfo::ExclusionTemplateInfo(const QString &templ, bool warning, bool def, bool deleted) :
+ExclusionTemplateInfo::ExclusionTemplateInfo(const QString &templ, bool warning, bool def) :
     _templ(templ),
     _warning(warning),
-    _def(def),
-    _deleted(deleted) {}
+    _def(def) {}
 
 
 void ExclusionTemplateInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, exclusionTemplateInfoString, CommonUtility::qStr2CommString(_templ));
     CommonUtility::writeValueToStruct(dstruct, exclusionTemplateInfoWarning, _warning);
     CommonUtility::writeValueToStruct(dstruct, exclusionTemplateInfoDefault, _def);
-    CommonUtility::writeValueToStruct(dstruct, exclusionTemplateInfoDeleted, _deleted);
 }
 
 void ExclusionTemplateInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
@@ -48,7 +45,6 @@ void ExclusionTemplateInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct
 
     CommonUtility::readValueFromStruct(dstruct, exclusionTemplateInfoWarning, _warning);
     CommonUtility::readValueFromStruct(dstruct, exclusionTemplateInfoDefault, _def);
-    CommonUtility::readValueFromStruct(dstruct, exclusionTemplateInfoDeleted, _deleted);
 }
 
 void ExclusionTemplateInfo::normalizeExclusionTemplateInfoList(std::vector<ExclusionTemplateInfo> &templateList) {
@@ -91,14 +87,12 @@ SyncNameSet ExclusionTemplateInfo::computeNormalizations(const SyncName &templat
 }
 
 QDataStream &operator>>(QDataStream &in, ExclusionTemplateInfo &exclusionTemplateInfo) {
-    in >> exclusionTemplateInfo._templ >> exclusionTemplateInfo._warning >> exclusionTemplateInfo._def >>
-            exclusionTemplateInfo._deleted;
+    in >> exclusionTemplateInfo._templ >> exclusionTemplateInfo._warning >> exclusionTemplateInfo._def;
     return in;
 }
 
 QDataStream &operator<<(QDataStream &out, const ExclusionTemplateInfo &exclusionTemplateInfo) {
-    out << exclusionTemplateInfo._templ << exclusionTemplateInfo._warning << exclusionTemplateInfo._def
-        << exclusionTemplateInfo._deleted;
+    out << exclusionTemplateInfo._templ << exclusionTemplateInfo._warning << exclusionTemplateInfo._def;
     return out;
 }
 
