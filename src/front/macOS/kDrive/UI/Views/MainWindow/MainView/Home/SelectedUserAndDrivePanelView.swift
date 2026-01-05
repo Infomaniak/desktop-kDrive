@@ -21,7 +21,7 @@ import Cocoa
 import kDriveCore
 import kDriveCoreUI
 
-final class SelectedUserAndDriveView: NSView {
+final class SelectedUserAndDrivePanelView: NSView {
     var user: UIUser {
         didSet {
             updateUser(for: user)
@@ -78,5 +78,5 @@ final class SelectedUserAndDriveView: NSView {
 
 @available(macOS 14.0, *)
 #Preview {
-    SelectedUserAndDriveView(user: PreviewHelper.user, drive: PreviewHelper.drive1)
+    SelectedUserAndDrivePanelView(user: PreviewHelper.user, drive: PreviewHelper.drive1)
 }
