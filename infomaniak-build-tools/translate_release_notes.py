@@ -89,25 +89,33 @@ os_list = [
     'linux',
     'macos'
 ]
+os_keys = [
+    '$windows',
+    '$linux',
+    '$macos'
+]
 
 def split_os(lang, fullName):
     lang_ext = lang.lower()
 
+    count = 0;
     for os_name in os_list:
         os_ext = os_name.lower()
+        os_key = os_keys[count]
+        count += 1
         shutil.copyfile(f"{fullName}-{lang_ext}.html", f"{fullName}-{os_ext}-{lang_ext}.html")
         with open(f"{fullName}-{os_ext}-{lang_ext}.html", "r") as f:
             lines = f.readlines()
         with open(f"{fullName}-{os_ext}-{lang_ext}.html", "w") as f:
             for line in lines:
                 lowered = line.lower()
-                if any(os_note in lowered for os_note in os_list):
-                    if (f"<li>{os_name} -" in lowered):
-                        f.write(f"\t\t<li>{line[line.find('-') + 2:]}")
+                if any(key in lowered for key in os_keys):
+                    if os_key in lowered:
+                        f.write(f"\t\t<li>{line[line.find(f"{os_key}") + len(f"{os_key}"):]}")
                 else:
                     f.write(line)
 
-        prettify_html(f"{fullName}-{os_ext}-{lang_ext}.html") 
+        prettify_html(f"{fullName}-{os_ext}-{lang_ext}.html")
         
 
 print(f"Generating Release Notes for kDrive-{args.version}")

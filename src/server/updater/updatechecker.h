@@ -20,6 +20,8 @@
 #include <mutex>
 #include "utility/types.h"
 
+#include <mutex>
+
 namespace KDC {
 
 class AbstractNetworkJob;
