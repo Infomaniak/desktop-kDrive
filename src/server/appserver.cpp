@@ -4121,7 +4121,7 @@ void AppServer::addError(const Error &error) {
         }
         if (!toBeRemovedErrorIds.empty()) sendErrorsCleared(errorCopy.syncDbId());
     } else if (errorCopy.exitCode() == ExitCode::UpdateRequired) {
-        AbstractUpdater::unskipVersion();
+        _updateManager->updater()->unskipVersion();
     }
 
     if (!ServerRequests::isAutoResolvedError(errorCopy) && !errorAlreadyExists) {
