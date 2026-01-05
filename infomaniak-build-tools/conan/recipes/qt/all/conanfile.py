@@ -93,11 +93,10 @@ class QtConan(ConanFile):
         if self.options.debug_symbols:
             modules.append(f"qt.qt{major}.{compact}.debug_info") # Qt Debug Information Files for Windows
 
-        if version != "6.10.1":
-            modules.append(f"qt.qt{major}.{compact}.qt5compat",
-                f"qt.qt{major}.{compact}.addons.qtwebengine")
+        if version == "6.10.1": # These two modules have different names within the Qt online installer depending on the version.
+            modules.append(f"qt.qt{major}.{compact}.addons.qt5compat",f"extensions.qtwebengine.{compact}")
         else:
-            modules.append(f"extensions.qtwebengine.{compact}")
+            modules.append(f"qt.qt{major}.{compact}.qt5compat", f"qt.qt{major}.{compact}.addons.qtwebengine")
 
         if self.settings.os == "Linux":
             modules.append(f"qt.qt{major}.{compact}.addons.qtserialport")
