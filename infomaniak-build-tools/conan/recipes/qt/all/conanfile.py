@@ -34,7 +34,7 @@ class QtConan(ConanFile):
         """
         Get the name of the installer to download based on the OS and architecture.
         See 'https://download.qt.io/official_releases/online_installers/' for available installers.
-        :return: 'qt-online-installer-{os}-{architecture}-online.{ext}' where os is 'mac', 'linux' or 'windows, architecture is 'arm64' or 'x64' on Linux or Windows and 'x64' on macOS, and ext is 'dmg','run' or 'exe.
+        :return: 'qt-online-installer-{os}-{architecture}-online.{ext}' where os is 'mac', 'linux' or 'windows, architecture is 'arm64' or 'x64' on Linux or Windows and 'x64' on macOS, and ext is 'dmg','run' or 'exe'.
         """
 
         # Here we don't use self.settings.os or self.settings.arch because the settings are not available yet inside the source() method.
