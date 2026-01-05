@@ -58,7 +58,7 @@ class KDriveDesktop(ConanFile):
         if self.settings.os == "Linux" and str(self.settings.arch).startswith("arm"): # linux arm64
             self.requires("qt/6.7.3")
         else:
-            self.requires("qt/6.2.3")
+            self.requires("qt/6.10.1")
         self.requires("xxhash/0.8.2") # From local recipe
         # log4cplus
         log4cplus_options = { "shared": True, "unicode": True }
