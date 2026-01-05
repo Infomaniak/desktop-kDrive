@@ -25,6 +25,7 @@ public enum KDriveResources {
   public static let checkmark = ImageAsset(name: "checkmark")
   public static let circularArrowsClockwise = ImageAsset(name: "circular-arrows-clockwise")
   public static let folderCircleArrowRight = ImageAsset(name: "folder-circle-arrow-right")
+  public static let folderShare = ImageAsset(name: "folder-share")
   public static let hammerWrench = ImageAsset(name: "hammer-wrench")
   public static let hardDiskDrive = ImageAsset(name: "hard-disk-drive")
   public static let house = ImageAsset(name: "house")
@@ -32,6 +33,8 @@ public enum KDriveResources {
   public static let persons = ImageAsset(name: "persons")
   public static let settings = ImageAsset(name: "settings")
   public static let share = ImageAsset(name: "share")
+  public static let star = ImageAsset(name: "star")
+  public static let trash = ImageAsset(name: "trash")
   public static let kdriveAppIcon = ImageAsset(name: "kdrive-app-icon")
   public static let onboardingGradient = ImageAsset(name: "OnboardingGradient")
 }
