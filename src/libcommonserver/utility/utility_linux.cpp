@@ -230,7 +230,7 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
             return false;
         }
         const SyncPath appimageDir = SyncPath(CommonUtility::envVarValue("APPIMAGE"));
-        LOGW_DEBUG(logger(), "APPIMAGE: " << Utility::formatSyncPath(appimageDir));
+        LOGW_DEBUG(logger(), L"APPIMAGE: " << Utility::formatSyncPath(appimageDir));
         autoStartFile << "[Desktop Entry]" << std::endl;
         autoStartFile << "Name=" << guiName << std::endl;
         autoStartFile << "GenericName=File Synchronizer" << std::endl;
