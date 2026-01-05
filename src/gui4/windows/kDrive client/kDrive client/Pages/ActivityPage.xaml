@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page x:Class="Infomaniak.kDrive.Pages.ActivityPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:local="using:Infomaniak.kDrive"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+      xmlns:controlsErrors="using:Infomaniak.kDrive.CustomControls.Errors"
+      xmlns:converters="using:Infomaniak.kDrive.Converters"
+      xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
+      xmlns:templateSelectors="using:Infomaniak.kDrive.TemplateSelectors"
+      mc:Ignorable="d">
+    <Page.Resources>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <converters:BooleanToInvertedBooleanConverter x:Key="BooleanToInvertedBooleanConverter" />
+        <converters:BooleanToIntegerConverter x:Key="BooleanToIntegerConverter" />
+        <converters:DateTimeToTimeAgoConverter x:Key="DateTimeToTimeAgoConverter" />
+        <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
+
+        <!-- Title templates -->
+        <DataTemplate x:Key="UpToDateTitleTemplate"
+                      x:DataType="viewmodels:Sync">
+            <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
+                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}"
+                            Orientation="Horizontal">
+                    <TextBlock Text="Synchronisation terminée"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
+                    <controls:SvgIcon Height="16"
+                                      UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-check}" />
+                </StackPanel>
+                <TextBlock Text="{x:Bind LastActivity.Timestamp, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Ago', Mode=OneWay}"
+                           Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
+                           Visibility="{x:Bind LastActivity, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}" />
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="InProgressTitleTemplate"
+                      x:DataType="viewmodels:Sync">
+            <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
+                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}"
+                            Orientation="Horizontal">
+                    <TextBlock Text="Synchronisation en cours"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
+                    <controls:SvgIcon Height="16"
+                                      UriString="{StaticResource Infomaniak.DS.Icons.Arrows.arrow-loop}" />
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="InPauseTitleTemplate"
+                      x:DataType="viewmodels:Sync">
+            <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
+                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}"
+                            Orientation="Horizontal">
+                    <TextBlock Text="Synchronisation en pause"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
+                    <controls:SvgIcon Height="16"
+                                      UriString="{StaticResource Infomaniak.DS.Icons.Media.pause}"
+                                      Foreground="{ThemeResource SystemAccentColor}" />
+                </StackPanel>
+                <TextBlock Text="{x:Bind LastActivity.Timestamp, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Since', Mode=OneWay}"
+                           Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
+                           Visibility="{x:Bind LastActivity, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}" />
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="ErrorTitleTemplate"
+                      x:DataType="viewmodels:Sync">
+            <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
+                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}"
+                            Orientation="Horizontal">
+                    <TextBlock Text="Erreurs de synchronisation"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
+                    <controls:SvgIcon Height="16"
+                                      UriString="{StaticResource Infomaniak.DS.Icons.Actions.triangle-alert}"
+                                      Foreground="{ThemeResource SystemErrorTextColor}" />
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="OfflineTitleTemplate"
+                      x:DataType="viewmodels:Sync">
+            <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
+                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}"
+                            Orientation="Horizontal">
+                    <TextBlock Text="Hors ligne"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
+                    <controls:SvgIcon Height="16"
+                                      UriString="{StaticResource Infomaniak.DS.Icons.Network.cloud-offline}"
+                                      Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="NoActivityTitleTemplate"
+                      x:DataType="viewmodels:Sync">
+            <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
+                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}"
+                            Orientation="Horizontal">
+                    <TextBlock Text="Aucune activité récente"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="LoadingTitleTemplate"
+                      x:DataType="viewmodels:Sync">
+            <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
+                <controls:ContentLoader IsLoading="True"
+                                        CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.XS}"
+                                        Height="{StaticResource Infomaniak.Style.Spacing.L}"
+                                        Width="300" />
+                <controls:ContentLoader IsLoading="True"
+                                        HorizontalAlignment="Left"
+                                        CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.XS}"
+                                        Height="{StaticResource Infomaniak.Style.Spacing.S}"
+                                        Width="60" />
+            </StackPanel>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid Margin="24"
+          RowSpacing="{StaticResource Infomaniak.Style.Spacing.S}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <!-- Header -->
+            <RowDefinition Height="Auto" />
+            <!-- Main content -->
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <ContentControl x:Name="TitleContentControl"
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        ContentTemplate="{StaticResource LoadingTitleTemplate}"
+                        Content="{x:Bind ViewModel.SelectedSync, Mode=OneWay}"
+                        MinHeight="50" />
+
+        <ComboBox  Grid.Row="0"
+                   Grid.Column="1"
+                   Background="Transparent"
+                   BorderBrush="Transparent"
+                   FlowDirection="RightToLeft"
+                   SelectedIndex="{x:Bind ViewModel.SelectedSync.ShowIncomingActivity, Converter={StaticResource BooleanToIntegerConverter}, Mode=TwoWay}">
+            <ComboBox.Items>
+                <ComboBoxItem>
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                        <controls:SvgIcon Height="14"
+                                          UriString="{StaticResource Infomaniak.DS.Icons.Users.user}"
+                                          Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                        <TextBlock Text="Mon activité uniquement" />
+                    </StackPanel>
+                </ComboBoxItem>
+                <ComboBoxItem>
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                        <controls:SvgIcon Height="14"
+                                          UriString="{StaticResource Infomaniak.DS.Icons.Users.users}"
+                                          Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                        <TextBlock Text="Toutes les activités" />
+                    </StackPanel>
+                </ComboBoxItem>
+            </ComboBox.Items>
+        </ComboBox>
+
+        <!-- Left main pane -->
+        <Grid Grid.Row="2"
+              Grid.ColumnSpan="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <controlsErrors:ErrorBar Grid.Row="0" />
+            <controls:SyncActivityTable Grid.Row="1"
+                                        ShowIncomingActivity="{x:Bind ViewModel.SelectedSync.ShowIncomingActivity, Mode=OneWay}" />
+        </Grid>
+    </Grid>
+</Page>

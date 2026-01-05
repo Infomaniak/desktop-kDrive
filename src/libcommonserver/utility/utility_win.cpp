@@ -19,8 +19,6 @@
 #include "utility.h"
 
 #include "libcommon/utility/utility.h"
-#include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/io/iohelper_win.h"
 #include "log/log.h"
 
 #include <filesystem>
@@ -31,6 +29,8 @@
 #include <windows.h>
 #include <Shobjidl.h> //Required for IFileOperation Interface
 #include <shellapi.h> //Required for Flags set in "SetOperationFlags"
+#include <shlobj_core.h> // SHCreateItemFromIDList
+#include <atlbase.h> // CComPtr
 #include <objbase.h>
 #include <objidl.h>
 #include <shlguid.h>
@@ -51,141 +51,6 @@
 constexpr int userNameBufLen = 4096;
 
 namespace KDC {
-
-bool Utility::moveItemToTrash(const SyncPath &itemPath) {
-    if (CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED) != S_OK) {
-        LOGW_INFO(Log::instance()->getLogger(),
-                  L"Error in CoInitializeEx in moveItemToTrash. Might be already initialized. Check if next call to "
-                  L"CoCreateInstance is failing.");
-    }
-
-    // Create the IFileOperation object
-    IFileOperation *fileOperation = nullptr;
-    HRESULT hr = CoCreateInstance(__uuidof(FileOperation), nullptr, CLSCTX_ALL, IID_PPV_ARGS(&fileOperation));
-    if (FAILED(hr)) {
-        // Couldn't CoCreateInstance - clean up and return
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in CoCreateInstance - path="
-                                                        << Path2WStr(itemPath) << L" err="
-                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
-
-        std::wstringstream errorStream;
-        errorStream << L"Move to trash failed for item with " << Utility::formatSyncPath(itemPath)
-                    << L" - CoCreateInstance failed with error: " << CommonUtility::s2ws(std::system_category().message(hr));
-        std::wstring errorStr = errorStream.str();
-        LOGW_WARN(Log::instance()->getLogger(), errorStr);
-        sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "CoCreateInstance failed");
-        CoUninitialize();
-        return false;
-    }
-
-    hr = fileOperation->SetOperationFlags(FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT);
-    if (FAILED(hr)) {
-        // Couldn't add flags - clean up and return
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in SetOperationFlags path="
-                                                        << Path2WStr(itemPath) << L" err="
-                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
-
-        std::wstringstream errorStream;
-        errorStream << L"Move to trash failed for item " << Path2WStr(itemPath) << L" - SetOperationFlags failed with error: "
-                    << CommonUtility::s2ws(std::system_category().message(hr));
-        std::wstring errorStr = errorStream.str();
-        LOGW_WARN(Log::instance()->getLogger(), errorStr);
-
-        sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "SetOperationFlags failed");
-        fileOperation->Release();
-        CoUninitialize();
-        return false;
-    }
-
-    SyncPath itemPathPreferred(itemPath);
-    IShellItem *fileOrFolderItem = nullptr;
-    hr = SHCreateItemFromParsingName(itemPathPreferred.make_preferred().native().c_str(), nullptr,
-                                     IID_PPV_ARGS(&fileOrFolderItem));
-    if (FAILED(hr)) {
-        // Couldn't get file into an item - cleanup and return (maybe the file doesn't exist?)
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in SHCreateItemFromParsingName - path="
-                                                        << Path2WStr(itemPath) << L" err="
-                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
-
-        std::wstringstream errorStream;
-        errorStream << L"Move to trash failed for item " << Path2WStr(itemPath)
-                    << L" - SHCreateItemFromParsingName failed with error: "
-                    << CommonUtility::s2ws(std::system_category().message(hr));
-        std::wstring errorStr = errorStream.str();
-        LOGW_WARN(Log::instance()->getLogger(), errorStr);
-
-        sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "SHCreateItemFromParsingName failed");
-        fileOperation->Release();
-        CoUninitialize();
-        return false;
-    }
-
-    hr = fileOperation->DeleteItem(fileOrFolderItem, nullptr);
-    if (FAILED(hr)) {
-        // Failed to mark file/folder item for deletion - cleanup and return
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in DeleteItem - path="
-                                                        << Path2WStr(itemPath) << L" err="
-                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
-
-        std::wstringstream errorStream;
-        errorStream << L"Move to trash failed for item " << Path2WStr(itemPath) << L" - DeleteItem failed with error: "
-                    << CommonUtility::s2ws(std::system_category().message(hr));
-        std::wstring errorStr = errorStream.str();
-        LOGW_WARN(Log::instance()->getLogger(), errorStr);
-        sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "DeleteItem failed");
-
-        fileOrFolderItem->Release();
-        fileOperation->Release();
-        CoUninitialize();
-        return false;
-    }
-
-    hr = fileOperation->PerformOperations();
-    if (FAILED(hr)) {
-        // failed to carry out delete - return
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in PerformOperations - path="
-                                                        << Path2WStr(itemPath) << L" err="
-                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
-
-        std::wstringstream errorStream;
-        errorStream << L"Move to trash failed for item " << Path2WStr(itemPath) << L" - PerformOperations failed with error: "
-                    << CommonUtility::s2ws(std::system_category().message(hr));
-        std::wstring errorStr = errorStream.str();
-        LOGW_WARN(Log::instance()->getLogger(), errorStr);
-
-        sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "PerformOperations failed");
-        fileOrFolderItem->Release();
-        fileOperation->Release();
-        CoUninitialize();
-        return false;
-    }
-
-    BOOL aborted = false;
-    hr = fileOperation->GetAnyOperationsAborted(&aborted);
-    if (!FAILED(hr) && aborted) {
-        // failed to carry out delete - return
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in GetAnyOperationsAborted - path="
-                                                        << Path2WStr(itemPath) << L" err="
-                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
-
-        std::wstringstream errorStream;
-        errorStream << L"Move to trash aborted for item " << Path2WStr(itemPath);
-        std::wstring errorStr = errorStream.str();
-        LOGW_WARN(Log::instance()->getLogger(), errorStr);
-
-        sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "Move to trash aborted");
-
-        fileOrFolderItem->Release();
-        fileOperation->Release();
-        CoUninitialize();
-        return false;
-    }
-
-    fileOrFolderItem->Release();
-    fileOperation->Release();
-    CoUninitialize();
-    return true;
-}
 
 bool Utility::totalRamAvailable(uint64_t &ram, int &errorCode) {
     return true;
@@ -463,7 +328,7 @@ bool Utility::registryExistKeyTree(HKEY hRootKey, const std::wstring &subKey) {
 
     REGSAM sam = KEY_READ | KEY_WOW64_64KEY;
     LONG result = RegOpenKeyEx(hRootKey, subKey.c_str(), 0, sam, &hKey);
-    LOG_IF_FAIL(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
+    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
     if (result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND) return false;
 
     RegCloseKey(hKey);
@@ -476,12 +341,12 @@ bool Utility::registryExistKeyValue(HKEY hRootKey, const std::wstring &subKey, c
 
     REGSAM sam = KEY_READ | KEY_WOW64_64KEY;
     LONG result = RegOpenKeyEx(hRootKey, subKey.c_str(), 0, sam, &hKey);
-    LOG_IF_FAIL(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
+    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
     if (result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND) return false;
 
     DWORD type = 0, sizeInBytes = 0;
     result = RegQueryValueEx(hKey, valueName.c_str(), 0, &type, nullptr, &sizeInBytes);
-    LOG_IF_FAIL(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
+    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
     if (result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND) return false;
 
     RegCloseKey(hKey);
@@ -496,13 +361,13 @@ Utility::kdVariant Utility::registryGetKeyValue(const HKEY hRootKey, const std::
 
     const REGSAM sam = KEY_READ | KEY_WOW64_64KEY;
     LONG result = RegOpenKeyEx(hRootKey, subKey.c_str(), 0, sam, &hKey);
-    LOG_IF_FAIL(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
+    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
     if (result != ERROR_SUCCESS) return value;
 
     DWORD type = 0;
     DWORD sizeInBytes = 0;
     result = RegQueryValueEx(hKey, valueName.c_str(), 0, &type, nullptr, &sizeInBytes);
-    LOG_IF_FAIL(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
+    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
     if (result != ERROR_SUCCESS) {
         (void) RegCloseKey(hKey);
         return value;
@@ -539,7 +404,7 @@ Utility::kdVariant Utility::registryGetKeyValue(const HKEY hRootKey, const std::
         default:
             Q_UNREACHABLE();
     }
-    LOG_IF_FAIL(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
+    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
 
     RegCloseKey(hKey);
     return value;
@@ -555,7 +420,7 @@ bool Utility::registrySetKeyValue(HKEY hRootKey, const std::wstring &subKey, con
     // for both 32 and 64bit.
     REGSAM sam = KEY_WRITE | KEY_WOW64_64KEY;
     LONG result = RegCreateKeyEx(hRootKey, subKey.c_str(), 0, nullptr, 0, sam, nullptr, &hKey, nullptr);
-    LOG_IF_FAIL(result == ERROR_SUCCESS)
+    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS)
     if (result != ERROR_SUCCESS) {
         LPTSTR errorText = nullptr;
         if (!FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr,
@@ -587,7 +452,7 @@ bool Utility::registrySetKeyValue(HKEY hRootKey, const std::wstring &subKey, con
         default:
             Q_UNREACHABLE();
     }
-    LOG_IF_FAIL(result == ERROR_SUCCESS)
+    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS)
     if (result != ERROR_SUCCESS) {
         LPTSTR errorText = nullptr;
         if (!FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr,
@@ -610,15 +475,15 @@ bool Utility::registryDeleteKeyTree(HKEY hRootKey, const std::wstring &subKey) {
     HKEY hKey;
     REGSAM sam = DELETE | KEY_ENUMERATE_SUB_KEYS | KEY_QUERY_VALUE | KEY_SET_VALUE | KEY_WOW64_64KEY;
     LONG result = RegOpenKeyEx(hRootKey, subKey.c_str(), 0, sam, &hKey);
-    LOG_IF_FAIL(result == ERROR_SUCCESS)
+    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS)
     if (result != ERROR_SUCCESS) return false;
 
     result = RegDeleteTree(hKey, nullptr);
     RegCloseKey(hKey);
-    LOG_IF_FAIL(result == ERROR_SUCCESS)
+    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS)
 
     result |= RegDeleteKeyEx(hRootKey, subKey.c_str(), sam, 0);
-    LOG_IF_FAIL(result == ERROR_SUCCESS)
+    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS)
 
     return result == ERROR_SUCCESS;
 }
@@ -627,11 +492,11 @@ bool Utility::registryDeleteKeyValue(HKEY hRootKey, const std::wstring &subKey, 
     HKEY hKey;
     REGSAM sam = KEY_WRITE | KEY_WOW64_64KEY;
     LONG result = RegOpenKeyEx(hRootKey, subKey.c_str(), 0, sam, &hKey);
-    LOG_IF_FAIL(result == ERROR_SUCCESS)
+    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS)
     if (result != ERROR_SUCCESS) return false;
 
     result = RegDeleteValue(hKey, valueName.c_str());
-    LOG_IF_FAIL(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
+    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND)
 
     RegCloseKey(hKey);
     return result == ERROR_SUCCESS;
@@ -642,14 +507,14 @@ bool Utility::registryWalkSubKeys(HKEY hRootKey, const std::wstring &subKey,
     HKEY hKey;
     REGSAM sam = KEY_READ | KEY_WOW64_64KEY;
     LONG result = RegOpenKeyEx(hRootKey, subKey.c_str(), 0, sam, &hKey);
-    LOG_IF_FAIL(result == ERROR_SUCCESS)
+    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS)
     if (result != ERROR_SUCCESS) return false;
 
     DWORD maxSubKeyNameSize;
     // Get the largest keyname size once instead of relying each call on ERROR_MORE_DATA.
     result = RegQueryInfoKey(hKey, nullptr, nullptr, nullptr, nullptr, &maxSubKeyNameSize, nullptr, nullptr, nullptr, nullptr,
                              nullptr, nullptr);
-    LOG_IF_FAIL(result == ERROR_SUCCESS)
+    LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS)
     if (result != ERROR_SUCCESS) {
         RegCloseKey(hKey);
         return false;
@@ -667,7 +532,7 @@ bool Utility::registryWalkSubKeys(HKEY hRootKey, const std::wstring &subKey,
         retCode = RegEnumKeyEx(hKey, i, reinterpret_cast<LPWSTR>(subKeyName.data()), &subKeyNameSize, nullptr, nullptr, nullptr,
                                nullptr);
 
-        LOG_IF_FAIL(result == ERROR_SUCCESS || retCode == ERROR_NO_MORE_ITEMS)
+        LOG_IF_FAIL(Log::instance()->getLogger(), result == ERROR_SUCCESS || retCode == ERROR_NO_MORE_ITEMS)
         if (retCode == ERROR_SUCCESS) {
             // subKeyNameSize excludes the trailing \0
             subKeyName.resize(subKeyNameSize);
@@ -685,5 +550,4 @@ void Utility::unixTimeToFiletime(time_t t, FILETIME *filetime) {
     filetime->dwLowDateTime = (DWORD) ll;
     filetime->dwHighDateTime = ll >> 32;
 }
-
 } // namespace KDC

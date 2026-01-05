@@ -49,7 +49,7 @@ class URI;
 /* TODO : Replace with std::source_location when we will bump gcc version to 10 or higher
  *  static std::string errId(std::source_location location = std::source_location::current());
  */
-#define errId() Utility::_errId(__FILENAME__, __LINE__)
+#define ERR_ID Utility::_errId(__FILENAME__, __LINE__)
 
 namespace KDC {
 struct COMMONSERVER_EXPORT Utility {
@@ -77,12 +77,13 @@ struct COMMONSERVER_EXPORT Utility {
         static std::wstring formatSyncName(const SyncName &name);
         static std::wstring formatSyncPath(const SyncPath &path);
         static std::wstring formatPath(const QString &path);
+        static std::wstring formatSystemError(const std::system_error &exception);
 
         static std::string formatRequest(const Poco::URI &uri, const std::string &code, const std::string &description);
 
-        static std::string formatGenericServerError(std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
+        static std::string formatGenericServerError(const std::string &replyBody, const Poco::Net::HTTPResponse &httpResponse);
         static void logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle,
-                                          std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
+                                          const std::string &replyBody, const Poco::Net::HTTPResponse &httpResponse);
 
         /**
          * Check if two paths coincide up to case and encoding of file names.
@@ -110,11 +111,15 @@ struct COMMONSERVER_EXPORT Utility {
         static bool checkIfSameNormalization(const SyncPath &a, const SyncPath &b, bool &areSame);
 
 
-        static bool moveItemToTrash(const SyncPath &itemPath);
+        static SyncPath getTrashPath();
 #if defined(KD_MACOS)
         static bool preventSleeping(bool enable);
         static void restartFinderExtension();
+        static void restartLoginItemAgent();
+        static bool isLiteSyncExtRunning();
 #endif
+        static bool isLiteSyncExtError(const ExitInfo &exitInfo);
+
         static bool getLinuxDesktopType(std::string &currentDesktop);
 
         static void str2hexstr(const std::string &str, std::string &hexstr, bool capital = false);
@@ -173,7 +178,7 @@ struct COMMONSERVER_EXPORT Utility {
         static bool hasLaunchOnStartup(const std::string &appName);
         static bool setLaunchOnStartup(const std::string &appName, const std::string &guiName, bool enable);
 
-#ifdef _WIN32
+#if defined(KD_WINDOWS)
         using kdVariant = std::variant<int, std::wstring>;
 
         static void setFolderPinState(const std::wstring &clsid, bool show);
@@ -196,6 +201,19 @@ struct COMMONSERVER_EXPORT Utility {
         static void unixTimeToFiletime(time_t t, FILETIME *filetime);
 #endif
         static bool isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode);
+
+        /**
+         * @brief Check if a directory can be created in the temp directory.
+         * @param name the name of the directory to create.
+         * @return IoError
+         */
+        static IoError tryCreateTmpDir(const SyncName &name = Str("testDir"));
+        /**
+         * @brief Check if a file can be created in the temp directory.
+         * @param name the name of the file to create.
+         * @return IoError
+         */
+        static IoError tryCreateTmpFile(const SyncName &name = Str("testFile"));
 
     private:
         static log4cplus::Logger _logger;

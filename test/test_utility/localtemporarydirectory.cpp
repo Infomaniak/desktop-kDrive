@@ -28,7 +28,7 @@ LocalTemporaryDirectory::LocalTemporaryDirectory(const std::string &testType, co
     const std::time_t now = std::time(nullptr);
     const std::tm tm = *std::localtime(&now);
     std::ostringstream woss;
-    woss << std::put_time(&tm, "%Y%m%d_%H%M");
+    woss << std::put_time(&tm, "%Y%m%d_%H%M%S");
 
     const auto basePath = destinationPath.empty() ? std::filesystem::temp_directory_path() : destinationPath;
     _path = basePath / ("kdrive_" + testType + "_unit_tests_" + woss.str());
@@ -52,7 +52,21 @@ LocalTemporaryDirectory::LocalTemporaryDirectory(const std::string &testType, co
 
 LocalTemporaryDirectory::~LocalTemporaryDirectory() {
     auto ioError = IoError::Success;
+
+    // Set full access to temp directory.
+    (void) IoHelper::unlock(_path);
     (void) IoHelper::setRights(_path, true, true, true, ioError);
+
+    // Set full access to all children of temp directory.
+    IoHelper::DirectoryIterator dir;
+    IoHelper::getDirectoryIterator(_path, true, ioError, dir);
+    DirectoryEntry entry;
+    ioError = IoError::Success;
+    bool endOfDirectory = false;
+    while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
+        (void) IoHelper::unlock(entry.path());
+        (void) IoHelper::setRights(entry.path(), true, true, true, ioError);
+    }
 
     std::error_code ec;
     std::filesystem::remove_all(_path, ec);

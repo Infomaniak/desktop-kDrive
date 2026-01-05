@@ -117,28 +117,695 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="LanguageSelectionRestartNeeded.Title" xml:space="preserve">
+  <data name="CC_TrayIcon_ExitApplicationCommand.Label" xml:space="preserve">
     <value />
   </data>
-  <data name="LanguageSelectionRestartNeeded.Message" xml:space="preserve">
+  <data name="CC_TrayIcon_OpenApplicationCommand.Label" xml:space="preserve">
     <value />
   </data>
-  <data name="TrayIconExitApplicationCommand.Label" xml:space="preserve">
+  <data name="CC_SyncExclusionSelector_Header_Size.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="TrayIconOpenApplicationCommand.Label" xml:space="preserve">
+  <data name="CC_SyncExclusionSelector_Header_Name.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="NavHome.Content" xml:space="preserve">
+  <data name="W_MainWindow_NavBar_Home.Content" xml:space="preserve">
     <value />
   </data>
-  <data name="NavActivity.Content" xml:space="preserve">
+  <data name="W_MainWindow_NavBar_Activity.Content" xml:space="preserve">
     <value />
   </data>
-  <data name="NavStorage.Content" xml:space="preserve">
+  <data name="W_MainWindow_NavBar_Storage.Content" xml:space="preserve">
     <value />
   </data>
-  <data name="NavFolder.Content" xml:space="preserve">
+  <data name="W_MainWindow_TitleBar_SearchBox.PlaceholderText" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncStatusBar_PausedStatus.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncStatusBar_StartingStatus.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncStatusBar_PausingStatus.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncStatusBar_SyncedStatus.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncErrorBar_message.Message" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncErrorBar_button.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncActivityTable_Header_Name.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncActivityTable_Header_State.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Converter_SyncDirectionToToolTipConverter_Outgoing" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Converter_DateTimeToTimeAgoConverter_Since" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Converter_DateTimeToTimeAgoConverter_Ago" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncActivityTable_Header_Size.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncActivityTable_Header_LastLocation.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncActivityTable_Empty_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncActivityTable_Empty_Link.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_SyncActivityTable_Empty_Description.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_Second" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_Day" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_JustNow" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_Hour" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_Minute" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_SupportUrl" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_FAQUrl" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_UpgradeOfferMy_Url" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_UpgradeOfferProUrl" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_LearnMoreButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="  /!\  Ressource naming convention" xml:space="preserve">
+    <value>-</value>
+  </data>
+  <data name="CC_QuickAccess_favorites.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_QuickAccess_trash.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_QuickAccess_shared.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_KSuiteUpgradeBar_link.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_ConsentDialog.PrimaryButtonText" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_ConsentDialog_Toggle.OnContent" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_ConsentDialog_Toggle.OffContent" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_ConsentDialog.CloseButtonText" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_KSuiteUpgradeBar_message.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="ERR_LocalFileAccessError.Title" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_ErrorBar.Title" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_ErrorBar_Button.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="ERR_FrobiddenChar.Description" xml:space="preserve">
+    <value />
+  </data>
+  <data name="ERR_FrobiddenChar.Title" xml:space="preserve">
+    <value />
+  </data>
+  <data name="ERR_LocalFileAccessError.Description" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_UpdateAvailableBar_message.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_UpdateAvailableBar_link.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_SignupUrl" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Processing_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_RestartOAuthButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Success_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Error_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_ConnectInNavigator_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Processing_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Success_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_OAuthLoadingPage_Error_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_WelcomePage_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_WelcomePage_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_WelcomePage_SigninButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_WelcomePage_SignupButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_FinishButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_FinishPage_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_FinishPage_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_FinishPage_OpenButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_DriveAlreadyConfigured.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_FinishingPage_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_FinishingPage_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_NoDrive_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_NoDrive_Text.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_StartFreeButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_OffersButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_kDriveOffersUrl" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_kDriveShopUrl" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_StoragePage_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_StoragePage_ThisComputer.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_StoragePage_Used.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_StoragePage_Free.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_StoragePage_OfflineFiles.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_StoragePage_OtherFiles.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Converter_SyncDirectionToToolTipConverter_Incoming" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Hello.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_TeraBytes" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_MegaBytes" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_GigaBytes" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_KiloBytes" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_StoragePage_DiskUnavailable.Message" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Status_SyncUpToDate.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Main_SyncUpToDate_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Main_SyncInPause_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Main_SyncInProgress_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Main_SyncUpToDate_HyperLink.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Main_SyncInPause_HyperLink.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Main_SyncInProgress_HyperLink.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Main_SyncUpToDate_Description.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Main_SyncInProgress_Description.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Status_SyncOffline.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Status_SyncInPause.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Status_SyncInProgress.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Main_SyncInPause_Description.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Main_SyncOffline_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Main_SyncOffline_Description_Line1.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_HomePage_Main_SyncOffline_Description_Line2.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Global_LanguageCode" xml:space="preserve">
+    <value>it</value>
+  </data>
+  <data name="CC_UpdateExpander_Header.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_UpdateExpander_UpdateAvailable_Description.TextTemplate" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_UpdateExpander_UpToDate_Description.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_UpdateExpander_UpdateAvailable_UpdateDetails.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_LicensesHyperLink_Text.TextTemplate" xml:space="preserve">
+    <value />
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="Page_SettingsPage_Global.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_AutoUpdate.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_AutoStart.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Notifications.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="CC_LicensesHyperLink_HyperLinkButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_LicensesHyperLink_HyperLinkButton.NavigateUri" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CC_UpdateExpander_ChangeLogHyperLink.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Language.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Title.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Accounts.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_Location.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_FolderSelection.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_FolderSelection_Presentation_Header.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_FolderSelection_SaveButton.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_FolderSelection_CancelButton.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_FolderSelection_Presentation_Description.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_Offline.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_Online.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.Title" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.Title" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_InProgress.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_InProgress.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.SecondaryButtonText" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="SecondaryButtonText" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.PrimaryButtonText" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_Offline.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_Online.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Advanced.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_RemoveAccount_Dialog.Title" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_RemoveAccount_Dialog.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_RemoveAccount.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_SyncRules.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Privacy_Presentation.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Privacy_Matomo.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Privacy_Matomo_ConsentDialog.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Privacy_Sentry_ConsentDialog.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Privacy_Sentry.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Privacy.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Proxy.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Proxy_Type.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Proxy_SaveButton.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Proxy_CancelButton.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Proxy_Host.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Proxy_Port.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Proxy_NeedAuth.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Proxy_User.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Proxy_Password.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Proxy_Password_PasswordBox.PlaceholderText" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Proxy_ComoBox_SYSTEM.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Proxy.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Privacy_Sources.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_SyncRules.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_RemoveAccount_Dialog.SecondaryButtonText" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_RemoveAccount_Dialog.PrimaryButtonText" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_AddAccounts.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Drive_Configured.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Drive_Unconfigured.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Language_ComboBox_Default.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Notifications_ComboBox_Never.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Notifications_ComboBox_OneHour.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Notifications_ComboBox_UntilTomorrow.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Notifications_ComboBox_ThreeDays.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Notifications_ComboBox_OneWeek.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Beta_ComboBox_Stable.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Beta_ComboBox_Beta.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Beta_ComboBox_Internal.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Notifications_ComboBox_Always.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_MoveToTrash_Description.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_MoveToTrash.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Beta.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Logs.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Logs_Purge.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Logs_Extended.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Logs_Extended.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Logs_Extended_Tooltip.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Logs_DebugLevel.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Logs_DebugFolder.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Logs_DebugLevel_ComboBox_Warning.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Logs_DebugLevel_ComboBox_Extended.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Logs_DebugLevel_ComboBox_Fatal.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Logs_DebugLevel_ComboBox_Error.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Logs_DebugLevel_ComboBox_Info.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Logs_DebugLevel_ComboBox_Debug.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Logs_DebugLevel.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Logs_Purge.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Logs_Enabled.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Logs_Enabled.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Logs.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Beta_Expander.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Beta_Expander.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Privacy_Presentation.Description" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="CC_UpdateExpander_UpdateButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.PrimaryButtonText" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_InfoBar.Message" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_CustomizeButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Title" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog_TeachingTip.Subtitle" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Onboarding_DriveSelectionPage_AdvancedDialog.CloseButtonText" xml:space="preserve">
+    <value />
+  </data>
+  <data name="W_MainWindow_PaneFooter_Folder.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="CC_QuickAccess_onlineDrive.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Global_Bytes" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_DriveManagement_Title.Text" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_AdvancedSyncs.Header" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.PrimaryButtonText" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.SecondaryButtonText" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Proxy_ComoBox_HTTP.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_SettingsPage_Proxy_ComoBox_NONE.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="CC_SyncStatusBar_SyncingStatus.Text" xml:space="preserve">
     <value />
   </data>
 </root>

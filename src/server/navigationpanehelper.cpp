@@ -31,8 +31,7 @@
 
 namespace KDC {
 
-NavigationPaneHelper::NavigationPaneHelper(const std::unordered_map<int, std::shared_ptr<KDC::Vfs>> &vfsMap) :
-    _vfsMap(vfsMap) {
+NavigationPaneHelper::NavigationPaneHelper() {
     _showInExplorerNavigationPane = KDC::ParametersCache::instance()->parameters().showShortcuts();
 
 #ifdef Q_OS_WIN
@@ -96,9 +95,6 @@ void NavigationPaneHelper::updateCloudStorageRegistry() {
 
     for (KDC::Sync &sync: syncList) {
         if (sync.virtualFileMode() != KDC::VirtualFileMode::Win) {
-            if (sync.navigationPaneClsid().empty()) {
-                sync.setNavigationPaneClsid(QUuid::createUuid().toString().toStdString());
-            }
             Utility::addLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()), sync.localPath(),
                                            _showInExplorerNavigationPane);
         }

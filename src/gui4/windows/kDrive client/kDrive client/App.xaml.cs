@@ -1,51 +1,200 @@
-﻿using H.NotifyIcon;
+﻿/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2025 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+using DynamicData;
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
+using Infomaniak.kDrive.ServerCommunication.Services;
+using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Security.Authentication.OAuth;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Media.Imaging;
-using Microsoft.UI.Xaml.Navigation;
-using Microsoft.UI.Xaml.Shapes;
+using Microsoft.Win32;
+using Sentry;
 using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
+using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.ApplicationModel;
-using Windows.ApplicationModel.Activation;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using System.Threading.Tasks;
 
-namespace kDrive_client
+
+namespace Infomaniak.kDrive
 {
     public partial class App : Application
     {
-        #region Properties
-
-        public Window? Window { get; set; }
+        private Window? _currentWindow;
+        public int LegacyCommPort { get; private set; } = -1;
+        public Window? CurrentWindow
+        {
+            get => _currentWindow;
+            private set
+            {
+                _currentWindow = value;
+                TrayIcoManager.ConfigureWindowEventHandler();
+            }
+        }
         public TrayIcon.TrayIconManager TrayIcoManager { get; private set; }
 
-        #endregion
+        private readonly IServiceCollection _services = new ServiceCollection();
+        private static IServiceProvider? _serviceProvider = null;
+        internal static IServiceProvider ServiceProvider => _serviceProvider ?? throw new InvalidOperationException("Service provider is not initialized.");
 
-        #region Constructors
-
-        public App()
+        internal static IAppConstants Constants => new ProductionConstants();
+        internal App()
         {
+            SentrySdk.Init(options =>
+            {
+                options.Dsn = Constants.SentryDSN;
+                options.Debug = true;
+                options.SendDefaultPii = true;
+                options.AutoSessionTracking = true;
+                options.IsGlobalModeEnabled = true;
+                options.Environment = "production";
+            });
             InitializeComponent();
             TrayIcoManager = new TrayIcon.TrayIconManager();
+            _services.AddSingleton<AppModel>();
+            _services.AddSingleton<IServerCommProtocol, SocketServerCommProtocol>();
+            //_services.AddSingleton<IServerCommProtocol, MockServerCommProtocol>();
+            _services.AddSingleton<IServerCommService, ServerCommService>();
+            _serviceProvider = _services.BuildServiceProvider();
+            Logger.Log(Logger.Level.Info, "Application started");
         }
 
-        #endregion
-
-        #region Event Handlers
-
-        protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+        protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            TrayIcoManager.Initialize(Window);
+            string[] arguments = Environment.GetCommandLineArgs();
+            if (arguments.Length > 1)
+            {
+                var oauthArg = arguments.FirstOrDefault(arg => arg.StartsWith("kdrive://auth-desktop"), "");
+                if (oauthArg != "")
+                {
+                    if (OAuth2Manager.CompleteAuthRequest(new Uri(oauthArg)))
+                    {
+                        // Terminate the Process
+                        Logger.Log(Logger.Level.Info, "OAuth process completed, response routed successfully. Terminating the process.");
+                    }
+                    else
+                    {
+                        Logger.Log(Logger.Level.Warning, "OAuth process failed.");
+                    }
+                    Process current = Process.GetCurrentProcess();
+                    current.Kill();
+                    return;
+                }
+                LegacyCommPort = Int32.Parse(arguments[1]);
+            }
+
+            // Register oAuth protocol handler
+            RegisterOAuthProtocol();
+
+            // Start all singleton services
+            foreach (var serviceDescriptor in _services.Where(sd => sd.Lifetime == ServiceLifetime.Singleton))
+            {
+                // Force the initialization of singleton services
+                ServiceProvider.GetRequiredService(serviceDescriptor.ServiceType);
+            }
+
+            CurrentWindow = new MainWindow();
+            var currentWindowContent = CurrentWindow.Content;
+
+            // Affiche le spinning wheel
+            CurrentWindow.Content = new CustomControls.SplashScreen();
+
+            TrayIcoManager.Initialize();
+            AppModel appModel = ServiceProvider.GetRequiredService<AppModel>();
+            await appModel.InitializeAsync();
+            CurrentWindow.Content = currentWindowContent;
+            (CurrentWindow as MainWindow)?.AppNavView.Frame.Navigate(typeof(Pages.HomePage));
+            StartOnboardingIfNeeded();
+            appModel.AllSyncs.AsObservableChangeSet()
+            .Subscribe(_ =>
+            {
+                StartOnboardingIfNeeded();
+            });
         }
-        #endregion
+
+        private void RegisterOAuthProtocol()
+        {
+            const string protocol = "kDrive";
+            string exe = Environment.ProcessPath ?? "";
+            if (exe == "")
+            {
+                Logger.Log(Logger.Level.Error, "Failed to register oauth protocol handler: unable to determine executable path.");
+                return;
+            }
+
+            using var key = Registry.CurrentUser.CreateSubKey($@"Software\Classes\{protocol}");
+            key.SetValue("", $"URL:{protocol} protocol");
+            key.SetValue("URL Protocol", "");
+
+            using var icon = Registry.CurrentUser.CreateSubKey($@"Software\Classes\{protocol}\DefaultIcon");
+            icon.SetValue("", $"{exe},1");
+
+            using var command = Registry.CurrentUser.CreateSubKey($@"Software\Classes\{protocol}\shell\open\command");
+            command.SetValue("", $"\"{exe}\" \"%1\"");
+        }
+
+
+        public void StartOnboarding()
+        {
+            AppModel.UIThreadDispatcher.TryEnqueue(() =>
+            {
+                if (CurrentWindow?.GetType() == typeof(OnBoarding.OnBoardingWindow))
+                {
+                    Logger.Log(Logger.Level.Info, "OnBoardingWindow is already open, skipping StartOnboarding call.");
+                    return;
+                }
+                CurrentWindow?.Close();
+                CurrentWindow = new OnBoarding.OnBoardingWindow();
+                ((OnBoarding.OnBoardingWindow)CurrentWindow).Closed += (s, e) =>
+                {
+                    if (ServiceProvider.GetRequiredService<AppModel>().Users.Any())
+                    {
+                        Logger.Log(Logger.Level.Info, "OnBoardingWindow closed, restarting MainWindow.");
+                        CurrentWindow = new MainWindow();
+                        CurrentWindow.Activate();
+                    }
+                };
+                CurrentWindow.Activate();
+            });
+        }
+
+        public void StartOnboardingIfNeeded()
+        {
+            if (!ServiceProvider.GetRequiredService<AppModel>().Users.Any() && !(CurrentWindow is OnBoarding.OnBoardingWindow))
+            {
+                Logger.Log(Logger.Level.Info, "No users available after initialization, starting onboarding process.");
+                StartOnboarding();
+            }
+        }
+
+        public static void ExitApplication()
+        {
+            Logger.Log(Logger.Level.Info, "Exiting application.");
+            (Current as App)!.CurrentWindow?.Close();
+            Environment.Exit(0);
+        }
+
+        public static void ExitApplicationAndShutdownServer()
+        {
+            Logger.Log(Logger.Level.Info, "Sending exit command to server.");
+            App.ServiceProvider.GetRequiredService<IServerCommService>().Exit();
+            ExitApplication();
+        }
     }
 }

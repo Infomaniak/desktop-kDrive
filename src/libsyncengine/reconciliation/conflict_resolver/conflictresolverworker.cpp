@@ -120,7 +120,7 @@ ExitInfo ConflictResolverWorker::handleConflictOnOmittedEdit(const Conflict &con
         if (auto exitInfo = editChangeShouldBePropagated(localNode, propagateEdit); !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in OperationProcessor::editChangeShouldBePropagated: "
                                                << Utility::formatSyncPath(localNode->getPath()) << L" " << exitInfo);
-            _syncPal->addError(Error(errId(), exitInfo));
+            _syncPal->addError(Error(ERR_ID, exitInfo));
             return exitInfo;
         }
 
@@ -303,7 +303,11 @@ ExitCode ConflictResolverWorker::generateParentDeleteConflictOperation(const Con
     deleteOp->setType(OperationType::Delete);
     const auto deleteNode = conflict.node()->hasChangeEvent(OperationType::Delete) ? conflict.node() : conflict.otherNode();
     deleteOp->setAffectedNode(deleteNode);
-    const auto &correspondingNode = correspondingNodeInOtherTree(deleteNode);
+    const auto correspondingNode = correspondingNodeInOtherTree(deleteNode);
+    if (!correspondingNode) {
+        LOGW_SYNCPAL_WARN(_logger, L"Failed to get corresponding node: " << Utility::formatSyncName(deleteNode->name()));
+        return ExitCode::DataError;
+    }
     deleteOp->setCorrespondingNode(correspondingNode);
     deleteOp->setTargetSide(correspondingNode->side());
     deleteOp->setConflict(conflict);
@@ -417,6 +421,10 @@ ExitCode ConflictResolverWorker::undoMove(const std::shared_ptr<Node> moveNode, 
 
     moveOp->setType(OperationType::Move);
     const auto correspondingNode = correspondingNodeInOtherTree(moveNode);
+    if (!correspondingNode) {
+        LOGW_SYNCPAL_WARN(_logger, L"Failed to get corresponding node: " << Utility::formatSyncName(moveNode->name()));
+        return ExitCode::DataError;
+    }
     correspondingNode->setMoveOriginInfos({moveNode->getPath(), moveNode->parentNode()->id().value_or("")});
     correspondingNode->insertChangeEvent(OperationType::Move);
     moveOp->setAffectedNode(correspondingNode);

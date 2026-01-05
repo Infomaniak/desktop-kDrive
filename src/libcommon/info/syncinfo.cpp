@@ -17,6 +17,16 @@
  */
 
 #include "syncinfo.h"
+#include "libcommon/utility/utility.h"
+
+static const auto syncInfoDbId = "dbId";
+static const auto syncInfoDriveDbId = "driveDbId";
+static const auto syncInfoLocalPath = "localPath";
+static const auto syncInfoTargetPath = "targetPath";
+static const auto syncInfoTargetNodeId = "targetNodeId";
+static const auto syncInfoSupportVfs = "supportVfs";
+static const auto syncInfoVirtualFileMode = "virtualFileMode";
+static const auto syncInfoNavigationPaneClsid = "navigationPaneClsid";
 
 namespace KDC {
 
@@ -30,6 +40,41 @@ SyncInfo::SyncInfo(int dbId, int driveDbId, const QString &localPath, const QStr
     _supportVfs(supportVfs),
     _virtualFileMode(virtualFileMode),
     _navigationPaneClsid(navigationPaneClsid) {}
+
+void SyncInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
+    CommonUtility::writeValueToStruct(dstruct, syncInfoDbId, _dbId);
+    CommonUtility::writeValueToStruct(dstruct, syncInfoDriveDbId, _driveDbId);
+    CommonUtility::writeValueToStruct(dstruct, syncInfoLocalPath, CommonUtility::qStr2CommString(_localPath));
+    CommonUtility::writeValueToStruct(dstruct, syncInfoTargetPath, CommonUtility::qStr2CommString(_targetPath));
+    CommonUtility::writeValueToStruct(dstruct, syncInfoTargetNodeId, CommonUtility::qStr2CommString(_targetNodeId));
+    CommonUtility::writeValueToStruct(dstruct, syncInfoSupportVfs, _supportVfs);
+    CommonUtility::writeValueToStruct(dstruct, syncInfoVirtualFileMode, _virtualFileMode);
+    CommonUtility::writeValueToStruct(dstruct, syncInfoNavigationPaneClsid, CommonUtility::qStr2CommString(_navigationPaneClsid));
+}
+
+void SyncInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
+    CommonUtility::readValueFromStruct(dstruct, syncInfoDbId, _dbId);
+    CommonUtility::readValueFromStruct(dstruct, syncInfoDriveDbId, _driveDbId);
+
+    CommString localPath;
+    CommonUtility::readValueFromStruct(dstruct, syncInfoLocalPath, localPath);
+    _localPath = CommonUtility::commString2QStr(localPath);
+
+    CommString targetPath;
+    CommonUtility::readValueFromStruct(dstruct, syncInfoTargetPath, targetPath);
+    _targetPath = CommonUtility::commString2QStr(targetPath);
+
+    CommString targetNodeId;
+    CommonUtility::readValueFromStruct(dstruct, syncInfoTargetNodeId, targetNodeId);
+    _targetNodeId = CommonUtility::commString2QStr(targetNodeId);
+
+    CommonUtility::readValueFromStruct(dstruct, syncInfoSupportVfs, _supportVfs);
+    CommonUtility::readValueFromStruct(dstruct, syncInfoVirtualFileMode, _virtualFileMode);
+
+    CommString navigationPaneClsid;
+    CommonUtility::readValueFromStruct(dstruct, syncInfoNavigationPaneClsid, navigationPaneClsid);
+    _navigationPaneClsid = CommonUtility::commString2QStr(navigationPaneClsid);
+}
 
 QDataStream &operator>>(QDataStream &in, SyncInfo &info) {
     in >> info._dbId >> info._driveDbId >> info._localPath >> info._targetPath >> info._targetNodeId >> info._supportVfs >>
@@ -57,9 +102,9 @@ QDataStream &operator>>(QDataStream &in, QList<SyncInfo> &list) {
     int count = 0;
     in >> count;
     for (int i = 0; i < count; i++) {
-        SyncInfo *info = new SyncInfo();
-        in >> *info;
-        list.push_back(*info);
+        SyncInfo info;
+        in >> info;
+        list.push_back(info);
     }
     return in;
 }

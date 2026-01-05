@@ -18,28 +18,46 @@
 
 #include "testincludes.h"
 
-
 #if defined(KD_MACOS)
-#include "vfs/mac/testlitesyncextconnector.h"
+#include "vfs/mac/testlitesynccommclient.h"
 #include "vfs/mac/testvfsmac.h"
 #endif
 #include "workers/testworkers.h"
 #include "updater/testabstractupdater.h"
+#if defined(KD_WINDOWS)
+#include "updater/testwindowsupdater.h"
+#endif
 #include "updater/testupdatechecker.h"
 #include "requests/testserverrequests.h"
 #include "appserver/testappserver.h"
+#include "comm/guicommchannel/testguicommchannel.h"
+#include "comm/testsocketcomm.h"
+#if defined(KD_WINDOWS)
+#include "comm/testpipecomm.h"
+#endif
+#include "comm/guijobs/testabstractguijob.h"
 
 namespace KDC {
 
 #if defined(KD_MACOS)
 CPPUNIT_TEST_SUITE_REGISTRATION(TestVfsMac);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestLiteSyncExtConnector);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestLiteSyncCommClient);
 #endif
 CPPUNIT_TEST_SUITE_REGISTRATION(TestWorkers);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateChecker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractUpdater);
+#if defined(KD_WINDOWS)
+CPPUNIT_TEST_SUITE_REGISTRATION(TestWindowsUpdater);
+#endif
 CPPUNIT_TEST_SUITE_REGISTRATION(TestServerRequests);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAppServer);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestSocketComm);
+#if defined(KD_WINDOWS)
+CPPUNIT_TEST_SUITE_REGISTRATION(TestPipeComm);
+#endif
+CPPUNIT_TEST_SUITE_REGISTRATION(TestGuiCommChannel);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractGuiJob);
+
 } // namespace KDC
 
 int main(int, char **) {

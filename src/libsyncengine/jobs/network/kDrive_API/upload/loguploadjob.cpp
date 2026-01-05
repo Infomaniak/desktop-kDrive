@@ -53,7 +53,7 @@ LogUploadJob::LogUploadJob(const bool includeArchivedLog, const std::function<vo
 }
 
 void LogUploadJob::abort() {
-    AbstractJob::abort();
+    SyncJob::abort();
     const LogUploadState logUploadState = getDbUploadState();
 
     if (logUploadState == LogUploadState::CancelRequested || logUploadState == LogUploadState::Canceled) {
@@ -103,30 +103,29 @@ bool LogUploadJob::getLogDirEstimatedSize(uint64_t &size, IoError &ioError) {
     return result;
 }
 
-void LogUploadJob::runJob() {
-    if (!canRun()) {
+ExitInfo LogUploadJob::runJob() {
+    if (const auto exitInfo = canRun(); !exitInfo) {
         LOG_DEBUG(Log::instance()->getLogger(), "LogUploadJob job cannot run.");
-        _exitInfo = ExitCode::Ok;
-        return;
+        return ExitCode::Ok;
     }
 
     if (const ExitInfo exitInfo = init(); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadJob::init: " << exitInfo);
         handleJobFailure(exitInfo);
-        return;
+        return exitInfo;
     }
 
     if (const ExitInfo exitInfo = archive(_generatedArchivePath); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadJob::archive: " << exitInfo);
         handleJobFailure(exitInfo);
-        return;
+        return exitInfo;
     }
 
     // Save the path of the generated archive, so the user can attach it to the support request if the upload fails
     if (bool found = false;
         !ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, _generatedArchivePath.string(), found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
-        _addErrorCallback(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+        _addErrorCallback(Error(ERR_ID, ExitCode::DbError, ExitCause::DbAccessError));
     } else if (!found) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in ParmsDb::updateAppState: " << AppStateKey::LastLogUploadArchivePath << " key not found");
@@ -135,10 +134,11 @@ void LogUploadJob::runJob() {
     if (const ExitInfo exitInfo = upload(_generatedArchivePath); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadJob::sendLogToSupport: " << exitInfo);
         handleJobFailure(exitInfo, false);
-        return;
+        return exitInfo;
     }
 
     finalize();
+    return ExitCode::Ok;
 }
 
 ExitInfo LogUploadJob::init() {
@@ -199,19 +199,18 @@ void LogUploadJob::finalize() {
     }
 
     (void) notifyLogUploadProgress(LogUploadState::Success, 100);
-    _exitInfo = ExitCode::Ok;
     _runningJob.reset();
 }
 
-bool LogUploadJob::canRun() {
+ExitInfo LogUploadJob::canRun() {
     const std::scoped_lock lock(_runningJobMutex);
     if (_runningJob) {
         LOG_WARN(Log::instance()->getLogger(), "Another log upload job is already running");
-        return false;
+        return {};
     }
 
     _runningJob = shared_from_this();
-    return true;
+    return ExitCode::Ok;
 }
 
 ExitInfo LogUploadJob::archive(SyncPath &generatedArchivePath) {
@@ -404,7 +403,7 @@ ExitInfo LogUploadJob::generateUserDescriptionFile(const SyncPath &outputPath) c
     } else {
         file << "Unable to retrieve user ID(s)" << std::endl;
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
-        _addErrorCallback(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+        _addErrorCallback(Error(ERR_ID, ExitCode::DbError, ExitCause::DbAccessError));
     }
 
     file << "Drive ID(s): ";
@@ -416,7 +415,7 @@ ExitInfo LogUploadJob::generateUserDescriptionFile(const SyncPath &outputPath) c
     } else {
         file << "Unable to retrieve drive ID(s)" << std::endl;
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
-        _addErrorCallback(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+        _addErrorCallback(Error(ERR_ID, ExitCode::DbError, ExitCause::DbAccessError));
     }
 
 
@@ -543,7 +542,7 @@ LogUploadState LogUploadJob::getDbUploadState() const {
     AppStateValue appStateValue = LogUploadState::None;
     if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found)) {
         LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
-        _addErrorCallback(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+        _addErrorCallback(Error(ERR_ID, ExitCode::DbError, ExitCause::DbAccessError));
         return LogUploadState::None;
     } else if (!found) {
         LOG_WARN(_logger, AppStateKey::LogUploadState << " not found in the database");
@@ -557,7 +556,7 @@ void LogUploadJob::updateDbUploadState(LogUploadState newState) const {
     bool found = false;
     if (!ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, newState, found)) {
         LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
-        _addErrorCallback(Error(errId(), ExitCode::DbError, ExitCause::DbAccessError));
+        _addErrorCallback(Error(ERR_ID, ExitCode::DbError, ExitCause::DbAccessError));
         return;
     }
     if (!found) {
@@ -611,7 +610,6 @@ void LogUploadJob::handleJobFailure(const ExitInfo &exitInfo, const bool clearTm
                                         "Log upload failed with exitInfo: " + exitInfo.operator std::string());
     }
     _runningJob.reset();
-    _exitInfo = exitInfo;
 }
 
 bool LogUploadJob::getFileSize(const SyncPath &path, uint64_t &size) {

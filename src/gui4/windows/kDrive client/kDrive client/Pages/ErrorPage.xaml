@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page x:Class="Infomaniak.kDrive.Pages.ErrorPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:local="using:Infomaniak.kDrive"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+      xmlns:errors="using:Infomaniak.kDrive.CustomControls.Errors"
+      xmlns:converters="using:Infomaniak.kDrive.Converters"
+      xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
+      mc:Ignorable="d">
+
+    <Grid Margin="{StaticResource Infomaniak.Style.Thickness.Uniform.L}"
+          RowSpacing="{StaticResource Infomaniak.Style.Spacing.L}"
+          ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.L}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- TODO: Localize when implementing UI/UX designs -->
+        <TextBlock Grid.Row="0"
+                   Text="Erreurs à corriger"
+                   Style="{StaticResource TitleTextBlockStyle}" /> 
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0">
+                <!-- TODO: Localize when implementing UI/UX designs -->
+                <Run Text="Vous avez " />
+                <Run Text="{x:Bind ViewModel.SelectedSync.SyncErrors.Count, Mode=OneWay}" />
+                <Run Text=" erreurs de synchronisation à corriger." /> 
+            </TextBlock>
+        </Grid>
+
+        <ListView Grid.Row="2"
+                  ItemsSource="{x:Bind ViewModel.SelectedSync.SyncErrors, Mode=OneWay}"
+                  SelectionMode="None"
+                  IsItemClickEnabled="False">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="viewmodels:Error">
+                    <errors:ErrorPresenter Error="{x:Bind Mode=OneWay}" />
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
+</Page>

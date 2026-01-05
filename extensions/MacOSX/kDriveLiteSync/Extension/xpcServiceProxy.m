@@ -17,7 +17,7 @@
  */
 
 #import "xpcServiceProxy.h"
-#import "../kDrive/xpcLiteSyncExtensionRemoteProtocol.h"
+#import "../kDriveModel/xpcLiteSyncExtensionRemoteProtocol.h"
 
 @implementation XPCServiceProxy
 

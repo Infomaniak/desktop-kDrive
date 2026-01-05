@@ -32,7 +32,7 @@ class NavigationPaneHelper : public QObject {
         Q_OBJECT
 
     public:
-        NavigationPaneHelper(const std::unordered_map<int, std::shared_ptr<KDC::Vfs>> &vfsMap);
+        NavigationPaneHelper();
 
 #ifdef Q_OS_WIN
         bool showInExplorerNavigationPane() const { return _showInExplorerNavigationPane; }
@@ -42,8 +42,6 @@ class NavigationPaneHelper : public QObject {
 #endif
 
     private:
-        const std::unordered_map<int, std::shared_ptr<KDC::Vfs>> &_vfsMap;
-
 #ifdef Q_OS_WIN
         void updateCloudStorageRegistry();
 #endif

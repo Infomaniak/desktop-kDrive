@@ -85,15 +85,12 @@ void TestIo::testSetXAttrValue() {
 
         IoError ioError = IoError::Success;
         CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "status", "locked", ioError));
-
-        std::filesystem::permissions(path, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
-
-        CPPUNIT_ASSERT(ioError == IoError::AccessDenied);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError); // `setXAttrValue` grant write permissions temporarily
 
         std::string value;
         CPPUNIT_ASSERT(_testObj->getXAttrValue(path, "status", value, ioError));
-        CPPUNIT_ASSERT(ioError == IoError::AttrNotFound);
-        CPPUNIT_ASSERT(value.empty());
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+        CPPUNIT_ASSERT_EQUAL(std::string("locked"), value);
     }
 #endif
 

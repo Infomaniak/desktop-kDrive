@@ -35,28 +35,6 @@ class ActionWidget;
 class ClientGui;
 class CustomSwitch;
 
-// A data class holding the switch widget and the line edit field
-// which let users confirm the synchronization of a folder whose size
-// is above a user-defined threshold (amount).
-struct LargeFolderConfirmation : public QObject { // Derived from QObject because retranslateUi calls tr()
-        Q_OBJECT
-
-    public:
-        explicit LargeFolderConfirmation(QBoxLayout *folderConfirmationBox);
-        void retranslateUi();
-        // If this switch is on, a confirmation is asked for synchronizing large folders.
-        const CustomSwitch *customSwitch() const { return _switch; };
-        // A user-defined size expressed in MBs above which the confirmation is actually required.
-        const QLineEdit *amountLineEdit() const { return _amountLineEdit; };
-        void setAmountLineEditEnabled(bool enabled);
-
-    private:
-        QLabel *_label{nullptr};
-        QLabel *_amountLabel{nullptr};
-        QLineEdit *_amountLineEdit{nullptr};
-        CustomSwitch *_switch{nullptr};
-};
-
 class PreferencesWidget : public LargeWidgetWithCustomToolTip {
         Q_OBJECT
 
@@ -67,14 +45,12 @@ class PreferencesWidget : public LargeWidgetWithCustomToolTip {
 
     signals:
         void setStyle(bool darkTheme);
-        void undecidedListsCleared();
         void displayErrors();
         void restartSync(int syncDbId);
 
     private:
         std::shared_ptr<ClientGui> _gui;
 
-        std::unique_ptr<LargeFolderConfirmation> _largeFolderConfirmation;
         VersionWidget *_versionWidget;
         CustomComboBox *_languageSelectorComboBox{nullptr};
         QLabel *_generalLabel{nullptr};
@@ -98,13 +74,9 @@ class PreferencesWidget : public LargeWidgetWithCustomToolTip {
 
         void showEvent(QShowEvent *event) override;
 
-        void clearUndecidedLists();
-
         [[nodiscard]] bool isStaff() const;
 
     private slots:
-        void onFolderConfirmationSwitchClicked(bool checked = false);
-        void onFolderConfirmationAmountTextEdited(const QString &text);
         void onDarkThemeSwitchClicked(bool checked = false);
         void onMonochromeSwitchClicked(bool checked = false);
         void onLaunchAtStartupSwitchClicked(bool checked = false);

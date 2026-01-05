@@ -1,0 +1,164 @@
+/*
+ * Loco ios export: Xcode Strings (legacy)
+ * Project: kDrive Desktop
+ * Locale: en, English
+ * Tagged: macOS
+ * Exported by: Valentin Perignon
+ * Exported at: Thu, 04 Dec 2025 16:15:08 +0100
+ */
+
+/* loco:691deb2291b20ac7fd045012 */
+"buttonAdvancedParameters" = "Advanced settings";
+
+/* loco:691deb0be15255c13908ba42 */
+"buttonContinue" = "Continue";
+
+/* loco:68e673c48af12c42e80027c8 */
+"buttonCreateAccount" = "Create an account";
+
+/* loco:6930506962426d4ff30af473 */
+"buttonFinishInstallation" = "Finish installation";
+
+/* loco:69304d546385bb9cfc03e524 */
+"buttonKDriveIsActivated" = "I've activated kDrive";
+
+/* loco:68e673b2042a15d8470f9452 */
+"buttonLogin" = "Login";
+
+/* loco:68b04d823f2b735c170caea2 */
+"buttonOpenInBrowser" = "Open in browser";
+
+/* loco:68b04d5a63085b7ab90cea63 */
+"buttonOpenInFinder" = "Open in Finder";
+
+/* loco:6931a5687031691272002314 */
+"buttonOpenKDrive" = "Open kDrive";
+
+/* loco:69240f7b15d05a975c07dc13 */
+"buttonShowOffers" = "Show offers";
+
+/* loco:69240f6d4433e24658054fd4 */
+"buttonStartForFree" = "Get started for free";
+
+/* loco:6930595e7664999c6a08c8a4 */
+"instructionEnableKDrive" = "Activate kDrive.app";
+
+/* loco:693059768c31ab63990a0c82 */
+"instructionEnableKDriveArgument" = "kDrive.app";
+
+/* loco:69314c10606d30eb26081742 */
+"instructionEnableKDriveHint" = "You must activate kDrive.app before continuing";
+
+/* loco:69314cfb358e5c25a50b1fb3 */
+"instructionFullDisk" = "Activate kDrive and kDrive LiteSync Extension";
+
+/* loco:69314c248389940c6c08d902 */
+"instructionFullDiskHint" = "You must activate authorizations before continuing";
+
+/* loco:69314c4aba85c2962d068dc2 */
+"instructionOpenPrivacySecurity" = "Go to Privacy & Security > Full disk access";
+
+/* loco:69314c54606d30eb26081743 */
+"instructionOpenPrivacySecurityArgument" = "Full disk access";
+
+/* loco:69314c62739c205c410aa082 */
+"instructionOpenPrivacySecurityLink" = "Privacy & Security";
+
+/* loco:69305911b203efcf750e7bb4 */
+"instructionOpenSecurityExtensions" = "Select Open & Extensions > Security extensions";
+
+/* loco:6930592bfd6c86f6690db6d5 */
+"instructionOpenSecurityExtensionsArgument" = "Security extensions";
+
+/* loco:693059483fc5023f6a0f86b3 */
+"instructionOpenSecurityExtensionsLink" = "Open & Extensions";
+
+/* loco:69305849f1fb5be2c7093fa2 */
+"instructionOpenSystemSettings" = "Open System Settings > General";
+
+/* loco:6930588953221ff00608e983 */
+"instructionOpenSystemSettingsLink" = "System Settings";
+
+/* loco:69314d1a739c205c410aa087 */
+"instructionRestartIfNecessary" = "Restart the application if required";
+
+/* loco:693050ed6a0836d25507da22 */
+"onboardingAuthorizationExtensionDescription" = "Authorize kDrive in macOS settings :";
+
+/* loco:6930509e14b396d6fc04b0f2 */
+"onboardingAuthorizationExtensionTitle" = "Activate kDrive on your Mac";
+
+/* loco:6930510648920a67910d1094 */
+"onboardingAuthorizationFullDiskDescription" = "To complete the installation, you must authorize kDrive to access your :";
+
+/* loco:693050bab2a2c1990a0d2f04 */
+"onboardingAuthorizationFullDiskTitle" = "Authorize access to files";
+
+/* loco:692406b0258f5599bf01d113 */
+"onboardingDriveSelectionNoDriveDescription" = "Get started for free with my kSuite,\nor choose a package tailored to your needs.";
+
+/* loco:692405adc5c224ad2a07ff62 */
+"onboardingDriveSelectionNoDriveTitle" = "You don't have a kDrive yet.";
+
+/* loco:69242dd4299cf487060f2143 */
+"onboardingDriveSelectionSelectTitle" = "Select the kDrive to be synchronized on this computer:";
+
+/* loco:69271e987f61390c0e053442 */
+"onboardingDriveSelectionSyncInProgress" = "Synchronization in progress";
+
+/* loco:691deaf47145f10ab4052cd2 */
+"onboardingDriveSelectionTitle" = "Welcome back!";
+
+/* loco:68e6739c8af12c42e80027c5 */
+"onboardingLoginDescription" = "The fast, secure private cloud, hosted in Switzerland.\n\nLog in and keep your documents synchronized on all your devices.";
+
+/* loco:68e8fa543a683192560af9e2 */
+"onboardingLoginErrorDescription" = "An error has occurred, please try again.";
+
+/* loco:68e8fa06c1b003290f0ccf42 */
+"onboardingLoginErrorTitle" = "Connection error";
+
+/* loco:691deb66e28b84c78e034353 */
+"onboardingLoginHintLoading" = "Just a few more moments, and we'll load your account…";
+
+/* loco:691deb477145f10ab4052cd4 */
+"onboardingLoginHintWebAuth" = "Login from your browser…";
+
+/* loco:68e673754d80559c460bdf02 */
+"onboardingLoginTitle" = "Welcome to kDrive!";
+
+/* loco:6931a1769dc60cb1820f5fe3 */
+"onboardingSynchronizationAppReadyDescription" = "Your files are ready to be securely synchronized on your computer.";
+
+/* loco:6931a16c3498d5205b0380d3 */
+"onboardingSynchronizationAppReadyTitle" = "All set!";
+
+/* loco:6931a1582ee1a869eb0303f4 */
+"onboardingSynchronizationInProgressDescription" = "Your kDrive files are being synchronized.\nPlease wait a few moments.";
+
+/* loco:6931a14fa4031f6161097f42 */
+"onboardingSynchronizationInProgressTitle" = "Synchronization in progress..";
+
+/* loco:68e8fa27d09187683c0679b2 */
+"onboardingWindowTitle" = "Welcome to kDrive";
+
+/* loco:68cd386502633dee14000352 */
+"sidebarItemAccounts" = "Accounts";
+
+/* loco:68cd389fcc36238762040074 */
+"sidebarItemAdvanced" = "Advanced";
+
+/* loco:68cd3843fbf0b4c60d0c9c82 */
+"sidebarItemGeneral" = "General";
+
+/* loco:68a70c92c32749426b06db02 */
+"sidebarItemKDriveTitle" = "kDrive folder";
+
+/* loco:68a70be4b749277aa1081dc2 */
+"tabTitleActivity" = "Activity";
+
+/* loco:68a705225b0066f86e001d52 */
+"tabTitleHome" = "Home";
+
+/* loco:68a70c659c53feed83039c42 */
+"tabTitleStorage" = "Storage";

@@ -29,38 +29,10 @@
 #include <log4cplus/loggingmacros.h>
 
 #import <AppKit/NSApplication.h>
+#import <AppKit/NSRunningApplication.h>
 #import <IOKit/pwr_mgt/IOPMLib.h>
 
 namespace KDC {
-
-bool Utility::moveItemToTrash(const SyncPath &itemPath) {
-    if (itemPath.empty()) {
-        LOG_WARN(Log::instance()->getLogger(), "Path is empty");
-        return false;
-    }
-
-    NSString *filePath = [NSString stringWithCString:itemPath.c_str() encoding:NSUTF8StringEncoding];
-
-    if (filePath == nullptr) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in stringWithCString. Failed to cast std filepath to NSString." << Utility::formatSyncPath(itemPath));
-        return false;
-    }
-    NSURL *fileURL = [NSURL fileURLWithPath:filePath];
-
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-
-    NSError *error = nil;
-    BOOL success = [fileManager trashItemAtURL:fileURL resultingItemURL:nil error:&error];
-
-    if (error != nil) {
-        const auto wcharError = reinterpret_cast<const wchar_t *>(
-                [error.localizedDescription cStringUsingEncoding:NSUTF32LittleEndianStringEncoding]);
-        LOGW_WARN(Log::instance()->getLogger(), std::wstring(wcharError) << Utility::formatSyncPath(itemPath));
-    }
-
-    return success;
-}
 
 bool Utility::preventSleeping(bool enable) {
     static IOPMAssertionID assertionID;
@@ -80,15 +52,18 @@ bool Utility::preventSleeping(bool enable) {
     return (ret == kIOReturnSuccess);
 }
 
+void runKillCommand(pid_t pid) {
+    NSString *killCommand = [NSString stringWithFormat:@"kill -9 %d", pid];
+    LOG_DEBUG(Log::instance()->getLogger(), "Running kill command: " << killCommand.UTF8String);
+    system(killCommand.UTF8String);
+}
+
 void Utility::restartFinderExtension() {
     NSString *bundleID = NSBundle.mainBundle.bundleIdentifier;
-    NSString *extBundleID = [NSString stringWithFormat:@"%@.Extension", bundleID];
-    NSArray<NSRunningApplication *> *apps = [NSRunningApplication runningApplicationsWithBundleIdentifier:extBundleID];
-    for (NSRunningApplication *app: apps) {
-        NSString *killCommand = [NSString stringWithFormat:@"kill -9 %d", app.processIdentifier];
-        LOG_DEBUG(Log::instance()->getLogger(), "Running kill Finder Extension command: " << killCommand.UTF8String);
-        system(killCommand.UTF8String);
-    }
+    NSString *processName = [NSString stringWithFormat:@"%@.Extension", bundleID];
+    NSArray<NSRunningApplication *> *apps = [NSRunningApplication runningApplicationsWithBundleIdentifier:processName];
+    LOG_DEBUG(Log::instance()->getLogger(), "Killing Finder Extension");
+    for (NSRunningApplication *app: apps) runKillCommand(app.processIdentifier);
 
     // Before macOS 15.0, and when other Finder extension (e.g. Goggle Drive) were installed,
     // it was needed to got to "System Settings -> Privacy & Security -> Extensions -> Added Extensions"
@@ -96,16 +71,69 @@ void Utility::restartFinderExtension() {
     // in Finder.
     // The commands below aims to simulate this manipulation.
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t) (0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-      NSString *runCommand = [NSString stringWithFormat:@"pluginkit -e ignore -i %@", extBundleID];
+      NSString *runCommand = [NSString stringWithFormat:@"pluginkit -e ignore -i %@", processName];
       LOG_DEBUG(Log::instance()->getLogger(), "Running ignore Finder Extension command: " << runCommand.UTF8String);
       system(runCommand.UTF8String);
     });
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t) (1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-      NSString *runCommand = [NSString stringWithFormat:@"pluginkit -e use -i %@", extBundleID];
+      NSString *runCommand = [NSString stringWithFormat:@"pluginkit -e use -i %@", processName];
       LOG_DEBUG(Log::instance()->getLogger(), "Running use Finder Extension command: " << runCommand.UTF8String);
       system(runCommand.UTF8String);
     });
+}
+
+NSMutableArray *getPIDsForProcessName(NSString *processName) {
+    NSTask *task = [[NSTask alloc] init];
+    [task setLaunchPath:@"/bin/ps"];
+    [task setArguments:@[ @"-axo", @"pid,comm" ]];
+
+    NSPipe *pipe = [NSPipe pipe];
+    [task setStandardOutput:pipe];
+    [task launch];
+
+    NSData *data = [[pipe fileHandleForReading] readDataToEndOfFile];
+    NSString *output = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+
+    NSMutableArray *pids = [NSMutableArray array];
+    NSArray *lines = [output componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+
+    for (NSString *line in lines) {
+        if ([line rangeOfString:processName].location != NSNotFound && [line rangeOfString:@"grep"].location == NSNotFound) {
+            NSArray *fields = [line componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+            for (NSString *field in fields) {
+                if (!field || [field length] == 0 || [field isEqualToString:processName]) continue;
+                pid_t pid = [field intValue];
+                if (pid > 0) {
+                    [pids addObject:@(pid)];
+                }
+            }
+        }
+    }
+
+    return pids;
+}
+
+void Utility::restartLoginItemAgent() {
+    LOG_DEBUG(Log::instance()->getLogger(), "Killing Login Item Agent");
+    NSString *bundleID = NSBundle.mainBundle.bundleIdentifier;
+    NSString *processName =
+            [NSString stringWithFormat:@"%@%@.LoginItemAgent", [NSString stringWithUTF8String:TEAM_IDENTIFIER_PREFIX], bundleID];
+    NSMutableArray *pids = getPIDsForProcessName(processName);
+    assert(pids.count <= 1);
+    if (pids.count == 1) {
+        NSNumber *pidNumber = [pids objectAtIndex:0];
+        pid_t pid = [pidNumber longValue];
+        runKillCommand(pid);
+    }
+}
+
+bool Utility::isLiteSyncExtRunning() {
+    NSString *bundleID = NSBundle.mainBundle.bundleIdentifier;
+    NSString *processName = [NSString stringWithFormat:@"%@.LiteSyncExt", bundleID];
+    NSMutableArray *pids = getPIDsForProcessName(processName);
+    assert(pids.count <= 1);
+    return pids.count == 1;
 }
 
 bool Utility::hasLaunchOnStartup(const std::string &) {

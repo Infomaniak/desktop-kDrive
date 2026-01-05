@@ -20,6 +20,7 @@
 
 #include "network/proxy.h"
 #include "jobs/network/networkjobsparams.h"
+#include "jobs/syncjob.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "utility/jsonparserutility.h"
@@ -45,15 +46,12 @@
 
 namespace KDC {
 
-std::string AbstractNetworkJob::_userAgent = std::string();
+const std::string AbstractNetworkJob::_userAgent = KDC::CommonUtility::userAgentString();
 Poco::Net::Context::Ptr AbstractNetworkJob::_context = nullptr;
 AbstractNetworkJob::TimeoutHelper AbstractNetworkJob::_timeoutHelper;
 
-AbstractNetworkJob::AbstractNetworkJob() {
-    if (_userAgent.empty()) {
-        _userAgent = KDC::CommonUtility::userAgentString();
-    }
-
+AbstractNetworkJob::AbstractNetworkJob() :
+    _requestUuid(CommonUtility::generateUUID()) {
     if (!_context) {
         for (int trials = 1; trials <= std::min(_trials, MAX_TRIALS); trials++) {
             try {
@@ -68,7 +66,7 @@ AbstractNetworkJob::AbstractNetworkJob() {
                     LOG_INFO(_logger, "Error in Poco::Net::Context constructor: " << errorText(e));
                     throw std::runtime_error(errorText(e).c_str());
                 }
-            } catch (std::exception &e) {
+            } catch (const std::exception &e) {
                 if (trials < _trials) {
                     LOG_INFO(_logger, "Unknown error in Poco::Net::Context constructor: " << errorText(e) << ", retrying...");
                 } else {
@@ -104,18 +102,44 @@ bool AbstractNetworkJob::isManagedError(const ExitInfo exitInfo) noexcept {
     }
 }
 
-void AbstractNetworkJob::runJob() noexcept {
-    std::string url = getUrl();
-    if (url == "") {
-        LOG_WARN(_logger, "URL is not set");
+void AbstractNetworkJob::logRequestInfo() {
+    if (!isExtendedLog()) { // If not in extended mode, log only the request ID.
+        LOG_DEBUG(_logger, "X-Request-ID: " << _requestUuid);
         return;
+    }
+
+    LOG_DEBUG(_logger, "*** Headers: ***");
+    LOG_DEBUG(_logger, "User-Agent: " << _userAgent);
+    LOG_DEBUG(_logger, "Content-Type: " << contentType());
+    LOG_DEBUG(_logger, "Accept: " << acceptHeader());
+    LOG_DEBUG(_logger, "X-Request-ID: " << _requestUuid);
+    for (const auto &[headerKey, headerValue]: _rawHeaders) {
+        if (headerKey == "Authorization") continue;
+        LOG_DEBUG(_logger, headerKey << ": " << headerValue);
+    }
+    if (!_data.empty()) {
+        LOG_DEBUG(_logger, "Content-Length: " << static_cast<std::streamsize>(_data.size()));
+    }
+
+    if (contentType() != mimeTypeJson) return; // Log the body only for JSON MIME type
+
+    LOG_DEBUG(_logger, "*** Body: ***");
+    LOG_DEBUG(_logger, _data);
+}
+
+ExitInfo AbstractNetworkJob::runJob() noexcept {
+    std::string url = getUrl();
+    if (url.empty()) {
+        LOG_WARN(_logger, "URL is not set");
+        return {};
     }
 
     assert(!_httpMethod.empty());
 
     Poco::URI uri;
+    ExitInfo outputExitInfo = ExitCode::Ok;
     for (int trials = 1; trials <= std::min(_trials, MAX_TRIALS); trials++) {
-        _exitInfo = ExitCode::Ok;
+        outputExitInfo = ExitCode::Ok;
 
         if (trials > 1) {
             Utility::msleep(500); // Sleep for 0.5s
@@ -126,48 +150,41 @@ void AbstractNetworkJob::runJob() noexcept {
         createSession(uri);
 
         try {
-            if (!canRun()) {
-                return;
+            outputExitInfo = canRun();
+            if (!outputExitInfo) {
+                return outputExitInfo;
             }
         } catch (Poco::Exception const &e) {
             LOG_INFO(_logger, "Error with request " << jobId() << " " << uri.toString() << " : " << errorText(e));
-            _exitInfo = ExitCode::NetworkError;
+            outputExitInfo = ExitCode::NetworkError;
             break;
         }
 
-        bool canceled = false;
-        if (ExitInfo exitInfo = setData(); !exitInfo) { // Must be called before setQueryParameters
-            LOG_WARN(_logger, "Job " << jobId() << " is cancelled " << exitInfo);
-            _exitInfo = exitInfo;
+        outputExitInfo = setData();
+        if (!outputExitInfo) { // Must be called before setQueryParameters
+            LOG_WARN(_logger, "Job " << jobId() << " is cancelled " << outputExitInfo);
             break;
         }
 
-        setQueryParameters(uri, canceled);
-        if (canceled) {
-            LOG_WARN(_logger, "Job " << jobId() << " is cancelled");
-            _exitInfo = ExitCode::DataError;
-            break;
-        }
+        setQueryParameters(uri);
 
         // Send request
         auto sendChrono = std::chrono::steady_clock::now();
-        bool ret = false;
         try {
-            ret = sendRequest(uri);
-        } catch (std::exception &e) {
+            outputExitInfo = sendRequest(uri);
+        } catch (const std::exception &e) {
             LOG_WARN(_logger, "Error in sendRequest " << jobId() << " : " << errorText(e));
-            _exitInfo = ExitCode::NetworkError;
-            ret = false;
+            outputExitInfo = ExitCode::NetworkError;
         }
 
-        if (!ret) {
+        if (!outputExitInfo) {
             if (isAborted()) {
                 LOG_INFO(_logger, "Request " << jobId() << " " << uri.toString() << " aborted");
-                _exitInfo = ExitCode::Ok;
+                outputExitInfo = ExitCode::Ok;
                 break;
             }
 
-            if (_exitInfo.code() == ExitCode::NetworkError && _exitInfo.cause() == ExitCause::SocketsDefuncted) {
+            if (outputExitInfo.code() == ExitCode::NetworkError && outputExitInfo.cause() == ExitCause::SocketsDefuncted) {
                 break;
             }
 
@@ -182,28 +199,27 @@ void AbstractNetworkJob::runJob() noexcept {
 
         // Receive response
         try {
-            ret = receiveResponse(uri);
-        } catch (std::exception &e) {
+            outputExitInfo = receiveResponse(uri);
+        } catch (const std::exception &e) {
             LOG_WARN(_logger, "Error in receiveResponse " << jobId() << " : " << errorText(e));
-            _exitInfo = ExitCode::NetworkError;
-            ret = false;
+            outputExitInfo = ExitCode::NetworkError;
         }
 
-        if (!ret) {
+        if (!outputExitInfo) {
             if (isAborted()) {
                 LOG_INFO(_logger, "Request " << jobId() << " " << uri.toString() << " aborted");
-                _exitInfo = ExitCode::Ok;
+                outputExitInfo = ExitCode::Ok;
                 break;
             }
 
             // Attempt to detect network timeout
             auto errChrono = std::chrono::steady_clock::now();
             std::chrono::duration<double> requestDuration = errChrono - sendChrono;
-            if (_exitInfo.code() == ExitCode::NetworkError) {
+            if (outputExitInfo.code() == ExitCode::NetworkError) {
                 _timeoutHelper.add(requestDuration);
                 if (_timeoutHelper.isTimeoutDetected()) {
                     LOG_WARN(_logger, "Network timeout detected - value=" << _timeoutHelper.value());
-                    _exitInfo.setCause(ExitCause::NetworkTimeout);
+                    outputExitInfo.setCause(ExitCause::NetworkTimeout);
                 }
             }
 
@@ -216,35 +232,31 @@ void AbstractNetworkJob::runJob() noexcept {
             break;
         }
 
-        if (_exitInfo.code() == ExitCode::TokenRefreshed || _exitInfo.code() == ExitCode::RateLimited) {
+        if (outputExitInfo.code() == ExitCode::TokenRefreshed || outputExitInfo.code() == ExitCode::RateLimited) {
             _trials++; // Add one more chance
             continue;
-        } else if (isManagedError(_exitInfo)) {
+        } else if (isManagedError(outputExitInfo)) {
             break;
         } else {
-            _exitInfo = ExitCode::Ok;
+            outputExitInfo = ExitCode::Ok;
             break;
         }
     }
+
+    return outputExitInfo;
 }
 
 bool AbstractNetworkJob::hasHttpError(std::string *errorCode /*= nullptr*/) const {
-    if (_resHttp.getStatus() != Poco::Net::HTTPResponse::HTTP_OK) {
-        if (errorCode) *errorCode = std::to_string(_resHttp.getStatus());
+    if (httpResponse().getStatus() != Poco::Net::HTTPResponse::HTTP_OK) {
+        if (errorCode) *errorCode = std::to_string(httpResponse().getStatus());
         return true;
     }
     return false;
 }
 
-bool AbstractNetworkJob::hasErrorApi(std::string *errorCode, std::string *errorDescr) const {
+bool AbstractNetworkJob::hasErrorApi() const {
     if (hasHttpError()) return true;
-    if (_errorCode.empty()) return false;
-    if (errorCode) {
-        *errorCode = _errorCode;
-        if (errorDescr) {
-            *errorDescr = _errorDescr;
-        }
-    }
+    if (!_backError.isValidError()) return false;
     return true;
 }
 
@@ -255,7 +267,7 @@ void AbstractNetworkJob::addRawHeader(const std::string &key, const std::string 
 void AbstractNetworkJob::abort() {
     LOG_DEBUG(_logger, "Aborting session for job " << jobId());
 
-    AbstractJob::abort();
+    SyncJob::abort();
 
     abortSession();
 }
@@ -267,13 +279,8 @@ void AbstractNetworkJob::unzip(std::istream &is, std::stringstream &ss) {
     }
 }
 
-void AbstractNetworkJob::getStringFromStream(std::istream &is, std::string &res) {
-    std::string tmp(std::istreambuf_iterator<char>(is), (std::istreambuf_iterator<char>()));
-    res = std::move(tmp);
-}
-
 void AbstractNetworkJob::createSession(const Poco::URI &uri) {
-    const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
+    const std::scoped_lock lock(_mutexSession);
 
     if (_session) {
         // Redirection case
@@ -297,7 +304,7 @@ void AbstractNetworkJob::createSession(const Poco::URI &uri) {
 }
 
 void AbstractNetworkJob::clearSession() {
-    const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
+    const std::scoped_lock lock(_mutexSession);
 
     if (_session) {
         try {
@@ -325,7 +332,7 @@ void AbstractNetworkJob::abortSession() {
     }
 }
 
-bool AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
+ExitInfo AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
     std::string path(uri.getPathAndQuery());
     if (path.empty()) {
         path = "/";
@@ -333,32 +340,26 @@ bool AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
 
     LOG_DEBUG(_logger, "Sending " << _httpMethod << " request " << jobId() << " : " << uri.toString());
 
-    // Get Content Type
-    bool canceled = false;
-    std::string contentType = getContentType(canceled);
-    if (canceled) {
-        LOG_WARN(_logger, "Unable to get content type!");
-        _exitInfo = ExitCode::DataError;
-        return false;
-    }
-
     Poco::Net::HTTPRequest req(_httpMethod, path, Poco::Net::HTTPMessage::HTTP_1_1);
 
     // Set headers
     req.set("User-Agent", _userAgent);
-    req.setContentType(contentType);
-    for (const auto &header: _rawHeaders) {
-        req.add(header.first, header.second);
+    req.setContentType(contentType());
+    req.add("Accept", acceptHeader());
+    req.add("X-Request-ID", _requestUuid);
+    for (const auto &[headerKey, headerValue]: _rawHeaders) {
+        req.add(headerKey, headerValue);
     }
 
     if (!_data.empty()) {
         req.setContentLength(static_cast<std::streamsize>(_data.size()));
     }
+    logRequestInfo();
 
     // Send request, retrieve an open stream
     std::vector<std::reference_wrapper<std::ostream>> stream;
     try {
-        const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
+        const std::scoped_lock lock(_mutexSession);
         if (_session) {
             stream.push_back(_session->sendRequest(req));
             if (ioOrLogicalErrorOccurred(stream[0].get())) {
@@ -367,17 +368,17 @@ bool AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
         }
     } catch (Poco::Exception &e) {
         return processSocketError("sendRequest exception", jobId(), e);
-    } catch (std::exception &e) {
+    } catch (const std::exception &e) {
         return processSocketError("sendRequest exception", jobId(), e);
     }
 
     // Send data
     std::string::const_iterator itBegin = _data.begin();
     while (itBegin != _data.end()) {
-        const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
+        const std::scoped_lock lock(_mutexSession);
         if (isAborted()) {
             LOG_DEBUG(_logger, "Request " << jobId() << ": aborting HTTPS session");
-            return false;
+            return {};
         }
 
         std::string::const_iterator itEnd = (_data.end() - itBegin > BUF_SIZE ? itBegin + BUF_SIZE : _data.end());
@@ -388,7 +389,7 @@ bool AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
             }
         } catch (Poco::Exception &e) {
             return processSocketError("send data exception", jobId(), e);
-        } catch (std::exception &e) {
+        } catch (const std::exception &e) {
             return processSocketError("send data exception", jobId(), e);
         }
 
@@ -399,116 +400,138 @@ bool AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
         itBegin = itEnd;
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
-bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
-    std::vector<std::reference_wrapper<std::istream>> stream;
+ExitInfo AbstractNetworkJob::receiveResponseFromSession(StreamVector &stream) {
     try {
-        const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
+        const std::scoped_lock lock(_mutexSession);
         if (_session) {
-            stream.push_back(_session->receiveResponse(_resHttp));
+            (void) stream.emplace_back(_session->receiveResponse(_httpResponse));
             if (ioOrLogicalErrorOccurred(stream[0].get())) {
                 return processSocketError("invalid receive stream", jobId());
             }
         }
-    } catch (Poco::Exception &e) {
+    } catch (const Poco::Exception &e) {
         return processSocketError("receiveResponse exception", jobId(), e);
-    } catch (std::exception &e) {
+    } catch (const std::exception &e) {
         return processSocketError("receiveResponse exception", jobId(), e);
     }
+
+    return ExitCode::Ok;
+}
+
+ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
+    StreamVector stream;
+    if (const auto exitInfo = receiveResponseFromSession(stream); !exitInfo) return exitInfo;
 
     if (isAborted()) {
         LOG_DEBUG(_logger, "Request " << jobId() << " aborted");
-        return true;
+        return ExitCode::Ok;
     }
 
-    LOG_DEBUG(_logger,
-              "Request " << jobId() << " finished with status: " << _resHttp.getStatus() << " / " << _resHttp.getReason());
+    LOG_DEBUG(_logger, "Request " << jobId() << " finished with status: " << httpResponse().getStatus() << " / "
+                                  << httpResponse().getReason());
 
-    if (Utility::isError500(_resHttp.getStatus())) {
-        _exitInfo = {ExitCode::BackError, ExitCause::Http5xx};
+    if (Utility::isError500(httpResponse().getStatus())) {
+        std::string replyBody;
+        getStringFromStream(stream[0].get(), replyBody);
+        LOG_WARN(_logger, "Reply " << jobId() << ": " << replyBody);
         disableRetry();
-        return true;
+        return {ExitCode::BackError, ExitCause::Http5xx};
     }
 
-    bool res = true;
-    switch (_resHttp.getStatus()) {
+    switch (httpResponse().getStatus()) {
         case Poco::Net::HTTPResponse::HTTP_OK: {
-            bool ok = false;
             try {
-                const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
-                ok = handleResponse(stream[0].get());
-            } catch (std::exception &e) {
+                const std::scoped_lock lock(_mutexSession);
+                return handleResponse(stream[0].get());
+            } catch (const std::exception &e) {
                 LOG_WARN(_logger, "handleResponse exception: " << errorText(e));
-                return false;
-            }
-
-            if (!ok) {
-                LOG_WARN(_logger, "Response handling failed");
-                res = false;
+                return {};
             }
             break;
         }
         case Poco::Net::HTTPResponse::HTTP_FOUND: {
             // Redirection
-            if (!isAborted()) {
-                if (!followRedirect()) {
-                    if (_exitInfo.code() != ExitCode::Ok && _exitInfo.code() != ExitCode::DataError) {
-                        LOG_WARN(_logger, "Redirect handling failed");
-                    }
-                    return false;
+            if (isAborted()) break;
+
+            if (const auto exitInfo = followRedirect(); !exitInfo) {
+                if (exitInfo.code() != ExitCode::Ok && exitInfo.code() != ExitCode::DataError) {
+                    LOG_WARN(_logger, "Redirect handling failed");
                 }
-                return true;
+                return exitInfo;
             }
-            break;
+            return ExitCode::Ok;
+        }
+        case Poco::Net::HTTPResponse::HTTP_UNPROCESSABLE_ENTITY: {
+            disableRetry();
+            std::string replyBody;
+            getStringFromStream(stream[0].get(), replyBody);
+            LOG_WARN(_logger, "Reply " << jobId() << ": " << replyBody);
+            _backError = BackError(replyBody);
+            return {ExitCode::BackError, ExitCause::HttpErr};
         }
         case Poco::Net::HTTPResponse::HTTP_UPGRADE_REQUIRED: {
-            _exitInfo = ExitCode::UpdateRequired;
             LOG_WARN(_logger, "Received HTTP_UPGRADE_REQUIRED, update required");
-            break;
+            return ExitCode::UpdateRequired;
         }
         case Poco::Net::HTTPResponse::HTTP_TOO_MANY_REQUESTS: {
             // Rate limitation
-            _exitInfo = ExitCode::RateLimited;
             LOG_WARN(_logger, "Received HTTP_TOO_MANY_REQUESTS, rate limited");
-            break;
+            return ExitCode::RateLimited;
         }
         default: {
             if (!isAborted()) {
-                bool ok = false;
+                ExitInfo exitInfo;
                 try {
-                    ok = handleError(stream[0].get(), uri);
-                } catch (std::exception &e) {
+                    exitInfo = handleError(stream[0].get(), uri);
+                } catch (const std::exception &e) {
                     LOG_WARN(_logger, "handleError failed: " << errorText(e));
-                    return false;
+                    return {};
                 }
 
-                if (!ok) {
-                    if (_exitInfo.code() != ExitCode::Ok && _exitInfo.code() != ExitCode::DataError &&
-                        _exitInfo.code() != ExitCode::InvalidToken &&
-                        (_exitInfo.code() != ExitCode::BackError || _exitInfo.cause() != ExitCause::NotFound)) {
+                if (!exitInfo) {
+                    if (exitInfo.code() != ExitCode::DataError && exitInfo.code() != ExitCode::InvalidToken &&
+                        (exitInfo.code() != ExitCode::BackError || exitInfo.cause() != ExitCause::NotFound)) {
                         LOG_WARN(_logger, "Error handling failed");
                     }
-                    res = false;
+                    return exitInfo;
                 }
             }
             break;
         }
     }
 
-    return res;
+    return ExitCode::Ok;
 }
 
-bool AbstractNetworkJob::followRedirect() {
+ExitInfo AbstractNetworkJob::handleError(std::istream &inputStream, const Poco::URI &uri) {
+    std::string replyBody;
+    getStringFromStream(inputStream, replyBody);
+    LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << CommonUtility::s2ws(replyBody));
+    return handleError(replyBody, uri);
+}
+
+void AbstractNetworkJob::getStringFromStream(std::istream &inputStream, std::string &res) {
+    if (const std::string encoding = httpResponse().get("content-encoding", ""); encoding == "gzip") {
+        std::stringstream ss;
+        unzip(inputStream, ss);
+        res = ss.str();
+    } else {
+        std::string tmp(std::istreambuf_iterator<char>(inputStream), (std::istreambuf_iterator<char>()));
+        res = std::move(tmp);
+    }
+}
+
+ExitInfo AbstractNetworkJob::followRedirect() {
     // Get redirection URL
     std::string redirectUrl;
-    redirectUrl = _resHttp.get("Location", "");
+    redirectUrl = httpResponse().get("Location", "");
 
     if (redirectUrl.empty()) {
         LOG_WARN(_logger, "Request " << jobId() << ": Failed to retrieve redirection URL");
-        _exitInfo = {ExitCode::DataError, ExitCause::RedirectionError};
-        return false;
+        return {ExitCode::DataError, ExitCause::RedirectionError};
     }
 
     const Poco::URI uri(redirectUrl);
@@ -517,14 +540,14 @@ bool AbstractNetworkJob::followRedirect() {
     LOG_DEBUG(_logger, "Request " << jobId() << ", following redirection: " << redirectUrl);
     createSession(uri);
 
-    if (!sendRequest(uri)) {
-        return false;
+    if (const auto exitInfo = sendRequest(uri); !exitInfo) {
+        return exitInfo;
     }
     return receiveResponse(uri);
 }
 
-bool AbstractNetworkJob::processSocketError(const std::string &msg, const UniqueId jobId) {
-    const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
+ExitInfo AbstractNetworkJob::processSocketError(const std::string &msg, const UniqueId jobId) {
+    const std::scoped_lock lock(_mutexSession);
     if (_session) {
         int err = _session->socket().getError();
         std::string errMsg = Poco::Error::getMessage(err);
@@ -534,40 +557,39 @@ bool AbstractNetworkJob::processSocketError(const std::string &msg, const Unique
     }
 }
 
-bool AbstractNetworkJob::processSocketError(const std::string &msg, const UniqueId jobId, const std::exception &e) {
+ExitInfo AbstractNetworkJob::processSocketError(const std::string &msg, const UniqueId jobId, const std::exception &e) {
     return processSocketError(msg, jobId, 0, e.what());
 }
 
-bool AbstractNetworkJob::processSocketError(const std::string &msg, const UniqueId jobId, const Poco::Exception &e) {
+ExitInfo AbstractNetworkJob::processSocketError(const std::string &msg, const UniqueId jobId, const Poco::Exception &e) {
     return processSocketError(msg, jobId, e.code(), e.message());
 }
 
-bool AbstractNetworkJob::processSocketError(const std::string &msg, const UniqueId jobId, int err, const std::string &errMsg) {
+ExitInfo AbstractNetworkJob::processSocketError(const std::string &msg, const UniqueId jobId, int err,
+                                                const std::string &errMsg) {
     if (isAborted()) {
-        _exitInfo = ExitCode::Ok;
-        return true;
-    } else {
-        std::stringstream errMsgStream;
-        errMsgStream << msg.c_str();
-        if (jobId) errMsgStream << " - job " << jobId;
-        if (err) errMsgStream << " : (" << err << ")";
-        if (!errMsg.empty()) errMsgStream << " : " << errMsg.c_str();
-        LOG_WARN(_logger, errMsgStream.str());
-
-        _exitInfo = ExitCode::NetworkError;
-        if (err == EBADF) {
-            // !!! macOS
-            // When too many sockets are opened, the kernel kills all the process' sockets!
-            // Console message generated: "mbuf_watchdog_defunct: defuncting all sockets from kDrive.<process id>"
-            // macOS !!!
-            LOG_WARN(_logger, "Sockets defuncted by kernel");
-            _exitInfo.setCause(ExitCause::SocketsDefuncted);
-        } else {
-            _exitInfo.setCause(ExitCause::Unknown);
-        }
-
-        return false;
+        return ExitCode::Ok;
     }
+
+    std::stringstream errMsgStream;
+    errMsgStream << msg.c_str();
+    if (jobId) errMsgStream << " - job " << jobId;
+    if (err) errMsgStream << " : (" << err << ")";
+    if (!errMsg.empty()) errMsgStream << " : " << errMsg.c_str();
+    LOG_WARN(_logger, errMsgStream.str());
+
+    ExitInfo exitInfo = ExitCode::NetworkError;
+    if (err == EBADF) {
+        // !!! macOS
+        // When too many sockets are opened, the kernel kills all the process' sockets!
+        // Console message generated: "mbuf_watchdog_defunct: defuncting all sockets from kDrive.<process id>"
+        // macOS !!!
+        LOG_WARN(_logger, "Sockets defuncted by kernel");
+        exitInfo.setCause(ExitCause::SocketsDefuncted);
+    } else {
+        exitInfo.setCause(ExitCause::Unknown);
+    }
+    return exitInfo;
 }
 
 bool AbstractNetworkJob::ioOrLogicalErrorOccurred(std::ios &stream) {
@@ -591,24 +613,23 @@ std::string AbstractNetworkJob::errorText(const std::exception &e) const {
     return error.str();
 }
 
-bool AbstractNetworkJob::handleJsonResponse(std::istream &is) {
-    return extractJson(is, _jsonRes);
+ExitInfo AbstractNetworkJob::handleJsonResponse(const std::string &replyBody) {
+    return extractJson(replyBody, _jsonRes);
 }
 
-bool AbstractNetworkJob::handleOctetStreamResponse(std::istream &is) {
+ExitInfo AbstractNetworkJob::handleOctetStreamResponse(std::istream &is) {
     getStringFromStream(is, _octetStreamRes);
-    return true;
+    return ExitCode::Ok;
 }
 
-bool AbstractNetworkJob::extractJson(std::istream &is, Poco::JSON::Object::Ptr &jsonObj) {
+ExitInfo AbstractNetworkJob::extractJson(const std::string &replyBody, Poco::JSON::Object::Ptr &jsonObj) {
     try {
-        jsonObj = Poco::JSON::Parser{}.parse(is).extract<Poco::JSON::Object::Ptr>();
+        jsonObj = Poco::JSON::Parser{}.parse(replyBody).extract<Poco::JSON::Object::Ptr>();
     } catch (const Poco::Exception &exc) {
         LOGW_WARN(_logger, L"Reply " << jobId() << L" received doesn't contain a valid JSON payload: "
                                      << CommonUtility::s2ws(exc.displayText()));
-        Utility::logGenericServerError(_logger, "Request error", is, _resHttp);
-        _exitInfo = {ExitCode::BackError, ExitCause::ApiErr};
-        return false;
+        Utility::logGenericServerError(_logger, "Request error", replyBody, httpResponse());
+        return {ExitCode::BackError, ExitCause::ApiErr};
     }
 
     if (isExtendedLog()) {
@@ -616,22 +637,7 @@ bool AbstractNetworkJob::extractJson(std::istream &is, Poco::JSON::Object::Ptr &
         jsonObj->stringify(os);
         LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << CommonUtility::s2ws(os.str()));
     }
-    return true;
-}
-
-bool AbstractNetworkJob::extractJsonError(std::istream &is, Poco::JSON::Object::Ptr errorObjPtr /*= nullptr*/) {
-    Poco::JSON::Object::Ptr jsonObj;
-    if (!extractJson(is, jsonObj)) return false;
-
-    errorObjPtr = jsonObj->getObject(errorKey);
-    if (!JsonParserUtility::extractValue(errorObjPtr, codeKey, _errorCode)) {
-        return false;
-    }
-    if (!JsonParserUtility::extractValue(errorObjPtr, descriptionKey, _errorDescr)) {
-        return false;
-    }
-
-    return true;
+    return ExitCode::Ok;
 }
 
 void AbstractNetworkJob::TimeoutHelper::add(std::chrono::duration<double> duration) {

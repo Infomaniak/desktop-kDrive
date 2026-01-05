@@ -45,27 +45,21 @@ enum class MsgType {
 };
 
 enum class RequestNum {
-    LOGIN_REQUESTTOKEN = 1,
+    Unknown = 0,
+    LOGIN_REQUESTTOKEN,
     USER_DBIDLIST,
     USER_INFOLIST,
     USER_DELETE,
     USER_AVAILABLEDRIVES,
-    USER_ID_FROM_USERDBID,
     ACCOUNT_INFOLIST,
     DRIVE_INFOLIST,
-    DRIVE_INFO,
-    DRIVE_ID_FROM_DRIVEDBID,
-    DRIVE_ID_FROM_SYNCDBID,
-    DRIVE_DEFAULTCOLOR,
     DRIVE_UPDATE,
     DRIVE_DELETE,
-    DRIVE_GET_OFFLINE_FILES_TOTAL_SIZE,
     DRIVE_SEARCH,
     SYNC_INFOLIST,
     SYNC_START,
     SYNC_STOP,
     SYNC_STATUS,
-    SYNC_ISRUNNING,
     SYNC_ADD,
     SYNC_ADD2,
     SYNC_START_AFTER_LOGIN,
@@ -75,9 +69,8 @@ enum class RequestNum {
     SYNC_ASKFORSTATUS,
     SYNC_SETSUPPORTSVIRTUALFILES,
     SYNC_SETROOTPINSTATE,
-    SYNC_PROPAGATE_SYNCLIST_CHANGE,
-    SYNCNODE_LIST,
-    SYNCNODE_SETLIST,
+    BLACKLISTED_NODE_LIST,
+    BLACKLISTED_NODE_SETLIST,
     NODE_PATH,
     NODE_INFO,
     NODE_SUBFOLDERS,
@@ -85,7 +78,8 @@ enum class RequestNum {
     NODE_FOLDER_SIZE,
     NODE_CREATEMISSINGFOLDERS,
     ERROR_INFOLIST,
-    ERROR_GET_CONFLICTS,
+    ERROR_INFOLIST_LEGACY,
+    ERROR_GET_CONFLICTS_LEGACY,
     ERROR_DELETE_SERVER,
     ERROR_DELETE_SYNC,
     ERROR_DELETE_INVALIDTOKEN,
@@ -126,6 +120,7 @@ enum class RequestNum {
     UPDATER_STATE,
     UPDATER_START_INSTALLER,
     UPDATER_SKIP_VERSION,
+    EnumEnd
 };
 
 inline std::string toString(RequestNum e) {
@@ -140,20 +135,10 @@ inline std::string toString(RequestNum e) {
             return "USER_DELETE";
         case RequestNum::USER_AVAILABLEDRIVES:
             return "USER_AVAILABLEDRIVES";
-        case RequestNum::USER_ID_FROM_USERDBID:
-            return "USER_ID_FROM_USERDBID";
         case RequestNum::ACCOUNT_INFOLIST:
             return "ACCOUNT_INFOLIST";
         case RequestNum::DRIVE_INFOLIST:
             return "DRIVE_INFOLIST";
-        case RequestNum::DRIVE_INFO:
-            return "DRIVE_INFO";
-        case RequestNum::DRIVE_ID_FROM_DRIVEDBID:
-            return "DRIVE_ID_FROM_DRIVEDBID";
-        case RequestNum::DRIVE_ID_FROM_SYNCDBID:
-            return "DRIVE_ID_FROM_SYNCDBID";
-        case RequestNum::DRIVE_DEFAULTCOLOR:
-            return "DRIVE_DEFAULTCOLOR";
         case RequestNum::DRIVE_UPDATE:
             return "DRIVE_UPDATE";
         case RequestNum::DRIVE_DELETE:
@@ -166,8 +151,6 @@ inline std::string toString(RequestNum e) {
             return "SYNC_STOP";
         case RequestNum::SYNC_STATUS:
             return "SYNC_STATUS";
-        case RequestNum::SYNC_ISRUNNING:
-            return "SYNC_ISRUNNING";
         case RequestNum::SYNC_ADD:
             return "SYNC_ADD";
         case RequestNum::SYNC_ADD2:
@@ -186,12 +169,10 @@ inline std::string toString(RequestNum e) {
             return "SYNC_SETSUPPORTSVIRTUALFILES";
         case RequestNum::SYNC_SETROOTPINSTATE:
             return "SYNC_SETROOTPINSTATE";
-        case RequestNum::SYNC_PROPAGATE_SYNCLIST_CHANGE:
-            return "SYNC_PROPAGATE_SYNCLIST_CHANGE";
-        case RequestNum::SYNCNODE_LIST:
-            return "SYNCNODE_LIST";
-        case RequestNum::SYNCNODE_SETLIST:
-            return "SYNCNODE_SETLIST";
+        case RequestNum::BLACKLISTED_NODE_LIST:
+            return "BLACKLISTED_NODE_LIST";
+        case RequestNum::BLACKLISTED_NODE_SETLIST:
+            return "BLACKLISTED_NODE_SETLIST";
         case RequestNum::NODE_PATH:
             return "NODE_PATH";
         case RequestNum::NODE_INFO:
@@ -206,8 +187,10 @@ inline std::string toString(RequestNum e) {
             return "NODE_CREATEMISSINGFOLDERS";
         case RequestNum::ERROR_INFOLIST:
             return "ERROR_INFOLIST";
-        case RequestNum::ERROR_GET_CONFLICTS:
-            return "ERROR_GET_CONFLICTS";
+        case RequestNum::ERROR_INFOLIST_LEGACY:
+            return "ERROR_INFOLIST_LEGACY";
+        case RequestNum::ERROR_GET_CONFLICTS_LEGACY:
+            return "ERROR_GET_CONFLICTS_LEGACY";
         case RequestNum::ERROR_DELETE_SERVER:
             return "ERROR_DELETE_SERVER";
         case RequestNum::ERROR_DELETE_SYNC:
@@ -232,7 +215,7 @@ inline std::string toString(RequestNum e) {
         case RequestNum::EXCLAPP_SETLIST:
             return "EXCLAPP_SETLIST";
         case RequestNum::EXCLAPP_GET_FETCHING_APP_LIST:
-            return "GET_FETCHING_APP_LIST";
+            return "EXCLAPP_GET_FETCHING_APP_LIST";
 #endif
         case RequestNum::PARAMETERS_INFO:
             return "PARAMETERS_INFO";
@@ -288,8 +271,9 @@ inline std::string toString(RequestNum e) {
 }
 
 enum class SignalNum {
+    Unknown = 0,
     // User
-    USER_ADDED = 0,
+    USER_ADDED,
     USER_UPDATED,
     USER_STATUSCHANGED,
     USER_REMOVED,
@@ -319,13 +303,15 @@ enum class SignalNum {
     UPDATER_STATE_CHANGED,
     // Utility
     UTILITY_SHOW_NOTIFICATION,
-    UTILITY_NEW_BIG_FOLDER,
+    UTILITY_ERROR_ADDED_LEGACY,
     UTILITY_ERROR_ADDED,
+    UTILITY_ERROR_REMOVED,
     UTILITY_ERRORS_CLEARED,
     UTILITY_SHOW_SETTINGS,
     UTILITY_SHOW_SYNTHESIS,
     UTILITY_LOG_UPLOAD_STATUS_UPDATED,
-    UTILITY_QUIT
+    UTILITY_QUIT,
+    EnumEnd
 };
 
 inline std::string toString(SignalNum e) {
@@ -378,9 +364,11 @@ inline std::string toString(SignalNum e) {
             return "UPDATER_STATE_CHANGED";
         case SignalNum::UTILITY_SHOW_NOTIFICATION:
             return "UTILITY_SHOW_NOTIFICATION";
-        case SignalNum::UTILITY_NEW_BIG_FOLDER:
-            return "UTILITY_NEW_BIG_FOLDER";
+        case SignalNum::UTILITY_ERROR_ADDED_LEGACY:
+            return "UTILITY_ERROR_ADDED_LEGACY";
         case SignalNum::UTILITY_ERROR_ADDED:
+            return "UTILITY_ERROR_ADDED";
+        case SignalNum::UTILITY_ERROR_REMOVED:
             return "UTILITY_ERROR_ADDED";
         case SignalNum::UTILITY_ERRORS_CLEARED:
             return "UTILITY_ERRORS_CLEARED";

@@ -15,6 +15,8 @@ set(CMAKE_AUTORCC TRUE)
 add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)
 
+add_subdirectory(vfs)
+
 if(UNIX AND NOT APPLE)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIE")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIE")
@@ -39,11 +41,74 @@ else()
 endif()
 
 set(server_SRCS
-    commserver.h commserver.cpp
-    navigationpanehelper.h navigationpanehelper.cpp
-    socketapi.h socketapi.cpp
-    socketlistener.h socketlistener.cpp
     appserver.h appserver.cpp
+    comm/oldcommserver.h comm/oldcommserver.cpp
+    comm/abstractcommchannel.h comm/abstractcommchannel.cpp
+    comm/abstractcommserver.h
+    comm/commmanager.h comm/commmanager.cpp
+    comm/guicommserver.h comm/guicommserver.cpp
+    comm/guijobmanager.h comm/guijobmanager.cpp
+    comm/guijobs/abstractguijob.h comm/guijobs/abstractguijob.cpp
+    comm/guijobs/guijobfactory.h comm/guijobs/guijobfactory.cpp
+    comm/guijobs/loginrequesttokenjob.h comm/guijobs/loginrequesttokenjob.cpp
+    comm/guijobs/nodepathjob.h comm/guijobs/nodepathjob.cpp
+    comm/guijobs/unknownrequestjob.h comm/guijobs/unknownrequestjob.cpp
+    comm/guijobs/userdbidlistjob.h comm/guijobs/userdbidlistjob.cpp
+    comm/guijobs/userinfolistjob.h comm/guijobs/userinfolistjob.cpp
+    comm/guijobs/userdeletejob.h comm/guijobs/userdeletejob.cpp
+    comm/guijobs/useravailabledrivesjob.h comm/guijobs/useravailabledrivesjob.cpp
+    comm/guijobs/accountinfolistjob.h comm/guijobs/accountinfolistjob.cpp
+    comm/guijobs/driveinfolistjob.h comm/guijobs/driveinfolistjob.cpp
+    comm/guijobs/driveupdatejob.h comm/guijobs/driveupdatejob.cpp
+    comm/guijobs/drivedeletejob.h comm/guijobs/drivedeletejob.cpp
+    comm/guijobs/drivesearchjob.h comm/guijobs/drivesearchjob.cpp
+    comm/guijobs/syncinfolistjob.h comm/guijobs/syncinfolistjob.cpp
+    comm/guijobs/syncstartjob.h comm/guijobs/syncstartjob.cpp
+    comm/guijobs/syncstopjob.h comm/guijobs/syncstopjob.cpp
+    comm/guijobs/syncstatusjob.h comm/guijobs/syncstatusjob.cpp
+    comm/guijobs/abstractsyncaddjob.h comm/guijobs/abstractsyncaddjob.cpp
+    comm/guijobs/syncaddjob.h comm/guijobs/syncaddjob.cpp
+    comm/guijobs/syncadd2job.h comm/guijobs/syncadd2job.cpp
+    comm/guijobs/syncstartafterloginjob.h comm/guijobs/syncstartafterloginjob.cpp
+    comm/guijobs/syncdeletejob.h comm/guijobs/syncdeletejob.cpp
+    comm/guijobs/syncgetpubliclinkurljob.h comm/guijobs/syncgetpubliclinkurljob.cpp
+    comm/guijobs/syncgetprivatelinkurljob.h comm/guijobs/syncgetprivatelinkurljob.cpp
+    comm/guijobs/syncsetsupportsvirtualfilesjob.h comm/guijobs/syncsetsupportsvirtualfilesjob.cpp
+    comm/guijobs/syncsetrootpinstatejob.h comm/guijobs/syncsetrootpinstatejob.cpp
+    comm/guijobs/blacklistednodelistjob.h comm/guijobs/blacklistednodelistjob.cpp
+    comm/guijobs/blacklistednodesetlistjob.h comm/guijobs/blacklistednodesetlistjob.cpp
+    comm/guijobs/nodeinfojob.h comm/guijobs/nodeinfojob.cpp
+    comm/guijobs/nodesubfoldersjob.h comm/guijobs/nodesubfoldersjob.cpp
+    comm/guijobs/nodesubfolders2job.h comm/guijobs/nodesubfolders2job.cpp
+    comm/guijobs/nodefoldersizejob.h comm/guijobs/nodefoldersizejob.cpp
+    comm/guijobs/nodecreatemissingfoldersjob.h comm/guijobs/nodecreatemissingfoldersjob.cpp
+    comm/guijobs/errorinfolistjob.h comm/guijobs/errorinfolistjob.cpp
+    comm/guijobs/excltemplgetexcludedjob.h comm/guijobs/excltemplgetexcludedjob.cpp
+    comm/guijobs/excltemplgetlistjob.h comm/guijobs/excltemplgetlistjob.cpp
+    comm/guijobs/excltemplsetlistjob.h comm/guijobs/excltemplsetlistjob.cpp
+    comm/guijobs/excltemplpropagatechangejob.h comm/guijobs/excltemplpropagatechangejob.cpp
+    comm/guijobs/parametersinfojob.h comm/guijobs/parametersinfojob.cpp
+    comm/guijobs/parametersupdatejob.h comm/guijobs/parametersupdatejob.cpp
+    comm/guijobs/utilityactivateloadinfojob.h comm/guijobs/utilityactivateloadinfojob.cpp
+    comm/guijobs/utilitysetappstatejob.h comm/guijobs/utilitysetappstatejob.cpp
+    comm/guijobs/utilitygetappstatejob.h comm/guijobs/utilitygetappstatejob.cpp
+    comm/guijobs/utilitysendlogtosupportjob.h comm/guijobs/utilitysendlogtosupportjob.cpp
+    comm/guijobs/utilitycancellogtosupportjob.h comm/guijobs/utilitycancellogtosupportjob.cpp
+    comm/guijobs/utilitygetlogestimatedsizejob.h comm/guijobs/utilitygetlogestimatedsizejob.cpp
+    comm/guijobs/signaluseraddedjob.h comm/guijobs/signaluseraddedjob.cpp
+    comm/guijobs/signaluserupdatedjob.h comm/guijobs/signaluserupdatedjob.cpp
+    comm/guijobs/signaluserremovedjob.h comm/guijobs/signaluserremovedjob.cpp
+    comm/guijobs/signalaccountaddedjob.h comm/guijobs/signalaccountaddedjob.cpp
+    comm/guijobs/signalaccountremovedjob.h comm/guijobs/signalaccountremovedjob.cpp
+    comm/guijobs/signaldriveaddedjob.h comm/guijobs/signaldriveaddedjob.cpp
+    comm/guijobs/signaldriveremovedjob.h comm/guijobs/signaldriveremovedjob.cpp
+    comm/guijobs/signalsyncaddedjob.h comm/guijobs/signalsyncaddedjob.cpp
+    comm/guijobs/signalsyncremovedjob.h comm/guijobs/signalsyncremovedjob.cpp
+    comm/guijobs/signalsyncprogressinfo.h comm/guijobs/signalsyncprogressinfo.cpp
+    comm/guijobs/signalsynccompleteditem.h comm/guijobs/signalsynccompleteditem.cpp
+    comm/guijobs/signalsyncupdatedjob.h comm/guijobs/signalsyncupdatedjob.cpp
+    comm/guijobs/signalerroraddedjob.h comm/guijobs/signalerroraddedjob.cpp
+    comm/guijobs/signalerrorremovedjob.h comm/guijobs/signalerrorremovedjob.cpp
     migration/migrationparams.h migration/migrationparams.cpp
     requests/serverrequests.h requests/serverrequests.cpp
     requests/offlinefilessizeestimator.h requests/offlinefilessizeestimator.cpp
@@ -56,12 +121,28 @@ set(updater_SRCS
     updater/updatechecker.h updater/updatechecker.cpp
 )
 
-if(APPLE)
-    list(APPEND server_SRCS socketapisocket_mac.mm)
-    set_property(SOURCE socketapisocket_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+if(APPLE OR WIN32)
+    list(APPEND server_SRCS comm/extcommserver.h comm/extcommserver.cpp)
+    list(APPEND server_SRCS comm/extjobmanager.h comm/extjobmanager.cpp)
+    list(APPEND server_SRCS comm/extensionjob.h comm/extensionjob.cpp)
+endif()
 
-    list(APPEND server_SRCS ../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m)
-    set_property(SOURCE ../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+if(APPLE)
+    list(APPEND server_SRCS comm/abstractcommserver_mac.h comm/abstractcommserver_mac.mm)
+    list(APPEND server_SRCS comm/xpccommserver_mac.h comm/xpccommserver_mac.mm)
+    list(APPEND server_SRCS comm/extcommserver_mac.mm)
+    list(APPEND server_SRCS comm/guicommserver_mac.mm)
+    list(APPEND server_SRCS comm/guijobs/exclappgetlistjob.h comm/guijobs/exclappgetlistjob.cpp)
+    list(APPEND server_SRCS comm/guijobs/exclappsetlistjob.h comm/guijobs/exclappsetlistjob.cpp)
+    list(APPEND server_SRCS comm/guijobs/exclappgetfetchingapplistjob.h comm/guijobs/exclappgetfetchingapplistjob.cpp)
+
+    set_property(SOURCE comm/abstractcommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+    set_property(SOURCE comm/xpccommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+    set_property(SOURCE comm/extcommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+    set_property(SOURCE comm/guicommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+
+    list(APPEND server_SRCS ../../extensions/MacOSX/kDriveFinderSync/kDriveModel/NSXPCConnection+LoginItem.m)
+    set_property(SOURCE ../../extensions/MacOSX/kDriveFinderSync/kDriveModel/NSXPCConnection+LoginItem.m APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 
     if(SPARKLE_FOUND)
         # Define this, we need to check in updater.cpp
@@ -76,8 +157,13 @@ if(APPLE)
                 DESTINATION "${KDRIVE_OSX_BUNDLE}/Contents/Frameworks" USE_SOURCE_PERMISSIONS)
     endif()
 elseif(WIN32)
+    list(APPEND server_SRCS navigationpanehelper.h navigationpanehelper.cpp)
+    list(APPEND server_SRCS ../common/utility_win.cpp)
+    list(APPEND server_SRCS comm/socketcommserver.h comm/socketcommserver.cpp)
+    list(APPEND server_SRCS comm/pipecommserver.h comm/pipecommserver.cpp)
     list(APPEND updater_SRCS updater/windowsupdater.h updater/windowsupdater.cpp)
 else()
+    list(APPEND server_SRCS comm/socketcommserver.h comm/socketcommserver.cpp)
     list(APPEND updater_SRCS updater/linuxupdater.h updater/linuxupdater.cpp)
 endif()
 
@@ -121,6 +207,8 @@ include(ECMAddAppIcon)
 
 file(GLOB_RECURSE KDRIVE_ICONS "${theme_dir}/colored/*-${APPLICATION_ICON_NAME}-icon*")
 if(APPLE)
+    # Sidebar icons for macOS < 26
+    # For macOS >= 26, the icon is defined by the value of CFBundleSymbolName in Info.plist
     file(GLOB_RECURSE KDRIVE_SIDEBAR_ICONS "${theme_dir}/colored/*-${APPLICATION_ICON_NAME}-sidebar*")
     message(STATUS "KDRIVE_SIDEBAR_ICONS: ${APPLICATION_ICON_NAME}: ${KDRIVE_SIDEBAR_ICONS}")
 endif()
@@ -140,7 +228,9 @@ if(NOT BUILD_KDRIVE_OSX_BUNDLE)
     add_executable(${APPLICATION_EXECUTABLE} WIN32 mainserver.cpp ${final_src})
 else()
     # we must add MACOSX_BUNDLE only if building a bundle
-    add_executable(${APPLICATION_EXECUTABLE} WIN32 MACOSX_BUNDLE mainserver.cpp ${final_src})
+    add_executable(${APPLICATION_EXECUTABLE} WIN32 MACOSX_BUNDLE mainserver.cpp ${final_src}
+        comm/guijobs/utilitygetappstatejob.h
+        comm/guijobs/utilitygetappstatejob.cpp)
 
     get_target_property(_qmake Qt6::qmake LOCATION)
     execute_process(COMMAND ${_qmake} -query QT_INSTALL_TRANSLATIONS
@@ -225,7 +315,9 @@ endif()
 
 if(APPLE)
     find_library(SERVICE_MANAGEMENT_LIBRARY NAMES ServiceManagement)
+    find_library(SYSTEM_EXTENSION_LIBRARY NAMES SystemExtensions)
     target_link_libraries(${APPLICATION_EXECUTABLE} ${SERVICE_MANAGEMENT_LIBRARY})
+    target_link_libraries(${APPLICATION_EXECUTABLE} ${SYSTEM_EXTENSION_LIBRARY})
 endif()
 
 if(ZLIB_FOUND)

@@ -21,6 +21,7 @@
 #include "test_utility/testhelpers.h"
 #include "config.h"
 #include "libcommon/utility/utility.h" // CommonUtility::isSubDir
+#include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
 
 #include <Poco/URI.h>
@@ -125,31 +126,8 @@ void TestUtility::testIsEqualUpToCaseAndEnc(void) {
     CPPUNIT_ASSERT(Utility::checkIfEqualUpToCaseAndEncoding(nfcNormalizedName, nfdNormalizedName, isEqual) && isEqual);
 }
 
-void TestUtility::testMoveItemToTrash(void) {
-    // !!! Linux - Move to trash fails on tmpfs
-    if (Utility::userName() == "docker") return;
-    LocalTemporaryDirectory tempDir;
-    SyncPath path = tempDir.path() / "test.txt";
-    std::ofstream file(path);
-    file << "test";
-    file.close();
-
-    CPPUNIT_ASSERT(Utility::moveItemToTrash(path));
-    CPPUNIT_ASSERT(!std::filesystem::exists(path));
-
-    // Test with a non existing file
-    CPPUNIT_ASSERT(!Utility::moveItemToTrash(tempDir.path() / "test2.txt"));
-
-    // Test with a directory
-    SyncPath dirPath = tempDir.path() / "testDir";
-    std::filesystem::create_directory(dirPath);
-    CPPUNIT_ASSERT(Utility::moveItemToTrash(dirPath));
-    CPPUNIT_ASSERT(!std::filesystem::exists(dirPath));
-}
-
 void TestUtility::testGetLinuxDesktopType() {
     std::string currentDesktop;
-
 #if defined(KD_LINUX)
     CPPUNIT_ASSERT(Utility::getLinuxDesktopType(currentDesktop));
     CPPUNIT_ASSERT(!currentDesktop.empty());
@@ -236,7 +214,7 @@ void TestUtility::testXxHash() {
 }
 
 void TestUtility::testErrId() {
-    CPPUNIT_ASSERT_EQUAL(std::string("TES:") + std::to_string(__LINE__), errId());
+    CPPUNIT_ASSERT_EQUAL(std::string("TES:") + std::to_string(__LINE__), ERR_ID);
 }
 
 void TestUtility::testIsSubDir() {
@@ -302,20 +280,60 @@ void TestUtility::testCheckIfDirEntryIsManaged() {
     CPPUNIT_ASSERT(isManaged);
     CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
-    // Check with a simlink (managed)
-    const SyncPath simLinkDir = tempDir.path() / "simLinkDir";
-    std::filesystem::create_directory(simLinkDir);
-    std::filesystem::create_symlink(path, simLinkDir / "testLink.txt");
-    entry = std::filesystem::recursive_directory_iterator(simLinkDir);
-    CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(*entry, isManaged, ioError));
-    CPPUNIT_ASSERT(isManaged);
-    CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+    // Check with a symlink on a directory (managed)
+    const SyncPath testDir = tempDir.path() / "testDir";
+    (void) std::filesystem::create_directory(testDir);
+    std::filesystem::create_symlink(testDir, tempDir.path() / "testSymLink");
+    std::filesystem::create_directory_symlink(testDir, tempDir.path() / "testSymLinkDir");
+    for (auto it = std::filesystem::recursive_directory_iterator(tempDir.path());
+         it != std::filesystem::recursive_directory_iterator(); ++it) {
+        isManaged = false;
+        ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(*entry, isManaged, ioError));
+        CPPUNIT_ASSERT(isManaged);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+    }
+
+    // Check with a dangling symlink (managed)
+    std::filesystem::create_symlink(tempDir.path() / "non_existing_file.png", tempDir.path() / "danglingSymLink");
+    std::filesystem::create_directory_symlink(tempDir.path() / "non_existing_directory", tempDir.path() / "danglingSymLinkDir§");
+    for (auto it = std::filesystem::recursive_directory_iterator(tempDir.path());
+         it != std::filesystem::recursive_directory_iterator(); ++it) {
+        isManaged = false;
+        ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(*entry, isManaged, ioError));
+        CPPUNIT_ASSERT(isManaged);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+    }
 
     // Check with a directory
+    isManaged = false;
     entry = std::filesystem::recursive_directory_iterator(tempDir.path());
     CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(*entry, isManaged, ioError));
     CPPUNIT_ASSERT(isManaged);
     CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+
+    // A symbolic link on a file with too many levels of indirection.
+    testhelpers::createSymLinkLoop(tempDir.path() / "file1.txt", tempDir.path() / "file2.txt", NodeType::File);
+    for (auto it = std::filesystem::recursive_directory_iterator(tempDir.path());
+         it != std::filesystem::recursive_directory_iterator(); ++it) {
+        isManaged = false;
+        ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(*entry, isManaged, ioError));
+        CPPUNIT_ASSERT(isManaged);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+    }
+
+    // A symbolic link on a folder with too many levels of indirection.
+    testhelpers::createSymLinkLoop(tempDir.path() / "folder1", tempDir.path() / "folder2", NodeType::Directory);
+    for (auto it = std::filesystem::recursive_directory_iterator(tempDir.path());
+         it != std::filesystem::recursive_directory_iterator(); ++it) {
+        isManaged = false;
+        ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(*entry, isManaged, ioError));
+        CPPUNIT_ASSERT(isManaged);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+    }
 }
 
 void TestUtility::testFormatStdError() {
@@ -462,6 +480,62 @@ void TestUtility::testUserName() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"homeDir=" << Utility::formatSyncPath(homeDir));
     CPPUNIT_ASSERT_EQUAL(homeDir.filename().native(), userName);
 #endif
+}
+
+void TestUtility::testTryCreateTmpDir() {
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir());
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir(Str("test name")));
+
+#if defined(KD_MACOS)
+    {
+        // Saves the current value of "KDRIVE_TMP_PATH".
+        const std::string previousPathString = CommonUtility::envVarValue("KDRIVE_TMP_PATH");
+
+        // Change the tmp directory used by the app.
+        const LocalTemporaryDirectory temporaryDirectory;
+        const auto newTmpPath = SyncPath(temporaryDirectory.path());
+        (void) CommonUtility::setenv("KDRIVE_TMP_PATH", Path2Str(newTmpPath).c_str(), 1);
+
+        // Remove access rights.
+        auto ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(IoHelper::setRights(newTmpPath, false, false, false, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::AccessDenied, Utility::tryCreateTmpDir());
+
+        // Add back access rights.
+        CPPUNIT_ASSERT(IoHelper::setRights(newTmpPath, true, true, true, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir());
+
+        // Restores previous value for "KDRIVE_TMP_PATH".
+        (void) CommonUtility::setenv("KDRIVE_TMP_PATH", previousPathString.c_str(), 1);
+    }
+#endif
+}
+
+void TestUtility::testTryCreateTmpFile() {
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile());
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile(Str("test name")));
+
+    {
+        // Saves the current value of "KDRIVE_TMP_PATH".
+        const std::string previousPathString = CommonUtility::envVarValue("KDRIVE_TMP_PATH");
+
+        // Change the tmp directory used by the app.
+        const LocalTemporaryDirectory temporaryDirectory;
+        const auto newTmpPath = SyncPath(temporaryDirectory.path());
+        (void) CommonUtility::setenv("KDRIVE_TMP_PATH", Path2Str(newTmpPath).c_str(), 1);
+
+        // Remove access rights.
+        auto ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(IoHelper::setRights(newTmpPath, false, false, false, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::AccessDenied, Utility::tryCreateTmpFile());
+
+        // Add back access rights.
+        CPPUNIT_ASSERT(IoHelper::setRights(newTmpPath, true, true, true, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile());
+
+        // Restores previous value for "KDRIVE_TMP_PATH".
+        (void) CommonUtility::setenv("KDRIVE_TMP_PATH", previousPathString.c_str(), 1);
+    }
 }
 
 } // namespace KDC

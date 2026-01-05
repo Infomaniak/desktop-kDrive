@@ -40,13 +40,12 @@ std::string UploadSessionCancelJob::getSpecificUrl() {
     return str;
 }
 
-bool UploadSessionCancelJob::handleError(std::istream &is, const Poco::URI &uri) {
-    if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_BAD_REQUEST) {
-        _exitInfo = ExitCode::BackError;
-        return false;
+ExitInfo UploadSessionCancelJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
+    if (httpResponse().getStatus() == Poco::Net::HTTPResponse::HTTP_BAD_REQUEST) {
+        return ExitCode::BackError;
     }
 
-    return AbstractTokenNetworkJob::handleError(is, uri);
+    return AbstractTokenNetworkJob::handleError(replyBody, uri);
 }
 
 

@@ -17,6 +17,8 @@
  */
 
 #include "guirequests.h"
+
+#include "info/searchinfo.h"
 #include "libcommongui/commclient.h"
 #include "libcommon/utility/utility.h"
 
@@ -54,24 +56,6 @@ ExitCode GuiRequests::getUserInfoList(QList<UserInfo> &list) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getUserIdFromUserDbId(const int userDbId, int &userId) {
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << userDbId;
-
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::USER_ID_FROM_USERDBID, params, results)) {
-        return ExitCode::SystemError;
-    }
-
-    auto exitCode = ExitCode::Unknown;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
-    resultStream >> userId;
-
-    return exitCode;
-}
-
 ExitCode GuiRequests::getErrorInfoList(const ErrorLevel level, const int syncDbId, const int limit, QList<ErrorInfo> &list) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -80,7 +64,7 @@ ExitCode GuiRequests::getErrorInfoList(const ErrorLevel level, const int syncDbI
     paramsStream << limit;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::ERROR_INFOLIST, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::ERROR_INFOLIST_LEGACY, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -99,7 +83,7 @@ ExitCode GuiRequests::getConflictList(const int driveDbId, const QList<ConflictT
     paramsStream << filter;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::ERROR_GET_CONFLICTS, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::ERROR_GET_CONFLICTS_LEGACY, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -271,56 +255,6 @@ ExitCode GuiRequests::getDriveInfoList(QList<DriveInfo> &list) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getDriveIdFromDriveDbId(const int driveDbId, int &driveId) {
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << driveDbId;
-
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::DRIVE_ID_FROM_DRIVEDBID, params, results)) {
-        return ExitCode::SystemError;
-    }
-
-    auto exitCode = ExitCode::Unknown;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
-    resultStream >> driveId;
-
-    return exitCode;
-}
-
-ExitCode GuiRequests::getDriveIdFromSyncDbId(const int syncDbId, int &driveId) {
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << syncDbId;
-
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::DRIVE_ID_FROM_SYNCDBID, params, results)) {
-        return ExitCode::SystemError;
-    }
-
-    auto exitCode = ExitCode::Unknown;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
-    resultStream >> driveId;
-
-    return exitCode;
-}
-
-ExitCode GuiRequests::getDriveDefaultColor(QColor &color) {
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::DRIVE_DEFAULTCOLOR, {}, results)) {
-        return ExitCode::SystemError;
-    }
-
-    auto exitCode = ExitCode::Unknown;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
-    resultStream >> color;
-
-    return exitCode;
-}
-
 ExitCode GuiRequests::updateDrive(const DriveInfo &driveInfo) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -355,22 +289,24 @@ ExitCode GuiRequests::deleteDrive(const int driveDbId) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getOfflineFilesTotalSize(const int driveDbId, uint64_t &totalSize) {
+ExitCode GuiRequests::searchItemInDrive(const int driveDbId, const QString &searchString, QList<SearchInfo> &list, bool &hasMore,
+                                        QString &cursor) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << driveDbId;
+    paramsStream << searchString;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::DRIVE_GET_OFFLINE_FILES_TOTAL_SIZE, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::DRIVE_SEARCH, params, results, COMM_LONG_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
-    auto exitCode = ExitCode::Ok;
-    quint64 tmpSize = 0;
+    auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
-    resultStream >> tmpSize;
-    totalSize = tmpSize;
+    resultStream >> list;
+    resultStream >> hasMore;
+    resultStream >> cursor;
 
     return exitCode;
 }
@@ -441,32 +377,13 @@ ExitCode GuiRequests::getSyncStatus(const int syncDbId, SyncStatus &status) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getSyncIsRunning(const int syncDbId, bool &running) {
+ExitCode GuiRequests::getBlacklistedNodeIdSet(const int syncDbId, QSet<QString> &syncIdSet) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << syncDbId;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::SYNC_ISRUNNING, params, results)) {
-        return ExitCode::SystemError;
-    }
-
-    auto exitCode = ExitCode::Unknown;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
-    resultStream >> running;
-
-    return exitCode;
-}
-
-ExitCode GuiRequests::getSyncIdSet(const int syncDbId, const SyncNodeType type, QSet<QString> &syncIdSet) {
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << syncDbId;
-    paramsStream << type;
-
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::SYNCNODE_LIST, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::BLACKLISTED_NODE_LIST, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -478,15 +395,14 @@ ExitCode GuiRequests::getSyncIdSet(const int syncDbId, const SyncNodeType type, 
     return exitCode;
 }
 
-ExitCode GuiRequests::setSyncIdSet(const int syncDbId, const SyncNodeType type, const QSet<QString> &syncIdSet) {
+ExitCode GuiRequests::setBlacklistedNodeIdSet(const int syncDbId, const QSet<QString> &syncIdSet) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << syncDbId;
-    paramsStream << type;
     paramsStream << syncIdSet;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::SYNCNODE_SETLIST, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::BLACKLISTED_NODE_SETLIST, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -750,24 +666,6 @@ ExitCode GuiRequests::deleteSync(const int syncDbId) {
 
     auto exitCode = ExitCode::Ok;
     ArgsWriter(results).write(exitCode);
-
-    return exitCode;
-}
-
-ExitCode GuiRequests::propagateSyncListChange(const int syncDbId, const bool restartSync) {
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << syncDbId;
-    paramsStream << restartSync;
-
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::SYNC_PROPAGATE_SYNCLIST_CHANGE, params, results)) {
-        return ExitCode::SystemError;
-    }
-
-    auto exitCode = ExitCode::Unknown;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
 
     return exitCode;
 }
@@ -1242,8 +1140,10 @@ ExitCode GuiRequests::versionInfo(VersionInfo &versionInfo, const VersionChannel
         return ExitCode::SystemError;
     }
 
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> versionInfo;
+    if (!results.isEmpty()) {
+        QDataStream resultStream(&results, QIODevice::ReadOnly);
+        resultStream >> versionInfo;
+    }
     return ExitCode::Ok;
 }
 

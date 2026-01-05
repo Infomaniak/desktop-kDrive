@@ -252,6 +252,12 @@ void TestIntegration::testEditDeleteConflict() {
         CPPUNIT_ASSERT(!std::filesystem::exists(filepath));
         // ... but the edited file has been rescued.
         CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / FileRescuer::rescueFolderName() / filepath.filename()));
+
+        CPPUNIT_ASSERT(testhelpers::isInTrash(dirpath.filename()));
+#if defined(KD_MACOS) || defined(KD_LINUX)
+        testhelpers::eraseFromTrash(dirpath.filename());
+#endif
+
         logStep("testEditDeleteConflict2");
     }
 }
@@ -319,7 +325,7 @@ void TestIntegration::testMoveDeleteConflict() {
         waitForSyncToBeIdle(SourceLocation::currentLoc());
 
         // Delete A on remote replica
-        deleteRemoteFile(_driveDbId, info.remoteNodeIdA);
+        deleteRemoteItem(_driveDbId, info.remoteNodeIdA);
 
         // Rename A to B on local replica
         const SyncPath localPathA = _syncPal->localPath() / tmpRemoteDir.name() / "A";
@@ -348,7 +354,7 @@ void TestIntegration::testMoveDeleteConflict() {
         waitForSyncToBeIdle(SourceLocation::currentLoc());
 
         // Delete A on remote replica
-        deleteRemoteFile(_driveDbId, info.remoteNodeIdA);
+        deleteRemoteItem(_driveDbId, info.remoteNodeIdA);
 
         // Rename A to B on local replica
         const SyncPath localPathA = _syncPal->localPath() / tmpRemoteDir.name() / "A";
@@ -383,7 +389,7 @@ void TestIntegration::testMoveDeleteConflict() {
         waitForSyncToBeIdle(SourceLocation::currentLoc());
 
         // Delete A on remote replica
-        deleteRemoteFile(_driveDbId, info.remoteNodeIdA);
+        deleteRemoteItem(_driveDbId, info.remoteNodeIdA);
 
         // Rename A to B on local replica
         const SyncPath localPathA = _syncPal->localPath() / tmpRemoteDir.name() / "A";
@@ -413,7 +419,7 @@ void TestIntegration::testMoveDeleteConflict() {
         waitForSyncToBeIdle(SourceLocation::currentLoc());
 
         // Delete A on remote replica
-        deleteRemoteFile(_driveDbId, info.remoteNodeIdA);
+        deleteRemoteItem(_driveDbId, info.remoteNodeIdA);
 
         // Rename A to B on local replica
         const SyncPath localPathA = _syncPal->localPath() / tmpRemoteDir.name() / "A";
@@ -442,7 +448,7 @@ void TestIntegration::testMoveDeleteConflict() {
         waitForSyncToBeIdle(SourceLocation::currentLoc());
 
         // Delete A on remote replica
-        deleteRemoteFile(_driveDbId, info.remoteNodeIdA);
+        deleteRemoteItem(_driveDbId, info.remoteNodeIdA);
 
         // Rename A/AB to A/AB2 on local replica
         const SyncPath localPathAB = _syncPal->localPath() / tmpRemoteDir.name() / "AB";
@@ -474,7 +480,7 @@ void TestIntegration::testMoveParentDeleteConflict() {
         waitForSyncToBeIdle(SourceLocation::currentLoc());
 
         // Delete A on remote replica
-        deleteRemoteFile(_driveDbId, info.remoteNodeIdA);
+        deleteRemoteItem(_driveDbId, info.remoteNodeIdA);
 
         // Move A/AA/AAA to A/AB/AAA on local replica
         const SyncPath localPathA = _syncPal->localPath() / tmpRemoteDir.name() / "A";
@@ -504,7 +510,7 @@ void TestIntegration::testMoveParentDeleteConflict() {
         (void) RenameJob(nullptr, _driveDbId, info.remoteNodeIdA, Str("A2")).runSynchronously();
 
         // Delete A/AB on remote replica
-        deleteRemoteFile(_driveDbId, info.remoteNodeIdAB);
+        deleteRemoteItem(_driveDbId, info.remoteNodeIdAB);
 
         // Move A/AA to A/AB/AA on local replica
         const SyncPath localPathA = _syncPal->localPath() / tmpRemoteDir.name() / "A";
@@ -543,7 +549,7 @@ void TestIntegration::testMoveParentDeleteConflict() {
         waitForSyncToBeIdle(SourceLocation::currentLoc());
 
         // Delete A/AB on remote replica
-        deleteRemoteFile(_driveDbId, info.remoteNodeIdAB);
+        deleteRemoteItem(_driveDbId, info.remoteNodeIdAB);
 
         // Edit A/AB/ABB on local replica
         const SyncPath localPathA = _syncPal->localPath() / tmpRemoteDir.name() / "A";
@@ -580,7 +586,7 @@ void TestIntegration::testCreateParentDeleteConflict() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
     // Delete AB on remote replica
-    deleteRemoteFile(_driveDbId, info.remoteNodeIdAB);
+    deleteRemoteItem(_driveDbId, info.remoteNodeIdAB);
 
     // Create A/AB/ABA on local replica
     const SyncPath localPathA = _syncPal->localPath() / tmpRemoteDir.name() / "A";

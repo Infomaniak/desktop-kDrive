@@ -24,6 +24,7 @@
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommon/utility/sourcelocation.h"
+#include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"
 #include "utility/timerutility.h"
 
@@ -41,6 +42,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
 #if defined(KD_LINUX)
         CPPUNIT_TEST(testNodeIdReuseFile2DirAndDir2File);
         CPPUNIT_TEST(testNodeIdReuseFile2File);
+        CPPUNIT_TEST(testNodeIdReuseFalsePositive);
 #endif
         CPPUNIT_TEST_SUITE_END();
 
@@ -82,6 +84,11 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testNegativeModificationTime();
 
         void testDeleteAndRecreateBranch();
+        void testDeleteAndMoveCase();
+
+        void testSynchronizationOfSymLinks();
+        void testSymLinkWithTooManySymbolicLevels();
+        void testDirSymLinkWithTooManySymbolicLevels();
 
         class MockIoHelperFileStat : public IoHelper {
             public:
@@ -106,6 +113,8 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
 #if defined(KD_LINUX)
         void testNodeIdReuseFile2DirAndDir2File();
         void testNodeIdReuseFile2File();
+        void testNodeIdReuseFalsePositive();
+        void nodeIdReuseFalsePositiveInitialSituation(const LocalTemporaryDirectory &localTmpDir) const;
 #endif
         void waitForSyncToBeIdle(const SourceLocation &srcLoc,
                                  std::chrono::milliseconds minWaitTime = std::chrono::milliseconds(3000)) const;
@@ -129,7 +138,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void moveRemoteFile(const int driveDbId, const NodeId &remoteFileId, const NodeId &destinationRemoteParentId,
                             const SyncName &name = {}) const;
         NodeId duplicateRemoteFile(const int driveDbId, const NodeId &id, const SyncName &newName) const;
-        void deleteRemoteFile(const int driveDbId, const NodeId &id) const;
+        void deleteRemoteItem(const int driveDbId, const NodeId &id) const;
         SyncPath findLocalFileByNamePrefix(const SyncPath &parentAbsolutePath, const SyncName &namePrefix) const;
 
         log4cplus::Logger _logger;
@@ -139,6 +148,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         int _driveDbId = 0;
         LocalTemporaryDirectory _localSyncDir;
         RemoteTemporaryDirectory _remoteSyncDir{"testIntegration"};
+        LocalTemporaryDirectory _localTempDir{"testIntegration"};
         NodeId _testFileRemoteId;
         TimerUtility _timer;
 };

@@ -20,6 +20,13 @@
 
 @protocol XPCExtensionProtocol
 
-- (void)sendMessage:(NSData*)msg;
+- (void)sendMessage:(NSData *)msg;
+
+@end
+
+@protocol XPCExtensionRemoteProtocol
+
+- (void)initConnection:(void (^)(BOOL))callback;
+- (void)sendMessage:(NSData *)msg;
 
 @end

@@ -100,6 +100,7 @@ IoError IoHelper::posixError2ioError(int error) noexcept {
     switch (error) {
         case 0:
             return IoError::Success;
+        case EPERM:
         case EACCES:
             return IoError::AccessDenied;
         case EEXIST:
@@ -295,20 +296,20 @@ bool IoHelper::_checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoErro
 }
 
 bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &exec, IoError &ioError) noexcept {
+    ioError = getRights(path, read, write, exec);
+    return ioError == IoError::Success || isExpectedError(ioError);
+}
+
+IoError IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &exec) noexcept {
     read = false;
     write = false;
     exec = false;
-    ioError = IoError::Success;
 
     ItemType itemType;
     const bool success = getItemType(path, itemType);
-    if (!success) {
+    if (!success || itemType.ioError != IoError::Success) {
         LOGW_WARN(logger(), L"Failed to get item type: " << Utility::formatIoError(path, itemType.ioError));
-        return false;
-    }
-    ioError = itemType.ioError;
-    if (ioError != IoError::Success) {
-        return isExpectedError(ioError);
+        return itemType.ioError;
     }
 
     std::error_code ec;
@@ -317,26 +318,34 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
                                            : std::filesystem::status(path, ec).permissions();
     if (ec) {
         const bool exists = (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory));
-        ioError = stdError2ioError(ec);
+        IoError ioError = stdError2ioError(ec);
         if (!exists) {
             ioError = IoError::NoSuchFileOrDirectory;
         }
         LOGW_WARN(logger(), L"Failed to get permissions: " << Utility::formatStdError(path, ec));
-        return isExpectedError(ioError);
+        return ioError;
     }
 
     read = ((perms & std::filesystem::perms::owner_read) != std::filesystem::perms::none);
 #if defined(KD_MACOS)
-    write = isLocked(path) ? false : ((perms & std::filesystem::perms::owner_write) != std::filesystem::perms::none);
+    bool isLocked = false;
+    if (const auto ioError = IoHelper::isLocked(path, isLocked); ioError != IoError::Success) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to check if file is locked for " << Utility::formatSyncPath(path));
+        return ioError;
+    }
+    write = isLocked ? false : ((perms & std::filesystem::perms::owner_write) != std::filesystem::perms::none);
 #elif defined(KD_LINUX)
     write = ((perms & std::filesystem::perms::owner_write) != std::filesystem::perms::none);
 #endif
     exec = ((perms & std::filesystem::perms::owner_exec) != std::filesystem::perms::none);
-    return true;
+    return IoError::Success;
 }
 #endif
 
+
 bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
+    itemType = ItemType{};
+
     // Check whether the item indicated by `path` is a symbolic link.
     std::error_code ec;
     const bool isSymlink = _isSymlink(path, ec);
@@ -550,7 +559,7 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
     ioError = IoError::Success;
     bool endOfDirectory = false;
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
-        if (entry.is_directory() && !entry.is_symlink()) {
+        if (!entry.is_symlink() && entry.is_directory()) {
             if (maxDepth == 0) {
                 LOGW_WARN(logger(), L"Max depth reached in getDirectorySize, skipping deeper directories for "
                                             << Utility::formatSyncPath(path));
@@ -608,9 +617,17 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
 
 bool IoHelper::tempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
     // Warning: never log anything in this method. If the logger is not set, the app will crash.
+    ioError = IoError::Success;
     std::error_code ec;
-    directoryPath = _tempDirectoryPath(ec); // The std::filesystem implementation returns an empty path on error.
+    if (const auto value = CommonUtility::envVarValue("KDRIVE_TMP_PATH"); !value.empty()) {
+        directoryPath = SyncPath(value);
+        (void) std::filesystem::create_directories(directoryPath, ec);
+    } else {
+        directoryPath = _tempDirectoryPath(ec); // The std::filesystem implementation returns an empty path on error.
+    }
+
     ioError = stdError2ioError(ec);
+
     return ioError == IoError::Success;
 }
 
@@ -765,8 +782,8 @@ bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &io
     }
 #endif
 
-    exists = ioError != IoError::NoSuchFileOrDirectory;
-    return isExpectedError(ioError) || ioError == IoError::Success;
+    exists = (ioError != IoError::NoSuchFileOrDirectory) && (ioError != IoError::FileNameTooLong);
+    return ioError == IoError::Success || (ioError == IoError::FileNameTooLong) || isExpectedError(ioError);
 }
 
 bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &existsWithSameId,
@@ -938,11 +955,12 @@ bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, b
 
     std::error_code ec;
     if (isFolder) {
-        LOGW_DEBUG(logger(),
-                   L"Create directory symlink: target " << Path2WStr(targetPath) << L", " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(logger(), L"Create directory symlink: target " << Utility::formatSyncPath(targetPath) << L", "
+                                                                  << Utility::formatSyncPath(path));
         std::filesystem::create_directory_symlink(targetPath, path, ec);
     } else {
-        LOGW_DEBUG(logger(), L"Create file symlink: target " << Path2WStr(targetPath) << L", " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(logger(), L"Create file symlink: target " << Utility::formatSyncPath(targetPath) << L", "
+                                                             << Utility::formatSyncPath(path));
         std::filesystem::create_symlink(targetPath, path, ec);
     }
 
@@ -1033,6 +1051,12 @@ void IoHelper::DirectoryIterator::disableRecursionPending() {
 bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept {
     return _setRightsStd(path, read, write, exec, ioError);
 }
+
+IoError IoHelper::setRights(const SyncPath &path, const bool read, const bool write, const bool exec) noexcept {
+    IoError ioError = IoError::Unknown;
+    (void) setRights(path, read, write, exec, ioError);
+    return ioError;
+}
 #endif
 
 bool IoHelper::_setRightsStd(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept {
@@ -1057,4 +1081,59 @@ bool IoHelper::_setRightsStd(const SyncPath &path, bool read, bool write, bool e
 
     return true;
 }
+
+#if defined(KD_MACOS) || defined(KD_LINUX)
+NodeType IoHelper::getTargetNodeType(const SyncPath &path) {
+    auto nodeType = NodeType::Unknown;
+    if (struct stat sbTarget; stat(path.string().c_str(), &sbTarget) >= 0) {
+        nodeType = S_ISDIR(sbTarget.st_mode) ? NodeType::Directory : NodeType::File;
+    }
+
+    return nodeType;
+}
+#endif
+
+IoError IoHelper::setReadOnly(const SyncPath &path) noexcept {
+    // Retrieve the `exec` right.
+    bool dummyRead = false;
+    bool dummyWrite = false;
+    bool exec = false;
+    if (const auto ioError = IoHelper::getRights(path, dummyRead, dummyWrite, exec); ioError != IoError::Success) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to get rights for " << Utility::formatSyncPath(path));
+        return IoError::Unknown;
+    }
+
+    // Remove the `write` right and force the `read` right. `exec` right is not modified.
+    if (const auto ioError = IoHelper::setRights(path, true, false, exec); ioError != IoError::Success) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to set rights for " << Utility::formatSyncPath(path));
+        return ioError;
+    }
+
+    // Lock the file.
+    return lock(path);
+}
+
+IoError IoHelper::setFullAccess(const SyncPath &path) noexcept {
+    // Retrieve `exec` rights. It is not modified by this method.
+    bool dummyRead = false;
+    bool dummyWrite = false;
+    bool exec = false;
+    if (const auto ioError = IoHelper::getRights(path, dummyRead, dummyWrite, exec); ioError != IoError::Success) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to set rights for: " << Utility::formatSyncPath(path));
+        return IoError::Unknown;
+    }
+
+    // The file must be unlocked before changing its access rights.
+    if (const auto ioError = unlock(path); ioError != IoError::Success) {
+        return ioError;
+    }
+
+    // Set full access rights.
+    if (const auto ioError = IoHelper::setRights(path, true, true, exec); ioError != IoError::Success) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Failed to set rights for: " << Utility::formatSyncPath(path));
+        return IoError::Unknown;
+    }
+    return IoError::Success;
+}
+
 } // namespace KDC

@@ -1,0 +1,41 @@
+disabled_rules:
+ - line_length
+ - identifier_name
+ - type_body_length
+ - function_body_length
+ - file_length
+ - type_name
+ - force_cast
+ - cyclomatic_complexity
+ - inclusive_language
+ - for_where
+ - optional_data_string_conversion
+opt_in_rules:
+ - closure_end_indentation
+ - closure_spacing
+ - collection_alignment
+ - contains_over_filter_count
+ - contains_over_first_not_nil
+ - contains_over_range_nil_comparison
+ - empty_collection_literal
+ - empty_count
+ - empty_string
+ - first_where
+ - identical_operands
+ - last_where
+ - operator_usage_whitespace
+ - overridden_super_call
+ - prefer_zero_over_explicit_init
+ - prohibited_super_call
+ - redundant_type_annotation
+ - toggle_bool
+ - trailing_closure
+ - unneeded_parentheses_in_closure_argument
+analyzer_rules:
+ - unused_import
+included:
+ - kDrive
+ - kDriveCoreUI
+ - kDriveCore
+excluded:
+ - kDrive/Resources/Generated

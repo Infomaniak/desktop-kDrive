@@ -1,0 +1,14 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    <Fragment>
+        <PackageGroup Id="VCRedistComponents">
+            <ExePackage Id="VcRedistExe"
+              DisplayName="Microsoft Visual C++"
+              SourceFile="$(desktop-kDriveDir)/build-windows/install/bin/vc_redist.x64.exe"
+              Vital="no"
+              InstallArguments="/quiet /norestart"
+              UninstallArguments="/quiet /norestart"
+              Permanent="yes"
+              DetectCondition="VersionNT64"/>
+        </PackageGroup>
+    </Fragment>
+</Wix>

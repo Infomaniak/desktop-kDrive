@@ -43,9 +43,7 @@ void TestServerRequests::setUp() {
     (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
-    bool alreadyExists = false;
-    const std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
-    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
+    (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
     // Insert user, account & drive
@@ -85,15 +83,13 @@ void TestServerRequests::testGetPublicLink() {
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, "1", "testGetPublicLink");
 
     // 1st call : sent POST request to generate the public share link
-    QString url;
-    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok,
-                         ServerRequests::getPublicLinkUrl(_driveDbId, QString::fromStdString(remoteTmpDir.id()), url));
-    CPPUNIT_ASSERT(!url.isEmpty());
-    // 2nd call : POST request will fail and a GET request should be sent to retreive exisiting share link
+    std::string url;
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ServerRequests::getPublicLinkUrl(_driveDbId, remoteTmpDir.id(), url));
+    CPPUNIT_ASSERT(!url.empty());
+    // 2nd call : POST request will fail and a GET request should be sent to retrieve existing share link
     url.clear();
-    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok,
-                         ServerRequests::getPublicLinkUrl(_driveDbId, QString::fromStdString(remoteTmpDir.id()), url));
-    CPPUNIT_ASSERT(!url.isEmpty());
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ServerRequests::getPublicLinkUrl(_driveDbId, remoteTmpDir.id(), url));
+    CPPUNIT_ASSERT(!url.empty());
 }
 
 } // namespace KDC

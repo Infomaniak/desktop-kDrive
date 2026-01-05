@@ -32,14 +32,17 @@ GetInfoDriveJob::GetInfoDriveJob(int driveDbId) :
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
-bool GetInfoDriveJob::handleError(std::istream &is, const Poco::URI &uri) {
-    if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
-        _resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
+ExitInfo GetInfoDriveJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
+    if (httpResponse().getStatus() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
+        httpResponse().getStatus() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
         // The drive is not accessible or doesn't exist
-        return true;
-    } else {
-        return AbstractTokenNetworkJob::handleError(is, uri);
+        return ExitCode::Ok;
     }
+    return AbstractTokenNetworkJob::handleError(replyBody, uri);
+}
+
+void GetInfoDriveJob::setQueryParameters(Poco::URI &uri) {
+    uri.addQueryParameter("with", "preferences");
 }
 
 } // namespace KDC

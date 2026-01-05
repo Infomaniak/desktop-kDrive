@@ -21,8 +21,6 @@ set(CMAKE_AUTOMOC TRUE)
 add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)
 
-add_subdirectory(vfs)
-
 # Sources
 set(libcommonserver_SRCS
     # Utility
@@ -42,6 +40,8 @@ set(libcommonserver_SRCS
     # Io
     io/filestat.h
     io/iohelper.h io/iohelper.cpp
+    io/permissionsholder.h io/permissionsholder.cpp
+    # VFS
     vfs/vfs.h vfs/vfs.cpp
     vfs/workerinfo.h vfs/vfsworker.h
     vfs/plugin.h vfs/plugin.cpp
@@ -55,6 +55,7 @@ if(APPLE)
     set_property(SOURCE utility/utility_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 elseif(WIN32)
     list(APPEND libcommonserver_SRCS io/iohelper_win.h io/iohelper_win.cpp utility/utility_win.cpp)
+    list(APPEND libcommonserver_SRCS utility/digitalsignaturechecker_win.h utility/digitalsignaturechecker_win.cpp)
 else()
     list(APPEND libcommonserver_SRCS io/iohelper_linux.cpp utility/utility_linux.cpp)
 endif()
@@ -104,7 +105,7 @@ target_precompile_headers(${libcommonserver_NAME} PRIVATE ${PC_HEADER_FILES})
 
 set_target_properties(${libcommonserver_NAME} PROPERTIES
     VERSION ${KDRIVE_VERSION}
-    SOVERSION ${KDRIVE_SOVERSION}
+    SOVERSION ${KDRIVE_VERSION_BUILD}
     RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY}
 )
 

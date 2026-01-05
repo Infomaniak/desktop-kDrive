@@ -18,6 +18,7 @@
 #pragma once
 #include "testincludes.h"
 #include "test_utility/localtemporarydirectory.h"
+
 #include "syncpal/syncpal.h"
 
 using namespace CppUnit;
@@ -33,6 +34,7 @@ class TestSyncPal : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSyncFileItem);
         CPPUNIT_TEST(testCheckIfExistsOnServer);
         CPPUNIT_TEST(testBlacklist);
+        CPPUNIT_TEST(testWipeVirtualFiles);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -41,10 +43,11 @@ class TestSyncPal : public CppUnit::TestFixture, public TestBase {
         void tearDown() override;
 
     private:
-        std::shared_ptr<SyncPal> _syncPal;
-        std::shared_ptr<ParmsDb> _parmsDb;
+        std::shared_ptr<SyncPal> _syncPal = nullptr;
+        std::shared_ptr<ParmsDb> _parmsDb = nullptr;
         LocalTemporaryDirectory _localTempDir = LocalTemporaryDirectory("TestSyncpal");
-        int _driveDbId;
+        LocalTemporaryDirectory _localParmsDbTempDir = LocalTemporaryDirectory("TestSyncpalParmsDbDir");
+        int _driveDbId = 0;
         SyncPath _localPath;
         SyncPath _remotePath;
 
@@ -55,6 +58,7 @@ class TestSyncPal : public CppUnit::TestFixture, public TestBase {
         void testSyncFileItem();
         void testCheckIfExistsOnServer();
         void testBlacklist();
+        void testWipeVirtualFiles();
 
         void testAll();
         void testConflictQueue();

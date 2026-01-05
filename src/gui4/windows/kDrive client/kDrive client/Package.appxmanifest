@@ -9,14 +9,14 @@
 
   <Identity
     Name="26f2cf0c-0c35-42bc-9489-50659ddb95d7"
-    Publisher="CN=Herve"
+    Publisher="CN=INFOMANIAK NETWORK SA, O=INFOMANIAK NETWORK SA, S=Genève, C=CH"
     Version="1.0.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="26f2cf0c-0c35-42bc-9489-50659ddb95d7" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>kDrive client</DisplayName>
-    <PublisherDisplayName>Herve</PublisherDisplayName>
+    <PublisherDisplayName>Infomaniak Network SA</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
@@ -38,14 +38,22 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="kDrive client"
+        DisplayName="kDrive"
         Description="kDrive client"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">
-        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png"  Square71x71Logo="Assets\SmallTile.png" Square310x310Logo="Assets\LargeTile.png"/>
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png"  Square71x71Logo="Assets\SmallTile.png" Square310x310Logo="Assets\LargeTile.png" ShortName="kDrive"/>
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
+      <Extensions>
+        <uap:Extension Category="windows.protocol">
+          <uap:Protocol Name="kdrive">
+            <uap:Logo>Assets\kdrive.png</uap:Logo>
+            <uap:DisplayName>Infomaniak login</uap:DisplayName>
+          </uap:Protocol>
+        </uap:Extension>
+      </Extensions>
     </Application>
   </Applications>
 

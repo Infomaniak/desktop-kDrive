@@ -40,10 +40,11 @@ class CsvFullFileListWithCursorJob final : public AbstractListingJob {
 
     private:
         std::string getSpecificUrl() override;
-        void setSpecificQueryParameters(Poco::URI &uri) override;
-        ExitInfo setData() override { return ExitCode::Ok; }
+        std::string contentType() override;
+        std::string acceptHeader() override;
+        void setQueryParameters(Poco::URI &uri) override;
 
-        bool handleResponse(std::istream &is) override;
+        ExitInfo handleResponse(std::istream &is) override;
 
         NodeId _dirId;
         bool _zip = true;

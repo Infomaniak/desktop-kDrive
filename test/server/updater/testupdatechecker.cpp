@@ -18,7 +18,7 @@
 
 #include "testupdatechecker.h"
 
-#include "jobs/jobmanager.h"
+#include "jobs/syncjobmanager.h"
 #include "jobs/network/infomaniak_API/getappversionjob.h"
 #include "libcommon/utility/utility.h"
 #include "requests/parameterscache.h"
@@ -34,8 +34,8 @@ void TestUpdateChecker::setUp() {
 
 void TestUpdateChecker::tearDown() {
     ParametersCache::reset();
-    JobManager::instance()->stop();
-    JobManager::instance()->clear();
+    SyncJobManagerSingleton::instance()->stop();
+    SyncJobManagerSingleton::clear();
     TestBase::stop();
 }
 
@@ -44,9 +44,9 @@ void TestUpdateChecker::testCheckUpdateAvailable() {
     {
         MockUpdateChecker testObj;
         UniqueId jobId = 0;
-        testObj.setUpdateShoudBeAvailable(true);
+        testObj.setUpdateShouldBeAvailable(true);
         testObj.checkUpdateAvailability(&jobId);
-        while (!JobManager::instance()->isJobFinished(jobId)) Utility::msleep(10);
+        while (!SyncJobManagerSingleton::instance()->isJobFinished(jobId)) Utility::msleep(10);
         CPPUNIT_ASSERT(testObj.versionInfo(VersionChannel::Beta).isValid());
     }
 
@@ -54,9 +54,9 @@ void TestUpdateChecker::testCheckUpdateAvailable() {
     {
         MockUpdateChecker testObj;
         UniqueId jobId = 0;
-        testObj.setUpdateShoudBeAvailable(false);
+        testObj.setUpdateShouldBeAvailable(false);
         testObj.checkUpdateAvailability(&jobId);
-        while (!JobManager::instance()->isJobFinished(jobId)) Utility::msleep(10);
+        while (!SyncJobManagerSingleton::instance()->isJobFinished(jobId)) Utility::msleep(10);
         CPPUNIT_ASSERT(testObj.versionInfo(VersionChannel::Beta).isValid());
     }
 }

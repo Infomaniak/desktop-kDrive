@@ -37,7 +37,6 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testFormatSyncPath);
         CPPUNIT_TEST(testFormatRequest);
         CPPUNIT_TEST(testIsEqualUpToCaseAndEnc);
-        CPPUNIT_TEST(testMoveItemToTrash);
         CPPUNIT_TEST(testStr2HexStr);
         CPPUNIT_TEST(testStrHex2Str);
         CPPUNIT_TEST(testSplitStr);
@@ -52,6 +51,8 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testNormalizedSyncName);
         CPPUNIT_TEST(testNormalizedSyncPath);
         CPPUNIT_TEST(testUserName);
+        CPPUNIT_TEST(testTryCreateTmpDir);
+        CPPUNIT_TEST(testTryCreateTmpFile);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -70,7 +71,6 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testFormatSyncPath();
         void testFormatRequest();
         void testIsEqualUpToCaseAndEnc();
-        void testMoveItemToTrash();
         void testGetLinuxDesktopType();
         void testGetAppSupportDir();
         void testStr2HexStr();
@@ -87,6 +87,8 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testNormalizedSyncName();
         void testNormalizedSyncPath();
         void testUserName();
+        void testTryCreateTmpDir();
+        void testTryCreateTmpFile();
 
     private:
         bool checkNfcAndNfdNamesEqual(const SyncName &name, bool &equal);

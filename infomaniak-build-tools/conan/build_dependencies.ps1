@@ -58,7 +58,10 @@ param(
     [string]$OutputDir,
 
     [Parameter(Mandatory = $false, HelpMessage = "Use the 'infomaniak_release' Conan profile.")]
-    [switch]$MakeRelease
+    [switch]$MakeRelease,
+
+    [Parameter(Mandatory = $false, HelpMessage = "Update environment variables after installation.")]
+    [switch]$UpdateEnvironment
 )
 
 function Show-Help { Write-Host "Usage: $($MyInvocation.MyCommand.Name) [-Help] [Debug|Release|RelWithDebInfo] [-CI] [-OutputDir <path>] [-MakeRelease]" ; exit 0 }
@@ -79,6 +82,12 @@ if ($OutputDir) {
 } else {
     $OutputDir = $DefaultOutputDir
     Log "No custom output directory provided. Using default: $OutputDir"
+}
+
+# Remove previous CMakeUserPresets.json if it exists
+if (Test-Path -Path ".\CMakeUserPresets.json") {
+    Log "Removing previous CMakeUserPresets.json file."
+    Remove-Item -Path ".\CMakeUserPresets.json" -Force
 }
 
 
@@ -185,7 +194,7 @@ if ($MakeRelease) {
 $remotes = & $ConanExe remote list
 if (-not ($remotes -match "^$LocalRemoteName.*\[.*Enabled: True.*\]")) {
     Log "Adding Conan remote '$LocalRemoteName' at '$ConanRemoteBaseFolder'."
-    & $ConanExe remote add $LocalRemoteName $ConanRemoteBaseFolder --profile:all="$ConanProfile"
+    & $ConanExe remote add $LocalRemoteName $ConanRemoteBaseFolder
     if ($LASTEXITCODE -ne 0) {
         Err "Failed to add local Conan remote."
     }
@@ -204,6 +213,43 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Log "Conan dependencies successfully installed in: $OutputDir"
+
+#clear old conan PATH entries
+Log "Removing previous conan path in user Path environment variable..."
+$currentUserPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
+$newUserPath = ($currentUserPath -split ';' | Where-Object { $_ -notlike "*\.conan2\*" }) -join ';'
+[System.Environment]::SetEnvironmentVariable("Path", $newUserPath, "User")
+Log "previous conan path entries removed."
+
+# Update user environment variables if requested (programs will need to be restarted to see the changes)
+if ($UpdateEnvironment) {
+    Log "Adding new conan path to user Path environment variable..."
+    $currentUserPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
+    $allowedNames = @("build", "bin")
+
+    $conanRoot = Join-Path $env:USERPROFILE ".conan2\p"
+        $conanBinPaths = Get-ChildItem -Path $conanRoot -Recurse -Include *.exe, *.dll | ForEach-Object { $_.Directory.FullName } | Sort-Object -Unique
+
+    # Get matching directories
+    $conanBinPaths = Get-ChildItem -Path $conanRoot -Recurse -Include *.exe, *.dll | Sort-Object -Unique | Where-Object {
+        $current = $_.Directory.Name
+        $parent = $_.Directory.Parent.Name
+        $grandparent = $_.Directory.Parent.Parent.Name
+        $allowedNames -contains $current -or
+        $allowedNames -contains $parent -or
+        $allowedNames -contains $grandparent
+    } | ForEach-Object { $_.Directory.FullName } | Sort-Object -Unique
+
+    foreach ($path in $conanBinPaths) {
+        if (-not ($newUserPath -split ';' | Where-Object { $_ -eq $path })) {
+            Log "Adding '$path' to user Path."
+            $newUserPath += ";$path"
+        }
+    }
+   [System.Environment]::SetEnvironmentVariable("Path", $newUserPath, "User")
+   Log "New user Path set to: $newUserPath"
+   Log "User Path environment variable updated. Please restart your programs to apply the changes."
+}
 
 if ($CI)  {
     # Exit the python virtual environment.

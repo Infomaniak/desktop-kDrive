@@ -27,7 +27,7 @@ class GetDrivesListJob : public AbstractTokenNetworkJob {
         GetDrivesListJob(int userDbId);
 
     private:
-        virtual void setQueryParameters(Poco::URI &uri, bool &) override;
+        virtual void setQueryParameters(Poco::URI &uri) override;
         inline virtual ExitInfo setData() override { return ExitCode::Ok; }
         virtual std::string getSpecificUrl() override;
 };

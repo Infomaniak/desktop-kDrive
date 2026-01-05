@@ -83,6 +83,9 @@ KDClientInterface::ContextMenuInfo KDClientInterface::FetchInfo(const std::wstri
                 break; // Stop once we completely received the last sent request
             }
         } else {
+            if (socket.Event() == INVALID_HANDLE_VALUE) {
+                return {};
+            }
             Sleep(50);
             ++sleptCount;
         }

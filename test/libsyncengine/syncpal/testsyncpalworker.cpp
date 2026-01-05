@@ -17,12 +17,13 @@
  */
 
 #include "testsyncpalworker.h"
+
+#include "jobs/syncjobmanager.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/network/proxy.h"
 #include "libsyncengine/jobs/network/kDrive_API/movejob.h"
 #include "mocks/libcommonserver/db/mockdb.h"
-#include "jobs/jobmanager.h"
 
 #include "test_utility/testhelpers.h"
 #include "test_utility/timeouthelper.h"
@@ -48,9 +49,7 @@ void TestSyncPalWorker::setUp() {
     (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
-    bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
-    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
+    (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
 
     // Insert user, account, drive & sync
     int userId = atoi(testVariables.userId.c_str());
@@ -94,8 +93,8 @@ void TestSyncPalWorker::tearDown() {
             thread->join();
         }
     }
-    JobManager::instance()->stop();
-    JobManager::instance()->clear();
+    SyncJobManagerSingleton::instance()->stop();
+    SyncJobManagerSingleton::clear();
 }
 
 void TestSyncPalWorker::setUpTestInternalPause(const std::chrono::steady_clock::duration &longPollDuration) {

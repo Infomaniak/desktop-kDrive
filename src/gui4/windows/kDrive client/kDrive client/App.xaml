@@ -1,17 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Application
-    x:Class="kDrive_client.App"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:kDrive_client">
+<!--
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2025 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see<http://www.gnu.org/licenses/> .
+ -->
+
+<Application x:Class="Infomaniak.kDrive.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:Infomaniak.kDrive">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <!-- Static ressources -->
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
-                <ResourceDictionary Source="TrayIcon/TrayIconResources.xaml" />
-                <!-- Other merged dictionaries here -->
+                <ResourceDictionary Source="/TrayIcon/TrayIconResources.xaml" />
+                <ResourceDictionary Source="/Styles/InfomaniakStyles.xaml" />
+                <ResourceDictionary Source="/Styles/DS/InfomaniakStylesStatic.xaml" />
+                <ResourceDictionary Source="/Styles/Custom/InfomaniakStylesStatic.xaml" />
+                <ResourceDictionary Source="ms-appx:///CommunityToolkit.WinUI.Controls.SettingsControls/SettingsCard/SettingsCard.xaml" />
+                <ResourceDictionary Source="ms-appx:///CommunityToolkit.WinUI.Controls.SettingsControls/SettingsExpander/SettingsExpander.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <!-- Other app resources here -->
+            <ResourceDictionary.ThemeDictionaries>
+                <!-- Theme specific ressources -->
+                <!-- Light -->
+                <ResourceDictionary x:Key="Light">
+                    <ResourceDictionary.MergedDictionaries>
+                        <ResourceDictionary Source="/Styles/Custom/InfomaniakStylesLight.xaml" />
+                        <ResourceDictionary Source="/Styles/DS/InfomaniakStylesLight.xaml" />
+                    </ResourceDictionary.MergedDictionaries>
+                </ResourceDictionary>
+
+                <!-- Dark -->
+                <ResourceDictionary x:Key="Dark">
+                    <ResourceDictionary.MergedDictionaries>
+                        <ResourceDictionary Source="/Styles/Custom/InfomaniakStylesDark.xaml" />
+                        <ResourceDictionary Source="/Styles/DS/InfomaniakStylesDark.xaml" />
+                    </ResourceDictionary.MergedDictionaries>
+                </ResourceDictionary>
+
+                <!-- High Contrast -->
+                <ResourceDictionary x:Key="HighContrast">
+                    <ResourceDictionary.MergedDictionaries>
+                        <ResourceDictionary Source="/Styles/Custom/InfomaniakStylesLight.xaml" />
+                        <ResourceDictionary Source="/Styles/DS/InfomaniakStylesLight.xaml" />
+                    </ResourceDictionary.MergedDictionaries>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -22,7 +22,7 @@
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
-#include "libsyncengine/jobs/jobmanager.h"
+#include "libsyncengine/jobs/syncjobmanager.h"
 #include "libsyncengine/jobs/network/kDrive_API/deletejob.h"
 #include "libsyncengine/jobs/network/kDrive_API/movejob.h"
 #include "libsyncengine/jobs/network/kDrive_API/renamejob.h"
@@ -66,9 +66,8 @@ void TestRemoteFileSystemObserverWorker::setUp() {
     (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
-    bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
-    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
+    (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
+
 
     // Insert user, account, drive & sync
     const int userId(atoi(testVariables.userId.c_str()));
@@ -111,8 +110,8 @@ void TestRemoteFileSystemObserverWorker::tearDown() {
 
     ParmsDb::instance()->close();
     ParmsDb::reset();
-    JobManager::instance()->stop();
-    JobManager::instance()->clear();
+    SyncJobManagerSingleton::instance()->stop();
+    SyncJobManagerSingleton::clear();
     if (_syncPal && _syncPal->syncDb()) {
         _syncPal->syncDb()->close();
     }

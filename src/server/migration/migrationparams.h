@@ -39,7 +39,6 @@ class MigrationParams {
         ExitCode migrateAppExclusion();
 #endif
         ExitCode migrateProxySettings(ProxyConfig &proxyConfig);
-        ExitCode migrateSelectiveSyncs();
 
         ExitCode getOldAppPwd(const std::string &keychainKey, std::string &appPassword, bool &found);
         ExitCode setToken(User &user, const std::string &appPassword);

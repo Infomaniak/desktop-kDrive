@@ -23,6 +23,8 @@
 #include <QString>
 #include <QList>
 
+#include <Poco/Dynamic/Struct.h>
+
 namespace KDC {
 
 class AccountInfo {
@@ -34,6 +36,11 @@ class AccountInfo {
         inline int dbId() const { return _dbId; }
         inline void setUserDbId(int userDbId) { _userDbId = userDbId; }
         inline int userDbId() const { return _userDbId; }
+        inline void setAccountId(const int accountId) { _accountId = accountId; }
+        inline int accountId() const { return _accountId; }
+
+        void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
+        void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
 
         friend QDataStream &operator>>(QDataStream &in, AccountInfo &userInfo);
         friend QDataStream &operator<<(QDataStream &out, const AccountInfo &userInfo);
@@ -44,6 +51,7 @@ class AccountInfo {
     private:
         int _dbId;
         int _userDbId;
+        int _accountId{-1};
 };
 
 } // namespace KDC

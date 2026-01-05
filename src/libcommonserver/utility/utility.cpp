@@ -21,6 +21,7 @@
 #include "config.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
+#include "test_utility/localtemporarydirectory.h"
 
 #include "utility/utility_base.h"
 
@@ -242,13 +243,13 @@ std::string Utility::formatRequest(const Poco::URI &uri, const std::string &code
     return ss.str();
 }
 
-std::string Utility::formatGenericServerError(std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse) {
+std::string Utility::formatGenericServerError(const std::string &replyBody, const Poco::Net::HTTPResponse &httpResponse) {
     std::stringstream errorStream;
     errorStream << "Error in reply";
 
     // Try to parse as string
-    if (const std::string str(std::istreambuf_iterator<char>(inputStream), {}); !str.empty()) {
-        errorStream << ", error: " << str.c_str();
+    if (!replyBody.empty()) {
+        errorStream << ", error: " << replyBody;
     }
 
     errorStream << ", content type: " << httpResponse.getContentType().c_str();
@@ -262,9 +263,16 @@ std::string Utility::formatGenericServerError(std::istream &inputStream, const P
     return errorStream.str(); // str() return a copy of the underlying string
 }
 
-void Utility::logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle, std::istream &inputStream,
+std::wstring Utility::formatSystemError(const std::system_error &exception) {
+    std::wstringstream ss;
+    ss << L"code=" << exception.code() << L", error=" << exception.what();
+
+    return ss.str();
+}
+
+void Utility::logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle, const std::string &replyBody,
                                     const Poco::Net::HTTPResponse &httpResponse) {
-    std::string errorMsg = formatGenericServerError(inputStream, httpResponse);
+    std::string errorMsg = formatGenericServerError(replyBody, httpResponse);
     sentry::Handler::captureMessage(sentry::Level::Warning, errorTitle, errorMsg);
     LOG_WARN(logger, errorTitle << ": " << errorMsg);
 }
@@ -511,40 +519,60 @@ bool Utility::normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath,
 
 bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, IoError &ioError,
                                        const ItemType &itemType) {
-    isManaged = true;
+    isManaged = false;
     ioError = IoError::Success;
     if (dirEntry.path().native().length() > CommonUtility::maxPathLength()) {
         LOGW_WARN(logger(),
                   L"Ignore " << formatSyncPath(dirEntry.path()) << L" because size > " << CommonUtility::maxPathLength());
-        isManaged = false;
         return true;
     }
 
-    if (!dirEntry.is_regular_file() && !dirEntry.is_directory()) {
-        auto tmpItemType = itemType;
-        if (tmpItemType == ItemType()) {
-            bool result = IoHelper::getItemType(dirEntry.path(), tmpItemType);
-            ioError = tmpItemType.ioError;
-            if (!result) {
-                LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirEntry.path(), ioError));
-                return false;
-            }
+    std::error_code ec;
+    const bool isSpecialItem = !dirEntry.is_regular_file(ec) && !dirEntry.is_directory(ec);
+    const bool isSymLinkWithTooManyLevels = utility_base::isLikeTooManySymbolicLinkLevelsError(ec);
 
-            if (ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied) {
-                LOGW_DEBUG(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirEntry.path(), ioError));
-                return true;
-            }
+    if (isSymLinkWithTooManyLevels) {
+        LOGW_DEBUG(logger(), L"Synchronizing invalid symbolic link with " << formatSyncPath(dirEntry.path())
+                                                                          << L" although it has too many levels of indirection.")
+    }
+
+    if (isSymLinkWithTooManyLevels || !isSpecialItem) {
+        isManaged = true;
+        return true;
+    }
+
+    auto tmpItemType = itemType;
+    if (tmpItemType == ItemType()) {
+        bool result = IoHelper::getItemType(dirEntry.path(), tmpItemType);
+        ioError = tmpItemType.ioError;
+        if (!result) {
+            LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirEntry.path(), ioError));
+            return false;
         }
-        if (tmpItemType.linkType == LinkType::None) {
-            LOGW_WARN(logger(), L"Ignore " << formatSyncPath(dirEntry.path())
-                                           << L" because it is not a directory, a regular file or a symlink");
-            isManaged = false;
+
+        if (ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied) {
+            LOGW_DEBUG(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirEntry.path(), ioError));
             return true;
         }
     }
+    if (tmpItemType.linkType == LinkType::None) {
+        LOGW_WARN(logger(), L"Ignore " << formatSyncPath(dirEntry.path())
+                                       << L" because it is not a directory, a regular file or a symlink.");
+        return true;
+    }
 
+    isManaged = true;
 
     return true;
+}
+
+bool Utility::isLiteSyncExtError(const ExitInfo &exitInfo) {
+#if defined(KD_MACOS)
+    return (exitInfo.code() == ExitCode::SystemError &&
+            (exitInfo.cause() == ExitCause::LiteSyncNotAllowed || exitInfo.cause() == ExitCause::LiteSyncExtNotRunning));
+#else
+    return false;
+#endif
 }
 
 bool Utility::getLinuxDesktopType(std::string &currentDesktop) {
@@ -654,6 +682,60 @@ bool Utility::isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode
         default:
             return false;
     }
+}
+
+IoError Utility::tryCreateTmpDir(const SyncName &name /*= Str("testDir")*/) {
+#if defined(KD_MACOS)
+    SyncPath tmpDirPath;
+    if (auto ioError = IoError::Unknown; !IoHelper::tempDirectoryPath(tmpDirPath, ioError)) {
+        return ioError;
+    }
+
+    SyncPath tmpPath = tmpDirPath / name;
+    std::error_code ec;
+    std::filesystem::create_directory(tmpPath, ec);
+    if (ec.value()) {
+        if (ec.value() == static_cast<int>(std::errc::illegal_byte_sequence)) {
+            return IoError::InvalidFileName;
+        }
+        return IoHelper::stdError2ioError(ec);
+    }
+
+    std::filesystem::remove_all(tmpPath, ec);
+#else
+    (void) name;
+#endif
+    return IoError::Success;
+}
+
+IoError Utility::tryCreateTmpFile(const SyncName &name /*= Str("testFile")*/) {
+    SyncPath tmpDirPath;
+    if (auto ioError = IoError::Unknown; !IoHelper::tempDirectoryPath(tmpDirPath, ioError)) {
+        return ioError;
+    }
+
+    const SyncPath tmpPath = tmpDirPath / name;
+    std::ofstream output(tmpPath.native().c_str(), std::ios::binary);
+    if (!output) {
+        bool read = false;
+        bool write = false;
+        bool exec = false;
+        auto ioError = IoError::Unknown;
+        if (!IoHelper::getRights(tmpDirPath, read, write, exec, ioError)) {
+            return ioError;
+        }
+        if (!read || !write) {
+            return IoError::AccessDenied;
+        }
+
+        return IoError::Unknown;
+    }
+
+    output.close();
+
+    std::error_code ec;
+    (void) std::filesystem::remove_all(tmpPath, ec);
+    return IoError::Success;
 }
 
 } // namespace KDC

@@ -18,12 +18,32 @@
 
 #include "parametersinfo.h"
 
+#include "libcommon/utility/utility.h"
+
 namespace KDC {
+
+static const auto parametersInfoLanguage = "language";
+static const auto parametersInfoMonoIcons = "monoIcons";
+static const auto parametersInfoAutoStart = "autoStart";
+static const auto parametersInfoMoveToTrash = "moveToTrash";
+static const auto parametersInfoNotificationsDisabled = "notificationsDisabled";
+static const auto parametersInfoUseLog = "useLog";
+static const auto parametersInfoLogLevel = "logLevel";
+static const auto parametersInfoExtendedLog = "extendedLog";
+static const auto parametersInfoPurgeOldLogs = "purgeOldLogs";
+static const auto parametersInfoProxyConfigInfo = "proxyConfigInfo";
+static const auto parametersInfoDarkTheme = "darkTheme";
+static const auto parametersInfoShowShortcuts = "showShortcuts";
+static const auto parametersInfoDialogGeometry = "dialogGeometry";
+static const auto parametersInfoMaxAllowedCpu = "maxAllowedCpu";
+static const auto parametersInfoVersionChannel = "distributionChannel";
+static const auto parametersInfoSentryEnabled = "sentryEnabled";
+static const auto parametersInfoMatomoEnabled = "matomoEnabled";
 
 ParametersInfo::ParametersInfo(Language language, bool monoIcons, bool autoStart, bool moveToTrash,
                                NotificationsDisabled notificationsDisabled, bool useLog, LogLevel logLevel, bool extendedLog,
-                               bool purgeOldLogs, bool useBigFolderSizeLimit, qint64 bigFolderSizeLimit, bool darkTheme,
-                               bool showShortcuts, QMap<QString, QByteArray> dialogGeometry, int maxAllowedCpu) :
+                               bool purgeOldLogs, bool darkTheme, bool showShortcuts, DialogGeometry dialogGeometry,
+                               int maxAllowedCpu) :
     _language(language),
     _monoIcons(monoIcons),
     _autoStart(autoStart),
@@ -33,47 +53,110 @@ ParametersInfo::ParametersInfo(Language language, bool monoIcons, bool autoStart
     _logLevel(logLevel),
     _extendedLog(extendedLog),
     _purgeOldLogs(purgeOldLogs),
-    _useBigFolderSizeLimit(useBigFolderSizeLimit),
-    _bigFolderSizeLimit(bigFolderSizeLimit),
     _darkTheme(darkTheme),
     _showShortcuts(showShortcuts),
-    _dialogGeometry(dialogGeometry),
+    _dialogGeometry(std::move(dialogGeometry)),
     _maxAllowedCpu(maxAllowedCpu) {}
 
-ParametersInfo::ParametersInfo() :
-    _language(Language::Default),
-    _monoIcons(false),
-    _autoStart(true),
-    _moveToTrash(true),
-    _notificationsDisabled(NotificationsDisabled::Never),
-    _useLog(true),
-    _logLevel(LogLevel::Debug),
-    _extendedLog(false),
-    _purgeOldLogs(true),
-    _useBigFolderSizeLimit(true),
-    _bigFolderSizeLimit(500),
-    _darkTheme(false),
-    _showShortcuts(true),
-    _dialogGeometry(QMap<QString, QByteArray>()),
-    _maxAllowedCpu(50) {}
+void ParametersInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoLanguage, _language);
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoMonoIcons, _monoIcons);
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoAutoStart, _autoStart);
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoMoveToTrash, _moveToTrash);
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoNotificationsDisabled, _notificationsDisabled);
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoUseLog, _useLog);
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoLogLevel, _logLevel);
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoExtendedLog, _extendedLog);
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoPurgeOldLogs, _purgeOldLogs);
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoProxyConfigInfo, _proxyConfigInfo, info2DynamicVar<ProxyConfigInfo>);
+#ifdef KD_MACOS
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoDarkTheme, _darkTheme);
+#endif // KD_MACOS
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoShowShortcuts, _showShortcuts);
+
+    const std::function<Poco::Dynamic::Var(const DialogGeometry &)> dialogGeometry2DynamicVar = [](const DialogGeometry &value) {
+        Poco::DynamicStruct structValue;
+
+        for (auto it = value.keyValueBegin(); it != value.keyValueEnd(); ++it) {
+            std::string blob64Str;
+            CommonUtility::convertToBase64Str(it->second.toStdString(), blob64Str);
+            (void) structValue.insert(it->first.toStdString(), blob64Str);
+        }
+
+        return structValue;
+    };
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoDialogGeometry, _dialogGeometry, dialogGeometry2DynamicVar);
+
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoMaxAllowedCpu, _maxAllowedCpu);
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoVersionChannel, _distributionChannel);
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoSentryEnabled, _sentryEnabled);
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoMatomoEnabled, _matomoEnabled);
+};
+
+void ParametersInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
+    CommonUtility::readValueFromStruct(dstruct, parametersInfoLanguage, _language);
+    if (dstruct.contains(parametersInfoMonoIcons)) { // Not used by the new clients
+        CommonUtility::readValueFromStruct(dstruct, parametersInfoMonoIcons, _monoIcons);
+    }
+    CommonUtility::readValueFromStruct(dstruct, parametersInfoAutoStart, _autoStart);
+    CommonUtility::readValueFromStruct(dstruct, parametersInfoMoveToTrash, _moveToTrash);
+    CommonUtility::readValueFromStruct(dstruct, parametersInfoNotificationsDisabled, _notificationsDisabled);
+    CommonUtility::readValueFromStruct(dstruct, parametersInfoUseLog, _useLog);
+    CommonUtility::readValueFromStruct(dstruct, parametersInfoLogLevel, _logLevel);
+    CommonUtility::readValueFromStruct(dstruct, parametersInfoExtendedLog, _extendedLog);
+    CommonUtility::readValueFromStruct(dstruct, parametersInfoPurgeOldLogs, _purgeOldLogs);
+
+    CommonUtility::readValueFromStruct(dstruct, parametersInfoProxyConfigInfo, _proxyConfigInfo,
+                                       dynamicVar2Struct<ProxyConfigInfo>);
+#ifdef KD_MACOS
+    CommonUtility::readValueFromStruct(dstruct, parametersInfoDarkTheme, _darkTheme);
+#endif // KD_MACOS
+
+    CommonUtility::readValueFromStruct(dstruct, parametersInfoShowShortcuts, _showShortcuts);
+
+    if (dstruct.contains(parametersInfoDialogGeometry)) // Not used by the new clients
+    {
+        const std::function<DialogGeometry(const Poco::Dynamic::Var &)> dynamicVar2DialogGeometry =
+                [](const Poco::Dynamic::Var &value) {
+                    assert(value.isStruct());
+                    const auto &structValue = value.extract<Poco::DynamicStruct>();
+                    DialogGeometry dialogGeometry;
+
+                    for (const auto &[key, blob64]: structValue) {
+                        const auto blob64Str = blob64.convert<std::string>();
+                        CommString commStr;
+                        CommonUtility::convertFromBase64Str(blob64Str, commStr);
+                        std::string str = CommonUtility::commString2Str(commStr);
+                        dialogGeometry.insert(QString::fromStdString(key), QByteArray(str.data()));
+                    }
+                    return dialogGeometry;
+                };
+
+        CommonUtility::readValueFromStruct(dstruct, parametersInfoDialogGeometry, _dialogGeometry, dynamicVar2DialogGeometry);
+    }
+
+    if (dstruct.contains(parametersInfoMaxAllowedCpu)) // Not used by the clients
+        CommonUtility::readValueFromStruct(dstruct, parametersInfoMaxAllowedCpu, _maxAllowedCpu);
+    CommonUtility::readValueFromStruct(dstruct, parametersInfoVersionChannel, _distributionChannel);
+    CommonUtility::readValueFromStruct(dstruct, parametersInfoSentryEnabled, _sentryEnabled);
+    CommonUtility::readValueFromStruct(dstruct, parametersInfoMatomoEnabled, _matomoEnabled);
+};
 
 QDataStream &operator>>(QDataStream &in, ParametersInfo &parametersInfo) {
     in >> parametersInfo._language >> parametersInfo._monoIcons >> parametersInfo._autoStart >> parametersInfo._moveToTrash >>
             parametersInfo._notificationsDisabled >> parametersInfo._useLog >> parametersInfo._logLevel >>
-            parametersInfo._extendedLog >> parametersInfo._purgeOldLogs >> parametersInfo._useBigFolderSizeLimit >>
-            parametersInfo._bigFolderSizeLimit >> parametersInfo._darkTheme >> parametersInfo._showShortcuts >>
-            parametersInfo._dialogGeometry >> parametersInfo._maxAllowedCpu >> parametersInfo._proxyConfigInfo >>
-            parametersInfo._distributionChannel;
+            parametersInfo._extendedLog >> parametersInfo._purgeOldLogs >> parametersInfo._darkTheme >>
+            parametersInfo._showShortcuts >> parametersInfo._dialogGeometry >> parametersInfo._maxAllowedCpu >>
+            parametersInfo._proxyConfigInfo >> parametersInfo._distributionChannel;
     return in;
 }
 
 QDataStream &operator<<(QDataStream &out, const ParametersInfo &parametersInfo) {
     out << parametersInfo._language << parametersInfo._monoIcons << parametersInfo._autoStart << parametersInfo._moveToTrash
         << parametersInfo._notificationsDisabled << parametersInfo._useLog << parametersInfo._logLevel
-        << parametersInfo._extendedLog << parametersInfo._purgeOldLogs << parametersInfo._useBigFolderSizeLimit
-        << parametersInfo._bigFolderSizeLimit << parametersInfo._darkTheme << parametersInfo._showShortcuts
-        << parametersInfo._dialogGeometry << parametersInfo._maxAllowedCpu << parametersInfo._proxyConfigInfo
-        << parametersInfo._distributionChannel;
+        << parametersInfo._extendedLog << parametersInfo._purgeOldLogs << parametersInfo._darkTheme
+        << parametersInfo._showShortcuts << parametersInfo._dialogGeometry << parametersInfo._maxAllowedCpu
+        << parametersInfo._proxyConfigInfo << parametersInfo._distributionChannel;
     return out;
 }
 

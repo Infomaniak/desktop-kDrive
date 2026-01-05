@@ -28,27 +28,38 @@ AbstractListingJob::AbstractListingJob(const int driveDbId, const NodeSet &black
 AbstractListingJob::AbstractListingJob(const ApiType apiType, const int driveDbId, const NodeSet &blacklist /*= {}*/) :
     AbstractTokenNetworkJob(apiType, 0, 0, driveDbId, 0),
     _blacklist(blacklist) {
-    _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+    _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 
-void AbstractListingJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
-    setSpecificQueryParameters(uri);
+ExitInfo AbstractListingJob::setData() {
     if (!_blacklist.empty()) {
-        if (const std::string str = Utility::nodeSet2str(_blacklist); !str.empty()) {
-            uri.addQueryParameter("without_ids", str);
+        Poco::JSON::Object json;
+        Poco::JSON::Array withoutIdsArray;
+        for (const auto &id: _blacklist) {
+            if (id.empty()) {
+                assert(false);
+                sentry::Handler::captureMessage(sentry::Level::Warning, "ID should not be NULL",
+                                                "The IDs in `without_ids` should never be NULL.");
+                LOG_WARN(_logger, "ID should not be NULL");
+                continue;
+            }
+            (void) withoutIdsArray.add(id);
         }
+        (void) json.set("without_ids", withoutIdsArray);
+
+        std::stringstream ss;
+        json.stringify(ss);
+        _data = ss.str();
     }
-    canceled = false;
+    return ExitCode::Ok;
 }
 
-bool AbstractListingJob::handleError(std::istream &is, const Poco::URI &uri) {
-    if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN) {
+ExitInfo AbstractListingJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
+    if (httpResponse().getStatus() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN) {
         // Access to the directory is forbidden or it doesn't exist
-        _exitInfo = {ExitCode::InvalidSync, ExitCause::SyncDirAccessError};
-        return true;
-    } else {
-        return AbstractTokenNetworkJob::handleError(is, uri);
+        return {ExitCode::InvalidSync, ExitCause::SyncDirAccessError};
     }
+    return AbstractTokenNetworkJob::handleError(replyBody, uri);
 }
 
 } // namespace KDC

@@ -28,11 +28,11 @@ class GetInfoDriveJob : public AbstractTokenNetworkJob {
         GetInfoDriveJob(int driveDbId);
 
     protected:
-        virtual bool handleError(std::istream &is, const Poco::URI &uri) override;
+        ExitInfo handleError(const std::string &replyBody, const Poco::URI &uri) override;
 
     private:
-        virtual void setQueryParameters(Poco::URI &, bool &canceled) override { canceled = false; }
-        inline virtual ExitInfo setData() override { return ExitCode::Ok; }
+        inline ExitInfo setData() override { return ExitCode::Ok; }
+        void setQueryParameters(Poco::URI &uri) override;
 };
 
 } // namespace KDC

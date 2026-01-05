@@ -19,6 +19,9 @@
 #pragma once
 
 #include "testincludes.h"
+#include "keychainmanager/apitoken.h"
+#include "test_utility/localtemporarydirectory.h"
+
 #include "utility/types.h"
 #include "libcommonserver/io/iohelper.h"
 using namespace CppUnit;
@@ -51,12 +54,16 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testDriveUploadSessionConstructorException);
         CPPUNIT_TEST(testDriveUploadSessionSynchronous);
         CPPUNIT_TEST(testDriveUploadSessionAsynchronous);
+        CPPUNIT_TEST(testDriveUploadSessionWithSizeMismatchError);
+        CPPUNIT_TEST(testDriveUploadSessionWithNullChunkSizeError);
         CPPUNIT_TEST(testDefuncted);
         CPPUNIT_TEST(testDriveUploadSessionSynchronousAborted);
         CPPUNIT_TEST(testDriveUploadSessionAsynchronousAborted);
         CPPUNIT_TEST(testGetAppVersionInfo);
         CPPUNIT_TEST(testDirectDownload);
         CPPUNIT_TEST(testDownloadHasEnoughSpace);
+        CPPUNIT_TEST(testSearch);
+        CPPUNIT_TEST(testGetInfoUserTrialsOn401Error);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -88,12 +95,16 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         void testDriveUploadSessionConstructorException();
         void testDriveUploadSessionSynchronous();
         void testDriveUploadSessionAsynchronous();
+        void testDriveUploadSessionWithSizeMismatchError();
+        void testDriveUploadSessionWithNullChunkSizeError();
         void testDefuncted();
         void testDriveUploadSessionSynchronousAborted();
         void testDriveUploadSessionAsynchronousAborted();
         void testGetAppVersionInfo();
         void testDirectDownload();
         void testDownloadHasEnoughSpace();
+        void testSearch();
+        void testGetInfoUserTrialsOn401Error();
 
     private:
         bool createTestFiles();
@@ -104,6 +115,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         int _driveDbId = 0;
         int _userDbId = 0;
         NodeId _remoteDirId;
+        ApiToken _apiToken;
 
         SyncName _dummyFileName;
         SyncPath _dummyLocalFilePath;
@@ -111,5 +123,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         NodeId _dummyRemoteFileId;
 
         static uint64_t _nbParallelThreads;
+
+        LocalTemporaryDirectory _localParmsDbTempDir{"testNetworkJobs"};
 };
 } // namespace KDC

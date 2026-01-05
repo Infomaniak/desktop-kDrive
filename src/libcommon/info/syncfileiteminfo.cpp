@@ -17,6 +17,21 @@
  */
 
 #include "syncfileiteminfo.h"
+#include "utility/utility.h"
+
+static const auto outParamsType = "type";
+static const auto outParamsPath = "path";
+static const auto outParamsNewPath = "newPath";
+static const auto outParamsLocalNodeId = "localNodeId";
+static const auto outParamsRemoteNodeId = "remoteNodeId";
+static const auto outParamsDirection = "direction";
+static const auto outParamsInstruction = "instruction";
+static const auto outParamsStatus = "status";
+static const auto outParamsConflict = "conflict";
+static const auto outParamsInconsistency = "inconsistency";
+static const auto outParamsCancelType = "cancelType";
+static const auto outParamsError = "error";
+
 
 namespace KDC {
 
@@ -37,6 +52,21 @@ SyncFileItemInfo::SyncFileItemInfo(NodeType type, const QString &path, const QSt
     _cancelType(cancelType) {}
 
 SyncFileItemInfo::SyncFileItemInfo() {}
+
+void SyncFileItemInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
+    CommonUtility::writeValueToStruct(dstruct, outParamsType, _type);
+    CommonUtility::writeValueToStruct(dstruct, outParamsPath, _path.toStdString());
+    CommonUtility::writeValueToStruct(dstruct, outParamsNewPath, _newPath.toStdString());
+    CommonUtility::writeValueToStruct(dstruct, outParamsLocalNodeId, _localNodeId.toStdString());
+    CommonUtility::writeValueToStruct(dstruct, outParamsRemoteNodeId, _remoteNodeId.toStdString());
+    CommonUtility::writeValueToStruct(dstruct, outParamsDirection, _direction);
+    CommonUtility::writeValueToStruct(dstruct, outParamsInstruction, _instruction);
+    CommonUtility::writeValueToStruct(dstruct, outParamsStatus, _status);
+    CommonUtility::writeValueToStruct(dstruct, outParamsConflict, _conflict);
+    CommonUtility::writeValueToStruct(dstruct, outParamsInconsistency, _inconsistency);
+    CommonUtility::writeValueToStruct(dstruct, outParamsCancelType, _cancelType);
+    CommonUtility::writeValueToStruct(dstruct, outParamsError, _error.toStdString());
+}
 
 QDataStream &operator>>(QDataStream &in, SyncFileItemInfo &info) {
     in >> info._type >> info._path >> info._newPath >> info._localNodeId >> info._remoteNodeId >> info._direction >>
@@ -65,11 +95,12 @@ QDataStream &operator>>(QDataStream &in, QList<SyncFileItemInfo> &list) {
     int count = 0;
     in >> count;
     for (int i = 0; i < count; i++) {
-        SyncFileItemInfo *info = new SyncFileItemInfo();
-        in >> *info;
-        list.push_back(*info);
+        SyncFileItemInfo info;
+        in >> info;
+        list.push_back(info);
     }
     return in;
 }
+
 
 } // namespace KDC

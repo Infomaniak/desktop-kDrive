@@ -43,7 +43,7 @@
 - (void)dealloc;
 - (void)start;
 - (void)connectToLoginAgent;
-- (void)connectToApp:(NSXPCListenerEndpoint *)endpoint;
+- (void)connectToServer:(NSXPCListenerEndpoint *)endpoint;
 - (void)scheduleRetryToConnectToLoginAgent;
 - (void)sendQuery:(NSString *)path query:(NSString *)verb;
 - (void)askForStatus:(NSString *)path isDirectory:(BOOL)isDir;

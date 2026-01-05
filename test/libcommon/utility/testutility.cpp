@@ -26,16 +26,19 @@
 #include "test_utility/localtemporarydirectory.h"
 #include "utility/utility_base.h"
 
-
 #include <QLocale>
+
 #include <iostream>
 #include <regex>
+#include <source_location>
+
+#include <Poco/DynamicStruct.h>
 
 namespace KDC {
 
 void TestUtility::testGetAppSupportDir() {
-    SyncPath appSupportDir = CommonUtility::getAppSupportDir();
-    std::string faillureMessage = "Path: " + appSupportDir.string();
+    const SyncPath appSupportDir = CommonUtility::getAppSupportDir();
+    const std::string faillureMessage = "Path: " + appSupportDir.string();
     CPPUNIT_ASSERT_MESSAGE(faillureMessage.c_str(), !appSupportDir.empty());
 #if defined(KD_WINDOWS)
     CPPUNIT_ASSERT_MESSAGE(faillureMessage.c_str(), appSupportDir.string().find("AppData") != std::string::npos);
@@ -47,6 +50,50 @@ void TestUtility::testGetAppSupportDir() {
     CPPUNIT_ASSERT_MESSAGE(faillureMessage.c_str(), appSupportDir.string().find(".config") != std::string::npos);
 #endif
     CPPUNIT_ASSERT_MESSAGE(faillureMessage.c_str(), appSupportDir.string().find(APPLICATION_NAME) != std::wstring::npos);
+}
+
+void TestUtility::extractIntFromStrVersion() {
+    {
+        const std::string versionString = "3.7.6";
+        std::vector<uint32_t> versionNumberComponents;
+
+        CommonUtility::extractIntFromStrVersion(versionString, versionNumberComponents);
+        CPPUNIT_ASSERT(bool(std::vector<uint32_t>{3, 7, 6} == versionNumberComponents));
+    }
+
+    {
+        const std::string versionString = "3.7.61.10.12";
+        std::vector<uint32_t> versionNumberComponents;
+
+        CommonUtility::extractIntFromStrVersion(versionString, versionNumberComponents);
+        CPPUNIT_ASSERT((std::vector<uint32_t>{3, 7, 61, 10, 12} == versionNumberComponents));
+    }
+
+    {
+        const std::string versionString = "155.75.0 (build 20250221)";
+        std::vector<uint32_t> versionNumberComponents;
+
+        CommonUtility::extractIntFromStrVersion(versionString, versionNumberComponents);
+        CPPUNIT_ASSERT((std::vector<uint32_t>{155, 75, 0, 20250221} == versionNumberComponents));
+    }
+
+    // Invalid version string
+    {
+        const std::string versionString = ".0";
+        std::vector<uint32_t> versionNumberComponents;
+
+        CommonUtility::extractIntFromStrVersion(versionString, versionNumberComponents);
+        CPPUNIT_ASSERT(versionNumberComponents.empty());
+    }
+
+    // Invalid version string
+    {
+        const std::string versionString = "1.x.0";
+        std::vector<uint32_t> versionNumberComponents;
+
+        CommonUtility::extractIntFromStrVersion(versionString, versionNumberComponents);
+        CPPUNIT_ASSERT((std::vector<uint32_t>{1} == versionNumberComponents));
+    }
 }
 
 void TestUtility::testIsVersionLower() {
@@ -91,6 +138,18 @@ void TestUtility::testIsVersionLower() {
     // With a build version
     CPPUNIT_ASSERT(CommonUtility::isVersionLower("155.75.0 (build 20250221)", "155.75.0 (build 20250222)"));
     CPPUNIT_ASSERT(CommonUtility::isVersionLower("255.85.0 (build 20240221)", "255.85.0 (build 20250222)"));
+    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("255.85.0 (build 20240221)", "255.85.0 (build 1)"));
+    CPPUNIT_ASSERT(CommonUtility::isVersionLower("255.85.0 (build 1)", "255.85.0 (build 20250222)"));
+    CPPUNIT_ASSERT(CommonUtility::isVersionLower("255.85.0 (build 1)", "255.85.0 (build 2)"));
+    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("255.85.0 (build 2)", "255.85.0 (build 1)"));
+
+    // With an invalid version
+    CPPUNIT_ASSERT(!CommonUtility::isVersionLower(".155.75.0", "156.75.0"));
+    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("155.75.0", ".156.75.0"));
+    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("1.x.0", "156.75.0"));
+    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("156.75.0", "1.x.0"));
+    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("a.0.0", "156.75.0"));
+    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("156.75.0", "a.0.0"));
 }
 
 void TestUtility::testStringToAppStateValue() {
@@ -244,15 +303,15 @@ void TestUtility::testArgsWriter() {
 }
 
 void TestUtility::testCompressFile() {
-    LocalTemporaryDirectory tmpDir("CommonUtility_compressFile");
-    SyncPath filePath = tmpDir.path() / "testFile.txt";
+    const LocalTemporaryDirectory tmpDir("CommonUtility_compressFile");
+    const SyncPath filePath = tmpDir.path() / "testFile.txt";
 
     // Test with an empty file
     std::ofstream file(filePath);
     file.close();
 
     SyncPath outPath = tmpDir.path() / "resEmptyFile.zip";
-    CommonUtility::compressFile(filePath.string(), outPath.string());
+    (void) CommonUtility::compressFile(filePath.string(), outPath.string());
 
     bool exists = false;
     IoError ioError = IoError::Unknown;
@@ -260,9 +319,9 @@ void TestUtility::testCompressFile() {
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(exists);
 
-    // Test with a non empty file
+    // Test with a non-empty file
     file.open(filePath);
-    for (int i = 0; i < 100; i++) {
+    for (auto i = 0; i < 100; i++) {
         file << "test" << std::endl;
     }
     file.close();
@@ -272,7 +331,7 @@ void TestUtility::testCompressFile() {
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     outPath = tmpDir.path() / "resFile.zip";
-    CommonUtility::compressFile(filePath.string(), outPath.string());
+    (void) CommonUtility::compressFile(filePath.string(), outPath.string());
 
     CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(outPath, exists, ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
@@ -283,14 +342,14 @@ void TestUtility::testCompressFile() {
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(compressedSize < size);
 
-    // Test with a non existing file
+    // Test with a non-existing file
     outPath = tmpDir.path() / "resNonExistingFile.zip";
     CPPUNIT_ASSERT(!CommonUtility::compressFile("nonExistingFile.txt", outPath.string()));
     CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(outPath, exists, ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(!exists);
 
-    // Test with a non existing output dir
+    // Test with a non-existing output dir
     outPath = tmpDir.path() / "nonExistingDir" / "resNonExistingDir.zip";
     CPPUNIT_ASSERT(!CommonUtility::compressFile(filePath.string(), outPath.string()));
     CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(outPath, exists, ioError));
@@ -299,7 +358,7 @@ void TestUtility::testCompressFile() {
 
     // Test with wstring path
     outPath = tmpDir.path() / "resWstring.zip";
-    CommonUtility::compressFile(filePath.wstring(), outPath.wstring());
+    (void) CommonUtility::compressFile(filePath.wstring(), outPath.wstring());
     CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(outPath, exists, ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(exists);
@@ -311,13 +370,13 @@ void TestUtility::testCurrentVersion() {
 }
 
 SourceLocation testSourceLocationFooFunc(uint32_t &constructLine, SourceLocation location = SourceLocation::currentLoc()) {
-    constructLine = __LINE__ - 1;
+    constructLine = std::source_location::current().line() - 1;
     return location;
 }
 
 void TestUtility::testSourceLocation() {
     SourceLocation location = SourceLocation::currentLoc();
-    uint32_t correctLine = __LINE__ - 1;
+    uint32_t correctLine = std::source_location::current().line() - 1;
 
     CPPUNIT_ASSERT_EQUAL(std::string("testutility.cpp"), location.fileName());
     CPPUNIT_ASSERT_EQUAL(correctLine, location.line());
@@ -331,7 +390,7 @@ void TestUtility::testSourceLocation() {
     // Test as a default argument
     uint32_t fooFuncLine = 0;
     location = testSourceLocationFooFunc(fooFuncLine);
-    correctLine = __LINE__ - 1;
+    correctLine = std::source_location::current().line() - 1;
 
     CPPUNIT_ASSERT_EQUAL(std::string("testutility.cpp"), location.fileName());
 #ifdef SRC_LOC_AVALAIBALE
@@ -349,7 +408,7 @@ void TestUtility::testGenerateRandomStringAlphaNum() {
         int err = 0;
         std::set<std::string> results;
         for (int i = 0; i < 100000; i++) {
-            std::string str = CommonUtility::generateRandomStringAlphaNum();
+            const std::string str = CommonUtility::generateRandomStringAlphaNum();
             if (!results.insert(str).second) {
                 err++;
             }
@@ -358,30 +417,37 @@ void TestUtility::testGenerateRandomStringAlphaNum() {
     }
 
     {
-        int err = 0;
-        for (int c = 0; c < 100000; c++) {
+        auto err = 0;
+        for (auto c = 0; c < 100000; c++) {
             std::vector<std::thread> workers;
             std::set<std::string> results;
             std::mutex resultsMutex;
             bool wait = true;
-            for (int i = 0; i < 3; i++) {
-                workers.push_back(std::thread([&]() {
+            for (auto i = 0; i < 3; i++) {
+                (void) workers.emplace_back(std::thread([&]() {
                     while (wait) {
                         std::this_thread::sleep_for(std::chrono::milliseconds(1));
-                    };
-                    std::string str = CommonUtility::generateRandomStringAlphaNum();
-                    const std::lock_guard<std::mutex> lock(resultsMutex);
+                    }
+                    const std::string str = CommonUtility::generateRandomStringAlphaNum();
+                    const std::scoped_lock lock(resultsMutex);
                     if (!results.insert(str).second) {
                         err++;
                     }
                 }));
             }
             wait = false;
-            std::for_each(workers.begin(), workers.end(), [](std::thread &t) { t.join(); });
+            (void) std::for_each(workers.begin(), workers.end(), [](std::thread &t) { t.join(); });
         }
         CPPUNIT_ASSERT(err == 0);
     }
 }
+
+void TestUtility::testGenerateUuid() {
+    const auto uuid = CommonUtility::generateUUID();
+    const auto regexPattern = std::regex(R"(^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$)");
+    CPPUNIT_ASSERT(std::regex_match(uuid, regexPattern));
+}
+
 void TestUtility::testLanguageCode() {
     // Only the C language is installed in docker
     if (Utility::userName() == "docker") return;
@@ -431,7 +497,8 @@ void TestUtility::testGetLastErrorMessage() {
 #endif
 
 void TestUtility::generatePaths(const std::vector<std::string> &itemsNames, const std::vector<char> &separators,
-                                bool startWithSeparator, std::vector<SyncPath> &result, const std::string &start, size_t pos) {
+                                const bool startWithSeparator, std::vector<SyncPath> &result, const std::string &start,
+                                const size_t pos) {
     if (pos == itemsNames.size()) {
         (void) result.emplace_back(start);
         for (const auto &separator: separators) {
@@ -446,21 +513,6 @@ void TestUtility::generatePaths(const std::vector<std::string> &itemsNames, cons
         for (const auto &separator: separators) {
             generatePaths(itemsNames, separators, false, result, start + separator + itemsNames.at(pos), pos + 1);
         }
-    }
-};
-
-void TestUtility::testTruncateLongLogMessage() {
-    // No truncation
-    {
-        const QString message = "short";
-        CPPUNIT_ASSERT_EQUAL(std::string("short"), CommonUtility::truncateLongLogMessage(message).toStdString());
-    }
-
-    // Truncation of one character
-    {
-        const auto message = std::string(2049, 'a');
-        const QString truncatedMessage = CommonUtility::truncateLongLogMessage(QString::fromStdString(message));
-        CPPUNIT_ASSERT(QString::fromStdString(message.substr(0, 2048) + std::string(" (truncated)")) == truncatedMessage);
     }
 }
 
@@ -521,9 +573,9 @@ void TestUtility::testRelativePath() {
     }
 
     for (const auto &rootPath: rootPaths) {
-        for (const auto &[absolutePath, relativePaths]: absolutePaths) {
+        for (const auto &[absolutePath, relativePath]: absolutePaths) {
             CPPUNIT_ASSERT_EQUAL_MESSAGE("Root path: " + rootPath.string() + " Absolute path: " + absolutePath.string(),
-                                         relativePaths, CommonUtility::relativePath(rootPath, absolutePath));
+                                         relativePath, CommonUtility::relativePath(rootPath, absolutePath));
         }
     }
 
@@ -550,12 +602,12 @@ void TestUtility::testSplitSyncPath() {
     splitting.pop_front();
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(SyncName{Str("file.txt")}), SyncName2Str(splitting.front()));
 
-    SyncName noSegment = Str("*_blacklisted_*_*_*");
+    const SyncName noSegment = Str("*_blacklisted_*_*_*");
     splitting = CommonUtility::splitSyncPath(SyncPath{noSegment});
     CPPUNIT_ASSERT_EQUAL(size_t{1}, splitting.size());
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(noSegment), SyncName2Str(splitting.front()));
 
-    SyncName oneSeparator = Str("A/B");
+    const SyncName oneSeparator = Str("A/B");
     splitting = CommonUtility::splitSyncPath(SyncPath{oneSeparator});
     CPPUNIT_ASSERT_EQUAL(size_t{2}, splitting.size());
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(SyncName{Str("A")}), SyncName2Str(splitting.front()));
@@ -600,17 +652,17 @@ void TestUtility::testSplitSyncPath() {
 }
 
 void TestUtility::testSplitSyncName() {
-    SyncName empty;
+    const SyncName empty;
     auto splitting = CommonUtility::splitSyncName(empty, Str("/"));
     CPPUNIT_ASSERT_EQUAL(size_t{1}, splitting.size());
     CPPUNIT_ASSERT(splitting.at(0).empty());
 
-    SyncName noSegment = Str("*_blacklisted_*_*_*");
+    const SyncName noSegment = Str("*_blacklisted_*_*_*");
     splitting = CommonUtility::splitSyncName(noSegment, Str("/"));
     CPPUNIT_ASSERT_EQUAL(size_t{1}, splitting.size());
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(noSegment), SyncName2Str(splitting.at(0)));
 
-    SyncName oneSeparation = Str("A/B");
+    const SyncName oneSeparation = Str("A/B");
     splitting = CommonUtility::splitSyncName(oneSeparation, Str("/"));
     CPPUNIT_ASSERT_EQUAL(size_t{2}, splitting.size());
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(SyncName{Str("A")}), SyncName2Str(splitting.at(0)));
@@ -646,17 +698,17 @@ void TestUtility::testSplitSyncName() {
 }
 
 void TestUtility::testSplitPathFromSyncName() {
-    SyncName empty;
+    const SyncName empty;
     auto splitting = CommonUtility::splitPath(empty);
     CPPUNIT_ASSERT_EQUAL(size_t{1}, splitting.size());
     CPPUNIT_ASSERT(splitting.at(0).empty());
 
-    SyncName noSegment = Str("*_blacklisted_*_*_*");
+    const SyncName noSegment = Str("*_blacklisted_*_*_*");
     splitting = CommonUtility::splitPath(noSegment);
     CPPUNIT_ASSERT_EQUAL(size_t{1}, splitting.size());
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(noSegment), SyncName2Str(splitting.at(0)));
 
-    SyncName oneSeparator = Str("A/B");
+    const SyncName oneSeparator = Str("A/B");
     splitting = CommonUtility::splitPath(oneSeparator);
     CPPUNIT_ASSERT_EQUAL(size_t{2}, splitting.size());
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(SyncName{Str("A")}), SyncName2Str(splitting.at(0)));
@@ -695,15 +747,15 @@ void TestUtility::testSplitPathFromSyncName() {
 
 void TestUtility::testComputeSyncNameNormalizations() {
     const SyncName name = Str("éèä");
-    auto normalizations = CommonUtility::computeSyncNameNormalizations(name);
+    const auto normalizations = CommonUtility::computeSyncNameNormalizations(name);
     CPPUNIT_ASSERT_EQUAL(size_t{2}, normalizations.size());
 
     SyncName nfcName;
-    CommonUtility::normalizedSyncName(name, nfcName, UnicodeNormalization::NFC);
+    (void) CommonUtility::normalizedSyncName(name, nfcName, UnicodeNormalization::NFC);
     CPPUNIT_ASSERT(normalizations.contains(nfcName));
 
     SyncName nfdName;
-    CommonUtility::normalizedSyncName(name, nfdName, UnicodeNormalization::NFD);
+    (void) CommonUtility::normalizedSyncName(name, nfdName, UnicodeNormalization::NFD);
     CPPUNIT_ASSERT(normalizations.contains(nfdName));
 }
 
@@ -772,6 +824,48 @@ void TestUtility::testEndsWithInsensitive() {
     CPPUNIT_ASSERT(CommonUtility::endsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("defg"))));
     CPPUNIT_ASSERT(!CommonUtility::endsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("abc"))));
     CPPUNIT_ASSERT(CommonUtility::endsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("dEfG"))));
+}
+
+void TestUtility::testContains() {
+    CPPUNIT_ASSERT(!CommonUtility::contains("abcdefg", ""));
+    CPPUNIT_ASSERT(!CommonUtility::contains("", "defg"));
+    CPPUNIT_ASSERT(CommonUtility::contains("abcdefg", "defg"));
+    CPPUNIT_ASSERT(CommonUtility::contains("defgabc", "defg"));
+    CPPUNIT_ASSERT(!CommonUtility::contains("abcdefg", "hij"));
+    CPPUNIT_ASSERT(!CommonUtility::contains("abcdefg", "abcdefgh"));
+    CPPUNIT_ASSERT(!CommonUtility::contains("abcdefg", "DEFG"));
+    CPPUNIT_ASSERT(!CommonUtility::contains("ABCDEFG", "defg"));
+    CPPUNIT_ASSERT(CommonUtility::contains("ABCDEFG", "DEFG"));
+
+    CPPUNIT_ASSERT(!CommonUtility::containsInsensitive("abcdefg", ""));
+    CPPUNIT_ASSERT(!CommonUtility::containsInsensitive("", "defg"));
+    CPPUNIT_ASSERT(CommonUtility::containsInsensitive("abcdefg", "defg"));
+    CPPUNIT_ASSERT(CommonUtility::containsInsensitive("defgabc", "defg"));
+    CPPUNIT_ASSERT(!CommonUtility::containsInsensitive("abcdefg", "hij"));
+    CPPUNIT_ASSERT(!CommonUtility::containsInsensitive("abcdefg", "abcdefgh"));
+    CPPUNIT_ASSERT(CommonUtility::containsInsensitive("abcdefg", "DEFG"));
+    CPPUNIT_ASSERT(CommonUtility::containsInsensitive("ABCDEFG", "defg"));
+    CPPUNIT_ASSERT(CommonUtility::containsInsensitive("ABCDEFG", "DEFG"));
+
+    CPPUNIT_ASSERT(!CommonUtility::contains(SyncName(Str("abcdefg")), SyncName(Str(""))));
+    CPPUNIT_ASSERT(!CommonUtility::contains(SyncName(Str("")), SyncName(Str("defg"))));
+    CPPUNIT_ASSERT(CommonUtility::contains(SyncName(Str("abcdefg")), SyncName(Str("defg"))));
+    CPPUNIT_ASSERT(CommonUtility::contains(SyncName(Str("defgabc")), SyncName(Str("defg"))));
+    CPPUNIT_ASSERT(!CommonUtility::contains(SyncName(Str("abcdefg")), SyncName(Str("hij"))));
+    CPPUNIT_ASSERT(!CommonUtility::contains(SyncName(Str("abcdefg")), SyncName(Str("abcdefgh"))));
+    CPPUNIT_ASSERT(!CommonUtility::contains(SyncName(Str("abcdefg")), SyncName(Str("DEFG"))));
+    CPPUNIT_ASSERT(!CommonUtility::contains(SyncName(Str("ABCDEFG")), SyncName(Str("defg"))));
+    CPPUNIT_ASSERT(CommonUtility::contains(SyncName(Str("ABCDEFG")), SyncName(Str("DEFG"))));
+
+    CPPUNIT_ASSERT(!CommonUtility::containsInsensitive(SyncName(Str("abcdefg")), SyncName(Str(""))));
+    CPPUNIT_ASSERT(!CommonUtility::containsInsensitive(SyncName(Str("")), SyncName(Str("defg"))));
+    CPPUNIT_ASSERT(CommonUtility::containsInsensitive(SyncName(Str("abcdefg")), SyncName(Str("defg"))));
+    CPPUNIT_ASSERT(CommonUtility::containsInsensitive(SyncName(Str("defgabc")), SyncName(Str("defg"))));
+    CPPUNIT_ASSERT(!CommonUtility::containsInsensitive(SyncName(Str("abcdefg")), SyncName(Str("hij"))));
+    CPPUNIT_ASSERT(!CommonUtility::containsInsensitive(SyncName(Str("abcdefg")), SyncName(Str("abcdefgh"))));
+    CPPUNIT_ASSERT(CommonUtility::containsInsensitive(SyncName(Str("abcdefg")), SyncName(Str("DEFG"))));
+    CPPUNIT_ASSERT(CommonUtility::containsInsensitive(SyncName(Str("ABCDEFG")), SyncName(Str("defg"))));
+    CPPUNIT_ASSERT(CommonUtility::containsInsensitive(SyncName(Str("ABCDEFG")), SyncName(Str("DEFG"))));
 }
 
 void TestUtility::testToUpper() {
@@ -843,6 +937,300 @@ void TestUtility::testRtrim() {
 
 void TestUtility::testTrim() {
     CPPUNIT_ASSERT(CommonUtility::trim("    ab    cd    ") == "ab    cd");
+}
+
+void TestUtility::testReadValueFromStruct() {
+    // Insert data
+    Poco::DynamicStruct dstruct;
+    (void) dstruct.insert("intValue", 666);
+
+    (void) dstruct.insert("floatValue", 123.456f);
+
+    std::string base64StrValue;
+    CommonUtility::convertToBase64Str("yxcv", base64StrValue);
+    (void) dstruct.insert("strValue", base64StrValue);
+
+    std::string base64WStrValue;
+    CommonUtility::convertToBase64Str(L"asdf", base64WStrValue);
+    (void) dstruct.insert("wstrValue", base64WStrValue);
+
+    std::string blobStr("0123456789abcdefghijklmnopqrtsuvwxyz");
+    std::string base64BlobStr;
+    CommonUtility::convertToBase64Str(blobStr, base64BlobStr);
+    (void) dstruct.insert("blobValue", base64BlobStr);
+
+    (void) dstruct.insert("boolValue", true);
+
+    Poco::DynamicStruct structValue;
+    (void) structValue.insert("intValue", 12345);
+    CommonUtility::convertToBase64Str("qwertz", base64StrValue);
+    (void) structValue.insert("strValue", base64StrValue);
+    (void) dstruct.insert("structValue", structValue);
+
+    const Poco::Dynamic::Array intValues{999, 888, 777};
+    (void) dstruct.insert("intValues", intValues);
+
+    Poco::Dynamic::Array strValues;
+    CommonUtility::convertToBase64Str("éééé", base64StrValue);
+    (void) strValues.emplace_back(base64StrValue);
+    CommonUtility::convertToBase64Str("àààà", base64StrValue);
+    (void) strValues.emplace_back(base64StrValue);
+    (void) dstruct.insert("strValues", strValues);
+
+    Poco::Dynamic::Array structValues;
+    (void) structValues.emplace_back(structValue);
+    structValue["intValue"] = 67890;
+    CommonUtility::convertToBase64Str("ztrewq", base64StrValue);
+    structValue["strValue"] = base64StrValue;
+    (void) structValues.emplace_back(structValue);
+    (void) dstruct.insert("structValues", structValues);
+
+    // Read data
+    try {
+        int intValue = 0;
+        CommonUtility::readValueFromStruct(dstruct, "intValue", intValue);
+        CPPUNIT_ASSERT(intValue == 666);
+
+        float floatValue = 0.0f;
+        CommonUtility::readValueFromStruct(dstruct, "floatValue", floatValue);
+        CPPUNIT_ASSERT(floatValue == 123.456f);
+
+        std::string strValue;
+        CommonUtility::readValueFromStruct(dstruct, "strValue", strValue);
+        CPPUNIT_ASSERT(strValue == "yxcv");
+
+        std::wstring wstrValue;
+        CommonUtility::readValueFromStruct(dstruct, "wstrValue", wstrValue);
+        CPPUNIT_ASSERT(wstrValue == L"asdf");
+
+        CommBLOB blobValue;
+        (void) std::copy(blobStr.begin(), blobStr.end(), std::back_inserter(blobValue));
+        CommBLOB blobValue2;
+        CommonUtility::readValueFromStruct(dstruct, "blobValue", blobValue2);
+        CPPUNIT_ASSERT(blobValue2 == blobValue);
+
+        bool boolValue = false;
+        CommonUtility::readValueFromStruct(dstruct, "boolValue", boolValue);
+        CPPUNIT_ASSERT(boolValue == true);
+
+        struct Dummy {
+                int intValue;
+                std::string strValue;
+        };
+
+        const std::function<Dummy(const Poco::Dynamic::Var &)> dynamicVar2Dummy = [](const Poco::Dynamic::Var &value) {
+            assert(value.isStruct());
+            const auto &structValue = value.extract<Poco::DynamicStruct>();
+            Dummy dummy;
+            CommonUtility::readValueFromStruct(structValue, "intValue", dummy.intValue);
+            CommonUtility::readValueFromStruct(structValue, "strValue", dummy.strValue);
+            return dummy;
+        };
+
+        Dummy dummyValue;
+        CommonUtility::readValueFromStruct(dstruct, "structValue", dummyValue, dynamicVar2Dummy);
+        CPPUNIT_ASSERT(dummyValue.intValue == 12345);
+        CPPUNIT_ASSERT(dummyValue.strValue == "qwertz");
+
+        std::vector<int> intValues2;
+        CommonUtility::readValuesFromStruct(dstruct, "intValues", intValues2);
+        CPPUNIT_ASSERT(intValues2.size() == 3);
+        CPPUNIT_ASSERT(intValues2[0] == 999);
+        CPPUNIT_ASSERT(intValues2[1] == 888);
+        CPPUNIT_ASSERT(intValues2[2] == 777);
+
+        std::vector<std::string> strValues2;
+        CommonUtility::readValuesFromStruct(dstruct, "strValues", strValues2);
+        CPPUNIT_ASSERT(strValues2.size() == 2);
+        CPPUNIT_ASSERT(strValues2[0] == "éééé");
+        CPPUNIT_ASSERT(strValues2[1] == "àààà");
+
+        std::vector<Dummy> dummyValues;
+        CommonUtility::readValuesFromStruct(dstruct, "structValues", dummyValues, dynamicVar2Dummy);
+        CPPUNIT_ASSERT(dummyValues.size() == 2);
+        CPPUNIT_ASSERT(dummyValues[0].intValue == 12345);
+        CPPUNIT_ASSERT(dummyValues[0].strValue == "qwertz");
+        CPPUNIT_ASSERT(dummyValues[1].intValue == 67890);
+        CPPUNIT_ASSERT(dummyValues[1].strValue == "ztrewq");
+    } catch (const std::exception &e) {
+        CPPUNIT_ASSERT(false);
+    }
+}
+
+void TestUtility::testWriteValueToStruct() {
+    // Insert data
+    Poco::DynamicStruct dstruct;
+    CommonUtility::writeValueToStruct(dstruct, "intValue", 555);
+    CommonUtility::writeValueToStruct(dstruct, "floatValue", 111.222f);
+    CommonUtility::writeValueToStruct(dstruct, "strValue", "mnbvc");
+    CommonUtility::writeValueToStruct(dstruct, "wstrValue", L"lkjhgf");
+
+    std::string blobStr("0123456789abcdefghijklmnopqrtsuvwxyz");
+    CommBLOB blob;
+    (void) std::copy(blobStr.begin(), blobStr.end(), std::back_inserter(blob));
+    CommonUtility::writeValueToStruct(dstruct, "blobValue", blob);
+
+    CommonUtility::writeValueToStruct(dstruct, "boolValue", true);
+
+
+    struct Dummy {
+            int intValue;
+            std::string strValue;
+    };
+
+    const std::function<Poco::Dynamic::Var(const Dummy &)> dummy2DynamicVar = [](const Dummy &value) {
+        Poco::DynamicStruct structValue;
+        CommonUtility::writeValueToStruct(structValue, "intValue", value.intValue);
+        CommonUtility::writeValueToStruct(structValue, "strValue", value.strValue);
+        return structValue;
+    };
+
+    const Dummy dummyValue = {4444, "poiuz"};
+    CommonUtility::writeValueToStruct(dstruct, "dummyValue", dummyValue, dummy2DynamicVar);
+
+    const std::vector<int> intValues{987, 654};
+    CommonUtility::writeValuesToStruct(dstruct, "intValues", intValues);
+
+    const std::vector<std::string> strValues{"èéàèéà", "öööö"};
+    CommonUtility::writeValuesToStruct(dstruct, "strValues", strValues);
+
+    const std::vector<Dummy> dummyValues{{4444, "poiuz"}, {3333, "lkjhg"}};
+    CommonUtility::writeValuesToStruct(dstruct, "dummyValues", dummyValues, dummy2DynamicVar);
+
+    const std::unordered_map<std::string, std::string, StringHashFunction, std::equal_to<>> table = {{"first_name", "john"},
+                                                                                                     {"family_name", "does"}};
+    CommonUtility::writeValuesToStruct(dstruct, "table", table);
+
+    // Read data
+    CPPUNIT_ASSERT(dstruct["intValue"] == 555);
+    CPPUNIT_ASSERT(dstruct["floatValue"] == 111.222f);
+
+    std::string base64StrValue;
+    CommonUtility::convertToBase64Str("mnbvc", base64StrValue);
+    CPPUNIT_ASSERT(dstruct["strValue"] == base64StrValue);
+
+    CommonUtility::convertToBase64Str(L"lkjhgf", base64StrValue);
+    CPPUNIT_ASSERT(dstruct["wstrValue"] == base64StrValue);
+
+    std::string base64BlobValue;
+    CommonUtility::convertToBase64Str(blobStr, base64BlobValue);
+    CPPUNIT_ASSERT(dstruct["blobValue"] == base64BlobValue);
+
+    CPPUNIT_ASSERT(dstruct["boolValue"] == true);
+
+    CPPUNIT_ASSERT(dstruct["dummyValue"].isStruct());
+    CPPUNIT_ASSERT(dstruct["dummyValue"].size() == 2);
+    CPPUNIT_ASSERT(dstruct["dummyValue"]["intValue"] == 4444);
+    CommonUtility::convertToBase64Str("poiuz", base64StrValue);
+    CPPUNIT_ASSERT(dstruct["dummyValue"]["strValue"] == base64StrValue);
+
+    CPPUNIT_ASSERT(dstruct["intValues"].isArray());
+    CPPUNIT_ASSERT(dstruct["intValues"].size() == 2);
+    Poco::Dynamic::Array intArr = dstruct["intValues"].extract<Poco::Dynamic::Array>();
+    CPPUNIT_ASSERT(intArr[0] == 987);
+    CPPUNIT_ASSERT(intArr[1] == 654);
+
+    CPPUNIT_ASSERT(dstruct["strValues"].isArray());
+    CPPUNIT_ASSERT(dstruct["strValues"].size() == 2);
+    Poco::Dynamic::Array strArr = dstruct["strValues"].extract<Poco::Dynamic::Array>();
+    CommonUtility::convertToBase64Str("èéàèéà", base64StrValue);
+    CPPUNIT_ASSERT(strArr[0] == base64StrValue);
+    CommonUtility::convertToBase64Str("öööö", base64StrValue);
+    CPPUNIT_ASSERT(strArr[1] == base64StrValue);
+
+    CPPUNIT_ASSERT(dstruct["dummyValues"].isArray());
+    CPPUNIT_ASSERT(dstruct["dummyValues"].size() == 2);
+    Poco::DynamicStruct dummyStruct = dstruct["dummyValues"][0].extract<Poco::DynamicStruct>();
+    CPPUNIT_ASSERT(dummyStruct["intValue"] == 4444);
+    CommonUtility::convertToBase64Str("poiuz", base64StrValue);
+    CPPUNIT_ASSERT(dummyStruct["strValue"] == base64StrValue);
+    dummyStruct = dstruct["dummyValues"][1].extract<Poco::DynamicStruct>();
+    CPPUNIT_ASSERT(dummyStruct["intValue"] == 3333);
+    CommonUtility::convertToBase64Str("lkjhg", base64StrValue);
+    CPPUNIT_ASSERT(dummyStruct["strValue"] == base64StrValue);
+
+    CPPUNIT_ASSERT(dstruct["table"].isStruct());
+    CPPUNIT_ASSERT(dstruct["table"].size() == 2);
+    Poco::DynamicStruct tableStruct = dstruct["table"].extract<Poco::DynamicStruct>();
+
+    auto toBase64 = [](const std::string &str) {
+        std::string base64StrValue;
+        CommonUtility::convertToBase64Str(str, base64StrValue);
+
+        return base64StrValue;
+    };
+
+    CPPUNIT_ASSERT(tableStruct["first_name"] == toBase64("john"));
+    CPPUNIT_ASSERT(tableStruct["family_name"] == toBase64("does"));
+}
+
+void TestUtility::testConvertFromBase64Str() {
+    std::string value;
+    CommonUtility::convertFromBase64Str("YWJjZMOpw6DDqCBmZ2hpams=", value);
+    CPPUNIT_ASSERT(value == "abcdéàè fghijk");
+
+    CommonUtility::convertFromBase64Str("5q+P5Liq5Lq66YO95pyJ5LuW55qE5L2c5oiY562W55Wl", value);
+    CPPUNIT_ASSERT(value == "每个人都有他的作战策略");
+
+    std::wstring wvalue;
+    CommonUtility::convertFromBase64Str("YWJjZMOpw6DDqA==", wvalue);
+    CPPUNIT_ASSERT(wvalue == L"abcdéàè");
+
+    CommonUtility::convertFromBase64Str("5q+P5Liq5Lq66YO95pyJ5LuW55qE5L2c5oiY562W55Wl", wvalue);
+    CPPUNIT_ASSERT(wvalue == L"每个人都有他的作战策略");
+
+    std::string blobStr("0123456789abcdefg hijklmnopqrtsuvwxyz");
+    CommBLOB blob;
+    (void) std::copy(blobStr.begin(), blobStr.end(), std::back_inserter(blob));
+
+    CommBLOB blob2;
+    CommonUtility::convertFromBase64Str("MDEyMzQ1Njc4OWFiY2RlZmcgaGlqa2xtbm9wcXJ0c3V2d3h5eg==", blob2);
+    CPPUNIT_ASSERT(blob == blob2);
+}
+
+void TestUtility::testConvertToBase64Str() {
+    std::string value;
+    CommonUtility::convertToBase64Str("abcdéàè", value);
+    CPPUNIT_ASSERT(value == "YWJjZMOpw6DDqA==");
+
+    CommonUtility::convertToBase64Str(
+            "0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz",
+            value);
+    CPPUNIT_ASSERT(value ==
+                   "MDEyMzQ1Njc4OWFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6MDEyMzQ1Njc4OWFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6MDEyMzQ1Njc4O"
+                   "WFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6");
+
+    CommonUtility::convertToBase64Str("每个人都有他的作战策略", value);
+    CPPUNIT_ASSERT(value == "5q+P5Liq5Lq66YO95pyJ5LuW55qE5L2c5oiY562W55Wl");
+
+    CommonUtility::convertToBase64Str(L"abcdéàè", value);
+    CPPUNIT_ASSERT(value == "YWJjZMOpw6DDqA==");
+
+    CommonUtility::convertToBase64Str(L"每个人都有他的作战策略", value);
+    CPPUNIT_ASSERT(value == "5q+P5Liq5Lq66YO95pyJ5LuW55qE5L2c5oiY562W55Wl");
+
+    std::string blobStr("0123456789abcdefghijklmnopqrtsuvwxyz");
+    CommBLOB blob;
+    (void) std::copy(blobStr.begin(), blobStr.end(), std::back_inserter(blob));
+
+    CommonUtility::convertToBase64Str(blob, value);
+    CPPUNIT_ASSERT(value == "MDEyMzQ1Njc4OWFiY2RlZmdoaWprbG1ub3BxcnRzdXZ3eHl6");
+
+    CommonUtility::convertFromBase64Str(
+            R"(iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=)",
+            blob);
+    CommonUtility::convertToBase64Str(blob, value);
+    CPPUNIT_ASSERT(
+            value ==
+            R"(iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAPYQAAD2EBqD+naQAAAApJREFUCJljYAAAAAIAAfRxZKYAAAAASUVORK5CYII=)");
+}
+
+void TestUtility::isLikeSomeError() {
+    std::error_code errorCode = std::make_error_code(std::errc::too_many_symbolic_link_levels);
+    CPPUNIT_ASSERT(utility_base::isLikeTooManySymbolicLinkLevelsError(errorCode));
+
+    errorCode = std::make_error_code(std::errc::no_such_file_or_directory);
+    CPPUNIT_ASSERT(utility_base::isLikeFileNotFoundError(errorCode));
 }
 
 } // namespace KDC

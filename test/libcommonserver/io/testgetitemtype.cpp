@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "test_utility/testhelpers.h"
 #include "testio.h"
 
 #include <filesystem>
@@ -113,8 +114,21 @@ GetItemChecker::Result GetItemChecker::checkAccessIsDenied(const SyncPath &path)
     return {};
 }
 
-
 void TestIo::testGetItemTypeSimpleCases() {
+    {
+        // Check that calling getItemType clears the ItemType argument.
+        ItemType itemType;
+        itemType.nodeType = NodeType::Directory;
+        itemType.linkType = LinkType::Hardlink;
+        itemType.ioError = IoError::Unknown;
+
+        CPPUNIT_ASSERT(IoHelper::getItemType(_localTestDirPath / "test_pictures/picture-1.jpg", itemType));
+
+        CPPUNIT_ASSERT_EQUAL(itemType.ioError, IoError::Success);
+        CPPUNIT_ASSERT_EQUAL(itemType.nodeType, NodeType::File);
+        CPPUNIT_ASSERT_EQUAL(itemType.linkType, LinkType::None);
+    }
+
     GetItemChecker checker;
 
     // A regular file
@@ -161,8 +175,8 @@ void TestIo::testGetItemTypeSimpleCases() {
 
     // A non-existing file with a very long name
     {
-        const std::string veryLongfileName(1000, 'a'); // Exceeds the max allowed name length on every file system of interest.
-        const SyncPath path = _localTestDirPath / veryLongfileName; // This file doesn't exist.
+        const std::string veryLongFileName(1000, 'a'); // Exceeds the max allowed name length on every file system of interest.
+        const SyncPath path = _localTestDirPath / veryLongFileName; // This file doesn't exist.
         ItemType itemType;
 #if defined(KD_WINDOWS)
         CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
@@ -251,6 +265,42 @@ void TestIo::testGetItemTypeSimpleCases() {
 #else
         const auto result =
                 checker.checkSuccessfullRetrievalOfDanglingLink(path, targetPath, LinkType::Symlink, NodeType::Unknown);
+#endif
+        CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
+    }
+
+    // A circular symbolic link between two files
+    {
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath filepath1 = temporaryDirectory.path() / "file1.txt";
+        const SyncPath filepath2 = temporaryDirectory.path() / "file2.txt";
+        testhelpers::createSymLinkLoop(filepath1, filepath2, NodeType::File);
+
+        // Actual test
+#if defined(KD_WINDOWS)
+        const auto result =
+                checker.checkSuccessfullRetrievalOfDanglingLink(filepath1, "file2.txt", LinkType::Symlink, NodeType::File);
+#else
+        const auto result =
+                checker.checkSuccessfullRetrievalOfDanglingLink(filepath1, "file2.txt", LinkType::Symlink, NodeType::Unknown);
+#endif
+        CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
+    }
+
+    // A circular symbolic link between two folders
+    {
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath filepath1 = temporaryDirectory.path() / "folder1";
+        const SyncPath filepath2 = temporaryDirectory.path() / "folder2";
+        testhelpers::createSymLinkLoop(filepath1, filepath2, NodeType::Directory);
+
+        // Actual test
+#if defined(KD_WINDOWS)
+        const auto result =
+                checker.checkSuccessfullRetrievalOfDanglingLink(filepath1, "folder2", LinkType::Symlink, NodeType::File);
+#else
+        const auto result =
+                checker.checkSuccessfullRetrievalOfDanglingLink(filepath1, "folder2", LinkType::Symlink, NodeType::Unknown);
 #endif
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }

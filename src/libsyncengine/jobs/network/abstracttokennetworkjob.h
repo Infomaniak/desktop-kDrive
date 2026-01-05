@@ -68,18 +68,18 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         inline static void clearCacheForUser(int userDbId) { _userToApiKeyMap.erase(userDbId); }
         inline static void clearCacheForDrive(int driveDbId) { _driveToApiKeyMap.erase(driveDbId); }
 
-        bool refreshToken();
+        ExitInfo refreshToken();
         long tokenUpdateDurationFromNow();
 
         static ExitCode exception2ExitCode(const std::exception &e);
 
     protected:
         std::string getSpecificUrl() override;
-        std::string getContentType(bool &canceled) override;
+        std::string contentType() override;
 
-        bool handleResponse(std::istream &is) override;
-        bool handleError(std::istream &is, const Poco::URI &uri) override;
-        bool handleJsonResponse(std::istream &is) override;
+        ExitInfo handleResponse(std::istream &is) override;
+        ExitInfo handleError(const std::string &replyBody, const Poco::URI &uri) override;
+        ExitInfo handleJsonResponse(const std::string &replyBody) override;
 
         [[nodiscard]] int userId() const { return _userId; }
         [[nodiscard]] int driveId() const { return _driveId; }
@@ -98,15 +98,15 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         int _driveDbId;
         int _driveId;
         bool _returnJson;
-        std::string _token;
+        ApiToken _apiToken;
 
         bool _accessTokenAlreadyRefreshed = false;
 
-        std::string loadToken();
+        virtual ApiToken loadApiToken();
 
         std::string getUrl() override;
-        bool handleUnauthorizedResponse();
-        bool defaultBackErrorHandling(NetworkErrorCode errorCode, const Poco::URI &uri);
+        ExitInfo handleUnauthorizedResponse();
+        void defaultBackErrorHandling(NetworkErrorCode errorCode, const Poco::URI &uri, ExitCause &exitCause);
 };
 
 } // namespace KDC

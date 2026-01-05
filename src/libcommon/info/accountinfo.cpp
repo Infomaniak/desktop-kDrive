@@ -17,6 +17,11 @@
  */
 
 #include "accountinfo.h"
+#include "libcommon/utility/utility.h"
+
+static const auto accountInfoDbId = "dbId";
+static const auto accountInfoUserDbId = "userDbId";
+static const auto accountInfoAccountId = "accountId";
 
 namespace KDC {
 
@@ -27,6 +32,18 @@ AccountInfo::AccountInfo(int dbId, int userDbId) :
 AccountInfo::AccountInfo() :
     _dbId(0),
     _userDbId(0) {}
+
+void AccountInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
+    CommonUtility::writeValueToStruct(dstruct, accountInfoDbId, _dbId);
+    CommonUtility::writeValueToStruct(dstruct, accountInfoUserDbId, _userDbId);
+    CommonUtility::writeValueToStruct(dstruct, accountInfoAccountId, _accountId);
+}
+
+void AccountInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
+    CommonUtility::readValueFromStruct(dstruct, accountInfoDbId, _dbId);
+    CommonUtility::readValueFromStruct(dstruct, accountInfoUserDbId, _userDbId);
+    CommonUtility::readValueFromStruct(dstruct, accountInfoAccountId, _accountId);
+}
 
 QDataStream &operator>>(QDataStream &in, AccountInfo &accountInfo) {
     in >> accountInfo._dbId >> accountInfo._userDbId;
@@ -52,9 +69,9 @@ QDataStream &operator>>(QDataStream &in, QList<AccountInfo> &list) {
     int count = 0;
     in >> count;
     for (int i = 0; i < count; i++) {
-        AccountInfo *accountInfo = new AccountInfo();
-        in >> *accountInfo;
-        list.push_back(*accountInfo);
+        AccountInfo accountInfo;
+        in >> accountInfo;
+        list.push_back(accountInfo);
     }
     return in;
 }

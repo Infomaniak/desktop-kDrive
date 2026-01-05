@@ -20,6 +20,7 @@
 #include "comm.h"
 #include "syncpal/virtualfilescleaner.h"
 #include "syncpalworker.h"
+#include "jobs/syncjobmanager.h"
 #include "libcommon/utility/logiffail.h"
 #include "syncpal/excludelistpropagator.h"
 #include "syncpal/conflictingfilescorrector.h"
@@ -52,7 +53,22 @@
 
 #define SYNCPAL_NEW_ERROR_MSG "Failed to create SyncPal instance!"
 
+
+static const auto currentFile = "currentFile";
+static const auto totalFiles = "totalFiles";
+static const auto completedSize = "completedSize";
+static const auto totalSize = "totalSize";
+static const auto estimatedRemainingTime = "estimatedRemainingTime";
+
 namespace KDC {
+
+void SyncProgress::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
+    CommonUtility::writeValueToStruct(dstruct, currentFile, _currentFile);
+    CommonUtility::writeValueToStruct(dstruct, totalFiles, _totalFiles);
+    CommonUtility::writeValueToStruct(dstruct, completedSize, _completedSize);
+    CommonUtility::writeValueToStruct(dstruct, totalSize, _totalSize);
+    CommonUtility::writeValueToStruct(dstruct, estimatedRemainingTime, _estimatedRemainingTime);
+}
 
 SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const SyncPath &syncDbPath, const std::string &version, const bool hasFullyCompleted) :
     _vfs(vfs),
@@ -307,11 +323,11 @@ ExitCode SyncPal::clearNodes() {
 }
 
 void SyncPal::syncPalStartCallback([[maybe_unused]] UniqueId jobId) {
-    auto jobPtr = JobManager::instance()->getJob(jobId);
+    auto jobPtr = SyncJobManagerSingleton::instance()->getJob(jobId);
     if (jobPtr) {
         if (jobPtr->exitInfo().code() != ExitCode::Ok) {
             LOG_SYNCPAL_WARN(_logger, "Error in PropagatorJob");
-            addError(Error(syncDbId(), errId(), jobPtr->exitInfo().code(), ExitCause::Unknown));
+            addError(Error(syncDbId(), ERR_ID, jobPtr->exitInfo().code(), ExitCause::Unknown));
             return;
         }
 
@@ -352,13 +368,13 @@ void SyncPal::addCompletedItem(int syncDbId, const SyncFileItem &item) {
 bool SyncPal::wipeVirtualFiles() {
     LOG_SYNCPAL_INFO(_logger, "Wiping virtual files");
     if (!vfs()) {
-        addError(Error(syncDbId(), errId(), ExitCode::LogicError, ExitCause::Unknown));
+        addError(Error(syncDbId(), ERR_ID, ExitCode::LogicError, ExitCause::Unknown));
         return false;
     }
     VirtualFilesCleaner virtualFileCleaner(localPath(), _syncDb, vfs());
     if (!virtualFileCleaner.run()) {
         LOG_SYNCPAL_WARN(_logger, "Error in VirtualFilesCleaner::run");
-        addError(Error(syncDbId(), errId(), virtualFileCleaner.exitCode(), virtualFileCleaner.exitCause()));
+        addError(Error(syncDbId(), ERR_ID, virtualFileCleaner.exitCode(), virtualFileCleaner.exitCause()));
         return false;
     }
     return true;
@@ -417,8 +433,8 @@ void SyncPal::freeSharedObjects() {
     LOG_IF_FAIL(_remoteSnapshot.use_count() == 0);
     LOG_IF_FAIL(_localOperationSet.use_count() == 0);
     LOG_IF_FAIL(_remoteOperationSet.use_count() == 0);
-    LOG_IF_FAIL(_localUpdateTree.use_count() == 0);
-    LOG_IF_FAIL(_remoteUpdateTree.use_count() == 0);
+    // LOG_IF_FAIL(_localUpdateTree.use_count() == 0); // Can happen if handleAccessDeniedItem is deleting a node
+    // LOG_IF_FAIL(_remoteUpdateTree.use_count() == 0); // Can happen if handleAccessDeniedItem is deleting a node
     LOG_IF_FAIL(_conflictQueue.use_count() == 0);
     LOG_IF_FAIL(_syncOps.use_count() == 0);
     LOG_IF_FAIL(_progressInfo.use_count() == 0);
@@ -434,7 +450,6 @@ void SyncPal::initSharedObjects() {
 
 void SyncPal::resetSharedObjects() {
     LOG_SYNCPAL_DEBUG(_logger, "Reset shared objects");
-
     if (_localOperationSet) _localOperationSet->clear();
     if (_remoteOperationSet) _remoteOperationSet->clear();
     if (_localUpdateTree) _localUpdateTree->clear();
@@ -607,7 +622,7 @@ bool SyncPal::setProgressComplete(const SyncPath &relativeLocalPath, SyncFileSta
 }
 
 void SyncPal::directDownloadCallback(UniqueId jobId) {
-    const std::lock_guard lock(_directDownloadJobsMapMutex);
+    const std::scoped_lock lock(_directDownloadJobsMapMutex);
     auto directDownloadJobsMapIt = _directDownloadJobsMap.find(jobId);
     if (directDownloadJobsMapIt == _directDownloadJobsMap.end()) {
         // No need to send a warning, the job might have been canceled, and therefor not in the map anymore
@@ -705,16 +720,16 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
         job->setAffectedFilePath(absoluteLocalPath);
     } catch (const std::exception &e) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in DownloadJob::DownloadJob: error=" << e.what());
-        addError(Error(syncDbId(), errId(), ExitCode::Unknown, ExitCause::Unknown));
+        addError(Error(syncDbId(), ERR_ID, ExitCode::Unknown, ExitCause::Unknown));
         return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
     // Queue job
     std::function<void(UniqueId)> callback = std::bind_front(&SyncPal::directDownloadCallback, this);
     job->setAdditionalCallback(callback);
-    JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_HIGH);
+    SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_HIGH);
 
-    const std::lock_guard lock(_directDownloadJobsMapMutex);
+    const std::scoped_lock lock(_directDownloadJobsMapMutex);
     (void) _directDownloadJobsMap.try_emplace(job->jobId(), job);
     (void) _syncPathToDownloadJobMap.try_emplace(absoluteLocalPath, job->jobId());
     if (!parentFolderPath.empty() && _folderHydrationInProgress.contains(parentFolderPath)) {
@@ -725,14 +740,14 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
 }
 
 void SyncPal::monitorFolderHydration(const SyncPath &absoluteLocalPath) {
-    const std::lock_guard lock(_directDownloadJobsMapMutex);
+    const std::scoped_lock lock(_directDownloadJobsMapMutex);
     (void) _folderHydrationInProgress.try_emplace(absoluteLocalPath);
     LOGW_INFO(_logger, L"Monitoring folder hydration: " << Utility::formatSyncPath(absoluteLocalPath));
 }
 
-ExitCode SyncPal::cancelDlDirectJobs(const std::list<SyncPath> &fileList) {
+ExitCode SyncPal::cancelDlDirectJobs(const std::vector<SyncPath> &fileList) {
     for (const auto &filePath: fileList) {
-        const std::lock_guard lock(_directDownloadJobsMapMutex);
+        const std::scoped_lock lock(_directDownloadJobsMapMutex);
 
         if (const auto itId = _syncPathToDownloadJobMap.find(filePath); itId != _syncPathToDownloadJobMap.end()) {
             if (const auto itJob = _directDownloadJobsMap.find(itId->second); itJob != _directDownloadJobsMap.end()) {
@@ -753,7 +768,7 @@ ExitCode SyncPal::cancelDlDirectJobs(const std::list<SyncPath> &fileList) {
 ExitCode SyncPal::cancelAllDlDirectJobs(bool quit) {
     LOG_SYNCPAL_INFO(_logger, "Cancelling all direct download jobs");
 
-    const std::lock_guard<std::mutex> lock(_directDownloadJobsMapMutex);
+    const std::scoped_lock<std::mutex> lock(_directDownloadJobsMapMutex);
     for (auto &directDownloadJobsMapElt: _directDownloadJobsMap) {
         LOG_SYNCPAL_DEBUG(_logger, "Cancelling download job " << directDownloadJobsMapElt.first);
         if (quit) {
@@ -774,7 +789,7 @@ ExitCode SyncPal::cancelAllDlDirectJobs(bool quit) {
     return ExitCode::Ok;
 }
 
-void SyncPal::setSyncHasFullyCompletedInParms(bool syncHasFullyCompleted) {
+void SyncPal::setSyncHasFullyCompletedInParams(bool syncHasFullyCompleted) {
     setSyncHasFullyCompleted(syncHasFullyCompleted);
 
     bool found = false;
@@ -791,7 +806,7 @@ ExitInfo SyncPal::isRootFolderValid() {
     if (NodeId rootNodeId; IoHelper::getNodeId(localPath(), rootNodeId)) {
         if (rootNodeId.empty()) {
             LOGW_SYNCPAL_WARN(_logger, L"Unable to get root folder nodeId: " << Utility::formatSyncPath(localPath()));
-            return ExitCode::SystemError;
+            return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
         }
 
         if (localNodeId().empty()) {
@@ -805,7 +820,7 @@ ExitInfo SyncPal::isRootFolderValid() {
         return localNodeId() == rootNodeId ? ExitInfo(ExitCode::Ok) : ExitInfo(ExitCode::DataError, ExitCause::SyncDirChanged);
     } else {
         LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getNodeId for root folder: " << Utility::formatSyncPath(localPath()));
-        return ExitCode::SystemError;
+        return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
     }
 }
 
@@ -1007,9 +1022,8 @@ ExitCode SyncPal::syncListUpdated(bool restartSync) {
 
     _blacklistPropagator.reset(new BlacklistPropagator(shared_from_this()));
     _blacklistPropagator->setRestartSyncPal(restartSync);
-    std::function<void(UniqueId)> callback = std::bind(&SyncPal::syncPalStartCallback, this, std::placeholders::_1);
-    _blacklistPropagator->setAdditionalCallback(callback);
-    JobManager::instance()->queueAsyncJob(_blacklistPropagator, Poco::Thread::PRIO_HIGHEST);
+    _blacklistPropagator->setAdditionalCallback(std::bind_front(&SyncPal::syncPalStartCallback, this));
+    SyncJobManagerSingleton::instance()->queueAsyncJob(_blacklistPropagator, Poco::Thread::PRIO_HIGHEST);
 
     return ExitCode::Ok;
 }
@@ -1028,9 +1042,8 @@ ExitCode SyncPal::excludeListUpdated() {
 
     _excludeListPropagator.reset(new ExcludeListPropagator(shared_from_this()));
     _excludeListPropagator->setRestartSyncPal(restartSync);
-    std::function<void(UniqueId)> callback = std::bind(&SyncPal::syncPalStartCallback, this, std::placeholders::_1);
-    _excludeListPropagator->setAdditionalCallback(callback);
-    JobManager::instance()->queueAsyncJob(_excludeListPropagator, Poco::Thread::PRIO_HIGHEST);
+    _excludeListPropagator->setAdditionalCallback(std::bind_front(&SyncPal::syncPalStartCallback, this));
+    SyncJobManagerSingleton::instance()->queueAsyncJob(_excludeListPropagator, Poco::Thread::PRIO_HIGHEST);
 
     return ExitCode::Ok;
 }
@@ -1049,9 +1062,8 @@ ExitCode SyncPal::fixConflictingFiles(bool keepLocalVersion, std::vector<Error> 
 
     _conflictingFilesCorrector.reset(new ConflictingFilesCorrector(shared_from_this(), keepLocalVersion, errorList));
     _conflictingFilesCorrector->setRestartSyncPal(restartSync);
-    std::function<void(UniqueId)> callback = std::bind(&SyncPal::syncPalStartCallback, this, std::placeholders::_1);
-    _conflictingFilesCorrector->setAdditionalCallback(callback);
-    JobManager::instance()->queueAsyncJob(_conflictingFilesCorrector, Poco::Thread::PRIO_HIGHEST);
+    _conflictingFilesCorrector->setAdditionalCallback(std::bind_front(&SyncPal::syncPalStartCallback, this));
+    SyncJobManagerSingleton::instance()->queueAsyncJob(_conflictingFilesCorrector, Poco::Thread::PRIO_HIGHEST);
 
     return ExitCode::Ok;
 }
@@ -1095,12 +1107,12 @@ void SyncPal::start(const std::chrono::seconds &startDelay) {
     bool found;
     if (!ParmsDb::instance()->selectSync(syncDbId(), sync, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::selectSync");
-        addError(Error(syncDbId(), errId(), ExitCode::DbError, ExitCause::Unknown));
+        addError(Error(syncDbId(), ERR_ID, ExitCode::DbError, ExitCause::Unknown));
         return;
     }
     if (!found) {
         LOG_SYNCPAL_WARN(_logger, "Sync not found in sync table for syncDbId=" << syncDbId());
-        addError(Error(syncDbId(), errId(), ExitCode::DataError, ExitCause::Unknown));
+        addError(Error(syncDbId(), ERR_ID, ExitCode::DataError, ExitCause::Unknown));
         return;
     }
     setVfsMode(sync.virtualFileMode());
@@ -1119,14 +1131,14 @@ void SyncPal::start(const std::chrono::seconds &startDelay) {
     ExitCode exitCode = setSyncPaused(false);
     if (exitCode != ExitCode::Ok) {
         LOG_SYNCPAL_DEBUG(_logger, "Error in SyncPal::setSyncPaused");
-        addError(Error(syncDbId(), errId(), exitCode, ExitCause::Unknown));
+        addError(Error(syncDbId(), ERR_ID, exitCode, ExitCause::Unknown));
         return;
     }
 
     exitCode = cleanOldUploadSessionTokens();
     if (exitCode != ExitCode::Ok) {
         LOG_SYNCPAL_DEBUG(_logger, "Error in SyncPal::cleanOldUploadSessionTokens");
-        addError(Error(syncDbId(), errId(), exitCode, ExitCause::Unknown));
+        addError(Error(syncDbId(), ERR_ID, exitCode, ExitCause::Unknown));
     }
 
     // Start main worker
@@ -1159,7 +1171,7 @@ void SyncPal::unpause() {
         ExitCode exitCode = cleanOldUploadSessionTokens();
         if (exitCode != ExitCode::Ok) {
             LOG_SYNCPAL_DEBUG(_logger, "Error in SyncPal::cleanOldUploadSessionTokens");
-            addError(Error(syncDbId(), errId(), exitCode, ExitCause::Unknown));
+            addError(Error(syncDbId(), ERR_ID, exitCode, ExitCause::Unknown));
         }
 
         // Unpause main worker
@@ -1193,7 +1205,7 @@ void SyncPal::stop(bool pausedByUser, bool quit, bool clear) {
         ExitCode exitCode = setSyncPaused(true);
         if (exitCode != ExitCode::Ok) {
             LOG_SYNCPAL_DEBUG(_logger, "Error in SyncPal::setSyncPaused");
-            addError(Error(syncDbId(), errId(), exitCode, ExitCause::Unknown));
+            addError(Error(syncDbId(), ERR_ID, exitCode, ExitCause::Unknown));
         }
     }
 
@@ -1354,12 +1366,13 @@ void SyncPal::removeItemFromTmpBlacklist(const SyncPath &relativePath) {
     _tmpBlacklistManager->removeItemFromTmpBlacklist(relativePath);
 }
 
-ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, ExitCause cause) {
+ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool deleteNodeLater, ExitCause cause) {
     std::shared_ptr<Node> dummyNodePtr;
-    return handleAccessDeniedItem(relativeLocalPath, dummyNodePtr, dummyNodePtr, cause);
+    return handleAccessDeniedItem(relativeLocalPath, deleteNodeLater, dummyNodePtr, dummyNodePtr, cause);
 }
 
-ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std::shared_ptr<Node> &localBlacklistedNode,
+ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool deleteNodeLater,
+                                         std::shared_ptr<Node> &localBlacklistedNode,
                                          std::shared_ptr<Node> &remoteBlacklistedNode, ExitCause cause) {
     if (relativeLocalPath.empty()) {
         LOG_SYNCPAL_WARN(_logger, "Access error on root folder");
@@ -1387,8 +1400,8 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std:
             if (ioError == IoError::AccessDenied) { // A parent of the file does not have sufficient right
                 LOGW_DEBUG(_logger, L"A parent of " << Utility::formatSyncPath(relativeLocalPath)
                                                     << L"does not have sufficient right, blacklisting the parent item.");
-                return handleAccessDeniedItem(relativeLocalPath.parent_path(), localBlacklistedNode, remoteBlacklistedNode,
-                                              cause);
+                return handleAccessDeniedItem(relativeLocalPath.parent_path(), deleteNodeLater, localBlacklistedNode,
+                                              remoteBlacklistedNode, cause);
             }
         }
     }
@@ -1407,15 +1420,29 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, std:
     // Blacklist the item
     if (!localNodeId.empty()) {
         _tmpBlacklistManager->blacklistItem(localNodeId, relativeLocalPath, ReplicaSide::Local);
-        if (!updateTree(ReplicaSide::Local)->deleteNode(localNodeId)) {
-            // Do nothing: Can happen if the UpdateTreeWorker step has never been launched
-        }
     }
 
     if (!remoteNodeId.empty()) {
         _tmpBlacklistManager->blacklistItem(remoteNodeId, relativeLocalPath, ReplicaSide::Remote);
-        if (!updateTree(ReplicaSide::Remote)->deleteNode(remoteNodeId)) {
-            // Do nothing: Can happen if the UpdateTreeWorker step has never been launched
+    }
+
+    // Delete nodes from update trees
+    if (!localNodeId.empty() || !remoteNodeId.empty()) {
+        // Copy the update trees shared ptrs to protect their access
+        auto localUpdateTree = updateTree(ReplicaSide::Local);
+        auto remoteUpdateTree = updateTree(ReplicaSide::Remote);
+        if (!localUpdateTree || !remoteUpdateTree) {
+            // Can happen if the sync is restarting
+            return ExitCode::Ok;
+        }
+
+        // deleteNode can fail if the UpdateTreeWorker has never been launched or the node has been deleted by a concurrent worker
+        if (!localNodeId.empty()) {
+            (void) localUpdateTree->deleteNode(localNodeId, deleteNodeLater);
+        }
+
+        if (!remoteNodeId.empty()) {
+            (void) remoteUpdateTree->deleteNode(remoteNodeId, deleteNodeLater);
         }
     }
 

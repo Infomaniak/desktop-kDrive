@@ -39,6 +39,10 @@ static constexpr short workerDehydration = 1;
 
 namespace KDC {
 
+class Vfs;
+
+using VfsMap = std::unordered_map<int, std::shared_ptr<Vfs>>;
+
 struct VfsSetupParams {
         VfsSetupParams() = default;
         explicit VfsSetupParams(const log4cplus::Logger &logger) :
@@ -87,7 +91,7 @@ class Vfs : public QObject {
 
     public:
         std::array<WorkerInfo, nbWorkers> _workerInfo;
-        static QString modeToString(VirtualFileMode virtualFileMode);
+        static CommString modeToString(VirtualFileMode virtualFileMode);
         static VirtualFileMode modeFromString(const QString &str);
 
         explicit Vfs(const VfsSetupParams &vfsSetupParams, QObject *parent = nullptr);
@@ -112,7 +116,7 @@ class Vfs : public QObject {
          * The plugin-specific work is done in startImpl().
          * Possible return values are:
          * - ExitCode::Ok: Everything went fine.
-         * - ExitCode::LiteSyncError, ExitCause::UnableToCreateVfs: The VFS provider could not be started.
+         * - ExitCode::LiteSyncError, ExitCause::UnableToStartVfs: The VFS provider could not be started.
          */
         ExitInfo start(bool &installationDone, bool &activationDone, bool &connectionDone);
 
@@ -125,7 +129,7 @@ class Vfs : public QObject {
          * Some plugins might provide alternate shell integration, making the normal
          * context menu actions redundant.
          */
-        virtual bool socketApiPinStateActionsShown() const = 0;
+        virtual bool showPinStateActions() const = 0;
 
         /** Update placeholder metadata.
          *
@@ -288,6 +292,14 @@ class Vfs : public QObject {
          */
         virtual ExitInfo getFetchingAppList(QHash<QString, QString> &appTable) = 0;
 
+        /** Set the list of applications that should not be hydrated.
+         *
+         * * Possible return values are:
+         * - ExitCode::Ok: Everything went fine, the list was set.
+         * - ExitCode::LogicError, ExitCause::Unknown: An unknown error occurred.
+         */
+        virtual ExitInfo getFetchingAppList(AppTable &appTable) = 0;
+
         virtual void exclude(const SyncPath &) = 0;
         virtual bool isExcluded(const SyncPath &filePath) = 0;
 
@@ -399,7 +411,7 @@ class VfsOff : public Vfs {
 
         VirtualFileMode mode() const override { return VirtualFileMode::Off; }
 
-        bool socketApiPinStateActionsShown() const override { return false; }
+        bool showPinStateActions() const override { return false; }
 
         ExitInfo updateMetadata(const SyncPath &, time_t, time_t, int64_t, const NodeId &) override { return ExitCode::Ok; }
         ExitInfo createPlaceholder(const SyncPath &, const SyncFileItem &) override { return ExitCode::Ok; }
@@ -423,6 +435,7 @@ class VfsOff : public Vfs {
         }
         ExitInfo setThumbnail(const SyncPath &, const QPixmap &) override { return ExitCode::Ok; }
         ExitInfo setAppExcludeList() override { return ExitCode::Ok; }
+        ExitInfo getFetchingAppList(AppTable &) override { return ExitCode::Ok; }
         ExitInfo getFetchingAppList(QHash<QString, QString> &) override { return ExitCode::Ok; }
         void exclude(const SyncPath &) override { /*VfsOff*/ }
         bool isExcluded(const SyncPath &) override { return false; }

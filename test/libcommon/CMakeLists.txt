@@ -24,6 +24,14 @@ set(testcommon_SRCS
         log/sentry/testsentryhandler.h log/sentry/testsentryhandler.cpp
 )
 
+if(APPLE)
+    list(APPEND testcommon_SRCS ../test_utility/testhelpers_mac.cpp)
+elseif (WIN32)
+    list(APPEND testcommon_SRCS ../test_utility/testhelpers_win.cpp)
+else ()
+    list(APPEND testcommon_SRCS ../test_utility/testhelpers_linux.cpp)
+endif()
+
 if(WIN32)
     include_directories("C:/Program Files (x86)/cppunit/include")
 else()

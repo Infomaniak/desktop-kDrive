@@ -29,22 +29,16 @@ class AbstractLoginJob : public AbstractNetworkJob {
 
         inline const ApiToken &apiToken() const { return _apiToken; }
 
-        bool hasErrorApi(std::string *errorCode = nullptr, std::string *errorDescr = nullptr);
-
     protected:
         ApiToken _apiToken;
 
     private:
-        virtual std::string getSpecificUrl() override;
-        virtual std::string getUrl() override;
-        virtual void setQueryParameters(Poco::URI &, bool &) override {}
-        virtual std::string getContentType(bool &canceled) override;
+        std::string getSpecificUrl() override;
+        std::string getUrl() override;
+        std::string contentType() override;
 
-        virtual bool handleResponse(std::istream &inputStream) override;
-        virtual bool handleError(std::istream &inputStream, const Poco::URI &uri) override;
-
-        std::string _errorCode;
-        std::string _errorDescr;
+        ExitInfo handleResponse(std::istream &inputStream) override;
+        ExitInfo handleError(const std::string &replyBody, const Poco::URI &uri) override;
 };
 
 } // namespace KDC

@@ -17,13 +17,14 @@ set(syncengine_SRCS
     db/syncdb.h db/syncdb.cpp
     db/syncdbreadonlycache.h db/syncdbreadonlycache.cpp
     db/syncnode.h db/syncnode.cpp
-    olddb/oldsyncdb.h olddb/oldsyncdb.cpp
     # Login
     login/login.h login/login.cpp
     # Jobs
     jobs/jobmanager.h jobs/jobmanager.cpp
-    jobs/jobmanagerdata.h jobs/jobmanagerdata.cpp
+    jobs/syncjobmanager.h jobs/syncjobmanager.cpp
+    jobs/jobmanagerdata.h jobs/jobmanagerdata.cpp 
     jobs/abstractjob.h jobs/abstractjob.cpp
+    jobs/syncjob.h jobs/syncjob.cpp
     jobs/abstractpropagatorjob.h
     ## Network jobs
     jobs/network/networkjobsparams.h jobs/network/networkjobsparams.cpp
@@ -36,10 +37,11 @@ set(syncengine_SRCS
     jobs/network/infomaniak_API/getappversionjob.h jobs/network/infomaniak_API/getappversionjob.cpp
     jobs/network/directdownloadjob.h jobs/network/directdownloadjob.cpp
     ### API v2 jobs
+    jobs/network/kDrive_API/backerror.h jobs/network/kDrive_API/backerror.cpp
     jobs/network/abstracttokennetworkjob.h jobs/network/abstracttokennetworkjob.cpp
     jobs/network/kDrive_API/getrootfilelistjob.h jobs/network/kDrive_API/getrootfilelistjob.cpp
     jobs/network/kDrive_API/getfilelistjob.h jobs/network/kDrive_API/getfilelistjob.cpp
-    jobs/network/kDrive_API/initfilelistwithcursorjob.h jobs/network/kDrive_API/initfilelistwithcursorjob.cpp
+    jobs/network/kDrive_API/listing/initfilelistwithcursorjob.h jobs/network/kDrive_API/listing/initfilelistwithcursorjob.cpp
     jobs/network/kDrive_API/listing/abstractlistingjob.h jobs/network/kDrive_API/listing/abstractlistingjob.cpp
     jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.h jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.cpp
     jobs/network/kDrive_API/listing/snapshotitemhandler.h jobs/network/kDrive_API/listing/snapshotitemhandler.cpp
@@ -72,6 +74,7 @@ set(syncengine_SRCS
     jobs/network/kDrive_API/postfilelinkjob.h jobs/network/kDrive_API/postfilelinkjob.cpp
     jobs/network/kDrive_API/getfilelinkjob.h jobs/network/kDrive_API/getfilelinkjob.cpp
     jobs/network/kDrive_API/getsizejob.h jobs/network/kDrive_API/getsizejob.cpp
+    jobs/network/kDrive_API/searchjob.h jobs/network/kDrive_API/searchjob.cpp
     ## Local jobs
     jobs/local/localmovejob.h jobs/local/localmovejob.cpp
     jobs/local/localcopyjob.h jobs/local/localcopyjob.cpp
@@ -195,7 +198,7 @@ target_precompile_headers(${libsyncengine_NAME} PRIVATE ${PC_HEADER_FILES})
 
 set_target_properties(${libsyncengine_NAME} PROPERTIES
         VERSION ${KDRIVE_VERSION}
-        SOVERSION ${KDRIVE_SOVERSION}
+        SOVERSION ${KDRIVE_VERSION_BUILD}
         RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY}
 )
 

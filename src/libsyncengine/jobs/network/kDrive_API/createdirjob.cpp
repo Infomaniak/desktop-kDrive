@@ -73,18 +73,18 @@ ExitInfo CreateDirJob::setData() {
     return ExitCode::Ok;
 }
 
-bool CreateDirJob::handleResponse(std::istream &is) {
-    if (!AbstractTokenNetworkJob::handleResponse(is)) {
-        return false;
+ExitInfo CreateDirJob::handleResponse(std::istream &is) {
+    if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) {
+        return exitInfo;
     }
 
     if (jsonRes()) {
         if (const auto dataObj = jsonRes()->getObject(dataKey); dataObj) {
             if (!JsonParserUtility::extractValue(dataObj, idKey, _nodeId)) {
-                return false;
+                return {};
             }
             if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modtime)) {
-                return false;
+                return {};
             }
         }
 
@@ -97,7 +97,7 @@ bool CreateDirJob::handleResponse(std::istream &is) {
         }
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

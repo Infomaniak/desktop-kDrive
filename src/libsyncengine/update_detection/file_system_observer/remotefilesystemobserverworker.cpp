@@ -17,7 +17,7 @@
  */
 
 #include "remotefilesystemobserverworker.h"
-#include "jobs/jobmanager.h"
+#include "jobs/syncjobmanager.h"
 #include "jobs/network/kDrive_API/listing/continuefilelistwithcursorjob.h"
 #include "jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.h"
 #include "jobs/network/kDrive_API/listing/longpolljob.h"
@@ -116,7 +116,7 @@ ExitInfo RemoteFileSystemObserverWorker::generateInitialSnapshot() {
 
         switch (exitInfo.code()) {
             case ExitCode::NetworkError:
-                _syncPal->addError(Error(errId(), exitInfo));
+                _syncPal->addError(Error(ERR_ID, exitInfo));
                 break;
             case ExitCode::LogicError:
             case ExitCode::InvalidSync:
@@ -197,8 +197,8 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents() {
             break;
         }
 
-        if (std::string errorCode; job->hasErrorApi(&errorCode)) {
-            if (getNetworkErrorCode(errorCode) == NetworkErrorCode::ForbiddenError) {
+        if (job->hasErrorApi()) {
+            if (getNetworkErrorCode(job->backError().code()) == NetworkErrorCode::ForbiddenError) {
                 LOG_SYNCPAL_WARN(_logger, "Access forbidden");
                 exitInfo = ExitCode::Ok;
                 break;
@@ -275,8 +275,8 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
-    JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_LOW);
-    while (!JobManager::instance()->isJobFinished(job->jobId())) {
+    SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_LOW);
+    while (!SyncJobManagerSingleton::instance()->isJobFinished(job->jobId())) {
         if (stopAsked()) {
             return ExitCode::Ok;
         }
@@ -341,7 +341,10 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         }
 
         // Check unsupported characters
-        if (hasUnsupportedCharacters(item.name(), item.id(), item.type())) {
+        if (const auto exitInfo = checkForUnsupportedCharacters(item.name(), item.id(), item.type()); !exitInfo) {
+            if (exitInfo.cause() == ExitCause::TmpDirAccessError) {
+                return exitInfo;
+            }
             continue;
         }
 
@@ -412,8 +415,8 @@ ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
             return AbstractTokenNetworkJob::exception2ExitCode(e);
         }
 
-        JobManager::instance()->queueAsyncJob(notifyJob, Poco::Thread::PRIO_LOW);
-        while (!JobManager::instance()->isJobFinished(notifyJob->jobId())) {
+        SyncJobManagerSingleton::instance()->queueAsyncJob(notifyJob, Poco::Thread::PRIO_LOW);
+        while (!SyncJobManagerSingleton::instance()->isJobFinished(notifyJob->jobId())) {
             if (stopAsked()) {
                 LOG_DEBUG(_logger, "Request " << notifyJob->jobId() << ": aborting LongPoll job");
                 notifyJob->abort();
@@ -439,7 +442,7 @@ ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
                                                                << std::to_string(_driveDbId) << " and cursor: " << _cursor);
 
             if (notifyJob->exitInfo() == ExitInfo(ExitCode::NetworkError, ExitCause::NetworkTimeout)) {
-                _syncPal->addError(Error(errId(), notifyJob->exitInfo()));
+                _syncPal->addError(Error(ERR_ID, notifyJob->exitInfo()));
             }
 
             return notifyJob->exitInfo();
@@ -480,8 +483,12 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
         }
 
         // Check unsupported characters
-        if (hasUnsupportedCharacters(actionInfo.snapshotItem.name(), actionInfo.snapshotItem.id(),
-                                     actionInfo.snapshotItem.type())) {
+        if (const auto exitInfo = checkForUnsupportedCharacters(actionInfo.snapshotItem.name(), actionInfo.snapshotItem.id(),
+                                                                actionInfo.snapshotItem.type());
+            !exitInfo) {
+            if (exitInfo.cause() == ExitCause::TmpDirAccessError) {
+                return exitInfo;
+            }
             continue;
         }
 
@@ -625,7 +632,7 @@ ExitInfo RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, s
                 switch (exitInfo.code()) {
                     case ExitCode::NetworkError:
                         if (exitCause() == ExitCause::NetworkTimeout) {
-                            _syncPal->addError(Error(errId(), exitInfo));
+                            _syncPal->addError(Error(ERR_ID, exitInfo));
                         }
                         break;
                     case ExitCode::LogicError:
@@ -733,30 +740,35 @@ ExitInfo RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &
     return ExitCode::Ok;
 }
 
-bool RemoteFileSystemObserverWorker::hasUnsupportedCharacters(const SyncName &name, const NodeId &nodeId, NodeType type) {
+ExitInfo RemoteFileSystemObserverWorker::checkForUnsupportedCharacters(const SyncName &name, const NodeId &nodeId,
+                                                                       NodeType type) {
+    ExitInfo exitInfo = ExitCode::Ok;
 #if defined(KD_MACOS)
     // Check that the name doesn't contain a character not yet supported by the filesystem (ex: U+1FA77 on pre macOS 13.4)
-    bool valid = false;
+    auto ioError = IoError::Unknown;
     if (type == NodeType::File) {
-        valid = CommonUtility::fileNameIsValid(name);
+        ioError = Utility::tryCreateTmpFile(name);
     } else if (type == NodeType::Directory) {
-        valid = CommonUtility::dirNameIsValid(name);
+        ioError = Utility::tryCreateTmpDir(name);
     }
 
-    if (!valid) {
+    if (ioError == IoError::AccessDenied) {
+        LOGW_SYNCPAL_ERROR(_logger, L"Can't access tmp directory.");
+        exitInfo = {ExitCode::SystemError, ExitCause::TmpDirAccessError};
+        _syncPal->addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
+    } else if (ioError != IoError::Success) {
         LOGW_SYNCPAL_DEBUG(_logger, L"The file/directory name contains a character not yet supported by the filesystem "
                                             << SyncName2WStr(name) << L". Item is ignored.");
-
-        Error err(_syncPal->syncDbId(), "", nodeId, type, name, ConflictType::None, InconsistencyType::NotYetSupportedChar);
-        _syncPal->addError(err);
-        return true;
+        _syncPal->addError(
+                Error(_syncPal->syncDbId(), "", nodeId, type, name, ConflictType::None, InconsistencyType::NotYetSupportedChar));
+        exitInfo = {ExitCode::SystemError, ExitCause::InvalidName};
     }
 #else
     (void) name;
     (void) nodeId;
     (void) type;
 #endif
-    return false;
+    return exitInfo;
 }
 
 void RemoteFileSystemObserverWorker::countListingRequests() {

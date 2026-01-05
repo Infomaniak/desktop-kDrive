@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "info/searchinfo.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/info/userinfo.h"
 #include "libcommon/info/accountinfo.h"
@@ -45,18 +46,13 @@ struct GuiRequests {
         // Use COMM_SHORT_TIMEOUT
         static ExitCode getUserDbIdList(QList<int> &list);
         static ExitCode getUserInfoList(QList<UserInfo> &list);
-        static ExitCode getUserIdFromUserDbId(int userDbId, int &userId);
         static ExitCode getAccountInfoList(QList<AccountInfo> &list);
         static ExitCode getDriveInfoList(QList<DriveInfo> &list);
-        static ExitCode getDriveIdFromDriveDbId(int driveDbId, int &driveId);
-        static ExitCode getDriveIdFromSyncDbId(int syncDbId, int &driveId);
-        static ExitCode getDriveDefaultColor(QColor &color);
         static ExitCode updateDrive(const DriveInfo &driveInfo);
         static ExitCode getSyncInfoList(QList<SyncInfo> &list);
         static ExitCode getSyncStatus(int syncDbId, SyncStatus &status);
-        static ExitCode getSyncIsRunning(int syncDbId, bool &running);
-        static ExitCode getSyncIdSet(int syncDbId, SyncNodeType type, QSet<QString> &syncIdSet);
-        static ExitCode setSyncIdSet(int syncDbId, SyncNodeType type, const QSet<QString> &syncIdSet);
+        static ExitCode getBlacklistedNodeIdSet(int syncDbId, QSet<QString> &syncIdSet);
+        static ExitCode setBlacklistedNodeIdSet(int syncDbId, const QSet<QString> &syncIdSet);
         static ExitCode getParameters(ParametersInfo &parametersInfo);
         static ExitCode updateParameters(const ParametersInfo &parametersInfo);
         static ExitCode getNodePath(int syncDbId, const QString &nodeId, QString &path);
@@ -114,8 +110,9 @@ struct GuiRequests {
         static ExitCode checkCommStatus(); // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitCode deleteUser(int userDbId); // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitCode deleteDrive(int driveDbId); // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitCode searchItemInDrive(int driveDbId, const QString &searchString, QList<SearchInfo> &list, bool &hasMore,
+                                          QString &cursor); // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitCode deleteSync(int syncDbId); // Asynchronous because it can be time consuming
-        static ExitCode propagateSyncListChange(int syncDbId, bool restartSync);
         static ExitCode bestAvailableVfsMode(VirtualFileMode &mode);
         static ExitCode propagateExcludeListChange(); // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitCode hasSystemLaunchOnStartup(bool &enabled);
@@ -134,6 +131,5 @@ struct GuiRequests {
         static ExitCode startInstaller();
         static ExitCode skipUpdate(const std::string &version);
         static ExitCode reportClientDisplayed();
-        static ExitCode getOfflineFilesTotalSize(int driveDbId, uint64_t &totalSize);
 };
 } // namespace KDC

@@ -22,9 +22,6 @@
 #include "mocks/libsyncengine/vfs/mockvfs.h"
 
 #include "test_utility/testhelpers.h"
-#if defined(KD_MACOS)
-#include "vfs/mac/vfs_mac.h"
-#endif
 
 #include <memory>
 
@@ -263,7 +260,7 @@ void TestConflictResolverWorker::testEditDelete1() {
         _syncPal->_syncOps->clear();
 
         // Simulate edit of file A/AA/AAA on local replica
-        const auto editNodeAAA = _testSituationGenerator.editNode(editSide, "aaa");
+        const auto editNodeAAA = _testSituationGenerator.getNode(ReplicaSide::Local, "aaa");
         editNodeAAA->setChangeEvents(OperationType::Edit);
 
         // and delete of file A/AA/AAA on remote replica
@@ -292,7 +289,7 @@ void TestConflictResolverWorker::testEditDelete2() {
         _syncPal->_syncOps->clear();
 
         // Simulate edit of file A/AA/AAA on editSide replica
-        const auto editNodeAAA = _testSituationGenerator.editNode(editSide, "aaa");
+        const auto editNodeAAA = _testSituationGenerator.getNode(editSide, "aaa");
         editNodeAAA->setChangeEvents(OperationType::Edit);
 
         // and delete of dir A/AA (and all children) on otherSide(editSide) replica
@@ -302,6 +299,7 @@ void TestConflictResolverWorker::testEditDelete2() {
         const Conflict conflict(deleteNodeAAA, editNodeAAA, ConflictType::EditDelete);
         _syncPal->_conflictQueue->push(conflict);
         _syncPal->_conflictResolverWorker->execute();
+
         CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), _syncPal->_syncOps->size());
         const auto opId = _syncPal->_syncOps->opSortedList().front();
         return _syncPal->_syncOps->getOp(opId);

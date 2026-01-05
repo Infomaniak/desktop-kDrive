@@ -1,0 +1,388 @@
+﻿using CommunityToolkit.WinUI;
+using Infomaniak.kDrive.ViewModels;
+using Microsoft.UI;
+using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Security;
+using System.Threading.Tasks;
+using Windows.Graphics;
+
+namespace Infomaniak.kDrive
+{
+    public static class Utility
+    {
+        public static async Task RunOnUIThread(Action action)
+        {
+            var dispatcher = AppModel.UIThreadDispatcher;
+            if (dispatcher.HasThreadAccess)
+            {
+                action();
+            }
+            else
+            {
+                TaskCompletionSource taskCompletionSource = new TaskCompletionSource();
+                await dispatcher.EnqueueAsync(() =>
+                {
+                    try
+                    {
+                        action();
+                        taskCompletionSource.SetResult();
+                    }
+                    catch (Exception ex)
+                    {
+                        taskCompletionSource.SetException(ex);
+                    }
+                });
+                await taskCompletionSource.Task;
+            }
+        }
+
+        public static bool OpenFolderSecurely(string folderPath)
+        {
+            // Validate input
+            if (string.IsNullOrWhiteSpace(folderPath))
+            {
+                Logger.Log(Logger.Level.Warning, "Cannot open the FolderPath which is null or empty.");
+                return false;
+            }
+
+            // Prevent UNC paths
+            if (folderPath.StartsWith(@"\\", StringComparison.OrdinalIgnoreCase))
+            {
+                Logger.Log(Logger.Level.Warning, $"Access to UNC paths is restricted ({folderPath}).");
+                return false;
+            }
+
+            string fullPath;
+            try
+            {
+                fullPath = Path.GetFullPath(folderPath);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(Logger.Level.Error, $"Invalid path format provided ({folderPath}): {ex.Message}");
+                return false;
+            }
+
+            if (!Directory.Exists(fullPath))
+            {
+                Logger.Log(Logger.Level.Warning, $"The specified folder does not exist: {fullPath}");
+                return false;
+            }
+
+            ProcessStartInfo startInfo = new ProcessStartInfo
+            {
+                FileName = "explorer.exe",
+                Arguments = $"\"{fullPath}\"",
+                UseShellExecute = true,
+                CreateNoWindow = true
+            };
+
+            Process.Start(startInfo);
+            return true;
+        }
+
+        public static string DefaultSyncPath(string DriveName, List<string>? reservedPaths = null)
+        {
+            string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            string defaultPath = Path.Combine(userProfile, $"kDrive {DriveName}");
+
+            if (!Utility.CheckSyncPathValidity(defaultPath, out string errorMessage, reservedPaths))
+            {
+                Logger.Log(Logger.Level.Warning, $"Default sync path '{defaultPath}' is not valid: {errorMessage}. Falling back to numbered paths.");
+                int number = 1;
+                do
+                {
+                    defaultPath = Path.Combine(userProfile, number > 0 ? $"kDrive ({number})" : "kDrive");
+                    number++;
+                } while (!Utility.CheckSyncPathValidity(defaultPath, out errorMessage, reservedPaths) && number < 500);
+
+                if (number >= 500)
+                {
+                    Logger.Log(Logger.Level.Error, "Unable to find a valid default sync path after 500 attempts.");
+                    throw new Exception("Unable to find a valid default sync path after 500 attempts.");
+                }
+                Logger.Log(Logger.Level.Info, $"Using fallback sync path: {defaultPath}");
+            }
+            return defaultPath;
+        }
+
+        public static bool CheckSyncPathValidity(string path, out string errorMessage, List<string>? reservedPaths = null)
+        {
+            if (reservedPaths?.Contains(path) ?? false)
+            {
+                errorMessage = "The path is already in use by another sync.";
+                return false;
+            }
+
+            errorMessage = string.Empty;
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                errorMessage = "The path cannot be empty.";
+                return false;
+            }
+            // Check for invalid characters
+            char[] invalidChars = Path.GetInvalidPathChars();
+            if (path.IndexOfAny(invalidChars) >= 0)
+            {
+                errorMessage = "The path contains invalid characters.";
+                return false;
+            }
+            // Check for reserved names (Windows specific)
+            string[] reservedNames = new string[]
+            {
+                "CON", "PRN", "AUX", "NUL",
+                "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+                "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
+            };
+            string directoryName = Path.GetFileName(path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+            if (reservedNames.Contains(directoryName, StringComparer.OrdinalIgnoreCase))
+            {
+                errorMessage = $"The path contains a reserved name: {directoryName}.";
+                return false;
+            }
+
+            // Check if the path is a folder (not a file)
+            DirectoryInfo dirInfo = new DirectoryInfo(path);
+            if (!dirInfo.Exists)
+            {
+                return true;
+            }
+
+            if (dirInfo.Exists && (dirInfo.Attributes & FileAttributes.Directory) == 0)
+            {
+                errorMessage = "The specified path is not a directory.";
+                return false;
+            }
+
+            // Check if the directory is writable
+            try
+            {
+                string testFilePath = Path.Combine(path, Path.GetRandomFileName());
+                using (FileStream fs = File.Create(testFilePath, 1, FileOptions.DeleteOnClose))
+                {
+                    // Successfully created a file, so the directory is writable
+                }
+            }
+            catch (UnauthorizedAccessException)
+            {
+                errorMessage = "The application does not have permission to write to this directory.";
+                return false;
+            }
+            catch (DirectoryNotFoundException)
+            {
+                // The directory does not exist, which is normal for a new sync folder
+            }
+            catch (IOException ioEx)
+            {
+                errorMessage = $"An I/O error occurred while accessing the directory: {ioEx.Message}";
+                return false;
+            }
+            catch (SecurityException)
+            {
+                errorMessage = "The application does not have the required security permissions for this directory.";
+                return false;
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"An unexpected error occurred: {ex.Message}";
+                return false;
+            }
+
+            // Check if the directory is not a system or hidden folder
+            if (dirInfo.Exists && (dirInfo.Attributes.HasFlag(FileAttributes.System) || dirInfo.Attributes.HasFlag(FileAttributes.Hidden)))
+            {
+                errorMessage = "The specified directory is a system or hidden folder.";
+                return false;
+            }
+
+            // Check if the directory is a reparse point (e.g., symbolic link or mount point)
+            if (dirInfo.Exists && (dirInfo.Attributes & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint)
+            {
+                errorMessage = "The specified directory is a reparse point (e.g., symbolic link or mount point), which is not allowed.";
+                return false;
+            }
+
+            // Check if the directory is empty
+            if (dirInfo.Exists && dirInfo.EnumerateFileSystemInfos().Any())
+            {
+                errorMessage = "The specified directory is not empty.";
+                return false;
+            }
+
+            // Additional checks can be added here as needed
+            return true;
+        }
+
+        public static bool SupportOnlineSync(string path)
+        {
+            // Check if the path is on an NTFS volume
+            var root = Path.GetPathRoot(path);
+            if (root == null)
+                return false;
+
+            if (path == root)
+                return false;
+
+            DriveInfo driveInfo = new DriveInfo(root);
+            try
+            {
+                return driveInfo.DriveFormat.Equals("NTFS", StringComparison.OrdinalIgnoreCase);
+            }
+            catch (IOException)
+            {
+                Logger.Log(Logger.Level.Warning, $"IO Exception when accessing drive info for path: {path}");
+                return false;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                Logger.Log(Logger.Level.Warning, $"Unauthorized Access when accessing drive info for path: {path}");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(Logger.Level.Warning, $"Unexpected error when accessing drive info for path: {path}. Error: {ex.Message}");
+                return false;
+            }
+        }
+
+
+        public static class DpiHelper
+        {
+            [DllImport("User32.dll")]
+            private static extern uint GetDpiForWindow(IntPtr hWnd);
+
+            public static double GetScaleForWindow(IntPtr hWnd)
+            {
+                uint dpi = GetDpiForWindow(hWnd);
+                return dpi / 96.0; // 96 DPI = 100%
+            }
+        }
+        public static void SetWindowProperties(Window window, int width, int height, bool resizable)
+        {
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
+            var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+            var appWindow = AppWindow.GetFromWindowId(windowId);
+            if (appWindow != null && appWindow.Presenter is OverlappedPresenter presenter)
+            {
+                presenter.IsMaximizable = true;
+                presenter.IsMinimizable = true;
+                presenter.IsResizable = resizable;
+
+                // Use the RasterizationScale to scale the desired size
+                double scale = DpiHelper.GetScaleForWindow(hWnd);
+
+                int scaledWidth = (int)(width * scale);
+                int scaledHeight = (int)(height * scale);
+                presenter.PreferredMinimumWidth = scaledWidth;
+                presenter.PreferredMinimumHeight = scaledHeight;
+                appWindow.Resize(new SizeInt32(scaledWidth, scaledHeight));
+            }
+        }
+        public static string GetLocalizedString(string key)
+        {
+            return GetLocalizedString(key, null);
+        }
+
+        public static string GetLocalizedString(string key, params object?[]? args)
+        {
+            var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
+            string? localizedString = resourceLoader.GetString(key);
+
+            if(localizedString is null || localizedString.Length == 0)
+            {
+                Logger.Log(Logger.Level.Warning, $"Missing localization for key: {key} in current culture {System.Globalization.CultureInfo.CurrentUICulture.Name}");
+                localizedString = key; // Fallback to the key itself if not found
+            }
+
+            // Replace literal \r\n with real newlines
+            localizedString = localizedString.Replace("\\r\\n", Environment.NewLine);
+
+            // Format the string if arguments are provided
+            if (args != null && args.Length > 0)
+            {
+                localizedString = string.Format(localizedString, args);
+            }
+
+            return localizedString;
+        }
+
+        // Convert any enum value to a string
+        public static string ToString(Enum value)
+        {
+            return value.ToString();
+        }
+
+        public static void SetEnumComboBoxSelection<TEnum>(ComboBox comboBox, TEnum value) where TEnum : struct, Enum
+        {
+            foreach (var item in comboBox.Items)
+            {
+                if (item is ComboBoxItem comboBoxItem && comboBoxItem.Tag is string tagString && Enum.TryParse<TEnum>(tagString, out TEnum itemValue) && itemValue.Equals(value))
+                {
+                    comboBox.SelectedItem = comboBoxItem;
+                    return;
+                }
+            }
+        }
+
+        public static async Task<ContentDialogResult> ShowContentDialog(XamlRoot xamlRoot, string xuid)
+        {
+            ContentDialog dialog = new ContentDialog();
+
+            dialog.XamlRoot = xamlRoot;
+            dialog.Title = Utility.GetLocalizedString(xuid + "/Title");
+            dialog.PrimaryButtonText = Utility.GetLocalizedString(xuid + "/PrimaryButtonText");
+            dialog.SecondaryButtonText = Utility.GetLocalizedString(xuid + "/SecondaryButtonText");
+            dialog.DefaultButton = ContentDialogButton.Primary;
+            dialog.Content = Utility.GetLocalizedString(xuid + "/Content");
+            var result = await dialog.ShowAsync();
+            return result;
+        }
+
+
+        public static string? ToBase64String(string? data)
+        {
+            if (data is null)
+                return null;
+            return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(data));
+        }
+
+        public static bool IsSubPathOf(string path, string prefix)
+        {
+            if (!path.StartsWith(prefix))
+                return false;
+
+            if (path.Length == prefix.Length)
+                return true;
+
+            char nextChar = path[prefix.Length];
+            return nextChar == Path.DirectorySeparatorChar || nextChar == Path.AltDirectorySeparatorChar;
+        }
+
+        public static Frame? GetFrame(Control control)
+        {
+            DependencyObject? parent = control;
+            while (parent is not null)
+            {
+                if (parent is Frame frame)
+                    return frame;
+
+                parent = VisualTreeHelper.GetParent(parent);
+            }
+            return null;
+        }
+    }
+}
+
+
+
+
+

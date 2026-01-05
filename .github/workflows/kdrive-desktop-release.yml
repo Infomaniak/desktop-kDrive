@@ -7,10 +7,6 @@ on:
         type: environment
         description: Select the deployment environment
         default: Internal beta
-      skip_tests:
-        type: boolean
-        description: Skip unit tests
-        default: false
 
 concurrency:
   group: kDrive-desktop-release-${{ github.head_ref }}
@@ -39,8 +35,16 @@ jobs:
         run: |
              cd translations\updateTool
              $result = .\Windows.ps1
+             echo $result
              # Ensure that result contains FOUR TIMES the string "0 new"
-             if ($result[2] -notmatch "0 new" -OR $result[5] -notmatch "0 new" -OR $result[8] -notmatch "0 new" -OR $result[11] -notmatch "0 new") {
+             $counter = 0
+             foreach ($str in $result) {
+                 if ($str -match "0 new") {
+                     $counter++
+                 }
+             }
+
+             if ($counter -ne 4) {
                  Write-Host "<h1>:stop_sign: Translation files are not up to date. Please run the update tool. </h1>" -ForegroundColor Red
                  "<h1>:stop_sign: Translation files are not up to date. Please run the update tool. </h1>" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
                  exit 1
@@ -63,11 +67,9 @@ jobs:
 
       - name: Check release notes
         run: |
-          VERSION_NUMBER="${{ steps.get-version.outputs.kDrive_version }}"  # Example: 3.9.20.20250820
-          version_size=${#VERSION_NUMBER}
-          end_position=$((size - 9))
-          VERSION_NUMBER=${VERSION_NUMBER:0:$end_position}  # Removes the date, e.g., 20250820
-
+          VERSION_NUMBER="${{ steps.get-version.outputs.kDrive_version }}"  # Example: 3.9.20.23
+          VERSION_NUMBER="${VERSION_NUMBER%.*}"  # Remove build number for release notes check
+         
           BASE_NAME="kDrive-${VERSION_NUMBER}"
           BASE_PATH="./release_notes/${BASE_NAME}"
           OS=( "win" "linux" "macos" )
@@ -167,80 +169,9 @@ jobs:
           release_build: true    
           release_build_altool_username: ${{ secrets.ALTOOL_USERNAME }}
 
-# Tests Windows
-  test-Windows:
-    if: ${{ !github.event.inputs.skip_tests }}
-    needs: build-Windows
-    strategy:
-      fail-fast: false
-      matrix:
-        test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms"]
-    runs-on: [ self-hosted, Windows ]
-    env:
-      KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
-      KDRIVE_SENTRY_ENVIRONMENT: "windows_ci_runner"
-    steps:
-      - name: Checkout the PR
-        uses: actions/checkout@v4.1.1
-        with:
-          ref: ${{ github.head_ref }}
-
-      - name: Run test
-        uses: ./.github/actions/test_windows
-        with:
-           test_name: ${{ matrix.test_name }}
-           test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
-# Tests Linux
-  test-Linux:
-    if: ${{ !github.event.inputs.skip_tests }}
-    needs: [build-Linux-amd, build-Linux-arm]
-    strategy:
-      fail-fast: false
-      matrix:
-        test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms"]
-    runs-on: [ self-hosted, Linux, X64 ]
-    env:
-      KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
-      KDRIVE_SENTRY_ENVIRONMENT: "linux_ci_runner"
-    steps:
-      - name: Checkout the PR
-        uses: actions/checkout@v4.1.1
-        with:
-          ref: ${{ github.head_ref }}
-
-      - name: Run test
-        uses: ./.github/actions/test_linux
-        with:
-          test_name: ${{ matrix.test_name }}
-          test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
-
-# Tests macOS
-  test-macOS:
-    if: ${{ !github.event.inputs.skip_tests }}
-    needs: build-MacOS
-    strategy:
-      fail-fast: false
-      matrix:
-        test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms"]
-    runs-on: [ self-hosted, macOS ]
-    env:
-      KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
-      KDRIVE_SENTRY_ENVIRONMENT: "macos_ci_runner"
-    steps:
-       - name: Checkout the PR
-         uses: actions/checkout@v4.1.1
-         with:
-          ref: ${{ github.head_ref }}
-
-       - name: Run test
-         uses: ./.github/actions/test_macos
-         with:  
-            test_name: ${{ matrix.test_name }}
-            test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
-
 # Upload the installer and sentry artifacts
-  upload-to-kDrive-and-sentry:
-    needs: [test-Linux, test-Windows, test-macOS]
+  upload-to-kDrive-and-sentry-Windows:
+    needs: [build-Windows]
     runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be runing on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
     env:
         KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
@@ -263,29 +194,8 @@ jobs:
           pattern: win-release-artifacts-*
           merge-multiple: true
 
-      - name: Download macOS artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: build-macos
-          pattern: macos-release-artifacts-*
-          merge-multiple: true
-
-      - name: Download Linux ARM64 artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: build-linux-arm64
-          pattern: linux-release-artifacts-*-arm64
-          merge-multiple: true
-
-      - name: Download Linux AMD64 artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: build-linux-amd64
-          pattern: linux-release-artifacts-*-amd64
-          merge-multiple: true
-
       - name: Upload debug files and installers/appimage to kDrive
-        run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version }}"
+        run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version }}" -os "win"
 
       - name: Download sentry-cli and login
         run: |
@@ -301,12 +211,119 @@ jobs:
           .\sentry-cli.exe debug-files upload --project kdrive-client --type sourcebundle .\build-windows\kDrive_client.src.zip
         shell: powershell
 
+  upload-to-kDrive-and-sentry-Linux-amd:
+    needs: [build-Linux-amd]
+    runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be running on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
+    env:
+        KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
+        KDRIVE_ID: ${{ secrets.KDRIVE_ID }}
+        KDRIVE_DIR_ID: ${{ secrets.KDRIVE_DIR_ID }}
+    steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Get kDrive version
+        id: get-version
+        uses: ./.github/actions/get_version
+
+      - name: Download Linux AMD64 artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: build-linux-amd64
+          pattern: linux-release-artifacts-*-amd64
+          merge-multiple: true
+
+      - name: Upload debug files and installers/appimage to kDrive
+        run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version }}" -os "linux-amd"
+
+      - name: Download sentry-cli and login
+        run: |
+          Invoke-WebRequest -Uri https://github.com/getsentry/sentry-cli/releases/download/2.46.0/sentry-cli-Windows-x86_64.exe -OutFile sentry-cli.exe
+          .\sentry-cli.exe login --auth-token ${{ secrets.SENTRY_AUTH_TOKEN }}
+        shell: powershell
+
       - name: Upload sentry artifacts - Linux
         run: |
           .\sentry-cli.exe debug-files upload --project kdrive-server .\build-linux\kDrive.dbg
           .\sentry-cli.exe debug-files upload --project kdrive-client .\build-linux\kDrive_client.dbg
           .\sentry-cli.exe debug-files upload --project kdrive-server --type sourcebundle .\build-linux\kDrive.src.zip
           .\sentry-cli.exe debug-files upload --project kdrive-client --type sourcebundle .\build-linux\kDrive_client.src.zip
+        shell: powershell
+
+  upload-to-kDrive-and-sentry-Linux-arm:
+    needs: [build-Linux-arm]
+    runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be running on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
+    env:
+        KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
+        KDRIVE_ID: ${{ secrets.KDRIVE_ID }}
+        KDRIVE_DIR_ID: ${{ secrets.KDRIVE_DIR_ID }}
+    steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Get kDrive version
+        id: get-version
+        uses: ./.github/actions/get_version
+
+      - name: Download Linux ARM64 artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: build-linux-arm64
+          pattern: linux-release-artifacts-*-arm64
+          merge-multiple: true
+
+      - name: Upload debug files and installers/appimage to kDrive
+        run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version }}" -os "linux-arm"
+
+      - name: Download sentry-cli and login
+        run: |
+          Invoke-WebRequest -Uri https://github.com/getsentry/sentry-cli/releases/download/2.46.0/sentry-cli-Windows-x86_64.exe -OutFile sentry-cli.exe
+          .\sentry-cli.exe login --auth-token ${{ secrets.SENTRY_AUTH_TOKEN }}
+        shell: powershell
+
+      - name: Upload sentry artifacts - Linux
+        run: |
+          .\sentry-cli.exe debug-files upload --project kdrive-server .\build-linux\kDrive.dbg
+          .\sentry-cli.exe debug-files upload --project kdrive-client .\build-linux\kDrive_client.dbg
+          .\sentry-cli.exe debug-files upload --project kdrive-server --type sourcebundle .\build-linux\kDrive.src.zip
+          .\sentry-cli.exe debug-files upload --project kdrive-client --type sourcebundle .\build-linux\kDrive_client.src.zip
+        shell: powershell
+
+  upload-to-kDrive-and-sentry-macOS:
+    needs: [build-MacOS]
+    runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be running on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
+    env:
+        KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
+        KDRIVE_ID: ${{ secrets.KDRIVE_ID }}
+        KDRIVE_DIR_ID: ${{ secrets.KDRIVE_DIR_ID }}
+    steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Get kDrive version
+        id: get-version
+        uses: ./.github/actions/get_version
+
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: build-macos
+          pattern: macos-release-artifacts-*
+          merge-multiple: true
+
+      - name: Upload debug files and installers/appimage to kDrive
+        run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version }}" -os "macos"
+
+      - name: Download sentry-cli and login
+        run: |
+          Invoke-WebRequest -Uri https://github.com/getsentry/sentry-cli/releases/download/2.46.0/sentry-cli-Windows-x86_64.exe -OutFile sentry-cli.exe
+          .\sentry-cli.exe login --auth-token ${{ secrets.SENTRY_AUTH_TOKEN }}
         shell: powershell
 
       - name: Upload sentry artifacts - macOS

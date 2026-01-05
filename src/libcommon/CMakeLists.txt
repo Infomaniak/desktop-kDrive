@@ -23,8 +23,9 @@ add_definitions(-D_UNICODE)
 # Sources
 set(libcommon_SRCS
     comm.h
+    utility/cstypes.h
     utility/types.h utility/types.cpp
-    utility/utility.h utility/utility.cpp
+    utility/utility_base.h utility/utility.h utility/utility.cpp
     utility/filename.h utility/commonmacros.h utility/coveragemacros.h
     utility/logiffail.h utility/qlogiffail.h
     utility/jsonparserutility.h
@@ -44,6 +45,7 @@ set(libcommon_SRCS
     info/exclusiontemplateinfo.h info/exclusiontemplateinfo.cpp
     info/exclusionappinfo.h info/exclusionappinfo.cpp
     info/proxyconfiginfo.h info/proxyconfiginfo.cpp
+    info/searchinfo.h info/searchinfo.cpp
     log/sentry/handler.h log/sentry/handler.cpp
     log/sentry/abstractptrace.h 
     log/sentry/abstractcounterscopedptrace.h
@@ -95,7 +97,7 @@ target_precompile_headers(${libcommon_NAME} PRIVATE ${PC_HEADER_FILES})
 
 set_target_properties(${libcommon_NAME} PROPERTIES
     VERSION ${KDRIVE_VERSION}
-    SOVERSION ${KDRIVE_SOVERSION}
+    SOVERSION ${KDRIVE_VERSION_BUILD}
     RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY}
 )
 
@@ -132,6 +134,13 @@ target_link_libraries(${libcommon_NAME}
 if(UNIX)
     target_link_libraries(${libcommon_NAME}
         utf8proc)
+    if(NOT APPLE)
+        target_link_libraries(${libcommon_NAME}
+                "uuid")   # For UUID generation
+    endif()
+elseif(WIN32)
+    target_link_libraries(${libcommon_NAME}
+            "rpcrt4.lib")   # For UUID generation
 endif()
 
 if(APPLE)

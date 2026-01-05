@@ -68,41 +68,32 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *buf, IoError &ioEr
      * If the file system does not support extended attributes, a warning will be logged and the creation time will be set to the
      * ctime of the file.
      */
+    buf->creationTime = sb.stx_ctime.tv_sec;
     if (sb.stx_mask & STATX_BTIME) {
         buf->creationTime = sb.stx_btime.tv_sec; // The file system supports creation time
-    } else if (static const std::string btimeXattrName = "user.kDrive.birthtime";
-               lgetxattr(path.string().c_str(), btimeXattrName.c_str(), &buf->creationTime, sizeof(buf->creationTime)) < 0) {
-        buf->creationTime = sb.stx_ctime.tv_sec;
+    } else if (static const auto btimeXattrName = "user.kDrive.birthtime";
+               lgetxattr(path.string().c_str(), btimeXattrName, &buf->creationTime, sizeof(buf->creationTime)) < 0) {
         if (const auto err = errno; err == ENODATA) {
-            if (lsetxattr(path.string().c_str(), btimeXattrName.c_str(), &buf->creationTime, sizeof(buf->creationTime), 0) < 0) {
+            if (lsetxattr(path.string().c_str(), btimeXattrName, &buf->creationTime, sizeof(buf->creationTime), 0) < 0) {
                 LOG_ERROR(logger(), "Failed to set user.kDrive.birthtime extended attribute: " << strerror(errno));
             }
         } else if (err == ENOTSUP) {
             if (!_unsuportedFSLogged) {
                 LOG_ERROR(logger(), "The file system does not support extended attributes: " << strerror(errno));
-                sentry::Handler::captureMessage(sentry::Level::Warning, "Unsuported file system",
+                sentry::Handler::captureMessage(sentry::Level::Warning, "Unsupported file system",
                                                 "The file system does not support neither creation time nor extended attributes");
                 _unsuportedFSLogged = true;
             }
         } else {
-            LOG_ERROR(logger(), "Failed to get user.kDrive.birthtime extended attribute: " << strerror(errno));
+            LOG_ERROR(logger(), "Failed to get 'user.kDrive.birthtime' extended attribute: " << strerror(errno));
         }
     }
 
     buf->modificationTime = sb.stx_mtime.tv_sec;
     buf->size = static_cast<int64_t>(sb.stx_size);
-    if (S_ISLNK(sb.stx_mode)) {
-        // The item is a symlink.
-        struct stat sbTarget;
-        if (stat(path.string().c_str(), &sbTarget) < 0) {
-            // Cannot access target => undetermined
-            buf->nodeType = NodeType::Unknown;
-        } else {
-            buf->nodeType = S_ISDIR(sbTarget.st_mode) ? NodeType::Directory : NodeType::File;
-        }
-    } else {
-        buf->nodeType = S_ISDIR(sb.stx_mode) ? NodeType::Directory : NodeType::File;
-    }
+    buf->nodeType = S_ISDIR(sb.stx_mode) ? NodeType::Directory : NodeType::File;
+
+    if (S_ISLNK(sb.stx_mode)) buf->nodeType = getTargetNodeType(path);
 
     return true;
 }
@@ -120,6 +111,58 @@ IoError IoHelper::setFileDates(const SyncPath &filePath, const SyncTime /*creati
     }
 
     return IoError::Success;
+}
+
+IoError IoHelper::lock(const SyncPath &) noexcept {
+    return IoError::Success; // Only on macOS
+}
+
+IoError IoHelper::unlock(const SyncPath &) noexcept {
+    return IoError::Success; // Only on macOS
+}
+
+IoError IoHelper::isLocked(const SyncPath &, bool &locked) noexcept {
+    locked = false;
+    return IoError::Success; // Only on macOS
+}
+
+bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
+    std::string desktopType;
+    if (!Utility::getLinuxDesktopType(desktopType)) {
+        desktopType = "GNOME";
+    }
+
+    std::string command;
+    if (desktopType == "GNOME") {
+        command = "gio trash \"" + itemPath.string() + "\"";
+    } else if (desktopType == "KDE") {
+        command = "kioclient move \"" + itemPath.string() + "\" trash:/files/";
+    } else {
+        // Not implemented for the others distros
+        return true;
+    }
+
+    const SyncPath trashPath = Utility::getTrashPath();
+
+    // Check if the trash/files & trash/info path exists and create it if needed
+    if (std::error_code ec; !std::filesystem::exists(trashPath, ec)) {
+        if (ec) {
+            LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::exists - " << Utility::formatStdError(ec));
+            return false;
+        }
+
+        if (!std::filesystem::create_directories(trashPath)) {
+            LOGW_WARN(Log::instance()->getLogger(), L"Failed to create directory - " << Utility::formatSyncPath(trashPath));
+            return false;
+        }
+    }
+
+    if (const auto result = system(command.c_str()); result) {
+        LOG_WARN(Log::instance()->getLogger(), "Failed to move item to trash - err=" << std::to_string(result));
+        return false;
+    }
+
+    return true;
 }
 
 } // namespace KDC

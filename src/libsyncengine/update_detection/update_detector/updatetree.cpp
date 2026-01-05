@@ -48,7 +48,7 @@ void UpdateTree::insertNode(std::shared_ptr<Node> node) {
     _nodes[*node->id()] = node;
 }
 
-bool UpdateTree::deleteNode(std::shared_ptr<Node> node, int depth) {
+bool UpdateTree::deleteNode(std::shared_ptr<Node> node, bool deleteNodeLater, int depth) {
     if (!node) {
         return false;
     }
@@ -61,21 +61,26 @@ bool UpdateTree::deleteNode(std::shared_ptr<Node> node, int depth) {
 
     // Recursively remove all children
     while (node->children().size() > 0) {
-        if (!deleteNode((node->children().begin())->second, depth + 1)) {
+        if (!deleteNode((node->children().begin())->second, deleteNodeLater, depth + 1)) {
             return false;
         }
     }
 
-    // Remove node from tree
-    node->parentNode()->deleteChildren(node);
-    _nodes.erase(*node->id());
+    if (deleteNodeLater) {
+        // Mark the node as to be deleted
+        node->setStatus(NodeStatus::ToDelete);
+    } else {
+        // Remove node from tree
+        node->parentNode()->deleteChildren(node);
+        _nodes.erase(*node->id());
+    }
 
     return true;
 }
 
-bool UpdateTree::deleteNode(const NodeId &id) {
+bool UpdateTree::deleteNode(const NodeId &id, bool deleteNodeLater) {
     const auto node = getNodeById(id);
-    return deleteNode(node);
+    return deleteNode(node, deleteNodeLater);
 }
 
 std::shared_ptr<Node> UpdateTree::getNodeByPath(const SyncPath &path) {

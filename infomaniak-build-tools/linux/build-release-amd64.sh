@@ -126,9 +126,6 @@ build_release() {
 
   source "$conan_generator_folder/conanbuild.sh"
 
-  # Set defaults
-  export SUFFIX=""
-
   # Build client
   mkdir -p "$build_dir/build"
   cd "$build_dir/build"
@@ -141,10 +138,8 @@ build_release() {
       -DCMAKE_BUILD_TYPE=$build_type \
       -DCMAKE_INSTALL_PREFIX=/usr \
       -DBIN_INSTALL_DIR="$build_dir/build/bin" \
-      -DKDRIVE_VERSION_SUFFIX="$SUFFIX" \
       -DBUILD_UNIT_TESTS="$build_unit_tests" \
       -DKDRIVE_THEME_DIR="$src_dir/infomaniak" \
-      -DKDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
       -DCONAN_DEP_DIR="$conan_dependencies_folder" \
       -DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
 

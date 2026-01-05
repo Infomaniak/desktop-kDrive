@@ -20,9 +20,10 @@
 #include "windowsupdater.h"
 #include "log/log.h"
 #include "jobs/network/directdownloadjob.h"
-#include "jobs/jobmanager.h"
+#include "jobs/syncjobmanager.h"
 #include "io/iohelper.h"
 #include "libcommonserver/utility/utility.h" // Path2WStr
+#include "utility/digitalsignaturechecker_win.h"
 
 namespace KDC {
 
@@ -33,9 +34,24 @@ void WindowsUpdater::onUpdateFound() {
         setState(UpdateState::DownloadError);
         return;
     }
-    if (std::filesystem::exists(filepath)) {
+
+    const auto expectedSize = getExpectedInstallerSize(versionInfo(_currentChannel).downloadUrl);
+
+    // Check if an installer is already downloaded and get its size.
+    uint64_t localSize = 0;
+    auto ioError = IoError::Success;
+    if (!IoHelper::getFileSize(filepath, localSize, ioError)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::getFileSize for " << Utility::formatSyncPath(filepath));
+    }
+    if (ioError == IoError::Success && localSize == static_cast<uint64_t>(expectedSize)) {
         LOGW_INFO(Log::instance()->getLogger(), L"Installer already downloaded at " << Utility::formatSyncPath(filepath)
                                                                                     << L". Update is ready to be installed.");
+
+        if (!verifyDigitalSignature(filepath)) {
+            setState(UpdateState::UpdateError);
+            return;
+        }
+
         setState(UpdateState::Ready);
         return;
     }
@@ -49,9 +65,22 @@ void WindowsUpdater::startInstaller() {
         setState(UpdateState::DownloadError);
         return;
     }
+    if (std::error_code ec; !std::filesystem::exists(filepath, ec)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Installer file not found. " << Utility::formatStdError(filepath, ec));
+        if (_autoUpdate) {
+            LOG_ERROR(Log::instance()->getLogger(), "Already tried to re-download the installer before.");
+            setState(UpdateState::UpdateError);
+            return;
+        }
+        _autoUpdate = true;
+        downloadUpdate();
+        return;
+    }
+    _autoUpdate = false;
+
     LOGW_INFO(Log::instance()->getLogger(), L"Starting updater " << Utility::formatSyncPath(filepath));
-    auto cmd = filepath.wstring() + L" /S /launch";
-    Utility::runDetachedProcess(cmd);
+    const auto cmd = filepath.wstring() + L" /S /launch";
+    (void) Utility::runDetachedProcess(cmd);
 }
 
 void WindowsUpdater::downloadUpdate() noexcept {
@@ -61,15 +90,22 @@ void WindowsUpdater::downloadUpdate() noexcept {
         return;
     }
 
-    auto job = std::make_shared<DirectDownloadJob>(filepath, versionInfo(_currentChannel).downloadUrl);
+    // Remove an eventual already existing installer file.
+    auto ioError = IoError::Success;
+    (void) IoHelper::deleteItem(filepath, ioError);
+    if (ioError != IoError::Success && ioError != IoError::NoSuchFileOrDirectory) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Failed to to remove existing installer " << Utility::formatSyncPath(filepath));
+    }
+
+    const auto job = std::make_shared<DirectDownloadJob>(filepath, versionInfo(_currentChannel).downloadUrl);
     const std::function<void(UniqueId)> callback = std::bind_front(&WindowsUpdater::downloadFinished, this);
     job->setAdditionalCallback(callback);
-    JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
+    SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
     setState(UpdateState::Downloading);
 }
 
 void WindowsUpdater::downloadFinished(const UniqueId jobId) {
-    auto job = JobManager::instance()->getJob(jobId);
+    const auto job = SyncJobManagerSingleton::instance()->getJob(jobId);
     const auto downloadJob = std::dynamic_pointer_cast<DirectDownloadJob>(job);
     if (!downloadJob) {
         const auto error = "Could not cast job pointer.";
@@ -80,11 +116,9 @@ void WindowsUpdater::downloadFinished(const UniqueId jobId) {
         return;
     }
 
-    std::string errorCode;
-    std::string errorDescr;
-    if (downloadJob->hasErrorApi(&errorCode, &errorDescr)) {
+    if (downloadJob->hasErrorApi()) {
         std::stringstream ss;
-        ss << errorCode << " - " << errorDescr;
+        ss << downloadJob->backError().code() << " - " << downloadJob->backError().description();
         sentry::Handler::captureMessage(sentry::Level::Warning, "WindowsUpdater::downloadFinished", ss.str());
         LOG_ERROR(Log::instance()->getLogger(), ss.str());
         setState(UpdateState::DownloadError);
@@ -97,17 +131,25 @@ void WindowsUpdater::downloadFinished(const UniqueId jobId) {
         setState(UpdateState::DownloadError);
         return;
     }
-    if (!std::filesystem::exists(filepath)) {
-        const auto error = "Installer file not found.";
-        sentry::Handler::captureMessage(sentry::Level::Warning, "WindowsUpdater::downloadFinished", error);
-        LOG_ERROR(Log::instance()->getLogger(), error);
-        setState(UpdateState::DownloadError);
+
+    if (std::error_code ec; !std::filesystem::exists(filepath, ec)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Installer file not found. " << Utility::formatStdError(filepath, ec));
+        downloadUpdate();
+        return;
+    }
+
+    if (!verifyDigitalSignature(filepath)) {
+        setState(UpdateState::UpdateError);
         return;
     }
 
     LOGW_INFO(Log::instance()->getLogger(),
               L"Installer downloaded at: " << Utility::formatSyncPath(filepath) << L". Update is ready to be installed.");
     setState(UpdateState::Ready);
+    if (_autoUpdate) {
+        // Start the installer automatically.
+        startInstaller();
+    }
 }
 
 bool WindowsUpdater::getInstallerPath(SyncPath &path) const {
@@ -121,6 +163,26 @@ bool WindowsUpdater::getInstallerPath(SyncPath &path) const {
         return false;
     }
     path = tmpDirPath / installerName;
+    return true;
+}
+
+std::streamsize WindowsUpdater::getExpectedInstallerSize(const std::string &downloadUrl) {
+    // Get the expected size of the installer.
+    DirectDownloadJob job(downloadUrl);
+    (void) job.runSynchronously();
+    return job.httpResponse().getContentLength();
+}
+
+bool WindowsUpdater::verifyDigitalSignature(const SyncPath &filepath) {
+    if (!DigitalSignatureChecker_win(filepath).isSignatureValid()) {
+        const auto error =
+                L"The digital signature of installer " + Utility::formatSyncPath(filepath) + L" is invalid. Aborting update.";
+        sentry::Handler::captureMessage(sentry::Level::Error, "Invalid signature", CommonUtility::ws2s(error));
+        LOGW_ERROR(Log::instance()->getLogger(), error);
+        auto ioError = IoError::Success;
+        (void) IoHelper::deleteItem(filepath, ioError);
+        return false;
+    }
     return true;
 }
 

@@ -1,11 +1,6 @@
 set(KDRIVE_THEME_DIR "" CACHE STRING "Define directory containing a custom theme")
 include("${KDRIVE_THEME_DIR}/kDrive.cmake")
 
-# Default suffix if the theme doesn't define one
-if(NOT DEFINED APPLICATION_VIRTUALFILE_SUFFIX)
-    set(APPLICATION_VIRTUALFILE_SUFFIX "${APPLICATION_SHORTNAME}_virtual" CACHE STRING "Virtual file suffix (not including the .)")
-endif()
-
 # Default dbus name and path
 if(NOT DEFINED APPLICATION_CLOUDPROVIDERS_DBUS_NAME)
     set(APPLICATION_CLOUDPROVIDERS_DBUS_NAME ${APPLICATION_REV_DOMAIN})

@@ -18,6 +18,12 @@
 
 #include "exclusionappinfo.h"
 
+#include "libcommon/utility/utility.h"
+
+static const auto appInfoId = "appId";
+static const auto appInfoDescription = "description";
+static const auto appInfoDef = "def";
+
 namespace KDC {
 
 ExclusionAppInfo::ExclusionAppInfo(const QString &appId, const QString &description, bool def) :
@@ -25,10 +31,24 @@ ExclusionAppInfo::ExclusionAppInfo(const QString &appId, const QString &descript
     _description(description),
     _def(def) {}
 
-ExclusionAppInfo::ExclusionAppInfo() :
-    _appId(QString()),
-    _description(QString()),
-    _def(false) {}
+
+void ExclusionAppInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
+    CommonUtility::writeValueToStruct(dstruct, appInfoId, CommonUtility::qStr2CommString(_appId));
+    CommonUtility::writeValueToStruct(dstruct, appInfoDescription, CommonUtility::qStr2CommString(_description));
+    CommonUtility::writeValueToStruct(dstruct, appInfoDef, _def);
+}
+
+void ExclusionAppInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
+    CommString appIdCommStr;
+    CommonUtility::readValueFromStruct(dstruct, appInfoId, appIdCommStr);
+    _appId = CommonUtility::commString2QStr(appIdCommStr);
+
+    CommString appInfoDescriptionCommStr;
+    CommonUtility::readValueFromStruct(dstruct, appInfoDescription, appInfoDescriptionCommStr);
+    _description = CommonUtility::commString2QStr(appInfoDescriptionCommStr);
+
+    CommonUtility::readValueFromStruct(dstruct, appInfoDef, _def);
+}
 
 QDataStream &operator>>(QDataStream &in, ExclusionAppInfo &exclusionAppInfo) {
     in >> exclusionAppInfo._appId >> exclusionAppInfo._description >> exclusionAppInfo._def;
@@ -54,9 +74,9 @@ QDataStream &operator>>(QDataStream &in, QList<ExclusionAppInfo> &list) {
     auto count = 0;
     in >> count;
     for (int i = 0; i < count; i++) {
-        ExclusionAppInfo *exclusionAppInfo = new ExclusionAppInfo();
-        in >> *exclusionAppInfo;
-        list.push_back(*exclusionAppInfo);
+        ExclusionAppInfo exclusionAppInfo;
+        in >> exclusionAppInfo;
+        list.push_back(exclusionAppInfo);
     }
     return in;
 }

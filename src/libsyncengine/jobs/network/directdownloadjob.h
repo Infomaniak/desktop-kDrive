@@ -25,6 +25,16 @@ namespace KDC {
 
 class DirectDownloadJob final : public AbstractNetworkJob {
     public:
+        /**
+         * @brief Constructor used to retrieve only the headers.
+         * @param url The URL of the file to be downloaded.
+         */
+        DirectDownloadJob(const std::string &url);
+        /**
+         * @brief Constructor used to actually download the target file.
+         * @param destinationFile The local destination where the file will be downloaded.
+         * @param url The URL of the file to be downloaded.
+         */
         DirectDownloadJob(const SyncPath &destinationFile, const std::string &url);
 
         [[nodiscard]] const SyncPath &getDestinationFile() const { return _destinationFile; }
@@ -34,8 +44,9 @@ class DirectDownloadJob final : public AbstractNetworkJob {
         std::string getSpecificUrl() override { return ""; }
 
     private:
-        bool handleResponse(std::istream &inputStream) override;
-        bool handleError(std::istream &is, const Poco::URI &uri) override;
+        ExitInfo handleResponse(std::istream &inputStream) override;
+        ExitInfo handleError(const std::string &replyBody, const Poco::URI &uri) override;
+        ExitInfo readFromStream(std::istream &is, std::ofstream &output);
 
         const SyncPath _destinationFile;
         const std::string _url;

@@ -87,7 +87,7 @@
 			isa = PBXGroup;
 			children = (
 				46BB2CB225B5998000CCC772 /* Extension */,
-				46E2165D25B829F9008A6905 /* kDrive */,
+				46E2165D25B829F9008A6905 /* kDriveModel */,
 				46BB2CAF25B5998000CCC772 /* Frameworks */,
 				46BB2C5A25B5974200CCC772 /* Products */,
 			);
@@ -128,7 +128,7 @@
 			path = Extension;
 			sourceTree = "<group>";
 		};
-		46E2165D25B829F9008A6905 /* kDrive */ = {
+		46E2165D25B829F9008A6905 /* kDriveModel */ = {
 			isa = PBXGroup;
 			children = (
 				46E2166725B829FB008A6905 /* main.m */,
@@ -136,7 +136,7 @@
 				46E2166625B829FB008A6905 /* Info.plist */,
 				46E2166925B829FB008A6905 /* kDriveLiteSync.entitlements */,
 			);
-			path = kDrive;
+			path = kDriveModel;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -426,14 +426,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = kDrive/kDriveLiteSync.entitlements;
+				CODE_SIGN_ENTITLEMENTS = kDriveModel/kDriveLiteSync.entitlements;
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = 864VDCS2QY;
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = 864VDCS2QY;
 				ENABLE_HARDENED_RUNTIME = YES;
-				INFOPLIST_FILE = kDrive/Info.plist;
+				INFOPLIST_FILE = kDriveModel/Info.plist;
 				KD_APPLICATION_DOMAIN = com.infomaniak.drive.desktopclient;
 				KD_APPLICATION_VERSION = 3.3.5;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -453,14 +453,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = kDrive/kDriveLiteSync.entitlements;
+				CODE_SIGN_ENTITLEMENTS = kDriveModel/kDriveLiteSync.entitlements;
 				CODE_SIGN_IDENTITY = "Developer ID Application";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = 864VDCS2QY;
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = 864VDCS2QY;
 				ENABLE_HARDENED_RUNTIME = YES;
-				INFOPLIST_FILE = kDrive/Info.plist;
+				INFOPLIST_FILE = kDriveModel/Info.plist;
 				KD_APPLICATION_DOMAIN = com.infomaniak.drive.desktopclient;
 				KD_APPLICATION_VERSION = 3.3.5;
 				LD_RUNPATH_SEARCH_PATHS = (

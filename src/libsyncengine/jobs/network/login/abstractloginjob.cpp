@@ -31,20 +31,6 @@ AbstractLoginJob::AbstractLoginJob() {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 
-bool AbstractLoginJob::hasErrorApi(std::string *errorCode, std::string *errorDescr) {
-    if (getStatusCode() == Poco::Net::HTTPResponse::HTTP_OK) {
-        return false;
-    }
-
-    if (errorCode) {
-        *errorCode = _errorCode;
-        if (errorDescr) {
-            *errorDescr = _errorDescr;
-        }
-    }
-    return true;
-}
-
 std::string AbstractLoginJob::getSpecificUrl() {
     return "/token";
 }
@@ -53,29 +39,25 @@ std::string AbstractLoginJob::getUrl() {
     return std::string(UrlHelper::loginApiUrl()) + getSpecificUrl();
 }
 
-std::string AbstractLoginJob::getContentType(bool &canceled) {
-    canceled = false;
+std::string AbstractLoginJob::contentType() {
     return "application/x-www-form-urlencoded";
 }
 
-bool AbstractLoginJob::handleResponse(std::istream &inputStream) {
+ExitInfo AbstractLoginJob::handleResponse(std::istream &inputStream) {
     std::string str(std::istreambuf_iterator<char>(inputStream), {});
     _apiToken = ApiToken(str);
-
-    return true;
+    return ExitCode::Ok;
 }
 
-bool AbstractLoginJob::handleError(std::istream &inputStream, const Poco::URI &uri) {
+ExitInfo AbstractLoginJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
     Poco::JSON::Parser jsonParser;
     Poco::JSON::Object::Ptr jsonError;
     try {
-        jsonError = jsonParser.parse(inputStream).extract<Poco::JSON::Object::Ptr>();
+        jsonError = jsonParser.parse(replyBody).extract<Poco::JSON::Object::Ptr>();
     } catch (Poco::Exception &exc) {
         LOG_WARN(_logger, "Reply " << jobId() << " received doesn't contain a valid JSON error: " << exc.displayText());
-        Utility::logGenericServerError(_logger, "Login error", inputStream, _resHttp);
-
-        _exitInfo = {ExitCode::BackError, ExitCause::ApiErr};
-        return false;
+        Utility::logGenericServerError(_logger, "Login error", replyBody, httpResponse());
+        return {ExitCode::BackError, ExitCause::ApiErr};
     }
 
     if (isExtendedLog()) {
@@ -84,36 +66,33 @@ bool AbstractLoginJob::handleError(std::istream &inputStream, const Poco::URI &u
         LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << CommonUtility::s2ws(os.str()));
     }
 
-    Poco::JSON::Object::Ptr errorObj = jsonError->getObject(errorKey);
-    if (errorObj) {
-        if (!JsonParserUtility::extractValue(errorObj, codeKey, _errorCode)) {
-            return false;
-        }
-        if (!JsonParserUtility::extractValue(errorObj, descriptionKey, _errorDescr)) {
-            return false;
-        }
-        LOG_WARN(_logger, "Error in request " << uri.toString() << " : " << _errorCode << " - " << _errorDescr);
-        _exitInfo = ExitCode::BackError;
+    ExitInfo exitInfo;
+    _backError = BackError(jsonError);
+    if (_backError.isValidError()) {
+        LOG_WARN(_logger,
+                 "Error in request " << uri.toString() << " : " << _backError.code() << " - " << _backError.description());
+        exitInfo = ExitCode::BackError;
     } else {
-        JsonParserUtility::extractValue(jsonError, errorKey, _errorCode, false);
+        std::string errorCode;
+        (void) JsonParserUtility::extractValue(jsonError, errorKey, errorCode, false);
 
         std::string errorReason;
-        JsonParserUtility::extractValue(jsonError, reasonKey, errorReason, false);
+        (void) JsonParserUtility::extractValue(jsonError, reasonKey, errorReason, false);
 
-        if (getNetworkErrorCode(_errorCode) == NetworkErrorCode::InvalidGrant ||
+        if (getNetworkErrorCode(errorCode) == NetworkErrorCode::InvalidGrant ||
             getNetworkErrorReason(errorReason) == NetworkErrorReason::RefreshTokenRevoked) {
-            _errorDescr = errorReason;
             LOG_WARN(_logger, "Error in request " << uri.toString() << " : refresh token has been revoked ");
             disableRetry();
-            _exitInfo = ExitCode::InvalidToken;
+            exitInfo = ExitCode::InvalidToken;
         } else {
             LOG_WARN(_logger, "Error in request " << uri.toString() << " : " << errorReason);
-            _exitInfo = ExitCode::BackError;
+            exitInfo = ExitCode::BackError;
         }
+        _backError = BackError(errorCode, errorReason);
     }
 
-    _exitInfo.setCause(ExitCause::LoginError);
-    return false;
+    exitInfo.setCause(ExitCause::LoginError);
+    return exitInfo;
 }
 
 } // namespace KDC

@@ -28,6 +28,7 @@ namespace KDC {
 class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestUtility);
         CPPUNIT_TEST(testGetAppSupportDir);
+        CPPUNIT_TEST(extractIntFromStrVersion);
         CPPUNIT_TEST(testIsVersionLower);
         CPPUNIT_TEST(testStringToAppStateValue);
         CPPUNIT_TEST(testArgsWriter);
@@ -35,9 +36,9 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testCurrentVersion);
         CPPUNIT_TEST(testSourceLocation);
         CPPUNIT_TEST(testGenerateRandomStringAlphaNum);
+        CPPUNIT_TEST(testGenerateUuid);
         CPPUNIT_TEST(testLanguageCode);
         CPPUNIT_TEST(testIsSupportedLanguage);
-        CPPUNIT_TEST(testTruncateLongLogMessage);
         CPPUNIT_TEST(testLogIfFail);
         CPPUNIT_TEST(testRelativePath);
         CPPUNIT_TEST(testSplitSyncName);
@@ -52,6 +53,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testStartsWithInsensitive);
         CPPUNIT_TEST(testEndsWith);
         CPPUNIT_TEST(testEndsWithInsensitive);
+        CPPUNIT_TEST(testContains);
         CPPUNIT_TEST(testToUpper);
         CPPUNIT_TEST(testToLower);
         CPPUNIT_TEST(testIsSameOrParentPath);
@@ -61,6 +63,11 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testLtrim);
         CPPUNIT_TEST(testRtrim);
         CPPUNIT_TEST(testTrim);
+        CPPUNIT_TEST(testReadValueFromStruct);
+        CPPUNIT_TEST(testWriteValueToStruct);
+        CPPUNIT_TEST(testConvertFromBase64Str);
+        CPPUNIT_TEST(testConvertToBase64Str);
+        CPPUNIT_TEST(isLikeSomeError);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -69,6 +76,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
 
     protected:
         void testGetAppSupportDir();
+        void extractIntFromStrVersion();
         void testIsVersionLower();
         void testStringToAppStateValue();
         void testArgsWriter();
@@ -76,9 +84,9 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testCurrentVersion();
         void testSourceLocation();
         void testGenerateRandomStringAlphaNum();
+        void testGenerateUuid();
         void testLanguageCode();
         void testIsSupportedLanguage();
-        void testTruncateLongLogMessage();
         void testLogIfFail();
         void testRelativePath();
         void testSplitSyncName();
@@ -94,6 +102,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testStartsWithInsensitive();
         void testEndsWith();
         void testEndsWithInsensitive();
+        void testContains();
         void testToUpper();
         void testToLower();
         void testIsSameOrParentPath();
@@ -103,6 +112,11 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testLtrim();
         void testRtrim();
         void testTrim();
+        void testReadValueFromStruct();
+        void testWriteValueToStruct();
+        void testConvertFromBase64Str();
+        void testConvertToBase64Str();
+        void isLikeSomeError();
 
     private:
         /* Generate all the possible path for a set of items and separators

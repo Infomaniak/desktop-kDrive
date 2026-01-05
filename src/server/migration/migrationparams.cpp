@@ -72,9 +72,6 @@ static const char automaticLogDirC[] = "logToTemporaryLogDir";
 static const char minLogLevelC[] = "minLogLevel";
 static const char moveToTrashC[] = "moveToTrash";
 static const char monoIconsC[] = "monoIcons";
-static const char newBigFolderSizeLimitC[] = "newBigFolderSizeLimit";
-static const char useNewBigFolderSizeLimitC[] = "useNewBigFolderSizeLimit";
-static const int defaultBigFolderSizeLimit = 500;
 static const int defaultMinLogLevel = 1;
 static const char navigationPaneClsidC[] = "navigationPaneClsid";
 
@@ -202,12 +199,10 @@ ExitCode MigrationParams::migrateGeneralParams() {
     bool moveToTrash = settings.value(QString(moveToTrashC), true).toBool();
     bool monoIcons = settings.value(QString(monoIconsC), false).toBool();
     int minLogLevel = settings.value(QString(minLogLevelC), defaultMinLogLevel).toInt();
-    long newBigFolderSizeLimit = settings.value(QString(newBigFolderSizeLimitC), defaultBigFolderSizeLimit).toLongLong();
     QString clientVersion = settings.value(QString(clientVersionC), QString()).toString();
     QString language = settings.value(QString(languageC), QString()).toString();
     QString deleteOldLogsAfterHours = settings.value(QString(deleteOldLogsAfterHoursC), QString()).toString();
     bool automaticLogDir = settings.value(QString(automaticLogDirC), true).toBool();
-    bool useNewBigFolderSizeLimit = settings.value(QString(useNewBigFolderSizeLimitC), true).toBool();
 
     // Log level Info and Debug are to be switched
     LogLevel logLevel = intToLogLevel(minLogLevel);
@@ -222,8 +217,6 @@ ExitCode MigrationParams::migrateGeneralParams() {
     ParametersCache::instance()->parameters().setMonoIcons(monoIcons);
     ParametersCache::instance()->parameters().setUseLog(automaticLogDir);
     ParametersCache::instance()->parameters().setLogLevel(logLevel);
-    ParametersCache::instance()->parameters().setUseBigFolderSizeLimit(useNewBigFolderSizeLimit);
-    ParametersCache::instance()->parameters().setBigFolderSizeLimit(newBigFolderSizeLimit);
     ParametersCache::instance()->parameters().setLanguage(strToLanguage(language));
     bool purgeOldLogs = false;
     if (deleteOldLogsAfterHours == QString() || deleteOldLogsAfterHours != "-1") {
@@ -620,19 +613,6 @@ ExitCode MigrationParams::migrateProxySettings(ProxyConfig &proxyConfig) {
     return ExitCode::Ok;
 }
 
-ExitCode MigrationParams::migrateSelectiveSyncs() {
-    LOG_INFO(Log::instance()->getLogger(), "Migrate selective syncs");
-
-    ExitCode ret = ExitCode::Ok;
-    for (auto &syncToMigrateElt: _syncToMigrate) {
-        ExitCode code = ServerRequests::migrateSelectiveSync(syncToMigrateElt.first, syncToMigrateElt.second);
-        if (code != ExitCode::Ok) {
-            ret = code;
-        }
-    }
-    return ret;
-}
-
 void MigrationParams::deleteUselessConfigFiles() {
     // Remove old configuration files
     QDir cfgDir(configDir().absolutePath());
@@ -762,21 +742,17 @@ ExitCode MigrationParams::getOldAppPwd(const std::string &keychainKey, std::stri
 
 ExitCode MigrationParams::getTokenFromAppPassword(const std::string &email, const std::string &appPassword, ApiToken &apiToken) {
     try {
-        std::string errorDescr, errorCode;
         GetTokenFromAppPasswordJob job(email, appPassword);
-        const ExitCode exitCode = job.runSynchronously();
-        if (exitCode != ExitCode::Ok) {
+        if (const ExitCode exitCode = job.runSynchronously(); exitCode != ExitCode::Ok) {
             LOG_WARN(_logger, "Error in GetTokenFromAppPasswordJob::runSynchronously: code=" << exitCode);
-            errorCode = std::string();
-            errorDescr = std::string();
             return exitCode;
         }
 
         LOG_DEBUG(_logger, "job.runSynchronously() done");
-        if (job.hasErrorApi(&errorCode, &errorDescr)) {
-            LOGW_WARN(_logger, L"Failed to retrieve authentification token. code=" << KDC::CommonUtility::s2ws(errorCode)
-                                                                                   << L" descr="
-                                                                                   << KDC::CommonUtility::s2ws(errorDescr));
+        if (job.hasErrorApi()) {
+            LOGW_WARN(_logger, L"Failed to retrieve authentification token. code="
+                                       << KDC::CommonUtility::s2ws(job.backError().code()) << L" descr="
+                                       << KDC::CommonUtility::s2ws(job.backError().description()));
             return ExitCode::BackError;
         }
 

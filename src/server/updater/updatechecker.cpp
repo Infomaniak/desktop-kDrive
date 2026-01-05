@@ -19,7 +19,7 @@
 #include "updatechecker.h"
 
 #include "db/parmsdb.h"
-#include "jobs/jobmanager.h"
+#include "jobs/syncjobmanager.h"
 #include "jobs/network/abstractnetworkjob.h"
 #include "jobs/network/infomaniak_API/getappversionjob.h"
 #include "libcommon/utility/utility.h"
@@ -37,7 +37,7 @@ ExitCode UpdateChecker::checkUpdateAvailability(UniqueId *id /*= nullptr*/) {
 
     const std::function<void(UniqueId)> callback = std::bind_front(&UpdateChecker::versionInfoReceived, this);
     job->setAdditionalCallback(callback);
-    JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
+    SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
     return ExitCode::Ok;
 }
 
@@ -57,12 +57,12 @@ class VersionInfoCmp {
         }
 };
 
-const VersionInfo &UpdateChecker::versionInfo(const VersionChannel choosedChannel) {
+const VersionInfo &UpdateChecker::versionInfo(const VersionChannel chosenChannel) {
     if (!_isVersionReceived) return _defaultVersionInfo;
     const VersionInfo &prodVersion = prodVersionInfo();
 
     // If the user wants only `Production` versions, just return the current `Production` version.
-    if (choosedChannel == VersionChannel::Prod) return prodVersion;
+    if (chosenChannel == VersionChannel::Prod) return prodVersion;
 
     // Otherwise, we need to check if there is not a newer version in other channels.
     const VersionInfo &betaVersion =
@@ -74,18 +74,20 @@ const VersionInfo &UpdateChecker::versionInfo(const VersionChannel choosedChanne
     sortedVersionList.insert(betaVersion);
     sortedVersionList.insert(internalVersion);
     for (const auto &versionInfo: sortedVersionList) {
-        if (versionInfo.get().channel <= choosedChannel) return versionInfo;
+        if (versionInfo.get().channel <= chosenChannel) return versionInfo;
     }
 
     return _defaultVersionInfo;
 }
 
 void UpdateChecker::versionInfoReceived(UniqueId jobId) {
+    // A mutex is needed because this function can be run multiple times simultaneously when the computer wakes from sleep.
+    const std::scoped_lock<std::mutex> lock(_mutex);
     _isVersionReceived = false;
     _versionsInfo.clear();
     LOG_INFO(Log::instance()->getLogger(), "App version info received");
 
-    const auto job = JobManager::instance()->getJob(jobId);
+    const auto job = SyncJobManagerSingleton::instance()->getJob(jobId);
     const auto getAppVersionJobPtr = std::dynamic_pointer_cast<GetAppVersionJob>(job);
     if (!getAppVersionJobPtr) {
         LOG_ERROR(Log::instance()->getLogger(), "Could not cast job pointer.");
@@ -93,11 +95,9 @@ void UpdateChecker::versionInfoReceived(UniqueId jobId) {
         return;
     }
 
-    std::string errorCode;
-    std::string errorDescr;
-    if (getAppVersionJobPtr->hasErrorApi(&errorCode, &errorDescr)) {
+    if (getAppVersionJobPtr->hasErrorApi()) {
         std::stringstream ss;
-        ss << errorCode.c_str() << " - " << errorDescr;
+        ss << getAppVersionJobPtr->backError().code() << " - " << getAppVersionJobPtr->backError().description();
         sentry::Handler::captureMessage(sentry::Level::Warning, "AbstractUpdater::checkUpdateAvailable", ss.str());
         LOG_ERROR(Log::instance()->getLogger(), ss.str());
     } else if (getAppVersionJobPtr->exitInfo().code() != ExitCode::Ok) {

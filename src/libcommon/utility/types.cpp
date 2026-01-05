@@ -178,8 +178,8 @@ std::string toString(const ExitCause e) {
             return "FileSizeMismatch";
         case ExitCause::UploadNotTerminated:
             return "UploadNotTerminated";
-        case ExitCause::UnableToCreateVfs:
-            return "UnableToCreateVfs";
+        case ExitCause::UnableToStartVfs:
+            return "UnableToStartVfs";
         case ExitCause::NotEnoughMemory:
             return "NotEnoughMemory";
         case ExitCause::FileTooBig:
@@ -190,6 +190,8 @@ std::string toString(const ExitCause e) {
             return "InvalidName";
         case ExitCause::LiteSyncNotAllowed:
             return "LiteSyncNotAllowed";
+        case ExitCause::LiteSyncExtNotRunning:
+            return "LiteSyncExtNotRunning";
         case ExitCause::NotPlaceHolder:
             return "NotPlaceHolder";
         case ExitCause::NetworkTimeout:
@@ -220,6 +222,10 @@ std::string toString(const ExitCause e) {
             return "NotEnoughINotifyWatches";
         case ExitCause::FileOrDirectoryCorrupted:
             return "FileOrDirectoryCorrupted";
+        case ExitCause::TmpDirAccessError:
+            return "TmpDirAccessError";
+        case ExitCause::UpdateTreeIntegrityCheckFailed:
+            return "UpdateTreeIntegrityCheckFailed";
         default:
             return noConversionStr;
     }
@@ -328,6 +334,8 @@ std::string toString(const NodeStatus e) {
             return "Processed";
         case NodeStatus::ConflictOpGenerated:
             return "ConflictOpGenerated";
+        case NodeStatus::ToDelete:
+            return "ToDelete";
         default:
             return noConversionStr;
     }
@@ -377,10 +385,6 @@ std::string toString(const SyncNodeType e) {
             return "Undefined";
         case SyncNodeType::BlackList:
             return "BlackList";
-        case SyncNodeType::WhiteList:
-            return "WhiteList";
-        case SyncNodeType::UndecidedList:
-            return "UndecidedList";
         case SyncNodeType::TmpRemoteBlacklist:
             return "TmpRemoteBlacklist";
         case SyncNodeType::TmpLocalBlacklist:
@@ -710,6 +714,8 @@ std::string toString(const AppStateKey e) {
             return "LogUploadToken";
         case AppStateKey::AppUid:
             return "AppUid";
+        case AppStateKey::NoUpdate:
+            return "NoUpdate";
         case AppStateKey::Unknown:
             return "Unknown";
         default:
@@ -758,6 +764,8 @@ std::string toString(const UpdateState e) {
             return "DownloadError";
         case UpdateState::UpdateError:
             return "UpdateError";
+        case UpdateState::NoUpdate:
+            return "NoUpdate";
         case UpdateState::Unknown:
             return "Unknown";
         default:

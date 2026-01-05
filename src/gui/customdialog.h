@@ -54,6 +54,9 @@ class CustomDialog : public QDialog {
         void exit();
         void viewIconSet();
 
+    protected:
+        void drawRoundRectangle();
+
     private:
         enum Edge {
             None = 0,
@@ -102,6 +105,8 @@ class CustomDialog : public QDialog {
         }
 
         virtual void setButtonIcon(const QColor &value) { Q_UNUSED(value); }
+
+        void drawDropShadow(); // Can cause refresh issues on Windows.
 
     private slots:
         void onExit();

@@ -33,7 +33,6 @@
 #include <log4cplus/loggingmacros.h>
 
 #define UPDATE_PROGRESS_DELAY 1
-
 namespace KDC {
 
 SyncPalWorker::SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
@@ -49,12 +48,18 @@ bool hasSuccessfullyFinished(const std::shared_ptr<ISyncWorker> w1, const std::s
 bool shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr) {
     const auto networkIssue =
             (w1 && w1->exitCode() == ExitCode::NetworkError) || (w2 && w2->exitCode() == ExitCode::NetworkError);
-    const auto http500error = (w1 && w1->exitCode() == ExitCode::BackError && w1->exitCause() == ExitCause::Http5xx) ||
-                              (w2 && w2->exitCode() == ExitCode::BackError && w2->exitCause() == ExitCause::Http5xx);
+    const auto httpBlockingError = (w1 && w1->exitCode() == ExitCode::BackError &&
+                                    (w1->exitCause() == ExitCause::Http5xx || w1->exitCause() == ExitCause::HttpErr ||
+                                     w1->exitCause() == ExitCause::FullListParsingError)) ||
+                                   (w2 && w2->exitCode() == ExitCode::BackError &&
+                                    (w2->exitCause() == ExitCause::Http5xx || w2->exitCause() == ExitCause::HttpErr ||
+                                     w2->exitCause() == ExitCause::FullListParsingError));
     const auto syncDirNotAccessible =
             (w1 && w1->exitCode() == ExitCode::SystemError && w1->exitCause() == ExitCause::SyncDirAccessError) ||
             (w2 && w2->exitCode() == ExitCode::SystemError && w2->exitCause() == ExitCause::SyncDirAccessError);
-    return networkIssue || http500error || syncDirNotAccessible;
+    const auto invalidOperation =
+            (w1 && w1->exitCode() == ExitCode::InvalidOperation) || (w2 && w2->exitCode() == ExitCode::InvalidOperation);
+    return networkIssue || httpBlockingError || syncDirNotAccessible || invalidOperation;
 }
 
 bool shouldBeStoppedAndRestarted(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr) {
@@ -71,8 +76,12 @@ bool shouldBeStopped(const std::shared_ptr<ISyncWorker> w1, const std::shared_pt
             (w1 && w1->exitCode() == ExitCode::UpdateRequired) || (w2 && w2->exitCode() == ExitCode::UpdateRequired);
     const auto invalidSyncError =
             (w1 && w1->exitCode() == ExitCode::InvalidSync) || (w2 && w2->exitCode() == ExitCode::InvalidSync);
+    const auto invalidToken =
+            (w1 && w1->exitCode() == ExitCode::InvalidToken) || (w2 && w2->exitCode() == ExitCode::InvalidToken);
+    const auto driveNotFound = (w1 && w1->exitCode() == ExitCode::BackError && w1->exitCause() == ExitCause::DriveAccessError) ||
+                               (w2 && w2->exitCode() == ExitCode::BackError && w2->exitCause() == ExitCause::DriveAccessError);
 
-    return dbError || systemError || updateRequired || invalidSyncError;
+    return dbError || systemError || updateRequired || invalidSyncError || invalidToken || driveNotFound;
 }
 
 } // namespace
@@ -391,7 +400,7 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             _syncPal->stopEstimateUpdates();
             if (!_syncPal->restart()) {
                 _syncPal->resetSnapshotInvalidationCounters();
-                _syncPal->setSyncHasFullyCompletedInParms(true);
+                _syncPal->setSyncHasFullyCompletedInParams(true);
             }
             if (_syncPal->updateTreesNeedToBeCleared()) {
                 LOG_SYNCPAL_DEBUG(_logger, "Clearing update trees");
@@ -586,7 +595,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
             }
             SyncPath absolutePath;
             try {
-                if (dirIt->is_directory() && !dirIt->is_symlink()) {
+                if (!dirIt->is_symlink() && dirIt->is_directory()) {
                     continue;
                 }
                 absolutePath = dirIt->path();
@@ -672,10 +681,10 @@ void SyncPalWorker::resetVfsFilesStatus() {
         }
     } catch (std::filesystem::filesystem_error &e) {
         LOG_SYNCPAL_WARN(_logger,
-                         "Error caught in SyncPalWorker::resetVfsFilesStatus: code=" << e.code() << " error=" << e.what());
+                         "Exception caught in SyncPalWorker::resetVfsFilesStatus: code=" << e.code() << " error=" << e.what());
         ok = false;
     } catch (...) {
-        LOG_SYNCPAL_WARN(_logger, "Error caught in SyncPalWorker::resetVfsFilesStatus");
+        LOG_SYNCPAL_WARN(_logger, "Exception caught in SyncPalWorker::resetVfsFilesStatus");
         ok = false;
     }
 

@@ -281,10 +281,7 @@ void ParametersDialog::initUI() {
     connect(_errorsMenuBarWidget, &ErrorsMenuBarWidget::backButtonClicked, this, &ParametersDialog::onBackButtonClicked);
     connect(_preferencesWidget, &PreferencesWidget::displayErrors, this, &ParametersDialog::onDisplayGeneralErrors);
     connect(_preferencesWidget, &PreferencesWidget::setStyle, this, &ParametersDialog::onSetStyle);
-    connect(_preferencesWidget, &PreferencesWidget::undecidedListsCleared, _drivePreferencesWidget,
-            &DrivePreferencesWidget::undecidedListsCleared);
     connect(this, &ParametersDialog::clearErrors, this, &ParametersDialog::onClearErrors);
-    connect(this, &ParametersDialog::newBigFolder, _drivePreferencesWidget, &DrivePreferencesWidget::newBigFolderDiscovered);
 }
 
 QByteArray ParametersDialog::contents(const QString &path) {
@@ -316,11 +313,17 @@ void ParametersDialog::reset() {
 QString ParametersDialog::getAppErrorText(const QString &fctCode, const ExitCode exitCode, const ExitCause exitCause) const {
     const auto err = QString("%1:%2:%3").arg(fctCode).arg(toInt(exitCode)).arg(toInt(exitCause));
     switch (exitCode) {
+        case ExitCode::SystemError:
+            if (exitCause == ExitCause::TmpDirAccessError) {
+                return tr("kDrive needs to have write access to your computer's temporary directory.<br>"
+                          "Please restart the kDrive app to resolve this issue.")
+                        .arg(err);
+            }
+            [[fallthrough]];
         case ExitCode::Unknown:
         case ExitCode::DataError:
         case ExitCode::DbError:
         case ExitCode::BackError:
-        case ExitCode::SystemError:
         case ExitCode::FatalError:
             return tr("A technical error has occurred (error %1).<br>"
                       "Please empty the history and if the error persists, contact our support team.")
@@ -387,22 +390,18 @@ QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, const Ex
                     .arg(err);
 
         case ExitCause::LiteSyncNotAllowed: {
-            if (QOperatingSystemVersion::current().currentType() == QOperatingSystemVersion::OSType::MacOS &&
-                QOperatingSystemVersion::current().majorVersion() >= 15) {
-                return tr("Unable to start synchronization (error %1).<br>"
-                          "You must allow:<br>"
-                          "- kDrive in System Settings >> General >> Login Items & Extensions >> Endpoint Security Extensions<br>"
-                          "- kDrive LiteSync Extension in System Settings >> Privacy & Security >> Full Disk Access.")
-                        .arg(err);
-            } else {
-                return tr("Unable to start synchronization (error %1).<br>"
-                          "You must allow:<br>"
-                          "- kDrive in System Settings >> Privacy & Security >> Security<br>"
-                          "- kDrive LiteSync Extension in System Settings >> Privacy & Security >> Full Disk Access.")
-                        .arg(err);
-            }
+            return tr("Unable to start synchronization (error %1).<br>"
+                      "You must allow:<br>"
+                      "- kDrive in System Settings >> General >> Login Items & Extensions >> Endpoint Security Extensions<br>"
+                      "- kDrive LiteSync Extension in System Settings >> Privacy & Security >> Full Disk Access.")
+                    .arg(err);
         }
-        case ExitCause::UnableToCreateVfs: {
+        case ExitCause::LiteSyncExtNotRunning: {
+            return tr("Unable to start synchronization (error %1).<br>"
+                      "The LiteSyncExt process is not currently running. Synchronization will resume as soon as it is started.")
+                    .arg(err);
+        }
+        case ExitCause::UnableToStartVfs: {
             if (CommonUtility::isWindows()) {
                 return tr("Unable to start Lite Sync plugin (error %1).<br>"
                           "Check that the Lite Sync extension is installed and Windows Search service is enabled.<br>"
@@ -537,6 +536,7 @@ QString ParametersDialog::getSyncPalErrorText(const QString &fctCode, const Exit
             return getSyncPalBackErrorText(err, exitCause, userIsAdmin);
         case ExitCode::SystemError:
             return getSyncPalSystemErrorText(err, exitCause);
+        case ExitCode::InvalidOperation:
         case ExitCode::FatalError:
             return tr("A technical error has occurred (error %1).<br>"
                       "Please empty the history and if the error persists, contact our support team.")
@@ -568,7 +568,6 @@ QString ParametersDialog::getSyncPalErrorText(const QString &fctCode, const Exit
         case ExitCode::TokenRefreshed:
         case ExitCode::RateLimited:
         case ExitCode::OperationCanceled:
-        case ExitCode::InvalidOperation:
         case ExitCode::UpdateRequired:
         case ExitCode::LogUploadFailed:
         case ExitCode::UpdateFailed:

@@ -76,7 +76,6 @@ ClientGui::ClientGui(AppClient *parent) :
     connect(_app, &AppClient::syncProgressInfo, this, &ClientGui::onProgressInfo);
     connect(_app, &AppClient::itemCompleted, this, &ClientGui::itemCompleted);
     connect(_app, &AppClient::vfsConversionCompleted, this, &ClientGui::vfsConversionCompleted);
-    connect(_app, &AppClient::newBigFolder, this, &ClientGui::newBigFolder);
     connect(_app, &AppClient::showNotification, this, &ClientGui::onShowOptionalTrayMessage);
     connect(_app, &AppClient::errorAdded, this, &ClientGui::onErrorAdded);
     connect(_app, &AppClient::errorsCleared, this, &ClientGui::onErrorsCleared);
@@ -503,7 +502,6 @@ void ClientGui::setupParametersDialog() {
     connect(this, &ClientGui::updateProgress, _parametersDialog.get(), &ParametersDialog::onUpdateProgress);
     connect(this, &ClientGui::driveQuotaUpdated, _parametersDialog.get(), &ParametersDialog::onDriveQuotaUpdated);
     connect(this, &ClientGui::itemCompleted, _parametersDialog.get(), &ParametersDialog::onItemCompleted);
-    connect(this, &ClientGui::newBigFolder, _parametersDialog.get(), &ParametersDialog::newBigFolder);
     connect(this, &ClientGui::errorAdded, _parametersDialog.get(), &ParametersDialog::onRefreshErrorList);
     connect(this, &ClientGui::refreshStatusNeeded, _parametersDialog.get(), &ParametersDialog::onRefreshStatusNeeded);
 }
@@ -856,7 +854,7 @@ void ClientGui::onAddDriveAccepted() {
 }
 
 void ClientGui::onAddDriveRejected() {
-    AppClient *app = qobject_cast<AppClient *>(qApp);
+    auto *app = qobject_cast<AppClient *>(qApp);
     app->onWizardDone(QDialog::Rejected);
 }
 
@@ -866,16 +864,12 @@ void ClientGui::onAddDriveFinished() {
 
 void ClientGui::onCopyLinkItem(int driveDbId, const QString &nodeId) {
     QString linkUrl;
-    ExitCode exitCode = GuiRequests::getPublicLinkUrl(driveDbId, nodeId, linkUrl);
-    if (exitCode != ExitCode::Ok) {
+    if (const auto exitCode = GuiRequests::getPublicLinkUrl(driveDbId, nodeId, linkUrl); exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::getPublicLinkUrl";
         return;
     }
 
     QApplication::clipboard()->setText(linkUrl);
-    CustomMessageBox msgBox(QMessageBox::Information, tr("The shared link has been copied to the clipboard."), QMessageBox::Ok,
-                            nullptr);
-    msgBox.exec();
 }
 
 void ClientGui::onOpenWebviewItem(int driveDbId, const QString &nodeId) {
@@ -917,13 +911,6 @@ void ClientGui::resolveUnsupportedCharErrors(int driveDbId) {
         qCWarning(lcClientGui()) << "Error in Requests::resolveUnsupportedCharErrors";
         return;
     }
-}
-
-void ClientGui::onCopyUrlToClipboard(const QString &url) {
-    QApplication::clipboard()->setText(url);
-    CustomMessageBox msgBox(QMessageBox::Information, tr("The shared link has been copied to the clipboard."), QMessageBox::Ok,
-                            nullptr);
-    msgBox.exec();
 }
 
 void ClientGui::onScreenUpdated(QScreen *screen) {

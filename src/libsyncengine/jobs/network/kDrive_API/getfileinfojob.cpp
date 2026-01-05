@@ -38,30 +38,30 @@ GetFileInfoJob::GetFileInfoJob(const int driveDbId, const NodeId &nodeId) :
     _trials = 1;
 }
 
-bool GetFileInfoJob::handleResponse(std::istream &is) {
-    if (!AbstractTokenNetworkJob::handleResponse(is)) return false;
+ExitInfo GetFileInfoJob::handleResponse(std::istream &is) {
+    if (const auto exitCode = AbstractTokenNetworkJob::handleResponse(is); !exitCode) return exitCode;
 
-    if (!jsonRes()) return true;
+    if (!jsonRes()) return ExitCode::Ok;
 
     const auto dataObj = jsonRes()->getObject(dataKey);
-    if (!dataObj) return true;
+    if (!dataObj) return ExitCode::Ok;
 
     if (!JsonParserUtility::extractValue(dataObj, parentIdKey, _parentNodeId)) {
-        return false;
+        return {};
     }
     if (!JsonParserUtility::extractValue(dataObj, createdAtKey, _creationTime)) {
-        return false;
+        return {};
     }
     if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modificationTime)) {
-        return false;
+        return {};
     }
     std::string tmp;
     if (!JsonParserUtility::extractValue(dataObj, typeKey, tmp)) {
-        return false;
+        return {};
     }
     if (tmp != dirKey) {
         if (!JsonParserUtility::extractValue(dataObj, sizeKey, _size)) {
-            return false;
+            return {};
         }
     }
 
@@ -72,7 +72,7 @@ bool GetFileInfoJob::handleResponse(std::istream &is) {
     if (_withPath) {
         std::string relativePathStr;
         if (!JsonParserUtility::extractValue(dataObj, pathKey, relativePathStr)) {
-            return false;
+            return {};
         }
         if (CommonUtility::startsWith(relativePathStr, "/")) {
             relativePathStr.erase(0, 1);
@@ -81,16 +81,17 @@ bool GetFileInfoJob::handleResponse(std::istream &is) {
         _path = relativePathStr;
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
-bool GetFileInfoJob::handleError(std::istream &is, const Poco::URI &uri) {
+ExitInfo GetFileInfoJob::handleError(const std::string &replyBody, const Poco::URI &uri) {
     using namespace Poco::Net;
-    if (_resHttp.getStatus() == HTTPResponse::HTTP_FORBIDDEN || _resHttp.getStatus() == HTTPResponse::HTTP_NOT_FOUND) {
-        return true; // The file is not accessible or doesn't exist
+    if (httpResponse().getStatus() == HTTPResponse::HTTP_FORBIDDEN ||
+        httpResponse().getStatus() == HTTPResponse::HTTP_NOT_FOUND) {
+        return ExitCode::Ok; // The file is not accessible or doesn't exist
     }
 
-    return AbstractTokenNetworkJob::handleError(is, uri);
+    return AbstractTokenNetworkJob::handleError(replyBody, uri);
 }
 
 std::string GetFileInfoJob::getSpecificUrl() {
@@ -100,11 +101,10 @@ std::string GetFileInfoJob::getSpecificUrl() {
     return str;
 }
 
-void GetFileInfoJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
+void GetFileInfoJob::setQueryParameters(Poco::URI &uri) {
     if (_withPath) {
         uri.addQueryParameter("with", "path");
     }
-    canceled = false;
 }
 
 } // namespace KDC

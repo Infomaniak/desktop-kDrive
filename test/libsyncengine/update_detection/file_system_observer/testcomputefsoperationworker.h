@@ -49,7 +49,6 @@ class TestComputeFSOperationWorker : public CppUnit::TestFixture, public TestBas
         CPPUNIT_TEST(testExclusion);
         CPPUNIT_TEST(testIsInUnsyncedList);
         CPPUNIT_TEST(testHasChangedSinceLastSeen);
-        CPPUNIT_TEST(testUpdateSyncNode);
 #if defined(KD_LINUX)
         CPPUNIT_TEST(testPostponeCreateOperationsOnReusedIds);
 #endif
@@ -98,9 +97,6 @@ class TestComputeFSOperationWorker : public CppUnit::TestFixture, public TestBas
         void testExclusion();
         void testIsInUnsyncedList();
 
-        // Test updates of SyncDb's 'sync_node' table
-        void testUpdateSyncNode();
-
         void testHasChangedSinceLastSeen();
 
 #if defined(KD_LINUX)
@@ -113,7 +109,8 @@ class TestComputeFSOperationWorker : public CppUnit::TestFixture, public TestBas
         void testIsInUnsyncedList(bool expectedResult, const NodeId &nodeId, ReplicaSide side) const;
 
         std::shared_ptr<SyncPal> _syncPal;
-        LocalTemporaryDirectory _localTempDir{"TestSyncPal"};
+        LocalTemporaryDirectory _localTempDir{"TestComputeFSOperationWorker"};
+        LocalTemporaryDirectory _localParmsTempDir{"TestComputeFSOperationWorker_parmsDb"};
         TestSituationGenerator _situationGenerator;
 };
 

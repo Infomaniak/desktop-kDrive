@@ -36,6 +36,7 @@ inline const SyncPath localTestDirPath() {
     if (!localTestDirPath.empty()) return localTestDirPath;
     localTestDirPath = CommonUtility::s2ws(loadEnvVariable("KDRIVE_TEST_CI_LOCAL_PATH", true));
     LOGW_INFO(Log::instance()->getLogger(), L"test_ci dir is: " << Utility::formatSyncPath(localTestDirPath));
+
     return localTestDirPath;
 }
 
@@ -84,7 +85,24 @@ struct TestVariables {
         }
 };
 
+struct RightsSet {
+        RightsSet(int rights) :
+            read(rights & 4),
+            write(rights & 2),
+            execute(rights & 1) {};
+        RightsSet(bool read, bool write, bool execute) :
+            read(read),
+            write(write),
+            execute(execute) {};
+        bool read;
+        bool write;
+        bool execute;
+};
+
+void generateTestFile(const SyncPath &path, const uint64_t size = 0);
 void generateOrEditTestFile(const SyncPath &path);
+void setTestFileSize(const SyncPath &path, uint64_t size);
+
 /**
  * @brief Generate test files.
  * @param dirPath Directory in which the files will be created.
@@ -95,5 +113,45 @@ void generateBigFiles(const SyncPath &dirPath, uint16_t size, uint16_t count);
 SyncPath generateBigFile(const SyncPath &dirPath, uint16_t size);
 
 void setModificationDate(const SyncPath &path, const std::chrono::time_point<std::chrono::system_clock> &timePoint);
+
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+/**
+ * @brief Create a file with an online status. (Dehydrated files a recognized by the application thanks to this special
+ * synchronization status).
+ * @param filPath Path indicating the file to create.
+ */
+void createFileWithDehydratedStatus(const SyncPath &filePath);
+#endif
+
+#if defined(KD_MACOS) || defined(KD_LINUX)
+void eraseFromTrash(const SyncPath &relativePath);
+#endif
+/**
+ * Check whether a path indicates an item located in the trash.
+ * @param relativePath SyncPath relative to the trash directory path.
+ * @return true if `relativePath` indicated an existing item of the trash, false otherwise.
+ */
+bool isInTrash(const SyncPath &relativePath);
+// Create two symbolic links that refer to each other:
+// filepath1 -> filepath2,
+// filepath2 -> filepath1
+// The created target paths are relative paths. The implementation does not raise an DELETE event in the directories containing
+// `filepath1` and `filepath2`.
+void createSymLinkLoop(const SyncPath &filepath1, const SyncPath &filepath2, const NodeType nodeType = NodeType::File);
+
+void setupLogging();
+
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+//! Sets the extended attribute corresponding to a dehydrated placeholder (LiteSync).
+//! Note: Dehydrated placeholders are characterized by the `O` (online) status attribute on Mac and
+//! the attribute `FILE_ATTRIBUTE_OFFLINE` on Windows.
+//! Note: should be used for testing only.
+/*!
+ \param path is the file system path of the item.
+ \param ioError holds the error returned when an underlying OS API call fails.
+ \return true if no unexpected error occurred, false otherwise.
+ */
+bool setDehydratedPlaceholderStatus(const SyncPath &path, IoError &ioError) noexcept;
+#endif
 
 } // namespace KDC::testhelpers

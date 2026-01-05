@@ -162,7 +162,7 @@ bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath
     IoError ioError = IoError::Success;
     bool endOfDir = false;
     while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
-        if (entry.is_directory() && !entry.is_symlink()) fullList.push_back(entry.path());
+        if (!entry.is_symlink() && entry.is_directory()) fullList.push_back(entry.path());
     }
 
     return true;

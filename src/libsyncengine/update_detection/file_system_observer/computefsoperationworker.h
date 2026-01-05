@@ -82,8 +82,6 @@ class ComputeFSOperationWorker : public ISyncWorker {
          */
         bool isInUnsyncedListParentSearchInSnapshot(std::shared_ptr<const Snapshot> snapshot, const NodeId &nodeId,
                                                     ReplicaSide side) const; // Search parent in snapshot
-        bool isWhitelisted(const std::shared_ptr<const Snapshot> snapshot, const NodeId &nodeId) const;
-        bool isTooBig(const std::shared_ptr<const Snapshot> remoteSnapshot, const NodeId &remoteNodeId, int64_t size);
         bool isPathTooLong(const SyncPath &path, const NodeId &nodeId, NodeType type) const;
 #if defined(KD_LINUX)
         void isReusedNodeId(const NodeId &localNodeId, const DbNode &dbNode, const std::shared_ptr<const Snapshot> &snapshot,
@@ -93,18 +91,16 @@ class ComputeFSOperationWorker : public ISyncWorker {
 
         void deleteChildOpRecursively(const std::shared_ptr<const Snapshot> remoteSnapshot, const NodeId &remoteNodeId,
                                       NodeSet &tmpTooBigList);
-        void deleteLocalDescendantCreateOps(const NodeId &localNodeId);
+        void deleteLocalDescendantOps(const NodeId &localNodeId);
 
         void updateUnsyncedList();
-        ExitCode updateSyncNode(SyncNodeType syncNodeType);
-        ExitCode updateSyncNode();
         void logOperationGeneration(const ReplicaSide side, const FSOpPtr fsOp);
         void notifyIgnoredItem(const NodeId &nodeId, const SyncPath &relativePath, NodeType nodeType);
         ExitInfo blacklistItem(const SyncPath &relativeLocalPath);
 
         // The remote propagation of the creation of local items that reuse identifiers of deleted items is postponed to the next
         // synchronization. So is the propagation of the creation of the descendants of those local items.
-        void postponeCreateOperationsOnReusedIds();
+        void postponeOperationsOnReusedIds();
 
         SyncDbReadOnlyCache &_syncDbReadOnlyCache;
         Sync _sync;

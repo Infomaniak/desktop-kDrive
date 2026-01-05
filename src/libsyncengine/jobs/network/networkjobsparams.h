@@ -22,13 +22,14 @@
 #include <cstdint>
 
 namespace KDC {
-static const int threadPoolMaxCapacity = 10;
-static const int threadPoolMinCapacity = 3;
-static const uint64_t chunkMaxSize = 100 * 1024 * 1024; // 100MB
-static const uint64_t chunkMinSize = 10 * 1024 * 1024; // 10MB
-static const int64_t bigFileThreshold = 100 * 1024 * 1024; // if file size > 100MB -> start upload session
-static const uint64_t optimalTotalChunks = 200;
-static const uint64_t maxTotalChunks = 10000; // Theoretical max. file size 10'000 * 100MB = 1TB
+static constexpr int threadPoolMaxCapacity = 10;
+static constexpr int threadPoolMinCapacity = 3;
+static constexpr uint64_t chunkMaxSize = 100 * 1024 * 1024; // 100MB
+static constexpr uint64_t chunkMinSize = 10 * 1024 * 1024; // 10MB
+static constexpr int64_t bigFileThreshold = 100 * 1024 * 1024; // if file size > 100MB -> start upload session
+static constexpr uint64_t optimalTotalChunks = 200;
+static constexpr uint64_t maxTotalChunks = 10000; // Theoretical max. file size 10'000 * 100MB = 1TB
+static constexpr uint64_t maxNumberParallelBigDownloads = 3; // Download max. 3 big files in parallel
 
 /*
  * Static string
@@ -37,6 +38,7 @@ static const uint64_t maxTotalChunks = 10000; // Theoretical max. file size 10'0
 static const std::string mimeTypeJson = "application/json";
 static const std::string mimeTypeOctetStream = "application/octet-stream";
 static const std::string mimeTypeImageJpeg = "image/jpeg";
+static const std::string mimeTypeTextCsv = "text/csv";
 
 // Link content types
 static const std::string mimeTypeSymlink = "inode/symlink";
@@ -68,6 +70,7 @@ static const std::string cursorKey = "cursor";
 static const std::string hasMoreKey = "has_more";
 static const std::string tokenKey = "token";
 static const std::string preferenceKey = "preference";
+static const std::string preferencesKey = "preferences";
 
 static const std::string changesKey = "changes";
 static const std::string actionsKey = "actions";
@@ -162,6 +165,7 @@ static const std::string reasonKey = "reason";
 static const std::string codeKey = "code";
 static const std::string descriptionKey = "description";
 static const std::string contextKey = "context";
+static const std::string modelKey = "model";
 
 /// Error codes
 enum class NetworkErrorCode {

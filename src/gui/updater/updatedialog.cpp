@@ -120,6 +120,12 @@ void UpdateDialog::initUi(const VersionInfo &versionInfo) {
 #endif
 }
 
+void UpdateDialog::paintEvent(QPaintEvent *event) {
+    Q_UNUSED(event)
+
+    drawRoundRectangle();
+}
+
 void UpdateDialog::reject() {
     if (sender() == _skipButton) _skip = true;
     MatomoClient::sendEvent("updateDialog", MatomoEventAction::Click, "rejectButton", _skip ? 1 : 0);

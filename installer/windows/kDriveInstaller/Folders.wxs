@@ -1,0 +1,30 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    <Fragment>
+        <StandardDirectory Id="ProgramFiles64Folder">
+            <Directory Id="INSTALLFOLDER" Name="!(bind.Property.ProductName)">
+                <Directory Id="I18NFOLDER" Name="i18n" />
+                <Directory Id="ICONENGINESFOLDER" Name="iconengines" />
+                <Directory Id="IMAGEFORMATSFOLDER" Name="imageformats" />
+                <Directory Id="NETWORKINFORMATIONFOLDER" Name="networkinformation" />
+                <Directory Id="PLATFORMSFOLDER" Name="platforms" />
+                <Directory Id="POSITIONFOLDER" Name="position" />
+                <Directory Id="TLSFOLDER" Name="tls" />
+                <Directory Id="TRANSLATIONSFOLDER" Name="translations" >
+                    <Directory Id="QTWEBENGINE_LOCALES" Name="qtwebengine_locales" />
+                </Directory>
+                <Directory Id="RESOURCESFOLDER" Name="resources"/>
+                <Directory Id="STYLEFOLDER" Name="styles"/>
+                <Directory Id="SHELLEXTFOLDER" Name="shellext">
+                    <Directory Id="APPXFOLDER" Name="AppX">
+                        <Directory Id="APPXDEPENDENCIESFOLDER" Name="Dependencies">
+                            <Directory Id="APPXDEPENDENCIESx64FOLDER" Name="x64" />
+                            <Directory Id="APPXDEPENDENCIESx86FOLDER" Name="x86" />
+                            <Directory Id="APPXDEPENDENCIESARMFOLDER" Name="ARM" />
+                        </Directory>
+                    </Directory>
+                </Directory>
+            </Directory>
+        </StandardDirectory>
+        <StandardDirectory Id="SystemFolder"/>
+    </Fragment>
+</Wix>

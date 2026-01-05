@@ -92,13 +92,14 @@ void AbstractUpdater::unskipVersion() {
 bool AbstractUpdater::isVersionSkipped(const std::string &version) {
     if (version.empty()) return false;
 
-    const auto seenVerison = ParametersCache::instance()->parameters().seenVersion();
-    if (seenVerison.empty()) return false;
+    const auto seenVersion = ParametersCache::instance()->parameters().seenVersion();
+    if (seenVersion.empty()) return false;
 
-    if (seenVerison == version || CommonUtility::isVersionLower(version, seenVerison)) {
-        LOG_INFO(Log::instance()->getLogger(), "Version " << seenVerison << " has been skipped.");
+    if (seenVersion == version || CommonUtility::isVersionLower(version, seenVersion)) {
+        LOG_INFO(Log::instance()->getLogger(), "Version " << seenVersion << " has been skipped.");
         return true;
     }
+
     return false;
 }
 

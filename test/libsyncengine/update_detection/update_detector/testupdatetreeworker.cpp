@@ -31,15 +31,14 @@ namespace KDC {
 void TestUpdateTreeWorker::setUp() {
     TestBase::start();
     // Create parmsDb
-    bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
-    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
+    (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
     // Create DB
-    const std::filesystem::path syncDbPath = MockDb::makeDbName(1, 1, 1, 1, alreadyExists);
-    _syncDb = std::make_shared<SyncDb>(syncDbPath.string(), "3.6.1");
-    _syncDb->init("3.6.1");
+    bool alreadyExists = false;
+    const SyncPath syncDbPath = MockDb::makeDbName(1, 1, 1, 1, alreadyExists);
+    _syncDb = std::make_shared<SyncDb>(syncDbPath.string(), KDRIVE_VERSION_STRING);
+    _syncDb->init(KDRIVE_VERSION_STRING);
     _syncDb->setAutoDelete(true);
     _operationSet = std::make_shared<FSOperationSet>(ReplicaSide::Unknown);
 
@@ -77,6 +76,7 @@ void TestUpdateTreeWorker::setUpDbTree() {
         ├── 2
         ├── 3
         │   └── 3.1
+        |   └── 3.2
         ├── 4
         │   └── 4.1
         │       └── 4.1.1
@@ -97,6 +97,7 @@ void TestUpdateTreeWorker::setUpDbTree() {
     DbNodeId dbNodeIdDir2;
     DbNodeId dbNodeIdDir3;
     DbNodeId dbNodeIdDir31;
+    DbNodeId dbNodeIdDir32;
     DbNodeId dbnodeIdDir4;
     DbNodeId dbnodeIdfile4111;
     DbNodeId dbnodeIdfile4112;
@@ -138,6 +139,10 @@ void TestUpdateTreeWorker::setUpDbTree() {
                            testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultFileSize,
                            std::nullopt);
     _syncDb->insertNode(nodeDir31, dbNodeIdDir31, constraintError);
+    const DbNode nodeDir32(0, dbNodeIdDir3, Str("Dir 3.2"), Str("Dir 3.2"), "id32", "id drive 32", testhelpers::defaultTime,
+                           testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultFileSize,
+                           std::nullopt);
+    _syncDb->insertNode(nodeDir32, dbNodeIdDir32, constraintError);
     const DbNode nodeDir4(0, _syncDb->rootNode().nodeId(), Str("Dir 4"), Str("Dir 4"), "id4", "id drive 4",
                           testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
                           testhelpers::defaultFileSize, std::nullopt);
@@ -495,9 +500,9 @@ void TestUpdateTreeWorker::testStep3() {
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Move, "id11", NodeType::Directory,
                                                           testhelpers::defaultTime, testhelpers::defaultTime,
                                                           testhelpers::defaultFileSize, "Dir 1/Dir 1.1", "Dir 1/Dir 1.2"));
-    _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Delete, "id3", NodeType::Directory,
+    _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Delete, "id31", NodeType::Directory,
                                                           testhelpers::defaultTime, testhelpers::defaultTime,
-                                                          testhelpers::defaultFileSize, "Dir 1/Dir 1.2/Dir 3"));
+                                                          testhelpers::defaultFileSize, "Dir 1/Dir 1.2/Dir 3/Dir 3.1"));
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Delete, "id2", NodeType::Directory,
                                                           testhelpers::defaultTime, testhelpers::defaultTime,
                                                           testhelpers::defaultFileSize, "Dir 2")); // existing node
@@ -505,7 +510,7 @@ void TestUpdateTreeWorker::testStep3() {
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->step1MoveDirectory());
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->step3DeleteDirectory());
     CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 1/Dir 1.2/Dir 3")->hasChangeEvent(OperationType::Move));
-    CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 1/Dir 1.2/Dir 3")->hasChangeEvent(OperationType::Delete));
+    CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 1/Dir 1.2/Dir 3/Dir 3.1")->hasChangeEvent(OperationType::Delete));
     CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 1/Dir 1.2/Dir 3")->id() == "id3");
     CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 1/Dir 1.2/Dir 3")->parentNode()->id() == "id11");
     CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 2")->id() == "id2");
@@ -742,18 +747,13 @@ void TestUpdateTreeWorker::testClearTreeStep3() {
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Delete, "id3", NodeType::Directory,
                                                           testhelpers::defaultTime, testhelpers::defaultTime,
                                                           testhelpers::defaultFileSize, "Dir 1/Dir 1.2/Dir 3"));
-    _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Delete, "id2", NodeType::Directory,
-                                                          testhelpers::defaultTime, testhelpers::defaultTime,
-                                                          testhelpers::defaultFileSize, "Dir 2"));
+
     // make move dir to test special case
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->step1MoveDirectory());
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->step3DeleteDirectory());
-    CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 1/Dir 1.2/Dir 3")->hasChangeEvent(OperationType::Move));
     CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 1/Dir 1.2/Dir 3")->hasChangeEvent(OperationType::Delete));
     CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 1/Dir 1.2/Dir 3")->id() == "id3");
     CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 1/Dir 1.2/Dir 3")->parentNode()->id() == "id11");
-    CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 2")->id() == "id2");
-    CPPUNIT_ASSERT(_localUpdateTree->getNodeByPath("Dir 2")->hasChangeEvent(OperationType::Delete));
 }
 
 void TestUpdateTreeWorker::testClearTreeStep4() {
@@ -856,7 +856,7 @@ void TestUpdateTreeWorker::testClearTreeStep7() {
 
 void TestUpdateTreeWorker::testClearTreeStep8() {
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->step8CompleteUpdateTree());
-    CPPUNIT_ASSERT(_localUpdateTreeWorker->_updateTree->nodes().size() == 19);
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->_updateTree->nodes().size() == 20);
 }
 
 void TestUpdateTreeWorker::testGetOriginPath() {
@@ -1187,6 +1187,18 @@ void TestUpdateTreeWorker::testIntegrityCheck() {
     CPPUNIT_ASSERT(!_localUpdateTreeWorker->integrityCheck());
 
     newNode->setId(NodeId{"123"});
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
+
+    newNode->setChangeEvents(OperationType::Create);
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
+    newNode->setChangeEvents(OperationType::Edit);
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
+    newNode->setMoveOriginInfos(Node::MoveOriginInfos("/dummy", "1"));
+    newNode->setChangeEvents(OperationType::Move);
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
+    newNode->setChangeEvents(OperationType::Delete);
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
+    newNode->setChangeEvents(OperationType::Edit | OperationType::Move);
     CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
 }
 
