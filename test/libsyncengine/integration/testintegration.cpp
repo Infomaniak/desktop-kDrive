@@ -22,7 +22,7 @@
 
 #include "db/db.h"
 #include "jobs/local/localcopyjob.h"
-#include "jobs/local/localdeletejob.h"
+#include "jobs/local/synclocaldeletejob.h"
 #include "jobs/local/localmovejob.h"
 #include "jobs/syncjobmanager.h"
 #include "jobs/local/localcreatedirjob.h"

@@ -20,7 +20,7 @@
 
 #include "filerescuer.h"
 #include "jobs/local/localcreatedirjob.h"
-#include "jobs/local/localdeletejob.h"
+#include "jobs/local/synclocaldeletejob.h"
 #include "jobs/local/localmovejob.h"
 #include "jobs/network/kDrive_API/createdirjob.h"
 #include "jobs/network/kDrive_API/deletejob.h"
@@ -1172,7 +1172,7 @@ ExitInfo ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool
             LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve node ID");
             return ExitCode::DataError;
         }
-        job = std::make_shared<LocalDeleteJob>(_syncPal, relativeLocalFilePath, isLiteSyncActivated(), remoteNodeId);
+        job = std::make_shared<SyncLocalDeleteJob>(_syncPal, relativeLocalFilePath, isLiteSyncActivated(), remoteNodeId);
     } else {
         try {
             job = std::make_shared<DeleteJob>(_syncPal->driveDbId(), syncOp->correspondingNode()->id().value_or(""),
@@ -1449,7 +1449,7 @@ ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath 
             // Delete the item from local replica
             const NodeId remoteNodeId = syncOp->correspondingNode()->id().value_or("");
             if (!remoteNodeId.empty()) {
-                LocalDeleteJob deleteJob(_syncPal, relativeLocalPath, isLiteSyncActivated(), remoteNodeId);
+                SyncLocalDeleteJob deleteJob(_syncPal, relativeLocalPath, isLiteSyncActivated(), remoteNodeId);
                 deleteJob.setBypassCheck(true);
                 deleteJob.runSynchronously();
             }

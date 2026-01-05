@@ -18,35 +18,34 @@
 
 #pragma once
 
-#include "jobs/syncjob.h"
-#include "syncpal/syncpal.h"
+#include "genericlocaldeletejob.h"
 
+#include "syncpal/syncpal.h"
 
 namespace KDC {
 
-class LocalDeleteJob : public SyncJob {
+/**
+ * @brief Delete job designed to delete a local file in the context of synchronization.
+ */
+class SyncLocalDeleteJob : public GenericLocalDeleteJob {
     public:
-        LocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, bool liteSyncIsEnabled,
-                       const NodeId &remoteId,
-                       bool forceToTrash = false); // Check existence of remote counterpart and abort if needed.
-        LocalDeleteJob(const SyncPath &absolutePath, const std::shared_ptr<SyncPal> syncPal = nullptr); // Delete without checks
-        ~LocalDeleteJob();
+        SyncLocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, bool liteSyncIsEnabled,
+                           const NodeId &remoteId,
+                           bool forceToTrash = false); // Check existence of remote counterpart and abort if needed.
+        SyncLocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, const SyncPath &absolutePath); // Delete without checks
 
     protected:
-        SyncPath _absolutePath;
         bool _liteSyncIsEnabled = false;
 
         ExitInfo canRun() override;
         virtual bool findRemoteItem(SyncPath &remoteItemPath) const;
         virtual ExitInfo moveToTrash();
-        ExitInfo moveToTrashOrHardDeleteIfNeeded(const SyncPath &path);
 
     private:
         ExitInfo runJob() override;
-        ExitInfo hardDelete(const SyncPath &path);
+
         ExitInfo hardDeleteDehydratedPlaceholders();
         ExitInfo handleLiteSyncFile(const SyncPath &path);
-
         ExitInfo deleteFromDB(const SyncPath &path);
 
         //! Returns `true` if `localRelativePath` and `remoteRelativePath` indicate the same synchronised item.

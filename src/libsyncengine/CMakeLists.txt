@@ -78,7 +78,8 @@ set(syncengine_SRCS
     ## Local jobs
     jobs/local/localmovejob.h jobs/local/localmovejob.cpp
     jobs/local/localcopyjob.h jobs/local/localcopyjob.cpp
-    jobs/local/localdeletejob.h jobs/local/localdeletejob.cpp
+    jobs/local/genericlocaldeletejob.h jobs/local/genericlocaldeletejob.cpp
+    jobs/local/synclocaldeletejob.h jobs/local/synclocaldeletejob.cpp
     jobs/local/localcreatedirjob.h jobs/local/localcreatedirjob.cpp
     # Update Detection
     ## File System Observer

@@ -18,7 +18,7 @@
 
 #include "blacklistpropagator.h"
 
-#include "jobs/local/localdeletejob.h"
+#include "jobs/local/synclocaldeletejob.h"
 #include "jobs/local/localmovejob.h"
 #include "libcommon/utility/utility.h" // Path2WStr
 #include "libcommonserver/io/iohelper.h"
@@ -231,7 +231,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
                                                                      << L") on local replica because it is blacklisted.");
         }
 
-        LocalDeleteJob job(_syncPal, localPath, liteSyncActivated, remoteNodeId);
+        SyncLocalDeleteJob job(_syncPal, localPath, liteSyncActivated, remoteNodeId);
         job.setBypassCheck(true);
         job.runSynchronously();
         if (!job.exitInfo()) {

@@ -43,7 +43,7 @@
 #include "propagation/executor/executorworker.h"
 #include "requests/syncnodecache.h"
 #include "jobs/network/kDrive_API/downloadjob.h"
-#include "jobs/local/localdeletejob.h"
+#include "jobs/local/synclocaldeletejob.h"
 #include "jobs/jobmanager.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
@@ -1324,7 +1324,8 @@ void SyncPal::fixInconsistentFileNames() {
                 continue;
             }
 
-            LocalDeleteJob deleteJob(oldLocalPath);
+            GenericLocalDeleteJob deleteJob(oldLocalPath,
+                                            true); // Hard delete to make sure we do not put dehydrated placeholder in the trash.
             deleteJob.runSynchronously();
         }
     }
