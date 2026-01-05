@@ -104,9 +104,9 @@ static BOOL processAuthOpen(const es_message_t *msg, BOOL *thumbnail)
         return FALSE;
     }
         
-    NSLog(@"[KD] Open file %s with flags %d asked by %s",
+    /*NSLog(@"[KD] Open file %s with flags %d asked by %s",
           msg->event.open.file->path.data, msg->event.open.fflag,
-          msg->process->signing_id.data);
+          msg->process->signing_id.data);*/
     
     // Check file status
     long bufferLength = getxattr([filePath UTF8String], [EXT_ATTR_STATUS UTF8String], NULL, 0, 0, 0);
