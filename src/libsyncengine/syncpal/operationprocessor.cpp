@@ -129,6 +129,8 @@ bool OperationProcessor::isPseudoConflict(const std::shared_ptr<Node> node, cons
 }
 
 std::shared_ptr<Node> OperationProcessor::correspondingNodeInOtherTree(const std::shared_ptr<Node> node) {
+    if (!node) return nullptr;
+
     std::optional<DbNodeId> dbNodeId = node->idb();
     if (!dbNodeId && node->id()) {
         // Find node in DB
