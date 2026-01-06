@@ -21,7 +21,7 @@ import kDriveResources
 
 final class LargeButtonCell: NSButtonCell {
     enum ComponentTokens {
-        static let iconSize: CGFloat = 16
+        static let iconSize: CGSize = CGSize(width: 12, height: 12)
         static let buttonHeight: CGFloat = 32
 
         static let spacing = AppPadding.padding8
@@ -65,20 +65,26 @@ final class LargeButtonCell: NSButtonCell {
     override func drawInterior(withFrame cellFrame: NSRect, in controlView: NSView) {
         let insetRect = cellFrame.insetBy(dx: ComponentTokens.horizontalPadding, dy: 0)
 
-        drawImage(at: NSPoint(x: insetRect.minX, y: insetRect.midY), image: icon)
+        drawImage(
+            at: NSPoint(x: insetRect.minX, y: insetRect.midY),
+            image: icon,
+            withColor: ComponentTokens.accentColor,
+            size: ComponentTokens.iconSize
+        )
         drawTitle(cellFrame: insetRect)
         if let accessory {
             drawImage(
-                at: NSPoint(x: insetRect.maxX - ComponentTokens.iconSize, y: insetRect.midY),
+                at: NSPoint(x: insetRect.maxX - ComponentTokens.iconSize.width, y: insetRect.midY),
                 image: accessory,
-                size: CGSize(width: 12, height: 12)
+                withColor: NSColor.Tokens.Text.tertiary,
+                size: CGSize(width: 8, height: 8)
             )
         }
     }
 
-    private func drawImage(at point: NSPoint, image: NSImage, size: CGSize = CGSize(width: 16, height: 16)) {
+    private func drawImage(at point: NSPoint, image: NSImage, withColor color: NSColor, size: CGSize) {
         let tintedImage = NSImage(size: size, flipped: true) { rect in
-            ComponentTokens.accentColor.setFill()
+            color.setFill()
             rect.fill()
 
             image.draw(
@@ -93,7 +99,7 @@ final class LargeButtonCell: NSButtonCell {
 
         let iconRect = NSRect(
             x: point.x,
-            y: point.y - ComponentTokens.iconSize / 2,
+            y: point.y - size.height / 2,
             width: size.width,
             height: size.height
         )
@@ -101,7 +107,7 @@ final class LargeButtonCell: NSButtonCell {
     }
 
     private func drawTitle(cellFrame: NSRect) {
-        let xPosition = cellFrame.minX + ComponentTokens.iconSize + ComponentTokens.spacing
+        let xPosition = cellFrame.minX + ComponentTokens.iconSize.width + ComponentTokens.spacing
         let availableWidth = cellFrame.width - xPosition
         let titleRect = NSRect(
             x: xPosition,
