@@ -118,10 +118,12 @@ class SentryNativeConan(ConanFile):
         self.cpp_info.set_property("cmake_file_name", "sentry")
         self.cpp_info.set_property("cmake_find_mode", "both")
 
+        # Qt is required at package level (not component level) because it uses cmake_find_mode="none"
+        self.cpp_info.requires = ["qt"]
+
         comp_sentry = self.cpp_info.components["sentry"]
         comp_sentry.set_property("cmake_target_name", "sentry::sentry")
         comp_sentry.libs = ["sentry"]
-
 
         if self.settings.os == "Linux":
             # libcurl::curl should transitively provide c-ares, but we also add it explicitly
