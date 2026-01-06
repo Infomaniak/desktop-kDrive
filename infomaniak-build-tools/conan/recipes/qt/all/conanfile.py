@@ -60,7 +60,7 @@ class QtConan(ConanFile):
     def _get_compiler(self):
         """
         Get the compiler name on QT installer based on the OS and architecture.
-        :return: The compiler name, e.g. 'clang_64', 'gcc_64', 'linux_gcc_64', 'linux_gcc_arm64', or 'win64_msvc2019_64'.
+        :return: The compiler name, e.g. 'clang_64', 'gcc_64', 'linux_gcc_64', 'linux_gcc_arm64', 'win64_msvc2019_64', 'win64_msvc2022_64', or 'win64_mingw'.
         """
         if self.settings.os == "Macos":
             return "clang_64"
@@ -74,7 +74,19 @@ class QtConan(ConanFile):
                 else:
                     return "linux_gcc_64"
         elif self.settings.os == "Windows":
-            return "win64_msvc2019_64"
+            # Qt 6.2.3 always uses MSVC 2019
+            if self.version == "6.2.3":
+                return "win64_msvc2019_64"
+            # Qt 6.10.1+ supports both MinGW and MSVC 2022 (2019 is no longer compatible)
+            elif self.version == "6.10.1":
+                compiler = str(self.settings.compiler)
+                if compiler == "gcc":  # MinGW uses gcc as compiler in Conan
+                    return "win64_mingw"
+                else:  # MSVC
+                    return "win64_msvc2022_64"
+            else:
+                # Default for other versions
+                return "win64_msvc2019_64" # May fail, if an error occurs, verify with a manual run of the Qt Online Installer.
         else:
             raise ConanInvalidConfiguration("Unsupported OS for Qt installation")
 
@@ -321,22 +333,30 @@ class QtConan(ConanFile):
 
     def _subfolder_install(self):
         """
-        Get the subfolder name where the Qt installation is done, based on the OS and architecture.
-        :return: The subfolder name, e.g., 'macos', 'gcc_64', or 'msvc2019_64'.
+        Get the subfolder name where the Qt installation is done, based on the OS, architecture, and compiler.
+        :return: The subfolder name, e.g., 'macos', 'gcc_64', 'gcc_arm64', 'msvc2019_64', 'msvc2022_64', or 'mingw_64'.
         """
-        subfolder_map = {
-            ("Macos", "arm64"): "macos",
-            ("Macos", "x64"): "macos",
-            ("Linux", "arm64"): "gcc_arm64",
-            ("Linux", "x64"): "gcc_64",
-            ("Windows", "arm64"): "msvc2019_64",
-            ("Windows", "x64"): "msvc2019_64",
-        }
-        key = (str(self.settings.os), str(self._get_real_arch()))
-        try:
-            return subfolder_map[key]
-        except KeyError:
-            raise ConanInvalidConfiguration(f"Unsupported combination: {key}")
+        if self.settings.os == "Macos":
+            return "macos"
+        elif self.settings.os == "Linux":
+            if self._get_real_arch() == "arm64":
+                return "gcc_arm64"
+            else:
+                return "gcc_64"
+        elif self.settings.os == "Windows":
+            # Determine Windows subfolder based on compiler and version
+            if self.version == "6.2.3":
+                return "msvc2019_64"
+            elif self.version == "6.10.1":
+                if str(self.settings.compiler) == "gcc":  # MinGW
+                    return "mingw_64"
+                else:  # MSVC
+                    return "msvc2022_64"
+            else:
+                # Default for other versions
+                return "msvc2019_64"
+        else:
+            raise ConanInvalidConfiguration(f"Unsupported OS: {self.settings.os}")
 
     def package(self):
         self.output.highlight("This step can take a while, please be patient...")
@@ -403,6 +423,8 @@ class QtConan(ConanFile):
         :return: None
         """
         self.info.settings.rm_safe("build_type")
-        self.info.settings.rm_safe("compiler")
+        # Keep compiler setting on Windows as it affects which Qt variant (MSVC/MinGW) is installed
+        if self.settings.os != "Windows":
+            self.info.settings.rm_safe("compiler")
         self.info.options.rm_safe("qt_login_type")
         self.info.options.rm_safe("install_vcredist")  # vcredist doesn't affect Qt binaries
