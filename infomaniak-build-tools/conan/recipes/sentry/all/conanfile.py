@@ -36,7 +36,9 @@ class SentryNativeConan(ConanFile):
             )
 
     def requirements(self):
-        self.requires("qt/[>=6.2.3 <7.0.0]")
+        # Qt is private (headers=True, libs=False) because it uses cmake_find_mode="none"
+        # and cannot be propagated via Conan - consumers must find Qt via find_package(Qt6)
+        self.requires("qt/[>=6.2.3 <7.0.0]", headers=True, libs=False, visible=False)
         if self.settings.os == "Linux":
             # c-ares is required explicitly because Crashpad (Sentry's backend) uses it directly
             self.requires("c-ares/[>=1.27 <2]")
@@ -117,9 +119,6 @@ class SentryNativeConan(ConanFile):
     def package_info(self):
         self.cpp_info.set_property("cmake_file_name", "sentry")
         self.cpp_info.set_property("cmake_find_mode", "both")
-
-        # Qt is required at package level (not component level) because it uses cmake_find_mode="none"
-        self.cpp_info.requires = ["qt"]
 
         comp_sentry = self.cpp_info.components["sentry"]
         comp_sentry.set_property("cmake_target_name", "sentry::sentry")
