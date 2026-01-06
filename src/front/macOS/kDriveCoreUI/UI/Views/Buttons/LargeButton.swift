@@ -21,7 +21,8 @@ import kDriveResources
 
 final class LargeButtonCell: NSButtonCell {
     enum ComponentTokens {
-        static let iconSize: CGSize = CGSize(width: 12, height: 12)
+        static let iconSize = CGSize(width: 12, height: 12)
+        static let accessorySize = CGSize(width: 8, height: 8)
         static let buttonHeight: CGFloat = 32
 
         static let spacing = AppPadding.padding8
@@ -71,13 +72,15 @@ final class LargeButtonCell: NSButtonCell {
             withColor: ComponentTokens.accentColor,
             size: ComponentTokens.iconSize
         )
+        
         drawTitle(cellFrame: insetRect)
+        
         if let accessory {
             drawImage(
                 at: NSPoint(x: insetRect.maxX - ComponentTokens.iconSize.width, y: insetRect.midY),
                 image: accessory,
                 withColor: NSColor.Tokens.Text.tertiary,
-                size: CGSize(width: 8, height: 8)
+                size: ComponentTokens.accessorySize
             )
         }
     }
