@@ -83,6 +83,13 @@ final class SelectedUserAndDrivePanelView: NSView {
         buttonsStackView.orientation = .vertical
         buttonsStackView.spacing = 8
         addSubview(buttonsStackView)
+        
+        let trashFolderButton = generateLargeButton(
+            icon: KDriveResources.trash.image,
+            title: "Corbeille",
+            action: #selector(openRemoteTrashFolder)
+        )
+        addSubview(trashFolderButton)
 
         addSubview(avatarView)
         NSLayoutConstraint.activate([
@@ -93,12 +100,18 @@ final class SelectedUserAndDrivePanelView: NSView {
 
             buttonsStackView.topAnchor.constraint(equalTo: avatarView.bottomAnchor, constant: AppPadding.padding16),
             buttonsStackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: AppPadding.padding16),
-            buttonsStackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -AppPadding.padding16)
+            buttonsStackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -AppPadding.padding16),
+            
+            trashFolderButton.topAnchor.constraint(greaterThanOrEqualTo: buttonsStackView.bottomAnchor, constant: AppPadding.padding8),
+            trashFolderButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: AppPadding.padding16),
+            trashFolderButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -AppPadding.padding16),
+            trashFolderButton.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -AppPadding.padding16)
         ])
     }
 
     private func generateLargeButton(icon: NSImage, title: String, action: Selector) -> LargeButton {
         let button = LargeButton(icon: icon, title: title, accessory: KDriveResources.share.image)
+        button.translatesAutoresizingMaskIntoConstraints = false
         button.target = self
         button.action = action
         return button

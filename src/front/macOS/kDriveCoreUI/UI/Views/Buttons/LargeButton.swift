@@ -83,7 +83,7 @@ final class LargeButtonCell: NSButtonCell {
 
             image.draw(
                 in: rect,
-                from: NSRect(origin: .zero, size: size),
+                from: NSRect(origin: .zero, size: image.size),
                 operation: .destinationIn,
                 fraction: 1.0
             )
