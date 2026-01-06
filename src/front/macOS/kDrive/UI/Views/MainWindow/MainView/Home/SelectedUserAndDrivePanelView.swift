@@ -21,6 +21,43 @@ import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 
+enum RemoteFolder: Int {
+    case favorites
+    case sharedWithMe
+    case kDriveHome
+    case trash
+    
+    var name: String {
+        switch self {
+        case .favorites:
+            return "Favoris"
+        case .sharedWithMe:
+            return "Partages"
+        case .kDriveHome:
+            return "kDrive en ligne"
+        case .trash:
+            return "Corbeille"
+        }
+    }
+    
+    var icon: NSImage {
+        switch self {
+        case .favorites:
+            return KDriveResources.star.image
+        case .sharedWithMe:
+            return KDriveResources.folderShare.image
+        case .kDriveHome:
+            return KDriveResources.kdriveFoldersStacked.image
+        case .trash:
+            return KDriveResources.trash.image
+        }
+    }
+}
+
+protocol SelectedUserAndDrivePanelDelegate: AnyObject {
+    func didTapRemoteFolderButton(_ remoteFolder: RemoteFolder)
+}
+
 final class SelectedUserAndDrivePanelView: NSView {
     var user: UIUser {
         didSet {
@@ -33,6 +70,8 @@ final class SelectedUserAndDrivePanelView: NSView {
             updateDrive(for: drive)
         }
     }
+    
+    weak var delegate: SelectedUserAndDrivePanelDelegate?
 
     private lazy var avatarView: UserAvatarAndDriveView = {
         let avatarView = UserAvatarAndDriveView(user: user, drive: drive)
@@ -57,38 +96,17 @@ final class SelectedUserAndDrivePanelView: NSView {
         wantsLayer = true
         layer?.backgroundColor = NSColor.Tokens.Surface.secondary.cgColor
         layer?.cornerRadius = AppRadius.radius16
+        
+        let topFolders: [RemoteFolder] = [.favorites, .sharedWithMe, .kDriveHome]
+        let folderButtons = topFolders.map { generateLargeButton(for: $0) }
 
-        let favoriteFolderButton = generateLargeButton(
-            icon: KDriveResources.star.image,
-            title: "Favoris",
-            action: #selector(openRemoteFavoriteFolder)
-        )
-        let sharedWithMeFolderButton = generateLargeButton(
-            icon: KDriveResources.folderShare.image,
-            title: "Partages",
-            action: #selector(openRemoteSharedWithMeFolder)
-        )
-        let kDriveHomeFolderButton = generateLargeButton(
-            icon: KDriveResources.kdriveFoldersStacked.image,
-            title: "kDrive en ligne",
-            action: #selector(openRemoteHomeFolder)
-        )
-
-        let buttonsStackView = NSStackView(views: [
-            favoriteFolderButton,
-            sharedWithMeFolderButton,
-            kDriveHomeFolderButton
-        ])
+        let buttonsStackView = NSStackView(views: folderButtons)
         buttonsStackView.translatesAutoresizingMaskIntoConstraints = false
         buttonsStackView.orientation = .vertical
         buttonsStackView.spacing = 8
         addSubview(buttonsStackView)
         
-        let trashFolderButton = generateLargeButton(
-            icon: KDriveResources.trash.image,
-            title: "Corbeille",
-            action: #selector(openRemoteTrashFolder)
-        )
+        let trashFolderButton = generateLargeButton(for: .trash)
         addSubview(trashFolderButton)
 
         addSubview(avatarView)
@@ -109,11 +127,12 @@ final class SelectedUserAndDrivePanelView: NSView {
         ])
     }
 
-    private func generateLargeButton(icon: NSImage, title: String, action: Selector) -> LargeButton {
-        let button = LargeButton(icon: icon, title: title, accessory: KDriveResources.share.image)
+    private func generateLargeButton(for remoteFolder: RemoteFolder) -> LargeButton {
+        let button = LargeButton(icon: remoteFolder.icon, title: remoteFolder.name, accessory: KDriveResources.share.image)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.target = self
-        button.action = action
+        button.action = #selector(didTapLargeButton)
+        button.tag = remoteFolder.rawValue
         return button
     }
 
@@ -123,6 +142,14 @@ final class SelectedUserAndDrivePanelView: NSView {
 
     private func updateDrive(for drive: UIDrive) {
         avatarView.drive = drive
+    }
+    
+    @objc private func didTapLargeButton(_ sender: LargeButton) {
+        guard let remoteFolder = RemoteFolder(rawValue: sender.tag) else {
+            return
+        }
+        
+        delegate?.didTapRemoteFolderButton(remoteFolder)
     }
 }
 
