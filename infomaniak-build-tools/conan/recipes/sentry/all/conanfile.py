@@ -75,6 +75,8 @@ class SentryNativeConan(ConanFile):
         }
         if self.settings.os != "Windows":
             cache_variables["CMAKE_BUILD_TYPE"] = self.forced_build_type
+        if self.settings.os == "Linux":
+            cache_variables["SENTRY_TRANSPORT"] = "curl"
         return cache_variables
 
     def generate(self):
@@ -132,4 +134,5 @@ class SentryNativeConan(ConanFile):
         if not self.options.shared:
             comp_sentry.defines = ["SENTRY_BUILD_STATIC"]
 
-        self.cpp_info.set_property("cmake_build_modules", [pjoin(self.package_folder, "lib", "cmake", "sentry", "sentry_crashpad-targets.cmake")])
+        # Note: cmake_build_modules removed to let Conan handle all dependencies transitively
+        # self.cpp_info.set_property("cmake_build_modules", [pjoin(self.package_folder, "lib", "cmake", "sentry", "sentry_crashpad-targets.cmake")])
