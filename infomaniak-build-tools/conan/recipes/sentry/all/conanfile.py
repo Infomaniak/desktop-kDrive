@@ -36,11 +36,9 @@ class SentryNativeConan(ConanFile):
             )
 
     def requirements(self):
+        self.requires("qt/[>=6.2.3 <7.0.0]")
         if self.settings.os == "Linux":
-            self.requires("qt/6.7.3")
             self.requires("libcurl/8.10.1", options={"with_c_ares": True}) # Provide Curl with AsynchDNS (needed on linux)
-        else:
-            self.requires("qt/6.10.1")
 
     @property
     def forced_build_type(self):
