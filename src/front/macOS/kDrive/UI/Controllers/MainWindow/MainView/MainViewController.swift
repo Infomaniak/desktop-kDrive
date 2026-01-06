@@ -59,7 +59,7 @@ final class MainViewController: IKSplitViewController {
         sidebarItem.maximumThickness = 250
         addSplitViewItem(sidebarItem)
 
-        let homeViewController = HomeViewController(toolbarTitle: SidebarItem.home.title)
+        let homeViewController = HomeViewController(mainViewModel: viewModel)
         let homeDetailItem = NSSplitViewItem(viewController: homeViewController)
         addSplitViewItem(homeDetailItem)
     }
@@ -72,7 +72,7 @@ extension MainViewController: NavigableSidebarViewControllerDelegate {
         var contentViewController: NSViewController
         switch item {
         case .home:
-            contentViewController = HomeViewController()
+            contentViewController = HomeViewController(mainViewModel: viewModel)
         case .activity:
             contentViewController = ActivityViewController()
         case .storage:
