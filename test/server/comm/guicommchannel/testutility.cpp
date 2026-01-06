@@ -17,6 +17,7 @@
  */
 
 #include "comm/guijobs/utilityactivateloadinfojob.h"
+#include "comm/guijobs/utilitybestvfsavailablemode.h"
 #include "comm/guijobs/utilitygetappstatejob.h"
 #include "comm/guijobs/utilitysetappstatejob.h"
 #include "comm/guijobs/utilitycancellogtosupportjob.h"
@@ -59,6 +60,51 @@ void TestGuiCommChannel::testUtilityActivateLoadInfoJob() {
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto activateLoadInfoJob = std::dynamic_pointer_cast<UtilityActivateLoadInfoJob>(job);
+        CPPUNIT_ASSERT(activateLoadInfoJob);
+    };
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+#else
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
+void TestGuiCommChannel::testUtilityBestVfsAvailableModeJob() {
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    const auto queryStr{R"({ "id": 1,)"
+                        R"( "num": )" +
+                        std::to_string(toInt(RequestNum::UTILITY_BESTVFSAVAILABLEMODE)) +
+                        R"(,)"
+#if defined(KD_WINDOWS)
+                        R"( "params": { "path": "C:\dummy" } })"};
+#else
+                        R"( "params": { "path": "/dummy" } })"};
+#endif
+#else
+    // There is no need to pass a request id as the response is via a callback.
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::UTILITY_BESTVFSAVAILABLEMODE)) +
+                        R"(,)"
+                        R"( "params": { "path": "/dummy" } })"};
+
+    // Callback expected answer
+    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"bestMode":)" + std::to_string(toInt(VirtualFileMode::Off)) +
+                            R"(}})"};
+#endif
+
+    // Job expected answer
+    const auto answerStr{R"({ "cause": 0,)"
+                         R"( "code": 0,)"
+                         R"( "id": 1,)"
+                         R"( "num": )" +
+                         std::to_string(toInt(RequestNum::UTILITY_BESTVFSAVAILABLEMODE)) +
+                         R"(,)"
+                         R"( "params": { "bestMode": )" +
+                         std::to_string(toInt(VirtualFileMode::Off)) + R"( }, "type": )" +
+                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto activateLoadInfoJob = std::dynamic_pointer_cast<UtilityBestVfsAvailableModeJob>(job);
         CPPUNIT_ASSERT(activateLoadInfoJob);
     };
 
