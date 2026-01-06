@@ -58,7 +58,7 @@ class QtConan(ConanFile):
     def _get_compiler(self):
         """
         Get the compiler name on QT installer based on the OS and architecture.
-        :return: The compiler name, e.g. 'clang_64', 'gcc_64', 'linux_gcc_arm64', or 'win64_msvc2019_64'.
+        :return: The compiler name, e.g. 'clang_64', 'linux_gcc_64', 'linux_gcc_arm64', or 'win64_msvc2019_64'.
         """
         if self.settings.os == "Macos":
             return "clang_64"
@@ -66,7 +66,7 @@ class QtConan(ConanFile):
             if self._get_real_arch() == "arm64":
                 return "linux_gcc_arm64"
             else:
-                return "gcc_64"
+                return "linux_gcc_64"
         elif self.settings.os == "Windows":
             return "win64_msvc2019_64"
         else:
