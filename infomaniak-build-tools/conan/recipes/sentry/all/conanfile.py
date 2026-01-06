@@ -3,7 +3,7 @@ import os
 
 from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration
-from conan.tools.cmake import CMake, CMakeToolchain
+from conan.tools.cmake import CMake, CMakeToolchain, CMakeDeps
 from conan.tools.files import copy, replace_in_file
 from conan.tools.scm import Git
 
@@ -38,7 +38,8 @@ class SentryNativeConan(ConanFile):
     def requirements(self):
         self.requires("qt/[>=6.2.3 <7.0.0]")
         if self.settings.os == "Linux":
-            # c-ares is provided transitively through libcurl when with_c_ares=True
+            # c-ares is required explicitly because Crashpad (Sentry's backend) uses it directly
+            self.requires("c-ares/[>=1.27 <2]")
             self.requires("libcurl/8.10.1", options={"with_c_ares": True}) # Provide Curl with AsynchDNS (needed on linux)
 
     @property
@@ -86,6 +87,10 @@ class SentryNativeConan(ConanFile):
             tc.cache_variables[key] = value
         tc.generate()
 
+        # Generate CMakeDeps to allow Sentry's CMake to find libcurl and c-ares
+        deps = CMakeDeps(self)
+        deps.generate()
+
     def build(self):
         self._patch_sources()
         cmake = CMake(self)
@@ -121,7 +126,9 @@ class SentryNativeConan(ConanFile):
         comp_sentry.requires = ["qt::qt"]
 
         if self.settings.os == "Linux":
-            comp_sentry.requires.append("libcurl::curl")
+            # libcurl::curl should transitively provide c-ares, but we also add it explicitly
+            # because Crashpad (Sentry's backend) uses it directly
+            comp_sentry.requires.extend(["libcurl::curl", "c-ares::cares"])
             comp_sentry.exelinkflags = ["-Wl,-E,--build-id=sha1"]
             comp_sentry.sharedlinkflags = ["-Wl,-E,--build-id=sha1"]
             comp_sentry.system_libs = [ "pthread", "dl" ]
