@@ -4,7 +4,7 @@ import os
 from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration
 from conan.tools.cmake import CMake, CMakeToolchain
-from conan.tools.files import copy
+from conan.tools.files import copy, replace_in_file
 from conan.tools.scm import Git
 
 required_conan_version = ">=2"
@@ -53,6 +53,16 @@ class SentryNativeConan(ConanFile):
         git = Git(self)
         git.clone(url="https://github.com/getsentry/sentry-native.git", target=".", hide_url=False, args=["-b", str(self.version), "--recurse-submodules"])
 
+    def _patch_sources(self):
+        # Remove AsynchDNS component requirement as FindCURL doesn't detect it correctly with Conan
+        # We ensure c-ares is enabled in libcurl requirements, so AsynchDNS is available
+        replace_in_file(
+            self,
+            os.path.join(self.source_folder, "CMakeLists.txt"),
+            "find_package(CURL REQUIRED COMPONENTS AsynchDNS)",
+            "find_package(CURL REQUIRED)"
+        )
+
     def _cache_variables(self):
         qt = self.dependencies["qt"]
         if qt is None:
@@ -76,6 +86,7 @@ class SentryNativeConan(ConanFile):
         tc.generate()
 
     def build(self):
+        self._patch_sources()
         cmake = CMake(self)
         cmake.configure(variables=self._cache_variables())
         cmake.build(target="sentry")
