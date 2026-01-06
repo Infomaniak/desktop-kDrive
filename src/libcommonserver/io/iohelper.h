@@ -109,7 +109,7 @@ struct IoHelper {
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
          */
-        static bool kDriveTempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept;
+        static bool appTempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept;
 
 
         //! Returns the directory location suitable for temporary files.

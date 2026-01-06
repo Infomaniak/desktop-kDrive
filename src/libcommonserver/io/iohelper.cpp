@@ -631,7 +631,7 @@ bool IoHelper::deviceTempDirectoryPath(SyncPath &directoryPath, IoError &ioError
     return ioError == IoError::Success;
 }
 
-bool IoHelper::kDriveTempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
+bool IoHelper::appTempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
     SyncPath tmpDirPath;
     if (const auto res = !deviceTempDirectoryPath(tmpDirPath, ioError)) return res;
 

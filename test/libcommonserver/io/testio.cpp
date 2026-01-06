@@ -63,7 +63,7 @@ void TestIo::testTempDirectoryPath() {
         CPPUNIT_ASSERT(!tmpPath.empty());
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 
-        CPPUNIT_ASSERT(IoHelper::kDriveTempDirectoryPath(tmpPath, ioError));
+        CPPUNIT_ASSERT(IoHelper::appTempDirectoryPath(tmpPath, ioError));
         CPPUNIT_ASSERT(!tmpPath.empty());
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
