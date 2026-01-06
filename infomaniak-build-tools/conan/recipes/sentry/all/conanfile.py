@@ -38,6 +38,7 @@ class SentryNativeConan(ConanFile):
     def requirements(self):
         self.requires("qt/[>=6.2.3 <7.0.0]")
         if self.settings.os == "Linux":
+            # c-ares is provided transitively through libcurl when with_c_ares=True
             self.requires("libcurl/8.10.1", options={"with_c_ares": True}) # Provide Curl with AsynchDNS (needed on linux)
 
     @property
@@ -120,7 +121,7 @@ class SentryNativeConan(ConanFile):
         comp_sentry.requires = ["qt::qt"]
 
         if self.settings.os == "Linux":
-            comp_sentry.requires.append("libcurl::libcurl")
+            comp_sentry.requires.append("libcurl::curl")
             comp_sentry.exelinkflags = ["-Wl,-E,--build-id=sha1"]
             comp_sentry.sharedlinkflags = ["-Wl,-E,--build-id=sha1"]
             comp_sentry.system_libs = [ "pthread", "dl" ]
@@ -134,5 +135,4 @@ class SentryNativeConan(ConanFile):
         if not self.options.shared:
             comp_sentry.defines = ["SENTRY_BUILD_STATIC"]
 
-        # Note: cmake_build_modules removed to let Conan handle all dependencies transitively
-        # self.cpp_info.set_property("cmake_build_modules", [pjoin(self.package_folder, "lib", "cmake", "sentry", "sentry_crashpad-targets.cmake")])
+        self.cpp_info.set_property("cmake_build_modules", [pjoin(self.package_folder, "lib", "cmake", "sentry", "sentry_crashpad-targets.cmake")])
