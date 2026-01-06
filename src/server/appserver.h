@@ -244,34 +244,33 @@ class AppServer : public SharedTools::QtSingleApplication {
         [[nodiscard]] ExitInfo processMigratedSyncOnceConnected(int userDbId, int driveId, Sync &sync, QSet<QString> &blackList,
                                                                 bool &syncUpdated);
 
-        void sendUserAdded(const UserInfo &userInfo);
+        void sendUserAdded(const UserInfo &userInfo) const;
         void sendUserUpdated(const UserInfo &userInfo) const;
-        void sendUserStatusChanged(int userDbId, bool connected, QString connexionError);
-        void sendUserRemoved(int userDbId);
-        void sendAccountAdded(const AccountInfo &accountInfo);
-        void sendAccountUpdated(const AccountInfo &accountInfo);
-        void sendAccountRemoved(int accountDbId);
-        void sendDriveAdded(const DriveInfo &driveInfo);
-        void sendDriveUpdated(const DriveInfo &driveInfo);
-        void sendDriveQuotaUpdated(int driveDbId, qint64 total, qint64 used);
-        void sendDriveRemoved(int driveDbId);
-        void sendDriveDeletionFailed(int driveDbId);
-        void sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep step, const SyncProgress &progress);
-        void sendSyncAdded(const SyncInfo &syncInfo);
-        void sendSyncUpdated(const SyncInfo &syncInfo);
-        void sendSyncRemoved(int syncDbId);
-        void sendSyncDeletionFailed(int syncDbId);
-        void sendGetFolderSizeCompleted(const QString &nodeId, qint64 size);
+        void sendUserStatusChanged(int userDbId, bool connected, QString connexionError) const;
+        void sendUserRemoved(int userDbId) const;
+        void sendAccountAdded(const AccountInfo &accountInfo) const;
+        void sendAccountUpdated(const AccountInfo &accountInfo) const;
+        void sendAccountRemoved(int accountDbId) const;
+        void sendDriveAdded(const DriveInfo &driveInfo) const;
+        void sendDriveUpdated(const DriveInfo &driveInfo) const;
+        void sendDriveQuotaUpdated(int driveDbId, qint64 total, qint64 used) const;
+        void sendDriveRemoved(int driveDbId) const;
+        void sendDriveDeletionFailed(int driveDbId) const;
+        void sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep step, const SyncProgress &progress) const;
+        void sendSyncAdded(const SyncInfo &syncInfo) const;
+        void sendSyncUpdated(const SyncInfo &syncInfo) const;
+        void sendSyncRemoved(int syncDbId) const;
+        void sendSyncDeletionFailed(int syncDbId) const;
+        void sendGetFolderSizeCompleted(const QString &nodeId, qint64 size) const;
         void sendErrorsCleared(int syncDbId) const;
-        void sendQuit(); // Ask client to quit
-
-        void sendLogUploadStatusUpdated(LogUploadState status, int percent);
+        void sendQuit() const; // Ask client to quit
+        void sendLogUploadStatusUpdated(LogUploadState status, int percent) const;
 
         void deleteAccount(int accountDbId);
         void sendErrorAdded(const ErrorInfo &errorInfo) const;
         void sendErrorRemoved(int64_t dbId) const;
         void addCompletedItem(int syncDbId, const SyncFileItem &item, bool notify);
-        void sendSignal(SignalNum sigNum, int syncDbId, const SigValueType &val);
+        void sendSignal(SignalNum sigNum, int syncDbId, const SigValueType &val) const;
 
         void syncFileStatus(int syncDbId, const KDC::SyncPath &path, KDC::SyncFileStatus &status);
         void syncFileSyncing(int syncDbId, const KDC::SyncPath &path, bool &syncing);
@@ -279,11 +278,11 @@ class AppServer : public SharedTools::QtSingleApplication {
 #if defined(KD_MACOS)
         void exclusionAppList(QString &appList);
 #endif
-        void sendSyncCompletedItem(int syncDbId, const SyncFileItemInfo &item);
-        void sendVfsConversionCompleted(int syncDbId);
+        void sendSyncCompletedItem(int syncDbId, const SyncFileItemInfo &item) const;
+        void sendVfsConversionCompleted(int syncDbId) const;
         ExitCode sendShowFileNotification(int syncDbId, const QString &filename, const QString &renameTarget,
-                                          SyncFileInstruction status, int count);
-        void sendShowNotification(const QString &title, const QString &message);
+                                          SyncFileInstruction status, int count) const;
+        void sendShowNotification(const QString &title, const QString &message) const;
 
         void showSettings();
         void showSynthesis();

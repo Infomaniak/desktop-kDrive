@@ -2316,7 +2316,7 @@ void AppServer::sendErrorsCleared(int syncDbId) const {
     }
 }
 
-void AppServer::sendQuit() {
+void AppServer::sendQuit() const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -2327,7 +2327,7 @@ void AppServer::sendQuit() {
     }
 }
 
-void AppServer::sendLogUploadStatusUpdated(LogUploadState status, int percent) {
+void AppServer::sendLogUploadStatusUpdated(LogUploadState status, int percent) const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -2480,7 +2480,7 @@ void AppServer::onSendNotifAsked(const QString &title, const QString &message) {
     sendShowNotification(title, message);
 }
 
-void AppServer::sendShowNotification(const QString &title, const QString &message) {
+void AppServer::sendShowNotification(const QString &title, const QString &message) const {
     // Notify client
     if (useOldCommServer()) {
         int id = 0;
@@ -2535,7 +2535,7 @@ void AppServer::addCompletedItem(int syncDbId, const SyncFileItem &item, bool no
     }
 }
 
-void AppServer::sendSignal(SignalNum sigNum, int syncDbId, const SigValueType &val) {
+void AppServer::sendSignal(SignalNum sigNum, int syncDbId, const SigValueType &val) const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -3472,7 +3472,7 @@ void AppServer::clearKeychainKeys() {
 }
 
 ExitCode AppServer::sendShowFileNotification(int syncDbId, const QString &filename, const QString &renameTarget,
-                                             SyncFileInstruction status, int count) {
+                                             SyncFileInstruction status, int count) const {
     // Check if notifications are disabled globally
     if (ParametersCache::instance()->parameters().notificationsDisabled() == NotificationsDisabled::Always) {
         return ExitCode::Ok;
@@ -4209,7 +4209,7 @@ void AppServer::addError(const Error &error) const {
     }
 }
 
-void AppServer::sendUserAdded(const UserInfo &userInfo) {
+void AppServer::sendUserAdded(const UserInfo &userInfo) const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -4239,7 +4239,7 @@ void AppServer::sendUserUpdated(const UserInfo &userInfo) const {
     }
 }
 
-void AppServer::sendUserStatusChanged(int userDbId, bool connected, QString connexionError) {
+void AppServer::sendUserStatusChanged(int userDbId, bool connected, QString connexionError) const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -4256,7 +4256,7 @@ void AppServer::sendUserStatusChanged(int userDbId, bool connected, QString conn
     }
 }
 
-void AppServer::sendUserRemoved(int userDbId) {
+void AppServer::sendUserRemoved(int userDbId) const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -4271,7 +4271,7 @@ void AppServer::sendUserRemoved(int userDbId) {
     }
 }
 
-void AppServer::sendAccountAdded(const AccountInfo &accountInfo) {
+void AppServer::sendAccountAdded(const AccountInfo &accountInfo) const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -4286,7 +4286,7 @@ void AppServer::sendAccountAdded(const AccountInfo &accountInfo) {
     }
 }
 
-void AppServer::sendAccountUpdated(const AccountInfo &accountInfo) {
+void AppServer::sendAccountUpdated(const AccountInfo &accountInfo) const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -4301,7 +4301,7 @@ void AppServer::sendAccountUpdated(const AccountInfo &accountInfo) {
     }
 }
 
-void AppServer::sendAccountRemoved(int accountDbId) {
+void AppServer::sendAccountRemoved(int accountDbId) const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -4316,7 +4316,7 @@ void AppServer::sendAccountRemoved(int accountDbId) {
     }
 }
 
-void AppServer::sendDriveAdded(const DriveInfo &driveInfo) {
+void AppServer::sendDriveAdded(const DriveInfo &driveInfo) const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -4331,7 +4331,7 @@ void AppServer::sendDriveAdded(const DriveInfo &driveInfo) {
     }
 }
 
-void AppServer::sendDriveUpdated(const DriveInfo &driveInfo) {
+void AppServer::sendDriveUpdated(const DriveInfo &driveInfo) const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -4346,7 +4346,7 @@ void AppServer::sendDriveUpdated(const DriveInfo &driveInfo) {
     }
 }
 
-void AppServer::sendDriveQuotaUpdated(int driveDbId, qint64 total, qint64 used) {
+void AppServer::sendDriveQuotaUpdated(int driveDbId, qint64 total, qint64 used) const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -4363,7 +4363,7 @@ void AppServer::sendDriveQuotaUpdated(int driveDbId, qint64 total, qint64 used) 
     }
 }
 
-void AppServer::sendDriveRemoved(int driveDbId) {
+void AppServer::sendDriveRemoved(int driveDbId) const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -4378,7 +4378,7 @@ void AppServer::sendDriveRemoved(int driveDbId) {
     }
 }
 
-void AppServer::sendSyncUpdated(const SyncInfo &syncInfo) {
+void AppServer::sendSyncUpdated(const SyncInfo &syncInfo) const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -4393,7 +4393,7 @@ void AppServer::sendSyncUpdated(const SyncInfo &syncInfo) {
     }
 }
 
-void AppServer::sendSyncRemoved(int syncDbId) {
+void AppServer::sendSyncRemoved(int syncDbId) const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -4408,7 +4408,7 @@ void AppServer::sendSyncRemoved(int syncDbId) {
     }
 }
 
-void AppServer::sendSyncDeletionFailed(int syncDbId) {
+void AppServer::sendSyncDeletionFailed(int syncDbId) const {
     if (useOldCommServer()) {
         int id = 0;
         const auto params = QByteArray(ArgsReader(syncDbId));
@@ -4421,7 +4421,7 @@ void AppServer::sendSyncDeletionFailed(int syncDbId) {
 }
 
 
-void AppServer::sendDriveDeletionFailed(int driveDbId) {
+void AppServer::sendDriveDeletionFailed(int driveDbId) const {
     if (useOldCommServer()) {
         int id = 0;
         const auto params = QByteArray(ArgsReader(driveDbId));
@@ -4434,7 +4434,7 @@ void AppServer::sendDriveDeletionFailed(int driveDbId) {
 }
 
 
-void AppServer::sendGetFolderSizeCompleted(const QString &nodeId, qint64 size) {
+void AppServer::sendGetFolderSizeCompleted(const QString &nodeId, qint64 size) const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -4450,7 +4450,7 @@ void AppServer::sendGetFolderSizeCompleted(const QString &nodeId, qint64 size) {
     }
 }
 
-void AppServer::sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep step, const SyncProgress &progress) {
+void AppServer::sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep step, const SyncProgress &progress) const {
     if (useOldCommServer()) {
         int id = 0;
         QByteArray params;
@@ -4470,7 +4470,7 @@ void AppServer::sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep s
     }
 }
 
-void AppServer::sendSyncCompletedItem(int syncDbId, const SyncFileItemInfo &itemInfo) {
+void AppServer::sendSyncCompletedItem(int syncDbId, const SyncFileItemInfo &itemInfo) const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -4485,7 +4485,7 @@ void AppServer::sendSyncCompletedItem(int syncDbId, const SyncFileItemInfo &item
     }
 }
 
-void AppServer::sendVfsConversionCompleted(int syncDbId) {
+void AppServer::sendVfsConversionCompleted(int syncDbId) const {
     if (useOldCommServer()) {
         int id = 0;
 
@@ -4499,7 +4499,7 @@ void AppServer::sendVfsConversionCompleted(int syncDbId) {
     }
 }
 
-void AppServer::sendSyncAdded(const SyncInfo &syncInfo) {
+void AppServer::sendSyncAdded(const SyncInfo &syncInfo) const {
     if (useOldCommServer()) {
         int id = 0;
 

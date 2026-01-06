@@ -57,9 +57,9 @@ void ExclusionTemplateInfo::normalizeExclusionTemplateInfoList(std::vector<Exclu
         SyncName normalizedTempl;
         if (const auto nfcSuccess =
                     CommonUtility::normalizedSyncName(QStr2SyncName(it->templ()), normalizedTempl, UnicodeNormalization::NFC);
-            !nfcSuccess) {
+            !nfcSuccess)
             normalizedTempl = QStr2SyncName(it->templ());
-        } else
+        else
             it->setTempl(QString::fromStdString(SyncName2Str(normalizedTempl)));
 
         if (uniqueTemplSet.emplace(normalizedTempl).second)
