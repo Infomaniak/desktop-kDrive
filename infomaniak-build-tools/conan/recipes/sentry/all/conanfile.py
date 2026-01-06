@@ -115,7 +115,7 @@ class SentryNativeConan(ConanFile):
         comp_sentry.libs = ["sentry"]
 
         # Qt is required for all platforms
-        comp_sentry.requires = ["Qt6::Core"]
+        comp_sentry.requires = ["qt::qt"]
 
         if self.settings.os == "Linux":
             comp_sentry.requires.append("libcurl::libcurl")
