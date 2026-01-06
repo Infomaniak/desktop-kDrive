@@ -424,7 +424,5 @@ class QtConan(ConanFile):
         """
         self.info.settings.rm_safe("build_type")
         # Keep compiler setting on Windows as it affects which Qt variant (MSVC/MinGW) is installed
-        if self.settings.os != "Windows":
-            self.info.settings.rm_safe("compiler")
         self.info.options.rm_safe("qt_login_type")
         self.info.options.rm_safe("install_vcredist")  # vcredist doesn't affect Qt binaries
