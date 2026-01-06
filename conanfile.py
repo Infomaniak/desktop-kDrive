@@ -55,10 +55,7 @@ class KDriveDesktop(ConanFile):
         """
         self.requires("zlib/[>=1.2.11 <2]", transitive_headers=True, options={"shared": True})
         # From local recipe, using the qt online installer.
-        if self.settings.os == "Linux":
-            self.requires("qt/6.7.3")
-        else:
-            self.requires("qt/6.10.1")
+        self.requires("qt/6.10.1")
         self.requires("xxhash/0.8.2") # From local recipe
         # log4cplus
         log4cplus_options = { "shared": True, "unicode": True }
