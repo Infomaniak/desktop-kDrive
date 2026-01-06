@@ -39,7 +39,7 @@ ExitInfo ExclTemplSetUserListJob::deserializeInputParms() {
 ExitInfo ExclTemplSetUserListJob::process() {
     ExclusionTemplateInfo::updateExclusionTemplateInfoList(_exclusionTemplateList);
 
-    if (const auto exitCode = ServerRequests::setExclusionTemplateList(false, _exclusionTemplateList);
+    if (const auto exitCode = ServerRequests::setUserExclusionTemplateList(_exclusionTemplateList);
         exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in Requests::setExclusionTemplateList: code=" << exitCode);
         addError(Error(ERR_ID, exitCode));
