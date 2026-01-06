@@ -127,7 +127,7 @@ class SentryNativeConan(ConanFile):
 
         if self.settings.os == "Linux":
             # libcurl::curl should transitively provide c-ares, but we also add it explicitly
-            comp_sentry.requires.extend(["libcurl::curl", "c-ares::cares"])
+            comp_sentry.requires = ["libcurl::curl", "c-ares::cares"]
             comp_sentry.exelinkflags = ["-Wl,-E,--build-id=sha1"]
             comp_sentry.sharedlinkflags = ["-Wl,-E,--build-id=sha1"]
             comp_sentry.system_libs = [ "pthread", "dl" ]
