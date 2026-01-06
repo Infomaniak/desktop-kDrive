@@ -28,12 +28,15 @@ function Get-Overlay-Guid {
         [string] $keyType
     )
 
-    $guid = (Select-String -Path "$path\extensions\windows\standard\KDOverlays\OverlayConstants.h" $keyType |  Select-Object -ExpandProperty Line)
-    $guid = $guid.Split(" ")[-1] # Extract last word.
-    $guid = $guid.Substring(1) # Trim the initial 'L' character.
-
-    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
+    try {
+        $guid = (Select-String -Path "$path\extensions\windows\standard\KDOverlays\OverlayConstants.h" $keyType |  Select-Object -ExpandProperty Line)
+        $guid = $guid.Split(" ")[-1] # Extract last word.
+        $guid = $guid.Substring(2, $guid.length - 3) # Trim the initial 'L' character and the surrounding double quotes.
+    } catch {
+            Write-Error "Failed to retrieve overlay GUID for '$keyType' from OverlayConstants.h"
+            exit 1
+    }
+    
     return $guid
 }
 
@@ -45,19 +48,18 @@ function Update-Define-Constants {
     )
 
     $pattern = "$key=*"
-    $existing = $defineConstants | Where-Object { $_ -like $pattern }
+    $existing = $defineConstants.Value | Where-Object { $_ -like $pattern }
 
     if ($existing) {
         # Update existing constant
-        $constantIndex = [array]::IndexOf($defineConstants, $existing)
-        $defineConstants[$constantIndex] = "$key=$value"
+        $constantIndex = [array]::IndexOf($defineConstants.Value, $existing)
+        $defineConstants.Value[$constantIndex] = "$key=$value"
         Write-Host "Existing $key constant found. Updating to $value."
     } else {
         # Add new constant
         $defineConstants.Value += "$key=$value"
         Write-Host "No existing $key constant found. Adding $key=$value"
     }
-
 }
 
 
@@ -102,8 +104,6 @@ Update-Define-Constants -Key "regKeySyncGUID" -Value $guid -DefineConstants ([re
 
 $guid = Get-Overlay-Guid -Path $RepositoryRootPath -KeyType "OVERLAY_GUID_WARNING"
 Update-Define-Constants -Key "regKeyWarningGUID" -Value $guid -DefineConstants ([ref]$defineConstants)
-
-Write-Host $defineConstants
 
 # Save
 
