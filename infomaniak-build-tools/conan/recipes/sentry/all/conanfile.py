@@ -122,8 +122,6 @@ class SentryNativeConan(ConanFile):
         comp_sentry.set_property("cmake_target_name", "sentry::sentry")
         comp_sentry.libs = ["sentry"]
 
-        # Qt is required for all platforms (Qt6::Core)
-        comp_sentry.requires = ["qt::qtCore"]
 
         if self.settings.os == "Linux":
             # libcurl::curl should transitively provide c-ares, but we also add it explicitly
@@ -131,6 +129,8 @@ class SentryNativeConan(ConanFile):
             comp_sentry.exelinkflags = ["-Wl,-E,--build-id=sha1"]
             comp_sentry.sharedlinkflags = ["-Wl,-E,--build-id=sha1"]
             comp_sentry.system_libs = [ "pthread", "dl" ]
+        else:
+            comp_sentry.requires = []
 
         if self.settings.os == "Windows":
             comp_sentry.system_libs = [ "dbghelp", "shlwapi", "version", "winhttp" ]
