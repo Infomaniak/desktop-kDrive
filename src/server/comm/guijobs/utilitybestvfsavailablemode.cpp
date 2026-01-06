@@ -37,9 +37,9 @@ UtilityBestVfsAvailableModeJob::UtilityBestVfsAvailableModeJob(std::shared_ptr<C
 
 ExitInfo UtilityBestVfsAvailableModeJob::deserializeInputParms() {
     constexpr auto logMessage = "Exception in UtilityGetAppStateJob::readParamValue: error=";
-    SyncName pathStr;
+    std::string pathStr;
     try {
-        readParamValue(inParamsPath, _path);
+        readParamValue(inParamsPath, pathStr);
     } catch (const Poco::Exception &pocoException) {
         LOG_WARN(_logger, logMessage << pocoException.message());
 
