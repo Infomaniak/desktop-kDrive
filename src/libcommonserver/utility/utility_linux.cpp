@@ -229,7 +229,7 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
             LOGW_WARN(logger(), L"Could not create autostart desktop file: " << Utility::formatSyncPath(userAutoStartFilePath));
             return false;
         }
-        const SyncPath appimageDir = SyncPath(CommonUtility::envVarValue("APPIMAGE"));
+        const SyncPath appimageDir{CommonUtility::envVarValue("APPIMAGE")};
         LOGW_DEBUG(logger(), L"APPIMAGE: " << Utility::formatSyncPath(appimageDir));
         autoStartFile << "[Desktop Entry]" << std::endl;
         autoStartFile << "Name=" << guiName << std::endl;
