@@ -24,7 +24,6 @@
 
 #include "libcommon/libcommon.h"
 #include "types.h"
-#include "../info/exclusiontemplateinfo.h"
 
 #include <string>
 #include <thread>
@@ -204,9 +203,6 @@ struct COMMON_EXPORT CommonUtility {
 
         static bool normalizedSyncName(const SyncName &name, SyncName &normalizedName,
                                        UnicodeNormalization normalization = UnicodeNormalization::NFC) noexcept;
-
-
-        static void normalizeExclusionTemplateInfoList(std::vector<ExclusionTemplateInfo> &templateList);
 
         /**
          * Split the input path into a vector of file and directory names.

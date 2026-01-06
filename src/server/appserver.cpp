@@ -1809,7 +1809,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 break;
             }
 
-            CommonUtility::normalizeExclusionTemplateInfoList(exclusionTemplateList);
+            ExclusionTemplateInfo::normalizeExclusionTemplateInfoList(exclusionTemplateList);
 
             QList<ExclusionTemplateInfo> list;
             std::for_each(exclusionTemplateList.begin(), exclusionTemplateList.end(),

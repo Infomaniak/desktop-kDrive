@@ -52,7 +52,7 @@ ExitInfo ExclTemplGetListJob::process() {
         return exitCode;
     }
 
-    CommonUtility::normalizeExclusionTemplateInfoList(_exclusionTemplateList);
+    ExclusionTemplateInfo::normalizeExclusionTemplateInfoList(_exclusionTemplateList);
 
     return ExitCode::Ok;
 }

@@ -1284,23 +1284,6 @@ bool CommonUtility::normalizedSyncName(const SyncName &name, SyncName &normalize
 }
 #endif
 
-void CommonUtility::normalizeExclusionTemplateInfoList(std::vector<ExclusionTemplateInfo> &templateList) {
-    SyncNameSet uniqueTemplSet; // Unique template names up to NFC-encoding.
-    for (auto it = templateList.begin(); it != templateList.end();) {
-        SyncName normalizedTempl;
-        if (const auto nfcSuccess = normalizedSyncName(QStr2SyncName(it->templ()), normalizedTempl, UnicodeNormalization::NFC);
-            !nfcSuccess) {
-            normalizedTempl = QStr2SyncName(it->templ());
-        } else
-            it->setTempl(QString::fromStdString(SyncName2Str(normalizedTempl)));
-
-        if (uniqueTemplSet.emplace(normalizedTempl).second)
-            ++it;
-        else
-            templateList.erase(it);
-    }
-}
-
 SyncName CommonUtility::preferredPathSeparator() {
     return SyncName{std::filesystem::path::preferred_separator};
 }

@@ -51,6 +51,24 @@ void ExclusionTemplateInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct
     CommonUtility::readValueFromStruct(dstruct, exclusionTemplateInfoDeleted, _deleted);
 }
 
+void ExclusionTemplateInfo::normalizeExclusionTemplateInfoList(std::vector<ExclusionTemplateInfo> &templateList) {
+    SyncNameSet uniqueTemplSet; // Unique template names up to NFC-encoding.
+    for (auto it = templateList.begin(); it != templateList.end();) {
+        SyncName normalizedTempl;
+        if (const auto nfcSuccess =
+                    CommonUtility::normalizedSyncName(QStr2SyncName(it->templ()), normalizedTempl, UnicodeNormalization::NFC);
+            !nfcSuccess) {
+            normalizedTempl = QStr2SyncName(it->templ());
+        } else
+            it->setTempl(QString::fromStdString(SyncName2Str(normalizedTempl)));
+
+        if (uniqueTemplSet.emplace(normalizedTempl).second)
+            ++it;
+        else
+            templateList.erase(it);
+    }
+}
+
 QDataStream &operator>>(QDataStream &in, ExclusionTemplateInfo &exclusionTemplateInfo) {
     in >> exclusionTemplateInfo._templ >> exclusionTemplateInfo._warning >> exclusionTemplateInfo._def >>
             exclusionTemplateInfo._deleted;

@@ -48,6 +48,8 @@ class ExclusionTemplateInfo {
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
         void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
 
+        static void normalizeExclusionTemplateInfoList(std::vector<ExclusionTemplateInfo> &templateList);
+
         friend QDataStream &operator>>(QDataStream &in, ExclusionTemplateInfo &exclusionTemplateInfo);
         friend QDataStream &operator<<(QDataStream &out, const ExclusionTemplateInfo &exclusionTemplateInfo);
 
