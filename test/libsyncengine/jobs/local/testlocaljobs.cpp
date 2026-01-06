@@ -38,7 +38,7 @@ namespace KDC {
 
 class LocalDeleteJobMockingTrash : public SyncLocalDeleteJob {
     public:
-        explicit LocalDeleteJobMockingTrash(const SyncPath &absolutePath, const std::shared_ptr<SyncPal> syncPal = nullptr) :
+        explicit LocalDeleteJobMockingTrash(const std::shared_ptr<SyncPal> syncPal, const SyncPath &absolutePath) :
             SyncLocalDeleteJob(syncPal, absolutePath) {};
         void setMoveToTrashFailed(const bool failed) { _moveToTrashFailed = failed; };
         void setLiteSyncEnabled(const bool enabled) { _liteSyncIsEnabled = enabled; };
@@ -144,7 +144,7 @@ void KDC::TestLocalJobs::testLocalJobs() {
     CPPUNIT_ASSERT(std::filesystem::exists(copyDirPath / testDirName / "tmp_picture.jpg"));
 
     // Delete
-    LocalDeleteJobMockingTrash deleteJob(copyDirPath, _syncPal);
+    LocalDeleteJobMockingTrash deleteJob(_syncPal, copyDirPath);
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
     const SyncName dehydratedPlaceholderName = Str("dehydrated_placeholder.jpg");
     testhelpers::createFileWithDehydratedStatus(copyDirPath / testDirName / dehydratedPlaceholderName);
@@ -199,13 +199,13 @@ void KDC::TestLocalJobs::testDeleteFilesWithDuplicateNames() {
     }
     // Delete the two files
     {
-        LocalDeleteJobMockingTrash nfcDeleteJob(temporaryDirectory.path() / testhelpers::makeNfcSyncName());
+        LocalDeleteJobMockingTrash nfcDeleteJob(_syncPal, temporaryDirectory.path() / testhelpers::makeNfcSyncName());
         nfcDeleteJob.runSynchronously();
         CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, nfcDeleteJob.exitInfo().code());
         CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, nfcDeleteJob.exitInfo().cause());
     }
     {
-        LocalDeleteJobMockingTrash nfdDeleteJob(temporaryDirectory.path() / testhelpers::makeNfdSyncName());
+        LocalDeleteJobMockingTrash nfdDeleteJob(_syncPal, temporaryDirectory.path() / testhelpers::makeNfdSyncName());
         nfdDeleteJob.runSynchronously();
         CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, nfdDeleteJob.exitInfo().code());
         CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, nfdDeleteJob.exitInfo().cause());
