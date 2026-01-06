@@ -17,12 +17,14 @@ class QtConan(ConanFile):
         # envvars:   Use the environment variable QT_INSTALLER_JWT_TOKEN to provide the JWT Token to the installer. You can find this token in an existing Qt installation in the file qtaccount.ini inside the folders described in the _get_default_login_ini_location func.
         # cli:   If the qtaccount.ini file exists, the online installer will use it; otherwise, it will prompt the user for their Qt account email and password. This cannot be used in CI/CD pipelines.
         "qt_login_type": ["ini", "envvars", "cli"],
-        "debug_symbols": [True, False]
+        "debug_symbols": [True, False],
+        "install_vcredist": [True, False]  # Install Visual C++ Redistributable packages (Windows MSVC only)
     }
 
     default_options = {
         "qt_login_type": "ini",
-        "debug_symbols": False
+        "debug_symbols": False,
+        "install_vcredist": False
     }
 
     @staticmethod
@@ -107,6 +109,14 @@ class QtConan(ConanFile):
         if self.settings.os == "Linux":
             modules.append(f"qt.qt{major}.{compact}.addons.qtserialport")
             modules.append("qt.tools.qtcreator_gui")
+
+        # Add vcredist module if requested (Windows MSVC only)
+        if self.settings.os == "Windows" and self.options.install_vcredist:
+            if str(self.settings.compiler) != "gcc":  # MSVC, not MinGW
+                if compiler == "win64_msvc2019_64":
+                    modules.append("qt.tools.vcredist_msvc2019_x86")
+                elif compiler == "win64_msvc2022_64":
+                    modules.append("qt.tools.vcredist_msvc2022_x64")
 
         return modules
 
@@ -395,3 +405,4 @@ class QtConan(ConanFile):
         self.info.settings.rm_safe("build_type")
         self.info.settings.rm_safe("compiler")
         self.info.options.rm_safe("qt_login_type")
+        self.info.options.rm_safe("install_vcredist")  # vcredist doesn't affect Qt binaries
