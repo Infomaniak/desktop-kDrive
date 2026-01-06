@@ -130,6 +130,7 @@ class AbstractNetworkJob : public SyncJob {
         static bool isManagedError(ExitInfo exitInfo) noexcept;
 
         void logRequestInfo();
+        void logReplyInfo();
 
         const std::string _requestUuid;
 
