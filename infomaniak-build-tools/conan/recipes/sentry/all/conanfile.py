@@ -127,7 +127,6 @@ class SentryNativeConan(ConanFile):
 
         if self.settings.os == "Linux":
             # libcurl::curl should transitively provide c-ares, but we also add it explicitly
-            # because Crashpad (Sentry's backend) uses it directly
             comp_sentry.requires.extend(["libcurl::curl", "c-ares::cares"])
             comp_sentry.exelinkflags = ["-Wl,-E,--build-id=sha1"]
             comp_sentry.sharedlinkflags = ["-Wl,-E,--build-id=sha1"]
