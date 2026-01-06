@@ -372,15 +372,12 @@ void AppServer::init() {
     connect(OldCommServer::instance().get(), &OldCommServer::restartClient, this, &AppServer::onRestartClientReceived);
 
     // Update users/accounts/drives info
-    ExitCode exitCode = updateAllUsersInfo();
-    if (exitCode == ExitCode::InvalidToken) {
+    const auto exitInfo = updateAllUsersInfo();
+    if (exitInfo.code() == ExitCode::InvalidToken) {
         // The user will be asked to enter its credentials later
-    } else if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in updateAllUsersInfo: code=" << exitCode);
-        addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
-        if (exitCode != ExitCode::NetworkError && exitCode != ExitCode::UpdateRequired) {
-            throw std::runtime_error("Failed to load user data.");
-        }
+    } else if (!exitInfo) {
+        LOG_WARN(_logger, "Error in updateAllUsersInfo: " << exitInfo);
+        addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
     }
 
     // Set sentry user
@@ -2609,24 +2606,24 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
     return exitCode;
 }
 
-ExitCode AppServer::updateUserInfo(User &user) {
+ExitInfo AppServer::updateUserInfo(User &user) {
     if (user.keychainKey().empty()) {
         return ExitCode::Ok;
     }
 
     bool found = false;
     bool updated = false;
-    ExitCode exitCode = ServerRequests::loadUserInfo(user, updated);
-    if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in Requests::loadUserInfo: code=" << exitCode);
-        if (exitCode == ExitCode::InvalidToken) {
+    auto exitInfo = ServerRequests::loadUserInfo(user, updated);
+    if (!exitInfo) {
+        LOG_WARN(_logger, "Error in Requests::loadUserInfo: " << exitInfo);
+        if (exitInfo.code() == ExitCode::InvalidToken) {
             // Notify client app that the user is disconnected
             UserInfo userInfo;
             ServerRequests::userToUserInfo(user, userInfo);
             sendUserUpdated(userInfo);
         }
 
-        return exitCode;
+        return exitInfo;
     }
 
     if (updated) {
@@ -2660,10 +2657,10 @@ ExitCode AppServer::updateUserInfo(User &user) {
         for (auto &drive: drives) {
             bool quotaUpdated = false;
             bool accountUpdated = false;
-            exitCode = ServerRequests::loadDriveInfo(drive, account, updated, quotaUpdated, accountUpdated);
-            if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::loadDriveInfo: code=" << exitCode);
-                return exitCode;
+            exitInfo = ServerRequests::loadDriveInfo(drive, account, updated, quotaUpdated, accountUpdated);
+            if (!exitInfo) {
+                LOG_WARN(_logger, "Error in Requests::loadDriveInfo: " << exitInfo);
+                return exitInfo;
             }
 
             if (drive.accessDenied() || drive.maintenanceInfo()._maintenance) {
@@ -2752,10 +2749,10 @@ ExitCode AppServer::updateUserInfo(User &user) {
                     }
 
                     if (driveList.size() == 0) {
-                        exitCode = ServerRequests::deleteAccount(account.dbId());
-                        if (exitCode != ExitCode::Ok) {
-                            LOG_WARN(_logger, "Error in Requests::deleteAccount: code=" << exitCode);
-                            return exitCode;
+                        exitInfo = ServerRequests::deleteAccount(account.dbId());
+                        if (!exitInfo) {
+                            LOG_WARN(_logger, "Error in Requests::deleteAccount: " << exitInfo);
+                            return exitInfo;
                         }
                         sendAccountRemoved(account.accountId());
                         accountRemoved = true;
@@ -3537,7 +3534,7 @@ bool AppServer::startClient() {
     return true;
 }
 
-ExitCode AppServer::updateAllUsersInfo() {
+ExitInfo AppServer::updateAllUsersInfo() {
     std::vector<User> users;
     if (!ParmsDb::instance()->selectAllUsers(users)) {
         LOG_WARN(_logger, "Error in ParmsDb::selectAllUsers");
@@ -3562,10 +3559,10 @@ ExitCode AppServer::updateAllUsersInfo() {
             continue;
         }
 
-        ExitCode exitCode = updateUserInfo(user);
-        if (exitCode != ExitCode::Ok) {
-            LOG_WARN(_logger, "Error in updateUserInfo: code=" << exitCode);
-            return exitCode;
+        auto exitInfo = updateUserInfo(user);
+        if (!exitInfo) {
+            LOG_WARN(_logger, "Error in updateUserInfo: " << exitInfo);
+            return exitInfo;
         }
     }
 
