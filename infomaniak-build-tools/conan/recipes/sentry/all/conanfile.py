@@ -117,6 +117,7 @@ class SentryNativeConan(ConanFile):
         comp_sentry.libs = ["sentry"]
 
         if self.settings.os == "Linux":
+            comp_sentry.requires = ["libcurl::libcurl"]
             comp_sentry.exelinkflags = ["-Wl,-E,--build-id=sha1"]
             comp_sentry.sharedlinkflags = ["-Wl,-E,--build-id=sha1"]
             comp_sentry.system_libs = [ "pthread", "dl" ]
