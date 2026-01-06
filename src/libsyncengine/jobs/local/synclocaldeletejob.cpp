@@ -258,8 +258,7 @@ ExitInfo SyncLocalDeleteJob::runJob() {
     PermissionsHolder permsHolder(absolutePath().parent_path(), _logger);
     PermissionsHolder permsHolder2(absolutePath(), _logger);
 
-    if (const bool tryMoveToTrash = ParametersCache::instance()->parameters().moveToTrash();
-        _syncPal && (tryMoveToTrash || _forceToTrash)) {
+    if (const bool tryMoveToTrash = ParametersCache::instance()->parameters().moveToTrash(); tryMoveToTrash || _forceToTrash) {
         return moveToTrash();
     }
 
