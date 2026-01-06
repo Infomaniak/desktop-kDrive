@@ -840,7 +840,7 @@ VersionInfo AppServer::getVersionInfo(const VersionChannel versionChannel) const
 }
 
 UpdateState AppServer::getUpdateState() const {
-    if (_noUpdate) return UpdateState::Unknown;
+    if (_noUpdate) return UpdateState::NoUpdate;
 
     assert(_updateManager && "The update manager is not set.");
 
@@ -849,7 +849,7 @@ UpdateState AppServer::getUpdateState() const {
 
 void AppServer::startInstaller() {
     LOG_IF_FAIL(_logger, _updateManager && "The update manager is not set.");
-    if(_updateManager) _updateManager->startInstaller();
+    if (_updateManager) _updateManager->startInstaller();
 }
 
 void AppServer::crash() const {
