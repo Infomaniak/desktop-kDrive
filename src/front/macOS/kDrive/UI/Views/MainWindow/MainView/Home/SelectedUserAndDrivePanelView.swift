@@ -59,13 +59,13 @@ protocol SelectedUserAndDrivePanelDelegate: AnyObject {
 }
 
 final class SelectedUserAndDrivePanelView: NSView {
-    var user: UIUser {
+    var user: UIUser? {
         didSet {
             updateUser(for: user)
         }
     }
 
-    var drive: UIDrive {
+    var drive: UIDrive? {
         didSet {
             updateDrive(for: drive)
         }
@@ -74,22 +74,21 @@ final class SelectedUserAndDrivePanelView: NSView {
     weak var delegate: SelectedUserAndDrivePanelDelegate?
 
     private lazy var avatarView: UserAvatarAndDriveView = {
-        let avatarView = UserAvatarAndDriveView(user: user, drive: drive)
+        let avatarView = UserAvatarAndDriveView()
+        avatarView.user = user
+        avatarView.drive = drive
         avatarView.translatesAutoresizingMaskIntoConstraints = false
         return avatarView
     }()
 
-    init(user: UIUser, drive: UIDrive) {
-        self.user = user
-        self.drive = drive
-        super.init(frame: .zero)
-
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
         setupView()
     }
 
-    @available(*, unavailable)
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        super.init(coder: coder)
+        setupView()
     }
 
     private func setupView() {
@@ -136,11 +135,11 @@ final class SelectedUserAndDrivePanelView: NSView {
         return button
     }
 
-    private func updateUser(for user: UIUser) {
+    private func updateUser(for user: UIUser?) {
         avatarView.user = user
     }
 
-    private func updateDrive(for drive: UIDrive) {
+    private func updateDrive(for drive: UIDrive?) {
         avatarView.drive = drive
     }
     
@@ -167,5 +166,8 @@ extension SelectedUserAndDrivePanelView {
 
 @available(macOS 14.0, *)
 #Preview {
-    SelectedUserAndDrivePanelView(user: PreviewHelper.user, drive: PreviewHelper.drive1)
+    let selectedUserAndDrivePanelView = SelectedUserAndDrivePanelView()
+    selectedUserAndDrivePanelView.user = PreviewHelper.user
+    selectedUserAndDrivePanelView.drive = PreviewHelper.drive1
+    return selectedUserAndDrivePanelView
 }

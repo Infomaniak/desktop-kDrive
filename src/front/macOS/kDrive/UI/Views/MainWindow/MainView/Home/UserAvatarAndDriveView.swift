@@ -27,20 +27,20 @@ final class UserAvatarAndDriveView: NSView {
     static let driveIconSize: CGFloat = 12
     static let driveBackgroundSize: CGFloat = 20
 
-    var user: UIUser {
+    var user: UIUser? {
         didSet {
             updateUser(for: user)
         }
     }
 
-    var drive: UIDrive {
+    var drive: UIDrive? {
         didSet {
             updateDrive(for: drive)
         }
     }
 
     private lazy var avatarImageView: ResizableImageView = {
-        let image = ResizableImageView(image: user.avatar)
+        let image = ResizableImageView(image: user?.avatar)
         image.translatesAutoresizingMaskIntoConstraints = false
         image.wantsLayer = true
         image.layer?.cornerRadius = UserAvatarAndDriveView.avatarSize / 2
@@ -63,17 +63,15 @@ final class UserAvatarAndDriveView: NSView {
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
-
-    init(user: UIUser, drive: UIDrive) {
-        self.user = user
-        self.drive = drive
-        super.init(frame: .zero)
+    
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
         setupView()
     }
 
-    @available(*, unavailable)
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        super.init(coder: coder)
+        setupView()
     }
 
     private func setupView() {
@@ -107,12 +105,12 @@ final class UserAvatarAndDriveView: NSView {
         ])
     }
 
-    private func updateUser(for user: UIUser) {
-        avatarImageView.image = user.avatar
+    private func updateUser(for user: UIUser?) {
+        avatarImageView.image = user?.avatar
     }
 
-    private func updateDrive(for drive: UIDrive) {
-        guard let driveColor = drive.color else {
+    private func updateDrive(for drive: UIDrive?) {
+        guard let driveColor = drive?.color else {
             return
         }
 
@@ -123,5 +121,8 @@ final class UserAvatarAndDriveView: NSView {
 
 @available(macOS 14.0, *)
 #Preview {
-    UserAvatarAndDriveView(user: PreviewHelper.user, drive: PreviewHelper.drive1)
+    let userAvatarAndDriveView = UserAvatarAndDriveView()
+    userAvatarAndDriveView.user = PreviewHelper.user
+    userAvatarAndDriveView.drive = PreviewHelper.drive1
+    return userAvatarAndDriveView
 }
