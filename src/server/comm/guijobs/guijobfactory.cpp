@@ -66,7 +66,6 @@
 #include "utilitysendlogtosupportjob.h"
 #include "utilitycancellogtosupportjob.h"
 #include "utilitygetlogestimatedsizejob.h"
-#include "updaterchangechanneljob.h"
 #include "updaterversioninfojob.h"
 #include "updaterstatejob.h"
 #include "updaterstartinstallerjob.h"
@@ -124,8 +123,7 @@ GuiJobFactory::GuiJobFactory() {
         {RequestNum::UTILITY_GET_APPSTATE, makeShared<UtilityGetAppStateJob>},
         {RequestNum::UTILITY_SEND_LOG_TO_SUPPORT, makeShared<UtilitySendLogToSupportJob>},
         {RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT, makeShared<UtilityCancelLogToSupportJob>},
-        {RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE, makeShared<UtilityGetLogEstimatedSizeJob>},                 
-        {RequestNum::UPDATER_CHANGE_CHANNEL, makeShared<UpdaterChangeChannelJob>},
+        {RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE, makeShared<UtilityGetLogEstimatedSizeJob>},
         {RequestNum::UPDATER_VERSION_INFO, makeShared<UpdaterVersionInfoJob>},
         {RequestNum::UPDATER_STATE, makeShared<UpdaterStateJob>},
         {RequestNum::UPDATER_START_INSTALLER, makeShared<UpdaterStartInstallerJob>},

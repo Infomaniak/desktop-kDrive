@@ -19,7 +19,6 @@
 #include "testguicommchannel.h"
 #include "../testcommhelpers.h"
 
-#include "comm/guijobs/updaterchangechanneljob.h"
 #include "comm/guijobs/updaterversioninfojob.h"
 #include "comm/guijobs/updaterstatejob.h"
 #include "comm/guijobs/updaterstartinstallerjob.h"
@@ -28,47 +27,6 @@
 namespace KDC {
 
 using namespace testcommhelpers;
-
-void TestGuiCommChannel::testUpdaterChangeChannelJob() {
-    Poco::JSON::Object queryObj;
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    (void) queryObj.set("id", 1);
-#endif
-    (void) queryObj.set("num", toInt(RequestNum::UPDATER_CHANGE_CHANNEL));
-    Poco::JSON::Object queryParamsObj;
-    (void) queryParamsObj.set("channel", toInt(VersionChannel::Prod));
-    (void) queryObj.set("params", queryParamsObj);
-
-    const auto queryStr = stringifyQueryObj(queryObj);
-
-    // Answer
-    Poco::JSON::Object answerObj;
-    (void) answerObj.set("cause", 0);
-    (void) answerObj.set("code", 0);
-    (void) answerObj.set("id", 1);
-
-    Poco::JSON::Object paramsObj;
-    (void) answerObj.set("params", paramsObj);
-
-    Poco::JSON::Object answerObjWithNumAndType = answerObj;
-    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UPDATER_CHANGE_CHANNEL));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
-
-    // Job expected answers
-    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
-
-    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-        auto updaterChangeChannelJob = std::dynamic_pointer_cast<UpdaterChangeChannelJob>(job);
-        CPPUNIT_ASSERT(updaterChangeChannelJob);
-        CPPUNIT_ASSERT_EQUAL(VersionChannel::Prod, updaterChangeChannelJob->_channel);
-    };
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(queryStr, answerStr, {}, processFct);
-#else
-    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
-    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
-#endif
-}
 
 
 void TestGuiCommChannel::testUpdaterVersionInfoJob() {
