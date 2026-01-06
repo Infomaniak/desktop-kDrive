@@ -173,7 +173,6 @@ The project requires additional CMake variables for a correct build. To inject t
    set(APPLICATION_CLIENT_EXECUTABLE "kdrive_client")
    set(KDRIVE_THEME_DIR "$ENV{HOME}/Projects/desktop-kDrive/infomaniak")
    set(BUILD_UNIT_TESTS "ON")      # Set to "OFF" to skip tests
-   set(SOCKETAPI_TEAM_IDENTIFIER_PREFIX "864VDCS2QY")
    set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/Projects/CLion-build-debug/bin")
    ```
 
