@@ -1826,7 +1826,15 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> def;
             paramsStream >> list;
 
-            ExitCode exitCode = ServerRequests::setExclusionTemplateList(def, list);
+            std::vector<ExclusionTemplateInfo> exclusionTemplateList;
+            std::for_each(list.begin(), list.end(),
+                          [&](const ExclusionTemplateInfo &templateInfo) { exclusionTemplateList.push_back(templateInfo); });
+
+            if (!def) {
+                ExclusionTemplateInfo::computeNormalizations(exclusionTemplateList);
+            }
+
+            ExitCode exitCode = ServerRequests::setExclusionTemplateList(def, exclusionTemplateList);
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in Requests::setExclusionTemplateList: code=" << exitCode);
                 addError(Error(ERR_ID, exitCode, ExitCause::Unknown));

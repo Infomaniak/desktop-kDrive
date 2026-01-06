@@ -50,6 +50,10 @@ class ExclusionTemplateInfo {
 
         static void normalizeExclusionTemplateInfoList(std::vector<ExclusionTemplateInfo> &templateList);
 
+        static void completeExclusionTemplateInfoListWithVariations(std::vector<ExclusionTemplateInfo> &templateList);
+        static std::unordered_set<SyncName> computeNormalizations(const SyncName &templateString);
+        static bool canNormalize(const SyncName &template_);
+
         friend QDataStream &operator>>(QDataStream &in, ExclusionTemplateInfo &exclusionTemplateInfo);
         friend QDataStream &operator<<(QDataStream &out, const ExclusionTemplateInfo &exclusionTemplateInfo);
 
