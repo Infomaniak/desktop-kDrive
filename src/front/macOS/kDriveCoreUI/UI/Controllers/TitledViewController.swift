@@ -17,17 +17,22 @@
  */
 
 import Cocoa
+import SwiftUI
 
-open class TitledViewController: NSViewController {
+open class TitledViewController<Content: View>: NSHostingController<Content> {
     public let toolbarTitle: String
 
-    open override var acceptsFirstResponder: Bool {
+    override open var acceptsFirstResponder: Bool {
         return true
     }
 
-    public init(toolbarTitle: String) {
+    public init(toolbarTitle: String, rootView: Content) {
         self.toolbarTitle = toolbarTitle
-        super.init(nibName: nil, bundle: nil)
+        super.init(rootView: rootView)
+    }
+
+    public convenience init(toolbarTitle: String, @ViewBuilder rootView: () -> Content) {
+        self.init(toolbarTitle: toolbarTitle, rootView: rootView())
     }
 
     @available(*, unavailable)
