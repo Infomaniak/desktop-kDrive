@@ -125,9 +125,9 @@ ExitCode ServerRequests::deleteUser(int userDbId) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::deleteAccount(int accountDbId) {
+ExitInfo ServerRequests::deleteAccount(int accountDbId) {
     // Delete account (and linked drives/syncs by cascade)
-    bool found;
+    bool found = false;
     if (!ParmsDb::instance()->deleteAccount(accountDbId, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteAccount");
         return ExitCode::DbError;

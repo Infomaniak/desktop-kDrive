@@ -372,8 +372,7 @@ void AppServer::init() {
     connect(OldCommServer::instance().get(), &OldCommServer::restartClient, this, &AppServer::onRestartClientReceived);
 
     // Update users/accounts/drives info
-    const auto exitInfo = updateAllUsersInfo();
-    if (exitInfo.code() == ExitCode::InvalidToken) {
+    if (const auto exitInfo = updateAllUsersInfo(); exitInfo.code() == ExitCode::InvalidToken) {
         // The user will be asked to enter its credentials later
     } else if (!exitInfo) {
         LOG_WARN(_logger, "Error in updateAllUsersInfo: " << exitInfo);
@@ -2610,11 +2609,8 @@ ExitInfo AppServer::updateUserInfo(User &user) {
     if (user.keychainKey().empty()) {
         return ExitCode::Ok;
     }
-
-    bool found = false;
     bool updated = false;
-    auto exitInfo = ServerRequests::loadUserInfo(user, updated);
-    if (!exitInfo) {
+    if (const auto exitInfo = ServerRequests::loadUserInfo(user, updated); !exitInfo) {
         LOG_WARN(_logger, "Error in Requests::loadUserInfo: " << exitInfo);
         if (exitInfo.code() == ExitCode::InvalidToken) {
             // Notify client app that the user is disconnected
@@ -2627,6 +2623,7 @@ ExitInfo AppServer::updateUserInfo(User &user) {
     }
 
     if (updated) {
+        bool found = false;
         if (!ParmsDb::instance()->updateUser(user, found)) {
             LOG_WARN(_logger, "Error in ParmsDb::updateUser");
             return ExitCode::DbError;
@@ -2657,8 +2654,8 @@ ExitInfo AppServer::updateUserInfo(User &user) {
         for (auto &drive: drives) {
             bool quotaUpdated = false;
             bool accountUpdated = false;
-            exitInfo = ServerRequests::loadDriveInfo(drive, account, updated, quotaUpdated, accountUpdated);
-            if (!exitInfo) {
+            if (const auto exitInfo = ServerRequests::loadDriveInfo(drive, account, updated, quotaUpdated, accountUpdated);
+                !exitInfo) {
                 LOG_WARN(_logger, "Error in Requests::loadDriveInfo: " << exitInfo);
                 return exitInfo;
             }
@@ -2691,6 +2688,7 @@ ExitInfo AppServer::updateUserInfo(User &user) {
             }
 
             if (updated) {
+                bool found = false;
                 if (!ParmsDb::instance()->updateDrive(drive, found)) {
                     LOG_WARN(_logger, "Error in ParmsDb::updateDrive");
                     return ExitCode::DbError;
@@ -2715,6 +2713,7 @@ ExitInfo AppServer::updateUserInfo(User &user) {
 
                 if (accountDbId == 0) {
                     // No existing account with the new accountId, update it
+                    bool found = false;
                     if (!ParmsDb::instance()->updateAccount(account, found)) {
                         LOG_WARN(_logger, "Error in ParmsDb::updateAccount");
                         return ExitCode::DbError;
@@ -2730,6 +2729,7 @@ ExitInfo AppServer::updateUserInfo(User &user) {
                 } else {
                     // An account already exists with the new accountId, link the drive to it
                     drive.setAccountDbId(accountDbId);
+                    bool found = false;
                     if (!ParmsDb::instance()->updateDrive(drive, found)) {
                         LOG_WARN(_logger, "Error in ParmsDb::updateDrive");
                         return ExitCode::DbError;
@@ -2749,7 +2749,7 @@ ExitInfo AppServer::updateUserInfo(User &user) {
                     }
 
                     if (driveList.size() == 0) {
-                        exitInfo = ServerRequests::deleteAccount(account.dbId());
+                        const auto exitInfo = ServerRequests::deleteAccount(account.dbId());
                         if (!exitInfo) {
                             LOG_WARN(_logger, "Error in Requests::deleteAccount: " << exitInfo);
                             return exitInfo;
@@ -3559,8 +3559,7 @@ ExitInfo AppServer::updateAllUsersInfo() {
             continue;
         }
 
-        auto exitInfo = updateUserInfo(user);
-        if (!exitInfo) {
+        if (const auto exitInfo = updateUserInfo(user); !exitInfo) {
             LOG_WARN(_logger, "Error in updateUserInfo: " << exitInfo);
             return exitInfo;
         }
