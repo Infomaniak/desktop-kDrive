@@ -71,9 +71,7 @@ class KDriveDesktop(ConanFile):
             self.requires("openssl/3.2.4", options={ "shared": True }) # Otherwise, using the conan center recipe.
 
         self.requires("sentry/0.7.10")
-        self.requires("poco/1.13.3", options={
-            "shared": True
-        })
+        self.requires("poco/1.13.3", options={ "shared": True })
 
 class OverrideVSRuntimeBlock(VSRuntimeBlock):
     def __init__(self, conanfile, toolchain, name):
