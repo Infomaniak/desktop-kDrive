@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Collections
 import Foundation
 
 public typealias IndexedSynchros = [Int32: Synchro]
@@ -34,25 +35,27 @@ public struct Synchro: Identifiable, Hashable, Sendable {
     public let supportVfs: Bool
     public let virtualFileMode: KDC.VirtualFileMode
     public var progress: SynchroProgressInfo?
-    public var synchNodes: [SynchroNode] = []
+    public var synchNodes: OrderedDictionary<String, SynchroNode> = [:]
 
     private static let maxSynchNodesCount = 100
 
     public mutating func addOrUpdateSynchNode(_ node: SynchroNode) {
-        if let existingIndex = synchNodes.firstIndex(where: { $0.localNodeId == node.localNodeId }) {
-            synchNodes[existingIndex] = node
-        } else {
-            synchNodes.append(node)
+        synchNodes[node.localNodeId] = node
 
-            if synchNodes.count > Self.maxSynchNodesCount {
-                let itemsToRemove = synchNodes.count - Self.maxSynchNodesCount
-                synchNodes.removeFirst(itemsToRemove)
-            }
+        guard synchNodes.count > Self.maxSynchNodesCount else {
+            return
         }
+        
+        let itemsToRemove = max(synchNodes.count - Self.maxSynchNodesCount, 0)
+        guard itemsToRemove > 0 else {
+            return
+        }
+        
+        synchNodes.removeFirst(itemsToRemove)
     }
 
     public func getSynchNode(by localNodeId: String) -> SynchroNode? {
-        return synchNodes.first { $0.localNodeId == localNodeId }
+        return synchNodes[localNodeId]
     }
 }
 
