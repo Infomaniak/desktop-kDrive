@@ -98,6 +98,10 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testUtilityCancelLogToSupportJob);
         CPPUNIT_TEST(testUtilityGetLogEstimatedSizeJob);
         CPPUNIT_TEST(testUtilitySendLogToSupportJob);
+        CPPUNIT_TEST(testUpdaterVersionInfoJob);
+        CPPUNIT_TEST(testUpdaterStateJob);
+        CPPUNIT_TEST(testUpdaterStartInstallerJob);
+        CPPUNIT_TEST(testUpdaterSkipVersionJob);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -133,10 +137,8 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testNodePathJob();
         void testNodeInfoJob();
         void testNodeSubFolderJob();
-        void testNodeFolderSizeJob();
-        void testSyncNodeListJob();
-        void testSyncNodeSetListJob();
         void testNodeSubFolders2Job();
+        void testNodeFolderSizeJob();
         void testNodeCreateMissingFoldersJob();
         void testErrorInfoListJob();
         void testExclTemplGetExcludedJob();
@@ -156,6 +158,11 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testUtilityCancelLogToSupportJob();
         void testUtilityGetLogEstimatedSizeJob();
         void testUtilitySendLogToSupportJob();
+        void testUpdaterChangeChannelJob();
+        void testUpdaterVersionInfoJob();
+        void testUpdaterStateJob();
+        void testUpdaterStartInstallerJob();
+        void testUpdaterSkipVersionJob();
 
     private:
         GuiJobFactory _guiJobFactory;

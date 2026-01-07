@@ -586,7 +586,7 @@ ExitInfo DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::is
         if (!output.is_open()) {
             const bool enoughSpace = Utility::enoughSpace(_tmpPath);
             LOGW_WARN(_logger, L"Failed to open tmp file: " << Utility::formatSyncPath(_tmpPath) << L". Reason: "
-                                                            << (enoughSpace ? L"not enough space." : L"file access error."));
+                                                            << (enoughSpace ? L"file access error." : L"not enough space."));
             return {ExitCode::SystemError, enoughSpace ? ExitCause::FileAccessError : ExitCause::NotEnoughDiskSpace};
         }
 
