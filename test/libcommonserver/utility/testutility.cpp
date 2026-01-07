@@ -483,8 +483,33 @@ void TestUtility::testUserName() {
 }
 
 void TestUtility::testTryCreateTmpDir() {
+    SyncPath tmpDirPath;
+    IoError ioError = IoError::Unknown;
+    IoHelper::appTempDirectoryPath(tmpDirPath, ioError);
+
     CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir());
     CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir(Str("test name")));
+
+    // Make sure the item are correctly removed from the tmp dir
+    IoHelper::DirectoryIterator dir;
+    CPPUNIT_ASSERT(IoHelper::getDirectoryIterator(tmpDirPath, true, ioError, dir));
+
+    DirectoryEntry entry;
+    bool endOfDirectory = false;
+    auto counter = 0;
+    while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
+        if (entry.is_directory()) counter++; // Count only directories to ignore ".DS_Store" files
+    }
+    CPPUNIT_ASSERT_EQUAL(0, counter);
+
+    // Try to create a tmp dir but a directory already exist with the same name
+    SyncName testDirName = Str("testDir");
+    CPPUNIT_ASSERT(IoHelper::createDirectory(tmpDirPath / testDirName, false, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir(Str(testDirName)));
+
+    // Delete the tmp directory and make sure it is re-created
+    CPPUNIT_ASSERT(IoHelper::deleteItem(tmpDirPath, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir());
 
 #if defined(KD_MACOS)
     {

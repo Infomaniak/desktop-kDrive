@@ -683,7 +683,7 @@ bool Utility::isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode
             return false;
     }
 }
-
+static constexpr int maxNbCreationTmpFolderRetries = 3;
 IoError Utility::tryCreateTmpDir(const SyncName &name /*= Str("testDir")*/) {
 #if defined(KD_MACOS)
     SyncPath tmpDirPath;
@@ -693,13 +693,21 @@ IoError Utility::tryCreateTmpDir(const SyncName &name /*= Str("testDir")*/) {
 
     SyncPath tmpPath = tmpDirPath / name;
     std::error_code ec;
-    std::filesystem::create_directory(tmpPath, ec);
-    if (ec.value()) {
-        if (ec.value() == static_cast<int>(std::errc::illegal_byte_sequence)) {
-            return IoError::InvalidFileName;
+    auto retries = 0;
+    bool directoryCreated = false;
+    do {
+        directoryCreated = std::filesystem::create_directory(tmpPath, ec);
+        if (!directoryCreated || ec.value()) {
+            if (ec.value() == static_cast<int>(std::errc::illegal_byte_sequence)) {
+                return IoError::InvalidFileName;
+            }
+            retries++;
+            // Retry with a random suffix added to item name
+            tmpPath = tmpDirPath / (name + CommonUtility::generateRandomStringAlphaNum());
         }
-        return IoHelper::stdError2ioError(ec);
-    }
+    } while ((!directoryCreated || ec.value()) && retries < maxNbCreationTmpFolderRetries);
+
+    if (ec.value()) return IoHelper::stdError2ioError(ec);
 
     std::filesystem::remove_all(tmpPath, ec);
 #else
