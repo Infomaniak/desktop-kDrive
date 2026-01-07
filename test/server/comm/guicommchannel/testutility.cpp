@@ -77,7 +77,7 @@ void TestGuiCommChannel::testUtilityBestVfsAvailableModeJob() {
                         std::to_string(toInt(RequestNum::UTILITY_BESTVFSAVAILABLEMODE)) +
                         R"(,)"
 #if defined(KD_WINDOWS)
-                        R"( "params": { "path": "C:\dummy" } })"};
+                        R"( "params": { "path": "C:\\dummy" } })"};
 #else
                         R"( "params": { "path": "/dummy" } })"};
 #endif
