@@ -331,18 +331,21 @@ ExitInfo ServerRequests::isPathVAlidForNewSync(const SyncPath &path, bool &valid
 
     // If the directory exist, check if it is empty
     bool isEmpty = true;
-    if (std::filesystem::exists(path)) {
+    std::error_code ec;
+    if (std::filesystem::exists(path, ec) && !ec) {
         if (!std::filesystem::is_directory(path)) {
             LOGW_WARN(Log::instance()->getLogger(), L"The path exists but is not a directory: " << Utility::formatSyncPath(path));
             valid = false;
             return ExitCode::Ok;
         }
 
-        for (const auto &entry: std::filesystem::directory_iterator(path)) {
-            (void) entry;
-            isEmpty = false;
-            break;
-        }           
+        isEmpty = std::filesystem::is_empty(path, ec);
+    }
+
+    if (ec) {
+        LOG_WARN(Log::instance()->getLogger(), "Error checking if path exists/is empty: " << ec.message());
+        valid = false;
+        return ExitCode::SystemError;
     }
 
     if (!isEmpty && CommonUtility::envVarValue("KD_ALLOW_NON_EMPTY_SYNC_FOLDER") != "1") {
