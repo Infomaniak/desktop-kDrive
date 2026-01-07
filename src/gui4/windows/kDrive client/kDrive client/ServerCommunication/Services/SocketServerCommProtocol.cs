@@ -245,6 +245,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             else
             {
+                _inBufferJsonBalance = 0;
                 UpdateJsonBalance(_inBuffer, ref _inBufferJsonBalance, ref jsonEndIndex);
             }
 

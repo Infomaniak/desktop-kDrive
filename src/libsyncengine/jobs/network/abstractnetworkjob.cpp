@@ -108,7 +108,7 @@ void AbstractNetworkJob::logRequestInfo() {
         return;
     }
 
-    LOG_DEBUG(_logger, "*** Headers: ***");
+    LOG_DEBUG(_logger, "*** Request headers: ***");
     LOG_DEBUG(_logger, "User-Agent: " << _userAgent);
     LOG_DEBUG(_logger, "Content-Type: " << contentType());
     LOG_DEBUG(_logger, "Accept: " << acceptHeader());
@@ -121,10 +121,21 @@ void AbstractNetworkJob::logRequestInfo() {
         LOG_DEBUG(_logger, "Content-Length: " << static_cast<std::streamsize>(_data.size()));
     }
 
-    if (contentType() != mimeTypeJson) return; // Log the body only for JSON MIME type
+    if (contentType() != mimeTypeJson || _data.empty()) return; // Log the body only for JSON MIME type
 
     LOG_DEBUG(_logger, "*** Body: ***");
     LOG_DEBUG(_logger, _data);
+}
+
+void AbstractNetworkJob::logReplyInfo() {
+    if (!isExtendedLog() || httpResponse().empty()) return;
+
+    LOG_DEBUG(_logger, "*** Reply headers: ***");
+
+    Poco::Net::NameValueCollection nvc(httpResponse());
+    for (auto it = nvc.begin(); it != nvc.end(); ++it) {
+        LOG_DEBUG(_logger, it->first << ": " << it->second);
+    }
 }
 
 ExitInfo AbstractNetworkJob::runJob() noexcept {
@@ -432,6 +443,7 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
 
     LOG_DEBUG(_logger, "Request " << jobId() << " finished with status: " << httpResponse().getStatus() << " / "
                                   << httpResponse().getReason());
+    logReplyInfo();
 
     if (Utility::isError500(httpResponse().getStatus())) {
         std::string replyBody;
