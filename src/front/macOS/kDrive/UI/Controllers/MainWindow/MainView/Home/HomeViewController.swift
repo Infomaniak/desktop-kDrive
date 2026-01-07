@@ -17,6 +17,8 @@
  */
 
 import Cocoa
+import Combine
+import kDriveCore
 import kDriveCoreUI
 
 final class HomeViewController: TitledViewController {
@@ -43,10 +45,28 @@ final class HomeViewController: TitledViewController {
 
     private var mainViewModel: MainViewModel
 
+    private var bindStore = Set<AnyCancellable>()
+
     init(mainViewModel: MainViewModel) {
         self.mainViewModel = mainViewModel
         super.init(toolbarTitle: SidebarItem.home.title)
+
         setupView()
+        bindViewModel()
+    }
+
+    private func bindViewModel() {
+        mainViewModel.$currentUser
+            .receiveOnMain(store: &bindStore) { [weak self] user in
+                guard let user else { return }
+                self?.updateCurrentUser(user)
+            }
+
+        mainViewModel.$currentDrive
+            .receiveOnMain(store: &bindStore) { [weak self] drive in
+                guard let drive else { return }
+                self?.updateCurrentDrive(drive)
+            }
     }
 
     private func setupView() {
@@ -76,5 +96,13 @@ final class HomeViewController: TitledViewController {
             selectedUserAndDrivePanel.heightAnchor.constraint(equalTo: panelsContainer.heightAnchor),
             selectedUserAndDrivePanel.trailingAnchor.constraint(equalTo: panelsContainer.trailingAnchor)
         ])
+    }
+
+    private func updateCurrentUser(_ user: UIUser) {
+        selectedUserAndDrivePanel.user = user
+    }
+
+    private func updateCurrentDrive(_ drive: UIDrive) {
+        selectedUserAndDrivePanel.drive = drive
     }
 }

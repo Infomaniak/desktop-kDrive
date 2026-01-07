@@ -46,6 +46,7 @@ final class MainViewModel {
     func refreshCache() {
         Task {
             try await coherentCache.refresh()
+            await restoreLastSelection()
         }
     }
 
@@ -97,15 +98,25 @@ final class MainViewModel {
         currentSynchro = updatedSynchro
     }
 
-    func restoreLastSelection() {
-        Task {
-            let synchroDbId = UserDefaults.standard.selectedSynchroDbId
-            guard let syncho = await coherentCache.getSynchro(synchroDbId: Int32(synchroDbId)) else {
-                return
-            }
-
-            setCurrentSynchro(UISynchro(synchro: syncho))
+    private func restoreLastSelection() async {
+        let synchroDbId = UserDefaults.standard.selectedSynchroDbId
+        guard let syncho = await coherentCache.getSynchro(synchroDbId: Int32(synchroDbId)) else {
+            setDefaultSynchro()
+            return
         }
+
+        setCurrentSynchro(UISynchro(synchro: syncho))
+    }
+
+    private func setDefaultSynchro() {
+        guard let firstAvailableUser = availableUsers.values.first,
+              let firstAvailableAccount = firstAvailableUser.accounts.first?.value,
+              let firstAvailableDrive = firstAvailableAccount.drives.first?.value,
+              let firstAvailableSynchro = firstAvailableDrive.synchros.first?.value else {
+            return
+        }
+
+        setCurrentSynchro(firstAvailableSynchro)
     }
 
     private func getSelectedValuesFromSynchro(_ synchro: UISynchro) -> (user: UIUser, account: UIAccount, drive: UIDrive)? {
