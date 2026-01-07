@@ -42,6 +42,10 @@ bool GuiCommChannel::sendMessage(const CommString &message) {
 bool GuiCommChannel::canReadMessage() {
     fetchDataToBuffer();
     _validJsonInBuffer = containsValidJson(_readBuffer, _inBufferJsonEndIndex);
+    if (!_validJsonInBuffer)
+        LOGW_ERROR(Log::instance()->getLogger(),
+                   L"The channel contains an invalid JSON: " << CommonUtility::commString2WStr(_readBuffer));
+
     return _validJsonInBuffer;
 }
 
