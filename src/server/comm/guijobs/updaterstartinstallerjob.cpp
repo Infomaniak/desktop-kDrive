@@ -1,6 +1,7 @@
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2025 Infomaniak Network SA
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -15,28 +16,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "updaterstartinstallerjob.h"
+#include "appserver.h"
 
-#include "iohelper.h"
-#include "utility/types.h"
+#include "libcommon/comm.h"
 
-/**
- * @brief Provide full access to a file or folder for the lifespan of the `PermissionsHolder` object. Access rights are reset to
- * their initial values upon destruction.
- * This class aims to simplify the management of items inside folders with restricted access (such as "Common documents" or
- * "Shared") or files with read-only rights that need to be updated. It should be used everywhere an item (or its children) with
- * limited access might be modified.
- */
 namespace KDC {
 
-class PermissionsHolder {
-    public:
-        explicit PermissionsHolder(const SyncPath &path, const log4cplus::Logger logger);
-        ~PermissionsHolder();
+UpdaterStartInstallerJob::UpdaterStartInstallerJob(std::shared_ptr<CommManager> commManager, int requestId,
+                                                   const Poco::DynamicStruct &inParams,
+                                                   std::shared_ptr<AbstractCommChannel> channel) :
+    AbstractGuiJob(commManager, requestId, inParams, channel) {
+    _requestNum = RequestNum::UPDATER_START_INSTALLER;
+}
 
-    private:
-        SyncPath _path;
-        const log4cplus::Logger _logger;
-};
+
+ExitInfo UpdaterStartInstallerJob::process() {
+    _commManager->appServer().startInstaller();
+
+    return ExitCode::Ok;
+}
 
 } // namespace KDC

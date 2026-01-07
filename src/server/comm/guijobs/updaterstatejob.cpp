@@ -1,6 +1,7 @@
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2025 Infomaniak Network SA
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -15,28 +16,35 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "updaterstatejob.h"
+#include "appserver.h"
 
-#include "iohelper.h"
-#include "utility/types.h"
 
-/**
- * @brief Provide full access to a file or folder for the lifespan of the `PermissionsHolder` object. Access rights are reset to
- * their initial values upon destruction.
- * This class aims to simplify the management of items inside folders with restricted access (such as "Common documents" or
- * "Shared") or files with read-only rights that need to be updated. It should be used everywhere an item (or its children) with
- * limited access might be modified.
- */
+#include "libcommon/comm.h"
+
+
+// Output parameters keys
+static const auto outParamsUpdateState = "updateState";
+
 namespace KDC {
 
-class PermissionsHolder {
-    public:
-        explicit PermissionsHolder(const SyncPath &path, const log4cplus::Logger logger);
-        ~PermissionsHolder();
+UpdaterStateJob::UpdaterStateJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                                 std::shared_ptr<AbstractCommChannel> channel) :
+    AbstractGuiJob(commManager, requestId, inParams, channel) {
+    _requestNum = RequestNum::UPDATER_STATE;
+}
 
-    private:
-        SyncPath _path;
-        const log4cplus::Logger _logger;
-};
+
+ExitInfo UpdaterStateJob::serializeOutputParms() {
+    writeParamValue(outParamsUpdateState, _updateState);
+
+    return ExitCode::Ok;
+}
+
+ExitInfo UpdaterStateJob::process() {
+    _updateState = _commManager->appServer().getUpdateState();
+
+    return ExitCode::Ok;
+}
 
 } // namespace KDC

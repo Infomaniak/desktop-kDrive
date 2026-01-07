@@ -134,6 +134,10 @@ class AppServer : public SharedTools::QtSingleApplication {
         [[nodiscard]] ExitInfo startSyncs(User &user);
         void stopSyncTask(int syncDbId);
         [[nodiscard]] ExitInfo setSupportsVirtualFiles(int syncDbId, bool value);
+        void setDistributionChannel(VersionChannel versionChannel);
+        VersionInfo getVersionInfo(VersionChannel versionChannel) const;
+        UpdateState getUpdateState() const;
+        void startInstaller();
         [[nodiscard]] ExitInfo getNodePath(int syncDbId, const NodeId &nodeId, CommString &path);
 
         void logExtendedLogActivationMessage(bool isExtendedLogEnabled) noexcept;
@@ -211,8 +215,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         void processInterruptedLogsUpload();
 
         ExitCode migrateConfiguration(bool &proxyNotSupported);
-        ExitCode updateUserInfo(User &user);
-        ExitCode updateAllUsersInfo();
+        ExitInfo updateUserInfo(User &user);
+        ExitInfo updateAllUsersInfo();
         [[nodiscard]] ExitInfo initSyncPal(const Sync &sync, const QSet<QString> &blackList, bool start = true,
                                            const std::chrono::seconds &startDelay = std::chrono::seconds(0),
                                            bool resumedByUser = false, bool firstInit = false);

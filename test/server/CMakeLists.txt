@@ -77,6 +77,10 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/utilitysendlogtosupportjob.h ${server_srcs_path}/comm/guijobs/utilitysendlogtosupportjob.cpp
     ${server_srcs_path}/comm/guijobs/utilitycancellogtosupportjob.h ${server_srcs_path}/comm/guijobs/utilitycancellogtosupportjob.cpp
     ${server_srcs_path}/comm/guijobs/utilitygetlogestimatedsizejob.h ${server_srcs_path}/comm/guijobs/utilitygetlogestimatedsizejob.cpp
+    ${server_srcs_path}/comm/guijobs/updaterversioninfojob.h ${server_srcs_path}/comm/guijobs/updaterversioninfojob.cpp
+    ${server_srcs_path}/comm/guijobs/updaterstatejob.h ${server_srcs_path}/comm/guijobs/updaterstatejob.cpp
+    ${server_srcs_path}/comm/guijobs/updaterstartinstallerjob.h ${server_srcs_path}/comm/guijobs/updaterstartinstallerjob.cpp
+    ${server_srcs_path}/comm/guijobs/updaterskipversionjob.h ${server_srcs_path}/comm/guijobs/updaterskipversionjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluseraddedjob.h ${server_srcs_path}/comm/guijobs/signaluseraddedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.h ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserremovedjob.h ${server_srcs_path}/comm/guijobs/signaluserremovedjob.cpp
@@ -169,14 +173,14 @@ set(testserver_SRCS
     appserver/testappserver.h appserver/testappserver.cpp
     comm/testsocketcomm.h comm/testsocketcomm.cpp
 
-    comm/testcommhelpers.h comm/testcommhelpers.cpp
-    comm/guicommchannel/testguicommchannel.h comm/guicommchannel/testguicommchannel.cpp
+    comm/testcommhelpers.h comm/testcommhelpers.cpp 
     comm/guicommchannel/testgenericjob.cpp
-    comm/guicommchannel/testsyncjobs.cpp comm/guicommchannel/testnodejobs.cpp
-    comm/guicommchannel/testerrorjobs.cpp
+    comm/guicommchannel/testguicommchannel.h comm/guicommchannel/testguicommchannel.cpp 
+    comm/guicommchannel/testsyncjobs.cpp comm/guicommchannel/testnodejobs.cpp 
+    comm/guicommchannel/testparameters.cpp comm/guicommchannel/testerrorjobs.cpp
     comm/guicommchannel/testexclapp.cpp comm/guicommchannel/testexcltempl.cpp 
     comm/guicommchannel/testparameters.cpp comm/guicommchannel/testutility.cpp
-    comm/testcommhelpers.h comm/testcommhelpers.cpp
+    comm/guicommchannel/testupdaterjobs.cpp
 
     comm/guijobs/testabstractguijob.h comm/guijobs/testabstractguijob.cpp
 )
