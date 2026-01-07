@@ -40,15 +40,19 @@ final class HomeViewController: TitledViewController {
         panel.translatesAutoresizingMaskIntoConstraints = false
         panel.user = mainViewModel.currentUser
         panel.drive = mainViewModel.currentDrive
+        panel.delegate = self
         return panel
     }()
 
-    private var mainViewModel: MainViewModel
-
+    private let mainViewModel: MainViewModel
+    private let viewModel: HomeViewModel
+    
     private var bindStore = Set<AnyCancellable>()
 
     init(mainViewModel: MainViewModel) {
         self.mainViewModel = mainViewModel
+        viewModel = HomeViewModel(mainViewModel: mainViewModel)
+        
         super.init(toolbarTitle: SidebarItem.home.title)
 
         setupView()
@@ -104,5 +108,11 @@ final class HomeViewController: TitledViewController {
 
     private func updateCurrentDrive(_ drive: UIDrive) {
         selectedUserAndDrivePanel.drive = drive
+    }
+}
+
+extension HomeViewController: SelectedUserAndDrivePanelDelegate {
+    func didTapRemoteFolderButton(_ remoteFolder: RemoteFolder) {
+        viewModel.openRemoteFolder(remoteFolder)
     }
 }
