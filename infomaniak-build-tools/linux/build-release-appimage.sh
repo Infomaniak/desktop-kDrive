@@ -84,9 +84,9 @@ function build_client_via_cmake() {
   build_type=$1
   conan_dependencies_folder=$2
 
-  cd /build
-  mkdir -p client
-  cd client
+  echo "Building client via CMake..."
+
+  cd /build/client
 
   CMAKE_PARAMS=()
 
@@ -96,20 +96,14 @@ function build_client_via_cmake() {
 
   export KDRIVE_DEBUG=0
 
-  build_folder=$PWD
-  cd /src
-
+  # Find Conan toolchain file
   conan_folder=/build/conan
-  bash /src/infomaniak-build-tools/conan/build_dependencies.sh $build_type --output-dir="$conan_folder"
-
   conan_toolchain_file="$(find "$conan_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
 
   if [ ! -f "$conan_toolchain_file" ]; then
     echo "Conan toolchain file not found: $conan_toolchain_file"
     exit 1
   fi
-
-  cd "$build_folder"
 
   architecture=$(get_host_arch)
   qt_neon_activation="ON"
@@ -248,21 +242,28 @@ if [[ -n "$ulimit_error" ]]; then
     echo "Current limit: '$(ulimit -n)'."
 fi
 
-setup_build
+architecture="$(get_host_arch)"
+build_type="RelWithDebInfo"
+conan_dependencies_folder="/build/conan/dependencies"
+
+echo "Detecting Qt and building Conan dependencies for ${architecture}..."
+find_qt_from_conan "$build_type"
 
 if [ ! "$?" -eq "0" ]; then
     echo
     echo "Build setup failed."
+
+echo
+
+setup_build
+
+if [ ! "$?" -eq "0" ]; then
     exit 1
 fi
 
 echo
 
-architecture="$(get_host_arch)"
-build_type="RelWithDebInfo"
-conan_dependencies_folder="/build/conan/dependencies"
-
-echo "Building desktop-kDrive application with type ${build_type} via CMake for architecture ${architecture} ..."
+echo "Building desktop-kDrive application with type ${build_type} via CMake for architecture ${architecture}..."
 build_client_via_cmake "$build_type" "$conan_dependencies_folder"
 
 if [ ! "$?" -eq "0" ]; then
