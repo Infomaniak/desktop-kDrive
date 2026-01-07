@@ -21,6 +21,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <x:String x:Key="Infomaniak.Custom.Icons.lab-flask">ms-appx:///Assets/Custom/Icons/lab-flask.svg</x:String>
+    <x:String x:Key="Infomaniak.Custom.Icons.folder-circle-arrow-right">ms-appx:///Assets/Custom/Icons/folder-circle-arrow-right.svg</x:String>
     <x:String x:Key="Infomaniak.Custom.Icons.folder-star">ms-appx:///Assets/Custom/Icons/folder-star.svg</x:String>
     <x:String x:Key="Infomaniak.Custom.Icons.folder-share">ms-appx:///Assets/Custom/Icons/folder-share.svg</x:String>
     <x:String x:Key="Infomaniak.Custom.Icons.drive-custom">ms-appx:///Assets/Custom/Icons/drive-custom.svg</x:String>
