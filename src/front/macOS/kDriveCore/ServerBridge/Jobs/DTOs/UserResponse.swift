@@ -38,14 +38,17 @@ public struct UserInfoResponse: Codable, Sendable {
 
 extension UserInfoResponse {
     var userCache: User {
-        User(dbId: dbId,
-             userId: userId,
-             name: name,
-             email: email,
-             accounts: [:],
-             availableDrives: [:],
-             isConnected: isConnected,
-             isStaff: isStaff)
+        User(
+            dbId: dbId,
+            userId: userId,
+            name: name,
+            email: email,
+            accounts: [:],
+            availableDrives: [:],
+            avatar: avatar,
+            isConnected: isConnected,
+            isStaff: isStaff
+        )
     }
 }
 
