@@ -26,10 +26,10 @@ program_name="$(basename "$0")"
 QT_BASE_DIR=""
 
 function display_help {
-  echo "$program_name [-h]"
-  echo "  Build the Linux release AppImage for desktop-kDrive."
-  echo "where:"
-  echo "-h  Show this help text."
+  echo "$program_name [-h]" >&2
+  echo "  Build the Linux release AppImage for desktop-kDrive." >&2
+  echo "where:" >&2
+  echo "-h  Show this help text." >&2
 }
 
 function get_arch() {
@@ -39,8 +39,8 @@ function get_arch() {
         echo "x86_64"
     elif [[  "$architecture" == "arm64" ]]; then
         echo "aarch64"
-    else 
-        echo "Invalid architecture argument: '$architecture'"
+    else
+        echo "Invalid architecture argument: '$architecture'" >&2
         exit 1;
     fi
 }
@@ -101,7 +101,7 @@ function build_client_via_cmake() {
   conan_toolchain_file="$(find "$conan_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
 
   if [ ! -f "$conan_toolchain_file" ]; then
-    echo "Conan toolchain file not found: $conan_toolchain_file"
+    echo "ERROR: Conan toolchain file not found: $conan_toolchain_file" >&2
     exit 1
   fi
 
@@ -238,8 +238,8 @@ done
 inode_max_limit=100000
 ulimit_error=$( { ulimit -n $inode_max_limit; } 2>&1)
 if [[ -n "$ulimit_error" ]]; then
-    echo "Failed to set the max limit of open inodes with '$inode_max_limit'."
-    echo "Current limit: '$(ulimit -n)'."
+    echo "Failed to set the max limit of open inodes with '$inode_max_limit'." >&2
+    echo "Current limit: '$(ulimit -n)'." >&2
 fi
 
 architecture="$(get_host_arch)"
@@ -250,14 +250,16 @@ echo "Detecting Qt and building Conan dependencies for ${architecture}..."
 find_qt_from_conan "$build_type"
 
 if [ ! "$?" -eq "0" ]; then
-    echo
-    echo "Build setup failed."
+    echo "\nQt detection or Conan dependencies build failed." >&2
+    exit 1
+fi
 
 echo
 
 setup_build
 
 if [ ! "$?" -eq "0" ]; then
+    echo "\nBuild setup failed." >&2
     exit 1
 fi
 
@@ -267,8 +269,7 @@ echo "Building desktop-kDrive application with type ${build_type} via CMake for 
 build_client_via_cmake "$build_type" "$conan_dependencies_folder"
 
 if [ ! "$?" -eq "0" ]; then
-    echo
-    echo "CMake build failed."
+    echo "\nCMake build failed." >&2
     exit 1
 fi
 
@@ -278,8 +279,7 @@ echo "Moving dependencies ..."
 move_dependencies "$architecture" "$conan_dependencies_folder"
 
 if [ ! "$?" -eq "0" ]; then
-    echo
-    echo "Move of dependencies failed."
+    echo "\nMove of dependencies failed." >&2
     exit 1
 fi
 
@@ -287,8 +287,7 @@ echo "Building AppImage ..."
 build_app_image "$architecture"
 
 if [ ! "$?" -eq "0" ]; then
-    echo
-    echo "Build of the AppImage failed."
+    echo "\nBuild of the AppImage failed." >&2
     exit 1
 fi
 
