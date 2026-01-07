@@ -820,6 +820,40 @@ bool AppServer::areMacVfsAuthsOk() const {
 }
 #endif
 
+void AppServer::setDistributionChannel(const VersionChannel versionChannel) {
+    if (_noUpdate) return;
+    assert(_updateManager && "The update manager is not set.");
+
+    _updateManager->setDistributionChannel(versionChannel);
+}
+
+VersionInfo AppServer::getVersionInfo(const VersionChannel versionChannel) const {
+    if (_noUpdate) {
+        VersionInfo versionInfo;
+        versionInfo.tag = CommonUtility::versionTag();
+        versionInfo.buildVersion = CommonUtility::versionBuild();
+
+        return versionInfo;
+    }
+
+    assert(_updateManager && "The update manager is not set.");
+
+    return _updateManager->versionInfo(versionChannel);
+}
+
+UpdateState AppServer::getUpdateState() const {
+    if (_noUpdate) return UpdateState::NoUpdate;
+
+    assert(_updateManager && "The update manager is not set.");
+
+    return _updateManager->state();
+}
+
+void AppServer::startInstaller() {
+    LOG_IF_FAIL(_logger, _updateManager && "The update manager is not set.");
+    if (_updateManager) _updateManager->startInstaller();
+}
+
 void AppServer::crash() const {
     // SIGSEGV crash
     CommonUtility::crash();
