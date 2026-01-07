@@ -123,6 +123,12 @@ void BaseFolderTreeItemWidget::insertNode(QTreeWidgetItem *parent, const NodeInf
             item->setData(TreeWidgetColumn::Folder, baseDirRole, folderInfo.name());
             item->setData(TreeWidgetColumn::Folder, nodeIdRole, folderInfo.nodeId());
 
+            // Manage access denied
+            if (folderInfo.accessDenied()) {
+                item->setDisabled(true);
+                item->setSelected(false);
+            }
+
             item->setChildIndicatorPolicy(QTreeWidgetItem::ShowIndicator);
         }
     }

@@ -57,9 +57,9 @@ void GetRootFileListJob::setQueryParameters(Poco::URI &uri) {
         uri.addQueryParameter("type[]", "dir");
     }
     if (_withPath) {
-        uri.addQueryParameter("with", "path,total");
+        uri.addQueryParameter("with", "path,total,capabilities");
     } else {
-        uri.addQueryParameter("with", "total");
+        uri.addQueryParameter("with", "total,capabilities");
     }
 }
 

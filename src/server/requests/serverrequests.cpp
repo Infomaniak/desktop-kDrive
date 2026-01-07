@@ -893,9 +893,20 @@ ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, co
                 }
             }
 
+            Poco::JSON::Object::Ptr capabilitiesObj = dirObj->getObject(capabilitiesKey);
+            bool accessDenied = false;
+            if (capabilitiesObj) {
+                bool canShow = true;
+                if (!JsonParserUtility::extractValue(capabilitiesObj, canShowKey, canShow)) {
+                    return ExitCode::BackError;
+                }
+                accessDenied = !canShow;
+            }
+
             NodeInfo nodeInfo(QString::fromStdString(nodeId2), SyncName2QStr(name),
                               -1, // Size is not set here as it can be very long to evaluate
                               parentId.c_str(), modTime, SyncName2QStr(path));
+            nodeInfo.setAccessDenied(accessDenied);
             list.push_back(nodeInfo);
         }
 

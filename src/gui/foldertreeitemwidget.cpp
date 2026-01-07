@@ -227,6 +227,12 @@ void FolderTreeItemWidget::insertNode(QTreeWidgetItem *parent, const NodeInfo &n
     // Set name
     item->setText(TreeWidgetColumn::Folder, nodeInfo.name());
 
+    // Manage access denied
+    if (nodeInfo.accessDenied()) {
+        item->setDisabled(true);
+        item->setSelected(false);
+    }
+
     if (!nodeInfo.nodeId().isEmpty()) {
         addTreeWidgetItemToQueue(nodeInfo.nodeId(), item);
     }
