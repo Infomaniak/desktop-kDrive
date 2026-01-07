@@ -19,6 +19,7 @@
 #include "comm/guijobs/utilityactivateloadinfojob.h"
 #include "comm/guijobs/utilitybestvfsavailablemodejob.h"
 #include "comm/guijobs/utilityfindgoodpathfornewsyncjob.h"
+#include "comm/guijobs/utilityispathvalidfornewsyncjob.h"
 #include "comm/guijobs/utilitygetappstatejob.h"
 #include "comm/guijobs/utilitysetappstatejob.h"
 #include "comm/guijobs/utilitycancellogtosupportjob.h"
@@ -148,6 +149,46 @@ void TestGuiCommChannel::testUtilityFindGoodPathForNewSyncJob() {
         CPPUNIT_ASSERT(findGoodPathForNewSyncJob);
         findGoodPathForNewSyncJob->_goodPath = SyncPath{"/dummy/good_path"};
         findGoodPathForNewSyncJob->_errorMessage = "";
+    };
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+#else
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
+void TestGuiCommChannel::testUtilityIsPathValidForNewSyncJob() {
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    const auto queryStr{R"({ "id": 1,)"
+                        R"( "num": )" +
+                        std::to_string(toInt(RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC)) +
+                        R"(,)"
+                        R"( "params": { "path": "" } })"};
+#else
+    // There is no need to pass a request id as the response is via a callback.
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC)) +
+                        R"(,)"
+                        R"( "params": { "path": "" } })"};
+
+    // Callback expected answer
+    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"isValid":true}})"};
+#endif
+
+    // Job expected answer
+    const auto answerStr{R"({ "cause": 0,)"
+                         R"( "code": 0,)"
+                         R"( "id": 1,)"
+                         R"( "num": )" +
+                         std::to_string(toInt(RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC)) +
+                         R"(,)"
+                         R"( "params": { "isValid": true }, "type": )" +
+                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto isPathValidForForNewSyncJob = std::dynamic_pointer_cast<UtilityIsPathValidForNewSyncJob>(job);
+        CPPUNIT_ASSERT(isPathValidForForNewSyncJob);
+        isPathValidForForNewSyncJob->_isValid = true;
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)

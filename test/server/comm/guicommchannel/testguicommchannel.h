@@ -96,6 +96,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testUtilityActivateLoadInfoJob);
         CPPUNIT_TEST(testUtilityBestVfsAvailableModeJob);
         CPPUNIT_TEST(testUtilityFindGoodPathForNewSyncJob);
+        CPPUNIT_TEST(testUtilityIsPathValidForNewSyncJob);
         CPPUNIT_TEST(testUtilityGetAppStateJob);
         CPPUNIT_TEST(testUtilitySetAppStateJob);
         CPPUNIT_TEST(testUtilityCancelLogToSupportJob);
@@ -159,6 +160,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testUtilityActivateLoadInfoJob();
         void testUtilityBestVfsAvailableModeJob();
         void testUtilityFindGoodPathForNewSyncJob();
+        void testUtilityIsPathValidForNewSyncJob();
         void testUtilityGetAppStateJob();
         void testUtilitySetAppStateJob();
         void testUtilityCancelLogToSupportJob();
