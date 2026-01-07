@@ -1,9 +1,10 @@
-import platform
 import textwrap
+import os
 
 from conan import ConanFile
 from conan.tools.cmake import CMakeToolchain, cmake_layout
 from conan.tools.cmake.toolchain.blocks import VSRuntimeBlock
+from conan.errors import ConanInvalidConfiguration
 
 
 class KDriveDesktop(ConanFile):
@@ -13,6 +14,84 @@ class KDriveDesktop(ConanFile):
 
     settings = "os", "compiler", "build_type", "arch"
     generators = "CMakeDeps", "VirtualRunEnv"
+
+    def validate(self):
+        """
+        Validate system requirements before building.
+        - Only Linux, macOS, and Windows are supported
+        - On Ubuntu: minimum version 22.04 for amd64, 24.04 for arm64
+        """
+        # Check supported operating systems
+        supported_os = ["Linux", "Macos", "Windows"]
+        if str(self.settings.os) not in supported_os:
+            raise ConanInvalidConfiguration(
+                f"Unsupported operating system: {self.settings.os}. "
+                f"Only {', '.join(supported_os)} are supported."
+            )
+
+        # Ubuntu-specific version checks
+        if str(self.settings.os) == "Linux":
+            self._validate_ubuntu_version()
+
+    def _validate_ubuntu_version(self):
+        """
+        Validate Ubuntu version based on architecture.
+        - amd64 (x86_64): minimum Ubuntu 22.04
+        - arm64 (armv8): minimum Ubuntu 24.04
+        """
+        # Detect if running on Ubuntu
+        if not os.path.exists("/etc/os-release"):
+            # Not Ubuntu or distro info not available, skip validation
+            self.output.warning("Cannot detect Linux distribution. Skipping Ubuntu version check.")
+            return
+
+        # Read /etc/os-release to get distro info
+        with open("/etc/os-release", "r") as f:
+            os_release = f.read()
+
+        # Check if it's Ubuntu
+        if "ID=ubuntu" not in os_release.lower() and "ID_LIKE=" not in os_release.lower():
+            # Not Ubuntu, skip validation
+            return
+
+        # Extract Ubuntu version
+        version_id = None
+        for line in os_release.splitlines():
+            if line.startswith("VERSION_ID="):
+                version_id = line.split("=")[1].strip('"')
+                break
+
+        if not version_id:
+            self.output.warning("Cannot detect Ubuntu version. Skipping version check.")
+            return
+
+        # Convert version to float for comparison (e.g., "22.04" -> 22.04)
+        try:
+            ubuntu_version = float(version_id)
+        except ValueError:
+            self.output.warning(f"Invalid Ubuntu version format: {version_id}. Skipping version check.")
+            return
+
+        # Get architecture
+        arch = str(self.settings.arch)
+
+        # Validation rules
+        if arch in ["x86_64"]:
+            min_version = 22.04
+            if ubuntu_version < min_version:
+                raise ConanInvalidConfiguration(
+                    f"Ubuntu {ubuntu_version} on {arch} is not supported. "
+                    f"Minimum required version: Ubuntu {min_version} for {arch} architecture."
+                )
+        elif arch in ["armv8"]:
+            min_version = 24.04
+            if ubuntu_version < min_version:
+                raise ConanInvalidConfiguration(
+                    f"Ubuntu {ubuntu_version} on {arch} is not supported. "
+                    f"Minimum required version: Ubuntu {min_version} for {arch} architecture."
+                )
+
+        self.output.info(f"Ubuntu {ubuntu_version} on {arch} meets minimum requirements.")
 
     def generate(self):
         """
