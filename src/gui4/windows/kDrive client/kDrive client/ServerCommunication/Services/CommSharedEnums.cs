@@ -303,7 +303,7 @@ namespace Infomaniak.kDrive.Types
         ForbiddenCharOnlySpaces = 0x080, // The name contains only spaces (not supported by back end)
         ForbiddenCharEndWithSpace = 0x100, // The name ends with a space
     };
-    enum VirtualFileMode
+    public enum VirtualFileMode
     {
         Off,
         Win,

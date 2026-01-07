@@ -412,7 +412,7 @@ ExitCode ServerRequests::findGoodPathForNewSync(const QString &basePath, QString
             return ExitCode::SystemError;
         }
 
-        folder = basePath + QString::number(attempt);
+        folder = basePath + " " + QString::number(attempt);
     }
 
     path = folder;

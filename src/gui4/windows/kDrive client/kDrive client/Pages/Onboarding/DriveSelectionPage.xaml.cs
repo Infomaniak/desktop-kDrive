@@ -66,7 +66,8 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             {
                 var commServices = App.ServiceProvider.GetRequiredService<IServerCommService>();
                 string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-                string desiredPath = Path.Combine(userProfile, $"kDrive {drive.Name}");
+                string desiredFolderName = drive.Name.StartsWith("kDrive") ? drive.Name : $"kDrive {drive.Name}";
+                string desiredPath = Path.Combine(userProfile, desiredFolderName);
                 IServerCommService.GetGoodPathResult? result = await commServices.GetGoodPathForNewSync(drive, desiredPath, CancellationToken.None);
                 if (!result.HasValue || result.Value.GoodPath is null)
                 {
@@ -152,34 +153,14 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             if (folder != null)
             {
                 Logger.Log(Logger.Level.Info, "Folder picked: " + folder.Path);
-
-                if (_onBoardingViewModel!.NewSyncs.Select(s => s.LocalPath).ToList().Contains(folder.Path))
-                {
-                    Logger.Log(Logger.Level.Warning, $"Selected folder path '{folder.Path}' is already used by another sync.");
-                    FolderSelectionError.IsOpen = true;
-                    if (senderButton != null)
-                        senderButton.IsEnabled = true;
-                    return;
-                }
-
-                var commServices = App.ServiceProvider.GetRequiredService<IServerCommService>();
-                IServerCommService.GetGoodPathResult? result = await commServices.GetGoodPathForNewSync(newSync.Drive, folder.Path, CancellationToken.None);
-                if (!result.HasValue || result.Value.GoodPath is null || result.Value.GoodPath != folder.Path)
-                {
-                    Logger.Log(Logger.Level.Warning, $"Selected folder path '{folder.Path}' is not valid for syncing: {result?.ErrorMessage ?? "Unknown error"}");
-                    FolderSelectionError.IsOpen = true;
-                    if (senderButton != null)
-                        senderButton.IsEnabled = true;
-                    return;
-                }
-
-                if (_onBoardingViewModel == null)
+                if (_onBoardingViewModel is null)
                 {
                     Logger.Log(Logger.Level.Error, "OnBoardingViewModel is null in ChangeSyncPathButton_Click");
                     if (senderButton != null)
                         senderButton.IsEnabled = true;
                     return;
                 }
+
                 if (_onBoardingViewModel.NewSyncs.Any(s => s.LocalPath.Equals(folder.Path, StringComparison.OrdinalIgnoreCase)))
                 {
                     Logger.Log(Logger.Level.Warning, $"Selected folder path '{folder.Path}' is already used by another sync.");
@@ -189,16 +170,20 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     return;
                 }
 
-                if (_onBoardingViewModel is not null)
+                var commServices = App.ServiceProvider.GetRequiredService<IServerCommService>();
+                bool? result = await commServices.IsPathValidForNewSync(folder.Path, CancellationToken.None);
+                if (result is null || result == false)
                 {
-                    await SetNewSyncLocalPathAndUpdateVfsMode(newSync, folder.Path);
-                    Logger.Log(Logger.Level.Info, $"Sync path for drive '{newSync!.Drive?.Name ?? "unknown"}' updated to '{newSync!.LocalPath}' with sync type '{newSync.SyncType}'");
-                    RefreshAdvancedSettingsConfirmButtonIsEnabled();
+                    Logger.Log(Logger.Level.Warning, $"Selected folder path '{folder.Path}' is not valid for syncing");
+                    FolderSelectionError.IsOpen = true;
+                    if (senderButton != null)
+                        senderButton.IsEnabled = true;
+                    return;
                 }
-                else
-                {
-                    Logger.Log(Logger.Level.Error, "ChangeSyncPathButton_Click: DataContext is not a Sync or OnBoardingViewModel is null");
-                }
+
+                await SetNewSyncLocalPathAndUpdateVfsMode(newSync, folder.Path);
+                Logger.Log(Logger.Level.Info, $"Sync path for drive '{newSync!.Drive?.Name ?? "unknown"}' updated to '{newSync!.LocalPath}' with sync type '{newSync.SyncType}'");
+                RefreshAdvancedSettingsConfirmButtonIsEnabled();
             }
             else
             {

@@ -492,8 +492,19 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         }
         public async Task<bool?> IsPathValidForNewSync(string path, CancellationToken cancellationToken)
         {
-            // TODO: implement server call.
-            return true;
+            var parms = new JsonObject
+            {
+                [JsonKeys.Path] = Utility.ToBase64String(path),
+            };
+
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_ISPATHVALIDFORNEWSYNC, parms, cancellationToken);
+
+            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.IsValid))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.IsValid} not found in response: {data.Params}");
+                return null;
+            }
+            return data.Params[JsonKeys.IsValid]?.GetValue<bool>() ?? false;
         }
 
         public async Task<List<Node>?> GetSubFolders(DbId userDbId, DriveId driveId, NodeId parentNodeId, CancellationToken cancellationToken)

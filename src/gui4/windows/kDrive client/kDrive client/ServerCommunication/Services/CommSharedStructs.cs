@@ -167,8 +167,8 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         public string? LocalPath { get; set; }
         public string? TargetPath { get; set; }
         public string? TargetNodeId { get; set; }
-        public bool? SupportOnlineMode { get; set; }
-        public bool? OnlineMode { get; set; }
+        public bool? SupportVfs { get; set; }
+        public VirtualFileMode? VirtualFileMode { get; set; }
     }
     public static partial class ConversionHelper
     {
@@ -177,6 +177,13 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             copyProperty(source, target, nameof(source.DbId), nameof(target.DbId));
             copyProperty(source, target, nameof(source.TargetPath), nameof(target.RemotePath));
             copyProperty(source, target, nameof(source.LocalPath), nameof(target.LocalPath));
+            copyProperty(source, target, nameof(source.SupportVfs), nameof(target.SupportOnlineMode));
+
+            if (source.VirtualFileMode is not null)
+                if (source.VirtualFileMode.Value == VirtualFileMode.Win)
+                    target.SyncType = SyncType.Online;
+                else
+                    target.SyncType = SyncType.Offline;
         }
     }
 
