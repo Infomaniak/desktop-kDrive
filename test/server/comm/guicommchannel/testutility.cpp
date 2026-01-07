@@ -18,6 +18,7 @@
 
 #include "comm/guijobs/utilityactivateloadinfojob.h"
 #include "comm/guijobs/utilitybestvfsavailablemode.h"
+#include "comm/guijobs/utilityfindgoodpathfornewsyncjob.h"
 #include "comm/guijobs/utilitygetappstatejob.h"
 #include "comm/guijobs/utilitysetappstatejob.h"
 #include "comm/guijobs/utilitycancellogtosupportjob.h"
@@ -104,8 +105,49 @@ void TestGuiCommChannel::testUtilityBestVfsAvailableModeJob() {
                          std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-        auto activateLoadInfoJob = std::dynamic_pointer_cast<UtilityBestVfsAvailableModeJob>(job);
-        CPPUNIT_ASSERT(activateLoadInfoJob);
+        auto bestVfsAvailableModeJob = std::dynamic_pointer_cast<UtilityBestVfsAvailableModeJob>(job);
+        CPPUNIT_ASSERT(bestVfsAvailableModeJob);
+    };
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+#else
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
+void TestGuiCommChannel::testUtilityFindGoodPathForNewSyncJob() {
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    const auto queryStr{R"({ "id": 1,)"
+                        R"( "num": )" +
+                        std::to_string(toInt(RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC)) +
+                        R"(,)"
+                        R"( "params": { "basePath": "", "driveDbId": 0 } })"};
+#else
+    // There is no need to pass a request id as the response is via a callback.
+    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC)) +
+                        R"(,)"
+                        R"( "params": { "path": "/dummy" } })"};
+
+    // Callback expected answer
+    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"errorMessage":"","goodPath":"L2R1bW15L2dvb2RfcGF0aA=="}})"};
+#endif
+
+    // Job expected answer
+    const auto answerStr{R"({ "cause": 0,)"
+                         R"( "code": 0,)"
+                         R"( "id": 1,)"
+                         R"( "num": )" +
+                         std::to_string(toInt(RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC)) +
+                         R"(,)"
+                         R"( "params": { "errorMessage": "", "goodPath": "L2R1bW15L2dvb2RfcGF0aA==" }, "type": )" +
+                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto findGoodPathForNewSyncJob = std::dynamic_pointer_cast<UtilityFindGoodPathForNewSyncJob>(job);
+        CPPUNIT_ASSERT(findGoodPathForNewSyncJob);
+        findGoodPathForNewSyncJob->_goodPath = SyncPath{"/dummy/good_path"};
+        findGoodPathForNewSyncJob->_errorMessage = "";
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)

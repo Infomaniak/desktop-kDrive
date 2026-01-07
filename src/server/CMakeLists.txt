@@ -96,6 +96,7 @@ set(server_SRCS
     comm/guijobs/parametersupdatejob.h comm/guijobs/parametersupdatejob.cpp
     comm/guijobs/utilityactivateloadinfojob.h comm/guijobs/utilityactivateloadinfojob.cpp
     comm/guijobs/utilitybestvfsavailablemode.h comm/guijobs/utilitybestvfsavailablemode.cpp
+    comm/guijobs/utilityfindgoodpathfornewsyncjob.h comm/guijobs/utilityfindgoodpathfornewsyncjob.cpp
     comm/guijobs/utilitysetappstatejob.h comm/guijobs/utilitysetappstatejob.cpp
     comm/guijobs/utilitygetappstatejob.h comm/guijobs/utilitygetappstatejob.cpp
     comm/guijobs/utilitysendlogtosupportjob.h comm/guijobs/utilitysendlogtosupportjob.cpp

@@ -72,6 +72,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/errorinfolistjob.h ${server_srcs_path}/comm/guijobs/errorinfolistjob.cpp
     ${server_srcs_path}/comm/guijobs/utilityactivateloadinfojob.h ${server_srcs_path}/comm/guijobs/utilityactivateloadinfojob.cpp
     ${server_srcs_path}/comm/guijobs/utilitybestvfsavailablemode.h ${server_srcs_path}/comm/guijobs/utilitybestvfsavailablemode.cpp
+    ${server_srcs_path}/comm/guijobs/utilityfindgoodpathfornewsyncjob.h ${server_srcs_path}/comm/guijobs/utilityfindgoodpathfornewsyncjob.cpp
     ${server_srcs_path}/comm/guijobs/utilitysetappstatejob.h ${server_srcs_path}/comm/guijobs/utilitysetappstatejob.cpp
     ${server_srcs_path}/comm/guijobs/utilitygetappstatejob.h ${server_srcs_path}/comm/guijobs/utilitygetappstatejob.cpp
     ${server_srcs_path}/comm/guijobs/utilitysendlogtosupportjob.h ${server_srcs_path}/comm/guijobs/utilitysendlogtosupportjob.cpp
