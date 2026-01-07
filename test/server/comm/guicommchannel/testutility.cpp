@@ -127,7 +127,7 @@ void TestGuiCommChannel::testUtilityFindGoodPathForNewSyncJob() {
     // There is no need to pass a request id as the response is via a callback.
     const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC)) +
                         R"(,)"
-                        R"( "params": { "path": "/dummy" } })"};
+                        R"( "params": { "basePath": "", "driveDbId": 0 } })"};
 
     // Callback expected answer
     const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"errorMessage":"","goodPath":"L2R1bW15L2dvb2RfcGF0aA=="}})"};
