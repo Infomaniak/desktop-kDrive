@@ -121,6 +121,7 @@ function build_client_via_cmake() {
   cmake -DCMAKE_PREFIX_PATH="$QT_BASE_DIR" \
       -DCMAKE_INSTALL_PREFIX=/usr \
       -DQT_FEATURE_neon="$qt_neon_activation" \
+      -DCMAKE_MODULE_PATH="$QT_BASE_DIR/lib/cmake/" \
       -DCMAKE_BUILD_TYPE=$build_type \
       -DKDRIVE_THEME_DIR="/src/infomaniak" \
       -DBUILD_UNIT_TESTS=0 \
@@ -148,11 +149,11 @@ function move_dependencies() {
   cd /app
 
   mkdir -p ./usr/plugins
-  cp -P -r /opt/qt6.2.3/plugins/* ./usr/plugins/
+  cp -P -r $QT_BASE_DIR/plugins/* ./usr/plugins/
 
-  cp -P -r /opt/qt6.2.3/libexec ./usr
-  cp -P -r /opt/qt6.2.3/resources ./usr
-  cp -P -r /opt/qt6.2.3/translations ./usr
+  cp -P -r $QT_BASE_DIR/libexec ./usr
+  cp -P -r $QT_BASE_DIR/resources ./usr
+  cp -P -r $QT_BASE_DIR/translations ./usr
 
   mv "./usr/lib/$arch-linux-gnu/"* ./usr/lib/ || echo "The folder /app/usr/lib/$arch-linux-gnu/ might not exist." >&2
 
@@ -161,8 +162,8 @@ function move_dependencies() {
 
   cp -P -r "/usr/lib/$arch-linux-gnu/nss" ./usr/lib/
 
-  cp -P /opt/qt6.2.3/lib/libQt6WaylandClient.so* ./usr/lib
-  cp -P /opt/qt6.2.3/lib/libQt6WaylandEglClientHwIntegration.so* ./usr/lib
+  cp -P $QT_BASE_DIR/lib/libQt6WaylandClient.so* ./usr/lib
+  cp -P $QT_BASE_DIR/lib/libQt6WaylandEglClientHwIntegration.so* ./usr/lib
 
   cp -P "$conan_dependencies_folder"/* ./usr/lib
 
@@ -194,11 +195,24 @@ function build_app_image() {
 
 
 function setup_build() {
+  # Validate that QT_BASE_DIR is set
+  if [ -z "$QT_BASE_DIR" ]; then
+    echo "ERROR: QT_BASE_DIR is not set. Call find_qt_from_conan() first." >&2
+    exit 1
+  fi
+
+  if [ ! -d "$QT_BASE_DIR" ]; then
+    echo "ERROR: QT_BASE_DIR directory does not exist: $QT_BASE_DIR" >&2
+    exit 1
+  fi
+
+  echo "Setting up build environment with Qt from: $QT_BASE_DIR"
+
   mkdir -p /app
   mkdir -p /build
 
-  # Set Qt-6.2
-  export QT_BASE_DIR=/opt/qt6.2.3
+  # Export Qt environment variables
+  export QT_BASE_DIR
   export QTDIR="$QT_BASE_DIR"
   export QMAKE="$QT_BASE_DIR/bin/qmake"
   export PATH="$QT_BASE_DIR/bin:$QT_BASE_DIR/libexec:$PATH"
