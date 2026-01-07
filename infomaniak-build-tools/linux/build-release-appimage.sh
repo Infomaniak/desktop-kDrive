@@ -70,7 +70,7 @@ function find_qt_from_conan() {
   source /src/infomaniak-build-tools/conan/common-utils.sh
 
   # Detect Qt installation from Conan
-  QT_BASE_DIR="$(find_qt_conan_path "$build_folder")"
+  QT_BASE_DIR="$(find_qt_conan_path "$conan_folder")"
 
   if [ -z "$QT_BASE_DIR" ] || [ ! -d "$QT_BASE_DIR" ]; then
     echo "ERROR: Qt base directory not found via Conan (QT_BASE_DIR='$QT_BASE_DIR')" >&2
