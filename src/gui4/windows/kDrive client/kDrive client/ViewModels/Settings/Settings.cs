@@ -12,7 +12,7 @@ namespace Infomaniak.kDrive.ViewModels
     {
         public Settings()
         {
-            AppVersion = new AppVersion { Tag = "3.7.6", BuildVersion = "20250908" }; // TODO: Remove hardcoded version once loaded from the app.
+            AppVersion = new AppVersion { Tag = "3.7.6", BuildVersion = 1 }; // TODO: Remove hardcoded version once loaded from the app.
         }
         private Language _language = Language.SystemDefault;
         private bool _autoStart = false;

@@ -292,7 +292,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 { "channel", (int)update.Channel },
                 { "tag", Utility.ToBase64String(update.Tag) },
-                { "buildVersion", Utility.ToBase64String(update.BuildVersion) },
+                { "buildVersion", update.BuildVersion },
                 { "buildMinOsVersion","" }, // Not used
                 { "downloadUrl", "" }, // Not used
             };
@@ -447,14 +447,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         }
 
         public List<User> Users { get; set; } = new List<User>();
-        public AppVersion CurrentVersion { get; set; } = new AppVersion() { BuildVersion = "20250908", Tag = "3.7.6" };
+        public AppVersion CurrentVersion { get; set; } = new AppVersion() { BuildVersion = 1, Tag = "3.7.6" };
         public ParmsInfo Settings { get; set; } = new ParmsInfo();
 
         public Dictionary<VersionChannel, AppVersion?> VersionsByChannel { get; set; } = new Dictionary<VersionChannel, AppVersion?>()
         {
-            {VersionChannel.Prod, new AppVersion() { BuildVersion = "20250908", Tag = "3.7.6" } },
-            {VersionChannel.Beta, new AppVersion() { BuildVersion = "20251020", Tag = "3.7.7" } },
-            {VersionChannel.Internal, new AppVersion() { BuildVersion = "20251022", Tag = "3.7.8" }},
+            {VersionChannel.Prod, new AppVersion() { BuildVersion = 1, Tag = "3.7.6" } },
+            {VersionChannel.Beta, new AppVersion() { BuildVersion = 2, Tag = "3.7.7" } },
+            {VersionChannel.Internal, new AppVersion() { BuildVersion = 2, Tag = "3.7.8" }},
         };
 
         public MockServerData()

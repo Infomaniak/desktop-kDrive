@@ -13,6 +13,7 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommProtocol;
+using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommService;
 
 namespace Infomaniak.kDrive.ServerCommunication.Services
 {
@@ -441,6 +442,59 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
         }
 
+        public async Task<bool?> PathSupportLiteSync(string localPath, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.Path] = Utility.ToBase64String(localPath)
+            };
+
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_BESTVFSAVAILABLEMODE, parms, cancellationToken);
+            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.BestMode))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.BestMode} not found in response.");
+                return null;
+            }
+
+            return ((VirtualFileMode?)(data.Params[JsonKeys.BestMode]?.GetValue<int>()) ?? VirtualFileMode.Off) == VirtualFileMode.Win;
+        }
+
+        public async Task<GetGoodPathResult?> GetGoodPathForNewSync(IDrive? drive, string desiredPath, CancellationToken cancellationToken)
+        {
+            DbId driveDbId = -1;
+            if (drive is Drive inDbDrive)
+                driveDbId = inDbDrive.DbId;
+
+            var parms = new JsonObject
+            {
+                [JsonKeys.DriveDbId] = driveDbId,
+                [JsonKeys.BasePath] = Utility.ToBase64String(desiredPath)
+            };
+
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_FINDGOODPATHFORNEWSYNC, parms, cancellationToken);
+
+            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.GoodPath) || !data.Params.ContainsKey(JsonKeys.ErrorMessage))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.GoodPath} or {JsonKeys.Path} not found in response: {data.Params}");
+                return null;
+            }
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            options.Converters.Add(new Base64StringJsonConverter());
+
+            GetGoodPathResult result = new();
+            result.GoodPath = data.Params[JsonKeys.GoodPath].Deserialize<string>(options) ?? "";
+            result.ErrorMessage = data.Params[JsonKeys.ErrorMessage].Deserialize<string>(options) ?? "";
+            return result;
+        }
+        public async Task<bool?> IsPathValidForNewSync(string path, CancellationToken cancellationToken)
+        {
+            // TODO: implement server call.
+            return true;
+        }
 
         public async Task<List<Node>?> GetSubFolders(DbId userDbId, DriveId driveId, NodeId parentNodeId, CancellationToken cancellationToken)
         {
@@ -616,7 +670,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             CommStruct.ConversionHelper.copyToSettings(parametersInfo, _viewModel.Settings);
         }
-        
+
         public async Task ActivateLoadInfo(CancellationToken cancellationToken)
         {
             await _commClient.SendRequestAsync(RequestNum.UTILITY_ACTIVATELOADINFO, new JsonObject { }, cancellationToken);

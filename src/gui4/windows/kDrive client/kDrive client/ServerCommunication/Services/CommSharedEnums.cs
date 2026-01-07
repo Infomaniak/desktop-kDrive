@@ -69,6 +69,7 @@ namespace Infomaniak.kDrive.Types
         UTILITY_FINDGOODPATHFORNEWSYNC,
         UTILITY_ISPATHVALIDFORNEWSYNC,
         UTILITY_BESTVFSAVAILABLEMODE,
+        UTILITY_BESTVFSAVAILABLEMODE_LEGACY,
         UTILITY_SHOWSHORTCUT,
         UTILITY_SETSHOWSHORTCUT,
         UTILITY_ACTIVATELOADINFO,
@@ -301,5 +302,12 @@ namespace Infomaniak.kDrive.Types
         DuplicateNames = 0x040, // Two items have the same standardized paths with possibly different encodings (Windows 10 and 11).
         ForbiddenCharOnlySpaces = 0x080, // The name contains only spaces (not supported by back end)
         ForbiddenCharEndWithSpace = 0x100, // The name ends with a space
+    };
+    enum VirtualFileMode
+    {
+        Off,
+        Win,
+        Mac,
+        Suffix
     };
 }
