@@ -215,8 +215,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         void processInterruptedLogsUpload();
 
         ExitCode migrateConfiguration(bool &proxyNotSupported);
-        ExitCode updateUserInfo(User &user);
-        ExitCode updateAllUsersInfo();
+        ExitInfo updateUserInfo(User &user);
+        ExitInfo updateAllUsersInfo();
         [[nodiscard]] ExitInfo initSyncPal(const Sync &sync, const QSet<QString> &blackList, bool start = true,
                                            const std::chrono::seconds &startDelay = std::chrono::seconds(0),
                                            bool resumedByUser = false, bool firstInit = false);
