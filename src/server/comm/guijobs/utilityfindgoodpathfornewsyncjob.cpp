@@ -60,7 +60,7 @@ ExitInfo UtilityFindGoodPathForNewSyncJob::serializeOutputParms() {
 }
 
 ExitInfo UtilityFindGoodPathForNewSyncJob::process() {
-    if (const auto exitInfo = ServerRequests::findGoodPathForNewSync(_driveDbId, _basePath, _goodPath, _errorMessage);
+    if (const auto exitInfo = ServerRequests::findGoodPathForNewSync(_basePath, _goodPath, _errorMessage);
         !exitInfo) {
         LOGW_WARN(_logger, L"findGoodPathForNewSync failed: " << L"driveDbId=" << _driveDbId << L", basePath="
                                                               << Utility::formatSyncPath(_basePath) << L", errorMessage="

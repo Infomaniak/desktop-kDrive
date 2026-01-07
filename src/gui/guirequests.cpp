@@ -463,10 +463,9 @@ ExitCode GuiRequests::getNodePath(const int syncDbId, const QString &nodeId, QSt
     return exitCode;
 }
 
-ExitCode GuiRequests::findGoodPathForNewSync(const int driveDbId, const QString &basePath, QString &path, QString &error) {
+ExitCode GuiRequests::findGoodPathForNewSync(const QString &basePath, QString &path, QString &error) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << driveDbId;
     paramsStream << basePath;
 
     QByteArray results;

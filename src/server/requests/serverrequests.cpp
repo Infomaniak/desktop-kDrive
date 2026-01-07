@@ -311,18 +311,61 @@ ExitCode ServerRequests::updateParameters(const ParametersInfo &parametersInfo) 
     return exitCode;
 }
 
-ExitInfo ServerRequests::findGoodPathForNewSync(int driveDbId, const SyncPath &basePath, SyncPath &path,
-                                                std::string &error) {
+ExitInfo ServerRequests::isPathVAlidForNewSync(const SyncPath &path, bool &valid) {
+
+    // Check for nested syncs
+    std::vector<Sync> syncList;
+    valid = false;
+    if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
+        return ExitCode::DbError;
+    }
+    std::string error;
+    QString qPath = QString::fromStdString(path.string());
+    QString qError;
+
+    if (ExitInfo exitInfo = checkPathValidityForNewFolder(syncList, qPath, qError); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityForNewFolder: " << exitInfo);
+        return ExitCode::Ok;
+    }
+
+    // If the directory exist, check if it is empty
+    bool isEmpty = true;
+    if (std::filesystem::exists(path)) {
+        if (!std::filesystem::is_directory(path)) {
+            LOGW_WARN(Log::instance()->getLogger(), L"The path exists but is not a directory: " << Utility::formatSyncPath(path));
+            valid = false;
+            return ExitCode::Ok;
+        }
+
+        for (const auto &entry: std::filesystem::directory_iterator(path)) {
+            (void) entry;
+            isEmpty = false;
+            break;
+        }           
+    }
+
+    if (!isEmpty && CommonUtility::envVarValue("KD_ALLOW_NON_EMPTY_SYNC_FOLDER") != "1") {
+        LOGW_WARN(Log::instance()->getLogger(), L"The path exists but is not empty: " << Utility::formatSyncPath(path));
+        valid = false;
+        return ExitCode::Ok;
+    }
+
+    valid = true;
+    return ExitCode::Ok;
+}
+
+ExitInfo ServerRequests::findGoodPathForNewSync(const SyncPath &basePath, SyncPath &path, std::string &error) {
     const QString qBasePath = QString::fromStdString(basePath.string());
     QString qPath;
     QString qError;
-    const ExitInfo exitInfo = findGoodPathForNewSync(driveDbId, qBasePath, qPath, qError);
+    const ExitInfo exitInfo = findGoodPathForNewSync(qBasePath, qPath, qError);
     path = qPath.toStdString();
     error = qError.toStdString();
     return exitInfo;
 }
 
-ExitCode ServerRequests::findGoodPathForNewSync(int driveDbId, const QString &basePath, QString &path, QString &error) {
+ExitCode ServerRequests::findGoodPathForNewSync(const QString &basePath, QString &path, QString &error) {
     std::vector<Sync> syncList;
     if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
@@ -349,7 +392,7 @@ ExitCode ServerRequests::findGoodPathForNewSync(int driveDbId, const QString &ba
 
     int attempt = 1;
     forever {
-        exitCode = checkPathValidityForNewFolder(syncList, driveDbId, folder, error);
+        exitCode = checkPathValidityForNewFolder(syncList, folder, error);
         if (exitCode != ExitCode::Ok) {
             LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityForNewFolder: code=" << exitCode);
             return exitCode;
@@ -2070,8 +2113,7 @@ ExitCode ServerRequests::checkPathValidityRecursive(const QString &path, QString
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::checkPathValidityForNewFolder(const std::vector<Sync> &syncList, int driveDbId, const QString &path,
-                                                       QString &error) {
+ExitCode ServerRequests::checkPathValidityForNewFolder(const std::vector<Sync> &syncList, const QString &path, QString &error) {
     ExitCode exitCode = checkPathValidityRecursive(path, error);
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityRecursive: code=" << exitCode);
@@ -2083,13 +2125,13 @@ ExitCode ServerRequests::checkPathValidityForNewFolder(const std::vector<Sync> &
 
     const QString userDir = QDir::cleanPath(canonicalPath(path)) + '/';
 
-    QList<QPair<std::filesystem::path, int>> folderByDriveList;
+    QList<std::filesystem::path> folderByDriveList;
     for (const Sync &sync: syncList) {
-        folderByDriveList << qMakePair(sync.localPath(), sync.driveDbId());
+        folderByDriveList << sync.localPath();
     }
 
-    for (QPair<std::filesystem::path, int> folderByDrive: folderByDriveList) {
-        QString folderDir = QDir::cleanPath(canonicalPath(SyncName2QStr(folderByDrive.first.native()))) + '/';
+    for (std::filesystem::path folderByDrive: folderByDriveList) {
+        QString folderDir = QDir::cleanPath(canonicalPath(SyncName2QStr(folderByDrive.native()))) + '/';
 
         bool differentPaths = QString::compare(folderDir, userDir, cs) != 0;
         if (differentPaths && folderDir.startsWith(userDir, cs)) {
@@ -2106,17 +2148,6 @@ ExitCode ServerRequests::checkPathValidityForNewFolder(const std::vector<Sync> &
                             "Please pick another one!")
                             .arg(QDir::toNativeSeparators(path));
             return ExitCode::SystemError;
-        }
-
-        // If both pathes are equal, the drive needs to be different
-        if (!differentPaths) {
-            if (driveDbId == folderByDrive.second) {
-                error = QObject::tr(
-                                "The local folder %1 is already synced on the same drive. "
-                                "Please pick another one!")
-                                .arg(QDir::toNativeSeparators(path));
-                return ExitCode::SystemError;
-            }
         }
     }
 
