@@ -505,7 +505,7 @@ void TestUtility::testTryCreateTmpDir() {
     // Try to create a tmp dir but a directory already exist with the same name
     SyncName testDirName = Str("testDir");
     CPPUNIT_ASSERT(IoHelper::createDirectory(tmpDirPath / testDirName, false, ioError));
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir(Str(testDirName)));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir(testDirName));
 
     // Delete the tmp directory and make sure it is re-created
     CPPUNIT_ASSERT(IoHelper::deleteItem(tmpDirPath, ioError));
