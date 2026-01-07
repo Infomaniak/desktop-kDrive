@@ -64,7 +64,7 @@ ExitInfo UtilityFindGoodPathForNewSyncJob::process() {
         !exitInfo) {
         LOGW_WARN(_logger, L"findGoodPathForNewSync failed: " << L"driveDbId=" << _driveDbId << L", basePath="
                                                               << Utility::formatSyncPath(_basePath) << L", errorMessage="
-                                                              << Str2SyncName(_errorMessage));
+                                                              << CommonUtility::s2ws(_errorMessage));
         return exitInfo;
     }
     return ExitCode::Ok;
