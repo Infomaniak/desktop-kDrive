@@ -78,15 +78,15 @@ void TestGuiCommChannel::testUtilityBestVfsAvailableModeJob() {
                         std::to_string(toInt(RequestNum::UTILITY_BESTVFSAVAILABLEMODE)) +
                         R"(,)"
 #if defined(KD_WINDOWS)
-                        R"( "params": { "path": "C:\\dummy" } })"};
+                        R"( "params": { "path": "C:\\dummy", "driveDbId": 0 } })"};
 #else
-                        R"( "params": { "path": "/dummy" } })"};
+                        R"( "params": { "path": "/dummy", "driveDbId": 0 } })"};
 #endif
 #else
     // There is no need to pass a request id as the response is via a callback.
     const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::UTILITY_BESTVFSAVAILABLEMODE)) +
                         R"(,)"
-                        R"( "params": { "path": "/dummy" } })"};
+                        R"( "params": { "path": "/dummy", "driveDbId": 0 } })"};
 
     // Callback expected answer
     const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"bestMode":)" + std::to_string(toInt(VirtualFileMode::Off)) +

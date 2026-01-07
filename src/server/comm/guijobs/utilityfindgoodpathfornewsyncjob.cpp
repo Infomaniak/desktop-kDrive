@@ -39,7 +39,7 @@ UtilityFindGoodPathForNewSyncJob::UtilityFindGoodPathForNewSyncJob(std::shared_p
 }
 
 ExitInfo UtilityFindGoodPathForNewSyncJob::deserializeInputParms() {
-    constexpr auto logMessage = "Exception in UtilityGetAppStateJob::readParamValue: error=";
+    constexpr auto logMessage = "Exception in UtilityFindGoodPathForNewSyncJob::readParamValue: error=";
     std::string pathStr;
     try {
         readParamValue(inParamsDriveDbId, _driveDbId);
