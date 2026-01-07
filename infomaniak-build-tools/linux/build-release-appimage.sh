@@ -23,6 +23,8 @@ source "$script_directory_path/build-utils.sh"
 
 program_name="$(basename "$0")"
 
+QT_BASE_DIR=""
+
 function display_help {
   echo "$program_name [-h]"
   echo "  Build the Linux release AppImage for desktop-kDrive."
@@ -41,6 +43,41 @@ function get_arch() {
         echo "Invalid architecture argument: '$architecture'"
         exit 1;
     fi
+}
+
+function find_qt_from_conan() {
+  build_type=$1
+
+  echo "Building Conan dependencies and detecting Qt installation..."
+
+  # Ensure /build directory exists
+  mkdir -p /build/client
+  cd /build/client
+
+  build_folder=$PWD
+  cd /src
+
+  # Build Conan dependencies
+  conan_folder=/build/conan
+  bash /src/infomaniak-build-tools/conan/build_dependencies.sh "$build_type" --output-dir="$conan_folder"
+
+  if [ ! "$?" -eq "0" ]; then
+    echo "ERROR: Conan dependencies build failed" >&2
+    exit 1
+  fi
+
+  # Source utilities for Qt detection
+  source /src/infomaniak-build-tools/conan/common-utils.sh
+
+  # Detect Qt installation from Conan
+  QT_BASE_DIR="$(find_qt_conan_path "$build_folder")"
+
+  if [ -z "$QT_BASE_DIR" ] || [ ! -d "$QT_BASE_DIR" ]; then
+    echo "ERROR: Qt base directory not found via Conan (QT_BASE_DIR='$QT_BASE_DIR')" >&2
+    exit 1
+  fi
+
+  echo "Qt detected at: $QT_BASE_DIR"
 }
 
 function build_client_via_cmake() {
