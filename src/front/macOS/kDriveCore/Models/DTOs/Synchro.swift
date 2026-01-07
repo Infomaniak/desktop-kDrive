@@ -19,7 +19,6 @@
 import Foundation
 
 public typealias IndexedSynchros = [Int32: Synchro]
-public typealias IndexedSynchroNode = [String: SynchroNode]
 
 public struct Synchro: Identifiable, Hashable, Sendable {
     public var id: Int32 {
@@ -35,7 +34,26 @@ public struct Synchro: Identifiable, Hashable, Sendable {
     public let supportVfs: Bool
     public let virtualFileMode: KDC.VirtualFileMode
     public var progress: SynchroProgressInfo?
-    public var synchNodes: IndexedSynchroNode = [:]
+    public var synchNodes: [SynchroNode] = []
+
+    private static let maxSynchNodesCount = 100
+
+    public mutating func addOrUpdateSynchNode(_ node: SynchroNode) {
+        if let existingIndex = synchNodes.firstIndex(where: { $0.localNodeId == node.localNodeId }) {
+            synchNodes[existingIndex] = node
+        } else {
+            synchNodes.append(node)
+
+            if synchNodes.count > Self.maxSynchNodesCount {
+                let itemsToRemove = synchNodes.count - Self.maxSynchNodesCount
+                synchNodes.removeFirst(itemsToRemove)
+            }
+        }
+    }
+
+    public func getSynchNode(by localNodeId: String) -> SynchroNode? {
+        return synchNodes.first { $0.localNodeId == localNodeId }
+    }
 }
 
 public struct SynchroProgressInfo: Hashable, Sendable {

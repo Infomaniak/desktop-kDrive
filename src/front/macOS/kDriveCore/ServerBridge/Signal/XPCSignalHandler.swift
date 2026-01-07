@@ -242,7 +242,7 @@ extension CoherentCache {
             throw ServerCoherentCache.CacheError.synchroNotFound(syncDbId)
         }
 
-        synchro.synchNodes[itemInfo.localNodeId] = itemInfo.toSynchroFile
+        synchro.addOrUpdateSynchNode(itemInfo.toSynchroFile)
 
         try await updateSynchro(synchro)
     }
