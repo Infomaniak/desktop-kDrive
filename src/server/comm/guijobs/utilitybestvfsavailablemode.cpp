@@ -76,13 +76,6 @@ ExitInfo UtilityBestVfsAvailableModeJob::process() {
         return ExitCode::Ok;
     }
 
-    if (!_path.has_root_path()) {
-        LOGW_DEBUG(_logger,
-                   L"The path does not have a root path: " << Utility::formatSyncPath(_path) << L". VFS cannot be used.");
-        _bestMode = VirtualFileMode::Off;
-        return ExitCode::Ok;
-    }
-
     if (_path == _path.root_path()) {
         LOGW_DEBUG(_logger, L"The path is the root of a disk: " << Utility::formatSyncPath(_path) << L". VFS cannot be used.");
         _bestMode = VirtualFileMode::Off;
