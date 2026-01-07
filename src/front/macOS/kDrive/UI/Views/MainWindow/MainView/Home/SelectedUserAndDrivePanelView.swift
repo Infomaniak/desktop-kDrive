@@ -26,7 +26,7 @@ enum RemoteFolder: Int {
     case sharedWithMe
     case kDriveHome
     case trash
-    
+
     var name: String {
         switch self {
         case .favorites:
@@ -39,7 +39,7 @@ enum RemoteFolder: Int {
             return "Corbeille"
         }
     }
-    
+
     var icon: NSImage {
         switch self {
         case .favorites:
@@ -70,7 +70,7 @@ final class SelectedUserAndDrivePanelView: NSView {
             updateDrive(for: drive)
         }
     }
-    
+
     weak var delegate: SelectedUserAndDrivePanelDelegate?
 
     private lazy var avatarView: UserAvatarAndDriveView = {
@@ -95,7 +95,7 @@ final class SelectedUserAndDrivePanelView: NSView {
         wantsLayer = true
         layer?.backgroundColor = NSColor.Tokens.Surface.secondary.cgColor
         layer?.cornerRadius = AppRadius.radius16
-        
+
         let topFolders: [RemoteFolder] = [.favorites, .sharedWithMe, .kDriveHome]
         let folderButtons = topFolders.map { generateLargeButton(for: $0) }
 
@@ -104,7 +104,7 @@ final class SelectedUserAndDrivePanelView: NSView {
         buttonsStackView.orientation = .vertical
         buttonsStackView.spacing = 8
         addSubview(buttonsStackView)
-        
+
         let trashFolderButton = generateLargeButton(for: .trash)
         addSubview(trashFolderButton)
 
@@ -118,8 +118,11 @@ final class SelectedUserAndDrivePanelView: NSView {
             buttonsStackView.topAnchor.constraint(equalTo: avatarView.bottomAnchor, constant: AppPadding.padding16),
             buttonsStackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: AppPadding.padding16),
             buttonsStackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -AppPadding.padding16),
-            
-            trashFolderButton.topAnchor.constraint(greaterThanOrEqualTo: buttonsStackView.bottomAnchor, constant: AppPadding.padding8),
+
+            trashFolderButton.topAnchor.constraint(
+                greaterThanOrEqualTo: buttonsStackView.bottomAnchor,
+                constant: AppPadding.padding8
+            ),
             trashFolderButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: AppPadding.padding16),
             trashFolderButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -AppPadding.padding16),
             trashFolderButton.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -AppPadding.padding16)
@@ -132,6 +135,8 @@ final class SelectedUserAndDrivePanelView: NSView {
         button.target = self
         button.action = #selector(didTapLargeButton)
         button.tag = remoteFolder.rawValue
+        button.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        button.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         return button
     }
 
@@ -142,12 +147,12 @@ final class SelectedUserAndDrivePanelView: NSView {
     private func updateDrive(for drive: UIDrive?) {
         avatarView.drive = drive
     }
-    
+
     @objc private func didTapLargeButton(_ sender: LargeButton) {
         guard let remoteFolder = RemoteFolder(rawValue: sender.tag) else {
             return
         }
-        
+
         delegate?.didTapRemoteFolderButton(remoteFolder)
     }
 }
