@@ -46,7 +46,7 @@ public struct SynchroProgressInfo: Hashable, Sendable {
 
 public struct SynchroNode: Identifiable, Codable, Hashable, Sendable {
     public var id: String {
-        localNodeId // validate that this is a correct way to uniquely identify a node
+        localNodeId
     }
 
     public let type: KDC.NodeType
