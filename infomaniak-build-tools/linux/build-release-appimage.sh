@@ -344,7 +344,7 @@ echo "Detecting Qt and building Conan dependencies for ${architecture}..."
 find_qt_from_conan "$build_type"
 
 if [ ! "$?" -eq "0" ]; then
-    echo "\nQt detection or Conan dependencies build failed." >&2
+    printf "\nQt detection or Conan dependencies build failed." >&2
     exit 1
 fi
 
@@ -353,7 +353,7 @@ echo
 setup_build
 
 if [ ! "$?" -eq "0" ]; then
-    echo "\nBuild setup failed." >&2
+    printf "\nBuild setup failed." >&2
     exit 1
 fi
 
@@ -363,7 +363,7 @@ echo "Building desktop-kDrive application with type ${build_type} via CMake for 
 build_client_via_cmake "$build_type" "$conan_dependencies_folder"
 
 if [ ! "$?" -eq "0" ]; then
-    echo "\nCMake build failed." >&2
+    printf "\nCMake build failed." >&2
     exit 1
 fi
 
@@ -373,7 +373,7 @@ echo "Moving dependencies ..."
 move_dependencies "$architecture" "$conan_dependencies_folder"
 
 if [ ! "$?" -eq "0" ]; then
-    echo "\nMove of dependencies failed." >&2
+    printf "\nMove of dependencies failed." >&2
     exit 1
 fi
 
@@ -387,7 +387,7 @@ echo "Building AppImage ..."
 build_app_image "$architecture"
 
 if [ ! "$?" -eq "0" ]; then
-    echo "\nBuild of the AppImage failed." >&2
+    printf "\nBuild of the AppImage failed." >&2
     exit 1
 fi
 
