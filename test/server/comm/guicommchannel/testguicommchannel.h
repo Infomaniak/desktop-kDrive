@@ -46,7 +46,7 @@ class GuiCommChannelTest : public GuiCommChannel {
 
 class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestGuiCommChannel);
-        /* CPPUNIT_TEST(testSendMessage);
+        CPPUNIT_TEST(testSendMessage);
         CPPUNIT_TEST(testReadMessage);
         CPPUNIT_TEST(testCanReadMessage);
         CPPUNIT_TEST(testLoginRequestTokenJob);
@@ -93,7 +93,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testParametersInfoJob);
         CPPUNIT_TEST(testParametersUpdateJob);
         CPPUNIT_TEST(testUtilityActivateLoadInfoJob);
-        CPPUNIT_TEST(testUtilityBestVfsAvailableModeJob);*/
+        CPPUNIT_TEST(testUtilityBestVfsAvailableModeJob);
         CPPUNIT_TEST(testUtilityFindGoodPathForNewSyncJob);
         CPPUNIT_TEST(testUtilityGetAppStateJob);
         CPPUNIT_TEST(testUtilitySetAppStateJob);
