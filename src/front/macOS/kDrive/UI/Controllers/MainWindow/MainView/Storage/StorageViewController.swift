@@ -22,6 +22,6 @@ import SwiftUI
 
 class StorageViewController: TitledViewController<Text> {
     convenience init() {
-        self.init(toolbarTitle: SidebarItem.storage.title, rootView: Text("Hello, World!"))
+        self.init(toolbarTitle: SidebarItem.storage.title, contentView: Text("Hello, World!"))
     }
 }

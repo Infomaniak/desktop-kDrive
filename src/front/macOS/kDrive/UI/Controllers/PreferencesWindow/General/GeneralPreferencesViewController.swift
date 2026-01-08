@@ -22,6 +22,6 @@ import SwiftUI
 
 class GeneralPreferencesViewController: TitledViewController<Text> {
     convenience init() {
-        self.init(toolbarTitle: SidebarItem.general.title, rootView: Text("Hello, World!"))
+        self.init(toolbarTitle: SidebarItem.general.title, contentView: Text("Hello, World!"))
     }
 }

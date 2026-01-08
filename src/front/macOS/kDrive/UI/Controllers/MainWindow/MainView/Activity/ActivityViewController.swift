@@ -22,6 +22,6 @@ import SwiftUI
 
 final class ActivityViewController: TitledViewController<Text> {
     convenience init() {
-        self.init(toolbarTitle: SidebarItem.activity.title, rootView: Text("WIP"))
+        self.init(toolbarTitle: SidebarItem.activity.title, contentView: Text("WIP"))
     }
 }

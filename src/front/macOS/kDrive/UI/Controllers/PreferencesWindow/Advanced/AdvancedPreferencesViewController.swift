@@ -22,6 +22,6 @@ import SwiftUI
 
 class AdvancedPreferencesViewController: TitledViewController<Text> {
     convenience init() {
-        self.init(toolbarTitle: SidebarItem.advanced.title, rootView: Text("Hello, World!"))
+        self.init(toolbarTitle: SidebarItem.advanced.title, contentView: Text("Hello, World!"))
     }
 }
