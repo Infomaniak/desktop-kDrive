@@ -45,12 +45,12 @@ public struct Synchro: Identifiable, Hashable, Sendable {
         guard synchNodes.count > Self.maxSynchNodesCount else {
             return
         }
-        
+
         let itemsToRemove = max(synchNodes.count - Self.maxSynchNodesCount, 0)
         guard itemsToRemove > 0 else {
             return
         }
-        
+
         synchNodes.removeFirst(itemsToRemove)
     }
 
