@@ -87,7 +87,7 @@ void TestGuiCommChannel::testUtilityCheckCommStatusJob() {
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+    testGenericJob(queryStr, answerStr, {}, processFct);
 #else
     const auto cbkAnswerStr = stringifyCbkAnswerObj(simpleAnswers.answer);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
@@ -123,7 +123,7 @@ void TestGuiCommChannel::testUtilityHasSystemLaunchOnStartupJob() {
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+    testGenericJob(queryStr, answerStr, {}, processFct);
 #else
     const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
@@ -339,7 +339,7 @@ void TestGuiCommChannel::testUtilityQuitJob() {
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+    testGenericJob(queryStr, answerStr, {}, processFct);
 #else
     const auto cbkAnswerStr = stringifyCbkAnswerObj(simpleAnswers.answer);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
@@ -360,7 +360,7 @@ void TestGuiCommChannel::testUtilityDisplayClientReportJob() {
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+    testGenericJob(queryStr, answerStr, {}, processFct);
 #else
     const auto cbkAnswerStr = stringifyCbkAnswerObj(simpleAnswers.answer);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
