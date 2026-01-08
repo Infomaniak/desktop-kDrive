@@ -120,6 +120,25 @@ void TestGuiCommChannel::testReadMessage() {
     CPPUNIT_ASSERT(message[0] == readMessage); // Now should be complete
 }
 
+void TestGuiCommChannel::testContainsCompleteMessage() {
+    GuiCommChannelTest channelTest;
+    size_t endIndex = 0;
+
+    // Empty message
+    CPPUNIT_ASSERT(!channelTest.containsCompleteMessage("", endIndex));
+
+    // The message should start with a "{" or "["
+    CPPUNIT_ASSERT(!channelTest.containsCompleteMessage("qwertz", endIndex));
+
+    // The message should be correctly parenthesized
+    CPPUNIT_ASSERT(!channelTest.containsCompleteMessage(R"({"var":"value")", endIndex));
+    CPPUNIT_ASSERT(channelTest.containsCompleteMessage(R"({"var":"value"})", endIndex) && endIndex == 14);
+    CPPUNIT_ASSERT(channelTest.containsCompleteMessage(R"({"var":"value"}{"var2":"value2"})", endIndex) && endIndex == 14);
+    CPPUNIT_ASSERT(!channelTest.containsCompleteMessage(R"({"varList":[1,2,3,4)", endIndex));
+    CPPUNIT_ASSERT(channelTest.containsCompleteMessage(R"({"varList":[1,2,3,4]})", endIndex) && endIndex == 20);
+    CPPUNIT_ASSERT(channelTest.containsCompleteMessage(R"({{[][]}{[{{[]}{}}]}{{}{}{}}})", endIndex) && endIndex == 27);
+}
+
 void TestGuiCommChannel::testCanReadMessage() {
     GuiCommChannelTest channelTest;
     CommString message = Str("{\"type\":\"test\",\"content\":\"Hello, World!\"}");

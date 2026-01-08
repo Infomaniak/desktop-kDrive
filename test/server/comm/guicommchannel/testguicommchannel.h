@@ -49,6 +49,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSendMessage);
         CPPUNIT_TEST(testReadMessage);
         CPPUNIT_TEST(testCanReadMessage);
+        CPPUNIT_TEST(testContainsCompleteMessage);
         CPPUNIT_TEST(testLoginRequestTokenJob);
         CPPUNIT_TEST(testUserDbIdListJob);
         CPPUNIT_TEST(testUserInfoListJob);
@@ -109,6 +110,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void tearDown() final;
         void testSendMessage();
         void testReadMessage();
+        void testContainsCompleteMessage();
         void testCanReadMessage();
         void testLoginRequestTokenJob();
         void testUserDbIdListJob();
