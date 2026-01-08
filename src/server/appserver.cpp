@@ -2199,21 +2199,24 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             ExitInfo exitInfo = setSupportsVirtualFiles(syncDbId, value, true);
             if (!exitInfo) {
                 LOG_WARN(_logger, "Error in setSupportsVirtualFiles for syncDbId=" << syncDbId << " : " << exitInfo);
-            } else {
-                std::shared_ptr<Vfs> vfs;
-                const std::scoped_lock lock(vfsMapMutex);
-                if (exitInfo = getVfs(syncDbId, vfs); !exitInfo) {
-                    LOG_WARN(_logger, "Error in getVfs for syncDbId=" << syncDbId << " : " << exitInfo);
-                    resultStream << toInt(exitInfo.code());
-                    break;
-                }
-                if (exitInfo = vfs->setPinState("", value ? PinState::Unspecified : PinState::AlwaysLocal);
-                    !exitInfo) {
-                    LOG_WARN(_logger, "Error in vfsSetPinState for syncDbId=" << syncDbId << " : " << exitInfo);
-                    resultStream << toInt(exitInfo.code());
-                    break;
-                }
+                resultStream << toInt(exitInfo.code());
+                break;
             }
+
+            std::shared_ptr<Vfs> vfs;
+            const std::scoped_lock lock(vfsMapMutex);
+            if (exitInfo = getVfs(syncDbId, vfs); !exitInfo) {
+                LOG_WARN(_logger, "Error in getVfs for syncDbId=" << syncDbId << " : " << exitInfo);
+                resultStream << toInt(exitInfo.code());
+                break;
+            }
+
+            if (exitInfo = vfs->setPinState("", value ? PinState::Unspecified : PinState::AlwaysLocal); !exitInfo) {
+                LOG_WARN(_logger, "Error in vfsSetPinState for syncDbId=" << syncDbId << " : " << exitInfo);
+                resultStream << toInt(exitInfo.code());
+                break;
+            }
+
             resultStream << toInt(exitInfo.code());
             break;
         }
