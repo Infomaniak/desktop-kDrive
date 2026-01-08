@@ -17,13 +17,13 @@ namespace Infomaniak.kDrive.Converters
                 {
                     string resourceKey = state switch
                     {
-                        SyncFileStatus.Success => "Infomaniak.DS.Icons.Actions.circle-check",
-                        SyncFileStatus.Ignored => "Infomaniak.DS.Icons.Actions.circle-check",
+                        SyncFileStatus.Success => "Infomaniak.Custom.Icons.Actions.circle-check",
+                        SyncFileStatus.Ignored => "Infomaniak.Custom.Icons.Actions.circle-check",
                         SyncFileStatus.Syncing => "Infomaniak.DS.Icons.Arrows.arrow-loop",
-                        SyncFileStatus.Inconsistency => "Infomaniak.DS.Icons.Actions.triangle-alert",
-                        SyncFileStatus.Error => "Infomaniak.DS.Icons.Actions.triangle-alert",
-                        SyncFileStatus.Unknown => "Infomaniak.DS.Icons.Actions.triangle-alert",
-                        SyncFileStatus.Conflict => "Infomaniak.DS.Icons.Actions.triangle-alert",
+                        SyncFileStatus.Inconsistency => "Infomaniak.Custom.Icons.Actions.triangle-alert",
+                        SyncFileStatus.Error => "Infomaniak.Custom.Icons.Actions.triangle-alert",
+                        SyncFileStatus.Unknown => "Infomaniak.Custom.Icons.Actions.triangle-alert",
+                        SyncFileStatus.Conflict => "Infomaniak.Custom.Icons.Actions.triangle-alert",
                         _ => "Infomaniak.DS.Icons.Arrows.arrow-loop",
                     };
                     if (Application.Current.Resources[resourceKey] is string iconUriStr)
