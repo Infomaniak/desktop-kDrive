@@ -41,7 +41,7 @@ final class SidebarHeaderView: NSView {
         let textField = NSTextField(labelWithString: Constants.appName)
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.font = NSFont.Tokens.title3Emphasized
-        textField.textColor = NSColor.Tokens.Text.primary
+        textField.textColor = ColorToken.Text.primary.asNSColor
         textField.backgroundColor = .clear
         addSubview(textField)
 

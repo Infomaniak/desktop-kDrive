@@ -30,7 +30,7 @@ public final class ColoredPopUpButton: NSPopUpButton {
     }
 
     public func addItem(withTitle title: String, image: NSImage, color: NSColor?, representedObject: Any? = nil) {
-        let item = ColoredMenuItem(title: title, image: image, color: color ?? NSColor.Tokens.Drive.defaultColor)
+        let item = ColoredMenuItem(title: title, image: image, color: color ?? ColorToken.Drive.defaultColor.asNSColor)
         item.representedObject = representedObject
 
         menu?.addItem(item)

@@ -55,7 +55,7 @@ class DrivesListView: NSView {
         let titleLabel = NSTextField(labelWithString: KDriveLocalizable.onboardingDriveSelectionSelectTitle)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.font = NSFont.Tokens.subheadline
-        titleLabel.textColor = NSColor.Tokens.Text.tertiary
+        titleLabel.textColor = ColorToken.Text.tertiary.asNSColor
 
         let stackView = NSStackView(views: [titleLabel, drivesStackView])
         stackView.translatesAutoresizingMaskIntoConstraints = false
