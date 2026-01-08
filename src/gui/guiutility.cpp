@@ -71,6 +71,9 @@ static const int windowsIncrement = 50;
 
 static bool darkTheme = false;
 
+static bool blacklistWarnMaxSize = 1000;
+static bool blacklistBackMaxSize = 3000;
+
 Q_LOGGING_CATEGORY(lcGuiUtility, "gui.guiutility", QtInfoMsg)
 
 bool GuiUtility::openBrowser(const QUrl &url, QWidget *errorWidgetParent) {
@@ -632,13 +635,20 @@ QString GuiUtility::getDateForCurrentLanguage(const QDateTime &dateTime, const Q
 }
 
 bool GuiUtility::checkBlacklistSize(const qsizetype blacklistSize, QWidget *parent) {
-    if (blacklistSize > 1000) {
-        (void) CustomMessageBox(
-                QMessageBox::Warning,
-                QCoreApplication::translate("utility",
-                                            "You cannot exclude more than 1000 folders. Please uncheck higher-level folders."),
-                QMessageBox::Ok, parent)
+    if (blacklistSize > blacklistWarnMaxSize && blacklistSize <= blacklistBackMaxSize) {
+        auto message =
+                QString("You have excluded more than %1 folders, please note that this will affect synchronization performance.")
+                        .arg(blacklistWarnMaxSize);
+        (void) CustomMessageBox(QMessageBox::Warning, QCoreApplication::translate("utility", message.toStdString().c_str()),
+                                QMessageBox::Ok, parent)
                 .exec();
+    } else if (blacklistSize > blacklistBackMaxSize) {
+        auto message = QString("You cannot exclude more than %1 folders. Please uncheck higher-level folders.")
+                               .arg(blacklistBackMaxSize);
+        (void) CustomMessageBox(QMessageBox::Warning, QCoreApplication::translate("utility", message.toStdString().c_str()),
+                                QMessageBox::Ok, parent)
+                .exec();
+
         return false;
     }
     return true;
