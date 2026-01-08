@@ -313,13 +313,13 @@ ExitCode ServerRequests::updateParameters(const ParametersInfo &parametersInfo) 
 
 ExitInfo ServerRequests::findGoodPathForNewSync(int driveDbId, const SyncPath &basePath, SyncPath &path,
                                                 std::string &error) {
-    QString qBasePath = QString::fromStdString(basePath.string());
+    const QString qBasePath = QString::fromStdString(basePath.string());
     QString qPath;
     QString qError;
-    ExitCode exitCode = findGoodPathForNewSync(driveDbId, qBasePath, qPath, qError);
+    const ExitInfo exitInfo = findGoodPathForNewSync(driveDbId, qBasePath, qPath, qError);
     path = qPath.toStdString();
     error = qError.toStdString();
-    return exitCode;
+    return exitInfo;
 }
 
 ExitCode ServerRequests::findGoodPathForNewSync(int driveDbId, const QString &basePath, QString &path, QString &error) {
