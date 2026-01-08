@@ -153,7 +153,6 @@ static NSNumber *lastRequestId = @0;
         // Write JSON on the channel
         NSString *queryStr = [[NSString alloc] initWithData:newQuery encoding:NSUTF8StringEncoding];
         self.wrapper->inBuffer += std::string([queryStr UTF8String]);
-        self.wrapper->inBuffer += "\n";
         self.wrapper->publicPtr->readyReadCbk();
     }
 }
