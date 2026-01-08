@@ -24,6 +24,7 @@ public typealias AssetImageTypeAlias = ImageAsset.Image
 public enum KDriveResources {
   public static let checkmark = ImageAsset(name: "checkmark")
   public static let circularArrowsClockwise = ImageAsset(name: "circular-arrows-clockwise")
+  public static let folderCircleArrowRight = ImageAsset(name: "folder-circle-arrow-right")
   public static let hammerWrench = ImageAsset(name: "hammer-wrench")
   public static let hardDiskDrive = ImageAsset(name: "hard-disk-drive")
   public static let house = ImageAsset(name: "house")

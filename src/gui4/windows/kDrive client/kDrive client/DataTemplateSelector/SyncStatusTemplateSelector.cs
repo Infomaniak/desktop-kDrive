@@ -4,7 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Infomaniak.kDrive.TemplateSelectors
 {
-    public class SyncStatusTemplateSelector : DataTemplateSelector
+    public partial class SyncStatusTemplateSelector : DataTemplateSelector
     {
         public DataTemplate? SyncUpToDateTemplate { get; set; }
         public DataTemplate? SyncInProgressTemplate { get; set; }

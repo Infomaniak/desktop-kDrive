@@ -40,6 +40,7 @@ namespace Infomaniak.kDrive.OnBoarding
             this.ExtendsContentIntoTitleBar = true;  // enable custom titlebar
             this.SetTitleBar(AppTitleBar);
             Utility.SetWindowProperties(this, 850, 530, false);
+            AppWindow.TitleBar.PreferredTheme = Microsoft.UI.Windowing.TitleBarTheme.UseDefaultAppMode;
 
             if (ViewModel.Users.Any())
             {

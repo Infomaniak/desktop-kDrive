@@ -57,6 +57,7 @@ CommString stringifyCbkAnswerObj(const Poco::JSON::Object &obj) {
     return CommonUtility::str2CommString(json.str());
 }
 
+
 Poco::JSON::Object createSimpleQuery(const RequestNum requestNum) {
     Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)

@@ -134,10 +134,26 @@ class AppServer : public SharedTools::QtSingleApplication {
         [[nodiscard]] ExitInfo startSyncs(User &user);
         void stopSyncTask(int syncDbId);
         [[nodiscard]] ExitInfo setSupportsVirtualFiles(int syncDbId, bool value);
+        void setDistributionChannel(VersionChannel versionChannel);
+        VersionInfo getVersionInfo(VersionChannel versionChannel) const;
+        UpdateState getUpdateState() const;
+        void startInstaller();
+        [[nodiscard]] ExitInfo getNodePath(int syncDbId, const NodeId &nodeId, CommString &path);
 
         void logExtendedLogActivationMessage(bool isExtendedLogEnabled) noexcept;
+
         [[nodiscard]] ExitInfo updateParametersAndPropagateChanges(const ParametersInfo &);
         [[nodiscard]] ExitInfo displaySentryClientReport();
+
+        // Ask the Finder/File explorer Extension to register the folder
+        void registerSync(std::shared_ptr<SyncPal> syncPal);
+
+        // Ask the Finder/File explorer Extension to unregister the folder
+        void unregisterSync(std::shared_ptr<SyncPal> syncPal);
+
+        static void uploadLog(bool includeArchivedLogs);
+
+
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         static ExitCode getThumbnail(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) {
             return ServerRequests::getThumbnail(driveDbId, nodeId, width, thumbnail);
@@ -203,8 +219,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         void processInterruptedLogsUpload();
 
         ExitCode migrateConfiguration(bool &proxyNotSupported);
-        ExitCode updateUserInfo(User &user);
-        ExitCode updateAllUsersInfo();
+        ExitInfo updateUserInfo(User &user);
+        ExitInfo updateAllUsersInfo();
         [[nodiscard]] ExitInfo initSyncPal(const Sync &sync, const QSet<QString> &blackList, bool start = true,
                                            const std::chrono::seconds &startDelay = std::chrono::seconds(0),
                                            bool resumedByUser = false, bool firstInit = false);
@@ -237,8 +253,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         static void sendErrorsCleared(int syncDbId);
         void sendQuit(); // Ask client to quit
 
-        void uploadLog(bool includeArchivedLogs);
-        void sendLogUploadStatusUpdated(LogUploadState status, int percent);
+        static void sendLogUploadStatusUpdated(LogUploadState status, int percent);
 
         void deleteAccount(int accountDbId);
         static void sendErrorAdded(const ErrorInfo &errorInfo);
@@ -268,10 +283,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         bool areMacVfsAuthsOk() const;
 #endif
 
-        // Ask the Finder/File explorer Extension to register the folder
-        void registerSync(std::shared_ptr<SyncPal> syncPal);
-        // Ask the Finder/File explorer Extension to unregister the folder
-        void unregisterSync(std::shared_ptr<SyncPal> syncPal);
+        std::string appUID() const;
 
         // For testing purpose
         void crash() const;

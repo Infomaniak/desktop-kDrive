@@ -39,7 +39,7 @@ public sealed partial class SyncStartPauseButton : UserControl
     }
 }
 
-public class StartPauseButtonTemplateSelector : DataTemplateSelector
+public partial class StartPauseButtonTemplateSelector : DataTemplateSelector
 {
     public DataTemplate? PauseButtonTemplate { get; set; }
     public DataTemplate? StartButtonTemplate { get; set; }

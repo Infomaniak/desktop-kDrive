@@ -65,6 +65,7 @@ public struct SyncJobs: Sendable {
 
     public init() {}
 
+    @discardableResult
     public func availableSync() async throws -> [SyncInfo] {
         IKLogger.data.log("Query for availableSync list")
         let query = EmptyQuery()
@@ -75,9 +76,7 @@ public struct SyncJobs: Sendable {
         try decodedMessage.validate()
 
         let syncList = decodedMessage.body.syncInfoList
-
-        // TODO: new method to bump cache from SyncInfo
-        // await syncList.asyncForEach { await coherentCache.updateSynchro($0.asSynchro, driveDbId: <#Int32#>) }
+        await syncList.asyncForEach { try? await coherentCache.updateSynchro($0.asSynchro) }
 
         return syncList
     }

@@ -20,8 +20,8 @@ import Cocoa
 import kDriveResources
 
 public final class BorderedProminentButton: NSButton {
-    var backgroundColor = NSColor.Tokens.Action.primary
-    var foregroundColor = NSColor.Tokens.Action.onPrimary
+    var backgroundColor = ColorToken.Action.primary.asNSColor
+    var foregroundColor = ColorToken.Action.onPrimary.asNSColor
 
     override public var title: String {
         didSet {

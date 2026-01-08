@@ -125,9 +125,9 @@ ExitCode ServerRequests::deleteUser(int userDbId) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::deleteAccount(int accountDbId) {
+ExitInfo ServerRequests::deleteAccount(int accountDbId) {
     // Delete account (and linked drives/syncs by cascade)
-    bool found;
+    bool found = false;
     if (!ParmsDb::instance()->deleteAccount(accountDbId, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteAccount");
         return ExitCode::DbError;
@@ -989,6 +989,16 @@ ExitCode ServerRequests::getNodeIdByPath(int userDbId, int driveId, const SyncPa
     return ExitCode::Ok;
 }
 
+ExitInfo ServerRequests::getPathByNodeId(const int userDbId, const int driveId, const NodeId &nodeId, CommString &path) {
+    path = {};
+    QString pathQString;
+
+    const auto exitInfo = getPathByNodeId(userDbId, driveId, QString::fromStdString(nodeId), pathQString);
+    path = CommonUtility::qStr2CommString(pathQString);
+
+    return exitInfo;
+}
+
 ExitInfo ServerRequests::getPathByNodeId(int userDbId, int driveId, const QString &nodeId, QString &path) {
     NodeInfo nodeInfo;
 
@@ -1162,6 +1172,7 @@ bool ServerRequests::isDisplayableError(const Error &error) {
                 case ExitCause::NotFound:
                 case ExitCause::QuotaExceeded:
                 case ExitCause::FileLocked:
+                case ExitCause::Http5xx:
                     return true;
                 default:
                     return false;
@@ -1437,31 +1448,51 @@ ExitCode ServerRequests::getPrivateLinkUrl(const int driveDbId, const QString &f
     return exitCode;
 }
 
-ExitCode ServerRequests::getExclusionTemplateList(bool def, QList<ExclusionTemplateInfo> &list) {
+ExitCode ServerRequests::getExclusionTemplateList(const bool def, std::vector<ExclusionTemplateInfo> &list) {
     list.clear();
     for (const ExclusionTemplate &exclusionTemplate: ExclusionTemplateCache::instance()->exclusionTemplates(def)) {
         ExclusionTemplateInfo exclusionTemplateInfo;
         ServerRequests::exclusionTemplateToExclusionTemplateInfo(exclusionTemplate, exclusionTemplateInfo);
-        list << exclusionTemplateInfo;
+        list.push_back(std::move(exclusionTemplateInfo));
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitCode ServerRequests::getExclusionTemplateList(const bool def, QList<ExclusionTemplateInfo> &list) {
+    list.clear();
+    std::vector<ExclusionTemplateInfo> stdVector;
+
+    if (const auto exitCode = getExclusionTemplateList(def, stdVector); exitCode != ExitCode::Ok) return exitCode;
+
+    for (auto &exclusionTemplateInfo: stdVector) {
+        list.append(std::move(exclusionTemplateInfo));
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitCode ServerRequests::setExclusionTemplateList(const bool def, const std::vector<ExclusionTemplateInfo> &list) {
+    std::vector<ExclusionTemplate> exclusionList;
+    for (const ExclusionTemplateInfo &exclusionTemplateInfo: list) {
+        ExclusionTemplate exclusionTemplate;
+        ServerRequests::exclusionTemplateInfoToExclusionTemplate(exclusionTemplateInfo, exclusionTemplate);
+        exclusionList.push_back(std::move(exclusionTemplate));
+    }
+
+    if (const auto exitCode = ExclusionTemplateCache::instance()->update(def, exclusionList); exitCode != ExitCode::Ok) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ExclusionTemplateCache::save");
+        return exitCode;
     }
 
     return ExitCode::Ok;
 }
 
 ExitCode ServerRequests::setExclusionTemplateList(bool def, const QList<ExclusionTemplateInfo> &list) {
-    std::vector<ExclusionTemplate> exclusionList;
-    for (const ExclusionTemplateInfo &exclusionTemplateInfo: list) {
-        ExclusionTemplate exclusionTemplate;
-        ServerRequests::exclusionTemplateInfoToExclusionTemplate(exclusionTemplateInfo, exclusionTemplate);
-        exclusionList.push_back(exclusionTemplate);
-    }
-    ExitCode exitCode = ExclusionTemplateCache::instance()->update(def, exclusionList);
-    if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ExclusionTemplateCache::save");
-        return exitCode;
-    }
+    std::vector<ExclusionTemplateInfo> exclusionStdVector;
+    for (const auto &exclusionTemplateInfo: list) exclusionStdVector.push_back(exclusionTemplateInfo);
 
-    return ExitCode::Ok;
+    return setExclusionTemplateList(def, exclusionStdVector);
 }
 
 #if defined(KD_MACOS)
@@ -1735,103 +1766,102 @@ ExitInfo ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &upd
         return ExitCode::Ok;
     }
     if (httpStatus != Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK) {
-        LOG_WARN(Log::instance()->getLogger(),
-                 "Network error in GetInfoDriveJob::runSynchronously for driveDbId=" << drive.dbId());
-        return ExitCode::NetworkError;
+        LOG_WARN(Log::instance()->getLogger(), "Error in GetInfoDriveJob::runSynchronously for driveDbId=" << drive.dbId());
+        return exitInfo;
     }
 
     Poco::JSON::Object::Ptr dataObj = job->jsonRes()->getObject(dataKey);
-    if (dataObj && dataObj->size() != 0) {
-        std::string name;
-        if (!JsonParserUtility::extractValue(dataObj, nameKey, name)) {
-            return ExitCode::BackError;
-        }
-        if (drive.name() != name) {
-            drive.setName(name);
-            updated = true;
-        }
-
-        int64_t size = 0;
-        if (!JsonParserUtility::extractValue(dataObj, sizeKey, size)) {
-            return ExitCode::BackError;
-        }
-        if (drive.size() != size) {
-            drive.setSize(size);
-            updated = true;
-            quotaUpdated = true;
-        }
-
-        bool admin = false;
-        if (!JsonParserUtility::extractValue(dataObj, accountAdminKey, admin)) {
-            return ExitCode::BackError;
-        }
-        if (drive.admin() != admin) {
-            drive.setAdmin(admin);
-            updated = true;
-        }
-
-        int accountId = 0;
-        if (!JsonParserUtility::extractValue(dataObj, accountIdKey, accountId)) {
-            return ExitCode::BackError;
-        }
-        if (account.accountId() != accountId) {
-            account.setAccountId(accountId);
-            accountUpdated = true;
-        }
-
-        std::string colorHex;
-        if (Poco::JSON::Object::Ptr prefObj = dataObj->getObject(preferencesKey)) {
-            if (!JsonParserUtility::extractValue(prefObj, colorKey, colorHex, false)) {
-                return ExitCode::BackError;
-            }
-            if (drive.color() != colorHex) {
-                drive.setColor(colorHex);
-                updated = true;
-            }
-        }
-
-        // Non DB attributes
-        bool inMaintenance = false;
-        if (!JsonParserUtility::extractValue(dataObj, inMaintenanceKey, inMaintenance)) {
-            return ExitCode::BackError;
-        }
-
-        int64_t maintenanceFrom = 0;
-        if (drive.maintenanceInfo()._maintenance) {
-            if (!JsonParserUtility::extractValue(dataObj, maintenanceAtKey, maintenanceFrom, false)) {
-                return ExitCode::BackError;
-            }
-        }
-
-        bool isLocked = false;
-        if (!JsonParserUtility::extractValue(dataObj, isLockedKey, isLocked)) {
-            return ExitCode::BackError;
-        }
-        drive.setLocked(isLocked);
-        drive.setAccessDenied(false);
-        drive.setMaintenanceInfo({._maintenance = inMaintenance,
-                                  ._notRenew = job->exitInfo().cause() == ExitCause::DriveNotRenew,
-                                  ._asleep = job->exitInfo().cause() == ExitCause::DriveAsleep,
-                                  ._wakingUp = job->exitInfo().cause() == ExitCause::DriveWakingUp,
-                                  ._maintenanceFrom = maintenanceFrom});
-
-        int64_t usedSize = 0;
-        if (!JsonParserUtility::extractValue(dataObj, usedSizeKey, usedSize)) {
-            return ExitCode::BackError;
-        }
-        if (drive.usedSize() != usedSize) {
-            drive.setUsedSize(usedSize);
-            quotaUpdated = true;
-        }
-    } else {
+    if (!dataObj || dataObj->size() == 0) {
         LOG_WARN(Log::instance()->getLogger(), "Unable to read drive info for driveDbId=" << drive.dbId());
         return ExitCode::DataError;
+    }
+
+    std::string name;
+    if (!JsonParserUtility::extractValue(dataObj, nameKey, name)) {
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+    }
+    if (drive.name() != name) {
+        drive.setName(name);
+        updated = true;
+    }
+
+    int64_t size = 0;
+    if (!JsonParserUtility::extractValue(dataObj, sizeKey, size)) {
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+    }
+    if (drive.size() != size) {
+        drive.setSize(size);
+        updated = true;
+        quotaUpdated = true;
+    }
+
+    bool admin = false;
+    if (!JsonParserUtility::extractValue(dataObj, accountAdminKey, admin)) {
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+    }
+    if (drive.admin() != admin) {
+        drive.setAdmin(admin);
+        updated = true;
+    }
+
+    int accountId = 0;
+    if (!JsonParserUtility::extractValue(dataObj, accountIdKey, accountId)) {
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+    }
+    if (account.accountId() != accountId) {
+        account.setAccountId(accountId);
+        accountUpdated = true;
+    }
+
+    std::string colorHex;
+    if (Poco::JSON::Object::Ptr prefObj = dataObj->getObject(preferencesKey)) {
+        if (!JsonParserUtility::extractValue(prefObj, colorKey, colorHex, false)) {
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
+        }
+        if (drive.color() != colorHex) {
+            drive.setColor(colorHex);
+            updated = true;
+        }
+    }
+
+    // Non DB attributes
+    bool inMaintenance = false;
+    if (!JsonParserUtility::extractValue(dataObj, inMaintenanceKey, inMaintenance)) {
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+    }
+
+    int64_t maintenanceFrom = 0;
+    if (drive.maintenanceInfo()._maintenance) {
+        if (!JsonParserUtility::extractValue(dataObj, maintenanceAtKey, maintenanceFrom, false)) {
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
+        }
+    }
+
+    bool isLocked = false;
+    if (!JsonParserUtility::extractValue(dataObj, isLockedKey, isLocked)) {
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+    }
+    drive.setLocked(isLocked);
+    drive.setAccessDenied(false);
+    drive.setMaintenanceInfo({._maintenance = inMaintenance,
+                              ._notRenew = job->exitInfo().cause() == ExitCause::DriveNotRenew,
+                              ._asleep = job->exitInfo().cause() == ExitCause::DriveAsleep,
+                              ._wakingUp = job->exitInfo().cause() == ExitCause::DriveWakingUp,
+                              ._maintenanceFrom = maintenanceFrom});
+
+    int64_t usedSize = 0;
+    if (!JsonParserUtility::extractValue(dataObj, usedSizeKey, usedSize)) {
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+    }
+    if (drive.usedSize() != usedSize) {
+        drive.setUsedSize(usedSize);
+        quotaUpdated = true;
     }
 
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getThumbnail(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) {
+ExitInfo ServerRequests::getThumbnail(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) {
     std::shared_ptr<GetThumbnailJob> job = nullptr;
     try {
         job = std::make_shared<GetThumbnailJob>(driveDbId, nodeId, width);
@@ -1841,9 +1871,8 @@ ExitCode ServerRequests::getThumbnail(int driveDbId, const NodeId &nodeId, int w
         return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
-    ExitCode exitCode = job->runSynchronously();
-    if (exitCode != ExitCode::Ok) {
-        return exitCode;
+    if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
+        return exitInfo;
     }
 
     Poco::Net::HTTPResponse::HTTPStatus httpStatus = job->getStatusCode();
@@ -1861,7 +1890,7 @@ ExitCode ServerRequests::getThumbnail(int driveDbId, const NodeId &nodeId, int w
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::loadUserInfo(User &user, bool &updated) {
+ExitInfo ServerRequests::loadUserInfo(User &user, bool &updated) {
     updated = false;
 
     // Get user data
@@ -1874,12 +1903,12 @@ ExitCode ServerRequests::loadUserInfo(User &user, bool &updated) {
         return AbstractTokenNetworkJob::exception2ExitCode(e);
     }
 
-    ExitCode exitCode = job->runSynchronously();
-    if (exitCode != ExitCode::Ok) {
-        if (exitCode == ExitCode::InvalidToken) {
+    auto exitInfo = job->runSynchronously();
+    if (!exitInfo) {
+        if (exitInfo.code() == ExitCode::InvalidToken) {
             user.setKeychainKey(""); // Invalid keychain key
         }
-        return exitCode;
+        return exitInfo;
     }
 
     if (const Poco::Net::HTTPResponse::HTTPStatus httpStatus = job->getStatusCode();
@@ -1909,7 +1938,7 @@ ExitCode ServerRequests::loadUserInfo(User &user, bool &updated) {
         } else if (user.avatarUrl() != job->avatarUrl()) {
             // get avatarData
             user.setAvatarUrl(job->avatarUrl());
-            exitCode = loadUserAvatar(user);
+            exitInfo = loadUserAvatar(user);
         }
         updated = true;
     }
@@ -1919,15 +1948,15 @@ ExitCode ServerRequests::loadUserInfo(User &user, bool &updated) {
         updated = true;
     }
 
-    return exitCode;
+    return exitInfo;
 }
 
-ExitCode ServerRequests::loadUserAvatar(User &user) {
+ExitInfo ServerRequests::loadUserAvatar(User &user) {
     try {
-        GetAvatarJob getAvatarJob = GetAvatarJob(user.avatarUrl());
-        const ExitCode exitCode = getAvatarJob.runSynchronously();
-        if (exitCode != ExitCode::Ok) {
-            return exitCode;
+        auto getAvatarJob = GetAvatarJob(user.avatarUrl());
+        const auto exitInfo = getAvatarJob.runSynchronously();
+        if (!exitInfo) {
+            return exitInfo;
         }
 
         user.setAvatar(getAvatarJob.avatar());
@@ -1942,7 +1971,7 @@ ExitCode ServerRequests::loadUserAvatar(User &user) {
 ExitCode ServerRequests::processRequestTokenFinished(const Login &login, UserInfo &userInfo, bool &userCreated) {
     // Get user
     User user;
-    bool found;
+    bool found = false;
     if (!ParmsDb::instance()->selectUserByUserId(login.apiToken().userId(), user, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectUserByUserId");
         return ExitCode::DbError;

@@ -79,7 +79,6 @@ Error::Error(int64_t dbId, int64_t time, ErrorLevel level, const std::string &fu
              InconsistencyType inconsistencyType, CancelType cancelType /*= CancelType::None*/,
              const SyncPath &destinationPath /*= ""*/) :
     _dbId(dbId),
-    _time(time),
     _level(level),
     _functionName(functionName),
     _syncDbId(syncDbId),
@@ -93,7 +92,8 @@ Error::Error(int64_t dbId, int64_t time, ErrorLevel level, const std::string &fu
     _conflictType(conflictType),
     _inconsistencyType(inconsistencyType),
     _cancelType(cancelType),
-    _destinationPath(destinationPath) {}
+    _destinationPath(destinationPath),
+    _time(time) {}
 
 std::string Error::errorString() const {
     std::ostringstream errStream;

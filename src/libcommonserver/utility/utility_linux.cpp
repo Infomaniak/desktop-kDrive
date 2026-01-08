@@ -220,34 +220,35 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
     if (enable) {
         IoError ioError = IoError::Unknown;
         if (!std::filesystem::exists(userAutoStartDirPath) && !IoHelper::createDirectory(userAutoStartDirPath, false, ioError)) {
-            LOGW_WARN(logger(), L"Could not create autostart folder" << Utility::formatSyncPath(userAutoStartDirPath)
-                                                                     << Utility::formatIoError(ioError));
+            LOGW_WARN(logger(), L"Could not create autostart folder: " << Utility::formatIoError(userAutoStartDirPath, ioError));
             return false;
         }
 
-        std::wofstream testFile{userAutoStartFilePath};
-        if (!testFile.is_open()) {
-            LOGW_WARN(logger(), L"Could not write auto start entry." << Utility::formatSyncPath(userAutoStartFilePath));
+        std::ofstream autoStartFile{userAutoStartFilePath};
+        if (!autoStartFile.is_open()) {
+            LOGW_WARN(logger(), L"Could not create autostart desktop file: " << Utility::formatSyncPath(userAutoStartFilePath));
             return false;
         }
-        const auto appimageDir = CommonUtility::envVarValue("APPIMAGE");
-        LOG_DEBUG(logger(), "APPIMAGE=" << appimageDir);
-        testFile << L"[Desktop Entry]" << std::endl;
-        testFile << L"Name=" << CommonUtility::s2ws(guiName) << std::endl;
-        testFile << L"GenericName=File Synchronizer" << std::endl;
-        testFile << L"Exec=" << L"'" << CommonUtility::s2ws(appimageDir) << L"'" << std::endl;
-        testFile << L"Terminal=false" << std::endl;
-        testFile << L"Icon=" << CommonUtility::s2ws(CommonUtility::toLower(appName)) << std::endl;
-        testFile << L"Categories=Network" << std::endl;
-        testFile << L"Type=Application" << std::endl;
-        testFile << L"StartupNotify=false" << std::endl;
-        testFile << L"X-GNOME-Autostart-enabled=true" << std::endl;
-        testFile << L"X-GNOME-Autostart-Delay=10" << std::endl;
-        testFile.close();
+        const SyncPath appimageDir{CommonUtility::envVarValue("APPIMAGE")};
+        LOGW_DEBUG(logger(), L"APPIMAGE: " << Utility::formatSyncPath(appimageDir));
+        autoStartFile << "[Desktop Entry]" << std::endl;
+        autoStartFile << "Name=" << guiName << std::endl;
+        autoStartFile << "GenericName=File Synchronizer" << std::endl;
+        autoStartFile << "Exec="
+                      << "'" << appimageDir.native() << "'" << std::endl;
+        autoStartFile << "Terminal=false" << std::endl;
+        autoStartFile << "Icon=" << CommonUtility::toLower(appName) << std::endl;
+        autoStartFile << "Categories=Network" << std::endl;
+        autoStartFile << "Type=Application" << std::endl;
+        autoStartFile << "StartupNotify=false" << std::endl;
+        autoStartFile << "X-GNOME-Autostart-enabled=true" << std::endl;
+        autoStartFile << "X-GNOME-Autostart-Delay=10" << std::endl;
+        autoStartFile.close();
     } else {
         IoError ioError = IoError::Unknown;
         if (!IoHelper::deleteItem(userAutoStartFilePath, ioError)) {
-            LOGW_WARN(logger(), L"Could not remove autostart desktop file." << Utility::formatIoError(ioError));
+            LOGW_WARN(logger(),
+                      L"Could not remove autostart desktop file: " << Utility::formatIoError(userAutoStartDirPath, ioError));
             return false;
         }
     }

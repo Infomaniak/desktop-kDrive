@@ -37,6 +37,7 @@ public struct UserJobs: Sendable {
         return decodedMessage.body.userDbIdList
     }
 
+    @discardableResult
     public func userInfoList() async throws -> [UserInfoResponse] {
         IKLogger.data.log("Query for userInfo list")
         let request = await RequestMessage<EmptyQuery>(num: RequestNum.USER_INFOLIST, body: EmptyQuery())

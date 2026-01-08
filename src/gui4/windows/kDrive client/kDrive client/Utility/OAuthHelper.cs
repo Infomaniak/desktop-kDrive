@@ -1,11 +1,7 @@
-﻿using Infomaniak.kDrive.ServerCommunication;
-using Microsoft.Security.Authentication.OAuth;
+﻿using Microsoft.Security.Authentication.OAuth;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -57,6 +53,11 @@ namespace Infomaniak.kDrive
             {
                 Logger.Log(Logger.Level.Error, $"Unexpected OAuth error: {ex}");
                 throw;
+            }
+            finally
+            {
+                Utility.BringCurrentWindowToFront();
+                Logger.Log(Logger.Level.Info, "OAuth authorization process completed.");
             }
 
             return new OAuthResult { Code = "", CodeVerifier = "" };

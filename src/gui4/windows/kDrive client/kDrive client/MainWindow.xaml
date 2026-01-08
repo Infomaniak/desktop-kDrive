@@ -59,7 +59,7 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Left: Logo + App Name -->
-                <controls:AppTitleBarLogo Grid.Column="0"/>
+                <controls:AppTitleBarLogo Grid.Column="0" />
 
                 <StackPanel Grid.Column="0"
                             Grid.ColumnSpan="3"
@@ -81,7 +81,8 @@
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
-                                    BorderThickness="1" />
+                                    BorderThickness="1"
+                                    IsEnabled="False"/>
                 </StackPanel>
             </Grid>
         </Border>

@@ -47,13 +47,13 @@ namespace Infomaniak.kDrive.CustomControls
         #region Private fields
 
         // Node IDs currently excluded on the server for this sync
-        private List<NodeId> _excludedNodeIds = new List<NodeId>();
+        private List<NodeId> _excludedNodeIds = [];
 
         // Map of excluded node id -> full remote path (needed to infer exclusion state for unloaded descendants)
-        private Dictionary<NodeId, string> _excludedNodePathsMap = new Dictionary<NodeId, string>();
+        private readonly Dictionary<NodeId, string> _excludedNodePathsMap = [];
 
         // Root level items displayed in the TreeView (children of the logical root folder)
-        private ObservableCollection<TreeItem> _rootLevelItems { get; } = new ObservableCollection<TreeItem>();
+        private readonly ObservableCollection<TreeItem> _rootLevelItems = [];
 
         // Flag guarding recursive event cascades while we programmatically change selection states
         private bool _isBulkSelectionPropagation = false;
@@ -188,7 +188,7 @@ namespace Infomaniak.kDrive.CustomControls
             }
             else if (parent._childrenLoaded) // Indeterminate and children loaded: evaluate children individually
             {
-                List<NodeId> excluded = new List<NodeId>();
+                List<NodeId> excluded = [];
                 foreach (var child in parent.Children)
                 {
                     excluded.AddRange(GetExcludedDescendantNodeIds(child));
@@ -200,7 +200,7 @@ namespace Infomaniak.kDrive.CustomControls
             else
             {
                 // Indeterminate but children not loaded: look up exclusion map for any descendant path starting with this path
-                List<NodeId> excluded = _excludedNodePathsMap.Where(pair => pair.Value.StartsWith(parent.Node.Path)).Select(pair => pair.Key).ToList();
+                List<NodeId> excluded = [.. _excludedNodePathsMap.Where(pair => pair.Value.StartsWith(parent.Node.Path)).Select(pair => pair.Key)];
                 if (excluded.Count == 0)
                     Logger.Log(Logger.Level.Error, $"Logic error: parent node {parent.Node.NodeId} - {parent.Node.Name} is indeterminate but all children are selected.");
                 return excluded;
@@ -291,7 +291,7 @@ namespace Infomaniak.kDrive.CustomControls
             }
 
             // Fetch path for newly excluded nodes
-            List<Task> loadTasks = new List<Task>();
+            List<Task> loadTasks = [];
             foreach (var nodeId in _excludedNodeIds.Where(id => !_excludedNodePathsMap.ContainsKey(id)))
             {
                 loadTasks.Add(loadPath(nodeId));
@@ -357,7 +357,7 @@ namespace Infomaniak.kDrive.CustomControls
             return control?.DataContext as TreeItem;
         }
 
-        private void SelectAllDescendants(TreeItem parent)
+        private static void SelectAllDescendants(TreeItem parent)
         {
             foreach (var child in parent.Children)
             {
@@ -366,7 +366,7 @@ namespace Infomaniak.kDrive.CustomControls
             }
         }
 
-        private void DeselectAllDescendants(TreeItem parent)
+        private static void DeselectAllDescendants(TreeItem parent)
         {
             foreach (var child in parent.Children.Where(c => c.Type != NodeType.File))
             {
@@ -588,7 +588,7 @@ namespace Infomaniak.kDrive.CustomControls
     /// <summary>
     /// Chooses between directory and synthetic file templates.
     /// </summary>
-    public class NodeTypeTemplateSelector : DataTemplateSelector
+    public partial class NodeTypeTemplateSelector : DataTemplateSelector
     {
         public DataTemplate? DirectoryTemplate { get; set; }
         public DataTemplate? FileTemplate { get; set; }

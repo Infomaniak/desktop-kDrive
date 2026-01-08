@@ -441,6 +441,13 @@ void TestUtility::testGenerateRandomStringAlphaNum() {
         CPPUNIT_ASSERT(err == 0);
     }
 }
+
+void TestUtility::testGenerateUuid() {
+    const auto uuid = CommonUtility::generateUUID();
+    const auto regexPattern = std::regex(R"(^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$)");
+    CPPUNIT_ASSERT(std::regex_match(uuid, regexPattern));
+}
+
 void TestUtility::testLanguageCode() {
     // Only the C language is installed in docker
     if (Utility::userName() == "docker") return;

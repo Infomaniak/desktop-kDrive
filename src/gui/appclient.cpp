@@ -126,6 +126,9 @@ AppClient::AppClient(int &argc, char **argv) :
         throw std::runtime_error("Unable to initialize parameters cache.");
     }
 
+    // Update Sentry configuration
+    sentry::Handler::instance()->setIsSentryActivated(true);
+
     // Setup logging
     setupLogging();
 

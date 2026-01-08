@@ -41,6 +41,7 @@ public struct DriveJobs: Sendable {
 
     public init() {}
 
+    @discardableResult
     public func driveInfoList() async throws -> [DriveResponse] {
         IKLogger.data.log("Query for driveInfoList")
         let query = EmptyQuery()

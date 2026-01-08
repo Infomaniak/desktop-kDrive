@@ -22,6 +22,7 @@ public extension UserDefaults {
     enum Key: Sendable {
         public static let isFirstLaunch = "isFirstLaunch"
         public static let shouldPresentOnboarding = "shouldPresentOnboarding"
+        public static let selectedSynchroDbId = "selectedSynchroDbId"
     }
 }
 
@@ -47,6 +48,15 @@ public extension UserDefaults {
         }
         set {
             set(newValue, forKey: Key.shouldPresentOnboarding)
+        }
+    }
+
+    var selectedSynchroDbId: Int {
+        get {
+            integer(forKey: Key.selectedSynchroDbId)
+        }
+        set {
+            set(newValue, forKey: Key.selectedSynchroDbId)
         }
     }
 }
