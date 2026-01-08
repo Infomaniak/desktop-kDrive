@@ -19,7 +19,7 @@
 import Cocoa
 
 public final class StepCircleView: NSView {
-    public var color = NSColor.Tokens.Status.Medium.security {
+    public var color = ColorToken.Status.Medium.security.asNSColor {
         didSet {
             if #available(macOS 26.0, *) {
                 let backgroundView = self.backgroundView as? NSGlassEffectView

@@ -29,7 +29,7 @@ public final class LoadingLabelView: NSView {
         let label = NSTextField(labelWithString: stringValue)
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = NSFont.Tokens.body
-        label.textColor = NSColor.Tokens.Text.tertiary
+        label.textColor = ColorToken.Text.tertiary.asNSColor
         return label
     }()
 

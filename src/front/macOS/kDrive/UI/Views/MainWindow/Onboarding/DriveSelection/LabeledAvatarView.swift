@@ -38,7 +38,7 @@ class LabeledAvatarView: NSView {
     private lazy var label: NSTextField = {
         let textField = NSTextField(labelWithString: user?.name ?? "")
         textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.textColor = NSColor.Tokens.Text.secondary
+        textField.textColor = ColorToken.Text.secondary.asNSColor
         textField.font = NSFont.Tokens.body
         return textField
     }()

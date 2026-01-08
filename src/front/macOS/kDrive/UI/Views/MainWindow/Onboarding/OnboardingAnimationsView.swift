@@ -44,7 +44,7 @@ class OnboardingAnimationsView: NSView {
     }
 
     override func draw(_ dirtyRect: NSRect) {
-        NSColor.Tokens.Surface.secondary.setFill()
+        ColorToken.Surface.secondary.asNSColor.setFill()
         bounds.fill()
     }
 

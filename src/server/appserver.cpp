@@ -326,6 +326,11 @@ void AppServer::init() {
 
     // Setup auto start
 #ifdef NDEBUG
+#if defined(KD_WINDOWS)
+    (void) Utility::setLaunchOnStartup(_theme->appName(), _theme->appClientName(),
+                                       false); // Disable it first to make sure the path is updated in registry
+#endif
+
 #if defined(KD_LINUX)
     // On Linux, override the auto startup file on every app launch to make sure it points to the correct executable.
     if (ParametersCache::instance()->parameters().autoStart()) {
@@ -372,15 +377,11 @@ void AppServer::init() {
     connect(OldCommServer::instance().get(), &OldCommServer::restartClient, this, &AppServer::onRestartClientReceived);
 
     // Update users/accounts/drives info
-    ExitCode exitCode = updateAllUsersInfo();
-    if (exitCode == ExitCode::InvalidToken) {
+    if (const auto exitInfo = updateAllUsersInfo(); exitInfo.code() == ExitCode::InvalidToken) {
         // The user will be asked to enter its credentials later
-    } else if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in updateAllUsersInfo: code=" << exitCode);
-        addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
-        if (exitCode != ExitCode::NetworkError && exitCode != ExitCode::UpdateRequired) {
-            throw std::runtime_error("Failed to load user data.");
-        }
+    } else if (!exitInfo) {
+        LOG_WARN(_logger, "Error in updateAllUsersInfo: " << exitInfo);
+        addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
     }
 
     // Set sentry user
@@ -819,6 +820,40 @@ bool AppServer::areMacVfsAuthsOk() const {
     return ret;
 }
 #endif
+
+void AppServer::setDistributionChannel(const VersionChannel versionChannel) {
+    if (_noUpdate) return;
+    assert(_updateManager && "The update manager is not set.");
+
+    _updateManager->setDistributionChannel(versionChannel);
+}
+
+VersionInfo AppServer::getVersionInfo(const VersionChannel versionChannel) const {
+    if (_noUpdate) {
+        VersionInfo versionInfo;
+        versionInfo.tag = CommonUtility::versionTag();
+        versionInfo.buildVersion = CommonUtility::versionBuild();
+
+        return versionInfo;
+    }
+
+    assert(_updateManager && "The update manager is not set.");
+
+    return _updateManager->versionInfo(versionChannel);
+}
+
+UpdateState AppServer::getUpdateState() const {
+    if (_noUpdate) return UpdateState::NoUpdate;
+
+    assert(_updateManager && "The update manager is not set.");
+
+    return _updateManager->state();
+}
+
+void AppServer::startInstaller() {
+    LOG_IF_FAIL(_logger, _updateManager && "The update manager is not set.");
+    if (_updateManager) _updateManager->startInstaller();
+}
 
 void AppServer::crash() const {
     // SIGSEGV crash
@@ -2609,27 +2644,25 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
     return exitCode;
 }
 
-ExitCode AppServer::updateUserInfo(User &user) {
+ExitInfo AppServer::updateUserInfo(User &user) {
     if (user.keychainKey().empty()) {
         return ExitCode::Ok;
     }
-
-    bool found = false;
     bool updated = false;
-    ExitCode exitCode = ServerRequests::loadUserInfo(user, updated);
-    if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in Requests::loadUserInfo: code=" << exitCode);
-        if (exitCode == ExitCode::InvalidToken) {
+    if (const auto exitInfo = ServerRequests::loadUserInfo(user, updated); !exitInfo) {
+        LOG_WARN(_logger, "Error in Requests::loadUserInfo: " << exitInfo);
+        if (exitInfo.code() == ExitCode::InvalidToken) {
             // Notify client app that the user is disconnected
             UserInfo userInfo;
             ServerRequests::userToUserInfo(user, userInfo);
             sendUserUpdated(userInfo);
         }
 
-        return exitCode;
+        return exitInfo;
     }
 
     if (updated) {
+        bool found = false;
         if (!ParmsDb::instance()->updateUser(user, found)) {
             LOG_WARN(_logger, "Error in ParmsDb::updateUser");
             return ExitCode::DbError;
@@ -2660,10 +2693,10 @@ ExitCode AppServer::updateUserInfo(User &user) {
         for (auto &drive: drives) {
             bool quotaUpdated = false;
             bool accountUpdated = false;
-            exitCode = ServerRequests::loadDriveInfo(drive, account, updated, quotaUpdated, accountUpdated);
-            if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::loadDriveInfo: code=" << exitCode);
-                return exitCode;
+            if (const auto exitInfo = ServerRequests::loadDriveInfo(drive, account, updated, quotaUpdated, accountUpdated);
+                !exitInfo) {
+                LOG_WARN(_logger, "Error in Requests::loadDriveInfo: " << exitInfo);
+                return exitInfo;
             }
 
             if (drive.accessDenied() || drive.maintenanceInfo()._maintenance) {
@@ -2694,6 +2727,7 @@ ExitCode AppServer::updateUserInfo(User &user) {
             }
 
             if (updated) {
+                bool found = false;
                 if (!ParmsDb::instance()->updateDrive(drive, found)) {
                     LOG_WARN(_logger, "Error in ParmsDb::updateDrive");
                     return ExitCode::DbError;
@@ -2718,6 +2752,7 @@ ExitCode AppServer::updateUserInfo(User &user) {
 
                 if (accountDbId == 0) {
                     // No existing account with the new accountId, update it
+                    bool found = false;
                     if (!ParmsDb::instance()->updateAccount(account, found)) {
                         LOG_WARN(_logger, "Error in ParmsDb::updateAccount");
                         return ExitCode::DbError;
@@ -2733,6 +2768,7 @@ ExitCode AppServer::updateUserInfo(User &user) {
                 } else {
                     // An account already exists with the new accountId, link the drive to it
                     drive.setAccountDbId(accountDbId);
+                    bool found = false;
                     if (!ParmsDb::instance()->updateDrive(drive, found)) {
                         LOG_WARN(_logger, "Error in ParmsDb::updateDrive");
                         return ExitCode::DbError;
@@ -2752,10 +2788,10 @@ ExitCode AppServer::updateUserInfo(User &user) {
                     }
 
                     if (driveList.size() == 0) {
-                        exitCode = ServerRequests::deleteAccount(account.dbId());
-                        if (exitCode != ExitCode::Ok) {
-                            LOG_WARN(_logger, "Error in Requests::deleteAccount: code=" << exitCode);
-                            return exitCode;
+                        const auto exitInfo = ServerRequests::deleteAccount(account.dbId());
+                        if (!exitInfo) {
+                            LOG_WARN(_logger, "Error in Requests::deleteAccount: " << exitInfo);
+                            return exitInfo;
                         }
                         sendAccountRemoved(account.accountId());
                         accountRemoved = true;
@@ -3537,7 +3573,7 @@ bool AppServer::startClient() {
     return true;
 }
 
-ExitCode AppServer::updateAllUsersInfo() {
+ExitInfo AppServer::updateAllUsersInfo() {
     std::vector<User> users;
     if (!ParmsDb::instance()->selectAllUsers(users)) {
         LOG_WARN(_logger, "Error in ParmsDb::selectAllUsers");
@@ -3562,10 +3598,9 @@ ExitCode AppServer::updateAllUsersInfo() {
             continue;
         }
 
-        ExitCode exitCode = updateUserInfo(user);
-        if (exitCode != ExitCode::Ok) {
-            LOG_WARN(_logger, "Error in updateUserInfo: code=" << exitCode);
-            return exitCode;
+        if (const auto exitInfo = updateUserInfo(user); !exitInfo) {
+            LOG_WARN(_logger, "Error in updateUserInfo: " << exitInfo);
+            return exitInfo;
         }
     }
 
@@ -4116,7 +4151,7 @@ void AppServer::addError(const Error &error) {
         }
         if (!toBeRemovedErrorIds.empty()) sendErrorsCleared(errorCopy.syncDbId());
     } else if (errorCopy.exitCode() == ExitCode::UpdateRequired) {
-        AbstractUpdater::unskipVersion();
+        _updateManager->updater()->unskipVersion();
     }
 
     if (!ServerRequests::isAutoResolvedError(errorCopy) && !errorAlreadyExists) {

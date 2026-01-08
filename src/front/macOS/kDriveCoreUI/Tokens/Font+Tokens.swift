@@ -17,6 +17,26 @@
  */
 
 import Cocoa
+import SwiftUI
+
+// MARK: - Font
+
+public extension Font {
+    enum Tokens {
+        public static let largeTitleEmphasized: Font = .largeTitle.weight(.bold)
+
+        public static let title3Emphasized: Font = .title3.weight(.bold)
+
+        public static let headline: NSFont = .preferredFont(forTextStyle: .headline)
+
+        public static let body: Font = .body
+        public static let bodyEmphasized: Font = .body.weight(.bold)
+
+        public static let subheadline: Font = .subheadline
+    }
+}
+
+// MARK: - NSFont
 
 extension NSFont.Weight {
     public static let emphasized = NSFont.Weight.semibold

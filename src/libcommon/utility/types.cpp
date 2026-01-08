@@ -16,8 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string>
+
 #include "types.h"
+
+#include "utility.h"
+
+#include <string>
 #include <Poco/UnicodeConverter.h>
 
 namespace KDC {
@@ -226,6 +230,8 @@ std::string toString(const ExitCause e) {
             return "TmpDirAccessError";
         case ExitCause::UpdateTreeIntegrityCheckFailed:
             return "UpdateTreeIntegrityCheckFailed";
+        case ExitCause::MissingReplyData:
+            return "MissingReplyData";
         default:
             return noConversionStr;
     }
@@ -889,6 +895,14 @@ long ExitInfo::indexInList(const ExitCode &exitCode, const std::vector<ExitCode>
     const auto it = std::find(exitCodeList.begin(), exitCodeList.end(), exitCode);
     const long index = it - exitCodeList.begin();
     return index;
+}
+
+void VersionInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
+    CommonUtility::writeValueToStruct(dstruct, "channel", channel);
+    CommonUtility::writeValueToStruct(dstruct, "tag", tag);
+    CommonUtility::writeValueToStruct(dstruct, "buildVersion", buildVersion);
+    CommonUtility::writeValueToStruct(dstruct, "buildMinOsVersion", buildMinOsVersion);
+    CommonUtility::writeValueToStruct(dstruct, "downloadUrl", downloadUrl);
 }
 
 } // namespace KDC
