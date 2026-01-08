@@ -35,14 +35,12 @@ extension XPCConnectionManager: XPCConnectionProvider {
 
     public var guiConnection: XPCGuiProtocol {
         get async throws {
-            // TODO: Remove reset connection hack
-            appConnection?.invalidate()
-            appConnection = nil
-
-            try await fetchServerEndpointFromLoginItemAgentAndConnect()
+            try await fetchServerEndpointFromLoginItemAgentAndConnectIfNeeded()
 
             let connection = try self.connection
-            return try connection.proxy(from: connection, type: XPCGuiProtocol.self)
+            let proxy = try connection.proxy(from: connection, type: XPCGuiProtocol.self)
+
+            return proxy
         }
     }
 }
