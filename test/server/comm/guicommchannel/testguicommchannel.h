@@ -71,7 +71,6 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSyncGetPublicLinkUrlJob);
         CPPUNIT_TEST(testSyncGetPrivateLinkUrlJob);
         CPPUNIT_TEST(testSyncSetSupportsVirtualFilesJob);
-        CPPUNIT_TEST(testSyncSetRootPinStateJob);
         CPPUNIT_TEST(testBlacklistedSyncNodeListJob);
         CPPUNIT_TEST(testBlacklistedSyncNodeSetListJob);
         CPPUNIT_TEST(testNodeInfoJob);
@@ -136,7 +135,6 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testSyncGetPublicLinkUrlJob();
         void testSyncGetPrivateLinkUrlJob();
         void testSyncSetSupportsVirtualFilesJob();
-        void testSyncSetRootPinStateJob();
         void testBlacklistedSyncNodeListJob();
         void testBlacklistedSyncNodeSetListJob();
         void testNodePathJob();

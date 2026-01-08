@@ -55,9 +55,21 @@ ExitInfo SyncSetSupportsVirtualFilesJob::deserializeInputParms() {
 }
 
 ExitInfo SyncSetSupportsVirtualFilesJob::process() {
-    if (const auto exitInfo = _commManager->appServer().setSupportsVirtualFiles(_syncDbId, _value); !exitInfo) {
+    if (const auto exitInfo = _commManager->appServer().setSupportsVirtualFiles(_syncDbId, _value, false); !exitInfo) {
         LOG_WARN(_logger, "Error in setSupportsVirtualFiles for syncDbId=" << _syncDbId);
 
+        return exitInfo;
+    }
+
+    std::shared_ptr<Vfs> vfs;
+    const std::scoped_lock lock(AppServer::vfsMapMutex);
+    if (const ExitInfo exitInfo = AppServer::getVfs(_syncDbId, vfs); !exitInfo) {
+        LOG_WARN(_logger, "Error in getVfs for syncDbId=" << _syncDbId << " : " << exitInfo);
+        return exitInfo;
+    }
+
+    if (const ExitInfo exitInfo = vfs->setPinState("", _value ? PinState::Unspecified : PinState:: AlwaysLocal); !exitInfo) {
+        LOG_WARN(_logger, "Error in vfsSetPinState for syncDbId=" << _syncDbId << " : " << exitInfo);
         return exitInfo;
     }
 

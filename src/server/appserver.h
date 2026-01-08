@@ -133,7 +133,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         [[nodiscard]] ExitInfo stopVfs(int syncDbId, bool unregister);
         [[nodiscard]] ExitInfo startSyncs(User &user);
         void stopSyncTask(int syncDbId);
-        [[nodiscard]] ExitInfo setSupportsVirtualFiles(int syncDbId, bool value);
+        [[nodiscard]] ExitInfo setSupportsVirtualFiles(int syncDbId, bool value, bool asyncRespons);
         void setDistributionChannel(VersionChannel versionChannel);
         VersionInfo getVersionInfo(VersionChannel versionChannel) const;
         UpdateState getUpdateState() const;

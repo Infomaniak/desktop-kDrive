@@ -2196,33 +2196,25 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             bool value = false;
             ArgsWriter(params).write(syncDbId, value);
 
-            const ExitCode exitCode = setSupportsVirtualFiles(syncDbId, value);
-            if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in setSupportsVirtualFiles for syncDbId=" << syncDbId);
+            ExitInfo exitInfo = setSupportsVirtualFiles(syncDbId, value, true);
+            if (!exitInfo) {
+                LOG_WARN(_logger, "Error in setSupportsVirtualFiles for syncDbId=" << syncDbId << " : " << exitInfo);
+            } else {
+                std::shared_ptr<Vfs> vfs;
+                const std::scoped_lock lock(vfsMapMutex);
+                if (exitInfo = getVfs(syncDbId, vfs); !exitInfo) {
+                    LOG_WARN(_logger, "Error in getVfs for syncDbId=" << syncDbId << " : " << exitInfo);
+                    resultStream << toInt(exitInfo.code());
+                    break;
+                }
+                if (exitInfo = vfs->setPinState("", value ? PinState::Unspecified : PinState::AlwaysLocal);
+                    !exitInfo) {
+                    LOG_WARN(_logger, "Error in vfsSetPinState for syncDbId=" << syncDbId << " : " << exitInfo);
+                    resultStream << toInt(exitInfo.code());
+                    break;
+                }
             }
-
-            resultStream << toInt(exitCode);
-            break;
-        }
-        case RequestNum::SYNC_SETROOTPINSTATE: {
-            int syncDbId;
-            PinState state;
-            QDataStream paramsStream(params);
-            paramsStream >> syncDbId;
-            paramsStream >> state;
-            std::shared_ptr<Vfs> vfs;
-            const std::scoped_lock lock(vfsMapMutex);
-            if (ExitInfo exitInfo = getVfs(syncDbId, vfs); !exitInfo) {
-                LOG_WARN(_logger, "Error in getVfs for syncDbId=" << syncDbId << " : " << exitInfo);
-                resultStream << toInt(exitInfo.code());
-                break;
-            }
-            if (const ExitInfo exitInfo = vfs->setPinState("", state); !exitInfo) {
-                LOG_WARN(_logger, "Error in vfsSetPinState for syncDbId=" << syncDbId << " : " << exitInfo);
-                resultStream << toInt(exitInfo.code());
-                break;
-            }
-            resultStream << ExitCode::Ok;
+            resultStream << toInt(exitInfo.code());
             break;
         }
         case RequestNum::UPDATER_CHANGE_CHANNEL: {
@@ -3871,7 +3863,7 @@ ExitInfo AppServer::stopVfs(int syncDbId, bool unregister) {
     return ExitCode::Ok;
 }
 
-ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
+ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value, bool asyncRespons) {
     const std::scoped_lock lock(syncPalMapMutex);
     auto syncPalMapIt = syncPalMap.find(syncDbId);
     if (syncPalMapIt == syncPalMap.end()) {
@@ -3971,7 +3963,12 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
         }
         syncPalMapIt->second->setVfs(vfs);
 
-        QTimer::singleShot(100, this, [=, this]() {
+        // Update sync info on client side
+        SyncInfo syncInfo;
+        ServerRequests::syncToSyncInfo(sync, syncInfo);
+        sendSyncUpdated(syncInfo);
+
+        auto func = [=, this]() {
             if (newMode != VirtualFileMode::Off) {
                 // Clear file system
                 const std::scoped_lock lock3(vfsMapMutex);
@@ -3980,14 +3977,10 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
                     vfsMapIt->second->convertDirContentToPlaceholder(SyncName2QStr(sync.localPath()), true);
                 }
             }
-
-            // Update sync info on client side
-            SyncInfo syncInfo;
-            ServerRequests::syncToSyncInfo(sync, syncInfo);
-            sendSyncUpdated(syncInfo);
-
-            // Notify conversion completed
-            sendVfsConversionCompleted(sync.dbId());
+            // Notify conversion completed async
+            if (asyncRespons) {
+                sendVfsConversionCompleted(sync.dbId());
+            }
 
             if (!startPostponed) {
                 // Re-start sync
@@ -3997,7 +3990,13 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
                     syncPalMapIt2->second->start();
                 }
             }
-        });
+        };
+
+        if (asyncRespons) {
+            QTimer::singleShot(100, this, func);
+        } else {
+            func();
+        }
 
         return mainExitInfo;
     }

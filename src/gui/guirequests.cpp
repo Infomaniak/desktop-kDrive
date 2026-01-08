@@ -192,24 +192,6 @@ ExitCode GuiRequests::setSupportsVirtualFiles(const int syncDbId, const bool val
     return exitCode;
 }
 
-ExitCode GuiRequests::setRootPinState(const int syncDbId, const PinState pinState) {
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << syncDbId;
-    paramsStream << pinState;
-
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::SYNC_SETROOTPINSTATE, params, results)) {
-        return ExitCode::SystemError;
-    }
-
-    auto exitCode = ExitCode::Unknown;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
-
-    return exitCode;
-}
-
 ExitCode GuiRequests::deleteUser(const int userDbId) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);

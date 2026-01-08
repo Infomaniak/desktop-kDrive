@@ -68,7 +68,6 @@ enum class RequestNum {
     SYNC_GETPRIVATELINKURL,
     SYNC_ASKFORSTATUS,
     SYNC_SETSUPPORTSVIRTUALFILES,
-    SYNC_SETROOTPINSTATE,
     BLACKLISTED_NODE_LIST,
     BLACKLISTED_NODE_SETLIST,
     NODE_PATH,
@@ -169,8 +168,6 @@ inline std::string toString(RequestNum e) {
             return "SYNC_ASKFORSTATUS";
         case RequestNum::SYNC_SETSUPPORTSVIRTUALFILES:
             return "SYNC_SETSUPPORTSVIRTUALFILES";
-        case RequestNum::SYNC_SETROOTPINSTATE:
-            return "SYNC_SETROOTPINSTATE";
         case RequestNum::BLACKLISTED_NODE_LIST:
             return "BLACKLISTED_NODE_LIST";
         case RequestNum::BLACKLISTED_NODE_SETLIST:
