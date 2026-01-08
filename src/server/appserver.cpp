@@ -720,7 +720,7 @@ ExitInfo AppServer::updateParametersAndPropagateChanges(const ParametersInfo &ne
         AppServer::addError(Error(ERR_ID, exitCode));
     }
 
-    // extendedLog change propagation
+    // Propagate extendedLog change
     if (oldParametersInfo.extendedLog() != newParametersInfo.extendedLog()) {
         logExtendedLogActivationMessage(newParametersInfo.extendedLog());
         const std::scoped_lock lock(AppServer::vfsMapMutex);
@@ -729,12 +729,12 @@ ExitInfo AppServer::updateParametersAndPropagateChanges(const ParametersInfo &ne
         }
     }
 
-    // Language change propagation
+    // Propagate language change
     if (oldParametersInfo.language() != newParametersInfo.language()) {
         CommonUtility::setupTranslations(this, newParametersInfo.language());
     }
 
-    // ProxyConfig change propagation
+    // Propagate ProxyConfig change
     if (oldParametersInfo.proxyConfig().type() != newParametersInfo.proxyConfigInfo().type() ||
         oldParametersInfo.proxyConfig().hostName() != newParametersInfo.proxyConfigInfo().hostName().toStdString() ||
         oldParametersInfo.proxyConfig().port() != newParametersInfo.proxyConfigInfo().port() ||
@@ -745,11 +745,21 @@ ExitInfo AppServer::updateParametersAndPropagateChanges(const ParametersInfo &ne
         Proxy::instance()->setProxyConfig(ParametersCache::instance()->parameters().proxyConfig());
     }
 
-    // Autostart change propagation
+    // Propagate autostart change
     if (oldParametersInfo.autoStart() != newParametersInfo.autoStart()) {
         auto *theme = Theme::instance();
         (void) Utility::setLaunchOnStartup(theme->appName(), theme->appName(), newParametersInfo.autoStart());
     }
+
+    // Propagate Sentry activation change
+    if (KDRIVE_VERSION_MAJOR >= 4) {
+        if (oldParametersInfo.sentryEnabled() != newParametersInfo.sentryEnabled()) {
+            sentry::Handler::instance()->setIsSentryActivated(newParametersInfo.sentryEnabled());
+        }
+    }
+
+    // Propagate distribution channel change
+    setDistributionChannel(newParametersInfo.distributionChannel());
 
     return exitCode;
 }
