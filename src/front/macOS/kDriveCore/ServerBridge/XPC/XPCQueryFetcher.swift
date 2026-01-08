@@ -39,6 +39,7 @@ struct XPCQueryFetcher: XPCQueryFetcherProtocol {
 
         let guiConnection = try await xpcConnectionProvider.guiConnection
         guard let replyData = await guiConnection.sendQueryAsync(requestData) else {
+            IKLogger.data.error("[KD] no replyData on sendQueryAsync woops")
             throw QueryError.noReplyData
         }
 
