@@ -179,6 +179,96 @@ function move_dependencies() {
   cp ./usr/share/icons/hicolor/512x512/apps/kdrive-win.png . # Workaround for linuxeployqt bug, FIXME
 }
 
+function clean_app_directory() {
+  arch="$(get_arch $1)"
+
+  echo "Cleaning unnecessary files from AppImage..."
+
+  cd /app
+
+  # Remove Qt development tools from libexec (keep only QtWebEngineProcess)
+  echo "  Removing Qt development tools..."
+  cd ./usr/libexec
+  ls | grep -v "QtWebEngineProcess" | xargs rm -f
+  cd /app
+
+  # Remove development plugins
+  echo "  Removing development plugins..."
+  rm -rf ./usr/plugins/designer
+  rm -rf ./usr/plugins/qmltooling
+  rm -rf ./usr/plugins/assetimporters
+  rm -rf ./usr/plugins/canbus
+  rm -rf ./usr/plugins/geometryloaders
+  rm -rf ./usr/plugins/opcua
+  rm -rf ./usr/plugins/renderers
+  rm -rf ./usr/plugins/renderplugins
+  rm -rf ./usr/plugins/sceneparsers
+  rm -rf ./usr/plugins/scxmldatamodel
+  rm -rf ./usr/plugins/sensors
+  rm -rf ./usr/plugins/virtualkeyboard
+  rm -rf ./usr/plugins/wayland-graphics-integration-server
+
+  # Remove unnecessary platform plugins (keep only xcb and wayland)
+  echo "  Removing unnecessary platform plugins..."
+  cd ./usr/plugins/platforms
+  ls | grep -vE "^libqxcb\.so$|^libqwayland" | xargs rm -f
+  cd /app
+
+  # Remove egldeviceintegrations (embedded systems)
+  rm -rf ./usr/plugins/egldeviceintegrations
+
+  # Remove unnecessary SQL drivers (keep only sqlite)
+  echo "  Removing unnecessary SQL drivers..."
+  cd ./usr/plugins/sqldrivers
+  ls | grep -v "libqsqlite.so" | xargs rm -f
+  cd /app
+
+  # Clean translations - keep only de, es, fr, it, en
+  echo "  Cleaning translations..."
+  cd ./usr/translations
+
+  # Remove all assistant, designer, linguist, qt_help translations (dev tools)
+  rm -f assistant_*.qm designer_*.qm linguist_*.qm qt_help_*.qm
+
+  # For other Qt translations, keep only supported languages
+  for prefix in qt qtbase qtconnectivity qtdeclarative qtlocation qtmultimedia qtserialport qtwebengine qtwebsockets; do
+    # Remove all except de, es, fr, it, en
+    ls ${prefix}_*.qm 2>/dev/null | grep -vE "_(de|es|fr|it|en)\.qm$" | xargs rm -f 2>/dev/null || true
+  done
+
+  # Clean qtwebengine_locales - keep only de, en-US, en-GB, es, fr, it
+  cd qtwebengine_locales
+  ls *.pak | grep -vE "^(de|en-US|en-GB|es|fr|it)\.pak$" | xargs rm -f
+  cd /app
+
+  # Remove unnecessary system libraries
+  echo "  Removing unnecessary system libraries..."
+  cd ./usr/lib
+
+  # Remove Kerberos/GSSAPI libs
+  rm -f libgssapi*.so.* libk5crypto.so.* libkeyutils.so.* libkrb5.so.* libkrb5support.so.*
+  rm -f libhcrypto.so.* libheimbase.so.* libheimntlm.so.* libhx509.so.* libroken.so.* libwind.so.* libasn1.so.*
+
+  # Remove LDAP libs
+  rm -f liblber*.so.* libldap*.so.* libsasl2.so.*
+
+  # Remove Avahi
+  rm -f libavahi-client.so.* libavahi-common.so.*
+
+  # Remove CUPS (printing) - uncomment if printing not needed
+  # rm -f libcups.so.*
+
+  # Remove old OpenSSL 1.1 (we have 3.x)
+  rm -f libcrypto.so.1.1 libssl.so.1.1
+
+  # Remove unused image format libs
+  rm -f libjbig.so.* librtmp.so.* libssh.so.*
+
+  cd /app
+
+  echo "  Cleanup completed!"
+}
+
 function build_app_image() {
   architecture=$1
 
@@ -283,6 +373,12 @@ if [ ! "$?" -eq "0" ]; then
     exit 1
 fi
 
+# TODO enable the cleaning of the appimage folder once the build is stable.
+#echo
+#echo "Cleaning unnecessary files ..."
+#clean_app_directory "$architecture"
+
+echo
 echo "Building AppImage ..."
 build_app_image "$architecture"
 
