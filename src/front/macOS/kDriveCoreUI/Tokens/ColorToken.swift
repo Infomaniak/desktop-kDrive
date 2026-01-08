@@ -71,6 +71,10 @@ public struct ColorToken {
             public static let warning = ColorToken(light: KDriveColors.orange500, dark: KDriveColors.orange400)
             public static let security = ColorToken(light: KDriveColors.blue500, dark: KDriveColors.blue400)
         }
+
+        public enum Light {
+            public static let warning = ColorToken(light: KDriveColors.orange100, dark: KDriveColors.brown950)
+        }
     }
 
     // MARK: Contextual tokens (T3)

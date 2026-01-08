@@ -19,6 +19,7 @@
 import Cocoa
 import Foundation
 import kDriveCore
+import SwiftUI
 
 private final class PreviewBundle {
     /** Meant to access kDriveCoreUI bundle in `PreviewHelper` */
@@ -64,5 +65,15 @@ public enum PreviewHelper {
         userDbId: 1,
         name: "Drive Pro Max",
         color: .red
+    )
+
+    @available(macOS 12.0, *)
+    public static let blockingError = UIBlockingError(
+        title: "You have been disconnected",
+        subtitle: "Log back to use kDrive",
+        drive: Self.drive2,
+        badgeIcon: Image(systemName: "exclamationmark.triangle.fill"),
+        badgeBackgroundColor: ColorToken.Status.Light.warning.asColor,
+        badgeColor: ColorToken.Status.Medium.warning.asColor
     )
 }
