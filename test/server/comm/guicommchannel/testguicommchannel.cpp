@@ -125,18 +125,19 @@ void TestGuiCommChannel::testContainsCompleteMessage() {
     size_t endIndex = 0;
 
     // Empty message
-    CPPUNIT_ASSERT(!channelTest.containsCompleteMessage("", endIndex));
+    CPPUNIT_ASSERT(!channelTest.containsCompleteMessage(Str(""), endIndex));
 
     // The message should start with a "{" or "["
-    CPPUNIT_ASSERT(!channelTest.containsCompleteMessage("qwertz", endIndex));
+    CPPUNIT_ASSERT(!channelTest.containsCompleteMessage(Str("qwertz"), endIndex));
 
     // The message should be correctly parenthesized
-    CPPUNIT_ASSERT(!channelTest.containsCompleteMessage(R"({"var":"value")", endIndex));
-    CPPUNIT_ASSERT(channelTest.containsCompleteMessage(R"({"var":"value"})", endIndex) && endIndex == 14);
-    CPPUNIT_ASSERT(channelTest.containsCompleteMessage(R"({"var":"value"}{"var2":"value2"})", endIndex) && endIndex == 14);
-    CPPUNIT_ASSERT(!channelTest.containsCompleteMessage(R"({"varList":[1,2,3,4)", endIndex));
-    CPPUNIT_ASSERT(channelTest.containsCompleteMessage(R"({"varList":[1,2,3,4]})", endIndex) && endIndex == 20);
-    CPPUNIT_ASSERT(channelTest.containsCompleteMessage(R"({{[][]}{[{{[]}{}}]}{{}{}{}}})", endIndex) && endIndex == 27);
+    CPPUNIT_ASSERT(!channelTest.containsCompleteMessage(Str("{\"var\":\"value\")"), endIndex));
+    CPPUNIT_ASSERT(channelTest.containsCompleteMessage(Str("{\"var\":\"value\"})"), endIndex) && endIndex == 14);
+    CPPUNIT_ASSERT(channelTest.containsCompleteMessage(Str("{\"var\":\"value\"}{\"var2\":\"value2\"})"), endIndex) &&
+                   endIndex == 14);
+    CPPUNIT_ASSERT(!channelTest.containsCompleteMessage(Str("{\"varList\":[1,2,3,4)"), endIndex));
+    CPPUNIT_ASSERT(channelTest.containsCompleteMessage(Str("{\"varList\":[1,2,3,4]})"), endIndex) && endIndex == 20);
+    CPPUNIT_ASSERT(channelTest.containsCompleteMessage(Str("{{[][]}{[{{[]}{}}]}{{}{}{}}})"), endIndex) && endIndex == 27);
 }
 
 void TestGuiCommChannel::testCanReadMessage() {
