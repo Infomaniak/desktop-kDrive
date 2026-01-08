@@ -38,9 +38,10 @@ final class MainViewModel {
     init() {
         cacheObservable.usersPublisher
             .allSynchrosPublisher()
-            .receive(on: DispatchQueue.main)
-            .receiveOnMain(store: &bindStore) { [weak self] synchros in
-                let uiSynchros = synchros.map { UISynchroContext(synchroContext: $0) }
+            .map { synchros in
+                synchros.map { UISynchroContext(synchroContext: $0) }
+            }
+            .receiveOnMain(store: &bindStore) { [weak self] uiSynchros in
                 self?.handleUpdatedSynchros(uiSynchros)
             }
     }
