@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "utilitybestvfsavailablemode.h"
+#include "utilitybestvfsavailablemodejob.h"
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
 

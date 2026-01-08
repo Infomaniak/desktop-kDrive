@@ -17,7 +17,7 @@
  */
 
 #include "comm/guijobs/utilityactivateloadinfojob.h"
-#include "comm/guijobs/utilitybestvfsavailablemode.h"
+#include "comm/guijobs/utilitybestvfsavailablemodejob.h"
 #include "comm/guijobs/utilityfindgoodpathfornewsyncjob.h"
 #include "comm/guijobs/utilitygetappstatejob.h"
 #include "comm/guijobs/utilitysetappstatejob.h"

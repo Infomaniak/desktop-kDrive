@@ -62,7 +62,7 @@
 #include "parametersupdatejob.h"
 #include "utilityactivateloadinfojob.h"
 #include "utilityfindgoodpathfornewsyncjob.h"
-#include "utilitybestvfsavailablemode.h"
+#include "utilitybestvfsavailablemodejob.h"
 #include "utilitysetappstatejob.h"
 #include "utilitygetappstatejob.h"
 #include "utilitysendlogtosupportjob.h"
