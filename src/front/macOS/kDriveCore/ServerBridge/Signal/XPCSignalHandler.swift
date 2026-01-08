@@ -121,6 +121,9 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         case .SYNC_COMPLETEDITEM:
             try await handleSyncCompleted(signal)
 
+        case .UTILITY_ERROR_ADDED:
+            print("TODO: implement error handling")
+            
         default:
             throw SignalError.unsupported(signalNum)
         }
