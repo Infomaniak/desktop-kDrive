@@ -149,17 +149,21 @@ function move_dependencies() {
   cp -P -r $QT_BASE_DIR/resources ./usr
   cp -P -r $QT_BASE_DIR/translations ./usr
 
-  mv "./usr/lib/$arch-linux-gnu/"* ./usr/lib/ || echo "The folder /app/usr/lib/$arch-linux-gnu/ might not exist." >&2
-
-  cp -P /usr/local/lib/libssl.so* ./usr/lib/
-  cp -P /usr/local/lib/libcrypto.so* ./usr/lib/
-
-  cp -P -r "/usr/lib/$arch-linux-gnu/nss" ./usr/lib/
-
-  cp -P $QT_BASE_DIR/lib/libQt6WaylandClient.so* ./usr/lib
-  cp -P $QT_BASE_DIR/lib/libQt6WaylandEglClientHwIntegration.so* ./usr/lib
+  mv "./usr/lib/$arch-linux-gnu/"* ./usr/lib/ 2>/dev/null || echo "The folder /app/usr/lib/$arch-linux-gnu/ might not exist." >&2
 
   cp -P "$conan_dependencies_folder"/* ./usr/lib
+
+  # Copy nss if it exists (optional)
+  if [ -d "/usr/lib/$arch-linux-gnu/nss" ]; then
+    cp -P -r "/usr/lib/$arch-linux-gnu/nss" ./usr/lib/ 2>/dev/null
+  fi
+
+  # Copy Qt Wayland libraries if they exist (optional for Wayland support)
+  for lib in libQt6WaylandClient.so libQt6WaylandEglClientHwIntegration.so; do
+    if ls $QT_BASE_DIR/lib/${lib}* 1> /dev/null 2>&1; then
+      cp -P $QT_BASE_DIR/lib/${lib}* ./usr/lib 2>/dev/null || true
+    fi
+  done
 
   mkdir -p ./usr/qml
 
