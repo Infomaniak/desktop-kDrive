@@ -36,6 +36,8 @@
 #include <variant>
 #include <signal.h>
 
+#include <Poco/DynamicStruct.h>
+
 #include <QDebug>
 
 namespace KDC {
@@ -664,6 +666,9 @@ struct VersionInfo {
             buildMinOsVersion.clear();
             downloadUrl.clear();
         }
+
+        void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
+
 
         friend QDataStream &operator>>(QDataStream &in, VersionInfo &versionInfo) {
             QString tmpTag;

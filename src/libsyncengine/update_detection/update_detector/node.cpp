@@ -126,10 +126,11 @@ void Node::insertChangeEvent(const OperationType op) {
 }
 
 bool Node::hasInvalidEvents() const {
-    using enum OperationType;
-    const bool res = (hasChangeEvent(Create) && _changeEvents != Create) || (hasChangeEvent(Delete) && _changeEvents != Delete) ||
-                     ((hasChangeEvent(Move) || hasChangeEvent(Edit)) && _changeEvents != Move && _changeEvents != Edit &&
-                      _changeEvents != MoveEdit);
+    const bool res = (hasChangeEvent(OperationType::Create) && _changeEvents != OperationType::Create) ||
+                     (hasChangeEvent(OperationType::Delete) && _changeEvents != OperationType::Delete) ||
+                     ((hasChangeEvent(OperationType::Move) || hasChangeEvent(OperationType::Edit)) &&
+                      _changeEvents != OperationType::Move && _changeEvents != OperationType::Edit &&
+                      _changeEvents != OperationType::MoveEdit);
     return res;
 }
 

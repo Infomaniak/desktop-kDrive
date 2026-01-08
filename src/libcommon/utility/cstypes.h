@@ -135,6 +135,7 @@ enum class ExitCause {
     FileOrDirectoryCorrupted,
     TmpDirAccessError,
     UpdateTreeIntegrityCheckFailed,
+    MissingReplyData,
     EnumEnd
 };
 

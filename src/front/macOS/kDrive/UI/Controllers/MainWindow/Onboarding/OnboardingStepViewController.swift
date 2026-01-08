@@ -75,13 +75,13 @@ open class OnboardingStepViewController: NSViewController {
         view.addSubview(stackView)
 
         titleLabel.font = NSFont.Tokens.largeTitleEmphasized
-        titleLabel.textColor = NSColor.Tokens.Text.primary
+        titleLabel.textColor = ColorToken.Text.primary.asNSColor
         stackView.addArrangedSubview(titleLabel)
         stackView.setCustomSpacing(AppPadding.padding8, after: titleLabel)
 
         descriptionLabel.font = NSFont.Tokens.body
         descriptionLabel.lineBreakMode = .byWordWrapping
-        descriptionLabel.textColor = NSColor.Tokens.Text.secondary
+        descriptionLabel.textColor = ColorToken.Text.secondary.asNSColor
         descriptionLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         stackView.addArrangedSubview(descriptionLabel)
         stackView.setCustomSpacing(AppPadding.padding32, after: descriptionLabel)

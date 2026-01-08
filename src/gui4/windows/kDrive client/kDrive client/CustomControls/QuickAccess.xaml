@@ -21,10 +21,6 @@
                         Width="46"
                         Height="46">
 
-                    <ToolTipService.ToolTip>
-                        <ToolTip Content="{x:Bind ViewModel.SelectedSync.Drive.Account.User.Name, Mode=OneWay}" Placement="Right"/>
-                    </ToolTipService.ToolTip>
-
                     <Border BorderBrush="{StaticResource Infomaniak.Style.Color.Brand.Default}"
                             BorderThickness="2"
                             CornerRadius="100"
@@ -35,6 +31,9 @@
                                        Height="41"
                                        Width="41">
                         </PersonPicture>
+                        <ToolTipService.ToolTip>
+                            <ToolTip Content="{x:Bind ViewModel.SelectedSync.Drive.Account.User.Name, Mode=OneWay}" Placement="Right"/>
+                        </ToolTipService.ToolTip>
                     </Border>
                     <Border Canvas.ZIndex="2"
                             Canvas.Left="30"
@@ -48,6 +47,9 @@
                                               UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom}"
                                               Foreground="{x:Bind ViewModel.SelectedSync.Drive.Color, Mode=OneWay, Converter={StaticResource ColorToBrushConverter}}" />
                         </Viewbox>
+                        <ToolTipService.ToolTip>
+                            <ToolTip Content="{x:Bind ViewModel.SelectedSync.Drive.Name, Mode=OneWay}" Placement="Right"/>
+                        </ToolTipService.ToolTip>
                     </Border>
 
                 </Canvas>
