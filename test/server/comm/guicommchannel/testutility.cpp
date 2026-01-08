@@ -186,9 +186,9 @@ void TestGuiCommChannel::testUtilityIsPathValidForNewSyncJob() {
                          std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-        auto isPathValidForForNewSyncJob = std::dynamic_pointer_cast<UtilityIsPathValidForNewSyncJob>(job);
-        CPPUNIT_ASSERT(isPathValidForForNewSyncJob);
-        isPathValidForForNewSyncJob->_isValid = true;
+        auto isPathValidForNewSyncJob = std::dynamic_pointer_cast<UtilityIsPathValidForNewSyncJob>(job);
+        CPPUNIT_ASSERT(isPathValidForNewSyncJob);
+        isPathValidForNewSyncJob->_isValid = true;
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)

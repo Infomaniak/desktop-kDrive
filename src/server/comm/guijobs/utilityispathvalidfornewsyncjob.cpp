@@ -56,8 +56,8 @@ ExitInfo UtilityIsPathValidForNewSyncJob::serializeOutputParms() {
 }
 
 ExitInfo UtilityIsPathValidForNewSyncJob::process() {
-    if (const auto exitInfo = ServerRequests::isPathVAlidForNewSync(_path, _isValid); !exitInfo) {
-        LOGW_WARN(_logger, L"isPathVAlidForNewSync failed: " << Utility::formatSyncPath(_path));
+    if (const auto exitInfo = ServerRequests::isPathValidForNewSync(_path, _isValid); !exitInfo) {
+        LOGW_WARN(_logger, L"isPathValidForNewSync failed: " << Utility::formatSyncPath(_path));
         return exitInfo;
     }
     return ExitCode::Ok;

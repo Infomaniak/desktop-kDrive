@@ -311,7 +311,7 @@ ExitCode ServerRequests::updateParameters(const ParametersInfo &parametersInfo) 
     return exitCode;
 }
 
-ExitInfo ServerRequests::isPathVAlidForNewSync(const SyncPath &path, bool &valid) {
+ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, bool &valid) {
 
     // Check for nested syncs
     std::vector<Sync> syncList;
@@ -320,12 +320,11 @@ ExitInfo ServerRequests::isPathVAlidForNewSync(const SyncPath &path, bool &valid
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
         return ExitCode::DbError;
     }
-    std::string error;
+
     QString qPath = QString::fromStdString(path.string());
     QString qError;
-
     if (ExitInfo exitInfo = checkPathValidityForNewFolder(syncList, qPath, qError); !exitInfo) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityForNewFolder: " << exitInfo);
+        LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityForNewFolder: " << exitInfo << qError.toStdString());
         return ExitCode::Ok;
     }
 
@@ -2128,16 +2127,16 @@ ExitCode ServerRequests::checkPathValidityForNewFolder(const std::vector<Sync> &
 
     const QString userDir = QDir::cleanPath(canonicalPath(path)) + '/';
 
-    QList<std::filesystem::path> folderByDriveList;
+    QList<std::filesystem::path> existingSyncFolderList;
     for (const Sync &sync: syncList) {
-        folderByDriveList << sync.localPath();
+        existingSyncFolderList << sync.localPath();
     }
 
-    for (std::filesystem::path folderByDrive: folderByDriveList) {
-        QString folderDir = QDir::cleanPath(canonicalPath(SyncName2QStr(folderByDrive.native()))) + '/';
+    for (std::filesystem::path existingSyncFolder: existingSyncFolderList) {
+        QString existingSyncFolderDir = QDir::cleanPath(canonicalPath(SyncName2QStr(existingSyncFolder.native()))) + '/';
 
-        bool differentPaths = QString::compare(folderDir, userDir, cs) != 0;
-        if (differentPaths && folderDir.startsWith(userDir, cs)) {
+        bool differentPaths = QString::compare(existingSyncFolderDir, userDir, cs) != 0;
+        if (differentPaths && existingSyncFolderDir.startsWith(userDir, cs)) {
             error = QObject::tr(
                             "The local folder %1 contains a folder already synced. "
                             "Please pick another one!")
@@ -2145,10 +2144,16 @@ ExitCode ServerRequests::checkPathValidityForNewFolder(const std::vector<Sync> &
             return ExitCode::SystemError;
         }
 
-        if (differentPaths && userDir.startsWith(folderDir, cs)) {
+        if (differentPaths && userDir.startsWith(existingSyncFolderDir, cs)) {
             error = QObject::tr(
                             "The local folder %1 is contained in a folder already synced. "
                             "Please pick another one!")
+                            .arg(QDir::toNativeSeparators(path));
+            return ExitCode::SystemError;
+        }
+
+        if (!differentPaths) {
+            error = QObject::tr("The local folder %1 is already synced. Please pick another one!")
                             .arg(QDir::toNativeSeparators(path));
             return ExitCode::SystemError;
         }

@@ -31,7 +31,6 @@ class UtilityFindGoodPathForNewSyncJob : public AbstractGuiJob {
     private:
         // Input parameters
         SyncPath _basePath;
-        int _driveDbId = -1;
 
         // Output parameters
         SyncPath _goodPath;
