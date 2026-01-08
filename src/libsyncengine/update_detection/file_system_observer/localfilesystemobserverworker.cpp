@@ -269,8 +269,9 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(
                 // happens for instance if a file is deleted while another file with the same path is created shortly
                 // afterward. Typically, editors of the MS suite (xlsx, docx) or Adobe suite (pdf) perform a
                 // Delete-followed-by-Create operation during a single edit.
-                NodeId itemId = _liveSnapshot.itemId(relativePath);
-                if (!itemId.empty() && _liveSnapshot.removeItem(itemId)) {
+                const NodeId itemId = _liveSnapshot.itemId(relativePath);
+                if (itemId.empty()) continue;
+                if (_liveSnapshot.removeItem(itemId)) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: " << Utility::formatSyncPath(absolutePath)
                                                                                       << L" (" << CommonUtility::s2ws(itemId)
                                                                                       << L")");
@@ -407,13 +408,15 @@ void LocalFileSystemObserverWorker::execute() {
             break;
         }
 
-        if (exitInfo = _syncPal->isRootFolderValid(); !exitInfo) {
+        exitInfo = _syncPal->isRootFolderValid();
+        if (!exitInfo) {
             LOG_SYNCPAL_WARN(_logger, "Error in isRootFolderValid: " << exitInfo);
             invalidateSnapshot();
             break;
         }
 
-        if (exitInfo = _folderWatcher->exitInfo(); !exitInfo) {
+        exitInfo = _folderWatcher->exitInfo();
+        if (!exitInfo) {
             LOG_SYNCPAL_WARN(_logger, "Error in FolderWatcher: " << _folderWatcher->exitInfo());
             tryToInvalidateSnapshot();
             break;
@@ -429,11 +432,12 @@ void LocalFileSystemObserverWorker::execute() {
 
         // Wait 1 sec after the last update
         if (_updating) {
-            auto diff_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() -
-                                                                                 _needUpdateTimerStart);
+            const auto diff_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() -
+                                                                                       _needUpdateTimerStart);
             if (diff_ms.count() > waitForUpdateDelay) {
                 // Check if root folder is still valid
-                if (exitInfo = _syncPal->isRootFolderValid(); !exitInfo) {
+                exitInfo = _syncPal->isRootFolderValid();
+                if (!exitInfo) {
                     LOG_SYNCPAL_WARN(_logger, "Error in isRootFolderValid: " << exitInfo);
                     invalidateSnapshot();
                     break;

@@ -217,3 +217,7 @@ using REPARSE_DATA_BUFFER = struct _REPARSE_DATA_BUFFER {
 #define REPARSE_DATA_BUFFER_HEADER_SIZE FIELD_OFFSET(REPARSE_DATA_BUFFER, GenericReparseBuffer)
 constexpr auto REPARSE_MOUNTPOINT_HEADER_SIZE = 8;
 // Definitions for DeviceIoControl - End
+
+namespace KDC {
+PZW_QUERY_DIRECTORY_FILE pzwQueryDirectoryFileFct(IoError &ioError);
+}

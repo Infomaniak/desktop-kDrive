@@ -430,6 +430,63 @@ void TestOperationSorterWorker::testFixCreateBeforeCreateComplexOrdering() {
     }
 }
 
+void TestOperationSorterWorker::testFixCreateBeforeCreateSameIdOnBothSide() {
+    // Initial remote situation:
+    // .
+    // ├── A (a)
+    // │   └── AA (aa)
+    // │       └── AAA (aaa)
+    const auto nodeA = std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str("A"), NodeType::Directory,
+                                              OperationType::Create, "a", testhelpers::defaultTime, testhelpers::defaultTime,
+                                              testhelpers::defaultDirSize, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+    (void) _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(nodeA);
+    _syncPal->updateTree(ReplicaSide::Remote)->insertNode(nodeA);
+    const auto opA = generateSyncOperation(OperationType::Create, nodeA);
+
+    const auto nodeAA =
+            std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str("AA"), NodeType::Directory, OperationType::Create, "aa",
+                                   testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultDirSize, nodeA);
+    (void) nodeA->insertChildren(nodeAA);
+    _syncPal->updateTree(ReplicaSide::Remote)->insertNode(nodeAA);
+    const auto opAA = generateSyncOperation(OperationType::Create, nodeAA);
+
+    const auto nodeAAA =
+            std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str("AAA"), NodeType::File, OperationType::Create, "aaa",
+                                   testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultDirSize, nodeAA);
+    (void) nodeAA->insertChildren(nodeAAA);
+    _syncPal->updateTree(ReplicaSide::Remote)->insertNode(nodeAAA);
+    const auto opAAA = generateSyncOperation(OperationType::Create, nodeAAA);
+
+    // Initial local situation :
+    // .
+    // └── B (b)
+    //     └── BA (aa)
+    const auto nodeB = std::make_shared<Node>(std::nullopt, ReplicaSide::Local, Str("B"), NodeType::Directory,
+                                              OperationType::Create, "b", testhelpers::defaultTime, testhelpers::defaultTime,
+                                              testhelpers::defaultDirSize, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
+    (void) _syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeB);
+    _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeB);
+    const auto opB = generateSyncOperation(OperationType::Create, nodeB);
+
+    const auto nodeBA =
+            std::make_shared<Node>(std::nullopt, ReplicaSide::Local, Str("BA"), NodeType::File, OperationType::Create, "aa",
+                                   testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultDirSize, nodeB);
+    (void) nodeB->insertChildren(nodeBA);
+    _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeBA);
+    const auto opBA = generateSyncOperation(OperationType::Create, nodeBA);
+
+    _syncPal->syncOps()->clear();
+
+    (void) _syncPal->syncOps()->pushOp(opA);
+    (void) _syncPal->syncOps()->pushOp(opAA);
+    (void) _syncPal->syncOps()->pushOp(opAAA);
+    (void) _syncPal->syncOps()->pushOp(opB);
+    (void) _syncPal->syncOps()->pushOp(opBA);
+
+    _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
+
+    CPPUNIT_ASSERT(!_syncPal->_operationsSorterWorker->hasOrderChanged());
+}
 
 // edit before move, e.g. user moves an object "a" to "b" and then edit it.
 void TestOperationSorterWorker::testFixEditBeforeMove() {

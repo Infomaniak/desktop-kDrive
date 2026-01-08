@@ -46,16 +46,11 @@ struct GuiRequests {
         // Use COMM_SHORT_TIMEOUT
         static ExitCode getUserDbIdList(QList<int> &list);
         static ExitCode getUserInfoList(QList<UserInfo> &list);
-        static ExitCode getUserIdFromUserDbId(int userDbId, int &userId);
         static ExitCode getAccountInfoList(QList<AccountInfo> &list);
         static ExitCode getDriveInfoList(QList<DriveInfo> &list);
-        static ExitCode getDriveIdFromDriveDbId(int driveDbId, int &driveId);
-        static ExitCode getDriveIdFromSyncDbId(int syncDbId, int &driveId);
-        static ExitCode getDriveDefaultColor(QColor &color);
         static ExitCode updateDrive(const DriveInfo &driveInfo);
         static ExitCode getSyncInfoList(QList<SyncInfo> &list);
         static ExitCode getSyncStatus(int syncDbId, SyncStatus &status);
-        static ExitCode getSyncIsRunning(int syncDbId, bool &running);
         static ExitCode getSyncIdSet(int syncDbId, SyncNodeType type, QSet<QString> &syncIdSet);
         static ExitCode setSyncIdSet(int syncDbId, SyncNodeType type, const QSet<QString> &syncIdSet);
         static ExitCode getParameters(ParametersInfo &parametersInfo);
@@ -137,6 +132,5 @@ struct GuiRequests {
         static ExitCode startInstaller();
         static ExitCode skipUpdate(const std::string &version);
         static ExitCode reportClientDisplayed();
-        static ExitCode getOfflineFilesTotalSize(int driveDbId, uint64_t &totalSize);
 };
 } // namespace KDC

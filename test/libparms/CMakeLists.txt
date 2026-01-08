@@ -19,6 +19,15 @@ set(testparms_SRCS
     db/testparmsdb.h db/testparmsdb.cpp
 )
 
+if(APPLE)
+    list(APPEND testparms_SRCS ../test_utility/testhelpers_mac.cpp)
+elseif(UNIX)
+    list(APPEND testparms_SRCS ../test_utility/testhelpers_linux.cpp)
+elseif(WIN32)
+    list(APPEND testparms_SRCS ../test_utility/testhelpers_win.cpp)
+endif()
+
+
 if(USE_OUR_OWN_SQLITE3)
     list(APPEND testparms_SRCS ${SQLITE3_SOURCE})
 endif()

@@ -92,16 +92,13 @@ void TestNetworkJobs::setUp() {
     const testhelpers::TestVariables testVariables;
 
     // Insert api token into keystore
-    ApiToken apiToken;
-    apiToken.setAccessToken(testVariables.apiToken);
+    _apiToken.setAccessToken(testVariables.apiToken);
 
     const std::string keychainKey("123");
     (void) KeyChainManager::instance(true);
-    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance()->writeToken(keychainKey, _apiToken.reconstructJsonString());
     // Create parmsDb
-    bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
-    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
+    (void) ParmsDb::instance(_localParmsDbTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
     // Insert user, account & drive
@@ -1557,21 +1554,34 @@ bool TestNetworkJobs::createTestFiles() {
 void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
     class GetInfoUserJobMock final : public GetInfoUserJob {
         public:
-            explicit GetInfoUserJobMock(int32_t userDbId) :
-                GetInfoUserJob(userDbId) {};
+            explicit GetInfoUserJobMock(const int32_t userDbId, const ApiToken &apiToken) :
+                GetInfoUserJob(userDbId),
+                _apiToken(apiToken) {};
 
-        protected:
-            ExitInfo receiveResponseFromSession(StreamVector &stream) override {
-                AbstractNetworkJob::receiveResponseFromSession(stream);
-                _resHttp.setStatus("401");
-                return ExitCode::Ok;
-            };
+            [[nodiscard]] Poco::Net::HTTPResponse httpResponse() const override {
+                return Poco::Net::HTTPResponse(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
+            }
+            ApiToken loadApiToken() override { return _apiToken; }
+
+        private:
+            ApiToken _apiToken;
     };
 
-    GetInfoUserJobMock job(_userDbId);
-    ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT_EQUAL(ExitCode::InvalidToken, exitCode);
-    CPPUNIT_ASSERT_EQUAL(0, job.trials());
+    // Without refresh token.
+    {
+        GetInfoUserJobMock job(_userDbId, _apiToken);
+        const auto exitInfo = job.runSynchronously();
+        CPPUNIT_ASSERT_EQUAL(ExitCode::InvalidToken, exitInfo.code());
+    }
+    // With refresh token
+    {
+        _apiToken.setRefreshToken("123");
+        GetInfoUserJobMock job(_userDbId, _apiToken);
+        (void) job.runSynchronously(); // Run once just to update the refresh token in cache.
+        const auto exitInfo = job.runSynchronously();
+        CPPUNIT_ASSERT_EQUAL(ExitCode::InvalidToken, exitInfo.code());
+        CPPUNIT_ASSERT_EQUAL(0, job.trials());
+    }
 }
 
 } // namespace KDC

@@ -29,7 +29,8 @@ namespace KDC {
 
 class MockDb : public Db {
     public:
-        explicit MockDb(const std::filesystem::path &dbPath) : Db(dbPath) {}
+        explicit MockDb(const std::filesystem::path &dbPath) :
+            Db(dbPath) {}
 
         static std::string makeDbFileName(int userId, int accountId, int driveId, int syncDbId) {
             std::string fileName = Db::makeDbFileName(userId, accountId, driveId, syncDbId);
@@ -37,11 +38,13 @@ class MockDb : public Db {
             return fileName;
         }
 
-        static std::filesystem::path makeDbName(bool &alreadyExist) { return makeDbName(0, 0, 0, 0, alreadyExist); }
+        static std::string makeDbMockFileName() { return makeDbFileName(0, 0, 0, 0); }
 
         static std::filesystem::path makeDbName(int userId, int accountId, int driveId, int syncDbId, bool &alreadyExist) {
             return Db::makeDbName(userId, accountId, driveId, syncDbId, alreadyExist, makeDbFileName);
         }
+
+        static std::filesystem::path makeDbName(bool &alreadyExist) { return makeDbName(0, 0, 0, 0, alreadyExist); }
 };
 
 } // namespace KDC

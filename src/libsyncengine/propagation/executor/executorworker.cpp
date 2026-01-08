@@ -161,9 +161,7 @@ void ExecutorWorker::execute() {
             }
 
             if (job) {
-                std::function<void(UniqueId)> callback =
-                        std::bind(&ExecutorWorker::executorCallback, this, std::placeholders::_1);
-                job->setAdditionalCallback(callback);
+                job->setAdditionalCallback(std::bind_front(&ExecutorWorker::executorCallback, this));
                 SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
                 _ongoingJobs.insert({job->jobId(), job});
                 _jobToSyncOpMap.insert({job->jobId(), syncOp});
@@ -536,7 +534,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
 
         } else {
             if (syncOp->affectedNode()->type() == NodeType::Directory) {
-                job = std::make_shared<LocalCreateDirJob>(absoluteLocalFilePath);
+                job = std::make_shared<LocalCreateDirJob>(absoluteLocalFilePath, syncOp->affectedNode()->isSharedFolder());
             } else {
                 bool exists = false;
                 IoError ioError = IoError::Success;
@@ -1066,7 +1064,7 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
             try {
                 job = std::make_shared<MoveJob>(_syncPal->vfs(), _syncPal->driveDbId(), absoluteDestLocalFilePath, fileId,
                                                 destDirId, syncOp->newName());
-            } catch (std::exception &e) {
+            } catch (const std::exception &e) {
                 LOG_SYNCPAL_WARN(_logger, "Error in GetTokenFromAppPasswordJob::GetTokenFromAppPasswordJob: error=" << e.what());
                 return ExitCode::DataError;
             }
@@ -1183,8 +1181,7 @@ ExitInfo ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool
             LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve node ID");
             return ExitCode::DataError;
         }
-        job = std::make_shared<LocalDeleteJob>(_syncPal->syncInfo(), relativeLocalFilePath, isDehydratedPlaceholder,
-                                               remoteNodeId);
+        job = std::make_shared<LocalDeleteJob>(_syncPal->syncInfo(), relativeLocalFilePath, isLiteSyncActivated(), remoteNodeId);
     } else {
         try {
             job = std::make_shared<DeleteJob>(_syncPal->driveDbId(), syncOp->correspondingNode()->id().value_or(""),
@@ -2023,6 +2020,7 @@ ExitInfo ExecutorWorker::deleteFromDb(std::shared_ptr<Node> node) {
 
     return ExitCode::Ok;
 }
+
 
 ExitInfo ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<SyncJob> job) {
     (void) job->runSynchronously();

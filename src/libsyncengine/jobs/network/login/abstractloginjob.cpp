@@ -31,20 +31,6 @@ AbstractLoginJob::AbstractLoginJob() {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 
-bool AbstractLoginJob::hasErrorApi(std::string *errorCode, std::string *errorDescr) {
-    if (getStatusCode() == Poco::Net::HTTPResponse::HTTP_OK) {
-        return false;
-    }
-
-    if (errorCode) {
-        *errorCode = _errorCode;
-        if (errorDescr) {
-            *errorDescr = _errorDescr;
-        }
-    }
-    return true;
-}
-
 std::string AbstractLoginJob::getSpecificUrl() {
     return "/token";
 }
@@ -70,7 +56,7 @@ ExitInfo AbstractLoginJob::handleError(const std::string &replyBody, const Poco:
         jsonError = jsonParser.parse(replyBody).extract<Poco::JSON::Object::Ptr>();
     } catch (Poco::Exception &exc) {
         LOG_WARN(_logger, "Reply " << jobId() << " received doesn't contain a valid JSON error: " << exc.displayText());
-        Utility::logGenericServerError(_logger, "Login error", replyBody, _resHttp);
+        Utility::logGenericServerError(_logger, "Login error", replyBody, httpResponse());
         return {ExitCode::BackError, ExitCause::ApiErr};
     }
 
@@ -81,8 +67,7 @@ ExitInfo AbstractLoginJob::handleError(const std::string &replyBody, const Poco:
     }
 
     ExitInfo exitInfo;
-    Poco::JSON::Object::Ptr errorObj = jsonError->getObject(errorKey);
-    if (errorObj) {
+    if (Poco::JSON::Object::Ptr errorObj = jsonError->getObject(errorKey); errorObj) {
         if (!JsonParserUtility::extractValue(errorObj, codeKey, _errorCode)) {
             return {};
         }

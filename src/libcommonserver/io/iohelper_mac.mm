@@ -231,18 +231,7 @@ void IoHelper::setFileHidden(const SyncPath &path, bool hidden) noexcept {
     [pathURL setResourceValue:value forKey:NSURLIsHiddenKey error:NULL];
 }
 
-bool isLocked(const SyncPath &path) {
-    NSString *pathStr = [NSString stringWithCString:path.c_str() encoding:NSUTF8StringEncoding];
-    if (pathStr == nil) {
-        return false;
-    }
-
-    NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:pathStr error:nil];
-    BOOL isLocked = [[attributes objectForKey:NSFileImmutable] boolValue];
-    return isLocked;
-}
-
-IoError IoHelper::setFileDates(const SyncPath &filePath, const SyncTime creationDate, const SyncTime modificationDate,
+IoError IoHelper::setFileDates(const SyncPath &filePath, SyncTime creationDate, SyncTime modificationDate,
                                bool symlink) noexcept {
     NSDate *cDate = [[NSDate alloc] initWithTimeIntervalSince1970:creationDate];
     NSDate *mDate = [[NSDate alloc] initWithTimeIntervalSince1970:modificationDate];
@@ -287,6 +276,35 @@ IoError IoHelper::setFileDates(const SyncPath &filePath, const SyncTime creation
     }
 
     return IoError::Success;
+}
+
+bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
+    if (itemPath.empty()) {
+        LOG_WARN(Log::instance()->getLogger(), "Path is empty");
+        return false;
+    }
+
+    NSString *filePath = [NSString stringWithCString:itemPath.c_str() encoding:NSUTF8StringEncoding];
+
+    if (filePath == nullptr) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in stringWithCString. Failed to cast std filepath to NSString." << Utility::formatSyncPath(itemPath));
+        return false;
+    }
+    NSURL *fileURL = [NSURL fileURLWithPath:filePath];
+
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+
+    NSError *error = nil;
+    BOOL success = [fileManager trashItemAtURL:fileURL resultingItemURL:nil error:&error];
+
+    if (error != nil) {
+        const auto wcharError = reinterpret_cast<const wchar_t *>(
+                [error.localizedDescription cStringUsingEncoding:NSUTF32LittleEndianStringEncoding]);
+        LOGW_WARN(Log::instance()->getLogger(), std::wstring(wcharError) << Utility::formatSyncPath(itemPath));
+    }
+
+    return success;
 }
 
 } // namespace KDC

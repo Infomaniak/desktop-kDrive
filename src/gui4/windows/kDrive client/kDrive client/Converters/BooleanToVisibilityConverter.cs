@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.UI.Xaml.Data;
+﻿using Microsoft.UI.Xaml.Data;
+using System;
 
 namespace Infomaniak.kDrive.Converters
 {
@@ -12,17 +7,21 @@ namespace Infomaniak.kDrive.Converters
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-
+            bool valueAsBool = false;
+            // Convert the input value to a boolean
             if (value is bool boolValue)
-            {
-                return boolValue ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
-            }
+                valueAsBool = boolValue;
             else if (value is int intValue)
-            {
-                return intValue != 0 ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
-            }
-            Logger.Log(Logger.Level.Warning, "BooleanToVisibilityConverter: value is not a boolean.");
-            return Microsoft.UI.Xaml.Visibility.Collapsed;
+                valueAsBool = intValue != 0;
+            else
+                throw new InvalidOperationException("Value must be a boolean or an integer.");
+
+            // Parse parameters
+            ParameterParser parser = new(parameter);
+            if (parser.KeyEquals("Inverted", "True"))
+                valueAsBool = !valueAsBool;
+
+            return valueAsBool ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

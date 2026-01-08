@@ -52,16 +52,15 @@ class TestWorkers : public CppUnit::TestFixture, public TestBase {
         log4cplus::Logger _logger;
         std::shared_ptr<SyncPal> _syncPal;
         Sync _sync;
-        LocalTemporaryDirectory _localTempDir{"TestExecutorWorker"};
-
-        std::unique_ptr<CommManager> _commManager;
+        LocalTemporaryDirectory _localTempDir{"TestWorkers"};
+        LocalTemporaryDirectory _localParmsDbTempDir{"testParmsDbTempDir"};
 
 #if defined(KD_MACOS)
-        static std::shared_ptr<VfsMac> _vfsPtr;
+        static std::shared_ptr<VfsMac> _vfs;
 #elif defined(KD_WINDOWS)
-        static std::shared_ptr<VfsWin> _vfsPtr;
+        static std::shared_ptr<VfsWin> _vfs;
 #else
-        static std::shared_ptr<VfsOff> _vfsPtr;
+        static std::shared_ptr<VfsOff> _vfs;
 #endif
 
         static bool _vfsInstallationDone;

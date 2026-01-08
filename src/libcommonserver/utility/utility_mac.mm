@@ -34,35 +34,6 @@
 
 namespace KDC {
 
-bool Utility::moveItemToTrash(const SyncPath &itemPath) {
-    if (itemPath.empty()) {
-        LOG_WARN(Log::instance()->getLogger(), "Path is empty");
-        return false;
-    }
-
-    NSString *filePath = [NSString stringWithCString:itemPath.c_str() encoding:NSUTF8StringEncoding];
-
-    if (filePath == nullptr) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in stringWithCString. Failed to cast std filepath to NSString." << Utility::formatSyncPath(itemPath));
-        return false;
-    }
-    NSURL *fileURL = [NSURL fileURLWithPath:filePath];
-
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-
-    NSError *error = nil;
-    BOOL success = [fileManager trashItemAtURL:fileURL resultingItemURL:nil error:&error];
-
-    if (error != nil) {
-        const auto wcharError = reinterpret_cast<const wchar_t *>(
-                [error.localizedDescription cStringUsingEncoding:NSUTF32LittleEndianStringEncoding]);
-        LOGW_WARN(Log::instance()->getLogger(), std::wstring(wcharError) << Utility::formatSyncPath(itemPath));
-    }
-
-    return success;
-}
-
 bool Utility::preventSleeping(bool enable) {
     static IOPMAssertionID assertionID;
 
@@ -82,6 +53,12 @@ bool Utility::preventSleeping(bool enable) {
 }
 
 void runKillCommand(pid_t pid) {
+    // Filtering of dangerous cases:
+    // pid 1 is launchd
+    // pid -1 would broadcast a kill to all processes belonging to the user
+    assert(pid > 1);
+    if (pid <= 1) return;
+
     NSString *killCommand = [NSString stringWithFormat:@"kill -9 %d", pid];
     LOG_DEBUG(Log::instance()->getLogger(), "Running kill command: " << killCommand.UTF8String);
     system(killCommand.UTF8String);
@@ -92,7 +69,10 @@ void Utility::restartFinderExtension() {
     NSString *processName = [NSString stringWithFormat:@"%@.Extension", bundleID];
     NSArray<NSRunningApplication *> *apps = [NSRunningApplication runningApplicationsWithBundleIdentifier:processName];
     LOG_DEBUG(Log::instance()->getLogger(), "Killing Finder Extension");
-    for (NSRunningApplication *app: apps) runKillCommand(app.processIdentifier);
+    for (NSRunningApplication *app: apps) {
+        if (app.terminated) continue;
+        runKillCommand(app.processIdentifier);
+    }
 
     // Before macOS 15.0, and when other Finder extension (e.g. Goggle Drive) were installed,
     // it was needed to got to "System Settings -> Privacy & Security -> Extensions -> Added Extensions"

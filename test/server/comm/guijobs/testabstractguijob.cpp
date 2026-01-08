@@ -96,10 +96,7 @@ void TestAbstractGuiJob::setUp() {
     _logger = Log::instance()->getLogger();
 
     // Create parmsDb
-    bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
-    (void) std::filesystem::remove(parmsDbPath);
-    ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
+    (void) ParmsDb::instance(_localParmsDbTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
 
     _channel = std::make_shared<GuiCommChannelTest2>();
 }
@@ -204,7 +201,7 @@ ExitInfo GuiJobTest::deserializeInputParms() {
     return ExitCode::Ok;
 }
 
-ExitInfo GuiJobTest::serializeOutputParms([[maybe_unused]] bool hasError /*= false*/) {
+ExitInfo GuiJobTest::serializeOutputParms() {
     writeParamValue(outParamsStrValue, "qwertz");
     writeParamValue(outParamsStrValue2, "每个人都有他的作战策略");
     writeParamValue(outParamsWStrValue, L"asdfgh");

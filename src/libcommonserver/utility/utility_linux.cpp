@@ -22,6 +22,7 @@
 #include "libcommon/utility/utility.h"
 
 #include <filesystem>
+#include <regex>
 #include <string>
 #include <pwd.h>
 #include <sys/stat.h>
@@ -37,66 +38,18 @@
 
 namespace KDC {
 
-bool Utility::moveItemToTrash(const SyncPath &itemPath) {
-    std::string xdgDataHome, homePath, trashPath;
-
-    const char *xdgDataHomeEnv = std::getenv("XDG_DATA_HOME");
+SyncPath Utility::getTrashPath() {
     const char *homePathEnv = std::getenv("HOME");
-
-    if (xdgDataHomeEnv) {
-        xdgDataHome = std::string(xdgDataHomeEnv);
-    }
     if (!homePathEnv) {
         LOG_WARN(Log::instance()->getLogger(), "Path to HOME not found");
-        return false;
+        return {};
     }
 
-    homePath = std::string(homePathEnv);
-
-    if (xdgDataHome.empty()) {
-        trashPath = homePath + "/.local/share/Trash/files/";
-    } else {
-        trashPath = xdgDataHome + "/Trash/files/";
+    if (const char *xdgDataHomeEnv = std::getenv("XDG_DATA_HOME"); xdgDataHomeEnv) {
+        return std::string(xdgDataHomeEnv) + "/Trash/files/";
     }
 
-    std::string desktopType;
-    if (!Utility::getLinuxDesktopType(desktopType)) {
-        desktopType = "GNOME";
-    }
-
-    std::string command;
-    if (desktopType == "GNOME") {
-        command = "gio trash \"" + itemPath.string() + "\"";
-    } else if (desktopType == "KDE") {
-        command = "kioclient move \"" + itemPath.string() + "\" trash:/files/";
-    } else {
-        // Not implemented for the others distros
-        return true;
-    }
-
-    std::filesystem::path trash_path(trashPath);
-
-    // Check if the trash/files & trash/info path exists and create it if needed
-    std::error_code ec;
-    if (!std::filesystem::exists(trash_path, ec)) {
-        if (ec.value() != 0) {
-            LOG_WARN(Log::instance()->getLogger(),
-                     "Error in std::filesystem::exists - err=" << ec.message() << " (" << std::to_string(ec.value()) << ")");
-            return false;
-        }
-
-        if (!std::filesystem::create_directories(trash_path)) {
-            LOG_WARN(Log::instance()->getLogger(), "Failed to create directory - path=" << trash_path.string());
-            return false;
-        }
-    }
-
-    int result = system(command.c_str());
-    if (result != 0) {
-        LOG_WARN(Log::instance()->getLogger(), "Failed to move item to trash - err=" << std::to_string(result));
-        return false;
-    }
-    return true;
+    return std::string(homePathEnv) + "/.local/share/Trash/files/";
 }
 
 namespace {
@@ -249,8 +202,9 @@ namespace {
 // Returns the autostart directory the linux way
 // and respects the XDG_CONFIG_HOME env variable
 SyncPath getUserAutostartDir() {
-    auto configPath = CommonUtility::getAppSupportDir();
+    auto configPath = CommonUtility::getAppSupportDir().parent_path();
     configPath /= "autostart";
+
     return configPath;
 }
 } // namespace
@@ -271,7 +225,7 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
             return false;
         }
 
-        std::wofstream testFile(userAutoStartFilePath, std::ios_base::in);
+        std::wofstream testFile{userAutoStartFilePath};
         if (!testFile.is_open()) {
             LOGW_WARN(logger(), L"Could not write auto start entry." << Utility::formatSyncPath(userAutoStartFilePath));
             return false;
@@ -281,7 +235,7 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
         testFile << L"[Desktop Entry]" << std::endl;
         testFile << L"Name=" << CommonUtility::s2ws(guiName) << std::endl;
         testFile << L"GenericName=File Synchronizer" << std::endl;
-        testFile << L"Exec=" << Utility::formatSyncPath(appimageDir) << std::endl;
+        testFile << L"Exec=" << L"'" << CommonUtility::s2ws(appimageDir) << L"'" << std::endl;
         testFile << L"Terminal=false" << std::endl;
         testFile << L"Icon=" << CommonUtility::s2ws(CommonUtility::toLower(appName)) << std::endl;
         testFile << L"Categories=Network" << std::endl;

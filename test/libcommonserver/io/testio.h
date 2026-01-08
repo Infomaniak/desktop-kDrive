@@ -30,7 +30,10 @@ using namespace CppUnit;
 namespace KDC {
 class TestIo : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestIo);
-        CPPUNIT_TEST(testCheckSetAndGetRights); // Keep this test before any tests that may use set/get rights functions
+        CPPUNIT_TEST(testCheckSetAndGetRights); // Keep this test before any tests that may use set/get right functions
+        CPPUNIT_TEST(testLock);
+        CPPUNIT_TEST(testReadOnly);
+        CPPUNIT_TEST(testPermissionsHolder);
         CPPUNIT_TEST(testGetItemType);
         CPPUNIT_TEST(testGetFileSize);
         CPPUNIT_TEST(testTempDirectoryPath);
@@ -69,6 +72,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testOpenLockedFileRemovedBeforeTimedOut);
         CPPUNIT_TEST(testSetFileDates);
         CPPUNIT_TEST(testGetDirectorySize);
+        CPPUNIT_TEST(testMoveItemToTrash);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -107,6 +111,9 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
 #endif
         void testCheckIfFileIsDehydrated();
         void testCheckSetAndGetRights();
+        void testLock();
+        void testReadOnly();
+        void testPermissionsHolder();
 
     private:
         void testGetItemTypeSimpleCases();
@@ -138,6 +145,8 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
 
         void testSetFileDates();
         void testGetDirectorySize();
+
+        void testMoveItemToTrash();
 
     private:
         IoHelperTestUtilities *_testObj;

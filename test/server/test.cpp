@@ -18,18 +18,23 @@
 
 #include "testincludes.h"
 
-
 #if defined(KD_MACOS)
 #include "vfs/mac/testlitesynccommclient.h"
 #include "vfs/mac/testvfsmac.h"
 #endif
 #include "workers/testworkers.h"
 #include "updater/testabstractupdater.h"
+#if defined(KD_WINDOWS)
+#include "updater/testwindowsupdater.h"
+#endif
 #include "updater/testupdatechecker.h"
 #include "requests/testserverrequests.h"
 #include "appserver/testappserver.h"
 #include "comm/testguicommchannel.h"
 #include "comm/testsocketcomm.h"
+#if defined(KD_WINDOWS)
+#include "comm/testpipecomm.h"
+#endif
 #include "comm/guijobs/testabstractguijob.h"
 
 namespace KDC {
@@ -41,9 +46,15 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestLiteSyncCommClient);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestWorkers);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateChecker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractUpdater);
+#if defined(KD_WINDOWS)
+CPPUNIT_TEST_SUITE_REGISTRATION(TestWindowsUpdater);
+#endif
 CPPUNIT_TEST_SUITE_REGISTRATION(TestServerRequests);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAppServer);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSocketComm);
+#if defined(KD_WINDOWS)
+CPPUNIT_TEST_SUITE_REGISTRATION(TestPipeComm);
+#endif
 CPPUNIT_TEST_SUITE_REGISTRATION(TestGuiCommChannel);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractGuiJob);
 

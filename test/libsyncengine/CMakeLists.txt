@@ -62,8 +62,9 @@ set(testsyncengine_SRCS
         propagation/executor/testexecutorworker.h propagation/executor/testexecutorworker.cpp
         propagation/executor/testfilerescuer.h propagation/executor/testfilerescuer.cpp
         integration/testintegration.h integration/testintegration.cpp
-        integration/testintegration_conflicts.cpp
         integration/testintegration_basics.cpp
+        integration/testintegration_conflicts.cpp
+        integration/testintegration_nodeid_reuse.cpp
         # SyncPal
         syncpal/testsyncpal.h syncpal/testsyncpal.cpp
         syncpal/testsyncpalworker.h syncpal/testsyncpalworker.cpp
@@ -76,9 +77,11 @@ set(testsyncengine_SRCS
 )
 
 if(APPLE)
-    list(APPEND testsyncengine_SRCS update_detection/file_system_observer/testfolderwatchermac.h update_detection/file_system_observer/testfolderwatchermac.cpp)
+    list(APPEND testsyncengine_SRCS update_detection/file_system_observer/testfolderwatchermac.h update_detection/file_system_observer/testfolderwatchermac.cpp ../test_utility/testhelpers_mac.cpp)
 elseif(UNIX)
-    list(APPEND testsyncengine_SRCS update_detection/file_system_observer/testfolderwatcherlinux.h update_detection/file_system_observer/testfolderwatcherlinux.cpp)
+    list(APPEND testsyncengine_SRCS update_detection/file_system_observer/testfolderwatcherlinux.h update_detection/file_system_observer/testfolderwatcherlinux.cpp ../test_utility/testhelpers_linux.cpp)
+elseif (WIN32)
+    list(APPEND testsyncengine_SRCS ../test_utility/testhelpers_win.cpp)
 endif()
 
 if(USE_OUR_OWN_SQLITE3)

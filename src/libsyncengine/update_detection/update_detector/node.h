@@ -143,6 +143,7 @@ class Node {
         void clearChangeEvents() { _changeEvents = OperationType::None; }
         bool hasChangeEvent() const { return _changeEvents != OperationType::None; }
         bool hasChangeEvent(const OperationType op) const { return (_changeEvents & op) == op; }
+        bool hasInvalidEvents() const;
 
         void insertConflictAlreadyConsidered(const ConflictType &conf) { _conflictsAlreadyConsidered.push_back(conf); }
         void clearConflictAlreadyConsidered() { _conflictsAlreadyConsidered.clear(); }
@@ -154,6 +155,7 @@ class Node {
         [[nodiscard]] bool isRoot() const;
         [[nodiscard]] bool isCommonDocumentsFolder() const;
         [[nodiscard]] bool isSharedFolder() const;
+        [[nodiscard]] bool isSpecialFolder() const;
         [[nodiscard]] bool isParentOf(std::shared_ptr<const Node> potentialChild) const;
 
         [[nodiscard]] SyncPath getPath() const;

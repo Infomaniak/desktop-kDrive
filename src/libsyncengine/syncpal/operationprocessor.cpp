@@ -186,6 +186,10 @@ std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromPath(const st
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id for dbNodeId=" << parentDbNodeId);
         return nullptr;
     }
+    if (!found) {
+        LOG_SYNCPAL_WARN(_logger, "Node not found in SyncDb for dbNodeId=" << parentDbNodeId);
+        return nullptr;
+    }
 
     // Find corresponding ancestor node in the other tree
     std::shared_ptr<UpdateTree> otherTree = _syncPal->updateTree(otherSide(node->side()));

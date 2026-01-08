@@ -170,27 +170,26 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
     LONGLONG fileInfo[(MAX_PATH_LENGTH_WIN_LONG + sizeof(FILE_ID_FULL_DIR_INFORMATION)) / sizeof(LONGLONG)];
     PFILE_ID_FULL_DIR_INFORMATION pFileInfo = (PFILE_ID_FULL_DIR_INFORMATION) fileInfo;
 
-    PZW_QUERY_DIRECTORY_FILE zwQueryDirectoryFile =
-            (PZW_QUERY_DIRECTORY_FILE) GetProcAddress(GetModuleHandle(L"ntdll.dll"), "ZwQueryDirectoryFile");
-
-    if (zwQueryDirectoryFile == 0) {
-        LOGW_WARN(logger(), L"Error in GetProcAddress: " << Utility::formatSyncPath(path.parent_path()) << L", "
-                                                         << utility_base::getLastErrorMessage());
+    IoError ioError = IoError::Success;
+    PZW_QUERY_DIRECTORY_FILE pzwQueryDirectoryFile = pzwQueryDirectoryFileFct(ioError);
+    if (!pzwQueryDirectoryFile) {
+        LOGW_WARN(logger(), L"Error in pzwQueryDirectoryFileFct: " << Utility::formatIoError(ioError));
+        (void) CloseHandle(hParent);
         return false;
     }
 
-    NTSTATUS status = zwQueryDirectoryFile(hParent, NULL, NULL, NULL, &iosb, fileInfo, sizeof(fileInfo),
-                                           FileIdFullDirectoryInformation, true, &fn, TRUE);
+    NTSTATUS status = pzwQueryDirectoryFile(hParent, nullptr, nullptr, nullptr, &iosb, fileInfo, sizeof(fileInfo),
+                                            FileIdFullDirectoryInformation, true, &fn, TRUE);
 
     if (!NT_SUCCESS(status)) {
-        CloseHandle(hParent);
+        (void) CloseHandle(hParent);
         return false;
     }
 
     // Get the Windows file id as an inode replacement.
     nodeId = std::to_string(computeNodeId(pFileInfo));
 
-    CloseHandle(hParent);
+    (void) CloseHandle(hParent);
     return true;
 }
 
@@ -205,8 +204,8 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *filestat, IoError 
         retry = false;
 
         const DWORD dwShareMode = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
-        hParent = CreateFileW(path.parent_path().wstring().c_str(), FILE_LIST_DIRECTORY, dwShareMode, NULL, OPEN_EXISTING,
-                              FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
+        hParent = CreateFileW(path.parent_path().wstring().c_str(), FILE_LIST_DIRECTORY, dwShareMode, nullptr, OPEN_EXISTING,
+                              FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, nullptr);
         if (hParent == INVALID_HANDLE_VALUE) {
             DWORD dwError = GetLastError();
             if (utility_base::isLikeFileNotFoundError(dwError)) {
@@ -243,23 +242,20 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *filestat, IoError 
     LONGLONG fileInfo[(MAX_PATH_LENGTH_WIN_LONG + sizeof(FILE_ID_FULL_DIR_INFORMATION)) / sizeof(LONGLONG)];
     PFILE_ID_FULL_DIR_INFORMATION pFileInfo = (PFILE_ID_FULL_DIR_INFORMATION) fileInfo;
 
-    PZW_QUERY_DIRECTORY_FILE zwQueryDirectoryFile =
-            (PZW_QUERY_DIRECTORY_FILE) GetProcAddress(GetModuleHandle(L"ntdll.dll"), "ZwQueryDirectoryFile");
-
-    if (zwQueryDirectoryFile == 0) {
-        LOG_WARN(logger(), "Error in GetProcAddress");
-        ioError = dWordError2ioError(GetLastError(), logger());
-        CloseHandle(hParent);
+    PZW_QUERY_DIRECTORY_FILE pzwQueryDirectoryFile = pzwQueryDirectoryFileFct(ioError);
+    if (!pzwQueryDirectoryFile) {
+        LOGW_WARN(logger(), L"Error in pzwQueryDirectoryFileFct: " << Utility::formatIoError(ioError));
+        (void) CloseHandle(hParent);
         return false;
     }
 
-    NTSTATUS status = zwQueryDirectoryFile(hParent, NULL, NULL, NULL, &iosb, fileInfo, sizeof(fileInfo),
-                                           FileIdFullDirectoryInformation, true, &fn, TRUE);
+    NTSTATUS status = pzwQueryDirectoryFile(hParent, nullptr, nullptr, nullptr, &iosb, fileInfo, sizeof(fileInfo),
+                                            FileIdFullDirectoryInformation, true, &fn, TRUE);
 
     DWORD dwError = GetLastError();
     // On FAT32 file system, NT_SUCCESS will return false even if it is a success, therefore we also check GetLastError
     if ((CommonUtility::isNTFS(path) && !NT_SUCCESS(status)) || (CommonUtility::isFAT(path) && dwError != 0)) {
-        CloseHandle(hParent);
+        (void) CloseHandle(hParent);
 
         if (!NT_SUCCESS(status)) {
             ioError = ntStatus2ioError(status);
@@ -281,7 +277,7 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *filestat, IoError 
 
     filestat->isHidden = pFileInfo->FileAttributes & FILE_ATTRIBUTE_HIDDEN;
     filestat->nodeType = pFileInfo->FileAttributes & FILE_ATTRIBUTE_DIRECTORY ? NodeType::Directory : NodeType::File;
-    CloseHandle(hParent);
+    (void) CloseHandle(hParent);
 
     return true;
 }
@@ -289,7 +285,8 @@ bool IoHelper::_getFileStatFn(const SyncPath &path, FileStat *filestat, IoError 
 bool IoHelper::isFileAccessible(const SyncPath &absolutePath, IoError &ioError) {
     ioError = IoError::Success;
 
-    HANDLE hFile = CreateFileW(Path2WStr(absolutePath).c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, NULL, NULL);
+    HANDLE hFile =
+            CreateFileW(Path2WStr(absolutePath).c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, NULL, NULL);
     if (hFile == INVALID_HANDLE_VALUE) {
         ioError = dWordError2ioError(GetLastError(), logger());
         return false;
@@ -675,6 +672,12 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
     return true;
 }
 
+IoError IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &exec) noexcept {
+    IoError ioError = IoError::Unknown;
+    (void) IoHelper::getRights(path, read, write, exec, ioError);
+    return ioError;
+}
+
 bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept {
     if (_getAndSetRightsMethod == -1) initRightsWindowsApi();
     // Preferred method
@@ -724,12 +727,31 @@ bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec,
     return _setRightsStd(path, read, write, exec, ioError);
 }
 
+IoError IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec) noexcept {
+    IoError ioError = IoError::Unknown;
+    (void) IoHelper::setRights(path, read, write, exec, ioError);
+    return ioError;
+}
+
+IoError IoHelper::lock(const SyncPath &path) noexcept {
+    return IoError::Success;
+}
+
+IoError IoHelper::unlock(const SyncPath &path) noexcept {
+    return IoError::Success;
+}
+
+IoError IoHelper::isLocked(const SyncPath &path, bool &locked) noexcept {
+    locked = false;
+    return IoError::Success;
+}
+
 bool IoHelper::checkIfIsJunction(const SyncPath &path, bool &isJunction, IoError &ioError) noexcept {
     isJunction = false;
     ioError = IoError::Success;
 
-    HANDLE hFile = CreateFileW(Path2WStr(path).c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
-                               FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
+    HANDLE hFile = CreateFileW(Path2WStr(path).c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING,
+                               FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, nullptr);
     if (hFile == INVALID_HANDLE_VALUE) {
         ioError = dWordError2ioError(GetLastError(), logger());
         return isExpectedError(ioError);
@@ -738,8 +760,8 @@ bool IoHelper::checkIfIsJunction(const SyncPath &path, bool &isJunction, IoError
     BYTE buf[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
     REPARSE_DATA_BUFFER &ReparseBuffer = (REPARSE_DATA_BUFFER &) buf;
     DWORD dwRet;
-    if (!DeviceIoControl(hFile, FSCTL_GET_REPARSE_POINT, NULL, 0, &ReparseBuffer, MAXIMUM_REPARSE_DATA_BUFFER_SIZE, &dwRet,
-                         NULL)) {
+    if (!DeviceIoControl(hFile, FSCTL_GET_REPARSE_POINT, nullptr, 0, &ReparseBuffer, MAXIMUM_REPARSE_DATA_BUFFER_SIZE, &dwRet,
+                         nullptr)) {
         DWORD dwError = GetLastError();
         CloseHandle(hFile);
 
@@ -760,22 +782,22 @@ bool IoHelper::createJunction(const std::string &data, const SyncPath &path, IoE
     ioError = IoError::Success;
 
     // Create the junction directory
-    if (!CreateDirectoryW(Path2WStr(path).c_str(), NULL)) {
+    if (!CreateDirectoryW(Path2WStr(path).c_str(), nullptr)) {
         ioError = dWordError2ioError(GetLastError(), logger());
         return false;
     }
 
     // Set the reparse point
     HANDLE hDir;
-    hDir = CreateFileW(Path2WStr(path).c_str(), GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
-                       FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS, NULL);
+    hDir = CreateFileW(Path2WStr(path).c_str(), GENERIC_WRITE, 0, nullptr, OPEN_EXISTING,
+                       FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS, nullptr);
     if (hDir == INVALID_HANDLE_VALUE) {
         ioError = dWordError2ioError(GetLastError(), logger());
         return false;
     }
 
     DWORD dwRet = 0;
-    if (!DeviceIoControl(hDir, FSCTL_SET_REPARSE_POINT, (void *) data.data(), (WORD) data.size(), NULL, 0, &dwRet, NULL)) {
+    if (!DeviceIoControl(hDir, FSCTL_SET_REPARSE_POINT, (void *) data.data(), (WORD) data.size(), nullptr, 0, &dwRet, nullptr)) {
         RemoveDirectoryW(Path2WStr(path).c_str());
         CloseHandle(hDir);
         ioError = dWordError2ioError(GetLastError(), logger());
@@ -791,7 +813,7 @@ bool IoHelper::readJunction(const SyncPath &path, std::string &data, SyncPath &t
 
     HANDLE hFile =
             CreateFileW(Path2WStr(path).c_str(), FILE_WRITE_ATTRIBUTES, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
-                        NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
+                        nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, nullptr);
     if (hFile == INVALID_HANDLE_VALUE) {
         ioError = dWordError2ioError(GetLastError(), logger());
         return isExpectedError(ioError);
@@ -800,8 +822,8 @@ bool IoHelper::readJunction(const SyncPath &path, std::string &data, SyncPath &t
     BYTE buf[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
     REPARSE_DATA_BUFFER &reparseBuffer = (REPARSE_DATA_BUFFER &) buf;
     DWORD dwRet;
-    if (!DeviceIoControl(hFile, FSCTL_GET_REPARSE_POINT, NULL, 0, &reparseBuffer, MAXIMUM_REPARSE_DATA_BUFFER_SIZE, &dwRet,
-                         NULL)) {
+    if (!DeviceIoControl(hFile, FSCTL_GET_REPARSE_POINT, nullptr, 0, &reparseBuffer, MAXIMUM_REPARSE_DATA_BUFFER_SIZE, &dwRet,
+                         nullptr)) {
         DWORD dwError = GetLastError();
         CloseHandle(hFile);
 
@@ -829,15 +851,15 @@ bool IoHelper::createJunctionFromPath(const SyncPath &targetPath, const SyncPath
     ioError = IoError::Success;
 
     // Create the junction directory
-    if (!CreateDirectoryW(Path2WStr(path).c_str(), NULL)) {
+    if (!CreateDirectoryW(Path2WStr(path).c_str(), nullptr)) {
         ioError = dWordError2ioError(GetLastError(), logger());
         return false;
     }
 
     // Set the reparse point
     HANDLE hDir;
-    hDir = CreateFileW(Path2WStr(path).c_str(), GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
-                       FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS, NULL);
+    hDir = CreateFileW(Path2WStr(path).c_str(), GENERIC_WRITE, 0, nullptr, OPEN_EXISTING,
+                       FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS, nullptr);
     if (hDir == INVALID_HANDLE_VALUE) {
         ioError = dWordError2ioError(GetLastError(), logger());
         return false;
@@ -868,7 +890,7 @@ bool IoHelper::createJunctionFromPath(const SyncPath &targetPath, const SyncPath
     DWORD dwError = ERROR_SUCCESS;
     const bool success =
             DeviceIoControl(hDir, FSCTL_SET_REPARSE_POINT, reparseDataBuffer,
-                            reparseDataBuffer->ReparseDataLength + REPARSE_MOUNTPOINT_HEADER_SIZE, NULL, 0, &dwError, NULL);
+                            reparseDataBuffer->ReparseDataLength + REPARSE_MOUNTPOINT_HEADER_SIZE, nullptr, 0, &dwError, nullptr);
 
     ioError = dWordError2ioError(dwError, logger());
     free(reparseDataBuffer);
@@ -910,8 +932,8 @@ IoError IoHelper::setFileDates(const SyncPath &filePath, const SyncTime creation
     HANDLE hFile = INVALID_HANDLE_VALUE;
     for (bool isDirectory: {false, true}) {
         hFile = CreateFileW(filePath.native().c_str(), FILE_WRITE_ATTRIBUTES,
-                            FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
-                            (isDirectory ? FILE_FLAG_BACKUP_SEMANTICS : 0) | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
+                            FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING,
+                            (isDirectory ? FILE_FLAG_BACKUP_SEMANTICS : 0) | FILE_FLAG_OPEN_REPARSE_POINT, nullptr);
         if (hFile == INVALID_HANDLE_VALUE) {
             DWORD dwError = GetLastError();
             if (dwError == ERROR_ACCESS_DENIED) {
@@ -935,7 +957,7 @@ IoError IoHelper::setFileDates(const SyncPath &filePath, const SyncTime creation
         return IoError::Unknown;
     }
 
-    if (!SetFileTime(hFile, &creationTime, NULL, &modificationTime)) {
+    if (!SetFileTime(hFile, &creationTime, nullptr, &modificationTime)) {
         auto ioError = IoError::Unknown;
         DWORD dwError = GetLastError();
         if (utility_base::isLikeFileNotFoundError(dwError)) {
@@ -1005,6 +1027,166 @@ bool IoHelper::getShortPathName(const SyncPath &path, SyncPath &shortPathName, I
     shortPathName = SyncPath(output);
 
     return true;
+}
+
+bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
+    if (CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED) != S_OK) {
+        LOGW_INFO(Log::instance()->getLogger(),
+                  L"Error in CoInitializeEx in moveItemToTrash. Might be already initialized. Check if next call to "
+                  L"CoCreateInstance is failing.");
+    }
+
+    // Create the IFileOperation object
+    IFileOperation *fileOperation = nullptr;
+    HRESULT hr = CoCreateInstance(__uuidof(FileOperation), nullptr, CLSCTX_ALL, IID_PPV_ARGS(&fileOperation));
+    if (FAILED(hr)) {
+        // Couldn't CoCreateInstance - clean up and return
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in CoCreateInstance - path="
+                                                        << Path2WStr(itemPath) << L" err="
+                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
+
+        std::wstringstream errorStream;
+        errorStream << L"Move to trash failed for item with " << Utility::formatSyncPath(itemPath)
+                    << L" - CoCreateInstance failed with error: " << CommonUtility::s2ws(std::system_category().message(hr));
+        std::wstring errorStr = errorStream.str();
+        LOGW_WARN(Log::instance()->getLogger(), errorStr);
+        sentry::Handler::captureMessage(sentry::Level::Error, "IoHelper::moveItemToTrash", "CoCreateInstance failed");
+        CoUninitialize();
+        return false;
+    }
+
+    hr = fileOperation->SetOperationFlags(FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT);
+    if (FAILED(hr)) {
+        // Couldn't add flags - clean up and return
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in SetOperationFlags path="
+                                                        << Path2WStr(itemPath) << L" err="
+                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
+
+        std::wstringstream errorStream;
+        errorStream << L"Move to trash failed for item " << Path2WStr(itemPath) << L" - SetOperationFlags failed with error: "
+                    << CommonUtility::s2ws(std::system_category().message(hr));
+        std::wstring errorStr = errorStream.str();
+        LOGW_WARN(Log::instance()->getLogger(), errorStr);
+
+        sentry::Handler::captureMessage(sentry::Level::Error, "IoHelper::moveItemToTrash", "SetOperationFlags failed");
+        fileOperation->Release();
+        CoUninitialize();
+        return false;
+    }
+
+    SyncPath itemPathPreferred(itemPath);
+    IShellItem *fileOrFolderItem = nullptr;
+    hr = SHCreateItemFromParsingName(itemPathPreferred.make_preferred().native().c_str(), nullptr,
+                                     IID_PPV_ARGS(&fileOrFolderItem));
+    if (FAILED(hr)) {
+        // Couldn't get file into an item - cleanup and return (maybe the file doesn't exist?)
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in SHCreateItemFromParsingName - path="
+                                                        << Path2WStr(itemPath) << L" err="
+                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
+
+        std::wstringstream errorStream;
+        errorStream << L"Move to trash failed for item " << Path2WStr(itemPath)
+                    << L" - SHCreateItemFromParsingName failed with error: "
+                    << CommonUtility::s2ws(std::system_category().message(hr));
+        std::wstring errorStr = errorStream.str();
+        LOGW_WARN(Log::instance()->getLogger(), errorStr);
+
+        sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "SHCreateItemFromParsingName failed");
+        fileOperation->Release();
+        CoUninitialize();
+        return false;
+    }
+
+    hr = fileOperation->DeleteItem(fileOrFolderItem, nullptr);
+    if (FAILED(hr)) {
+        // Failed to mark file/folder item for deletion - cleanup and return
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in DeleteItem - path="
+                                                        << Path2WStr(itemPath) << L" err="
+                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
+
+        std::wstringstream errorStream;
+        errorStream << L"Move to trash failed for item " << Path2WStr(itemPath) << L" - DeleteItem failed with error: "
+                    << CommonUtility::s2ws(std::system_category().message(hr));
+        std::wstring errorStr = errorStream.str();
+        LOGW_WARN(Log::instance()->getLogger(), errorStr);
+        sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "DeleteItem failed");
+
+        fileOrFolderItem->Release();
+        fileOperation->Release();
+        CoUninitialize();
+        return false;
+    }
+
+    hr = fileOperation->PerformOperations();
+    if (FAILED(hr)) {
+        // failed to carry out delete - return
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in PerformOperations - path="
+                                                        << Path2WStr(itemPath) << L" err="
+                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
+
+        std::wstringstream errorStream;
+        errorStream << L"Move to trash failed for item " << Path2WStr(itemPath) << L" - PerformOperations failed with error: "
+                    << CommonUtility::s2ws(std::system_category().message(hr));
+        std::wstring errorStr = errorStream.str();
+        LOGW_WARN(Log::instance()->getLogger(), errorStr);
+
+        sentry::Handler::captureMessage(sentry::Level::Error, "Utility::moveItemToTrash", "PerformOperations failed");
+        fileOrFolderItem->Release();
+        fileOperation->Release();
+        CoUninitialize();
+        return false;
+    }
+
+    BOOL aborted = false;
+    BOOL result = true;
+    hr = fileOperation->GetAnyOperationsAborted(&aborted);
+    if (FAILED(hr)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in GetAnyOperationsAborted - "
+                                                        << Utility::formatSyncPath(itemPath) << L" err="
+                                                        << CommonUtility::s2ws(std::system_category().message(hr)));
+        result = false;
+    } else if (aborted) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Move to trash aborted for item with " << Utility::formatSyncPath(itemPath));
+        result = false;
+    } else {
+        // MISRA Coding Guideline
+    }
+
+    fileOrFolderItem->Release();
+    fileOperation->Release();
+    CoUninitialize();
+
+    return result;
+}
+
+PZW_QUERY_DIRECTORY_FILE pzwQueryDirectoryFileFct(IoError &ioError) {
+    static PZW_QUERY_DIRECTORY_FILE pzwQueryDirectoryFile = nullptr;
+
+    ioError = IoError::Success;
+    if (pzwQueryDirectoryFile) return pzwQueryDirectoryFile;
+
+    HMODULE hModule = GetModuleHandle(L"ntdll.dll");
+    if (hModule == nullptr) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in GetModuleHandle for ntdll.dll");
+        ioError = dWordError2ioError(GetLastError(), Log::instance()->getLogger());
+        return nullptr;
+    }
+
+    try {
+        pzwQueryDirectoryFile = (PZW_QUERY_DIRECTORY_FILE) GetProcAddress(hModule, "ZwQueryDirectoryFile");
+    } catch (const std::exception &e) {
+        LOG_WARN(Log::instance()->getLogger(), "Exception in GetProcAddress: err=" << e.what());
+        ioError = IoError::Unknown;
+        return nullptr;
+    }
+
+    if (pzwQueryDirectoryFile == nullptr) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in GetProcAddress");
+        ioError = dWordError2ioError(GetLastError(), Log::instance()->getLogger());
+        return nullptr;
+    }
+
+    return pzwQueryDirectoryFile;
 }
 
 } // namespace KDC

@@ -1,37 +1,49 @@
-﻿using Infomaniak.kDrive.OnBoarding;
+﻿using CommunityToolkit.WinUI;
+using Infomaniak.kDrive.Converters;
 using Infomaniak.kDrive.Types;
+using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using System;
-using System.Collections.Generic;
-using System.Data.Common;
+
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security;
-using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Linq;
+using Windows.Graphics;
 
 namespace Infomaniak.kDrive
 {
     public static class Utility
     {
-        public static NodeType DeduceNodeTypeFromFilePath(string filePath)
+        public static async Task RunOnUIThread(Action action)
         {
-            string fileName = System.IO.Path.GetFileName(filePath);
-            string extension = System.IO.Path.GetExtension(fileName).ToLower();
-            return extension switch
+            var dispatcher = AppModel.UIThreadDispatcher;
+            if (dispatcher.HasThreadAccess)
             {
-                ".doc" or ".docx" or ".odt" => NodeType.Doc,
-                ".pdf" => NodeType.Pdf,
-                ".png" or ".jpg" or ".jpeg" or ".gif" or ".bmp" or ".tiff" or ".svg" => NodeType.Image,
-                ".mp4" or ".avi" or ".mov" or ".wmv" or ".flv" => NodeType.Video,
-                ".mp3" or ".wav" or ".aac" or ".flac" => NodeType.Audio,
-                ".xls" or ".xlsx" or ".ods" => NodeType.Grid,
-                _ => NodeType.File,
-            };
+                action();
+            }
+            else
+            {
+                TaskCompletionSource taskCompletionSource = new TaskCompletionSource();
+                await dispatcher.EnqueueAsync(() =>
+                {
+                    try
+                    {
+                        action();
+                        taskCompletionSource.SetResult();
+                    }
+                    catch (Exception ex)
+                    {
+                        taskCompletionSource.SetException(ex);
+                    }
+                });
+                await taskCompletionSource.Task;
+            }
         }
 
         public static bool OpenFolderSecurely(string folderPath)
@@ -237,6 +249,18 @@ namespace Infomaniak.kDrive
             }
         }
 
+
+        public static class DpiHelper
+        {
+            [DllImport("User32.dll")]
+            private static extern uint GetDpiForWindow(IntPtr hWnd);
+
+            public static double GetScaleForWindow(IntPtr hWnd)
+            {
+                uint dpi = GetDpiForWindow(hWnd);
+                return dpi / 96.0; // 96 DPI = 100%
+            }
+        }
         public static void SetWindowProperties(Window window, int width, int height, bool resizable)
         {
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
@@ -244,11 +268,77 @@ namespace Infomaniak.kDrive
             var appWindow = AppWindow.GetFromWindowId(windowId);
             if (appWindow != null && appWindow.Presenter is OverlappedPresenter presenter)
             {
-                presenter.IsMaximizable = false;
+                presenter.IsMaximizable = true;
                 presenter.IsMinimizable = true;
                 presenter.IsResizable = resizable;
-                appWindow.Resize(new Windows.Graphics.SizeInt32(width, height));
+
+                // Use the RasterizationScale to scale the desired size
+                double scale = DpiHelper.GetScaleForWindow(hWnd);
+
+                int scaledWidth = (int)(width * scale);
+                int scaledHeight = (int)(height * scale);
+                presenter.PreferredMinimumWidth = scaledWidth;
+                presenter.PreferredMinimumHeight = scaledHeight;
+                appWindow.Resize(new SizeInt32(scaledWidth, scaledHeight));
             }
+        }
+        public static string GetLocalizedString(string key)
+        {
+            return GetLocalizedString(key, null);
+        }
+
+        public static string GetLocalizedString(string key, params object?[]? args)
+        {
+            var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
+            string localizedString = resourceLoader.GetString(key) ?? string.Empty;
+
+            // Replace literal \r\n with real newlines
+            localizedString = localizedString.Replace("\\r\\n", Environment.NewLine);
+
+            // Format the string if arguments are provided
+            if (args != null && args.Length > 0)
+            {
+                localizedString = string.Format(localizedString, args);
+            }
+
+            return localizedString;
+        }
+
+        // Convert any enum value to a string
+        public static string ToString(Enum value)
+        {
+            return value.ToString();
+        }
+
+        public static void SetEnumComboBoxSelection<TEnum>(ComboBox comboBox, TEnum value) where TEnum : struct, Enum
+        {
+            foreach (var item in comboBox.Items)
+            {
+                if (item is ComboBoxItem comboBoxItem && comboBoxItem.Tag is string tagString && Enum.TryParse<TEnum>(tagString, out TEnum itemValue) && itemValue.Equals(value))
+                {
+                    comboBox.SelectedItem = comboBoxItem;
+                    return;
+                }
+            }
+        }
+ 
+        public static async Task<ContentDialogResult> ShowContentDialog(XamlRoot xamlRoot, string xuid)
+        {
+            ContentDialog dialog = new ContentDialog();
+
+            dialog.XamlRoot = xamlRoot;
+            dialog.Title = Utility.GetLocalizedString(xuid + "/Title");
+            dialog.PrimaryButtonText = Utility.GetLocalizedString(xuid + "/PrimaryButtonText");
+            dialog.SecondaryButtonText = Utility.GetLocalizedString(xuid + "/SecondaryButtonText");
+            dialog.DefaultButton = ContentDialogButton.Primary;
+            dialog.Content = Utility.GetLocalizedString(xuid + "/Content");
+            var result = await dialog.ShowAsync();
+            return result;
         }
     }
 }
+
+
+
+
+

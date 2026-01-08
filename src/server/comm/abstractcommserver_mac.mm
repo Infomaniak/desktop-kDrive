@@ -134,7 +134,7 @@
     [_loginItemAgentConnection resume];
 
     // Create anonymous listener
-    NSLog(@"[KD] Create anonymous ext listener");
+    NSLog(@"[KD] Create anonymous listener");
     _listener = [NSXPCListener anonymousListener];
     [_listener setDelegate:self];
     [_listener resume];

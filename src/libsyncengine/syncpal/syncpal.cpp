@@ -53,7 +53,22 @@
 
 #define SYNCPAL_NEW_ERROR_MSG "Failed to create SyncPal instance!"
 
+
+static const auto currentFile = "currentFile";
+static const auto totalFiles = "totalFiles";
+static const auto completedSize = "completedSize";
+static const auto totalSize = "totalSize";
+static const auto estimatedRemainingTime = "estimatedRemainingTime";
+
 namespace KDC {
+
+void SyncProgress::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
+    CommonUtility::writeValueToStruct(dstruct, currentFile, _currentFile);
+    CommonUtility::writeValueToStruct(dstruct, totalFiles, _totalFiles);
+    CommonUtility::writeValueToStruct(dstruct, completedSize, _completedSize);
+    CommonUtility::writeValueToStruct(dstruct, totalSize, _totalSize);
+    CommonUtility::writeValueToStruct(dstruct, estimatedRemainingTime, _estimatedRemainingTime);
+}
 
 SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const SyncPath &syncDbPath, const std::string &version, const bool hasFullyCompleted) :
     _vfs(vfs),
@@ -792,7 +807,7 @@ ExitInfo SyncPal::isRootFolderValid() {
     if (NodeId rootNodeId; IoHelper::getNodeId(localPath(), rootNodeId)) {
         if (rootNodeId.empty()) {
             LOGW_SYNCPAL_WARN(_logger, L"Unable to get root folder nodeId: " << Utility::formatSyncPath(localPath()));
-            return ExitCode::SystemError;
+            return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
         }
 
         if (localNodeId().empty()) {
@@ -806,7 +821,7 @@ ExitInfo SyncPal::isRootFolderValid() {
         return localNodeId() == rootNodeId ? ExitInfo(ExitCode::Ok) : ExitInfo(ExitCode::DataError, ExitCause::SyncDirChanged);
     } else {
         LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getNodeId for root folder: " << Utility::formatSyncPath(localPath()));
-        return ExitCode::SystemError;
+        return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
     }
 }
 
@@ -1008,8 +1023,7 @@ ExitCode SyncPal::syncListUpdated(bool restartSync) {
 
     _blacklistPropagator.reset(new BlacklistPropagator(shared_from_this()));
     _blacklistPropagator->setRestartSyncPal(restartSync);
-    std::function<void(UniqueId)> callback = std::bind(&SyncPal::syncPalStartCallback, this, std::placeholders::_1);
-    _blacklistPropagator->setAdditionalCallback(callback);
+    _blacklistPropagator->setAdditionalCallback(std::bind_front(&SyncPal::syncPalStartCallback, this));
     SyncJobManagerSingleton::instance()->queueAsyncJob(_blacklistPropagator, Poco::Thread::PRIO_HIGHEST);
 
     return ExitCode::Ok;
@@ -1029,8 +1043,7 @@ ExitCode SyncPal::excludeListUpdated() {
 
     _excludeListPropagator.reset(new ExcludeListPropagator(shared_from_this()));
     _excludeListPropagator->setRestartSyncPal(restartSync);
-    std::function<void(UniqueId)> callback = std::bind(&SyncPal::syncPalStartCallback, this, std::placeholders::_1);
-    _excludeListPropagator->setAdditionalCallback(callback);
+    _excludeListPropagator->setAdditionalCallback(std::bind_front(&SyncPal::syncPalStartCallback, this));
     SyncJobManagerSingleton::instance()->queueAsyncJob(_excludeListPropagator, Poco::Thread::PRIO_HIGHEST);
 
     return ExitCode::Ok;
@@ -1050,8 +1063,7 @@ ExitCode SyncPal::fixConflictingFiles(bool keepLocalVersion, std::vector<Error> 
 
     _conflictingFilesCorrector.reset(new ConflictingFilesCorrector(shared_from_this(), keepLocalVersion, errorList));
     _conflictingFilesCorrector->setRestartSyncPal(restartSync);
-    std::function<void(UniqueId)> callback = std::bind(&SyncPal::syncPalStartCallback, this, std::placeholders::_1);
-    _conflictingFilesCorrector->setAdditionalCallback(callback);
+    _conflictingFilesCorrector->setAdditionalCallback(std::bind_front(&SyncPal::syncPalStartCallback, this));
     SyncJobManagerSingleton::instance()->queueAsyncJob(_conflictingFilesCorrector, Poco::Thread::PRIO_HIGHEST);
 
     return ExitCode::Ok;

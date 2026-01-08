@@ -18,16 +18,19 @@
 
 #include "testhelpers.h"
 #include "localtemporarydirectory.h"
+#include "io/iohelper.h"
 
 #include "libcommon/utility/utility.h"
+#include "libcommonserver/io/iohelper.h"
 
 #include <fstream>
+
 #include <Poco/JSON/Object.h>
 
-
 #if defined(KD_WINDOWS)
-#include "libcommonserver/io/filestat.h"
-#include "libcommonserver/io/iohelper.h"
+#include <shlobj_core.h> // SHCreateItemFromIDList
+#include <atlbase.h> // CComPtr
+
 #include <sys/utime.h>
 #include <sys/types.h>
 #else
@@ -53,10 +56,26 @@ SyncName makeNfcSyncName() {
     return nfcNormalized;
 }
 
+void generateTestFile(const SyncPath &path, const uint64_t size /*= 0*/) {
+    std::ofstream testFile(path, std::ios_base::in | std::ios_base::trunc);
+    if (size) {
+        setTestFileSize(path, size);
+    }
+    testFile.close();
+}
+
 void generateOrEditTestFile(const SyncPath &path) {
     std::ofstream testFile(path, std::ios::app);
     testFile << "test" << std::endl;
     testFile.close();
+}
+
+void setTestFileSize(const SyncPath &path, uint64_t size) {
+    const std::string str{"0123456789"};
+    std::ofstream ofs(path, std::ios_base::in | std::ios_base::trunc);
+    for (uint64_t i = 0; i < static_cast<uint64_t>(round(static_cast<double>(size) / static_cast<double>(str.length()))); i++) {
+        ofs << str;
+    }
 }
 
 void generateBigFiles(const SyncPath &dirPath, const uint16_t size, const uint16_t count) {
@@ -95,6 +114,18 @@ std::string loadEnvVariable(const std::string &key, const bool mandatory) {
     return val;
 }
 
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+void createFileWithDehydratedStatus(const SyncPath &filePath) {
+    generateOrEditTestFile(filePath);
+
+    auto ioError = IoError::Unknown;
+    (void) setDehydratedPlaceholderStatus(filePath, ioError);
+    assert(setDehydratedPlaceholderStatus(filePath, ioError) && ioError == IoError::Success &&
+           "Unexpected failure of IoHelper::setXAttrValue.");
+}
+#endif
+
+
 void createSymLinkLoop(const SyncPath &filepath1, const SyncPath &filepath2, const NodeType nodeType) {
     const LocalTemporaryDirectory tempDir;
     const auto currentPath = std::filesystem::current_path();
@@ -128,6 +159,18 @@ void createSymLinkLoop(const SyncPath &filepath1, const SyncPath &filepath2, con
 
     std::filesystem::current_path(currentPath);
     std::filesystem::rename(tempDir.path() / filepath1.filename(), filepath1);
+}
+
+void setupLogging() {
+    IoError ioError = IoError::Success;
+    SyncPath logDirPath;
+    if (!IoHelper::logDirectoryPath(logDirPath, ioError)) {}
+
+    // Setup log4cplus
+    const std::filesystem::path logFilePath = logDirPath / Utility::logFileNameWithTime();
+    if (!Log::instance(Path2WStr(logFilePath))) {
+        assert(false);
+    }
 }
 
 } // namespace KDC::testhelpers

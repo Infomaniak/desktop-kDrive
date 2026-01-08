@@ -42,10 +42,10 @@ ComputeFSOperationWorker::ComputeFSOperationWorker(SyncDbReadOnlyCache &testSync
     ISyncWorker(nullptr, name, shortName, std::chrono::seconds(0), true),
     _syncDbReadOnlyCache(testSyncDbReadOnlyCache) {}
 
-void ComputeFSOperationWorker::postponeCreateOperationsOnReusedIds() {
+void ComputeFSOperationWorker::postponeOperationsOnReusedIds() {
     for (const auto &localId: _localReusedIds) {
         _syncPal->removeLocalOperation(localId, OperationType::Create);
-        deleteLocalDescendantCreateOps(localId);
+        deleteLocalDescendantOps(localId);
         SyncPath localPath;
         bool ignore = false;
         (void) _syncPal->snapshot(ReplicaSide::Local)->path(localId, localPath, ignore);
@@ -141,7 +141,7 @@ void ComputeFSOperationWorker::execute() {
         LOG_SYNCPAL_INFO(_logger, "FS operation sets generated in: " << elapsedSeconds.count() << "s");
     }
 
-    postponeCreateOperationsOnReusedIds();
+    postponeOperationsOnReusedIds();
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
     setDone(exitCode);
@@ -953,11 +953,17 @@ void ComputeFSOperationWorker::deleteChildOpRecursively(const std::shared_ptr<co
     }
 }
 
-void ComputeFSOperationWorker::deleteLocalDescendantCreateOps(const NodeId &localNodeId) {
+void ComputeFSOperationWorker::deleteLocalDescendantOps(const NodeId &localNodeId) {
     const auto localSnapshot = _syncPal->snapshot(ReplicaSide::Local);
     const auto descendantIds = localSnapshot->getDescendantIds(localNodeId);
 
-    for (const auto &descendantId: descendantIds) _syncPal->removeLocalOperation(descendantId, OperationType::Create);
+    // Remove all operations on descendant nodes except Delete operations.
+    for (const auto &descendantId: descendantIds) {
+        _syncPal->removeLocalOperation(descendantId, OperationType::Create);
+        _syncPal->removeLocalOperation(descendantId, OperationType::Move);
+        _syncPal->removeLocalOperation(descendantId, OperationType::Edit);
+        _syncPal->removeLocalOperation(descendantId, OperationType::MoveEdit);
+    }
 }
 
 void ComputeFSOperationWorker::updateUnsyncedList() {

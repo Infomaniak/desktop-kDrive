@@ -20,12 +20,14 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
 using Windows.Storage.Pickers;
+using Microsoft.Extensions.DependencyInjection;
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
 
 namespace Infomaniak.kDrive.Pages.Onboarding
 {
     public sealed partial class DriveSelectionPage : Page
     {
-        private AppModel _viewModel = ((App)Application.Current).Data;
+        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         private ViewModels.Onboarding? _onBoardingViewModel;
         private Dictionary<Sync, string> _previousSyncPaths = new Dictionary<Sync, string>(); // To store previous sync paths and allow reverting if needed in advanced settings
         public AppModel ViewModel { get { return _viewModel; } }
@@ -206,14 +208,12 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
         private async void StartFree_Click(object sender, RoutedEventArgs e)
         {
-            var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
-            await Windows.System.Launcher.LaunchUriAsync(new Uri(resourceLoader.GetString("Global_kDriveOffersUrl")));
+            await Windows.System.Launcher.LaunchUriAsync(new Uri(Utility.GetLocalizedString("Global_kDriveOffersUrl")));
         }
 
         private async void OffersButton_Click(object sender, RoutedEventArgs e)
         {
-            var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
-            await Windows.System.Launcher.LaunchUriAsync(new Uri(resourceLoader.GetString("Global_kDriveOffersUrl")));
+            await Windows.System.Launcher.LaunchUriAsync(new Uri(Utility.GetLocalizedString("Global_kDriveOffersUrl")));
         }
     }
 }

@@ -17,10 +17,11 @@
  */
 
 #include "loginrequesttokenjob.h"
-#include "../guijobmanager.h"
+#include "appserver.h"
 #include "requests/serverrequests.h"
 #include "signaluseraddedjob.h"
 #include "signaluserupdatedjob.h"
+#include "server/comm/guijobmanager.h"
 #include "libcommon/info/userinfo.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
@@ -38,8 +39,7 @@ static const auto outParamsErrorDescr = "errorDescr";
 namespace KDC {
 
 LoginRequestTokenJob::LoginRequestTokenJob(std::shared_ptr<CommManager> commManager, int requestId,
-                                           const Poco::DynamicStruct &inParams,
-                                           const std::shared_ptr<AbstractCommChannel> channel) :
+                                           const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
     _requestNum = RequestNum::LOGIN_REQUESTTOKEN;
 }
@@ -48,7 +48,7 @@ ExitInfo LoginRequestTokenJob::deserializeInputParms() {
     try {
         readParamValue(inParamsCode, _code);
         readParamValue(inParamsCodeVerifier, _codeVerifier);
-    } catch (std::exception &e) {
+    } catch (const std::exception &e) {
         LOG_WARN(_logger, "Exception in AbstractGuiJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
     }
@@ -56,14 +56,15 @@ ExitInfo LoginRequestTokenJob::deserializeInputParms() {
     return ExitCode::Ok;
 }
 
-ExitInfo LoginRequestTokenJob::serializeOutputParms(bool hasError /*= false*/) {
+ExitInfo LoginRequestTokenJob::serializeOutputParms() {
     // Output parameters serialization
-    if (hasError) {
+    if (_error.empty()) {
+        writeParamValue(outParamsUserDbId, _userDbId);
+    } else {
         writeParamValue(outParamsError, CommonUtility::str2CommString(_error));
         writeParamValue(outParamsErrorDescr, CommonUtility::str2CommString(_errorDescr));
-    } else {
-        writeParamValue(outParamsUserDbId, _userDbId);
     }
+
     return ExitCode::Ok;
 }
 
@@ -79,15 +80,13 @@ ExitInfo LoginRequestTokenJob::process() {
     }
 
     _userDbId = userInfo.dbId();
-    _commManager->updateSentryUserCbk();
+    AppServer::updateSentryUser();
     if (userCreated) {
-        auto signalUserAddedJob = std::make_shared<SignalUserAddedJob>(_commManager, _channel, userInfo);
-        // Add job to JobManager pool
-        GuiJobManagerSingleton::instance()->queueAsyncJob(signalUserAddedJob, Poco::Thread::PRIO_NORMAL);
+        auto signalUserAddedJob = std::make_shared<SignalUserAddedJob>(userInfo);
+        _commManager->sendGuiSignal(signalUserAddedJob);
     } else {
-        auto signalUserUpdatedJob = std::make_shared<SignalUserUpdatedJob>(_commManager, _channel, userInfo);
-        // Add job to JobManager pool
-        GuiJobManagerSingleton::instance()->queueAsyncJob(signalUserUpdatedJob, Poco::Thread::PRIO_NORMAL);
+        auto signalUserUpdatedJob = std::make_shared<SignalUserUpdatedJob>(userInfo);
+        _commManager->sendGuiSignal(signalUserUpdatedJob);
     }
 
     return ExitCode::Ok;

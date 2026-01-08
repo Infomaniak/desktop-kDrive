@@ -15,11 +15,9 @@ namespace Infomaniak.kDrive.Converters
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            var resourceLoader = Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
-
             if (value is null)
             {
-                return $"? {resourceLoader.GetString("Global_MegaBytes")}";
+                return $"? {Utility.GetLocalizedString("Global_MegaBytes")}";
             }
 
             long byteCount;
@@ -35,7 +33,7 @@ namespace Infomaniak.kDrive.Converters
 
             var units = new (long Threshold, string ResourceKey)[]
             {
-                (1L,                      "Global_Bytes"),
+                (0L,                      "Global_Bytes"),
                 (1024L,                   "Global_KiloBytes"),
                 (1024L * 1024L,           "Global_MegaBytes"),
                 (1024L * 1024L * 1024L,   "Global_GigaBytes"),
@@ -49,13 +47,13 @@ namespace Infomaniak.kDrive.Converters
             {
                 if (byteCount >= units[i].Threshold)
                 {
-                    displayValue = (double)byteCount / units[i].Threshold;
+                    displayValue = (double)byteCount / (units[i].Threshold > 0 ? units[i].Threshold : 1);
                     unitKey = units[i].ResourceKey;
                     break;
                 }
             }
 
-            return $"{displayValue.ToString("0.##")} {resourceLoader.GetString(unitKey)}";
+            return $"{displayValue.ToString("0.##")} {Utility.GetLocalizedString(unitKey)}";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

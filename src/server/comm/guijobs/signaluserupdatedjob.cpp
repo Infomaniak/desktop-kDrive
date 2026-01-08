@@ -17,7 +17,6 @@
  */
 
 #include "signaluserupdatedjob.h"
-#include "libcommon/info/userinfo.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 
@@ -26,21 +25,14 @@ static const auto outParamsUserInfo = "userInfo";
 
 namespace KDC {
 
-SignalUserUpdatedJob::SignalUserUpdatedJob(std::shared_ptr<CommManager> commManager,
-                                           const std::shared_ptr<AbstractCommChannel> channel, const UserInfo &userInfo) :
-    AbstractGuiJob(commManager, channel),
+SignalUserUpdatedJob::SignalUserUpdatedJob(const UserInfo &userInfo) :
     _userInfo(userInfo) {
     _signalNum = SignalNum::USER_UPDATED;
 }
 
-ExitInfo SignalUserUpdatedJob::serializeOutputParms([[maybe_unused]] bool hasError /*= false*/) {
+ExitInfo SignalUserUpdatedJob::serializeOutputParms() {
     // Output parameters serialization
-    std::function<Poco::Dynamic::Var(const UserInfo &)> userInfo2DynamicVar = [](const UserInfo &value) {
-        Poco::DynamicStruct structValue;
-        value.toDynamicStruct(structValue);
-        return structValue;
-    };
-    writeParamValue(outParamsUserInfo, _userInfo, userInfo2DynamicVar);
+    writeParamValue(outParamsUserInfo, _userInfo, info2DynamicVar<UserInfo>);
     return ExitCode::Ok;
 }
 

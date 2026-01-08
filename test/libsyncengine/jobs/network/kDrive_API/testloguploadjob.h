@@ -19,6 +19,8 @@
 #pragma once
 
 #include "testincludes.h"
+#include "test_utility/localtemporarydirectory.h"
+
 #include "utility/types.h"
 using namespace CppUnit;
 
@@ -53,5 +55,7 @@ class TestLogUploadJob : public CppUnit::TestFixture, public TestBase {
         void createFakeActiveSessionFile(int newNbActiveSessionFiles);
         void createFakeOldSessionFile(int newNbOldSessionFiles);
         void deleteFakeFiles();
+
+        LocalTemporaryDirectory _localTempDir{"testUploadLogs"};
 };
 } // namespace KDC
