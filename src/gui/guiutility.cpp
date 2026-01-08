@@ -69,10 +69,10 @@ static const int fontWeightBold = 750;
 static const int windowsIncrement = 50;
 #endif
 
-static bool darkTheme = false;
+static const int blacklistWarnMaxSize = 1000;
+static const int blacklistBackMaxSize = 3000;
 
-static bool blacklistWarnMaxSize = 1000;
-static bool blacklistBackMaxSize = 3000;
+static bool darkTheme = false;
 
 Q_LOGGING_CATEGORY(lcGuiUtility, "gui.guiutility", QtInfoMsg)
 
@@ -652,6 +652,8 @@ bool GuiUtility::checkBlacklistSize(const qsizetype blacklistSize, QWidget *pare
                 .exec();
 
         return false;
+    } else {
+        // No issue
     }
     return true;
 }

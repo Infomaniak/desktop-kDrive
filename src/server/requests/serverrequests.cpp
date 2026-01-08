@@ -127,7 +127,7 @@ ExitCode ServerRequests::deleteUser(int userDbId) {
 
 ExitCode ServerRequests::deleteAccount(int accountDbId) {
     // Delete account (and linked drives/syncs by cascade)
-    bool found;
+    bool found = false;
     if (!ParmsDb::instance()->deleteAccount(accountDbId, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteAccount");
         return ExitCode::DbError;
@@ -1965,7 +1965,7 @@ ExitCode ServerRequests::loadUserInfo(User &user, bool &updated) {
 
 ExitCode ServerRequests::loadUserAvatar(User &user) {
     try {
-        GetAvatarJob getAvatarJob = GetAvatarJob(user.avatarUrl());
+        auto getAvatarJob = GetAvatarJob(user.avatarUrl());
         const ExitCode exitCode = getAvatarJob.runSynchronously();
         if (exitCode != ExitCode::Ok) {
             return exitCode;
@@ -1983,7 +1983,7 @@ ExitCode ServerRequests::loadUserAvatar(User &user) {
 ExitCode ServerRequests::processRequestTokenFinished(const Login &login, UserInfo &userInfo, bool &userCreated) {
     // Get user
     User user;
-    bool found;
+    bool found = false;
     if (!ParmsDb::instance()->selectUserByUserId(login.apiToken().userId(), user, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectUserByUserId");
         return ExitCode::DbError;

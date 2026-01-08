@@ -38,11 +38,7 @@ NodeInfo::NodeInfo(QString nodeId, QString name, qint64 size, QString parentNode
     _path(path) {}
 
 NodeInfo::NodeInfo() :
-    _nodeId(QString()),
-    _name(QString()),
-    _size(-1),
-    _parentNodeId(QString()),
-    _modtime(0) {}
+    _size(-1) {}
 
 void NodeInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, nodeInfoNodeId, CommonUtility::qStr2CommString(_nodeId));

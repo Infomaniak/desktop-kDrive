@@ -272,8 +272,8 @@ void FolderTreeItemWidget::createBlackSet(const QTreeWidgetItem *parentItem, QSe
 
     const auto parentNodeId = parentItem->data(TreeWidgetColumn::Folder, nodeIdRole).toString();
 
-    auto checkState = parentItem->checkState(TreeWidgetColumn::Folder);
-    if (checkState == Qt::Unchecked && !parentItem->isDisabled()) {
+    if (const auto checkState = parentItem->checkState(TreeWidgetColumn::Folder);
+        checkState == Qt::Unchecked && !parentItem->isDisabled()) {
         (void) blackset.insert(parentNodeId);
         const QString path = getPath(parentNodeId);
         if (!path.isEmpty()) {
