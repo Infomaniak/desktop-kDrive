@@ -126,10 +126,11 @@ void BaseFolderTreeItemWidget::insertNode(QTreeWidgetItem *parent, const NodeInf
             // Manage access denied
             if (folderInfo.accessDenied()) {
                 item->setDisabled(true);
-                item->setSelected(false);
+                item->setCheckState(TreeWidgetColumn::Folder, Qt::Unchecked);
+                item->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+            } else {
+                item->setChildIndicatorPolicy(QTreeWidgetItem::ShowIndicator);
             }
-
-            item->setChildIndicatorPolicy(QTreeWidgetItem::ShowIndicator);
         }
     }
 }
