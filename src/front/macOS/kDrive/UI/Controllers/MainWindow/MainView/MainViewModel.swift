@@ -31,15 +31,17 @@ final class MainViewModel {
     @Published private(set) var currentAccount: UIAccount?
     @Published private(set) var currentDrive: UIDrive?
     @Published private(set) var currentSynchro: UISynchro?
-
-    @Published private(set) var availableUsers = [Int: UIUser]()
+    @Published private(set) var currentSynchros = [UISynchroContext]()
 
     private var bindStore = Set<AnyCancellable>()
 
     init() {
         cacheObservable.usersPublisher
-            .receiveOnMain(store: &bindStore) { [weak self] indexedUser in
-                self?.handleUpdatedUsers(indexedUser)
+            .allSynchrosPublisher()
+            .receive(on: DispatchQueue.main)
+            .receiveOnMain(store: &bindStore) { [weak self] synchros in
+                let uiSynchros = synchros.map { UISynchroContext(synchroContext: $0) }
+                self?.handleUpdatedSynchros(uiSynchros)
             }
     }
 
@@ -63,38 +65,21 @@ final class MainViewModel {
         }
     }
 
-    private func handleUpdatedUsers(_ users: IndexedUsers) {
-        availableUsers = Dictionary(uniqueKeysWithValues: users.map { userDbId, user in
-            (Int(userDbId), UIUser(user: user))
-        })
-
+    private func handleUpdatedSynchros(_ synchros: [UISynchroContext]) {
+        currentSynchros = synchros
         updateSelectedItems()
     }
 
     private func updateSelectedItems() {
-        guard let currentUserDbId = currentUser?.dbId,
-              let updatedUser = availableUsers[currentUserDbId] else {
+        guard let currentSynchro = currentSynchro,
+              let currentSyncContext = getSelectedValuesFromSynchro(currentSynchro) else {
             return
         }
-        currentUser = updatedUser
 
-        guard let currentAccountDbId = currentAccount?.dbId,
-              let updatedAccount = updatedUser.accounts[currentAccountDbId] else {
-            return
-        }
-        currentAccount = updatedAccount
-
-        guard let currentDriveDbId = currentDrive?.dbId,
-              let updatedDrive = updatedAccount.drives[currentDriveDbId] else {
-            return
-        }
-        currentDrive = updatedDrive
-
-        guard let currentSynchroDbId = currentSynchro?.dbId,
-              let updatedSynchro = updatedDrive.synchros[currentSynchroDbId] else {
-            return
-        }
-        currentSynchro = updatedSynchro
+        currentUser = currentSyncContext.user
+        currentAccount = currentSyncContext.account
+        currentDrive = currentSyncContext.drive
+        self.currentSynchro = currentSyncContext.synchro
     }
 
     func restoreLastSelection() {
@@ -108,17 +93,12 @@ final class MainViewModel {
         }
     }
 
-    private func getSelectedValuesFromSynchro(_ synchro: UISynchro) -> (user: UIUser, account: UIAccount, drive: UIDrive)? {
-        for user in availableUsers.values {
-            for account in user.accounts.values {
-                for drive in account.drives.values {
-                    if drive.dbId == synchro.driveDbId {
-                        return (user, account, drive)
-                    }
-                }
-            }
+    private func getSelectedValuesFromSynchro(_ synchro: UISynchro) -> UISynchroContext? {
+        guard let matchedSyncContext = currentSynchros.first(where: { syncContext in
+            syncContext.synchro.dbId == Int32(synchro.dbId)
+        }) else {
+            return nil
         }
-
-        return nil
+        return matchedSyncContext
     }
 }
