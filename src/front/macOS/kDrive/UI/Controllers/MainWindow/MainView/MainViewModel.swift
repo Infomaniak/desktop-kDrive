@@ -86,11 +86,11 @@ final class MainViewModel {
     func restoreLastSelection() {
         Task {
             let synchroDbId = UserDefaults.standard.selectedSynchroDbId
-            guard let syncho = await coherentCache.getSynchro(synchroDbId: Int32(synchroDbId)) else {
+            guard let synchro = await coherentCache.getSynchro(synchroDbId: Int32(synchroDbId)) else {
                 return
             }
 
-            setCurrentSynchro(UISynchro(synchro: syncho))
+            setCurrentSynchro(UISynchro(synchro: synchro))
         }
     }
 
