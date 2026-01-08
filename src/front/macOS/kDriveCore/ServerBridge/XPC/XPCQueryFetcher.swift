@@ -43,11 +43,12 @@ struct XPCQueryFetcher: XPCQueryFetcherProtocol {
         }
 
         do {
-            //IKLogger.data.log("recv raw: \(String(data: replyData, encoding: .utf8))")
+            //IKLogger.data.log("[KD] recv raw: \(String(data: replyData, encoding: .utf8))")
             let decodedMessage = try decoder.decode(Response.self, from: replyData)
-            IKLogger.data.log("recv callback: \(String(describing: decodedMessage))")
+            IKLogger.data.log("[KD] recv callback: \(String(describing: decodedMessage))")
             return decodedMessage
         } catch {
+            IKLogger.data.error("[KD] recv decoding woops \(error)")
             throw QueryError.unableToDecodeReply(parsingError: error)
         }
     }
