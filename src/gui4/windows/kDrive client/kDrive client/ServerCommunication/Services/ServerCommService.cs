@@ -5,6 +5,7 @@ using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -384,6 +385,48 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
 
             // Rely on signal to add the sync to the model
+            return true;
+        }
+
+        public async Task<bool> SetSyncType(DbId syncDbId, SyncType type, CancellationToken cancellationToken)
+        {
+            Sync? sync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == syncDbId);
+            if (sync is null)
+            {
+                Logger.Log(Logger.Level.Error, $"Sync with DbId {syncDbId} not found in model.");
+                return false;
+            }
+
+            if (type == sync.SyncType)
+            {
+                Logger.Log(Logger.Level.Debug, $"Sync with DbId {syncDbId} is already of type {type}, no change needed.");
+                return true;
+            }
+
+            if (type == SyncType.Online)
+            {
+                // Ensure the path supports online mode
+                bool? supportOnlineMode = await PathSupportLiteSync(sync.LocalPath, CancellationToken.None);
+                if (!supportOnlineMode.HasValue || supportOnlineMode.Value == false)
+                {
+                    Logger.Log(Logger.Level.Warning, $"Local path {sync.LocalPath} does not support online sync mode, unable to change sync type for sync with DbId {syncDbId}.");
+                    return false;
+                }
+            }
+
+            var parms = new JsonObject
+            {
+                [JsonKeys.SyncDbId] = syncDbId,
+                [JsonKeys.Value] = type == SyncType.Online
+            };
+
+            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_SETSUPPORTSVIRTUALFILES, parms, cancellationToken);
+            if (data?.Code != ExitCode.Ok)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to set sync type for sync with DbId {syncDbId}, exit code: {(ExitCode?)data?.Params?[JsonKeys.ExitCode]?.GetValue<int>()}");
+                return false;
+            }
+
             return true;
         }
 

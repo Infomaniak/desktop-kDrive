@@ -91,7 +91,7 @@ namespace Infomaniak.kDrive
             Process.Start(startInfo);
             return true;
         }
-   
+
         public static class DpiHelper
         {
             [DllImport("User32.dll")]
@@ -136,8 +136,7 @@ namespace Infomaniak.kDrive
 
             if (localizedString is null || localizedString.Length == 0)
             {
-                Logger.Log(Logger.Level.Warning, $"Missing localization for key: {key} in current culture {System.Globalization.CultureInfo.CurrentUICulture.Name}");
-                localizedString = "";
+                Logger.Log(Logger.Level.Error, $"Missing localization for key: {key} in current culture {System.Globalization.CultureInfo.CurrentUICulture.Name}");
             }
 
             // Replace literal \r\n with real newlines
@@ -170,7 +169,7 @@ namespace Infomaniak.kDrive
             }
         }
 
-        public static async Task<ContentDialogResult> ShowContentDialog(XamlRoot xamlRoot, string xuid)
+        public static ContentDialog GetContentDialog(XamlRoot xamlRoot, string xuid)
         {
             ContentDialog dialog = new ContentDialog();
 
@@ -180,10 +179,14 @@ namespace Infomaniak.kDrive
             dialog.SecondaryButtonText = Utility.GetLocalizedString(xuid + "/SecondaryButtonText");
             dialog.DefaultButton = ContentDialogButton.Primary;
             dialog.Content = Utility.GetLocalizedString(xuid + "/Content");
-            var result = await dialog.ShowAsync();
-            return result;
+            return dialog;
         }
 
+        public static async Task<ContentDialogResult> ShowContentDialogAsync(XamlRoot xamlRoot, string xuid)
+        {
+            var result = await GetContentDialog(xamlRoot, xuid).ShowAsync();
+            return result;
+        }
 
         public static string? ToBase64String(string? data)
         {

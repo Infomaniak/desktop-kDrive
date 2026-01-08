@@ -182,23 +182,25 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task Start()
         {
-            var serverComm = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            await serverComm.StartSync(DbId, CancellationToken.None);
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            await commService.StartSync(DbId, CancellationToken.None);
         }
 
         public async Task Pause()
         {
-            var serverComm = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            await serverComm.PauseSync(DbId, CancellationToken.None);
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            await commService.PauseSync(DbId, CancellationToken.None);
         }
 
-        public async Task ChangeSyncType(SyncType newType)
+        public async Task<bool> ChangeSyncType(SyncType newType)
         {
             SetPropertyInUIThread(ref _syncTypeMigrationInProgress, true, nameof(SyncTypeMigrationInProgress));
-            Logger.Log(Logger.Level.Error, "Changing sync type is not yet implemented.");
-            await Task.Delay(5000); // TODO: Replace with actual implementation
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            bool result = await commService.SetSyncType(DbId, newType, CancellationToken.None);
+
             SetPropertyInUIThread(ref _syncTypeMigrationInProgress, false, nameof(SyncTypeMigrationInProgress));
 
+            return result;
         }
 
         public async Task AddErrorAsync(Error error)

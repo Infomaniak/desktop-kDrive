@@ -578,6 +578,9 @@ ou choisissez une offre adaptée à vos besoins.</value>
   <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.Title" xml:space="preserve">
     <value>Êtes-vous sûr de vouloir changer le mode de synchronisation ?</value>
   </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_ErrorDialog.Title" xml:space="preserve">
+    <value>Une erreur est survenue</value>
+  </data>
   <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.Title" xml:space="preserve">
     <value>Supprimer la synchronisation ?</value>
   </data>
@@ -595,8 +598,16 @@ Avant de continuer, assurez-vous que tout vos fichiers sont bien à jour et sync
 
 Ne fermez pas l’application pendant le processus.</value>
   </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_ErrorDialog.Content" xml:space="preserve">
+    <value>Le changement de mode de synchronisation a été annulé.
+
+La synchronisation actuelle reste inchangée. Toutefois, en cas de comportement anormal, il peut être nécessaire de supprimer puis de recréer la synchronisation afin de rétablir un fonctionnement correct.</value>
+  </data>
   <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.SecondaryButtonText" xml:space="preserve">
     <value>Annuler</value>
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_ErrorDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Fermer</value>
   </data>
   <data name="SecondaryButtonText" xml:space="preserve">
     <value>Êtes-vous sûr de vouloir changer le mode de synchronisation ?</value>
