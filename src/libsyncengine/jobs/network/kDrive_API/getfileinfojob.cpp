@@ -103,7 +103,9 @@ std::string GetFileInfoJob::getSpecificUrl() {
 
 void GetFileInfoJob::setQueryParameters(Poco::URI &uri) {
     if (_withPath) {
-        uri.addQueryParameter("with", "path");
+        uri.addQueryParameter("with", "path,capabilities");
+    } else {
+        uri.addQueryParameter("with", "capabilities");
     }
 }
 
