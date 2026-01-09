@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveCore
 import kDriveCoreUI
 import SwiftUI
 
@@ -24,10 +25,18 @@ struct HomeView: View {
 
     static let spacing = AppPadding.padding24
 
+    private var userName: String {
+        guard let currentUser = mainViewModel.currentUser,
+              let givenName = try? PersonNameComponents.FormatStyle().parseStrategy.parse(currentUser.name).givenName
+        else { return "" }
+
+        return givenName
+    }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            GreetingStatusView(name: "Valentin", synchroStatus: .upToDate)
-                .padding(.bottom, AppPadding.padding32)
+        VStack(alignment: .leading, spacing: AppPadding.padding24) {
+            GreetingStatusView(name: userName, synchroStatus: .upToDate)
+                .padding(.bottom, AppPadding.padding8)
 
             GeometryReader { proxy in
                 HStack(spacing: HomeView.spacing) {
