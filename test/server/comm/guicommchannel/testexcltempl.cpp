@@ -54,8 +54,9 @@ void TestGuiCommChannel::testExclTemplGetExcludedJob() {
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::EXCLTEMPL_GETEXCLUDED));
     (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-    // Job expected answers
+    // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto exclTemplGetExcludedJob = std::dynamic_pointer_cast<ExclTemplGetExcludedJob>(job);
         CPPUNIT_ASSERT(exclTemplGetExcludedJob);
@@ -114,8 +115,9 @@ void TestGuiCommChannel::testExclTemplGetListJob() {
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::EXCLTEMPL_GETLIST));
     (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-    // Job expected answers
+    // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto exclTemplGetListJob = std::dynamic_pointer_cast<ExclTemplGetListJob>(job);
         CPPUNIT_ASSERT(exclTemplGetListJob);
@@ -176,8 +178,9 @@ void TestGuiCommChannel::testExclTemplSetListJob() {
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::EXCLTEMPL_SETLIST));
     (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-    // Job expected answers
+    // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto exclTemplSetListJob = std::dynamic_pointer_cast<ExclTemplSetListJob>(job);
         CPPUNIT_ASSERT(exclTemplSetListJob);
@@ -220,8 +223,9 @@ void TestGuiCommChannel::testExclTemplPropagateChangeJob() {
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::EXCLTEMPL_PROPAGATE_CHANGE));
     (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-    // Job expected answers
+    // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto exclTemplPropagateChangeJob = std::dynamic_pointer_cast<ExclTemplPropagateChangeJob>(job);
         CPPUNIT_ASSERT(exclTemplPropagateChangeJob);

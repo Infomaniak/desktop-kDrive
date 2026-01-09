@@ -156,7 +156,7 @@ void TestGuiCommChannel::testNodePathJob() {
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::NODE_PATH));
     (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-    // Job expected answers
+    // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
@@ -214,7 +214,7 @@ void TestGuiCommChannel::testNodeInfoJob() {
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::NODE_INFO));
     (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-    // Job expected answers
+    // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
@@ -361,7 +361,7 @@ void TestGuiCommChannel::testNodeSubFolders2Job() {
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::NODE_SUBFOLDERS2));
     (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-    // Job expected answers
+    // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
