@@ -48,7 +48,8 @@ fi
 
 chmod +x "$tester"
 export DYLD_LIBRARY_PATH="$PWD:/usr/local/lib:/usr/lib:$DYLD_LIBRARY_PATH"
-"./$tester"
+ulimit -c unlimited       # Enable core dumps before running the test
+"./$tester" || gdb -c core "./$tester" -ex "bt" -ex "quit"
 
 if [ $? -ne 0 ]; then
     echo "${RED}---------- Failure: $tester ----------${NC}"
