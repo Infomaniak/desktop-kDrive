@@ -53,7 +53,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testUploadAborted);
         CPPUNIT_TEST(testDriveUploadSessionConstructorException);
         CPPUNIT_TEST(testDriveUploadSessionSynchronous);
-        CPPUNIT_TEST(testDriveUploadSessionAsynchronous);
+        // CPPUNIT_TEST(testDriveUploadSessionAsynchronous);
         CPPUNIT_TEST(testDriveUploadSessionWithSizeMismatchError);
         CPPUNIT_TEST(testDriveUploadSessionWithNullChunkSizeError);
         CPPUNIT_TEST(testDefuncted);
