@@ -29,5 +29,7 @@ extension KDC.SyncFileInstruction: Codable {}
 extension KDC.ConflictType: Codable {}
 extension KDC.InconsistencyType: Codable {}
 extension KDC.CancelType: Codable {}
+extension KDC.SyncStatus: Codable {}
+extension KDC.SyncStep: Codable {}
 extension SignalNum: Codable {}
 extension RequestNum: Codable {}
