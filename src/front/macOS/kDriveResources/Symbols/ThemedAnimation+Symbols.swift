@@ -37,6 +37,23 @@ public extension ThemedAnimation {
         light: "permission-light-sync-extension-light",
         dark: "permission-light-sync-extension-dark"
     )
+
+    static let kDriveCheckmark = ThemedAnimation(
+        light: "kdrive-checkmark-light",
+        dark: "kdrive-checkmark-dark"
+    )
+    static let cloudPause = ThemedAnimation(
+        light: "cloud-pause-light",
+        dark: "cloud-pause-dark"
+    )
+    static let cloudSync = ThemedAnimation(
+        light: "cloud-sync-light",
+        dark: "cloud-sync-dark"
+    )
+    static let offline = ThemedAnimation(
+        light: "offline-light",
+        dark: "offline-dark"
+    )
 }
 
 public struct ThemedAnimation: Sendable {
