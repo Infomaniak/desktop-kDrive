@@ -23,6 +23,10 @@ struct SyncRemoveSignal: Codable, Sendable {
 }
 
 struct SyncInfoSignal: Codable, Sendable {
+    let syncInfo: SyncInfoSignalMetadata
+}
+
+struct SyncInfoSignalMetadata: Codable, Sendable {
     let dbId: Int32
     let driveDbId: Int32
     @Base64CodedString var localPath: String
@@ -32,7 +36,7 @@ struct SyncInfoSignal: Codable, Sendable {
     let virtualFileMode: KDC.VirtualFileMode
 }
 
-extension SyncInfoSignal {
+extension SyncInfoSignalMetadata {
     var asSynchro: Synchro {
         Synchro(dbId: dbId,
                 driveDbId: driveDbId,

@@ -107,7 +107,10 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         case .DRIVE_REMOVED:
             try await handleDriveRemoved(signal)
 
-        case .SYNC_ADDED, .SYNC_UPDATED:
+        case .SYNC_ADDED:
+            try await handleSync(signal)
+
+        case .SYNC_UPDATED:
             try await handleSync(signal)
 
         case .SYNC_REMOVED:
@@ -193,7 +196,7 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
             throw SignalError.unableToGetSyncFromSignal
         }
 
-        let syncInfo = syncInfoSignal.body
+        let syncInfo = syncInfoSignal.body.syncInfo
         try await coherentCache.addSynchro(syncInfo.asSynchro)
     }
 
