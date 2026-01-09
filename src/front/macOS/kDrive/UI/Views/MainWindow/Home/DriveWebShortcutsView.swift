@@ -61,8 +61,8 @@ struct WebFolder: Sendable, Identifiable, Equatable {
 }
 
 struct DriveWebShortcutsView: View {
-    let user: UIUser
-    let drive: UIDrive
+    let user: UIUser?
+    let drive: UIDrive?
 
     private var topFolders: [WebFolder] {
         return [.favorites, .sharedWithMe, .kDriveHome]
@@ -91,6 +91,10 @@ struct DriveWebShortcutsView: View {
     }
 
     private func didTapFolder(_ folder: WebFolder) {
+        guard let drive else {
+            return
+        }
+
         let url = folder.url(driveID: drive.driveId)
         NSWorkspace.shared.open(url)
     }

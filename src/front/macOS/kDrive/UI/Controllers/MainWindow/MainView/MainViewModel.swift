@@ -23,7 +23,7 @@ import InfomaniakDI
 import kDriveCore
 
 @MainActor
-final class MainViewModel {
+final class MainViewModel: ObservableObject {
     @LazyInjectService private var coherentCache: CoherentCache
     @LazyInjectService private var cacheObservable: CoherentCacheObservable
 
