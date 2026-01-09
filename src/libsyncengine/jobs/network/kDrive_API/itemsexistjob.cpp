@@ -66,13 +66,13 @@ ExitInfo ItemsExistJob::handleResponse(std::istream &is) {
     if (const auto exitCode = AbstractTokenNetworkJob::handleResponse(is); !exitCode) return exitCode;
     if (!jsonRes()) {
         LOG_ERROR(_logger, "No valid JSON object.");
-        return {ExitCode::BackError, ExitCause::InvalidReply};
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
     const auto dataArray = jsonRes()->getArray(dataKey);
     if (!dataArray) {
         LOG_ERROR(_logger, "Missing data array, key:" << dataKey);
-        return {ExitCode::BackError, ExitCause::InvalidReply};
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
     for (auto it = dataArray->begin(); it != dataArray->end(); ++it) {
         const auto obj = it->extract<Poco::JSON::Object::Ptr>();

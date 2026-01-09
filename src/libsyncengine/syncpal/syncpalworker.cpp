@@ -51,10 +51,10 @@ bool shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr
     const auto httpBlockingError =
             (w1 && w1->exitCode() == ExitCode::BackError &&
              (w1->exitCause() == ExitCause::Http5xx || w1->exitCause() == ExitCause::HttpErr ||
-              w1->exitCause() == ExitCause::FullListParsingError || w1->exitCause() == ExitCause::InvalidReply)) ||
+              w1->exitCause() == ExitCause::FullListParsingError || w1->exitCause() == ExitCause::MissingReplyData)) ||
             (w2 && w2->exitCode() == ExitCode::BackError &&
              (w2->exitCause() == ExitCause::Http5xx || w2->exitCause() == ExitCause::HttpErr ||
-              w2->exitCause() == ExitCause::FullListParsingError || w2->exitCause() == ExitCause::InvalidReply));
+              w2->exitCause() == ExitCause::FullListParsingError || w2->exitCause() == ExitCause::MissingReplyData));
     const auto syncDirNotAccessible =
             (w1 && w1->exitCode() == ExitCode::SystemError && w1->exitCause() == ExitCause::SyncDirAccessError) ||
             (w2 && w2->exitCode() == ExitCode::SystemError && w2->exitCause() == ExitCause::SyncDirAccessError);
