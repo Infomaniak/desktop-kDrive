@@ -67,7 +67,7 @@ class LabeledAvatarView: NSView {
         stackView.spacing = AppPadding.padding8
         addSubview(stackView)
 
-        if let avatar = user?.avatar {
+        if let avatar = user?.nsAvatar {
             imageView.image = avatar
         }
 
@@ -86,7 +86,7 @@ class LabeledAvatarView: NSView {
         guard let user else { return }
 
         label.stringValue = user.name
-        if let avatar = user.avatar {
+        if let avatar = user.nsAvatar {
             imageView.image = avatar
         }
     }

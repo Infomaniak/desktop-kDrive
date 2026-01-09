@@ -18,11 +18,13 @@
 
 import Cocoa
 import Foundation
+import SwiftUI
 
 public protocol UIDriveRepresentation: Sendable, Equatable, Hashable {
     var id: Int { get }
     var name: String { get }
-    var color: NSColor? { get }
+    var nsColor: NSColor? { get }
+    var color: Color? { get }
 }
 
 // MARK: - UIAvailableDrive
@@ -35,13 +37,18 @@ public struct UIAvailableDrive: UIDriveRepresentation, Hashable {
     public let driveId: Int
     public let userDbId: Int
     public let name: String
-    public let color: NSColor?
+    public let nsColor: NSColor?
+
+    public var color: Color? {
+        guard let nsColor else { return nil }
+        return Color(nsColor: nsColor)
+    }
 
     public init(driveId: Int, userDbId: Int, name: String, color: NSColor?) {
         self.driveId = driveId
         self.userDbId = userDbId
         self.name = name
-        self.color = color
+        nsColor = color
     }
 }
 
@@ -72,15 +79,20 @@ public struct UIDrive: UIDriveRepresentation {
     public let driveId: Int
     public let userDbId: Int
     public let name: String
-    public let color: NSColor?
+    public let nsColor: NSColor?
     public let synchros: [Int: UISynchro]
+
+    public var color: Color? {
+        guard let nsColor else { return nil }
+        return Color(nsColor: nsColor)
+    }
 
     public init(dbId: Int, driveId: Int, userDbId: Int, name: String, color: NSColor?, synchros: [Int: UISynchro]) {
         self.dbId = dbId
         self.driveId = driveId
         self.userDbId = userDbId
         self.name = name
-        self.color = color
+        nsColor = color
         self.synchros = synchros
     }
 }

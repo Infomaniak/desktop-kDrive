@@ -31,7 +31,7 @@ public struct UserAndDriveView: View {
     public var body: some View {
         ZStack(alignment: .bottomTrailing) {
             avatarView
-                .frame(width: 40, height: 40)
+                .frame(width: 44, height: 44)
                 .clipShape(Circle())
                 .overlay {
                     Circle()

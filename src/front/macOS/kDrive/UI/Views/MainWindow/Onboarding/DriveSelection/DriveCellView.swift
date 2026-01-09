@@ -47,7 +47,7 @@ final class DriveCellView: NSView {
     }
 
     private var color: NSColor {
-        return drive.color ?? ColorToken.Drive.defaultColor.asNSColor
+        return drive.nsColor ?? ColorToken.Drive.defaultColor.asNSColor
     }
 
     private var isActivated: Bool = false

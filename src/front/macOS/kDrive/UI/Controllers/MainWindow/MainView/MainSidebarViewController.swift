@@ -200,7 +200,7 @@ final class MainSidebarViewController: NSViewController {
         popUpButton.addItem(
             withTitle: title,
             image: KDriveResources.kdriveFoldersStacked.image,
-            color: drive.color,
+            color: drive.nsColor,
             representedObject: synchro
         )
     }

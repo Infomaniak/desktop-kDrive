@@ -28,10 +28,10 @@ struct HomeView: View {
         GeometryReader { proxy in
             HStack(spacing: HomeView.spacing) {
                 Color.clear
-                    .frame(width: (proxy.size.width - HomeView.spacing / 2) * 0.66)
+                    .frame(maxWidth: (proxy.size.width - HomeView.spacing / 2) * 2 / 3)
 
                 DriveWebShortcutsView(user: mainViewModel.currentUser, drive: mainViewModel.currentDrive)
-                    .frame(width: (proxy.size.width - HomeView.spacing / 2) * 0.33)
+                    .frame(maxWidth: (proxy.size.width - HomeView.spacing / 2) * 1 / 3)
             }
         }
         .padding(AppPadding.padding24)

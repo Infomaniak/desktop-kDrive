@@ -70,7 +70,8 @@ struct DriveWebShortcutsView: View {
 
     var body: some View {
         VStack(spacing: AppPadding.padding16) {
-            UserAndDriveView(avatar: nil, driveColor: nil)
+            UserAndDriveView(avatar: user?.avatar, driveColor: drive?.color)
+                .padding(.top, AppPadding.padding8)
 
             VStack(spacing: AppPadding.padding8) {
                 ForEach(topFolders) { folder in
