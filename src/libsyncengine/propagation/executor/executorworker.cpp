@@ -1046,7 +1046,8 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
                                                              ? parentNode
                                                              : correspondingNodeInOtherTree(parentNode);
             if (!remoteParentNode) {
-                LOGW_SYNCPAL_WARN(_logger, L"Parent node not found for item " << Path2WStr(parentNode->getPath()));
+                LOGW_SYNCPAL_WARN(_logger,
+                                  L"Parent node not found for item with " << Utility::formatSyncPath(parentNode->getPath()));
                 return ExitCode::DataError;
             }
 
