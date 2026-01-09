@@ -2203,20 +2203,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 break;
             }
 
-            std::shared_ptr<Vfs> vfs;
-            const std::scoped_lock lock(vfsMapMutex);
-            if (exitInfo = getVfs(syncDbId, vfs); !exitInfo) {
-                LOG_WARN(_logger, "Error in getVfs for syncDbId=" << syncDbId << " : " << exitInfo);
-                resultStream << toInt(exitInfo.code());
-                break;
-            }
-
-            if (exitInfo = vfs->setPinState("", value ? PinState::Unspecified : PinState::AlwaysLocal); !exitInfo) {
-                LOG_WARN(_logger, "Error in vfsSetPinState for syncDbId=" << syncDbId << " : " << exitInfo);
-                resultStream << toInt(exitInfo.code());
-                break;
-            }
-
             resultStream << toInt(exitInfo.code());
             break;
         }
@@ -3866,7 +3852,7 @@ ExitInfo AppServer::stopVfs(int syncDbId, bool unregister) {
     return ExitCode::Ok;
 }
 
-ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value, bool asyncRespons) {
+ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value, bool asyncResponse) {
     const std::scoped_lock lock(syncPalMapMutex);
     auto syncPalMapIt = syncPalMap.find(syncDbId);
     if (syncPalMapIt == syncPalMap.end()) {
@@ -3981,7 +3967,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value, bool async
                 }
             }
             // Notify conversion completed async
-            if (asyncRespons) {
+            if (asyncResponse) {
                 sendVfsConversionCompleted(sync.dbId());
             }
 
@@ -3995,10 +3981,22 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value, bool async
             }
         };
 
-        if (asyncRespons) {
+        if (asyncResponse) {
             QTimer::singleShot(100, this, func);
         } else {
             func();
+        }
+
+        std::shared_ptr<Vfs> vfs;
+        const std::scoped_lock lock(vfsMapMutex);
+        if (ExitInfo exitInfo = getVfs(syncDbId, vfs); !exitInfo) {
+            LOG_WARN(_logger, "Error in getVfs for syncDbId=" << syncDbId << " : " << exitInfo);
+            return exitInfo;
+        }
+
+        if (ExitInfo exitInfo = vfs->setPinState("", value ? PinState::Unspecified : PinState::AlwaysLocal); !exitInfo) {
+            LOG_WARN(_logger, "Error in vfsSetPinState for syncDbId=" << syncDbId << " : " << exitInfo);
+            return exitInfo;
         }
 
         return mainExitInfo;

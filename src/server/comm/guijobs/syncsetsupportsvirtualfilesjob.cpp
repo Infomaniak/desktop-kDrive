@@ -61,18 +61,6 @@ ExitInfo SyncSetSupportsVirtualFilesJob::process() {
         return exitInfo;
     }
 
-    std::shared_ptr<Vfs> vfs;
-    const std::scoped_lock lock(AppServer::vfsMapMutex);
-    if (const ExitInfo exitInfo = AppServer::getVfs(_syncDbId, vfs); !exitInfo) {
-        LOG_WARN(_logger, "Error in getVfs for syncDbId=" << _syncDbId << " : " << exitInfo);
-        return exitInfo;
-    }
-
-    if (const ExitInfo exitInfo = vfs->setPinState("", _value ? PinState::Unspecified : PinState:: AlwaysLocal); !exitInfo) {
-        LOG_WARN(_logger, "Error in vfsSetPinState for syncDbId=" << _syncDbId << " : " << exitInfo);
-        return exitInfo;
-    }
-
     return ExitCode::Ok;
 }
 
