@@ -21,22 +21,22 @@ import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-struct RemoteFolder: Sendable, Identifiable {
+struct WebFolder: Sendable, Identifiable {
     let id: Int
     let name: String
     let icon: Image
 
-    static let favorites = RemoteFolder(id: 0, name: "Favoris", icon: KDriveResources.star.swiftUIImage)
-    static let sharedWithMe = RemoteFolder(id: 1, name: "Partages", icon: KDriveResources.folderShare.swiftUIImage)
-    static let kDriveHome = RemoteFolder(id: 2, name: "kDrive en ligne", icon: KDriveResources.kdriveFoldersStacked.swiftUIImage)
-    static let trash = RemoteFolder(id: 3, name: "Corbeille", icon: KDriveResources.trash.swiftUIImage)
+    static let favorites = WebFolder(id: 0, name: "Favoris", icon: KDriveResources.star.swiftUIImage)
+    static let sharedWithMe = WebFolder(id: 1, name: "Partages", icon: KDriveResources.folderShare.swiftUIImage)
+    static let kDriveHome = WebFolder(id: 2, name: "kDrive en ligne", icon: KDriveResources.kdriveFoldersStacked.swiftUIImage)
+    static let trash = WebFolder(id: 3, name: "Corbeille", icon: KDriveResources.trash.swiftUIImage)
 }
 
-struct DriveShortcutsView: View {
+struct DriveWebShortcutsView: View {
     let user: UIUser
     let drive: UIDrive
 
-    private var topFolders: [RemoteFolder] {
+    private var topFolders: [WebFolder] {
         return [.favorites, .sharedWithMe, .kDriveHome]
     }
 
@@ -53,8 +53,8 @@ struct DriveShortcutsView: View {
             }
             .frame(maxHeight: .infinity, alignment: .top)
 
-            ExternalLinkButton(icon: RemoteFolder.trash.icon, title: RemoteFolder.trash.name) {
-                didTapFolder(RemoteFolder.trash)
+            ExternalLinkButton(icon: WebFolder.trash.icon, title: WebFolder.trash.name) {
+                didTapFolder(WebFolder.trash)
             }
         }
         .padding(AppPadding.padding16)
@@ -62,10 +62,10 @@ struct DriveShortcutsView: View {
         .clipShape(RoundedRectangle(cornerRadius: AppRadius.radius16))
     }
 
-    private func didTapFolder(_ folder: RemoteFolder) {
+    private func didTapFolder(_ folder: WebFolder) {
     }
 }
 
 #Preview {
-    DriveShortcutsView(user: PreviewHelper.user, drive: PreviewHelper.drive1)
+    DriveWebShortcutsView(user: PreviewHelper.user, drive: PreviewHelper.drive1)
 }
