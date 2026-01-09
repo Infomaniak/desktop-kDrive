@@ -35,30 +35,30 @@ extension SynchroStatus {
 
 struct SynchroStatusView: View {
     struct State {
-        let animation: String
+        let animation: ThemedAnimation
         let title: String
         let description: String
 
         static let synchroUpToDate = State(
-            animation: "",
+            animation: .kDriveCheckmark,
             title: KDriveLocalizable.synchroStatusUpToDateTitle,
             description: KDriveLocalizable.synchroStatusUpToDateDescription
         )
 
         static let synchroInProgress = State(
-            animation: "",
+            animation: .cloudSync,
             title: KDriveLocalizable.synchroStatusInProgressTitle,
             description: KDriveLocalizable.synchroStatusInProgressDescription
         )
 
         static let synchroPaused = State(
-            animation: "",
+            animation: .cloudPause,
             title: KDriveLocalizable.synchroStatusPausedTitle,
             description: KDriveLocalizable.synchroStatusPausedDescription
         )
 
         static let offline = State(
-            animation: "",
+            animation: .offline,
             title: KDriveLocalizable.synchroStatusOfflineTitle,
             description: KDriveLocalizable.synchroStatusOfflineDescription
         )
@@ -72,7 +72,7 @@ struct SynchroStatusView: View {
 
     var body: some View {
         VStack(spacing: AppPadding.padding32) {
-            // TODO: Animation here
+            ThemedLottieView(animation: state.animation)
 
             VStack(spacing: AppPadding.padding8) {
                 Text(state.title)
