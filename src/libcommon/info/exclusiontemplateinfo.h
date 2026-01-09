@@ -48,9 +48,23 @@ class ExclusionTemplateInfo {
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
         void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
 
+        //!
+        /*!
+          \param templateString is the pattern string the normalizations of which are queried.
+          \return a set of std::string containing the NFC and NFD normalizations of exclusionTemplate, if those have been
+          successful. The returned set contains additionally the string exclusionTemplate in any case.
+        */
         static void normalizeExclusionTemplateInfoList(std::vector<ExclusionTemplateInfo> &templateList);
 
-        static void completeExclusionTemplateInfoListWithVariations(std::vector<ExclusionTemplateInfo> &templateList);
+        static void updateExclusionTemplateInfoList(std::vector<ExclusionTemplateInfo> &templateList);
+
+        //! Computes and returns all possible NFC and NFD normalizations of `templateString` segments
+        //! interpreted as a file system path.
+        /*!
+          \param templateString is the pattern string the normalizations of which are queried.
+          \return a set of std::string containing the NFC and NFD normalizations of exclusionTemplate, if those have been
+          successful. The returned set contains additionally the string exclusionTemplate in any case.
+        */
         static std::unordered_set<SyncName> computeNormalizations(const SyncName &templateString);
         static bool canNormalize(const SyncName &template_);
 

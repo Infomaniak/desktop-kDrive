@@ -69,26 +69,16 @@ void ExclusionTemplateInfo::normalizeExclusionTemplateInfoList(std::vector<Exclu
     }
 }
 
-void ExclusionTemplateInfo::computeNormalizations(std::vector<ExclusionTemplateInfo> &templateList) {
-    std::vector<ExclusionTemplateInfo> result;
-
+void ExclusionTemplateInfo::updateExclusionTemplateInfoList(std::vector<ExclusionTemplateInfo> &templateList) {
+    std::vector<ExclusionTemplateInfo> newTemplateList;
     for (const auto &templateInfo: templateList) {
         const auto normalizations = computeNormalizations(QStr2SyncName(templateInfo.templ()));
         for (const auto &normalization: normalizations)
-            result.push_back(ExclusionTemplateInfo{QString::fromStdString(SyncName2Str(normalization))});
+            newTemplateList.push_back(ExclusionTemplateInfo{QString::fromStdString(SyncName2Str(normalization))});
     }
-
-    return result;
+    templateList = newTemplateList;
 }
 
-//
-//! Computes and returns all possible NFC and NFD normalizations of `templateString` segments
-//! interpreted as a file system path.
-/*!
-  \param templateString is the pattern string the normalizations of which are queried.
-  \return a set of std::string containing the NFC and NFD normalizations of exclusionTemplate, if those have been successful.
-  The returned set contains additionally the string exclusionTemplate in any case.
-*/
 std::unordered_set<SyncName> ExclusionTemplateInfo::computeNormalizations(const SyncName &templateString) {
     if (!canNormalize(templateString)) return {templateString};
 
