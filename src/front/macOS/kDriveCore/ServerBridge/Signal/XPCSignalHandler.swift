@@ -98,7 +98,10 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         case .ACCOUNT_REMOVED:
             try await handleAccountRemoved(signal)
 
-        case .DRIVE_ADDED, .DRIVE_UPDATED:
+        case .DRIVE_ADDED:
+            try await handleDrive(signal)
+
+        case .DRIVE_UPDATED:
             try await handleDrive(signal)
 
         case .DRIVE_REMOVED:
@@ -170,7 +173,7 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
             throw SignalError.unableToGetDriveFromSignal
         }
 
-        let driveInfo = driveInfoSignal.body
+        let driveInfo = driveInfoSignal.body.driveInfo
         try await coherentCache.addOrUpdateDriveSignal(driveInfo)
     }
 
@@ -250,7 +253,7 @@ extension CoherentCache {
 }
 
 extension CoherentCache {
-    func addOrUpdateDriveSignal(_ driveSignal: DriveInfoSignal) async throws {
+    func addOrUpdateDriveSignal(_ driveSignal: DriveInfoSignalMetadata) async throws {
         let accountDbId = driveSignal.accountDbId
         guard var account = await getAccount(accountDbId: accountDbId) else {
             throw ServerCoherentCache.CacheError.accountNotFound(accountDbId)
