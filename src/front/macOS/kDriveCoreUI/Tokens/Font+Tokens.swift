@@ -23,17 +23,24 @@ import SwiftUI
 
 public extension Font {
     enum Tokens {
-        public static let largeTitleEmphasized: Font = .largeTitle.weight(.bold)
+        public static let largeTitleEmphasized: Font = .largeTitle.weight(.emphasized)
 
-        public static let title3Emphasized: Font = .title3.weight(.bold)
+        public static let title2: Font = .title2
+        public static let title2Emphasized: Font = .title2.weight(.emphasized)
+
+        public static let title3Emphasized: Font = .title3.weight(.emphasized)
 
         public static let headline: NSFont = .preferredFont(forTextStyle: .headline)
 
         public static let body: Font = .body
-        public static let bodyEmphasized: Font = .body.weight(.bold)
+        public static let bodyEmphasized: Font = .body.weight(.emphasized)
 
         public static let subheadline: Font = .subheadline
     }
+}
+
+extension Font.Weight {
+    static let emphasized = Font.Weight.semibold
 }
 
 // MARK: - NSFont

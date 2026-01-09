@@ -25,13 +25,17 @@ struct HomeView: View {
     static let spacing = AppPadding.padding24
 
     var body: some View {
-        GeometryReader { proxy in
-            HStack(spacing: HomeView.spacing) {
-                Color.clear
-                    .frame(maxWidth: (proxy.size.width - HomeView.spacing / 2) * 2 / 3)
+        VStack(alignment: .leading) {
+            GreetingStatusView(name: "Valentin", synchroStatus: .upToDate)
 
-                DriveWebShortcutsView(user: mainViewModel.currentUser, drive: mainViewModel.currentDrive)
-                    .frame(maxWidth: (proxy.size.width - HomeView.spacing / 2) * 1 / 3)
+            GeometryReader { proxy in
+                HStack(spacing: HomeView.spacing) {
+                    Color.clear
+                        .frame(maxWidth: (proxy.size.width - HomeView.spacing / 2) * 2 / 3)
+
+                    DriveWebShortcutsView(user: mainViewModel.currentUser, drive: mainViewModel.currentDrive)
+                        .frame(maxWidth: (proxy.size.width - HomeView.spacing / 2) * 1 / 3)
+                }
             }
         }
         .padding(AppPadding.padding24)
