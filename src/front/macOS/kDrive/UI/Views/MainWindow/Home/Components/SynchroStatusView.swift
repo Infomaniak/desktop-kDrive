@@ -76,7 +76,7 @@ struct SynchroStatusView: View {
 
             VStack(spacing: AppPadding.padding8) {
                 Text(state.title)
-                    .font(.Tokens.title3)
+                    .font(.Tokens.title3Emphasized)
 
                 Text(state.description)
                     .font(.Tokens.body)
