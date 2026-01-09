@@ -67,7 +67,9 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode getSyncInfoList(std::vector<SyncInfo> &list);
         static ExitCode getParameters(ParametersInfo &parametersInfo);
         static ExitCode updateParameters(const ParametersInfo &parametersInfo);
-        static ExitCode findGoodPathForNewSync(int driveDbId, const QString &basePath, QString &path, QString &error);
+        static ExitInfo isPathValidForNewSync(const SyncPath &path, bool &valid);
+        static ExitInfo findGoodPathForNewSync(const SyncPath &basePath, SyncPath &path, std::string &error);
+        static ExitCode findGoodPathForNewSync(const QString &basePath, QString &path, QString &error);
         static ExitCode getPrivateLinkUrl(int driveDbId, const std::string &fileId, std::string &linkUrl);
         static ExitCode getPrivateLinkUrl(int driveDbId, const QString &fileId, QString &linkUrl);
         static ExitCode getExclusionTemplateList(bool def, std::vector<ExclusionTemplateInfo> &list);
@@ -133,15 +135,15 @@ struct SYNCENGINE_EXPORT ServerRequests {
 
         // C/S requests (others)
         static ExitCode deleteUser(int userDbId); // !!! Use COMM_LONG_TIMEOUT !!!
-        static ExitCode deleteAccount(int accountDbId); // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitInfo deleteAccount(int accountDbId); // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitCode deleteDrive(int driveDbId); // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitCode deleteSync(int syncDbId); // !!! Use COMM_LONG_TIMEOUT !!!
 
         // Server requests
         static ExitInfo loadDriveInfo(Drive &drive, Account &account, bool &updated, bool &quotaUpdated, bool &accountUpdated);
-        static ExitCode loadUserInfo(User &user, bool &updated);
-        static ExitCode loadUserAvatar(User &user);
-        static ExitCode getThumbnail(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail);
+        static ExitInfo loadUserInfo(User &user, bool &updated);
+        static ExitInfo loadUserAvatar(User &user);
+        static ExitInfo getThumbnail(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail);
 
         // Utility
         static void userToUserInfo(const User &user, UserInfo &userInfo);
@@ -170,8 +172,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode processRequestTokenFinished(const Login &login, UserInfo &userInfo, bool &userCreated);
         static QString canonicalPath(const QString &path);
         static ExitCode checkPathValidityRecursive(const QString &path, QString &error);
-        static ExitCode checkPathValidityForNewFolder(const std::vector<Sync> &syncList, int driveDbId, const QString &path,
-                                                      QString &error);
+        static ExitCode checkPathValidityForNewFolder(const std::vector<Sync> &syncList, const QString &path, QString &error);
         static ExitCode syncForPath(const std::vector<Sync> &syncList, const QString &path, int &syncDbId);
         static QString excludeFile(bool liteSync);
         static ExitCode createUser(const User &user, UserInfo &userInfo);

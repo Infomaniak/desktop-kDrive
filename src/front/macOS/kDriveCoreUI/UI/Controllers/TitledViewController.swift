@@ -17,17 +17,33 @@
  */
 
 import Cocoa
+import SwiftUI
 
-open class TitledViewController: NSViewController {
+public struct ResizableContainerView<Content: View>: View {
+    let content: Content
+
+    public var body: some View {
+        VStack {
+            content
+        }
+        .frame(minWidth: nil, maxWidth: .infinity, minHeight: nil, maxHeight: .infinity)
+    }
+}
+
+open class TitledViewController<Content: View>: NSHostingController<ResizableContainerView<Content>> {
     public let toolbarTitle: String
 
-    open override var acceptsFirstResponder: Bool {
+    override open var acceptsFirstResponder: Bool {
         return true
     }
 
-    public init(toolbarTitle: String) {
+    public init(toolbarTitle: String, contentView: Content) {
         self.toolbarTitle = toolbarTitle
-        super.init(nibName: nil, bundle: nil)
+        super.init(rootView: ResizableContainerView(content: contentView))
+    }
+
+    public convenience init(toolbarTitle: String, @ViewBuilder contentView: () -> Content) {
+        self.init(toolbarTitle: toolbarTitle, contentView: contentView())
     }
 
     @available(*, unavailable)

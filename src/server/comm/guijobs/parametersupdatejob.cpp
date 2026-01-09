@@ -71,7 +71,7 @@ ExitInfo ParametersUpdateJob::process() {
         AppServer::addError(Error(ERR_ID, exitCode));
     }
 
-    // extendedLog change propagation
+    // Propagate extendedLog change
     if (parameters.extendedLog() != _parametersInfo.extendedLog()) {
         _commManager->appServer().logExtendedLogActivationMessage(_parametersInfo.extendedLog());
         const std::scoped_lock lock(AppServer::vfsMapMutex);
@@ -80,12 +80,12 @@ ExitInfo ParametersUpdateJob::process() {
         }
     }
 
-    // Language change propagation
+    // Propagate language change
     if (parameters.language() != _parametersInfo.language()) {
         CommonUtility::setupTranslations(&_commManager->appServer(), _parametersInfo.language());
     }
 
-    // ProxyConfig change propagation
+    // Propagate ProxyConfig change
     if (parameters.proxyConfig().type() != _parametersInfo.proxyConfigInfo().type() ||
         parameters.proxyConfig().hostName() != _parametersInfo.proxyConfigInfo().hostName().toStdString() ||
         parameters.proxyConfig().port() != _parametersInfo.proxyConfigInfo().port() ||
@@ -95,12 +95,15 @@ ExitInfo ParametersUpdateJob::process() {
         Proxy::instance()->setProxyConfig(ParametersCache::instance()->parameters().proxyConfig());
     }
 
+    // Propagate Sentry activation change
     if (KDRIVE_VERSION_MAJOR >= 4) {
-        // Sentry activation change propagation
         if (parameters.sentryEnabled() != _parametersInfo.sentryEnabled()) {
             sentry::Handler::instance()->setIsSentryActivated(_parametersInfo.sentryEnabled());
         }
     }
+
+    // Propagate distribution channel change
+    _commManager->appServer().setDistributionChannel(_parametersInfo.distributionChannel());
 
     return exitCode;
 }

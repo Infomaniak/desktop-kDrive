@@ -945,10 +945,15 @@ bool IoHelper::copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &d
     return ioError == IoError::Success;
 }
 
-bool IoHelper::getDirectoryIterator(const SyncPath &path, const bool recursive, IoError &ioError,
-                                    DirectoryIterator &iterator) noexcept {
-    iterator = DirectoryIterator(path, recursive, ioError);
+bool IoHelper::getDirectoryIterator(const SyncPath &path, const bool recursive, IoError &ioError, DirectoryIterator &iterator,
+                                    const bool skipPermissionDenied) noexcept {
+    iterator = DirectoryIterator(path, recursive, ioError, skipPermissionDenied);
     return ioError == IoError::Success;
+}
+
+bool IoHelper::getRecursiveDirectoryIterator(const SyncPath &path, IoError &ioError, DirectoryIterator &iterator,
+                                             const bool skipPermissionDenied) noexcept {
+    return getDirectoryIterator(path, true, ioError, iterator, skipPermissionDenied);
 }
 
 bool IoHelper::getDirectoryEntry(const SyncPath &path, IoError &ioError, DirectoryEntry &entry) noexcept {
@@ -983,13 +988,14 @@ bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, b
 
 // DirectoryIterator
 
-IoHelper::DirectoryIterator::DirectoryIterator(const SyncPath &directoryPath, const bool recursive, IoError &ioError) :
+IoHelper::DirectoryIterator::DirectoryIterator(const SyncPath &directoryPath, bool recursive, IoError &ioError,
+                                               bool skipPermissionDenied) :
     _recursive(recursive),
     _directoryPath(directoryPath) {
     std::error_code ec;
+    const auto option = skipPermissionDenied ? DirectoryOptions::skip_permission_denied : DirectoryOptions::none;
 
-    _dirIterator = std::filesystem::begin(
-            std::filesystem::recursive_directory_iterator(directoryPath, DirectoryOptions::skip_permission_denied, ec));
+    _dirIterator = std::filesystem::begin(std::filesystem::recursive_directory_iterator(directoryPath, option, ec));
     ioError = IoHelper::stdError2ioError(ec);
 }
 

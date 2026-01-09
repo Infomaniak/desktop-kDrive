@@ -24,6 +24,7 @@
     <x:String x:Key="Infomaniak.DS.Icons.Actions.power">ms-appx:///Assets/DS/Icons/Actions/power.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Actions.trashbin">ms-appx:///Assets/DS/Icons/Actions/trashbin.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Actions.triangle-alert">ms-appx:///Assets/DS/Icons/Actions/triangle-alert.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Actions.triangle-alert-outline">ms-appx:///Assets/DS/Icons/Actions/triangle-alert-outline.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Actions.circle-check">ms-appx:///Assets/DS/Icons/Actions/circle-check.svg</x:String>
 
     <!-- Books -->

@@ -22,7 +22,7 @@ import kDriveResources
 public final class IconCircleView: NSView {
     static let iconSize = NSSize(width: 12, height: 12)
 
-    public var color = NSColor.Tokens.Status.Medium.security {
+    public var color = ColorToken.Status.Medium.security.asNSColor {
         didSet {
             if #available(macOS 26.0, *) {
                 let backgroundView = self.backgroundView as? NSGlassEffectView
