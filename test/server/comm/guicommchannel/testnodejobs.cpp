@@ -63,7 +63,7 @@ void TestGuiCommChannel::testBlacklistedSyncNodeListJob() {
     (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
     // Job expected answer
-    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto listJob = std::dynamic_pointer_cast<BlacklistedNodeListJob>(job);
@@ -72,7 +72,7 @@ void TestGuiCommChannel::testBlacklistedSyncNodeListJob() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(queryStr, answerStr, {}, processFct);
 #else
-    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
