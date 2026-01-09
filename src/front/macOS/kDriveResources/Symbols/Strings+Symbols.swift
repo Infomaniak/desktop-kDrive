@@ -20,6 +20,8 @@ public enum KDriveLocalizable {
   public static let buttonFinishInstallation = KDriveLocalizable.tr("Localizable", "buttonFinishInstallation", fallback: "Finish installation")
   /// loco:69304d546385bb9cfc03e524
   public static let buttonKDriveIsActivated = KDriveLocalizable.tr("Localizable", "buttonKDriveIsActivated", fallback: "I've activated kDrive")
+  /// loco:695e58701870be5cd709d2a2
+  public static let buttonKDriveOnline = KDriveLocalizable.tr("Localizable", "buttonKDriveOnline", fallback: "kDrive Online")
   /// loco:68e673b2042a15d8470f9452
   public static let buttonLogin = KDriveLocalizable.tr("Localizable", "buttonLogin", fallback: "Login")
   /// loco:68b04d823f2b735c170caea2
@@ -32,6 +34,12 @@ public enum KDriveLocalizable {
   public static let buttonShowOffers = KDriveLocalizable.tr("Localizable", "buttonShowOffers", fallback: "Show offers")
   /// loco:69240f6d4433e24658054fd4
   public static let buttonStartForFree = KDriveLocalizable.tr("Localizable", "buttonStartForFree", fallback: "Get started for free")
+  /// loco:695e57f549f806b5ef0a3ac2
+  public static let folderFavorites = KDriveLocalizable.tr("Localizable", "folderFavorites", fallback: "Favorites")
+  /// loco:695e584bbc7544361b08b832
+  public static let folderShares = KDriveLocalizable.tr("Localizable", "folderShares", fallback: "Shares")
+  /// loco:695e5889bc7544361b08b834
+  public static let folderTrash = KDriveLocalizable.tr("Localizable", "folderTrash", fallback: "Trash")
   /// loco:6930595e7664999c6a08c8a4
   public static let instructionEnableKDrive = KDriveLocalizable.tr("Localizable", "instructionEnableKDrive", fallback: "Activate kDrive.app")
   /// loco:693059768c31ab63990a0c82
