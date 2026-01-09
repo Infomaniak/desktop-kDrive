@@ -537,8 +537,32 @@ void TestUtility::testTryCreateTmpDir() {
 }
 
 void TestUtility::testTryCreateTmpFile() {
+    SyncPath tmpDirPath;
+    IoError ioError = IoError::Unknown;
+    IoHelper::appTempDirectoryPath(tmpDirPath, ioError);
+
     CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile());
     CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile(Str("test name")));
+
+    // Make sure the item are correctly removed from the tmp dir
+    IoHelper::DirectoryIterator dir;
+    CPPUNIT_ASSERT(IoHelper::getDirectoryIterator(tmpDirPath, true, ioError, dir));
+
+    DirectoryEntry entry;
+    bool endOfDirectory = false;
+    auto counter = 0;
+    while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
+        if (entry.is_directory()) counter++; // Count only directories to ignore ".DS_Store" files
+    }
+    CPPUNIT_ASSERT_EQUAL(0, counter);
+
+    // Try to create a tmp file but a file already exist with the same name but different capitalization.
+    testhelpers::generateTestFile(tmpDirPath / Str("TestFile"));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile(Str("testFile")));
+
+    // Delete the tmp directory and make sure it is re-created
+    CPPUNIT_ASSERT(IoHelper::deleteItem(tmpDirPath, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile());
 
     {
         // Saves the current value of "KDRIVE_TMP_PATH".

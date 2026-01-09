@@ -722,24 +722,58 @@ IoError Utility::tryCreateTmpFile(const SyncName &name /*= Str("testFile")*/) {
         return ioError;
     }
 
-    const SyncPath tmpPath = tmpDirPath / name;
-    std::ofstream output(tmpPath.native().c_str(), std::ios::binary);
-    if (!output) {
-        bool read = false;
-        bool write = false;
-        bool exec = false;
+    SyncPath tmpPath = tmpDirPath / name;
+    auto retries = 0;
+    bool ok = false;
+    do {
+        bool exists = false;
         auto ioError = IoError::Unknown;
-        if (!IoHelper::getRights(tmpDirPath, read, write, exec, ioError)) {
+        // Check if item already exist (it should not exist at this point)
+        if (!IoHelper::checkIfPathExists(tmpPath, exists, ioError)) {
+            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(tmpPath, ioError));
             return ioError;
         }
-        if (!read || !write) {
-            return IoError::AccessDenied;
+        if (exists) {
+            retries++;
+            // Retry with a random suffix added to item name
+            tmpPath = tmpDirPath / (name + CommonUtility::generateRandomStringAlphaNum());
+            continue;
         }
 
-        return IoError::Unknown;
-    }
+        std::ofstream output = std::ofstream(tmpPath.native().c_str(), std::ios::binary);
+        if (!output) {
+            bool read = false;
+            bool write = false;
+            bool exec = false;
 
-    output.close();
+            // auto ioError = IoError::Unknown;
+            if (!IoHelper::getRights(tmpDirPath, read, write, exec, ioError)) {
+                return ioError;
+            }
+            if (!read || !write) {
+                return IoError::AccessDenied;
+            }
+
+            retries++;
+            // Retry with a random suffix added to item name
+            tmpPath = tmpDirPath / (name + CommonUtility::generateRandomStringAlphaNum());
+            continue;
+        }
+        output.close();
+
+        // Check again if item already exist (it should exist at this point)
+        if (!IoHelper::checkIfPathExists(tmpPath, exists, ioError)) {
+            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(tmpPath, ioError));
+            return ioError;
+        }
+        if (!exists) {
+            retries++;
+            // Retry with a random suffix added to item name
+            tmpPath = tmpDirPath / (name + CommonUtility::generateRandomStringAlphaNum());
+            continue;
+        }
+        ok = true;
+    } while (!ok && retries < maxNbCreationTmpFolderRetries);
 
     std::error_code ec;
     (void) std::filesystem::remove_all(tmpPath, ec);
