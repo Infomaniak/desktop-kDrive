@@ -4,7 +4,7 @@
  * Locale: en, English
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Fri, 09 Jan 2026 07:00:07 +0100
+ * Exported at: Fri, 09 Jan 2026 09:11:23 +0100
  */
 
 /* loco:691deb2291b20ac7fd045012 */
@@ -51,6 +51,9 @@
 
 /* loco:695e5889bc7544361b08b834 */
 "folderTrash" = "Trash";
+
+/* loco:6960b7720cbd5c07340af144 */
+"greetingLabel" = "Hello %s, %s";
 
 /* loco:6930595e7664999c6a08c8a4 */
 "instructionEnableKDrive" = "Activate kDrive.app";
@@ -165,6 +168,15 @@
 
 /* loco:68a70c92c32749426b06db02 */
 "sidebarItemKDriveTitle" = "kDrive folder";
+
+/* loco:6960b7decf8ffcd3950d2706 */
+"synchroInProgress" = "your files are synchronizing";
+
+/* loco:6960b7fd4e868a099e022dc5 */
+"synchroPaused" = "synchronization is paused";
+
+/* loco:6960b7a6cf8ffcd3950d2704 */
+"synchroUpToDate" = "your files are up to date";
 
 /* loco:68a70be4b749277aa1081dc2 */
 "tabTitleActivity" = "Activity";
