@@ -17,6 +17,7 @@
  */
 
 import Cocoa
+import SwiftUI
 
 public extension ThemedAnimation {
     static let kDriveLoader = ThemedAnimation(
@@ -53,6 +54,19 @@ public struct ThemedAnimation: Sendable {
         if appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua {
             return dark
         } else {
+            return light
+        }
+    }
+
+    public func animation(forColorScheme colorScheme: ColorScheme?) -> String {
+        guard let colorScheme else { return light }
+
+        switch colorScheme {
+        case .light:
+            return light
+        case .dark:
+            return dark
+        @unknown default:
             return light
         }
     }
