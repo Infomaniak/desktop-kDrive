@@ -98,6 +98,7 @@ namespace Infomaniak.kDrive
                 }
                 LegacyCommPort = Int32.Parse(arguments[1]);
             }
+
             // Register oAuth protocol handler
             RegisterOAuthProtocol();
 

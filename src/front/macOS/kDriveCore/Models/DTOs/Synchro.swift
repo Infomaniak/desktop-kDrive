@@ -28,4 +28,9 @@ public struct Synchro: Identifiable, Hashable, Sendable {
     public let dbId: Int32
     public let driveDbId: Int32
     public let localPath: String
+
+    public let targetPath: String
+    public let targetNodeId: String
+    public let supportVfs: Bool
+    public let virtualFileMode: KDC.VirtualFileMode
 }

@@ -32,6 +32,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/guijobfactory.h ${server_srcs_path}/comm/guijobs/guijobfactory.cpp
     ${server_srcs_path}/comm/guijobs/unknownrequestjob.h ${server_srcs_path}/comm/guijobs/unknownrequestjob.cpp
     ${server_srcs_path}/comm/guijobs/loginrequesttokenjob.h ${server_srcs_path}/comm/guijobs/loginrequesttokenjob.cpp
+    ${server_srcs_path}/comm/guijobs/nodepathjob.h ${server_srcs_path}/comm/guijobs/nodepathjob.cpp
     ${server_srcs_path}/comm/guijobs/userdbidlistjob.h ${server_srcs_path}/comm/guijobs/userdbidlistjob.cpp
     ${server_srcs_path}/comm/guijobs/userinfolistjob.h ${server_srcs_path}/comm/guijobs/userinfolistjob.cpp
     ${server_srcs_path}/comm/guijobs/userdeletejob.h ${server_srcs_path}/comm/guijobs/userdeletejob.cpp
@@ -70,11 +71,18 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/parametersupdatejob.h ${server_srcs_path}/comm/guijobs/parametersupdatejob.cpp
     ${server_srcs_path}/comm/guijobs/errorinfolistjob.h ${server_srcs_path}/comm/guijobs/errorinfolistjob.cpp
     ${server_srcs_path}/comm/guijobs/utilityactivateloadinfojob.h ${server_srcs_path}/comm/guijobs/utilityactivateloadinfojob.cpp
+    ${server_srcs_path}/comm/guijobs/utilitybestvfsavailablemodejob.h ${server_srcs_path}/comm/guijobs/utilitybestvfsavailablemodejob.cpp
+    ${server_srcs_path}/comm/guijobs/utilityfindgoodpathfornewsyncjob.h ${server_srcs_path}/comm/guijobs/utilityfindgoodpathfornewsyncjob.cpp
     ${server_srcs_path}/comm/guijobs/utilitysetappstatejob.h ${server_srcs_path}/comm/guijobs/utilitysetappstatejob.cpp
     ${server_srcs_path}/comm/guijobs/utilitygetappstatejob.h ${server_srcs_path}/comm/guijobs/utilitygetappstatejob.cpp
+    ${server_srcs_path}/comm/guijobs/utilityispathvalidfornewsyncjob.h ${server_srcs_path}/comm/guijobs/utilityispathvalidfornewsyncjob.cpp
     ${server_srcs_path}/comm/guijobs/utilitysendlogtosupportjob.h ${server_srcs_path}/comm/guijobs/utilitysendlogtosupportjob.cpp
     ${server_srcs_path}/comm/guijobs/utilitycancellogtosupportjob.h ${server_srcs_path}/comm/guijobs/utilitycancellogtosupportjob.cpp
     ${server_srcs_path}/comm/guijobs/utilitygetlogestimatedsizejob.h ${server_srcs_path}/comm/guijobs/utilitygetlogestimatedsizejob.cpp
+    ${server_srcs_path}/comm/guijobs/updaterversioninfojob.h ${server_srcs_path}/comm/guijobs/updaterversioninfojob.cpp
+    ${server_srcs_path}/comm/guijobs/updaterstatejob.h ${server_srcs_path}/comm/guijobs/updaterstatejob.cpp
+    ${server_srcs_path}/comm/guijobs/updaterstartinstallerjob.h ${server_srcs_path}/comm/guijobs/updaterstartinstallerjob.cpp
+    ${server_srcs_path}/comm/guijobs/updaterskipversionjob.h ${server_srcs_path}/comm/guijobs/updaterskipversionjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluseraddedjob.h ${server_srcs_path}/comm/guijobs/signaluseraddedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.h ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserremovedjob.h ${server_srcs_path}/comm/guijobs/signaluserremovedjob.cpp
@@ -167,13 +175,14 @@ set(testserver_SRCS
     appserver/testappserver.h appserver/testappserver.cpp
     comm/testsocketcomm.h comm/testsocketcomm.cpp
 
-    comm/testcommhelpers.h comm/testcommhelpers.cpp
-    comm/guicommchannel/testguicommchannel.h comm/guicommchannel/testguicommchannel.cpp
-    comm/guicommchannel/testsyncjobs.cpp comm/guicommchannel/testnodejobs.cpp
-    comm/guicommchannel/testerrorjobs.cpp
+    comm/testcommhelpers.h comm/testcommhelpers.cpp 
+    comm/guicommchannel/testgenericjob.cpp
+    comm/guicommchannel/testguicommchannel.h comm/guicommchannel/testguicommchannel.cpp 
+    comm/guicommchannel/testsyncjobs.cpp comm/guicommchannel/testnodejobs.cpp 
+    comm/guicommchannel/testparameters.cpp comm/guicommchannel/testerrorjobs.cpp
     comm/guicommchannel/testexclapp.cpp comm/guicommchannel/testexcltempl.cpp 
     comm/guicommchannel/testparameters.cpp comm/guicommchannel/testutility.cpp
-    comm/testcommhelpers.h comm/testcommhelpers.cpp
+    comm/guicommchannel/testupdaterjobs.cpp
 
     comm/guijobs/testabstractguijob.h comm/guijobs/testabstractguijob.cpp
 )

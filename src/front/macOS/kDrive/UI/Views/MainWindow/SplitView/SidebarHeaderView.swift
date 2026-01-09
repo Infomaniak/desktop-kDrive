@@ -17,18 +17,19 @@
  */
 
 import Cocoa
+import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 
 final class SidebarHeaderView: NSView {
-    init() {
-        super.init(frame: .zero)
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
         setupView()
     }
 
-    @available(*, unavailable)
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        super.init(coder: coder)
+        setupView()
     }
 
     private func setupView() {
@@ -37,9 +38,10 @@ final class SidebarHeaderView: NSView {
         imageView.imageScaling = .scaleProportionallyUpOrDown
         addSubview(imageView)
 
-        let textField = NSTextField(labelWithString: "kDrive")
+        let textField = NSTextField(labelWithString: Constants.appName)
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.font = NSFont.Tokens.title3Emphasized
+        textField.textColor = ColorToken.Text.primary.asNSColor
         textField.backgroundColor = .clear
         addSubview(textField)
 

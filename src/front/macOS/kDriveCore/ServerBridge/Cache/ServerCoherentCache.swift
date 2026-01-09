@@ -85,8 +85,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         }
 
         let indexedDrives: IndexedAvailableDrives = Dictionary(uniqueKeysWithValues:
-            drives.map { drive in (drive.driveId, drive) }
-        )
+            drives.map { drive in (drive.driveId, drive) })
 
         user.availableDrives = indexedDrives
 
@@ -130,7 +129,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
     }
 
     public func updateAccount(_ account: Account) throws {
-        guard var user = users.values.first(where: { $0.accounts.keys.contains(account.dbId) }) else {
+        guard var user = users.values.first(where: { $0.dbId == account.userDbId }) else {
             throw CacheError.accountNotFound(account.dbId)
         }
 
@@ -183,6 +182,21 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         users[userDbId] = user
 
         notifyUpdate()
+    }
+
+    public func removeDrive(driveDbId: Int32) throws {
+        for user in users.values {
+            for var account in user.accounts.values {
+                guard account.drives.removeValue(forKey: driveDbId) != nil else {
+                    continue
+                }
+
+                try updateAccount(account)
+                return
+            }
+        }
+
+        throw CacheError.driveNotFound(driveDbId)
     }
 
     public func updateDrive(drive: Drive) throws {
@@ -257,9 +271,18 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         usersSubject.send(users)
     }
 
-    // MARK: - Cleanup
+    // MARK: - Management
 
-    public func clearOnServerRestart() {
+    public func refresh() async throws {
+        try await UserJobs().userInfoList()
+        try await AccountJobs().accountInfoList()
+        try await DriveJobs().driveInfoList()
+        try await SyncJobs().availableSync()
+    }
+
+    // TODO: Call on XPC reset
+    public func clearAndRefresh() async throws {
         users = [:]
+        try await refresh()
     }
 }

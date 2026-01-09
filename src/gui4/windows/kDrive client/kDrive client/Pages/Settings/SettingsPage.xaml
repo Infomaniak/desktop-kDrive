@@ -80,7 +80,7 @@
                     <TextBlock x:Uid="Page_SettingsPage_Global"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}" />
                     <!-- General - Update -->
-                    <controls:UpdateExpander IsEnabled="False"/>
+                    <controls:UpdateExpander IsEnabled="False" />
 
                     <!-- General - Language -->
                     <toolKit:SettingsCard x:Uid="Page_SettingsPage_Language"
@@ -288,21 +288,13 @@
                                                   IsClickEnabled="True"
                                                   Click="MatomoButton_Click"
                                                   IsEnabled="False" />
-                            <controls:ConsentDialog x:Name="MatomoContentDialog"
-                                                    x:Uid="Page_SettingsPage_Privacy_Matomo_ConsentDialog"
-                                                    LogoUriStr="{StaticResource Infomaniak.Custom.Icons.logo-matomo}"
-                                                    CurrentValue="{x:Bind  ViewModel.Settings.MatomoEnabled, Mode=OneWay}" />
-
+                            
                             <!-- Sentry -->
                             <toolKit:SettingsCard x:Uid="Page_SettingsPage_Privacy_Sentry"
                                                   Background="{ThemeResource LayerFillColorDefault}"
                                                   IsClickEnabled="True"
                                                   Click="SentryButton_Click"
                                                   IsEnabled="False" />
-                            <controls:ConsentDialog x:Name="SentryContentDialog"
-                                                    x:Uid="Page_SettingsPage_Privacy_Sentry_ConsentDialog"
-                                                    LogoUriStr="{StaticResource Infomaniak.Custom.Icons.logo-sentry}"
-                                                    CurrentValue="{x:Bind  ViewModel.Settings.SentryEnabled, Mode=OneWay}" />
 
                             <!-- Sources -->
                             <toolKit:SettingsCard x:Uid="Page_SettingsPage_Privacy_Sources"
@@ -315,7 +307,16 @@
                                 </toolKit:SettingsCard.ActionIcon>
                             </toolKit:SettingsCard>
                         </toolKit:SettingsExpander.Items>
+                        
                     </toolKit:SettingsExpander>
+                    <controls:ConsentDialog x:Name="SentryContentDialog"
+                                            x:Uid="Page_SettingsPage_Privacy_Sentry_ConsentDialog"
+                                            LogoUriStr="{StaticResource Infomaniak.Custom.Icons.logo-sentry}"
+                                            CurrentValue="{x:Bind  ViewModel.Settings.SentryEnabled, Mode=OneWay}" />
+                    <controls:ConsentDialog x:Name="MatomoContentDialog"
+                                            x:Uid="Page_SettingsPage_Privacy_Matomo_ConsentDialog"
+                                            LogoUriStr="{StaticResource Infomaniak.Custom.Icons.logo-matomo}"
+                                            CurrentValue="{x:Bind  ViewModel.Settings.MatomoEnabled, Mode=OneWay}" />
 
                     <!-- Advanced - Proxy -->
                     <toolKit:SettingsExpander x:Name="ProxySettingsExpander"

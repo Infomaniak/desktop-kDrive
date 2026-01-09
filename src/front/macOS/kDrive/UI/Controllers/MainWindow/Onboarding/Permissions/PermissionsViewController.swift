@@ -254,7 +254,7 @@ final class PermissionsViewController: OnboardingStepViewController {
             instructionCell?.title = attributedString
             if let hint = instruction.hint {
                 instructionCell?.hint = hint
-                instructionCell?.hintLabel.textColor = NSColor.Tokens.Status.Strong.warning
+                instructionCell?.hintLabel.textColor = ColorToken.Status.Strong.warning.asNSColor
             }
         }
     }
@@ -269,7 +269,7 @@ final class PermissionsViewController: OnboardingStepViewController {
 
         let basicAttributes: [NSAttributedString.Key: Any] = [
             .font: NSFont.Tokens.body,
-            .foregroundColor: NSColor.Tokens.Text.secondary,
+            .foregroundColor: ColorToken.Text.secondary.asNSColor,
             .paragraphStyle: paragraphStyle,
             .cursor: NSCursor.arrow
         ]
@@ -284,7 +284,7 @@ final class PermissionsViewController: OnboardingStepViewController {
             let range = (attributedString.string as NSString).range(of: link)
             let attributes: [NSAttributedString.Key: Any] = [
                 .font: NSFont.Tokens.bodyEmphasized,
-                .foregroundColor: NSColor.Tokens.Action.primary,
+                .foregroundColor: ColorToken.Action.primary.asNSColor,
                 .link: linkURL,
                 .cursor: NSCursor.pointingHand
             ]

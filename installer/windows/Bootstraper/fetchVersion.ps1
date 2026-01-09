@@ -21,6 +21,48 @@ param(
     [string]$RepositoryRootPath
 )
 
+
+function Get-Overlay-Guid {
+    param (
+        [string] $path,
+        [string] $keyType
+    )
+
+    try {
+        $guid = (Select-String -Path "$path\extensions\windows\standard\KDOverlays\OverlayConstants.h" $keyType |  Select-Object -ExpandProperty Line)
+        $guid = $guid.Split(" ")[-1] # Extract last word.
+        $guid = $guid.Substring(2, $guid.length - 3) # Trim the initial 'L' character and the surrounding double quotes.
+    } catch {
+            Write-Error "Failed to retrieve overlay GUID for '$keyType' from OverlayConstants.h"
+            exit 1
+    }
+    
+    return $guid
+}
+
+function Update-Define-Constants {
+    param (
+        [string] $key,
+        [string] $value,
+        [ref] $defineConstants
+    )
+
+    $pattern = "$key=*"
+    $existing = $defineConstants.Value | Where-Object { $_ -like $pattern }
+
+    if ($existing) {
+        # Update existing constant
+        $constantIndex = [array]::IndexOf($defineConstants.Value, $existing)
+        $defineConstants.Value[$constantIndex] = "$key=$value"
+        Write-Host "Existing $key constant found. Updating to $value."
+    } else {
+        # Add new constant
+        $defineConstants.Value += "$key=$value"
+        Write-Host "No existing $key constant found. Adding $key=$value"
+    }
+}
+
+
 $versionString = ""
 $RepositoryRootPath = $RepositoryRootPath.Trim('"')
 . "$RepositoryRootPath\infomaniak-build-tools\version-helpers.ps1"
@@ -39,22 +81,31 @@ if (-Not (Test-Path $WixProjPath)) {
 $propertyGroupNode = $wixProjXml.Project.PropertyGroup | Where-Object { $_.DefineConstants } | Select-Object -First 1
 
 if (-not $propertyGroupNode) {
-    Write-Error "No <DefineConstants> found in wixproj — expected exactly one."
+    Write-Error "No <DefineConstants> found in wixproj. Expected exactly one."
     exit 1
 }
-$defineConstants = $propertyGroupNode.DefineConstants -split ';'
-$existingVersion = $defineConstants | Where-Object { $_ -like 'version=*' }
 
-if ($existingVersion) {
-    # Update existing Version constant
-    $versionConstantIndex = [array]::IndexOf($defineConstants, $existingVersion)
-    $defineConstants[$versionConstantIndex] = "version=$versionString"
-    Write-Host "Existing Version constant found. Updating to $versionString"
-} else {
-    # Add new Version constant
-    $defineConstants += "version=$versionString"
-    Write-Host "No existing Version constant found. Adding Version=$versionString"
-}
+$defineConstants = $propertyGroupNode.DefineConstants -split ';'
+
+# Version
+
+Update-Define-Constants -Key "version" -Value $versionString -DefineConstants ([ref]$defineConstants)
+
+# Overlay GUIDs 
+
+$guid = Get-Overlay-Guid -Path $RepositoryRootPath -KeyType "OVERLAY_GUID_OK"
+Update-Define-Constants -Key "regKeyOkGUID" -Value $guid -DefineConstants ([ref]$defineConstants)
+
+$guid = Get-Overlay-Guid -Path $RepositoryRootPath -KeyType "OVERLAY_GUID_ERROR"
+Update-Define-Constants -Key "regKeyErrorGUID" -Value $guid -DefineConstants ([ref]$defineConstants)
+
+$guid = Get-Overlay-Guid -Path $RepositoryRootPath -KeyType "OVERLAY_GUID_SYNC"
+Update-Define-Constants -Key "regKeySyncGUID" -Value $guid -DefineConstants ([ref]$defineConstants)
+
+$guid = Get-Overlay-Guid -Path $RepositoryRootPath -KeyType "OVERLAY_GUID_WARNING"
+Update-Define-Constants -Key "regKeyWarningGUID" -Value $guid -DefineConstants ([ref]$defineConstants)
+
+# Save
 
 $propertyGroupNode.DefineConstants = ($defineConstants -join ';')
 Write-Host "Updated wixproj Version to $versionString"

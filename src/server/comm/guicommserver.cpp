@@ -41,7 +41,7 @@ bool GuiCommChannel::sendMessage(const CommString &message) {
 
 bool GuiCommChannel::canReadMessage() {
     fetchDataToBuffer();
-    _validJsonInBuffer = containsValidJson(_readBuffer, _inBufferJsonEndIndex);
+    _validJsonInBuffer = containsCompleteMessage(_readBuffer, _inBufferJsonEndIndex);
     return _validJsonInBuffer;
 }
 
@@ -58,9 +58,14 @@ CommString GuiCommChannel::readMessage() {
     return message;
 }
 
-bool GuiCommChannel::containsValidJson(const CommString &message, size_t &endIndex) const {
+bool GuiCommChannel::containsCompleteMessage(const CommString &message, size_t &endIndex) const {
     endIndex = 0;
-    if (message.empty() || (message[0] != '{' && message[0] != '[')) {
+    if (message.empty()) {
+        return false;
+    }
+
+    if ((message[0] != '{' && message[0] != '[')) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Invalid JSON: " << CommonUtility::commString2WStr(message));
         return false;
     }
 

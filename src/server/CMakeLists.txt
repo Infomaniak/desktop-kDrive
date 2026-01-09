@@ -51,6 +51,7 @@ set(server_SRCS
     comm/guijobs/abstractguijob.h comm/guijobs/abstractguijob.cpp
     comm/guijobs/guijobfactory.h comm/guijobs/guijobfactory.cpp
     comm/guijobs/loginrequesttokenjob.h comm/guijobs/loginrequesttokenjob.cpp
+    comm/guijobs/nodepathjob.h comm/guijobs/nodepathjob.cpp
     comm/guijobs/unknownrequestjob.h comm/guijobs/unknownrequestjob.cpp
     comm/guijobs/userdbidlistjob.h comm/guijobs/userdbidlistjob.cpp
     comm/guijobs/userinfolistjob.h comm/guijobs/userinfolistjob.cpp
@@ -66,6 +67,7 @@ set(server_SRCS
     comm/guijobs/syncstopjob.h comm/guijobs/syncstopjob.cpp
     comm/guijobs/syncstatusjob.h comm/guijobs/syncstatusjob.cpp
     comm/guijobs/abstractsyncaddjob.h comm/guijobs/abstractsyncaddjob.cpp
+
     comm/guijobs/syncaddjob.h comm/guijobs/syncaddjob.cpp
     comm/guijobs/syncadd2job.h comm/guijobs/syncadd2job.cpp
     comm/guijobs/syncstartafterloginjob.h comm/guijobs/syncstartafterloginjob.cpp
@@ -74,6 +76,7 @@ set(server_SRCS
     comm/guijobs/syncgetprivatelinkurljob.h comm/guijobs/syncgetprivatelinkurljob.cpp
     comm/guijobs/syncsetsupportsvirtualfilesjob.h comm/guijobs/syncsetsupportsvirtualfilesjob.cpp
     comm/guijobs/syncsetrootpinstatejob.h comm/guijobs/syncsetrootpinstatejob.cpp
+
     comm/guijobs/blacklistednodelistjob.h comm/guijobs/blacklistednodelistjob.cpp
     comm/guijobs/blacklistednodesetlistjob.h comm/guijobs/blacklistednodesetlistjob.cpp
     comm/guijobs/nodeinfojob.h comm/guijobs/nodeinfojob.cpp
@@ -81,19 +84,30 @@ set(server_SRCS
     comm/guijobs/nodesubfolders2job.h comm/guijobs/nodesubfolders2job.cpp
     comm/guijobs/nodefoldersizejob.h comm/guijobs/nodefoldersizejob.cpp
     comm/guijobs/nodecreatemissingfoldersjob.h comm/guijobs/nodecreatemissingfoldersjob.cpp
+
     comm/guijobs/errorinfolistjob.h comm/guijobs/errorinfolistjob.cpp
+    
     comm/guijobs/excltemplgetexcludedjob.h comm/guijobs/excltemplgetexcludedjob.cpp
     comm/guijobs/excltemplgetlistjob.h comm/guijobs/excltemplgetlistjob.cpp
     comm/guijobs/excltemplsetlistjob.h comm/guijobs/excltemplsetlistjob.cpp
     comm/guijobs/excltemplpropagatechangejob.h comm/guijobs/excltemplpropagatechangejob.cpp
+    
     comm/guijobs/parametersinfojob.h comm/guijobs/parametersinfojob.cpp
     comm/guijobs/parametersupdatejob.h comm/guijobs/parametersupdatejob.cpp
     comm/guijobs/utilityactivateloadinfojob.h comm/guijobs/utilityactivateloadinfojob.cpp
+    comm/guijobs/utilitybestvfsavailablemodejob.h comm/guijobs/utilitybestvfsavailablemodejob.cpp
+    comm/guijobs/utilityfindgoodpathfornewsyncjob.h comm/guijobs/utilityfindgoodpathfornewsyncjob.cpp
     comm/guijobs/utilitysetappstatejob.h comm/guijobs/utilitysetappstatejob.cpp
     comm/guijobs/utilitygetappstatejob.h comm/guijobs/utilitygetappstatejob.cpp
+    comm/guijobs/utilityispathvalidfornewsyncjob.h comm/guijobs/utilityispathvalidfornewsyncjob.cpp
     comm/guijobs/utilitysendlogtosupportjob.h comm/guijobs/utilitysendlogtosupportjob.cpp
     comm/guijobs/utilitycancellogtosupportjob.h comm/guijobs/utilitycancellogtosupportjob.cpp
     comm/guijobs/utilitygetlogestimatedsizejob.h comm/guijobs/utilitygetlogestimatedsizejob.cpp
+    comm/guijobs/updaterversioninfojob.h comm/guijobs/updaterversioninfojob.cpp
+    comm/guijobs/updaterstatejob.h comm/guijobs/updaterstatejob.cpp
+    comm/guijobs/updaterstartinstallerjob.h comm/guijobs/updaterstartinstallerjob.cpp
+    comm/guijobs/updaterskipversionjob.h comm/guijobs/updaterskipversionjob.cpp
+    
     comm/guijobs/signaluseraddedjob.h comm/guijobs/signaluseraddedjob.cpp
     comm/guijobs/signaluserupdatedjob.h comm/guijobs/signaluserupdatedjob.cpp
     comm/guijobs/signaluserremovedjob.h comm/guijobs/signaluserremovedjob.cpp

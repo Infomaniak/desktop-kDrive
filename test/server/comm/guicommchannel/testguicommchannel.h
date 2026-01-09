@@ -49,6 +49,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSendMessage);
         CPPUNIT_TEST(testReadMessage);
         CPPUNIT_TEST(testCanReadMessage);
+        CPPUNIT_TEST(testContainsCompleteMessage);
         CPPUNIT_TEST(testLoginRequestTokenJob);
         CPPUNIT_TEST(testUserDbIdListJob);
         CPPUNIT_TEST(testUserInfoListJob);
@@ -71,15 +72,13 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSyncGetPrivateLinkUrlJob);
         CPPUNIT_TEST(testSyncSetSupportsVirtualFilesJob);
         CPPUNIT_TEST(testSyncSetRootPinStateJob);
-        /* Deactivated because string values are not yet base64-encoded
-         * in these tests.
         CPPUNIT_TEST(testBlacklistedSyncNodeListJob);
         CPPUNIT_TEST(testBlacklistedSyncNodeSetListJob);
         CPPUNIT_TEST(testNodeInfoJob);
+        CPPUNIT_TEST(testNodePathJob);
         CPPUNIT_TEST(testNodeSubFolderJob);
-        CPPUNIT_TEST(testNodeFolderSizeJob);
-         */
         CPPUNIT_TEST(testNodeSubFolders2Job);
+        CPPUNIT_TEST(testNodeFolderSizeJob);
         CPPUNIT_TEST(testNodeCreateMissingFoldersJob);
         CPPUNIT_TEST(testErrorInfoListJob);
         CPPUNIT_TEST(testExclTemplGetExcludedJob);
@@ -95,11 +94,18 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testParametersInfoJob);
         CPPUNIT_TEST(testParametersUpdateJob);
         CPPUNIT_TEST(testUtilityActivateLoadInfoJob);
+        CPPUNIT_TEST(testUtilityBestVfsAvailableModeJob);
+        CPPUNIT_TEST(testUtilityFindGoodPathForNewSyncJob);
+        CPPUNIT_TEST(testUtilityIsPathValidForNewSyncJob);
         CPPUNIT_TEST(testUtilityGetAppStateJob);
         CPPUNIT_TEST(testUtilitySetAppStateJob);
         CPPUNIT_TEST(testUtilityCancelLogToSupportJob);
         CPPUNIT_TEST(testUtilityGetLogEstimatedSizeJob);
         CPPUNIT_TEST(testUtilitySendLogToSupportJob);
+        CPPUNIT_TEST(testUpdaterVersionInfoJob);
+        CPPUNIT_TEST(testUpdaterStateJob);
+        CPPUNIT_TEST(testUpdaterStartInstallerJob);
+        CPPUNIT_TEST(testUpdaterSkipVersionJob);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -107,6 +113,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void tearDown() final;
         void testSendMessage();
         void testReadMessage();
+        void testContainsCompleteMessage();
         void testCanReadMessage();
         void testLoginRequestTokenJob();
         void testUserDbIdListJob();
@@ -132,12 +139,11 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testSyncSetRootPinStateJob();
         void testBlacklistedSyncNodeListJob();
         void testBlacklistedSyncNodeSetListJob();
+        void testNodePathJob();
         void testNodeInfoJob();
         void testNodeSubFolderJob();
-        void testNodeFolderSizeJob();
-        void testSyncNodeListJob();
-        void testSyncNodeSetListJob();
         void testNodeSubFolders2Job();
+        void testNodeFolderSizeJob();
         void testNodeCreateMissingFoldersJob();
         void testErrorInfoListJob();
         void testExclTemplGetExcludedJob();
@@ -152,12 +158,19 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testParametersInfoJob();
         void testParametersUpdateJob();
         void testUtilityActivateLoadInfoJob();
+        void testUtilityBestVfsAvailableModeJob();
+        void testUtilityFindGoodPathForNewSyncJob();
+        void testUtilityIsPathValidForNewSyncJob();
         void testUtilityGetAppStateJob();
         void testUtilitySetAppStateJob();
         void testUtilityCancelLogToSupportJob();
         void testUtilityGetLogEstimatedSizeJob();
         void testUtilitySendLogToSupportJob();
-
+        void testUpdaterChangeChannelJob();
+        void testUpdaterVersionInfoJob();
+        void testUpdaterStateJob();
+        void testUpdaterStartInstallerJob();
+        void testUpdaterSkipVersionJob();
 
     private:
         GuiJobFactory _guiJobFactory;

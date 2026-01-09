@@ -63,13 +63,13 @@ IFACEMETHODIMP ThumbnailProvider::GetThumbnail(_In_ UINT width, _Out_ HBITMAP *b
         winrt::handle fileHandle(
                 CreateFile(fullPath.c_str(), WRITE_DAC, 0, nullptr, OPEN_EXISTING, FILE_FLAG_OPEN_NO_RECALL, nullptr));
         if (fileHandle.get() == INVALID_HANDLE_VALUE) {
-            TRACE_ERROR(L"Error in CreateFile : %ls", Utilities::getLastErrorMessage().c_str());
+            TRACE_ERROR(L"Error in CreateFile: '%ls'", Utilities::getLastErrorMessage().c_str());
             return E_UNEXPECTED;
         }
 
         FILE_ATTRIBUTE_TAG_INFO fileInformation;
         if (!GetFileInformationByHandleEx(fileHandle.get(), FileAttributeTagInfo, &fileInformation, sizeof(fileInformation))) {
-            TRACE_ERROR(L"Error in GetFileInformationByHandleEx : %ls", Utilities::getLastErrorMessage().c_str());
+            TRACE_ERROR(L"Error in GetFileInformationByHandleEx: %ls", Utilities::getLastErrorMessage().c_str());
             return E_UNEXPECTED;
         }
 
@@ -140,7 +140,7 @@ IFACEMETHODIMP ThumbnailProvider::GetThumbnail(_In_ UINT width, _Out_ HBITMAP *b
             winrt::check_hresult(thumbnailProviderSource->GetThumbnail(width, bitmap, alphaType));
         }
     } catch (winrt::hresult_error const &ex) {
-        TRACE_ERROR(L"WinRT error caught : hr %08x - %s!", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
+        TRACE_ERROR(L"WinRT error caught: hr %08x - %s!", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
         return E_UNEXPECTED;
     }
 

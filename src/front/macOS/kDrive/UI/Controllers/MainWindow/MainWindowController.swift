@@ -22,7 +22,7 @@ import InfomaniakDI
 enum MainWindowState: Sendable {
     case preloading
     case login
-    case splitView
+    case mainView
 }
 
 final class MainWindowController: NSWindowController {

@@ -25,6 +25,8 @@
 #include <winerror.h>
 #include <shlguid.h>
 #include <string>
+#include <stdio.h>
+#include <rpcdce.h>
 
 #include <QLibrary>
 #include <QFile>
@@ -40,6 +42,27 @@ static const char themePathC[] = "HKEY_CURRENT_USER\\Software\\Microsoft\\Window
 static const char lightThemeKeyC[] = "SystemUsesLightTheme";
 
 namespace KDC {
+
+std::string CommonUtility::generateUUID() {
+    UUID uuid;
+    unsigned char *uuidStr;
+
+    RPC_STATUS status = UuidCreate(&uuid);
+    if (status != RPC_S_OK) {
+        return {};
+    }
+
+    status = UuidToStringA(&uuid, &uuidStr);
+    if (status != RPC_S_OK) {
+        return {};
+    }
+
+    std::string output = reinterpret_cast<const char *>(uuidStr);
+
+    (void) RpcStringFreeA(&uuidStr);
+
+    return output;
+}
 
 SyncPath CommonUtility::getGenericAppSupportDir() {
     if (PWSTR path = nullptr; SUCCEEDED(SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_NO_ALIAS, nullptr, &path))) {

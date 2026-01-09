@@ -35,7 +35,7 @@ class NodeSubFolders2Job : public AbstractGuiJob {
         bool _withPath = false;
 
         // Output parameters
-        std::vector<NodeInfo> _subfoldersList;
+        std::vector<NodeInfo> _nodeSubFolderInfoList;
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;
