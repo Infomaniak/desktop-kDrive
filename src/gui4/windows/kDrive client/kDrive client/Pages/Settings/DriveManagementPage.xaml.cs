@@ -88,7 +88,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             OfflineRadioButton.IsEnabled = false;
             bool succeed = false;
             bool canceled = false;
-            if (await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncMode_WarningDialog") == ContentDialogResult.Primary)
+            if (await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncMode_WarningDialog") == ContentDialogResult.Secondary) // Secondary is the continue button
             {
                 Logger.Log(Logger.Level.Info, "User confirmed to change to online Sync mode");
                 if (ManagedDrive?.MainSync is not null)
@@ -125,7 +125,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             bool succeed = false;
             bool canceled = false;
 
-            if (await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncMode_WarningDialog") == ContentDialogResult.Primary)
+            if (await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncMode_WarningDialog") == ContentDialogResult.Secondary) // Secondary is "Continue"
             {
                 Logger.Log(Logger.Level.Info, "User confirmed to change to offline Sync mode");
                 if (ManagedDrive?.MainSync is not null)
