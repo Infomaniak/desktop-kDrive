@@ -119,6 +119,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Cache/CoherentCacheTests.swift,
+				Cache/DTOs/SynchroTests.swift,
 				Cache/Observation/ObservableCoherentCacheTests.swift,
 				Cache/Observation/ObservableData.swift,
 				Cache/Observation/ObservedAccountTests.swift,
