@@ -574,7 +574,7 @@ void AppServer::cleanup() {
     SyncPath tmpDirPath;
     auto dummyIoError = IoError::Unknown;
     if (IoHelper::appTempDirectoryPath(tmpDirPath, dummyIoError)) {
-        IoHelper::deleteItem(tmpDirPath, dummyIoError);
+        (void) IoHelper::deleteItem(tmpDirPath, dummyIoError);
     }
 }
 

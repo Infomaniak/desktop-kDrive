@@ -683,7 +683,8 @@ bool Utility::isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode
             return false;
     }
 }
-static constexpr int maxNbCreationTmpFolderRetries = 3;
+
+static constexpr uint64_t maxNbCreationTmpFolderRetries = 3;
 IoError Utility::tryCreateTmpDir(const SyncName &name /*= Str("testDir")*/) {
 #if defined(KD_MACOS)
     SyncPath tmpDirPath;
@@ -745,8 +746,6 @@ IoError Utility::tryCreateTmpFile(const SyncName &name /*= Str("testFile")*/) {
             bool read = false;
             bool write = false;
             bool exec = false;
-
-            // auto ioError = IoError::Unknown;
             if (!IoHelper::getRights(tmpDirPath, read, write, exec, ioError)) {
                 return ioError;
             }

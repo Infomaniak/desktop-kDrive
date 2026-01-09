@@ -758,7 +758,7 @@ bool IoHelper::logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexc
 
 bool IoHelper::logArchiverDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
     SyncPath tempDir;
-    deviceTempDirectoryPath(tempDir, ioError);
+    (void) deviceTempDirectoryPath(tempDir, ioError);
     if (ioError != IoError::Success) {
         return false;
     }
@@ -945,7 +945,7 @@ bool IoHelper::copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &d
     return ioError == IoError::Success;
 }
 
-bool IoHelper::getDirectoryIterator(const SyncPath &path, bool recursive, IoError &ioError,
+bool IoHelper::getDirectoryIterator(const SyncPath &path, const bool recursive, IoError &ioError,
                                     DirectoryIterator &iterator) noexcept {
     iterator = DirectoryIterator(path, recursive, ioError);
     return ioError == IoError::Success;
@@ -983,7 +983,7 @@ bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, b
 
 // DirectoryIterator
 
-IoHelper::DirectoryIterator::DirectoryIterator(const SyncPath &directoryPath, bool recursive, IoError &ioError) :
+IoHelper::DirectoryIterator::DirectoryIterator(const SyncPath &directoryPath, const bool recursive, IoError &ioError) :
     _recursive(recursive),
     _directoryPath(directoryPath) {
     std::error_code ec;

@@ -485,7 +485,7 @@ void TestUtility::testUserName() {
 void TestUtility::testTryCreateTmpDir() {
     SyncPath tmpDirPath;
     IoError ioError = IoError::Unknown;
-    IoHelper::appTempDirectoryPath(tmpDirPath, ioError);
+    (void) IoHelper::appTempDirectoryPath(tmpDirPath, ioError);
 
     CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir());
     CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpDir(Str("test name")));
@@ -539,7 +539,7 @@ void TestUtility::testTryCreateTmpDir() {
 void TestUtility::testTryCreateTmpFile() {
     SyncPath tmpDirPath;
     IoError ioError = IoError::Unknown;
-    IoHelper::appTempDirectoryPath(tmpDirPath, ioError);
+    (void) IoHelper::appTempDirectoryPath(tmpDirPath, ioError);
 
     CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile());
     CPPUNIT_ASSERT_EQUAL(IoError::Success, Utility::tryCreateTmpFile(Str("test name")));
