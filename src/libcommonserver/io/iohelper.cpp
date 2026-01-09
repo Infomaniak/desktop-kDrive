@@ -933,7 +933,7 @@ bool IoHelper::copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &d
     return ioError == IoError::Success;
 }
 
-bool IoHelper::getDirectoryIterator(const SyncPath &path, bool recursive, IoError &ioError, DirectoryIterator &iterator,
+bool IoHelper::getDirectoryIterator(const SyncPath &path, const bool recursive, IoError &ioError, DirectoryIterator &iterator,
                                     const bool skipPermissionDenied) noexcept {
     iterator = DirectoryIterator(path, recursive, ioError, skipPermissionDenied);
     return ioError == IoError::Success;
