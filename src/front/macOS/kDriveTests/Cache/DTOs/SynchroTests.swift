@@ -313,6 +313,149 @@ struct SynchroTests {
         #expect(nodesArray[2] == node3)
     }
 
+    @Test("SynchroNode order maintenance on update")
+    func synchroNodeOrderOnUpdate() {
+        // GIVEN
+        var synchro = Synchro(dbId: 1,
+                              driveDbId: 2,
+                              localPath: "/test",
+                              targetPath: "/target",
+                              targetNodeId: "node-id",
+                              supportVfs: true,
+                              virtualFileMode: .Mac)
+
+        let node1 = SynchroNode(type: .File,
+                                path: "/file1.txt",
+                                newPath: "/file1.txt",
+                                localNodeId: "local-1",
+                                remoteNodeId: "remote-1",
+                                direction: .Up,
+                                instruction: .Put,
+                                status: .Syncing,
+                                conflict: .None,
+                                inconsistency: .None,
+                                cancelType: .None,
+                                error: "")
+
+        let node2 = SynchroNode(type: .File,
+                                path: "/file2.txt",
+                                newPath: "/file2.txt",
+                                localNodeId: "local-2",
+                                remoteNodeId: "remote-2",
+                                direction: .Down,
+                                instruction: .Update,
+                                status: .Syncing,
+                                conflict: .None,
+                                inconsistency: .None,
+                                cancelType: .None,
+                                error: "")
+
+        let node3 = SynchroNode(type: .File,
+                                path: "/file3.txt",
+                                newPath: "/file3.txt",
+                                localNodeId: "local-3",
+                                remoteNodeId: "remote-3",
+                                direction: .Up,
+                                instruction: .Remove,
+                                status: .Success,
+                                conflict: .None,
+                                inconsistency: .None,
+                                cancelType: .None,
+                                error: "")
+
+        synchro.addOrUpdateSynchNode(node1)
+        synchro.addOrUpdateSynchNode(node2)
+        synchro.addOrUpdateSynchNode(node3)
+
+        // WHEN - Update node2 (middle node)
+        let updatedNode2 = SynchroNode(type: .File,
+                                       path: "/file2_updated.txt",
+                                       newPath: "/file2_updated.txt",
+                                       localNodeId: "local-2",
+                                       remoteNodeId: "remote-2",
+                                       direction: .Up,
+                                       instruction: .Put,
+                                       status: .Syncing,
+                                       conflict: .None,
+                                       inconsistency: .None,
+                                       cancelType: .None,
+                                       error: "")
+
+        synchro.addOrUpdateSynchNode(updatedNode2)
+
+        // THEN - Verify order is maintained (node2 should still be in position 1)
+        let nodesArray = Array(synchro.synchNodes.values)
+        #expect(nodesArray.count == 3)
+        #expect(nodesArray[0] == node1)
+        #expect(nodesArray[1].localNodeId == node2.localNodeId) // Same node but updated
+        #expect(nodesArray[1].path == updatedNode2.path) // Verify it's the updated version
+        #expect(nodesArray[2] == node3)
+    }
+
+    @Test("SynchroNode order maintenance on deletion")
+    func synchroNodeOrderOnDeletion() {
+        // GIVEN
+        var synchro = Synchro(dbId: 1,
+                              driveDbId: 2,
+                              localPath: "/test",
+                              targetPath: "/target",
+                              targetNodeId: "node-id",
+                              supportVfs: true,
+                              virtualFileMode: .Mac)
+
+        let node1 = SynchroNode(type: .File,
+                                path: "/file1.txt",
+                                newPath: "/file1.txt",
+                                localNodeId: "local-1",
+                                remoteNodeId: "remote-1",
+                                direction: .Up,
+                                instruction: .Put,
+                                status: .Syncing,
+                                conflict: .None,
+                                inconsistency: .None,
+                                cancelType: .None,
+                                error: "")
+
+        let node2 = SynchroNode(type: .File,
+                                path: "/file2.txt",
+                                newPath: "/file2.txt",
+                                localNodeId: "local-2",
+                                remoteNodeId: "remote-2",
+                                direction: .Down,
+                                instruction: .Update,
+                                status: .Syncing,
+                                conflict: .None,
+                                inconsistency: .None,
+                                cancelType: .None,
+                                error: "")
+
+        let node3 = SynchroNode(type: .File,
+                                path: "/file3.txt",
+                                newPath: "/file3.txt",
+                                localNodeId: "local-3",
+                                remoteNodeId: "remote-3",
+                                direction: .Up,
+                                instruction: .Remove,
+                                status: .Success,
+                                conflict: .None,
+                                inconsistency: .None,
+                                cancelType: .None,
+                                error: "")
+
+        synchro.addOrUpdateSynchNode(node1)
+        synchro.addOrUpdateSynchNode(node2)
+        synchro.addOrUpdateSynchNode(node3)
+
+        // WHEN - Delete node2 (middle node)
+        synchro.synchNodes.removeValue(forKey: "local-2")
+
+        // THEN - Verify order is maintained (remaining nodes should keep their positions)
+        let nodesArray = Array(synchro.synchNodes.values)
+        #expect(nodesArray.count == 2)
+        #expect(nodesArray[0] == node1)
+        #expect(nodesArray[1] == node3)
+    }
+
     @Test("Synchro equality")
     func synchroEquality() {
         // GIVEN
