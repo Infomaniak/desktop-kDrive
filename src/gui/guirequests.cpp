@@ -672,7 +672,7 @@ ExitCode GuiRequests::deleteSync(const int syncDbId) {
 
 ExitCode GuiRequests::bestAvailableVfsMode(VirtualFileMode &mode) {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::UTILITY_BESTVFSAVAILABLEMODE, {}, results)) {
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_BESTVFSAVAILABLEMODE_LEGACY, {}, results)) {
         return ExitCode::SystemError;
     }
 
