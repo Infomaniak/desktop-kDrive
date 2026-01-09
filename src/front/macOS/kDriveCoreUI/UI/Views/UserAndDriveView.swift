@@ -1,4 +1,3 @@
-//
 /*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2025 Infomaniak Network SA
@@ -17,18 +16,21 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import SwiftUI
 import kDriveResources
+import SwiftUI
 
 public struct UserAndDriveView: View {
-    let avatar: Image
-    let driveColor: Color
+    let avatar: Image?
+    let driveColor: Color?
+
+    public init(avatar: Image?, driveColor: Color?) {
+        self.avatar = avatar
+        self.driveColor = driveColor
+    }
 
     public var body: some View {
         ZStack(alignment: .bottomTrailing) {
-            avatar
-                .resizable()
-                .scaledToFill()
+            avatarView
                 .frame(width: 40, height: 40)
                 .clipShape(Circle())
                 .overlay {
@@ -45,12 +47,27 @@ public struct UserAndDriveView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 12, height: 12)
-                        .foregroundStyle(driveColor)
+                        .foregroundStyle(driveColor ?? ColorToken.Drive.defaultColor.asColor)
                 }
+        }
+    }
+
+    @ViewBuilder
+    private var avatarView: some View {
+        if let avatar {
+            avatar
+                .resizable()
+                .scaledToFill()
+        } else {
+            ColorToken.Surface.tertiary.asColor
         }
     }
 }
 
-#Preview {
+#Preview("Default") {
     UserAndDriveView(avatar: Image(nsImage: PreviewHelper.userImage), driveColor: .yellow)
+}
+
+#Preview("No Data") {
+    UserAndDriveView(avatar: nil, driveColor: nil)
 }

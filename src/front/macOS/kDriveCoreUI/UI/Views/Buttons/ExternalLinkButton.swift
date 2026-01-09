@@ -19,8 +19,8 @@
 import kDriveResources
 import SwiftUI
 
-struct ExternalLinkButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
+public struct ExternalLinkButtonStyle: ButtonStyle {
+    public func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.Tokens.body)
             .foregroundStyle(ColorToken.Text.secondary.asColor)
@@ -32,12 +32,18 @@ struct ExternalLinkButtonStyle: ButtonStyle {
     }
 }
 
-struct ExternalLinkButton: View {
+public struct ExternalLinkButton: View {
     let icon: Image
     let title: String
     let action: () -> Void
 
-    var body: some View {
+    public init(icon: Image, title: String, action: @escaping () -> Void) {
+        self.icon = icon
+        self.title = title
+        self.action = action
+    }
+
+    public var body: some View {
         Button(action: action) {
             HStack(spacing: AppPadding.padding8) {
                 icon
