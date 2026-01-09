@@ -736,7 +736,7 @@ IoError Utility::tryCreateTmpFile(const SyncName &name /*= Str("testFile")*/) {
         if (exists) {
             retries++;
             // Retry with a random suffix added to item name
-            tmpPath = tmpDirPath / (name + CommonUtility::generateRandomStringAlphaNum());
+            tmpPath = tmpDirPath / (name + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()));
             continue;
         }
 
@@ -756,7 +756,7 @@ IoError Utility::tryCreateTmpFile(const SyncName &name /*= Str("testFile")*/) {
 
             retries++;
             // Retry with a random suffix added to item name
-            tmpPath = tmpDirPath / (name + CommonUtility::generateRandomStringAlphaNum());
+            tmpPath = tmpDirPath / (name + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()));
             continue;
         }
         output.close();
@@ -769,7 +769,7 @@ IoError Utility::tryCreateTmpFile(const SyncName &name /*= Str("testFile")*/) {
         if (!exists) {
             retries++;
             // Retry with a random suffix added to item name
-            tmpPath = tmpDirPath / (name + CommonUtility::generateRandomStringAlphaNum());
+            tmpPath = tmpDirPath / (name + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()));
             continue;
         }
         ok = true;
