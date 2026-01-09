@@ -20,7 +20,7 @@ import Cocoa
 import kDriveResources
 import Lottie
 
-public final class ThemedAnimationView: LottieAnimationView {
+public final class NSThemedAnimationView: LottieAnimationView {
     private var themedAnimation: ThemedAnimation?
 
     override public func viewDidChangeEffectiveAppearance() {
