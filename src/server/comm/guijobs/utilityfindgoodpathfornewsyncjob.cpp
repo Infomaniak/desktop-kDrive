@@ -60,7 +60,7 @@ ExitInfo UtilityFindGoodPathForNewSyncJob::serializeOutputParms() {
 
 ExitInfo UtilityFindGoodPathForNewSyncJob::process() {
     if (const auto exitInfo = ServerRequests::findGoodPathForNewSync(_basePath, _goodPath, _errorMessage); !exitInfo) {
-        LOGW_WARN(_logger, L"findGoodPathForNewSync failed: " << L", basePath=" << Utility::formatSyncPath(_basePath)
+        LOGW_WARN(_logger, L"findGoodPathForNewSync failed: " << L", basePath=" << Path2WStr(_basePath)
                                                               << L", errorMessage=" << CommonUtility::s2ws(_errorMessage));
         return exitInfo;
     }

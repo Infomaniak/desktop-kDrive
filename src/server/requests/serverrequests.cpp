@@ -312,7 +312,6 @@ ExitCode ServerRequests::updateParameters(const ParametersInfo &parametersInfo) 
 }
 
 ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, bool &valid) {
-
     // Check for nested syncs
     std::vector<Sync> syncList;
     valid = false;
@@ -321,14 +320,14 @@ ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, bool &valid
         return ExitCode::DbError;
     }
 
-    QString qPath = QString::fromStdString(path.string());
+    const QString qPath = QString::fromStdString(path.string());
     QString qError;
     if (ExitInfo exitInfo = checkPathValidityForNewFolder(syncList, qPath, qError); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityForNewFolder: " << exitInfo << qError.toStdString());
         return ExitCode::Ok;
     }
 
-    // If the directory exist, check if it is empty
+    // If the directory exists, check if it is empty
     bool isEmpty = true;
     std::error_code ec;
     if (std::filesystem::exists(path, ec) && !ec) {
@@ -2133,9 +2132,9 @@ ExitCode ServerRequests::checkPathValidityForNewFolder(const std::vector<Sync> &
     }
 
     for (std::filesystem::path existingSyncFolder: existingSyncFolderList) {
-        QString existingSyncFolderDir = QDir::cleanPath(canonicalPath(SyncName2QStr(existingSyncFolder.native()))) + '/';
+        const QString existingSyncFolderDir = QDir::cleanPath(canonicalPath(SyncName2QStr(existingSyncFolder.native()))) + '/';
 
-        bool differentPaths = QString::compare(existingSyncFolderDir, userDir, cs) != 0;
+        const bool differentPaths = QString::compare(existingSyncFolderDir, userDir, cs) != 0;
         if (differentPaths && existingSyncFolderDir.startsWith(userDir, cs)) {
             error = QObject::tr(
                             "The local folder %1 contains a folder already synced. "
