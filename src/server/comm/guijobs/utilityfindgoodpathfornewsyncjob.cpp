@@ -42,7 +42,6 @@ ExitInfo UtilityFindGoodPathForNewSyncJob::deserializeInputParms() {
     constexpr auto logMessage = "Exception in UtilityFindGoodPathForNewSyncJob::readParamValue: error=";
     std::string pathStr;
     try {
-        readParamValue(inParamsDriveDbId, _driveDbId);
         readParamValue(inParamsBasePath, pathStr);
     } catch (const Poco::Exception &pocoException) {
         LOG_WARN(_logger, logMessage << pocoException.message());
@@ -60,11 +59,9 @@ ExitInfo UtilityFindGoodPathForNewSyncJob::serializeOutputParms() {
 }
 
 ExitInfo UtilityFindGoodPathForNewSyncJob::process() {
-    if (const auto exitInfo = ServerRequests::findGoodPathForNewSync(_driveDbId, _basePath, _goodPath, _errorMessage);
-        !exitInfo) {
-        LOGW_WARN(_logger, L"findGoodPathForNewSync failed: " << L"driveDbId=" << _driveDbId << L", basePath="
-                                                              << Utility::formatSyncPath(_basePath) << L", errorMessage="
-                                                              << CommonUtility::s2ws(_errorMessage));
+    if (const auto exitInfo = ServerRequests::findGoodPathForNewSync(_basePath, _goodPath, _errorMessage); !exitInfo) {
+        LOGW_WARN(_logger, L"findGoodPathForNewSync failed: " << L", basePath=" << Path2WStr(_basePath)
+                                                              << L", errorMessage=" << CommonUtility::s2ws(_errorMessage));
         return exitInfo;
     }
     return ExitCode::Ok;

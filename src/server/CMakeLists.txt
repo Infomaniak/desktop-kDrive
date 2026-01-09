@@ -99,6 +99,7 @@ set(server_SRCS
     comm/guijobs/utilityfindgoodpathfornewsyncjob.h comm/guijobs/utilityfindgoodpathfornewsyncjob.cpp
     comm/guijobs/utilitysetappstatejob.h comm/guijobs/utilitysetappstatejob.cpp
     comm/guijobs/utilitygetappstatejob.h comm/guijobs/utilitygetappstatejob.cpp
+    comm/guijobs/utilityispathvalidfornewsyncjob.h comm/guijobs/utilityispathvalidfornewsyncjob.cpp
     comm/guijobs/utilitysendlogtosupportjob.h comm/guijobs/utilitysendlogtosupportjob.cpp
     comm/guijobs/utilitycancellogtosupportjob.h comm/guijobs/utilitycancellogtosupportjob.cpp
     comm/guijobs/utilitygetlogestimatedsizejob.h comm/guijobs/utilitygetlogestimatedsizejob.cpp

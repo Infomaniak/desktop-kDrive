@@ -75,6 +75,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/utilityfindgoodpathfornewsyncjob.h ${server_srcs_path}/comm/guijobs/utilityfindgoodpathfornewsyncjob.cpp
     ${server_srcs_path}/comm/guijobs/utilitysetappstatejob.h ${server_srcs_path}/comm/guijobs/utilitysetappstatejob.cpp
     ${server_srcs_path}/comm/guijobs/utilitygetappstatejob.h ${server_srcs_path}/comm/guijobs/utilitygetappstatejob.cpp
+    ${server_srcs_path}/comm/guijobs/utilityispathvalidfornewsyncjob.h ${server_srcs_path}/comm/guijobs/utilityispathvalidfornewsyncjob.cpp
     ${server_srcs_path}/comm/guijobs/utilitysendlogtosupportjob.h ${server_srcs_path}/comm/guijobs/utilitysendlogtosupportjob.cpp
     ${server_srcs_path}/comm/guijobs/utilitycancellogtosupportjob.h ${server_srcs_path}/comm/guijobs/utilitycancellogtosupportjob.cpp
     ${server_srcs_path}/comm/guijobs/utilitygetlogestimatedsizejob.h ${server_srcs_path}/comm/guijobs/utilitygetlogestimatedsizejob.cpp
