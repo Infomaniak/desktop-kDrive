@@ -150,7 +150,7 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
             throw SignalError.unableToGetAccountFromSignal
         }
 
-        let accountInfo = accountInfoSignal.body
+        let accountInfo = accountInfoSignal.body.accountInfo
         await coherentCache.addAccount(accountInfo.asAccount, userDbId: accountInfo.userDbId)
     }
 
