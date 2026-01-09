@@ -21,30 +21,42 @@ import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-struct WebFolder: Sendable, Identifiable {
+struct WebFolder: Sendable, Identifiable, Equatable {
     let id: Int
     let name: String
     let icon: Image
+    let path: String
+
+    func url(driveID: Int) -> URL {
+        var baseURL = URL(string: "https://ksuite.infomaniak.com/all/kdrive/app/drive/\(driveID)/")!
+        baseURL.appendPathComponent(path)
+
+        return baseURL
+    }
 
     static let favorites = WebFolder(
         id: 0,
         name: KDriveLocalizable.folderFavorites,
-        icon: KDriveResources.star.swiftUIImage
+        icon: KDriveResources.star.swiftUIImage,
+        path: "favorites"
     )
     static let sharedWithMe = WebFolder(
         id: 1,
         name: KDriveLocalizable.folderShares,
-        icon: KDriveResources.folderShare.swiftUIImage
+        icon: KDriveResources.folderShare.swiftUIImage,
+        path: "shared-with-me"
     )
     static let kDriveHome = WebFolder(
         id: 2,
         name: KDriveLocalizable.buttonKDriveOnline,
-        icon: KDriveResources.kdriveFoldersStacked.swiftUIImage
+        icon: KDriveResources.kdriveFoldersStacked.swiftUIImage,
+        path: "files"
     )
     static let trash = WebFolder(
         id: 3,
         name: KDriveLocalizable.folderTrash,
-        icon: KDriveResources.trash.swiftUIImage
+        icon: KDriveResources.trash.swiftUIImage,
+        path: "trash"
     )
 }
 
@@ -79,6 +91,8 @@ struct DriveWebShortcutsView: View {
     }
 
     private func didTapFolder(_ folder: WebFolder) {
+        let url = folder.url(driveID: drive.driveId)
+        NSWorkspace.shared.open(url)
     }
 }
 
