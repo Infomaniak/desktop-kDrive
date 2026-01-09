@@ -80,74 +80,98 @@ namespace Infomaniak.kDrive.Pages.Settings
             Utility.OpenFolderSecurely(path);
         }
 
-        private async void LiteSyncRadioButtonChecked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        private async void OnlineRadioButtonChecked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             if (!IsLoaded || !OnlineRadioButton.IsEnabled)
                 return;
+
+            Logger.Log(Logger.Level.Info, "User initiated change to online Sync mode");
             OnlineRadioButton.IsEnabled = false;
             OfflineRadioButton.IsEnabled = false;
             bool succeed = false;
-            bool canceled = false;
-            if (await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncMode_WarningDialog") == ContentDialogResult.Secondary) // Secondary is the continue button
+            bool canceledByUser = await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncMode_WarningDialog") == ContentDialogResult.Primary;
+
+            var revertFunc = () =>
             {
-                Logger.Log(Logger.Level.Info, "User confirmed to change to online Sync mode");
-                if (ManagedDrive?.MainSync is not null)
-                {
-                    succeed = await ManagedDrive.MainSync.ChangeSyncType(Types.SyncType.Online);
-                }
+                OnlineRadioButton.IsChecked = false;
+                OfflineRadioButton.IsChecked = true;
+                OnlineRadioButton.IsEnabled = true;
+                OfflineRadioButton.IsEnabled = true;
+            };
+
+            if (canceledByUser)
+            {
+                Logger.Log(Logger.Level.Info, "User canceled the change to online Sync mode");
+                revertFunc();
+                return;
+            }
+
+            Logger.Log(Logger.Level.Info, "User confirmed to change to online Sync mode");
+            if (ManagedDrive?.MainSync is not null)
+            {
+                succeed = await ManagedDrive.MainSync.ChangeSyncType(Types.SyncType.Online);
             }
             else
             {
-                canceled = true;
+                Logger.Log(Logger.Level.Error, "Cannot change sync mode: ManagedDrive or MainSync is null");
+                succeed = false;
             }
+
 
             if (!succeed)
             {
-                if (!canceled)
-                {
-                    Logger.Log(Logger.Level.Info, "User canceled the change to online Sync mode");
-                    await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncMode_ErrorDialog");
-                }
-                OnlineRadioButton.IsChecked = false;
-                OfflineRadioButton.IsChecked = true;
-
+                await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncMode_ErrorDialog");
+                revertFunc();
             }
+
             OnlineRadioButton.IsEnabled = true;
             OfflineRadioButton.IsEnabled = true;
         }
 
-        private async void LiteSyncRadioButtonUnchecked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        private async void OnlineRadioButtonUnchecked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             if (!IsLoaded || !OnlineRadioButton.IsEnabled)
                 return;
+
+            Logger.Log(Logger.Level.Info, "User initiated change to offline Sync mode");
             OnlineRadioButton.IsEnabled = false;
             OfflineRadioButton.IsEnabled = false;
             bool succeed = false;
-            bool canceled = false;
+            bool canceledByUser = await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncMode_WarningDialog") == ContentDialogResult.Primary;
 
-            if (await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncMode_WarningDialog") == ContentDialogResult.Secondary) // Secondary is "Continue"
+            var revertFunc = () =>
             {
-                Logger.Log(Logger.Level.Info, "User confirmed to change to offline Sync mode");
-                if (ManagedDrive?.MainSync is not null)
-                {
-                    succeed = await ManagedDrive.MainSync.ChangeSyncType(Types.SyncType.Offline);
-                }
+                OnlineRadioButton.IsChecked = true;
+                OfflineRadioButton.IsChecked = false;
+                OnlineRadioButton.IsEnabled = true;
+                OfflineRadioButton.IsEnabled = true;
+            };
+
+            if (canceledByUser)
+            {
+                Logger.Log(Logger.Level.Info, "User canceled the change to online Sync mode");
+                revertFunc();
+                return;
+            }
+
+            Logger.Log(Logger.Level.Info, "User confirmed to change to offline Sync mode");
+            if (ManagedDrive?.MainSync is not null)
+            {
+                succeed = await ManagedDrive.MainSync.ChangeSyncType(Types.SyncType.Offline);
             }
             else
             {
-                canceled = true;
+                Logger.Log(Logger.Level.Error, "Cannot change sync mode: ManagedDrive or MainSync is null");
+                succeed = false;
             }
+
 
             if (!succeed)
             {
-                if (!canceled)
-                {
-                    Logger.Log(Logger.Level.Info, "User canceled the change to online Sync mode");
-                    await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncMode_ErrorDialog");
-                }
-                OnlineRadioButton.IsChecked = true;
-                OfflineRadioButton.IsChecked = false;
+                await Utility.ShowContentDialogAsync(this.XamlRoot, "Page_Settings_DriveManagementPage_SyncMode_ErrorDialog");
+                revertFunc();
             }
+
             OnlineRadioButton.IsEnabled = true;
             OfflineRadioButton.IsEnabled = true;
         }

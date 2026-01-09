@@ -150,8 +150,8 @@
                                                  MinWidth="0"
                                                  HorizontalAlignment="Stretch"
                                                  IsChecked="{x:Bind ManagedDrive.MainSync.IsTypeOnline, Mode=OneWay}"
-                                                 Checked="LiteSyncRadioButtonChecked"
-                                                 Unchecked="LiteSyncRadioButtonUnchecked" />
+                                                 Checked="OnlineRadioButtonChecked"
+                                                 Unchecked="OnlineRadioButtonUnchecked" />
                                 </Grid>
                             </toolKit:SettingsCard>
 
