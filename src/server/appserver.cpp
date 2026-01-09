@@ -3947,7 +3947,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value, bool async
         // Update SyncPal
         std::shared_ptr<Vfs> vfs;
         {
-            const std::scoped_lock lock(vfsMapMutex);
+            const std::scoped_lock lock3(vfsMapMutex);
             if (const auto exitInfo = getVfs(syncDbId, vfs); !exitInfo) {
                 LOG_WARN(_logger, "Error in getVfs for syncDbId=" << syncDbId << " : " << exitInfo);
                 return exitInfo;
@@ -3960,10 +3960,10 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value, bool async
         ServerRequests::syncToSyncInfo(sync, syncInfo);
         sendSyncUpdated(syncInfo);
 
-        auto func = [=, this]() {
-            if (newMode != VirtualFileMode::Off) {
+        auto func = [=]() {
+            if (newMode != VirtualFileMode::Off && vfs) {
                 // Clear file system
-                if (vfs) vfs->convertDirContentToPlaceholder(SyncName2QStr(sync.localPath()), true);
+                vfs->convertDirContentToPlaceholder(SyncName2QStr(sync.localPath()), true);
             }
             // Notify conversion completed async
             if (asyncResponse) {
