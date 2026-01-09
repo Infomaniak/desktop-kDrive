@@ -67,7 +67,9 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode getSyncInfoList(std::vector<SyncInfo> &list);
         static ExitCode getParameters(ParametersInfo &parametersInfo);
         static ExitCode updateParameters(const ParametersInfo &parametersInfo);
-        static ExitCode findGoodPathForNewSync(int driveDbId, const QString &basePath, QString &path, QString &error);
+        static ExitInfo isPathValidForNewSync(const SyncPath &path, bool &valid);
+        static ExitInfo findGoodPathForNewSync(const SyncPath &basePath, SyncPath &path, std::string &error);
+        static ExitCode findGoodPathForNewSync(const QString &basePath, QString &path, QString &error);
         static ExitCode getPrivateLinkUrl(int driveDbId, const std::string &fileId, std::string &linkUrl);
         static ExitCode getPrivateLinkUrl(int driveDbId, const QString &fileId, QString &linkUrl);
         static ExitCode getExclusionTemplateList(bool def, std::vector<ExclusionTemplateInfo> &list);
@@ -170,8 +172,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode processRequestTokenFinished(const Login &login, UserInfo &userInfo, bool &userCreated);
         static QString canonicalPath(const QString &path);
         static ExitCode checkPathValidityRecursive(const QString &path, QString &error);
-        static ExitCode checkPathValidityForNewFolder(const std::vector<Sync> &syncList, int driveDbId, const QString &path,
-                                                      QString &error);
+        static ExitCode checkPathValidityForNewFolder(const std::vector<Sync> &syncList, const QString &path, QString &error);
         static ExitCode syncForPath(const std::vector<Sync> &syncList, const QString &path, int &syncDbId);
         static QString excludeFile(bool liteSync);
         static ExitCode createUser(const User &user, UserInfo &userInfo);

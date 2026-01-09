@@ -191,7 +191,7 @@ void AddDriveWizard::startNextStep(bool backward) {
         }
         QString goodLocalFolderPath;
         QString error;
-        ExitCode exitCode = GuiRequests::findGoodPathForNewSync(_syncDbId, localFolderPath, goodLocalFolderPath, error);
+        ExitCode exitCode = GuiRequests::findGoodPathForNewSync(localFolderPath, goodLocalFolderPath, error);
         if (exitCode != ExitCode::Ok) {
             qCWarning(lcAddDriveWizard()) << "Error in Requests::findGoodPathForNewSyncFolder : " << error;
             goodLocalFolderPath = localFolderPath;

@@ -69,6 +69,9 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/excltemplpropagatechangejob.h ${server_srcs_path}/comm/guijobs/excltemplpropagatechangejob.cpp
     ${server_srcs_path}/comm/guijobs/parametersinfojob.h ${server_srcs_path}/comm/guijobs/parametersinfojob.cpp
     ${server_srcs_path}/comm/guijobs/parametersupdatejob.h ${server_srcs_path}/comm/guijobs/parametersupdatejob.cpp
+    ${server_srcs_path}/comm/guijobs/utilitybestvfsavailablemodejob.h ${server_srcs_path}/comm/guijobs/utilitybestvfsavailablemodejob.cpp
+    ${server_srcs_path}/comm/guijobs/utilityfindgoodpathfornewsyncjob.h ${server_srcs_path}/comm/guijobs/utilityfindgoodpathfornewsyncjob.cpp
+    ${server_srcs_path}/comm/guijobs/utilityispathvalidfornewsyncjob.h ${server_srcs_path}/comm/guijobs/utilityispathvalidfornewsyncjob.cpp
     ${server_srcs_path}/comm/guijobs/utilityactivateloadinfojob.h ${server_srcs_path}/comm/guijobs/utilityactivateloadinfojob.cpp
     ${server_srcs_path}/comm/guijobs/utilitycheckcommstatusjob.h ${server_srcs_path}/comm/guijobs/utilitycheckcommstatusjob.cpp
     ${server_srcs_path}/comm/guijobs/utilityhassystemlaunchonstartupjob.h ${server_srcs_path}/comm/guijobs/utilityhassystemlaunchonstartupjob.cpp

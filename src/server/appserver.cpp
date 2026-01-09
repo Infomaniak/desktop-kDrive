@@ -2096,7 +2096,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             QString path;
             QString error;
-            ExitCode exitCode = ServerRequests::findGoodPathForNewSync(driveDbId, basePath, path, error);
+            ExitCode exitCode = ServerRequests::findGoodPathForNewSync(basePath, path, error);
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in Requests::findGoodPathForNewSyncFolder");
                 addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
@@ -2107,7 +2107,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << error;
             break;
         }
-        case RequestNum::UTILITY_BESTVFSAVAILABLEMODE: {
+        case RequestNum::UTILITY_BESTVFSAVAILABLEMODE_LEGACY: {
             VirtualFileMode mode = KDC::bestAvailableVfsMode();
 
             resultStream << ExitCode::Ok;

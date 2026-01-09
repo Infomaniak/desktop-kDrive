@@ -49,6 +49,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSendMessage);
         CPPUNIT_TEST(testReadMessage);
         CPPUNIT_TEST(testCanReadMessage);
+        CPPUNIT_TEST(testContainsCompleteMessage);
         CPPUNIT_TEST(testLoginRequestTokenJob);
         CPPUNIT_TEST(testUserDbIdListJob);
         CPPUNIT_TEST(testUserInfoListJob);
@@ -91,6 +92,9 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
 #endif
         CPPUNIT_TEST(testParametersInfoJob);
         CPPUNIT_TEST(testParametersUpdateJob);
+        CPPUNIT_TEST(testUtilityBestVfsAvailableModeJob);
+        CPPUNIT_TEST(testUtilityFindGoodPathForNewSyncJob);
+        CPPUNIT_TEST(testUtilityIsPathValidForNewSyncJob);
         CPPUNIT_TEST(testUtilityActivateLoadInfoJob);
         CPPUNIT_TEST(testUtilityCheckCommStatusJob);
         CPPUNIT_TEST(testUtilityHasSystemLaunchOnStartupJob);
@@ -112,6 +116,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void tearDown() final;
         void testSendMessage();
         void testReadMessage();
+        void testContainsCompleteMessage();
         void testCanReadMessage();
         void testLoginRequestTokenJob();
         void testUserDbIdListJob();
@@ -155,6 +160,9 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
 #endif
         void testParametersInfoJob();
         void testParametersUpdateJob();
+        void testUtilityBestVfsAvailableModeJob();
+        void testUtilityFindGoodPathForNewSyncJob();
+        void testUtilityIsPathValidForNewSyncJob();
         void testUtilityActivateLoadInfoJob();
         void testUtilityCheckCommStatusJob();
         void testUtilityHasSystemLaunchOnStartupJob();
