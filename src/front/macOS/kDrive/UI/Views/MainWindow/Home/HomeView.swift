@@ -22,9 +22,17 @@ import SwiftUI
 struct HomeView: View {
     @ObservedObject var mainViewModel: MainViewModel
 
+    static let spacing = AppPadding.padding24
+
     var body: some View {
-        HStack {
-            DriveWebShortcutsView(user: mainViewModel.currentUser, drive: mainViewModel.currentDrive)
+        GeometryReader { proxy in
+            HStack(spacing: HomeView.spacing) {
+                Color.clear
+                    .frame(width: (proxy.size.width - HomeView.spacing / 2) * 0.66)
+
+                DriveWebShortcutsView(user: mainViewModel.currentUser, drive: mainViewModel.currentDrive)
+                    .frame(width: (proxy.size.width - HomeView.spacing / 2) * 0.33)
+            }
         }
         .padding(AppPadding.padding24)
     }
