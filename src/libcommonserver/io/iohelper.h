@@ -59,7 +59,8 @@ struct IoHelper {
     public:
         class DirectoryIterator {
             public:
-                DirectoryIterator(const SyncPath &directoryPath, bool recursive, IoError &ioError);
+                DirectoryIterator(const SyncPath &directoryPath, bool recursive, IoError &ioError,
+                                  bool skipPermissionDenied = true);
 
                 DirectoryIterator() = default;
                 //! Get the next directory entry.
@@ -317,16 +318,29 @@ struct IoHelper {
          \param recursive is a boolean indicating whether the iterator should be recursive or not.
          \param ioError holds the error returned when an underlying OS API call fails.
          \param iterator is the directory iterator that is set with the directory iterator for the specified path.
+         \param skipPermissionDenied is a flag that enables the omission of permission-less directories.
          \return true if no unexpected error occurred, false otherwise.
         */
-        static bool getDirectoryIterator(const SyncPath &path, bool recursive, IoError &ioError,
-                                         DirectoryIterator &iterator) noexcept;
+        static bool getDirectoryIterator(const SyncPath &path, bool recursive, IoError &ioError, DirectoryIterator &iterator,
+                                         bool skipPermissionDenied = true) noexcept;
+
+        //! Create a recursive directory iterator for the specified path. The iterator can be used to iterate over the items in
+        //! the directory.
+        /*!
+         \param path is the file system path of the directory to iterate over.
+         \param ioError holds the error returned when an underlying OS API call fails.
+         \param iterator is the directory iterator that is set with the directory iterator for the specified path.
+         \param skipPermissionDenied is a flag that enables the omission of permission-less directories.
+         \return true if no unexpected error occurred, false otherwise.
+        */
+        static bool getRecursiveDirectoryIterator(const SyncPath &path, IoError &ioError, DirectoryIterator &iterator,
+                                                  bool skipPermissionDenied = true) noexcept;
 
         //! Create a directory entry for the specified path.
         /*!
          * \param path is the file system path of the directory entry to create.
          * \param ioError holds the error returned when an underlying OS API call fails.
-         * \entry is the directory entry that is set with the directory entry for the specified path.
+         * \param entry is the directory entry that is set with the directory entry for the specified path.
          * \return true if no unexpected error occurred, false otherwise.
          */
         static bool getDirectoryEntry(const SyncPath &path, IoError &ioError, DirectoryEntry &entry) noexcept;

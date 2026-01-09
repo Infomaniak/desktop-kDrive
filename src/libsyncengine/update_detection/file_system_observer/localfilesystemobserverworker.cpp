@@ -590,7 +590,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
     // Process all files
     try {
         IoHelper::DirectoryIterator dirIt;
-        if (!IoHelper::getDirectoryIterator(absoluteParentDirPath, true, ioError, dirIt)) {
+        if (!IoHelper::getRecursiveDirectoryIterator(absoluteParentDirPath, ioError, dirIt, false)) {
             assert(ioError != IoError::Success && "Unexpected IoHelper::getDirectoryIterator return value.");
             LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getDirectoryIterator: Local "
                                                << Utility::formatIoError(absoluteParentDirPath, ioError));
