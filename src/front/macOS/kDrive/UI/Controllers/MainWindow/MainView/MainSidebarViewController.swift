@@ -112,7 +112,7 @@ final class MainSidebarViewController: NSViewController {
     }
 
     private func bindViewModel() {
-        mainViewModel.$currentSynchros
+        mainViewModel.$availableSynchros
             .receiveOnMain(store: &bindStore) { [weak self] synchrosContext in
                 self?.updateSynchrosList(synchrosContext)
             }

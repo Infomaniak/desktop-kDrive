@@ -31,7 +31,7 @@ final class MainViewModel {
     @Published private(set) var currentAccount: UIAccount?
     @Published private(set) var currentDrive: UIDrive?
     @Published private(set) var currentSynchro: UISynchro?
-    @Published private(set) var currentSynchros = [UISynchroContext]()
+    @Published private(set) var availableSynchros = [UISynchroContext]()
 
     private var bindStore = Set<AnyCancellable>()
 
@@ -67,7 +67,7 @@ final class MainViewModel {
     }
 
     private func handleUpdatedSynchros(_ synchros: [UISynchroContext]) {
-        currentSynchros = synchros
+        availableSynchros = synchros
         updateSelectedItems()
     }
 
@@ -95,7 +95,7 @@ final class MainViewModel {
     }
 
     private func getSelectedValuesFromSynchro(_ synchro: UISynchro) -> UISynchroContext? {
-        guard let matchedSyncContext = currentSynchros.first(where: { syncContext in
+        guard let matchedSyncContext = availableSynchros.first(where: { syncContext in
             syncContext.synchro.dbId == Int32(synchro.dbId)
         }) else {
             return nil
