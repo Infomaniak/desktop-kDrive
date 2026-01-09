@@ -125,98 +125,98 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
     // MARK: User
 
     private func handleUser(_ signal: Data) async throws {
-        guard let userInfoSignal = try? decoder.decode(SignalMessage<UserInfoSignal>.self, from: signal),
-              let user = userInfoSignal.body?.asUser else {
+        guard let userInfoSignal = try? decoder.decode(SignalMessage<UserInfoSignal>.self, from: signal) else {
             throw SignalError.unableToGetUserFromSignal
         }
 
+        let user = userInfoSignal.body.asUser
         await coherentCache.updateUser(user)
     }
 
     private func handleUserRemoved(_ signal: Data) async throws {
-        guard let userRemoveSignal = try? decoder.decode(SignalMessage<UserRemoveSignal>.self, from: signal),
-              let userDbId = userRemoveSignal.body?.userDbId else {
+        guard let userRemoveSignal = try? decoder.decode(SignalMessage<UserRemoveSignal>.self, from: signal) else {
             throw SignalError.unableToGetUserDbIdFromSignal
         }
 
+        let userDbId = userRemoveSignal.body.userDbId
         await coherentCache.removeUser(dbId: userDbId)
     }
 
     // MARK: Account
 
     private func handleAccountAdded(_ signal: Data) async throws {
-        guard let accountInfoSignal = try? decoder.decode(SignalMessage<AccountInfoSignal>.self, from: signal),
-              let accountInfo = accountInfoSignal.body else {
+        guard let accountInfoSignal = try? decoder.decode(SignalMessage<AccountInfoSignal>.self, from: signal) else {
             throw SignalError.unableToGetAccountFromSignal
         }
 
+        let accountInfo = accountInfoSignal.body
         await coherentCache.addAccount(accountInfo.asAccount, userDbId: accountInfo.userDbId)
     }
 
     private func handleAccountRemoved(_ signal: Data) async throws {
-        guard let accountInfoSignal = try? decoder.decode(SignalMessage<AccountRemoveSignal>.self, from: signal),
-              let accountDbId = accountInfoSignal.body?.accountDbId else {
+        guard let accountInfoSignal = try? decoder.decode(SignalMessage<AccountRemoveSignal>.self, from: signal) else {
             throw SignalError.unableToGetAccountDbIdFromSignal
         }
 
+        let accountDbId = accountInfoSignal.body.accountDbId
         await coherentCache.removeAccount(accountDbId: accountDbId)
     }
 
     // MARK: Drive
 
     private func handleDrive(_ signal: Data) async throws {
-        guard let driveInfoSignal = try? decoder.decode(SignalMessage<DriveInfoSignal>.self, from: signal),
-              let driveInfo = driveInfoSignal.body else {
+        guard let driveInfoSignal = try? decoder.decode(SignalMessage<DriveInfoSignal>.self, from: signal) else {
             throw SignalError.unableToGetDriveFromSignal
         }
 
+        let driveInfo = driveInfoSignal.body
         try await coherentCache.addOrUpdateDriveSignal(driveInfo)
     }
 
     private func handleDriveRemoved(_ signal: Data) async throws {
-        guard let driveInfoSignal = try? decoder.decode(SignalMessage<DriveRemoveSignal>.self, from: signal),
-              let driveDbId = driveInfoSignal.body?.driveDbId else {
+        guard let driveInfoSignal = try? decoder.decode(SignalMessage<DriveRemoveSignal>.self, from: signal) else {
             throw SignalError.unableToGetDriveDbIdFromSignal
         }
 
+        let driveDbId = driveInfoSignal.body.driveDbId
         try await coherentCache.removeDrive(driveDbId: driveDbId)
     }
 
     // MARK: Synchro
 
     private func handleSync(_ signal: Data) async throws {
-        guard let syncInfoSignal = try? decoder.decode(SignalMessage<SyncInfoSignal>.self, from: signal),
-              let syncInfo = syncInfoSignal.body else {
+        guard let syncInfoSignal = try? decoder.decode(SignalMessage<SyncInfoSignal>.self, from: signal) else {
             throw SignalError.unableToGetSyncFromSignal
         }
 
+        let syncInfo = syncInfoSignal.body
         try await coherentCache.addSynchro(syncInfo.asSynchro)
     }
 
     private func handleSyncRemoved(_ signal: Data) async throws {
-        guard let syncRemoveSignal = try? decoder.decode(SignalMessage<SyncRemoveSignal>.self, from: signal),
-              let syncDbId = syncRemoveSignal.body?.syncDbId else {
+        guard let syncRemoveSignal = try? decoder.decode(SignalMessage<SyncRemoveSignal>.self, from: signal) else {
             throw SignalError.unableToGetSyncDbIdFromSignal
         }
 
+        let syncDbId = syncRemoveSignal.body.syncDbId
         try await coherentCache.removeSynchro(synchroDbId: syncDbId)
     }
 
     private func handleSyncProgress(_ signal: Data) async throws {
-        guard let syncProgressSignal = try? decoder.decode(SignalMessage<SyncProgressInfoSignal>.self, from: signal),
-              let syncProgress = syncProgressSignal.body else {
+        guard let syncProgressSignal = try? decoder.decode(SignalMessage<SyncProgressInfoSignal>.self, from: signal) else {
             throw SignalError.unableToGetSyncProgressFromSignal
         }
 
+        let syncProgress = syncProgressSignal.body
         try await coherentCache.updateSyncProgressInfoSignal(syncProgress)
     }
 
     private func handleSyncCompleted(_ signal: Data) async throws {
-        guard let syncFileItemInfo = try? decoder.decode(SignalMessage<SyncFileItemInfoSignal>.self, from: signal),
-              let syncFileItem = syncFileItemInfo.body else {
+        guard let syncFileItemInfo = try? decoder.decode(SignalMessage<SyncFileItemInfoSignal>.self, from: signal) else {
             throw SignalError.unableToGetSyncFileItemFromSignal
         }
 
+        let syncFileItem = syncFileItemInfo.body
         try await coherentCache.updateSyncFileItemInfoSignal(syncFileItem)
     }
 }
