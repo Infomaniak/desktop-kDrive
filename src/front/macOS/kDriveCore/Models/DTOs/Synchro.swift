@@ -60,9 +60,25 @@ public struct Synchro: Identifiable, Hashable, Sendable {
 }
 
 public struct SynchroProgressInfo: Hashable, Sendable {
-    public let syncStatus: Int32 // TODO: use SyncStatus enum
-    public let syncStep: Int32 // TODO: use SyncStep enum
-    public let syncProgress: Int32 // TODO: SyncProgress enum
+    public let syncStatus: KDC.SyncStatus
+    public let syncStep: KDC.SyncStep
+    public let syncProgress: SyncProgress
+}
+
+public struct SyncProgress: Hashable, Sendable {
+    public let currentFile: Int64
+    public let totalFiles: Int64
+    public let completedSize: Int64
+    public let totalSize: Int64
+    public let estimatedRemainingTime: Int64
+
+    init(syncProgress: SyncProgressSignal) {
+        currentFile = syncProgress.currentFile
+        totalFiles = syncProgress.totalFiles
+        completedSize = syncProgress.completedSize
+        totalSize = syncProgress.totalSize
+        estimatedRemainingTime = syncProgress.estimatedRemainingTime
+    }
 }
 
 public struct SynchroNode: Identifiable, Codable, Hashable, Sendable {
