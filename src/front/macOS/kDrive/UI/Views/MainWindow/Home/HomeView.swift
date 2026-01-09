@@ -25,12 +25,13 @@ struct HomeView: View {
     static let spacing = AppPadding.padding24
 
     var body: some View {
-        VStack(alignment: .leading) {
+        VStack(alignment: .leading, spacing: 0) {
             GreetingStatusView(name: "Valentin", synchroStatus: .upToDate)
+                .padding(.bottom, AppPadding.padding32)
 
             GeometryReader { proxy in
                 HStack(spacing: HomeView.spacing) {
-                    Color.clear
+                    SynchroStatusView(status: .upToDate)
                         .frame(maxWidth: (proxy.size.width - HomeView.spacing / 2) * 2 / 3)
 
                     DriveWebShortcutsView(user: mainViewModel.currentUser, drive: mainViewModel.currentDrive)

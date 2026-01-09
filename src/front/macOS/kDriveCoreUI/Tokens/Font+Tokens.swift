@@ -28,6 +28,7 @@ public extension Font {
         public static let title2: Font = .title2
         public static let title2Emphasized: Font = .title2.weight(.emphasized)
 
+        public static let title3: Font = .title3
         public static let title3Emphasized: Font = .title3.weight(.emphasized)
 
         public static let headline: NSFont = .preferredFont(forTextStyle: .headline)
