@@ -142,18 +142,21 @@
                             <DataTemplate x:Key="SynchronizationErrorTemplate"
                                           x:DataType="viewmodels:SyncFileItem">
                                 <controls:SvgIcon Height="16"
+                                                  PointerPressed="ItemErrorIcon_PointerPressed"
                                                   Foreground="{ThemeResource colors.status.medium.warning}"
                                                   UriString="{StaticResource Infomaniak.DS.Icons.Actions.triangle-alert-outline}" />
                             </DataTemplate>
                             <DataTemplate x:Key="SynchronizedTemplate"
                                           x:DataType="viewmodels:SyncFileItem">
                                 <controls:SvgIcon Height="16"
+                                                  PointerPressed="ItemErrorIcon_PointerPressed"
                                                   Foreground="{ThemeResource colors.status.medium.success}"
                                                   UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-check-outline}" />
                             </DataTemplate>
                             <DataTemplate x:Key="SynchronizingTemplate"
                                           x:DataType="viewmodels:SyncFileItem">
                                 <controls:SvgIcon Height="16"
+                                                  PointerPressed="ItemErrorIcon_PointerPressed"
                                                   Foreground="{StaticResource Infomaniak.Style.Color.Product.Default}"
                                                   UriString="{StaticResource Infomaniak.DS.Icons.Arrows.arrow-loop}" />
                             </DataTemplate>
