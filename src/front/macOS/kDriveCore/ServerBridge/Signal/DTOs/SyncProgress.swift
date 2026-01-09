@@ -23,9 +23,15 @@ struct SyncProgressInfoSignal: Codable, Sendable {
     let syncStatus: KDC.SyncStatus
     let syncStep: KDC.SyncStep
     let syncProgress: SyncProgressSignal
+
+    enum CodingKeys: String, CodingKey {
+        case syncDbId
+        case syncStatus
+        case syncStep
+        case syncProgress = "SyncProgress"
+    }
 }
 
-// TODO: Validate parsing
 struct SyncProgressSignal: Codable, Sendable {
     let currentFile: Int64
     let totalFiles: Int64
@@ -36,9 +42,9 @@ struct SyncProgressSignal: Codable, Sendable {
 
 extension SyncProgressInfoSignal {
     var asSynchroProgressInfo: SynchroProgressInfo {
-        let progress = SyncProgress(syncProgress: self.syncProgress)
+        let progress = SyncProgress(syncProgress: syncProgress)
         return SynchroProgressInfo(syncStatus: syncStatus,
-                            syncStep: syncStep,
-                            syncProgress: progress)
+                                   syncStep: syncStep,
+                                   syncProgress: progress)
     }
 }
