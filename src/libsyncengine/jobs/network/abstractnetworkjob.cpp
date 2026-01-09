@@ -643,6 +643,10 @@ ExitInfo AbstractNetworkJob::extractJson(const std::string &replyBody, Poco::JSO
         Utility::logGenericServerError(_logger, "Request error", replyBody, httpResponse());
         return {ExitCode::BackError, ExitCause::ApiErr};
     }
+
+    if (isExtendedLog()) {
+        LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << CommonUtility::s2ws(replyBody));
+    }
     return ExitCode::Ok;
 }
 
