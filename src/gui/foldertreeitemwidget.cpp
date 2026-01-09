@@ -234,10 +234,10 @@ void FolderTreeItemWidget::insertNode(QTreeWidgetItem *parent, const NodeInfo &n
         item->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
     } else {
         item->setChildIndicatorPolicy(QTreeWidgetItem::ShowIndicator);
-    }
 
-    if (!nodeInfo.nodeId().isEmpty()) {
-        addTreeWidgetItemToQueue(nodeInfo.nodeId(), item);
+        if (!nodeInfo.nodeId().isEmpty()) {
+            addTreeWidgetItemToQueue(nodeInfo.nodeId(), item);
+        }
     }
 }
 
