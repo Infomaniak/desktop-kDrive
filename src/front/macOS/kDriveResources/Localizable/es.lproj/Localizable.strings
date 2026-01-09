@@ -4,7 +4,7 @@
  * Locale: es, Spanish
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Fri, 09 Jan 2026 09:11:23 +0100
+ * Exported at: Fri, 09 Jan 2026 13:43:36 +0100
  */
 
 /* loco:691deb2291b20ac7fd045012 */
@@ -174,6 +174,30 @@
 
 /* loco:6960b7fd4e868a099e022dc5 */
 "synchroPaused" = "la sincronización está en pausa";
+
+/* loco:6960f0917cb01bc78104ed32 */
+"synchroStatusInProgressDescription" = "Tus archivos recientes se están actualizando.";
+
+/* loco:6960f01471cc26128d040b12 */
+"synchroStatusInProgressTitle" = "Sincronización en curso";
+
+/* loco:6960f77abfc1ab365409ead2 */
+"synchroStatusOfflineDescription" = "Tus archivos locales seguirán siendo accesibles. La sincronización se reanudará automáticamente en cuanto vuelvas a conectarte.";
+
+/* loco:6960f75e46598388a60c3022 */
+"synchroStatusOfflineTitle" = "Fuera de línea";
+
+/* loco:6960f0d67c633959570799d2 */
+"synchroStatusPausedDescription" = "La sincronización se detiene temporalmente.";
+
+/* loco:6960f0b8ef5d3700b0018933 */
+"synchroStatusPausedTitle" = "Pausa activada";
+
+/* loco:6960efeed6dfdcb3af05e2d2 */
+"synchroStatusUpToDateDescription" = "Tus archivos están accesibles y sincronizados.";
+
+/* loco:6960ef1d538ef75e5a0ad3e2 */
+"synchroStatusUpToDateTitle" = "Ninguna actividad en curso";
 
 /* loco:6960b7a6cf8ffcd3950d2704 */
 "synchroUpToDate" = "sus archivos están actualizados";

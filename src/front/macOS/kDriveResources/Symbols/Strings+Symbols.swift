@@ -124,6 +124,22 @@ public enum KDriveLocalizable {
   public static let synchroInProgress = KDriveLocalizable.tr("Localizable", "synchroInProgress", fallback: "your files are synchronizing")
   /// loco:6960b7fd4e868a099e022dc5
   public static let synchroPaused = KDriveLocalizable.tr("Localizable", "synchroPaused", fallback: "synchronization is paused")
+  /// loco:6960f0917cb01bc78104ed32
+  public static let synchroStatusInProgressDescription = KDriveLocalizable.tr("Localizable", "synchroStatusInProgressDescription", fallback: "Your recent files are being updated.")
+  /// loco:6960f01471cc26128d040b12
+  public static let synchroStatusInProgressTitle = KDriveLocalizable.tr("Localizable", "synchroStatusInProgressTitle", fallback: "Synchronization in progress")
+  /// loco:6960f77abfc1ab365409ead2
+  public static let synchroStatusOfflineDescription = KDriveLocalizable.tr("Localizable", "synchroStatusOfflineDescription", fallback: "Your local files remain accessible. Synchronization will resume automatically as soon as you reconnect.")
+  /// loco:6960f75e46598388a60c3022
+  public static let synchroStatusOfflineTitle = KDriveLocalizable.tr("Localizable", "synchroStatusOfflineTitle", fallback: "Offline")
+  /// loco:6960f0d67c633959570799d2
+  public static let synchroStatusPausedDescription = KDriveLocalizable.tr("Localizable", "synchroStatusPausedDescription", fallback: "Synchronization is temporarily stopped.")
+  /// loco:6960f0b8ef5d3700b0018933
+  public static let synchroStatusPausedTitle = KDriveLocalizable.tr("Localizable", "synchroStatusPausedTitle", fallback: "Pause activated")
+  /// loco:6960efeed6dfdcb3af05e2d2
+  public static let synchroStatusUpToDateDescription = KDriveLocalizable.tr("Localizable", "synchroStatusUpToDateDescription", fallback: "Your files are accessible and synchronized.")
+  /// loco:6960ef1d538ef75e5a0ad3e2
+  public static let synchroStatusUpToDateTitle = KDriveLocalizable.tr("Localizable", "synchroStatusUpToDateTitle", fallback: "No activity in progress")
   /// loco:6960b7a6cf8ffcd3950d2704
   public static let synchroUpToDate = KDriveLocalizable.tr("Localizable", "synchroUpToDate", fallback: "your files are up to date")
   /// loco:68a70be4b749277aa1081dc2

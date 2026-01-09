@@ -17,6 +17,7 @@
  */
 
 import kDriveCoreUI
+import kDriveResources
 import SwiftUI
 
 extension SynchroStatus {
@@ -36,30 +37,30 @@ struct SynchroStatusView: View {
     struct State {
         let animation: String
         let title: String
-        let subtitle: String
+        let description: String
 
         static let synchroUpToDate = State(
             animation: "",
-            title: "Pas d'activité en cours",
-            subtitle: "Vos fichiers sont accessibles et synchronisés."
+            title: KDriveLocalizable.synchroStatusUpToDateTitle,
+            description: KDriveLocalizable.synchroStatusUpToDateDescription
         )
 
         static let synchroInProgress = State(
             animation: "",
-            title: "Synchronisation en cours",
-            subtitle: "Vos fichiers récents sont en train d’être mis à jour."
+            title: KDriveLocalizable.synchroStatusInProgressTitle,
+            description: KDriveLocalizable.synchroStatusInProgressDescription
         )
 
         static let synchroPaused = State(
             animation: "",
-            title: "Pause activée",
-            subtitle: "La synchronisation est temporairement arrêtée."
+            title: KDriveLocalizable.synchroStatusPausedTitle,
+            description: KDriveLocalizable.synchroStatusPausedDescription
         )
 
         static let offline = State(
             animation: "",
-            title: "Hors ligne",
-            subtitle: "Vos fichiers locaux restent accessibles.La synchronisation reprendra automatiquement dès que vous serez reconnecté."
+            title: KDriveLocalizable.synchroStatusOfflineTitle,
+            description: KDriveLocalizable.synchroStatusOfflineDescription
         )
     }
 
@@ -77,7 +78,7 @@ struct SynchroStatusView: View {
                 Text(state.title)
                     .font(.Tokens.title3)
 
-                Text(state.subtitle)
+                Text(state.description)
                     .font(.Tokens.body)
             }
             .foregroundStyle(ColorToken.Text.primary.asColor)
