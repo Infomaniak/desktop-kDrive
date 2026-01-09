@@ -20,15 +20,25 @@ import Foundation
 
 struct SyncProgressInfoSignal: Codable, Sendable {
     let syncDbId: Int32
-    let syncStatus: Int32 // TODO: use SyncStatus enum
-    let syncStep: Int32 // TODO: use SyncStep enum
-    let syncProgress: Int32 // TODO: SyncProgress enum
+    let syncStatus: KDC.SyncStatus
+    let syncStep: KDC.SyncStep
+    let syncProgress: SyncProgressSignal
+}
+
+// TODO: Validate parsing
+struct SyncProgressSignal: Codable, Sendable {
+    let currentFile: Int64
+    let totalFiles: Int64
+    let completedSize: Int64
+    let totalSize: Int64
+    let estimatedRemainingTime: Int64
 }
 
 extension SyncProgressInfoSignal {
     var asSynchroProgressInfo: SynchroProgressInfo {
-        SynchroProgressInfo(syncStatus: syncStatus,
+        let progress = SyncProgress(syncProgress: self.syncProgress)
+        return SynchroProgressInfo(syncStatus: syncStatus,
                             syncStep: syncStep,
-                            syncProgress: syncProgress)
+                            syncProgress: progress)
     }
 }
