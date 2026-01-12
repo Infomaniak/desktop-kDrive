@@ -177,5 +177,41 @@ namespace Infomaniak.kDrive.CustomControls
             };
         }
     }
+
+    public partial class ActivityStatusDataTemplateSelector : DataTemplateSelector
+    {
+        public DataTemplate? SynchronizedTemplate { get; set; }
+        public DataTemplate? SynchronizingTemplate { get; set; }
+        public DataTemplate? SynchronizationErrorTemplate { get; set; }
+
+        protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container)
+        {
+            if (item == null)
+                return null;
+
+            Types.SyncFileStatus syncFileStatus;
+            if (item is SyncFileItem syncActivity)
+            {
+                syncFileStatus = syncActivity.Status;
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Error, "Unexpected type in SelectTemplateCore");
+                return null;
+            }
+
+            return syncFileStatus switch
+            {
+                SyncFileStatus.Unknown => SynchronizationErrorTemplate,
+                SyncFileStatus.Error => SynchronizationErrorTemplate,
+                SyncFileStatus.Success => SynchronizedTemplate,
+                SyncFileStatus.Conflict => SynchronizationErrorTemplate,
+                SyncFileStatus.Inconsistency => SynchronizationErrorTemplate,
+                SyncFileStatus.Ignored => SynchronizationErrorTemplate,
+                SyncFileStatus.Syncing => SynchronizingTemplate,
+                _ => SynchronizationErrorTemplate,
+            };
+        }
+    }
 }
 
