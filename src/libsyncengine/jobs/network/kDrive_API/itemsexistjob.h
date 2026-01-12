@@ -26,7 +26,7 @@ class ItemsExistJob : public AbstractTokenNetworkJob {
     public:
         explicit ItemsExistJob(int driveDbId, const NodeSet &ids = {});
 
-        ExitInfo exists(const NodeId &id);
+        bool exists(const NodeId &id, IoError &ioError);
 
     private:
         ExitInfo setData() override;

@@ -1592,10 +1592,15 @@ void TestNetworkJobs::testExists() {
     const auto ids = {pictureDirRemoteId, picture1RemoteId, dummyId};
     ItemsExistJob job(_driveDbId, ids);
     job.runSynchronously();
-    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.exists(pictureDirRemoteId).code());
-    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.exists(picture1RemoteId).code());
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::BackError, ExitCause::NotFound), job.exists(dummyId));
-    CPPUNIT_ASSERT_EQUAL(ExitCode::LogicError, job.exists("0987654321").code());
+    IoError ioError = IoError::Unknown;
+    CPPUNIT_ASSERT(job.exists(pictureDirRemoteId, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    CPPUNIT_ASSERT(job.exists(picture1RemoteId, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    CPPUNIT_ASSERT(job.exists(dummyId, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
+    CPPUNIT_ASSERT(job.exists("0987654321", ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
 }
 
 } // namespace KDC

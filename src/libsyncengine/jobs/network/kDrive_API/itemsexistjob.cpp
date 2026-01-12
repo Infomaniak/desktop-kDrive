@@ -32,10 +32,17 @@ ItemsExistJob::ItemsExistJob(int driveDbId, const NodeSet &ids) :
     }
 }
 
-ExitInfo ItemsExistJob::exists(const NodeId &id) {
-    if (!_itemInfo.contains(id)) return ExitCode::LogicError;
-    if (_itemInfo[id]) return ExitCode::Ok;
-    return {ExitCode::BackError, ExitCause::NotFound};
+bool ItemsExistJob::exists(const NodeId &id, IoError &ioError) {
+    if (!_itemInfo.contains(id)) {
+        ioError = IoError::InvalidArgument;
+        return false;
+    }
+    if (_itemInfo[id]) {
+        ioError = IoError::Success;
+        return true;
+    }
+    ioError = IoError::NoSuchFileOrDirectory;
+    return false;
 }
 
 ExitInfo ItemsExistJob::setData() {
