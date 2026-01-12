@@ -19,6 +19,7 @@
 #include "synclocaldeletejob.h"
 
 #include "jobs/network/kDrive_API/getfileinfojob.h"
+#include "jobs/network/kDrive_API/itemsexistjob.h"
 #include "libcommonserver/io/permissionsholder.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
@@ -123,15 +124,17 @@ ExitInfo SyncLocalDeleteJob::canRun() {
     }
 
     // Check if the item we want to delete locally has a remote counterpart.
-
-    SyncPath remoteRelativePath;
-    const bool remoteItemIsFound = findRemoteItem(remoteRelativePath);
-    if (!remoteItemIsFound) return ExitCode::Ok; // Safe deletion.
+    ItemsExistJob existsJob(_syncPal->syncInfo().driveDbId, {_remoteNodeId});
+    existsJob.runSynchronously();
+    if (!existsJob.exists(_remoteNodeId, ioError) && ioError == IoError::NoSuchFileOrDirectory)
+        return ExitCode::Ok; // Safe deletion.
 
     // Check whether the remote item has been moved.
     // If the remote item has been moved into a blacklisted folder, then this Delete job is created and
     // the local item should be deleted.
-    // Note: the other remote move operations are not relevant: they generate Move jobs.
+    SyncPath remoteRelativePath;
+    const bool remoteItemIsFound = findRemoteItem(remoteRelativePath);
+    if (!remoteItemIsFound) return ExitCode::Ok; // Safe deletion.
 
     SyncPath normalizedPath;
     if (!Utility::normalizedSyncPath(_relativeLocalPath, normalizedPath)) {
