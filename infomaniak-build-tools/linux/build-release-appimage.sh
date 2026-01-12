@@ -76,8 +76,6 @@ function find_qt_from_conan() {
     echo "ERROR: Qt base directory not found via Conan (QT_BASE_DIR='$QT_BASE_DIR')" >&2
     exit 1
   fi
-
-  echo "Qt detected at: $QT_BASE_DIR"
 }
 
 function build_client_via_cmake() {
@@ -166,6 +164,14 @@ function move_dependencies() {
   done
 
   mkdir -p ./usr/qml
+
+  # Copy GIO modules from the build system
+  # These are loaded dynamically by GLib and must match the bundled GLib version
+  mkdir -p ./usr/lib/gio/modules
+  if [ -d "/usr/lib/$arch-linux-gnu/gio/modules" ]; then
+    echo "Copying GIO modules from /usr/lib/$arch-linux-gnu/gio/modules..."
+    cp -P /usr/lib/$arch-linux-gnu/gio/modules/*.so ./usr/lib/gio/modules/ 2>/dev/null || true
+  fi
 
   rm -rf "./usr/lib/$arch-linux-gnu/"
   rm -rf ./usr/lib/kDrive
