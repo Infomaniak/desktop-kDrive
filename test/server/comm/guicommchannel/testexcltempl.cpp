@@ -1,6 +1,6 @@
 ﻿/*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,8 +56,6 @@ void TestGuiCommChannel::testExclTemplGetExcludedJob() {
 
     // Job expected answers
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
-    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
-
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto exclTemplGetExcludedJob = std::dynamic_pointer_cast<ExclTemplGetExcludedJob>(job);
         CPPUNIT_ASSERT(exclTemplGetExcludedJob);
@@ -66,7 +64,12 @@ void TestGuiCommChannel::testExclTemplGetExcludedJob() {
         exclTemplGetExcludedJob->_isExcluded = true;
     };
 
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(queryStr, answerStr, {}, processFct);
+#else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
 }
 
 void TestGuiCommChannel::testExclTemplGetListJob() {
@@ -113,8 +116,6 @@ void TestGuiCommChannel::testExclTemplGetListJob() {
 
     // Job expected answers
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
-    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
-
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto exclTemplGetListJob = std::dynamic_pointer_cast<ExclTemplGetListJob>(job);
         CPPUNIT_ASSERT(exclTemplGetListJob);
@@ -124,7 +125,12 @@ void TestGuiCommChannel::testExclTemplGetListJob() {
                                                        ExclusionTemplateInfo("template2", false, true, false)};
     };
 
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(queryStr, answerStr, {}, processFct);
+#else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
 }
 
 void TestGuiCommChannel::testExclTemplSetListJob() {
@@ -172,8 +178,6 @@ void TestGuiCommChannel::testExclTemplSetListJob() {
 
     // Job expected answers
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
-    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
-
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto exclTemplSetListJob = std::dynamic_pointer_cast<ExclTemplSetListJob>(job);
         CPPUNIT_ASSERT(exclTemplSetListJob);
@@ -184,7 +188,12 @@ void TestGuiCommChannel::testExclTemplSetListJob() {
                        exclTemplSetListJob->_exclusionTemplateList.at(1));
     };
 
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(queryStr, answerStr, {}, processFct);
+#else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
 }
 
 void TestGuiCommChannel::testExclTemplPropagateChangeJob() {
@@ -213,14 +222,17 @@ void TestGuiCommChannel::testExclTemplPropagateChangeJob() {
 
     // Job expected answers
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
-    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
-
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto exclTemplPropagateChangeJob = std::dynamic_pointer_cast<ExclTemplPropagateChangeJob>(job);
         CPPUNIT_ASSERT(exclTemplPropagateChangeJob);
     };
 
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(queryStr, answerStr, {}, processFct);
+#else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
 }
 
 } // namespace KDC

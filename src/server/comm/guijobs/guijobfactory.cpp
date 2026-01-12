@@ -63,6 +63,7 @@
 #include "utilityactivateloadinfojob.h"
 #include "utilityfindgoodpathfornewsyncjob.h"
 #include "utilitybestvfsavailablemodejob.h"
+#include "utilityispathvalidfornewsyncjob.h"
 #include "utilitysetappstatejob.h"
 #include "utilitygetappstatejob.h"
 #include "utilitysendlogtosupportjob.h"
@@ -122,6 +123,7 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::UTILITY_ACTIVATELOADINFO, makeShared<UtilityActivateLoadInfoJob>},
                 {RequestNum::UTILITY_BESTVFSAVAILABLEMODE, makeShared<UtilityBestVfsAvailableModeJob>},
                 {RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC, makeShared<UtilityFindGoodPathForNewSyncJob>},
+                {RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC, makeShared<UtilityIsPathValidForNewSyncJob>},
                 {RequestNum::UTILITY_SET_APPSTATE, makeShared<UtilitySetAppStateJob>},
                 {RequestNum::UTILITY_GET_APPSTATE, makeShared<UtilityGetAppStateJob>},
                 {RequestNum::UTILITY_SEND_LOG_TO_SUPPORT, makeShared<UtilitySendLogToSupportJob>},

@@ -22,19 +22,18 @@
 
 namespace KDC {
 
-class UtilityFindGoodPathForNewSyncJob : public AbstractGuiJob {
+class UtilityIsPathValidForNewSyncJob : public AbstractGuiJob {
     public:
-        UtilityFindGoodPathForNewSyncJob(std::shared_ptr<CommManager> commManager, int requestId,
+        UtilityIsPathValidForNewSyncJob(std::shared_ptr<CommManager> commManager, int requestId,
                                        const Poco::DynamicStruct &inParams,
                               std::shared_ptr<AbstractCommChannel> channel);
 
     private:
         // Input parameters
-        SyncPath _basePath;
+        SyncPath _path;
 
         // Output parameters
-        SyncPath _goodPath;
-        std::string _errorMessage;
+        bool _isValid = false;
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;

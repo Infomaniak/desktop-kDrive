@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,29 +18,25 @@
 
 #pragma once
 
-#include "server/comm/guijobs/abstractguijob.h"
-
 namespace KDC {
 
-class UtilityFindGoodPathForNewSyncJob : public AbstractGuiJob {
+/**
+ * @brief Generic delete job used to delete a local file without any checks.
+ */
+class GenericLocalDeleteJob : public SyncJob {
     public:
-        UtilityFindGoodPathForNewSyncJob(std::shared_ptr<CommManager> commManager, int requestId,
-                                       const Poco::DynamicStruct &inParams,
-                              std::shared_ptr<AbstractCommChannel> channel);
+        GenericLocalDeleteJob(const SyncPath &absolutePath, bool forceHardDelete = false);
+
+        [[nodiscard]] const SyncPath &absolutePath() const { return _absolutePath; }
+
+    protected:
+        ExitInfo runJob() override;
+        ExitInfo moveToTrashOrHardDeleteIfNeeded(const SyncPath &path);
+        ExitInfo hardDelete(const SyncPath &path);
 
     private:
-        // Input parameters
-        SyncPath _basePath;
-
-        // Output parameters
-        SyncPath _goodPath;
-        std::string _errorMessage;
-
-        ExitInfo deserializeInputParms() override;
-        ExitInfo serializeOutputParms() override;
-        ExitInfo process() override;
-
-        friend class TestGuiCommChannel;
+        SyncPath _absolutePath;
+        bool _forceHardDelete{false};
 };
 
 } // namespace KDC

@@ -123,7 +123,14 @@ void BaseFolderTreeItemWidget::insertNode(QTreeWidgetItem *parent, const NodeInf
             item->setData(TreeWidgetColumn::Folder, baseDirRole, folderInfo.name());
             item->setData(TreeWidgetColumn::Folder, nodeIdRole, folderInfo.nodeId());
 
-            item->setChildIndicatorPolicy(QTreeWidgetItem::ShowIndicator);
+            // Manage access denied
+            if (folderInfo.accessDenied()) {
+                item->setDisabled(true);
+                item->setCheckState(TreeWidgetColumn::Folder, Qt::Unchecked);
+                item->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+            } else {
+                item->setChildIndicatorPolicy(QTreeWidgetItem::ShowIndicator);
+            }
         }
     }
 }
