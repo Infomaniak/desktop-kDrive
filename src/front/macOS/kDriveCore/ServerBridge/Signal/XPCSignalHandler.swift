@@ -126,26 +126,6 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         }
     }
 
-    // MARK: Drive
-
-    private func handleDrive(_ signal: Data) async throws {
-        guard let driveInfoSignal = try? decoder.decode(SignalMessage<DriveInfoSignal>.self, from: signal) else {
-            throw SignalError.unableToGetDriveFromSignal
-        }
-
-        let driveInfo = driveInfoSignal.body.driveInfo
-        try await coherentCache.addOrUpdateDriveSignal(driveInfo)
-    }
-
-    private func handleDriveRemoved(_ signal: Data) async throws {
-        guard let driveInfoSignal = try? decoder.decode(SignalMessage<DriveRemoveSignal>.self, from: signal) else {
-            throw SignalError.unableToGetDriveDbIdFromSignal
-        }
-
-        let driveDbId = driveInfoSignal.body.driveDbId
-        try await coherentCache.removeDrive(driveDbId: driveDbId)
-    }
-
     // MARK: Synchro
 
     private func handleSync(_ signal: Data) async throws {
