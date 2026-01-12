@@ -92,8 +92,7 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
             try await handleAccountAdded(signal)
 
         case .ACCOUNT_UPDATED:
-            IKLogger.xpc.error("[KD] TODO - ACCOUNT_UPDATED not available")
-            throw SignalError.unsupported(signalNum)
+            try await handleAccountUpdated(signal)
 
         case .ACCOUNT_REMOVED:
             try await handleAccountRemoved(signal)
@@ -158,6 +157,15 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
 
         let accountInfo = accountInfoSignal.body.accountInfo
         await coherentCache.addAccount(accountInfo.asAccount, userDbId: accountInfo.userDbId)
+    }
+
+    private func handleAccountUpdated(_ signal: Data) async throws {
+        guard let accountInfoSignal = try? decoder.decode(SignalMessage<AccountInfoSignal>.self, from: signal) else {
+            throw SignalError.unableToGetAccountFromSignal
+        }
+
+        let accountInfo = accountInfoSignal.body.accountInfo
+        try await coherentCache.updateAccount(accountInfo.asAccount)
     }
 
     private func handleAccountRemoved(_ signal: Data) async throws {
