@@ -38,79 +38,57 @@ namespace KDC {
 using namespace testcommhelpers;
 
 void TestGuiCommChannel::testUtilityActivateLoadInfoJob() {
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{R"({ "id": 1,)"
-                        R"( "num": )" +
-                        std::to_string(toInt(RequestNum::UTILITY_ACTIVATELOADINFO)) +
-                        R"(,)"
-                        R"( "params": { } })"};
-#else
-    // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::UTILITY_ACTIVATELOADINFO)) +
-                        R"(,)"
-                        R"( "params": { } })"};
+    const Poco::JSON::Object query = createSimpleQuery(RequestNum::UTILITY_ACTIVATELOADINFO);
+    const auto queryStr = stringifyQueryObj(query);
 
-    // Callback expected answer
-    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{}})"};
-#endif
-
-    // Job expected answer
-    const auto answerStr{R"({ "cause": 0,)"
-                         R"( "code": 0,)"
-                         R"( "id": 1,)"
-                         R"( "num": )" +
-                         std::to_string(toInt(RequestNum::UTILITY_ACTIVATELOADINFO)) +
-                         R"(,)"
-                         R"( "params": {  }, "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+    // Job expected answers
+    const SimpleAnswers simpleAnswers = createSimpleAnswers(RequestNum::UTILITY_ACTIVATELOADINFO);
+    const auto answerStr = stringifyAnswerObj(simpleAnswers.answerWithNumAndType);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-        auto activateLoadInfoJob = std::dynamic_pointer_cast<UtilityActivateLoadInfoJob>(job);
+        const auto activateLoadInfoJob = std::dynamic_pointer_cast<UtilityActivateLoadInfoJob>(job);
         CPPUNIT_ASSERT(activateLoadInfoJob);
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+    testGenericJob(queryStr, answerStr, {}, processFct);
 #else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(simpleAnswers.answer);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
 
 void TestGuiCommChannel::testUtilityBestVfsAvailableModeJob() {
+    // Query
+    Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr {
-        R"({ "id": 1,)"
-        R"( "num": )" +
-                std::to_string(toInt(RequestNum::UTILITY_BESTVFSAVAILABLEMODE)) +
-                R"(,)"
-#if defined(KD_WINDOWS)
-                R"( "params": { "path": "C:\\dummy", "driveDbId": 0 } })"
-    };
-#else
-                R"( "params": { "path": "/dummy", "driveDbId": 0 } })"
-    };
+    (void) queryObj.set("id", 1);
 #endif
-#else
-    // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::UTILITY_BESTVFSAVAILABLEMODE)) +
-                        R"(,)"
-                        R"( "params": { "path": "/dummy", "driveDbId": 0 } })"};
+    (void) queryObj.set("num", toInt(RequestNum::UTILITY_BESTVFSAVAILABLEMODE));
 
-    // Callback expected answer
-    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"bestMode":)" + std::to_string(toInt(VirtualFileMode::Off)) +
-                            R"(}})"};
-#endif
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("path", "/dummy");
+    (void) queryParamsObj.set("driveDbId", 0);
 
-    // Job expected answer
-    const auto answerStr{R"({ "cause": 0,)"
-                         R"( "code": 0,)"
-                         R"( "id": 1,)"
-                         R"( "num": )" +
-                         std::to_string(toInt(RequestNum::UTILITY_BESTVFSAVAILABLEMODE)) +
-                         R"(,)"
-                         R"( "params": { "bestMode": )" +
-                         std::to_string(toInt(VirtualFileMode::Off)) + R"( }, "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+    (void) queryObj.set("params", queryParamsObj);
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+
+    Poco::JSON::Object paramsObj;
+    (void) paramsObj.set("bestMode", toInt(VirtualFileMode::Off));
+    (void) answerObj.set("params", paramsObj);
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UTILITY_BESTVFSAVAILABLEMODE));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+
+    // Job expected answers
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto bestVfsAvailableModeJob = std::dynamic_pointer_cast<UtilityBestVfsAvailableModeJob>(job);
@@ -118,38 +96,45 @@ void TestGuiCommChannel::testUtilityBestVfsAvailableModeJob() {
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+    testGenericJob(queryStr, answerStr, {}, processFct);
 #else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
 
 void TestGuiCommChannel::testUtilityFindGoodPathForNewSyncJob() {
+    // Query
+    Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{R"({ "id": 1,)"
-                        R"( "num": )" +
-                        std::to_string(toInt(RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC)) +
-                        R"(,)"
-                        R"( "params": { "basePath": "", "driveDbId": 0 } })"};
-#else
-    // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC)) +
-                        R"(,)"
-                        R"( "params": { "basePath": "", "driveDbId": 0 } })"};
-
-    // Callback expected answer
-    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"errorMessage":"","goodPath":"L2R1bW15L2dvb2RfcGF0aA=="}})"};
+    (void) queryObj.set("id", 1);
 #endif
+    (void) queryObj.set("num", toInt(RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC));
 
-    // Job expected answer
-    const auto answerStr{R"({ "cause": 0,)"
-                         R"( "code": 0,)"
-                         R"( "id": 1,)"
-                         R"( "num": )" +
-                         std::to_string(toInt(RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC)) +
-                         R"(,)"
-                         R"( "params": { "errorMessage": "", "goodPath": "L2R1bW15L2dvb2RfcGF0aA==" }, "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("basePath", "");
+    (void) queryParamsObj.set("driveDbId", 0);
+
+    (void) queryObj.set("params", queryParamsObj);
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+
+    Poco::JSON::Object paramsObj;
+    (void) paramsObj.set("errorMessage", "");
+    (void) paramsObj.set("goodPath", toBase64("/dummy/good_path"));
+    (void) answerObj.set("params", paramsObj);
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+
+    // Job expected answers
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto findGoodPathForNewSyncJob = std::dynamic_pointer_cast<UtilityFindGoodPathForNewSyncJob>(job);
@@ -159,38 +144,42 @@ void TestGuiCommChannel::testUtilityFindGoodPathForNewSyncJob() {
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+    testGenericJob(queryStr, answerStr, {}, processFct);
 #else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
 
 void TestGuiCommChannel::testUtilityIsPathValidForNewSyncJob() {
+    // Query
+    Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{R"({ "id": 1,)"
-                        R"( "num": )" +
-                        std::to_string(toInt(RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC)) +
-                        R"(,)"
-                        R"( "params": { "path": "" } })"};
-#else
-    // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC)) +
-                        R"(,)"
-                        R"( "params": { "path": "" } })"};
-
-    // Callback expected answer
-    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"isValid":true}})"};
+    (void) queryObj.set("id", 1);
 #endif
+    (void) queryObj.set("num", toInt(RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC));
+
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("path", "");
+    (void) queryObj.set("params", queryParamsObj);
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+
+    Poco::JSON::Object paramsObj;
+    (void) paramsObj.set("isValid", true);
+    (void) answerObj.set("params", paramsObj);
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
     // Job expected answer
-    const auto answerStr{R"({ "cause": 0,)"
-                         R"( "code": 0,)"
-                         R"( "id": 1,)"
-                         R"( "num": )" +
-                         std::to_string(toInt(RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC)) +
-                         R"(,)"
-                         R"( "params": { "isValid": true }, "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto isPathValidForNewSyncJob = std::dynamic_pointer_cast<UtilityIsPathValidForNewSyncJob>(job);
@@ -199,8 +188,9 @@ void TestGuiCommChannel::testUtilityIsPathValidForNewSyncJob() {
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+    testGenericJob(queryStr, answerStr, {}, processFct);
 #else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
@@ -263,31 +253,34 @@ void TestGuiCommChannel::testUtilityHasSystemLaunchOnStartupJob() {
 }
 
 void TestGuiCommChannel::testUtilitySetAppStateJob() {
+    // Query
+    Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{R"({ "id": 1,)"
-                        R"( "num": )" +
-                        std::to_string(toInt(RequestNum::UTILITY_SET_APPSTATE)) +
-                        R"(,)"
-                        R"( "params": { "key": 0, "value": 123 } })"};
-#else
-    // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::UTILITY_SET_APPSTATE)) +
-                        R"(,)"
-                        R"( "params": { "key": 0, "value": 123 } })"};
-
-    // Callback expected answer
-    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{}})"};
+    (void) queryObj.set("id", 1);
 #endif
+    (void) queryObj.set("num", toInt(RequestNum::UTILITY_SET_APPSTATE));
+
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("key", 0);
+    (void) queryParamsObj.set("value", 123);
+    (void) queryObj.set("params", queryParamsObj);
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+
+    Poco::JSON::Object paramsObj;
+    (void) answerObj.set("params", paramsObj);
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UTILITY_SET_APPSTATE));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
     // Job expected answer
-    const auto answerStr{R"({ "cause": 0,)"
-                         R"( "code": 0,)"
-                         R"( "id": 1,)"
-                         R"( "num": )" +
-                         std::to_string(toInt(RequestNum::UTILITY_SET_APPSTATE)) +
-                         R"(,)"
-                         R"( "params": {  }, "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto setAppStateJob = std::dynamic_pointer_cast<UtilitySetAppStateJob>(job);
@@ -295,38 +288,42 @@ void TestGuiCommChannel::testUtilitySetAppStateJob() {
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+    testGenericJob(queryStr, answerStr, {}, processFct);
 #else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
 
 void TestGuiCommChannel::testUtilityGetAppStateJob() {
+    // Query
+    Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{R"({ "id": 1,)"
-                        R"( "num": )" +
-                        std::to_string(toInt(RequestNum::UTILITY_GET_APPSTATE)) +
-                        R"(,)"
-                        R"( "params": { "key": 0 } })"};
-#else
-    // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::UTILITY_GET_APPSTATE)) +
-                        R"(,)"
-                        R"( "params": { "key": 0 } })"};
-
-    // Callback expected answer
-    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"value":123}})"};
+    (void) queryObj.set("id", 1);
 #endif
+    (void) queryObj.set("num", toInt(RequestNum::UTILITY_GET_APPSTATE));
+
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("key", 0);
+    (void) queryObj.set("params", queryParamsObj);
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+
+    Poco::JSON::Object paramsObj;
+    (void) paramsObj.set("value", 123);
+    (void) answerObj.set("params", paramsObj);
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UTILITY_GET_APPSTATE));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
     // Job expected answer
-    const auto answerStr{R"({ "cause": 0,)"
-                         R"( "code": 0,)"
-                         R"( "id": 1,)"
-                         R"( "num": )" +
-                         std::to_string(toInt(RequestNum::UTILITY_GET_APPSTATE)) +
-                         R"(,)"
-                         R"( "params": { "value": 123 }, "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto getAppStateJob = std::dynamic_pointer_cast<UtilityGetAppStateJob>(job);
@@ -334,38 +331,41 @@ void TestGuiCommChannel::testUtilityGetAppStateJob() {
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+    testGenericJob(queryStr, answerStr, {}, processFct);
 #else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
 
 void TestGuiCommChannel::testUtilitySendLogToSupportJob() {
+    // Query
+    Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{R"({ "id": 1,)"
-                        R"( "num": )" +
-                        std::to_string(toInt(RequestNum::UTILITY_SEND_LOG_TO_SUPPORT)) +
-                        R"(,)"
-                        R"( "params": { "includeArchivedLogs": 1 } })"};
-#else
-    // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::UTILITY_SEND_LOG_TO_SUPPORT)) +
-                        R"(,)"
-                        R"( "params": { "includeArchivedLogs": 1 } })"};
-
-    // Callback expected answer
-    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{}})"};
+    (void) queryObj.set("id", 1);
 #endif
+    (void) queryObj.set("num", toInt(RequestNum::UTILITY_SEND_LOG_TO_SUPPORT));
+
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("includeArchivedLogs", 1);
+    (void) queryObj.set("params", queryParamsObj);
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+
+    Poco::JSON::Object paramsObj;
+    (void) answerObj.set("params", paramsObj);
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UTILITY_SEND_LOG_TO_SUPPORT));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
     // Job expected answer
-    const auto answerStr{R"({ "cause": 0,)"
-                         R"( "code": 0,)"
-                         R"( "id": 1,)"
-                         R"( "num": )" +
-                         std::to_string(toInt(RequestNum::UTILITY_SEND_LOG_TO_SUPPORT)) +
-                         R"(,)"
-                         R"( "params": {  }, "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto utilitySendLogToSupportJob = std::dynamic_pointer_cast<UtilitySendLogToSupportJob>(job);
@@ -373,38 +373,20 @@ void TestGuiCommChannel::testUtilitySendLogToSupportJob() {
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+    testGenericJob(queryStr, answerStr, {}, processFct);
 #else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
 
 void TestGuiCommChannel::testUtilityCancelLogToSupportJob() {
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{R"({ "id": 1,)"
-                        R"( "num": )" +
-                        std::to_string(toInt(RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT)) +
-                        R"(,)"
-                        R"( "params": { } })"};
-#else
-    // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT)) +
-                        R"(,)"
-                        R"( "params": { } })"};
+    const Poco::JSON::Object query = createSimpleQuery(RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT);
+    const auto queryStr = stringifyQueryObj(query);
 
-    // Callback expected answer
-    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{}})"};
-#endif
-
-    // Job expected answer
-    const auto answerStr{R"({ "cause": 0,)"
-                         R"( "code": 0,)"
-                         R"( "id": 1,)"
-                         R"( "num": )" +
-                         std::to_string(toInt(RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT)) +
-                         R"(,)"
-                         R"( "params": {  }, "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+    // Job expected answers
+    const SimpleAnswers simpleAnswers = createSimpleAnswers(RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT);
+    const auto answerStr = stringifyAnswerObj(simpleAnswers.answerWithNumAndType);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto utilityCancelLogToSupportJob = std::dynamic_pointer_cast<UtilityCancelLogToSupportJob>(job);
@@ -412,38 +394,41 @@ void TestGuiCommChannel::testUtilityCancelLogToSupportJob() {
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+    testGenericJob(queryStr, answerStr, {}, processFct);
 #else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(simpleAnswers.answer);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
 
 void TestGuiCommChannel::testUtilityGetLogEstimatedSizeJob() {
+    // Query
+    Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{R"({ "id": 1,)"
-                        R"( "num": )" +
-                        std::to_string(toInt(RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE)) +
-                        R"(,)"
-                        R"( "params": { } })"};
-#else
-    // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE)) +
-                        R"(,)"
-                        R"( "params": { } })"};
-
-    // Callback expected answer
-    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"logSize":99999}})"};
+    (void) queryObj.set("id", 1);
 #endif
+    (void) queryObj.set("num", toInt(RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE));
+
+    Poco::JSON::Object queryParamsObj;
+    (void) queryObj.set("params", queryParamsObj);
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+
+    Poco::JSON::Object paramsObj;
+    (void) paramsObj.set("logSize", 99999);
+    (void) answerObj.set("params", paramsObj);
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
     // Job expected answer
-    const auto answerStr{R"({ "cause": 0,)"
-                         R"( "code": 0,)"
-                         R"( "id": 1,)"
-                         R"( "num": )" +
-                         std::to_string(toInt(RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE)) +
-                         R"(,)"
-                         R"( "params": { "logSize": 99999 }, "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto utilityGetLogEstimatedSizeJob = std::dynamic_pointer_cast<UtilityGetLogEstimatedSizeJob>(job);
@@ -451,8 +436,9 @@ void TestGuiCommChannel::testUtilityGetLogEstimatedSizeJob() {
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+    testGenericJob(queryStr, answerStr, {}, processFct);
 #else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
@@ -479,11 +465,11 @@ void TestGuiCommChannel::testUtilityQuitJob() {
 }
 
 void TestGuiCommChannel::testUtilityDisplayClientReportJob() {
-    const Poco::JSON::Object query = createSimpleQuery(RequestNum::UTILITY_DISPLAY_CLIENT_REPORT);
+    const Poco::JSON::Object query = createSimpleQuery(RequestNum::UTILITY_SEND_APP_START_TRACE);
     const auto queryStr = stringifyQueryObj(query);
 
     // Job expected answers
-    const SimpleAnswers simpleAnswers = createSimpleAnswers(RequestNum::UTILITY_DISPLAY_CLIENT_REPORT);
+    const SimpleAnswers simpleAnswers = createSimpleAnswers(RequestNum::UTILITY_SEND_APP_START_TRACE);
     const auto answerStr = stringifyAnswerObj(simpleAnswers.answerWithNumAndType);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
