@@ -111,7 +111,7 @@ def split_os(lang, fullName):
                 lowered = line.lower()
                 if any(key in lowered for key in os_keys):
                     if os_key in lowered:
-                        f.write(f"\t\t<li>{line[line.find(f"{os_key}") + len(f"{os_key}"):]}")
+                        f.write(f"\t\t<li>{line[line.find(os_key) + len(os_key):]}")
                 else:
                     f.write(line)
 
