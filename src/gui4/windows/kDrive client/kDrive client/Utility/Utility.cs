@@ -302,7 +302,7 @@ namespace Infomaniak.kDrive
             if (localizedString is null || localizedString.Length == 0)
             {
                 Logger.Log(Logger.Level.Warning, $"Missing localization for key: {key} in current culture {System.Globalization.CultureInfo.CurrentUICulture.Name}");
-                localizedString = key; // Fallback to the key itself if not found
+                localizedString = "";
             }
 
             // Replace literal \r\n with real newlines

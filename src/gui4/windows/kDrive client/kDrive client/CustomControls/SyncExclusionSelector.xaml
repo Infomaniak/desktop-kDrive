@@ -33,9 +33,7 @@
                               MinWidth="0"
                               MinHeight="0"
                               Tag="{x:Bind}"
-                              Checked="CheckBox_Checked"
-                              Unchecked="CheckBox_Unchecked"
-                              Indeterminate="CheckBox_Indeterminate" />
+                              Click="CheckBox_Click" />
                     <local:SvgIcon Grid.Column="1"
                                    UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder}"
                                    Foreground="{ThemeResource TextFillColorPrimary}"
@@ -64,49 +62,6 @@
                 </Grid>
             </TreeViewItem>
         </DataTemplate>
-
-        <DataTemplate x:DataType="local:TreeItem"
-                      x:Key="FileTemplate">
-            <TreeViewItem ItemsSource="{x:Bind Children, Mode=OneWay}"
-                          IsEnabled="{x:Bind IsEnabled, Mode=OneWay}"
-                          HorizontalAlignment="Stretch">
-                <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="auto" />
-                        <ColumnDefinition Width="auto" />
-                        <ColumnDefinition Width="auto" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <CheckBox Grid.Column="0"
-                              IsChecked="{x:Bind IsSelected, Mode=OneWay}"
-                              IsThreeState="False"
-                              IsEnabled="{x:Bind IsEnabled, Mode=OneWay}"
-                              MinWidth="0"
-                              MinHeight="0"
-                              Tag="{x:Bind}"
-                              Checked="CheckBox_Checked"
-                              Unchecked="CheckBox_Unchecked" />
-
-                    <local:SvgIcon Grid.Column="1"
-                                   UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-open-file}"
-                                   Foreground="{ThemeResource TextFillColorPrimary}"
-                                   Height="16" />
-
-                    <TextBlock Grid.Column="2"
-                               Text="{x:Bind Node.Name}" />
-
-                    <TextBlock Grid.Column="3"
-                               Text="-"
-                               HorizontalAlignment="Right"
-                               MinWidth="60"
-                               Margin="{StaticResource Infomaniak.Style.Thickness.Right.M}" />
-                </Grid>
-            </TreeViewItem>
-        </DataTemplate>
-
-        <local:NodeTypeTemplateSelector x:Key="NodeTypeTemplateSelector"
-                                        DirectoryTemplate="{StaticResource DirectoryTemplate}"
-                                        FileTemplate="{StaticResource FileTemplate}" />
     </UserControl.Resources>
     <local:ContentLoader x:Name="TreeViewContentLoader"
                          IsLoading="{x:Bind IsLoading, Mode=OneWay}"
@@ -131,10 +86,8 @@
                                   IsThreeState="True"
                                   MinWidth="0"
                                   MinHeight="0"
-                                  Checked="CheckBox_Checked"
-                                  Unchecked="CheckBox_Unchecked"
-                                  Indeterminate="CheckBox_Indeterminate"
-                                  DataContext="{x:Bind RootTreeItem, Mode=OneWay}"/>
+                                  Click="CheckBox_Click"
+                                  DataContext="{x:Bind RootTreeItem, Mode=OneWay}" />
                         <TextBlock x:Uid="CC_SyncExclusionSelector_Header_Name"
                                    VerticalAlignment="Center" />
                     </StackPanel>
@@ -149,14 +102,13 @@
                           Grid.ColumnSpan="2"
                           Grid.Row="1"
                           ItemsSource="{x:Bind _rootLevelItems, Mode=OneWay}"
-                          IsEnabled="{x:Bind StatePropagationInProgress, Converter={StaticResource BooleanToInvertedBooleanConverter}, Mode=OneWay}"
                           SelectionMode="None"
                           HorizontalAlignment="Stretch"
                           Expanding="TreeView_Expanding"
                           CanDrag="False"
                           CanDragItems="False"
                           CanReorderItems="False"
-                          ItemTemplateSelector="{StaticResource NodeTypeTemplateSelector}" />
+                          ItemTemplate="{StaticResource DirectoryTemplate}" />
 
             </Grid>
         </local:ContentLoader.LoaderContent>
