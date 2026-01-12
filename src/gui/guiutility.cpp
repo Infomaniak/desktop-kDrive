@@ -69,6 +69,9 @@ static const int fontWeightBold = 750;
 static const int windowsIncrement = 50;
 #endif
 
+static const int blacklistWarnMaxSize = 1000;
+static const int blacklistBackMaxSize = 3000;
+
 static bool darkTheme = false;
 
 Q_LOGGING_CATEGORY(lcGuiUtility, "gui.guiutility", QtInfoMsg)
@@ -317,8 +320,7 @@ QString GuiUtility::getSyncStatusText(StatusInfo &statusInfo) {
     QString text;
     if (statusInfo._disconnected) {
         text = QCoreApplication::translate("utility", "You are not connected anymore. <a style=\"%1\" href=\"%2\">Log in</a>")
-                       .arg(KDC::CommonUtility::linkStyle)
-                       .arg(loginLink);
+                       .arg(KDC::CommonUtility::linkStyle, loginLink);
     } else {
         switch (statusInfo._status) {
             case KDC::SyncStatus::Undefined:
@@ -359,8 +361,7 @@ QString GuiUtility::getSyncStatusText(StatusInfo &statusInfo) {
             case KDC::SyncStatus::Error:
                 text = QCoreApplication::translate(
                                "utility", "Some files couldn't be synchronized. <a style=\"%1\" href=\"%2\">Learn more</a>")
-                               .arg(KDC::CommonUtility::linkStyle)
-                               .arg(learnMoreLink);
+                               .arg(KDC::CommonUtility::linkStyle, learnMoreLink);
                 break;
             case KDC::SyncStatus::PauseAsked:
             case KDC::SyncStatus::StopAsked:
@@ -632,14 +633,27 @@ QString GuiUtility::getDateForCurrentLanguage(const QDateTime &dateTime, const Q
 }
 
 bool GuiUtility::checkBlacklistSize(const qsizetype blacklistSize, QWidget *parent) {
-    if (blacklistSize > 1000) {
+    if (blacklistSize > blacklistWarnMaxSize && blacklistSize <= blacklistBackMaxSize) {
+        (void) CustomMessageBox(
+                QMessageBox::Warning,
+                QCoreApplication::translate(
+                        "utility",
+                        "You have excluded more than %1 folders, please note that this will affect synchronization performance.")
+                        .arg(blacklistWarnMaxSize),
+                QMessageBox::Ok, parent)
+                .exec();
+    } else if (blacklistSize > blacklistBackMaxSize) {
         (void) CustomMessageBox(
                 QMessageBox::Warning,
                 QCoreApplication::translate("utility",
-                                            "You cannot exclude more than 1000 folders. Please uncheck higher-level folders."),
+                                            "You cannot exclude more than %1 folders. Please uncheck higher-level folders.")
+                        .arg(blacklistBackMaxSize),
                 QMessageBox::Ok, parent)
                 .exec();
+
         return false;
+    } else {
+        // No issue
     }
     return true;
 }

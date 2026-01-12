@@ -20,13 +20,6 @@ import Combine
 import Foundation
 import InfomaniakDI
 
-public struct SynchroContext: Sendable, Equatable {
-    public let synchro: Synchro
-    public let drive: Drive
-    public let account: Account
-    public let user: User
-}
-
 @MainActor
 @propertyWrapper
 public final class ObservedSynchros: ObservableObject {
