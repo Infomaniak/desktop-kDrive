@@ -4,7 +4,7 @@
  * Locale: de, German
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Fri, 09 Jan 2026 13:43:36 +0100
+ * Exported at: Mon, 12 Jan 2026 14:01:58 +0100
  */
 
 /* loco:691deb2291b20ac7fd045012 */
@@ -37,6 +37,12 @@
 /* loco:6931a5687031691272002314 */
 "buttonOpenKDrive" = "KDrive öffnen";
 
+/* loco:6964e1fd78f375ec03073c88 */
+"buttonRestartSynchro" = "Synchronisierung neu starten";
+
+/* loco:6964e1dfed4b6acb0107409a */
+"buttonSeeActivities" = "Siehe Aktivitäten";
+
 /* loco:69240f7b15d05a975c07dc13 */
 "buttonShowOffers" = "Zu den Angeboten";
 
@@ -54,6 +60,9 @@
 
 /* loco:6960b7720cbd5c07340af144 */
 "greetingLabel" = "Hallo %s, %s";
+
+/* loco:6964f0b575a31a8d9601a6d7 */
+"helpKDriveName" = "kDrive %s";
 
 /* loco:6930595e7664999c6a08c8a4 */
 "instructionEnableKDrive" = "Aktivieren Sie kDrive.app";

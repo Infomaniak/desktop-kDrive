@@ -30,6 +30,10 @@ public enum KDriveLocalizable {
   public static let buttonOpenInFinder = KDriveLocalizable.tr("Localizable", "buttonOpenInFinder", fallback: "Open in Finder")
   /// loco:6931a5687031691272002314
   public static let buttonOpenKDrive = KDriveLocalizable.tr("Localizable", "buttonOpenKDrive", fallback: "Open kDrive")
+  /// loco:6964e1fd78f375ec03073c88
+  public static let buttonRestartSynchro = KDriveLocalizable.tr("Localizable", "buttonRestartSynchro", fallback: "Restart synchronization")
+  /// loco:6964e1dfed4b6acb0107409a
+  public static let buttonSeeActivities = KDriveLocalizable.tr("Localizable", "buttonSeeActivities", fallback: "See activities")
   /// loco:69240f7b15d05a975c07dc13
   public static let buttonShowOffers = KDriveLocalizable.tr("Localizable", "buttonShowOffers", fallback: "Show offers")
   /// loco:69240f6d4433e24658054fd4
@@ -43,6 +47,10 @@ public enum KDriveLocalizable {
   /// loco:6960b7720cbd5c07340af144
   public static func greetingLabel(_ p1: UnsafePointer<CChar>, _ p2: UnsafePointer<CChar>) -> String {
     return KDriveLocalizable.tr("Localizable", "greetingLabel", p1, p2, fallback: "Hello %s, %s")
+  }
+  /// loco:6964f0b575a31a8d9601a6d7
+  public static func helpKDriveName(_ p1: UnsafePointer<CChar>) -> String {
+    return KDriveLocalizable.tr("Localizable", "helpKDriveName", p1, fallback: "kDrive %s")
   }
   /// loco:6930595e7664999c6a08c8a4
   public static let instructionEnableKDrive = KDriveLocalizable.tr("Localizable", "instructionEnableKDrive", fallback: "Activate kDrive.app")
