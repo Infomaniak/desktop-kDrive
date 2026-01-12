@@ -1,0 +1,50 @@
+/*
+ Infomaniak kDrive - Desktop
+ Copyright (C) 2023-2025 Infomaniak Network SA
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+import Foundation
+
+extension XPCSignalHandler {
+    // MARK: Account
+
+    func handleAccountAdded(_ signal: Data) async throws {
+        guard let accountInfoSignal = try? decoder.decode(SignalMessage<AccountInfoSignal>.self, from: signal) else {
+            throw SignalError.unableToGetAccountFromSignal
+        }
+
+        let accountInfo = accountInfoSignal.body.accountInfo
+        await coherentCache.addAccount(accountInfo.asAccount, userDbId: accountInfo.userDbId)
+    }
+
+    func handleAccountUpdated(_ signal: Data) async throws {
+        guard let accountInfoSignal = try? decoder.decode(SignalMessage<AccountInfoSignal>.self, from: signal) else {
+            throw SignalError.unableToGetAccountFromSignal
+        }
+
+        let accountInfo = accountInfoSignal.body.accountInfo
+        try await coherentCache.updateAccount(accountInfo.asAccount)
+    }
+
+    func handleAccountRemoved(_ signal: Data) async throws {
+        guard let accountInfoSignal = try? decoder.decode(SignalMessage<AccountRemoveSignal>.self, from: signal) else {
+            throw SignalError.unableToGetAccountDbIdFromSignal
+        }
+
+        let accountDbId = accountInfoSignal.body.accountDbId
+        await coherentCache.removeAccount(accountDbId: accountDbId)
+    }
+}

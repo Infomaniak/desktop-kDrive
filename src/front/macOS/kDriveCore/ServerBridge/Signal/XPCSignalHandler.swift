@@ -129,35 +129,6 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         }
     }
 
-    // MARK: Account
-
-    private func handleAccountAdded(_ signal: Data) async throws {
-        guard let accountInfoSignal = try? decoder.decode(SignalMessage<AccountInfoSignal>.self, from: signal) else {
-            throw SignalError.unableToGetAccountFromSignal
-        }
-
-        let accountInfo = accountInfoSignal.body.accountInfo
-        await coherentCache.addAccount(accountInfo.asAccount, userDbId: accountInfo.userDbId)
-    }
-
-    private func handleAccountUpdated(_ signal: Data) async throws {
-        guard let accountInfoSignal = try? decoder.decode(SignalMessage<AccountInfoSignal>.self, from: signal) else {
-            throw SignalError.unableToGetAccountFromSignal
-        }
-
-        let accountInfo = accountInfoSignal.body.accountInfo
-        try await coherentCache.updateAccount(accountInfo.asAccount)
-    }
-
-    private func handleAccountRemoved(_ signal: Data) async throws {
-        guard let accountInfoSignal = try? decoder.decode(SignalMessage<AccountRemoveSignal>.self, from: signal) else {
-            throw SignalError.unableToGetAccountDbIdFromSignal
-        }
-
-        let accountDbId = accountInfoSignal.body.accountDbId
-        await coherentCache.removeAccount(accountDbId: accountDbId)
-    }
-
     // MARK: Drive
 
     private func handleDrive(_ signal: Data) async throws {
