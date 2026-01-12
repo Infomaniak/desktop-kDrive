@@ -28,16 +28,16 @@ ItemsExistJob::ItemsExistJob(int driveDbId, const NodeSet &ids) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
     for (const auto &id: ids) {
-        (void) _itemInfo.try_emplace(id, false);
+        (void) _nodeExistenceMap.try_emplace(id, false);
     }
 }
 
 bool ItemsExistJob::exists(const NodeId &id, IoError &ioError) {
-    if (!_itemInfo.contains(id)) {
+    if (!_nodeExistenceMap.contains(id)) {
         ioError = IoError::InvalidArgument;
         return false;
     }
-    if (_itemInfo[id]) {
+    if (_nodeExistenceMap[id]) {
         ioError = IoError::Success;
         return true;
     }
@@ -48,7 +48,7 @@ bool ItemsExistJob::exists(const NodeId &id, IoError &ioError) {
 ExitInfo ItemsExistJob::setData() {
     Poco::JSON::Object obj;
     Poco::JSON::Array ids;
-    for (const auto &[id, exists]: _itemInfo) {
+    for (const auto &[id, exists]: _nodeExistenceMap) {
         (void) ids.add(id);
     }
     (void) obj.set("ids", ids);
@@ -93,12 +93,12 @@ ExitInfo ItemsExistJob::handleResponse(std::istream &is) {
             LOG_WARN(_logger, "Missing object:" << resultKey);
             continue;
         }
-        if (!_itemInfo.contains(nodeId)) {
+        if (!_nodeExistenceMap.contains(nodeId)) {
             LOG_WARN(_logger, "ID " << nodeId << " is not watched.");
             continue;
         }
 
-        _itemInfo[nodeId] = exists;
+        _nodeExistenceMap[nodeId] = exists;
     }
     return ExitCode::Ok;
 }

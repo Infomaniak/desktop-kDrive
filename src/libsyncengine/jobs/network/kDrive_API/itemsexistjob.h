@@ -34,7 +34,7 @@ class ItemsExistJob : public AbstractTokenNetworkJob {
 
         ExitInfo handleResponse(std::istream &is) override;
 
-        std::unordered_map<NodeId, bool, StringHashFunction, std::equal_to<>> _itemInfo;
+        std::unordered_map<NodeId, bool, StringHashFunction, std::equal_to<>> _nodeExistenceMap;
 };
 
 } // namespace KDC
