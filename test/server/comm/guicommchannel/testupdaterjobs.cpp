@@ -62,7 +62,7 @@ void TestGuiCommChannel::testUpdaterVersionInfoJob() {
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UPDATER_VERSION_INFO));
     (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-    // Job expected answers
+    // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
@@ -112,7 +112,7 @@ void TestGuiCommChannel::testUpdaterStateJob() {
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UPDATER_STATE));
     (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-    // Job expected answers
+    // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
@@ -154,8 +154,9 @@ void TestGuiCommChannel::testUpdaterStartInstallerJob() {
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UPDATER_START_INSTALLER));
     (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-    // Job expected answers
+    // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto updaterStartInstallerJob = std::dynamic_pointer_cast<UpdaterStartInstallerJob>(job);
         CPPUNIT_ASSERT(updaterStartInstallerJob);
@@ -194,8 +195,9 @@ void TestGuiCommChannel::testUpdaterSkipVersionJob() {
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UPDATER_SKIP_VERSION));
     (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-    // Job expected answers
+    // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto updaterSkipVersionJob = std::dynamic_pointer_cast<UpdaterSkipVersionJob>(job);
         CPPUNIT_ASSERT(updaterSkipVersionJob);
