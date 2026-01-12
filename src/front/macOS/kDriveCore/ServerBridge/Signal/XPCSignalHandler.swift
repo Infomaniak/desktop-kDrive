@@ -128,44 +128,6 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
             throw SignalError.unsupported(signalNum)
         }
     }
-
-    // MARK: Synchro
-
-    private func handleSync(_ signal: Data) async throws {
-        guard let syncInfoSignal = try? decoder.decode(SignalMessage<SyncInfoSignal>.self, from: signal) else {
-            throw SignalError.unableToGetSyncFromSignal
-        }
-
-        let syncInfo = syncInfoSignal.body.syncInfo
-        try await coherentCache.addSynchro(syncInfo.asSynchro)
-    }
-
-    private func handleSyncRemoved(_ signal: Data) async throws {
-        guard let syncRemoveSignal = try? decoder.decode(SignalMessage<SyncRemoveSignal>.self, from: signal) else {
-            throw SignalError.unableToGetSyncDbIdFromSignal
-        }
-
-        let syncDbId = syncRemoveSignal.body.syncDbId
-        try await coherentCache.removeSynchro(synchroDbId: syncDbId)
-    }
-
-    private func handleSyncProgress(_ signal: Data) async throws {
-        guard let syncProgressSignal = try? decoder.decode(SignalMessage<SyncProgressInfoSignal>.self, from: signal) else {
-            throw SignalError.unableToGetSyncProgressFromSignal
-        }
-
-        let syncProgress = syncProgressSignal.body
-        try await coherentCache.updateSyncProgressInfoSignal(syncProgress)
-    }
-
-    private func handleSyncCompleted(_ signal: Data) async throws {
-        guard let syncFileItemInfo = try? decoder.decode(SignalMessage<SyncFileItemInfoSignal>.self, from: signal) else {
-            throw SignalError.unableToGetSyncFileItemFromSignal
-        }
-
-        let syncFileItem = syncFileItemInfo.body
-        try await coherentCache.updateSyncFileItemInfoSignal(syncFileItem)
-    }
 }
 
 extension CoherentCache {
