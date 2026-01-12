@@ -77,13 +77,15 @@ int main(int argc, char **argv) {
         if (!appDirValue.empty()) {
             // Use APPDIR which points to the mounted AppImage directory
             KDC::CommonUtility::_workingDirPath = KDC::SyncPath(appDirValue) / "usr/bin";
+
+            // Prevent loading incompatible system GIO modules by pointing to our AppImage's GIO modules
+            // This must be set BEFORE any GLib initialization
+            const std::string gioModuleDir = appDirValue + "/usr/lib/gio/modules";
+            KDC::CommonUtility::setenv("GIO_MODULE_DIR", gioModuleDir.c_str(), 1);
         } else {
             // Fallback if APPDIR is not set (should not happen in a proper AppImage)
             KDC::CommonUtility::_workingDirPath /= "usr/bin";
         }
-
-        // Prevent loading incompatible system GIO modules
-        KDC::CommonUtility::setenv("GIO_EXTRA_MODULES", "", 1);
     }
 #endif
     KDC::sentry::Handler::init(KDC::AppType::Client);

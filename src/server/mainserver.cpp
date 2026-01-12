@@ -74,16 +74,16 @@ std::int32_t init(int argc, char **argv, std::unique_ptr<KDC::AppServer> &appPtr
         // We are running inside an AppImage
         const std::string appDirValue = KDC::CommonUtility::envVarValue("APPDIR");
         if (!appDirValue.empty()) {
-            std::cout << "EnvVar 'APPDIR'=" << appDirValue << std::endl;
             // Use APPDIR which points to the mounted AppImage directory
             KDC::CommonUtility::_workingDirPath = KDC::SyncPath(appDirValue) / "usr/bin";
+
+            // Prevent loading incompatible system GIO modules by pointing to our AppImage's GIO modules
+            const std::string gioModuleDir = appDirValue + "/usr/lib/gio/modules";
+            KDC::CommonUtility::setenv("GIO_MODULE_DIR", gioModuleDir.c_str(), 1);
         } else {
             // Fallback if APPDIR is not set (should not happen in a proper AppImage)
             KDC::CommonUtility::_workingDirPath /= "usr/bin";
         }
-
-        // Prevent loading incompatible system GIO modules
-        KDC::CommonUtility::setenv("GIO_EXTRA_MODULES", "", 1);
     }
 #endif
 
