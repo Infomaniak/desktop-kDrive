@@ -84,7 +84,7 @@ namespace Infomaniak.kDrive.Types
         UTILITY_GET_LOG_ESTIMATED_SIZE,
         UTILITY_CRASH,
         UTILITY_QUIT,
-        UTILITY_DISPLAY_CLIENT_REPORT, // Sent by the Client process as soon the UI is visible for the user.
+        UTILITY_SEND_APP_START_TRACE, // Sent by the Client process as soon the UI is visible for the user.
         UPDATER_CHANGE_CHANNEL,
         UPDATER_VERSION_INFO,
         UPDATER_STATE,
