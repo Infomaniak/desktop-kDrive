@@ -69,9 +69,21 @@ std::int32_t init(int argc, char **argv, std::unique_ptr<KDC::AppServer> &appPtr
     // Working dir;
     KDC::CommonUtility::_workingDirPath = KDC::SyncPath(argv[0]).parent_path();
 #if defined(KD_LINUX)
-    const std::string value = KDC::CommonUtility::envVarValue("APPIMAGE");
-    if (!value.empty()) {
-        KDC::CommonUtility::_workingDirPath /= "usr/bin";
+    const std::string appImageEnvValue = KDC::CommonUtility::envVarValue("APPIMAGE");
+    if (!appImageEnvValue.empty()) {
+        // We are running inside an AppImage
+        const std::string appDirValue = KDC::CommonUtility::envVarValue("APPDIR");
+        if (!appDirValue.empty()) {
+            std::cout << "EnvVar 'APPDIR'=" << appDirValue << std::endl;
+            // Use APPDIR which points to the mounted AppImage directory
+            KDC::CommonUtility::_workingDirPath = KDC::SyncPath(appDirValue) / "usr/bin";
+        } else {
+            // Fallback if APPDIR is not set (should not happen in a proper AppImage)
+            KDC::CommonUtility::_workingDirPath /= "usr/bin";
+        }
+
+        // Prevent loading incompatible system GIO modules
+        KDC::CommonUtility::setenv("GIO_EXTRA_MODULES", "", 1);
     }
 #endif
 

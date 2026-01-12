@@ -69,6 +69,23 @@ int main(int argc, char **argv) {
 
     // Working dir;
     KDC::CommonUtility::_workingDirPath = KDC::SyncPath(argv[0]).parent_path();
+#if defined(KD_LINUX)
+    const std::string appImageEnvValue = KDC::CommonUtility::envVarValue("APPIMAGE");
+    if (!appImageEnvValue.empty()) {
+        // We are running inside an AppImage
+        const std::string appDirValue = KDC::CommonUtility::envVarValue("APPDIR");
+        if (!appDirValue.empty()) {
+            // Use APPDIR which points to the mounted AppImage directory
+            KDC::CommonUtility::_workingDirPath = KDC::SyncPath(appDirValue) / "usr/bin";
+        } else {
+            // Fallback if APPDIR is not set (should not happen in a proper AppImage)
+            KDC::CommonUtility::_workingDirPath /= "usr/bin";
+        }
+
+        // Prevent loading incompatible system GIO modules
+        KDC::CommonUtility::setenv("GIO_EXTRA_MODULES", "", 1);
+    }
+#endif
     KDC::sentry::Handler::init(KDC::AppType::Client);
     KDC::sentry::Handler::instance()->setGlobalConfidentialityLevel(KDC::sentry::ConfidentialityLevel::Authenticated);
 
