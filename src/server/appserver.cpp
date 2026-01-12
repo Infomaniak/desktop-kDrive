@@ -764,9 +764,9 @@ ExitInfo AppServer::updateParametersAndPropagateChanges(const ParametersInfo &ne
     return exitCode;
 }
 
-ExitInfo AppServer::displaySentryClientReport() {
+ExitInfo AppServer::sendAppStartTrace() {
     if (_clientManuallyRestarted) {
-        // If the client initially started by the server never sends the UTILITY_DISPLAY_CLIENT_REPORT,
+        // If the client initially started by the server never sends the UTILITY_SEND_APP_START_TRACE,
         // we consider the client's startup aborted, and the user was forced to manually start the client again.
         if (!_appStartPTraceStopped) {
             sentry::pTraces::basic::AppStart().stop(sentry::PTraceStatus::Aborted);
@@ -2259,8 +2259,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QTimer::singleShot(QUIT_DELAY, []() { quit(); });
             break;
         }
-        case RequestNum::UTILITY_DISPLAY_CLIENT_REPORT: {
-            (void) displaySentryClientReport();
+        case RequestNum::UTILITY_SEND_APP_START_TRACE: {
+            (void) sendAppStartTrace();
             break;
         }
         case RequestNum::SYNC_SETSUPPORTSVIRTUALFILES: {

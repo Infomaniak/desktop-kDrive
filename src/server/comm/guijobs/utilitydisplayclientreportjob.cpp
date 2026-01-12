@@ -27,12 +27,12 @@ UtilityDisplayClientReportJob::UtilityDisplayClientReportJob(std::shared_ptr<Com
                                                              const Poco::DynamicStruct &inParams,
                                                              std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
-    _requestNum = RequestNum::UTILITY_DISPLAY_CLIENT_REPORT;
+    _requestNum = RequestNum::UTILITY_SEND_APP_START_TRACE;
 }
 
 
 ExitInfo UtilityDisplayClientReportJob::process() {
-    return _commManager->appServer().displaySentryClientReport();
+    return _commManager->appServer().sendAppStartTrace();
 }
 
 } // namespace KDC
