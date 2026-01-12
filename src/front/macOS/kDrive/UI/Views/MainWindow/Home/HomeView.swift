@@ -34,7 +34,7 @@ struct HomeView: View {
     }
 
     private var state: SynchroStatusView.State {
-        return .synchroInProgress
+        return .synchroUpToDate
     }
 
     var body: some View {

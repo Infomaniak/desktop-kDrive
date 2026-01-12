@@ -71,6 +71,7 @@ struct DriveWebShortcutsView: View {
     var body: some View {
         VStack(spacing: AppPadding.padding16) {
             UserAndDriveView(avatar: user?.avatar, driveColor: drive?.color)
+                .help(KDriveLocalizable.helpKDriveName(drive?.name ?? ""))
                 .padding(.top, AppPadding.padding8)
 
             VStack(spacing: AppPadding.padding8) {
