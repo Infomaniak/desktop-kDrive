@@ -18,6 +18,8 @@ namespace Infomaniak.kDrive.CustomControls
         {
             InitializeComponent();
             RegisterPropertyChangedHandlers();
+            bool staffUserExists = ViewModel.Users.Any(u => u.IsStaff && u.IsConnected);
+            UpdateChannelComboBox_Internal.Visibility = staffUserExists ? Visibility.Visible : Visibility.Collapsed;
         }
 
         ~UpdateExpander()
@@ -81,13 +83,15 @@ namespace Infomaniak.kDrive.CustomControls
                 DisplayedVersion = AppVersionInfo;
             }
             // check if any of the users is staff to show the internal update channel combobox
-            bool staffUserExists = App.ServiceProvider.GetRequiredService<AppModel>().Users.Any(user => user.IsStaff && user.IsConnected);
+            bool staffUserExists = ViewModel.Users.Any(u => u.IsStaff && u.IsConnected);
             UpdateChannelComboBox_Internal.Visibility = staffUserExists ? Visibility.Visible : Visibility.Collapsed;
+
         }
 
         private async void UpdateChannel_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!IsLoaded) return;
+            if (!IsLoaded)
+                return;
             if (sender is ComboBox comboBox && comboBox.SelectedItem is ComboBoxItem selectedItem)
             {
                 string? channelString = selectedItem.Tag as string;
@@ -131,7 +135,8 @@ namespace Infomaniak.kDrive.CustomControls
 
         private async void AutoUpdateToggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded) return;
+            if (!IsLoaded)
+                return;
             if (sender is ToggleSwitch toggleSwitch)
             {
                 toggleSwitch.IsEnabled = false;

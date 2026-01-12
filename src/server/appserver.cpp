@@ -4180,8 +4180,7 @@ void AppServer::sendUserUpdated(const UserInfo &userInfo) {
     paramsStream << userInfo;
 
     OldCommServer::instance()->sendSignal(SignalNum::USER_UPDATED, params, id);
-    // if(_commManager) _commManager->sendGuiSignal(std::make_shared<SignalUserUpdatedJob>(userInfo)); -> sendUserUpdated should
-    // not be static
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalUserUpdatedJob>(userInfo));
 }
 
 void AppServer::sendUserStatusChanged(int userDbId, bool connected, QString connexionError) {

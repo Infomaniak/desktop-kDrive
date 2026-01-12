@@ -292,7 +292,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 { "channel", (int)update.Channel },
                 { "tag", Utility.ToBase64String(update.Tag) },
-                { "buildVersion", Utility.ToBase64String(update.BuildVersion) },
+                { "buildVersion", update.BuildVersion },
                 { "buildMinOsVersion","" }, // Not used
                 { "downloadUrl", "" }, // Not used
             };
@@ -416,19 +416,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task SimulateSignals()
         {
-            long updaterStateChangeCounter = 0;
-            while (true)
-            {
-                updaterStateChangeCounter++;
-                await Task.Delay(100);
-                if (updaterStateChangeCounter % 600 == 0)
-                {
-                    if (!_mockData.VersionsByChannel.ContainsKey(VersionChannel.Internal)) continue;
-                    string oldTag = _mockData.VersionsByChannel[VersionChannel.Internal]?.Tag ?? "0.0.0";
-                    _mockData.VersionsByChannel[VersionChannel.Internal]!.Tag = "3.7.9" + ((updaterStateChangeCounter / 50)).ToString();
-                    EnqueueSignal(SignalNum.UPDATER_STATE_CHANGED, new JsonObject());
-                }
-            }
         }
     }
 
@@ -447,14 +434,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         }
 
         public List<User> Users { get; set; } = new List<User>();
-        public AppVersion CurrentVersion { get; set; } = new AppVersion() { BuildVersion = "20250908", Tag = "3.7.6" };
+        public AppVersion CurrentVersion { get; set; } = new AppVersion() { BuildVersion = 1, Tag = "3.7.6" };
         public ParmsInfo Settings { get; set; } = new ParmsInfo();
 
         public Dictionary<VersionChannel, AppVersion?> VersionsByChannel { get; set; } = new Dictionary<VersionChannel, AppVersion?>()
         {
-            {VersionChannel.Prod, new AppVersion() { BuildVersion = "20250908", Tag = "3.7.6" } },
-            {VersionChannel.Beta, new AppVersion() { BuildVersion = "20251020", Tag = "3.7.7" } },
-            {VersionChannel.Internal, new AppVersion() { BuildVersion = "20251022", Tag = "3.7.8" }},
+            {VersionChannel.Prod, new AppVersion() { BuildVersion = 1, Tag = "3.7.6" } },
+            {VersionChannel.Beta, new AppVersion() { BuildVersion = 1, Tag = "3.7.7" } },
+            {VersionChannel.Internal, new AppVersion() { BuildVersion = 1, Tag = "3.7.8" }},
         };
 
         public MockServerData()

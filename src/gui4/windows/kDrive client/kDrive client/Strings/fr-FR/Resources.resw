@@ -503,7 +503,7 @@ ou choisissez une offre adaptée à vos besoins.</value>
     <value>Mise à jour</value>
   </data>
   <data name="CC_UpdateExpander_UpdateAvailable_Description.TextTemplate" xml:space="preserve">
-    <value>kDrive build {0} disponible</value>
+    <value>kDrive {0} disponible</value>
     <comment>{0} version tag (ie 3.7.6)</comment>
   </data>
   <data name="CC_UpdateExpander_UpToDate_Description.Text" xml:space="preserve">
@@ -521,7 +521,7 @@ ou choisissez une offre adaptée à vos besoins.</value>
     <value>Général</value>
   </data>
   <data name="Page_SettingsPage_AutoUpdate.Header" xml:space="preserve">
-    <value>Mettre à jour kDrive automatiquement</value>
+    <value>Mises à jour automatiques</value>
   </data>
   <data name="Page_SettingsPage_AutoStart.Header" xml:space="preserve">
     <value>Ouvrir kDrive au démarrage de l’ordinateur</value>
