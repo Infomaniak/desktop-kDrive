@@ -16,31 +16,36 @@ using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.CustomControls
 {
-    /// <summary>
-    /// SyncExclusionSelector
-    /// UI control allowing the user to define which remote folders are EXCLUDED from a sync.
-    ///
-    /// Representation:
-    ///  - The remote folder hierarchy (directories only) is displayed as a tree.
-    ///  - Each directory has a tri-state checkbox: Checked (included), Unchecked (excluded), Indeterminate (some descendants excluded).
-    ///  - Each directory contains a synthetic "file" child item representing all files directly in that folder. Its checkbox:
-    ///        * Enabled only when ALL subdirectories are excluded.
-    ///        * Mirrors selection logic for directly contained files.
-    ///  - The exclusion list stored on the server is the list of UNSELECTED (excluded) nodes.
-    ///
-    /// Important invariants:
-    ///  - If a directory is explicitly unchecked -> all its descendants are implicitly excluded (we do not need to load them).
-    ///  - If a directory is explicitly checked -> all its descendants are implicitly included.
-    ///  - Indeterminate means at least one descendant differs (some excluded, some included).
-    ///
-    /// Persistence flow:
-    ///  - On load we fetch current excluded (blacklisted) node ids + their paths.
-    ///  - UI tree is rebuilt and tri-state states are computed from that exclusion map.
-    ///  - User modifies selections (no server calls yet) and HasPendingChanges becomes true if current UI differs from original exclusion set.
-    ///  - SaveChanges() uploads the new list of excluded node ids computed from current tri-state states.
-    ///  - CancelChanges() reloads original data from server.
-    ///
-    /// </summary>
+    /*
+    //  SyncExclusionSelector: A UI control for managing which remote folders are EXCLUDED from synchronization.
+    //  
+    //  Purpose:
+    //  Allows users to define a blacklist of remote folders (and their contents) that should NOT be synced locally.
+    //  The UI presents a tree view of the remote folder hierarchy, with tri-state checkboxes for inclusion/exclusion.
+    //  
+    //  Tree Structure & Behavior:
+    //  - Displays only directories (no files) in a hierarchical tree.
+    //  - Each folder has a tri-state checkbox:
+    //      • Checked: Included in sync -> all descendants are implicitly included.
+    //      • Unchecked: Excluded from sync -> all descendants are implicitly excluded.
+    //      • Indeterminate (-): Mixed state — some descendants are excluded, some are included.
+    //  
+    //  Persistence & State Management:
+    //  - On load: Fetches the current list of excluded node IDs + their paths from the server.
+    //  - UI tree is built and tri-state states are computed from this exclusion map.
+    //  - User changes are tracked locally; no server calls until SaveChanges() is called.
+    //  - HasPendingChanges becomes true when UI differs from the original server state.
+    //  - SaveChanges(): Uploads the new list of excluded node IDs (unselected nodes).
+    //  - CancelChanges(): Reverts UI to original server state.
+    //  
+    //  Notes:
+    //  - The root folder cannot be excluded.
+    //  - Children are lazily loaded on expand (TreeView_Expanding).
+    //  - File size is lazily loaded on view (SizeContentLoader_DataContextChanged).
+    //  - HasPendingChanges is updated automatically when selections change.
+    //  - Uses DynamicData for reactive collections and binding.
+    //  - AccessDenied nodes are read-only and cannot be modified.
+    */
     public sealed partial class SyncExclusionSelector : UserControl
     {
         #region Private fields
@@ -171,6 +176,9 @@ namespace Infomaniak.kDrive.CustomControls
         // Recursively accumulate excluded node IDs.
         private List<NodeId> GetExcludedDescendantNodeIds(TreeItem parent)
         {
+            if(parent.Node.AccessDenied)
+                return [];
+
             if (parent.IsSelected is not null) // If the parent is explicitly included or excluded (ie. not indeterminate)
             {
                 if (parent.IsSelected == false) // Explicitly excluded -> all descendants implicitly excluded
@@ -178,7 +186,7 @@ namespace Infomaniak.kDrive.CustomControls
                 else // Explicitly included -> descendants included
                     return [];
             }
-            else if (parent._childrenLoaded) // Indeterminate and children loaded: evaluate children individually
+            else if (parent.IsLoadingChildren) // Indeterminate and children loaded: evaluate children individually
             {
                 List<NodeId> excluded = [];
                 foreach (var child in parent.Children)
@@ -311,7 +319,7 @@ namespace Infomaniak.kDrive.CustomControls
         private void CheckBox_Click(object sender, RoutedEventArgs e)
         {
             Logger.Log(Logger.Level.Debug, "CheckBox_Click event triggered.");
-            if(e.OriginalSource is CheckBox checkBox)
+            if (e.OriginalSource is CheckBox checkBox)
             {
                 if (checkBox.IsChecked == true)
                 {
@@ -378,6 +386,9 @@ namespace Infomaniak.kDrive.CustomControls
 
         private static void SelectAllDescendants(TreeItem parent, bool selectParent = false)
         {
+            if (parent.Node.AccessDenied)
+                return;
+
             foreach (var child in parent.Children)
             {
                 SelectAllDescendants(child, true);
@@ -389,6 +400,9 @@ namespace Infomaniak.kDrive.CustomControls
 
         private static void DeselectAllDescendants(TreeItem parent, bool deselectParent = false)
         {
+            if (parent.Node.AccessDenied)
+                return;
+
             foreach (var child in parent.Children)
             {
                 DeselectAllDescendants(child, true);
@@ -404,9 +418,8 @@ namespace Infomaniak.kDrive.CustomControls
         // Lazy load size
         private async void SizeContentLoader_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            if ((sender as Control)?.DataContext is TreeItem treeItem)
-                if (treeItem.Node.Size == -1)
-                    await treeItem.Node.LoadSize();
+            if ((sender as Control)?.DataContext is TreeItem treeItem && treeItem.Node.Size == -1)
+                    await treeItem.Node.LoadSize(); 
         }
 
         // Recompute HasPendingChanges by comparing current excluded ids with original server exclusion set
@@ -429,18 +442,16 @@ namespace Infomaniak.kDrive.CustomControls
 
     /// <summary>
     /// TreeItem wraps a Node and adds UI-only state: tri-state selection plus lazy child loading logic.
-    /// A synthetic File item represents all direct files within a directory.
     /// </summary>
     public class TreeItem : UISafeObservableObject
     {
         #region Private fields
-        private DbId _userDbId = 0;
-        private DriveId _driveId;
+        private readonly DbId _userDbId = 0;
+        private readonly DriveId _driveId;
         private bool _isLoadingChildren = false;
-        public bool _childrenLoaded = false;
-        private bool _isEnabled = true;
+        private bool _childrenLoaded = false;
         private bool? _isSelected = true; // true=include, false=exclude, null=partial
-        private Dictionary<NodeId, string> _excludedNodes;
+        private readonly Dictionary<NodeId, string> _excludedNodes;
         #endregion
 
         #region Public properties
@@ -450,12 +461,6 @@ namespace Infomaniak.kDrive.CustomControls
         {
             get => _isLoadingChildren;
             private set => SetPropertyInUIThread(ref _isLoadingChildren, value);
-        }
-
-        public bool IsEnabled
-        {
-            get => _isEnabled;
-            private set => SetPropertyInUIThread(ref _isEnabled, value);
         }
 
         public bool? IsSelected
@@ -488,6 +493,9 @@ namespace Infomaniak.kDrive.CustomControls
         // Recompute tri-state based on exclusion map
         public void RecomputeSelectionFromExclusionMap()
         {
+            if (Node.AccessDenied)
+                return;
+
             if (ParentItem is not null && ParentItem.IsSelected is not null)
             {
                 IsSelected = ParentItem.IsSelected;
@@ -533,11 +541,11 @@ namespace Infomaniak.kDrive.CustomControls
         // Refresh directory tri-state based on children states
         private void UpdateDirectoryTriStateFromChildren()
         {
-            if (Children.All(c => c.IsSelected == true))
+            if (Children.All(c => c.IsSelected == true || c.Node.AccessDenied))
             {
                 IsSelected = true;
             }
-            else if (Children.All(c => c.IsSelected == false))
+            else if (Children.All(c => c.IsSelected == false || c.Node.AccessDenied))
             {
                 IsSelected = null;
             }
@@ -564,6 +572,19 @@ namespace Infomaniak.kDrive.CustomControls
             else
                 Logger.Log(Logger.Level.Error, "Failed to load nodes for SyncExclusionSelector.");
             IsLoadingChildren = false;
+        }
+    }
+    public partial class FolderTreeViewItemTemplateSelector : DataTemplateSelector
+    {
+        public DataTemplate? DirectoryTemplate { get; set; }
+        public DataTemplate? AccessDeniedTemplate { get; set; }
+
+        protected override DataTemplate? SelectTemplateCore(object item)
+        {
+            if (item is not TreeItem treeItem)
+                return base.SelectTemplateCore(item);
+
+            return treeItem.Node.AccessDenied ? AccessDeniedTemplate : DirectoryTemplate;
         }
     }
 }

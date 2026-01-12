@@ -14,10 +14,10 @@
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:BooleanToInvertedBooleanConverter x:Key="BooleanToInvertedBooleanConverter" />
         <converters:BytesToHumanReadableStringConverter x:Key="BytesToHumanReadableStringConverter" />
+
         <DataTemplate x:DataType="local:TreeItem"
                       x:Key="DirectoryTemplate">
-            <TreeViewItem ItemsSource="{x:Bind Children, Mode=OneWay}"
-                          HorizontalAlignment="Stretch">
+            <TreeViewItem ItemsSource="{x:Bind Children, Mode=OneWay}">
                 <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.S}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="auto" />
@@ -28,7 +28,6 @@
                     </Grid.ColumnDefinitions>
                     <CheckBox Grid.Column="0"
                               IsChecked="{x:Bind IsSelected, Mode=OneWay}"
-                              IsEnabled="{x:Bind IsEnabled, Mode=OneWay}"
                               IsThreeState="True"
                               MinWidth="0"
                               MinHeight="0"
@@ -62,7 +61,49 @@
                 </Grid>
             </TreeViewItem>
         </DataTemplate>
+
+        <DataTemplate x:DataType="local:TreeItem"
+                      x:Key="AccessDeneidDirectoryTemplate">
+            <TreeViewItem HorizontalAlignment="Stretch">
+                <ToolTipService.ToolTip>
+                    <ToolTip x:Uid="CC_SyncExclusionSelector_ToolTip_AccessDenied" />
+                </ToolTipService.ToolTip>
+                <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="auto" />
+                    </Grid.ColumnDefinitions>
+                    <CheckBox Grid.Column="0"
+                              IsChecked="False"
+                              IsEnabled="False"
+                              MinWidth="0"
+                              MinHeight="0" />
+                    <local:SvgIcon Grid.Column="1"
+                                   UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder-block}"
+                                   Foreground="{ThemeResource TextFillColorTertiary}"
+                                   Height="16" />
+
+                    <TextBlock Grid.Column="2"
+                               Foreground="{ThemeResource TextFillColorTertiary}"
+                               Text="{x:Bind Node.Name}" />
+
+                    <local:SvgIcon Grid.Column="3"
+                                   UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-block}"
+                                   Foreground="{ThemeResource TextFillColorTertiary}"
+                                   HorizontalAlignment="Center"
+                                   Height="16"
+                                   Margin="{StaticResource Infomaniak.Style.Thickness.Right.L}" />
+                </Grid>
+            </TreeViewItem>
+        </DataTemplate>
+
+        <local:FolderTreeViewItemTemplateSelector x:Key="FolderTreeViewItemTemplateSelector_"
+                                                  DirectoryTemplate="{StaticResource DirectoryTemplate}"
+                                                  AccessDeniedTemplate="{StaticResource AccessDeneidDirectoryTemplate}" />
     </UserControl.Resources>
+
     <local:ContentLoader x:Name="TreeViewContentLoader"
                          IsLoading="{x:Bind IsLoading, Mode=OneWay}"
                          CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
@@ -82,7 +123,6 @@
                     <StackPanel Orientation="Horizontal">
                         <CheckBox Grid.Column="0"
                                   IsChecked="{x:Bind RootTreeItem.IsSelected, Mode=OneWay}"
-                                  IsEnabled="{x:Bind RootTreeItem.IsEnabled, Mode=OneWay}"
                                   IsThreeState="True"
                                   MinWidth="0"
                                   MinHeight="0"
@@ -108,7 +148,7 @@
                           CanDrag="False"
                           CanDragItems="False"
                           CanReorderItems="False"
-                          ItemTemplate="{StaticResource DirectoryTemplate}" />
+                          ItemTemplateSelector="{StaticResource FolderTreeViewItemTemplateSelector_}" />
 
             </Grid>
         </local:ContentLoader.LoaderContent>

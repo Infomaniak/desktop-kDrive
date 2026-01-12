@@ -579,7 +579,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
-            AppVersion? versionInfo = data.Params[JsonKeys.VersionInfo].Deserialize<AppVersion>(options);
+            AppVersion? versionInfo = null;//           data.Params[JsonKeys.VersionInfo].Deserialize<AppVersion>(options);
             if (versionInfo?.Tag == _viewModel.Settings.AppVersion?.Tag && versionInfo?.BuildVersion == _viewModel.Settings.AppVersion?.BuildVersion)
             {
                 _viewModel.Settings.UpdateManager.AvailableUpdate = null;
