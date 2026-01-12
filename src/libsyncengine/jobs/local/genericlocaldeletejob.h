@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,34 +18,25 @@
 
 #pragma once
 
-#include "testincludes.h"
-#include "syncpal/syncpal.h"
-#include "test_utility/localtemporarydirectory.h"
-
-using namespace CppUnit;
-
 namespace KDC {
 
-class TestLocalJobs : public CppUnit::TestFixture, public TestBase {
+/**
+ * @brief Generic delete job used to delete a local file without any checks.
+ */
+class GenericLocalDeleteJob : public SyncJob {
     public:
-        CPPUNIT_TEST_SUITE(TestLocalJobs);
-        CPPUNIT_TEST(testLocalJobs);
-        CPPUNIT_TEST(testLocalDeleteJob);
-        CPPUNIT_TEST(testDeleteFilesWithDuplicateNames);
-        CPPUNIT_TEST_SUITE_END();
+        GenericLocalDeleteJob(const SyncPath &absolutePath, bool forceHardDelete = false);
 
-    public:
-        void setUp() override;
-        void tearDown() override;
+        [[nodiscard]] const SyncPath &absolutePath() const { return _absolutePath; }
 
     protected:
-        void testLocalJobs();
-        void testLocalDeleteJob();
-        void testDeleteFilesWithDuplicateNames();
+        ExitInfo runJob() override;
+        ExitInfo moveToTrashOrHardDeleteIfNeeded(const SyncPath &path);
+        ExitInfo hardDelete(const SyncPath &path);
 
     private:
-        std::shared_ptr<SyncPal> _syncPal = nullptr;
-        LocalTemporaryDirectory _localTempDir{"TestLocalJobs"};
+        SyncPath _absolutePath;
+        bool _forceHardDelete{false};
 };
 
 } // namespace KDC

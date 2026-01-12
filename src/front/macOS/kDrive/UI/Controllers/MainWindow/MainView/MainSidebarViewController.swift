@@ -112,9 +112,9 @@ final class MainSidebarViewController: NSViewController {
     }
 
     private func bindViewModel() {
-        mainViewModel.$availableUsers
-            .receiveOnMain(store: &bindStore) { [weak self] indexedUsers in
-                self?.updateSynchrosList(indexedUsers)
+        mainViewModel.$availableSynchros
+            .receiveOnMain(store: &bindStore) { [weak self] synchrosContext in
+                self?.updateSynchrosList(synchrosContext)
             }
     }
 
@@ -179,21 +179,13 @@ final class MainSidebarViewController: NSViewController {
         NSWorkspace.shared.open(currentSynchro.localPath)
     }
 
-    private func updateSynchrosList(_ users: [Int: UIUser]) {
+    private func updateSynchrosList(_ syncs: [UISynchroContext]) {
         popUpButton.removeAllItems()
-
-        for user in users.values {
-            for account in user.accounts.values {
-                for drive in account.drives.values {
-                    if drive.synchros.count == 1, let synchro = drive.synchros.values.first {
-                        addPopUpItem(forSynchro: synchro, drive: drive, displaySynchroPath: false)
-                    } else {
-                        for synchro in drive.synchros.values {
-                            addPopUpItem(forSynchro: synchro, drive: drive, displaySynchroPath: true)
-                        }
-                    }
-                }
-            }
+        for syncContext in syncs {
+            let displayPath = !(syncContext.drive.synchros.count == 1)
+            addPopUpItem(forSynchro: syncContext.synchro,
+                         drive: syncContext.drive,
+                         displaySynchroPath: displayPath)
         }
     }
 

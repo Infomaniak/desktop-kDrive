@@ -570,6 +570,13 @@ void AppServer::cleanup() {
     // Close ParmsDb
     ParmsDb::instance()->close();
     LOG_DEBUG(_logger, "ParmsDb closed");
+
+    // Clean up tmp directory
+    SyncPath tmpDirPath;
+    auto dummyIoError = IoError::Unknown;
+    if (IoHelper::appTempDirectoryPath(tmpDirPath, dummyIoError)) {
+        (void) IoHelper::deleteItem(tmpDirPath, dummyIoError);
+    }
 }
 
 void AppServer::reset() {

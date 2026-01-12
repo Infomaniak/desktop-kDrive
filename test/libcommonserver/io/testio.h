@@ -50,6 +50,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testFileChanged);
         CPPUNIT_TEST(testCheckIfIsHiddenFile);
         CPPUNIT_TEST(testCheckDirectoryIterator);
+        CPPUNIT_TEST(testCheckDirectoryIteratorSkipAccessDenied);
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_TEST(testGetXAttrValue);
         CPPUNIT_TEST(testSetXAttrValue);
@@ -132,6 +133,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         void testCheckDirectoryIteratorExistingPath();
         void testCheckDirectoryIteratotNextAfterEndOfDir();
         void testCheckDirectoryIteratorPermission();
+        void testCheckDirectoryIteratorSkipAccessDenied();
         void testCheckDirectoryRecursive();
         void testCheckDirectoryIteratorUnexpectedDelete();
         void testCheckDirectoryPermissionLost();
