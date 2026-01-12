@@ -34,41 +34,52 @@ extension SynchroStatus {
 }
 
 struct SynchroStatusView: View {
-    struct State {
+    struct State: Equatable {
+        let id: Int
         let animation: ThemedAnimation
         let title: String
         let description: String
+        let buttonTitle: String?
+
+        static func == (lhs: State, rhs: State) -> Bool {
+            return lhs.id == rhs.id
+        }
 
         static let synchroUpToDate = State(
+            id: 1,
             animation: .kDriveCheckmark,
             title: KDriveLocalizable.synchroStatusUpToDateTitle,
-            description: KDriveLocalizable.synchroStatusUpToDateDescription
+            description: KDriveLocalizable.synchroStatusUpToDateDescription,
+            buttonTitle: nil
         )
 
         static let synchroInProgress = State(
+            id: 2,
             animation: .cloudSync,
             title: KDriveLocalizable.synchroStatusInProgressTitle,
-            description: KDriveLocalizable.synchroStatusInProgressDescription
+            description: KDriveLocalizable.synchroStatusInProgressDescription,
+            buttonTitle: "Voir les activités"
         )
 
         static let synchroPaused = State(
+            id: 3,
             animation: .cloudPause,
             title: KDriveLocalizable.synchroStatusPausedTitle,
-            description: KDriveLocalizable.synchroStatusPausedDescription
+            description: KDriveLocalizable.synchroStatusPausedDescription,
+            buttonTitle: "Réactiver la synchronisation"
         )
 
         static let offline = State(
+            id: 4,
             animation: .offline,
             title: KDriveLocalizable.synchroStatusOfflineTitle,
-            description: KDriveLocalizable.synchroStatusOfflineDescription
+            description: KDriveLocalizable.synchroStatusOfflineDescription,
+            buttonTitle: nil
         )
     }
 
-    let status: SynchroStatus
-
-    private var state: State {
-        return status.state
-    }
+    let state: SynchroStatusView.State
+    let performAction: (SynchroStatusView.State) -> Void
 
     var body: some View {
         VStack(spacing: AppPadding.padding32) {
@@ -80,9 +91,20 @@ struct SynchroStatusView: View {
 
                 Text(state.description)
                     .font(.Tokens.body)
+
+                if let buttonTitle = state.buttonTitle {
+                    Button(buttonTitle) {
+                        performAction(state)
+                    }
+                    .buttonStyle(.borderless)
+                    .foregroundStyle(.tint)
+                }
             }
             .foregroundStyle(ColorToken.Text.primary.asColor)
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: 300)
         }
+        .padding(AppPadding.padding16)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(ColorToken.Surface.primary.asColor)
         .clipShape(RoundedRectangle(cornerRadius: AppRadius.radius16))
@@ -90,13 +112,17 @@ struct SynchroStatusView: View {
 }
 
 #Preview("Up To Date") {
-    SynchroStatusView(status: .upToDate)
+    SynchroStatusView(state: .synchroInProgress) { _ in }
 }
 
 #Preview("In Progress") {
-    SynchroStatusView(status: .inProgress)
+    SynchroStatusView(state: .synchroInProgress) { _ in }
 }
 
 #Preview("Pause") {
-    SynchroStatusView(status: .paused)
+    SynchroStatusView(state: .synchroPaused) { _ in }
+}
+
+#Preview("Offline") {
+    SynchroStatusView(state: .offline) { _ in }
 }

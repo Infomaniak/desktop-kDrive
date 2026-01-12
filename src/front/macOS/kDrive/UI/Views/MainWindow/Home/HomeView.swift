@@ -33,6 +33,10 @@ struct HomeView: View {
         return givenName
     }
 
+    private var state: SynchroStatusView.State {
+        return .synchroInProgress
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: AppPadding.padding24) {
             GreetingStatusView(name: userName, synchroStatus: .upToDate)
@@ -40,7 +44,7 @@ struct HomeView: View {
 
             GeometryReader { proxy in
                 HStack(spacing: HomeView.spacing) {
-                    SynchroStatusView(status: .upToDate)
+                    SynchroStatusView(state: state, performAction: didTapStateButton)
                         .frame(maxWidth: (proxy.size.width - HomeView.spacing / 2) * 2 / 3)
 
                     DriveWebShortcutsView(user: mainViewModel.currentUser, drive: mainViewModel.currentDrive)
@@ -49,6 +53,19 @@ struct HomeView: View {
             }
         }
         .padding(AppPadding.padding24)
+    }
+
+    private func didTapStateButton(for state: SynchroStatusView.State) {
+        switch state {
+        case .synchroInProgress:
+            // TODO: Navigate to activities
+            break
+        case .synchroPaused:
+            // TODO: Enable synchro
+            break
+        default:
+            break
+        }
     }
 }
 

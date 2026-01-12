@@ -31,6 +31,7 @@ final class MainViewModel: ObservableObject {
     @Published private(set) var currentAccount: UIAccount?
     @Published private(set) var currentDrive: UIDrive?
     @Published private(set) var currentSynchro: UISynchro?
+
     @Published private(set) var availableSynchros = [UISynchroContext]()
 
     private var bindStore = Set<AnyCancellable>()
@@ -95,14 +96,11 @@ final class MainViewModel: ObservableObject {
     }
 
     private func setDefaultSynchro() {
-        guard let firstAvailableUser = availableUsers.values.first,
-              let firstAvailableAccount = firstAvailableUser.accounts.first?.value,
-              let firstAvailableDrive = firstAvailableAccount.drives.first?.value,
-              let firstAvailableSynchro = firstAvailableDrive.synchros.first?.value else {
+        guard let firstAvailableSynchro = availableSynchros.first else {
             return
         }
 
-        setCurrentSynchro(firstAvailableSynchro)
+        setCurrentSynchro(firstAvailableSynchro.synchro)
     }
 
     private func getSelectedValuesFromSynchro(_ synchro: UISynchro) -> UISynchroContext? {
