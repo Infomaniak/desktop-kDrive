@@ -129,28 +129,6 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         }
     }
 
-    // MARK: - Specific signal handling
-
-    // MARK: User
-
-    private func handleUser(_ signal: Data) async throws {
-        guard let userInfoSignal = try? decoder.decode(SignalMessage<UserInfoSignal>.self, from: signal) else {
-            throw SignalError.unableToGetUserFromSignal
-        }
-
-        let user = userInfoSignal.body.asUser
-        await coherentCache.updateUser(user)
-    }
-
-    private func handleUserRemoved(_ signal: Data) async throws {
-        guard let userRemoveSignal = try? decoder.decode(SignalMessage<UserRemoveSignal>.self, from: signal) else {
-            throw SignalError.unableToGetUserDbIdFromSignal
-        }
-
-        let userDbId = userRemoveSignal.body.userDbId
-        await coherentCache.removeUser(dbId: userDbId)
-    }
-
     // MARK: Account
 
     private func handleAccountAdded(_ signal: Data) async throws {
