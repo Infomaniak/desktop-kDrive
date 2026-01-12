@@ -86,7 +86,6 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testExclTemplGetListJob);
         CPPUNIT_TEST(testExclTemplSetListJob);
         CPPUNIT_TEST(testExclTemplPropagateChangeJob);
-
 #if defined(KD_MACOS)
         CPPUNIT_TEST(testExclAppGetListJob);
         CPPUNIT_TEST(testExclAppSetListJob);
@@ -94,10 +93,14 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
 #endif
         CPPUNIT_TEST(testParametersInfoJob);
         CPPUNIT_TEST(testParametersUpdateJob);
-        CPPUNIT_TEST(testUtilityActivateLoadInfoJob);
         CPPUNIT_TEST(testUtilityBestVfsAvailableModeJob);
         CPPUNIT_TEST(testUtilityFindGoodPathForNewSyncJob);
         CPPUNIT_TEST(testUtilityIsPathValidForNewSyncJob);
+        CPPUNIT_TEST(testUtilityActivateLoadInfoJob);
+        CPPUNIT_TEST(testUtilityCheckCommStatusJob);
+        CPPUNIT_TEST(testUtilityHasSystemLaunchOnStartupJob);
+        CPPUNIT_TEST(testUtilityQuitJob);
+        CPPUNIT_TEST(testUtilityDisplayClientReportJob);
         CPPUNIT_TEST(testUtilityGetAppStateJob);
         CPPUNIT_TEST(testUtilitySetAppStateJob);
         CPPUNIT_TEST(testUtilityCancelLogToSupportJob);
@@ -159,16 +162,19 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
 #endif
         void testParametersInfoJob();
         void testParametersUpdateJob();
-        void testUtilityActivateLoadInfoJob();
         void testUtilityBestVfsAvailableModeJob();
         void testUtilityFindGoodPathForNewSyncJob();
         void testUtilityIsPathValidForNewSyncJob();
+        void testUtilityActivateLoadInfoJob();
+        void testUtilityCheckCommStatusJob();
+        void testUtilityHasSystemLaunchOnStartupJob();
+        void testUtilityQuitJob();
+        void testUtilityDisplayClientReportJob();
         void testUtilityGetAppStateJob();
         void testUtilitySetAppStateJob();
         void testUtilityCancelLogToSupportJob();
         void testUtilityGetLogEstimatedSizeJob();
         void testUtilitySendLogToSupportJob();
-        void testUpdaterChangeChannelJob();
         void testUpdaterVersionInfoJob();
         void testUpdaterStateJob();
         void testUpdaterStartInstallerJob();

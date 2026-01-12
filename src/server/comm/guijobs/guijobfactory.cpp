@@ -61,15 +61,21 @@
 #include "excltemplpropagatechangejob.h"
 #include "parametersinfojob.h"
 #include "parametersupdatejob.h"
-#include "utilityactivateloadinfojob.h"
+
 #include "utilityfindgoodpathfornewsyncjob.h"
 #include "utilitybestvfsavailablemodejob.h"
 #include "utilityispathvalidfornewsyncjob.h"
+#include "utilityactivateloadinfojob.h"
+#include "utilitycheckcommstatusjob.h"
+#include "utilityhassystemlaunchonstartupjob.h"
 #include "utilitysetappstatejob.h"
 #include "utilitygetappstatejob.h"
 #include "utilitysendlogtosupportjob.h"
 #include "utilitycancellogtosupportjob.h"
 #include "utilitygetlogestimatedsizejob.h"
+#include "utilityquitjob.h"
+#include "utilitydisplayclientreportjob.h"
+
 #include "updaterversioninfojob.h"
 #include "updaterstatejob.h"
 #include "updaterstartinstallerjob.h"
@@ -123,22 +129,34 @@ GuiJobFactory::GuiJobFactory() {
         {RequestNum::EXCLTEMPL_PROPAGATE_CHANGE, makeShared<ExclTemplPropagateChangeJob>},
         {RequestNum::PARAMETERS_INFO, makeShared<ParametersInfoJob>},
         {RequestNum::PARAMETERS_UPDATE, makeShared<ParametersUpdateJob>},
+        {RequestNum::EXCLTEMPL_GETEXCLUDED, makeShared<ExclTemplGetExcludedJob>},
+        {RequestNum::EXCLTEMPL_GETLIST, makeShared<ExclTemplGetListJob>},
+        {RequestNum::EXCLTEMPL_SETLIST, makeShared<ExclTemplSetListJob>},
+        {RequestNum::EXCLTEMPL_PROPAGATE_CHANGE, makeShared<ExclTemplPropagateChangeJob>},
+        {RequestNum::PARAMETERS_INFO, makeShared<ParametersInfoJob>},
+        {RequestNum::PARAMETERS_UPDATE, makeShared<ParametersUpdateJob>},
         {RequestNum::UTILITY_BESTVFSAVAILABLEMODE, makeShared<UtilityBestVfsAvailableModeJob>},
         {RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC, makeShared<UtilityFindGoodPathForNewSyncJob>},
         {RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC, makeShared<UtilityIsPathValidForNewSyncJob>},
         {RequestNum::UTILITY_ACTIVATELOADINFO, makeShared<UtilityActivateLoadInfoJob>},
+        {RequestNum::UTILITY_CHECKCOMMSTATUS, makeShared<UtilityCheckCommStatusJob>},
+        {RequestNum::UTILITY_HASSYSTEMLAUNCHONSTARTUP, makeShared<UtilityHasSystemLaunchOnStartupJob>},
         {RequestNum::UTILITY_SET_APPSTATE, makeShared<UtilitySetAppStateJob>},
         {RequestNum::UTILITY_GET_APPSTATE, makeShared<UtilityGetAppStateJob>},
         {RequestNum::UTILITY_SEND_LOG_TO_SUPPORT, makeShared<UtilitySendLogToSupportJob>},
         {RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT, makeShared<UtilityCancelLogToSupportJob>},
         {RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE, makeShared<UtilityGetLogEstimatedSizeJob>},
+        {RequestNum::UTILITY_SEND_LOG_TO_SUPPORT, makeShared<UtilitySendLogToSupportJob>},
+        {RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT, makeShared<UtilityCancelLogToSupportJob>},
+        {RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE, makeShared<UtilityGetLogEstimatedSizeJob>},
+        {RequestNum::UTILITY_QUIT, makeShared<UtilityQuitJob>},
+        {RequestNum::UTILITY_SEND_APP_START_TRACE, makeShared<UtilityDisplayClientReportJob>},
         {RequestNum::UPDATER_VERSION_INFO, makeShared<UpdaterVersionInfoJob>},
         {RequestNum::UPDATER_STATE, makeShared<UpdaterStateJob>},
         {RequestNum::UPDATER_START_INSTALLER, makeShared<UpdaterStartInstallerJob>},
         {RequestNum::UPDATER_SKIP_VERSION, makeShared<UpdaterSkipVersionJob>}
     };
 }
-
 
 std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::shared_ptr<CommManager> commManager,
                                                     int requestId, const Poco::DynamicStruct &inParams,

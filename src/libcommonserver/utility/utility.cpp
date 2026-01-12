@@ -684,22 +684,31 @@ bool Utility::isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode
     }
 }
 
+static constexpr uint64_t maxNbCreationTmpFolderRetries = 3;
 IoError Utility::tryCreateTmpDir(const SyncName &name /*= Str("testDir")*/) {
 #if defined(KD_MACOS)
     SyncPath tmpDirPath;
-    if (auto ioError = IoError::Unknown; !IoHelper::tempDirectoryPath(tmpDirPath, ioError)) {
+    if (auto ioError = IoError::Unknown; !IoHelper::appTempDirectoryPath(tmpDirPath, ioError)) {
         return ioError;
     }
 
     SyncPath tmpPath = tmpDirPath / name;
     std::error_code ec;
-    std::filesystem::create_directory(tmpPath, ec);
-    if (ec.value()) {
-        if (ec.value() == static_cast<int>(std::errc::illegal_byte_sequence)) {
-            return IoError::InvalidFileName;
+    auto retries = 0;
+    bool directoryCreated = false;
+    do {
+        directoryCreated = std::filesystem::create_directory(tmpPath, ec);
+        if (!directoryCreated || ec.value()) {
+            if (ec.value() == static_cast<int>(std::errc::illegal_byte_sequence)) {
+                return IoError::InvalidFileName;
+            }
+            retries++;
+            // Retry with a random suffix added to item name
+            tmpPath = tmpDirPath / (name + CommonUtility::generateRandomStringAlphaNum());
         }
-        return IoHelper::stdError2ioError(ec);
-    }
+    } while ((!directoryCreated || ec.value()) && retries < maxNbCreationTmpFolderRetries);
+
+    if (ec.value()) return IoHelper::stdError2ioError(ec);
 
     std::filesystem::remove_all(tmpPath, ec);
 #else
@@ -710,28 +719,60 @@ IoError Utility::tryCreateTmpDir(const SyncName &name /*= Str("testDir")*/) {
 
 IoError Utility::tryCreateTmpFile(const SyncName &name /*= Str("testFile")*/) {
     SyncPath tmpDirPath;
-    if (auto ioError = IoError::Unknown; !IoHelper::tempDirectoryPath(tmpDirPath, ioError)) {
+    if (auto ioError = IoError::Unknown; !IoHelper::appTempDirectoryPath(tmpDirPath, ioError)) {
         return ioError;
     }
 
-    const SyncPath tmpPath = tmpDirPath / name;
-    std::ofstream output(tmpPath.native().c_str(), std::ios::binary);
-    if (!output) {
-        bool read = false;
-        bool write = false;
-        bool exec = false;
+    SyncPath tmpPath = tmpDirPath / name;
+    auto retries = 0;
+    bool ok = false;
+    do {
+        bool exists = false;
         auto ioError = IoError::Unknown;
-        if (!IoHelper::getRights(tmpDirPath, read, write, exec, ioError)) {
+        // Check if item already exist (it should not exist at this point)
+        if (!IoHelper::checkIfPathExists(tmpPath, exists, ioError)) {
+            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(tmpPath, ioError));
             return ioError;
         }
-        if (!read || !write) {
-            return IoError::AccessDenied;
+        if (exists) {
+            retries++;
+            // Retry with a random suffix added to item name
+            tmpPath = tmpDirPath / (name + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()));
+            continue;
         }
 
-        return IoError::Unknown;
-    }
+        std::ofstream output = std::ofstream(tmpPath.native().c_str(), std::ios::binary);
+        if (!output) {
+            bool read = false;
+            bool write = false;
+            bool exec = false;
+            if (!IoHelper::getRights(tmpDirPath, read, write, exec, ioError)) {
+                return ioError;
+            }
+            if (!read || !write) {
+                return IoError::AccessDenied;
+            }
 
-    output.close();
+            retries++;
+            // Retry with a random suffix added to item name
+            tmpPath = tmpDirPath / (name + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()));
+            continue;
+        }
+        output.close();
+
+        // Check again if item already exist (it should exist at this point)
+        if (!IoHelper::checkIfPathExists(tmpPath, exists, ioError)) {
+            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(tmpPath, ioError));
+            return ioError;
+        }
+        if (!exists) {
+            retries++;
+            // Retry with a random suffix added to item name
+            tmpPath = tmpDirPath / (name + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()));
+            continue;
+        }
+        ok = true;
+    } while (!ok && retries < maxNbCreationTmpFolderRetries);
 
     std::error_code ec;
     (void) std::filesystem::remove_all(tmpPath, ec);
