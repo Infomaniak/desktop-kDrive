@@ -16,27 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "libcommon/utility/types.h"
+#include "utilitycheckcommstatusjob.h"
 
 #include "libcommon/comm.h"
-#include "server/comm/guijobs/abstractguijob.h"
 
-#include <Poco/JSON/Object.h>
+namespace KDC {
 
-namespace KDC::testcommhelpers {
-std::string toBase64(const CommString &input);
+UtilityCheckCommStatusJob::UtilityCheckCommStatusJob(std::shared_ptr<CommManager> commManager, int requestId,
+                                                     const Poco::DynamicStruct &inParams,
+                                                     std::shared_ptr<AbstractCommChannel> channel) :
+    AbstractGuiJob(commManager, requestId, inParams, channel) {
+    _requestNum = RequestNum::UTILITY_CHECKCOMMSTATUS;
+}
 
-CommString beautifulString(const Poco::JSON::Object &obj);
-CommString stringifyQueryObj(const Poco::JSON::Object &obj);
-CommString stringifyAnswerObj(const Poco::JSON::Object &obj);
-CommString stringifyCbkAnswerObj(const Poco::JSON::Object &obj);
 
-struct SimpleAnswers {
-        Poco::JSON::Object answer;
-        Poco::JSON::Object answerWithNumAndType;
-};
+ExitInfo UtilityCheckCommStatusJob::process() {
+    return ExitCode::Ok;
+}
 
-Poco::JSON::Object createSimpleQuery(RequestNum requestEnum);
-SimpleAnswers createSimpleAnswers(RequestNum requestEnum);
-
-} // namespace KDC::testcommhelpers
+} // namespace KDC

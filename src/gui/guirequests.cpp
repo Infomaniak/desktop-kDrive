@@ -1176,7 +1176,7 @@ ExitCode GuiRequests::skipUpdate(const std::string &version) {
 }
 
 ExitCode GuiRequests::reportClientDisplayed() {
-    CommClient::instance()->execute(RequestNum::UTILITY_DISPLAY_CLIENT_REPORT);
+    CommClient::instance()->execute(RequestNum::UTILITY_SEND_APP_START_TRACE);
     return ExitCode::Ok;
 }
 
