@@ -96,6 +96,27 @@ bool SyncLocalDeleteJob::findRemoteItem(SyncPath &remoteItemPath) const {
     return found;
 }
 
+ExitInfo SyncLocalDeleteJob::checkIfRemoteFileHasBeenMoved() {
+    SyncPath remoteRelativePath;
+    const bool remoteItemIsFound = findRemoteItem(remoteRelativePath);
+    if (!remoteItemIsFound) return ExitCode::Ok; // Safe deletion.
+
+    SyncPath normalizedPath;
+    if (!Utility::normalizedSyncPath(_relativeLocalPath, normalizedPath)) {
+        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(_relativeLocalPath));
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
+    }
+
+    if (matchRelativePaths(_syncPal->syncInfo().targetPath, normalizedPath, remoteRelativePath)) {
+        // Item is found at the same path on remote
+        LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(absolutePath()).c_str()
+                                          << L" still exists on remote replica. Aborting current sync and restarting.");
+        return {ExitCode::DataError, ExitCause::InvalidSnapshot}; // We need to rebuild the remote snapshot from scratch
+    }
+
+    return ExitCode::Ok;
+}
+
 ExitInfo SyncLocalDeleteJob::canRun() {
     if (bypassCheck()) {
         return ExitCode::Ok;
@@ -132,24 +153,7 @@ ExitInfo SyncLocalDeleteJob::canRun() {
     // Check whether the remote item has been moved.
     // If the remote item has been moved into a blacklisted folder, then this Delete job is created and
     // the local item should be deleted.
-    SyncPath remoteRelativePath;
-    const bool remoteItemIsFound = findRemoteItem(remoteRelativePath);
-    if (!remoteItemIsFound) return ExitCode::Ok; // Safe deletion.
-
-    SyncPath normalizedPath;
-    if (!Utility::normalizedSyncPath(_relativeLocalPath, normalizedPath)) {
-        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(_relativeLocalPath));
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
-    }
-
-    if (matchRelativePaths(_syncPal->syncInfo().targetPath, normalizedPath, remoteRelativePath)) {
-        // Item is found at the same path on remote
-        LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(absolutePath()).c_str()
-                                          << L" still exists on remote replica. Aborting current sync and restarting.");
-        return {ExitCode::DataError, ExitCause::InvalidSnapshot}; // We need to rebuild the remote snapshot from scratch
-    }
-
-    return ExitCode::Ok;
+    return checkIfRemoteFileHasBeenMoved();
 }
 
 namespace {

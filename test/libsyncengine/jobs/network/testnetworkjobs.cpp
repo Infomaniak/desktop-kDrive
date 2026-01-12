@@ -1597,9 +1597,9 @@ void TestNetworkJobs::testExists() {
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(job.exists(picture1RemoteId, ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-    CPPUNIT_ASSERT(job.exists(dummyId, ioError));
+    CPPUNIT_ASSERT(!job.exists(dummyId, ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
-    CPPUNIT_ASSERT(job.exists("0987654321", ioError));
+    CPPUNIT_ASSERT(!job.exists("0987654321", ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
 }
 
