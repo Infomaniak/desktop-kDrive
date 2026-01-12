@@ -186,7 +186,7 @@ namespace Infomaniak.kDrive.CustomControls
                 else // Explicitly included -> descendants included
                     return [];
             }
-            else if (parent.IsLoadingChildren) // Indeterminate and children loaded: evaluate children individually
+            else if (parent.ChildrenLoaded) // Indeterminate and children loaded: evaluate children individually
             {
                 List<NodeId> excluded = [];
                 foreach (var child in parent.Children)
@@ -425,10 +425,9 @@ namespace Infomaniak.kDrive.CustomControls
         // Recompute HasPendingChanges by comparing current excluded ids with original server exclusion set
         private void UpdateHasPendingChanges()
         {
-            if (HasPendingChanges)
-                return;
             if (RootTreeItem is null)
             {
+                Logger.Log(Logger.Level.Error, "Cannot update HasPendingChanges: RootTreeItem is null.");
                 HasPendingChanges = false;
                 return;
             }
@@ -463,6 +462,11 @@ namespace Infomaniak.kDrive.CustomControls
             private set => SetPropertyInUIThread(ref _isLoadingChildren, value);
         }
 
+        public bool ChildrenLoaded
+        {
+            get => _childrenLoaded;
+            private set => SetPropertyInUIThread(ref _childrenLoaded, value);
+        }
         public bool? IsSelected
         {
             get => _isSelected;
