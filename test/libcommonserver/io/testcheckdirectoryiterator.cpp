@@ -241,6 +241,49 @@ void TestIo::testCheckDirectoryIteratorPermission() {
     }
 }
 
+void TestIo::testCheckDirectoryIteratorSkipAccessDenied() {
+    {
+        // Check that the recursive directory iterator skips each directory with no permission
+        LocalTemporaryDirectory tempDir;
+        const SyncPath withPermissionDir = tempDir.path() / "withPermission";
+        const SyncPath withoutPermissionDir = tempDir.path() / "withoutPermission";
+        const SyncPath withoutPermissionFile = withoutPermissionDir / "file.txt";
+
+        IoError ioError = IoError::Success;
+
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createDirectory(withPermissionDir, false, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createDirectory(withoutPermissionDir, false, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+        std::ofstream file(withoutPermissionFile);
+        file << "file";
+        file.close();
+
+
+        bool result = IoHelper::setRights(withoutPermissionDir, false, false, false, ioError);
+        result &= ioError == IoError::Success;
+        if (!result) {
+            (void) IoHelper::setRights(withoutPermissionDir, true, true, true, ioError);
+            CPPUNIT_ASSERT(false /*setRights failed*/);
+        }
+
+        IoHelper::DirectoryIterator it(tempDir.path(), true, ioError);
+
+        DirectoryEntry entry;
+        bool endOfDirectory = false;
+        uint32_t itemCount = 0;
+        while (it.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
+            ++itemCount;
+        }
+
+        (void) IoHelper::setRights(withoutPermissionDir, true, true, true, ioError);
+        CPPUNIT_ASSERT(endOfDirectory);
+        CPPUNIT_ASSERT_EQUAL(uint32_t{2}, itemCount);
+    }
+}
+
+
 void TestIo::testCheckDirectoryIteratorUnexpectedDelete() {
     LocalTemporaryDirectory tempDir;
 
@@ -307,8 +350,8 @@ void TestIo::testCheckDirectoryPermissionLost() {
         result &= ioError == IoError::Success;
 
         if (!result) {
-            IoHelper::setRights(subDir, true, true, true, ioError);
-            IoHelper::setRights(filePath, true, true, true, ioError);
+            (void) IoHelper::setRights(subDir, true, true, true, ioError);
+            (void) IoHelper::setRights(filePath, true, true, true, ioError);
         }
 
         CPPUNIT_ASSERT(result /*result = it.next(entry, endOfDirectory, ioError);*/);
@@ -316,8 +359,8 @@ void TestIo::testCheckDirectoryPermissionLost() {
         result = it.next(entry, endOfDirectory, ioError);
         result &= ioError == IoError::Success;
 
-        IoHelper::setRights(subDir, true, true, true, ioError);
-        IoHelper::setRights(filePath, true, true, true, ioError);
+        (void) IoHelper::setRights(subDir, true, true, true, ioError);
+        (void) IoHelper::setRights(filePath, true, true, true, ioError);
 
         CPPUNIT_ASSERT(result /*result = it.next(entry, endOfDirectory, ioError);*/);
         CPPUNIT_ASSERT(endOfDirectory);

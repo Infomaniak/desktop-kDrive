@@ -18,13 +18,7 @@
 
 using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.ViewModels;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Input;
-using System;
-using System.IO;
-using System.Linq;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -41,6 +35,7 @@ namespace Infomaniak.kDrive
             this.SetTitleBar(AppTitleBar);
             Utility.SetWindowProperties(this, 900, 530, true);
             AppModel.UIThreadDispatcher = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread(); // Save the UI thread dispatcher for later use in view models
+            AppWindow.TitleBar.PreferredTheme = Microsoft.UI.Windowing.TitleBarTheme.UseDefaultAppMode;
         }
     }
 }

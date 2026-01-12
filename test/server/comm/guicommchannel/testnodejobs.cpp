@@ -17,9 +17,11 @@
  */
 
 #include "testguicommchannel.h"
+#include "../testcommhelpers.h"
 
 #include "comm/guijobs/blacklistednodelistjob.h"
 #include "comm/guijobs/blacklistednodesetlistjob.h"
+#include "comm/guijobs/nodepathjob.h"
 #include "comm/guijobs/nodeinfojob.h"
 #include "comm/guijobs/nodesubfoldersjob.h"
 #include "comm/guijobs/nodesubfolders2job.h"
@@ -27,249 +29,469 @@
 #include "comm/guijobs/nodecreatemissingfoldersjob.h"
 
 namespace KDC {
-
-namespace {
-std::string toQuotedBase64(const std::string &input) {
-    std::string output;
-    CommonUtility::convertToBase64Str(input, output);
-    return R"(")" + output + R"(")";
-}
-} // namespace
+using namespace testcommhelpers;
 
 void TestGuiCommChannel::testBlacklistedSyncNodeListJob() {
+    Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{R"({ "id": 1, "num": )" + std::to_string(toInt(RequestNum::BLACKLISTED_NODE_LIST)) +
-                        R"(, "params": { "syncDbId": 5 } })"};
-#else
-    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::BLACKLISTED_NODE_LIST)) +
-                        R"(, "params": { "syncDbId": 5 } })"};
-    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"nodeIdList":["n1","n2","n3"]}})"};
+    (void) queryObj.set("id", 1);
 #endif
-    const auto answerStr{R"({ "cause": 0, "code": 0, "id": 1, "num": )" +
-                         std::to_string(toInt(RequestNum::BLACKLISTED_NODE_LIST)) +
-                         R"(, "params": { "nodeIdList": [ "n1", "n2", "n3" ] }, "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+    (void) queryObj.set("num", toInt(RequestNum::BLACKLISTED_NODE_LIST));
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("syncDbId", 5);
+
+    (void) queryObj.set("params", queryParamsObj);
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+
+    Poco::JSON::Array nodeIdListObj;
+    (void) nodeIdListObj.add(toBase64(Str("n1")));
+    (void) nodeIdListObj.add(toBase64(Str("n2")));
+    (void) nodeIdListObj.add(toBase64(Str("n3")));
+
+    Poco::JSON::Object paramsObj;
+    (void) paramsObj.set("nodeIdList", nodeIdListObj);
+    (void) answerObj.set("params", paramsObj);
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::BLACKLISTED_NODE_LIST));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+
+    // Job expected answers
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto listJob = std::dynamic_pointer_cast<BlacklistedNodeListJob>(job);
         listJob->_nodeIdList = {"n1", "n2", "n3"};
     };
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+    testGenericJob(queryStr, answerStr, {}, processFct);
 #else
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
 
 void TestGuiCommChannel::testBlacklistedSyncNodeSetListJob() {
+    Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{R"({ "id": 1, "num": )" + std::to_string(toInt(RequestNum::BLACKLISTED_NODE_SETLIST)) +
-                        R"(, "params": { "syncDbId": 5, "nodeIdList": ["x1","x2"] } })"};
-#else
-    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::BLACKLISTED_NODE_SETLIST)) +
-                        R"(, "params": { "syncDbId": 5, "nodeIdList": ["x1","x2"] } })"};
-    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{}})"};
+    (void) queryObj.set("id", 1);
 #endif
-    const auto answerStr{R"({ "cause": 0, "code": 0, "id": 1, "num": )" +
-                         std::to_string(toInt(RequestNum::BLACKLISTED_NODE_SETLIST)) + R"(, "params": {  }, "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+    (void) queryObj.set("num", toInt(RequestNum::BLACKLISTED_NODE_SETLIST));
+
+    Poco::JSON::Array nodeIdListObj;
+    (void) nodeIdListObj.add(toBase64(Str("x1")));
+    (void) nodeIdListObj.add(toBase64(Str("x2")));
+
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("syncDbId", 5);
+    (void) queryParamsObj.set("nodeIdList", nodeIdListObj);
+
+    (void) queryObj.set("params", queryParamsObj);
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+
+    Poco::JSON::Object paramsObj;
+    (void) answerObj.set("params", paramsObj);
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::BLACKLISTED_NODE_SETLIST));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+
+    // Job expected answers
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
+
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         // Nothing to serialize back for set job
         auto blacklistedNodeSetListJob = std::dynamic_pointer_cast<BlacklistedNodeSetListJob>(job);
-        CPPUNIT_ASSERT(std::dynamic_pointer_cast<BlacklistedNodeSetListJob>(job));
+        CPPUNIT_ASSERT(blacklistedNodeSetListJob);
         CPPUNIT_ASSERT_EQUAL(5, blacklistedNodeSetListJob->_syncDbId);
         CPPUNIT_ASSERT_EQUAL(size_t{2}, blacklistedNodeSetListJob->_nodeIdList.size());
         CPPUNIT_ASSERT_EQUAL(std::string{"x1"}, blacklistedNodeSetListJob->_nodeIdList.at(0));
-        CPPUNIT_ASSERT_EQUAL(std::string{"x2"}, blacklistedNodeSetListJob->_nodeIdList.at(0));
+        CPPUNIT_ASSERT_EQUAL(std::string{"x2"}, blacklistedNodeSetListJob->_nodeIdList.at(1));
     };
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+    testGenericJob(queryStr, answerStr, {}, processFct);
+#else
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
+void TestGuiCommChannel::testNodePathJob() {
+    Poco::JSON::Object queryObj;
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    (void) queryObj.set("id", 1);
+#endif
+    (void) queryObj.set("num", toInt(RequestNum::NODE_PATH));
+
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("syncDbId", 1);
+    (void) queryParamsObj.set("nodeId", toBase64(Str("1111")));
+
+    (void) queryObj.set("params", queryParamsObj);
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+
+    Poco::JSON::Object paramsObj;
+    (void) paramsObj.set("path", toBase64(Str("/home/kDrive/Documents/presentation.doc")));
+    (void) answerObj.set("params", paramsObj);
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::NODE_PATH));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+
+    // Job expected answers
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto nodePathJob = std::dynamic_pointer_cast<NodePathJob>(job);
+        CPPUNIT_ASSERT(nodePathJob);
+        CPPUNIT_ASSERT_EQUAL(1, nodePathJob->_syncDbId);
+        CPPUNIT_ASSERT_EQUAL(NodeId{"1111"}, nodePathJob->_nodeId);
+
+        nodePathJob->_path = CommString{Str("/home/kDrive/Documents/presentation.doc")};
+    };
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(queryStr, answerStr, {}, processFct);
 #else
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
 
 void TestGuiCommChannel::testNodeInfoJob() {
+    Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{R"({ "id": 1, "num": )" + std::to_string(toInt(RequestNum::NODE_INFO)) +
-                        R"(, "params": { "userDbId": 1, "driveId": 1111, "nodeId": "n1", "withPath": true } })"};
-#else
-    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::NODE_INFO)) +
-                        R"(, "params": { "userDbId": 1, "driveId": 1111, "nodeId": "n1", "withPath": true } })"};
-    const auto cbkAnswerStr{
-            R"({"cause":0,"code":0,"id":1,"params":{"nodeInfo":{"modtime":55,"name":"FileA","nodeId":"n1","parentNodeId":"n2","path":"/root/FileA","size":123}}})"};
+    (void) queryObj.set("id", 1);
 #endif
-    const auto answerStr{
-            R"({ "cause": 0, "code": 0, "id": 1, "num": )" + std::to_string(toInt(RequestNum::NODE_INFO)) +
-            R"(, "params": { "nodeInfo": { "modtime": 55, "name": "FileA", "nodeId": "n1", "parentNodeId": "n2", "path": "/root/FileA", "size": 123 } }, "type": )" +
-            std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+    (void) queryObj.set("num", toInt(RequestNum::NODE_INFO));
+
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("userDbId", 1);
+    (void) queryParamsObj.set("driveId", 1111);
+    (void) queryParamsObj.set("nodeId", toBase64(Str("n1")));
+    (void) queryParamsObj.set("withPath", true);
+
+    (void) queryObj.set("params", queryParamsObj);
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+
+    Poco::JSON::Object nodeInfoObj;
+    (void) nodeInfoObj.set("modtime", 55);
+    (void) nodeInfoObj.set("name", toBase64(Str("FileA")));
+    (void) nodeInfoObj.set("nodeId", toBase64(Str("n1")));
+    (void) nodeInfoObj.set("parentNodeId", toBase64(Str("n2")));
+    (void) nodeInfoObj.set("path", toBase64(Str("/root/FileA")));
+    (void) nodeInfoObj.set("size", 123);
+    (void) nodeInfoObj.set("accessDenied", false);
+
+    Poco::JSON::Object paramsObj;
+    (void) paramsObj.set("nodeInfo", nodeInfoObj);
+    (void) answerObj.set("params", paramsObj);
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::NODE_INFO));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+
+    // Job expected answers
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto nodeInfoJob = std::dynamic_pointer_cast<NodeInfoJob>(job);
+        CPPUNIT_ASSERT_EQUAL(1, nodeInfoJob->_userDbId);
+        CPPUNIT_ASSERT_EQUAL(1111, nodeInfoJob->_driveId);
+        CPPUNIT_ASSERT_EQUAL(NodeId{"n1"}, nodeInfoJob->_nodeId);
+        CPPUNIT_ASSERT(nodeInfoJob->_withPath);
+
         nodeInfoJob->_nodeInfo = NodeInfo("n1", "FileA", 123, "n2", 55, "/root/FileA");
+        nodeInfoJob->_nodeInfo.setAccessDenied(false);
     };
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+    testGenericJob(queryStr, answerStr, {}, processFct);
 #else
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
 
 void TestGuiCommChannel::testNodeSubFolderJob() {
+    Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    // Query: list sub folders for nodeId "123" with path
-    const auto queryStr{R"({ "id": 1, "num": )" + std::to_string(toInt(RequestNum::NODE_SUBFOLDERS)) +
-                        R"(, "params": { "userDbId": 1, "driveId": 1111, "nodeId": "123", "withPath": true } })"};
-#else
-    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::NODE_SUBFOLDERS)) +
-                        R"(, "params": { "userDbId": 1, "driveId": 1111, "nodeId": "123", "withPath": true } })"};
-    const auto cbkAnswerStr{
-            R"({"cause":0,"code":0,"id":1,"params":{"nodeSubFolderInfoList":[{"modtime":10,"name":"FolderA","nodeId":"A","parentNodeId":"123","path":"/root/FolderA","size":0},{"modtime":20,"name":"FolderB","nodeId":"B","parentNodeId":"123","path":"/root/FolderB","size":0}]}})"};
+    (void) queryObj.set("id", 1);
 #endif
-    const auto answerStr{
-            R"({ "cause": 0, "code": 0, "id": 1, "num": )" + std::to_string(toInt(RequestNum::NODE_SUBFOLDERS)) +
-            R"(, "params": { "nodeSubFolderInfoList": [ { "modtime": 10, "name": "FolderA", "nodeId": "A", "parentNodeId": "123", "path": "/root/FolderA", "size": 0 }, { "modtime": 20, "name": "FolderB", "nodeId": "B", "parentNodeId": "123", "path": "/root/FolderB", "size": 0 } ] }, "type": )" +
-            std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+    (void) queryObj.set("num", toInt(RequestNum::NODE_SUBFOLDERS));
+
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("userDbId", 1);
+    (void) queryParamsObj.set("driveId", 1111);
+    (void) queryParamsObj.set("nodeId", toBase64(Str("123")));
+    (void) queryParamsObj.set("withPath", true);
+
+    (void) queryObj.set("params", queryParamsObj);
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+
+    Poco::JSON::Object nodeInfoObj1;
+    (void) nodeInfoObj1.set("modtime", 10);
+    (void) nodeInfoObj1.set("name", toBase64(Str("FolderA")));
+    (void) nodeInfoObj1.set("nodeId", toBase64(Str("A")));
+    (void) nodeInfoObj1.set("parentNodeId", toBase64(Str("123")));
+    (void) nodeInfoObj1.set("path", toBase64(Str("/root/FolderA")));
+    (void) nodeInfoObj1.set("size", 0);
+    (void) nodeInfoObj1.set("accessDenied", false);
+
+    Poco::JSON::Object nodeInfoObj2;
+    (void) nodeInfoObj2.set("modtime", 20);
+    (void) nodeInfoObj2.set("name", toBase64(Str("FolderB")));
+    (void) nodeInfoObj2.set("nodeId", toBase64(Str("B")));
+    (void) nodeInfoObj2.set("parentNodeId", toBase64(Str("123")));
+    (void) nodeInfoObj2.set("path", toBase64(Str("/root/FolderB")));
+    (void) nodeInfoObj2.set("size", 0);
+    (void) nodeInfoObj2.set("accessDenied", false);
+
+    Poco::JSON::Array nodeSubFolderInfoListObj;
+    (void) nodeSubFolderInfoListObj.add(nodeInfoObj1);
+    (void) nodeSubFolderInfoListObj.add(nodeInfoObj2);
+
+    Poco::JSON::Object paramsObj;
+    (void) paramsObj.set("nodeSubFolderInfoList", nodeSubFolderInfoListObj);
+    (void) answerObj.set("params", paramsObj);
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::NODE_SUBFOLDERS));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+
+    // Job expected answers
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto nodeSubFoldersJob = std::dynamic_pointer_cast<NodeSubFoldersJob>(job);
-        NodeInfo n1("A", "FolderA", 0, "123", 10, "/root/FolderA");
-        NodeInfo n2("B", "FolderB", 0, "123", 20, "/root/FolderB");
+        CPPUNIT_ASSERT(nodeSubFoldersJob);
+        CPPUNIT_ASSERT_EQUAL(1, nodeSubFoldersJob->_userDbId);
+        CPPUNIT_ASSERT_EQUAL(1111, nodeSubFoldersJob->_driveId);
+        CPPUNIT_ASSERT_EQUAL(NodeId{"123"}, nodeSubFoldersJob->_nodeId);
+        CPPUNIT_ASSERT(nodeSubFoldersJob->_withPath);
+
+        const NodeInfo n1("A", "FolderA", 0, "123", 10, "/root/FolderA");
+        const NodeInfo n2("B", "FolderB", 0, "123", 20, "/root/FolderB");
         nodeSubFoldersJob->_nodeSubFolderInfoList = {n1, n2};
     };
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+    testGenericJob(queryStr, answerStr, {}, processFct);
 #else
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
 
 void TestGuiCommChannel::testNodeSubFolders2Job() {
+    Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{R"({ "id": 1,)"
-                        R"( "num": )" +
-                        std::to_string(toInt(RequestNum::NODE_SUBFOLDERS2)) +
-                        R"(,)"
-                        R"( "params": { "driveDbId": 1, "nodeId": )" +
-                        toQuotedBase64("1111") + R"(, "withPath": true } })"};
-#else
-    // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::NODE_SUBFOLDERS2)) +
-                        R"(,)"
-                        R"( "params": { "driveDbId": 1, "nodeId": )" +
-                        toQuotedBase64("1111") + R"(, "withPath": true } })"};
-
-    // Callback expected answer
-    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"subfoldersList":[{"modtime":0,"name":)" +
-                            toQuotedBase64("name") + R"(,"nodeId":)" + toQuotedBase64("1111") + R"(,"parentNodeId":)" +
-                            toQuotedBase64("0000") + R"(,"path":)" + toQuotedBase64("documents/pending") + R"(,"size":1024}]}})"};
+    (void) queryObj.set("id", 1);
 #endif
-    // Job expected answer
-    const auto answerStr{R"({ "cause": 0,)"
-                         R"( "code": 0,)"
-                         R"( "id": 1,)"
-                         R"( "num": )" +
-                         std::to_string(toInt(RequestNum::NODE_SUBFOLDERS2)) +
-                         R"(,)"
-                         R"( "params": { "subfoldersList": [ { "modtime": 0, "name": )" +
-                         toQuotedBase64("name") + R"(, "nodeId": )" + toQuotedBase64("1111") + R"(, "parentNodeId": )" +
-                         toQuotedBase64("0000") + R"(, "path": )" + toQuotedBase64("documents/pending") +
-                         R"(, "size": 1024 } ] },)"
-                         R"( "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+    (void) queryObj.set("num", toInt(RequestNum::NODE_SUBFOLDERS2));
+
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("driveDbId", 1);
+    (void) queryParamsObj.set("nodeId", toBase64(Str("someNodeId")));
+    (void) queryParamsObj.set("withPath", true);
+
+    (void) queryObj.set("params", queryParamsObj);
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+
+    Poco::JSON::Object nodeInfoObj1;
+    (void) nodeInfoObj1.set("modtime", 0);
+    (void) nodeInfoObj1.set("name", toBase64(Str("name1")));
+    (void) nodeInfoObj1.set("nodeId", toBase64(Str("1111")));
+    (void) nodeInfoObj1.set("parentNodeId", toBase64(Str("0000")));
+    (void) nodeInfoObj1.set("path", toBase64(Str("documents/pending1")));
+    (void) nodeInfoObj1.set("size", 1024);
+    (void) nodeInfoObj1.set("accessDenied", false);
+
+    Poco::JSON::Object nodeInfoObj2;
+    (void) nodeInfoObj2.set("modtime", 0);
+    (void) nodeInfoObj2.set("name", toBase64(Str("name2")));
+    (void) nodeInfoObj2.set("nodeId", toBase64(Str("2222")));
+    (void) nodeInfoObj2.set("parentNodeId", toBase64(Str("0000")));
+    (void) nodeInfoObj2.set("path", toBase64(Str("documents/pending2")));
+    (void) nodeInfoObj2.set("size", 1024);
+    (void) nodeInfoObj2.set("accessDenied", false);
+
+    Poco::JSON::Array nodeSubFolderInfoListObj;
+    (void) nodeSubFolderInfoListObj.add(nodeInfoObj1);
+    (void) nodeSubFolderInfoListObj.add(nodeInfoObj2);
+
+    Poco::JSON::Object paramsObj;
+    (void) paramsObj.set("nodeSubFolderInfoList", nodeSubFolderInfoListObj);
+    (void) answerObj.set("params", paramsObj);
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::NODE_SUBFOLDERS2));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+
+    // Job expected answers
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto nodeSubFolders2Job = std::dynamic_pointer_cast<NodeSubFolders2Job>(job);
         CPPUNIT_ASSERT(nodeSubFolders2Job);
         CPPUNIT_ASSERT_EQUAL(1, nodeSubFolders2Job->_driveDbId);
-        CPPUNIT_ASSERT_EQUAL(NodeId{"1111"}, nodeSubFolders2Job->_nodeId);
+        CPPUNIT_ASSERT_EQUAL(NodeId{"someNodeId"}, nodeSubFolders2Job->_nodeId);
         CPPUNIT_ASSERT(nodeSubFolders2Job->_withPath);
 
-        nodeSubFolders2Job->_subfoldersList = {};
-        const NodeInfo nodeInfo(QString{"1111"}, "name", 1024, "0000", 0, "documents/pending");
-        nodeSubFolders2Job->_subfoldersList = {nodeInfo};
+        const NodeInfo nodeInfo1(QString{"1111"}, "name1", 1024, "0000", 0, "documents/pending1");
+        const NodeInfo nodeInfo2(QString{"2222"}, "name2", 1024, "0000", 0, "documents/pending2");
+
+        nodeSubFolders2Job->_nodeSubFolderInfoList = {nodeInfo1, nodeInfo2};
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+    testGenericJob(queryStr, answerStr, {}, processFct);
 #else
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
 
 void TestGuiCommChannel::testNodeFolderSizeJob() {
+    Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{R"({ "id": 1, "num": )" + std::to_string(toInt(RequestNum::NODE_FOLDER_SIZE)) +
-                        R"(, "params": { "userDbId": 1, "driveId": 1111, "nodeId": "123" } })"};
-#else
-    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::NODE_FOLDER_SIZE)) +
-                        R"(, "params": { "userDbId": 1, "driveId": 1111, "nodeId": "123" } })"};
-    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"folderSize":987654321}})"};
+    (void) queryObj.set("id", 1);
 #endif
-    const auto answerStr{R"({ "cause": 0, "code": 0, "id": 1, "num": )" + std::to_string(toInt(RequestNum::NODE_FOLDER_SIZE)) +
-                         R"(, "params": { "folderSize": 987654321 }, "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+    (void) queryObj.set("num", toInt(RequestNum::NODE_FOLDER_SIZE));
+
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("userDbId", 1);
+    (void) queryParamsObj.set("driveId", 1111);
+    (void) queryParamsObj.set("nodeId", toBase64(Str("123")));
+
+    (void) queryObj.set("params", queryParamsObj);
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+
+    Poco::JSON::Object paramsObj;
+    (void) paramsObj.set("folderSize", 987654321);
+    (void) answerObj.set("params", paramsObj);
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::NODE_FOLDER_SIZE));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+
+    // Job expected answers
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto folderSizeJob = std::dynamic_pointer_cast<NodeFolderSizeJob>(job);
+        CPPUNIT_ASSERT_EQUAL(1, folderSizeJob->_userDbId);
+        CPPUNIT_ASSERT_EQUAL(1111, folderSizeJob->_driveId);
+        CPPUNIT_ASSERT_EQUAL(NodeId{"123"}, folderSizeJob->_nodeId);
+
         folderSizeJob->_folderSize = 987654321;
     };
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+    testGenericJob(queryStr, answerStr, {}, processFct);
 #else
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
 
 void TestGuiCommChannel::testNodeCreateMissingFoldersJob() {
+    Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{R"({ "id": 1,)"
-                        R"( "num": )" +
-                        std::to_string(toInt(RequestNum::NODE_CREATEMISSINGFOLDERS)) +
-                        R"(,)"
-                        R"( "params": { "driveDbId": 1, "folderList": [ { "name": )" +
-                        toQuotedBase64("some-name") + R"(, "nodeId": )" + toQuotedBase64("6666") + R"( }, { "name": )" +
-                        toQuotedBase64("some-other-name") + R"(, "nodeId": )" + toQuotedBase64("7777") + R"( }  ] } })"};
-#else
-    // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::NODE_CREATEMISSINGFOLDERS)) +
-                        R"(,)"
-                        R"( "params": { "driveDbId": 1, "folderList": [ { "name": )" +
-                        toQuotedBase64("some-name") + R"(, "nodeId": )" + toQuotedBase64("6666") + R"( }, { "name": )" +
-                        toQuotedBase64("some-other-name") + R"(, "nodeId": )" + toQuotedBase64("7777") + R"( }  ] } })"};
-
-    // Callback expected answer
-    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{"parentNodeId":)" + toQuotedBase64("1111") + R"(}})"};
+    (void) queryObj.set("id", 1);
 #endif
+    (void) queryObj.set("num", toInt(RequestNum::NODE_CREATEMISSINGFOLDERS));
 
-    // Job expected answer
-    const auto answerStr{R"({ "cause": 0,)"
-                         R"( "code": 0,)"
-                         R"( "id": 1,)"
-                         R"( "num": )" +
-                         std::to_string(toInt(RequestNum::NODE_CREATEMISSINGFOLDERS)) +
-                         R"(,)"
-                         R"( "params": { "parentNodeId": )" +
-                         toQuotedBase64("1111") +
-                         R"( },)"
-                         R"( "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+    Poco::JSON::Object folderObj1;
+    (void) folderObj1.set("name", toBase64(Str("someName")));
+    (void) folderObj1.set("nodeId", toBase64(Str("6666")));
+
+    Poco::JSON::Object folderObj2;
+    (void) folderObj2.set("name", toBase64(Str("someOtherName")));
+    (void) folderObj2.set("nodeId", toBase64(Str("7777")));
+
+    Poco::JSON::Array folderListObj;
+    (void) folderListObj.add(folderObj1);
+    (void) folderListObj.add(folderObj2);
+
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("driveDbId", 1);
+    (void) queryParamsObj.set("folderList", folderListObj);
+
+    (void) queryObj.set("params", queryParamsObj);
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+
+    Poco::JSON::Object paramsObj;
+    (void) paramsObj.set("parentNodeId", toBase64(Str("1111")));
+    (void) answerObj.set("params", paramsObj);
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::NODE_CREATEMISSINGFOLDERS));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+
+    // Job expected answers
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto nodeCreateMissingFoldersJob = std::dynamic_pointer_cast<NodeCreateMissingFoldersJob>(job);
         CPPUNIT_ASSERT(nodeCreateMissingFoldersJob);
         CPPUNIT_ASSERT_EQUAL(1, nodeCreateMissingFoldersJob->_driveDbId);
         CPPUNIT_ASSERT(NodeId{"6666"} == nodeCreateMissingFoldersJob->_folderList.at(0).nodeId);
-        CPPUNIT_ASSERT(CommString{Str("some-name")} == nodeCreateMissingFoldersJob->_folderList.at(0).name);
+        CPPUNIT_ASSERT(CommString{Str("someName")} == nodeCreateMissingFoldersJob->_folderList.at(0).name);
         CPPUNIT_ASSERT(NodeId{"7777"} == nodeCreateMissingFoldersJob->_folderList.at(1).nodeId);
-        CPPUNIT_ASSERT(CommString{Str("some-other-name")} == nodeCreateMissingFoldersJob->_folderList.at(1).name);
+        CPPUNIT_ASSERT(CommString{Str("someOtherName")} == nodeCreateMissingFoldersJob->_folderList.at(1).name);
 
         nodeCreateMissingFoldersJob->_parentNodeId = NodeId("1111");
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+    testGenericJob(queryStr, answerStr, {}, processFct);
 #else
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif

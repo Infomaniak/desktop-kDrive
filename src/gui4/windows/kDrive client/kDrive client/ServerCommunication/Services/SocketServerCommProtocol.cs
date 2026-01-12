@@ -40,8 +40,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         private long _requestIdCounter = 0;
         private string _inBuffer = "";
         private int _inBufferJsonBalance = 0;
-        private readonly ConcurrentDictionary<long, TaskCompletionSource<CommData>> _pendingRequests
-            = new();
+        private readonly ConcurrentDictionary<long, TaskCompletionSource<CommData>> _pendingRequests = [];
+        private bool _stopRequested = false;
         private long NextId
         {
             get
@@ -65,72 +65,85 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public new void Initialize()
         {
-            // Fetch the port from the .comm file
-            string homePath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + Path.DirectorySeparatorChar + "kDrive" + Path.DirectorySeparatorChar + ".comm";
-            
-            try
-            {
-                int port = int.Parse((File.ReadAllText(homePath)).Trim());
-                Logger.Log(Logger.Level.Info, $"Connecting to port {port}");
-                _client = new TcpClient("localhost", port);
-                Logger.Log(Logger.Level.Info, "Connected to server.");
-            }
-            catch (SocketException ex)
-            {
-                Logger.Log(Logger.Level.Error, $"Socket connection error: {ex.Message}");
-                _client = null;
-            }catch (System.IO.FileNotFoundException)
-            {
-                Logger.Log(Logger.Level.Error, $".comm file not found at {homePath}");
-                _client = null;
-            }
-
-            if (_client != null && _client.Connected)
-            {
-                _ = Task.Run(async () =>
-                {
-                    while (true)
-                    {
-                        try
-                        {
-                            while (_client.GetStream().DataAvailable || _inBuffer.Any())
-                            {
-                                await OnReadyReadAsync().ConfigureAwait(false);
-                            }
-                            await Task.Delay(100).ConfigureAwait(false); // Polling interval
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.Log(Logger.Level.Error, $"Error in read loop: {ex.Message}");
-                        }
-                    }
-                });
-            }
-            else
-            {
-                Logger.Log(Logger.Level.Error, "Client is null or not connected, read loop not started.");
-            }
+            _ = Task.Run(ReconnectLoop);
         }
 
         ~SocketServerCommProtocol()
         {
             _client?.Dispose();
+            _stopRequested = true;
+        }
+
+        private async Task ReconnectLoop()
+        {
+            string commPortFilePath = Path.Combine(
+               Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+               "kDrive",
+               ".comm"
+           );
+
+            while (!_stopRequested)
+            {
+                if (_client == null || !_client.Connected)
+                {
+                    try
+                    {
+                        int port = int.Parse(File.ReadAllText(commPortFilePath).Trim());
+
+                        Logger.Log(Logger.Level.Info, $"Attempting to connect to localhost:{port}");
+                        _client?.Dispose();
+                        _client = new TcpClient();
+                        await _client.ConnectAsync("localhost", port).ConfigureAwait(false);
+                        Logger.Log(Logger.Level.Info, "Connected to server.");
+                    }
+                    catch (SocketException ex)
+                    {
+                        Logger.Log(Logger.Level.Warning, $"Connection failed: {ex.Message}. Retrying in 2 seconds...");
+                        _client = null;
+                        await Task.Delay(2000).ConfigureAwait(false);
+                        continue;
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        Logger.Log(Logger.Level.Error, $".comm file not found at {commPortFilePath}. Retrying in 2 seconds...");
+                        await Task.Delay(2000).ConfigureAwait(false);
+                        continue;
+                    }
+                }
+
+                try
+                {
+                    while (_client.Connected)
+                    {
+                        while (_client.GetStream().DataAvailable || _inBuffer.Any())
+                        {
+                            await OnReadyReadAsync().ConfigureAwait(false);
+                        }
+                        await Task.Delay(100).ConfigureAwait(false); // Polling interval
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(Logger.Level.Error, $"Error in read loop: {ex.Message}");
+                    _client?.Dispose();
+                    _client = null;
+                }
+
+                Logger.Log(Logger.Level.Warning, "Disconnected from server, attempting to reconnect...");
+                // Small delay before attempting reconnect
+                await Task.Delay(2000).ConfigureAwait(false);
+            }
         }
 
         public new async Task<CommData> SendRequestAsync(RequestNum requestNum, JsonObject parameters, CancellationToken cancellationToken = default)
         {
             try
             {
-                if (_client == null)
+                // Wait asynchronously until the client is connected
+                while (_client == null || !_client.Connected)
                 {
-                    Logger.Log(Logger.Level.Warning, "Unable to send request: client is null.");
-                    return new CommData();
-                }
-
-                if (!_client.Connected)
-                {
-                    Logger.Log(Logger.Level.Warning, "Unable to send request: client is not connected.");
-                    return new CommData();
+                    Logger.Log(Logger.Level.Warning, "Client not connected, waiting to send request...");
+                    await Task.Delay(100, cancellationToken).ConfigureAwait(false);
                 }
 
                 long requestId = NextId;
@@ -143,7 +156,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     ["type"] = (int)CommMessageType.Request,
                     ["id"] = requestId,
                     ["num"] = (int)requestNum,
-                    ["params"] = parameters?.Deserialize<JsonNode>()
+                    ["params"] = parameters.Deserialize<JsonNode>()
                 };
 
                 // Convert to JSON
@@ -232,6 +245,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             else
             {
+                _inBufferJsonBalance = 0;
                 UpdateJsonBalance(_inBuffer, ref _inBufferJsonBalance, ref jsonEndIndex);
             }
 

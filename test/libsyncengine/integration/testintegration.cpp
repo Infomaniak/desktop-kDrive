@@ -22,7 +22,7 @@
 
 #include "db/db.h"
 #include "jobs/local/localcopyjob.h"
-#include "jobs/local/localdeletejob.h"
+#include "jobs/local/synclocaldeletejob.h"
 #include "jobs/local/localmovejob.h"
 #include "jobs/syncjobmanager.h"
 #include "jobs/local/localcreatedirjob.h"
@@ -279,6 +279,7 @@ void TestIntegration::testBreakCycle() {
     logStep("testBreakCycle");
 }
 
+static const auto maxNbBlacklistedFiles = 3000;
 void TestIntegration::testBlacklist() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
     const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
@@ -334,7 +335,7 @@ void TestIntegration::testBlacklist() {
     // Add lots of folders in the blacklist (but not too many).
     const auto idInt = static_cast<uint64_t>(std::stoll(_remoteSyncDir.id()));
     NodeSet blacklist;
-    for (auto i = idInt + 1; i < idInt + 1000; i++) {
+    for (auto i = idInt + 1; i < idInt + maxNbBlacklistedFiles; i++) {
         (void) blacklist.emplace(std::to_string(i));
     }
     (void) SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, blacklist);
@@ -347,8 +348,8 @@ void TestIntegration::testBlacklist() {
     CPPUNIT_ASSERT(!std::filesystem::exists(dirpath));
 
     // Add too many folders in the blacklist.
-    (void) blacklist.emplace(std::to_string(idInt + 1001));
-    (void) blacklist.emplace(std::to_string(idInt + 1002));
+    (void) blacklist.emplace(std::to_string(idInt + maxNbBlacklistedFiles + 1));
+    (void) blacklist.emplace(std::to_string(idInt + maxNbBlacklistedFiles + 2));
     (void) SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, blacklist);
     // Apply new blacklist.
     _syncPal->stop();

@@ -52,12 +52,14 @@ class GuiCommChannel : public SocketCommChannel {
 #if defined(KD_MACOS)
         uint64_t writeData(const KDC::CommChar *data, uint64_t len) override;
 #endif
-        bool containsValidJson(const CommString &message, size_t &endIndex) const;
+        bool containsCompleteMessage(const CommString &message, size_t &endIndex) const;
         void fetchDataToBuffer();
 
         CommString _readBuffer;
         bool _validJsonInBuffer = false; // True if read buffer contains at least one valid JSON
         size_t _inBufferJsonEndIndex = 0; // Index of the end of the valid JSON in the buffer
+
+        friend class TestGuiCommChannel;
 };
 
 #if defined(KD_MACOS)

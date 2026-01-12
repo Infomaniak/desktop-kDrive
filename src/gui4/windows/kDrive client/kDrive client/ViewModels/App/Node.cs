@@ -36,8 +36,6 @@ namespace Infomaniak.kDrive.ViewModels
         private bool _isLoadingSize = false;
         private DbId _userDbId = -1;
         private DriveId _driveId = -1;
-
-        public Node() { }
         public Node(NodeId nodeId, string name, Int64 size, NodeId parentNodeId, string path, DbId userDbId, DriveId driveId)
         {
             _nodeId = nodeId;

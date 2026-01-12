@@ -99,23 +99,23 @@ class Handler {
         inline static bool debugBeforeSendCallback() { return _debugBeforeSendCallback; }
 
         // Print an event description into a file (for debugging)
-        static void writeEvent(const std::string &eventStr) noexcept { writeEvent(eventStr, false); };
+        static void writeEvent(const std::string &eventStr) noexcept { writeEvent(eventStr, false); }
         // Print a crash event description into a file (for debugging)
-        static void writeCrashEvent(const std::string &eventStr) noexcept { writeEvent(eventStr, true); };
+        static void writeCrashEvent(const std::string &eventStr) noexcept { writeEvent(eventStr, true); }
 
         void setDistributionChannel(VersionChannel channel);
         void setAppUUID(std::string appUUID);
+        void setIsSentryActivated(bool isSentryActivated) { _isSentryActivated = isSentryActivated; }
 
         // Returns the file path where non-crash events of type `appType` are written locally.
-        static SyncPath getEventFilePath(const AppType appType) { return getEventFilePath(appType, false); };
+        static SyncPath getEventFilePath(const AppType appType) { return getEventFilePath(appType, false); }
         // Returns the file path where crash events of type `appType` are written locally.
-        static SyncPath getCrashEventFilePath(const AppType appType) { return getEventFilePath(appType, true); };
+        static SyncPath getCrashEventFilePath(const AppType appType) { return getEventFilePath(appType, true); }
 
     protected:
         Handler() = default;
         void setMaxCaptureCountBeforeRateLimit(int maxCaptureCountBeforeRateLimit);
         void setMinUploadIntervalOnRateLimit(int minUploadIntervalOnRateLimit);
-        void setIsSentryActivated(bool isSentryActivated) { _isSentryActivated = isSentryActivated; }
         virtual void sendEventToSentry(const Level level, const std::string &title, const std::string &message) const;
         void privateCaptureMessage(Level level, const std::string &title, std::string message,
                                    const SentryUser &user = SentryUser());

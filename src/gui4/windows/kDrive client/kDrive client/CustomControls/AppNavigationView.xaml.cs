@@ -21,7 +21,7 @@ namespace Infomaniak.kDrive.CustomControls
         public Frame Frame { get { return ContentFrame; } }
         private Dictionary<string, List<Type>> _navigationItemToPage = new Dictionary<string, List<Type>>()
         {
-            { "HomePage", new List<Type>() { typeof(Pages.HomePage) } },
+            { "HomePage", new List<Type>() { typeof(Pages.HomePage), typeof(Pages.DriveAccessDeniedPage), typeof(Pages.LoggingErrorPage )} },
             { "ActivityPage", new List<Type>() { typeof(Pages.ActivityPage), typeof(Pages.ErrorPage) } },
             { "SettingsPage", new List<Type>() { typeof(Pages.Settings.SettingsPage), typeof(Pages.Settings.DriveManagementPage) } },
             { "StoragePage", new List<Type>() { typeof(Pages.StoragePage) } }
@@ -56,16 +56,16 @@ namespace Infomaniak.kDrive.CustomControls
 
         private void GoToNavigationViewItemPage(NavigationViewItem? item)
         {
-            if (item != null)
+            if (item is not null)
             {
                 // Navigate to the selected page
-                if (_navigationItemToPage.TryGetValue(item.Tag.ToString() ?? "", out List<Type>? pageTypes))
+                if (_navigationItemToPage.TryGetValue(item?.Tag?.ToString() ?? "", out List<Type>? pageTypes))
                 {
                     ContentFrame.Navigate(pageTypes.FirstOrDefault());
                     return;
                 }
 
-                Logger.Log(Logger.Level.Warning, $"Unknown navigation tag: {item.Tag}... Going to HomePage");
+                Logger.Log(Logger.Level.Info, $"Unknown navigation tag: {item.Tag}... Going to HomePage");
                 ContentFrame.Navigate(typeof(SettingsPage));
             }
         }

@@ -120,6 +120,26 @@ void TestGuiCommChannel::testReadMessage() {
     CPPUNIT_ASSERT(message[0] == readMessage); // Now should be complete
 }
 
+void TestGuiCommChannel::testContainsCompleteMessage() {
+    GuiCommChannelTest channelTest;
+    size_t endIndex = 0;
+
+    // Empty message
+    CPPUNIT_ASSERT(!channelTest.containsCompleteMessage(Str(""), endIndex));
+
+    // The message should start with a "{" or "["
+    CPPUNIT_ASSERT(!channelTest.containsCompleteMessage(Str("qwertz"), endIndex));
+
+    // The message should be correctly parenthesized
+    CPPUNIT_ASSERT(!channelTest.containsCompleteMessage(Str("{\"var\":\"value\")"), endIndex));
+    CPPUNIT_ASSERT(channelTest.containsCompleteMessage(Str("{\"var\":\"value\"})"), endIndex) && endIndex == 14);
+    CPPUNIT_ASSERT(channelTest.containsCompleteMessage(Str("{\"var\":\"value\"}{\"var2\":\"value2\"})"), endIndex) &&
+                   endIndex == 14);
+    CPPUNIT_ASSERT(!channelTest.containsCompleteMessage(Str("{\"varList\":[1,2,3,4)"), endIndex));
+    CPPUNIT_ASSERT(channelTest.containsCompleteMessage(Str("{\"varList\":[1,2,3,4]})"), endIndex) && endIndex == 20);
+    CPPUNIT_ASSERT(channelTest.containsCompleteMessage(Str("{{[][]}{[{{[]}{}}]}{{}{}{}}})"), endIndex) && endIndex == 27);
+}
+
 void TestGuiCommChannel::testCanReadMessage() {
     GuiCommChannelTest channelTest;
     CommString message = Str("{\"type\":\"test\",\"content\":\"Hello, World!\"}");
@@ -667,74 +687,6 @@ void TestGuiCommChannel::testDriveSearchJob() {
     testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
-#endif
-}
-
-void TestGuiCommChannel::testGenericJob(const CommString &query, const CommString &answer, const CommString &cbkAnswer,
-                                        const std::function<void(std::shared_ptr<AbstractGuiJob>)> &processFct) {
-    auto test = [&](const CommString &testQuery, std::shared_ptr<AbstractCommChannel> testChannel) {
-        //  Deserialize generic parameters
-        int requestId = 0;
-        RequestNum requestNum = RequestNum::Unknown;
-        Poco::DynamicStruct inParams;
-        if (!AbstractGuiJob::deserializeGenericInputParms(testQuery, requestId, requestNum, inParams)) {
-            CPPUNIT_ASSERT(false);
-        }
-
-        // Create job
-        auto job = _guiJobFactory.make(requestNum, nullptr, requestId, inParams, testChannel);
-        CPPUNIT_ASSERT(job != nullptr);
-
-        // Deserialize specific parameters
-        if (!job->deserializeInputParms()) {
-            CPPUNIT_ASSERT(false);
-        }
-
-        // Process job simulation
-        processFct(job);
-
-        // Serialize specific parameters
-        if (!job->serializeOutputParms()) {
-            CPPUNIT_ASSERT(false);
-        }
-
-        if (!job->serializeGenericOutputParms(ExitCode::Ok)) {
-            CPPUNIT_ASSERT(false);
-        }
-
-        if (requestNum != RequestNum::USER_INFOLIST) {
-            // TODO: Remove this exception when UserInfo._avatar will be a CommBLOB instead of a QImage
-            // (QImage.save() gives different results depending on the machine)
-            CommString s{answer};
-            assert(job->_outputParamsStr == answer);
-            CPPUNIT_ASSERT_MESSAGE(CommonUtility::commString2Str(job->_outputParamsStr).c_str(), job->_outputParamsStr == answer);
-        }
-
-        CPPUNIT_ASSERT(testChannel->sendMessage(job->_outputParamsStr));
-    };
-
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    auto testChannel = std::make_shared<GuiCommChannel>(Poco::Net::StreamSocket());
-    test(query, testChannel);
-#else
-    auto readyReadCbk = [&](std::shared_ptr<AbstractCommChannel> testChannel) {
-        if (testChannel->canReadMessage()) {
-            CommString testQuery = testChannel->readMessage();
-            if (!testQuery.empty()) {
-                test(testQuery, testChannel);
-            } else {
-                CPPUNIT_ASSERT(false);
-            }
-        }
-    };
-
-    auto answerCbk = [=](const CommString &answer) {
-        CommString s{answer};
-        assert(answer == CommString(cbkAnswer));
-        CPPUNIT_ASSERT_MESSAGE(answer, answer == CommString(cbkAnswer));
-    };
-
-    GuiCommChannel::runProcessQuery(query, readyReadCbk, answerCbk);
 #endif
 }
 

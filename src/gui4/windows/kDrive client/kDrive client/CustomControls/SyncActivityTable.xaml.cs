@@ -19,10 +19,10 @@ namespace Infomaniak.kDrive.CustomControls
 {
     public sealed partial class SyncActivityTable : UserControl
     {
-        private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+        private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel => _viewModel;
 
-        private readonly ObservableCollection<SyncFileItem> _outGoingActivities = new();
+        private readonly ObservableCollection<SyncFileItem> _outGoingActivities = [];
         private IDisposable? _activitySubscription;
 
         public SyncActivityTable()
@@ -149,7 +149,7 @@ namespace Infomaniak.kDrive.CustomControls
 
         }
     }
-    public class ItemTypeDataTemplateSelector : DataTemplateSelector
+    public partial class ItemTypeDataTemplateSelector : DataTemplateSelector
     {
         public DataTemplate? FileTemplate { get; set; }
         public DataTemplate? DirectoryTemplate { get; set; }
@@ -170,13 +170,47 @@ namespace Infomaniak.kDrive.CustomControls
                 return null;
             }
 
-            switch (nodeType)
+            return nodeType switch
             {
-                case Types.NodeType.Directory:
-                    return DirectoryTemplate;
-                default:
-                    return FileTemplate;
+                Types.NodeType.Directory => DirectoryTemplate,
+                _ => FileTemplate,
+            };
+        }
+    }
+
+    public partial class ActivityStatusDataTemplateSelector : DataTemplateSelector
+    {
+        public DataTemplate? SynchronizedTemplate { get; set; }
+        public DataTemplate? SynchronizingTemplate { get; set; }
+        public DataTemplate? SynchronizationErrorTemplate { get; set; }
+
+        protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container)
+        {
+            if (item == null)
+                return null;
+
+            Types.SyncFileStatus syncFileStatus;
+            if (item is SyncFileItem syncActivity)
+            {
+                syncFileStatus = syncActivity.Status;
             }
+            else
+            {
+                Logger.Log(Logger.Level.Error, "Unexpected type in SelectTemplateCore");
+                return null;
+            }
+
+            return syncFileStatus switch
+            {
+                SyncFileStatus.Unknown => SynchronizationErrorTemplate,
+                SyncFileStatus.Error => SynchronizationErrorTemplate,
+                SyncFileStatus.Success => SynchronizedTemplate,
+                SyncFileStatus.Conflict => SynchronizationErrorTemplate,
+                SyncFileStatus.Inconsistency => SynchronizationErrorTemplate,
+                SyncFileStatus.Ignored => SynchronizationErrorTemplate,
+                SyncFileStatus.Syncing => SynchronizingTemplate,
+                _ => SynchronizationErrorTemplate,
+            };
         }
     }
 }

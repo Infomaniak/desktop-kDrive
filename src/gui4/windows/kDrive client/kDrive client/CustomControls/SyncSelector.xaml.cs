@@ -18,7 +18,7 @@ namespace Infomaniak.kDrive.CustomControls
         }
     }
 
-    public class SyncTemplateSelector : DataTemplateSelector
+    public partial class SyncTemplateSelector : DataTemplateSelector
     {
         public DataTemplate? MainSyncTemplate { get; set; }
         public DataTemplate? AdvancedSyncTemplate { get; set; }

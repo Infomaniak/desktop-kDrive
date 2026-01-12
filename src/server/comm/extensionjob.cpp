@@ -161,17 +161,15 @@ void ExtensionJob::commandGetMenuItems(const CommString &argument, std::shared_p
 
         if (syncPalMapIt != AppServer::syncPalMap.end() && syncPalMapIt->second && vfsMapIt != AppServer::vfsMap.end() &&
             vfsMapIt->second) {
+            // Some options only show for single files
+            bool isSingleFile = false;
+            if (paths.size() == 1) {
+                manageActionsOnSingleFile(channel, paths[0], syncPalMapIt, vfsMapIt, sync);
+                isSingleFile = QFileInfo(CommonUtility::commString2QStr(paths[0])).isFile();
+            }
 #if defined(KD_MACOS)
             // File availability actions
             if (sync.virtualFileMode() != VirtualFileMode::Off && vfsMapIt->second->showPinStateActions()) {
-                // Some options only show for single files
-                bool isSingleFile = false;
-                if (paths.size() == 1) {
-                    manageActionsOnSingleFile(channel, paths[0], syncPalMapIt, vfsMapIt, sync);
-
-                    isSingleFile = QFileInfo(CommonUtility::commString2QStr(paths[0])).isFile();
-                }
-
                 // Manage hydration/dehydration
                 bool canCancelDehydration = false;
 
@@ -222,11 +220,6 @@ void ExtensionJob::commandGetMenuItems(const CommString &argument, std::shared_p
                 };
 
                 makePinContextMenu(canHydrate, canDehydrate, canCancelDehydration, canCancelHydration);
-            }
-#elif defined(KD_WINDOWS)
-            // Some options only show for single files
-            if (paths.size() == 1) {
-                manageActionsOnSingleFile(channel, paths[0], syncPalMapIt, vfsMapIt, sync);
             }
 #endif
         }
@@ -450,13 +443,11 @@ void ExtensionJob::commandGetAllMenuItems(const CommString &argument, std::share
         return;
     }
 
-    {
-        CommString msgId = argumentList[0];
-        CommString response(msgId);
-        response.append(responseToFinderArgSeparator);
-        response.append(CommonUtility::str2CommString(Theme::instance()->appName()));
-        channel->sendMessage(response);
-    }
+
+    CommString msgId = argumentList[0];
+    CommString response(msgId);
+    response.append(responseToFinderArgSeparator);
+    response.append(CommonUtility::str2CommString(Theme::instance()->appName()));
 
     // Find the common sync
     std::vector<SyncPath> paths;
@@ -470,7 +461,6 @@ void ExtensionJob::commandGetAllMenuItems(const CommString &argument, std::share
 
         if (syncPalMapIt != AppServer::syncPalMap.end() && syncPalMapIt->second && vfsMapIt != AppServer::vfsMap.end() &&
             vfsMapIt->second) {
-            CommString response;
             response.append(responseToFinderArgSeparator);
             response.append(sync.dbId() ? Vfs::modeToString(vfsMapIt->second->mode()) : Str(""));
 
@@ -482,6 +472,7 @@ void ExtensionJob::commandGetAllMenuItems(const CommString &argument, std::share
                 if (exitCode != ExitCode::Ok) {
                     LOGW_WARN(Log::instance()->getLogger(),
                               L"Error in SyncPal::itemId - " << Utility::formatSyncPath(fileData.relativePath));
+                    channel->sendMessage(response);
                     return;
                 }
                 bool isOnTheServer = !nodeId.empty();
@@ -514,10 +505,9 @@ void ExtensionJob::commandGetAllMenuItems(const CommString &argument, std::share
                 response.append(responseToFinderArgSeparator);
                 response.append(cancelHydrationText());
             }
-
-            channel->sendMessage(response);
         }
     }
+    channel->sendMessage(response);
 }
 
 void ExtensionJob::commandGetThumbnail(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
