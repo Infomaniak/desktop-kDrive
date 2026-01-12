@@ -372,6 +372,7 @@ ExitInfo AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
     try {
         const std::scoped_lock lock(_mutexSession);
         if (_session) {
+            _session->socket().setReuseAddress(true);
             stream.push_back(_session->sendRequest(req));
             if (ioOrLogicalErrorOccurred(stream[0].get())) {
                 return processSocketError("invalid send stream", jobId());
