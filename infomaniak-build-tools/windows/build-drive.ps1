@@ -73,9 +73,6 @@ $extPath = "$path/extensions/windows/cfapi"
 $clientPath = "$path/src/gui4/windows/kDrive client"
 $vfsDir = "$extPath/x64/Release"
 
-$msiInstallerFolderPath = "$path/installer/windows/kDriveInstaller"
-$msiPackageFolderPath = "$msiInstallerFolderPath/bin/x64/Release/en-US"
-
 # Files to be added to the archive and then packaged
 $archivePath = "$installPath/bin"
 $archiveName = "kDrive.7z"
@@ -594,14 +591,24 @@ function Create-Archive {
 }
 
 function Create-MSI-Package {
+    param (
+        [string] $path,
+        [string] $buildPath,
+        [string] $contentPath
+    )
+
     Write-Host "Creating MSI package ..."
 
 	$appName = Get-Package-Name $buildPath
+
+    $path = $path.Replace('/', '\')
+    $msiInstallerFolderPath = "$path\installer\windows\kDriveInstaller"
+    $msiPackageFolderPath = "$msiInstallerFolderPath\bin\x64\Release\en-US"
 	
-	dotnet build "$msiInstallerFolderPath/kDriveInstaller.sln" /p:Configuration="Release" /p:Platform="x64" /p:OutputName=$appName
+	dotnet build "$msiInstallerFolderPath\kDriveInstaller.sln" /p:Configuration="Release" /p:Platform="x64" /p:OutputName=$appName
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-	Move-Item -Path "$msiPackageFolderPath/$appName.msi" -Destination "$contentPath"
+	Move-Item -Path "$msiPackageFolderPath\$appName.msi" -Destination "$contentPath"
 	if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 	# Sign final installer
@@ -832,7 +839,7 @@ if (!$ci) {
 #################################################################################################
 
 if ($msi) {
-    Create-MSI-Package
+    Create-MSI-Package -Path $path -BuildPath $buildPath -contentPath $contentPath
     if ($LASTEXITCODE -ne 0) {
         Write-Host "MSI package creation failed ($LASTEXITCODE) . Aborting." -f Red
         exit $LASTEXITCODE
