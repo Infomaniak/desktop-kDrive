@@ -22,21 +22,14 @@
 
 namespace KDC {
 
-class UtilityFindGoodPathForNewSyncJob : public AbstractGuiJob {
+class UtilityDisplayClientReportJob : public AbstractGuiJob {
     public:
-        UtilityFindGoodPathForNewSyncJob(std::shared_ptr<CommManager> commManager, int requestId,
-                                         const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel);
+        UtilityDisplayClientReportJob(std::shared_ptr<CommManager> commManager, int requestId,
+                                      const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel);
 
     private:
-        // Input parameters
-        SyncPath _basePath;
-
-        // Output parameters
-        SyncPath _goodPath;
-        std::string _errorMessage;
-
-        ExitInfo deserializeInputParms() override;
-        ExitInfo serializeOutputParms() override;
+        ExitInfo deserializeInputParms() override { return ExitCode::Ok; };
+        ExitInfo serializeOutputParms() override { return ExitCode::Ok; };
         ExitInfo process() override;
 
         friend class TestGuiCommChannel;

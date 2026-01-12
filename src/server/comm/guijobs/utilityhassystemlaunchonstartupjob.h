@@ -20,22 +20,20 @@
 
 #include "server/comm/guijobs/abstractguijob.h"
 
+#include "libcommon/info/parametersinfo.h"
+
 namespace KDC {
 
-class UtilityFindGoodPathForNewSyncJob : public AbstractGuiJob {
+class UtilityHasSystemLaunchOnStartupJob : public AbstractGuiJob {
     public:
-        UtilityFindGoodPathForNewSyncJob(std::shared_ptr<CommManager> commManager, int requestId,
-                                         const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel);
+        UtilityHasSystemLaunchOnStartupJob(std::shared_ptr<CommManager> commManager, int requestId,
+                                           const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel);
 
     private:
-        // Input parameters
-        SyncPath _basePath;
+        // Output parameter
+        bool _enabled{false};
 
-        // Output parameters
-        SyncPath _goodPath;
-        std::string _errorMessage;
-
-        ExitInfo deserializeInputParms() override;
+        ExitInfo deserializeInputParms() override { return ExitCode::Ok; };
         ExitInfo serializeOutputParms() override;
         ExitInfo process() override;
 

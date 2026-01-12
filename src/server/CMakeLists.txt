@@ -93,15 +93,21 @@ set(server_SRCS
     
     comm/guijobs/parametersinfojob.h comm/guijobs/parametersinfojob.cpp
     comm/guijobs/parametersupdatejob.h comm/guijobs/parametersupdatejob.cpp
-    comm/guijobs/utilityactivateloadinfojob.h comm/guijobs/utilityactivateloadinfojob.cpp
+
     comm/guijobs/utilitybestvfsavailablemodejob.h comm/guijobs/utilitybestvfsavailablemodejob.cpp
     comm/guijobs/utilityfindgoodpathfornewsyncjob.h comm/guijobs/utilityfindgoodpathfornewsyncjob.cpp
+    comm/guijobs/utilityispathvalidfornewsyncjob.h comm/guijobs/utilityispathvalidfornewsyncjob.cpp
+    comm/guijobs/utilityactivateloadinfojob.h comm/guijobs/utilityactivateloadinfojob.cpp
+    comm/guijobs/utilitycheckcommstatusjob.h comm/guijobs/utilitycheckcommstatusjob.cpp
+    comm/guijobs/utilityhassystemlaunchonstartupjob.h comm/guijobs/utilityhassystemlaunchonstartupjob.cpp
     comm/guijobs/utilitysetappstatejob.h comm/guijobs/utilitysetappstatejob.cpp
     comm/guijobs/utilitygetappstatejob.h comm/guijobs/utilitygetappstatejob.cpp
-    comm/guijobs/utilityispathvalidfornewsyncjob.h comm/guijobs/utilityispathvalidfornewsyncjob.cpp
     comm/guijobs/utilitysendlogtosupportjob.h comm/guijobs/utilitysendlogtosupportjob.cpp
     comm/guijobs/utilitycancellogtosupportjob.h comm/guijobs/utilitycancellogtosupportjob.cpp
     comm/guijobs/utilitygetlogestimatedsizejob.h comm/guijobs/utilitygetlogestimatedsizejob.cpp
+    comm/guijobs/utilityquitjob.h comm/guijobs/utilityquitjob.cpp
+    comm/guijobs/utilitydisplayclientreportjob.h comm/guijobs/utilitydisplayclientreportjob.cpp
+    
     comm/guijobs/updaterversioninfojob.h comm/guijobs/updaterversioninfojob.cpp
     comm/guijobs/updaterstatejob.h comm/guijobs/updaterstatejob.cpp
     comm/guijobs/updaterstartinstallerjob.h comm/guijobs/updaterstartinstallerjob.cpp
