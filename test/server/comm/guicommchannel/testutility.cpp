@@ -126,7 +126,7 @@ void TestGuiCommChannel::testUtilityFindGoodPathForNewSyncJob() {
 
     Poco::JSON::Object paramsObj;
     (void) paramsObj.set("errorMessage", "");
-    (void) paramsObj.set("goodPath", toBase64("/dummy/good_path"));
+    (void) paramsObj.set("goodPath", toBase64(Str("/dummy/good_path")));
     (void) answerObj.set("params", paramsObj);
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
