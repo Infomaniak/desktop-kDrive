@@ -4,7 +4,7 @@
  * Locale: it, Italian
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Mon, 12 Jan 2026 14:01:58 +0100
+ * Exported at: Mon, 12 Jan 2026 15:52:07 +0100
  */
 
 /* loco:691deb2291b20ac7fd045012 */
@@ -62,7 +62,7 @@
 "greetingLabel" = "Ciao %s, %s";
 
 /* loco:6964f0b575a31a8d9601a6d7 */
-"helpKDriveName" = "kGuida %s";
+"helpKDriveName" = "kDrive %s";
 
 /* loco:6930595e7664999c6a08c8a4 */
 "instructionEnableKDrive" = "Attivare kDrive.app";
