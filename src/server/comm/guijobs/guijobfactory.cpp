@@ -74,7 +74,7 @@
 #include "utilitycancellogtosupportjob.h"
 #include "utilitygetlogestimatedsizejob.h"
 #include "utilityquitjob.h"
-#include "utilitydisplayclientreportjob.h"
+#include "utilitysendappstarttracejob.h"
 
 #include "updaterversioninfojob.h"
 #include "updaterstatejob.h"
@@ -150,7 +150,7 @@ GuiJobFactory::GuiJobFactory() {
         {RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT, makeShared<UtilityCancelLogToSupportJob>},
         {RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE, makeShared<UtilityGetLogEstimatedSizeJob>},
         {RequestNum::UTILITY_QUIT, makeShared<UtilityQuitJob>},
-        {RequestNum::UTILITY_SEND_APP_START_TRACE, makeShared<UtilityDisplayClientReportJob>},
+        {RequestNum::UTILITY_SEND_APP_START_TRACE, makeShared<UtilitySendAppStartTraceJob>},
         {RequestNum::UPDATER_VERSION_INFO, makeShared<UpdaterVersionInfoJob>},
         {RequestNum::UPDATER_STATE, makeShared<UpdaterStateJob>},
         {RequestNum::UPDATER_START_INSTALLER, makeShared<UpdaterStartInstallerJob>},

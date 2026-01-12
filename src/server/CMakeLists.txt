@@ -108,7 +108,7 @@ set(server_SRCS
     comm/guijobs/utilitycancellogtosupportjob.h comm/guijobs/utilitycancellogtosupportjob.cpp
     comm/guijobs/utilitygetlogestimatedsizejob.h comm/guijobs/utilitygetlogestimatedsizejob.cpp
     comm/guijobs/utilityquitjob.h comm/guijobs/utilityquitjob.cpp
-    comm/guijobs/utilitydisplayclientreportjob.h comm/guijobs/utilitydisplayclientreportjob.cpp
+    comm/guijobs/utilitysendappstarttracejob.h comm/guijobs/utilitysendappstarttracejob.cpp
     
     comm/guijobs/updaterversioninfojob.h comm/guijobs/updaterversioninfojob.cpp
     comm/guijobs/updaterstatejob.h comm/guijobs/updaterstatejob.cpp

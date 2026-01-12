@@ -28,7 +28,7 @@
 #include "comm/guijobs/utilitycancellogtosupportjob.h"
 #include "comm/guijobs/utilitygetlogestimatedsizejob.h"
 #include "comm/guijobs/utilityquitjob.h"
-#include "comm/guijobs/utilitydisplayclientreportjob.h"
+#include "comm/guijobs/utilitysendappstarttracejob.h"
 
 #include "testguicommchannel.h"
 #include "../testcommhelpers.h"
@@ -464,7 +464,7 @@ void TestGuiCommChannel::testUtilityQuitJob() {
 #endif
 }
 
-void TestGuiCommChannel::testUtilityDisplayClientReportJob() {
+void TestGuiCommChannel::testUtilitySendAppStartTraceJob() {
     const Poco::JSON::Object query = createSimpleQuery(RequestNum::UTILITY_SEND_APP_START_TRACE);
     const auto queryStr = stringifyQueryObj(query);
 
@@ -473,7 +473,7 @@ void TestGuiCommChannel::testUtilityDisplayClientReportJob() {
     const auto answerStr = stringifyAnswerObj(simpleAnswers.answerWithNumAndType);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-        const auto utilityDisplayClientReportJob = std::dynamic_pointer_cast<UtilityDisplayClientReportJob>(job);
+        const auto utilityDisplayClientReportJob = std::dynamic_pointer_cast<UtilitySendAppStartTraceJob>(job);
         CPPUNIT_ASSERT(utilityDisplayClientReportJob);
     };
 
