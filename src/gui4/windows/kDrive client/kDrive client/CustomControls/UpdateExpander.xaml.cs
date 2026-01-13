@@ -18,13 +18,23 @@ namespace Infomaniak.kDrive.CustomControls
         {
             InitializeComponent();
             RegisterPropertyChangedHandlers();
-            bool staffUserExists = ViewModel.Users.Any(u => u.IsStaff && u.IsConnected);
-            UpdateChannelComboBox_Internal.Visibility = staffUserExists ? Visibility.Visible : Visibility.Collapsed;
+            UpdateInternalChannelComboBoxVisibility();
         }
 
         ~UpdateExpander()
         {
             UnregisterPropertyChangedHandlers();
+        }
+
+        private bool IsStaffUserConnected()
+        {
+            return ViewModel.Users.Any(u => u.IsStaff && u.IsConnected);
+        }
+
+        private void UpdateInternalChannelComboBoxVisibility()
+        {
+            UpdateChannelComboBox_Internal.Visibility =
+                IsStaffUserConnected() ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void RegisterPropertyChangedHandlers()
@@ -82,10 +92,7 @@ namespace Infomaniak.kDrive.CustomControls
                 this.Description = Utility.GetLocalizedString("CC_UpdateExpander_UpToDate_Description/Text");
                 DisplayedVersion = AppVersionInfo;
             }
-            // check if any of the users is staff to show the internal update channel combobox
-            bool staffUserExists = ViewModel.Users.Any(u => u.IsStaff && u.IsConnected);
-            UpdateChannelComboBox_Internal.Visibility = staffUserExists ? Visibility.Visible : Visibility.Collapsed;
-
+            UpdateInternalChannelComboBoxVisibility();
         }
 
         private async void UpdateChannel_SelectionChanged(object sender, SelectionChangedEventArgs e)
