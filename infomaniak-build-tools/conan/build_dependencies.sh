@@ -178,9 +178,6 @@ if [[ $use_release_profile == true ]]; then
     if ! grep -qE 'build_type=(Release|RelWithDebInfo)' "$profile_path"; then
       error "Profile '$release_profile' must set build_type to Release or RelWithDebInfo"
     fi
-    if grep -q 'tools.cmake.cmaketoolchain:user_toolchain' "$profile_path"; then
-      error "Profile '$release_profile' must not set tools.cmake.cmaketoolchain:user_toolchain"
-    fi
 
     log "Using '$release_profile' profile for Conan."
     conan_profile="$release_profile"
@@ -227,7 +224,6 @@ log "- Output directory: '$output_dir'"
 echo
 
 log "Installing dependencies..."
-# Install this packet in the build folder.
 # Here: -s:b set the build type for the app itself, -s:h set the build type for the host (dependencies).
 conan install . --output-folder="$output_dir" --build=missing $architecture -s:b=build_type="$build_type" -s:h=build_type="Release" --profile:all="$conan_profile" -r=$local_recipe_remote_name -r=conancenter
 
