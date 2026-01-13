@@ -17,13 +17,15 @@
  */
 
 import Foundation
+import InfomaniakDI
 
-extension XPCSignalHandler {
-    // MARK: Drive
+struct DriveSignalHandler {
+    private let decoder = JSONDecoder()
+    @LazyInjectService private var coherentCache: CoherentCache
 
     func handleDrive(_ signal: Data) async throws {
         guard let driveInfoSignal = try? decoder.decode(SignalMessage<DriveInfoSignal>.self, from: signal) else {
-            throw SignalError.unableToGetDriveFromSignal
+            throw XPCSignalError.unableToGetDriveFromSignal
         }
 
         let driveInfo = driveInfoSignal.body.driveInfo
@@ -32,10 +34,27 @@ extension XPCSignalHandler {
 
     func handleDriveRemoved(_ signal: Data) async throws {
         guard let driveInfoSignal = try? decoder.decode(SignalMessage<DriveRemoveSignal>.self, from: signal) else {
-            throw SignalError.unableToGetDriveDbIdFromSignal
+            throw XPCSignalError.unableToGetDriveDbIdFromSignal
         }
 
         let driveDbId = driveInfoSignal.body.driveDbId
         try await coherentCache.removeDrive(driveDbId: driveDbId)
+    }
+}
+
+extension CoherentCache {
+    func addOrUpdateDriveSignal(_ driveSignal: DriveInfoSignalMetadata) async throws {
+        let accountDbId = driveSignal.accountDbId
+        guard var account = await getAccount(accountDbId: accountDbId) else {
+            throw ServerCoherentCache.CacheError.accountNotFound(accountDbId)
+        }
+
+        let existingDrive = account.drives[driveSignal.dbId]
+        let updatedDrive = driveSignal.asDrive(accountId: account.id,
+                                               userDbId: account.userDbId,
+                                               synchros: existingDrive?.synchros ?? [:])
+        account.drives[driveSignal.dbId] = updatedDrive
+
+        try await updateAccount(account)
     }
 }
