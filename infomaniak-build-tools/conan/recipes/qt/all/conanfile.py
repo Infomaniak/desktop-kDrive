@@ -18,13 +18,15 @@ class QtConan(ConanFile):
         # cli:   If the qtaccount.ini file exists, the online installer will use it; otherwise, it will prompt the user for their Qt account email and password. This cannot be used in CI/CD pipelines.
         "qt_login_type": ["ini", "envvars", "cli"],
         "debug_symbols": [True, False],
-        "install_vcredist": [True, False]  # Install Visual C++ Redistributable packages (Windows MSVC only)
+        "install_vcredist": [True, False],  # Install Visual C++ Redistributable packages (Windows MSVC only)
+        "verbose": [True, False]  # Enable verbose mode for installer output
     }
 
     default_options = {
         "qt_login_type": "ini",
         "debug_symbols": False,
-        "install_vcredist": False
+        "install_vcredist": False,
+        "verbose": False
     }
 
     @staticmethod
@@ -289,6 +291,11 @@ class QtConan(ConanFile):
             "--accept-licenses",     # Accepts all licenses without user input.
             "--default-answer"       # Automatically answers to message queries with their default values.
         ]
+
+        # Add verbose mode if enabled
+        if self.options.verbose:
+            args.append("--verbose")
+            self.output.info("Verbose mode enabled")
 
         args = ["--root", f"{self.build_folder}/install"] + args
 
