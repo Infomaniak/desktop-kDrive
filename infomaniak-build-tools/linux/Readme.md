@@ -163,18 +163,6 @@ Conan version 2.x.x
     os=Linux
    ```
 
-3. **Linux ARM only**: One of Sentry's dependencies requires the **m4** package. Building the official m4 package (version 1.4.19) from source fails on Linux ARM due to a known compatibility issue with GCC 14+ where the `_GL_ATTRIBUTE_NODISCARD` macro is incorrectly expanded.
-
-    **Solution:** Install m4 and related build tools from your system package manager:
-
-    On Ubuntu:
-    ```bash
-    sudo apt update && sudo apt install -y m4 autoconf automake libtool
-    ```
-
-    The `build_dependencies.sh` script automatically detects Linux ARM and skips building m4, using the system-installed version instead. No additional configuration is required.
-    
-
 ---
 
 ### 4. Configure CMake Toolchain Injection

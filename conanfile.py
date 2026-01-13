@@ -4,6 +4,7 @@ import os
 from conan import ConanFile
 from conan.tools.cmake import CMakeToolchain, cmake_layout
 from conan.tools.cmake.toolchain.blocks import VSRuntimeBlock
+from conan.tools.env import VirtualBuildEnv
 from conan.errors import ConanInvalidConfiguration
 
 
@@ -100,13 +101,32 @@ class KDriveDesktop(ConanFile):
             - Conan set in the generic_system block the vars "CMAKE_GENERATOR_PLATFORM" and "CMAKE_GENERATOR_TOOLSET" needed by MSBuild but Ninja,
                don't understand it and fails to build.
         """
+        # Fix for GCC 14+ on Linux ARM: m4 1.4.19 fails to compile due to gnulib bug
+        # GCC 14+ changed default C standard from gnu17 to gnu23, causing _GL_ATTRIBUTE_NODISCARD macro expansion issues
+        # Solution: Force C17 standard via CFLAGS (same fix as Debian)
+        # References:
+        # - https://www.mail-archive.com/debian-bugs-closed@lists.debian.org/msg797513.html
+        # - https://git.savannah.gnu.org/cgit/m4.git/commit/?h=branch-1.4&id=a22c9802dd7e724eaefb21dc21d84ac2d3a49c89
+        if (self.settings.os == "Linux" and
+            str(self.settings.arch) == "armv8" and
+            self.settings.compiler == "gcc"):
+            try:
+                gcc_version = int(str(self.settings.compiler.version).split('.')[0])
+                if gcc_version >= 14:
+                    self.output.info(f"GCC {gcc_version} detected on Linux ARM: setting CFLAGS=-std=gnu17 to fix m4 compilation")
+                    buildenv = VirtualBuildEnv(self)
+                    buildenv.environment().define("CFLAGS", "-std=gnu17")
+                    buildenv.generate()
+            except (ValueError, AttributeError) as e:
+                self.output.warning(f"Could not parse GCC version: {e}")
+
         tc = CMakeToolchain(self)
         if self.settings.os == "Windows":
             tc.blocks.remove("generic_system")
 
             # The default VSRuntimeBlock only configures CMAKE_MSVC_RUNTIME_LIBRARY for the profile's build_type
             # (in the CI's profile, it is Release), yielding $<$<CONFIG:Release>:MultiThreadedDLL>. Other configs
-            # (RelWithDebInfo, Debug) fall back to MSVC’s default CRT selection (/MT), here, we want /MD
+            # (RelWithDebInfo, Debug) fall back to MSVC's default CRT selection (/MT), here, we want /MD
             tc.blocks.remove("vs_runtime")
             tc.blocks["override_vs_runtime"] = OverrideVSRuntimeBlock(self, tc, "override_vs_runtime")
 
