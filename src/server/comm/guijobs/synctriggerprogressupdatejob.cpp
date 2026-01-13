@@ -17,9 +17,7 @@
  */
 
 #include "synctriggerprogressupdatejob.h"
-
 #include "appserver.h"
-
 #include "libcommon/comm.h"
 
 
