@@ -76,21 +76,30 @@ class QtConan(ConanFile):
                 else:
                     return "linux_gcc_64"
         elif self.settings.os == "Windows":
-            # Qt 6.2.3 always uses MSVC 2019
-            if self.version == "6.2.3":
-                return "win64_msvc2019_64"
-            # Qt 6.8.3+ and 6.10.1+ supports both MinGW and MSVC 2022 (2019 is no longer compatible)
-            elif self.version == "6.10.1":
-                compiler = str(self.settings.compiler)
-                if compiler == "gcc":  # MinGW uses gcc as compiler in Conan
-                    return "win64_mingw"
-                else:  # MSVC
-                    return "win64_msvc2022_64"
-            else:
-                # Default for other versions (6.5.3, 6.7.3, etc.)
-                return "win64_msvc2019_64" # May fail, if an error occurs, verify with a manual run of the Qt Online Installer.
+            return self._get_windows_compiler()
         else:
             raise ConanInvalidConfiguration("Unsupported OS for Qt installation")
+
+    def _get_windows_compiler(self):
+        """
+        Get the Windows compiler name based on the Qt version and the compiler used.
+        :return: The compiler name for Windows, e.g. 'win64_msvc2019_64', 'win64_msvc2022_64', or 'win64_mingw'.
+        """
+        compiler = str(self.settings.compiler)
+
+        # Qt 6.2.3 always uses MSVC 2019
+        if self.version == "6.2.3":
+            return "win64_msvc2019_64"
+
+        # Qt 6.5.3 supports both MinGW and MSVC 2019
+        elif self.version == "6.5.3":
+            return "win64_mingw" if compiler == "gcc" else "win64_msvc2019_64"
+
+        # Qt 6.8.3+ and 6.10.1+ supports both MinGW and MSVC 2022 (2019 is no longer compatible)
+        elif self.version in ("6.8.3", "6.10.1"):
+            return "win64_mingw" if compiler == "gcc" else "win64_msvc2022_64"
+        else:
+            return "win64_msvc2019_64"  # May fail, if an error occurs, verify with a manual run of the Qt Online Installer.
 
     def _get_qt_submodules(self, version):
         """
@@ -111,7 +120,7 @@ class QtConan(ConanFile):
         ]
 
         # Qt 6.8.3+ and 6.10.1+ use the new module naming scheme with extensions.qtwebengine
-        if version in ["6.8.3", "6.10.1"]:
+        if version in ("6.8.3", "6.10.1"):
             modules.append(f"qt.qt{major}.{compact}.addons.qt5compat")
             modules.append(f"extensions.qtwebengine.{compact}.{compiler}")
             if self.options.debug_symbols:
