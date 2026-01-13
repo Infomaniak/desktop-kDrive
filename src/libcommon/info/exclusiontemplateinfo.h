@@ -48,14 +48,16 @@ class ExclusionTemplateInfo {
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
         void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
 
-        //!
+        //! NFC normalizes the patterns in the list passed as a parameter and removes duplicates.
         /*!
-          \param templateString is the pattern string the normalizations of which are queried.
-          \return a set of std::string containing the NFC and NFD normalizations of exclusionTemplate, if those have been
-          successful. The returned set contains additionally the string exclusionTemplate in any case.
+          \param templateList is the pattern list the normalization of which is queried.
         */
         static void normalizeExclusionTemplateInfoList(std::vector<ExclusionTemplateInfo> &templateList);
 
+        //! Update the pattern list passed as a parameter with the NFC and NFD versions of the patterns.
+        /*!
+          \param templateList is the pattern list the update of which is queried.
+        */
         static void updateExclusionTemplateInfoList(std::vector<ExclusionTemplateInfo> &templateList);
 
         //! Computes and returns all possible NFC and NFD normalizations of `templateString` segments
