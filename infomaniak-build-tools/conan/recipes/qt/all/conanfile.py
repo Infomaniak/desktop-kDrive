@@ -71,7 +71,7 @@ class QtConan(ConanFile):
                 return "linux_gcc_arm64"
             else:
                 # Qt 6.2.3 uses 'gcc_64', but newer versions (6.7.3+) use 'linux_gcc_64'
-                if self.version == "6.2.3":
+                if self.version in ("6.2.3", "6.5.3"):
                     return "gcc_64"
                 else:
                     return "linux_gcc_64"
