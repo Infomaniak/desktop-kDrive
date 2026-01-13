@@ -258,9 +258,6 @@ ExitInfo AbstractTokenNetworkJob::handleResponse(std::istream &is) {
     if (_returnJson) {
         std::string replyBody;
         getStringFromStream(is, replyBody);
-        if (isExtendedLog()) {
-            LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << CommonUtility::s2ws(replyBody));
-        }
         return handleJsonResponse(replyBody);
     }
     return handleOctetStreamResponse(is);

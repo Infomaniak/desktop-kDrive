@@ -19,6 +19,7 @@
 #include "synclocaldeletejob.h"
 
 #include "jobs/network/kDrive_API/getfileinfojob.h"
+#include "jobs/network/kDrive_API/itemsexistjob.h"
 #include "libcommonserver/io/permissionsholder.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
@@ -95,6 +96,27 @@ bool SyncLocalDeleteJob::findRemoteItem(SyncPath &remoteItemPath) const {
     return found;
 }
 
+ExitInfo SyncLocalDeleteJob::checkIfRemoteFileHasBeenMoved() {
+    SyncPath remoteRelativePath;
+    const bool remoteItemIsFound = findRemoteItem(remoteRelativePath);
+    if (!remoteItemIsFound) return ExitCode::Ok; // Safe deletion.
+
+    SyncPath normalizedPath;
+    if (!Utility::normalizedSyncPath(_relativeLocalPath, normalizedPath)) {
+        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(_relativeLocalPath));
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
+    }
+
+    if (matchRelativePaths(_syncPal->syncInfo().targetPath, normalizedPath, remoteRelativePath)) {
+        // Item is found at the same path on remote
+        LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(absolutePath()).c_str()
+                                          << L" still exists on remote replica. Aborting current sync and restarting.");
+        return {ExitCode::DataError, ExitCause::InvalidSnapshot}; // We need to rebuild the remote snapshot from scratch
+    }
+
+    return ExitCode::Ok;
+}
+
 ExitInfo SyncLocalDeleteJob::canRun() {
     if (bypassCheck()) {
         return ExitCode::Ok;
@@ -123,30 +145,15 @@ ExitInfo SyncLocalDeleteJob::canRun() {
     }
 
     // Check if the item we want to delete locally has a remote counterpart.
-
-    SyncPath remoteRelativePath;
-    const bool remoteItemIsFound = findRemoteItem(remoteRelativePath);
-    if (!remoteItemIsFound) return ExitCode::Ok; // Safe deletion.
+    ItemsExistJob existsJob(_syncPal->syncInfo().driveDbId, {_remoteNodeId});
+    existsJob.runSynchronously();
+    if (!existsJob.exists(_remoteNodeId, ioError) && ioError == IoError::NoSuchFileOrDirectory)
+        return ExitCode::Ok; // Safe deletion.
 
     // Check whether the remote item has been moved.
     // If the remote item has been moved into a blacklisted folder, then this Delete job is created and
     // the local item should be deleted.
-    // Note: the other remote move operations are not relevant: they generate Move jobs.
-
-    SyncPath normalizedPath;
-    if (!Utility::normalizedSyncPath(_relativeLocalPath, normalizedPath)) {
-        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(_relativeLocalPath));
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
-    }
-
-    if (matchRelativePaths(_syncPal->syncInfo().targetPath, normalizedPath, remoteRelativePath)) {
-        // Item is found at the same path on remote
-        LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(absolutePath()).c_str()
-                                          << L" still exists on remote replica. Aborting current sync and restarting.");
-        return {ExitCode::DataError, ExitCause::InvalidSnapshot}; // We need to rebuild the remote snapshot from scratch
-    }
-
-    return ExitCode::Ok;
+    return checkIfRemoteFileHasBeenMoved();
 }
 
 namespace {

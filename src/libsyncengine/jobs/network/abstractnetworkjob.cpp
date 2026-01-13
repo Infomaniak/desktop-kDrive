@@ -645,9 +645,7 @@ ExitInfo AbstractNetworkJob::extractJson(const std::string &replyBody, Poco::JSO
     }
 
     if (isExtendedLog()) {
-        std::ostringstream os;
-        jsonObj->stringify(os);
-        LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << CommonUtility::s2ws(os.str()));
+        LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << CommonUtility::s2ws(replyBody));
     }
     return ExitCode::Ok;
 }
