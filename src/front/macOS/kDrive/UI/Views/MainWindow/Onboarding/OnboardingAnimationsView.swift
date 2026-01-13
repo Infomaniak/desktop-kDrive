@@ -26,7 +26,7 @@ import Lottie
 class OnboardingAnimationsView: NSView {
     private let flowCoordinator: OnboardingFlowCoordinator
 
-    private let animationView = ThemedAnimationView()
+    private let animationView = NSThemedAnimationView()
 
     private var bindStore = Set<AnyCancellable>()
 
@@ -44,7 +44,7 @@ class OnboardingAnimationsView: NSView {
     }
 
     override func draw(_ dirtyRect: NSRect) {
-        NSColor.Tokens.Surface.secondary.setFill()
+        ColorToken.Surface.secondary.asNSColor.setFill()
         bounds.fill()
     }
 

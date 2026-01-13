@@ -17,18 +17,12 @@
  */
 
 #include "parametersupdatejob.h"
+
 #include "appserver.h"
-
-#include "keychainmanager/keychainmanager.h"
-#include "requests/parameterscache.h"
-
 #include "libcommon/comm.h"
-#include "libcommonserver/log/log.h"
-#include "libcommonserver/network/proxy.h"
 
 // Output parameters keys
 static const auto inParamsParametersInfo = "parametersInfo";
-
 
 namespace KDC {
 
@@ -39,64 +33,24 @@ ParametersUpdateJob::ParametersUpdateJob(std::shared_ptr<CommManager> commManage
 }
 
 ExitInfo ParametersUpdateJob::deserializeInputParms() {
+    constexpr auto logMessage = "Exception in ParametersUpdateJob::readParamValue: error=";
     try {
         readParamValue(inParamsParametersInfo, _parametersInfo, dynamicVar2Struct<ParametersInfo>);
-    } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in ParametersUpdateJob::readParamValue: error=" << e.what());
+    } catch (const Poco::Exception &pocoException) {
+        LOG_WARN(_logger, logMessage << pocoException.message());
+
+        return ExitCode::LogicError;
+    } catch (const CommonUtility::InvalidEnumerationValue &cuException) {
+        LOG_WARN(_logger, logMessage << cuException.what());
+
         return ExitCode::LogicError;
     }
 
     return ExitCode::Ok;
 }
 
-
 ExitInfo ParametersUpdateJob::process() {
-    // Retrieve current settings
-    const Parameters parameters = ParametersCache::instance()->parameters();
-    std::string pwd;
-    if (parameters.proxyConfig().needsAuth()) {
-        // Read pwd from keystore
-        bool found = false;
-        if (!KeyChainManager::instance()->readDataFromKeystore(parameters.proxyConfig().token(), pwd, found)) {
-            LOG_WARN(_logger, "Failed to read proxy pwd from keychain");
-        }
-        if (!found) {
-            LOG_DEBUG(_logger, "Proxy pwd not found for keychainKey=" << parameters.proxyConfig().token());
-        }
-    }
-
-    // Update parameters
-    const ExitCode exitCode = ServerRequests::updateParameters(_parametersInfo);
-    if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in Requests::updateParameters");
-        AppServer::addError(Error(ERR_ID, exitCode));
-    }
-
-    // extendedLog change propagation
-    if (parameters.extendedLog() != _parametersInfo.extendedLog()) {
-        _commManager->appServer().logExtendedLogActivationMessage(_parametersInfo.extendedLog());
-        const std::scoped_lock lock(AppServer::vfsMapMutex);
-        for (const auto &[_, vfs]: AppServer::vfsMap) {
-            vfs->setExtendedLog(_parametersInfo.extendedLog());
-        }
-    }
-
-    // Language change propagation
-    if (parameters.language() != _parametersInfo.language()) {
-        CommonUtility::setupTranslations(&_commManager->appServer(), _parametersInfo.language());
-    }
-
-    // ProxyConfig change propagation
-    if (parameters.proxyConfig().type() != _parametersInfo.proxyConfigInfo().type() ||
-        parameters.proxyConfig().hostName() != _parametersInfo.proxyConfigInfo().hostName().toStdString() ||
-        parameters.proxyConfig().port() != _parametersInfo.proxyConfigInfo().port() ||
-        parameters.proxyConfig().needsAuth() != _parametersInfo.proxyConfigInfo().needsAuth() ||
-        parameters.proxyConfig().user() != _parametersInfo.proxyConfigInfo().user().toStdString() ||
-        pwd != _parametersInfo.proxyConfigInfo().pwd().toStdString()) {
-        Proxy::instance()->setProxyConfig(ParametersCache::instance()->parameters().proxyConfig());
-    }
-
-    return exitCode;
+    return _commManager->appServer().updateParametersAndPropagateChanges(_parametersInfo);
 }
 
 } // namespace KDC

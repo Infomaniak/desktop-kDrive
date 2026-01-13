@@ -10,53 +10,54 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.CustomControls
 {
-    /// <summary>
-    /// SyncExclusionSelector
-    /// UI control allowing the user to define which remote folders are EXCLUDED from a sync.
-    ///
-    /// Representation:
-    ///  - The remote folder hierarchy (directories only) is displayed as a tree.
-    ///  - Each directory has a tri-state checkbox: Checked (included), Unchecked (excluded), Indeterminate (some descendants excluded).
-    ///  - Each directory contains a synthetic "file" child item representing all files directly in that folder. Its checkbox:
-    ///        * Enabled only when ALL subdirectories are excluded.
-    ///        * Mirrors selection logic for directly contained files.
-    ///  - The exclusion list stored on the server is the list of UNSELECTED (excluded) nodes.
-    ///
-    /// Important invariants:
-    ///  - If a directory is explicitly unchecked -> all its descendants are implicitly excluded (we do not need to load them).
-    ///  - If a directory is explicitly checked -> all its descendants are implicitly included.
-    ///  - Indeterminate means at least one descendant differs (some excluded, some included).
-    ///
-    /// Persistence flow:
-    ///  - On load we fetch current excluded (blacklisted) node ids + their paths.
-    ///  - UI tree is rebuilt and tri-state states are computed from that exclusion map.
-    ///  - User modifies selections (no server calls yet) and HasPendingChanges becomes true if current UI differs from original exclusion set.
-    ///  - SaveChanges() uploads the new list of excluded node ids computed from current tri-state states.
-    ///  - CancelChanges() reloads original data from server.
-    ///
-    /// </summary>
+    /*
+    //  SyncExclusionSelector: A UI control for managing which remote folders are EXCLUDED from synchronization.
+    //  
+    //  Purpose:
+    //  Allows users to define a blacklist of remote folders (and their contents) that should NOT be synced locally.
+    //  The UI presents a tree view of the remote folder hierarchy, with tri-state checkboxes for inclusion/exclusion.
+    //  
+    //  Tree Structure & Behavior:
+    //  - Displays only directories (no files) in a hierarchical tree.
+    //  - Each folder has a tri-state checkbox:
+    //      • Checked: Included in sync -> all descendants are implicitly included.
+    //      • Unchecked: Excluded from sync -> all descendants are implicitly excluded.
+    //      • Indeterminate (-): Mixed state — some descendants are excluded, some are included.
+    //  
+    //  Persistence & State Management:
+    //  - On load: Fetches the current list of excluded node IDs + their paths from the server.
+    //  - UI tree is built and tri-state states are computed from this exclusion map.
+    //  - User changes are tracked locally; no server calls until SaveChanges() is called.
+    //  - HasPendingChanges becomes true when UI differs from the original server state.
+    //  - SaveChanges(): Uploads the new list of excluded node IDs (unselected nodes).
+    //  - CancelChanges(): Reverts UI to original server state.
+    //  
+    //  Notes:
+    //  - The root folder cannot be excluded.
+    //  - Children are lazily loaded on expand (TreeView_Expanding).
+    //  - File size is lazily loaded on view (SizeContentLoader_DataContextChanged).
+    //  - HasPendingChanges is updated automatically when selections change.
+    //  - Uses DynamicData for reactive collections and binding.
+    //  - AccessDenied nodes are read-only and cannot be modified.
+    */
     public sealed partial class SyncExclusionSelector : UserControl
     {
         #region Private fields
 
         // Node IDs currently excluded on the server for this sync
-        private List<NodeId> _excludedNodeIds = new List<NodeId>();
+        private List<NodeId> _excludedNodeIds = [];
 
         // Map of excluded node id -> full remote path (needed to infer exclusion state for unloaded descendants)
-        private Dictionary<NodeId, string> _excludedNodePathsMap = new Dictionary<NodeId, string>();
+        private readonly Dictionary<NodeId, string> _excludedNodePathsMap = [];
 
         // Root level items displayed in the TreeView (children of the logical root folder)
-        private ObservableCollection<TreeItem> _rootLevelItems { get; } = new ObservableCollection<TreeItem>();
-
-        // Flag guarding recursive event cascades while we programmatically change selection states
-        private bool _isBulkSelectionPropagation = false;
+        private readonly ObservableCollection<TreeItem> _rootLevelItems = [];
 
         #endregion
 
@@ -133,21 +134,19 @@ namespace Infomaniak.kDrive.CustomControls
             DependencyProperty.Register(nameof(RootTreeItem), typeof(TreeItem), typeof(SyncExclusionSelector), new PropertyMetadata(null));
         #endregion
 
-        #region Compatibility binding properties (preserve original XAML bindings)
-        // Expose original property names expected by existing XAML for backward compatibility.
-        // They map to the renamed internal members.
-        public bool StatePropagationInProgress => _isBulkSelectionPropagation;
-        #endregion
 
         #region Public methods
         public async Task SaveChanges()
         {
-            if (IsLoading) return;
+            if (IsLoading)
+                return;
+
             if (SyncDbId is null)
             {
                 Logger.Log(Logger.Level.Error, "Cannot save sync exclusion changes: SyncDbId is null.");
                 return;
             }
+
             IsLoading = true;
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
             await commService.SetBlacklistedNodeIdList(SyncDbId.Value, GetExcludedNodeIds(), CancellationToken.None);
@@ -177,18 +176,19 @@ namespace Infomaniak.kDrive.CustomControls
         // Recursively accumulate excluded node IDs.
         private List<NodeId> GetExcludedDescendantNodeIds(TreeItem parent)
         {
-            if (parent.Type == NodeType.File) return [];
+            if(parent.Node.AccessDenied)
+                return [];
 
-            if (parent.IsSelected is not null)
+            if (parent.IsSelected is not null) // If the parent is explicitly included or excluded (ie. not indeterminate)
             {
                 if (parent.IsSelected == false) // Explicitly excluded -> all descendants implicitly excluded
                     return [parent.Node.NodeId];
                 else // Explicitly included -> descendants included
                     return [];
             }
-            else if (parent._childrenLoaded) // Indeterminate and children loaded: evaluate children individually
+            else if (parent.ChildrenLoaded) // Indeterminate and children loaded: evaluate children individually
             {
-                List<NodeId> excluded = new List<NodeId>();
+                List<NodeId> excluded = [];
                 foreach (var child in parent.Children)
                 {
                     excluded.AddRange(GetExcludedDescendantNodeIds(child));
@@ -200,7 +200,7 @@ namespace Infomaniak.kDrive.CustomControls
             else
             {
                 // Indeterminate but children not loaded: look up exclusion map for any descendant path starting with this path
-                List<NodeId> excluded = _excludedNodePathsMap.Where(pair => pair.Value.StartsWith(parent.Node.Path)).Select(pair => pair.Key).ToList();
+                List<NodeId> excluded = [.. _excludedNodePathsMap.Where(pair => pair.Value.StartsWith(parent.Node.Path)).Select(pair => pair.Key)];
                 if (excluded.Count == 0)
                     Logger.Log(Logger.Level.Error, $"Logic error: parent node {parent.Node.NodeId} - {parent.Node.Name} is indeterminate but all children are selected.");
                 return excluded;
@@ -229,25 +229,24 @@ namespace Infomaniak.kDrive.CustomControls
         // (Re)build root level items under the logical root folder using current exclusion map
         public async Task BuildRootLevelItemsAsync()
         {
-            _isBulkSelectionPropagation = true;
 
             if (RootTreeItem is not null)
                 RootTreeItem.Children.Clear();
             _rootLevelItems.Clear();
 
             // Logical root node
-            Node rootNode = new Node(RemoteRootNodeId, "", -1, "", "", UserDbId, DriveId);
+            Node rootNode = new Node(RemoteRootNodeId, "", -1, "", "", UserDbId, DriveId, false);
             RootTreeItem = new TreeItem(rootNode, UserDbId, DriveId, null, _excludedNodePathsMap);
-
-            // Remove synthetic file item at root (not needed at top level)
-            var fileItem = RootTreeItem.Children.FirstOrDefault(i => i.Type == NodeType.File);
-            if (fileItem is not null) RootTreeItem.Children.Remove(fileItem);
 
             await RootTreeItem.LoadImmediateChildrenAsync();
 
             _rootLevelItems.AddRange(RootTreeItem.Children);
-
-            _isBulkSelectionPropagation = false;
+            List<Task> tasks = new();
+            foreach (var item in _rootLevelItems)
+            {
+                tasks.Add(item.LoadImmediateChildrenAsync());
+            }
+            await Task.WhenAll(tasks);
             HasPendingChanges = false;
         }
 
@@ -291,7 +290,7 @@ namespace Infomaniak.kDrive.CustomControls
             }
 
             // Fetch path for newly excluded nodes
-            List<Task> loadTasks = new List<Task>();
+            List<Task> loadTasks = [];
             foreach (var nodeId in _excludedNodeIds.Where(id => !_excludedNodePathsMap.ContainsKey(id)))
             {
                 loadTasks.Add(loadPath(nodeId));
@@ -303,49 +302,77 @@ namespace Infomaniak.kDrive.CustomControls
         #region TreeView events
         private async void TreeView_Expanding(TreeView sender, TreeViewExpandingEventArgs args)
         {
-            _isBulkSelectionPropagation = true;
+            List<Task> tasks = new();
             if (args.Item is TreeItem item)
-                await item.LoadImmediateChildrenAsync();
-            _isBulkSelectionPropagation = false;
+            {
+                foreach (var child in item.Children)
+                {
+                    tasks.Add(child.LoadImmediateChildrenAsync());
+                }
+                await Task.WhenAll(tasks);
+            }
         }
         #endregion
 
         #region Checkbox event handlers
-        private void CheckBox_Checked(object sender, RoutedEventArgs e)
-        {
-            var treeItem = ExtractTreeItemFromSender(sender);
-            if (treeItem is not null && !_isBulkSelectionPropagation)
-            {
-                _isBulkSelectionPropagation = true;
-                treeItem.IsSelected = true;
-                SelectAllDescendants(treeItem);
-                _isBulkSelectionPropagation = false;
-                if (!IsLoading) UpdateHasPendingChanges();
-            }
-        }
 
-        private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
+        private void CheckBox_Click(object sender, RoutedEventArgs e)
         {
-            var treeItem = ExtractTreeItemFromSender(sender);
-            if (treeItem is not null && !_isBulkSelectionPropagation)
+            Logger.Log(Logger.Level.Debug, "CheckBox_Click event triggered.");
+            if (e.OriginalSource is CheckBox checkBox)
             {
-                _isBulkSelectionPropagation = true;
-                treeItem.IsSelected = false;
-                DeselectAllDescendants(treeItem);
-                _isBulkSelectionPropagation = false;
-                if (!IsLoading) UpdateHasPendingChanges();
-            }
-        }
-
-        private void CheckBox_Indeterminate(object sender, RoutedEventArgs e)
-        {
-            var treeItem = ExtractTreeItemFromSender(sender);
-            if (treeItem is not null && !_isBulkSelectionPropagation && treeItem.IsSelected is not null)
-            {
-                if (treeItem.IsSelected.Value)
-                    CheckBox_Unchecked(sender, e);
+                if (checkBox.IsChecked == true)
+                {
+                    CheckBox_Checked(sender);
+                }
+                else if (checkBox.IsChecked == false)
+                {
+                    CheckBox_Unchecked(sender);
+                }
                 else
-                    CheckBox_Checked(sender, e);
+                {
+                    CheckBox_Indeterminate(sender);
+                }
+            }
+        }
+
+        private void CheckBox_Checked(object sender)
+        {
+            var treeItem = ExtractTreeItemFromSender(sender);
+            if (treeItem is not null)
+            {
+                SelectAllDescendants(treeItem, true);
+                if (!IsLoading)
+                    UpdateHasPendingChanges();
+            }
+        }
+
+        private void CheckBox_Unchecked(object sender)
+        {
+            var treeItem = ExtractTreeItemFromSender(sender);
+            if (treeItem is not null)
+            {
+                if (treeItem.ParentItem is null) // The root of the drive cannot be excluded
+                {
+                    CheckBox_Checked(sender);
+                    return;
+                }
+
+                DeselectAllDescendants(treeItem, true);
+                if (!IsLoading)
+                    UpdateHasPendingChanges();
+            }
+        }
+
+        private void CheckBox_Indeterminate(object sender)
+        {
+            var treeItem = ExtractTreeItemFromSender(sender);
+            if (treeItem is not null)
+            {
+                DeselectAllDescendants(treeItem, false);
+                treeItem.IsSelected = treeItem.Children.Any() ? null : false;
+                if (!IsLoading)
+                    UpdateHasPendingChanges();
             }
         }
         #endregion
@@ -357,26 +384,32 @@ namespace Infomaniak.kDrive.CustomControls
             return control?.DataContext as TreeItem;
         }
 
-        private void SelectAllDescendants(TreeItem parent)
+        private static void SelectAllDescendants(TreeItem parent, bool selectParent = false)
         {
+            if (parent.Node.AccessDenied)
+                return;
+
             foreach (var child in parent.Children)
             {
-                child.IsSelected = true;
-                SelectAllDescendants(child);
+                SelectAllDescendants(child, true);
             }
+
+            if (selectParent)
+                parent.IsSelected = true;
         }
 
-        private void DeselectAllDescendants(TreeItem parent)
+        private static void DeselectAllDescendants(TreeItem parent, bool deselectParent = false)
         {
-            foreach (var child in parent.Children.Where(c => c.Type != NodeType.File))
+            if (parent.Node.AccessDenied)
+                return;
+
+            foreach (var child in parent.Children)
             {
-                child.IsSelected = false;
-                DeselectAllDescendants(child);
+                DeselectAllDescendants(child, true);
             }
-            // Deselect synthetic file child if present last (to avoid re-enabling it during recursion)
-            var fileChild = parent.Children.FirstOrDefault(c => c.Type == NodeType.File);
-            if (fileChild is not null)
-                fileChild.IsSelected = false;
+
+            if (deselectParent)
+                parent.IsSelected = false;
         }
         #endregion
 
@@ -385,17 +418,16 @@ namespace Infomaniak.kDrive.CustomControls
         // Lazy load size
         private async void SizeContentLoader_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            if ((sender as Control)?.DataContext is TreeItem treeItem)
-                if (treeItem.Node.Size == -1)
-                    await treeItem.Node.LoadSize();
+            if ((sender as Control)?.DataContext is TreeItem treeItem && treeItem.Node.Size == -1)
+                    await treeItem.Node.LoadSize(); 
         }
 
         // Recompute HasPendingChanges by comparing current excluded ids with original server exclusion set
         private void UpdateHasPendingChanges()
         {
-            if (HasPendingChanges) return;
             if (RootTreeItem is null)
             {
+                Logger.Log(Logger.Level.Error, "Cannot update HasPendingChanges: RootTreeItem is null.");
                 HasPendingChanges = false;
                 return;
             }
@@ -404,23 +436,21 @@ namespace Infomaniak.kDrive.CustomControls
             var excludedSet = new HashSet<string>(_excludedNodeIds);
             HasPendingChanges = !currentSet.SetEquals(excludedSet);
         }
-        #endregion
+        #endregion      
     }
 
     /// <summary>
     /// TreeItem wraps a Node and adds UI-only state: tri-state selection plus lazy child loading logic.
-    /// A synthetic File item represents all direct files within a directory.
     /// </summary>
     public class TreeItem : UISafeObservableObject
     {
         #region Private fields
-        private DbId _userDbId = 0;
-        private DriveId _driveId;
+        private readonly DbId _userDbId = 0;
+        private readonly DriveId _driveId;
         private bool _isLoadingChildren = false;
-        public bool _childrenLoaded = false;
-        private bool _isEnabled = true;
+        private bool _childrenLoaded = false;
         private bool? _isSelected = true; // true=include, false=exclude, null=partial
-        private Dictionary<NodeId, string> _excludedNodes;
+        private readonly Dictionary<NodeId, string> _excludedNodes;
         #endregion
 
         #region Public properties
@@ -432,56 +462,44 @@ namespace Infomaniak.kDrive.CustomControls
             private set => SetPropertyInUIThread(ref _isLoadingChildren, value);
         }
 
-        public bool IsEnabled
+        public bool ChildrenLoaded
         {
-            get => _isEnabled;
-            private set => SetPropertyInUIThread(ref _isEnabled, value);
+            get => _childrenLoaded;
+            private set => SetPropertyInUIThread(ref _childrenLoaded, value);
         }
-
         public bool? IsSelected
         {
             get => _isSelected;
             set
             {
                 SetPropertyInUIThread(ref _isSelected, value);
-                UpdateSyntheticFileItemSelectionState();
             }
         }
 
         public ObservableCollection<TreeItem> Children { get; } = new ObservableCollection<TreeItem>();
         public TreeItem? ParentItem { get; }
-        public NodeType Type { get; }
         #endregion
 
-        public TreeItem(Node node, DbId userDbId, DriveId driveId, TreeItem? parentItem, Dictionary<NodeId, string> excluded, NodeType type = NodeType.Directory)
+        public TreeItem(Node node, DbId userDbId, DriveId driveId, TreeItem? parentItem, Dictionary<NodeId, string> excluded)
         {
             Node = node;
             ParentItem = parentItem;
             _userDbId = userDbId;
             _driveId = driveId;
-            Type = type;
             _excludedNodes = excluded;
 
-            if (Type == NodeType.Directory)
-            {
-                // Synthetic file child representing files directly inside this folder
-                Children.Add(new TreeItem(new Node("-1", "", 0, "", "", _userDbId, _driveId), 0, 0, this, _excludedNodes, NodeType.File));
-                Children.CollectionChanged += OnChildrenCollectionChanged;
-                RegisterSelectionCallbacks(Children);
-                UpdateSyntheticFileItemSelectionState();
-            }
-            if (Type == NodeType.File)
-            {
-                Node.Name = "Fichiers du dossier " + (ParentItem?.Node.Name ?? "");
-                Node.Path = parentItem?.Node.Path + System.IO.Path.DirectorySeparatorChar + Node.Name;
-                _childrenLoaded = true;
-            }
+            Children.CollectionChanged += OnChildrenCollectionChanged;
+            RegisterSelectionCallbacks(Children);
+
             RecomputeSelectionFromExclusionMap();
         }
 
         // Recompute tri-state based on exclusion map
         public void RecomputeSelectionFromExclusionMap()
         {
+            if (Node.AccessDenied)
+                return;
+
             if (ParentItem is not null && ParentItem.IsSelected is not null)
             {
                 IsSelected = ParentItem.IsSelected;
@@ -519,46 +537,21 @@ namespace Infomaniak.kDrive.CustomControls
                     if (item is TreeItem treeItem)
                         treeItem.WhenAnyPropertyChanged(nameof(TreeItem.IsSelected)).Subscribe(changedItem =>
                         {
-                            if (changedItem?.Type != NodeType.File) UpdateSyntheticFileItemSelectionState();
                             UpdateDirectoryTriStateFromChildren();
                         });
-            UpdateSyntheticFileItemSelectionState();
         }
 
-        // Maintain synthetic file child state based on directory selection + descendant selections
-        private void UpdateSyntheticFileItemSelectionState()
-        {
-            if (Type == NodeType.File) return;
-
-            var fileItem = Children.FirstOrDefault(c => c.Type == NodeType.File);
-            if (fileItem == null) return;
-
-            if (!(IsSelected ?? true))
-            {
-                fileItem.IsSelected = false;
-                fileItem.IsEnabled = true;
-                return;
-            }
-
-            bool hasSelectedDirectoryChild = Children.Where(c => c.Type == NodeType.Directory).Any(c => c.IsSelected ?? true);
-            if (hasSelectedDirectoryChild) fileItem.IsSelected = hasSelectedDirectoryChild;
-            fileItem.IsEnabled = !hasSelectedDirectoryChild; // enable only if no selected subfolder
-        }
 
         // Refresh directory tri-state based on children states
         private void UpdateDirectoryTriStateFromChildren()
         {
-            if (Type == NodeType.File) return;
-
-            if (Children.All(c => c.IsSelected == true))
+            if (Children.All(c => c.IsSelected == true || c.Node.AccessDenied))
             {
                 IsSelected = true;
-                return;
             }
-            else if (Children.All(c => c.IsSelected == false))
+            else if (Children.All(c => c.IsSelected == false || c.Node.AccessDenied))
             {
-                IsSelected = false;
-                return;
+                IsSelected = null;
             }
             else
             {
@@ -569,7 +562,8 @@ namespace Infomaniak.kDrive.CustomControls
         // Lazy load direct child directories
         public async Task LoadImmediateChildrenAsync()
         {
-            if (_childrenLoaded || Type == NodeType.File) return;
+            if (_childrenLoaded)
+                return;
             IsLoadingChildren = true;
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
             List<Node>? nodes = await commService.GetSubFolders(_userDbId, _driveId, Node.NodeId, CancellationToken.None);
@@ -584,19 +578,17 @@ namespace Infomaniak.kDrive.CustomControls
             IsLoadingChildren = false;
         }
     }
-
-    /// <summary>
-    /// Chooses between directory and synthetic file templates.
-    /// </summary>
-    public class NodeTypeTemplateSelector : DataTemplateSelector
+    public partial class FolderTreeViewItemTemplateSelector : DataTemplateSelector
     {
         public DataTemplate? DirectoryTemplate { get; set; }
-        public DataTemplate? FileTemplate { get; set; }
+        public DataTemplate? AccessDeniedTemplate { get; set; }
+
         protected override DataTemplate? SelectTemplateCore(object item)
         {
-            if (item is TreeItem treeItem)
-                return treeItem.Type == NodeType.Directory ? DirectoryTemplate : FileTemplate;
-            return base.SelectTemplateCore(item);
+            if (item is not TreeItem treeItem)
+                return base.SelectTemplateCore(item);
+
+            return treeItem.Node.AccessDenied ? AccessDeniedTemplate : DirectoryTemplate;
         }
     }
 }

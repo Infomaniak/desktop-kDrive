@@ -463,10 +463,9 @@ ExitCode GuiRequests::getNodePath(const int syncDbId, const QString &nodeId, QSt
     return exitCode;
 }
 
-ExitCode GuiRequests::findGoodPathForNewSync(const int driveDbId, const QString &basePath, QString &path, QString &error) {
+ExitCode GuiRequests::findGoodPathForNewSync(const QString &basePath, QString &path, QString &error) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << driveDbId;
     paramsStream << basePath;
 
     QByteArray results;
@@ -672,7 +671,7 @@ ExitCode GuiRequests::deleteSync(const int syncDbId) {
 
 ExitCode GuiRequests::bestAvailableVfsMode(VirtualFileMode &mode) {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::UTILITY_BESTVFSAVAILABLEMODE, {}, results)) {
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_BESTVFSAVAILABLEMODE_LEGACY, {}, results)) {
         return ExitCode::SystemError;
     }
 
@@ -1095,7 +1094,7 @@ ExitCode GuiRequests::activateLoadInfo(const bool activate) {
 
 ExitCode GuiRequests::askForStatus() {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::SYNC_ASKFORSTATUS, {}, results)) {
+    if (!CommClient::instance()->execute(RequestNum::SYNC_TRIGGER_PROGRESS_UPDATE, {}, results)) {
         return ExitCode::SystemError;
     }
 
@@ -1177,7 +1176,7 @@ ExitCode GuiRequests::skipUpdate(const std::string &version) {
 }
 
 ExitCode GuiRequests::reportClientDisplayed() {
-    CommClient::instance()->execute(RequestNum::UTILITY_DISPLAY_CLIENT_REPORT);
+    CommClient::instance()->execute(RequestNum::UTILITY_SEND_APP_START_TRACE);
     return ExitCode::Ok;
 }
 

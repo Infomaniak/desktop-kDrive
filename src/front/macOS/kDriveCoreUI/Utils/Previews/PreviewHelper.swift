@@ -32,29 +32,36 @@ public enum PreviewHelper {
         userId: 95014,
         name: "Tim Cook",
         email: "tim@apple.com",
-        avatar: PreviewHelper.userImage
+        avatar: PreviewHelper.userImage,
+        accounts: [:]
     )
 
     public static let drive1 = UIDrive(
         dbId: 1,
         driveId: 1,
+        userDbId: 1,
         name: "Tim Drive",
-        color: .blue
+        color: .blue,
+        synchros: [:]
     )
     public static let drive2 = UIDrive(
         dbId: 2,
         driveId: 2,
+        userDbId: 1,
         name: "Drive Pro Max",
-        color: .red
+        color: .red,
+        synchros: [:]
     )
 
     public static let availableDrive1 = UIAvailableDrive(
         driveId: 1,
+        userDbId: 1,
         name: "Tim Drive",
         color: .blue
     )
     public static let availableDrive2 = UIAvailableDrive(
         driveId: 2,
+        userDbId: 1,
         name: "Drive Pro Max",
         color: .red
     )

@@ -404,7 +404,7 @@ namespace Infomaniak.kDrive.Pages.Settings
     }
 
     // templateSelector for the drives listview
-    public class DriveDataTemplateSelector : DataTemplateSelector
+    public partial class DriveDataTemplateSelector : DataTemplateSelector
     {
         public DataTemplate? ConfiguredTemplate { get; set; }
         public DataTemplate? UnconfiguredTemplate { get; set; }

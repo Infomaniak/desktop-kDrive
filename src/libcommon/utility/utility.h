@@ -65,6 +65,7 @@ struct COMMON_EXPORT CommonUtility {
 
         static std::string generateRandomStringAlphaNum(int length = 10);
         static std::string generateRandomStringPKCE(int length = 10);
+        static std::string generateUUID();
 
         // File system type
         static bool isNTFS(const SyncPath &targetPath);

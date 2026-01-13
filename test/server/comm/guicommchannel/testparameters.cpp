@@ -80,6 +80,8 @@ Poco::JSON::Object createParametersInfoObject() {
     (void) parametersInfoObj.set("dialogGeometry", dialogGeometryObj);
     (void) parametersInfoObj.set("maxAllowedCpu", 50);
     (void) parametersInfoObj.set("distributionChannel", toInt(VersionChannel::Prod));
+    (void) parametersInfoObj.set("sentryEnabled", false);
+    (void) parametersInfoObj.set("matomoEnabled", false);
 
     return parametersInfoObj;
 };
@@ -110,7 +112,7 @@ void TestGuiCommChannel::testParametersInfoJob() {
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::PARAMETERS_INFO));
     (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-    // Job expected answers
+    // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
@@ -152,7 +154,7 @@ void TestGuiCommChannel::testParametersUpdateJob() {
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::PARAMETERS_UPDATE));
     (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-    // Job expected answers
+    // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {

@@ -23,10 +23,13 @@ using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Security.Authentication.OAuth;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.Win32;
+using Sentry;
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 
 
 namespace Infomaniak.kDrive
@@ -53,6 +56,15 @@ namespace Infomaniak.kDrive
         internal static IAppConstants Constants => new ProductionConstants();
         internal App()
         {
+            SentrySdk.Init(options =>
+            {
+                options.Dsn = Constants.SentryDSN;
+                options.Debug = true;
+                options.SendDefaultPii = true;
+                options.AutoSessionTracking = true;
+                options.IsGlobalModeEnabled = true;
+                options.Environment = "production";
+            });
             InitializeComponent();
             TrayIcoManager = new TrayIcon.TrayIconManager();
             _services.AddSingleton<AppModel>();
@@ -86,6 +98,7 @@ namespace Infomaniak.kDrive
                 }
                 LegacyCommPort = Int32.Parse(arguments[1]);
             }
+
             // Register oAuth protocol handler
             RegisterOAuthProtocol();
 
@@ -97,9 +110,15 @@ namespace Infomaniak.kDrive
             }
 
             CurrentWindow = new MainWindow();
+            var currentWindowContent = CurrentWindow.Content;
+
+            // Affiche le spinning wheel
+            CurrentWindow.Content = new CustomControls.SplashScreen();
+
             TrayIcoManager.Initialize();
             AppModel appModel = ServiceProvider.GetRequiredService<AppModel>();
             await appModel.InitializeAsync();
+            CurrentWindow.Content = currentWindowContent;
             (CurrentWindow as MainWindow)?.AppNavView.Frame.Navigate(typeof(Pages.HomePage));
             StartOnboardingIfNeeded();
             appModel.AllSyncs.AsObservableChangeSet()
@@ -107,7 +126,6 @@ namespace Infomaniak.kDrive
             {
                 StartOnboardingIfNeeded();
             });
-
         }
 
         private void RegisterOAuthProtocol()
@@ -163,6 +181,20 @@ namespace Infomaniak.kDrive
                 Logger.Log(Logger.Level.Info, "No users available after initialization, starting onboarding process.");
                 StartOnboarding();
             }
+        }
+
+        public static void ExitApplication()
+        {
+            Logger.Log(Logger.Level.Info, "Exiting application.");
+            (Current as App)!.CurrentWindow?.Close();
+            Environment.Exit(0);
+        }
+
+        public static void ExitApplicationAndShutdownServer()
+        {
+            Logger.Log(Logger.Level.Info, "Sending exit command to server.");
+            App.ServiceProvider.GetRequiredService<IServerCommService>().Exit();
+            ExitApplication();
         }
     }
 }

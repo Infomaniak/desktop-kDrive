@@ -335,6 +335,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         public Int64? Size { get; set; }
         public NodeId? ParentNodeId { get; set; }
         public string? Path { get; set; }
+        public bool? AccessDenied { get; set; }
     };
 
     public static partial class ConversionHelper
@@ -346,6 +347,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             copyProperty(source, target, nameof(source.Size), nameof(target.Size));
             copyProperty(source, target, nameof(source.ParentNodeId), nameof(target.ParentNodeId));
             copyProperty(source, target, nameof(source.Path), nameof(target.Path));
+            copyProperty(source, target, nameof(source.AccessDenied), nameof(target.AccessDenied));
         }
     }
 

@@ -31,15 +31,28 @@
             Click="UpdateButton_Click" />
 
     <toolKit:SettingsExpander.Items>
+        <toolKit:SettingsCard Background="{ThemeResource LayerFillColorDefault}">
+            <toolKit:SettingsCard.Header>
+                <TextBlock  Style="{StaticResource Infomaniak.Style.TextBlock.Body}">
+                    <Run Text="kDrive" />
+                    <Run Text="{x:Bind DisplayedVersion.Tag , Mode=OneWay}" />
+                </TextBlock>
+            </toolKit:SettingsCard.Header>
+            <toolKit:SettingsCard.Description>
+                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                    <TextBlock x:Uid="CC_UpdateExpander_UpdateAvailable_UpdateDetails"
+                               Visibility="{x:Bind ViewModel.Settings.UpdateManager.AvailableUpdate, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}" />
+                    <local:LicensesHyperlink DisplayedVersion="{x:Bind DisplayedVersion, Mode=OneWay}" />
+                </StackPanel>
+            </toolKit:SettingsCard.Description>
+            <HyperlinkButton x:Uid="
+                           CC_UpdateExpander_ChangeLogHyperLink"
+                             NavigateUri="{x:Bind DisplayedVersion.ChangeLogUrl, Mode=OneWay}" />
+        </toolKit:SettingsCard>
         <toolKit:SettingsCard x:Uid="Page_SettingsPage_AutoUpdate"
                               IsEnabled="False"
                               Background="{ThemeResource LayerFillColorDefault}">
             <!-- TODO: Make it enabled once auto-update is implemented on the server side (see: UpdateManager.ChangeAutoUpdate) -->
-            <toolKit:SettingsCard.HeaderIcon>
-                <local:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Arrows.arrows-loop-automatic}"
-                               Height="32"
-                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-            </toolKit:SettingsCard.HeaderIcon>
             <ToggleSwitch IsOn="{x:Bind ViewModel.Settings.UpdateManager.AutoUpdateEnabled, Mode=OneWay}"
                           Toggled="AutoUpdateToggleSwitch_Toggled" />
         </toolKit:SettingsCard>
@@ -58,25 +71,6 @@
                               Foreground="{ThemeResource SystemErrorTextColor}"
                               Visibility="Collapsed" />
             </ComboBox>
-        </toolKit:SettingsCard>
-        <toolKit:SettingsCard Background="{ThemeResource LayerFillColorDefault}">
-            <toolKit:SettingsCard.Header>
-                <TextBlock  Style="{StaticResource Infomaniak.Style.TextBlock.Body}">
-                <Run Text="kDrive" />
-                <Run Text="{x:Bind DisplayedVersion.Tag , Mode=OneWay}" />
-                </TextBlock>
-            </toolKit:SettingsCard.Header>
-            <toolKit:SettingsCard.Description>
-                <StackPanel>
-                    <TextBlock x:Name="ExpandedTextBox" />
-                    <HyperlinkButton x:Uid="CC_UpdateExpander_LicensesHyperLink"
-                                     NavigateUri="https://github.com/Infomaniak/desktop-kDrive?tab=GPL-3.0-1-ov-file" />
-                </StackPanel>
-            </toolKit:SettingsCard.Description>
-            <StackPanel Orientation="Horizontal">
-                <HyperlinkButton x:Uid="CC_UpdateExpander_ChangeLogHyperLink"
-                                 NavigateUri="{x:Bind DisplayedVersion.ChangeLogUrl, Mode=OneWay}" />
-            </StackPanel>
         </toolKit:SettingsCard>
     </toolKit:SettingsExpander.Items>
 </toolKit:SettingsExpander>

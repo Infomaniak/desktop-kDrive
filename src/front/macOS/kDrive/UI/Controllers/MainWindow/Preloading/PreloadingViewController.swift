@@ -24,7 +24,7 @@ import kDriveResources
 import Lottie
 
 final class PreloadingViewController: NSViewController {
-    private var animationView = ThemedAnimationView()
+    private var animationView = NSThemedAnimationView()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -55,7 +55,7 @@ final class PreloadingViewController: NSViewController {
 
             @InjectService var windowRouter: WindowRouter
             if hasAtLeastOneConnectedUser && !UserDefaults.standard.shouldPresentOnboarding {
-                windowRouter.navigate(to: .splitView)
+                windowRouter.navigate(to: .mainWindow)
             } else {
                 windowRouter.navigate(to: .onboarding())
             }
@@ -74,7 +74,7 @@ extension PreloadingViewController {
 
     private func setupView() {
         view.wantsLayer = true
-        view.layer?.backgroundColor = NSColor.Tokens.Surface.secondary.cgColor
+        view.layer?.backgroundColor = ColorToken.Surface.secondary.asCGColor
 
         animationView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(animationView)

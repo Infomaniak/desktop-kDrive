@@ -26,6 +26,7 @@ public struct AccountJobs: Sendable {
 
     public init() {}
 
+    @discardableResult
     public func accountInfoList() async throws -> [AccountInfoResponse] {
         IKLogger.data.log("Query for accountInfoList")
         let query = EmptyQuery()

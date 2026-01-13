@@ -73,6 +73,10 @@ class ParametersInfo {
         inline void setMaxAllowedCpu(int maxAllowedCpu) { _maxAllowedCpu = maxAllowedCpu; }
         [[nodiscard]] VersionChannel distributionChannel() const { return _distributionChannel; }
         void setDistributionChannel(const VersionChannel channel) { _distributionChannel = channel; }
+        bool sentryEnabled() const { return _sentryEnabled; }
+        void setSentryEnabled(bool value) { _sentryEnabled = value; }
+        bool matomoEnabled() const { return _matomoEnabled; }
+        void setMatomoEnabled(bool value) { _matomoEnabled = value; }
 
         friend bool operator==(const ParametersInfo &lhs, const ParametersInfo &rhs) {
             return (lhs.language() == rhs.language()) && (lhs.monoIcons() == rhs.monoIcons()) &&
@@ -81,7 +85,8 @@ class ParametersInfo {
                    (lhs.logLevel() == rhs.logLevel()) && (lhs.extendedLog() == rhs.extendedLog()) &&
                    (lhs.purgeOldLogs() == rhs.purgeOldLogs()) && (lhs.darkTheme() == rhs.darkTheme()) &&
                    (lhs.showShortcuts() == rhs.showShortcuts()) && (lhs.dialogGeometry() == rhs.dialogGeometry()) &&
-                   (lhs.maxAllowedCpu() == rhs.maxAllowedCpu());
+                   (lhs.maxAllowedCpu() == rhs.maxAllowedCpu()) && (lhs.distributionChannel() == rhs.distributionChannel()) &&
+                   (lhs.sentryEnabled() == rhs.sentryEnabled()) && (lhs.matomoEnabled() == rhs.matomoEnabled());
         }
 
         void toDynamicStruct(Poco::DynamicStruct &) const;
@@ -106,6 +111,8 @@ class ParametersInfo {
         DialogGeometry _dialogGeometry;
         int _maxAllowedCpu{50};
         VersionChannel _distributionChannel{VersionChannel::Prod};
+        bool _sentryEnabled{false};
+        bool _matomoEnabled{false};
 };
 
 } // namespace KDC

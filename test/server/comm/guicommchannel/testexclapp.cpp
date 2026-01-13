@@ -102,7 +102,7 @@ void TestGuiCommChannel::testExclAppGetListJob() {
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::EXCLAPP_GETLIST));
     (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-    // Job expected answers
+    // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
     const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
 

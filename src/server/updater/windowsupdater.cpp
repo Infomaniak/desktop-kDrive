@@ -157,7 +157,7 @@ bool WindowsUpdater::getInstallerPath(SyncPath &path) const {
     const auto pos = url.find_last_of('/');
     const auto installerName = url.substr(pos + 1);
     SyncPath tmpDirPath;
-    if (IoError ioError = IoError::Unknown; !IoHelper::tempDirectoryPath(tmpDirPath, ioError)) {
+    if (IoError ioError = IoError::Unknown; !IoHelper::deviceTempDirectoryPath(tmpDirPath, ioError)) {
         sentry::Handler::captureMessage(sentry::Level::Warning, "WindowsUpdater::getInstallerPath",
                                         "Impossible to retrieve installer destination directory.");
         return false;

@@ -290,7 +290,7 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
     assert(correspondingNode);
 
     if (!currentNode->parentNode() || !currentNode->parentNode()->id().has_value()) {
-        LOGW_SYNCPAL_WARN(_logger, L"Missing parent for node: " << SyncName2WStr(currentNode->name()));
+        LOGW_SYNCPAL_WARN(_logger, L"Missing parent for node with " << Utility::formatSyncName(currentNode->name()));
         return;
     }
 
