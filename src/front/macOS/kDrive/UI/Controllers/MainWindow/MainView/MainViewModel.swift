@@ -23,7 +23,7 @@ import InfomaniakDI
 import kDriveCore
 
 @MainActor
-final class MainViewModel {
+final class MainViewModel: ObservableObject {
     @LazyInjectService private var coherentCache: CoherentCache
     @LazyInjectService private var cacheObservable: CoherentCacheObservable
 
@@ -31,6 +31,7 @@ final class MainViewModel {
     @Published private(set) var currentAccount: UIAccount?
     @Published private(set) var currentDrive: UIDrive?
     @Published private(set) var currentSynchro: UISynchro?
+
     @Published private(set) var availableSynchros = [UISynchroContext]()
 
     private var bindStore = Set<AnyCancellable>()
@@ -49,6 +50,7 @@ final class MainViewModel {
     func refreshCache() {
         Task {
             try await coherentCache.refresh()
+            await restoreLastSelection()
         }
     }
 
@@ -83,15 +85,22 @@ final class MainViewModel {
         self.currentSynchro = currentSyncContext.synchro
     }
 
-    func restoreLastSelection() {
-        Task {
-            let synchroDbId = UserDefaults.standard.selectedSynchroDbId
-            guard let synchro = await coherentCache.getSynchro(synchroDbId: Int32(synchroDbId)) else {
-                return
-            }
-
-            setCurrentSynchro(UISynchro(synchro: synchro))
+    private func restoreLastSelection() async {
+        let synchroDbId = UserDefaults.standard.selectedSynchroDbId
+        guard let synchro = await coherentCache.getSynchro(synchroDbId: Int32(synchroDbId)) else {
+            setDefaultSynchro()
+            return
         }
+
+        setCurrentSynchro(UISynchro(synchro: synchro))
+    }
+
+    private func setDefaultSynchro() {
+        guard let firstAvailableSynchro = availableSynchros.first else {
+            return
+        }
+
+        setCurrentSynchro(firstAvailableSynchro.synchro)
     }
 
     private func getSelectedValuesFromSynchro(_ synchro: UISynchro) -> UISynchroContext? {

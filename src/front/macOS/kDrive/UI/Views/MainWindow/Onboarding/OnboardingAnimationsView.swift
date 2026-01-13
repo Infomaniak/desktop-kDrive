@@ -26,7 +26,7 @@ import Lottie
 class OnboardingAnimationsView: NSView {
     private let flowCoordinator: OnboardingFlowCoordinator
 
-    private let animationView = ThemedAnimationView()
+    private let animationView = NSThemedAnimationView()
 
     private var bindStore = Set<AnyCancellable>()
 
