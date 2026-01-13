@@ -6,6 +6,7 @@ from conan.errors import ConanInvalidConfiguration
 from conan.tools.cmake import CMake, CMakeToolchain, CMakeDeps
 from conan.tools.files import copy, replace_in_file
 from conan.tools.scm import Git
+from conan.tools.system import package_manager
 
 required_conan_version = ">=2"
 
@@ -25,6 +26,11 @@ class SentryNativeConan(ConanFile):
     options = {"shared": [True, False]}
     default_options = {"shared": True}
 
+    @property
+    def _is_linux_arm(self):
+        """Check if we're building for Linux ARM architecture."""
+        return self.settings.os == "Linux" and str(self.settings.arch).startswith("arm")
+
     def validate(self):
         if self.settings.os not in ("Macos", "Linux", "Windows"):
             raise ConanInvalidConfiguration(
@@ -35,11 +41,21 @@ class SentryNativeConan(ConanFile):
                 "On Linux, this recipe requires GCC or Clang because the Sentry/Crashpad build uses GCC/Clang-specific preprocessor extensions such as #include_next."
             )
 
+    def system_requirements(self):
+        """Install system packages required for Sentry on Linux ARM."""
+        # On Linux ARM, we use system packages for c-ares and libcurl to avoid m4 compilation issues
+        if self._is_linux_arm:
+            apt = package_manager.Apt(self)
+            apt.install(["libc-ares-dev", "libcurl4-openssl-dev"], update=True, check=True)
+
     def requirements(self):
         # Qt is private (headers=True, libs=False) because it uses cmake_find_mode="none"
         # and cannot be propagated via Conan - consumers must find Qt via find_package(Qt6)
         self.requires("qt/[>=6.2.3 <7.0.0]", headers=True, libs=False, visible=False)
-        if self.settings.os == "Linux":
+
+        # On Linux non-ARM: use Conan packages for c-ares and libcurl
+        # On Linux ARM: use system packages (installed via system_requirements())
+        if self.settings.os == "Linux" and not self._is_linux_arm:
             # c-ares is required explicitly because Crashpad (Sentry's backend) uses it directly
             self.requires("c-ares/[>=1.27 <2]")
             self.requires("libcurl/8.10.1", options={"with_c_ares": True}) # Provide Curl with AsynchDNS (needed on linux)
@@ -149,12 +165,19 @@ endif()
         comp_sentry.set_property("cmake_target_name", "sentry::sentry")
         comp_sentry.libs = ["sentry"]
 
+        # Linux-specific configuration
         if self.settings.os == "Linux":
-            # libcurl::curl should transitively provide c-ares, but we also add it explicitly
-            comp_sentry.requires = ["libcurl::curl", "c-ares::cares"]
             comp_sentry.exelinkflags = ["-Wl,-E,--build-id=sha1"]
             comp_sentry.sharedlinkflags = ["-Wl,-E,--build-id=sha1"]
-            comp_sentry.system_libs = [ "pthread", "dl" ]
+            comp_sentry.system_libs = ["pthread", "dl"]
+
+            if self._is_linux_arm:
+                # On ARM: use system libraries (curl and cares)
+                comp_sentry.requires = []
+                comp_sentry.system_libs.extend(["curl", "cares"])
+            else:
+                # On non-ARM: use Conan packages
+                comp_sentry.requires = ["libcurl::curl", "c-ares::cares"]
         else:
             comp_sentry.requires = []
 

@@ -163,6 +163,20 @@ Conan version 2.x.x
     os=Linux
    ```
 
+3. **Linux ARM only**: The Sentry Conan recipe automatically installs required system packages on Linux ARM to avoid building `c-ares` and `libcurl` from source (which would require `m4`, a package that fails to compile with GCC 14+).
+
+    The following packages will be automatically installed via `apt` when running `conan install`:
+    - `libc-ares-dev` (c-ares development library)
+    - `libcurl4-openssl-dev` (libcurl with OpenSSL support)
+
+    **Manual installation (optional):** If you prefer to install these packages beforehand:
+    ```bash
+    sudo apt update && sudo apt install -y libc-ares-dev libcurl4-openssl-dev
+    ```
+
+    No additional configuration is required - the Sentry recipe handles everything automatically.
+
+
 ---
 
 ### 4. Configure CMake Toolchain Injection
