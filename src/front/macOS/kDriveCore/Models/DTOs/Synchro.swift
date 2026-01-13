@@ -87,7 +87,8 @@ public struct SynchroNode: Identifiable, Codable, Hashable, Sendable {
     }
 
     public let type: KDC.NodeType
-    public let path: String // Sync folder relative filesystem path
+    /// Sync folder relative filesystem path
+    public let path: String
     public let newPath: String
     public let localNodeId: String
     public let remoteNodeId: String

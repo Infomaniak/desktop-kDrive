@@ -25,7 +25,8 @@ struct SyncFileItemInfoSignal: Codable, Sendable {
 
 struct SyncFileItemInfo: Codable, Sendable {
     let type: KDC.NodeType
-    @Base64CodedString var path: String // Sync folder relative filesystem path
+    /// Sync folder relative filesystem path
+    @Base64CodedString var path: String
     @Base64CodedString var newPath: String
     @Base64CodedString var localNodeId: String
     @Base64CodedString var remoteNodeId: String
