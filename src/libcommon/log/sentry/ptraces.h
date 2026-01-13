@@ -25,12 +25,15 @@ namespace KDC::sentry::pTraces {
 
 struct None : public AbstractPTrace {
         None() :
-            AbstractPTrace({}) {};
+            AbstractPTrace({}){};
         explicit None(int syncdbId) :
             AbstractPTrace({}, syncdbId) {}
-        void start() final { /* Do nothing */ }
-        void stop([[maybe_unused]] PTraceStatus status = PTraceStatus::Ok) final { /* Do nothing */ }
-        void restart() final { /* Do nothing */ }
+        void start() final { /* Do nothing */
+        }
+        void stop([[maybe_unused]] PTraceStatus status = PTraceStatus::Ok) final { /* Do nothing */
+        }
+        void restart() final { /* Do nothing */
+        }
 };
 
 /*
@@ -47,12 +50,12 @@ struct None : public AbstractPTrace {
 namespace basic {
 struct AppStart : public AbstractPTrace {
         [[nodiscard]] AppStart() :
-            AbstractPTrace({"AppStart", "Strat the application", PTraceName::AppStart}) {}
+            AbstractPTrace({"AppStart", "Start the application", PTraceName::AppStart}) {}
 };
 
 struct Sync : public AbstractPTrace {
         [[nodiscard]] explicit Sync(int dbId) :
-            AbstractPTrace({"Synchronisation", "Synchronisation initialization", PTraceName::Sync}, dbId) {};
+            AbstractPTrace({"Synchronisation", "Synchronisation initialization", PTraceName::Sync}, dbId){};
 };
 
 struct UpdateDetection1 : public AbstractPTrace {
@@ -68,7 +71,7 @@ struct UpdateDetection2 : public AbstractPTrace {
 struct Reconciliation1 : public AbstractPTrace {
         [[nodiscard]] explicit Reconciliation1(int dbId) :
             AbstractPTrace({"Reconciliation1", "Platform inconsistency check", PTraceName::Reconciliation1, PTraceName::Sync},
-                           dbId) {};
+                           dbId){};
 };
 
 struct Reconciliation2 : public AbstractPTrace {
@@ -128,7 +131,7 @@ struct RFSOChangeDetected : public AbstractScopedPTrace {
 struct RFSOGenerateInitialSnapshot : public AbstractScopedPTrace {
         explicit RFSOGenerateInitialSnapshot(int syncDbId) :
             AbstractScopedPTrace({"RFSO_GenerateInitialSnapshot", "Generate snapshot", PTraceName::RFSOGenerateInitialSnapshot},
-                                 PTraceStatus::Aborted, syncDbId) {};
+                                 PTraceStatus::Aborted, syncDbId){};
 };
 
 // This scoped performance trace expects to be manually stopped.

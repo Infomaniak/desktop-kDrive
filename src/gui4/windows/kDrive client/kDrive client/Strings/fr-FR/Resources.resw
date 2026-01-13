@@ -127,11 +127,12 @@
   </data>
   <data name="CC_SyncExclusionSelector_Header_Size.Text" xml:space="preserve">
     <value>Taille</value>
-    <comment>Name of the open button in the TrayIcon menu</comment>
+  </data>
+  <data name="CC_SyncExclusionSelector_ToolTip_AccessDenied.Content" xml:space="preserve">
+    <value>Accès non autorisé</value>
   </data>
   <data name="CC_SyncExclusionSelector_Header_Name.Text" xml:space="preserve">
     <value>Nom</value>
-    <comment>Name of the open button in the TrayIcon menu</comment>
   </data>
   <data name="W_MainWindow_NavBar_Home.Content" xml:space="preserve">
     <value>Accueil</value>

@@ -116,7 +116,7 @@ enum class RequestNum {
     UTILITY_GET_LOG_ESTIMATED_SIZE,
     UTILITY_CRASH,
     UTILITY_QUIT,
-    UTILITY_DISPLAY_CLIENT_REPORT, // Sent by the Client process as soon the UI is visible for the user.
+    UTILITY_SEND_APP_START_TRACE, // Sent by the Client process as soon the UI is visible for the user.
     UPDATER_CHANGE_CHANNEL,
     UPDATER_VERSION_INFO,
     UPDATER_STATE,
@@ -261,8 +261,8 @@ inline std::string toString(RequestNum e) {
             return "UTILITY_CRASH";
         case RequestNum::UTILITY_QUIT:
             return "UTILITY_QUIT";
-        case RequestNum::UTILITY_DISPLAY_CLIENT_REPORT:
-            return "UTILITY_DISPLAY_CLIENT_REPORT";
+        case RequestNum::UTILITY_SEND_APP_START_TRACE:
+            return "UTILITY_SEND_APP_START_TRACE";
         case RequestNum::UPDATER_VERSION_INFO:
             return "UPDATER_VERSION_INFO";
         case RequestNum::UPDATER_STATE:

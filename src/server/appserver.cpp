@@ -570,6 +570,13 @@ void AppServer::cleanup() {
     // Close ParmsDb
     ParmsDb::instance()->close();
     LOG_DEBUG(_logger, "ParmsDb closed");
+
+    // Clean up tmp directory
+    SyncPath tmpDirPath;
+    auto dummyIoError = IoError::Unknown;
+    if (IoHelper::appTempDirectoryPath(tmpDirPath, dummyIoError)) {
+        (void) IoHelper::deleteItem(tmpDirPath, dummyIoError);
+    }
 }
 
 void AppServer::reset() {
@@ -696,6 +703,90 @@ void AppServer::logExtendedLogActivationMessage(bool isExtendedLogEnabled) noexc
     const std::string msg = "Extended logging is " + activationStatus + ".";
 
     LOG_INFO(_logger, msg);
+}
+
+ExitInfo AppServer::updateParametersAndPropagateChanges(const ParametersInfo &newParametersInfo) {
+    // Retrieve current settings
+    const Parameters oldParametersInfo = ParametersCache::instance()->parameters();
+    std::string pwd;
+    if (oldParametersInfo.proxyConfig().needsAuth()) {
+        // Read pwd from keystore
+        bool found = false;
+        if (!KeyChainManager::instance()->readDataFromKeystore(oldParametersInfo.proxyConfig().token(), pwd, found)) {
+            LOG_WARN(_logger, "Failed to read proxy pwd from keychain");
+        }
+        if (!found) {
+            LOG_DEBUG(_logger, "Proxy pwd not found for keychainKey=" << oldParametersInfo.proxyConfig().token());
+        }
+    }
+
+    // Update parameters
+    const ExitCode exitCode = ServerRequests::updateParameters(newParametersInfo);
+    if (exitCode != ExitCode::Ok) {
+        LOG_WARN(_logger, "Error in Requests::updateParameters");
+        AppServer::addError(Error(ERR_ID, exitCode));
+    }
+
+    // Propagate extendedLog change
+    if (oldParametersInfo.extendedLog() != newParametersInfo.extendedLog()) {
+        logExtendedLogActivationMessage(newParametersInfo.extendedLog());
+        const std::scoped_lock lock(AppServer::vfsMapMutex);
+        for (const auto &[_, vfs]: AppServer::vfsMap) {
+            vfs->setExtendedLog(newParametersInfo.extendedLog());
+        }
+    }
+
+    // Propagate language change
+    if (oldParametersInfo.language() != newParametersInfo.language()) {
+        CommonUtility::setupTranslations(this, newParametersInfo.language());
+    }
+
+    // Propagate ProxyConfig change
+    if (oldParametersInfo.proxyConfig().type() != newParametersInfo.proxyConfigInfo().type() ||
+        oldParametersInfo.proxyConfig().hostName() != newParametersInfo.proxyConfigInfo().hostName().toStdString() ||
+        oldParametersInfo.proxyConfig().port() != newParametersInfo.proxyConfigInfo().port() ||
+        oldParametersInfo.proxyConfig().needsAuth() != newParametersInfo.proxyConfigInfo().needsAuth() ||
+        oldParametersInfo.proxyConfig().user() != newParametersInfo.proxyConfigInfo().user().toStdString() ||
+        pwd != newParametersInfo.proxyConfigInfo().pwd().toStdString()) {
+        // Note: The parameters cache has been updated with the parameters new values.
+        Proxy::instance()->setProxyConfig(ParametersCache::instance()->parameters().proxyConfig());
+    }
+
+    // Propagate autostart change
+    if (oldParametersInfo.autoStart() != newParametersInfo.autoStart()) {
+        auto *theme = Theme::instance();
+        (void) Utility::setLaunchOnStartup(theme->appName(), theme->appName(), newParametersInfo.autoStart());
+    }
+
+    // Propagate Sentry activation change
+    if (KDRIVE_VERSION_MAJOR >= 4) {
+        if (oldParametersInfo.sentryEnabled() != newParametersInfo.sentryEnabled()) {
+            sentry::Handler::instance()->setIsSentryActivated(newParametersInfo.sentryEnabled());
+        }
+    }
+
+    // Propagate distribution channel change
+    setDistributionChannel(newParametersInfo.distributionChannel());
+
+    return exitCode;
+}
+
+ExitInfo AppServer::sendAppStartTrace() {
+    if (_clientManuallyRestarted) {
+        // If the client initially started by the server never sends the UTILITY_SEND_APP_START_TRACE,
+        // we consider the client's startup aborted, and the user was forced to manually start the client again.
+        if (!_appStartPTraceStopped) {
+            sentry::pTraces::basic::AppStart().stop(sentry::PTraceStatus::Aborted);
+            _appStartPTraceStopped = true;
+        }
+    }
+
+    if (!_appStartPTraceStopped) {
+        _appStartPTraceStopped = true;
+        sentry::pTraces::basic::AppStart().stop();
+    }
+
+    return ExitCode::Ok;
 }
 
 void AppServer::updateSentryUser() {
@@ -2175,20 +2266,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QTimer::singleShot(QUIT_DELAY, []() { quit(); });
             break;
         }
-        case RequestNum::UTILITY_DISPLAY_CLIENT_REPORT: {
-            if (_clientManuallyRestarted) {
-                // If the client initially started by the server never sends the UTILITY_DISPLAY_CLIENT_REPORT,
-                // we consider the client's startup aborted, and the user was forced to manually start the client again.
-                if (!_appStartPTraceStopped) {
-                    sentry::pTraces::basic::AppStart().stop(sentry::PTraceStatus::Aborted);
-                    _appStartPTraceStopped = true;
-                }
-            }
-
-            if (!_appStartPTraceStopped) {
-                _appStartPTraceStopped = true;
-                sentry::pTraces::basic::AppStart().stop();
-            }
+        case RequestNum::UTILITY_SEND_APP_START_TRACE: {
+            (void) sendAppStartTrace();
             break;
         }
         case RequestNum::SYNC_SETSUPPORTSVIRTUALFILES: {
@@ -2621,11 +2700,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 

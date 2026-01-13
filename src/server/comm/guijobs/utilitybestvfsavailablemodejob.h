@@ -25,8 +25,7 @@ namespace KDC {
 class UtilityBestVfsAvailableModeJob : public AbstractGuiJob {
     public:
         UtilityBestVfsAvailableModeJob(std::shared_ptr<CommManager> commManager, int requestId,
-                                       const Poco::DynamicStruct &inParams,
-                              std::shared_ptr<AbstractCommChannel> channel);
+                                       const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel);
 
     private:
         // Input parameters

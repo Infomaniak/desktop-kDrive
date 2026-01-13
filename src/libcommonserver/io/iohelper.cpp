@@ -615,7 +615,7 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
     return true;
 }
 
-bool IoHelper::tempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
+bool IoHelper::deviceTempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
     // Warning: never log anything in this method. If the logger is not set, the app will crash.
     ioError = IoError::Success;
     std::error_code ec;
@@ -628,6 +628,18 @@ bool IoHelper::tempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noex
 
     ioError = stdError2ioError(ec);
 
+    return ioError == IoError::Success;
+}
+
+bool IoHelper::appTempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
+    SyncPath tmpDirPath;
+    if (const auto res = !deviceTempDirectoryPath(tmpDirPath, ioError)) return res;
+
+    static const SyncName kDriveTmpDirName = Str("kDrive-tmp");
+    directoryPath = tmpDirPath / kDriveTmpDirName;
+    std::error_code ec;
+    (void) std::filesystem::create_directory(directoryPath, ec);
+    ioError = stdError2ioError(ec);
     return ioError == IoError::Success;
 }
 
@@ -666,7 +678,7 @@ class CacheDirectoryHanlder {
             if (initDirectoryPathFromEnv("HOME", cacheDirName, ".cache")) return;
 #endif
             IoError ioError = IoError::Success;
-            if (!IoHelper::tempDirectoryPath(_directoryPath, ioError)) {
+            if (!IoHelper::deviceTempDirectoryPath(_directoryPath, ioError)) {
                 return;
             }
             _directoryPath /= cacheDirName;
@@ -732,7 +744,7 @@ bool IoHelper::logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexc
         }
     } else {
         // Generate directory path
-        if (!tempDirectoryPath(directoryPath, ioError)) {
+        if (!deviceTempDirectoryPath(directoryPath, ioError)) {
             return false;
         }
 
@@ -746,7 +758,7 @@ bool IoHelper::logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexc
 
 bool IoHelper::logArchiverDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
     SyncPath tempDir;
-    tempDirectoryPath(tempDir, ioError);
+    (void) deviceTempDirectoryPath(tempDir, ioError);
     if (ioError != IoError::Success) {
         return false;
     }
