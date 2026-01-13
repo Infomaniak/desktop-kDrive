@@ -306,7 +306,9 @@ class QtConan(ConanFile):
 
         self._check_envvars_login_type(check_option=True, raise_error=True) # If the login type is 'envvars', ensure that the required environment variable is set; otherwise, raise an error.
 
-        args += ["install"] + self._get_qt_submodules(self.version)
+        modules = self._get_qt_submodules(self.version)
+
+        args += ["install"] + modules
 
         quoted_installer = f"'{installer_path}'" if self.settings.os != "Windows" else installer_path
 
