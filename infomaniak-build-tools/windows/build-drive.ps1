@@ -443,7 +443,7 @@ function Prepare-Archive {
         [string] $buildType,
         [string] $buildPath,
         [string] $vfsDir,
-        [switch] $newGui,
+        [bool] $newGui,
         [string] $newGuiDir,
         [string] $archivePath,
         [bool] $upload,
