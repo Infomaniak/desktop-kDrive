@@ -227,9 +227,16 @@ log "- Output directory: '$output_dir'"
 echo
 
 log "Installing dependencies..."
-# Install this packet in the build folder.
-# Here: -s:b set the build type for the app itself, -s:h set the build type for the host (dependencies).
-conan install . --output-folder="$output_dir" --build=missing $architecture -s:b=build_type="$build_type" -s:h=build_type="Release" --profile:all="$conan_profile" -r=$local_recipe_remote_name -r=conancenter
+
+# On Linux ARM, skip building m4 due to GCC 14+ compatibility issues
+# The system-installed m4 will be used instead
+build_flags="--build=missing"
+if [[ "$platform" == "linux" ]] && [[ "$(get_target_architecture "$platform" "build")" == "armv8" ]]; then
+  log "Linux ARM detected: skipping m4 build (using system m4)"
+  build_flags="--build=missing --build=!m4"
+fi
+
+conan install . --output-folder="$output_dir" $build_flags $architecture -s:b=build_type="$build_type" -s:h=build_type="Release" --profile:all="$conan_profile" -r=$local_recipe_remote_name -r=conancenter
 
 
 if [ $? -ne 0 ]; then
