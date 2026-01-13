@@ -25,7 +25,7 @@ struct AccountSignalHandler {
 
     func handleAccountAdded(_ signal: Data) async throws {
         guard let accountInfoSignal = try? decoder.decode(SignalMessage<AccountInfoSignal>.self, from: signal) else {
-            throw XPCSignalError.unableToGetAccountFromSignal
+            throw SignalError.unableToGetAccountFromSignal
         }
 
         let accountInfo = accountInfoSignal.body.accountInfo
@@ -34,7 +34,7 @@ struct AccountSignalHandler {
 
     func handleAccountUpdated(_ signal: Data) async throws {
         guard let accountInfoSignal = try? decoder.decode(SignalMessage<AccountInfoSignal>.self, from: signal) else {
-            throw XPCSignalError.unableToGetAccountFromSignal
+            throw SignalError.unableToGetAccountFromSignal
         }
 
         let accountInfo = accountInfoSignal.body.accountInfo
@@ -43,7 +43,7 @@ struct AccountSignalHandler {
 
     func handleAccountRemoved(_ signal: Data) async throws {
         guard let accountInfoSignal = try? decoder.decode(SignalMessage<AccountRemoveSignal>.self, from: signal) else {
-            throw XPCSignalError.unableToGetAccountDbIdFromSignal
+            throw SignalError.unableToGetAccountDbIdFromSignal
         }
 
         let accountDbId = accountInfoSignal.body.accountDbId

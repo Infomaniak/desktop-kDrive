@@ -24,7 +24,7 @@ public protocol XPCSignalHandlerProtocol {
     func handleServerSignal(_ signal: Data?)
 }
 
-enum XPCSignalError: Error {
+enum SignalError: Error {
     case nilData
     case unableToParseMetadata(_ signal: String)
     case serverError(_ code: KDC.ExitCode?, _ cause: KDC.ExitCause?)
@@ -68,16 +68,16 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
 
     private func handleServerSignal(_ signal: Data?) async throws {
         guard let signal else {
-            throw XPCSignalError.nilData
+            throw SignalError.nilData
         }
 
         guard let signalMetadata = try? decoder.decode(SignalMetadata.self, from: signal) else {
             let output = String(data: signal, encoding: .utf8) ?? ""
-            throw XPCSignalError.unableToParseMetadata(output)
+            throw SignalError.unableToParseMetadata(output)
         }
 
         guard signalMetadata.code == nil, signalMetadata.cause == nil else {
-            throw XPCSignalError.serverError(signalMetadata.code, signalMetadata.cause)
+            throw SignalError.serverError(signalMetadata.code, signalMetadata.cause)
         }
 
         let signalNum = signalMetadata.num
@@ -125,7 +125,7 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
             try await synchroHandler.handleSyncCompleted(signal)
 
         default:
-            throw XPCSignalError.unsupported(signalNum)
+            throw SignalError.unsupported(signalNum)
         }
     }
 }

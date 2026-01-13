@@ -25,7 +25,7 @@ struct SynchroSignalHandler {
 
     func handleSync(_ signal: Data) async throws {
         guard let syncInfoSignal = try? decoder.decode(SignalMessage<SyncInfoSignal>.self, from: signal) else {
-            throw XPCSignalError.unableToGetSyncFromSignal
+            throw SignalError.unableToGetSyncFromSignal
         }
 
         let syncInfo = syncInfoSignal.body.syncInfo
@@ -34,7 +34,7 @@ struct SynchroSignalHandler {
 
     func handleSyncRemoved(_ signal: Data) async throws {
         guard let syncRemoveSignal = try? decoder.decode(SignalMessage<SyncRemoveSignal>.self, from: signal) else {
-            throw XPCSignalError.unableToGetSyncDbIdFromSignal
+            throw SignalError.unableToGetSyncDbIdFromSignal
         }
 
         let syncDbId = syncRemoveSignal.body.syncDbId
@@ -43,7 +43,7 @@ struct SynchroSignalHandler {
 
     func handleSyncProgress(_ signal: Data) async throws {
         guard let syncProgressSignal = try? decoder.decode(SignalMessage<SyncProgressInfoSignal>.self, from: signal) else {
-            throw XPCSignalError.unableToGetSyncProgressFromSignal
+            throw SignalError.unableToGetSyncProgressFromSignal
         }
 
         let syncProgress = syncProgressSignal.body
@@ -52,7 +52,7 @@ struct SynchroSignalHandler {
 
     func handleSyncCompleted(_ signal: Data) async throws {
         guard let syncFileItemInfo = try? decoder.decode(SignalMessage<SyncFileItemInfoSignal>.self, from: signal) else {
-            throw XPCSignalError.unableToGetSyncFileItemFromSignal
+            throw SignalError.unableToGetSyncFileItemFromSignal
         }
 
         let syncFileItem = syncFileItemInfo.body

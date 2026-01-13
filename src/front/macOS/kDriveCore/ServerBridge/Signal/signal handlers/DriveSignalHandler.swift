@@ -25,7 +25,7 @@ struct DriveSignalHandler {
 
     func handleDrive(_ signal: Data) async throws {
         guard let driveInfoSignal = try? decoder.decode(SignalMessage<DriveInfoSignal>.self, from: signal) else {
-            throw XPCSignalError.unableToGetDriveFromSignal
+            throw SignalError.unableToGetDriveFromSignal
         }
 
         let driveInfo = driveInfoSignal.body.driveInfo
@@ -34,7 +34,7 @@ struct DriveSignalHandler {
 
     func handleDriveRemoved(_ signal: Data) async throws {
         guard let driveInfoSignal = try? decoder.decode(SignalMessage<DriveRemoveSignal>.self, from: signal) else {
-            throw XPCSignalError.unableToGetDriveDbIdFromSignal
+            throw SignalError.unableToGetDriveDbIdFromSignal
         }
 
         let driveDbId = driveInfoSignal.body.driveDbId

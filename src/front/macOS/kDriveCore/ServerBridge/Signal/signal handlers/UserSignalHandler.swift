@@ -26,7 +26,7 @@ struct UserSignalHandler {
 
     func handleUser(_ signal: Data) async throws {
         guard let userInfoSignal = try? decoder.decode(SignalMessage<UserInfoSignal>.self, from: signal) else {
-            throw XPCSignalError.unableToGetUserFromSignal
+            throw SignalError.unableToGetUserFromSignal
         }
 
         let user = userInfoSignal.body.asUser
@@ -35,7 +35,7 @@ struct UserSignalHandler {
 
     func handleUserRemoved(_ signal: Data) async throws {
         guard let userRemoveSignal = try? decoder.decode(SignalMessage<UserRemoveSignal>.self, from: signal) else {
-            throw XPCSignalError.unableToGetUserDbIdFromSignal
+            throw SignalError.unableToGetUserDbIdFromSignal
         }
 
         let userDbId = userRemoveSignal.body.userDbId
