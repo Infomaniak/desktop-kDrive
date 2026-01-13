@@ -105,7 +105,7 @@ GuiJobFactory::GuiJobFactory() {
         {RequestNum::SYNC_DELETE, makeShared<SyncDeleteJob>},
         {RequestNum::SYNC_GETPUBLICLINKURL, makeShared<SyncGetPublicLinkUrlJob>},
         {RequestNum::SYNC_GETPRIVATELINKURL, makeShared<SyncGetPrivateLinkUrlJob>},
-        {RequestNum::SYNC_ASKFORSTATUS, makeShared<SyncTriggerProgressUpdateJob>},
+        {RequestNum::SYNC_TRIGGER_PROGRESS_UPDATE, makeShared<SyncTriggerProgressUpdateJob>},
         {RequestNum::SYNC_SETSUPPORTSVIRTUALFILES, makeShared<SyncSetSupportsVirtualFilesJob>},
         {RequestNum::SYNC_SETROOTPINSTATE, makeShared<SyncSetRootPinStateJob>},
         {RequestNum::BLACKLISTED_NODE_LIST, makeShared<BlacklistedNodeListJob>},

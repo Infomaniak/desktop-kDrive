@@ -526,11 +526,11 @@ void TestGuiCommChannel::testSyncGetPrivateLinkUrlJob() {
 }
 
 void TestGuiCommChannel::testSyncTriggerProgressUpdateJob() {
-    const Poco::JSON::Object query = createSimpleQuery(RequestNum::SYNC_ASKFORSTATUS);
+    const Poco::JSON::Object query = createSimpleQuery(RequestNum::SYNC_TRIGGER_PROGRESS_UPDATE);
     const auto queryStr = stringifyQueryObj(query);
 
     // Job expected answers
-    const SimpleAnswers simpleAnswers = createSimpleAnswers(RequestNum::SYNC_ASKFORSTATUS);
+    const SimpleAnswers simpleAnswers = createSimpleAnswers(RequestNum::SYNC_TRIGGER_PROGRESS_UPDATE);
     const auto answerStr = stringifyAnswerObj(simpleAnswers.answerWithNumAndType);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {

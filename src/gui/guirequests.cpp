@@ -1094,7 +1094,7 @@ ExitCode GuiRequests::activateLoadInfo(const bool activate) {
 
 ExitCode GuiRequests::askForStatus() {
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::SYNC_ASKFORSTATUS, {}, results)) {
+    if (!CommClient::instance()->execute(RequestNum::SYNC_TRIGGER_PROGRESS_UPDATE, {}, results)) {
         return ExitCode::SystemError;
     }
 

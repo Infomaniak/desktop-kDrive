@@ -29,7 +29,7 @@ SyncTriggerProgressUpdateJob::SyncTriggerProgressUpdateJob(std::shared_ptr<CommM
                                                            const Poco::DynamicStruct &inParams,
                                                            std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
-    _requestNum = RequestNum::SYNC_ASKFORSTATUS;
+    _requestNum = RequestNum::SYNC_TRIGGER_PROGRESS_UPDATE;
 }
 
 

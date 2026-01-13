@@ -165,7 +165,7 @@ inline std::string toString(RequestNum e) {
             return "SYNC_GETPUBLICLINKURL";
         case RequestNum::SYNC_GETPRIVATELINKURL:
             return "SYNC_GETPRIVATELINKURL";
-        case RequestNum::SYNC_ASKFORSTATUS:
+        case RequestNum::SYNC_TRIGGER_PROGRESS_UPDATE:
             return "SYNC_ASKFORSTATUS";
         case RequestNum::SYNC_SETSUPPORTSVIRTUALFILES:
             return "SYNC_SETSUPPORTSVIRTUALFILES";

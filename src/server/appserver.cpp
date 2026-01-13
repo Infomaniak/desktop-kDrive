@@ -1625,7 +1625,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << linkUrl;
             break;
         }
-        case RequestNum::SYNC_ASKFORSTATUS: {
+        case RequestNum::SYNC_TRIGGER_PROGRESS_UPDATE: {
             triggerSyncProgressUpdate();
 
             resultStream << ExitCode::Ok;
