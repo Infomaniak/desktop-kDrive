@@ -768,10 +768,6 @@ ExitCode ServerRequests::addSync(int driveDbId, const SyncPath &localFolderPath,
         return ExitCode::SystemError;
     }
 
-#ifndef Q_OS_WIN
-    Q_UNUSED(showInNavigationPane)
-#endif
-
 #if !defined(Q_OS_MAC) && !defined(Q_OS_WIN)
     Q_UNUSED(liteSync)
 #endif
