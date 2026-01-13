@@ -41,8 +41,7 @@ static const auto parametersInfoMatomoEnabled = "matomoEnabled";
 
 ParametersInfo::ParametersInfo(Language language, bool monoIcons, bool autoStart, bool moveToTrash,
                                NotificationsDisabled notificationsDisabled, bool useLog, LogLevel logLevel, bool extendedLog,
-                               bool purgeOldLogs, bool darkTheme, bool showShortcuts, DialogGeometry dialogGeometry,
-                               int maxAllowedCpu) :
+                               bool purgeOldLogs, bool darkTheme, DialogGeometry dialogGeometry, int maxAllowedCpu) :
     _language(language),
     _monoIcons(monoIcons),
     _autoStart(autoStart),

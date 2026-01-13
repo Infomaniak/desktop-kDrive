@@ -34,7 +34,6 @@ void NavigationPaneHelper::showInExplorerNavigationPane() {
         return;
     }
 
-    // scheduleUpdateCloudStorageRegistry();
     updateCloudStorageRegistry();
 
     // Set pin state

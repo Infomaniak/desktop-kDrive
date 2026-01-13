@@ -35,7 +35,7 @@ class ParametersInfo {
         using DialogGeometry = QMap<QString, QByteArray>;
         ParametersInfo(Language language, bool monoIcons, bool autoStart, bool moveToTrash,
                        NotificationsDisabled notificationsDisabled, bool useLog, LogLevel logLevel, bool extendedLog,
-                       bool purgeOldLogs, bool darkTheme, bool showShortcuts, DialogGeometry dialogGeometry, int maxAllowedCpu);
+                       bool purgeOldLogs, bool darkTheme, DialogGeometry dialogGeometry, int maxAllowedCpu);
         ParametersInfo() = default;
 
         inline void setLanguage(Language language) { _language = language; }
