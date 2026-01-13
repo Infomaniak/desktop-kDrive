@@ -58,6 +58,8 @@ class SyncFileItemInfo {
         inline void setCancelType(CancelType newCancelType) { _cancelType = newCancelType; }
         inline const QString &error() const { return _error; }
         inline void setError(const QString &newError) { _error = newError; }
+        inline int64_t size() const { return _size; }
+        inline void setSize(int64_t newSize) { _size = newSize; }
 
         friend QDataStream &operator>>(QDataStream &in, SyncFileItemInfo &info);
         friend QDataStream &operator<<(QDataStream &out, const SyncFileItemInfo &info);
@@ -79,6 +81,7 @@ class SyncFileItemInfo {
         InconsistencyType _inconsistency;
         CancelType _cancelType;
         QString _error;
+        int64_t _size{0};
 };
 
 } // namespace KDC

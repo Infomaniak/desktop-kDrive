@@ -2279,6 +2279,7 @@ void ServerRequests::syncFileItemToSyncFileItemInfo(const SyncFileItem &item, Sy
     itemInfo.setInconsistency(item.inconsistency());
     itemInfo.setCancelType(item.cancelType());
     itemInfo.setError(QString::fromStdString(item.error()));
+    itemInfo.setSize(item.size());
 }
 
 void ServerRequests::parametersToParametersInfo(const Parameters &parameters, ParametersInfo &parametersInfo) {
