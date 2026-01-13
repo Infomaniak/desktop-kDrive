@@ -59,7 +59,7 @@ final class MainViewController: IKSplitViewController {
         sidebarItem.maximumThickness = 250
         addSplitViewItem(sidebarItem)
 
-        let homeViewController = HomeViewController(toolbarTitle: SidebarItem.home.title)
+        let homeViewController = HomeViewController()
         let homeDetailItem = NSSplitViewItem(viewController: homeViewController)
         addSplitViewItem(homeDetailItem)
     }

@@ -18,9 +18,10 @@
 
 import Cocoa
 import kDriveCoreUI
+import SwiftUI
 
-class StorageViewController: TitledViewController {
+class StorageViewController: TitledViewController<Text> {
     convenience init() {
-        self.init(toolbarTitle: SidebarItem.storage.title)
+        self.init(toolbarTitle: SidebarItem.storage.title, contentView: Text("Hello, World!"))
     }
 }

@@ -227,11 +227,18 @@ void FolderTreeItemWidget::insertNode(QTreeWidgetItem *parent, const NodeInfo &n
     // Set name
     item->setText(TreeWidgetColumn::Folder, nodeInfo.name());
 
-    if (!nodeInfo.nodeId().isEmpty()) {
-        addTreeWidgetItemToQueue(nodeInfo.nodeId(), item);
-    }
+    // Manage access denied
+    if (nodeInfo.accessDenied()) {
+        item->setDisabled(true);
+        item->setCheckState(TreeWidgetColumn::Folder, Qt::Unchecked);
+        item->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+    } else {
+        item->setChildIndicatorPolicy(QTreeWidgetItem::ShowIndicator);
 
-    item->setChildIndicatorPolicy(QTreeWidgetItem::ShowIndicator);
+        if (!nodeInfo.nodeId().isEmpty()) {
+            addTreeWidgetItemToQueue(nodeInfo.nodeId(), item);
+        }
+    }
 }
 
 QSet<QString> FolderTreeItemWidget::createBlackSet() {
@@ -259,23 +266,20 @@ void FolderTreeItemWidget::createBlackSet(const QTreeWidgetItem *parentItem, QSe
 
     const auto parentNodeId = parentItem->data(TreeWidgetColumn::Folder, nodeIdRole).toString();
 
-    switch (parentItem->checkState(TreeWidgetColumn::Folder)) {
-        case Qt::Unchecked: {
-            (void) blackset.insert(parentNodeId);
-            const QString path = getPath(parentNodeId);
-            if (!path.isEmpty()) {
-                (void) _blacklistCache.emplace(parentNodeId, path);
-            }
-            removeChildNodeFromSet(path, blackset);
-            return;
+    if (const auto checkState = parentItem->checkState(TreeWidgetColumn::Folder);
+        checkState == Qt::Unchecked && !parentItem->isDisabled()) {
+        (void) blackset.insert(parentNodeId);
+        const QString path = getPath(parentNodeId);
+        if (!path.isEmpty()) {
+            (void) _blacklistCache.emplace(parentNodeId, path);
         }
-        case Qt::Checked: {
-            const QString path = getPath(parentNodeId);
-            removeChildNodeFromSet(path, blackset);
-            break;
-        }
-        case Qt::PartiallyChecked:
-            break;
+        removeChildNodeFromSet(path, blackset);
+        return;
+    } else if (checkState == Qt::Checked) {
+        const QString path = getPath(parentNodeId);
+        removeChildNodeFromSet(path, blackset);
+    } else { // PartiallyChecked
+        // Do nothing
     }
 
     (void) blackset.remove(parentNodeId);

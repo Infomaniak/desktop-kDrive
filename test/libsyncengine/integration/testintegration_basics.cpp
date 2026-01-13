@@ -17,7 +17,7 @@
  */
 
 #include "testintegration.h"
-#include "jobs/local/localdeletejob.h"
+#include "jobs/local/synclocaldeletejob.h"
 #include "jobs/local/localmovejob.h"
 #include "jobs/network/kDrive_API/createdirjob.h"
 #include "jobs/network/kDrive_API/deletejob.h"
@@ -91,7 +91,7 @@ void TestIntegration::testLocalChanges() {
 
     // Generate a delete operation.
     {
-        LocalDeleteJob deleteJob(subDirPath);
+        GenericLocalDeleteJob deleteJob(subDirPath);
         (void) deleteJob.runSynchronously();
     }
     waitForSyncToBeIdle(SourceLocation::currentLoc());

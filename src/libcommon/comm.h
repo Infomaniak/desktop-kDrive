@@ -96,8 +96,10 @@ enum class RequestNum {
 #endif
     PARAMETERS_INFO,
     PARAMETERS_UPDATE,
-    UTILITY_FINDGOODPATHFORNEWSYNC,
     UTILITY_BESTVFSAVAILABLEMODE,
+    UTILITY_BESTVFSAVAILABLEMODE_LEGACY,
+    UTILITY_FINDGOODPATHFORNEWSYNC,
+    UTILITY_ISPATHVALIDFORNEWSYNC,
 #if defined(KD_WINDOWS)
     UTILITY_SHOWSHORTCUT,
     UTILITY_SETSHOWSHORTCUT,
@@ -114,7 +116,7 @@ enum class RequestNum {
     UTILITY_GET_LOG_ESTIMATED_SIZE,
     UTILITY_CRASH,
     UTILITY_QUIT,
-    UTILITY_DISPLAY_CLIENT_REPORT, // Sent by the Client process as soon the UI is visible for the user.
+    UTILITY_SEND_APP_START_TRACE, // Sent by the Client process as soon the UI is visible for the user.
     UPDATER_CHANGE_CHANNEL,
     UPDATER_VERSION_INFO,
     UPDATER_STATE,
@@ -221,10 +223,14 @@ inline std::string toString(RequestNum e) {
             return "PARAMETERS_INFO";
         case RequestNum::PARAMETERS_UPDATE:
             return "PARAMETERS_UPDATE";
-        case RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC:
-            return "UTILITY_FINDGOODPATHFORNEWSYNC";
         case RequestNum::UTILITY_BESTVFSAVAILABLEMODE:
             return "UTILITY_BESTVFSAVAILABLEMODE";
+        case RequestNum::UTILITY_BESTVFSAVAILABLEMODE_LEGACY:
+            return "UTILITY_BESTVFSAVAILABLEMODE_LEGACY";
+        case RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC:
+            return "UTILITY_FINDGOODPATHFORNEWSYNC";
+        case RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC:
+            return "UTILITY_ISPATHVALIDFORNEWSYNC";
 #if defined(KD_WINDOWS)
         case RequestNum::UTILITY_SHOWSHORTCUT:
             return "UTILITY_SHOWSHORTCUT";
@@ -255,8 +261,8 @@ inline std::string toString(RequestNum e) {
             return "UTILITY_CRASH";
         case RequestNum::UTILITY_QUIT:
             return "UTILITY_QUIT";
-        case RequestNum::UTILITY_DISPLAY_CLIENT_REPORT:
-            return "UTILITY_DISPLAY_CLIENT_REPORT";
+        case RequestNum::UTILITY_SEND_APP_START_TRACE:
+            return "UTILITY_SEND_APP_START_TRACE";
         case RequestNum::UPDATER_VERSION_INFO:
             return "UPDATER_VERSION_INFO";
         case RequestNum::UPDATER_STATE:

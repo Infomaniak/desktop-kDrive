@@ -63,7 +63,7 @@ void UpdateManager::startInstaller() const {
     LOG_DEBUG(Log::instance()->getLogger(), "startInstaller called!");
 
     // Cleanup skipped version
-    AbstractUpdater::unskipVersion();
+    _updater->unskipVersion();
 
     _updater->startInstaller();
 }

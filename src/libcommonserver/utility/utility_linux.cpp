@@ -234,7 +234,8 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
         autoStartFile << "[Desktop Entry]" << std::endl;
         autoStartFile << "Name=" << guiName << std::endl;
         autoStartFile << "GenericName=File Synchronizer" << std::endl;
-        autoStartFile << "Exec=" << "'" << appimageDir.native() << "'" << std::endl;
+        autoStartFile << "Exec="
+                      << "'" << appimageDir.native() << "'" << std::endl;
         autoStartFile << "Terminal=false" << std::endl;
         autoStartFile << "Icon=" << CommonUtility::toLower(appName) << std::endl;
         autoStartFile << "Categories=Network" << std::endl;

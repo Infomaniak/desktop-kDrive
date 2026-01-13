@@ -5,7 +5,6 @@
     - [CPPUnit](#cppunit)
     - [Zlib](#zlib)
     - [libzip](#libzip)
-    - [C++ Redistributable](#redistributable)
     - [NSIS](#nsis)
     - [7za](#7za)
     - [Conan](#conan)
@@ -29,11 +28,11 @@
 
 # kDrive files
 
-The folder `F:\Projects` will be used for the installation of sources and dependencies.  
+The folder `F:\Projects` will be used for the installation of sources and dependencies.
 Feel free to use any directory that suits you.
 
 ```powershell
-mkdir F:\Projects 
+mkdir F:\Projects
 cd F:\Projects
 git clone https://github.com/Infomaniak/desktop-kDrive.git
 cd desktop-kDrive && git submodule update --init --recursive
@@ -41,7 +40,7 @@ cd desktop-kDrive && git submodule update --init --recursive
 
 # Installation Requirements
 
-Once `Visual Studio 2019` is installed, **all** commands should to be run using the `x64 Native Tools Command Prompt` with administrator permissions.  
+Once `Visual Studio 2019` is installed, **all** commands should to be run using the `x64 Native Tools Command Prompt` with administrator permissions.
 
 ## Visual Studio 2019/2022/2025
 You must install both `Visual Studio 2019` and either `Visual Studio 2022` or `Visual Studio 2025` to build the project.
@@ -120,11 +119,6 @@ cmake --build . --target install --config Debug
 cmake --build . --target install --config Release
 ```
 
-## Redistributable
-
-Create the `F:\Projects\vcredist` folder and copy-paste the [C++ Redistributable](https://docs.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170) `x64` and `arm64` 
-inside it.
-
 ## NSIS
 
 Download and install [NSIS v3.03](https://sourceforge.net/projects/nsis/files/NSIS%203/3.03/nsis-3.03-setup.exe/download).
@@ -137,20 +131,20 @@ You will need the following `NSIS` plugins:
 
 ## 7za
 
-Download [7za](https://sourceforge.net/projects/sevenzip/files/7-Zip/23.01/7z2301-extra.7z/download) and extract it in `C:\Program Files\7-Zip`. This 
+Download [7za](https://sourceforge.net/projects/sevenzip/files/7-Zip/23.01/7z2301-extra.7z/download) and extract it in `C:\Program Files\7-Zip`. This
 requires the prior installation of `7-Zip`.
 
 ## Icoutils
 
 Download [Icoutils](https://sourceforge.net/projects/unix-utils/files/icoutils/icoutils-0.32.3-x86_64.zip/download) and extract it.
-Add the path to the `Icoutils` folder to your `PATH` environment variable, e.g. `C:\Program Files\icoutils-0.32.3-x86_64\bin`. 
+Add the path to the `Icoutils` folder to your `PATH` environment variable, e.g. `C:\Program Files\icoutils-0.32.3-x86_64\bin`.
 
 # Certificate Configuration
 
 To be able to sign executables, you need to have one of two the Infomaniak certificates installed.
 We use the virtual certificate for `DEBUG` builds and the physical certificate (USB key) for release builds.
- 
-Once the certificates are installed on your machine, open `F:\Projects\desktop-kDrive\extensions\windows\cfapi\kDriveExt.sln` and follow the next steps 
+
+Once the certificates are installed on your machine, open `F:\Projects\desktop-kDrive\extensions\windows\cfapi\kDriveExt.sln` and follow the next steps
 to create an environment variable for each certificate:
 - Select `FileExplorerExtensionPackage\Package.appxmanifest`.
 - Go to the `Packaging` tab.
@@ -208,7 +202,7 @@ Conan version 2.x.x
    This creates `%USERPROFILE%/.conan2/profiles/default`.
 
 2. Open `%USERPROFILE%/.conan2/profiles/default` and customize the settings under the `[settings]` section. For example, to target Windows with C++20 with a debug build type:
-   
+
    ```ini
     [settings]
     arch=x86_64
@@ -293,7 +287,7 @@ You can disable QML debugger from the settings to avoid some error pop-ups.
 
 ### CMake Parameters
 
-Open the file `F:\Projects\desktop-kDrive\CMakeList.txt` in Qt Creator.  
+Open the file `F:\Projects\desktop-kDrive\CMakeList.txt` in Qt Creator.
 Then copy the following list of `CMake` variables in "Initial CMake Parameters" using batch editing:
 
 ```
@@ -330,7 +324,7 @@ Check first your [certificates configuration](# Certificate Configuration) befor
 4. Modify `F:\Projects\` to match your actual path. The last two paths are outputs of the global projects; keep them for later steps.
 5. Save and close the properties window.
 
-Select `Debug x64` and deploy. 
+Select `Debug x64` and deploy.
 
 To build in Release mode, repeat the same steps for `Release x64`.
 
@@ -349,7 +343,7 @@ Open `Visual Studio 2019` and select `Open local folder`. Then choose `F:\Projec
    - Configuration type: Debug
    - Toolset: msvc_x64_x64
    - Build root: The folder set in the post-build events of the `kDriveExt` solution.
-   - CMake command args: 
+   - CMake command args:
     ```
     -DAPPLICATION_CLIENT_EXECUTABLE=kdrive_client 
     -DKDRIVE_THEME_DIR=F:/Projects/desktop-kDrive/infomaniak 
@@ -361,10 +355,10 @@ Open `Visual Studio 2019` and select `Open local folder`. Then choose `F:\Projec
     -DVFS_DIRECTORY:PATH=F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug
     ```
    You may need to adjust paths based on your installation.
-   
+
    - Check that `Advanced settings > install path` is the the build root path.
 
-Save (CTRL + S). `CMake` will automatically run in the output window. 
+Save (CTRL + S). `CMake` will automatically run in the output window.
 Make sure no errors occur.
 
 ### Install
@@ -399,7 +393,7 @@ Once `kDrive.exe` is running, right-click on the `kDrive_client` executable: `De
 
 ## Testing the extension
 
-To test the extension in Debug mode, you will first need to install a [release version](https://www.infomaniak.com/en/apps/download-kdrive) of `kDrive`.  
+To test the extension in Debug mode, you will first need to install a [release version](https://www.infomaniak.com/en/apps/download-kdrive) of `kDrive`.
 Once installed and running, stop the `File Explorer` with the command:
 
 ```powershell
@@ -423,7 +417,7 @@ start explorer.exe
 
 ## Build and Packaging
 
-The script `build-drive.ps1` will build, sign, then package the project. You can either start it from the root of the `desktop-kDrive` repository, or provide a path when executing it.    
+The script `build-drive.ps1` will build, sign, then package the project. You can either start it from the root of the `desktop-kDrive` repository, or provide a path when executing it.
 To get more information, call the script with the option `-h` or `-help`
 
 **Note.** For `CMake` to be able to build the project, you need to initialise the environment for `x64` with `vcvarsall.bat`, or `vcvars64.bat` (see the help output of `build-drive.ps1` for details).

@@ -17,7 +17,6 @@
  */
 
 #include "testworkers.h"
-
 #include "propagation/executor/executorworker.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommonserver/network/proxy.h"
@@ -28,6 +27,7 @@
 
 #if defined(KD_WINDOWS)
 #include <combaseapi.h>
+#include "comm/pipecommserver.h"
 #endif
 
 namespace KDC {
@@ -133,6 +133,21 @@ void TestWorkers::setUp() {
 #if defined(KD_WINDOWS)
     // Initializes the COM library
     CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+
+    // Initialize server pipe for VFS communication (no need to listen, just create the named pipe is enough for the vfs to start)
+    SyncPath pipePath = PipeCommServer::pipePath();
+    CreateNamedPipe(pipePath.native().c_str(), // pipe name
+                    PIPE_ACCESS_DUPLEX | // read/write access
+                            FILE_FLAG_OVERLAPPED, // overlapped mode
+                    PIPE_TYPE_BYTE | // message-type pipe
+                            PIPE_READMODE_BYTE | // message-read mode
+                            PIPE_WAIT, // blocking mode
+                    10, // number of instances
+                    BUFSIZE * sizeof(TCHAR), // output buffer size
+                    BUFSIZE * sizeof(TCHAR), // input buffer size
+                    5000, // client time-out (ms)
+                    nullptr); // default security attributes
+
 #endif
 
     // Start Vfs
