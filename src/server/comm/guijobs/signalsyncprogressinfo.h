@@ -26,7 +26,8 @@ namespace KDC {
 class SignalSyncProgressInfo : public AbstractGuiJob {
     public:
         SignalSyncProgressInfo() = default;
-        explicit SignalSyncProgressInfo(int syncDbId, SyncStatus syncStatus, SyncStep syncStep, const SyncProgress &syncProgress);
+        explicit SignalSyncProgressInfo(int syncDbId, SyncStatus syncStatus, SyncStep syncStep,
+                                        const SyncProgress &syncProgress);
 
     private:
         // Output parameters

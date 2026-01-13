@@ -66,7 +66,6 @@ class SyncFileItemInfo {
         friend QDataStream &operator<<(QDataStream &out, const QList<SyncFileItemInfo> &list);
 
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
-
     private:
         NodeType _type;
         QString _path; // Sync folder relative filesystem path
