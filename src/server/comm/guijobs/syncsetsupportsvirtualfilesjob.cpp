@@ -55,7 +55,7 @@ ExitInfo SyncSetSupportsVirtualFilesJob::deserializeInputParms() {
 }
 
 ExitInfo SyncSetSupportsVirtualFilesJob::process() {
-    if (const auto exitInfo = _commManager->appServer().setSupportsVirtualFiles(_syncDbId, _value, false); !exitInfo) {
+    if (const auto exitInfo = _commManager->appServer().setSupportsVirtualFiles(_syncDbId, _value); !exitInfo) {
         LOG_WARN(_logger, "Error in setSupportsVirtualFiles for syncDbId=" << _syncDbId);
 
         return exitInfo;

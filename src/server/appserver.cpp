@@ -609,6 +609,14 @@ void AppServer::stopSyncTask(int syncDbId) {
     }
 }
 
+ExitInfo AppServer::setSupportsVirtualFilesAsync(int syncDbId, bool value) {
+    return setSupportsVirtualFiles(syncDbId, value, true);
+}
+
+ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
+    return setSupportsVirtualFiles(syncDbId, value, false);
+}
+
 void AppServer::stopAllSyncsTask(const std::vector<int> &syncDbIdList) {
     for (int syncDbId: syncDbIdList) {
         stopSyncTask(syncDbId);
@@ -2275,7 +2283,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             bool value = false;
             ArgsWriter(params).write(syncDbId, value);
 
-            ExitInfo exitInfo = setSupportsVirtualFiles(syncDbId, value, true);
+            ExitInfo exitInfo = setSupportsVirtualFilesAsync(syncDbId, value);
             if (!exitInfo) {
                 LOG_WARN(_logger, "Error in setSupportsVirtualFiles for syncDbId=" << syncDbId << " : " << exitInfo);
                 resultStream << toInt(exitInfo.code());

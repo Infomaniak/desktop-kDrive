@@ -133,7 +133,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         [[nodiscard]] ExitInfo stopVfs(int syncDbId, bool unregister);
         [[nodiscard]] ExitInfo startSyncs(User &user);
         void stopSyncTask(int syncDbId);
-        [[nodiscard]] ExitInfo setSupportsVirtualFiles(int syncDbId, bool value, bool asyncResponse);
+        [[nodiscard]] ExitInfo setSupportsVirtualFilesAsync(int syncDbId, bool value);
+        [[nodiscard]] ExitInfo setSupportsVirtualFiles(int syncDbId, bool value);
         void setDistributionChannel(VersionChannel versionChannel);
         VersionInfo getVersionInfo(VersionChannel versionChannel) const;
         UpdateState getUpdateState() const;
@@ -226,6 +227,7 @@ class AppServer : public SharedTools::QtSingleApplication {
                                            bool resumedByUser = false, bool firstInit = false);
 
         [[nodiscard]] ExitInfo createAndStartVfs(const Sync &sync) noexcept;
+        [[nodiscard]] ExitInfo setSupportsVirtualFiles(int syncDbId, bool value, bool asyncResponse);
 
         void startSyncsAndRetryOnError();
         [[nodiscard]] ExitInfo startSyncs();
