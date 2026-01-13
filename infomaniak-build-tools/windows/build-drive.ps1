@@ -817,12 +817,10 @@ if ($LASTEXITCODE -ne 0)
 #                                                                                               #
 #################################################################################################
 
-if (!$ci) {
-    Create-Archive -Path $path -BuildPath $buildPath -ContentPath $contentPath -InstallPath $installPath -Archivename $archiveName -ArchivePath $archivePath -Upload $upload -Ci $ci
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "Archive creation failed ($LASTEXITCODE) . Aborting." -f Red
-        exit $LASTEXITCODE
-    }
+Create-Archive -Path $path -BuildPath $buildPath -ContentPath $contentPath -InstallPath $installPath -Archivename $archiveName -ArchivePath $archivePath -Upload $upload -Ci $ci
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Archive creation failed ($LASTEXITCODE) . Aborting." -f Red
+    exit $LASTEXITCODE
 }
 
 #################################################################################################
