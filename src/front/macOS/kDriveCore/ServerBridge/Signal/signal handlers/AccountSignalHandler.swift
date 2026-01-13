@@ -17,13 +17,15 @@
  */
 
 import Foundation
+import InfomaniakDI
 
-extension XPCSignalHandler {
-    // MARK: Account
+struct AccountSignalHandler {
+    private let decoder = JSONDecoder()
+    @LazyInjectService private var coherentCache: CoherentCache
 
     func handleAccountAdded(_ signal: Data) async throws {
         guard let accountInfoSignal = try? decoder.decode(SignalMessage<AccountInfoSignal>.self, from: signal) else {
-            throw SignalError.unableToGetAccountFromSignal
+            throw XPCSignalError.unableToGetAccountFromSignal
         }
 
         let accountInfo = accountInfoSignal.body.accountInfo
@@ -32,7 +34,7 @@ extension XPCSignalHandler {
 
     func handleAccountUpdated(_ signal: Data) async throws {
         guard let accountInfoSignal = try? decoder.decode(SignalMessage<AccountInfoSignal>.self, from: signal) else {
-            throw SignalError.unableToGetAccountFromSignal
+            throw XPCSignalError.unableToGetAccountFromSignal
         }
 
         let accountInfo = accountInfoSignal.body.accountInfo
@@ -41,7 +43,7 @@ extension XPCSignalHandler {
 
     func handleAccountRemoved(_ signal: Data) async throws {
         guard let accountInfoSignal = try? decoder.decode(SignalMessage<AccountRemoveSignal>.self, from: signal) else {
-            throw SignalError.unableToGetAccountDbIdFromSignal
+            throw XPCSignalError.unableToGetAccountDbIdFromSignal
         }
 
         let accountDbId = accountInfoSignal.body.accountDbId
