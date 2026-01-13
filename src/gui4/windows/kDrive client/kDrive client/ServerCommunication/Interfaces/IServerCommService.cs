@@ -58,16 +58,15 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task RemoveSync(DbId syncDbId, CancellationToken cancellationToken);
         Task<bool> AddSync(NewSync newSync, CancellationToken cancellationToken);
 
-        // localPath must be an absolute path
-        Task<bool?> PathSupportLiteSync(string localPath, CancellationToken cancellationToken);
+        Task<bool?> PathSupportLiteSync(string absoluteLocalPath, CancellationToken cancellationToken);
 
         public struct GetGoodPathResult
         {
-            public string? GoodPath;
-            public string? ErrorMessage;
-        }        
+            public string? GoodPath { get; set; }
+            public string? ErrorMessage { get; set; }
+        }    
+        
         // Returns a valid path for a new sync as close as possible to the desiredPath, if not known, the driveDbId can be set to -1
-
         Task<GetGoodPathResult?> GetGoodPathForNewSync(IDrive? drive, string desiredPath, CancellationToken cancellationToken);
         Task<bool?> IsPathValidForNewSync(string path, CancellationToken cancellationToken);
 

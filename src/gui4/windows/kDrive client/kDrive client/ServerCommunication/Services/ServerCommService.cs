@@ -442,11 +442,11 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
         }
 
-        public async Task<bool?> PathSupportLiteSync(string localPath, CancellationToken cancellationToken)
+        public async Task<bool?> PathSupportLiteSync(string absoluteLocalPath, CancellationToken cancellationToken)
         {
             var parms = new JsonObject
             {
-                [JsonKeys.Path] = Utility.ToBase64String(localPath)
+                [JsonKeys.Path] = Utility.ToBase64String(absoluteLocalPath)
             };
 
             CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_BESTVFSAVAILABLEMODE, parms, cancellationToken);
