@@ -70,6 +70,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSyncDeleteJob);
         CPPUNIT_TEST(testSyncGetPublicLinkUrlJob);
         CPPUNIT_TEST(testSyncGetPrivateLinkUrlJob);
+        CPPUNIT_TEST(testSyncTriggerProgressUpdateJob);
         CPPUNIT_TEST(testSyncSetSupportsVirtualFilesJob);
         CPPUNIT_TEST(testSyncSetRootPinStateJob);
         CPPUNIT_TEST(testBlacklistedSyncNodeListJob);
@@ -99,7 +100,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testUtilityCheckCommStatusJob);
         CPPUNIT_TEST(testUtilityHasSystemLaunchOnStartupJob);
         CPPUNIT_TEST(testUtilityQuitJob);
-        CPPUNIT_TEST(testUtilityDisplayClientReportJob);
+        CPPUNIT_TEST(testUtilitySendAppStartTraceJob);
         CPPUNIT_TEST(testUtilityGetAppStateJob);
         CPPUNIT_TEST(testUtilitySetAppStateJob);
         CPPUNIT_TEST(testUtilityCancelLogToSupportJob);
@@ -138,6 +139,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testSyncDeleteJob();
         void testSyncGetPublicLinkUrlJob();
         void testSyncGetPrivateLinkUrlJob();
+        void testSyncTriggerProgressUpdateJob();
         void testSyncSetSupportsVirtualFilesJob();
         void testSyncSetRootPinStateJob();
         void testBlacklistedSyncNodeListJob();
@@ -167,7 +169,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testUtilityCheckCommStatusJob();
         void testUtilityHasSystemLaunchOnStartupJob();
         void testUtilityQuitJob();
-        void testUtilityDisplayClientReportJob();
+        void testUtilitySendAppStartTraceJob();
         void testUtilityGetAppStateJob();
         void testUtilitySetAppStateJob();
         void testUtilityCancelLogToSupportJob();

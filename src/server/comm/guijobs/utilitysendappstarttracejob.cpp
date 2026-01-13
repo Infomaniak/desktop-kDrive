@@ -16,23 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "utilitysendappstarttracejob.h"
+#include "appserver.h"
 
-#include "server/comm/guijobs/abstractguijob.h"
+#include "libcommon/comm.h"
 
 namespace KDC {
 
-class UtilityDisplayClientReportJob : public AbstractGuiJob {
-    public:
-        UtilityDisplayClientReportJob(std::shared_ptr<CommManager> commManager, int requestId,
-                                      const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel);
+UtilitySendAppStartTraceJob::UtilitySendAppStartTraceJob(std::shared_ptr<CommManager> commManager, int requestId,
+                                                         const Poco::DynamicStruct &inParams,
+                                                         std::shared_ptr<AbstractCommChannel> channel) :
+    AbstractGuiJob(commManager, requestId, inParams, channel) {
+    _requestNum = RequestNum::UTILITY_SEND_APP_START_TRACE;
+}
 
-    private:
-        ExitInfo deserializeInputParms() override { return ExitCode::Ok; };
-        ExitInfo serializeOutputParms() override { return ExitCode::Ok; };
-        ExitInfo process() override;
 
-        friend class TestGuiCommChannel;
-};
+ExitInfo UtilitySendAppStartTraceJob::process() {
+    return _commManager->appServer().sendAppStartTrace();
+}
 
 } // namespace KDC

@@ -38,6 +38,7 @@
 #include "syncdeletejob.h"
 #include "syncgetpubliclinkurljob.h"
 #include "syncgetprivatelinkurljob.h"
+#include "synctriggerprogressupdatejob.h"
 #include "syncsetsupportsvirtualfilesjob.h"
 #include "syncsetrootpinstatejob.h"
 #include "blacklistednodelistjob.h"
@@ -73,7 +74,7 @@
 #include "utilitycancellogtosupportjob.h"
 #include "utilitygetlogestimatedsizejob.h"
 #include "utilityquitjob.h"
-#include "utilitydisplayclientreportjob.h"
+#include "utilitysendappstarttracejob.h"
 
 #include "updaterversioninfojob.h"
 #include "updaterstatejob.h"
@@ -104,6 +105,7 @@ GuiJobFactory::GuiJobFactory() {
         {RequestNum::SYNC_DELETE, makeShared<SyncDeleteJob>},
         {RequestNum::SYNC_GETPUBLICLINKURL, makeShared<SyncGetPublicLinkUrlJob>},
         {RequestNum::SYNC_GETPRIVATELINKURL, makeShared<SyncGetPrivateLinkUrlJob>},
+        {RequestNum::SYNC_TRIGGER_PROGRESS_UPDATE, makeShared<SyncTriggerProgressUpdateJob>},
         {RequestNum::SYNC_SETSUPPORTSVIRTUALFILES, makeShared<SyncSetSupportsVirtualFilesJob>},
         {RequestNum::SYNC_SETROOTPINSTATE, makeShared<SyncSetRootPinStateJob>},
         {RequestNum::BLACKLISTED_NODE_LIST, makeShared<BlacklistedNodeListJob>},
@@ -127,10 +129,6 @@ GuiJobFactory::GuiJobFactory() {
         {RequestNum::EXCLTEMPL_PROPAGATE_CHANGE, makeShared<ExclTemplPropagateChangeJob>},
         {RequestNum::PARAMETERS_INFO, makeShared<ParametersInfoJob>},
         {RequestNum::PARAMETERS_UPDATE, makeShared<ParametersUpdateJob>},
-        {RequestNum::UPDATER_VERSION_INFO, makeShared<UpdaterVersionInfoJob>},
-        {RequestNum::UPDATER_STATE, makeShared<UpdaterStateJob>},
-        {RequestNum::UPDATER_START_INSTALLER, makeShared<UpdaterStartInstallerJob>},
-        {RequestNum::UPDATER_SKIP_VERSION, makeShared<UpdaterSkipVersionJob>},
         {RequestNum::EXCLTEMPL_GETEXCLUDED, makeShared<ExclTemplGetExcludedJob>},
         {RequestNum::EXCLTEMPL_GETLIST, makeShared<ExclTemplGetListJob>},
         {RequestNum::EXCLTEMPL_SETLIST, makeShared<ExclTemplSetListJob>},
@@ -141,7 +139,6 @@ GuiJobFactory::GuiJobFactory() {
         {RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC, makeShared<UtilityFindGoodPathForNewSyncJob>},
         {RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC, makeShared<UtilityIsPathValidForNewSyncJob>},
         {RequestNum::UTILITY_ACTIVATELOADINFO, makeShared<UtilityActivateLoadInfoJob>},
-        {RequestNum::UTILITY_ACTIVATELOADINFO, makeShared<UtilityActivateLoadInfoJob>},
         {RequestNum::UTILITY_CHECKCOMMSTATUS, makeShared<UtilityCheckCommStatusJob>},
         {RequestNum::UTILITY_HASSYSTEMLAUNCHONSTARTUP, makeShared<UtilityHasSystemLaunchOnStartupJob>},
         {RequestNum::UTILITY_SET_APPSTATE, makeShared<UtilitySetAppStateJob>},
@@ -149,13 +146,11 @@ GuiJobFactory::GuiJobFactory() {
         {RequestNum::UTILITY_SEND_LOG_TO_SUPPORT, makeShared<UtilitySendLogToSupportJob>},
         {RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT, makeShared<UtilityCancelLogToSupportJob>},
         {RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE, makeShared<UtilityGetLogEstimatedSizeJob>},
-        {RequestNum::UTILITY_QUIT, makeShared<UtilityQuitJob>},
-        {RequestNum::UTILITY_SEND_APP_START_TRACE, makeShared<UtilityDisplayClientReportJob>},
-        {RequestNum::UTILITY_SET_APPSTATE, makeShared<UtilitySetAppStateJob>},
-        {RequestNum::UTILITY_GET_APPSTATE, makeShared<UtilityGetAppStateJob>},
         {RequestNum::UTILITY_SEND_LOG_TO_SUPPORT, makeShared<UtilitySendLogToSupportJob>},
         {RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT, makeShared<UtilityCancelLogToSupportJob>},
         {RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE, makeShared<UtilityGetLogEstimatedSizeJob>},
+        {RequestNum::UTILITY_QUIT, makeShared<UtilityQuitJob>},
+        {RequestNum::UTILITY_SEND_APP_START_TRACE, makeShared<UtilitySendAppStartTraceJob>},
         {RequestNum::UPDATER_VERSION_INFO, makeShared<UpdaterVersionInfoJob>},
         {RequestNum::UPDATER_STATE, makeShared<UpdaterStateJob>},
         {RequestNum::UPDATER_START_INSTALLER, makeShared<UpdaterStartInstallerJob>},

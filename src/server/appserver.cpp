@@ -1625,8 +1625,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << linkUrl;
             break;
         }
-        case RequestNum::SYNC_ASKFORSTATUS: {
-            clearSyncCacheMap();
+        case RequestNum::SYNC_TRIGGER_PROGRESS_UPDATE: {
+            triggerSyncProgressUpdate();
 
             resultStream << ExitCode::Ok;
             break;
@@ -2147,9 +2147,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             if (value) {
                 QTimer::singleShot(100, this, &AppServer::onLoadInfo);
-
-                // Clear sync update progress cache
-                clearSyncCacheMap();
+                triggerSyncProgressUpdate();
             }
 
             resultStream << ExitCode::Ok;

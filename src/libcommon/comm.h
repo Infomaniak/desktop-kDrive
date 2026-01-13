@@ -66,7 +66,7 @@ enum class RequestNum {
     SYNC_DELETE,
     SYNC_GETPUBLICLINKURL,
     SYNC_GETPRIVATELINKURL,
-    SYNC_ASKFORSTATUS,
+    SYNC_TRIGGER_PROGRESS_UPDATE,
     SYNC_SETSUPPORTSVIRTUALFILES,
     SYNC_SETROOTPINSTATE,
     BLACKLISTED_NODE_LIST,
@@ -165,8 +165,8 @@ inline std::string toString(RequestNum e) {
             return "SYNC_GETPUBLICLINKURL";
         case RequestNum::SYNC_GETPRIVATELINKURL:
             return "SYNC_GETPRIVATELINKURL";
-        case RequestNum::SYNC_ASKFORSTATUS:
-            return "SYNC_ASKFORSTATUS";
+        case RequestNum::SYNC_TRIGGER_PROGRESS_UPDATE:
+            return "SYNC_TRIGGER_PROGRESS_UPDATE";
         case RequestNum::SYNC_SETSUPPORTSVIRTUALFILES:
             return "SYNC_SETSUPPORTSVIRTUALFILES";
         case RequestNum::SYNC_SETROOTPINSTATE:
