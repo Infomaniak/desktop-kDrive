@@ -285,11 +285,16 @@ class QtConan(ConanFile):
         self.output.highlight("Launching Qt installer...")
         installer_path = self._get_executable_path(pjoin(self.source_folder, self._get_distant_name()))
 
+        # Set cache path to build folder to keep all installer data isolated
+        cache_path = pjoin(self.build_folder, "qt-installer-cache")
+        mkdir(self, cache_path)
+
         args = [
             "--confirm-command",     # Confirms starting of installation
             "--accept-obligations",  # Accepts Qt Open Source usage obligations without user input
             "--accept-licenses",     # Accepts all licenses without user input.
-            "--default-answer"       # Automatically answers to message queries with their default values.
+            "--default-answer",      # Automatically answers to message queries with their default values.
+            "--cache-path", cache_path  # Set cache path to build folder to avoid polluting system
         ]
 
         # Add verbose mode if enabled
