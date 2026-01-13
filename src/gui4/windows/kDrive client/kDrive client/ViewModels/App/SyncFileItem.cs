@@ -17,7 +17,7 @@ namespace Infomaniak.kDrive.ViewModels
         private ConflictType _conflict;
         private InconsistencyType _inconsistency;
         private CancelType _cancelType;
-        private UInt64 _fileSize = 0;
+        private Int64 _size = 0;
         private string _error = "";
         private DateTime _timestamp = DateTime.Now;
         private string _localPath = "";
@@ -103,10 +103,10 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _error, value);
         }
 
-        public UInt64 FileSize
+        public Int64 Size
         {
-            get => _fileSize;
-            set => SetPropertyInUIThread(ref _fileSize, value);
+            get => _size;
+            set => SetPropertyInUIThread(ref _size, value);
         }
 
         public DateTime Timestamp
