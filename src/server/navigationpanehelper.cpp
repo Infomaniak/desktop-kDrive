@@ -21,6 +21,8 @@
 #include "config.h"
 #include "db/parmsdb.h"
 #include "db/sync.h"
+#include "log/log.h"
+#include "utility/utility.h"
 
 #include <log4cplus/loggingmacros.h>
 

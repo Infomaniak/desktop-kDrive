@@ -70,7 +70,6 @@ Poco::JSON::Object createParametersInfoObject() {
 #ifdef KD_MACOS
     (void) parametersInfoObj.set("darkTheme", true);
 #endif
-    (void) parametersInfoObj.set("showShortcuts", false);
 
     Poco::JSON::Object dialogGeometryObj;
     (void) dialogGeometryObj.set("preferencesWindow", toBase64(Str("blob1234")));
