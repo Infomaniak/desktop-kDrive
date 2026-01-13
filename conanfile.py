@@ -142,10 +142,11 @@ class KDriveDesktop(ConanFile):
             self.requires("qt/6.5.3")
         self.requires("xxhash/0.8.2") # From local recipe
         # log4cplus
-        log4cplus_options = { "shared": True, "unicode": True }
-        if self.settings.os == "Windows":
-            log4cplus_options["thread_pool"] = False
-        self.requires("log4cplus/2.1.2", options=log4cplus_options) # From https://conan.io/center/recipes/log4cplus
+        self.requires("log4cplus/2.1.2", options={
+            "shared": True,
+            "unicode": True,
+            "thread_pool": False if self.settings.os == "Windows" else True
+        })
 
         # openssl depends on zlib, which is already inside the conanfile.py of openssl
         # but since we build openssl two times (for x86_64 and arm64) in single arch and then merge them, we need to add zlib in 'armv8|x86_64' arch mode.
