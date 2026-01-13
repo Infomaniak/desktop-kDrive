@@ -318,25 +318,32 @@ class QtConan(ConanFile):
         self.run(f"{quoted_installer} {' '.join(args)}")
 
         find_wrap_open_gl = pjoin(self.build_folder, "install", self.version, self._subfolder_install(), "lib", "cmake", "Qt6", "FindWrapOpenGL.cmake")
-        if os.path.exists(find_wrap_open_gl) and self.settings.os == "Macos" and self.version in ("6.2.3", "6.7.3"):
+        if os.path.exists(find_wrap_open_gl) and self.settings.os == "Macos":
             self.output.highlight("Patching Qt installation...")
             from conan.tools.files import replace_in_file
-            """
-            Fixes spam of this kind of CMake warning on macOS:            
-            
-            CMake Warning at /Users/username/.conan2/p/b/qte693ca8061042/p/lib/cmake/Qt6/FindWrapOpenGL.cmake:41 (target_link_libraries):
-              Target "kDrive_client" requests linking to directory
-              "/Applications/Xcode-16.1.0.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk/System/Library/Frameworks".
-              Targets may link only to libraries.  CMake is dropping the item.
-            Call Stack (most recent call first):
-              /Applications/CMake.app/Contents/share/cmake-3.31/Modules/CMakeFindDependencyMacro.cmake:76 (find_package)
-              src/CMakeLists.txt:1 (find_package)
-            """
-            replace_in_file(
-                self, find_wrap_open_gl,
-                "target_link_libraries(WrapOpenGL::WrapOpenGL INTERFACE ${__opengl_fw_path})",
-                "target_link_libraries(WrapOpenGL::WrapOpenGL INTERFACE ${__opengl_fw_path}/OpenGL.framework)"
-            )
+            if self.version is "6.5.3":
+                replace_in_file(
+                    self, find_wrap_open_gl,
+                    'target_link_libraries(WrapOpenGL::WrapOpenGL INTERFACE ${__opengl_agl_fw_path})',
+                    ''
+                )
+            elif self.version is "6.2.3":
+                """
+                Fixes spam of this kind of CMake warning on macOS:            
+                
+                CMake Warning at /Users/username/.conan2/p/b/qte693ca8061042/p/lib/cmake/Qt6/FindWrapOpenGL.cmake:41 (target_link_libraries):
+                  Target "kDrive_client" requests linking to directory
+                  "/Applications/Xcode-16.1.0.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk/System/Library/Frameworks".
+                  Targets may link only to libraries.  CMake is dropping the item.
+                Call Stack (most recent call first):
+                  /Applications/CMake.app/Contents/share/cmake-3.31/Modules/CMakeFindDependencyMacro.cmake:76 (find_package)
+                  src/CMakeLists.txt:1 (find_package)
+                """
+                replace_in_file(
+                    self, find_wrap_open_gl,
+                    "target_link_libraries(WrapOpenGL::WrapOpenGL INTERFACE ${__opengl_fw_path})",
+                    "target_link_libraries(WrapOpenGL::WrapOpenGL INTERFACE ${__opengl_fw_path}/OpenGL.framework)"
+                )
 
     @staticmethod
     def _validate_installer_path(path):
