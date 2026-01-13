@@ -63,6 +63,7 @@
 #include "libsyncengine/requests/parameterscache.h"
 #include "libsyncengine/requests/exclusiontemplatecache.h"
 #include "libsyncengine/jobs/syncjobmanager.h"
+#include "utility/timerutility.h"
 
 #include <iostream>
 #include <fstream>
@@ -301,8 +302,7 @@ void AppServer::init() {
 
 #if defined(KD_WINDOWS)
     // Update shortcuts
-    // _navigationPaneHelper = std::make_unique<NavigationPaneHelper>();
-    NavigationPaneHelper().showInExplorerNavigationPane();
+    NavigationPaneHelper::showInExplorerNavigationPane();
 #endif
 
     // Setup proxy

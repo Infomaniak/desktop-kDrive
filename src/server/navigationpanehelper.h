@@ -16,31 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #pragma once
-
-#include "libcommonserver/vfs/vfs.h"
-
-#include <QObject>
-#include <QTimer>
-
-#include <unordered_map>
 
 namespace KDC {
 
-class NavigationPaneHelper : public QObject {
-        Q_OBJECT
-
+class NavigationPaneHelper {
     public:
-        NavigationPaneHelper();
-
-        void showInExplorerNavigationPane();
-        void scheduleUpdateCloudStorageRegistry();
+        static void showInExplorerNavigationPane();
 
     private:
-        void updateCloudStorageRegistry();
-
-        QTimer _updateCloudStorageRegistryTimer;
+        static void updateCloudStorageRegistry();
 };
 
 } // namespace KDC
