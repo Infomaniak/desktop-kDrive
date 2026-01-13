@@ -32,18 +32,11 @@
 namespace KDC {
 
 NavigationPaneHelper::NavigationPaneHelper() {
-    _showInExplorerNavigationPane = KDC::ParametersCache::instance()->parameters().showShortcuts();
-
-#ifdef Q_OS_WIN
     _updateCloudStorageRegistryTimer.setSingleShot(true);
     connect(&_updateCloudStorageRegistryTimer, &QTimer::timeout, this, &NavigationPaneHelper::updateCloudStorageRegistry);
-#endif
 }
 
-#ifdef Q_OS_WIN
-void NavigationPaneHelper::setShowInExplorerNavigationPane(bool show) {
-    _showInExplorerNavigationPane = show;
-
+void NavigationPaneHelper::showInExplorerNavigationPane() {
     // Fix folders without CLSID (to remove later)
     std::vector<KDC::Sync> syncList;
     if (!KDC::ParmsDb::instance()->selectAllSyncs(syncList)) {
@@ -55,7 +48,7 @@ void NavigationPaneHelper::setShowInExplorerNavigationPane(bool show) {
 
     // Set pin state
     for (const Sync &sync: syncList) {
-        Utility::setFolderPinState(CommonUtility::s2ws(sync.navigationPaneClsid()), show);
+        Utility::setFolderPinState(CommonUtility::s2ws(sync.navigationPaneClsid()), true);
     }
 }
 
@@ -95,11 +88,9 @@ void NavigationPaneHelper::updateCloudStorageRegistry() {
 
     for (KDC::Sync &sync: syncList) {
         if (sync.virtualFileMode() != KDC::VirtualFileMode::Win) {
-            Utility::addLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()), sync.localPath(),
-                                           _showInExplorerNavigationPane);
+            Utility::addLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()), sync.localPath(), true);
         }
     }
 }
-#endif
 
 } // namespace KDC

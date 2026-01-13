@@ -683,16 +683,12 @@ ExitCode ServerRequests::getUserAvailableDrives(int userDbId, std::vector<DriveA
 
 ExitCode ServerRequests::addSync(int userDbId, int accountId, int driveId, const SyncPath &localFolderPath,
                                  const SyncPath &serverFolderPath, const NodeId &serverFolderNodeId, bool liteSync,
-                                 bool showInNavigationPane, AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo) {
+                                 AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo) {
     LOGW_INFO(Log::instance()->getLogger(), L"Adding new sync - userDbId="
                                                     << userDbId << L" accountId=" << accountId << L" driveId=" << driveId
                                                     << L" localFolderPath=" << Path2WStr(localFolderPath).c_str()
                                                     << L" serverFolderPath=" << Path2WStr(serverFolderPath).c_str()
                                                     << L" liteSync=" << liteSync);
-
-#ifndef Q_OS_WIN
-    Q_UNUSED(showInNavigationPane)
-#endif
 
     // Create Account in DB if needed
     int accountDbId;
@@ -747,18 +743,18 @@ ExitCode ServerRequests::addSync(int userDbId, int accountId, int driveId, const
                                                                                         << L" accountDbId=" << accountDbId);
     }
 
-    return addSync(driveDbId, localFolderPath, serverFolderPath, serverFolderNodeId, liteSync, showInNavigationPane, syncInfo);
+    return addSync(driveDbId, localFolderPath, serverFolderPath, serverFolderNodeId, liteSync, syncInfo);
 }
 
 ExitCode ServerRequests::addSync(int userDbId, int accountId, int driveId, const QString &localFolderPath,
                                  const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
-                                 bool showInNavigationPane, AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo) {
+                                 AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo) {
     return addSync(userDbId, accountId, driveId, QStr2Path(localFolderPath), QStr2Path(serverFolderPath),
-                   serverFolderNodeId.toStdString(), liteSync, showInNavigationPane, accountInfo, driveInfo, syncInfo);
+                   serverFolderNodeId.toStdString(), liteSync, accountInfo, driveInfo, syncInfo);
 }
 
 ExitCode ServerRequests::addSync(int driveDbId, const SyncPath &localFolderPath, const SyncPath &serverFolderPath,
-                                 const NodeId &serverFolderNodeId, bool liteSync, bool showInNavigationPane, SyncInfo &syncInfo) {
+                                 const NodeId &serverFolderNodeId, bool liteSync, SyncInfo &syncInfo) {
     LOGW_INFO(Log::instance()->getLogger(), L"Adding new sync - driveDbId=" << driveDbId << L" localFolderPath="
                                                                             << Path2WStr(localFolderPath) << L" serverFolderPath="
                                                                             << Path2WStr(serverFolderPath) << L" liteSync="
@@ -838,10 +834,9 @@ ExitCode ServerRequests::addSync(int driveDbId, const SyncPath &localFolderPath,
 }
 
 ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
-                                 const QString &serverFolderNodeId, bool liteSync, bool showInNavigationPane,
-                                 SyncInfo &syncInfo) {
+                                 const QString &serverFolderNodeId, bool liteSync, SyncInfo &syncInfo) {
     return addSync(driveDbId, QStr2Path(localFolderPath), QStr2Path(serverFolderPath), serverFolderNodeId.toStdString(), liteSync,
-                   showInNavigationPane, syncInfo);
+                   syncInfo);
 }
 
 ExitInfo ServerRequests::getSubFolders(const int userDbId, const int driveId, const QString &nodeId, QList<NodeInfo> &list,
@@ -2295,9 +2290,7 @@ void ServerRequests::parametersToParametersInfo(const Parameters &parameters, Pa
     ProxyConfigInfo proxyConfigInfo;
     proxyConfigToProxyConfigInfo(parameters.proxyConfig(), proxyConfigInfo);
     parametersInfo.setProxyConfigInfo(proxyConfigInfo);
-
     parametersInfo.setDarkTheme(parameters.darkTheme());
-    parametersInfo.setShowShortcuts(parameters.showShortcuts());
 
     if (parameters.dialogGeometry()) {
         QByteArray dialogGeometryArr;
@@ -2330,7 +2323,6 @@ void ServerRequests::parametersInfoToParameters(const ParametersInfo &parameters
     parameters.setProxyConfig(proxyConfig);
 
     parameters.setDarkTheme(parametersInfo.darkTheme());
-    parameters.setShowShortcuts(parametersInfo.showShortcuts());
     parameters.setMoveToTrash(parametersInfo.moveToTrash());
 
     if (parametersInfo.dialogGeometry().size()) {

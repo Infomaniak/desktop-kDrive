@@ -63,7 +63,6 @@ class PreferencesWidget : public LargeWidgetWithCustomToolTip {
         QLabel *_moveToTrashDisclaimerLabel{nullptr};
         QLabel *_moveToTrashKnowMoreLabel{nullptr};
         QLabel *_languageSelectorLabel{nullptr};
-        QLabel *_shortcutsLabel{nullptr};
         QLabel *_advancedLabel{nullptr};
         QLabel *_debuggingLabel{nullptr};
         QLabel *_debuggingFolderLabel{nullptr};
@@ -82,9 +81,6 @@ class PreferencesWidget : public LargeWidgetWithCustomToolTip {
         void onLaunchAtStartupSwitchClicked(bool checked = false);
         void onLanguageChange();
         void onMoveToTrashSwitchClicked(bool checked = false);
-#ifdef Q_OS_WIN
-        void onShortcutsSwitchClicked(bool checked = false);
-#endif
         void onDebuggingWidgetClicked();
         void onFilesToExcludeWidgetClicked();
         void onProxyServerWidgetClicked();

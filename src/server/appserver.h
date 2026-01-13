@@ -163,9 +163,9 @@ class AppServer : public SharedTools::QtSingleApplication {
         }
 #endif
 
-#if defined(KD_WINDOWS)
-        auto &navigationPaneHelper() { return _navigationPaneHelper; }
-#endif
+        // #if defined(KD_WINDOWS)
+        //         auto &navigationPaneHelper() { return _navigationPaneHelper; }
+        // #endif
 
         static std::shared_ptr<CommManager> commManager() { return _commManager; }
 
@@ -174,9 +174,9 @@ class AppServer : public SharedTools::QtSingleApplication {
         log4cplus::Logger _logger;
         static std::vector<Notification> _notifications;
 
-#if defined(KD_WINDOWS)
-        std::unique_ptr<NavigationPaneHelper> _navigationPaneHelper;
-#endif
+        // #if defined(KD_WINDOWS)
+        //         std::unique_ptr<NavigationPaneHelper> _navigationPaneHelper;
+        // #endif
 
         static std::shared_ptr<CommManager> _commManager;
         bool _appRestartRequired{false};

@@ -76,11 +76,6 @@ struct GuiRequests {
         static ExitCode setSupportsVirtualFiles(int syncDbId, bool value);
         static ExitCode setRootPinState(int syncDbId, PinState pinState);
 
-#ifdef Q_OS_WIN
-        static ExitCode showInExplorerNavigationPane(bool &show);
-        static ExitCode setShowInExplorerNavigationPane(const bool &show);
-#endif
-
         // C/S requests (access to network)
         // !!! Use COMM_AVERAGE_TIMEOUT !!!
         static ExitCode requestToken(const QString &code, const QString &codeVerifier, int &userDbId, QString &error,
