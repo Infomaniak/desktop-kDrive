@@ -24,26 +24,29 @@ public protocol XPCSignalHandlerProtocol {
     func handleServerSignal(_ signal: Data?)
 }
 
-struct XPCSignalHandler: XPCSignalHandlerProtocol {
-    let decoder = JSONDecoder()
-    @LazyInjectService var coherentCache: CoherentCache
+enum XPCSignalError: Error {
+    case nilData
+    case unableToParseMetadata(_ signal: String)
+    case serverError(_ code: KDC.ExitCode?, _ cause: KDC.ExitCause?)
+    case unableToGetUserFromSignal
+    case unableToGetUserDbIdFromSignal
+    case unableToGetAccountFromSignal
+    case unableToGetAccountDbIdFromSignal
+    case unableToGetDriveFromSignal
+    case unableToGetDriveDbIdFromSignal
+    case unableToGetSyncFromSignal
+    case unableToGetSyncDbIdFromSignal
+    case unableToGetSyncProgressFromSignal
+    case unableToGetSyncFileItemFromSignal
+    case unsupported(_ num: SignalNum)
+}
 
-    enum SignalError: Error {
-        case nilData
-        case unableToParseMetadata(_ signal: String)
-        case serverError(_ code: KDC.ExitCode?, _ cause: KDC.ExitCause?)
-        case unableToGetUserFromSignal
-        case unableToGetUserDbIdFromSignal
-        case unableToGetAccountFromSignal
-        case unableToGetAccountDbIdFromSignal
-        case unableToGetDriveFromSignal
-        case unableToGetDriveDbIdFromSignal
-        case unableToGetSyncFromSignal
-        case unableToGetSyncDbIdFromSignal
-        case unableToGetSyncProgressFromSignal
-        case unableToGetSyncFileItemFromSignal
-        case unsupported(_ num: SignalNum)
-    }
+struct XPCSignalHandler: XPCSignalHandlerProtocol {
+    private let decoder = JSONDecoder()
+    private let userHandler = UserSignalHandler()
+    private let accountHandler = AccountSignalHandler()
+    private let driveHandler = DriveSignalHandler()
+    private let synchroHandler = SynchroSignalHandler()
 
     func handleServerSignal(_ signal: Data?) {
         Task {
@@ -65,108 +68,64 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
 
     private func handleServerSignal(_ signal: Data?) async throws {
         guard let signal else {
-            throw SignalError.nilData
+            throw XPCSignalError.nilData
         }
 
         guard let signalMetadata = try? decoder.decode(SignalMetadata.self, from: signal) else {
             let output = String(data: signal, encoding: .utf8) ?? ""
-            throw SignalError.unableToParseMetadata(output)
+            throw XPCSignalError.unableToParseMetadata(output)
         }
 
         guard signalMetadata.code == nil, signalMetadata.cause == nil else {
-            throw SignalError.serverError(signalMetadata.code, signalMetadata.cause)
+            throw XPCSignalError.serverError(signalMetadata.code, signalMetadata.cause)
         }
 
         let signalNum = signalMetadata.num
         IKLogger.xpc.log("[KD] recv signal: \(signalNum)")
-        //IKLogger.xpc.log("[KD] recv signal raw: \(String(data: signal, encoding: .utf8))")
+        // IKLogger.xpc.log("[KD] recv signal raw: \(String(data: signal, encoding: .utf8))")
 
         switch signalNum {
         case .USER_ADDED, .USER_UPDATED:
-            try await handleUser(signal)
+            try await userHandler.handleUser(signal)
 
         case .USER_REMOVED:
-            try await handleUserRemoved(signal)
+            try await userHandler.handleUserRemoved(signal)
 
         case .ACCOUNT_ADDED:
-            try await handleAccountAdded(signal)
+            try await accountHandler.handleAccountAdded(signal)
 
         case .ACCOUNT_UPDATED:
-            try await handleAccountUpdated(signal)
+            try await accountHandler.handleAccountUpdated(signal)
 
         case .ACCOUNT_REMOVED:
-            try await handleAccountRemoved(signal)
+            try await accountHandler.handleAccountRemoved(signal)
 
         case .DRIVE_ADDED:
-            try await handleDrive(signal)
+            try await driveHandler.handleDrive(signal)
 
         case .DRIVE_UPDATED:
-            try await handleDrive(signal)
+            try await driveHandler.handleDrive(signal)
 
         case .DRIVE_REMOVED:
-            try await handleDriveRemoved(signal)
+            try await driveHandler.handleDriveRemoved(signal)
 
         case .SYNC_ADDED:
-            try await handleSync(signal)
+            try await synchroHandler.handleSync(signal)
 
         case .SYNC_UPDATED:
-            try await handleSync(signal)
+            try await synchroHandler.handleSync(signal)
 
         case .SYNC_REMOVED:
-            try await handleSyncRemoved(signal)
+            try await synchroHandler.handleSyncRemoved(signal)
 
         case .SYNC_PROGRESSINFO:
-            try await handleSyncProgress(signal)
+            try await synchroHandler.handleSyncProgress(signal)
 
         case .SYNC_COMPLETEDITEM:
-            try await handleSyncCompleted(signal)
+            try await synchroHandler.handleSyncCompleted(signal)
 
         default:
-            throw SignalError.unsupported(signalNum)
+            throw XPCSignalError.unsupported(signalNum)
         }
-    }
-}
-
-extension CoherentCache {
-    func updateSyncProgressInfoSignal(_ syncSignal: SyncProgressInfoSignal) async throws {
-        let syncDbId = syncSignal.syncDbId
-        guard var synchro = await getSynchro(synchroDbId: syncDbId) else {
-            throw ServerCoherentCache.CacheError.synchroNotFound(syncDbId)
-        }
-
-        synchro.progress = syncSignal.asSynchroProgressInfo
-
-        try await updateSynchro(synchro)
-    }
-}
-
-extension CoherentCache {
-    func updateSyncFileItemInfoSignal(_ syncSignal: SyncFileItemInfoSignal) async throws {
-        let syncDbId = syncSignal.syncDbId
-        let itemInfo = syncSignal.itemInfo
-        guard var synchro = await getSynchro(synchroDbId: syncDbId) else {
-            throw ServerCoherentCache.CacheError.synchroNotFound(syncDbId)
-        }
-
-        synchro.addOrUpdateSynchNode(itemInfo.toSynchroFile)
-
-        try await updateSynchro(synchro)
-    }
-}
-
-extension CoherentCache {
-    func addOrUpdateDriveSignal(_ driveSignal: DriveInfoSignalMetadata) async throws {
-        let accountDbId = driveSignal.accountDbId
-        guard var account = await getAccount(accountDbId: accountDbId) else {
-            throw ServerCoherentCache.CacheError.accountNotFound(accountDbId)
-        }
-
-        let existingDrive = account.drives[driveSignal.dbId]
-        let updatedDrive = driveSignal.asDrive(accountId: account.id,
-                                               userDbId: account.userDbId,
-                                               synchros: existingDrive?.synchros ?? [:])
-        account.drives[driveSignal.dbId] = updatedDrive
-
-        try await updateAccount(account)
     }
 }
