@@ -79,7 +79,7 @@ class QtConan(ConanFile):
             # Qt 6.2.3 always uses MSVC 2019
             if self.version == "6.2.3":
                 return "win64_msvc2019_64"
-            # Qt 6.10.1+ supports both MinGW and MSVC 2022 (2019 is no longer compatible)
+            # Qt 6.8.3+ and 6.10.1+ supports both MinGW and MSVC 2022 (2019 is no longer compatible)
             elif self.version == "6.10.1":
                 compiler = str(self.settings.compiler)
                 if compiler == "gcc":  # MinGW uses gcc as compiler in Conan
@@ -87,7 +87,7 @@ class QtConan(ConanFile):
                 else:  # MSVC
                     return "win64_msvc2022_64"
             else:
-                # Default for other versions
+                # Default for other versions (6.5.3, 6.7.3, etc.)
                 return "win64_msvc2019_64" # May fail, if an error occurs, verify with a manual run of the Qt Online Installer.
         else:
             raise ConanInvalidConfiguration("Unsupported OS for Qt installation")
@@ -110,7 +110,8 @@ class QtConan(ConanFile):
             f"qt.qt{major}.{compact}.addons.qtwebview",
         ]
 
-        if version == "6.10.1": # These two modules have different names within the Qt online installer depending on the version.
+        # Qt 6.8.3+ and 6.10.1+ use the new module naming scheme with extensions.qtwebengine
+        if version in ["6.8.3", "6.10.1"]:
             modules.append(f"qt.qt{major}.{compact}.addons.qt5compat")
             modules.append(f"extensions.qtwebengine.{compact}.{compiler}")
             if self.options.debug_symbols:
@@ -369,13 +370,13 @@ class QtConan(ConanFile):
             # Determine Windows subfolder based on compiler and version
             if self.version == "6.2.3":
                 return "msvc2019_64"
-            elif self.version == "6.10.1":
+            elif self.version in ["6.8.3", "6.10.1"]:
                 if str(self.settings.compiler) == "gcc":  # MinGW
                     return "mingw_64"
-                else:  # MSVC
+                else:  # MSVC 2022
                     return "msvc2022_64"
             else:
-                # Default for other versions
+                # Default for other versions (6.2.3, 6.5.3, etc.)
                 return "msvc2019_64"
         else:
             raise ConanInvalidConfiguration(f"Unsupported OS: {self.settings.os}")
