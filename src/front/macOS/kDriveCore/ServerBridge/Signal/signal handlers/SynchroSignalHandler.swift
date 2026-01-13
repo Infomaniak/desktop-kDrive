@@ -17,13 +17,15 @@
  */
 
 import Foundation
+import InfomaniakDI
 
-extension XPCSignalHandler {
-    // MARK: Synchro
+struct SynchroSignalHandler {
+    private let decoder = JSONDecoder()
+    @LazyInjectService private var coherentCache: CoherentCache
 
     func handleSync(_ signal: Data) async throws {
         guard let syncInfoSignal = try? decoder.decode(SignalMessage<SyncInfoSignal>.self, from: signal) else {
-            throw SignalError.unableToGetSyncFromSignal
+            throw XPCSignalError.unableToGetSyncFromSignal
         }
 
         let syncInfo = syncInfoSignal.body.syncInfo
@@ -32,7 +34,7 @@ extension XPCSignalHandler {
 
     func handleSyncRemoved(_ signal: Data) async throws {
         guard let syncRemoveSignal = try? decoder.decode(SignalMessage<SyncRemoveSignal>.self, from: signal) else {
-            throw SignalError.unableToGetSyncDbIdFromSignal
+            throw XPCSignalError.unableToGetSyncDbIdFromSignal
         }
 
         let syncDbId = syncRemoveSignal.body.syncDbId
@@ -41,7 +43,7 @@ extension XPCSignalHandler {
 
     func handleSyncProgress(_ signal: Data) async throws {
         guard let syncProgressSignal = try? decoder.decode(SignalMessage<SyncProgressInfoSignal>.self, from: signal) else {
-            throw SignalError.unableToGetSyncProgressFromSignal
+            throw XPCSignalError.unableToGetSyncProgressFromSignal
         }
 
         let syncProgress = syncProgressSignal.body
@@ -50,10 +52,37 @@ extension XPCSignalHandler {
 
     func handleSyncCompleted(_ signal: Data) async throws {
         guard let syncFileItemInfo = try? decoder.decode(SignalMessage<SyncFileItemInfoSignal>.self, from: signal) else {
-            throw SignalError.unableToGetSyncFileItemFromSignal
+            throw XPCSignalError.unableToGetSyncFileItemFromSignal
         }
 
         let syncFileItem = syncFileItemInfo.body
         try await coherentCache.updateSyncFileItemInfoSignal(syncFileItem)
+    }
+}
+
+extension CoherentCache {
+    func updateSyncProgressInfoSignal(_ syncSignal: SyncProgressInfoSignal) async throws {
+        let syncDbId = syncSignal.syncDbId
+        guard var synchro = await getSynchro(synchroDbId: syncDbId) else {
+            throw ServerCoherentCache.CacheError.synchroNotFound(syncDbId)
+        }
+
+        synchro.progress = syncSignal.asSynchroProgressInfo
+
+        try await updateSynchro(synchro)
+    }
+}
+
+extension CoherentCache {
+    func updateSyncFileItemInfoSignal(_ syncSignal: SyncFileItemInfoSignal) async throws {
+        let syncDbId = syncSignal.syncDbId
+        let itemInfo = syncSignal.itemInfo
+        guard var synchro = await getSynchro(synchroDbId: syncDbId) else {
+            throw ServerCoherentCache.CacheError.synchroNotFound(syncDbId)
+        }
+
+        synchro.addOrUpdateSynchNode(itemInfo.toSynchroFile)
+
+        try await updateSynchro(synchro)
     }
 }
