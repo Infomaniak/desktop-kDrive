@@ -438,3 +438,4 @@ class QtConan(ConanFile):
         # Keep compiler setting on Windows as it affects which Qt variant (MSVC/MinGW) is installed
         self.info.options.rm_safe("qt_login_type")
         self.info.options.rm_safe("install_vcredist")  # vcredist doesn't affect Qt binaries
+        self.info.options.rm_safe("verbose")  # verbose doesn't affect Qt binaries
