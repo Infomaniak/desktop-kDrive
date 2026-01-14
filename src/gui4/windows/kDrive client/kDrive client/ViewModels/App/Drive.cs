@@ -39,6 +39,7 @@ namespace Infomaniak.kDrive.ViewModels
         private ObservableCollection<Sync> _syncs = new ObservableCollection<Sync>();
         private Sync? _mainSync;
         private bool _isConfigured = false; // Indicates if at least one sync (which is not an advanced sync) is set up for this drive
+        private bool _isAdmin = false; // Indicates if the user is admin of this drive
         private ObservableCollection<Sync> _advancedSyncs = new ObservableCollection<Sync>();
 
         private Account _account;
@@ -100,6 +101,11 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _color;
             set => SetPropertyInUIThread(ref _color, value);
+        }
+        public bool IsAdmin
+        {
+            get => _isAdmin;
+            set => SetPropertyInUIThread(ref _isAdmin, value);
         }
 
         public bool IsPaidOffer
