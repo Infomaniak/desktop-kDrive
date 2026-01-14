@@ -35,6 +35,8 @@
 #include <signal.h>
 #include <iostream>
 #include <fstream>
+#include <cerrno>
+#include <cstring>
 
 #ifdef Q_OS_UNIX
 #include <sys/time.h>
@@ -70,18 +72,23 @@ int main(int argc, char **argv) {
     // Working dir;
     KDC::CommonUtility::_workingDirPath = KDC::SyncPath(argv[0]).parent_path();
 #if defined(KD_LINUX)
-    const std::string appImageEnvValue = KDC::CommonUtility::envVarValue("APPIMAGE");
-    if (!appImageEnvValue.empty()) {
+    if (const std::string appImageEnvValue = KDC::CommonUtility::envVarValue("APPIMAGE");
+        !appImageEnvValue.empty()) {
         // We are running inside an AppImage
-        const std::string appDirValue = KDC::CommonUtility::envVarValue("APPDIR");
-        if (!appDirValue.empty()) {
+        if (const std::string appDirValue = KDC::CommonUtility::envVarValue("APPDIR");
+            !appDirValue.empty()) {
             // Use APPDIR which points to the mounted AppImage directory
             KDC::CommonUtility::_workingDirPath = KDC::SyncPath(appDirValue) / "usr/bin";
 
             // Prevent loading incompatible system GIO modules by pointing to our AppImage's GIO modules
             // This must be set BEFORE any GLib initialization
             const std::string gioModuleDir = appDirValue + "/usr/lib/gio/modules";
-            KDC::CommonUtility::setenv("GIO_MODULE_DIR", gioModuleDir.c_str(), 1);
+            if (KDC::CommonUtility::setenv("GIO_MODULE_DIR", gioModuleDir.c_str(), 1) == -1) {
+                const int err = errno;
+                qCWarning(lcMain) << "Failed to set GIO_MODULE_DIR to"
+                                  << QString::fromStdString(gioModuleDir)
+                                  << "(errno" << err << ":" << strerror(err) << ")";
+            }
         } else {
             // Fallback if APPDIR is not set (should not happen in a proper AppImage)
             KDC::CommonUtility::_workingDirPath /= "usr/bin";

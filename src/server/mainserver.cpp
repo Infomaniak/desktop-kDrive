@@ -69,11 +69,11 @@ std::int32_t init(int argc, char **argv, std::unique_ptr<KDC::AppServer> &appPtr
     // Working dir;
     KDC::CommonUtility::_workingDirPath = KDC::SyncPath(argv[0]).parent_path();
 #if defined(KD_LINUX)
-    const std::string appImageEnvValue = KDC::CommonUtility::envVarValue("APPIMAGE");
-    if (!appImageEnvValue.empty()) {
+    if (const std::string appImageEnvValue = KDC::CommonUtility::envVarValue("APPIMAGE");
+        !appImageEnvValue.empty()) {
         // We are running inside an AppImage
-        const std::string appDirValue = KDC::CommonUtility::envVarValue("APPDIR");
-        if (!appDirValue.empty()) {
+        if (const std::string appDirValue = KDC::CommonUtility::envVarValue("APPDIR");
+            !appDirValue.empty()) {
             // Use APPDIR which points to the mounted AppImage directory
             KDC::CommonUtility::_workingDirPath = KDC::SyncPath(appDirValue) / "usr/bin";
 
