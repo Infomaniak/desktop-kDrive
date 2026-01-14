@@ -97,7 +97,7 @@ void UpdateTreeWorker::execute() {
         }
     }
 
-    if (exitCode == ExitCode::Ok && !integrityCheck()) {
+    if (exitCode == ExitCode::Ok && !checkTreeIntegrity()) {
         exitCode = ExitCode::InvalidOperation;
         setExitCause(ExitCause::UpdateTreeIntegrityCheckFailed);
     }
@@ -1172,34 +1172,40 @@ bool UpdateTreeWorker::mergingTempNodeToRealNode(std::shared_ptr<Node> tmpNode, 
 
 std::wstring logStr(const std::shared_ptr<Node> node) {
     std::wstringstream logStream;
-    logStream << L" (node ID: '" << CommonUtility::s2ws(node->id().value_or("-1")) << L"', DB ID: '" << node->idb().value_or(-1)
-              << L"', " << Utility::formatSyncName(node->name()) << L")";
+    const auto nodeParentId = CommonUtility::s2ws(
+            node->parentNode() && node->parentNode()->id().has_value() ? node->parentNode()->id().value() : "-1");
+    logStream << L" (node ID: '" << CommonUtility::s2ws(node->id().value_or("-1")) << L", node parent ID: " << nodeParentId
+              << L"', DB ID: '" << node->idb().value_or(-1) << L"', " << Utility::formatSyncName(node->name()) << L")";
     return logStream.str();
 }
 static const auto integrityCheckFailureMsg = L" update tree integrity check failed.";
 
-bool UpdateTreeWorker::integrityCheck() {
-    // TODO : check if this does not slow the process too much
-    LOGW_SYNCPAL_INFO(_logger, _side << L" update tree integrity check started");
+bool UpdateTreeWorker::checkTreeIntegrity() {
+    LOG_SYNCPAL_INFO(_logger, _side << " update tree integrity check started");
     for (const auto &[_, node]: _updateTree->nodes()) {
-        if (!node->id().has_value() || node->id() == NodeId{} || node->isTmp() ||
-            CommonUtility::startsWith(*node->id(), "tmp_")) {
-            if (!node->id().has_value() || node->id() == NodeId{}) {
-                LOGW_SYNCPAL_WARN(_logger, _side << integrityCheckFailureMsg << L" Found a non-temporary node without ID: "
-                                                 << logStr(node));
-            } else {
-                LOGW_SYNCPAL_WARN(_logger, _side << integrityCheckFailureMsg << L" A temporary node remains in the update tree: "
-                                                 << logStr(node));
-            }
-
-            sentry::Handler::captureMessage(sentry::Level::Warning, "UpdateTreeWorker::integrityCheck",
-                                            "A node without a valid ID remains in the update tree");
-
-            return false;
-        }
-
+        if (!checkNodeIntegrity(node)) return false;
+        if (node->parentNode() && !checkNodeIntegrity(node->parentNode())) return false;
         if (!checkOperationTypes(node)) return false;
     }
+    return true;
+}
+
+bool UpdateTreeWorker::checkNodeIntegrity(const std::shared_ptr<Node> node) {
+    if (!node->id().has_value() || node->id() == NodeId{} || node->isTmp() || CommonUtility::startsWith(*node->id(), "tmp_")) {
+        if (!node->id().has_value() || node->id() == NodeId{}) {
+            LOGW_SYNCPAL_WARN(_logger,
+                              _side << integrityCheckFailureMsg << L" Found a non-temporary node without ID: " << logStr(node));
+        } else {
+            LOGW_SYNCPAL_WARN(_logger, _side << integrityCheckFailureMsg << L" A temporary node remains in the update tree: "
+                                             << logStr(node));
+        }
+
+        sentry::Handler::captureMessage(sentry::Level::Warning, "UpdateTreeWorker::integrityCheck",
+                                        "A node without a valid ID remains in the update tree");
+
+        return false;
+    }
+
     return true;
 }
 
