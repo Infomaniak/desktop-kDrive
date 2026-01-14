@@ -24,7 +24,7 @@ extension SynchroStatus {
     var state: SynchroStatusView.State {
         switch self {
         case .upToDate:
-            return .synchroUpToDate
+            return .synchroIdle
         case .inProgress:
             return .synchroInProgress
         case .paused:
@@ -45,7 +45,7 @@ struct SynchroStatusView: View {
             return lhs.id == rhs.id
         }
 
-        static let synchroUpToDate = State(
+        static let synchroIdle = State(
             id: 1,
             animation: .kDriveCheckmark,
             title: KDriveLocalizable.synchroStatusUpToDateTitle,
@@ -111,7 +111,7 @@ struct SynchroStatusView: View {
     }
 }
 
-#Preview("Up To Date") {
+#Preview("Idle") {
     SynchroStatusView(state: .synchroInProgress) { _ in }
 }
 

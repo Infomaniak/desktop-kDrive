@@ -34,7 +34,18 @@ struct HomeView: View {
     }
 
     private var state: SynchroStatusView.State {
-        return .synchroUpToDate
+        guard let synchroStatus = mainViewModel.currentSynchro?.progressInfo?.status else {
+            return .synchroIdle
+        }
+
+        switch synchroStatus {
+        case .idle, .error:
+            return .synchroIdle
+        case .starting, .running:
+            return .synchroInProgress
+        case .pauseAsked, .paused, .stopAsked, .stopped:
+            return .synchroPaused
+        }
     }
 
     var body: some View {
