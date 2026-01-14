@@ -84,7 +84,7 @@ conan_build_folder="$BUILD_DIR/conan"
 conan_dependencies_folder="$BUILD_DIR/conan/dependencies"
 
 export PATH="$HOME/.local/bin:$PATH" # the conan executable is located in ~/.local/bin on the ci runner
-bash "$BASEPATH/infomaniak-build-tools/conan/build_dependencies.sh" "$build_type" --output-dir="$conan_build_folder"
+bash "$BASEPATH/infomaniak-build-tools/conan/build_dependencies.sh" "$build_type" --output-dir="$conan_build_folder" --clean-cache
 conan_toolchain_file="$(find "$conan_build_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
 
 if [ ! -f "$conan_toolchain_file" ]; then

@@ -59,7 +59,7 @@ function find_qt_from_conan() {
 
   # Build Conan dependencies
   conan_folder=/build/conan
-  bash /src/infomaniak-build-tools/conan/build_dependencies.sh "$build_type" --output-dir="$conan_folder"
+  bash /src/infomaniak-build-tools/conan/build_dependencies.sh "$build_type" --output-dir="$conan_folder" --clean-cache
 
   if [ ! "$?" -eq "0" ]; then
     echo "ERROR: Conan dependencies build failed" >&2
