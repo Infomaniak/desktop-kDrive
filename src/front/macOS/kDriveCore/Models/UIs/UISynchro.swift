@@ -37,6 +37,14 @@ public struct UISynchro: Sendable, Equatable, Hashable {
     }
 }
 
+public struct UISynchroProgressInfo: Sendable, Equatable, Hashable {
+    public let status: UISynchroStatus?
+
+    public init(status: UISynchroStatus) {
+        self.status = status
+    }
+}
+
 public enum UISynchroStatus: Sendable {
     case starting
     case running
@@ -46,63 +54,4 @@ public enum UISynchroStatus: Sendable {
     case stopAsked
     case stopped
     case error
-}
-
-public struct UISynchroProgressInfo: Sendable, Equatable, Hashable {
-    public let status: UISynchroStatus?
-}
-
-// MARK: - Mappers
-
-public extension UISynchro {
-    init(synchro: Synchro) {
-        var progressInfo: UISynchroProgressInfo?
-        if let synchroProgressInfo = synchro.progress {
-            progressInfo = UISynchroProgressInfo(synchroProgressInfo: synchroProgressInfo)
-        }
-
-        self.init(
-            dbId: Int(synchro.dbId),
-            driveDbId: Int(synchro.driveDbId),
-            localPath: URL(fileURLWithPath: synchro.localPath),
-            progressInfo: progressInfo
-        )
-    }
-}
-
-public extension UISynchroProgressInfo {
-    init(synchroProgressInfo: SynchroProgressInfo) {
-        status = UISynchroStatus(syncStatus: synchroProgressInfo.syncStatus)
-    }
-}
-
-public extension UISynchroStatus {
-    init?(syncStatus: KDC.SyncStatus) {
-        switch syncStatus {
-        case .Undefined:
-            return nil
-        case .Starting:
-            self = .starting
-        case .Running:
-            self = .running
-        case .Idle:
-            self = .idle
-        case .PauseAsked:
-            self = .pauseAsked
-        case .Paused:
-            self = .paused
-        case .StopAsked:
-            self = .stopAsked
-        case .Stopped:
-            self = .stopped
-        case .Error:
-            self = .error
-        case .EnumEnd:
-            ReportHelper.reportToSentryIfProd(message: "UISynchroStatus init received SyncStatus.EnumEnd case")
-            return nil
-        @unknown default:
-            ReportHelper.reportToSentryIfProd(message: "Unhandled KDC.SyncStatus case")
-            return nil
-        }
-    }
 }
