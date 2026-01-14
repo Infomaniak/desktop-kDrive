@@ -52,7 +52,7 @@ struct HomeView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppPadding.padding24) {
-            GreetingStatusView(name: userName, synchroStatus: .upToDate)
+            GreetingStatusView(name: userName, state: state)
                 .padding(.bottom, AppPadding.padding8)
 
             GeometryReader { proxy in

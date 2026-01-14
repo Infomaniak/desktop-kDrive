@@ -20,34 +20,28 @@ import SwiftUI
 import kDriveResources
 import kDriveCoreUI
 
-enum SynchroStatus {
-    case inProgress
-    case paused
-    case upToDate
-}
-
-extension SynchroStatus {
-    var label: String {
+extension HomeState {
+    var greetingLabel: String {
         switch self {
-        case .inProgress:
-            return KDriveLocalizable.synchroInProgress
-        case .paused:
-            return KDriveLocalizable.synchroPaused
-        case .upToDate:
+        case .loading, .synchroIsUpToDate, .offline:
             return KDriveLocalizable.synchroUpToDate
+        case .synchroIsRunning:
+            return KDriveLocalizable.synchroInProgress
+        case .synchroIsPaused:
+            return KDriveLocalizable.synchroPaused
         }
     }
 }
 
 struct GreetingStatusView: View {
     var name: String
-    var synchroStatus: SynchroStatus
+    var state: HomeState
 
     private var attributedString: AttributedString {
-        var attributedString = AttributedString(KDriveLocalizable.greetingLabel(name, synchroStatus.label))
+        var attributedString = AttributedString(KDriveLocalizable.greetingLabel(name, state.greetingLabel))
 
         attributedString.font = .Tokens.title2
-        if let range = attributedString.range(of: synchroStatus.label) {
+        if let range = attributedString.range(of: state.greetingLabel) {
             attributedString[range].font = .Tokens.title2Emphasized
         }
 
@@ -56,9 +50,26 @@ struct GreetingStatusView: View {
 
     var body: some View {
         Text(attributedString)
+            .redacted(reason: state.isRedacted ? .placeholder : [])
     }
 }
 
-#Preview {
-    GreetingStatusView(name: "Valentin", synchroStatus: .upToDate)
+#Preview("Up To Date") {
+    GreetingStatusView(name: "Tim", state: .synchroIsUpToDate)
+}
+
+#Preview("Running") {
+    GreetingStatusView(name: "Tim", state: .synchroIsRunning)
+}
+
+#Preview("Paused") {
+    GreetingStatusView(name: "Tim", state: .synchroIsPaused)
+}
+
+#Preview("Offline") {
+    GreetingStatusView(name: "Tim", state: .offline)
+}
+
+#Preview("Loading") {
+    GreetingStatusView(name: "Tim", state: .loading)
 }

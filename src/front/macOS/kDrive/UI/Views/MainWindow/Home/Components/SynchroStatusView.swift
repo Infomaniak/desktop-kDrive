@@ -79,6 +79,12 @@ struct SynchroStatusView: View {
     var body: some View {
         VStack(spacing: AppPadding.padding32) {
             ThemedLottieView(animation: state.animation)
+                .overlay {
+                    if state.isRedacted {
+                        RoundedRectangle(cornerRadius: AppRadius.radius16)
+                            .fill(Color(nsColor: .lightGray))
+                    }
+                }
 
             VStack(spacing: AppPadding.padding8) {
                 Text(state.title)
@@ -99,6 +105,7 @@ struct SynchroStatusView: View {
             .multilineTextAlignment(.center)
             .frame(maxWidth: 300)
         }
+        .redacted(reason: state.isRedacted ? .placeholder : [])
         .padding(AppPadding.padding16)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(ColorToken.Surface.primary.asColor)
@@ -120,4 +127,8 @@ struct SynchroStatusView: View {
 
 #Preview("Offline") {
     SynchroStatusView(state: .offline) { _ in }
+}
+
+#Preview("Loading") {
+    SynchroStatusView(state: .loading) { _ in }
 }
