@@ -18,6 +18,7 @@
 
 import kDriveCoreUI
 import kDriveResources
+import Lottie
 import SwiftUI
 
 extension HomeState {
@@ -31,6 +32,15 @@ extension HomeState {
             return .cloudSync
         case .offline:
             return .offline
+        }
+    }
+
+    var animationLoopMode: Lottie.LottieLoopMode {
+        switch self {
+        case .synchroIsUpToDate:
+            return .repeatBackwards(1)
+        default:
+            return .loop
         }
     }
 
@@ -78,7 +88,7 @@ struct SynchroStatusView: View {
 
     var body: some View {
         VStack(spacing: AppPadding.padding32) {
-            ThemedLottieView(animation: state.animation)
+            ThemedLottieView(animation: state.animation, loopMode: state.animationLoopMode)
                 .opacity(state.isRedacted ? 0 : 1)
                 .overlay {
                     if state.isRedacted {
