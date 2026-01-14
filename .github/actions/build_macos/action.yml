@@ -64,14 +64,6 @@ runs:
           cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtSvg.framework ./dependencies/
           cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtDBus.framework ./dependencies/
           cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/Sparkle.framework ./dependencies/
-          cp /usr/local/lib/libPocoNetSSL.103.dylib ./dependencies/
-          cp /usr/local/lib/libPocoUtil.103.dylib ./dependencies/
-          cp /usr/local/lib/libPocoJSON.103.dylib ./dependencies/
-          cp /usr/local/lib/libPocoXML.103.dylib ./dependencies/
-          cp /usr/local/lib/libPocoFoundation.103.dylib ./dependencies/
-          cp /usr/local/lib/libPocoNet.103.dylib ./dependencies/
-          cp /usr/local/lib/libPocoCrypto.103.dylib ./dependencies/
-          cp /usr/local/lib/libcppunit-1.15.2.dylib ./dependencies/
           cp /usr/local/lib/libzip.5.dylib ./dependencies/
           cp /usr/local/lib/libzstd.1.dylib ./dependencies/
           cp ${{ github.workspace }}/build-macos/client/bin/crashpad_handler ./dependencies/
