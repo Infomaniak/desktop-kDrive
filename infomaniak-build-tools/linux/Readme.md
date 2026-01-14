@@ -298,7 +298,7 @@ For this part, please replace `[arch]` by either `amd64` or `arm64` depending on
 
 To pull the podman image from our github, run :
 ```bash
-podman pull --arch [arch] ghcr.io/infomaniak/kdrive-desktop-linux:latest
+podman pull ghcr.io/infomaniak/kdrive-desktop-linux:[arch]
 ```
 
 ## Building
