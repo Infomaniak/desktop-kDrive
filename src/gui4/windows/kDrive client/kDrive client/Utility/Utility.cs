@@ -91,7 +91,7 @@ namespace Infomaniak.kDrive
             Process.Start(startInfo);
             return true;
         }
-   
+
         public static class DpiHelper
         {
             [DllImport("User32.dll")]
@@ -242,6 +242,26 @@ namespace Infomaniak.kDrive
             }
 
             SetForegroundWindow(hWnd);
+        }
+        public static string ObfuscateEmail(string? email)
+        {
+            // if > 5 characters before @, keep first 2 and last 2, else keep first and last
+            if(email is null)
+                return "";
+
+            var atIndex = email.IndexOf('@');
+            if (atIndex <= 0)
+                return email; // invalid email
+
+            var localPart = email.Substring(0, atIndex);
+            var domainPart = email.Substring(atIndex);
+
+            if (localPart.Length > 5)
+                return localPart.Substring(0, 2) + new string('*', localPart.Length - 4) + localPart.Substring(localPart.Length - 2) + domainPart;
+            else if (localPart.Length > 2)
+                return localPart.Substring(0, 1) + new string('*', localPart.Length - 2) + localPart.Substring(localPart.Length - 1) + domainPart;
+            else
+                return new string('*', localPart.Length) + domainPart;
         }
     }
 }
