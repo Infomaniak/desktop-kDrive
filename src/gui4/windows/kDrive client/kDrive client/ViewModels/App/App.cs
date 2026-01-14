@@ -27,6 +27,7 @@ using Microsoft.VisualBasic.Devices;
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
@@ -82,12 +83,32 @@ namespace Infomaniak.kDrive.ViewModels
         private readonly CancellationTokenSource _networkWatcherCancellationSource = new();
         private bool _networkAvailable;
 
+        public class SelectedSyncChangedEventArgs : EventArgs
+        {
+            public Sync? OldValue { get; }
+            public Sync? NewValue { get; }
+
+            public SelectedSyncChangedEventArgs(Sync? oldValue, Sync? newValue)
+            {
+                OldValue = oldValue;
+                NewValue = newValue;
+            }
+        }
+        public event EventHandler<SelectedSyncChangedEventArgs>? SelectedSyncChanged;
+
         public Sync? SelectedSync
         {
             get => _selectedSync;
-            set => SetPropertyInUIThread(ref _selectedSync, value);
+            set
+            {
+                var oldValue = _selectedSync;
+                if (SetPropertyInUIThread(ref _selectedSync, value))
+                {
+                    SelectedSyncChanged?.Invoke(this, new SelectedSyncChangedEventArgs(oldValue, _selectedSync));
+                }
+            }
         }
-
+       
         public AppModel()
         {
             // Create a read-only observable collection of active drives across all users

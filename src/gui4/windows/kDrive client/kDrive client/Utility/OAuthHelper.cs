@@ -54,6 +54,11 @@ namespace Infomaniak.kDrive
                 Logger.Log(Logger.Level.Error, $"Unexpected OAuth error: {ex}");
                 throw;
             }
+            finally
+            {
+                Utility.BringCurrentWindowToFront();
+                Logger.Log(Logger.Level.Info, "OAuth authorization process completed.");
+            }
 
             return new OAuthResult { Code = "", CodeVerifier = "" };
         }

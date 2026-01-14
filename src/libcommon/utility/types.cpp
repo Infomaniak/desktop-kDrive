@@ -16,10 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string>
+
 #include "types.h"
 
 #include "libcommon/utility/utility.h"
+#include "utility.h"
 
 #include <Poco/UnicodeConverter.h>
 
@@ -229,6 +230,8 @@ std::string toString(const ExitCause e) {
             return "TmpDirAccessError";
         case ExitCause::UpdateTreeIntegrityCheckFailed:
             return "UpdateTreeIntegrityCheckFailed";
+        case ExitCause::MissingReplyData:
+            return "MissingReplyData";
         default:
             return noConversionStr;
     }
@@ -898,7 +901,7 @@ const std::string VersionInfo::versionInfoChannel = "channel";
 const std::string VersionInfo::versionInfoTag = "tag";
 const std::string VersionInfo::versionInfoBuildVersion = "buildVersion";
 const std::string VersionInfo::versionInfoBuildMinOsVersion = "buildMinOsVersion";
-const std::string VersionInfo::versionInfoDownloadUrl = "buildMinOsVersion";
+const std::string VersionInfo::versionInfoDownloadUrl = "downloadUrl";
 
 void VersionInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, versionInfoChannel, channel);

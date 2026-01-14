@@ -44,6 +44,7 @@ namespace KDC {
 #define TRIALS 5
 #define READ_PAUSE_SLEEP_PERIOD 100 // 0.1 s
 #define READ_RETRIES 10
+#define READ_RETRIES_NETWORK_LOST 100
 
 DownloadJob::DownloadJob(const std::shared_ptr<Vfs> &vfs, const int driveDbId, const NodeId &remoteFileId,
                          const SyncPath &localpath, const int64_t expectedSize, const SyncTime creationTime,
@@ -586,7 +587,7 @@ ExitInfo DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::is
         if (!output.is_open()) {
             const bool enoughSpace = Utility::enoughSpace(_tmpPath);
             LOGW_WARN(_logger, L"Failed to open tmp file: " << Utility::formatSyncPath(_tmpPath) << L". Reason: "
-                                                            << (enoughSpace ? L"not enough space." : L"file access error."));
+                                                            << (enoughSpace ? L"file access error." : L"not enough space."));
             return {ExitCode::SystemError, enoughSpace ? ExitCause::FileAccessError : ExitCause::NotEnoughDiskSpace};
         }
 
@@ -650,7 +651,7 @@ ExitInfo DownloadJob::createTmpFile(std::optional<std::reference_wrapper<std::is
                     }
 
                     if (readSize == 0 && !istr->get().eof()) {
-                        if (retryCount < READ_RETRIES) {
+                        if (retryCount < READ_RETRIES_NETWORK_LOST) {
                             // Try to read again later
                             LOG_WARN(_logger, "Request " << jobId() << ": empty buffer read after reading " << getProgress()
                                                          << " bytes from input stream, retrying");

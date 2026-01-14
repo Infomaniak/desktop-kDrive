@@ -18,11 +18,13 @@
 
 import Cocoa
 import Foundation
+import SwiftUI
 
-public protocol UIDriveRepresentation: Sendable {
+public protocol UIDriveRepresentation: Sendable, Equatable, Hashable {
     var id: Int { get }
     var name: String { get }
-    var color: NSColor? { get }
+    var nsColor: NSColor? { get }
+    var color: Color? { get }
 }
 
 // MARK: - UIAvailableDrive
@@ -33,13 +35,20 @@ public struct UIAvailableDrive: UIDriveRepresentation, Hashable {
     }
 
     public let driveId: Int
+    public let userDbId: Int
     public let name: String
-    public let color: NSColor?
+    public let nsColor: NSColor?
 
-    public init(driveId: Int, name: String, color: NSColor?) {
+    public var color: Color? {
+        guard let nsColor else { return nil }
+        return Color(nsColor: nsColor)
+    }
+
+    public init(driveId: Int, userDbId: Int, name: String, color: NSColor?) {
         self.driveId = driveId
+        self.userDbId = userDbId
         self.name = name
-        self.color = color
+        nsColor = color
     }
 }
 
@@ -52,6 +61,7 @@ public extension UIAvailableDrive {
 
         self.init(
             driveId: Int(availableDrive.driveId),
+            userDbId: Int(availableDrive.userDbId),
             name: availableDrive.name,
             color: color
         )
@@ -67,14 +77,23 @@ public struct UIDrive: UIDriveRepresentation {
 
     public let dbId: Int
     public let driveId: Int
+    public let userDbId: Int
     public let name: String
-    public let color: NSColor?
+    public let nsColor: NSColor?
+    public let synchros: [Int: UISynchro]
 
-    public init(dbId: Int, driveId: Int, name: String, color: NSColor?) {
+    public var color: Color? {
+        guard let nsColor else { return nil }
+        return Color(nsColor: nsColor)
+    }
+
+    public init(dbId: Int, driveId: Int, userDbId: Int, name: String, color: NSColor?, synchros: [Int: UISynchro]) {
         self.dbId = dbId
         self.driveId = driveId
+        self.userDbId = userDbId
         self.name = name
-        self.color = color
+        nsColor = color
+        self.synchros = synchros
     }
 }
 
@@ -85,11 +104,17 @@ public extension UIDrive {
             color = NSColor(hexColor: driveColor)
         }
 
+        let synchros = Dictionary(uniqueKeysWithValues: drive.synchros.map { key, synchro in
+            (Int(key), UISynchro(synchro: synchro))
+        })
+
         self.init(
             dbId: Int(drive.driveDbId),
             driveId: Int(drive.driveId),
+            userDbId: Int(drive.userDbId),
             name: drive.name,
-            color: color
+            color: color,
+            synchros: synchros
         )
     }
 }

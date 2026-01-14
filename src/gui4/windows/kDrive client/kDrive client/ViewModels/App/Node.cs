@@ -36,7 +36,8 @@ namespace Infomaniak.kDrive.ViewModels
         private bool _isLoadingSize = false;
         private DbId _userDbId = -1;
         private DriveId _driveId = -1;
-        public Node(NodeId nodeId, string name, Int64 size, NodeId parentNodeId, string path, DbId userDbId, DriveId driveId)
+        private bool _accessDenied = false;
+        public Node(NodeId nodeId, string name, Int64 size, NodeId parentNodeId, string path, DbId userDbId, DriveId driveId, bool accessDenied)
         {
             _nodeId = nodeId;
             _name = name;
@@ -45,6 +46,7 @@ namespace Infomaniak.kDrive.ViewModels
             _path = path;
             _userDbId = userDbId;
             _driveId = driveId;
+            _accessDenied = accessDenied;
         }
 
         public NodeId NodeId
@@ -93,13 +95,18 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _driveId, value);
         }
 
+        public bool AccessDenied
+        {
+            get => _accessDenied;
+            set => SetPropertyInUIThread(ref _accessDenied, value);
+        }
         public async Task LoadSize()
         {
             if (UserDbId == -1 || DriveId == -1 || NodeId == null)
             {
                 Logger.Log(Logger.Level.Error, "Cannot load node size: UserDbId, DriveId or NodeId is not set.");
             }
-            if (IsLoadingSize)
+            if (IsLoadingSize || AccessDenied)
             {
                 return;
             }

@@ -127,15 +127,27 @@ class AppServer : public SharedTools::QtSingleApplication {
                                            const std::chrono::seconds &startDelay = std::chrono::seconds(0),
                                            bool resumedByUser = false, bool firstInit = false);
         [[nodiscard]] ExitInfo stopSyncPal(int syncDbId, bool pausedByUser = false, bool quit = false, bool clear = false);
+
         void clearSyncCacheMap() { _syncCacheMap.clear(); }
+        void triggerSyncProgressUpdate() { clearSyncCacheMap(); }
+
         void loadUsersInfo() { onLoadInfo(); }
 
         [[nodiscard]] ExitInfo stopVfs(int syncDbId, bool unregister);
         [[nodiscard]] ExitInfo startSyncs(User &user);
         void stopSyncTask(int syncDbId);
+        [[nodiscard]] ExitInfo setSupportsVirtualFilesAsync(int syncDbId, bool value);
         [[nodiscard]] ExitInfo setSupportsVirtualFiles(int syncDbId, bool value);
+        void setDistributionChannel(VersionChannel versionChannel);
+        VersionInfo getVersionInfo(VersionChannel versionChannel) const;
+        UpdateState getUpdateState() const;
+        void startInstaller();
+        [[nodiscard]] ExitInfo getNodePath(int syncDbId, const NodeId &nodeId, CommString &path);
 
         void logExtendedLogActivationMessage(bool isExtendedLogEnabled) noexcept;
+
+        [[nodiscard]] ExitInfo updateParametersAndPropagateChanges(const ParametersInfo &);
+        [[nodiscard]] ExitInfo sendAppStartTrace();
 
         // Ask the Finder/File explorer Extension to register the folder
         void registerSync(std::shared_ptr<SyncPal> syncPal);
@@ -144,6 +156,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void unregisterSync(std::shared_ptr<SyncPal> syncPal);
 
         static void uploadLog(bool includeArchivedLogs);
+
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         static ExitCode getThumbnail(int driveDbId, const NodeId &nodeId, int width, std::string &thumbnail) {
@@ -154,21 +167,12 @@ class AppServer : public SharedTools::QtSingleApplication {
         }
 #endif
 
-#if defined(KD_WINDOWS)
-        auto &navigationPaneHelper() { return _navigationPaneHelper; }
-#endif
-
         static std::shared_ptr<CommManager> commManager() { return _commManager; }
 
     private:
         QStringList _arguments;
         log4cplus::Logger _logger;
         static std::vector<Notification> _notifications;
-
-#if defined(KD_WINDOWS)
-        std::unique_ptr<NavigationPaneHelper> _navigationPaneHelper;
-#endif
-
         static std::shared_ptr<CommManager> _commManager;
         bool _appRestartRequired{false};
         Theme *_theme{nullptr};
@@ -210,13 +214,14 @@ class AppServer : public SharedTools::QtSingleApplication {
         void processInterruptedLogsUpload();
 
         ExitCode migrateConfiguration(bool &proxyNotSupported);
-        ExitCode updateUserInfo(User &user);
-        ExitCode updateAllUsersInfo();
+        ExitInfo updateUserInfo(User &user);
+        ExitInfo updateAllUsersInfo();
         [[nodiscard]] ExitInfo initSyncPal(const Sync &sync, const QSet<QString> &blackList, bool start = true,
                                            const std::chrono::seconds &startDelay = std::chrono::seconds(0),
                                            bool resumedByUser = false, bool firstInit = false);
 
         [[nodiscard]] ExitInfo createAndStartVfs(const Sync &sync) noexcept;
+        [[nodiscard]] ExitInfo setSupportsVirtualFiles(int syncDbId, bool value, bool asyncResponse);
 
         void startSyncsAndRetryOnError();
         [[nodiscard]] ExitInfo startSyncs();

@@ -17,12 +17,15 @@
  */
 
 #include "comm/guijobs/signaluserupdatedjob.h"
-
 #include "comm/guijobs/signalaccountupdatedjob.h"
 #include "comm/guijobs/signaldriveupdatedjob.h"
-
 #include "comm/guijobs/signalupdatershowdialogjob.h"
 #include "comm/guijobs/signalupdaterstatechangedjob.h"
+#include "comm/guijobs/signalutilityshownotificationjob.h"
+#include "comm/guijobs/signalutilityshowsettingsjob.h"
+#include "comm/guijobs/signalutilityshowsynthesisjob.h"
+#include "comm/guijobs/signalutilityloguploadstatejob.h"
+#include "comm/guijobs/signalutilityquitjob.h"
 
 #include "testguicommchannel.h"
 #include "../testcommhelpers.h"
@@ -98,6 +101,37 @@ void TestGuiCommChannel::testSignalUserUpdatedJob() {
 
     checkSignalCommonMethods(job, SignalNum::USER_UPDATED);
     CPPUNIT_ASSERT(userInfo == job._userInfo);
+}
+
+void TestGuiCommChannel::testSignalUtilityShowNotificationJob() {
+    const CommString title = Str("Notification title");
+    const CommString message = Str("Message: the item 'C:/Users/kDrive/item/côté_au_carré.pdf' has been updated");
+    SignalUtilityShowNotificationJob job(title, message);
+    checkSignalCommonMethods(job, SignalNum::UTILITY_SHOW_NOTIFICATION);
+    CPPUNIT_ASSERT(title == job._title);
+    CPPUNIT_ASSERT(message == job._message);
+}
+
+void TestGuiCommChannel::testSignalUtilityShowSettingsJob() {
+    SignalUtilityShowSettingsJob job;
+    checkSignalCommonMethods(job, SignalNum::UTILITY_SHOW_SETTINGS);
+}
+
+void TestGuiCommChannel::testSignalUtilityShowSynthesisJob() {
+    SignalUtilityShowSynthesisJob job;
+    checkSignalCommonMethods(job, SignalNum::UTILITY_SHOW_SYNTHESIS);
+}
+
+void TestGuiCommChannel::testSignalUtilityLogUploadStateJob() {
+    SignalUtilityLogUploadStateJob job(LogUploadState::Success, 100);
+    checkSignalCommonMethods(job, SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED);
+    CPPUNIT_ASSERT_EQUAL(LogUploadState::Success, job._state);
+    CPPUNIT_ASSERT_EQUAL(int32_t{100}, job._percentage);
+}
+
+void TestGuiCommChannel::testSignalUtilityQuitJob() {
+    SignalUtilityQuitJob job;
+    checkSignalCommonMethods(job, SignalNum::UTILITY_QUIT);
 }
 
 } // namespace KDC

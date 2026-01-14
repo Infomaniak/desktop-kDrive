@@ -35,8 +35,6 @@ class PermissionsHolder {
         ~PermissionsHolder();
 
     private:
-        void log(const std::wstringstream &ss, LogLevel logLevel = LogLevel::Debug) const noexcept;
-
         SyncPath _path;
         const log4cplus::Logger _logger;
 };

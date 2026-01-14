@@ -20,21 +20,19 @@ import kDriveCore
 import Testing
 
 struct SignalMessageTests {
-    @Test func testDecodingSignalMessageWithUpdateUser() async throws {
+    @Test func decodingSignalMessageWithUpdateUser() async throws {
         // GIVEN
         let sourceJson = #"""
                 {
                   "id": 2,
                   "num": 2,
                   "params": {
-                    "userInfo": {
-                      "dbId": 1,
-                      "email": "QmFzZTY0",
-                      "isConnected": true,
-                      "isStaff": true,
-                      "name": "QmFzZTY0",
-                      "userId": 123456
-                    }
+                    "dbId": 1,
+                    "email": "QmFzZTY0",
+                    "isConnected": true,
+                    "isStaff": true,
+                    "name": "QmFzZTY0",
+                    "userId": 123456
                   }
                 }
         """# // "QmFzZTY0" is "Base64"
@@ -45,6 +43,6 @@ struct SignalMessageTests {
 
         // THEN
         #expect(message.num == SignalNum.USER_UPDATED)
-        #expect(message.body?.name == "Base64")
+        #expect(message.body.name == "Base64")
     }
 }

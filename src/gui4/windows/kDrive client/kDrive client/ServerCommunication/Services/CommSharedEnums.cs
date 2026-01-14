@@ -41,9 +41,8 @@ namespace Infomaniak.kDrive.Types
         SYNC_DELETE,
         SYNC_GETPUBLICLINKURL,
         SYNC_GETPRIVATELINKURL,
-        SYNC_ASKFORSTATUS,
+        SYNC_TRIGGER_PROGRESS_UPDATE,
         SYNC_SETSUPPORTSVIRTUALFILES,
-        SYNC_SETROOTPINSTATE,
         BLACKLISTED_NODE_LIST,
         BLACKLISTED_NODE_SETLIST,
         NODE_PATH,
@@ -66,8 +65,10 @@ namespace Infomaniak.kDrive.Types
         EXCLTEMPL_PROPAGATE_CHANGE,
         PARAMETERS_INFO,
         PARAMETERS_UPDATE,
-        UTILITY_FINDGOODPATHFORNEWSYNC,
         UTILITY_BESTVFSAVAILABLEMODE,
+        UTILITY_BESTVFSAVAILABLEMODE_LEGACY,
+        UTILITY_FINDGOODPATHFORNEWSYNC,
+        UTILITY_ISPATHVALIDFORNEWSYNC,
         UTILITY_SHOWSHORTCUT,
         UTILITY_SETSHOWSHORTCUT,
         UTILITY_ACTIVATELOADINFO,
@@ -82,7 +83,7 @@ namespace Infomaniak.kDrive.Types
         UTILITY_GET_LOG_ESTIMATED_SIZE,
         UTILITY_CRASH,
         UTILITY_QUIT,
-        UTILITY_DISPLAY_CLIENT_REPORT, // Sent by the Client process as soon the UI is visible for the user.
+        UTILITY_SEND_APP_START_TRACE, // Sent by the Client process as soon the UI is visible for the user.
         UPDATER_CHANGE_CHANNEL,
         UPDATER_VERSION_INFO,
         UPDATER_STATE,
@@ -300,5 +301,12 @@ namespace Infomaniak.kDrive.Types
         DuplicateNames = 0x040, // Two items have the same standardized paths with possibly different encodings (Windows 10 and 11).
         ForbiddenCharOnlySpaces = 0x080, // The name contains only spaces (not supported by back end)
         ForbiddenCharEndWithSpace = 0x100, // The name ends with a space
+    };
+    public enum VirtualFileMode
+    {
+        Off,
+        Win,
+        Mac,
+        Suffix
     };
 }

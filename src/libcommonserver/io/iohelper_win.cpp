@@ -440,7 +440,7 @@ void IoHelper::initRightsWindowsApi() {
     // Check getRights method performance
     SyncPath tmpDir;
     IoError ioError = IoError::Success;
-    if (!IoHelper::tempDirectoryPath(tmpDir, ioError)) {
+    if (!IoHelper::deviceTempDirectoryPath(tmpDir, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::tempDirectoryPath: " << Utility::formatIoError(tmpDir, ioError));
         return;
     }

@@ -324,6 +324,13 @@ QString ParametersDialog::getAppErrorText(const QString &fctCode, const ExitCode
         case ExitCode::DataError:
         case ExitCode::DbError:
         case ExitCode::BackError:
+            if (exitCause == ExitCause::Http5xx) {
+                return tr(
+                        "A technical error has occurred.<br>"
+                        "Synchronization will resume as soon as possible. Please contact our support team if the error "
+                        "persists.");
+            }
+            [[fallthrough]];
         case ExitCode::FatalError:
             return tr("A technical error has occurred (error %1).<br>"
                       "Please empty the history and if the error persists, contact our support team.")
@@ -470,6 +477,12 @@ QString ParametersDialog::getSyncPalBackErrorText(const QString &err, const Exit
             return tr(
                     "You are not authorised to access this kDrive.<br>"
                     "Synchronization has been paused. Please contact an administrator.");
+        case ExitCause::Http5xx: {
+            return tr(
+                    "A technical error has occurred.<br>"
+                    "Synchronization will resume as soon as possible. Please contact our support team if the error "
+                    "persists.");
+        }
         default:
             return tr("A technical error has occurred (error %1).<br>"
                       "Synchronization will resume as soon as possible. Please contact our support team if the error "

@@ -118,6 +118,15 @@ import InfomaniakDI
         try connectToServer(endpoint: endpoint)
     }
 
+    func fetchServerEndpointFromLoginItemAgentAndConnectIfNeeded() async throws {
+        guard appConnection == nil else {
+            return
+        }
+
+        let endpoint = try await getServerEndpoint()
+        try connectToServer(endpoint: endpoint)
+    }
+
     func getServerEndpoint() async throws -> NSXPCListenerEndpoint {
         guard let loginItemAgentConnection,
               let loginItemProxy = loginItemAgentConnection.remoteObjectProxy as? XPCLoginItemProtocol else {

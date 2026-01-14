@@ -127,11 +127,12 @@
   </data>
   <data name="CC_SyncExclusionSelector_Header_Size.Text" xml:space="preserve">
     <value>Taille</value>
-    <comment>Name of the open button in the TrayIcon menu</comment>
+  </data>
+  <data name="CC_SyncExclusionSelector_ToolTip_AccessDenied.Content" xml:space="preserve">
+    <value>Accès non autorisé</value>
   </data>
   <data name="CC_SyncExclusionSelector_Header_Name.Text" xml:space="preserve">
     <value>Nom</value>
-    <comment>Name of the open button in the TrayIcon menu</comment>
   </data>
   <data name="W_MainWindow_NavBar_Home.Content" xml:space="preserve">
     <value>Accueil</value>
@@ -144,9 +145,6 @@
   </data>
   <data name="W_MainWindow_TitleBar_SearchBox.PlaceholderText" xml:space="preserve">
     <value>Rechercher dans mon drive</value>
-  </data>
-  <data name="CC_SyncStatusBar_PausedStatus.Text" xml:space="preserve">
-    <value>Synchronisation en pause</value>
   </data>
   <data name="CC_SyncStatusBar_StartingStatus.Text" xml:space="preserve">
     <value>Démarrage de la synchronisation...</value>
@@ -422,6 +420,18 @@ ou choisissez une offre adaptée à vos besoins.</value>
   </data>
   <data name="Page_HomePage_Hello.Text" xml:space="preserve">
     <value>Bonjour</value>
+  </data>
+  <data name="Page_DriveAccessDeniedPage_Title.Text" xml:space="preserve">
+    <value>Accès refusé au kDrive</value>
+  </data>
+  <data name="Page_LogginErrorPage_Title.Text" xml:space="preserve">
+    <value>Vous avez été déconnecté</value>
+  </data>
+  <data name="Page_DriveAccessDeniedPage_Subtitle.Text" xml:space="preserve">
+    <value>Vous n’avez pas l’autorisation d’accéder à ce kDrive.  Veuillez vérifier vos droits ou contacter votre administrateur.</value>
+  </data>
+  <data name="Page_LogginErrorPage_Subtitle.Text" xml:space="preserve">
+    <value>Reconnectez-vous pour continuer à utiliser kDrive.</value>
   </data>
   <data name="Global_TeraBytes" xml:space="preserve">
     <value>To</value>
@@ -866,5 +876,14 @@ Avant de continuer, assurez-vous que tout vos fichiers sont bien à jour et sync
   </data>
   <data name="CC_SyncStatusBar_SyncingStatus.Text" xml:space="preserve">
     <value>Synchronisation en cours...</value>
+  </data>
+  <data name="CC_SyncStatusBar_PausedStatus.Text" xml:space="preserve">
+    <value>Synchronisation en pause</value>
+  </data>
+  <data name="Page_DriveAccessDeniedPage_Button.Content" xml:space="preserve">
+    <value>Réessayer</value>
+  </data>
+  <data name="Page_LogginErrorPage_Button.Content" xml:space="preserve">
+    <value>Connexion</value>
   </data>
 </root>

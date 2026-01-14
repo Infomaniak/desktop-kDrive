@@ -56,7 +56,7 @@ struct GuiRequests {
         static ExitCode getParameters(ParametersInfo &parametersInfo);
         static ExitCode updateParameters(const ParametersInfo &parametersInfo);
         static ExitCode getNodePath(int syncDbId, const QString &nodeId, QString &path);
-        static ExitCode findGoodPathForNewSync(int driveDbId, const QString &basePath, QString &path, QString &error);
+        static ExitCode findGoodPathForNewSync(const QString &basePath, QString &path, QString &error);
         static ExitCode getPrivateLinkUrl(int driveDbId, const QString &fileId, QString &linkUrl);
         static ExitCode getNameExcluded(const QString &name, bool excluded);
         static ExitCode getExclusionTemplateList(bool def, QList<ExclusionTemplateInfo> &templateList);
@@ -74,12 +74,6 @@ struct GuiRequests {
         static ExitCode resolveConflictErrors(int driveDbId, bool keepLocalVersion);
         static ExitCode resolveUnsupportedCharErrors(int driveDbId);
         static ExitCode setSupportsVirtualFiles(int syncDbId, bool value);
-        static ExitCode setRootPinState(int syncDbId, PinState pinState);
-
-#ifdef Q_OS_WIN
-        static ExitCode showInExplorerNavigationPane(bool &show);
-        static ExitCode setShowInExplorerNavigationPane(const bool &show);
-#endif
 
         // C/S requests (access to network)
         // !!! Use COMM_AVERAGE_TIMEOUT !!!

@@ -36,6 +36,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testCurrentVersion);
         CPPUNIT_TEST(testSourceLocation);
         CPPUNIT_TEST(testGenerateRandomStringAlphaNum);
+        CPPUNIT_TEST(testGenerateUuid);
         CPPUNIT_TEST(testLanguageCode);
         CPPUNIT_TEST(testIsSupportedLanguage);
         CPPUNIT_TEST(testLogIfFail);
@@ -83,6 +84,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testCurrentVersion();
         void testSourceLocation();
         void testGenerateRandomStringAlphaNum();
+        void testGenerateUuid();
         void testLanguageCode();
         void testIsSupportedLanguage();
         void testLogIfFail();

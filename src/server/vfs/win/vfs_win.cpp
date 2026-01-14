@@ -538,7 +538,7 @@ ExitInfo VfsWin::setPinState(const SyncPath &relativePathStd, PinState state) {
             break;
     }
 
-    PermissionsHolder permsHolder(fullPath, logger());
+    const PermissionsHolder permsHolder(fullPath, logger());
     if (vfsSetPinState(fullPath.lexically_normal().native().c_str(), vfsState) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsSetPinState: " << Utility::formatSyncPath(fullPath));
         return handleVfsError(fullPath);
@@ -578,7 +578,6 @@ PinState VfsWin::pinState(const SyncPath &relativePathStd) {
 
 ExitInfo VfsWin::status(const SyncPath &filePath, VfsStatus &vfsStatus) {
     // Check if the file is a placeholder
-    PermissionsHolder permsHolder(filePath, logger());
     bool isDehydrated = false;
     if (vfsGetPlaceHolderStatus(filePath.lexically_normal().native().c_str(), &vfsStatus.isPlaceholder, &isDehydrated, nullptr) !=
         S_OK) {

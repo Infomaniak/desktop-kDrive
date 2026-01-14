@@ -36,9 +36,9 @@
 #include <variant>
 #include <signal.h>
 
-#include <QDebug>
-
 #include <Poco/DynamicStruct.h>
+
+#include <QDebug>
 
 namespace KDC {
 
@@ -345,42 +345,6 @@ enum class SignalType {
 #endif
 };
 
-enum class SyncNodeType {
-    Undefined = 0,
-    BlackList = 1, // Nodes that are excluded from sync
-    TmpRemoteBlacklist = 4, // Blacklisted temporarily
-    TmpLocalBlacklist = 5, // Blacklisted temporarily
-    EnumEnd = 6
-};
-
-enum class SyncStatus {
-    Undefined,
-    Starting,
-    Running,
-    Idle,
-    PauseAsked,
-    Paused,
-    StopAsked,
-    Stopped,
-    Error,
-    EnumEnd
-};
-
-enum class SyncStep {
-    None = 0,
-    Idle,
-    UpdateDetection1, // Compute operations
-    UpdateDetection2, // Update Trees
-    Reconciliation1, // Platform Inconsistency Checker
-    Reconciliation2, // Conflict Finder
-    Reconciliation3, // Conflict Resolver
-    Reconciliation4, // Operation Generator
-    Propagation1, // Sorter
-    Propagation2, // Executor
-    Done,
-    EnumEnd
-};
-
 enum class UploadSessionType {
     Unknown,
     Drive,
@@ -673,8 +637,9 @@ struct VersionInfo {
         static const std::string versionInfoBuildMinOsVersion;
         static const std::string versionInfoDownloadUrl;
 
-        void toDynamicStruct(Poco::DynamicStruct &) const;
         void fromDynamicStruct(const Poco::DynamicStruct &);
+        void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
+
 
         friend QDataStream &operator>>(QDataStream &in, VersionInfo &versionInfo) {
             QString tmpTag;
