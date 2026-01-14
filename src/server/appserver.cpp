@@ -4047,7 +4047,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value, bool async
         ServerRequests::syncToSyncInfo(sync, syncInfo);
         sendSyncUpdated(syncInfo);
 
-        auto func = [=]() {
+        auto func = [newMode, vfs, sync, asyncResponse, startPostponed, syncDbId]() {
             if (newMode != VirtualFileMode::Off && vfs) {
                 // Clear file system
                 vfs->convertDirContentToPlaceholder(SyncName2QStr(sync.localPath()), true);
