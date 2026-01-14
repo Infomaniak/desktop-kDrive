@@ -285,7 +285,7 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
 
         CPPUNIT_ASSERT(!deleteJob.canRun()); // Empty node ID.
     }
-    
+
     // Local and remote item paths are different: can run
     {
         LocalDeleteJobMock deleteJob(_syncPal, SyncPath{_localTempDir.path().filename()}, false, NodeId{"1234"});
