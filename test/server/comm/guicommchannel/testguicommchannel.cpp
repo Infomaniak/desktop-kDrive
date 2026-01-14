@@ -628,10 +628,8 @@ void TestGuiCommChannel::testDriveUpdateJob() {
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::DRIVE_UPDATE));
     (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
-    // Job expected answers
+    // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
-    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
-
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         const auto driveInfoListJob = std::dynamic_pointer_cast<DriveUpdateJob>(job);
         CPPUNIT_ASSERT(driveInfoListJob);
@@ -640,8 +638,9 @@ void TestGuiCommChannel::testDriveUpdateJob() {
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+    testGenericJob(queryStr, answerStr, {}, processFct);
 #else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
