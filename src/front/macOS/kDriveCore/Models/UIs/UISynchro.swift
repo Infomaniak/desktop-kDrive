@@ -37,8 +37,19 @@ public struct UISynchro: Sendable, Equatable, Hashable {
     }
 }
 
+public enum UISynchroStatus: Sendable {
+    case starting
+    case running
+    case idle
+    case pauseAsked
+    case paused
+    case stopAsked
+    case stopped
+    case error
+}
+
 public struct UISynchroProgressInfo: Sendable, Equatable, Hashable {
-    public let status: KDC.SyncStatus
+    public let status: UISynchroStatus?
 }
 
 // MARK: - Mappers
@@ -61,6 +72,35 @@ public extension UISynchro {
 
 public extension UISynchroProgressInfo {
     init(synchroProgressInfo: SynchroProgressInfo) {
-        status = synchroProgressInfo.syncStatus
+        status = UISynchroStatus(syncStatus: synchroProgressInfo.syncStatus)
+    }
+}
+
+public extension UISynchroStatus {
+    init?(syncStatus: KDC.SyncStatus) {
+        switch syncStatus {
+        case .Undefined:
+            return nil
+        case .Starting:
+            self = .starting
+        case .Running:
+            self = .running
+        case .Idle:
+            self = .idle
+        case .PauseAsked:
+            self = .pauseAsked
+        case .Paused:
+            self = .paused
+        case .StopAsked:
+            self = .stopAsked
+        case .Stopped:
+            self = .stopped
+        case .Error:
+            self = .error
+        case .EnumEnd:
+            fatalError("KDC.SyncStatus EnumEnd should not be used")
+        @unknown default:
+            fatalError("Unhandled KDC.SyncStatus case")
+        }
     }
 }
