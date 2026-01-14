@@ -20,66 +20,61 @@ import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-extension SynchroStatus {
-    var state: SynchroStatusView.State {
+extension HomeState {
+    var animation: ThemedAnimation {
         switch self {
-        case .upToDate:
-            return .synchroIdle
-        case .inProgress:
-            return .synchroInProgress
-        case .paused:
-            return .synchroPaused
+        case .loading, .synchroIsUpToDate:
+            return .kDriveCheckmark
+        case .synchroIsPaused:
+            return .cloudPause
+        case .synchroIsRunning:
+            return .cloudSync
+        case .offline:
+            return .offline
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .loading, .synchroIsUpToDate:
+            return KDriveLocalizable.synchroStatusUpToDateTitle
+        case .synchroIsPaused:
+            return KDriveLocalizable.synchroStatusPausedTitle
+        case .synchroIsRunning:
+            return KDriveLocalizable.synchroStatusInProgressTitle
+        case .offline:
+            return KDriveLocalizable.synchroStatusOfflineTitle
+        }
+    }
+
+    var description: String {
+        switch self {
+        case .loading, .synchroIsUpToDate:
+            return KDriveLocalizable.synchroStatusUpToDateDescription
+        case .synchroIsPaused:
+            return KDriveLocalizable.synchroStatusPausedDescription
+        case .synchroIsRunning:
+            return KDriveLocalizable.synchroStatusInProgressDescription
+        case .offline:
+            return KDriveLocalizable.synchroStatusOfflineDescription
+        }
+    }
+
+    var buttonTitle: String? {
+        switch self {
+        case .synchroIsPaused:
+            return KDriveLocalizable.buttonRestartSynchro
+        case .synchroIsRunning:
+            return KDriveLocalizable.buttonSeeActivities
+        case .loading, .synchroIsUpToDate, .offline:
+            return nil
         }
     }
 }
 
 struct SynchroStatusView: View {
-    struct State: Equatable {
-        let id: Int
-        let animation: ThemedAnimation
-        let title: String
-        let description: String
-        let buttonTitle: String?
-
-        static func == (lhs: State, rhs: State) -> Bool {
-            return lhs.id == rhs.id
-        }
-
-        static let synchroIdle = State(
-            id: 1,
-            animation: .kDriveCheckmark,
-            title: KDriveLocalizable.synchroStatusUpToDateTitle,
-            description: KDriveLocalizable.synchroStatusUpToDateDescription,
-            buttonTitle: nil
-        )
-
-        static let synchroInProgress = State(
-            id: 2,
-            animation: .cloudSync,
-            title: KDriveLocalizable.synchroStatusInProgressTitle,
-            description: KDriveLocalizable.synchroStatusInProgressDescription,
-            buttonTitle: "Voir les activités"
-        )
-
-        static let synchroPaused = State(
-            id: 3,
-            animation: .cloudPause,
-            title: KDriveLocalizable.synchroStatusPausedTitle,
-            description: KDriveLocalizable.synchroStatusPausedDescription,
-            buttonTitle: "Réactiver la synchronisation"
-        )
-
-        static let offline = State(
-            id: 4,
-            animation: .offline,
-            title: KDriveLocalizable.synchroStatusOfflineTitle,
-            description: KDriveLocalizable.synchroStatusOfflineDescription,
-            buttonTitle: nil
-        )
-    }
-
-    let state: SynchroStatusView.State
-    let performAction: (SynchroStatusView.State) -> Void
+    let state: HomeState
+    let performAction: (HomeState) -> Void
 
     var body: some View {
         VStack(spacing: AppPadding.padding32) {
@@ -111,16 +106,16 @@ struct SynchroStatusView: View {
     }
 }
 
-#Preview("Idle") {
-    SynchroStatusView(state: .synchroInProgress) { _ in }
+#Preview("Up To Date") {
+    SynchroStatusView(state: .synchroIsUpToDate) { _ in }
 }
 
-#Preview("In Progress") {
-    SynchroStatusView(state: .synchroInProgress) { _ in }
+#Preview("Running") {
+    SynchroStatusView(state: .synchroIsRunning) { _ in }
 }
 
-#Preview("Pause") {
-    SynchroStatusView(state: .synchroPaused) { _ in }
+#Preview("Paused") {
+    SynchroStatusView(state: .synchroIsPaused) { _ in }
 }
 
 #Preview("Offline") {

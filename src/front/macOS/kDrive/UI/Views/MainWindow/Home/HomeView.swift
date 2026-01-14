@@ -33,18 +33,20 @@ struct HomeView: View {
         return givenName
     }
 
-    private var state: SynchroStatusView.State {
+    private var state: HomeState {
         guard let synchroStatus = mainViewModel.currentSynchro?.progressInfo?.status else {
-            return .synchroIdle
+            return .synchroIsUpToDate
         }
 
         switch synchroStatus {
-        case .idle, .error:
-            return .synchroIdle
+        case .idle:
+            return .synchroIsUpToDate
         case .starting, .running:
-            return .synchroInProgress
-        case .pauseAsked, .paused, .stopAsked, .stopped:
-            return .synchroPaused
+            return .synchroIsRunning
+        case .paused, .stopped, .error:
+            return .synchroIsPaused
+        case .pauseAsked, .stopAsked:
+            return .loading
         }
     }
 
@@ -66,12 +68,12 @@ struct HomeView: View {
         .padding(AppPadding.padding24)
     }
 
-    private func didTapStateButton(for state: SynchroStatusView.State) {
+    private func didTapStateButton(for state: HomeState) {
         switch state {
-        case .synchroInProgress:
+        case .synchroIsRunning:
             // TODO: Navigate to activities
             break
-        case .synchroPaused:
+        case .synchroIsPaused:
             // TODO: Enable synchro
             break
         default:
