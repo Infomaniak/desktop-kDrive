@@ -76,7 +76,6 @@ set(server_SRCS
     comm/guijobs/syncgetprivatelinkurljob.h comm/guijobs/syncgetprivatelinkurljob.cpp
     comm/guijobs/synctriggerprogressupdatejob.h comm/guijobs/synctriggerprogressupdatejob.cpp
     comm/guijobs/syncsetsupportsvirtualfilesjob.h comm/guijobs/syncsetsupportsvirtualfilesjob.cpp
-    comm/guijobs/syncsetrootpinstatejob.h comm/guijobs/syncsetrootpinstatejob.cpp
 
     comm/guijobs/blacklistednodelistjob.h comm/guijobs/blacklistednodelistjob.cpp
     comm/guijobs/blacklistednodesetlistjob.h comm/guijobs/blacklistednodesetlistjob.cpp

@@ -426,24 +426,12 @@ bool DrivePreferencesWidget::switchVfsOn(int syncDbId) {
     }
 #endif
 
-    // Setting to Unspecified retains existing data.
-    if (const auto exitCode = GuiRequests::setRootPinState(syncDbId, PinState::Unspecified); exitCode != ExitCode::Ok) {
-        qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::setRootPinState";
-        return false;
-    }
-
     return true;
 }
 
 bool DrivePreferencesWidget::switchVfsOff(int syncDbId, bool diskSpaceWarning) {
     if (const auto exitCode = GuiRequests::setSupportsVirtualFiles(syncDbId, false); exitCode != ExitCode::Ok) {
         qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::setSupportsVirtualFiles";
-        return false;
-    }
-
-    // Wipe pin states
-    if (const auto exitCode = GuiRequests::setRootPinState(syncDbId, PinState::AlwaysLocal); exitCode != ExitCode::Ok) {
-        qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::setRootPinState";
         return false;
     }
 
