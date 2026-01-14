@@ -24,6 +24,7 @@
 # Default values
 build_type="Debug"
 output_dir=""
+clean_conan_cache=false
 use_release_profile=false
 # Preserve original arguments for output_dir resolution
 all_args=("$@")
@@ -41,12 +42,17 @@ while [[ $# -gt 0 ]]; do
       use_release_profile=true
       shift
       ;;
+    --clean-cache)
+      clean_conan_cache=true
+      shift
+      ;;
     -h|--help)
       cat << EOF >&2
-Usage: $0 [Debug|RelWithDebInfo|Release] [--output-dir=<output_dir>] [--make-release] [--help]
+Usage: $0 [Debug|RelWithDebInfo|Release] [--output-dir=<output_dir>] [--make-release] [--clean-cache] [--help]
   --help               Display this help message.
   --output-dir=<dir>   Set the output directory for the Conan packages.
   --make-release       Use the 'infomaniak_release' Conan profile.
+  --clean-cache        Clean the Conan cache (packages sources, build folders, ...) after installation to save disk space.
 
 There are three ways to set the output directory (in descending order of priority):
     1. By passing the --output-dir=<dir> parameter.
@@ -232,3 +238,9 @@ if [ $? -ne 0 ]; then
   error "Failed to install Conan dependencies."
 fi
 log "Conan dependencies installed successfully for platform $platform ($build_type) in '$output_dir'."
+
+if [ "$clean_conan_cache" = true ]; then
+  log "Cleaning Conan cache to save disk space..."
+  conan cache clean --source --build --temp "*"
+  log "Conan cache cleaned."
+fi
