@@ -41,8 +41,8 @@ void TestGuiCommChannel::testSignalUtilityShowNotificationJob() {
     const CommString message = Str("Message: the item 'C:/Users/kDrive/item/côté_au_carré.pdf' has been updated");
     SignalUtilityShowNotificationJob job(title, message);
     checkSignalCommonMethods(job, SignalNum::UTILITY_SHOW_NOTIFICATION);
-    CPPUNIT_ASSERT_EQUAL(title, Str(job._title));
-    CPPUNIT_ASSERT_EQUAL(message, job._message);
+    CPPUNIT_ASSERT(title == job._title);
+    CPPUNIT_ASSERT(message == job._message);
 }
 
 void TestGuiCommChannel::testSignalUtilityShowSettingsJob() {
