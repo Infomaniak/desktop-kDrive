@@ -4,7 +4,7 @@
  * Locale: fr, French
  * Tagged: macOS
  * Exported by: Valentin Perignon
- * Exported at: Thu, 04 Dec 2025 16:15:08 +0100
+ * Exported at: Mon, 12 Jan 2026 15:52:07 +0100
  */
 
 /* loco:691deb2291b20ac7fd045012 */
@@ -22,6 +22,9 @@
 /* loco:69304d546385bb9cfc03e524 */
 "buttonKDriveIsActivated" = "J’ai activé kDrive";
 
+/* loco:695e58701870be5cd709d2a2 */
+"buttonKDriveOnline" = "kDrive en ligne";
+
 /* loco:68e673b2042a15d8470f9452 */
 "buttonLogin" = "Se connecter";
 
@@ -34,11 +37,32 @@
 /* loco:6931a5687031691272002314 */
 "buttonOpenKDrive" = "Ouvrir kDrive";
 
+/* loco:6964e1fd78f375ec03073c88 */
+"buttonRestartSynchro" = "Redémarrer la synchronisation";
+
+/* loco:6964e1dfed4b6acb0107409a */
+"buttonSeeActivities" = "Voir les activités";
+
 /* loco:69240f7b15d05a975c07dc13 */
 "buttonShowOffers" = "Voir les offres";
 
 /* loco:69240f6d4433e24658054fd4 */
 "buttonStartForFree" = "Commencer gratuitement";
+
+/* loco:695e57f549f806b5ef0a3ac2 */
+"folderFavorites" = "Favoris";
+
+/* loco:695e584bbc7544361b08b832 */
+"folderShares" = "Partages";
+
+/* loco:695e5889bc7544361b08b834 */
+"folderTrash" = "Poubelle";
+
+/* loco:6960b7720cbd5c07340af144 */
+"greetingLabel" = "Bonjour %s, %s";
+
+/* loco:6964f0b575a31a8d9601a6d7 */
+"helpKDriveName" = "kDrive %s";
 
 /* loco:6930595e7664999c6a08c8a4 */
 "instructionEnableKDrive" = "Activez kDrive.app";
@@ -153,6 +177,39 @@
 
 /* loco:68a70c92c32749426b06db02 */
 "sidebarItemKDriveTitle" = "Dossier kDrive";
+
+/* loco:6960b7decf8ffcd3950d2706 */
+"synchroInProgress" = "vos fichiers se synchronisent";
+
+/* loco:6960b7fd4e868a099e022dc5 */
+"synchroPaused" = "la synchronisation est interrompue";
+
+/* loco:6960f0917cb01bc78104ed32 */
+"synchroStatusInProgressDescription" = "Vos fichiers récents sont en cours de mise à jour.";
+
+/* loco:6960f01471cc26128d040b12 */
+"synchroStatusInProgressTitle" = "Synchronisation en cours";
+
+/* loco:6960f77abfc1ab365409ead2 */
+"synchroStatusOfflineDescription" = "Vos fichiers locaux restent accessibles. La synchronisation reprend automatiquement dès que vous vous reconnectez.";
+
+/* loco:6960f75e46598388a60c3022 */
+"synchroStatusOfflineTitle" = "Hors ligne";
+
+/* loco:6960f0d67c633959570799d2 */
+"synchroStatusPausedDescription" = "La synchronisation est temporairement arrêtée.";
+
+/* loco:6960f0b8ef5d3700b0018933 */
+"synchroStatusPausedTitle" = "Pause activée";
+
+/* loco:6960efeed6dfdcb3af05e2d2 */
+"synchroStatusUpToDateDescription" = "Vos fichiers sont accessibles et synchronisés.";
+
+/* loco:6960ef1d538ef75e5a0ad3e2 */
+"synchroStatusUpToDateTitle" = "Aucune activité en cours";
+
+/* loco:6960b7a6cf8ffcd3950d2704 */
+"synchroUpToDate" = "vos fichiers sont à jour";
 
 /* loco:68a70be4b749277aa1081dc2 */
 "tabTitleActivity" = "Activité";

@@ -38,6 +38,7 @@
 #include "jobs/network/infomaniak_API/getappversionjob.h"
 #include "jobs/network/directdownloadjob.h"
 #include "jobs/network/kDrive_API/createdirjob.h"
+#include "jobs/network/kDrive_API/itemsexistjob.h"
 #include "jobs/network/kDrive_API/searchjob.h"
 #include "jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.h"
 #include "jobs/network/kDrive_API/listing/initfilelistwithcursorjob.h"
@@ -1558,7 +1559,7 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
         public:
             explicit GetInfoUserJobMock(const int32_t userDbId, const ApiToken &apiToken) :
                 GetInfoUserJob(userDbId),
-                _apiToken(apiToken){};
+                _apiToken(apiToken) {};
 
             [[nodiscard]] Poco::Net::HTTPResponse httpResponse() const override {
                 return Poco::Net::HTTPResponse(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
@@ -1584,6 +1585,22 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
         CPPUNIT_ASSERT_EQUAL(ExitCode::InvalidToken, exitInfo.code());
         CPPUNIT_ASSERT_EQUAL(0, job.trials());
     }
+}
+
+void TestNetworkJobs::testExists() {
+    const NodeId dummyId("1234567890");
+    const auto ids = {pictureDirRemoteId, picture1RemoteId, dummyId};
+    ItemsExistJob job(_driveDbId, ids);
+    job.runSynchronously();
+    IoError ioError = IoError::Unknown;
+    CPPUNIT_ASSERT(job.exists(pictureDirRemoteId, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    CPPUNIT_ASSERT(job.exists(picture1RemoteId, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    CPPUNIT_ASSERT(!job.exists(dummyId, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
+    CPPUNIT_ASSERT(!job.exists("0987654321", ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
 }
 
 } // namespace KDC

@@ -41,9 +41,8 @@ namespace Infomaniak.kDrive.Types
         SYNC_DELETE,
         SYNC_GETPUBLICLINKURL,
         SYNC_GETPRIVATELINKURL,
-        SYNC_ASKFORSTATUS,
+        SYNC_TRIGGER_PROGRESS_UPDATE,
         SYNC_SETSUPPORTSVIRTUALFILES,
-        SYNC_SETROOTPINSTATE,
         BLACKLISTED_NODE_LIST,
         BLACKLISTED_NODE_SETLIST,
         NODE_PATH,
@@ -302,5 +301,12 @@ namespace Infomaniak.kDrive.Types
         DuplicateNames = 0x040, // Two items have the same standardized paths with possibly different encodings (Windows 10 and 11).
         ForbiddenCharOnlySpaces = 0x080, // The name contains only spaces (not supported by back end)
         ForbiddenCharEndWithSpace = 0x100, // The name ends with a space
+    };
+    public enum VirtualFileMode
+    {
+        Off,
+        Win,
+        Mac,
+        Suffix
     };
 }

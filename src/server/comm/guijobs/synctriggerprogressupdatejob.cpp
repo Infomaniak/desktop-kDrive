@@ -16,23 +16,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "utilitydisplayclientreportjob.h"
+#include "synctriggerprogressupdatejob.h"
 #include "appserver.h"
-
 #include "libcommon/comm.h"
+
 
 namespace KDC {
 
-UtilityDisplayClientReportJob::UtilityDisplayClientReportJob(std::shared_ptr<CommManager> commManager, int requestId,
-                                                             const Poco::DynamicStruct &inParams,
-                                                             std::shared_ptr<AbstractCommChannel> channel) :
+SyncTriggerProgressUpdateJob::SyncTriggerProgressUpdateJob(std::shared_ptr<CommManager> commManager, int requestId,
+                                                           const Poco::DynamicStruct &inParams,
+                                                           std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
-    _requestNum = RequestNum::UTILITY_SEND_APP_START_TRACE;
+    _requestNum = RequestNum::SYNC_TRIGGER_PROGRESS_UPDATE;
 }
 
 
-ExitInfo UtilityDisplayClientReportJob::process() {
-    return _commManager->appServer().sendAppStartTrace();
+ExitInfo SyncTriggerProgressUpdateJob::process() {
+    _commManager->appServer().triggerSyncProgressUpdate();
+
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

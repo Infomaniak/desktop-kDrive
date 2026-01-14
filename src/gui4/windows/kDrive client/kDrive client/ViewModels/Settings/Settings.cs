@@ -19,7 +19,6 @@ namespace Infomaniak.kDrive.ViewModels
         private bool _logEnbaled = false;
         private bool _extendedLogEnabled = false;
         private ProxyConfig _proxyConfig = new ProxyConfig();
-        private bool _showShortcuts;
         private bool _matomoEnabled;
         private bool _sentryEnabled;
         public UpdateManager UpdateManager { get; } = new UpdateManager();
@@ -67,13 +66,8 @@ namespace Infomaniak.kDrive.ViewModels
             get => _proxyConfig;
             set => SetPropertyInUIThread(ref _proxyConfig, value);
         }
-        public bool ShowShortcuts
-        {
-            get => _showShortcuts;
-            set => SetPropertyInUIThread(ref _showShortcuts, value);
-        }
-
         public AppVersion AppVersion { get; } = AppVersion.Current();
+        
         public bool MatomoEnabled
         {
             get => _matomoEnabled;

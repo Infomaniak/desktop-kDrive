@@ -53,8 +53,8 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/syncdeletejob.h ${server_srcs_path}/comm/guijobs/syncdeletejob.cpp
     ${server_srcs_path}/comm/guijobs/syncgetpubliclinkurljob.h ${server_srcs_path}/comm/guijobs/syncgetpubliclinkurljob.cpp
     ${server_srcs_path}/comm/guijobs/syncgetprivatelinkurljob.h ${server_srcs_path}/comm/guijobs/syncgetprivatelinkurljob.cpp
+    ${server_srcs_path}/comm/guijobs/synctriggerprogressupdatejob.h ${server_srcs_path}/comm/guijobs/synctriggerprogressupdatejob.cpp
     ${server_srcs_path}/comm/guijobs/syncsetsupportsvirtualfilesjob.h ${server_srcs_path}/comm/guijobs/syncsetsupportsvirtualfilesjob.cpp
-    ${server_srcs_path}/comm/guijobs/syncsetrootpinstatejob.h ${server_srcs_path}/comm/guijobs/syncsetrootpinstatejob.cpp
     ${server_srcs_path}/comm/guijobs/blacklistednodelistjob.h ${server_srcs_path}/comm/guijobs/blacklistednodelistjob.cpp
     ${server_srcs_path}/comm/guijobs/blacklistednodesetlistjob.h ${server_srcs_path}/comm/guijobs/blacklistednodesetlistjob.cpp
     ${server_srcs_path}/comm/guijobs/nodeinfojob.h ${server_srcs_path}/comm/guijobs/nodeinfojob.cpp
@@ -82,7 +82,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/utilitygetlogestimatedsizejob.h ${server_srcs_path}/comm/guijobs/utilitygetlogestimatedsizejob.cpp
     ${server_srcs_path}/comm/guijobs/updaterversioninfojob.h ${server_srcs_path}/comm/guijobs/updaterversioninfojob.cpp
     ${server_srcs_path}/comm/guijobs/utilityquitjob.h ${server_srcs_path}/comm/guijobs/utilityquitjob.cpp
-    ${server_srcs_path}/comm/guijobs/utilitydisplayclientreportjob.h ${server_srcs_path}/comm/guijobs/utilitydisplayclientreportjob.cpp
+    ${server_srcs_path}/comm/guijobs/utilitysendappstarttracejob.h ${server_srcs_path}/comm/guijobs/utilitysendappstarttracejob.cpp
     ${server_srcs_path}/comm/guijobs/updaterstatejob.h ${server_srcs_path}/comm/guijobs/updaterstatejob.cpp
     ${server_srcs_path}/comm/guijobs/updaterstartinstallerjob.h ${server_srcs_path}/comm/guijobs/updaterstartinstallerjob.cpp
     ${server_srcs_path}/comm/guijobs/updaterskipversionjob.h ${server_srcs_path}/comm/guijobs/updaterskipversionjob.cpp

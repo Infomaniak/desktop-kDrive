@@ -35,12 +35,11 @@ ParametersInfo getExpectedParametersInfo() {
     ParametersInfo parametersInfo(Language::Default, false, true, true, NotificationsDisabled::Never, true, LogLevel::Debug, true,
                                   true,
 #ifdef KD_MACOS // darkTheme only on macOS
-                                  true
+                                  true,
 #else
-                                  false
+                                  false,
 #endif
-                                  ,
-                                  false, dialogGeometry, 50);
+                                  dialogGeometry, 50);
 
     parametersInfo.setProxyConfigInfo(proxyConfigInfo);
 
@@ -71,7 +70,6 @@ Poco::JSON::Object createParametersInfoObject() {
 #ifdef KD_MACOS
     (void) parametersInfoObj.set("darkTheme", true);
 #endif
-    (void) parametersInfoObj.set("showShortcuts", false);
 
     Poco::JSON::Object dialogGeometryObj;
     (void) dialogGeometryObj.set("preferencesWindow", toBase64(Str("blob1234")));

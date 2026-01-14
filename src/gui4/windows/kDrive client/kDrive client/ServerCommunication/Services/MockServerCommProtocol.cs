@@ -440,8 +440,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public Dictionary<VersionChannel, AppVersion?> VersionsByChannel { get; set; } = new Dictionary<VersionChannel, AppVersion?>()
         {
             {VersionChannel.Prod, new AppVersion() { BuildVersion = 1, Tag = "3.7.6" } },
-            {VersionChannel.Beta, new AppVersion() { BuildVersion = 1, Tag = "3.7.7" } },
-            {VersionChannel.Internal, new AppVersion() { BuildVersion = 1, Tag = "3.7.8" }},
+            {VersionChannel.Beta, new AppVersion() { BuildVersion = 2, Tag = "3.7.7" } },
+            {VersionChannel.Internal, new AppVersion() { BuildVersion = 2, Tag = "3.7.8" }},
         };
 
         public MockServerData()
@@ -543,7 +543,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 LogLevel = Logger.Level.Debug,
                 ExtendedLog = false,
                 PurgeOldLogs = true,
-                ShowShortcuts = true,
                 ProxyConfigInfo = new ProxyConfigInfo()
                 {
                     Type = ProxyType.HTTP,

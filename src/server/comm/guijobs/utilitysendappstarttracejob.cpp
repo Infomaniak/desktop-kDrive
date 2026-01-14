@@ -16,24 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Foundation
-import InfomaniakDI
+#include "utilitysendappstarttracejob.h"
+#include "appserver.h"
 
-public protocol ServerBridgeable: Sendable {
-    func getConnectedUser() async -> UIUser?
+#include "libcommon/comm.h"
+
+namespace KDC {
+
+UtilitySendAppStartTraceJob::UtilitySendAppStartTraceJob(std::shared_ptr<CommManager> commManager, int requestId,
+                                                         const Poco::DynamicStruct &inParams,
+                                                         std::shared_ptr<AbstractCommChannel> channel) :
+    AbstractGuiJob(commManager, requestId, inParams, channel) {
+    _requestNum = RequestNum::UTILITY_SEND_APP_START_TRACE;
 }
 
-public struct ServerBridge: ServerBridgeable {
-    @LazyInjectService private var coherentCache: CoherentCache
 
-    public init() {}
-
-    public func getConnectedUser() async -> UIUser? {
-        // TODO: fetch user form server as well, cache only for now
-        guard let user = await coherentCache.getFirstAvailableUser() else {
-            return nil
-        }
-
-        return UIUser(user: user)
-    }
+ExitInfo UtilitySendAppStartTraceJob::process() {
+    return _commManager->appServer().sendAppStartTrace();
 }
+
+} // namespace KDC

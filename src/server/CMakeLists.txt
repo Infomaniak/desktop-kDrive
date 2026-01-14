@@ -74,8 +74,8 @@ set(server_SRCS
     comm/guijobs/syncdeletejob.h comm/guijobs/syncdeletejob.cpp
     comm/guijobs/syncgetpubliclinkurljob.h comm/guijobs/syncgetpubliclinkurljob.cpp
     comm/guijobs/syncgetprivatelinkurljob.h comm/guijobs/syncgetprivatelinkurljob.cpp
+    comm/guijobs/synctriggerprogressupdatejob.h comm/guijobs/synctriggerprogressupdatejob.cpp
     comm/guijobs/syncsetsupportsvirtualfilesjob.h comm/guijobs/syncsetsupportsvirtualfilesjob.cpp
-    comm/guijobs/syncsetrootpinstatejob.h comm/guijobs/syncsetrootpinstatejob.cpp
 
     comm/guijobs/blacklistednodelistjob.h comm/guijobs/blacklistednodelistjob.cpp
     comm/guijobs/blacklistednodesetlistjob.h comm/guijobs/blacklistednodesetlistjob.cpp
@@ -107,7 +107,7 @@ set(server_SRCS
     comm/guijobs/utilitycancellogtosupportjob.h comm/guijobs/utilitycancellogtosupportjob.cpp
     comm/guijobs/utilitygetlogestimatedsizejob.h comm/guijobs/utilitygetlogestimatedsizejob.cpp
     comm/guijobs/utilityquitjob.h comm/guijobs/utilityquitjob.cpp
-    comm/guijobs/utilitydisplayclientreportjob.h comm/guijobs/utilitydisplayclientreportjob.cpp
+    comm/guijobs/utilitysendappstarttracejob.h comm/guijobs/utilitysendappstarttracejob.cpp
     
     comm/guijobs/updaterversioninfojob.h comm/guijobs/updaterversioninfojob.cpp
     comm/guijobs/updaterstatejob.h comm/guijobs/updaterstatejob.cpp

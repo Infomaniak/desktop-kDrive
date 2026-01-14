@@ -18,21 +18,23 @@
 
 #pragma once
 
-#include "server/comm/guijobs/abstractguijob.h"
+#include "jobs/network/abstracttokennetworkjob.h"
 
 namespace KDC {
 
-class UtilityDisplayClientReportJob : public AbstractGuiJob {
+class ItemsExistJob : public AbstractTokenNetworkJob {
     public:
-        UtilityDisplayClientReportJob(std::shared_ptr<CommManager> commManager, int requestId,
-                                      const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel);
+        explicit ItemsExistJob(int driveDbId, const NodeSet &ids = {});
+
+        bool exists(const NodeId &id, IoError &ioError);
 
     private:
-        ExitInfo deserializeInputParms() override { return ExitCode::Ok; };
-        ExitInfo serializeOutputParms() override { return ExitCode::Ok; };
-        ExitInfo process() override;
+        ExitInfo setData() override;
+        std::string getSpecificUrl() override;
 
-        friend class TestGuiCommChannel;
+        ExitInfo handleResponse(std::istream &is) override;
+
+        std::unordered_map<NodeId, bool, StringHashFunction, std::equal_to<>> _nodeExistenceMap;
 };
 
 } // namespace KDC
