@@ -605,13 +605,14 @@ function Create-MSI-Package {
     $msiInstallerFolderPath = "$path\installer\windows\kDriveInstaller"
     $msiPackageFolderPath = "$msiInstallerFolderPath\bin\x64\Release\en-US"
 	
-	dotnet build -v diag "$msiInstallerFolderPath\kDriveInstaller.sln" /p:Configuration="Release" /p:Platform="x64" /p:OutputName=$appName
+    Write-Host "Executing the dotnet build command ..."
+	dotnet build -v diag "$msiInstallerFolderPath\kDriveInstaller.sln" /p:WixCabinetThreadCount=1 /p:Configuration="Release" /p:Platform="x64" /p:OutputName=$appName
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 	Move-Item -Path "$msiPackageFolderPath\$appName.msi" -Destination "$contentPath"
 	if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-	# Sign final installer
+	Write-Host "Signing the MSI installer ..."
 	if (!$thumbprint) {
 		$thumbprint = Get-Thumbprint $upload
 	}
