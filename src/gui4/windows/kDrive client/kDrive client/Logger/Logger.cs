@@ -75,7 +75,8 @@ namespace Infomaniak.kDrive
             string sourceContext = $"{fileName}:{lineNumber} - {memberName}";
             string shortLogEntry = $"{sourceContext}: {message}";
 
-            SentrySdk.AddBreadcrumb(shortLogEntry, level: ToBreadcrumbLevel(level));
+            if (App.ServiceProvider.GetRequiredService<AppModel>().Settings.SentryEnabled)
+                SentrySdk.AddBreadcrumb(shortLogEntry, level: ToBreadcrumbLevel(level));
 
             if (LogLevel == Level.None || (LogLevel == Level.Extended && level != Level.Extended))
                 return;
@@ -104,6 +105,10 @@ namespace Infomaniak.kDrive
         {
             if (level <= Level.Info)
                 return false; // Only send Warning and above
+
+            if (!App.ServiceProvider.GetRequiredService<AppModel>().Settings.SentryEnabled)
+                return false;
+
 
             int hash = HashCode.Combine(filePath, lineNumber, memberName);
             var now = DateTime.UtcNow;
