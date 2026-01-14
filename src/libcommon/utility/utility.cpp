@@ -1094,6 +1094,30 @@ int CommonUtility::setenv(const char *const name, const char *const value, const
 #endif
 }
 
+#if defined(KD_LINUX)
+void CommonUtility::initAppImageEnvironment() {
+    if (const std::string appImageEnvValue = envVarValue("APPIMAGE"); !appImageEnvValue.empty()) {
+        // We are running inside an AppImage
+        if (const std::string appDirValue = envVarValue("APPDIR"); !appDirValue.empty()) {
+            // Use APPDIR which points to the mounted AppImage directory
+            _workingDirPath = KDC::SyncPath(appDirValue) / "usr/bin";
+
+            // Prevent loading incompatible system GIO modules by pointing to our AppImage's GIO modules
+            // This must be set BEFORE any GLib initialization
+            const std::string gioModuleDir = appDirValue + "/usr/lib/gio/modules";
+            if (setenv("GIO_MODULE_DIR", gioModuleDir.c_str(), 1) == -1) {
+                const int err = errno;
+                std::cerr << "Failed to set GIO_MODULE_DIR to " << gioModuleDir << " (errno " << err << ": "
+                          << strerror(err) << ")" << std::endl;
+            }
+        } else {
+            // Fallback if APPDIR is not set (should not happen in a proper AppImage)
+            _workingDirPath /= "usr/bin";
+        }
+    }
+}
+#endif
+
 void CommonUtility::handleSignals(void (*sigHandler)(int)) {
     // Kills
     signal(SIGTERM, sigHandler); // Termination request, sent to the program
