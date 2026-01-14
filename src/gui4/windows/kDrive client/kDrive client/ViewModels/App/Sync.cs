@@ -211,7 +211,7 @@ namespace Infomaniak.kDrive.ViewModels
 
             Logger.Log(Logger.Level.Info, $"Sync {DbId}: Adding error {error.ExitCode} - {error.Path}");
             await Utility.RunOnUIThread(() => SyncErrors.Add(error));
-            RefreshErrorState();
+            await RefreshErrorState();
         }
 
         public async Task RemoveErrorAsync(Error error, bool refreshErrorState = true)
@@ -224,7 +224,7 @@ namespace Infomaniak.kDrive.ViewModels
             });
 
             if (refreshErrorState)
-                RefreshErrorState();
+                await RefreshErrorState();
         }
 
         public async Task ClearAllErrorsAsync()
@@ -235,45 +235,45 @@ namespace Infomaniak.kDrive.ViewModels
                 Logger.Log(Logger.Level.Info, $"Sync {DbId}: Clearing error {error.ExitCode} - {error.Path}");
                 await RemoveErrorAsync(error, false);
             }
-            RefreshErrorState();
+            await RefreshErrorState();
         }
 
-        public void RefreshErrorState()
+        public async Task RefreshErrorState()
         {
-            if (SyncErrors.Count == 0)
+            await Utility.RunOnUIThread(async () =>
             {
+
                 SyncErrorState = SyncErrorStates.Undefined;
-                return;
-            }
 
-            foreach (var error in SyncErrors)
-            {
-                SyncErrorState = error.ExitCause switch
+                foreach (var error in SyncErrors)
                 {
-                    Types.ExitCause.DriveAccessError => SyncErrorStates.AccessDenied,
-                    Types.ExitCause.DriveAsleep => SyncErrorStates.Asleep,
-                    Types.ExitCause.DriveWakingUp => SyncErrorStates.WakingUp,
-                    Types.ExitCause.DriveMaintenance => SyncErrorStates.Maintenance,
-                    Types.ExitCause.DriveNotRenew => SyncErrorStates.NotRenew,
-                    Types.ExitCause.LoginError => SyncErrorStates.LoggingError,
-                    _ => SyncErrorStates.Undefined
-                };
-                if (error.ExitCode == ExitCode.InvalidToken)
-                {
-                    SyncErrorState = SyncErrorStates.LoggingError;
+                    SyncErrorState = error.ExitCause switch
+                    {
+                        Types.ExitCause.DriveAccessError => SyncErrorStates.AccessDenied,
+                        Types.ExitCause.DriveAsleep => SyncErrorStates.Asleep,
+                        Types.ExitCause.DriveWakingUp => SyncErrorStates.WakingUp,
+                        Types.ExitCause.DriveMaintenance => SyncErrorStates.Maintenance,
+                        Types.ExitCause.DriveNotRenew => SyncErrorStates.NotRenew,
+                        Types.ExitCause.LoginError => SyncErrorStates.LoggingError,
+                        _ => SyncErrorStates.Undefined
+                    };
+                    if (error.ExitCode == ExitCode.InvalidToken)
+                    {
+                        SyncErrorState = SyncErrorStates.LoggingError;
+                    }
+
+                    if (SyncErrorState != SyncErrorStates.Undefined)
+                    {
+                        Logger.Log(Logger.Level.Info, $"Sync {DbId}: Setting SyncErrorState to {SyncErrorState} based on error {error.ExitCode} - {error.Path}");
+                        return;
+                    }
                 }
 
-                if (SyncErrorState != SyncErrorStates.Undefined)
+                if (SyncErrorState == SyncErrorStates.Undefined && !Drive.Account.User.IsConnected)
                 {
-                    Logger.Log(Logger.Level.Info, $"Sync {DbId}: Setting SyncErrorState to {SyncErrorState} based on error {error.ExitCode} - {error.Path}");
-                    return;
+                    //SyncErrorState = SyncErrorStates.LoggedOut;
                 }
-            }
-
-            if (SyncErrorState == SyncErrorStates.Undefined && !Drive.Account.User.IsConnected)
-            {
-                //SyncErrorState = SyncErrorStates.LoggedOut;
-            }
+            });
         }
     }
 }

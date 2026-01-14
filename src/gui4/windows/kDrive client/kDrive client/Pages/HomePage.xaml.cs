@@ -72,6 +72,9 @@ namespace Infomaniak.kDrive.Pages
                 case SyncErrorStates.LoggingError:
                     AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(LoggingErrorPage)));
                     break;
+                case SyncErrorStates.NotRenew:
+                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(NotRenewErrorPage)));
+                    break;
                 default:
                     Logger.Log(Logger.Level.Warning, $"Unexpected SyncErrorState: {ViewModel.SelectedSync?.SyncErrorState}. Staying on HomePage.");
                     break;
