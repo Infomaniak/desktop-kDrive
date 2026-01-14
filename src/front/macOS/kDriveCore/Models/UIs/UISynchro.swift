@@ -29,7 +29,7 @@ public struct UISynchro: Sendable, Equatable, Hashable {
     public let localPath: URL
     public let progressInfo: UISynchroProgressInfo?
 
-    public init(dbId: Int, driveDbId: Int, localPath: URL, progressInfo: UISynchroProgressInfo? = nil) {
+    public init(dbId: Int, driveDbId: Int, localPath: URL, progressInfo: UISynchroProgressInfo?) {
         self.dbId = dbId
         self.driveDbId = driveDbId
         self.localPath = localPath
@@ -98,9 +98,11 @@ public extension UISynchroStatus {
         case .Error:
             self = .error
         case .EnumEnd:
-            fatalError("KDC.SyncStatus EnumEnd should not be used")
+            ReportHelper.reportToSentryIfProd(message: "UISynchroStatus init received SyncStatus.EnumEnd case")
+            return nil
         @unknown default:
-            fatalError("Unhandled KDC.SyncStatus case")
+            ReportHelper.reportToSentryIfProd(message: "Unhandled KDC.SyncStatus case")
+            return nil
         }
     }
 }
