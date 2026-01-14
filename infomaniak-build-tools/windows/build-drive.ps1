@@ -526,10 +526,11 @@ function Prepare-Archive {
 
     }
 
+    Remove-Item -Path "$archivePath/client" -Recurse -Force -ErrorAction SilentlyContinue
+
     if ($newGui) {
         # Copy client files
         Write-Host "Copying new client files ($newGuiDir) to the archive ..."
-        Remove-Item -Path "$archivePath/client" -Recurse -Force -ErrorAction SilentlyContinue
         Copy-Item -Path "$newGuiDir/." -Destination "$archivePath/client" -Recurse -ErrorAction Stop
 
         # Sign all the .exe, .dll and .xbf that have no signature yet
