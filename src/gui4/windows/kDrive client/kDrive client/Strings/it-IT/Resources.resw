@@ -393,7 +393,10 @@
   <data name="Page_LogginErrorPage_Title.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="Page_LogginErrorPage_UserMissmatch_Title.Text" xml:space="preserve">
+  <data name="Page_NotRenewErrorPage_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_NotRenewErrorPage_Admin_SecondaryButton.Content" xml:space="preserve">
     <value />
   </data>
   <data name="Page_DriveAccessDeniedPage_Subtitle.Text" xml:space="preserve">
@@ -402,7 +405,10 @@
   <data name="Page_LogginErrorPage_Subtitle.Text" xml:space="preserve">
     <value />
   </data>
-  <data name="Page_LogginErrorPage_UserMissmatch_Subtitle.Text" xml:space="preserve">
+  <data name="Page_NotRenewErrorPage_Subtitle.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_NotRenewErrorPage_Admin_Subtitle.Text" xml:space="preserve">
     <value />
   </data>
   <data name="Global_TeraBytes" xml:space="preserve">
@@ -830,6 +836,18 @@
     <value />
   </data>
   <data name="Page_LogginErrorPage_Button.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_NotRenewErrorPage_MainButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_NotRenewErrorPage_Admin_MainButton.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_LogginErrorPage_UserMissmatch_Title.Text" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_LogginErrorPage_UserMissmatch_Subtitle.Text" xml:space="preserve">
     <value />
   </data>
   <data name="Page_LogginErrorPage_UserMissmatch_Button.Content" xml:space="preserve">

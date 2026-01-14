@@ -9,6 +9,8 @@ namespace Infomaniak.kDrive
         public abstract Uri StorageUrl { get; }
         public abstract Uri GitHubRepoUrl { get; }
         public abstract Uri GitHubLicenseUrl { get; }
+
+        public abstract Uri DriveRenewUrl(DriveId? driveId);
     }
 
     class ProductionConstants : IAppConstants
@@ -17,5 +19,7 @@ namespace Infomaniak.kDrive
         public Uri StorageUrl { get; } = new Uri("https://download.storage.infomaniak.com/drive/desktopclient");
         public Uri GitHubRepoUrl { get; } = new Uri("https://github.com/Infomaniak/desktop-kDrive");
         public Uri GitHubLicenseUrl { get; } = new Uri("https://github.com/Infomaniak/desktop-kDrive?tab=GPL-3.0-1-ov-file");
+
+        public Uri DriveRenewUrl(DriveId? driveId) => new Uri($"https://shop.infomaniak.com/order/drive/{(driveId?.ToString() ?? "")}");
     }
 }

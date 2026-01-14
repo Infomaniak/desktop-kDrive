@@ -60,7 +60,7 @@ namespace Infomaniak.kDrive.Pages
                     }
                     else
                     {
-                        DisplayMismatchContent();
+                        DisplayUserMismatchContent();
                     }
                 }
                 else
@@ -86,7 +86,7 @@ namespace Infomaniak.kDrive.Pages
             }
         }
 
-        private void DisplayMismatchContent()
+        private void DisplayUserMismatchContent()
         {
             TitleTextBlock.Text = Utility.GetLocalizedString("Page_LogginErrorPage_UserMissmatch_Title/Text");
             SubtitleTextBlock.Text = Utility.GetLocalizedString("Page_LogginErrorPage_UserMissmatch_Subtitle/Text", Utility.ObfuscateEmail(ViewModel.SelectedSync?.Drive.Account.User.Email));

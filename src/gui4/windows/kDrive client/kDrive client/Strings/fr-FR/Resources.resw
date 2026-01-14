@@ -427,8 +427,11 @@ ou choisissez une offre adaptée à vos besoins.</value>
   <data name="Page_LogginErrorPage_Title.Text" xml:space="preserve">
     <value>Vous avez été déconnecté</value>
   </data>
-  <data name="Page_LogginErrorPage_UserMissmatch_Title.Text" xml:space="preserve">
-    <value>Ce compte ne correspond pas</value>
+  <data name="Page_NotRenewErrorPage_Title.Text" xml:space="preserve">
+    <value>Votre kDrive a expiré</value>
+  </data>
+  <data name="Page_NotRenewErrorPage_Admin_SecondaryButton.Content" xml:space="preserve">
+    <value>Actualiser</value>
   </data>
   <data name="Page_DriveAccessDeniedPage_Subtitle.Text" xml:space="preserve">
     <value>Vous n’avez pas l’autorisation d’accéder à ce kDrive.  Veuillez vérifier vos droits ou contacter votre administrateur.</value>
@@ -436,9 +439,11 @@ ou choisissez une offre adaptée à vos besoins.</value>
   <data name="Page_LogginErrorPage_Subtitle.Text" xml:space="preserve">
     <value>Reconnectez-vous pour continuer à utiliser kDrive.</value>
   </data>
-  <data name="Page_LogginErrorPage_UserMissmatch_Subtitle.Text" xml:space="preserve">
-    <value>Le compte utilisé pour cette connexion ne correspond pas à celui de ce kDrive.  Veuillez vous reconnecter avec la bonne adresse e-mail  {0}</value>
-    <comment>{0} = stripped expected email</comment>
+  <data name="Page_NotRenewErrorPage_Subtitle.Text" xml:space="preserve">
+    <value>Ce Drive n’a pas été renouvelé. Vous ne pouvez plus y accéder.  Contactez votre administrateur pour réactiver le service.</value>
+  </data>
+  <data name="Page_NotRenewErrorPage_Admin_Subtitle.Text" xml:space="preserve">
+    <value>Ce Drive n’a pas été renouvelé. Vous ne pouvez plus y accéder.  Renouvelez votre abonnement pour réactiver le service.</value>
   </data>
   <data name="Global_TeraBytes" xml:space="preserve">
     <value>To</value>
@@ -889,6 +894,19 @@ Avant de continuer, assurez-vous que tout vos fichiers sont bien à jour et sync
   </data>
   <data name="Page_LogginErrorPage_Button.Content" xml:space="preserve">
     <value>Connexion</value>
+  </data>
+  <data name="Page_NotRenewErrorPage_MainButton.Content" xml:space="preserve">
+    <value>Actualiser</value>
+  </data>
+  <data name="Page_NotRenewErrorPage_Admin_MainButton.Content" xml:space="preserve">
+    <value>Mettre à jour l’abonnement</value>
+  </data>
+  <data name="Page_LogginErrorPage_UserMissmatch_Title.Text" xml:space="preserve">
+    <value>Ce compte ne correspond pas</value>
+  </data>
+  <data name="Page_LogginErrorPage_UserMissmatch_Subtitle.Text" xml:space="preserve">
+    <value>Le compte utilisé pour cette connexion ne correspond pas à celui de ce kDrive.  Veuillez vous reconnecter avec la bonne adresse e-mail  {0}</value>
+    <comment>{0} = stripped expected email</comment>
   </data>
   <data name="Page_LogginErrorPage_UserMissmatch_Button.Content" xml:space="preserve">
     <value>Connexion</value>
