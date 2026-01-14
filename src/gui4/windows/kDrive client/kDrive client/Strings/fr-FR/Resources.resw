@@ -427,6 +427,9 @@ ou choisissez une offre adaptée à vos besoins.</value>
   <data name="Page_LogginErrorPage_Title.Text" xml:space="preserve">
     <value>Vous avez été déconnecté</value>
   </data>
+  <data name="Page_MaintenanceErrorPage_Title.Text" xml:space="preserve">
+    <value>Maintenance en cours</value>
+  </data>
   <data name="Page_NotRenewErrorPage_Title.Text" xml:space="preserve">
     <value>Votre kDrive a expiré</value>
   </data>
@@ -438,6 +441,9 @@ ou choisissez une offre adaptée à vos besoins.</value>
   </data>
   <data name="Page_LogginErrorPage_Subtitle.Text" xml:space="preserve">
     <value>Reconnectez-vous pour continuer à utiliser kDrive.</value>
+  </data>
+  <data name="Page_MaintenanceErrorPage_Subtitle.Text" xml:space="preserve">
+    <value>Le Drive est temporairement indisponible pour maintenance.  Réessayez dans quelques minutes.</value>
   </data>
   <data name="Page_NotRenewErrorPage_Subtitle.Text" xml:space="preserve">
     <value>Ce Drive n’a pas été renouvelé. Vous ne pouvez plus y accéder.  Contactez votre administrateur pour réactiver le service.</value>
@@ -891,6 +897,9 @@ Avant de continuer, assurez-vous que tout vos fichiers sont bien à jour et sync
   </data>
   <data name="Page_DriveAccessDeniedPage_Button.Content" xml:space="preserve">
     <value>Réessayer</value>
+  </data>
+  <data name="Page_MaintenanceErrorPage_Button.Content" xml:space="preserve">
+    <value>Actualiser</value>
   </data>
   <data name="Page_LogginErrorPage_Button.Content" xml:space="preserve">
     <value>Connexion</value>
