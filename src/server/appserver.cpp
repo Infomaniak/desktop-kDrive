@@ -2428,8 +2428,7 @@ void AppServer::sendLogUploadStatusUpdated(LogUploadState status, int percent) {
     OldCommServer::instance()->sendSignal(SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED, params, id);
 
     if (_commManager)
-        _commManager->sendGuiSignal(
-                std::make_shared<SignalUtilityLogUploadStateJob>(status, reinterpret_cast<std::int32_t>(percent)));
+        _commManager->sendGuiSignal(std::make_shared<SignalUtilityLogUploadStateJob>(status, static_cast<std::int32_t>(percent)));
 
     if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, status, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
