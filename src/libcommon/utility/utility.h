@@ -151,6 +151,11 @@ struct COMMON_EXPORT CommonUtility {
         static std::string envVarValue(const std::string &name, bool &isSet);
         static int setenv(const char *const name, const char *const value, const int overwrite);
 
+#if defined(KD_LINUX)
+         // Sets the working directory path and configures GIO_MODULE_DIR to prevent loading incompatible system GIO modules.
+        static void initAppImageEnvironment();
+#endif
+
         static void handleSignals(void (*sigHandler)(int));
         static SyncPath signalFilePath(AppType appType, SignalCategory signalCategory);
         static void writeSignalFile(AppType appType, SignalType signalType) noexcept;
