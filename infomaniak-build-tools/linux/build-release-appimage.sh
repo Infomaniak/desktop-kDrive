@@ -384,9 +384,9 @@ if [ ! "$?" -eq "0" ]; then
 fi
 
 # TODO enable the cleaning of the appimage folder once the build is stable.
-#echo
-#echo "Cleaning unnecessary files ..."
-#clean_app_directory "$architecture"
+echo
+echo "Cleaning unnecessary files ..."
+clean_app_directory "$architecture"
 
 echo
 echo "Building AppImage ..."
