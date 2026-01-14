@@ -21,15 +21,17 @@
 #include "migration/migrationparams.h"
 #include "keychainmanager/keychainmanager.h"
 #include "requests/syncnodecache.h"
+#include "requests/offlinefilessizeestimator.h"
 #include "comm/guijobmanager.h"
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
 #include "comm/extjobmanager.h"
 #endif
+#include "updater/updatemanager.h"
+
 #include "jobs/network/kDrive_API/searchjob.h"
 #include "jobs/network/kDrive_API/upload/loguploadjob.h"
 #include "jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.h"
-#include "requests/offlinefilessizeestimator.h"
-#include "updater/updatemanager.h"
+
 #include "server/comm/guijobs/signalaccountaddedjob.h"
 #include "server/comm/guijobs/signaluseraddedjob.h"
 #include "server/comm/guijobs/signaluserupdatedjob.h"
@@ -44,6 +46,12 @@
 #include "server/comm/guijobs/signalerroraddedjob.h"
 #include "server/comm/guijobs/signalerrorremovedjob.h"
 #include "server/comm/guijobs/signalsyncprogressinfo.h"
+#include "server/comm/guijobs/signalutilityshownotificationjob.h"
+#include "server/comm/guijobs/signalutilityshowsettingsjob.h"
+#include "server/comm/guijobs/signalutilityshowsynthesisjob.h"
+#include "server/comm/guijobs/signalutilityloguploadstatejob.h"
+#include "server/comm/guijobs/signalutilityquitjob.h"
+
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
@@ -55,11 +63,13 @@
 #include "libcommon/info/exclusiontemplateinfo.h"
 #include "libcommon/log/sentry/handler.h"
 #include "libcommon/log/sentry/ptraces.h"
+
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/network/proxy.h"
 #include "libcommonserver/vfs/vfs.h"
 #include "libcommonserver/utility/utility.h"
+
 #include "libsyncengine/requests/parameterscache.h"
 #include "libsyncengine/requests/exclusiontemplatecache.h"
 #include "libsyncengine/jobs/syncjobmanager.h"
@@ -75,34 +85,6 @@
 #include <windows.h>
 #endif
 
-
-#include "jobs/network/kDrive_API/searchjob.h"
-#include "jobs/network/kDrive_API/upload/loguploadjob.h"
-#include "jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.h"
-#include "requests/offlinefilessizeestimator.h"
-#include "updater/updatemanager.h"
-
-#include "server/comm/guijobs/signalaccountaddedjob.h"
-#include "server/comm/guijobs/signaluseraddedjob.h"
-#include "server/comm/guijobs/signaluserupdatedjob.h"
-#include "server/comm/guijobs/signaluserremovedjob.h"
-#include "server/comm/guijobs/signalaccountremovedjob.h"
-#include "server/comm/guijobs/signaldriveaddedjob.h"
-#include "server/comm/guijobs/signaldriveremovedjob.h"
-#include "server/comm/guijobs/signalsyncaddedjob.h"
-#include "server/comm/guijobs/signalsyncremovedjob.h"
-#include "server/comm/guijobs/signalsyncprogressinfo.h"
-#include "server/comm/guijobs/signalsynccompleteditem.h"
-#include "server/comm/guijobs/signalsyncupdatedjob.h"
-#include "server/comm/guijobs/signalerroraddedjob.h"
-#include "server/comm/guijobs/signalerrorremovedjob.h"
-#include "server/comm/guijobs/signalutilityshownotificationjob.h"
-#include "server/comm/guijobs/signalutilityshowsettingsjob.h"
-#include "server/comm/guijobs/signalutilityshowsynthesisjob.h"
-#include "server/comm/guijobs/signalutilityloguploadstatejob.h"
-#include "server/comm/guijobs/signalutilityquitjob.h"
-
-#include <QDesktopServices>
 #include <QDir>
 #include <QFileInfo>
 #include <QFileOpenEvent>
@@ -117,7 +99,6 @@
 
 #define QUIT_DELAY 1000 // ms
 #define LOAD_PROGRESS_INTERVAL 1000 // ms
-#define LOAD_PROGRESS_MAXITEMS 100 // ms
 #define SEND_NOTIFICATIONS_INTERVAL 15000 // ms
 #define RESTART_SYNCS_INTERVAL 15000 // ms
 #define START_SYNCPALS_RETRY_INTERVAL 60000 // ms
@@ -4294,8 +4275,7 @@ void AppServer::sendUserUpdated(const UserInfo &userInfo) {
     paramsStream << userInfo;
 
     OldCommServer::instance()->sendSignal(SignalNum::USER_UPDATED, params, id);
-    // if(_commManager) _commManager->sendGuiSignal(std::make_shared<SignalUserUpdatedJob>(userInfo)); -> sendUserUpdated should
-    // not be static
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalUserUpdatedJob>(userInfo));
 }
 
 void AppServer::sendUserStatusChanged(int userDbId, bool connected, QString connexionError) {
