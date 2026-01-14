@@ -79,10 +79,10 @@ struct SynchroStatusView: View {
     var body: some View {
         VStack(spacing: AppPadding.padding32) {
             ThemedLottieView(animation: state.animation)
+                .opacity(state.isRedacted ? 0 : 1)
                 .overlay {
                     if state.isRedacted {
-                        RoundedRectangle(cornerRadius: AppRadius.radius16)
-                            .fill(Color(nsColor: .lightGray))
+                        redactedAnimation
                     }
                 }
 
@@ -110,6 +110,12 @@ struct SynchroStatusView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(ColorToken.Surface.primary.asColor)
         .clipShape(RoundedRectangle(cornerRadius: AppRadius.radius16))
+    }
+
+    /// We use a random image to serve as a redacted view
+    @ViewBuilder private var redactedAnimation: some View {
+        KDriveResources.checkmark.swiftUIImage
+            .resizable()
     }
 }
 
