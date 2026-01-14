@@ -19,13 +19,11 @@
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Sentry;
+using Serilog;
+using Serilog.Events;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive
 {
@@ -42,95 +40,88 @@ namespace Infomaniak.kDrive
             Extended
         }
 
-        private static string _logFilePath;
-        private static StreamWriter? _logStream;
+        private static readonly string _logFolder = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "temp",
+            "kDrive-logdir");
 
-        static Logger()
+        public static string LogFolder => _logFolder;
+
+        private static readonly string _logFilePath = Path.Combine(
+            _logFolder,
+            $"{DateTime.Now:yyyyMMdd_HHmm}_kDriveClient.log");
+
+        private static readonly Serilog.Core.Logger? _logger = new LoggerConfiguration()
+            .MinimumLevel.Verbose()
+            .WriteTo.File(
+                path: _logFilePath,
+                fileSizeLimitBytes: 500L * 1024L * 1024L, // 500 MB
+                rollOnFileSizeLimit: true,                // roll when exceeding size
+                retainedFileCountLimit: 5,                // keep up to 5 rolled files
+                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] {Message}{NewLine}{Exception}")
+            .CreateLogger();
+
+
+        public static Level LogLevel =>
+            App.ServiceProvider.GetService<AppModel>()?.Settings.LogLevel ?? Level.Extended;
+
+        public static void Log(Level level, string message,
+            [CallerFilePath] string filePath = "?",
+            [CallerLineNumber] int lineNumber = -1,
+            [CallerMemberName] string memberName = "?")
         {
-            string logDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "temp", "kDrive-logdir");
-            _logFilePath = Path.Combine(logDir, $"{DateTime.Now:yyyyMMdd_HHmm}_KDriveClient.log");
-            int counter = 1;
-            while (File.Exists(_logFilePath) && counter < 10)
-            {
-                _logFilePath = Path.Combine(logDir, $"{DateTime.Now:yyyyMMdd_HHmm}_KDriveClient_{++counter}.log");
-            }
+            string fileName = Path.GetFileName(filePath);
+            string sourceContext = $"{fileName}:{lineNumber} - {memberName}";
+            string shortLogEntry = $"{sourceContext}: {message}";
 
-            if (counter < 10)
-            {
-#pragma warning disable S2930
-                _logStream = new StreamWriter(_logFilePath, append: true) { AutoFlush = true };
-#pragma warning restore S2930
-            }
-            else
-            {
-                _logFilePath = "";
-                _logStream = null;
-            }
-        }
+            SentrySdk.AddBreadcrumb(shortLogEntry, level: ToBreadcrumbLevel(level));
 
-        static public string LogFilePath => _logFilePath;
-        static public string LogFolder => Path.GetDirectoryName(_logFilePath) ?? "";
-        static public Level LogLevel
-        {
-            get => App.ServiceProvider.GetService<AppModel>()?.Settings.LogLevel ?? Level.Extended;
-        }
-
-        public static void Log(Level level, string message, [CallerFilePath] string filePath = "?", [CallerLineNumber] int lineNumber = -1, [CallerMemberName] string memberName = "?")
-        {
-
-            string shortLogEntry = $"{Path.GetFileName(filePath)}:{lineNumber} - {memberName}: {message}";
-            string logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [{level}] {shortLogEntry}";
-            SentrySdk.AddBreadcrumb(shortLogEntry, level: LoggerLevelToBreadcrumbLevel(level));
 #if !DEBUG
-            if (LogLevel > level || _logStream is null)
-                return;
+            if (LogLevel > level) return;
 #endif
-            try
-            {
-                _logStream?.WriteLine(logEntry);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Failed to write log entry: {ex.Message}");
-                // Reset the log stream to avoid further errors
-                _logStream = new StreamWriter(_logFilePath, append: true) { AutoFlush = true };
-            }
+
+            _logger?.Write(ToSerilogLevel(level), "{SourceContext}: {Message}", sourceContext, message);
 
 #if DEBUG
             if (level > Level.Info)
             {
-                System.Diagnostics.Debug.WriteLine(logEntry);
-                SentrySdk.CaptureMessage(shortLogEntry, LoggerLevelToSentryLevel(level));
+                System.Diagnostics.Debug.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [{level}] {shortLogEntry}");
+                SentrySdk.CaptureMessage(shortLogEntry, ToSentryLevel(level));
             }
 #endif
         }
 
-        private static BreadcrumbLevel LoggerLevelToBreadcrumbLevel(Level level)
+        private static LogEventLevel ToSerilogLevel(Level level) => level switch
         {
-            return level switch
-            {
-                Level.Extended => BreadcrumbLevel.Debug,
-                Level.Debug => BreadcrumbLevel.Debug,
-                Level.Info => BreadcrumbLevel.Info,
-                Level.Warning => BreadcrumbLevel.Warning,
-                Level.Error => BreadcrumbLevel.Error,
-                Level.Fatal => BreadcrumbLevel.Fatal,
-                _ => BreadcrumbLevel.Info,
-            };
-        }
+            Level.Extended => LogEventLevel.Verbose,
+            Level.Debug => LogEventLevel.Debug,
+            Level.Info => LogEventLevel.Information,
+            Level.Warning => LogEventLevel.Warning,
+            Level.Error => LogEventLevel.Error,
+            Level.Fatal => LogEventLevel.Fatal,
+            _ => LogEventLevel.Information
+        };
 
-        private static SentryLevel LoggerLevelToSentryLevel(Level level)
+        private static BreadcrumbLevel ToBreadcrumbLevel(Level level) => level switch
         {
-            return level switch
-            {
-                Level.Extended => SentryLevel.Debug,
-                Level.Debug => SentryLevel.Debug,
-                Level.Info => SentryLevel.Info,
-                Level.Warning => SentryLevel.Warning,
-                Level.Error => SentryLevel.Error,
-                Level.Fatal => SentryLevel.Fatal,
-                _ => SentryLevel.Info,
-            };
-        }
+            Level.Extended => BreadcrumbLevel.Debug,
+            Level.Debug => BreadcrumbLevel.Debug,
+            Level.Info => BreadcrumbLevel.Info,
+            Level.Warning => BreadcrumbLevel.Warning,
+            Level.Error => BreadcrumbLevel.Error,
+            Level.Fatal => BreadcrumbLevel.Fatal,
+            _ => BreadcrumbLevel.Info
+        };
+
+        private static SentryLevel ToSentryLevel(Level level) => level switch
+        {
+            Level.Extended => SentryLevel.Debug,
+            Level.Debug => SentryLevel.Debug,
+            Level.Info => SentryLevel.Info,
+            Level.Warning => SentryLevel.Warning,
+            Level.Error => SentryLevel.Error,
+            Level.Fatal => SentryLevel.Fatal,
+            _ => SentryLevel.Info
+        };
     }
 }

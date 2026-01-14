@@ -54,6 +54,9 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.6584" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.250916003" />
     <PackageReference Include="Sentry" Version="6.0.0" />
+    <PackageReference Include="Sentry.Profiling" Version="6.0.0" />
+    <PackageReference Include="Serilog" Version="4.2.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
     <PackageReference Include="Svg" Version="3.4.7" />
   </ItemGroup>
   <!--
@@ -229,7 +232,7 @@
     <ItemGroup>
       <!-- Keep only fr-FR, en-US, es-ES, it-IT, de-DE -->
       <RemovingFiles Include="$(OutDir)*\*.mui" Exclude="&#xD;&#xA;            $(OutDir)fr-FR\*.mui;&#xD;&#xA;            $(OutDir)en-US\*.mui;&#xD;&#xA;            $(OutDir)es-ES\*.mui;&#xD;&#xA;            $(OutDir)it-IT\*.mui;&#xD;&#xA;            $(OutDir)de-DE\*.mui" />
-      <RemovingFolders Include="@(RemovingFiles-&gt;'%(RootDir)%(Directory)')" />
+      <RemovingFolders Include="@(RemovingFiles->'%(RootDir)%(Directory)')" />
     </ItemGroup>
     <RemoveDir Directories="@(RemovingFolders)" />
   </Target>
