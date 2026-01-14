@@ -283,7 +283,10 @@ function build_app_image() {
   architecture=$1
 
   export LD_LIBRARY_PATH="/app/usr/lib/:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
-  /deploy/linuxdeploy/build/bin/linuxdeploy --appdir /app -e /app/usr/bin/kDrive -i /app/kdrive-win.png -d /app/usr/share/applications/kDrive_client.desktop --plugin qt --output appimage -v0
+  # linuxdeploy bundles its own `strip` which can fail on newer ELF features.
+  # Skipping linuxdeploy stripping avoids build failures; our binaries are already handled earlier.
+  export NO_STRIP=1
+  linuxdeploy --appdir /app -e /app/usr/bin/kDrive -i /app/kdrive-win.png -d /app/usr/share/applications/kDrive_client.desktop --plugin qt --output appimage -v0 --
   mv kDrive*.AppImage "/install/kDrive-$architecture.AppImage"
 }
 
