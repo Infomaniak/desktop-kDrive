@@ -22,6 +22,7 @@ using Sentry;
 using Serilog;
 using Serilog.Events;
 using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Runtime.CompilerServices;
 
@@ -76,6 +77,8 @@ namespace Infomaniak.kDrive
 
             SentrySdk.AddBreadcrumb(shortLogEntry, level: ToBreadcrumbLevel(level));
 
+            if (LogLevel == Level.None || (LogLevel == Level.Extended && level != Level.Extended))
+                return;
 #if !DEBUG
             if (LogLevel > level) return;
 #endif
@@ -83,12 +86,53 @@ namespace Infomaniak.kDrive
             _logger?.Write(ToSerilogLevel(level), "{SourceContext}: {Message}", sourceContext, message);
 
 #if DEBUG
-            if (level > Level.Info)
-            {
-                System.Diagnostics.Debug.WriteLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [{level}] {shortLogEntry}");
+            if (CanSendSentryEvent(level, filePath, lineNumber, memberName))
                 SentrySdk.CaptureMessage(shortLogEntry, ToSentryLevel(level));
-            }
 #endif
+        }
+
+        // Manage sentry throttling to avoid flooding the sentry server with too many events (max 3 per minute per unique log location)
+        private const int _sentryLogThrottleLimitPerMinute = 3;
+        private struct SentryLogThrottleInfo
+        {
+            public DateTime LastSentTime;
+            public int CountInLastMinute;
+        }
+        private static readonly ConcurrentDictionary<int, SentryLogThrottleInfo> _sentryLogThrottleDict
+            = new ConcurrentDictionary<int, SentryLogThrottleInfo>();
+        private static bool CanSendSentryEvent(Level level, string filePath, int lineNumber, string memberName)
+        {
+            if (level <= Level.Info)
+                return false; // Only send Warning and above
+
+            int hash = HashCode.Combine(filePath, lineNumber, memberName);
+            var now = DateTime.UtcNow;
+            var info = _sentryLogThrottleDict.GetOrAdd(hash, _ => new SentryLogThrottleInfo
+            {
+                LastSentTime = now,
+                CountInLastMinute = 1
+            });
+
+            if ((now - info.LastSentTime).TotalMinutes >= 1)
+            {
+                // Reset count after one minute
+                info.CountInLastMinute = 1;
+                info.LastSentTime = now;
+                _sentryLogThrottleDict[hash] = info;
+                return true;
+            }
+            else if (info.CountInLastMinute < _sentryLogThrottleLimitPerMinute)
+            {
+                // Allow sending if under the limit
+                info.CountInLastMinute++;
+                _sentryLogThrottleDict[hash] = info;
+                return true;
+            }
+            else
+            {
+                SentrySdk.AddBreadcrumb("Sentry log throttled for this location", level: BreadcrumbLevel.Info);
+                return false;
+            }
         }
 
         private static LogEventLevel ToSerilogLevel(Level level) => level switch
