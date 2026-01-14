@@ -63,6 +63,7 @@
 #include "libsyncengine/requests/parameterscache.h"
 #include "libsyncengine/requests/exclusiontemplatecache.h"
 #include "libsyncengine/jobs/syncjobmanager.h"
+#include "utility/timerutility.h"
 
 #include <iostream>
 #include <fstream>
@@ -301,11 +302,7 @@ void AppServer::init() {
 
 #if defined(KD_WINDOWS)
     // Update shortcuts
-    _navigationPaneHelper = std::make_unique<NavigationPaneHelper>();
-    _navigationPaneHelper->setShowInExplorerNavigationPane(false);
-    if (ParametersCache::instance()->parameters().showShortcuts()) {
-        _navigationPaneHelper->setShowInExplorerNavigationPane(true);
-    }
+    NavigationPaneHelper::showInExplorerNavigationPane();
 #endif
 
     // Setup proxy
@@ -1452,11 +1449,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
 
             // Add sync in DB
-            bool showInNavigationPane = false;
-#if defined(KD_WINDOWS)
-            showInNavigationPane = _navigationPaneHelper->showInExplorerNavigationPane();
-#endif
-
             ExitCode exitCode = ExitCode::Ok;
             SyncInfo syncInfo;
             if (num == RequestNum::SYNC_ADD) {
@@ -1464,16 +1456,14 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 DriveInfo driveInfo;
 
                 exitCode = ServerRequests::addSync(userDbId, accountId, driveId, localFolderPath, serverFolderPath,
-                                                   serverFolderNodeId, liteSync, showInNavigationPane, accountInfo, driveInfo,
-                                                   syncInfo);
+                                                   serverFolderNodeId, liteSync, accountInfo, driveInfo, syncInfo);
 
                 if (exitCode != ExitCode::Ok) {
                     LOGW_WARN(_logger, L"Error in Requests::addSync - userDbId="
                                                << userDbId << L" accountId=" << accountId << L" driveId=" << driveId
                                                << L" localFolderPath=" << QStr2WStr(localFolderPath) << L" serverFolderPath="
                                                << QStr2WStr(serverFolderPath) << L" serverFolderNodeId="
-                                               << serverFolderNodeId.toStdWString() << L" liteSync=" << liteSync
-                                               << L" showInNavigationPane=" << showInNavigationPane);
+                                               << serverFolderNodeId.toStdWString() << L" liteSync=" << liteSync);
                     addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
                     resultStream << toInt(exitCode);
                     break;
@@ -1488,13 +1478,13 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 }
             } else {
                 exitCode = ServerRequests::addSync(driveDbId, localFolderPath, serverFolderPath, serverFolderNodeId, liteSync,
-                                                   showInNavigationPane, syncInfo);
+                                                   syncInfo);
 
                 if (exitCode != ExitCode::Ok) {
                     LOGW_WARN(_logger, L"Error in Requests::addSync for driveDbId="
                                                << driveDbId << L" localFolderPath=" << Path2WStr(QStr2Path(localFolderPath))
                                                << L" serverFolderPath=" << Path2WStr(QStr2Path(serverFolderPath)) << L" liteSync="
-                                               << liteSync << L" showInNavigationPane=" << showInNavigationPane);
+                                               << liteSync);
                     addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
                     resultStream << toInt(exitCode);
                     break;
@@ -2129,25 +2119,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << mode;
             break;
         }
-#if defined(KD_WINDOWS)
-        case RequestNum::UTILITY_SHOWSHORTCUT: {
-            bool show = _navigationPaneHelper->showInExplorerNavigationPane();
-
-            resultStream << ExitCode::Ok;
-            resultStream << show;
-            break;
-        }
-        case RequestNum::UTILITY_SETSHOWSHORTCUT: {
-            bool show;
-            QDataStream paramsStream(params);
-            paramsStream >> show;
-
-            _navigationPaneHelper->setShowInExplorerNavigationPane(show);
-
-            resultStream << ExitCode::Ok;
-            break;
-        }
-#endif
         case RequestNum::UTILITY_ACTIVATELOADINFO: {
             bool value;
             QDataStream paramsStream(params);
@@ -2687,11 +2658,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 
@@ -3891,14 +3862,12 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
 #if defined(KD_WINDOWS)
     // Save sync
     if (sync.virtualFileMode() == KDC::VirtualFileMode::Win) {
-        Utility::setFolderPinState(CommonUtility::s2ws(vfsMapIt->second->namespaceCLSID()),
-                                   _navigationPaneHelper->showInExplorerNavigationPane());
+        Utility::setFolderPinState(CommonUtility::s2ws(vfsMapIt->second->namespaceCLSID()), true);
     } else {
         if (vfsMapIt->second->namespaceCLSID().empty()) {
             vfsMapIt->second->setNamespaceCLSID(sync.navigationPaneClsid());
         }
-        Utility::addLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()), sync.localPath(),
-                                       _navigationPaneHelper->showInExplorerNavigationPane());
+        Utility::addLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()), sync.localPath(), true);
     }
 
     bool found = false;
@@ -3999,8 +3968,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value, bool async
         if (newMode == VirtualFileMode::Win) {
             Utility::removeLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()));
         } else if (sync.virtualFileMode() == VirtualFileMode::Win) {
-            Utility::addLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()), sync.localPath(),
-                                           _navigationPaneHelper->showInExplorerNavigationPane());
+            Utility::addLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()), sync.localPath(), true);
         }
 #endif
 

@@ -556,7 +556,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 LogLevel = Logger.Level.Debug,
                 ExtendedLog = false,
                 PurgeOldLogs = true,
-                ShowShortcuts = true,
                 ProxyConfigInfo = new ProxyConfigInfo()
                 {
                     Type = ProxyType.HTTP,

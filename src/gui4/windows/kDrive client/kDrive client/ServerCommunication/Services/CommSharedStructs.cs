@@ -229,7 +229,6 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         public bool? ExtendedLog { get; set; }
         public bool? PurgeOldLogs { get; set; }
         public ProxyConfigInfo? ProxyConfigInfo { get; set; }
-        public bool? ShowShortcuts { get; set; }
         public bool? MatomoEnabled { get; set; }
         public bool? SentryEnabled { get; set; }
         public VersionChannel? DistributionChannel { get; set; }
@@ -242,7 +241,6 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             copyProperty(source, target, nameof(source.AutoStart), nameof(target.AutoStart));
             copyProperty(source, target, nameof(source.MoveToTrash), nameof(target.MoveToTrash));
             copyProperty(source, target, nameof(source.NotificationsDisabled), nameof(target.NotificationsDisabled));
-            copyProperty(source, target, nameof(source.ShowShortcuts), nameof(target.ShowShortcuts));
             copyProperty(source, target.UpdateManager, nameof(source.DistributionChannel), nameof(target.UpdateManager.CurrentChannel));
             copyProperty(source, target, nameof(source.PurgeOldLogs), nameof(target.PurgeOldLogs));
             copyProperty(source, target, nameof(source.MatomoEnabled), nameof(target.MatomoEnabled));
@@ -267,7 +265,6 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             copyProperty(source, target, nameof(source.AutoStart), nameof(target.AutoStart));
             copyProperty(source, target, nameof(source.MoveToTrash), nameof(target.MoveToTrash));
             copyProperty(source, target, nameof(source.NotificationsDisabled), nameof(target.NotificationsDisabled));
-            copyProperty(source, target, nameof(source.ShowShortcuts), nameof(target.ShowShortcuts));
             copyProperty(source.UpdateManager, target, nameof(source.UpdateManager.CurrentChannel), nameof(target.DistributionChannel));
             copyProperty(source, target, nameof(source.PurgeOldLogs), nameof(target.PurgeOldLogs));
             copyProperty(source, target, nameof(source.MatomoEnabled), nameof(target.MatomoEnabled));
