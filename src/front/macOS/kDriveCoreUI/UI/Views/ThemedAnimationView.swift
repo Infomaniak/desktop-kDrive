@@ -42,6 +42,6 @@ public struct ThemedLottieView: View {
             ))
         }
         .playing(loopMode: loopMode)
-        .id(colorScheme)
+        .id("\(colorScheme.hashValue)_\(animation.hashValue)")
     }
 }
