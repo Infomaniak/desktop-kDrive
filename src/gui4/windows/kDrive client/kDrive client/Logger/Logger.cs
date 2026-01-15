@@ -78,10 +78,11 @@ namespace Infomaniak.kDrive
             if (App.ServiceProvider.GetRequiredService<AppModel>().Settings.SentryEnabled)
                 SentrySdk.AddBreadcrumb(shortLogEntry, level: ToBreadcrumbLevel(level));
 
-            if (LogLevel == Level.None || (LogLevel == Level.Extended && level != Level.Extended))
+            if (LogLevel == Level.None) 
                 return;
+
 #if !DEBUG
-            if (LogLevel > level) return;
+            if (LogLevel != LogLevel.Extended && LogLevel > level) return;
 #endif
 
             _logger?.Write(ToSerilogLevel(level), "{SourceContext}: {Message}", sourceContext, message);
