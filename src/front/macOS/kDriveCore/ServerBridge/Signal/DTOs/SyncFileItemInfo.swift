@@ -37,6 +37,7 @@ struct SyncFileItemInfo: Codable, Sendable {
     let inconsistency: KDC.InconsistencyType
     let cancelType: KDC.CancelType
     @Base64CodedString var error: String
+    let size: Int64
 }
 
 extension SyncFileItemInfo {
@@ -52,6 +53,7 @@ extension SyncFileItemInfo {
                     conflict: conflict,
                     inconsistency: inconsistency,
                     cancelType: cancelType,
-                    error: error)
+                    error: error,
+                    size: size)
     }
 }

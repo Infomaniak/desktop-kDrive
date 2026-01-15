@@ -102,6 +102,7 @@ public struct SynchroNode: Identifiable, Codable, Hashable, Sendable {
     public let inconsistency: KDC.InconsistencyType
     public let cancelType: KDC.CancelType
     public let error: String
+    public let size: Int64
 }
 
 public enum SynchroError: Error, Hashable, Sendable, CaseIterable {
