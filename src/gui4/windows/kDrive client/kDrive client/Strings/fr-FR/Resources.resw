@@ -445,9 +445,6 @@ ou choisissez une offre adaptée à vos besoins.</value>
   <data name="Global_KiloBytes" xml:space="preserve">
     <value>Ko</value>
   </data>
-  <data name="Page_StoragePage_DiskUnavailable.Message" xml:space="preserve">
-    <value>Disque indisponible</value>
-  </data>
   <data name="Page_HomePage_Status_SyncUpToDate.Text" xml:space="preserve">
     <value>, vos fichiers sont à jour</value>
   </data>
@@ -885,5 +882,17 @@ Avant de continuer, assurez-vous que tout vos fichiers sont bien à jour et sync
   </data>
   <data name="Page_LogginErrorPage_Button.Content" xml:space="preserve">
     <value>Connexion</value>
+  </data>
+  <data name="Page_StoragePage_Disconnected_Title.Text" xml:space="preserve">
+    <value>Le disque de stockage {0} n’est pas accessible</value>
+    <comment>{0}: Disk root (ie C:/)</comment>
+  </data>
+  <data name="Page_StoragePage_Disconnected_RetryButton.Content" xml:space="preserve">
+    <value>Réessayer</value>
+  </data>
+  <data name="Page_StoragePage_Disconnected_Subtitle.Text" xml:space="preserve">
+    <value>kDrive ne peut pas accéder au disque {0}  Assurez-vous qu’il est bien connecté, 
+déverrouillé et accessible depuis votre ordinateur.</value>
+    <comment>{0}: Disk root (ie C:/)</comment>
   </data>
 </root>
