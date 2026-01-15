@@ -17,6 +17,7 @@
  */
 
 import Foundation
+import OrderedCollections
 
 struct AccountInfoSignal: Codable, Sendable {
     let accountInfo: AccountInfoSignalMetadata
@@ -30,7 +31,7 @@ struct AccountInfoSignalMetadata: Codable, Sendable {
 
 extension AccountInfoSignalMetadata {
     var asAccount: Account {
-        Account(dbId: dbId, userDbId: userDbId, name: "", drives: [:])
+        Account(dbId: dbId, userDbId: userDbId, name: "", drives: IndexedDrives())
     }
 }
 
