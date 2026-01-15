@@ -27,6 +27,8 @@
     <x:String x:Key="Infomaniak.DS.Icons.Actions.triangle-alert-outline">ms-appx:///Assets/DS/Icons/Actions/triangle-alert-outline.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Actions.circle-check">ms-appx:///Assets/DS/Icons/Actions/circle-check.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Actions.circle-check-outline">ms-appx:///Assets/DS/Icons/Actions/circle-check-outline.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Actions.circle-minus-outline">ms-appx:///Assets/DS/Icons/Actions/circle-minus-outline.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Actions.circle-block">ms-appx:///Assets/DS/Icons/Actions/circle-block.svg</x:String>
 
     <!-- Books -->
     <x:String x:Key="Infomaniak.DS.Icons.Books.book">ms-appx:///Assets/DS/Icons/Books/book.svg</x:String>
@@ -40,6 +42,8 @@
     <!-- Essentials -->
     <x:String x:Key="Infomaniak.DS.Icons.Essentials.bell">ms-appx:///Assets/DS/Icons/Essentials/bell.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Essentials.cog">ms-appx:///Assets/DS/Icons/Essentials/cog.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Essentials.maintenance">ms-appx:///Assets/DS/Icons/Essentials/maintenance.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Essentials.moon-sleep">ms-appx:///Assets/DS/Icons/Essentials/moon-sleep.svg</x:String>
 
     <!-- Miscellaneous -->
     <x:String x:Key="Infomaniak.DS.Icons.Miscellaneous.rocket">ms-appx:///Assets/DS/Icons/Miscellaneous/rocket.svg</x:String>
@@ -86,6 +90,7 @@
     <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-connect">ms-appx:///Assets/DS/Icons/Documents/folder-connect.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-circle-plus">ms-appx:///Assets/DS/Icons/Documents/folder-circle-plus.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-open-file">ms-appx:///Assets/DS/Icons/Documents/folder-open-file.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-block">ms-appx:///Assets/DS/Icons/Documents/folder-block.svg</x:String>
 
     <!-- Devices -->
     <x:String x:Key="Infomaniak.DS.Icons.Devices.computer">ms-appx:///Assets/DS/Icons/Devices/computer.svg</x:String>

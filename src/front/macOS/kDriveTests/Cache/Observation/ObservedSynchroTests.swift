@@ -200,6 +200,42 @@ struct ObservedSynchroTests_dbIdOnly {
         #expect(latestFetchedSynchro == nil, "Object should no longer be available in cache")
         #expect(observedSynchro == nil, "Object should be nilified once it's removed from the cache")
     }
+
+    @Test(.timeLimit(.minutes(1)))
+    func deleteObservedSynchroFromDbId() async throws {
+        // GIVEN
+        let cache = ServerCoherentCache()
+        let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
+        #expect(initialUser == nil, "Cache should initially be empty")
+
+        @ObservedSynchro(synchroDbId: ObservableData.expectedSynchroDbId, cacheObservation: cache) var observedSynchro: Synchro?
+        let receivedValues = $observedSynchro.receivedValues
+
+        #expect(observedSynchro == nil, "Synchro should initially be nil")
+        await cache.addUser(ObservableData.expectedUserWithAccounts)
+
+        let expectedDrive = ObservableData.expectedDrive
+        try await cache.addDrive(expectedDrive, accountDbId: ObservableData.expectedAccountDbId)
+
+        let cachedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
+        #expect(cachedDrive == expectedDrive, "The cache should have been updated with a Drive")
+
+        let expectedSynchro = ObservableData.expectedSynchro
+        try await cache.addSynchro(expectedSynchro)
+
+        let fetchedSynchro = await cache.getSynchro(synchroDbId: ObservableData.expectedSynchroDbId)
+        #expect(fetchedSynchro == ObservableData.expectedSynchro, "We should find the object in cache")
+
+        // WHEN
+        try await cache.removeSynchro(synchroDbId: expectedSynchro.dbId)
+
+        // THEN
+        _ = await receivedValues.dropFirst().first(where: { $0 == nil })
+
+        let latestFetchedSynchro = await cache.getSynchro(synchroDbId: ObservableData.expectedSynchroDbId)
+        #expect(latestFetchedSynchro == nil, "Object should no longer be available in cache")
+        #expect(observedSynchro == nil, "Object should be nilified once it's removed from the cache")
+    }
 }
 
 @MainActor
@@ -381,6 +417,46 @@ struct ObservedSynchroTests_allIds {
         // WHEN
         try await cache.removeSynchro(synchroDbId: expectedSynchro.dbId,
                                       driveDbId: expectedSynchro.driveDbId)
+
+        // THEN
+        _ = await receivedValues.dropFirst().first(where: { $0 == nil })
+
+        let latestFetchedSynchro = await cache.getSynchro(synchroDbId: ObservableData.expectedSynchroDbId)
+        #expect(latestFetchedSynchro == nil, "Object should no longer be available in cache")
+        #expect(observedSynchro == nil, "Object should be nilified once it's removed from the cache")
+    }
+
+    @Test(.timeLimit(.minutes(1)))
+    func deleteObservedSynchroFromDbId() async throws {
+        // GIVEN
+        let cache = ServerCoherentCache()
+        let initialUser = await cache.getUser(dbId: ObservableData.expectedUserDbId)
+        #expect(initialUser == nil, "Cache should initially be empty")
+
+        @ObservedSynchro(userDbId: ObservableData.expectedUserDbId,
+                         accountDbId: ObservableData.expectedAccountDbId,
+                         driveDbId: ObservableData.expectedDriveDbId,
+                         synchroDbId: ObservableData.expectedSynchroDbId,
+                         cacheObservation: cache) var observedSynchro: Synchro?
+        let receivedValues = $observedSynchro.receivedValues
+
+        #expect(observedSynchro == nil, "Synchro should initially be nil")
+        await cache.addUser(ObservableData.expectedUserWithAccounts)
+
+        let expectedDrive = ObservableData.expectedDrive
+        try await cache.addDrive(expectedDrive, accountDbId: ObservableData.expectedAccountDbId)
+
+        let cachedDrive = await cache.getDrive(driveDbId: ObservableData.expectedDriveDbId)
+        #expect(cachedDrive == expectedDrive, "The cache should have been updated with a Drive")
+
+        let expectedSynchro = ObservableData.expectedSynchro
+        try await cache.addSynchro(expectedSynchro)
+
+        let fetchedSynchro = await cache.getSynchro(synchroDbId: ObservableData.expectedSynchroDbId)
+        #expect(fetchedSynchro == ObservableData.expectedSynchro, "We should find the object in cache")
+
+        // WHEN
+        try await cache.removeSynchro(synchroDbId: expectedSynchro.dbId)
 
         // THEN
         _ = await receivedValues.dropFirst().first(where: { $0 == nil })

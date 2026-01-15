@@ -41,9 +41,8 @@ namespace Infomaniak.kDrive.Types
         SYNC_DELETE,
         SYNC_GETPUBLICLINKURL,
         SYNC_GETPRIVATELINKURL,
-        SYNC_ASKFORSTATUS,
+        SYNC_TRIGGER_PROGRESS_UPDATE,
         SYNC_SETSUPPORTSVIRTUALFILES,
-        SYNC_SETROOTPINSTATE,
         BLACKLISTED_NODE_LIST,
         BLACKLISTED_NODE_SETLIST,
         NODE_PATH,
@@ -70,8 +69,6 @@ namespace Infomaniak.kDrive.Types
         UTILITY_BESTVFSAVAILABLEMODE_LEGACY,
         UTILITY_FINDGOODPATHFORNEWSYNC,
         UTILITY_ISPATHVALIDFORNEWSYNC,
-        UTILITY_SHOWSHORTCUT,
-        UTILITY_SETSHOWSHORTCUT,
         UTILITY_ACTIVATELOADINFO,
         UTILITY_CHECKCOMMSTATUS,
         UTILITY_HASSYSTEMLAUNCHONSTARTUP,
@@ -201,7 +198,7 @@ namespace Infomaniak.kDrive.Types
         OperationCanceled,
         UpdateRequired,
         LogUploadFailed,
-        UpdateFailed,
+        UpdateFailed
     };
 
 
@@ -234,12 +231,13 @@ namespace Infomaniak.kDrive.Types
         InconsistentPinState,
         FileSizeMismatch,
         UploadNotTerminated,
-        UnableToCreateVfs,
+        UnableToStartVfs,
         NotEnoughMemory,
         FileTooBig,
         MoveToTrashFailed,
         InvalidName,
         LiteSyncNotAllowed,
+        LiteSyncExtNotRunning,
         NotPlaceHolder,
         NetworkTimeout,
         SocketsDefuncted, // macOS: sockets defuncted by kernel
@@ -256,7 +254,8 @@ namespace Infomaniak.kDrive.Types
         NotEnoughINotifyWatches,
         FileOrDirectoryCorrupted,
         TmpDirAccessError,
-        UpdateTreeIntegrityCheckFailed
+        UpdateTreeIntegrityCheckFailed,
+        MissingReplyData
     };
 
     public enum ConflictType
@@ -302,5 +301,12 @@ namespace Infomaniak.kDrive.Types
         DuplicateNames = 0x040, // Two items have the same standardized paths with possibly different encodings (Windows 10 and 11).
         ForbiddenCharOnlySpaces = 0x080, // The name contains only spaces (not supported by back end)
         ForbiddenCharEndWithSpace = 0x100, // The name ends with a space
+    };
+    public enum VirtualFileMode
+    {
+        Off,
+        Win,
+        Mac,
+        Suffix
     };
 }

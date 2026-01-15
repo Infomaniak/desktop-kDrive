@@ -22,15 +22,17 @@
 
 namespace KDC {
 
-class UtilityDisplayClientReportJob : public AbstractGuiJob {
+class SignalUpdaterShowDialogJob : public AbstractGuiJob {
     public:
-        UtilityDisplayClientReportJob(std::shared_ptr<CommManager> commManager, int requestId,
-                                      const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel);
+        explicit SignalUpdaterShowDialogJob(const VersionInfo &driveInfo);
 
     private:
-        ExitInfo deserializeInputParms() override { return ExitCode::Ok; };
-        ExitInfo serializeOutputParms() override { return ExitCode::Ok; };
-        ExitInfo process() override;
+        // Output parameters
+        VersionInfo _versionInfo;
+
+        ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
+        ExitInfo serializeOutputParms() override;
+        ExitInfo process() override { return ExitCode::Ok; }
 
         friend class TestGuiCommChannel;
 };

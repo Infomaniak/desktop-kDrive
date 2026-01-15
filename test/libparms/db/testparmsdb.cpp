@@ -61,7 +61,6 @@ void TestParmsDb::testParameters() {
     CPPUNIT_ASSERT(parameters.proxyConfig().user() == defaultParameters.proxyConfig().user());
     CPPUNIT_ASSERT(parameters.proxyConfig().token() == defaultParameters.proxyConfig().token());
     CPPUNIT_ASSERT(parameters.darkTheme() == defaultParameters.darkTheme());
-    CPPUNIT_ASSERT(parameters.showShortcuts() == defaultParameters.showShortcuts());
     CPPUNIT_ASSERT(parameters.dialogGeometry() == defaultParameters.dialogGeometry());
     CPPUNIT_ASSERT(parameters.sentryEnabled() == defaultParameters.sentryEnabled());
     CPPUNIT_ASSERT(parameters.matomoEnabled() == defaultParameters.matomoEnabled());
@@ -100,7 +99,6 @@ void TestParmsDb::testParameters() {
     CPPUNIT_ASSERT(parameters.proxyConfig().user() == parameters2.proxyConfig().user());
     CPPUNIT_ASSERT(parameters.proxyConfig().token() == parameters2.proxyConfig().token());
     CPPUNIT_ASSERT(parameters.darkTheme() == parameters2.darkTheme());
-    CPPUNIT_ASSERT(parameters.showShortcuts() == parameters2.showShortcuts());
     CPPUNIT_ASSERT(*parameters.dialogGeometry() == *parameters2.dialogGeometry());
     CPPUNIT_ASSERT(parameters.sentryEnabled() == parameters2.sentryEnabled());
     CPPUNIT_ASSERT(parameters.matomoEnabled() == parameters2.matomoEnabled());

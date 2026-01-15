@@ -74,8 +74,8 @@ set(server_SRCS
     comm/guijobs/syncdeletejob.h comm/guijobs/syncdeletejob.cpp
     comm/guijobs/syncgetpubliclinkurljob.h comm/guijobs/syncgetpubliclinkurljob.cpp
     comm/guijobs/syncgetprivatelinkurljob.h comm/guijobs/syncgetprivatelinkurljob.cpp
+    comm/guijobs/synctriggerprogressupdatejob.h comm/guijobs/synctriggerprogressupdatejob.cpp
     comm/guijobs/syncsetsupportsvirtualfilesjob.h comm/guijobs/syncsetsupportsvirtualfilesjob.cpp
-    comm/guijobs/syncsetrootpinstatejob.h comm/guijobs/syncsetrootpinstatejob.cpp
 
     comm/guijobs/blacklistednodelistjob.h comm/guijobs/blacklistednodelistjob.cpp
     comm/guijobs/blacklistednodesetlistjob.h comm/guijobs/blacklistednodesetlistjob.cpp
@@ -107,7 +107,7 @@ set(server_SRCS
     comm/guijobs/utilitycancellogtosupportjob.h comm/guijobs/utilitycancellogtosupportjob.cpp
     comm/guijobs/utilitygetlogestimatedsizejob.h comm/guijobs/utilitygetlogestimatedsizejob.cpp
     comm/guijobs/utilityquitjob.h comm/guijobs/utilityquitjob.cpp
-    comm/guijobs/utilitydisplayclientreportjob.h comm/guijobs/utilitydisplayclientreportjob.cpp
+    comm/guijobs/utilitysendappstarttracejob.h comm/guijobs/utilitysendappstarttracejob.cpp
     
     comm/guijobs/updaterversioninfojob.h comm/guijobs/updaterversioninfojob.cpp
     comm/guijobs/updaterstatejob.h comm/guijobs/updaterstatejob.cpp
@@ -118,8 +118,10 @@ set(server_SRCS
     comm/guijobs/signaluserupdatedjob.h comm/guijobs/signaluserupdatedjob.cpp
     comm/guijobs/signaluserremovedjob.h comm/guijobs/signaluserremovedjob.cpp
     comm/guijobs/signalaccountaddedjob.h comm/guijobs/signalaccountaddedjob.cpp
+    comm/guijobs/signalaccountupdatedjob.h comm/guijobs/signalaccountupdatedjob.cpp
     comm/guijobs/signalaccountremovedjob.h comm/guijobs/signalaccountremovedjob.cpp
     comm/guijobs/signaldriveaddedjob.h comm/guijobs/signaldriveaddedjob.cpp
+    comm/guijobs/signaldriveupdatedjob.h comm/guijobs/signaldriveupdatedjob.cpp
     comm/guijobs/signaldriveremovedjob.h comm/guijobs/signaldriveremovedjob.cpp
     comm/guijobs/signalsyncaddedjob.h comm/guijobs/signalsyncaddedjob.cpp
     comm/guijobs/signalsyncremovedjob.h comm/guijobs/signalsyncremovedjob.cpp
@@ -128,6 +130,14 @@ set(server_SRCS
     comm/guijobs/signalsyncupdatedjob.h comm/guijobs/signalsyncupdatedjob.cpp
     comm/guijobs/signalerroraddedjob.h comm/guijobs/signalerroraddedjob.cpp
     comm/guijobs/signalerrorremovedjob.h comm/guijobs/signalerrorremovedjob.cpp
+    comm/guijobs/signalupdatershowdialogjob.h comm/guijobs/signalupdatershowdialogjob.cpp
+    comm/guijobs/signalupdaterstatechangedjob.h comm/guijobs/signalupdaterstatechangedjob.cpp
+    comm/guijobs/signalutilityshownotificationjob.h comm/guijobs/signalutilityshownotificationjob.cpp
+    comm/guijobs/signalutilityshowsettingsjob.h comm/guijobs/signalutilityshowsettingsjob.cpp
+    comm/guijobs/signalutilityshowsynthesisjob.h comm/guijobs/signalutilityshowsynthesisjob.cpp
+    comm/guijobs/signalutilityloguploadstatejob.h comm/guijobs/signalutilityloguploadstatejob.cpp
+    comm/guijobs/signalutilityquitjob.h comm/guijobs/signalutilityquitjob.cpp
+
     migration/migrationparams.h migration/migrationparams.cpp
     requests/serverrequests.h requests/serverrequests.cpp
     requests/offlinefilessizeestimator.h requests/offlinefilessizeestimator.cpp

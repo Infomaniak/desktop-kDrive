@@ -24,7 +24,7 @@ import kDriveResources
 import Lottie
 
 final class PreloadingViewController: NSViewController {
-    private var animationView = ThemedAnimationView()
+    private var animationView = NSThemedAnimationView()
 
     override func viewDidLoad() {
         super.viewDidLoad()

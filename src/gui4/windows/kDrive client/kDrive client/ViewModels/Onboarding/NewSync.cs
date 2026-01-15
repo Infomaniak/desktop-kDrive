@@ -28,7 +28,6 @@ namespace Infomaniak.kDrive.ViewModels
         private string _remotePath = "";
         private NodeId _remoteNodeId = "";
         private SyncType _syncType = SyncType.Unknown;
-        private bool _supportOnlineMode = true;
         private IDrive? drive;
 
         private ObservableCollection<NodeId> _excludedNodeIds = new ObservableCollection<NodeId>();
@@ -59,11 +58,7 @@ namespace Infomaniak.kDrive.ViewModels
             get => _syncType;
             set => SetPropertyInUIThread(ref _syncType, value);
         }
-        public bool SupportOnlineMode
-        {
-            get => _supportOnlineMode;
-            set => SetPropertyInUIThread(ref _supportOnlineMode, value);
-        }
+
         public ObservableCollection<NodeId> ExcludedNodeIds
         {
             get => _excludedNodeIds;

@@ -16,24 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Foundation
-import InfomaniakDI
+#pragma once
 
-public protocol ServerBridgeable: Sendable {
-    func getConnectedUser() async -> UIUser?
-}
+#include "server/comm/guijobs/abstractguijob.h"
 
-public struct ServerBridge: ServerBridgeable {
-    @LazyInjectService private var coherentCache: CoherentCache
+namespace KDC {
 
-    public init() {}
+class SignalUtilityQuitJob : public AbstractGuiJob {
+    public:
+        explicit SignalUtilityQuitJob();
 
-    public func getConnectedUser() async -> UIUser? {
-        // TODO: fetch user form server as well, cache only for now
-        guard let user = await coherentCache.getFirstAvailableUser() else {
-            return nil
-        }
+    private:
+        ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
+        ExitInfo serializeOutputParms() override { return ExitCode::Ok; };
+        ExitInfo process() override { return ExitCode::Ok; }
 
-        return UIUser(user: user)
-    }
-}
+        friend class TestGuiCommChannel;
+};
+
+} // namespace KDC

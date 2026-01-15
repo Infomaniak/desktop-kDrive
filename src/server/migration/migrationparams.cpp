@@ -130,9 +130,7 @@ LogLevel MigrationParams::intToLogLevel(int log) {
 }
 
 VirtualFileMode MigrationParams::modeFromString(const QString &str) {
-    if (str == "suffix") {
-        return VirtualFileMode::Suffix;
-    } else if (str == "wincfapi") {
+    if (str == "wincfapi") {
         return VirtualFileMode::Win;
     } else if (str == "mac") {
         return VirtualFileMode::Mac;

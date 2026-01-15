@@ -19,6 +19,10 @@
 import Foundation
 
 struct DriveInfoSignal: Codable, Sendable {
+    let driveInfo: DriveInfoSignalMetadata
+}
+
+struct DriveInfoSignalMetadata: Codable, Sendable {
     let dbId: Int32
     let id: Int32
     let accountDbId: Int32
@@ -31,7 +35,7 @@ struct DriveInfoSignal: Codable, Sendable {
     let accessDenied: Bool
 }
 
-extension DriveInfoSignal {
+extension DriveInfoSignalMetadata {
     func asDrive(accountId: Int32, userDbId: Int32, synchros: IndexedSynchros = [:]) -> Drive {
         Drive(driveDbId: dbId,
               driveId: id,

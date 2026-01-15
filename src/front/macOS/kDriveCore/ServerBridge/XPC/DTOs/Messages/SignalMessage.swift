@@ -32,24 +32,19 @@ public struct SignalMessage<Body: Codable>: Codable {
 
     public let id: Int32
     public let num: SignalNum
-    private let params: SignalParams<Body>?
-    public var body: Body? {
-        return params?.userInfo
-    }
+    public let body: Body
 
     public init(id: Int32,
                 num: SignalNum,
-                params: SignalParams<Body>?) {
+                body: Body) {
         self.id = id
         self.num = num
-        self.params = params
+        self.body = body
     }
-}
 
-public struct SignalParams<Body: Codable>: Codable {
-    public let userInfo: Body
-
-    public init(body: Body) {
-        userInfo = body
+    enum CodingKeys: String, CodingKey {
+        case id
+        case num
+        case body = "params"
     }
 }

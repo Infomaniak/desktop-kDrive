@@ -65,9 +65,6 @@ class PARMS_EXPORT Parameters {
         inline bool darkTheme() const { return _darkTheme; }
         inline void setDarkTheme(bool darkTheme) { _darkTheme = darkTheme; }
 
-        inline bool showShortcuts() const { return _showShortcuts; }
-        inline void setShowShortcuts(bool showShortcuts) { _showShortcuts = showShortcuts; }
-
         inline const std::string &updateFileAvailable() const { return _updateFileAvailable; }
         inline void setUpdateFileAvailable(const std::string &updateFileAvailable) { _updateFileAvailable = updateFileAvailable; }
 
@@ -121,7 +118,6 @@ class PARMS_EXPORT Parameters {
         bool _purgeOldLogs{true};
         ProxyConfig _proxyConfig;
         bool _darkTheme{false};
-        bool _showShortcuts{true};
         std::string _updateFileAvailable;
         std::string _updateTargetVersion;
         std::string _updateTargetVersionString;

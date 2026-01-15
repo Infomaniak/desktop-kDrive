@@ -12,7 +12,7 @@ namespace Infomaniak.kDrive.ViewModels
     {
         public Settings()
         {
-            AppVersion = new AppVersion { Tag = "3.7.6", BuildVersion = "20250908" }; // TODO: Remove hardcoded version once loaded from the app.
+            AppVersion = new AppVersion { Tag = "3.7.6", BuildVersion = 1 }; // TODO: Remove hardcoded version once loaded from the app.
         }
         private Language _language = Language.SystemDefault;
         private bool _autoStart = false;
@@ -23,7 +23,6 @@ namespace Infomaniak.kDrive.ViewModels
         private bool _logEnbaled = false;
         private bool _extendedLogEnabled = false;
         private ProxyConfig _proxyConfig = new ProxyConfig();
-        private bool _showShortcuts;
         private bool _matomoEnabled;
         private bool _sentryEnabled;
 
@@ -72,11 +71,6 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _proxyConfig;
             set => SetPropertyInUIThread(ref _proxyConfig, value);
-        }
-        public bool ShowShortcuts
-        {
-            get => _showShortcuts;
-            set => SetPropertyInUIThread(ref _showShortcuts, value);
         }
         public AppVersion? AppVersion
         {
