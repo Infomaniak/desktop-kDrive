@@ -65,7 +65,7 @@ public final class ObservedSynchro: ObservableObject {
     public var projectedValue: ObservedSynchro { self }
 }
 
-public extension AnyPublisher where Output == [Int32: User], Failure == Never {
+public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
     func synchroEventPublisher(
         userDbId: Int32,
         accountDbId: Int32,
@@ -119,7 +119,7 @@ public extension AnyPublisher where Output == [Int32: User], Failure == Never {
         )
         .map { event -> Synchro? in
             switch event {
-            case .update(let synchro): return synchro
+            case let .update(synchro): return synchro
             case .removed: return nil
             }
         }
@@ -131,7 +131,7 @@ public extension AnyPublisher where Output == [Int32: User], Failure == Never {
         synchroEventPublisher(synchroDbId: synchroDbId)
             .map { event -> Synchro? in
                 switch event {
-                case .update(let synchro): return synchro
+                case let .update(synchro): return synchro
                 case .removed: return nil
                 }
             }

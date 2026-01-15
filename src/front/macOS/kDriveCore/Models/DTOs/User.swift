@@ -19,7 +19,7 @@
 import Foundation
 import OrderedCollections
 
-public typealias IndexedUsers = [Int32: User]
+public typealias IndexedUsers = OrderedDictionary<Int32, User>
 
 public struct User: Identifiable, Hashable, Sendable {
     public var id: Int32 {
