@@ -17,6 +17,7 @@
  */
 
 @testable import kDriveCore
+import OrderedCollections
 
 extension Drive {
     static func some(driveDbId: Int32,

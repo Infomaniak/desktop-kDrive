@@ -18,8 +18,9 @@
 
 import Collections
 import Foundation
+import OrderedCollections
 
-public typealias IndexedSynchros = [Int32: Synchro]
+public typealias IndexedSynchros = OrderedDictionary<Int32, Synchro>
 
 public struct Synchro: Identifiable, Hashable, Sendable {
     public var id: Int32 {
