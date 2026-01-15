@@ -19,6 +19,7 @@
 import Combine
 import Foundation
 import InfomaniakDI
+import OrderedCollections
 
 @MainActor
 @propertyWrapper

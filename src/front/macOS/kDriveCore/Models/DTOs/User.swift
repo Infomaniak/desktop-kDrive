@@ -17,6 +17,7 @@
  */
 
 import Foundation
+import OrderedCollections
 
 public typealias IndexedUsers = [Int32: User]
 

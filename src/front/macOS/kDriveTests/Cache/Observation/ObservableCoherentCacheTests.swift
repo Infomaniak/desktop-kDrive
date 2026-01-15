@@ -19,6 +19,7 @@
 import Combine
 import Foundation
 import kDriveCore
+import OrderedCollections
 import XCTest
 
 final class ObservableCoherentCacheTests: XCTestCase {
