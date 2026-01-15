@@ -87,7 +87,7 @@ extension SignalNum: CustomStringConvertible {
             return "UTILITY_QUIT"
         case .EnumEnd:
             return "EnumEnd"
-        default:
+        @unknown default:
             return "SignalNum(rawValue: \(rawValue))"
         }
     }
