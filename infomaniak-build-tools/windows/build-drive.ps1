@@ -1,4 +1,4 @@
-<#
+﻿<#
  Infomaniak kDrive - Desktop App
  Copyright (C) 2023-2025 Infomaniak Network SA
 
@@ -606,7 +606,7 @@ function Create-MSI-Package {
     $msiPackageFolderPath = "$msiInstallerFolderPath\bin\x64\Release\en-US"
 	
     Write-Host "Executing the dotnet build command ..."
-	dotnet build -v diag "$msiInstallerFolderPath\kDriveInstaller.sln" /p:WixCabinetThreadCount=1 /p:Configuration="Release" /p:Platform="x64" /p:OutputName=$appName
+	dotnet build -v diag "$msiInstallerFolderPath\kDriveInstaller.sln" /p:WixUseCompression=false /p:WixCabinetThreadCount=1 /p:Configuration="Release" /p:Platform="x64" /p:OutputName=$appName
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 	Move-Item -Path "$msiPackageFolderPath\$appName.msi" -Destination "$contentPath"
