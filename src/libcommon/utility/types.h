@@ -631,6 +631,13 @@ struct VersionInfo {
             downloadUrl.clear();
         }
 
+        static const std::string versionInfoChannel;
+        static const std::string versionInfoTag;
+        static const std::string versionInfoBuildVersion;
+        static const std::string versionInfoBuildMinOsVersion;
+        static const std::string versionInfoDownloadUrl;
+
+        void fromDynamicStruct(const Poco::DynamicStruct &);
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
 
 

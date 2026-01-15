@@ -33,11 +33,13 @@
 #include "jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.h"
 
 #include "server/comm/guijobs/signalaccountaddedjob.h"
+#include "server/comm/guijobs/signalaccountupdatedjob.h"
+#include "server/comm/guijobs/signalaccountremovedjob.h"
 #include "server/comm/guijobs/signaluseraddedjob.h"
 #include "server/comm/guijobs/signaluserupdatedjob.h"
 #include "server/comm/guijobs/signaluserremovedjob.h"
-#include "server/comm/guijobs/signalaccountremovedjob.h"
 #include "server/comm/guijobs/signaldriveaddedjob.h"
+#include "server/comm/guijobs/signaldriveupdatedjob.h"
 #include "server/comm/guijobs/signaldriveremovedjob.h"
 #include "server/comm/guijobs/signalsyncaddedjob.h"
 #include "server/comm/guijobs/signalsyncremovedjob.h"
@@ -46,6 +48,8 @@
 #include "server/comm/guijobs/signalerroraddedjob.h"
 #include "server/comm/guijobs/signalerrorremovedjob.h"
 #include "server/comm/guijobs/signalsyncprogressinfo.h"
+#include "server/comm/guijobs/signalupdatershowdialogjob.h"
+#include "server/comm/guijobs/signalupdaterstatechangedjob.h"
 #include "server/comm/guijobs/signalutilityshownotificationjob.h"
 #include "server/comm/guijobs/signalutilityshowsettingsjob.h"
 #include "server/comm/guijobs/signalutilityshowsynthesisjob.h"
@@ -2457,8 +2461,10 @@ void AppServer::onShowWindowsUpdateDialog() {
     if (_updateManager) {
         QByteArray params;
         QDataStream paramsStream(&params, QIODevice::WriteOnly);
-        paramsStream << _updateManager.get()->versionInfo();
+        paramsStream << _updateManager->versionInfo();
         OldCommServer::instance()->sendSignal(SignalNum::UPDATER_SHOW_DIALOG, params);
+        if (_commManager)
+            _commManager->sendGuiSignal(std::make_shared<SignalUpdaterShowDialogJob>(_updateManager->versionInfo()));
     } else {
         assert(false);
     }
@@ -2469,6 +2475,7 @@ void AppServer::onUpdateStateChanged(const UpdateState state) {
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << state;
     OldCommServer::instance()->sendSignal(SignalNum::UPDATER_STATE_CHANGED, params);
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalUpdaterStateChangedJob>(state));
 }
 
 void AppServer::onCleanup() {
@@ -2673,11 +2680,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 
@@ -2839,10 +2846,9 @@ ExitInfo AppServer::updateUserInfo(User &user) {
                         return ExitCode::DbError;
                     }
 
-                    if (driveList.size() == 0) {
-                        const auto exitInfo = ServerRequests::deleteAccount(account.dbId());
-                        if (!exitInfo) {
-                            LOG_WARN(_logger, "Error in Requests::deleteAccount: " << exitInfo);
+                    if (driveList.empty()) {
+                        if (const auto exitInfo = ServerRequests::deleteAccount(account.dbId()); !exitInfo) {
+                            LOG_WARN(_logger, "Error in Requests::deleteAccount: code=" << exitInfo);
                             return exitInfo;
                         }
                         sendAccountRemoved(account.accountId());
@@ -2851,10 +2857,11 @@ ExitInfo AppServer::updateUserInfo(User &user) {
                 }
             }
 
-            if (updated) {
+            if (updated || quotaUpdated) {
                 DriveInfo driveInfo;
                 ServerRequests::driveToDriveInfo(drive, driveInfo);
-                sendDriveUpdated(driveInfo);
+                if (updated && !quotaUpdated) sendDriveUpdated(driveInfo);
+                if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalDriveUpdatedJob>(driveInfo));
             }
 
             if (accountRemoved) {
@@ -4287,6 +4294,7 @@ void AppServer::sendAccountUpdated(const AccountInfo &accountInfo) {
     paramsStream << accountInfo;
 
     OldCommServer::instance()->sendSignal(SignalNum::ACCOUNT_UPDATED, params, id);
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalAccountUpdatedJob>(accountInfo));
 }
 
 void AppServer::sendAccountRemoved(int accountDbId) {
@@ -4319,6 +4327,7 @@ void AppServer::sendDriveUpdated(const DriveInfo &driveInfo) {
     paramsStream << driveInfo;
 
     OldCommServer::instance()->sendSignal(SignalNum::DRIVE_UPDATED, params, id);
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalDriveUpdatedJob>(driveInfo));
 }
 
 void AppServer::sendDriveQuotaUpdated(int driveDbId, qint64 total, qint64 used) {

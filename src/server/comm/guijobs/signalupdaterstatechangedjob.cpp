@@ -16,26 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "signalupdaterstatechangedjob.h"
+#include "libcommon/utility/utility.h"
+#include "libcommon/comm.h"
 
-#include "server/comm/guijobs/abstractguijob.h"
-#include "libcommon/info/userinfo.h"
+// Output parameters keys
+static const auto outParamsUpdateState = "updateState";
 
 namespace KDC {
 
-class SignalUserUpdatedJob : public AbstractGuiJob {
-    public:
-        explicit SignalUserUpdatedJob(const UserInfo &userInfo);
+SignalUpdaterStateChangedJob::SignalUpdaterStateChangedJob(const UpdateState updateState) :
+    _updateState(updateState) {
+    _signalNum = SignalNum::UPDATER_STATE_CHANGED;
+}
 
-    private:
-        // Output parameters
-        UserInfo _userInfo;
+ExitInfo SignalUpdaterStateChangedJob::serializeOutputParms() {
+    writeParamValue(outParamsUpdateState, _updateState);
 
-        ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
-        ExitInfo serializeOutputParms() override;
-        ExitInfo process() override { return ExitCode::Ok; }
-
-        friend class TestGuiCommChannel;
-};
+    return ExitCode::Ok;
+}
 
 } // namespace KDC

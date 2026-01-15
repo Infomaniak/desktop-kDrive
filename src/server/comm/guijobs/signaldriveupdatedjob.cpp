@@ -16,26 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "signaldriveupdatedjob.h"
+#include "libcommon/utility/utility.h"
+#include "libcommon/comm.h"
 
-#include "server/comm/guijobs/abstractguijob.h"
-#include "libcommon/info/userinfo.h"
+// Output parameters keys
+static const auto outParamsDriveInfo = "driveInfo";
 
 namespace KDC {
 
-class SignalUserUpdatedJob : public AbstractGuiJob {
-    public:
-        explicit SignalUserUpdatedJob(const UserInfo &userInfo);
+SignalDriveUpdatedJob::SignalDriveUpdatedJob(DriveInfo driveInfo) :
+    _driveInfo(std::move(driveInfo)) {
+    _signalNum = SignalNum::DRIVE_UPDATED;
+}
 
-    private:
-        // Output parameters
-        UserInfo _userInfo;
+ExitInfo SignalDriveUpdatedJob::serializeOutputParms() {
+    writeParamValue(outParamsDriveInfo, _driveInfo, info2DynamicVar<DriveInfo>);
 
-        ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
-        ExitInfo serializeOutputParms() override;
-        ExitInfo process() override { return ExitCode::Ok; }
-
-        friend class TestGuiCommChannel;
-};
+    return ExitCode::Ok;
+}
 
 } // namespace KDC

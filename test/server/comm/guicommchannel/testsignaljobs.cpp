@@ -16,6 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "comm/guijobs/signaluserupdatedjob.h"
+#include "comm/guijobs/signalaccountupdatedjob.h"
+#include "comm/guijobs/signaldriveupdatedjob.h"
+#include "comm/guijobs/signalupdatershowdialogjob.h"
+#include "comm/guijobs/signalupdaterstatechangedjob.h"
 #include "comm/guijobs/signalutilityshownotificationjob.h"
 #include "comm/guijobs/signalutilityshowsettingsjob.h"
 #include "comm/guijobs/signalutilityshowsynthesisjob.h"
@@ -34,6 +39,68 @@ void TestGuiCommChannel::checkSignalCommonMethods(AbstractGuiJob &guiJob, const 
     CPPUNIT_ASSERT(guiJob.deserializeInputParms());
     CPPUNIT_ASSERT(guiJob.process());
     CPPUNIT_ASSERT(guiJob.serializeOutputParms());
+}
+
+void TestGuiCommChannel::testSignalAccountUpdatedJob() {
+    AccountInfo accountInfo(1, 666);
+    accountInfo.setAccountId(1001);
+    SignalAccountUpdatedJob job(accountInfo);
+    checkSignalCommonMethods(job, SignalNum::ACCOUNT_UPDATED);
+    CPPUNIT_ASSERT(accountInfo == job._accountInfo);
+}
+
+void TestGuiCommChannel::testSignalDriveUpdatedJob() {
+    DriveInfo driveInfo;
+    driveInfo.setDbId(1);
+    driveInfo.setId(2);
+    driveInfo.setAccountDbId(3);
+    driveInfo.setAdmin(true);
+    driveInfo.setAccessDenied(true);
+    driveInfo.setMaintenance(true);
+    driveInfo.setSize(1000000000);
+    driveInfo.setUsedSize(50000000);
+    SignalDriveUpdatedJob job(driveInfo);
+
+    checkSignalCommonMethods(job, SignalNum::DRIVE_UPDATED);
+    CPPUNIT_ASSERT(driveInfo == job._driveInfo);
+}
+
+void TestGuiCommChannel::testSignalUpdaterShowDialogJob() {
+    VersionInfo versionInfo;
+    versionInfo.channel = VersionChannel::Beta;
+    versionInfo.tag = "4.0.0";
+    versionInfo.buildVersion = 1;
+    versionInfo.buildMinOsVersion = "15.1";
+    versionInfo.downloadUrl = "https://downloads/kDrive/latest";
+
+    SignalUpdaterShowDialogJob job(versionInfo);
+
+    checkSignalCommonMethods(job, SignalNum::UPDATER_SHOW_DIALOG);
+    CPPUNIT_ASSERT(versionInfo == job._versionInfo);
+}
+
+void TestGuiCommChannel::testSignalUpdaterStateChangedJob() {
+    const auto state = UpdateState::Checking;
+
+    SignalUpdaterStateChangedJob job(state);
+
+    checkSignalCommonMethods(job, SignalNum::UPDATER_STATE_CHANGED);
+    CPPUNIT_ASSERT(state == job._updateState);
+}
+
+void TestGuiCommChannel::testSignalUserUpdatedJob() {
+    UserInfo userInfo;
+    userInfo.setDbId(1);
+    userInfo.setUserId(2);
+    userInfo.setAvatar(QImage{});
+    userInfo.setConnected(true);
+    userInfo.setCredentialsAsked(true);
+    userInfo.setIsStaff(true);
+
+    SignalUserUpdatedJob job(userInfo);
+
+    checkSignalCommonMethods(job, SignalNum::USER_UPDATED);
+    CPPUNIT_ASSERT(userInfo == job._userInfo);
 }
 
 void TestGuiCommChannel::testSignalUtilityShowNotificationJob() {

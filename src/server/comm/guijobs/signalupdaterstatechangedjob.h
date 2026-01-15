@@ -19,17 +19,16 @@
 #pragma once
 
 #include "server/comm/guijobs/abstractguijob.h"
-#include "libcommon/info/userinfo.h"
 
 namespace KDC {
 
-class SignalUserUpdatedJob : public AbstractGuiJob {
+class SignalUpdaterStateChangedJob : public AbstractGuiJob {
     public:
-        explicit SignalUserUpdatedJob(const UserInfo &userInfo);
+        explicit SignalUpdaterStateChangedJob(UpdateState updateState);
 
     private:
         // Output parameters
-        UserInfo _userInfo;
+        UpdateState _updateState;
 
         ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
         ExitInfo serializeOutputParms() override;
