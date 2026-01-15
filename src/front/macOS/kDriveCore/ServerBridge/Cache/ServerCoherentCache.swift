@@ -283,6 +283,20 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         try updateDrive(drive: drive)
     }
 
+    // MARK: - Errors
+
+    public func addOrUpdateError(_ error: ErrorInfo) async throws {
+    }
+
+    private func addOrUpdateServerError(_ error: ErrorInfo) async throws {
+    }
+
+    public func removeServerError(_ errorDbId: Int32) async {
+    }
+
+    public func clearServerError() async {
+    }
+
     // MARK: - Observation
 
     private func notifyUpdate() {
