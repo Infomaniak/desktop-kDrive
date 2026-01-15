@@ -19,6 +19,10 @@
 import Foundation
 
 struct ErrorInfoSignal: Codable, Sendable {
+    let errorInfo: ErrorInfoMetadata
+}
+
+struct ErrorInfoMetadata: Codable, Sendable {
     let dbId: Int32
     let syncDbId: Int32
     let time: Int64
@@ -32,8 +36,8 @@ struct ErrorInfoSignal: Codable, Sendable {
     let nodeType: KDC.NodeType
     @Base64CodedString var path: String
     let conflictType: KDC.ConflictType
-    let inconsistencyType: KDC.InconsistencyType
     let cancelType: KDC.CancelType
+    let inconsistencyType: KDC.InconsistencyType
     @Base64CodedString var destinationPath: String
     let autoResolved: Bool
 }
