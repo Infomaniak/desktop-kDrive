@@ -70,6 +70,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task<GetGoodPathResult?> GetGoodPathForNewSync(IDrive? drive, string desiredPath, CancellationToken cancellationToken);
         Task<bool?> IsPathValidForNewSync(string path, CancellationToken cancellationToken);
 
+        Task<UInt64?> GetSyncOfflineFilesSize(DbId syncDbId, CancellationToken cancellationToken);
+
         // Node-related requests
         Task<List<Node>?> GetSubFolders(DbId userDbId, DriveId driveId, NodeId parentNodeId /*Leave empty for root node*/, CancellationToken cancellationToken);
         Task<Node?> GetNodeInfo(DbId userDbId, DriveId driveId, NodeId nodeId, CancellationToken cancellationToken);
