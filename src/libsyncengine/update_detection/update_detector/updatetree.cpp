@@ -28,7 +28,7 @@
 namespace KDC {
 
 UpdateTree::UpdateTree(ReplicaSide side, const DbNode &dbNode) :
-    _nodes(std::unordered_map<NodeId, std::shared_ptr<Node>>()),
+    _validNodes(std::unordered_map<NodeId, std::shared_ptr<Node>>()),
     _rootNode(std::shared_ptr<Node>(
             new Node(dbNode.nodeId(), side, (side == ReplicaSide::Local ? dbNode.nameLocal() : dbNode.nameRemote()),
                      NodeType::Directory, {}, (side == ReplicaSide::Local ? dbNode.nodeIdLocal() : dbNode.nodeIdRemote()),
@@ -45,7 +45,7 @@ void UpdateTree::insertNode(std::shared_ptr<Node> node) {
         return;
     }
 
-    _nodes[*node->id()] = node;
+    _validNodes[*node->id()] = node;
 }
 
 bool UpdateTree::deleteNode(std::shared_ptr<Node> node, bool deleteNodeLater, int depth) {
@@ -72,7 +72,7 @@ bool UpdateTree::deleteNode(std::shared_ptr<Node> node, bool deleteNodeLater, in
     } else {
         // Remove node from tree
         node->parentNode()->deleteChildren(node);
-        _nodes.erase(*node->id());
+        _validNodes.erase(*node->id());
     }
 
     return true;
@@ -143,8 +143,8 @@ std::shared_ptr<Node> UpdateTree::getNodeByPathNormalized(const SyncPath &path) 
 }
 
 std::shared_ptr<Node> UpdateTree::getNodeById(const NodeId &nodeId) {
-    auto it = _nodes.find(nodeId);
-    if (it != _nodes.end()) {
+    auto it = _validNodes.find(nodeId);
+    if (it != _validNodes.end()) {
         return it->second;
     }
     return nullptr;
@@ -155,8 +155,8 @@ bool UpdateTree::exists(const NodeId &id) {
 }
 
 bool UpdateTree::isAncestor(const NodeId &nodeId, const NodeId &ancestorNodeId) const {
-    auto it = _nodes.find(nodeId);
-    if (it == _nodes.end()) {
+    auto it = _validNodes.find(nodeId);
+    if (it == _validNodes.end()) {
         return false;
     }
 
@@ -176,7 +176,7 @@ bool UpdateTree::isAncestor(const NodeId &nodeId, const NodeId &ancestorNodeId) 
 void UpdateTree::markAllNodesUnprocessed() {
     startUpdate();
 
-    for (auto &node: _nodes) {
+    for (auto &node: _validNodes) {
         node.second->setStatus(NodeStatus::Unprocessed);
     }
 }
@@ -210,21 +210,21 @@ bool UpdateTree::updateNodeId(std::shared_ptr<Node> node, const NodeId &newId) {
                                                        << Utility::formatSyncName(node->name()) << L".");
     }
 
-    if (!oldId.empty() && _nodes.contains(oldId)) {
-        auto nodeRef = _nodes.extract(oldId);
+    if (!oldId.empty() && _validNodes.contains(oldId)) {
+        auto nodeRef = _validNodes.extract(oldId);
         nodeRef.key() = newId;
-        _nodes.insert(std::move(nodeRef));
+        _validNodes.insert(std::move(nodeRef));
     }
     return true;
 }
 
 void UpdateTree::clear() {
-    std::unordered_map<NodeId, std::shared_ptr<Node>>::iterator it = _nodes.begin();
-    while (it != _nodes.end()) {
+    std::unordered_map<NodeId, std::shared_ptr<Node>>::iterator it = _validNodes.begin();
+    while (it != _validNodes.end()) {
         it->second->clear();
         it++;
     }
-    _nodes.clear();
+    _validNodes.clear();
     _previousIdSet.clear();
     init();
 }
