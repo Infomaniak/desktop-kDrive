@@ -23,7 +23,6 @@ struct UserSignalHandler {
     private let decoder = JSONDecoder()
     @LazyInjectService private var coherentCache: CoherentCache
 
-
     func handleUser(_ signal: Data) async throws {
         guard let userInfoSignal = try? decoder.decode(SignalMessage<UserInfoSignal>.self, from: signal) else {
             throw SignalError.unableToGetUserFromSignal
