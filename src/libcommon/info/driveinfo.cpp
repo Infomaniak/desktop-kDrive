@@ -33,8 +33,6 @@ static const auto driveInfoPackIsFree = "isFree";
 
 namespace KDC {
 
-DriveInfo::DriveInfo() {}
-
 void DriveInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, driveInfoDbId, _dbId);
     CommonUtility::writeValueToStruct(dstruct, driveInfoId, _id);

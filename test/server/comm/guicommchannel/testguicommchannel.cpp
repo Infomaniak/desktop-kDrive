@@ -473,40 +473,61 @@ void TestGuiCommChannel::testDriveInfoListJob() {
     // "drive1111" <=> "ZHJpdmUxMTEx"
     // "drive2222" <=> "ZHJpdmUyMjIy"
 
+    Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{R"({ "id": 1,)"
-                        R"( "num": )" +
-                        std::to_string(toInt(RequestNum::DRIVE_INFOLIST)) +
-                        R"(,)"
-                        R"( "params": { } })"};
-#else
-    // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::DRIVE_INFOLIST)) +
-                        R"(,)"
-                        R"( "params": { } })"};
-
-    // Callback expected answer
-    const auto cbkAnswerStr{
-            R"({"cause":0,"code":0,"id":1,"params":{"driveInfoList":[)"
-            R"({"accessDenied":false,"accountDbId":1,"admin":true,"color":"I2FhYmJjYw==","dbId":1,"id":1111,"locked":false,"maintenance":false,"name":"ZHJpdmUxMTEx","notifications":true},)"
-            R"({"accessDenied":true,"accountDbId":1,"admin":false,"color":"I2RkZWVmZg==","dbId":2,"id":2222,"locked":true,"maintenance":true,"name":"ZHJpdmUyMjIy","notifications":false}]}})"};
+    (void) queryObj.set("id", 1);
 #endif
+    (void) queryObj.set("num", toInt(RequestNum::DRIVE_INFOLIST));
+    Poco::JSON::Object queryParamsObj;
+    (void) queryObj.set("params", queryParamsObj);
+    const auto queryStr = testcommhelpers::stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+    Poco::JSON::Object paramsObj;
+    Poco::JSON::Array driveInfoArray;
+    Poco::JSON::Object driveObj1;
+    (void) driveObj1.set("accessDenied", false);
+    (void) driveObj1.set("accountDbId", 1);
+    (void) driveObj1.set("admin", true);
+    (void) driveObj1.set("color", "I2FhYmJjYw==");
+    (void) driveObj1.set("dbId", 1);
+    (void) driveObj1.set("id", 1111);
+    (void) driveObj1.set("locked", false);
+    (void) driveObj1.set("maintenance", false);
+    (void) driveObj1.set("name", "ZHJpdmUxMTEx");
+    (void) driveObj1.set("notifications", true);
+    (void) driveObj1.set("isFree", false);
+    (void) driveInfoArray.add(driveObj1);
+
+    Poco::JSON::Object driveObj2;
+    (void) driveObj2.set("accessDenied", true);
+    (void) driveObj2.set("accountDbId", 1);
+    (void) driveObj2.set("admin", false);
+    (void) driveObj2.set("color", "I2RkZWVmZg==");
+    (void) driveObj2.set("dbId", 2);
+    (void) driveObj2.set("id", 2222);
+    (void) driveObj2.set("locked", true);
+    (void) driveObj2.set("maintenance", true);
+    (void) driveObj2.set("name", "ZHJpdmUyMjIy");
+    (void) driveObj2.set("notifications", false);
+    (void) driveObj2.set("isFree", true);
+    (void) driveInfoArray.add(driveObj2);
+    (void) paramsObj.set("driveInfoList", driveInfoArray);
+
+    (void) answerObj.set("params", paramsObj);
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::DRIVE_INFOLIST));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
     // Job expected answer
-    const auto answerStr{
-            R"({ "cause": 0,)"
-            R"( "code": 0,)"
-            R"( "id": 1,)"
-            R"( "num": )" +
-            std::to_string(toInt(RequestNum::DRIVE_INFOLIST)) +
-            R"(,)"
-            R"( "params": {)"
-            R"( "driveInfoList": [)"
-            R"( { "accessDenied": false, "accountDbId": 1, "admin": true, "color": "I2FhYmJjYw==", "dbId": 1, "id": 1111, "locked": false, "maintenance": false, "name": "ZHJpdmUxMTEx", "notifications": true },)"
-            R"( { "accessDenied": true, "accountDbId": 1, "admin": false, "color": "I2RkZWVmZg==", "dbId": 2, "id": 2222, "locked": true, "maintenance": true, "name": "ZHJpdmUyMjIy", "notifications": false } ] },)"
-            R"( "type": )" +
-            std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+    const auto answerStr = testcommhelpers::stringifyAnswerObj(answerObjWithNumAndType);
 
+    // Job expected answer
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto driveInfoListJob = std::dynamic_pointer_cast<DriveInfoListJob>(job);
 
@@ -521,6 +542,7 @@ void TestGuiCommChannel::testDriveInfoListJob() {
         di1.setMaintenance(false);
         di1.setLocked(false);
         di1.setAccessDenied(false);
+        di1.setPackIsFree(false);
 
         DriveInfo di2;
         di2.setDbId(2);
@@ -533,6 +555,7 @@ void TestGuiCommChannel::testDriveInfoListJob() {
         di2.setMaintenance(true);
         di2.setLocked(true);
         di2.setAccessDenied(true);
+        di2.setPackIsFree(true);
 
         driveInfoListJob->_driveInfoList = {di1, di2};
     };
@@ -540,6 +563,7 @@ void TestGuiCommChannel::testDriveInfoListJob() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else
+    const auto cbkAnswerStr = testcommhelpers::stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
@@ -551,36 +575,42 @@ void TestGuiCommChannel::testDriveUpdateJob() {
     // "drive1111" <=> "ZHJpdmUxMTEx"
     // "drive2222" <=> "ZHJpdmUyMjIy"
 
+    Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{
-            R"({ "id": 1,)"
-            R"( "num": )" +
-            std::to_string(toInt(RequestNum::DRIVE_UPDATE)) +
-            R"(,)"
-            R"( "params": {)"
-            R"( "driveInfo": { "accessDenied": false, "accountDbId": 1, "admin": true, "color": "I2FhYmJjYw==", "dbId": 1, "id": 1111, "locked": false, "maintenance": false, "name": "ZHJpdmUxMTEx", "notifications": true } } })"};
-#else
-    // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{
-            R"({ "num": )" + std::to_string(toInt(RequestNum::DRIVE_UPDATE)) +
-            R"(,)"
-            R"( "params": {)"
-            R"( "driveInfo": { "accessDenied": false, "accountDbId": 1, "admin": true, "color": "I2FhYmJjYw==", "dbId": 1, "id": 1111, "locked": false, "maintenance": false, "name": "ZHJpdmUxMTEx", "notifications": true } } })"};
-
-    // Callback expected answer
-    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{}})"};
+    (void) queryObj.set("id", 1);
 #endif
+    (void) queryObj.set("num", toInt(RequestNum::DRIVE_UPDATE));
+    Poco::JSON::Object queryParamsObj;
+    Poco::JSON::Object querdriveInfoObj;
+    (void) querdriveInfoObj.set("accessDenied", false);
+    (void) querdriveInfoObj.set("accountDbId", 1);
+    (void) querdriveInfoObj.set("admin", true);
+    (void) querdriveInfoObj.set("color", "I2FhYmJjYw==");
+    (void) querdriveInfoObj.set("dbId", 1);
+    (void) querdriveInfoObj.set("id", 1111);
+    (void) querdriveInfoObj.set("locked", false);
+    (void) querdriveInfoObj.set("maintenance", false);
+    (void) querdriveInfoObj.set("name", "ZHJpdmUxMTEx");
+    (void) querdriveInfoObj.set("notifications", true);
+    (void) querdriveInfoObj.set("isFree", true);
+    (void) queryParamsObj.set("driveInfo", querdriveInfoObj);
+    (void) queryObj.set("params", queryParamsObj);
+    const auto queryStr = testcommhelpers::stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+    Poco::JSON::Object paramsObj;
+    (void) answerObj.set("params", paramsObj);
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::DRIVE_UPDATE));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
 
     // Job expected answer
-    const auto answerStr{R"({ "cause": 0,)"
-                         R"( "code": 0,)"
-                         R"( "id": 1,)"
-                         R"( "num": )" +
-                         std::to_string(toInt(RequestNum::DRIVE_UPDATE)) +
-                         R"(,)"
-                         R"( "params": {  },)"
-                         R"( "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+    const auto answerStr = testcommhelpers::stringifyAnswerObj(answerObjWithNumAndType);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob>) {
         // No output parameters
@@ -589,6 +619,7 @@ void TestGuiCommChannel::testDriveUpdateJob() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else
+    const auto cbkAnswerStr = testcommhelpers::stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }

@@ -32,8 +32,6 @@ namespace KDC {
 
 class DriveInfo {
     public:
-        DriveInfo();
-
         void setDbId(const int driveDbId) { _dbId = driveDbId; }
         int dbId() const { return _dbId; }
         void setId(const int driveId) { _id = driveId; }
