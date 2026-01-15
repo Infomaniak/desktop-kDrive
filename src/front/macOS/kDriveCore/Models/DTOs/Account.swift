@@ -32,7 +32,7 @@ public struct Account: Identifiable, Hashable, Sendable {
         dbId
     }
 
-    public init(dbId: Int32, userDbId: Int32, name: String, drives: [Int32: Drive]) {
+    public init(dbId: Int32, userDbId: Int32, name: String, drives: IndexedDrives) {
         self.dbId = dbId
         self.userDbId = userDbId
         self.name = name

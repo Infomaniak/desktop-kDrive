@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import OrderedCollections
 struct AccountListResponse: Codable, Sendable {
     let accountInfoList: [AccountInfoResponse]
 }
@@ -28,6 +29,6 @@ public struct AccountInfoResponse: Codable, Sendable {
 
 extension AccountInfoResponse {
     var asAccount: Account {
-        Account(dbId: dbId, userDbId: userDbId, name: "", drives: [:])
+        Account(dbId: dbId, userDbId: userDbId, name: "", drives: IndexedDrives())
     }
 }
