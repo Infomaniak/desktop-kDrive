@@ -402,15 +402,16 @@ ou choisissez une offre adaptée à vos besoins.</value>
     <value>Ce PC</value>
   </data>
   <data name="Page_StoragePage_Used.Text" xml:space="preserve">
-    <value>utilisé(s)</value>
-    <comment>Use mix singular/plural form.</comment>
+    <value>utilisés</value>
   </data>
   <data name="Page_StoragePage_Free.Text" xml:space="preserve">
-    <value>libre(s)</value>
-    <comment>Use mix singular/plural form.</comment>
+    <value>libres</value>
+  </data>
+  <data name="Page_StoragePage_FreeSpace.Text" xml:space="preserve">
+    <value>Espace libre de l’ordinateur</value>
   </data>
   <data name="Page_StoragePage_OfflineFiles.Text" xml:space="preserve">
-    <value>Fichiers kDrive accessibles hors ligne</value>
+    <value>Fichiers kDrive stocker sur l’ordinateur</value>
   </data>
   <data name="Page_StoragePage_OtherFiles.Text" xml:space="preserve">
     <value>Autres fichiers de l’ordinateur</value>

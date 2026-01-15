@@ -230,7 +230,9 @@ namespace Infomaniak.kDrive.Pages
             {
                 DriveInfo driveInfo = new DriveInfo(DiskRoot);
                 IsDiskConnected = true;
+                await Task.Delay(1000);
                 DiskSize = driveInfo.TotalSize;
+                await Task.Delay(1000);
                 DiskFreeSize = driveInfo.AvailableFreeSpace;
                 DiskUsedSize = DiskSize - DiskFreeSize;
                 HydratedFileSize = await GetHydratedFileSizeAsync(_cancellationTokenSource.Token);
