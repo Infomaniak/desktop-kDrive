@@ -31,7 +31,7 @@ struct AccountInfoSignalMetadata: Codable, Sendable {
 
 extension AccountInfoSignalMetadata {
     var asAccount: Account {
-        Account(dbId: dbId, userDbId: userDbId, name: "", drives: IndexedDrives())
+        Account(dbId: dbId, userDbId: userDbId, name: "", drives: [:])
     }
 }
 

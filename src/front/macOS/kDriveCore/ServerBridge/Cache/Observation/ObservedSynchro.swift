@@ -119,7 +119,7 @@ public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
         )
         .map { event -> Synchro? in
             switch event {
-            case let .update(synchro): return synchro
+            case .update(let synchro): return synchro
             case .removed: return nil
             }
         }
@@ -131,7 +131,7 @@ public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
         synchroEventPublisher(synchroDbId: synchroDbId)
             .map { event -> Synchro? in
                 switch event {
-                case let .update(synchro): return synchro
+                case .update(let synchro): return synchro
                 case .removed: return nil
                 }
             }

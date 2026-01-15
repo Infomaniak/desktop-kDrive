@@ -67,7 +67,7 @@ public struct DriveResponse: Codable, Sendable {
 }
 
 extension DriveResponse {
-    func asDrive(accountId: Int32, userDbId: Int32, synchros: IndexedSynchros = IndexedSynchros()) -> Drive {
+    func asDrive(accountId: Int32, userDbId: Int32, synchros: IndexedSynchros = [:]) -> Drive {
         Drive(driveDbId: driveDbId,
               driveId: driveId,
               accountDbId: accountDbId,

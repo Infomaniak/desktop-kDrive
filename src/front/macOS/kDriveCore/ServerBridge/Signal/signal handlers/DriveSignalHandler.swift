@@ -53,7 +53,7 @@ extension CoherentCache {
         let existingDrive = account.drives[driveSignal.dbId]
         let updatedDrive = driveSignal.asDrive(accountId: account.id,
                                                userDbId: account.userDbId,
-                                               synchros: existingDrive?.synchros ?? IndexedSynchros())
+                                               synchros: existingDrive?.synchros ?? [:])
         account.drives[driveSignal.dbId] = updatedDrive
 
         try await updateAccount(account)
