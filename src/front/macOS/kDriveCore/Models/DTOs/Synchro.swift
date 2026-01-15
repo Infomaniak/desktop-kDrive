@@ -36,6 +36,7 @@ public struct Synchro: Identifiable, Hashable, Sendable {
     public let virtualFileMode: KDC.VirtualFileMode
     public var progress: SynchroProgressInfo?
     public var synchNodes: OrderedDictionary<String, SynchroNode> = [:]
+    public var errors: OrderedDictionary<Int32, ErrorInfo> = [:]
 
     private static let maxSynchNodesCount = 100
 
