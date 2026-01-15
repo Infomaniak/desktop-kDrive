@@ -17,6 +17,7 @@
  */
 
 import Foundation
+import OrderedCollections
 
 struct DriveInfoSignal: Codable, Sendable {
     let driveInfo: DriveInfoSignalMetadata
@@ -36,7 +37,7 @@ struct DriveInfoSignalMetadata: Codable, Sendable {
 }
 
 extension DriveInfoSignalMetadata {
-    func asDrive(accountId: Int32, userDbId: Int32, synchros: IndexedSynchros = [:]) -> Drive {
+    func asDrive(accountId: Int32, userDbId: Int32, synchros: IndexedSynchros = IndexedSynchros()) -> Drive {
         Drive(driveDbId: dbId,
               driveId: id,
               accountDbId: accountDbId,
@@ -49,7 +50,7 @@ extension DriveInfoSignalMetadata {
               locked: locked,
               maintenance: maintenance,
               notifications: notifications,
-              synchros: [:])
+              synchros: synchros)
     }
 }
 

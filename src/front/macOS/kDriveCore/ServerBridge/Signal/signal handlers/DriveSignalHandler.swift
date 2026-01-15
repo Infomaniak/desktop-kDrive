@@ -18,6 +18,7 @@
 
 import Foundation
 import InfomaniakDI
+import OrderedCollections
 
 struct DriveSignalHandler {
     private let decoder = JSONDecoder()
@@ -52,7 +53,7 @@ extension CoherentCache {
         let existingDrive = account.drives[driveSignal.dbId]
         let updatedDrive = driveSignal.asDrive(accountId: account.id,
                                                userDbId: account.userDbId,
-                                               synchros: existingDrive?.synchros ?? [:])
+                                               synchros: existingDrive?.synchros ?? IndexedSynchros())
         account.drives[driveSignal.dbId] = updatedDrive
 
         try await updateAccount(account)
