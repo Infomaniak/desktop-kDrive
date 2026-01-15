@@ -18,6 +18,10 @@
 
 import Foundation
 
+struct ErrorRemovedSignal: Codable, Sendable {
+    let errorDbId: Int32
+}
+
 struct ErrorInfoSignal: Codable, Sendable {
     let errorInfo: ErrorInfoMetadata
 }
