@@ -203,6 +203,8 @@ extension XPCConnectionManager: XPCLoginItemRemoteProtocol {
 
 extension XPCConnectionManager: XPCGuiRemoteProtocol {
     public func processSignal(_ msg: Data) {
-        signalHandler.handleServerSignal(msg)
+        Task {
+            await signalHandler.handleServerSignal(msg)
+        }
     }
 }

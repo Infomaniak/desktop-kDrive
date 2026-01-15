@@ -21,7 +21,7 @@ import InfomaniakDI
 import Sentry
 
 public protocol XPCSignalHandlerProtocol {
-    func handleServerSignal(_ signal: Data?)
+    func handleServerSignal(_ signal: Data?) async
 }
 
 enum SignalError: Error {
@@ -43,7 +43,7 @@ enum SignalError: Error {
     case unsupported(_ num: SignalNum)
 }
 
-struct XPCSignalHandler: XPCSignalHandlerProtocol {
+actor XPCSignalHandler: XPCSignalHandlerProtocol {
     private let decoder = JSONDecoder()
     private let userHandler = UserSignalHandler()
     private let accountHandler = AccountSignalHandler()
@@ -51,25 +51,23 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
     private let synchroHandler = SynchroSignalHandler()
     private let utilitySignalHandler = UtilitySignalHandler()
 
-    func handleServerSignal(_ signal: Data?) {
-        Task {
-            do {
-                try await handleServerSignal(signal)
-            } catch {
-                IKLogger.xpc.error("[KD] signal error :\(error)")
+    func handleServerSignal(_ signal: Data?) async {
+        do {
+            try await decodeAndUseServerSignal(signal)
+        } catch {
+            IKLogger.xpc.error("[KD] signal error :\(error)")
 
-                SentrySDK.capture(message: "Error processing Signal") { scope in
-                    scope.setLevel(.error)
-                    scope.setContext(
-                        value: ["error": error, "description": error.localizedDescription],
-                        key: "underlying error"
-                    )
-                }
+            SentrySDK.capture(message: "Error processing Signal") { scope in
+                scope.setLevel(.error)
+                scope.setContext(
+                    value: ["error": error, "description": error.localizedDescription],
+                    key: "underlying error"
+                )
             }
         }
     }
 
-    private func handleServerSignal(_ signal: Data?) async throws {
+    private func decodeAndUseServerSignal(_ signal: Data?) async throws {
         guard let signal else {
             throw SignalError.nilData
         }
