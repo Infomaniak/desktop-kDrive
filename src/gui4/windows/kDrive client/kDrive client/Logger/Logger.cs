@@ -103,12 +103,12 @@ namespace Infomaniak.kDrive
             = new ConcurrentDictionary<int, SentryLogThrottleInfo>();
         private static bool CanSendSentryEvent(Level level, string filePath, int lineNumber, string memberName)
         {
-            if (level <= Level.Info)
-                return false; // Only send Warning and above
 
             if (!App.ServiceProvider.GetRequiredService<AppModel>().Settings.SentryEnabled)
                 return false;
 
+            if (level <= Level.Info)
+                return false; // Only send Warning and above
 
             int hash = HashCode.Combine(filePath, lineNumber, memberName);
             var now = DateTime.UtcNow;
