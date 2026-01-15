@@ -478,14 +478,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             // Create mock drives
             List<Drive> drives = new List<Drive>();
-            drives.Add(new Drive(1, accounts[0]) { DriveId = 140946, Name = "Infomaniak", Color = Color.FromArgb(255, 0, 150, 136), IsPaidOffer = true });
-            drives.Add(new Drive(2, accounts[0]) { DriveId = 101, Name = "Etik corp", Color = Color.FromArgb(255, 156, 38, 176), IsPaidOffer = true });
-            drives.Add(new Drive(3, accounts[0]) { DriveId = 102, Name = "CH corp", Color = Color.FromArgb(255, 110, 168, 44), IsPaidOffer = false });
-            drives.Add(new Drive(4, accounts[0]) { DriveId = 103, Name = "The cloud", Color = Color.FromArgb(255, 255, 168, 110), IsPaidOffer = false });
-            drives.Add(new Drive(5, accounts[0]) { DriveId = 104, Name = "SwissCloud", Color = Color.FromArgb(255, 160, 168, 213), IsPaidOffer = false });
-            drives.Add(new Drive(6, accounts[0]) { DriveId = 105, Name = "FrenchCloud", Color = Color.FromArgb(255, 123, 179, 12), IsPaidOffer = false });
-            drives.Add(new Drive(7, accounts[1]) { DriveId = 106, Name = "EuropaCloud", Color = Color.FromArgb(255, 160, 12, 213), IsPaidOffer = false });
-            drives.Add(new Drive(8, accounts[1]) { DriveId = 107, Name = "WinUI cloud", Color = Color.FromArgb(255, 12, 168, 179), IsPaidOffer = false });
+            drives.Add(new Drive(1, accounts[0]) { DriveId = 140946, Name = "Infomaniak", Color = Color.FromArgb(255, 0, 150, 136), IsFreeOffer = false });
+            drives.Add(new Drive(2, accounts[0]) { DriveId = 101, Name = "Etik corp", Color = Color.FromArgb(255, 156, 38, 176), IsFreeOffer = false });
+            drives.Add(new Drive(3, accounts[0]) { DriveId = 102, Name = "CH corp", Color = Color.FromArgb(255, 110, 168, 44), IsFreeOffer = true });
+            drives.Add(new Drive(4, accounts[0]) { DriveId = 103, Name = "The cloud", Color = Color.FromArgb(255, 255, 168, 110), IsFreeOffer = true });
+            drives.Add(new Drive(5, accounts[0]) { DriveId = 104, Name = "SwissCloud", Color = Color.FromArgb(255, 160, 168, 213), IsFreeOffer = true });
+            drives.Add(new Drive(6, accounts[0]) { DriveId = 105, Name = "FrenchCloud", Color = Color.FromArgb(255, 123, 179, 12), IsFreeOffer = true });
+            drives.Add(new Drive(7, accounts[1]) { DriveId = 106, Name = "EuropaCloud", Color = Color.FromArgb(255, 160, 12, 213), IsFreeOffer = true });
+            drives.Add(new Drive(8, accounts[1]) { DriveId = 107, Name = "WinUI cloud", Color = Color.FromArgb(255, 12, 168, 179), IsFreeOffer = true });
 
             Users[0].Accounts[0].Drives.Add(drives[0]);
             Users[0].Accounts[0].Drives.Add(drives[1]);
