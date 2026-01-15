@@ -19,6 +19,7 @@
 
 import Cocoa
 import Foundation
+import SwiftUI
 
 public struct UIUser: Sendable, Equatable, Hashable {
     public var id: Int {
@@ -29,15 +30,20 @@ public struct UIUser: Sendable, Equatable, Hashable {
     public let userId: Int
     public let name: String
     public let email: String
-    public let avatar: NSImage?
+    public let nsAvatar: NSImage?
     public let accounts: [Int: UIAccount]
+
+    public var avatar: Image? {
+        guard let nsAvatar else { return nil }
+        return Image(nsImage: nsAvatar)
+    }
 
     public init(dbId: Int, userId: Int, name: String, email: String, avatar: NSImage?, accounts: [Int: UIAccount]) {
         self.dbId = dbId
         self.userId = userId
         self.name = name
         self.email = email
-        self.avatar = avatar
+        nsAvatar = avatar
         self.accounts = accounts
     }
 }

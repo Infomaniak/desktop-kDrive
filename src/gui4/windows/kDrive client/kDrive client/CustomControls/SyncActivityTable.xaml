@@ -112,7 +112,7 @@
                             <DataTemplate x:Key="FileSizeTemplate"
                                           x:DataType="viewmodels:SyncFileItem">
                                 <TextBlock VerticalAlignment="Center"
-                                           Text="{x:Bind FileSize, Converter={StaticResource BytesToHumanReadableStringConverter}}" />
+                                           Text="{x:Bind Size, Converter={StaticResource BytesToHumanReadableStringConverter}}" />
                             </DataTemplate>
                             <DataTemplate x:Key="DirectorySizeTemplate"
                                           x:DataType="viewmodels:SyncFileItem">

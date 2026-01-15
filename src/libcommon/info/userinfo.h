@@ -49,6 +49,12 @@ class UserInfo {
         [[nodiscard]] bool isStaff() const { return _isStaff; }
         void setIsStaff(const bool is_staff) { _isStaff = is_staff; }
 
+        friend bool operator==(const UserInfo &lhs, const UserInfo &rhs) {
+            return (lhs.dbId() == rhs.dbId()) && (lhs.userId() == rhs.userId()) && (lhs.name() == rhs.name()) &&
+                   (lhs.email() == rhs.email()) && (lhs.avatar() == rhs.avatar()) && (lhs.connected() == rhs.connected()) &&
+                   (lhs.credentialsAsked() == rhs.credentialsAsked()) && (lhs.isStaff() == rhs.isStaff());
+        }
+
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
         void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
 

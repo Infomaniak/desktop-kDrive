@@ -29,10 +29,6 @@ AccountInfo::AccountInfo(int dbId, int userDbId) :
     _dbId(dbId),
     _userDbId(userDbId) {}
 
-AccountInfo::AccountInfo() :
-    _dbId(0),
-    _userDbId(0) {}
-
 void AccountInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, accountInfoDbId, _dbId);
     CommonUtility::writeValueToStruct(dstruct, accountInfoUserDbId, _userDbId);

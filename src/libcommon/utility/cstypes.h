@@ -277,7 +277,6 @@ enum class VirtualFileMode {
     Off,
     Win,
     Mac,
-    Suffix,
     EnumEnd
 };
 

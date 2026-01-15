@@ -52,21 +52,14 @@ ExitInfo SyncAdd2Job::deserializeInputParms() {
 
 ExitInfo SyncAdd2Job::process() {
     // Add sync in DB
-#if defined(KD_WINDOWS)
-    bool showInNavigationPane = _commManager->appServer().navigationPaneHelper()->showInExplorerNavigationPane();
-#else
-    bool showInNavigationPane = false;
-#endif
-
     SyncInfo syncInfo;
     if (const auto exitCode = ServerRequests::addSync(_driveDbId, localFolderPath(), serverFolderPath(), serverFolderNodeId(),
-                                                      liteSync(), showInNavigationPane, syncInfo);
+                                                      liteSync(), syncInfo);
         exitCode != ExitCode::Ok) {
         LOGW_WARN(_logger, L"Error in Requests::addSync - driveDbId="
                                    << _driveDbId << L" local " << Utility::formatSyncPath(localFolderPath()) << L" server "
                                    << Utility::formatSyncPath(serverFolderPath()) << L" serverFolderNodeId="
-                                   << Utility::v2ws(serverFolderNodeId()) << L" liteSync=" << liteSync()
-                                   << L" showInNavigationPane=" << showInNavigationPane);
+                                   << Utility::v2ws(serverFolderNodeId()) << L" liteSync=" << liteSync());
         AppServer::addError(Error(ERR_ID, exitCode));
         return exitCode;
     }

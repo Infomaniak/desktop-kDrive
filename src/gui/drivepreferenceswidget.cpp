@@ -348,8 +348,7 @@ void DrivePreferencesWidget::askEnableLiteSync(const std::function<void(bool)> &
         return;
     }
 
-    if (virtualFileMode == VirtualFileMode::Win || virtualFileMode == VirtualFileMode::Mac ||
-        virtualFileMode == VirtualFileMode::Suffix) {
+    if (virtualFileMode == VirtualFileMode::Win || virtualFileMode == VirtualFileMode::Mac) {
         CustomMessageBox msgBox(QMessageBox::Question, tr("Do you really want to turn on Lite Sync?"),
                                 tr("This operation may take from a few seconds to a few minutes depending on the size of the "
                                    "folder."),
@@ -426,24 +425,12 @@ bool DrivePreferencesWidget::switchVfsOn(int syncDbId) {
     }
 #endif
 
-    // Setting to Unspecified retains existing data.
-    if (const auto exitCode = GuiRequests::setRootPinState(syncDbId, PinState::Unspecified); exitCode != ExitCode::Ok) {
-        qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::setRootPinState";
-        return false;
-    }
-
     return true;
 }
 
 bool DrivePreferencesWidget::switchVfsOff(int syncDbId, bool diskSpaceWarning) {
     if (const auto exitCode = GuiRequests::setSupportsVirtualFiles(syncDbId, false); exitCode != ExitCode::Ok) {
         qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::setSupportsVirtualFiles";
-        return false;
-    }
-
-    // Wipe pin states
-    if (const auto exitCode = GuiRequests::setRootPinState(syncDbId, PinState::AlwaysLocal); exitCode != ExitCode::Ok) {
-        qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::setRootPinState";
         return false;
     }
 

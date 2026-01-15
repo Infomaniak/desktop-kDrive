@@ -7,12 +7,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommProtocol;
+using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommService;
 
 namespace Infomaniak.kDrive.ServerCommunication.Services
 {
@@ -441,6 +441,70 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
         }
 
+        public async Task<bool?> PathSupportLiteSync(string absoluteLocalPath, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.Path] = Utility.ToBase64String(absoluteLocalPath)
+            };
+
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_BESTVFSAVAILABLEMODE, parms, cancellationToken);
+            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.BestMode))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.BestMode} not found in response.");
+                return null;
+            }
+
+            return ((VirtualFileMode?)(data.Params[JsonKeys.BestMode]?.GetValue<int>()) ?? VirtualFileMode.Off) == VirtualFileMode.Win;
+        }
+
+        public async Task<GetGoodPathResult?> GetGoodPathForNewSync(IDrive? drive, string desiredPath, CancellationToken cancellationToken)
+        {
+            DbId driveDbId = -1;
+            if (drive is Drive inDbDrive)
+                driveDbId = inDbDrive.DbId;
+
+            var parms = new JsonObject
+            {
+                [JsonKeys.DriveDbId] = driveDbId,
+                [JsonKeys.BasePath] = Utility.ToBase64String(desiredPath)
+            };
+
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_FINDGOODPATHFORNEWSYNC, parms, cancellationToken);
+
+            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.GoodPath) || !data.Params.ContainsKey(JsonKeys.ErrorMessage))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.GoodPath} or {JsonKeys.Path} not found in response: {data.Params}");
+                return null;
+            }
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            options.Converters.Add(new Base64StringJsonConverter());
+
+            GetGoodPathResult result = new();
+            result.GoodPath = data.Params[JsonKeys.GoodPath].Deserialize<string>(options) ?? "";
+            result.ErrorMessage = data.Params[JsonKeys.ErrorMessage].Deserialize<string>(options) ?? "";
+            return result;
+        }
+        public async Task<bool?> IsPathValidForNewSync(string path, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.Path] = Utility.ToBase64String(path),
+            };
+
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_ISPATHVALIDFORNEWSYNC, parms, cancellationToken);
+
+            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.IsValid))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.IsValid} not found in response: {data.Params}");
+                return null;
+            }
+            return data.Params[JsonKeys.IsValid]?.GetValue<bool>() ?? false;
+        }
 
         public async Task<List<Node>?> GetSubFolders(DbId userDbId, DriveId driveId, NodeId parentNodeId, CancellationToken cancellationToken)
         {
@@ -466,7 +530,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             List<NodeInfo> nodeList = data.Params[JsonKeys.NodeSubFolderInfoList].Deserialize<List<NodeInfo>>(options) ?? new List<NodeInfo>();
             List<Node> nodes = nodeList.Select(n =>
             {
-                return new Node(n.NodeId ?? "", n.Name ?? "", n.Size ?? 0, n.ParentNodeId ?? "", n.Path ?? "", userDbId, driveId);
+                return new Node(n.NodeId ?? "", n.Name ?? "", n.Size ?? 0, n.ParentNodeId ?? "", n.Path ?? "", userDbId, driveId, n.AccessDenied ?? false);
             }).ToList();
 
             return nodes;
@@ -496,9 +560,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             if (nodeInfo is null)
             {
                 Logger.Log(Logger.Level.Error, $"Failed to deserialize nodeInfo from ${data.Params[JsonKeys.NodeInfo]}.");
-                return null;
+                return null; 
             }
-            return new Node(nodeInfo.NodeId ?? "", nodeInfo.Name ?? "", nodeInfo.Size ?? 0, nodeInfo.ParentNodeId ?? "", nodeInfo.Path ?? "", userDbId, driveId);
+            return new Node(nodeInfo.NodeId ?? "", nodeInfo.Name ?? "", nodeInfo.Size ?? 0, nodeInfo.ParentNodeId ?? "", nodeInfo.Path ?? "", userDbId, driveId, nodeInfo?.AccessDenied ?? false);
         }
 
         public async Task<Int64?> GetFolderSize(long userDbId, long driveId, string nodeId, CancellationToken cancellationToken)
@@ -580,7 +644,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 PropertyNameCaseInsensitive = true
             };
             options.Converters.Add(new Base64StringJsonConverter());
-            AppVersion? versionInfo = data.Params[JsonKeys.VersionInfo].Deserialize<AppVersion>(options);
+            AppVersion? versionInfo = null;//           data.Params[JsonKeys.VersionInfo].Deserialize<AppVersion>(options);
             if (versionInfo?.Tag == _viewModel.Settings.AppVersion?.Tag && versionInfo?.BuildVersion == _viewModel.Settings.AppVersion?.BuildVersion)
             {
                 _viewModel.Settings.UpdateManager.AvailableUpdate = null;
@@ -616,7 +680,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             CommStruct.ConversionHelper.copyToSettings(parametersInfo, _viewModel.Settings);
         }
-        
+
         public async Task ActivateLoadInfo(CancellationToken cancellationToken)
         {
             await _commClient.SendRequestAsync(RequestNum.UTILITY_ACTIVATELOADINFO, new JsonObject { }, cancellationToken);

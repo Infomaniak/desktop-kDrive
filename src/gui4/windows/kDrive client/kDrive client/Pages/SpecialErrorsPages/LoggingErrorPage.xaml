@@ -42,23 +42,27 @@
                         RelativePanel.AlignHorizontalCenterWithPanel="True"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.M}">
 
-                <TextBlock x:Uid="Page_LogginErrorPage_Title"
+                <TextBlock x:Name="TitleTextBlock"
+                           x:Uid="Page_LogginErrorPage_Title"
                            Style="{StaticResource TitleTextBlockStyle}"
                            HorizontalAlignment="Center" />
 
-                <TextBlock x:Uid="Page_LogginErrorPage_Subtitle"
+                <TextBlock x:Name="SubtitleTextBlock"
+                           x:Uid="Page_LogginErrorPage_Subtitle"
                            HorizontalAlignment="Center"
                            TextAlignment="Center" />
 
-                <Button x:Uid="Page_LogginErrorPage_Button"
+                <Button x:Name="ConnectionButton"
+                        x:Uid="Page_LogginErrorPage_Button"
                         HorizontalAlignment="Center"
                         Style="{ThemeResource AccentButtonStyle}"
                         Click="ConnectionButton_Click" />
+                
                 <ProgressRing x:Name="OAuthProgressRing"
                               Height="16"
                               Width="16"
                               IsIndeterminate="True"
-                              Visibility="Collapsed"/>
+                              Visibility="Collapsed" />
             </StackPanel>
 
             <!-- Status indicator above the content -->

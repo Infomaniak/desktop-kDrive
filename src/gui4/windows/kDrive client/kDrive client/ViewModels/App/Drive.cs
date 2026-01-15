@@ -39,6 +39,7 @@ namespace Infomaniak.kDrive.ViewModels
         private ObservableCollection<Sync> _syncs = new ObservableCollection<Sync>();
         private Sync? _mainSync;
         private bool _isConfigured = false; // Indicates if at least one sync (which is not an advanced sync) is set up for this drive
+        private bool _isAdmin = false; // Indicates if the user is admin of this drive
         private ObservableCollection<Sync> _advancedSyncs = new ObservableCollection<Sync>();
 
         private Account _account;
@@ -101,6 +102,11 @@ namespace Infomaniak.kDrive.ViewModels
             get => _color;
             set => SetPropertyInUIThread(ref _color, value);
         }
+        public bool IsAdmin
+        {
+            get => _isAdmin;
+            set => SetPropertyInUIThread(ref _isAdmin, value);
+        }
 
         public bool IsPaidOffer
         {
@@ -116,8 +122,8 @@ namespace Infomaniak.kDrive.ViewModels
         public Sync? MainSync
         {
             get => _mainSync;
-            set 
-            { 
+            set
+            {
                 SetPropertyInUIThread(ref _mainSync, value);
                 IsConfigured = value is not null;
             }
@@ -136,22 +142,22 @@ namespace Infomaniak.kDrive.ViewModels
 
         public Uri GetWebUri()
         {
-            return new Uri($"https://ksuite.infomaniak.com/kdrive/app/drive/{DriveId}");
+            return App.Constants.Drive.HomeUrl(DriveId);
         }
 
         public Uri GetWebTrashUri()
         {
-            return new Uri($"https://ksuite.infomaniak.com/kdrive/app/drive/{DriveId}/trash");
+            return App.Constants.Drive.TrashUrl(DriveId);
         }
 
         public Uri GetWebFavoritesUri()
         {
-            return new Uri($"https://ksuite.infomaniak.com/kdrive/app/drive/{DriveId}/favorites");
+            return App.Constants.Drive.FavoriteUrl(DriveId);
         }
 
         public Uri GetWebSharedUri()
         {
-            return new Uri($"https://ksuite.infomaniak.com/kdrive/app/drive/{DriveId}/shared-with-me");
+            return App.Constants.Drive.SharedUrl(DriveId);
         }
 
         public Account Account

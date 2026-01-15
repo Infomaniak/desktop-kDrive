@@ -16,12 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Foundation
+#pragma once
 
-final class MockServerBridge: ServerBridgeable {
-    func getConnectedUser() async -> UIUser? {
-        // It will be removed when the server part will be ready
-        try? await Task.sleep(nanoseconds: 5_000_000_000)
-        return UIUser(dbId: 0, userId: 0, name: "", email: "", avatar: nil, accounts: [:])
-    }
-}
+#include "server/comm/guijobs/abstractguijob.h"
+
+namespace KDC {
+
+class SignalUtilityShowSettingsJob : public AbstractGuiJob {
+    public:
+        explicit SignalUtilityShowSettingsJob();
+
+    private:
+        ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
+        ExitInfo serializeOutputParms() override { return ExitCode::Ok; }
+        ExitInfo process() override { return ExitCode::Ok; }
+
+        friend class TestGuiCommChannel;
+};
+
+} // namespace KDC

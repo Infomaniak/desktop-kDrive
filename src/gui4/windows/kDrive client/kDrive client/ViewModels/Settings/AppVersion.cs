@@ -8,17 +8,13 @@ namespace Infomaniak.kDrive.ViewModels
     {
         public VersionChannel Channel { get; set; } = VersionChannel.Prod;
         public string Tag { get; set; } = string.Empty; // e.g., "1.2.3"
-        public string BuildVersion { get; set; } = string.Empty; // e.g., "20250401"
+        public int BuildVersion { get; set; } = 0; // e.g., "20250401"
         public Uri ChangeLogUrl
         {
             get
             {
                 string languageCode = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
-                string res = String.Format(App.Constants.StorageUrl.ToString() + "/ kDrive-{0}-win-{1}.html",
-                    Tag,
-                    languageCode);
-
-                return new Uri(res);
+                return App.Constants.Storage.ReleaseNoteUrl(Tag, languageCode);
             }
         }
 
@@ -26,15 +22,15 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get
             {
-                if (DateTime.TryParseExact(BuildVersion, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedDate))
+                /*if (DateTime.TryParseExact(BuildVersion, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedDate))
                 {
                     return parsedDate;
                 }
                 else
-                {
-                    Logger.Log(Logger.Level.Warning, "BuildVersion string is not in the expected format 'yyyyMMdd'.");
-                    return DateTime.MinValue;
-                }
+                {*/
+                Logger.Log(Logger.Level.Warning, "BuildVersion string is not in the expected format 'yyyyMMdd'.");
+                return DateTime.MinValue;
+                //}
             }
         }
 

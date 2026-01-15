@@ -20,14 +20,8 @@ import Cocoa
 import kDriveCoreUI
 import SwiftUI
 
-struct HomeView: View {
-    var body: some View {
-        Text("Hello, World!")
-    }
-}
-
 final class HomeViewController: TitledViewController<HomeView> {
-    convenience init() {
-        self.init(toolbarTitle: SidebarItem.home.title, contentView: HomeView())
+    init(mainViewModel: MainViewModel) {
+        super.init(toolbarTitle: SidebarItem.home.title, contentView: HomeView(mainViewModel: mainViewModel))
     }
 }
