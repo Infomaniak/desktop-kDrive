@@ -48,6 +48,7 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
     private let accountHandler = AccountSignalHandler()
     private let driveHandler = DriveSignalHandler()
     private let synchroHandler = SynchroSignalHandler()
+    private let utilitySignalHandler = UtilitySignalHandler()
 
     func handleServerSignal(_ signal: Data?) {
         Task {
@@ -126,7 +127,7 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
             try await synchroHandler.handleSyncCompleted(signal)
 
         case .UTILITY_ERROR_ADDED:
-            print("TODO: implement error handling")
+            try await utilitySignalHandler.handleError(signal)
             
         default:
             throw SignalError.unsupported(signalNum)
