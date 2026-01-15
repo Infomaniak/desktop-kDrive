@@ -67,7 +67,13 @@
                            TextAlignment="Center" />
                 <Button x:Uid="Page_StoragePage_Disconnected_RetryButton"
                         HorizontalAlignment="Center"
-                        Style="{ThemeResource SubtleButtonStyle}" />
+                        Style="{ThemeResource TextBlockButtonStyle}"
+                        Click="RetryButton_click"/>
+                <ProgressRing x:Name="RetryProgressRing"
+                              Width="16"
+                              Height="16"
+                              HorizontalAlignment="Center"
+                              Visibility="Collapsed" />
             </StackPanel>
         </Grid>
         <Grid  Grid.Row="1"

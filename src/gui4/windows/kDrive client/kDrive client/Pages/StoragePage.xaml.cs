@@ -55,6 +55,30 @@ namespace Infomaniak.kDrive.Pages
                 Logger.Log(Logger.Level.Info, "Disk size update was canceled.");
             }
         }
+        private async void RetryButton_click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn)
+            {
+                btn.IsEnabled = false;
+                btn.Visibility = Visibility.Collapsed;
+                RetryProgressRing.Visibility = Visibility.Visible;
+                try
+                {
+                    await PageViewModel.UpdateDiskSizeAsync().ConfigureAwait(false);
+                    if (!PageViewModel.IsDiskConnected)
+                    {
+                        await Task.Delay(2000); // Add a small delay to let the user know we've done something but the disk still unavailable.
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    Logger.Log(Logger.Level.Info, "Disk size update was canceled.");
+                }
+                btn.IsEnabled = true;
+                btn.Visibility = Visibility.Visible;
+                RetryProgressRing.Visibility = Visibility.Collapsed;
+            }
+        }
     }
 
     public class StoragePageViewModel : UISafeObservableObject
