@@ -30,4 +30,5 @@
     <x:String x:Key="Infomaniak.Custom.Icons.logo-mobile">ms-appx:///Assets/Custom/Icons/logo-mobile.svg</x:String>
     <x:String x:Key="Infomaniak.Custom.Icons.Devices.cloud-sync">ms-appx:///Assets/Custom/Icons/Devices/cloud-sync.svg</x:String>
     <x:String x:Key="Infomaniak.Custom.Icons.Devices.computer-sync">ms-appx:///Assets/Custom/Icons/Devices/computer-sync.svg</x:String>
+    <x:String x:Key="Infomaniak.Custom.Images.hardware">ms-appx:///Assets/Custom/Images/hardware.svg</x:String>
 </ResourceDictionary>
