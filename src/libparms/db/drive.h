@@ -37,6 +37,13 @@ class PARMS_EXPORT Drive {
                 int64_t _maintenanceFrom{0};
         };
 
+        struct PackInfo {
+                uint64_t id{0};
+                std::string name;
+                std::string displayName;
+                bool isFree{false}; // False by default in order not to offer to upgrade when this value is not yet up to date.
+        };
+
         Drive();
         Drive(int dbId, int driveId, int accountDbId, const std::string &name = std::string(), int64_t size = int64_t(),
               const std::string &color = std::string(), bool notifications = true, bool admin = true);
@@ -67,22 +74,27 @@ class PARMS_EXPORT Drive {
         bool accessDenied() const { return _accessDenied; }
         void setAccessDenied(bool accessDenied) { _accessDenied = accessDenied; }
 
+        [[nodiscard]] const PackInfo &packInfo() const { return _packInfo; }
+        void setPackInfo(const PackInfo &packInfo) { _packInfo = packInfo; }
+
     private:
         log4cplus::Logger _logger;
-        int _dbId;
-        int _driveId;
-        int _accountDbId;
+        int _dbId{0};
+        int _driveId{0};
+        int _accountDbId{0};
         std::string _name;
-        int64_t _size;
+        int64_t _size{0};
         std::string _color; // #RRGGBB format
-        bool _notifications;
-        bool _admin;
+        bool _notifications{true};
+        bool _admin{false};
 
         // Non DB attributes
         MaintenanceInfo _maintenanceInfo;
-        bool _locked;
-        int64_t _usedSize;
-        bool _accessDenied;
+        bool _locked{false};
+        int64_t _usedSize{0};
+        bool _accessDenied{false};
+
+        PackInfo _packInfo;
 };
 
 } // namespace KDC

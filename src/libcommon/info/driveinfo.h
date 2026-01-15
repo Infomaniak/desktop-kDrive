@@ -18,6 +18,9 @@
 
 #pragma once
 
+#include "libparms/db/drive.h"
+
+
 #include <QDataStream>
 #include <QString>
 #include <QList>
@@ -53,6 +56,9 @@ class DriveInfo {
         bool accessDenied() const { return _accessDenied; }
         void setAccessDenied(const bool accessDenied) { _accessDenied = accessDenied; }
 
+        [[nodiscard]] bool packIsFree() const { return _packIsFree; }
+        void setPackIsFree(const bool pack_is_free) { _packIsFree = pack_is_free; }
+
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
         void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
 
@@ -69,6 +75,8 @@ class DriveInfo {
         bool _maintenance{false};
         bool _locked{false};
         bool _accessDenied{false};
+
+        bool _packIsFree{false};
 };
 
 void operator>>(QDataStream &in, DriveInfo &info);

@@ -1827,93 +1827,52 @@ ExitInfo ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &upd
         return exitInfo;
     }
 
-    Poco::JSON::Object::Ptr dataObj = job->jsonRes()->getObject(dataKey);
-    if (!dataObj || dataObj->size() == 0) {
-        LOG_WARN(Log::instance()->getLogger(), "Unable to read drive info for driveDbId=" << drive.dbId());
-        return ExitCode::DataError;
-    }
-
-    std::string name;
-    if (!JsonParserUtility::extractValue(dataObj, nameKey, name)) {
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
-    if (drive.name() != name) {
-        drive.setName(name);
+    if (drive.name() != job->name()) {
+        drive.setName(job->name());
         updated = true;
     }
 
-    int64_t size = 0;
-    if (!JsonParserUtility::extractValue(dataObj, sizeKey, size)) {
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
-    if (drive.size() != size) {
-        drive.setSize(size);
+    if (drive.size() != job->size()) {
+        drive.setSize(job->size());
         updated = true;
         quotaUpdated = true;
     }
 
-    bool admin = false;
-    if (!JsonParserUtility::extractValue(dataObj, accountAdminKey, admin)) {
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
-    if (drive.admin() != admin) {
-        drive.setAdmin(admin);
+    if (drive.admin() != job->isAdmin()) {
+        drive.setAdmin(job->isAdmin());
         updated = true;
     }
 
-    int accountId = 0;
-    if (!JsonParserUtility::extractValue(dataObj, accountIdKey, accountId)) {
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
-    if (account.accountId() != accountId) {
-        account.setAccountId(accountId);
+    if (account.accountId() != job->accountId()) {
+        account.setAccountId(job->accountId());
         accountUpdated = true;
     }
 
-    std::string colorHex;
-    if (Poco::JSON::Object::Ptr prefObj = dataObj->getObject(preferencesKey)) {
-        if (!JsonParserUtility::extractValue(prefObj, colorKey, colorHex, false)) {
-            return {ExitCode::BackError, ExitCause::MissingReplyData};
-        }
-        if (drive.color() != colorHex) {
-            drive.setColor(colorHex);
+    if (!job->colorHex().empty()) {
+        if (drive.color() != job->colorHex()) {
+            drive.setColor(job->colorHex());
             updated = true;
         }
     }
 
     // Non DB attributes
-    bool inMaintenance = false;
-    if (!JsonParserUtility::extractValue(dataObj, inMaintenanceKey, inMaintenance)) {
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
-
-    int64_t maintenanceFrom = 0;
-    if (drive.maintenanceInfo()._maintenance) {
-        if (!JsonParserUtility::extractValue(dataObj, maintenanceAtKey, maintenanceFrom, false)) {
-            return {ExitCode::BackError, ExitCause::MissingReplyData};
-        }
-    }
-
-    bool isLocked = false;
-    if (!JsonParserUtility::extractValue(dataObj, isLockedKey, isLocked)) {
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
-    drive.setLocked(isLocked);
+    drive.setLocked(job->isLocked());
     drive.setAccessDenied(false);
-    drive.setMaintenanceInfo({._maintenance = inMaintenance,
+    drive.setMaintenanceInfo({._maintenance = job->isInMaintenance(),
                               ._notRenew = job->exitInfo().cause() == ExitCause::DriveNotRenew,
                               ._asleep = job->exitInfo().cause() == ExitCause::DriveAsleep,
                               ._wakingUp = job->exitInfo().cause() == ExitCause::DriveWakingUp,
-                              ._maintenanceFrom = maintenanceFrom});
+                              ._maintenanceFrom = job->maintenanceFrom()});
 
-    int64_t usedSize = 0;
-    if (!JsonParserUtility::extractValue(dataObj, usedSizeKey, usedSize)) {
-        return {ExitCode::BackError, ExitCause::MissingReplyData};
-    }
-    if (drive.usedSize() != usedSize) {
-        drive.setUsedSize(usedSize);
+    if (drive.usedSize() != job->usedSize()) {
+        drive.setUsedSize(job->usedSize());
         quotaUpdated = true;
     }
+
+    drive.setPackInfo({.id = job->packInfo().id,
+                       .name = job->packInfo().name,
+                       .displayName = job->packInfo().displayName,
+                       .isFree = job->packInfo().isFree});
 
     return ExitCode::Ok;
 }

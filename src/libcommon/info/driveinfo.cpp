@@ -29,6 +29,7 @@ static const auto driveInfoAdmin = "admin";
 static const auto driveInfoMaintenance = "maintenance";
 static const auto driveInfoLocked = "locked";
 static const auto driveInfoAccessDenied = "accessDenied";
+static const auto driveInfoPackIsFree = "isFree";
 
 namespace KDC {
 
@@ -45,6 +46,7 @@ void DriveInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, driveInfoMaintenance, _maintenance);
     CommonUtility::writeValueToStruct(dstruct, driveInfoLocked, _locked);
     CommonUtility::writeValueToStruct(dstruct, driveInfoAccessDenied, _accessDenied);
+    CommonUtility::writeValueToStruct(dstruct, driveInfoPackIsFree, _packIsFree);
 }
 
 void DriveInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
@@ -65,6 +67,7 @@ void DriveInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, driveInfoMaintenance, _maintenance);
     CommonUtility::readValueFromStruct(dstruct, driveInfoLocked, _locked);
     CommonUtility::readValueFromStruct(dstruct, driveInfoAccessDenied, _accessDenied);
+    CommonUtility::readValueFromStruct(dstruct, driveInfoPackIsFree, _packIsFree);
 }
 
 void operator>>(QDataStream &in, DriveInfo &info) {
@@ -78,8 +81,10 @@ void operator>>(QDataStream &in, DriveInfo &info) {
     bool maintenance{false};
     bool locked{false};
     bool accessDenied{false};
+    bool packIsFree{false};
 
-    in >> dbId >> id >> accountDbId >> name >> color >> notifications >> admin >> maintenance >> locked >> accessDenied;
+    in >> dbId >> id >> accountDbId >> name >> color >> notifications >> admin >> maintenance >> locked >> accessDenied >>
+            packIsFree;
 
     info.setDbId(dbId);
     info.setId(id);
@@ -91,11 +96,12 @@ void operator>>(QDataStream &in, DriveInfo &info) {
     info.setMaintenance(maintenance);
     info.setLocked(locked);
     info.setAccessDenied(accessDenied);
+    info.setPackIsFree(packIsFree);
 }
 
 QDataStream &operator<<(QDataStream &out, const DriveInfo &info) {
     out << info.dbId() << info.id() << info.accountDbId() << info.name() << info.color() << info.notifications() << info.admin()
-        << info.maintenance() << info.locked() << info.accessDenied();
+        << info.maintenance() << info.locked() << info.accessDenied() << info.packIsFree();
     return out;
 }
 
