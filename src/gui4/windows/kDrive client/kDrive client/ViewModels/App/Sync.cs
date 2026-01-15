@@ -229,12 +229,15 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task ClearAllErrorsAsync()
         {
-            // Call RemoveError for each error to ensure proper handling (RemoveError is responsible for some viewmodel updates)
-            foreach (var error in SyncErrors)
+            await Utility.RunOnUIThread(async () =>
             {
-                Logger.Log(Logger.Level.Info, $"Sync {DbId}: Clearing error {error.ExitCode} - {error.Path}");
-                await RemoveErrorAsync(error, false);
-            }
+                // Call RemoveError for each error to ensure proper handling (RemoveError is responsible for some viewmodel updates)
+                foreach (var error in SyncErrors)
+                {
+                    Logger.Log(Logger.Level.Info, $"Sync {DbId}: Clearing error {error.ExitCode} - {error.Path}");
+                    await RemoveErrorAsync(error, false);
+                }
+            });
             await RefreshErrorState();
         }
 
