@@ -118,7 +118,19 @@ struct SynchroStatusView: View {
         .redacted(reason: state.isRedacted ? .placeholder : [])
         .padding(AppPadding.padding16)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(ColorToken.Surface.primary.asColor)
+        .background {
+            GeometryReader { proxy in
+                RadialGradient(
+                    colors: [
+                        ColorToken.Action.primary.asColor.opacity(0.4),
+                        ColorToken.Surface.primary.asColor
+                    ],
+                    center: UnitPoint(x: 0.5, y: -0.5),
+                    startRadius: 0,
+                    endRadius: max(proxy.size.width, proxy.size.height)
+                )
+            }
+        }
         .clipShape(RoundedRectangle(cornerRadius: AppRadius.radius16))
     }
 
