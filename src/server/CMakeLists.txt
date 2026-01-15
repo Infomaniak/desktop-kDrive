@@ -63,6 +63,7 @@ set(server_SRCS
     comm/guijobs/drivedeletejob.h comm/guijobs/drivedeletejob.cpp
     comm/guijobs/drivesearchjob.h comm/guijobs/drivesearchjob.cpp
     comm/guijobs/syncinfolistjob.h comm/guijobs/syncinfolistjob.cpp
+    comm/guijobs/syncofflinefilessize.h comm/guijobs/syncofflinefilessize.cpp
     comm/guijobs/syncstartjob.h comm/guijobs/syncstartjob.cpp
     comm/guijobs/syncstopjob.h comm/guijobs/syncstopjob.cpp
     comm/guijobs/syncstatusjob.h comm/guijobs/syncstatusjob.cpp

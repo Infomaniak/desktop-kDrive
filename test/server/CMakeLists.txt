@@ -43,6 +43,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/drivedeletejob.h ${server_srcs_path}/comm/guijobs/drivedeletejob.cpp
     ${server_srcs_path}/comm/guijobs/drivesearchjob.h ${server_srcs_path}/comm/guijobs/drivesearchjob.cpp
     ${server_srcs_path}/comm/guijobs/syncinfolistjob.h ${server_srcs_path}/comm/guijobs/syncinfolistjob.cpp
+    ${server_srcs_path}/comm/guijobs/syncofflinefilessize.h ${server_srcs_path}/comm/guijobs/syncofflinefilessize.cpp
     ${server_srcs_path}/comm/guijobs/syncstartjob.h ${server_srcs_path}/comm/guijobs/syncstartjob.cpp
     ${server_srcs_path}/comm/guijobs/syncstopjob.h ${server_srcs_path}/comm/guijobs/syncstopjob.cpp
     ${server_srcs_path}/comm/guijobs/syncstatusjob.h ${server_srcs_path}/comm/guijobs/syncstatusjob.cpp
