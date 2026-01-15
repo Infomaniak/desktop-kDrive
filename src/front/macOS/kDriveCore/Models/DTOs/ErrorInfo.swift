@@ -17,6 +17,9 @@
  */
 
 import Foundation
+import OrderedCollections
+
+public typealias IndexedErrors = OrderedDictionary<Int32, ErrorInfo>
 
 public struct ErrorInfo: Identifiable, Hashable, Sendable {
     public var id: Int32 {
