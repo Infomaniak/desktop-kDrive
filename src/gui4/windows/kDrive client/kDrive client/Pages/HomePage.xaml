@@ -79,8 +79,8 @@
 
                 <controls:LottiePlayer Grid.Row="0"
                                        UriSource="{ThemeResource Infomaniak.Custom.Animations.check}"
-                                       MaxWidth="230" 
-                                       Padding="50"/>
+                                       MaxWidth="230"
+                                       Padding="50" />
 
                 <StackPanel Grid.Row="1"
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
@@ -275,7 +275,7 @@
               ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.M}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <!-- Sync status bar -->
