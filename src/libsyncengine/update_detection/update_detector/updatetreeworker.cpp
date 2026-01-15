@@ -1184,6 +1184,8 @@ bool UpdateTreeWorker::checkTreeIntegrity() {
     LOG_SYNCPAL_INFO(_logger, _side << " update tree integrity check started");
     for (const auto &[_, node]: _updateTree->nodes()) {
         if (!checkNodeIntegrity(node)) return false;
+        // In some cases, the pointer to the parent node might not have been updated correctly and still pointing to a temporary
+        // node.
         if (node->parentNode() && !checkNodeIntegrity(node->parentNode())) return false;
         if (!checkOperationTypes(node)) return false;
     }
