@@ -18,8 +18,6 @@
 
 #include "syncofflinefilessize.h"
 #include "appserver.h"
-#include "requests/serverrequests.h"
-#include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
 #include <requests/offlinefilessizeestimator.h>
@@ -51,12 +49,7 @@ ExitInfo SyncOfflineFileSize::deserializeInputParms() {
 }
 
 ExitInfo SyncOfflineFileSize::serializeOutputParms() {
-    try {
-        _outParams[outParamsSize] = _size;
-    } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in SyncOfflineFileSize::serializeOutputParms: error=" << e.what());
-        return ExitCode::LogicError;
-    }
+    writeParamValue(outParamsSize, _size);
     return ExitCode::Ok;
 }
 

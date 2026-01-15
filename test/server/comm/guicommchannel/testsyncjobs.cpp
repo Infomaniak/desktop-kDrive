@@ -622,7 +622,7 @@ void TestGuiCommChannel::testSyncOflineFilesSizeJob() {
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto syncOfflineFilesSizeJob = std::dynamic_pointer_cast<SyncOfflineFileSize>(job);
         CPPUNIT_ASSERT(syncOfflineFilesSizeJob);
-        syncOfflineFilesSizeJob->_size = true;
+        syncOfflineFilesSizeJob->_size = 10;
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
