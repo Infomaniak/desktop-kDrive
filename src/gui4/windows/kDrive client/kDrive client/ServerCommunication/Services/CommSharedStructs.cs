@@ -311,6 +311,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         public InconsistencyType? Inconsistency { get; set; }
         public CancelType? CancelType { get; set; }
         public string? Error { get; set; }
+        public Int64? Size { get; set; }
     }
 
     public static partial class ConversionHelper
@@ -329,6 +330,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             copyProperty(source, target, nameof(source.Inconsistency), nameof(target.Inconsistency));
             copyProperty(source, target, nameof(source.CancelType), nameof(target.CancelType));
             copyProperty(source, target, nameof(source.Error), nameof(target.Error));
+            copyProperty(source, target, nameof(source.Size), nameof(target.Size));
         }
     }
 
