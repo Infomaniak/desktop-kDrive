@@ -34,7 +34,7 @@ namespace Infomaniak.kDrive.Pages
         private async void PrimaryButton_Click(object sender, RoutedEventArgs e)
         {
             Logger.Log(Logger.Level.Info, "Primary button clicked - Opening drive home page");
-            await Windows.System.Launcher.LaunchUriAsync(App.Constants.DriveHomeUrl(ViewModel.SelectedSync?.Drive.DriveId));
+            await Windows.System.Launcher.LaunchUriAsync(ViewModel.SelectedSync?.Drive.GetWebUri());
         }
 
         private async void SecondaryButton_Click(object sender, RoutedEventArgs e)

@@ -14,11 +14,7 @@ namespace Infomaniak.kDrive.ViewModels
             get
             {
                 string languageCode = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
-                string res = String.Format(App.Constants.StorageUrl.ToString() + "/ kDrive-{0}-win-{1}.html",
-                    Tag,
-                    languageCode);
-
-                return new Uri(res);
+                return App.Constants.Storage.ReleaseNoteUrl(Tag, languageCode);
             }
         }
 
@@ -32,8 +28,8 @@ namespace Infomaniak.kDrive.ViewModels
                 }
                 else
                 {*/
-                    Logger.Log(Logger.Level.Warning, "BuildVersion string is not in the expected format 'yyyyMMdd'.");
-                    return DateTime.MinValue;
+                Logger.Log(Logger.Level.Warning, "BuildVersion string is not in the expected format 'yyyyMMdd'.");
+                return DateTime.MinValue;
                 //}
             }
         }

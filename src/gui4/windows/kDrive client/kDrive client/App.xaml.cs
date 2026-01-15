@@ -53,12 +53,12 @@ namespace Infomaniak.kDrive
         private static IServiceProvider? _serviceProvider = null;
         internal static IServiceProvider ServiceProvider => _serviceProvider ?? throw new InvalidOperationException("Service provider is not initialized.");
 
-        internal static IAppConstants Constants => new ProductionConstants();
+        internal static IAppConstants Constants => new ProductionAppConstants();
         internal App()
         {
             SentrySdk.Init(options =>
             {
-                options.Dsn = Constants.SentryDSN;
+                options.Dsn = Constants.Sentry.Dsn;
                 options.Debug = true;
                 options.SendDefaultPii = true;
                 options.AutoSessionTracking = true;

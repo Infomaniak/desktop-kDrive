@@ -62,7 +62,7 @@ namespace Infomaniak.kDrive.Pages
             if (ViewModel.SelectedSync?.Drive.IsAdmin ?? false)
             {
                 Logger.Log(Logger.Level.Info, "Renew drive button clicked - Opening drive renewal page");
-                await Windows.System.Launcher.LaunchUriAsync(App.Constants.DriveRenewUrl(ViewModel.SelectedSync?.Drive.DriveId));
+                await Windows.System.Launcher.LaunchUriAsync(App.Constants.Drive.RenewUrl(ViewModel.SelectedSync?.Drive.DriveId));
             }
             else
             {

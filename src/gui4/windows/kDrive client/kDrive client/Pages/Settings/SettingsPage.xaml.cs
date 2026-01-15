@@ -235,7 +235,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             if (control is not null)
                 control.IsEnabled = false;
 
-            await Windows.System.Launcher.LaunchUriAsync(App.Constants.GitHubRepoUrl);
+            await Windows.System.Launcher.LaunchUriAsync(App.Constants.GitHub.RepoUrl);
 
             if (control is not null)
                 control.IsEnabled = true;
