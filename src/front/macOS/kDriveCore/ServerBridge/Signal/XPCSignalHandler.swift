@@ -38,6 +38,7 @@ enum SignalError: Error {
     case unableToGetSyncDbIdFromSignal
     case unableToGetSyncProgressFromSignal
     case unableToGetSyncFileItemFromSignal
+    case unableToGetErrorInfoFromSignal
     case unsupported(_ num: SignalNum)
 }
 
