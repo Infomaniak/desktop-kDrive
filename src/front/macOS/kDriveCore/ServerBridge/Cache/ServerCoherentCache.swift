@@ -27,8 +27,10 @@ public protocol CoherentCacheObservable: Sendable {
 /// This cache must track 1:1 the server, can only be purged on server restart
 public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
     private var users: IndexedUsers = [:]
+    private var serverErrors: IndexedErrors = [:]
 
     private nonisolated let usersSubject = PassthroughSubject<IndexedUsers, Never>()
+    private nonisolated let serverErrorsSubject = PassthroughSubject<IndexedErrors, Never>()
 
     public nonisolated var usersPublisher: AnyPublisher<IndexedUsers, Never> {
         usersSubject
@@ -41,6 +43,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         case accountNotFound(_ dbId: Int32)
         case driveNotFound(_ dbId: Int32)
         case synchroNotFound(_ dbId: Int32)
+        case errorNotFound(_ dbId: Int32)
         case notAServerError
     }
 
@@ -305,15 +308,48 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
             throw CacheError.notAServerError
         }
 
-        print("TODO: error.level == Server. Needs a specific global handling")
+        serverErrors[error.dbId] = error
+        notifyServerErrorsUpdate()
     }
 
-    public func removeServerError(_ errorDbId: Int32) async {
-        print("TODO: Remove specific error dbId \(errorDbId)")
+    public func removeError(_ errorDbId: Int32) async throws {
+        guard try await removeServerError(errorDbId) != nil else {
+            return
+        }
+
+        for user in users.values {
+            for account in user.accounts.values {
+                for drive in account.drives.values {
+                    for var synchro in drive.synchros.values {
+                        guard synchro.errors.removeValue(forKey: errorDbId) != nil else {
+                            continue
+                        }
+
+                        try updateSynchro(synchro)
+                        return
+                    }
+                }
+            }
+        }
+
+        throw CacheError.errorNotFound(errorDbId)
     }
 
-    public func clearServerError() async {
-        // TODO: Clean global `level == .Server` errors
+    @discardableResult
+    private func removeServerError(_ errorDbId: Int32) async throws -> ErrorInfo? {
+        guard let errorInfo = serverErrors.removeValue(forKey: errorDbId) else {
+            return nil
+        }
+
+        notifyServerErrorsUpdate()
+        return errorInfo
+    }
+
+    public func clearErrors() async {
+        if !serverErrors.isEmpty {
+            serverErrors.removeAll()
+            notifyServerErrorsUpdate()
+        }
 
         for user in users.values {
             for account in user.accounts.values {
@@ -331,6 +367,10 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
 
     private func notifyUpdate() {
         usersSubject.send(users)
+    }
+
+    private func notifyServerErrorsUpdate() {
+        serverErrorsSubject.send(serverErrors)
     }
 
     // MARK: - Management

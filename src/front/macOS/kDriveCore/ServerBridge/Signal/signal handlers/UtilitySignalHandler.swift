@@ -38,10 +38,10 @@ struct UtilitySignalHandler {
         }
 
         let errorDbId = errorRemovedSignal.body.errorDbId
-        try await coherentCache.removeServerError(errorDbId)
+        try await coherentCache.removeError(errorDbId)
     }
 
     func handleErrorCleared(_ signal: Data) async throws {
-        await coherentCache.clearServerError()
+        await coherentCache.clearErrors()
     }
 }
