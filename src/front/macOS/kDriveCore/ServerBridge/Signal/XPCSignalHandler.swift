@@ -39,6 +39,7 @@ enum SignalError: Error {
     case unableToGetSyncProgressFromSignal
     case unableToGetSyncFileItemFromSignal
     case unableToGetErrorInfoFromSignal
+    case unableToGetErrorRemovedFromSignal
     case unsupported(_ num: SignalNum)
 }
 
@@ -130,7 +131,7 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
             try await utilitySignalHandler.handleError(signal)
 
         case .UTILITY_ERROR_REMOVED:
-            print("TODO support for UTILITY_ERROR_REMOVED")
+            try await utilitySignalHandler.handleErrorRemoved(signal)
 
         case .UTILITY_ERRORS_CLEARED:
             print("TODO support for UTILITY_ERRORS_CLEARED")

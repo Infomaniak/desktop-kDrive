@@ -31,11 +31,23 @@ struct UtilitySignalHandler {
         let error = errorInfoSignal.body
         await coherentCache.handleServerError(error)
     }
+
+    func handleErrorRemoved(_ signal: Data) async throws {
+        guard let errorRemovedSignal = try? decoder.decode(SignalMessage<ErrorRemovedSignal>.self, from: signal) else {
+            throw SignalError.unableToGetErrorRemovedFromSignal
+        }
+
+        let errorDbId = errorRemovedSignal.body.errorDbId
+        await coherentCache.removeServerError(errorDbId)
+    }
 }
 
 extension CoherentCache {
     func handleServerError(_ error: ErrorInfoSignal) async {
         // TODO: Error handling
         print("handleServerError :\(error)")
+    
+    func removeServerError(_ errorDbId: Int32) async {
+        print("TODO: Remove specific error dbId \(errorDbId)")
     }
 }
