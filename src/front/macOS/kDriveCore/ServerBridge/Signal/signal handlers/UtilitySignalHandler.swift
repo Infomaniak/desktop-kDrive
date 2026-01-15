@@ -40,14 +40,23 @@ struct UtilitySignalHandler {
         let errorDbId = errorRemovedSignal.body.errorDbId
         await coherentCache.removeServerError(errorDbId)
     }
+
+    func handleErrorCleared(_ signal: Data) async throws {
+        await coherentCache.clearServerError()
+    }
 }
 
+// TODO: Error handling
 extension CoherentCache {
     func handleServerError(_ error: ErrorInfoSignal) async {
-        // TODO: Error handling
-        print("handleServerError :\(error)")
-    
+        print("TODO: handleServerError :\(error)")
+    }
+
     func removeServerError(_ errorDbId: Int32) async {
         print("TODO: Remove specific error dbId \(errorDbId)")
+    }
+
+    func clearServerError() async {
+        print("TODO: Remove all errors")
     }
 }

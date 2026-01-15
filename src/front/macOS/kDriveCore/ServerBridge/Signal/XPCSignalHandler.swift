@@ -131,8 +131,8 @@ actor XPCSignalHandler: XPCSignalHandlerProtocol {
         case .UTILITY_ERROR_REMOVED:
             try await utilitySignalHandler.handleErrorRemoved(signal)
 
-        case .UTILITY_ERRORS_CLEARED:
-            print("TODO support for UTILITY_ERRORS_CLEARED")
+        case .UTILITY_ERRORS_CLEARED: // Soon legacy Signal
+            try await utilitySignalHandler.handleErrorCleared(signal)
 
         default:
             throw SignalError.unsupported(signalNum)
