@@ -608,7 +608,7 @@ function Create-MSI-Package {
     Write-Host "Executing the dotnet build command ..."
     $env:WIX_CABINET_THREAD_COUNT = 4
     $env:WIX_USE_COMPRESSION = ""
-    powershell -Command "Add-MpPreference -ExclusionPath 'C:\release-runner\_work\desktop-kDrive\desktop-kDrive'"
+  
 	dotnet build -v diag "$msiInstallerFolderPath\kDriveInstaller.sln" /p:WixUseCompression=false /p:WixCabinetThreadCount=1 /p:Configuration="Release" /p:Platform="x64" /p:OutputName=$appName
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
