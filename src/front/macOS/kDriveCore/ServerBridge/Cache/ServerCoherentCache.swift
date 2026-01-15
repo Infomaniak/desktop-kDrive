@@ -18,6 +18,7 @@
 
 import Combine
 import Foundation
+import OrderedCollections
 
 public protocol CoherentCacheObservable: Sendable {
     var usersPublisher: AnyPublisher<IndexedUsers, Never> { get }
