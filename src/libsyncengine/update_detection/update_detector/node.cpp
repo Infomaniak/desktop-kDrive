@@ -265,6 +265,10 @@ bool Node::isParentOf(std::shared_ptr<const Node> potentialChild) const {
     return false;
 }
 
+bool Node::isValid() const {
+    return _id.has_value() && !_id.value().empty() && !_isTmp && !CommonUtility::startsWith(_id.value(), "tmp_");
+}
+
 bool Node::isParentValid(std::shared_ptr<const Node> parentNode) const {
     return !isParentOf(parentNode);
 }

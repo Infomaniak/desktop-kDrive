@@ -1193,13 +1193,14 @@ bool UpdateTreeWorker::checkTreeIntegrity() {
 }
 
 bool UpdateTreeWorker::checkNodeIntegrity(const std::shared_ptr<Node> node) {
-    if (!node->id().has_value() || node->id() == NodeId{} || node->isTmp() || CommonUtility::startsWith(*node->id(), "tmp_")) {
-        if (!node->id().has_value() || node->id() == NodeId{}) {
-            LOGW_SYNCPAL_WARN(_logger,
-                              _side << integrityCheckFailureMsg << L" Found a non-temporary node without ID: " << logStr(node));
-        } else {
+    if (!node->isValid()) {
+        if (node->isTmp()) {
             LOGW_SYNCPAL_WARN(_logger, _side << integrityCheckFailureMsg << L" A temporary node remains in the update tree: "
                                              << logStr(node));
+
+        } else {
+            LOGW_SYNCPAL_WARN(_logger,
+                              _side << integrityCheckFailureMsg << L" Found a non-temporary node without ID: " << logStr(node));
         }
 
         sentry::Handler::captureMessage(sentry::Level::Warning, "UpdateTreeWorker::integrityCheck",

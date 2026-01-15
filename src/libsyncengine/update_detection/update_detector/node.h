@@ -160,8 +160,11 @@ class Node {
 
         [[nodiscard]] SyncPath getPath() const;
 
-        [[nodiscard]] inline bool isTmp() const { return _isTmp; }
+        [[nodiscard]] inline bool isTmp() const {
+            return _isTmp || CommonUtility::startsWith(_id.has_value() ? _id.value() : "", "tmp_");
+        }
         inline void setIsTmp(bool newIsTmp) { _isTmp = newIsTmp; }
+        [[nodiscard]] bool isValid() const;
 
     private:
         friend class UpdateTree;
