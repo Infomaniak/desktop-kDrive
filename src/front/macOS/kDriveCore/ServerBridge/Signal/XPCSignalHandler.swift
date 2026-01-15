@@ -128,7 +128,13 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
 
         case .UTILITY_ERROR_ADDED:
             try await utilitySignalHandler.handleError(signal)
-            
+
+        case .UTILITY_ERROR_REMOVED:
+            print("TODO support for UTILITY_ERROR_REMOVED")
+
+        case .UTILITY_ERRORS_CLEARED:
+            print("TODO support for UTILITY_ERRORS_CLEARED")
+
         default:
             throw SignalError.unsupported(signalNum)
         }
