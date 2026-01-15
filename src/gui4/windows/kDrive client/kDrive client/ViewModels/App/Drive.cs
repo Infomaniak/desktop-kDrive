@@ -122,8 +122,8 @@ namespace Infomaniak.kDrive.ViewModels
         public Sync? MainSync
         {
             get => _mainSync;
-            set 
-            { 
+            set
+            {
                 SetPropertyInUIThread(ref _mainSync, value);
                 IsConfigured = value is not null;
             }
@@ -142,22 +142,22 @@ namespace Infomaniak.kDrive.ViewModels
 
         public Uri GetWebUri()
         {
-            return new Uri($"https://ksuite.infomaniak.com/kdrive/app/drive/{DriveId}");
+            return App.Constants.Drive.HomeUrl(DriveId);
         }
 
         public Uri GetWebTrashUri()
         {
-            return new Uri($"https://ksuite.infomaniak.com/kdrive/app/drive/{DriveId}/trash");
+            return App.Constants.Drive.TrashUrl(DriveId);
         }
 
         public Uri GetWebFavoritesUri()
         {
-            return new Uri($"https://ksuite.infomaniak.com/kdrive/app/drive/{DriveId}/favorites");
+            return App.Constants.Drive.FavoriteUrl(DriveId);
         }
 
         public Uri GetWebSharedUri()
         {
-            return new Uri($"https://ksuite.infomaniak.com/kdrive/app/drive/{DriveId}/shared-with-me");
+            return App.Constants.Drive.SharedUrl(DriveId);
         }
 
         public Account Account
