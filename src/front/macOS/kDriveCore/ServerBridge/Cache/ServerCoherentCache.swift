@@ -41,6 +41,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         case accountNotFound(_ dbId: Int32)
         case driveNotFound(_ dbId: Int32)
         case synchroNotFound(_ dbId: Int32)
+        case notAServerError
     }
 
     public init() {}
@@ -286,15 +287,44 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
     // MARK: - Errors
 
     public func addOrUpdateError(_ error: ErrorInfo) async throws {
+        if error.level == .Server {
+            try await addOrUpdateServerError(error)
+            return
+        }
+
+        guard var synchro = getSynchro(synchroDbId: error.synchroDbId) else {
+            throw ServerCoherentCache.CacheError.synchroNotFound(error.synchroDbId)
+        }
+
+        synchro.errors[error.dbId] = error
+        try updateSynchro(synchro)
     }
 
     private func addOrUpdateServerError(_ error: ErrorInfo) async throws {
+        guard error.level == .Server else {
+            throw CacheError.notAServerError
+        }
+
+        print("TODO: error.level == Server. Needs a specific global handling")
     }
 
     public func removeServerError(_ errorDbId: Int32) async {
+        print("TODO: Remove specific error dbId \(errorDbId)")
     }
 
     public func clearServerError() async {
+        // TODO: Clean global `level == .Server` errors
+
+        for user in users.values {
+            for account in user.accounts.values {
+                for drive in account.drives.values {
+                    for var synchro in drive.synchros.values {
+                        synchro.errors.removeAll()
+                        try? updateSynchro(synchro)
+                    }
+                }
+            }
+        }
     }
 
     // MARK: - Observation
