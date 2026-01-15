@@ -598,7 +598,7 @@ void TestGuiCommChannel::testSyncOflineFilesSizeJob() {
     (void) queryObj.set("num", toInt(RequestNum::SYNC_OFFLINE_FILES_SIZE));
 
     Poco::JSON::Object queryParamsObj;
-    (void) queryParamsObj.set("syncDbId", "1");
+    (void) queryParamsObj.set("syncDbId", 1);
     (void) queryObj.set("params", queryParamsObj);
     const auto queryStr = stringifyQueryObj(queryObj);
 
