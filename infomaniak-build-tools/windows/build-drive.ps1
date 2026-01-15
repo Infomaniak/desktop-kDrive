@@ -608,6 +608,8 @@ function Create-MSI-Package {
     Write-Host "Executing the dotnet build command ..."
     $env:WIX_CABINET_THREAD_COUNT = 4
     $env:WIX_USE_COMPRESSION = ""
+
+    Get-PSDrive -PSProvider FileSystem | Select-Object Name,Free,Used,Free/1GB,Used/1GB
   
 	dotnet build -v diag "$msiInstallerFolderPath\kDriveInstaller.sln" /p:WixUseCompression=false /p:WixCabinetThreadCount=1 /p:Configuration="Release" /p:Platform="x64" /p:OutputName=$appName
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
