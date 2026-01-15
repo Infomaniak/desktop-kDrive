@@ -26,7 +26,8 @@ namespace Infomaniak.kDrive.CustomControls
                 typeof(Pages.DriveAccessDeniedPage),
                 typeof(Pages.LoggingErrorPage),
                 typeof(Pages.NotRenewErrorPage),
-                typeof(Pages.MaintenanceErrorPage)
+                typeof(Pages.MaintenanceErrorPage),
+                typeof(Pages.AsleepErrorPage)
             } },
             { "ActivityPage", new List<Type>() { typeof(Pages.ActivityPage), typeof(Pages.ErrorPage) } },
             { "SettingsPage", new List<Type>() { typeof(Pages.Settings.SettingsPage), typeof(Pages.Settings.DriveManagementPage) } },

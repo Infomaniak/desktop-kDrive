@@ -424,9 +424,6 @@ ou choisissez une offre adaptée à vos besoins.</value>
   <data name="Page_DriveAccessDeniedPage_Title.Text" xml:space="preserve">
     <value>Accès refusé au kDrive</value>
   </data>
-  <data name="Page_LogginErrorPage_Title.Text" xml:space="preserve">
-    <value>Vous avez été déconnecté</value>
-  </data>
   <data name="Page_MaintenanceErrorPage_Title.Text" xml:space="preserve">
     <value>Maintenance en cours</value>
   </data>
@@ -919,5 +916,20 @@ Avant de continuer, assurez-vous que tout vos fichiers sont bien à jour et sync
   </data>
   <data name="Page_LogginErrorPage_UserMissmatch_Button.Content" xml:space="preserve">
     <value>Connexion</value>
+  </data>
+  <data name="Page_LogginErrorPage_Title.Text" xml:space="preserve">
+    <value>Vous avez été déconnecté</value>
+  </data>
+  <data name="Page_AsleepErrorPage_Title.Text" xml:space="preserve">
+    <value>Votre kDrive est en veille</value>
+  </data>
+  <data name="Page_AsleepErrorPage_Subtitle.Text" xml:space="preserve">
+    <value>Votre kDrive n’a pas été utilisé depuis longtemps et a été mis en veille afin d’économiser des ressources</value>
+  </data>
+  <data name="Page_AsleepErrorPage_PrimaryButton.Content" xml:space="preserve">
+    <value>Sortir de veille</value>
+  </data>
+  <data name="Page_AsleepErrorPage_SecondaryButton.Content" xml:space="preserve">
+    <value>Actualiser</value>
   </data>
 </root>
