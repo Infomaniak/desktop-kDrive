@@ -348,8 +348,7 @@ void DrivePreferencesWidget::askEnableLiteSync(const std::function<void(bool)> &
         return;
     }
 
-    if (virtualFileMode == VirtualFileMode::Win || virtualFileMode == VirtualFileMode::Mac ||
-        virtualFileMode == VirtualFileMode::Suffix) {
+    if (virtualFileMode == VirtualFileMode::Win || virtualFileMode == VirtualFileMode::Mac) {
         CustomMessageBox msgBox(QMessageBox::Question, tr("Do you really want to turn on Lite Sync?"),
                                 tr("This operation may take from a few seconds to a few minutes depending on the size of the "
                                    "folder."),
