@@ -406,8 +406,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             if (type == SyncType.Online)
             {
                 // Ensure the path supports online mode
-                bool? supportOnlineMode = await PathSupportLiteSync(sync.LocalPath, CancellationToken.None);
-                if (!supportOnlineMode.HasValue || supportOnlineMode.Value == false)
+                bool? canSupportOnlineMode = await CanPathSupportLiteSync(sync.LocalPath, CancellationToken.None);
+                if (!canSupportOnlineMode.HasValue || canSupportOnlineMode.Value == false)
                 {
                     Logger.Log(Logger.Level.Warning, $"Local path {sync.LocalPath} does not support online sync mode, unable to change sync type for sync with DbId {syncDbId}.");
                     return false;
@@ -484,7 +484,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
         }
 
-        public async Task<bool?> PathSupportLiteSync(string absoluteLocalPath, CancellationToken cancellationToken)
+        public async Task<bool?> CanPathSupportLiteSync(string absoluteLocalPath, CancellationToken cancellationToken)
         {
             var parms = new JsonObject
             {
