@@ -18,6 +18,7 @@
 
 import Foundation
 import InfomaniakDI
+import OrderedCollections
 
 public struct RequestMock: Codable, Sendable {
     public let id: Int32

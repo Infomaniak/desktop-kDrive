@@ -19,6 +19,7 @@
 import Combine
 import Foundation
 import InfomaniakDI
+import OrderedCollections
 
 @MainActor
 @propertyWrapper
@@ -64,7 +65,7 @@ public final class ObservedSynchro: ObservableObject {
     public var projectedValue: ObservedSynchro { self }
 }
 
-public extension AnyPublisher where Output == [Int32: User], Failure == Never {
+public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
     func synchroEventPublisher(
         userDbId: Int32,
         accountDbId: Int32,

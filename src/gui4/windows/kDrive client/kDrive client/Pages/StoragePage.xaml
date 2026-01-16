@@ -45,23 +45,37 @@
         <!-- Title -->
         <TextBlock x:Uid="Page_StoragePage_Title"
                    Grid.Row="0"
-                   Text="Stockage"
                    Style="{StaticResource Infomaniak.Style.TextBlock.Title}" />
 
         <!-- Main -->
-        <InfoBar x:Uid="Page_StoragePage_DiskUnavailable"
-                 Grid.Row="1"
-                 IsOpen="True"
-                 IsClosable="False"
-                 Message="{x:Bind PageViewModel.DiskRoot, Mode=OneWay}"
-                 Visibility="{x:Bind PageViewModel.IsDiskConnected, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True'}">
-            <!-- TODO: Replace this infobar once the page is ready on the UI/UX side-->
-            <InfoBar.ActionButton>
-                <Button Content="Réessayer"
-                        Click="RetryButton_click"
-                        HorizontalAlignment="Right" />
-            </InfoBar.ActionButton>
-        </InfoBar>
+        <Grid  Grid.Row="1"
+               Visibility="{x:Bind PageViewModel.IsDiskConnected, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True'}"
+               RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="auto" />
+            </Grid.RowDefinitions>
+            <controls:SvgIcon Grid.Row="0"
+                              Width="120"
+                              UriString="{StaticResource Infomaniak.Custom.Images.hardware}" />
+            <StackPanel Grid.Row="1"
+                        Spacing="{StaticResource Infomaniak.Style.Spacing.M}">
+                <TextBlock Text="{x:Bind PageViewModel.MissingDiskTitle, Mode=OneWay}"
+                           TextAlignment="Center"
+                           Style="{ThemeResource SubtitleTextBlockStyle}" />
+                <TextBlock Text="{x:Bind PageViewModel.MissingDiskSubtitle, Mode=OneWay}"
+                           TextAlignment="Center" />
+                <Button x:Uid="Page_StoragePage_Disconnected_RetryButton"
+                        HorizontalAlignment="Center"
+                        Style="{ThemeResource TextBlockButtonStyle}"
+                        Click="RetryButton_click"/>
+                <ProgressRing x:Name="RetryProgressRing"
+                              Width="16"
+                              Height="16"
+                              HorizontalAlignment="Center"
+                              Visibility="Collapsed" />
+            </StackPanel>
+        </Grid>
         <Grid  Grid.Row="1"
                Background="{ThemeResource LayerFillColorDefaultBrush}"
                CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"

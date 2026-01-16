@@ -17,6 +17,7 @@
  */
 
 import Foundation
+import OrderedCollections
 
 struct UserRemoveSignal: Codable, Sendable {
     let userDbId: Int32

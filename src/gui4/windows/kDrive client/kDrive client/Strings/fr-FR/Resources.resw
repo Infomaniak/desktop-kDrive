@@ -460,9 +460,6 @@ ou choisissez une offre adaptée à vos besoins.</value>
   <data name="Global_KiloBytes" xml:space="preserve">
     <value>Ko</value>
   </data>
-  <data name="Page_StoragePage_DiskUnavailable.Message" xml:space="preserve">
-    <value>Disque indisponible</value>
-  </data>
   <data name="Page_HomePage_Status_SyncUpToDate.Text" xml:space="preserve">
     <value>, vos fichiers sont à jour</value>
   </data>
@@ -910,6 +907,18 @@ La synchronisation actuelle reste inchangée. Toutefois, en cas de comportement 
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncMode_ErrorDialog.SecondaryButtonText" xml:space="preserve">
     <value>Fermer</value>
+  </data>
+  <data name="Page_StoragePage_Disconnected_Title.Text" xml:space="preserve">
+    <value>Le disque de stockage {0} n’est pas accessible</value>
+    <comment>{0}: Disk root (ie C:/)</comment>
+  </data>
+  <data name="Page_StoragePage_Disconnected_RetryButton.Content" xml:space="preserve">
+    <value>Réessayer</value>
+  </data>
+  <data name="Page_StoragePage_Disconnected_Subtitle.Text" xml:space="preserve">
+    <value>kDrive ne peut pas accéder au disque {0}  Assurez-vous qu’il est bien connecté, 
+déverrouillé et accessible depuis votre ordinateur.</value>
+    <comment>{0}: Disk root (ie C:/)</comment>
   </data>
   <data name="Page_NotRenewErrorPage_MainButton.Content" xml:space="preserve">
     <value>Actualiser</value>
