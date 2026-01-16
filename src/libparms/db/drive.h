@@ -58,8 +58,8 @@ class PARMS_EXPORT Drive {
         [[nodiscard]] const std::string &name() const { return _name; }
         void setSize(int64_t newSize) { _size = newSize; }
         [[nodiscard]] int64_t size() const { return _size; }
-        [[nodiscard]] std::string color() const { return _color; }
-        void setColor(std::string color) { _color = std::move(color); }
+        [[nodiscard]] const std::string &color() const { return _color; }
+        void setColor(const std::string &color) { _color = std::move(color); }
         [[nodiscard]] bool notifications() const { return _notifications; }
         void setNotifications(bool newNotifications) { _notifications = newNotifications; }
         [[nodiscard]] bool admin() const { return _admin; }

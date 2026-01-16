@@ -102,10 +102,10 @@ ExitInfo GetInfoDriveJob::handleJsonResponse(const std::string &replyBody) {
     }
 
     if (Poco::JSON::Object::Ptr packObj = dataObj->getObject(packKey); packObj) { // Not mandatory
-        JsonParserUtility::extractValue(dataObj, packIdKey, _packInfo.id);
-        JsonParserUtility::extractValue(dataObj, packNameKey, _packInfo.name);
-        JsonParserUtility::extractValue(dataObj, packDisplayNameKey, _packInfo.displayName);
-        JsonParserUtility::extractValue(dataObj, packIsFreeKey, _packInfo.isFree);
+        (void) JsonParserUtility::extractValue(dataObj, packIdKey, _packInfo.id);
+        (void) JsonParserUtility::extractValue(dataObj, packNameKey, _packInfo.name);
+        (void) JsonParserUtility::extractValue(dataObj, packDisplayNameKey, _packInfo.displayName);
+        (void) JsonParserUtility::extractValue(dataObj, packIsFreeKey, _packInfo.isFree);
     }
 
     return ExitCode::Ok;
