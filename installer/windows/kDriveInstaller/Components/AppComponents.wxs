@@ -1,4 +1,4 @@
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns=http://wixtoolset.org/schemas/v4/wxs>
 	<Fragment>
 		<ComponentGroup Id="App" Directory="INSTALLFOLDER">
 			<Component Guid="{5B73D754-B0DA-4873-8371-68308DA3C557}">

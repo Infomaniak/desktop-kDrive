@@ -1,4 +1,4 @@
-<Project Sdk="WixToolset.Sdk/6.0.2">
+<Project Sdk="WixToolset.Sdk/4.0.0">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <DefineConstants>desktop-kDriveDir=$(SolutionDir)..\..\..</DefineConstants>
     <VerboseOutput>true</VerboseOutput>
@@ -13,7 +13,8 @@
     <UserSecretsId>3821c68b-8a2a-49a7-8e78-f7810232e10d</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="WixToolset.BootstrapperApplications.wixext" Version="6.0.2" />
-    <PackageReference Include="WixToolset.Util.wixext" Version="6.0.2" />
+    <PackageReference Include="WixToolset.BootstrapperApplications.wixext" Version="4.0.0" />
+    <PackageReference Include="WixToolset.Sdk" Version="4.0.0" />
+    <PackageReference Include="WixToolset.Util.wixext" Version="4.0.0" />
   </ItemGroup>
 </Project>

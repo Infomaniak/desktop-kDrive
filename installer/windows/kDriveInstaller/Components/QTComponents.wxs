@@ -1,4 +1,4 @@
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+<Wix xmlns=http://wixtoolset.org/schemas/v4/wxs>
     <Fragment>
         <ComponentGroup Id="QTDLL" Directory="INSTALLFOLDER">
             <Component Guid="8E9E11E1-667E-4EA1-AA52-3A43B2D80C26">
