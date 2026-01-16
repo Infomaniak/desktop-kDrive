@@ -387,6 +387,7 @@ ExitInfo AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
     }
 
     // Send data
+    uint i = 0;
     std::string::const_iterator itBegin = _data.begin();
     while (itBegin != _data.end()) {
         const std::scoped_lock lock(_mutexSession);
@@ -397,12 +398,15 @@ ExitInfo AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
 
         std::string::const_iterator itEnd = (_data.end() - itBegin > BUF_SIZE ? itBegin + BUF_SIZE : _data.end());
         try {
-            LOG_DEBUG(_logger, "Request " << jobId() << ": sending data chunk");
+            if (i % 1000 == 0) LOG_DEBUG(_logger, "Request " << jobId() << ": sending data chunk");
             stream[0].get() << std::string(itBegin, itEnd);
             if (ioOrLogicalErrorOccurred(stream[0].get())) {
                 return processSocketError("stream write error", jobId());
             }
-            LOG_DEBUG(_logger, "Request " << jobId() << ": data chunk sent");
+            if (i % 1000 == 0) LOG_DEBUG(_logger, "Request " << jobId() << ": data chunk sent");
+
+            ++i;
+
         } catch (Poco::Exception &e) {
             return processSocketError("send data exception", jobId(), e);
         } catch (const std::exception &e) {
