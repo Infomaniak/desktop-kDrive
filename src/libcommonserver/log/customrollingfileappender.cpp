@@ -182,7 +182,11 @@ void CustomRollingFileAppender::append(const log4cplus::spi::InternalLoggingEven
 
     // Rotate log file if needed before appending to it.
     if (out.tellp() > _maxFileSize) customRollover(true);
-
+#ifdef KD_WINDOWS
+    std::wcout << event.getFile().c_str() << L":" << event.getLine() << L" " << event.getMessage().c_str() << std::endl;
+#else
+    std::cout << event.getFile().c_str() << ":" << event.getLine() << " " << event.getMessage().c_str() << std::endl;
+#endif
     try {
         RollingFileAppender::append(event);
     } catch (...) {
