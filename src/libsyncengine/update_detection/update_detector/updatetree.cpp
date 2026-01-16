@@ -28,7 +28,6 @@
 namespace KDC {
 
 UpdateTree::UpdateTree(ReplicaSide side, const DbNode &dbNode) :
-    _validNodes(std::unordered_map<NodeId, std::shared_ptr<Node>>()),
     _rootNode(std::shared_ptr<Node>(
             new Node(dbNode.nodeId(), side, (side == ReplicaSide::Local ? dbNode.nameLocal() : dbNode.nameRemote()),
                      NodeType::Directory, {}, (side == ReplicaSide::Local ? dbNode.nodeIdLocal() : dbNode.nodeIdRemote()),

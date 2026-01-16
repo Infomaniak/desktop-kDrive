@@ -1193,8 +1193,9 @@ bool UpdateTreeWorker::checkTreeIntegrity() {
 }
 
 bool UpdateTreeWorker::checkNodeIntegrity(const std::shared_ptr<Node> node) {
-    if (!node->isValid()) {
-        if (node->isTmp()) {
+    bool hasTempPrefix = node->id().has_value() && CommonUtility::startsWith(node->id().value(), "tmp_");
+    if (!node->isValid() || hasTempPrefix) {
+        if (node->isTmp() || hasTempPrefix) {
             LOGW_SYNCPAL_WARN(_logger, _side << integrityCheckFailureMsg << L" A temporary node remains in the update tree: "
                                              << logStr(node));
 
