@@ -32,6 +32,7 @@ namespace Infomaniak.kDrive.Types
         DRIVE_DELETE,
         DRIVE_SEARCH,
         SYNC_INFOLIST,
+        SYNC_OFFLINE_FILES_SIZE,
         SYNC_START,
         SYNC_STOP,
         SYNC_STATUS,
