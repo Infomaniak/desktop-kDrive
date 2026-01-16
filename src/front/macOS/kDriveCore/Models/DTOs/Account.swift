@@ -17,9 +17,9 @@
  */
 
 import Foundation
+import OrderedCollections
 
-public typealias IndexedAccounts = [Int32: Account]
-public typealias UserAccounts = (userDbId: Int32, indexedAccounts: [Int32: Account])
+public typealias IndexedAccounts = OrderedDictionary<Int32, Account>
 
 // TODO: Update to track userDbId in Account to match server type
 public struct Account: Identifiable, Hashable, Sendable {
@@ -32,7 +32,7 @@ public struct Account: Identifiable, Hashable, Sendable {
         dbId
     }
 
-    public init(dbId: Int32, userDbId: Int32, name: String, drives: [Int32: Drive]) {
+    public init(dbId: Int32, userDbId: Int32, name: String, drives: IndexedDrives) {
         self.dbId = dbId
         self.userDbId = userDbId
         self.name = name
