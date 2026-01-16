@@ -2,7 +2,7 @@
 
 namespace Infomaniak.kDrive
 {
-    public interface IAppConstants
+    internal interface IAppConstants
     {
         ISentryConstants Sentry { get; }
         IGitHubConstants GitHub { get; }

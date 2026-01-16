@@ -70,11 +70,11 @@ namespace Infomaniak.kDrive
             StopSentry();
             _sentryHandler = SentrySdk.Init(options =>
                     {
-                        options.Dsn = Constants.SentryInfo.DSN;
+                        options.Dsn = Constants.Sentry.Dsn;
                         options.SendDefaultPii = true;
                         options.AutoSessionTracking = true;
                         options.IsGlobalModeEnabled = true;
-                        options.Environment = Constants.SentryInfo.Environment;
+                        options.Environment = Constants.Sentry.Environment;
                     });
         }
 
