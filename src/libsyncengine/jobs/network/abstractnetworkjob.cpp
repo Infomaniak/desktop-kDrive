@@ -39,6 +39,7 @@
 #include <functional>
 #include <Poco/JSON/Parser.h>
 #include <Poco/Net/HTTPRequest.h>
+#include "kDrive_API/upload/upload_session/uploadsessionchunkjob.h"
 
 #define BUF_SIZE 1024
 

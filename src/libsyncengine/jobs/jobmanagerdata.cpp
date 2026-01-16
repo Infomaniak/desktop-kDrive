@@ -104,6 +104,7 @@ void JobManagerData::clear() {
     }
 
     for (const auto &[_, job]: _managedJobs) {
+        LOG_DEBUG(Log::instance()->getLogger(), "Clearing job main callback for: " << job->jobId());
         job->setMainCallback(nullptr);
     }
     _managedJobs.clear();
