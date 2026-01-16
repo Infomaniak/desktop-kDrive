@@ -1168,7 +1168,7 @@ void TestUpdateTreeWorker::testIntegrityCheck() {
     CPPUNIT_ASSERT(newNode->id()->substr(0, 4) == "tmp_");
     CPPUNIT_ASSERT(newNode->isTmp());
 
-    CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->checkTreeIntegrity()); // OK because update tree is still empty at this point.
 
     const auto createOp = std::make_shared<FSOperation>(OperationType::Create, "id51", NodeType::File, testhelpers::defaultTime,
                                                         testhelpers::defaultTime, testhelpers::defaultFileSize, "Dir 5/File 5.1");
@@ -1176,30 +1176,35 @@ void TestUpdateTreeWorker::testIntegrityCheck() {
             std::make_shared<FSOperation>(OperationType::Delete, "id51bis", NodeType::File, testhelpers::defaultTime,
                                           testhelpers::defaultTime, testhelpers::defaultFileSize, "Dir 5/File 5.1");
     CPPUNIT_ASSERT(_localUpdateTreeWorker->updateTmpFileNode(newNode, createOp, deleteOp, OperationType::Edit));
-    CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
+    CPPUNIT_ASSERT(!_localUpdateTreeWorker->checkTreeIntegrity()); // Not OK because "newNode" has been correctly added but its
+                                                                   // parent ("Dir 5") is still a temporary node.
 
-    CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _localUpdateTreeWorker->updateTmpNode(newNode->parentNode()));
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->checkTreeIntegrity());
 
     newNode->setId(std::nullopt);
-    CPPUNIT_ASSERT(!_localUpdateTreeWorker->integrityCheck());
+    CPPUNIT_ASSERT(!_localUpdateTreeWorker->checkTreeIntegrity());
 
     newNode->setId(NodeId{});
-    CPPUNIT_ASSERT(!_localUpdateTreeWorker->integrityCheck());
+    CPPUNIT_ASSERT(!_localUpdateTreeWorker->checkTreeIntegrity());
 
     newNode->setId(NodeId{"123"});
-    CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->checkTreeIntegrity());
 
     newNode->setChangeEvents(OperationType::Create);
-    CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->checkTreeIntegrity());
     newNode->setChangeEvents(OperationType::Edit);
-    CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->checkTreeIntegrity());
     newNode->setMoveOriginInfos(Node::MoveOriginInfos("/dummy", "1"));
     newNode->setChangeEvents(OperationType::Move);
-    CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->checkTreeIntegrity());
     newNode->setChangeEvents(OperationType::Delete);
-    CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->checkTreeIntegrity());
     newNode->setChangeEvents(OperationType::Edit | OperationType::Move);
-    CPPUNIT_ASSERT(_localUpdateTreeWorker->integrityCheck());
+    CPPUNIT_ASSERT(_localUpdateTreeWorker->checkTreeIntegrity());
+
+    newNode->parentNode()->setId(NodeId{"tmp_123"});
+    CPPUNIT_ASSERT(!_localUpdateTreeWorker->checkTreeIntegrity());
 }
 
 } // namespace KDC
