@@ -69,7 +69,7 @@ public struct InformationBlockView: View {
 
     public var body: some View {
         HStack(spacing: AppPadding.padding16) {
-            HStack(spacing: AppPadding.padding8) {
+            HStack(alignment: .top, spacing: AppPadding.padding8) {
                 if let icon {
                     RoundedRectangle(cornerRadius: AppRadius.radius4)
                         .fill(ColorToken.Accent.secondary.asColor)
