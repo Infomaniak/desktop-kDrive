@@ -320,6 +320,10 @@ void AbstractNetworkJob::clearSession() {
 
     if (_session) {
         try {
+            if (dynamic_cast<UploadSessionChunkJob *>(this) != nullptr) {
+                std::this_thread::sleep_for(std::chrono::seconds(10));
+                return;
+            }
             if (_session->connected()) {
                 _session->flushRequest();
                 _session->reset();
@@ -395,6 +399,10 @@ ExitInfo AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
 
         std::string::const_iterator itEnd = (_data.end() - itBegin > BUF_SIZE ? itBegin + BUF_SIZE : _data.end());
         try {
+            if (dynamic_cast<UploadSessionChunkJob *>(this) != nullptr) {
+                _session->abort();
+            }
+
             stream[0].get() << std::string(itBegin, itEnd);
             if (ioOrLogicalErrorOccurred(stream[0].get())) {
                 return processSocketError("stream write error", jobId());
