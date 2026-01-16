@@ -41,7 +41,8 @@ namespace Infomaniak.kDrive.Pages
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             ViewModel.SelectedSyncChanged += OnSelectedSyncChanged;
-            OnSelectedSyncChanged(null, new(null, ViewModel.SelectedSync));
+            if (ViewModel.SelectedSync is not null)
+                ViewModel.SelectedSync.PropertyChanged += OnSelectedSyncPropertyChanged;
             RedirectToHomePageIfNeeded();
         }
 
@@ -60,11 +61,7 @@ namespace Infomaniak.kDrive.Pages
 
         private void OnSelectedSyncChanged(object? sender, AppModel.SelectedSyncChangedEventArgs e)
         {
-            if (e.OldValue is not null)
-                e.OldValue.PropertyChanged -= OnSelectedSyncPropertyChanged;
-
-            if (e.NewValue is not null)
-                e.NewValue.PropertyChanged += OnSelectedSyncPropertyChanged;
+            AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(HomePage)));
         }
 
         private void OnSelectedSyncPropertyChanged(object? sender, PropertyChangedEventArgs e)

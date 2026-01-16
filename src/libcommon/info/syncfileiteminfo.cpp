@@ -31,6 +31,7 @@ static const auto outParamsConflict = "conflict";
 static const auto outParamsInconsistency = "inconsistency";
 static const auto outParamsCancelType = "cancelType";
 static const auto outParamsError = "error";
+static const auto outParamsSize = "size";
 
 
 namespace KDC {
@@ -66,6 +67,7 @@ void SyncFileItemInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, outParamsInconsistency, _inconsistency);
     CommonUtility::writeValueToStruct(dstruct, outParamsCancelType, _cancelType);
     CommonUtility::writeValueToStruct(dstruct, outParamsError, _error.toStdString());
+    CommonUtility::writeValueToStruct(dstruct, outParamsSize, _size);
 }
 
 QDataStream &operator>>(QDataStream &in, SyncFileItemInfo &info) {

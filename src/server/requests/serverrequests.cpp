@@ -2207,11 +2207,13 @@ void ServerRequests::driveToDriveInfo(const Drive &drive, DriveInfo &driveInfo) 
     driveInfo.setId(drive.driveId());
     driveInfo.setAccountDbId(drive.accountDbId());
     driveInfo.setName(QString::fromStdString(drive.name()));
+    driveInfo.setSize(drive.size());
     driveInfo.setColor(QColor(QString::fromStdString(drive.color())));
     driveInfo.setNotifications(drive.notifications());
     driveInfo.setAdmin(drive.admin());
     driveInfo.setMaintenance(drive.maintenanceInfo()._maintenance);
     driveInfo.setLocked(drive.locked());
+    driveInfo.setUsedSize(drive.usedSize());
     driveInfo.setAccessDenied(drive.accessDenied());
 }
 
@@ -2270,6 +2272,7 @@ void ServerRequests::syncFileItemToSyncFileItemInfo(const SyncFileItem &item, Sy
     itemInfo.setInconsistency(item.inconsistency());
     itemInfo.setCancelType(item.cancelType());
     itemInfo.setError(QString::fromStdString(item.error()));
+    itemInfo.setSize(item.size());
 }
 
 void ServerRequests::parametersToParametersInfo(const Parameters &parameters, ParametersInfo &parametersInfo) {

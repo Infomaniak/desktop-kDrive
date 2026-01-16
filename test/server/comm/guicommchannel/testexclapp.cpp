@@ -177,7 +177,7 @@ void TestGuiCommChannel::testExclAppGetFetchingAppListJob() {
     // Query. No need to pass a request id as the response is via a callback.
     Poco::JSON::Object queryObj;
     (void) queryObj.set("num", toInt(RequestNum::EXCLAPP_GET_FETCHING_APP_LIST));
-    Poco::JSON::Object queryParamsObj;
+    const Poco::JSON::Object queryParamsObj;
     (void) queryObj.set("params", queryParamsObj);
 
     const auto queryStr = stringifyQueryObj(queryObj);
