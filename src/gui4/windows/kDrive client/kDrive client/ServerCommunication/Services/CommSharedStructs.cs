@@ -400,7 +400,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
 
     public class SearchInfo
     {
-        public NodeId? NodeId { get; set; }
+        public NodeId? Id { get; set; }
         public string? Name { get; set; }
         public NodeType? Type { get; set; }
         public string? Path { get; set; }

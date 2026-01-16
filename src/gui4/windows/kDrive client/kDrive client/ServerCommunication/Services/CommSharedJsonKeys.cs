@@ -66,7 +66,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string BlackList = "blackList";
 
         static public string SearchString = "searchString";
-        static public string SearchInfoList = "searcsearchInfoListhString";
+        static public string SearchInfoList = "searchInfoList";
 
         static public string NodeSubFolderInfoList = "nodeSubFolderInfoList";
         static public string FolderSize = "folderSize";

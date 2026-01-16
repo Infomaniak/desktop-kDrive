@@ -493,7 +493,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         {
             var parms = new JsonObject
             {
-                [JsonKeys.Path] = Utility.ToBase64String(path),
+                [JsonKeys.Path] = Utility.ToBase64String(path)
             };
 
             CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_ISPATHVALIDFORNEWSYNC, parms, cancellationToken);
@@ -504,6 +504,61 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return null;
             }
             return data.Params[JsonKeys.IsValid]?.GetValue<bool>() ?? false;
+        }
+
+        public async Task<List<SearchItem>?> SearchItem(DbId syncDbId, string searchString, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.SyncDbId] = syncDbId,
+                [JsonKeys.SearchString] = Utility.ToBase64String(searchString)
+            };
+
+            CommData data = await _commClient.SendRequestAsync(RequestNum.DRIVE_SEARCH, parms, cancellationToken);
+
+            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.SearchInfoList))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.SearchInfoList} not found in response: {data.Params}");
+                return null;
+            }
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            options.Converters.Add(new Base64StringJsonConverter());
+            options.Converters.Add(new IntToDateTimeConverter());
+            List<SearchInfo>? resultInfos = data.Params[JsonKeys.SearchInfoList]?.Deserialize<List<SearchInfo>>(options);
+
+            if (resultInfos is null)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to deserialize SearchInfo list from ${data.Params[JsonKeys.SearchInfoList]}.");
+                return null;
+            }
+
+            var resultItems = new List<SearchItem>();
+
+            foreach (var item in resultInfos)
+            {
+                if (typeof(SearchInfo).GetProperties().Any(p => p.GetValue(item) == null))
+                {
+                    Logger.Log(
+                        Logger.Level.Error,
+                        $"SearchInfo contains null properties for item with NodeId {item.Id}. Skipping this item."
+                    );
+                    continue;
+                }
+
+                resultItems.Add(new SearchItem(
+                    item.Id!,
+                    item.Name!,
+                    item.Type ?? NodeType.Unknown,
+                    item.Path!,
+                    item.ModifiedTime ?? DateTime.MinValue,
+                    item.Size ?? 0,
+                    item.IsAvailableLocally ?? false
+                ));
+            }
+            return resultItems;
         }
 
         public async Task<List<Node>?> GetSubFolders(DbId userDbId, DriveId driveId, NodeId parentNodeId, CancellationToken cancellationToken)
@@ -560,7 +615,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             if (nodeInfo is null)
             {
                 Logger.Log(Logger.Level.Error, $"Failed to deserialize nodeInfo from ${data.Params[JsonKeys.NodeInfo]}.");
-                return null; 
+                return null;
             }
             return new Node(nodeInfo.NodeId ?? "", nodeInfo.Name ?? "", nodeInfo.Size ?? 0, nodeInfo.ParentNodeId ?? "", nodeInfo.Path ?? "", userDbId, driveId, nodeInfo?.AccessDenied ?? false);
         }
