@@ -5,6 +5,6 @@
     See the pre-build step of this project for details.
 -->
 
-<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
 	<Package Id="TODO_Manufacturer.__" Name="__" Manufacturer="TODO Manufacturer" Version="1.0.0.0"/>
 </Wix>
