@@ -2,7 +2,7 @@
 	<Fragment>
 		<ComponentGroup Id="App" Directory="INSTALLFOLDER">
 			<Component Guid="{5B73D754-B0DA-4873-8371-68308DA3C557}">
-				<File Id="kDrive.exe" Source="$(desktop-kDriveDir)\build-windows\install\bin\kDrive.exe" />
+				<File Id="kDrive.exe" Source="$(desktop-kDriveDir)\build-windows\install\bin\kDrive.exe" Compressed="no" />
 				<Shortcut Id="ApplicationStartMenuShortcut"
                         Name="kDrive"
                         Description="kDrive"
@@ -16,7 +16,7 @@
 				<RegistryValue Root="HKCU" Key="Software\Infomaniak\kDrive" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
 			</Component>
 			<Component>
-				<File Source="$(desktop-kDriveDir)\build-windows\install\bin\kDrive_client.exe" Checksum="yes" />
+				<File Source="$(desktop-kDriveDir)\build-windows\install\bin\kDrive_client.exe" Compressed="no" Checksum="yes" />
 			</Component>
 			<Component>
 				<File Source="$(desktop-kDriveDir)\installer\windows\kDriveInstaller\no_update"/>
