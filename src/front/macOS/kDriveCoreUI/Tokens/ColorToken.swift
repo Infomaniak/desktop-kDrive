@@ -41,7 +41,7 @@ public struct ColorToken {
 
     public enum Accent {
         public static let primary = ColorToken(light: KDriveColors.blue600, dark: KDriveColors.blue400)
-        public static let secondary = ColorToken(light: KDriveColors.kDrive500, dark: KDriveColors.kDrive400)
+        public static let secondary = ColorToken(light: KDriveColors.kDrive500, dark: KDriveColors.kDrive600)
     }
 
     public enum Action {

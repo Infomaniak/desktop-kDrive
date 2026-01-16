@@ -40,8 +40,8 @@ public enum KDriveColors {
   public static let orange400 = ColorAsset(name: "Orange400")
   public static let orange500 = ColorAsset(name: "Orange500")
   public static let orange800 = ColorAsset(name: "Orange800")
-  public static let kDrive400 = ColorAsset(name: "kDrive400")
   public static let kDrive500 = ColorAsset(name: "kDrive500")
+  public static let kDrive600 = ColorAsset(name: "kDrive600")
 }
 // swiftlint:enable identifier_name line_length nesting type_body_length type_name
 
