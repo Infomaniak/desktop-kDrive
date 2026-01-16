@@ -426,9 +426,6 @@
   <data name="Global_KiloBytes" xml:space="preserve">
     <value />
   </data>
-  <data name="Page_StoragePage_DiskUnavailable.Message" xml:space="preserve">
-    <value />
-  </data>
   <data name="Page_HomePage_Status_SyncUpToDate.Text" xml:space="preserve">
     <value />
   </data>

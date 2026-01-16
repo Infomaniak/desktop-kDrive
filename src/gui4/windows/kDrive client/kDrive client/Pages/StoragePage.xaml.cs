@@ -44,7 +44,8 @@ namespace Infomaniak.kDrive.Pages
 
         protected async override void OnNavigatedTo(NavigationEventArgs e)
         {
-            if (App.ServiceProvider.GetRequiredService<AppModel>().SelectedSync is null) AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(SettingsPage)));
+            if (App.ServiceProvider.GetRequiredService<AppModel>().SelectedSync is null)
+                AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(SettingsPage)));
             try
             {
                 await PageViewModel.UpdateDiskSizeAsync().ConfigureAwait(false);
@@ -54,12 +55,13 @@ namespace Infomaniak.kDrive.Pages
                 Logger.Log(Logger.Level.Info, "Disk size update was canceled.");
             }
         }
-
         private async void RetryButton_click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn)
             {
                 btn.IsEnabled = false;
+                btn.Visibility = Visibility.Collapsed;
+                RetryProgressRing.Visibility = Visibility.Visible;
                 try
                 {
                     await PageViewModel.UpdateDiskSizeAsync().ConfigureAwait(false);
@@ -73,6 +75,8 @@ namespace Infomaniak.kDrive.Pages
                     Logger.Log(Logger.Level.Info, "Disk size update was canceled.");
                 }
                 btn.IsEnabled = true;
+                btn.Visibility = Visibility.Visible;
+                RetryProgressRing.Visibility = Visibility.Collapsed;
             }
         }
     }
@@ -90,6 +94,10 @@ namespace Infomaniak.kDrive.Pages
         private bool _loading = false;
         private string _diskRoot = "";
         private bool _isDiskConnected = false;
+
+        // Text
+        private string _missingDiskTitle = "";
+        private string _missingDiskSubtitle = "";
 
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
@@ -156,13 +164,40 @@ namespace Infomaniak.kDrive.Pages
         public string DiskRoot
         {
             get => _diskRoot;
-            set => SetPropertyInUIThread(ref _diskRoot, value);
+            set
+            {
+                SetPropertyInUIThread(ref _diskRoot, value);
+                UpdateMissingDiskTexts();
+            }
+        }
+
+        public string MissingDiskTitle
+        {
+            get => _missingDiskTitle;
+            set => SetPropertyInUIThread(ref _missingDiskTitle, value);
+        }
+
+        public string MissingDiskSubtitle
+        {
+            get => _missingDiskSubtitle;
+            set => SetPropertyInUIThread(ref _missingDiskSubtitle, value);
         }
 
         public bool IsDiskConnected
         {
             get => _isDiskConnected;
             set => SetPropertyInUIThread(ref _isDiskConnected, value);
+        }
+
+
+        private void UpdateMissingDiskTexts()
+        {
+            if (AppViewModel.SelectedSync == null)
+                return;
+
+            MissingDiskTitle = Utility.GetLocalizedString("Page_StoragePage_Disconnected_Title/Text", DiskRoot.TrimEnd(Path.DirectorySeparatorChar));
+            MissingDiskSubtitle = Utility.GetLocalizedString("Page_StoragePage_Disconnected_Subtitle/Text", DiskRoot.TrimEnd(Path.DirectorySeparatorChar));
+
         }
 
         public async Task UpdateDiskSizeAsync()
