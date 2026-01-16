@@ -21,21 +21,25 @@
 #include "migration/migrationparams.h"
 #include "keychainmanager/keychainmanager.h"
 #include "requests/syncnodecache.h"
+#include "requests/offlinefilessizeestimator.h"
 #include "comm/guijobmanager.h"
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
 #include "comm/extjobmanager.h"
 #endif
+#include "updater/updatemanager.h"
+
 #include "jobs/network/kDrive_API/searchjob.h"
 #include "jobs/network/kDrive_API/upload/loguploadjob.h"
 #include "jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.h"
-#include "requests/offlinefilessizeestimator.h"
-#include "updater/updatemanager.h"
+
 #include "server/comm/guijobs/signalaccountaddedjob.h"
+#include "server/comm/guijobs/signalaccountupdatedjob.h"
+#include "server/comm/guijobs/signalaccountremovedjob.h"
 #include "server/comm/guijobs/signaluseraddedjob.h"
 #include "server/comm/guijobs/signaluserupdatedjob.h"
 #include "server/comm/guijobs/signaluserremovedjob.h"
-#include "server/comm/guijobs/signalaccountremovedjob.h"
 #include "server/comm/guijobs/signaldriveaddedjob.h"
+#include "server/comm/guijobs/signaldriveupdatedjob.h"
 #include "server/comm/guijobs/signaldriveremovedjob.h"
 #include "server/comm/guijobs/signalsyncaddedjob.h"
 #include "server/comm/guijobs/signalsyncremovedjob.h"
@@ -44,6 +48,14 @@
 #include "server/comm/guijobs/signalerroraddedjob.h"
 #include "server/comm/guijobs/signalerrorremovedjob.h"
 #include "server/comm/guijobs/signalsyncprogressinfo.h"
+#include "server/comm/guijobs/signalupdatershowdialogjob.h"
+#include "server/comm/guijobs/signalupdaterstatechangedjob.h"
+#include "server/comm/guijobs/signalutilityshownotificationjob.h"
+#include "server/comm/guijobs/signalutilityshowsettingsjob.h"
+#include "server/comm/guijobs/signalutilityshowsynthesisjob.h"
+#include "server/comm/guijobs/signalutilityloguploadstatejob.h"
+#include "server/comm/guijobs/signalutilityquitjob.h"
+
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
@@ -55,14 +67,17 @@
 #include "libcommon/info/exclusiontemplateinfo.h"
 #include "libcommon/log/sentry/handler.h"
 #include "libcommon/log/sentry/ptraces.h"
+
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/network/proxy.h"
 #include "libcommonserver/vfs/vfs.h"
 #include "libcommonserver/utility/utility.h"
+
 #include "libsyncengine/requests/parameterscache.h"
 #include "libsyncengine/requests/exclusiontemplatecache.h"
 #include "libsyncengine/jobs/syncjobmanager.h"
+#include "utility/timerutility.h"
 
 #include <iostream>
 #include <fstream>
@@ -75,7 +90,6 @@
 #include <windows.h>
 #endif
 
-#include <QDesktopServices>
 #include <QDir>
 #include <QFileInfo>
 #include <QFileOpenEvent>
@@ -90,7 +104,6 @@
 
 #define QUIT_DELAY 1000 // ms
 #define LOAD_PROGRESS_INTERVAL 1000 // ms
-#define LOAD_PROGRESS_MAXITEMS 100 // ms
 #define SEND_NOTIFICATIONS_INTERVAL 15000 // ms
 #define RESTART_SYNCS_INTERVAL 15000 // ms
 #define START_SYNCPALS_RETRY_INTERVAL 60000 // ms
@@ -301,11 +314,7 @@ void AppServer::init() {
 
 #if defined(KD_WINDOWS)
     // Update shortcuts
-    _navigationPaneHelper = std::make_unique<NavigationPaneHelper>();
-    _navigationPaneHelper->setShowInExplorerNavigationPane(false);
-    if (ParametersCache::instance()->parameters().showShortcuts()) {
-        _navigationPaneHelper->setShowInExplorerNavigationPane(true);
-    }
+    NavigationPaneHelper::showInExplorerNavigationPane();
 #endif
 
     // Setup proxy
@@ -361,7 +370,6 @@ void AppServer::init() {
 #elif defined(KD_MACOS)
     if (KDC::isVfsPluginAvailable(VirtualFileMode::Mac, error)) LOG_INFO(_logger, "VFS mac plugin is available");
 #endif
-    if (KDC::isVfsPluginAvailable(VirtualFileMode::Suffix, error)) LOG_INFO(_logger, "VFS suffix plugin is available");
 
     // Init CommManager
     _commManager = std::make_shared<CommManager>(*this);
@@ -607,6 +615,14 @@ void AppServer::stopSyncTask(int syncDbId) {
                     vfsMap[syncDbId].use_count() <= 1) // `use_count` can be zero when the local drive has been removed.
         (void) vfsMap.erase(syncDbId);
     }
+}
+
+ExitInfo AppServer::setSupportsVirtualFilesAsync(int syncDbId, bool value) {
+    return setSupportsVirtualFiles(syncDbId, value, true);
+}
+
+ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
+    return setSupportsVirtualFiles(syncDbId, value, false);
 }
 
 void AppServer::stopAllSyncsTask(const std::vector<int> &syncDbIdList) {
@@ -1444,11 +1460,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
 
             // Add sync in DB
-            bool showInNavigationPane = false;
-#if defined(KD_WINDOWS)
-            showInNavigationPane = _navigationPaneHelper->showInExplorerNavigationPane();
-#endif
-
             ExitCode exitCode = ExitCode::Ok;
             SyncInfo syncInfo;
             if (num == RequestNum::SYNC_ADD) {
@@ -1456,16 +1467,14 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 DriveInfo driveInfo;
 
                 exitCode = ServerRequests::addSync(userDbId, accountId, driveId, localFolderPath, serverFolderPath,
-                                                   serverFolderNodeId, liteSync, showInNavigationPane, accountInfo, driveInfo,
-                                                   syncInfo);
+                                                   serverFolderNodeId, liteSync, accountInfo, driveInfo, syncInfo);
 
                 if (exitCode != ExitCode::Ok) {
                     LOGW_WARN(_logger, L"Error in Requests::addSync - userDbId="
                                                << userDbId << L" accountId=" << accountId << L" driveId=" << driveId
                                                << L" localFolderPath=" << QStr2WStr(localFolderPath) << L" serverFolderPath="
                                                << QStr2WStr(serverFolderPath) << L" serverFolderNodeId="
-                                               << serverFolderNodeId.toStdWString() << L" liteSync=" << liteSync
-                                               << L" showInNavigationPane=" << showInNavigationPane);
+                                               << serverFolderNodeId.toStdWString() << L" liteSync=" << liteSync);
                     addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
                     resultStream << toInt(exitCode);
                     break;
@@ -1480,13 +1489,13 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 }
             } else {
                 exitCode = ServerRequests::addSync(driveDbId, localFolderPath, serverFolderPath, serverFolderNodeId, liteSync,
-                                                   showInNavigationPane, syncInfo);
+                                                   syncInfo);
 
                 if (exitCode != ExitCode::Ok) {
                     LOGW_WARN(_logger, L"Error in Requests::addSync for driveDbId="
                                                << driveDbId << L" localFolderPath=" << Path2WStr(QStr2Path(localFolderPath))
                                                << L" serverFolderPath=" << Path2WStr(QStr2Path(serverFolderPath)) << L" liteSync="
-                                               << liteSync << L" showInNavigationPane=" << showInNavigationPane);
+                                               << liteSync);
                     addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
                     resultStream << toInt(exitCode);
                     break;
@@ -2121,25 +2130,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << mode;
             break;
         }
-#if defined(KD_WINDOWS)
-        case RequestNum::UTILITY_SHOWSHORTCUT: {
-            bool show = _navigationPaneHelper->showInExplorerNavigationPane();
-
-            resultStream << ExitCode::Ok;
-            resultStream << show;
-            break;
-        }
-        case RequestNum::UTILITY_SETSHOWSHORTCUT: {
-            bool show;
-            QDataStream paramsStream(params);
-            paramsStream >> show;
-
-            _navigationPaneHelper->setShowInExplorerNavigationPane(show);
-
-            resultStream << ExitCode::Ok;
-            break;
-        }
-#endif
         case RequestNum::UTILITY_ACTIVATELOADINFO: {
             bool value;
             QDataStream paramsStream(params);
@@ -2273,33 +2263,14 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             bool value = false;
             ArgsWriter(params).write(syncDbId, value);
 
-            const ExitCode exitCode = setSupportsVirtualFiles(syncDbId, value);
-            if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in setSupportsVirtualFiles for syncDbId=" << syncDbId);
+            ExitInfo exitInfo = setSupportsVirtualFilesAsync(syncDbId, value);
+            if (!exitInfo) {
+                LOG_WARN(_logger, "Error in setSupportsVirtualFiles for syncDbId=" << syncDbId << " : " << exitInfo);
+                resultStream << toInt(exitInfo.code());
+                break;
             }
 
-            resultStream << toInt(exitCode);
-            break;
-        }
-        case RequestNum::SYNC_SETROOTPINSTATE: {
-            int syncDbId;
-            PinState state;
-            QDataStream paramsStream(params);
-            paramsStream >> syncDbId;
-            paramsStream >> state;
-            std::shared_ptr<Vfs> vfs;
-            const std::scoped_lock lock(vfsMapMutex);
-            if (ExitInfo exitInfo = getVfs(syncDbId, vfs); !exitInfo) {
-                LOG_WARN(_logger, "Error in getVfs for syncDbId=" << syncDbId << " : " << exitInfo);
-                resultStream << toInt(exitInfo.code());
-                break;
-            }
-            if (const ExitInfo exitInfo = vfs->setPinState("", state); !exitInfo) {
-                LOG_WARN(_logger, "Error in vfsSetPinState for syncDbId=" << syncDbId << " : " << exitInfo);
-                resultStream << toInt(exitInfo.code());
-                break;
-            }
-            resultStream << ExitCode::Ok;
+            resultStream << toInt(exitInfo.code());
             break;
         }
         case RequestNum::UPDATER_CHANGE_CHANNEL: {
@@ -2407,6 +2378,7 @@ void AppServer::sendQuit() {
     int id = 0;
 
     OldCommServer::instance()->sendSignal(SignalNum::UTILITY_QUIT, QByteArray(), id);
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalUtilityQuitJob>());
 }
 
 void AppServer::sendLogUploadStatusUpdated(LogUploadState status, int percent) {
@@ -2417,6 +2389,9 @@ void AppServer::sendLogUploadStatusUpdated(LogUploadState status, int percent) {
     paramsStream << status;
     paramsStream << percent;
     OldCommServer::instance()->sendSignal(SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED, params, id);
+
+    if (_commManager)
+        _commManager->sendGuiSignal(std::make_shared<SignalUtilityLogUploadStateJob>(status, static_cast<std::int32_t>(percent)));
 
     if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, status, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
@@ -2485,8 +2460,10 @@ void AppServer::onShowWindowsUpdateDialog() {
     if (_updateManager) {
         QByteArray params;
         QDataStream paramsStream(&params, QIODevice::WriteOnly);
-        paramsStream << _updateManager.get()->versionInfo();
+        paramsStream << _updateManager->versionInfo();
         OldCommServer::instance()->sendSignal(SignalNum::UPDATER_SHOW_DIALOG, params);
+        if (_commManager)
+            _commManager->sendGuiSignal(std::make_shared<SignalUpdaterShowDialogJob>(_updateManager->versionInfo()));
     } else {
         assert(false);
     }
@@ -2497,6 +2474,7 @@ void AppServer::onUpdateStateChanged(const UpdateState state) {
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << state;
     OldCommServer::instance()->sendSignal(SignalNum::UPDATER_STATE_CHANGED, params);
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalUpdaterStateChangedJob>(state));
 }
 
 void AppServer::onCleanup() {
@@ -2555,6 +2533,9 @@ void AppServer::sendShowNotification(const QString &title, const QString &messag
     paramsStream << title;
     paramsStream << message;
     OldCommServer::instance()->sendSignal(SignalNum::UTILITY_SHOW_NOTIFICATION, params, id);
+    if (_commManager)
+        _commManager->sendGuiSignal(std::make_shared<SignalUtilityShowNotificationJob>(CommonUtility::qStr2CommString(title),
+                                                                                       CommonUtility::qStr2CommString(message)));
 }
 
 void AppServer::sendErrorAdded(const ErrorInfo &errorInfo) {
@@ -2566,7 +2547,7 @@ void AppServer::sendErrorAdded(const ErrorInfo &errorInfo) {
     paramsStream << toInt(errorInfo.exitCode());
     paramsStream << errorInfo.syncDbId();
     OldCommServer::instance()->sendSignal(SignalNum::UTILITY_ERROR_ADDED_LEGACY, params, id);
-    _commManager->sendGuiSignal(std::make_shared<SignalErrorAddedJob>(errorInfo));
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalErrorAddedJob>(errorInfo));
 }
 
 void AppServer::addCompletedItem(int syncDbId, const SyncFileItem &item, bool notify) {
@@ -2864,10 +2845,9 @@ ExitInfo AppServer::updateUserInfo(User &user) {
                         return ExitCode::DbError;
                     }
 
-                    if (driveList.size() == 0) {
-                        const auto exitInfo = ServerRequests::deleteAccount(account.dbId());
-                        if (!exitInfo) {
-                            LOG_WARN(_logger, "Error in Requests::deleteAccount: " << exitInfo);
+                    if (driveList.empty()) {
+                        if (const auto exitInfo = ServerRequests::deleteAccount(account.dbId()); !exitInfo) {
+                            LOG_WARN(_logger, "Error in Requests::deleteAccount: code=" << exitInfo);
                             return exitInfo;
                         }
                         sendAccountRemoved(account.accountId());
@@ -2876,10 +2856,11 @@ ExitInfo AppServer::updateUserInfo(User &user) {
                 }
             }
 
-            if (updated) {
+            if (updated || quotaUpdated) {
                 DriveInfo driveInfo;
                 ServerRequests::driveToDriveInfo(drive, driveInfo);
-                sendDriveUpdated(driveInfo);
+                if (updated && !quotaUpdated) sendDriveUpdated(driveInfo);
+                if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalDriveUpdatedJob>(driveInfo));
             }
 
             if (accountRemoved) {
@@ -3476,11 +3457,13 @@ void AppServer::sendRestartClientMsg() {
 void AppServer::showSettings() {
     int id = 0;
     OldCommServer::instance()->sendSignal(SignalNum::UTILITY_SHOW_SETTINGS, QByteArray(), id);
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalUtilityShowSettingsJob>());
 }
 
 void AppServer::showSynthesis() {
     int id = 0;
     OldCommServer::instance()->sendSignal(SignalNum::UTILITY_SHOW_SYNTHESIS, QByteArray(), id);
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalUtilityShowSynthesisJob>());
 }
 
 void AppServer::clearKeychainKeys() {
@@ -3902,14 +3885,12 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
 #if defined(KD_WINDOWS)
     // Save sync
     if (sync.virtualFileMode() == KDC::VirtualFileMode::Win) {
-        Utility::setFolderPinState(CommonUtility::s2ws(vfsMapIt->second->namespaceCLSID()),
-                                   _navigationPaneHelper->showInExplorerNavigationPane());
+        Utility::setFolderPinState(CommonUtility::s2ws(vfsMapIt->second->namespaceCLSID()), true);
     } else {
         if (vfsMapIt->second->namespaceCLSID().empty()) {
             vfsMapIt->second->setNamespaceCLSID(sync.navigationPaneClsid());
         }
-        Utility::addLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()), sync.localPath(),
-                                       _navigationPaneHelper->showInExplorerNavigationPane());
+        Utility::addLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()), sync.localPath(), true);
     }
 
     bool found = false;
@@ -3948,7 +3929,7 @@ ExitInfo AppServer::stopVfs(int syncDbId, bool unregister) {
     return ExitCode::Ok;
 }
 
-ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
+ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value, bool asyncResponse) {
     const std::scoped_lock lock(syncPalMapMutex);
     auto syncPalMapIt = syncPalMap.find(syncDbId);
     if (syncPalMapIt == syncPalMap.end()) {
@@ -4010,8 +3991,7 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
         if (newMode == VirtualFileMode::Win) {
             Utility::removeLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()));
         } else if (sync.virtualFileMode() == VirtualFileMode::Win) {
-            Utility::addLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()), sync.localPath(),
-                                           _navigationPaneHelper->showInExplorerNavigationPane());
+            Utility::addLegacySyncRootKeys(CommonUtility::s2ws(sync.navigationPaneClsid()), sync.localPath(), true);
         }
 #endif
 
@@ -4042,29 +4022,29 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
 
         // Update SyncPal
         std::shared_ptr<Vfs> vfs;
-        if (const auto exitInfo = getVfs(syncDbId, vfs); !exitInfo) {
-            LOG_WARN(_logger, "Error in getVfs for syncDbId=" << syncDbId << " : " << exitInfo);
-            return exitInfo;
-        }
-        syncPalMapIt->second->setVfs(vfs);
-
-        QTimer::singleShot(100, this, [=, this]() {
-            if (newMode != VirtualFileMode::Off) {
-                // Clear file system
-                const std::scoped_lock lock3(vfsMapMutex);
-                auto vfsMapIt = vfsMap.find(syncDbId);
-                if (vfsMapIt != vfsMap.end()) {
-                    vfsMapIt->second->convertDirContentToPlaceholder(SyncName2QStr(sync.localPath()), true);
-                }
+        {
+            const std::scoped_lock lock3(vfsMapMutex);
+            if (const auto exitInfo = getVfs(syncDbId, vfs); !exitInfo) {
+                LOG_WARN(_logger, "Error in getVfs for syncDbId=" << syncDbId << " : " << exitInfo);
+                return exitInfo;
             }
+            syncPalMapIt->second->setVfs(vfs);
+        }
 
-            // Update sync info on client side
-            SyncInfo syncInfo;
-            ServerRequests::syncToSyncInfo(sync, syncInfo);
-            sendSyncUpdated(syncInfo);
+        // Update sync info on client side
+        SyncInfo syncInfo;
+        ServerRequests::syncToSyncInfo(sync, syncInfo);
+        sendSyncUpdated(syncInfo);
 
-            // Notify conversion completed
-            sendVfsConversionCompleted(sync.dbId());
+        auto func = [newMode, vfs, sync, asyncResponse, startPostponed, syncDbId]() {
+            if (newMode != VirtualFileMode::Off && vfs) {
+                // Clear file system
+                vfs->convertDirContentToPlaceholder(SyncName2QStr(sync.localPath()), true);
+            }
+            // Notify conversion completed async
+            if (asyncResponse) {
+                sendVfsConversionCompleted(sync.dbId());
+            }
 
             if (!startPostponed) {
                 // Re-start sync
@@ -4074,8 +4054,19 @@ ExitInfo AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
                     syncPalMapIt2->second->start();
                 }
             }
-        });
+        };
 
+        if (asyncResponse) {
+            QTimer::singleShot(100, this, func);
+        } else {
+            func();
+        }
+        if (vfs) {
+            if (ExitInfo exitInfo = vfs->setPinState("", value ? PinState::Unspecified : PinState::AlwaysLocal); !exitInfo) {
+                LOG_WARN(_logger, "Error in vfsSetPinState for syncDbId=" << syncDbId << " : " << exitInfo);
+                return exitInfo;
+            }
+        }
         return mainExitInfo;
     }
 
@@ -4257,8 +4248,7 @@ void AppServer::sendUserUpdated(const UserInfo &userInfo) {
     paramsStream << userInfo;
 
     OldCommServer::instance()->sendSignal(SignalNum::USER_UPDATED, params, id);
-    // if(_commManager) _commManager->sendGuiSignal(std::make_shared<SignalUserUpdatedJob>(userInfo)); -> sendUserUpdated should
-    // not be static
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalUserUpdatedJob>(userInfo));
 }
 
 void AppServer::sendUserStatusChanged(int userDbId, bool connected, QString connexionError) {
@@ -4303,6 +4293,7 @@ void AppServer::sendAccountUpdated(const AccountInfo &accountInfo) {
     paramsStream << accountInfo;
 
     OldCommServer::instance()->sendSignal(SignalNum::ACCOUNT_UPDATED, params, id);
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalAccountUpdatedJob>(accountInfo));
 }
 
 void AppServer::sendAccountRemoved(int accountDbId) {
@@ -4335,6 +4326,7 @@ void AppServer::sendDriveUpdated(const DriveInfo &driveInfo) {
     paramsStream << driveInfo;
 
     OldCommServer::instance()->sendSignal(SignalNum::DRIVE_UPDATED, params, id);
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalDriveUpdatedJob>(driveInfo));
 }
 
 void AppServer::sendDriveQuotaUpdated(int driveDbId, qint64 total, qint64 used) {

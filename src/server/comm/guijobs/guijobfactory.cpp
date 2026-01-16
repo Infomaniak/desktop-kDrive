@@ -40,7 +40,6 @@
 #include "syncgetprivatelinkurljob.h"
 #include "synctriggerprogressupdatejob.h"
 #include "syncsetsupportsvirtualfilesjob.h"
-#include "syncsetrootpinstatejob.h"
 #include "blacklistednodelistjob.h"
 #include "blacklistednodesetlistjob.h"
 #include "nodepathjob.h"
@@ -107,7 +106,6 @@ GuiJobFactory::GuiJobFactory() {
         {RequestNum::SYNC_GETPRIVATELINKURL, makeShared<SyncGetPrivateLinkUrlJob>},
         {RequestNum::SYNC_TRIGGER_PROGRESS_UPDATE, makeShared<SyncTriggerProgressUpdateJob>},
         {RequestNum::SYNC_SETSUPPORTSVIRTUALFILES, makeShared<SyncSetSupportsVirtualFilesJob>},
-        {RequestNum::SYNC_SETROOTPINSTATE, makeShared<SyncSetRootPinStateJob>},
         {RequestNum::BLACKLISTED_NODE_LIST, makeShared<BlacklistedNodeListJob>},
         {RequestNum::BLACKLISTED_NODE_SETLIST, makeShared<BlacklistedNodeSetListJob>},
         {RequestNum::NODE_PATH, makeShared<NodePathJob>},

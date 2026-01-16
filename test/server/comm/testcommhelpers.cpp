@@ -63,7 +63,7 @@ Poco::JSON::Object createSimpleQuery(const RequestNum requestNum) {
     (void) queryObj.set("id", 1);
 #endif
     (void) queryObj.set("num", toInt(requestNum));
-    Poco::JSON::Object queryParamsObj;
+    const Poco::JSON::Object queryParamsObj;
     (void) queryObj.set("params", queryParamsObj);
 
     return queryObj;

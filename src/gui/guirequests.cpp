@@ -192,24 +192,6 @@ ExitCode GuiRequests::setSupportsVirtualFiles(const int syncDbId, const bool val
     return exitCode;
 }
 
-ExitCode GuiRequests::setRootPinState(const int syncDbId, const PinState pinState) {
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << syncDbId;
-    paramsStream << pinState;
-
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::SYNC_SETROOTPINSTATE, params, results)) {
-        return ExitCode::SystemError;
-    }
-
-    auto exitCode = ExitCode::Unknown;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
-
-    return exitCode;
-}
-
 ExitCode GuiRequests::deleteUser(const int userDbId) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -481,39 +463,6 @@ ExitCode GuiRequests::findGoodPathForNewSync(const QString &basePath, QString &p
 
     return exitCode;
 }
-
-#ifdef Q_OS_WIN
-ExitCode GuiRequests::showInExplorerNavigationPane(bool &show) {
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::UTILITY_SHOWSHORTCUT, {}, results)) {
-        return ExitCode::SystemError;
-    }
-
-    auto exitCode = ExitCode::Unknown;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
-    resultStream >> show;
-
-    return exitCode;
-}
-
-ExitCode GuiRequests::setShowInExplorerNavigationPane(const bool &show) {
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << show;
-
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::UTILITY_SETSHOWSHORTCUT, params, results)) {
-        return ExitCode::SystemError;
-    }
-
-    auto exitCode = ExitCode::Unknown;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
-
-    return exitCode;
-}
-#endif
 
 ExitCode GuiRequests::requestToken(const QString &code, const QString &codeVerifier, int &userDbId, QString &error,
                                    QString &errorDescr) {

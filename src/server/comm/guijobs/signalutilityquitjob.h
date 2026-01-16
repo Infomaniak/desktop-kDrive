@@ -22,19 +22,14 @@
 
 namespace KDC {
 
-class SyncSetRootPinStateJob : public AbstractGuiJob {
+class SignalUtilityQuitJob : public AbstractGuiJob {
     public:
-        SyncSetRootPinStateJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                               std::shared_ptr<AbstractCommChannel> channel);
+        explicit SignalUtilityQuitJob();
 
     private:
-        // Input parameters
-        int _syncDbId = 0;
-        PinState _state;
-
-        ExitInfo deserializeInputParms() noexcept override;
+        ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
         ExitInfo serializeOutputParms() override { return ExitCode::Ok; };
-        ExitInfo process() override;
+        ExitInfo process() override { return ExitCode::Ok; }
 
         friend class TestGuiCommChannel;
 };

@@ -28,7 +28,6 @@
 #include "comm/guijobs/syncgetprivatelinkurljob.h"
 #include "comm/guijobs/synctriggerprogressupdatejob.h"
 #include "comm/guijobs/syncsetsupportsvirtualfilesjob.h"
-#include "comm/guijobs/syncsetrootpinstatejob.h"
 
 namespace KDC {
 
@@ -582,47 +581,6 @@ void TestGuiCommChannel::testSyncSetSupportsVirtualFilesJob() {
         CPPUNIT_ASSERT(!syncSetSupportsVirtualFilesJob->_value);
     };
 
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
-#else
-    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
-#endif
-}
-
-void TestGuiCommChannel::testSyncSetRootPinStateJob() {
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{R"({ "id": 1,)"
-                        R"( "num": )" +
-                        std::to_string(toInt(RequestNum::SYNC_SETROOTPINSTATE)) +
-                        R"(,)"
-                        R"( "params": { "syncDbId": 1, "state": 2 } })"};
-#else
-    // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::SYNC_SETROOTPINSTATE)) +
-                        R"(,)"
-                        R"( "params": { "syncDbId": 1, "state": 2 } })"};
-
-    // Callback expected answer
-    const auto cbkAnswerStr{R"({"cause":0,"code":0,"id":1,"params":{}})"};
-#endif
-
-    // Job expected answer
-    const auto answerStr{R"({ "cause": 0,)"
-                         R"( "code": 0,)"
-                         R"( "id": 1,)"
-                         R"( "num": )" +
-                         std::to_string(toInt(RequestNum::SYNC_SETROOTPINSTATE)) +
-                         R"(,)"
-                         R"( "params": {  },)"
-                         R"( "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
-
-    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-        auto syncSetRootPinStateJob = std::dynamic_pointer_cast<SyncSetRootPinStateJob>(job);
-        CPPUNIT_ASSERT(syncSetRootPinStateJob);
-        CPPUNIT_ASSERT_EQUAL(1, syncSetRootPinStateJob->_syncDbId);
-        CPPUNIT_ASSERT_EQUAL(PinState::OnlineOnly, syncSetRootPinStateJob->_state);
-    };
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else

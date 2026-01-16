@@ -126,6 +126,8 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
                 Logger.Log(Logger.Level.Info, $"DriveInfo color for {Name} is {_color}");
             }
         }
+
+        public bool? Admin { get; set; }
     }
     public static partial class ConversionHelper
     {
@@ -135,6 +137,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             copyProperty(source, target, nameof(source.Id), nameof(target.DriveId));
             copyProperty(source, target, nameof(source.Name), nameof(target.Name));
             copyProperty(source, target, nameof(source.Color), nameof(target.Color));
+            copyProperty(source, target, nameof(source.Admin), nameof(target.IsAdmin));
         }
     }
 
@@ -167,8 +170,8 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         public string? LocalPath { get; set; }
         public string? TargetPath { get; set; }
         public string? TargetNodeId { get; set; }
-        public bool? SupportOnlineMode { get; set; }
-        public bool? OnlineMode { get; set; }
+        public bool? SupportVfs { get; set; }
+        public VirtualFileMode? VirtualFileMode { get; set; }
     }
     public static partial class ConversionHelper
     {
@@ -177,6 +180,13 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             copyProperty(source, target, nameof(source.DbId), nameof(target.DbId));
             copyProperty(source, target, nameof(source.TargetPath), nameof(target.RemotePath));
             copyProperty(source, target, nameof(source.LocalPath), nameof(target.LocalPath));
+            copyProperty(source, target, nameof(source.SupportVfs), nameof(target.SupportOnlineMode));
+
+            if (source.VirtualFileMode is not null)
+                if (source.VirtualFileMode.Value == VirtualFileMode.Win)
+                    target.SyncType = SyncType.Online;
+                else
+                    target.SyncType = SyncType.Offline;
         }
     }
 
@@ -222,7 +232,6 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         public bool? ExtendedLog { get; set; }
         public bool? PurgeOldLogs { get; set; }
         public ProxyConfigInfo? ProxyConfigInfo { get; set; }
-        public bool? ShowShortcuts { get; set; }
         public bool? MatomoEnabled { get; set; }
         public bool? SentryEnabled { get; set; }
         public VersionChannel? DistributionChannel { get; set; }
@@ -235,7 +244,6 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             copyProperty(source, target, nameof(source.AutoStart), nameof(target.AutoStart));
             copyProperty(source, target, nameof(source.MoveToTrash), nameof(target.MoveToTrash));
             copyProperty(source, target, nameof(source.NotificationsDisabled), nameof(target.NotificationsDisabled));
-            copyProperty(source, target, nameof(source.ShowShortcuts), nameof(target.ShowShortcuts));
             copyProperty(source, target.UpdateManager, nameof(source.DistributionChannel), nameof(target.UpdateManager.CurrentChannel));
             copyProperty(source, target, nameof(source.PurgeOldLogs), nameof(target.PurgeOldLogs));
             copyProperty(source, target, nameof(source.MatomoEnabled), nameof(target.MatomoEnabled));
@@ -260,7 +268,6 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             copyProperty(source, target, nameof(source.AutoStart), nameof(target.AutoStart));
             copyProperty(source, target, nameof(source.MoveToTrash), nameof(target.MoveToTrash));
             copyProperty(source, target, nameof(source.NotificationsDisabled), nameof(target.NotificationsDisabled));
-            copyProperty(source, target, nameof(source.ShowShortcuts), nameof(target.ShowShortcuts));
             copyProperty(source.UpdateManager, target, nameof(source.UpdateManager.CurrentChannel), nameof(target.DistributionChannel));
             copyProperty(source, target, nameof(source.PurgeOldLogs), nameof(target.PurgeOldLogs));
             copyProperty(source, target, nameof(source.MatomoEnabled), nameof(target.MatomoEnabled));
@@ -307,6 +314,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         public InconsistencyType? Inconsistency { get; set; }
         public CancelType? CancelType { get; set; }
         public string? Error { get; set; }
+        public Int64? Size { get; set; }
     }
 
     public static partial class ConversionHelper
@@ -325,6 +333,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             copyProperty(source, target, nameof(source.Inconsistency), nameof(target.Inconsistency));
             copyProperty(source, target, nameof(source.CancelType), nameof(target.CancelType));
             copyProperty(source, target, nameof(source.Error), nameof(target.Error));
+            copyProperty(source, target, nameof(source.Size), nameof(target.Size));
         }
     }
 

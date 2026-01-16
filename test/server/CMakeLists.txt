@@ -55,7 +55,6 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/syncgetprivatelinkurljob.h ${server_srcs_path}/comm/guijobs/syncgetprivatelinkurljob.cpp
     ${server_srcs_path}/comm/guijobs/synctriggerprogressupdatejob.h ${server_srcs_path}/comm/guijobs/synctriggerprogressupdatejob.cpp
     ${server_srcs_path}/comm/guijobs/syncsetsupportsvirtualfilesjob.h ${server_srcs_path}/comm/guijobs/syncsetsupportsvirtualfilesjob.cpp
-    ${server_srcs_path}/comm/guijobs/syncsetrootpinstatejob.h ${server_srcs_path}/comm/guijobs/syncsetrootpinstatejob.cpp
     ${server_srcs_path}/comm/guijobs/blacklistednodelistjob.h ${server_srcs_path}/comm/guijobs/blacklistednodelistjob.cpp
     ${server_srcs_path}/comm/guijobs/blacklistednodesetlistjob.h ${server_srcs_path}/comm/guijobs/blacklistednodesetlistjob.cpp
     ${server_srcs_path}/comm/guijobs/nodeinfojob.h ${server_srcs_path}/comm/guijobs/nodeinfojob.cpp
@@ -91,8 +90,10 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.h ${server_srcs_path}/comm/guijobs/signaluserupdatedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaluserremovedjob.h ${server_srcs_path}/comm/guijobs/signaluserremovedjob.cpp
     ${server_srcs_path}/comm/guijobs/signalaccountaddedjob.h ${server_srcs_path}/comm/guijobs/signalaccountaddedjob.cpp
+    ${server_srcs_path}/comm/guijobs/signalaccountupdatedjob.h ${server_srcs_path}/comm/guijobs/signalaccountupdatedjob.cpp
     ${server_srcs_path}/comm/guijobs/signalaccountremovedjob.h ${server_srcs_path}/comm/guijobs/signalaccountremovedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaldriveaddedjob.h ${server_srcs_path}/comm/guijobs/signaldriveaddedjob.cpp
+    ${server_srcs_path}/comm/guijobs/signaldriveupdatedjob.h ${server_srcs_path}/comm/guijobs/signaldriveupdatedjob.cpp
     ${server_srcs_path}/comm/guijobs/signaldriveremovedjob.h ${server_srcs_path}/comm/guijobs/signaldriveremovedjob.cpp
     ${server_srcs_path}/comm/guijobs/signalsyncaddedjob.h ${server_srcs_path}/comm/guijobs/signalsyncaddedjob.cpp
     ${server_srcs_path}/comm/guijobs/signalsyncremovedjob.h ${server_srcs_path}/comm/guijobs/signalsyncremovedjob.cpp
@@ -101,6 +102,14 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/signalsyncupdatedjob.h ${server_srcs_path}/comm/guijobs/signalsyncupdatedjob.cpp
     ${server_srcs_path}/comm/guijobs/signalerroraddedjob.h ${server_srcs_path}/comm/guijobs/signalerroraddedjob.cpp
     ${server_srcs_path}/comm/guijobs/signalerrorremovedjob.h ${server_srcs_path}/comm/guijobs/signalerrorremovedjob.cpp
+    ${server_srcs_path}/comm/guijobs/signalupdatershowdialogjob.h ${server_srcs_path}/comm/guijobs/signalupdatershowdialogjob.cpp
+    ${server_srcs_path}/comm/guijobs/signalupdaterstatechangedjob.h ${server_srcs_path}/comm/guijobs/signalupdaterstatechangedjob.cpp
+    ${server_srcs_path}/comm/guijobs/signalutilityshownotificationjob.h ${server_srcs_path}/comm/guijobs/signalutilityshownotificationjob.cpp
+    ${server_srcs_path}/comm/guijobs/signalutilityshowsettingsjob.h ${server_srcs_path}/comm/guijobs/signalutilityshowsettingsjob.cpp
+    ${server_srcs_path}/comm/guijobs/signalutilityshowsynthesisjob.h ${server_srcs_path}/comm/guijobs/signalutilityshowsynthesisjob.cpp
+    ${server_srcs_path}/comm/guijobs/signalutilityloguploadstatejob.h ${server_srcs_path}/comm/guijobs/signalutilityloguploadstatejob.cpp
+    ${server_srcs_path}/comm/guijobs/signalutilityquitjob.h ${server_srcs_path}/comm/guijobs/signalutilityquitjob.cpp
+
     ${server_srcs_path}/migration/migrationparams.h ${server_srcs_path}/migration/migrationparams.cpp
     ${server_srcs_path}/requests/serverrequests.h ${server_srcs_path}/requests/serverrequests.cpp
     ${server_srcs_path}/updater/abstractupdater.h ${server_srcs_path}/updater/abstractupdater.cpp
@@ -177,16 +186,20 @@ set(testserver_SRCS
     workers/testworkers.h workers/testworkers.cpp
     requests/testserverrequests.h requests/testserverrequests.cpp
     appserver/testappserver.h appserver/testappserver.cpp
-    
+
     comm/testsocketcomm.h comm/testsocketcomm.cpp
     comm/testcommhelpers.h comm/testcommhelpers.cpp
 
+    comm/guicommchannel/testguicommchannel.h comm/guicommchannel/testguicommchannel.cpp
     comm/guicommchannel/testgenericjob.cpp
-    comm/guicommchannel/testguicommchannel.h comm/guicommchannel/testguicommchannel.cpp 
+    comm/guicommchannel/testsyncjobs.cpp comm/guicommchannel/testnodejobs.cpp
+    comm/guicommchannel/testerrorjobs.cpp
     comm/guicommchannel/testsyncjobs.cpp comm/guicommchannel/testnodejobs.cpp 
+    comm/guicommchannel/testexcltempl.cpp comm/guicommchannel/testexclapp.cpp 
     comm/guicommchannel/testparameters.cpp comm/guicommchannel/testerrorjobs.cpp
-    comm/guicommchannel/testexclapp.cpp comm/guicommchannel/testexcltempl.cpp
     comm/guicommchannel/testutility.cpp comm/guicommchannel/testupdaterjobs.cpp
+
+    comm/guicommchannel/testsignaljobs.cpp
 
     comm/guijobs/testabstractguijob.h comm/guijobs/testabstractguijob.cpp
 )

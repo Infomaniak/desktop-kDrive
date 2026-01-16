@@ -136,6 +136,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         [[nodiscard]] ExitInfo stopVfs(int syncDbId, bool unregister);
         [[nodiscard]] ExitInfo startSyncs(User &user);
         void stopSyncTask(int syncDbId);
+        [[nodiscard]] ExitInfo setSupportsVirtualFilesAsync(int syncDbId, bool value);
         [[nodiscard]] ExitInfo setSupportsVirtualFiles(int syncDbId, bool value);
         void setDistributionChannel(VersionChannel versionChannel);
         VersionInfo getVersionInfo(VersionChannel versionChannel) const;
@@ -166,21 +167,12 @@ class AppServer : public SharedTools::QtSingleApplication {
         }
 #endif
 
-#if defined(KD_WINDOWS)
-        auto &navigationPaneHelper() { return _navigationPaneHelper; }
-#endif
-
         static std::shared_ptr<CommManager> commManager() { return _commManager; }
 
     private:
         QStringList _arguments;
         log4cplus::Logger _logger;
         static std::vector<Notification> _notifications;
-
-#if defined(KD_WINDOWS)
-        std::unique_ptr<NavigationPaneHelper> _navigationPaneHelper;
-#endif
-
         static std::shared_ptr<CommManager> _commManager;
         bool _appRestartRequired{false};
         Theme *_theme{nullptr};
@@ -229,6 +221,7 @@ class AppServer : public SharedTools::QtSingleApplication {
                                            bool resumedByUser = false, bool firstInit = false);
 
         [[nodiscard]] ExitInfo createAndStartVfs(const Sync &sync) noexcept;
+        [[nodiscard]] ExitInfo setSupportsVirtualFiles(int syncDbId, bool value, bool asyncResponse);
 
         void startSyncsAndRetryOnError();
         [[nodiscard]] ExitInfo startSyncs();
