@@ -66,8 +66,8 @@ QDataStream &operator>>(QDataStream &in, SearchInfo &info) {
     QString tmpName;
     int tmpType = 0;
     QString tmpPath;
-    SyncTime tmpModifiedTime = 0;
-    int64_t tmpSize = 0;
+    qint64 tmpModifiedTime = 0;
+    qint64 tmpSize = 0;
     bool tmpIsAvailableLocally = false;
 
     in >> tmpId >> tmpName >> tmpType >> tmpPath >> tmpModifiedTime >> tmpSize >> tmpIsAvailableLocally;
@@ -75,8 +75,8 @@ QDataStream &operator>>(QDataStream &in, SearchInfo &info) {
     info._name = QStr2SyncName(tmpName);
     info._type = static_cast<NodeType>(tmpType);
     info._path = QStr2Path(tmpPath);
-    info._modifiedTime = tmpModifiedTime;
-    info._size = tmpSize;
+    info._modifiedTime = static_cast<SyncTime>(tmpModifiedTime);
+    info._size = static_cast<int64_t>(tmpSize);
     info._isAvailableLocally = tmpIsAvailableLocally;
     return in;
 }
@@ -93,7 +93,7 @@ QDataStream &operator<<(QDataStream &out, const QList<SearchInfo> &list) {
 
 QDataStream &operator<<(QDataStream &out, const SearchInfo &info) {
     out << QString::fromStdString(info._id) << SyncName2QStr(info._name) << static_cast<int>(info._type) << Path2QStr(info._path)
-        << info._modifiedTime << info._size << info._isAvailableLocally;
+        << static_cast<qint64>(info._modifiedTime) << static_cast<qint64>(info._size) << info._isAvailableLocally;
     return out;
 }
 
