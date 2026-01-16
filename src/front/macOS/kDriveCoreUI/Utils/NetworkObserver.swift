@@ -29,7 +29,7 @@ public final class NetworkObserver: ObservableObject {
     public init() {
         monitor = NWPathMonitor()
         monitor.pathUpdateHandler = handlePathUpdate
-        monitor.start(queue: .global(qos: .userInteractive))
+        monitor.start(queue: .global(qos: .utility))
     }
 
     deinit {

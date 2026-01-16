@@ -40,12 +40,12 @@ public struct UISynchro: Sendable, Equatable, Hashable {
 public struct UISynchroProgressInfo: Sendable, Equatable, Hashable {
     public let status: UISynchroStatus?
 
-    public init(status: UISynchroStatus) {
+    public init(status: UISynchroStatus?) {
         self.status = status
     }
 }
 
-public enum UISynchroStatus: Sendable {
+public enum UISynchroStatus: Sendable, Equatable, Hashable {
     case starting
     case running
     case idle
