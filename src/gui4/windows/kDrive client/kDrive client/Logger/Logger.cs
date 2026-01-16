@@ -85,7 +85,7 @@ namespace Infomaniak.kDrive
                 return;
 
 #if !DEBUG
-            if (LogLevel != LogLevel.Extended && LogLevel > level) return;
+            if (LogLevel != Level.Extended && LogLevel > level) return;
 #endif
 
             _logger?.Write(ToSerilogLevel(level), "{SourceContext}: {Message}", sourceContext, message);
