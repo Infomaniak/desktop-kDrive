@@ -78,7 +78,10 @@ namespace Infomaniak.kDrive
             if (App.ServiceProvider.GetRequiredService<AppModel>().Settings.SentryEnabled)
                 SentrySdk.AddBreadcrumb(shortLogEntry, level: ToBreadcrumbLevel(level));
 
-            if (LogLevel == Level.None) 
+            if (CanSendSentryEvent(level, filePath, lineNumber))
+                SentrySdk.CaptureMessage(shortLogEntry, ToSentryLevel(level));
+
+            if (LogLevel == Level.None)
                 return;
 
 #if !DEBUG
@@ -86,11 +89,6 @@ namespace Infomaniak.kDrive
 #endif
 
             _logger?.Write(ToSerilogLevel(level), "{SourceContext}: {Message}", sourceContext, message);
-
-#if DEBUG
-            if (CanSendSentryEvent(level, filePath, lineNumber, memberName))
-                SentrySdk.CaptureMessage(shortLogEntry, ToSentryLevel(level));
-#endif
         }
 
         // Manage sentry throttling to avoid flooding the sentry server with too many events (max 3 per minute per unique log location)
@@ -102,7 +100,7 @@ namespace Infomaniak.kDrive
         }
         private static readonly ConcurrentDictionary<int, SentryLogThrottleInfo> _sentryLogThrottleDict
             = new ConcurrentDictionary<int, SentryLogThrottleInfo>();
-        private static bool CanSendSentryEvent(Level level, string filePath, int lineNumber, string memberName)
+        private static bool CanSendSentryEvent(Level level, string filePath, int lineNumber)
         {
 
             if (!App.ServiceProvider.GetRequiredService<AppModel>().Settings.SentryEnabled)
@@ -111,7 +109,7 @@ namespace Infomaniak.kDrive
             if (level <= Level.Info)
                 return false; // Only send Warning and above
 
-            int hash = HashCode.Combine(filePath, lineNumber, memberName);
+            int hash = HashCode.Combine(filePath, lineNumber);
             var now = DateTime.UtcNow;
             var info = _sentryLogThrottleDict.GetOrAdd(hash, _ => new SentryLogThrottleInfo
             {
