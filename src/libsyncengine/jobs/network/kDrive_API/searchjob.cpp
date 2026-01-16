@@ -148,7 +148,7 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
         }
 
         (void) _searchResults.emplace_back(nodeId, name, type == "dir" ? NodeType::Directory : NodeType::File, path, modifiedTime,
-                                           size);
+                                           size, isAvailableLocally);
     }
     return ExitCode::Ok;
 }

@@ -27,7 +27,7 @@ class SearchInfo {
     public:
         SearchInfo() = default;
         SearchInfo(const NodeId &id, const SyncName &name, const NodeType type, const SyncPath &path, const SyncTime modifiedTime,
-                   const size_t size, const bool isAvailableLocally = false);
+                   const size_t size, const bool isAvailableLocally);
 
         [[nodiscard]] const NodeId &id() const { return _id; }
         [[nodiscard]] const SyncName &name() const { return _name; }

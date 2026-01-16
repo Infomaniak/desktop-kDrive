@@ -68,16 +68,16 @@ QDataStream &operator>>(QDataStream &in, SearchInfo &info) {
     QString tmpPath;
     SyncTime tmpModifiedTime = 0;
     size_t tmpSize = 0;
-    bool _isAvailableLocally = false;
+    bool tmpIsAvailableLocally = false;
 
-    in >> tmpId >> tmpName >> tmpType >> tmpPath >> tmpModifiedTime >> tmpSize >> _isAvailableLocally;
+    in >> tmpId >> tmpName >> tmpType >> tmpPath >> tmpModifiedTime >> tmpSize >> tmpIsAvailableLocally;
     info._id = QStr2Str(tmpId);
     info._name = QStr2SyncName(tmpName);
     info._type = static_cast<NodeType>(tmpType);
     info._path = QStr2Path(tmpPath);
     info._modifiedTime = tmpModifiedTime;
     info._size = tmpSize;
-    info._isAvailableLocally = _isAvailableLocally;
+    info._isAvailableLocally = tmpIsAvailableLocally;
     return in;
 }
 
