@@ -366,6 +366,9 @@
   <data name="Page_StoragePage_Title.Text" xml:space="preserve">
     <value />
   </data>
+  <data name="Page_StoragePage_Processing.Text" xml:space="preserve">
+    <value />
+  </data>
   <data name="Page_StoragePage_ThisComputer.Text" xml:space="preserve">
     <value />
   </data>

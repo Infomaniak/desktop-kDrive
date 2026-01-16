@@ -398,6 +398,9 @@ ou choisissez une offre adaptée à vos besoins.</value>
   <data name="Page_StoragePage_Title.Text" xml:space="preserve">
     <value>Stockage</value>
   </data>
+  <data name="Page_StoragePage_Processing.Text" xml:space="preserve">
+    <value>Calcul...</value>
+  </data>
   <data name="Page_StoragePage_ThisComputer.Text" xml:space="preserve">
     <value>Ce PC</value>
   </data>
