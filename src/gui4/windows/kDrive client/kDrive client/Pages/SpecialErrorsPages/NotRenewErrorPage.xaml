@@ -17,7 +17,7 @@
  * along with this program.  If not, see<http://www.gnu.org/licenses/> .
  -->
 
-<local:SpecialErroBasePage x:Class="Infomaniak.kDrive.Pages.DriveAccessDeniedPage"
+<local:SpecialErroBasePage x:Class="Infomaniak.kDrive.Pages.NotRenewErrorPage"
                            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                            xmlns:local="using:Infomaniak.kDrive.Pages"
@@ -42,18 +42,27 @@
                         RelativePanel.AlignHorizontalCenterWithPanel="True"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.M}">
 
-                <TextBlock x:Uid="Page_DriveAccessDeniedPage_Title"
+                <TextBlock x:Name="TitleTextBlock"
                            Style="{StaticResource TitleTextBlockStyle}"
                            HorizontalAlignment="Center" />
 
-                <TextBlock x:Uid="Page_DriveAccessDeniedPage_Subtitle"
+                <TextBlock x:Name="SubtitleTextBlock"
                            HorizontalAlignment="Center"
                            TextAlignment="Center" />
 
-                <Button x:Uid="Page_DriveAccessDeniedPage_Button"
-                        HorizontalAlignment="Center"
-                        Style="{ThemeResource AccentButtonStyle}"
-                        Click="RetryButton_Click" />
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                    <Button x:Name="MainButton"
+                            HorizontalAlignment="Center"
+                            Style="{ThemeResource AccentButtonStyle}"
+                            Click="MainButton_Click" />
+
+                    <Button x:Name="SecondaryButton"
+                            HorizontalAlignment="Center"
+                            Style="{ThemeResource DefaultButtonStyle}"
+                            Click="SecondaryButton_Click" />
+                </StackPanel>
             </StackPanel>
 
             <!-- Status indicator above the content -->

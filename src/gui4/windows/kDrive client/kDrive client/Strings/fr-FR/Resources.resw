@@ -424,14 +424,29 @@ ou choisissez une offre adaptée à vos besoins.</value>
   <data name="Page_DriveAccessDeniedPage_Title.Text" xml:space="preserve">
     <value>Accès refusé au kDrive</value>
   </data>
-  <data name="Page_LogginErrorPage_Title.Text" xml:space="preserve">
-    <value>Vous avez été déconnecté</value>
+  <data name="Page_MaintenanceErrorPage_Title.Text" xml:space="preserve">
+    <value>Maintenance en cours</value>
+  </data>
+  <data name="Page_NotRenewErrorPage_Title.Text" xml:space="preserve">
+    <value>Votre kDrive a expiré</value>
+  </data>
+  <data name="Page_NotRenewErrorPage_Admin_SecondaryButton.Content" xml:space="preserve">
+    <value>Actualiser</value>
   </data>
   <data name="Page_DriveAccessDeniedPage_Subtitle.Text" xml:space="preserve">
     <value>Vous n’avez pas l’autorisation d’accéder à ce kDrive.  Veuillez vérifier vos droits ou contacter votre administrateur.</value>
   </data>
   <data name="Page_LogginErrorPage_Subtitle.Text" xml:space="preserve">
     <value>Reconnectez-vous pour continuer à utiliser kDrive.</value>
+  </data>
+  <data name="Page_MaintenanceErrorPage_Subtitle.Text" xml:space="preserve">
+    <value>Le Drive est temporairement indisponible pour maintenance.  Réessayez dans quelques minutes.</value>
+  </data>
+  <data name="Page_NotRenewErrorPage_Subtitle.Text" xml:space="preserve">
+    <value>Ce Drive n’a pas été renouvelé. Vous ne pouvez plus y accéder.  Contactez votre administrateur pour réactiver le service.</value>
+  </data>
+  <data name="Page_NotRenewErrorPage_Admin_Subtitle.Text" xml:space="preserve">
+    <value>Ce Drive n’a pas été renouvelé. Vous ne pouvez plus y accéder.  Renouvelez votre abonnement pour réactiver le service.</value>
   </data>
   <data name="Global_TeraBytes" xml:space="preserve">
     <value>To</value>
@@ -594,9 +609,6 @@ Ne fermez pas l’application pendant le processus.</value>
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.SecondaryButtonText" xml:space="preserve">
     <value>Annuler</value>
-  </data>
-  <data name="SecondaryButtonText" xml:space="preserve">
-    <value>Êtes-vous sûr de vouloir changer le mode de synchronisation ?</value>
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.PrimaryButtonText" xml:space="preserve">
     <value>Modifier quand même</value>
@@ -880,6 +892,9 @@ Avant de continuer, assurez-vous que tout vos fichiers sont bien à jour et sync
   <data name="Page_DriveAccessDeniedPage_Button.Content" xml:space="preserve">
     <value>Réessayer</value>
   </data>
+  <data name="Page_MaintenanceErrorPage_Button.Content" xml:space="preserve">
+    <value>Actualiser</value>
+  </data>
   <data name="Page_LogginErrorPage_Button.Content" xml:space="preserve">
     <value>Connexion</value>
   </data>
@@ -894,5 +909,36 @@ Avant de continuer, assurez-vous que tout vos fichiers sont bien à jour et sync
     <value>kDrive ne peut pas accéder au disque {0}  Assurez-vous qu’il est bien connecté, 
 déverrouillé et accessible depuis votre ordinateur.</value>
     <comment>{0}: Disk root (ie C:/)</comment>
+  </data>
+  <data name="Page_NotRenewErrorPage_MainButton.Content" xml:space="preserve">
+    <value>Actualiser</value>
+  </data>
+  <data name="Page_NotRenewErrorPage_Admin_MainButton.Content" xml:space="preserve">
+    <value>Mettre à jour l’abonnement</value>
+  </data>
+  <data name="Page_LogginErrorPage_UserMissmatch_Title.Text" xml:space="preserve">
+    <value>Ce compte ne correspond pas</value>
+  </data>
+  <data name="Page_LogginErrorPage_UserMissmatch_Subtitle.Text" xml:space="preserve">
+    <value>Le compte utilisé pour cette connexion ne correspond pas à celui de ce kDrive.  Veuillez vous reconnecter avec la bonne adresse e-mail  {0}</value>
+    <comment>{0} = stripped expected email</comment>
+  </data>
+  <data name="Page_LogginErrorPage_UserMissmatch_Button.Content" xml:space="preserve">
+    <value>Connexion</value>
+  </data>
+  <data name="Page_LogginErrorPage_Title.Text" xml:space="preserve">
+    <value>Vous avez été déconnecté</value>
+  </data>
+  <data name="Page_AsleepErrorPage_Title.Text" xml:space="preserve">
+    <value>Votre kDrive est en veille</value>
+  </data>
+  <data name="Page_AsleepErrorPage_Subtitle.Text" xml:space="preserve">
+    <value>Votre kDrive n’a pas été utilisé depuis longtemps et a été mis en veille afin d’économiser des ressources</value>
+  </data>
+  <data name="Page_AsleepErrorPage_PrimaryButton.Content" xml:space="preserve">
+    <value>Sortir de veille</value>
+  </data>
+  <data name="Page_AsleepErrorPage_SecondaryButton.Content" xml:space="preserve">
+    <value>Actualiser</value>
   </data>
 </root>

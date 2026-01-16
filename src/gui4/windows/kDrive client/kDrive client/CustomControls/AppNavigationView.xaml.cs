@@ -21,7 +21,14 @@ namespace Infomaniak.kDrive.CustomControls
         public Frame Frame { get { return ContentFrame; } }
         private Dictionary<string, List<Type>> _navigationItemToPage = new Dictionary<string, List<Type>>()
         {
-            { "HomePage", new List<Type>() { typeof(Pages.HomePage), typeof(Pages.DriveAccessDeniedPage), typeof(Pages.LoggingErrorPage )} },
+            { "HomePage", new List<Type>() {
+                typeof(Pages.HomePage),
+                typeof(Pages.DriveAccessDeniedPage),
+                typeof(Pages.LoggingErrorPage),
+                typeof(Pages.NotRenewErrorPage),
+                typeof(Pages.MaintenanceErrorPage),
+                typeof(Pages.AsleepErrorPage)
+            } },
             { "ActivityPage", new List<Type>() { typeof(Pages.ActivityPage), typeof(Pages.ErrorPage) } },
             { "SettingsPage", new List<Type>() { typeof(Pages.Settings.SettingsPage), typeof(Pages.Settings.DriveManagementPage) } },
             { "StoragePage", new List<Type>() { typeof(Pages.StoragePage) } }
