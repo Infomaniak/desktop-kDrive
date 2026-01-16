@@ -55,6 +55,18 @@
 /* loco:69240f6d4433e24658054fd4 */
 "buttonStartForFree" = "Iniziare gratuitamente";
 
+/* loco:696a260311ac2de6c6029683 */
+"driveAccessDeniedErrorDescription" = "Non si ha l'autorizzazione ad accedere a questo kDrive.\nControllare le autorizzazioni o contattare l'amministratore.";
+
+/* loco:696a25f0bcde38f2b9018124 */
+"driveAccessDeniedErrorTitle" = "Accesso negato a kDrive";
+
+/* loco:696a29351c25c87abb045892 */
+"driveMaintenanceErrorDescription" = "Questo kDrive non è temporaneamente disponibile per manutenzione.\nRiprovare tra qualche minuto.";
+
+/* loco:696a2779d558c16f7d0a7ff9 */
+"driveMaintenanceErrorTitle" = "Manutenzione in corso";
+
 /* loco:695e57f549f806b5ef0a3ac2 */
 "folderFavorites" = "Preferiti";
 

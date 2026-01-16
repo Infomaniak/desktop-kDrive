@@ -42,6 +42,14 @@ public enum KDriveLocalizable {
   public static let buttonShowOffers = KDriveLocalizable.tr("Localizable", "buttonShowOffers", fallback: "Show offers")
   /// loco:69240f6d4433e24658054fd4
   public static let buttonStartForFree = KDriveLocalizable.tr("Localizable", "buttonStartForFree", fallback: "Get started for free")
+  /// loco:696a260311ac2de6c6029683
+  public static let driveAccessDeniedErrorDescription = KDriveLocalizable.tr("Localizable", "driveAccessDeniedErrorDescription", fallback: "You do not have permission to access this kDrive.\nPlease check your permissions or contact your administrator.")
+  /// loco:696a25f0bcde38f2b9018124
+  public static let driveAccessDeniedErrorTitle = KDriveLocalizable.tr("Localizable", "driveAccessDeniedErrorTitle", fallback: "Access denied to kDrive")
+  /// loco:696a29351c25c87abb045892
+  public static let driveMaintenanceErrorDescription = KDriveLocalizable.tr("Localizable", "driveMaintenanceErrorDescription", fallback: "This kDrive is temporarily unavailable for maintenance.\nPlease try again in a few minutes.")
+  /// loco:696a2779d558c16f7d0a7ff9
+  public static let driveMaintenanceErrorTitle = KDriveLocalizable.tr("Localizable", "driveMaintenanceErrorTitle", fallback: "Maintenance in progress")
   /// loco:695e57f549f806b5ef0a3ac2
   public static let folderFavorites = KDriveLocalizable.tr("Localizable", "folderFavorites", fallback: "Favorites")
   /// loco:695e584bbc7544361b08b832

@@ -17,6 +17,8 @@
  */
 
 import Foundation
+import kDriveCore
+import kDriveResources
 import SwiftUI
 
 public struct UIBlockingError {
@@ -43,5 +45,24 @@ public struct UIBlockingError {
         self.badgeIcon = badgeIcon
         self.badgeBackgroundColor = badgeBackgroundColor
         self.badgeColor = badgeColor
+    }
+
+    public init?(drive: Drive) {
+        self.drive = UIDrive(drive: drive)
+        if drive.maintenance {
+            title = KDriveLocalizable.driveMaintenanceErrorTitle
+            subtitle = KDriveLocalizable.driveMaintenanceErrorDescription
+            badgeIcon = KDriveResources.wrench.swiftUIImage
+            badgeBackgroundColor = ColorToken.Status.Light.warning.asColor
+            badgeColor = ColorToken.Status.Medium.warning.asColor
+        } else if drive.accessDenied {
+            title = KDriveLocalizable.driveAccessDeniedErrorTitle
+            subtitle = KDriveLocalizable.driveAccessDeniedErrorDescription
+            badgeIcon = KDriveResources.warning.swiftUIImage
+            badgeBackgroundColor = ColorToken.Status.Light.warning.asColor
+            badgeColor = ColorToken.Status.Medium.warning.asColor
+        } else {
+            return nil
+        }
     }
 }
