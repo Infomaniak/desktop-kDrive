@@ -536,7 +536,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         {
             var parms = new JsonObject
             {
-                [JsonKeys.Path] = Utility.ToBase64String(path),
+                [JsonKeys.Path] = Utility.ToBase64String(path)
             };
 
             CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_ISPATHVALIDFORNEWSYNC, parms, cancellationToken);
@@ -547,6 +547,23 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return null;
             }
             return data.Params[JsonKeys.IsValid]?.GetValue<bool>() ?? false;
+        }
+
+        public async Task<UInt64?> GetSyncOfflineFilesSize(DbId syncDbId, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.SyncDbId] = syncDbId
+            };
+
+            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_OFFLINE_FILES_SIZE, parms, cancellationToken);
+
+            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.Size))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.Size} not found in response: {data.Params}");
+                return null;
+            }
+            return data.Params[JsonKeys.Size]?.GetValue<UInt64>() ?? 0;
         }
 
         public async Task<List<Node>?> GetSubFolders(DbId userDbId, DriveId driveId, NodeId parentNodeId, CancellationToken cancellationToken)
@@ -603,7 +620,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             if (nodeInfo is null)
             {
                 Logger.Log(Logger.Level.Error, $"Failed to deserialize nodeInfo from ${data.Params[JsonKeys.NodeInfo]}.");
-                return null; 
+                return null;
             }
             return new Node(nodeInfo.NodeId ?? "", nodeInfo.Name ?? "", nodeInfo.Size ?? 0, nodeInfo.ParentNodeId ?? "", nodeInfo.Path ?? "", userDbId, driveId, nodeInfo?.AccessDenied ?? false);
         }

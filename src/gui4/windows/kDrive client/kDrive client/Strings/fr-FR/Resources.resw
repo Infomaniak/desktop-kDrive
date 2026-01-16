@@ -398,19 +398,23 @@ ou choisissez une offre adaptée à vos besoins.</value>
   <data name="Page_StoragePage_Title.Text" xml:space="preserve">
     <value>Stockage</value>
   </data>
+  <data name="Page_StoragePage_Processing.Text" xml:space="preserve">
+    <value>Calcul...</value>
+  </data>
   <data name="Page_StoragePage_ThisComputer.Text" xml:space="preserve">
     <value>Ce PC</value>
   </data>
   <data name="Page_StoragePage_Used.Text" xml:space="preserve">
-    <value>utilisé(s)</value>
-    <comment>Use mix singular/plural form.</comment>
+    <value>utilisés</value>
   </data>
   <data name="Page_StoragePage_Free.Text" xml:space="preserve">
-    <value>libre(s)</value>
-    <comment>Use mix singular/plural form.</comment>
+    <value>libres</value>
+  </data>
+  <data name="Page_StoragePage_FreeSpace.Text" xml:space="preserve">
+    <value>Espace libre de l’ordinateur</value>
   </data>
   <data name="Page_StoragePage_OfflineFiles.Text" xml:space="preserve">
-    <value>Fichiers kDrive accessibles hors ligne</value>
+    <value>Fichiers kDrive stocker sur l’ordinateur</value>
   </data>
   <data name="Page_StoragePage_OtherFiles.Text" xml:space="preserve">
     <value>Autres fichiers de l’ordinateur</value>
@@ -950,5 +954,17 @@ déverrouillé et accessible depuis votre ordinateur.</value>
   </data>
   <data name="Page_AsleepErrorPage_SecondaryButton.Content" xml:space="preserve">
     <value>Actualiser</value>
+  </data>
+  <data name="Page_StoragePage_Disconnected_Title.Text" xml:space="preserve">
+    <value>Le disque de stockage {0} n’est pas accessible</value>
+    <comment>{0}: Disk root (ie C:/)</comment>
+  </data>
+  <data name="Page_StoragePage_Disconnected_RetryButton.Content" xml:space="preserve">
+    <value>Réessayer</value>
+  </data>
+  <data name="Page_StoragePage_Disconnected_Subtitle.Text" xml:space="preserve">
+    <value>kDrive ne peut pas accéder au disque {0}  Assurez-vous qu’il est bien connecté, 
+déverrouillé et accessible depuis votre ordinateur.</value>
+    <comment>{0}: Disk root (ie C:/)</comment>
   </data>
 </root>

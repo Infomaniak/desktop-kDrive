@@ -56,7 +56,7 @@ public extension ThemedAnimation {
     )
 }
 
-public struct ThemedAnimation: Sendable {
+public struct ThemedAnimation: Sendable, Hashable {
     public let light: String
     public let dark: String
 
