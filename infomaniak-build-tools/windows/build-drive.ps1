@@ -608,8 +608,18 @@ function Create-MSI-Package {
     Write-Host "Executing the dotnet build command ..."
     Get-PSDrive -PSProvider FileSystem | Select-Object Name,Free,Used
   
-	dotnet build -v diag "$msiInstallerFolderPath\kDriveInstaller.sln" /p:LightAdditionalOptions="-t WixCabinetThreadCount=1" /p:WixUseCompression=false /p:WixCabinetThreadCount=1 /p:Configuration="Release" /p:Platform="x64" /p:OutputName=$appName
-    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+	#dotnet build -v diag "$msiInstallerFolderPath\kDriveInstaller.sln" /p:LightAdditionalOptions="-t WixCabinetThreadCount=1" /p:WixUseCompression=false /p:WixCabinetThreadCount=1 /p:Configuration="Release" /p:Platform="x64" /p:OutputName=$appName
+    #if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+    try {
+       dotnet build -v diag "$msiInstallerFolderPath\kDriveInstaller.sln" /p:LightAdditionalOptions="-t WixCabinetThreadCount=1" /p:WixUseCompression=false /p:WixCabinetThreadCount=1 /p:Configuration="Release" /p:Platform="x64" /p:OutputName=$appName
+     } catch {
+        Write-Host "An unexpected error occurred: $($_.Exception.Message)"
+        Write-Host "Error details: $($_.Exception)"
+        Write-Host "The dotnet build command failed. Aborting."
+        exit 1
+     }
+
 
 	Move-Item -Path "$msiPackageFolderPath\$appName.msi" -Destination "$contentPath"
 	if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
