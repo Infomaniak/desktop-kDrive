@@ -3,8 +3,8 @@
         <ComponentGroup Id="ShellExtComponents" Directory="SHELLEXTFOLDER">
             <Component Guid="C3C85E7E-ED48-4924-9FD0-35FCE680AF73">
                 <!-- KD dll -->
-                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/KDContextMenu.dll" />
-                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/KDOverlays.dll" />
+                <File Source="$(desktop-kDriveDir)\build-windows\install\bin\KDContextMenu.dll" />
+                <File Source="$(desktop-kDriveDir)\build-windows\install\bin\KDOverlays.dll" />
                 <RegistryKey Root="HKCR" Key="CLSID" ForceDeleteOnUninstall="no">
                     <RegistryKey Key="CLSID/$(regKeyOkGUID)" ForceDeleteOnUninstall="yes">
                         <RegistryValue Action="write" Type="string" Value="Infomaniak Drive overlay handler" />
@@ -57,17 +57,17 @@
             </Component>
             <Component Guid="C1733D32-3681-41E5-831A-854C4BB97DB8" Directory="APPXFOLDER">
                 <!-- A custom action take care of installing the msix (see Package.wxs) -->
-                <File Source="$(desktop-kDriveDir)/extensions/windows/cfapi/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$(version)_Test/FileExplorerExtensionPackage_$(version)_x64_arm64.msixbundle" />
+                <File Source="$(desktop-kDriveDir)\extensions\windows\cfapi\FileExplorerExtensionPackage\AppPackages\FileExplorerExtensionPackage_$(version)_Test\FileExplorerExtensionPackage_$(version)_x64_arm64.msixbundle" />
 				<File Id="UninstallShellExtScript" Source="$(desktop-kDriveDir)\extensions\windows\cfapi\FileExplorerExtension\UninstallExtension.ps1" />
 			</Component>
             <Component Guid="{04EB66D3-3231-499C-AF87-26EBC013ED83}" Directory="APPXDEPENDENCIESx64FOLDER">
-                <File Source="$(desktop-kDriveDir)//extensions/windows/cfapi/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$(version)_Test/Dependencies/x64/Microsoft.VCLibs.x64.14.00.Desktop.appx" />
+                <File Source="$(desktop-kDriveDir)/\extensions\windows\cfapi\FileExplorerExtensionPackage\AppPackages\FileExplorerExtensionPackage_$(version)_Test\Dependencies/x64/Microsoft.VCLibs.x64.14.00.Desktop.appx" />
             </Component>
             <Component Guid="{F681640C-E6E5-435C-820E-447AFE8BC674}" Directory="APPXDEPENDENCIESx86FOLDER">
-                <File Source="$(desktop-kDriveDir)/extensions/windows/cfapi/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$(version)_Test/Dependencies/x86/Microsoft.VCLibs.x86.14.00.Desktop.appx" />
+                <File Source="$(desktop-kDriveDir)\extensions\windows\cfapi\FileExplorerExtensionPackage\AppPackages\FileExplorerExtensionPackage_$(version)_Test\Dependencies/x86/Microsoft.VCLibs.x86.14.00.Desktop.appx" />
             </Component>
             <Component Guid="{780822D6-B47D-47E3-ACEB-E3ED196B74DB}" Directory="APPXDEPENDENCIESARMFOLDER">
-                <File Source="$(desktop-kDriveDir)/extensions/windows/cfapi/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$(version)_Test/Dependencies/ARM/Microsoft.VCLibs.ARM.14.00.Desktop.appx" />
+                <File Source="$(desktop-kDriveDir)\extensions\windows\cfapi\FileExplorerExtensionPackage\AppPackages\FileExplorerExtensionPackage_$(version)_Test\Dependencies/ARM/Microsoft.VCLibs.ARM.14.00.Desktop.appx" />
             </Component>
         </ComponentGroup>
     </Fragment>

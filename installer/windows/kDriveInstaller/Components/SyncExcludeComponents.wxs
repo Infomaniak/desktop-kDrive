@@ -2,7 +2,7 @@
     <Fragment>
         <ComponentGroup Id="SyncExcludeComponents" Directory="INSTALLFOLDER">
             <Component>
-                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/sync-exclude.lst" />
+                <File Source="$(desktop-kDriveDir)\build-windows\install\bin\sync-exclude.lst" />
             </Component>
         </ComponentGroup>
     </Fragment>

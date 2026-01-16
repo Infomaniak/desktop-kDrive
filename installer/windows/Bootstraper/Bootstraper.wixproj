@@ -1,4 +1,8 @@
 ﻿<Project Sdk="WixToolset.Sdk/6.0.2">
+  <PropertyGroup>
+    <WixUseCompression>false</WixUseCompression>
+    <WixCabinetThreadCount>1</WixCabinetThreadCount>
+  </PropertyGroup>
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
     <Exec Command="powershell  -ExecutionPolicy RemoteSigned -File &quot;$(ProjectDir)fetchVersion.ps1&quot; -WixProjPath &quot;$(SolutionDir)kDriveInstaller.wixproj&quot; -RepositoryRootPath &quot;$(SolutionDir)..\..\..\&quot;" />
   </Target>
