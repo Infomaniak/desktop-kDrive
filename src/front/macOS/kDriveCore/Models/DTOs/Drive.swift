@@ -17,8 +17,9 @@
  */
 
 import Foundation
+import OrderedCollections
 
-public typealias IndexedDrives = [Int32: Drive]
+public typealias IndexedDrives = OrderedDictionary<Int32, Drive>
 
 public enum DriveType: Equatable, Hashable, Sendable {
     case available(userId: Int32)

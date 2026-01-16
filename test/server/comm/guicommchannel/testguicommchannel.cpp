@@ -497,6 +497,7 @@ std::vector<DriveInfo> createDriveInfoList() {
     di1.setAccessDenied(false);
     di1.setSize(1000000000);
     di1.setUsedSize(50000000);
+    di1.setPackIsFree(true);
 
     DriveInfo di2;
     di2.setDbId(2);
@@ -511,6 +512,7 @@ std::vector<DriveInfo> createDriveInfoList() {
     di2.setAccessDenied(true);
     di2.setSize(2000000000);
     di2.setUsedSize(60000000);
+    di2.setPackIsFree(false);
 
     return {di1, di2};
 }
@@ -529,6 +531,7 @@ Poco::JSON::Array createDriveInfoObjList() {
     (void) driveInfoObj1.set("notifications", true);
     (void) driveInfoObj1.set("size", 1000000000);
     (void) driveInfoObj1.set("usedSize", 50000000);
+    (void) driveInfoObj1.set("isFree", true);
 
     Poco::JSON::Object driveInfoObj2;
     (void) driveInfoObj2.set("accessDenied", true);
@@ -543,6 +546,7 @@ Poco::JSON::Array createDriveInfoObjList() {
     (void) driveInfoObj2.set("notifications", false);
     (void) driveInfoObj2.set("size", 2000000000);
     (void) driveInfoObj2.set("usedSize", 60000000);
+    (void) driveInfoObj2.set("isFree", false);
 
     Poco::JSON::Array driveInfoObjList;
 
@@ -583,8 +587,8 @@ void TestGuiCommChannel::testDriveInfoListJob() {
 
     // Job expected answers
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
-    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
 
+    // Job expected answer
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto driveInfoListJob = std::dynamic_pointer_cast<DriveInfoListJob>(job);
         CPPUNIT_ASSERT(driveInfoListJob);
@@ -595,6 +599,7 @@ void TestGuiCommChannel::testDriveInfoListJob() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(queryStr, answerStr, {}, processFct);
 #else
+    const auto cbkAnswerStr = testcommhelpers::stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }

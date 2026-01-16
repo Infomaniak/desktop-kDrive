@@ -17,6 +17,7 @@
  */
 
 import Foundation
+import OrderedCollections
 
 struct AccountInfoSignal: Codable, Sendable {
     let accountInfo: AccountInfoSignalMetadata

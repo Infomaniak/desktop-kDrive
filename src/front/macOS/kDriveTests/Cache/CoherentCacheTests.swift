@@ -18,6 +18,7 @@
 
 import Foundation
 @testable import kDriveCore
+import OrderedCollections
 import Testing
 
 enum CacheData {

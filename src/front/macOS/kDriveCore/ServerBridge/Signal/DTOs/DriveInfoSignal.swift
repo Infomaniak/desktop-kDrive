@@ -17,6 +17,7 @@
  */
 
 import Foundation
+import OrderedCollections
 
 struct DriveInfoSignal: Codable, Sendable {
     let driveInfo: DriveInfoSignalMetadata
@@ -49,7 +50,7 @@ extension DriveInfoSignalMetadata {
               locked: locked,
               maintenance: maintenance,
               notifications: notifications,
-              synchros: [:])
+              synchros: synchros)
     }
 }
 

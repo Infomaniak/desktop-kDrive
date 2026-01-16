@@ -117,6 +117,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         public DbId? AccountDbId { get; set; }
         public DriveId? Id { get; set; }
         public string? Name { get; set; }
+        public bool? IsFree { get; set; }
         public System.Drawing.Color? Color
         {
             get => _color;
@@ -138,6 +139,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             copyProperty(source, target, nameof(source.Name), nameof(target.Name));
             copyProperty(source, target, nameof(source.Color), nameof(target.Color));
             copyProperty(source, target, nameof(source.Admin), nameof(target.IsAdmin));
+            copyProperty(source, target, nameof(source.IsFree), nameof(target.IsFreeOffer));
         }
     }
 

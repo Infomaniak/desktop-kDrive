@@ -19,6 +19,7 @@
 import Combine
 import Foundation
 import InfomaniakDI
+import OrderedCollections
 
 public enum ObservationEvent<Some: Equatable>: Equatable {
     case update(Some)
