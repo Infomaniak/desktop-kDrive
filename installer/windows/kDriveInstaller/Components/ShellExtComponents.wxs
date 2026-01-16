@@ -61,13 +61,13 @@
 				<File Id="UninstallShellExtScript" Source="$(desktop-kDriveDir)\extensions\windows\cfapi\FileExplorerExtension\UninstallExtension.ps1" />
 			</Component>
             <Component Guid="{04EB66D3-3231-499C-AF87-26EBC013ED83}" Directory="APPXDEPENDENCIESx64FOLDER">
-                <File Source="$(desktop-kDriveDir)/\extensions\windows\cfapi\FileExplorerExtensionPackage\AppPackages\FileExplorerExtensionPackage_$(version)_Test\Dependencies/x64/Microsoft.VCLibs.x64.14.00.Desktop.appx" />
+                <File Source="$(desktop-kDriveDir)/\extensions\windows\cfapi\FileExplorerExtensionPackage\AppPackages\FileExplorerExtensionPackage_$(version)_Test\Dependencies\x64\Microsoft.VCLibs.x64.14.00.Desktop.appx" />
             </Component>
             <Component Guid="{F681640C-E6E5-435C-820E-447AFE8BC674}" Directory="APPXDEPENDENCIESx86FOLDER">
-                <File Source="$(desktop-kDriveDir)\extensions\windows\cfapi\FileExplorerExtensionPackage\AppPackages\FileExplorerExtensionPackage_$(version)_Test\Dependencies/x86/Microsoft.VCLibs.x86.14.00.Desktop.appx" />
+                <File Source="$(desktop-kDriveDir)\extensions\windows\cfapi\FileExplorerExtensionPackage\AppPackages\FileExplorerExtensionPackage_$(version)_Test\Dependencies\x86\Microsoft.VCLibs.x86.14.00.Desktop.appx" />
             </Component>
             <Component Guid="{780822D6-B47D-47E3-ACEB-E3ED196B74DB}" Directory="APPXDEPENDENCIESARMFOLDER">
-                <File Source="$(desktop-kDriveDir)\extensions\windows\cfapi\FileExplorerExtensionPackage\AppPackages\FileExplorerExtensionPackage_$(version)_Test\Dependencies/ARM/Microsoft.VCLibs.ARM.14.00.Desktop.appx" />
+                <File Source="$(desktop-kDriveDir)\extensions\windows\cfapi\FileExplorerExtensionPackage\AppPackages\FileExplorerExtensionPackage_$(version)_Test\Dependencies\ARM\Microsoft.VCLibs.ARM.14.00.Desktop.appx" />
             </Component>
         </ComponentGroup>
     </Fragment>
