@@ -1,4 +1,4 @@
-<Wix xmlns=http://wixtoolset.org/schemas/v4/wxs>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
     <Fragment>
         <ComponentGroup Id="DLLComponents" Directory="INSTALLFOLDER">
             <Component Guid="96EBFD2F-1509-42B6-9768-079D6C989865">

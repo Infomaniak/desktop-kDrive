@@ -1,4 +1,4 @@
-﻿<Wix xmlns=http://wixtoolset.org/schemas/v4/wxs xmlns:util="http://schemas.microsoft.com/wix/2006/wi/util">
+﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:util="http://schemas.microsoft.com/wix/2006/wi/util">
     <!-- /!\ DO NOT CHANGE THE PACKAGE ID /!\ It uniquely identify the app on client devices -->
     <Package Id="Infomaniak_Network_SA.kDrive" Name="kDrive" Manufacturer="Infomaniak Network SA" Version="$(version)" InstallerVersion="301" Scope="perMachine" >
         <MajorUpgrade DowngradeErrorMessage="!(loc.DowngradeError)" AllowSameVersionUpgrades="yes" />

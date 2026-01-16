@@ -1,4 +1,4 @@
-<Wix xmlns=http://wixtoolset.org/schemas/v4/wxs>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
     <Fragment>
         <ComponentGroup Id="ShellExtComponents" Directory="SHELLEXTFOLDER">
             <Component Guid="C3C85E7E-ED48-4924-9FD0-35FCE680AF73">
