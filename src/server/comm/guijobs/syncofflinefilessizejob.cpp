@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "syncofflinefilessize.h"
+#include "syncofflinefilessizejob.h"
 #include "appserver.h"
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
@@ -31,29 +31,29 @@ static const auto outParamsSize = "size";
 
 namespace KDC {
 
-SyncOfflineFileSize::SyncOfflineFileSize(std::shared_ptr<CommManager> commManager, int requestId,
+SyncOfflineFilesSizeJob::SyncOfflineFilesSizeJob(std::shared_ptr<CommManager> commManager, int requestId,
                                          const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
     _requestNum = RequestNum::SYNC_OFFLINE_FILES_SIZE;
 }
 
-ExitInfo SyncOfflineFileSize::deserializeInputParms() {
+ExitInfo SyncOfflineFilesSizeJob::deserializeInputParms() {
     try {
         readParamValue(inParamsSyncDbId, _syncDbId);
     } catch (const std::exception &e) {
-        LOG_WARN(_logger, "Exception in SyncOfflineFileSize::readParamValue: error=" << e.what());
+        LOG_WARN(_logger, "Exception in SyncOfflineFilesSizeJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
     }
 
     return ExitCode::Ok;
 }
 
-ExitInfo SyncOfflineFileSize::serializeOutputParms() {
+ExitInfo SyncOfflineFilesSizeJob::serializeOutputParms() {
     writeParamValue(outParamsSize, _size);
     return ExitCode::Ok;
 }
 
-ExitInfo SyncOfflineFileSize::process() {
+ExitInfo SyncOfflineFilesSizeJob::process() {
     std::vector<std::shared_ptr<SyncPal>> syncPals;
 
     {

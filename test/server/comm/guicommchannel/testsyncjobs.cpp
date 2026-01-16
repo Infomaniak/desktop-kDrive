@@ -21,7 +21,7 @@
 #include "../testcommhelpers.h"
 
 #include "comm/guijobs/syncinfolistjob.h"
-#include "comm/guijobs/syncofflinefilessize.h"
+#include "comm/guijobs/syncofflinefilessizejob.h"
 #include "comm/guijobs/syncstatusjob.h"
 #include "comm/guijobs/syncaddjob.h"
 #include "comm/guijobs/syncadd2job.h"
@@ -589,7 +589,7 @@ void TestGuiCommChannel::testSyncSetSupportsVirtualFilesJob() {
 #endif
 }
 
-void TestGuiCommChannel::testSyncOflineFilesSizeJob() {
+void TestGuiCommChannel::testSyncOfflineFilesSizeJob() {
     // Query
     Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)

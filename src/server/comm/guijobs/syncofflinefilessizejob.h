@@ -22,9 +22,9 @@
 
 namespace KDC {
 
-class SyncOfflineFileSize : public AbstractGuiJob {
+class SyncOfflineFilesSizeJob : public AbstractGuiJob {
     public:
-        SyncOfflineFileSize(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+        SyncOfflineFilesSizeJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
                       std::shared_ptr<AbstractCommChannel> channel);
 
     private:

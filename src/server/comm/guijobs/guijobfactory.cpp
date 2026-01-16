@@ -29,7 +29,7 @@
 #include "drivedeletejob.h"
 #include "drivesearchjob.h"
 #include "syncinfolistjob.h"
-#include "syncofflinefilessize.h"
+#include "syncofflinefilessizejob.h"
 #include "syncstartjob.h"
 #include "syncstopjob.h"
 #include "syncstatusjob.h"
@@ -96,7 +96,7 @@ GuiJobFactory::GuiJobFactory() {
         {RequestNum::DRIVE_DELETE, makeShared<DriveDeleteJob>},
         {RequestNum::DRIVE_SEARCH, makeShared<DriveSearchJob>},
         {RequestNum::SYNC_INFOLIST, makeShared<SyncInfoListJob>},
-        {RequestNum::SYNC_OFFLINE_FILES_SIZE, makeShared<SyncOfflineFileSize>},
+        {RequestNum::SYNC_OFFLINE_FILES_SIZE, makeShared<SyncOfflineFilesSizeJob>},
         {RequestNum::SYNC_START, makeShared<SyncStartJob>},
         {RequestNum::SYNC_STOP, makeShared<SyncStopJob>},
         {RequestNum::SYNC_STATUS, makeShared<SyncStatusJob>},
