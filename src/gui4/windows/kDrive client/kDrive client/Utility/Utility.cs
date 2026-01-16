@@ -136,8 +136,7 @@ namespace Infomaniak.kDrive
 
             if (localizedString is null || localizedString.Length == 0)
             {
-                Logger.Log(Logger.Level.Warning, $"Missing localization for key: {key} in current culture {System.Globalization.CultureInfo.CurrentUICulture.Name}");
-                localizedString = "";
+                Logger.Log(Logger.Level.Error, $"Missing localization for key: {key} in current culture {System.Globalization.CultureInfo.CurrentUICulture.Name}");
             }
 
             // Replace literal \r\n with real newlines
@@ -170,7 +169,7 @@ namespace Infomaniak.kDrive
             }
         }
 
-        public static async Task<ContentDialogResult> ShowContentDialog(XamlRoot xamlRoot, string xuid)
+        public static ContentDialog GetContentDialog(XamlRoot xamlRoot, string xuid, ContentDialogButton contentDialogButton = ContentDialogButton.Primary)
         {
             ContentDialog dialog = new ContentDialog();
 
@@ -178,12 +177,16 @@ namespace Infomaniak.kDrive
             dialog.Title = Utility.GetLocalizedString(xuid + "/Title");
             dialog.PrimaryButtonText = Utility.GetLocalizedString(xuid + "/PrimaryButtonText");
             dialog.SecondaryButtonText = Utility.GetLocalizedString(xuid + "/SecondaryButtonText");
-            dialog.DefaultButton = ContentDialogButton.Primary;
+            dialog.DefaultButton = contentDialogButton;
             dialog.Content = Utility.GetLocalizedString(xuid + "/Content");
-            var result = await dialog.ShowAsync();
-            return result;
+            return dialog;
         }
 
+        public static async Task<ContentDialogResult> ShowContentDialogAsync(XamlRoot xamlRoot, string xuid, ContentDialogButton contentDialogButton = ContentDialogButton.Primary)
+        {
+            var result = await GetContentDialog(xamlRoot, xuid, contentDialogButton).ShowAsync();
+            return result;
+        }
 
         public static string? ToBase64String(string? data)
         {

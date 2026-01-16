@@ -8,12 +8,10 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.VoiceCommands;
 using Windows.Storage.Pickers;
 
 namespace Infomaniak.kDrive.Pages.Onboarding
@@ -225,15 +223,15 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             Frame.Navigate(typeof(FinishingPage), _onBoardingViewModel);
         }
 
-        private async Task SetNewSyncLocalPathAndUpdateVfsMode(NewSync sync, string newLocalPath)
+        private static async Task SetNewSyncLocalPathAndUpdateVfsMode(NewSync sync, string newLocalPath)
         {
             var commServices = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            bool? supportOnlineMode = await commServices.PathSupportLiteSync(newLocalPath, CancellationToken.None);
-            if (supportOnlineMode is null)
+            bool? CanSupportOnlineMode = await commServices.CanPathSupportLiteSync(newLocalPath, CancellationToken.None);
+            if (CanSupportOnlineMode is null)
                 Logger.Log(Logger.Level.Warning, $"Could not determine if the path '{newLocalPath}' supports online mode. Defaulting to offline sync.");
 
             sync.LocalPath = newLocalPath;
-            sync.SyncType = (supportOnlineMode ?? false) ? SyncType.Online : SyncType.Offline;
+            sync.SyncType = (CanSupportOnlineMode ?? false) ? SyncType.Online : SyncType.Offline;
         }
     }
 

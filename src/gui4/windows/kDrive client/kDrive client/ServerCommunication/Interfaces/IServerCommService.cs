@@ -57,8 +57,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task PauseSync(DbId syncDbId, CancellationToken cancellationToken);
         Task RemoveSync(DbId syncDbId, CancellationToken cancellationToken);
         Task<bool> AddSync(NewSync newSync, CancellationToken cancellationToken);
+        Task<bool> SetSyncType(DbId syncDbId, SyncType mode, CancellationToken cancellationToken);
 
-        Task<bool?> PathSupportLiteSync(string absoluteLocalPath, CancellationToken cancellationToken);
+        Task<bool?> CanPathSupportLiteSync(string absoluteLocalPath, CancellationToken cancellationToken);
 
         public struct GetGoodPathResult
         {
