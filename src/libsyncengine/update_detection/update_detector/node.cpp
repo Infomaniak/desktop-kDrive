@@ -250,9 +250,6 @@ SyncPath Node::getPath() const {
 }
 
 bool Node::isTmp() const {
-    assert(_id.has_value());
-    assert((_isTmp && CommonUtility::startsWith(*_id, "tmp_")) ||
-           (!_isTmp && !CommonUtility::startsWith(*_id, "tmp_"))); // Check that the ID is consistent with the "_isTmp" flag
     return _isTmp;
 }
 

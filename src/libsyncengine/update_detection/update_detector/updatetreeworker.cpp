@@ -1193,6 +1193,11 @@ bool UpdateTreeWorker::checkTreeIntegrity() {
 }
 
 bool UpdateTreeWorker::checkNodeIntegrity(const std::shared_ptr<Node> node) {
+    assert(node->id().has_value());
+    assert((node->isTmp() && CommonUtility::startsWith(*node->id(), "tmp_")) ||
+           (!node->isTmp() &&
+            !CommonUtility::startsWith(*node->id(), "tmp_"))); // Check that the ID is consistent with the "_isTmp" flag
+
     bool hasTempPrefix = node->id().has_value() && CommonUtility::startsWith(node->id().value(), "tmp_");
     if (!node->isValid() || hasTempPrefix) {
         if (node->isTmp() || hasTempPrefix) {
