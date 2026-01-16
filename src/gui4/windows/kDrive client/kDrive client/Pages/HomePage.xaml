@@ -305,7 +305,7 @@
                     <LinearGradientBrush StartPoint="0,0"
                                          EndPoint="0,1"
                                          Opacity="0.4">
-                        <GradientStop Color="#446FDD"
+                        <GradientStop Color="{ThemeResource SystemAccentColor}"
                                       Offset="0.0" />
                         <GradientStop Color="{ThemeResource LayerFillColorDefault}"
                                       Offset="0.6" />
