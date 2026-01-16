@@ -21,6 +21,7 @@
 #include "../testcommhelpers.h"
 
 #include "comm/guijobs/syncinfolistjob.h"
+#include "comm/guijobs/syncofflinefilessizejob.h"
 #include "comm/guijobs/syncstatusjob.h"
 #include "comm/guijobs/syncaddjob.h"
 #include "comm/guijobs/syncadd2job.h"
@@ -584,6 +585,50 @@ void TestGuiCommChannel::testSyncSetSupportsVirtualFilesJob() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
+void TestGuiCommChannel::testSyncOfflineFilesSizeJob() {
+    // Query
+    Poco::JSON::Object queryObj;
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    (void) queryObj.set("id", 1);
+#endif
+    (void) queryObj.set("num", toInt(RequestNum::SYNC_OFFLINE_FILES_SIZE));
+
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("syncDbId", 1);
+    (void) queryObj.set("params", queryParamsObj);
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+
+    Poco::JSON::Object paramsObj;
+    (void) paramsObj.set("size", 10);
+    (void) answerObj.set("params", paramsObj);
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::SYNC_OFFLINE_FILES_SIZE));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+
+    // Job expected answer
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto syncOfflineFilesSizeJob = std::dynamic_pointer_cast<SyncOfflineFilesSizeJob>(job);
+        CPPUNIT_ASSERT(syncOfflineFilesSizeJob);
+        syncOfflineFilesSizeJob->_size = 10;
+    };
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(queryStr, answerStr, {}, processFct);
+#else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
