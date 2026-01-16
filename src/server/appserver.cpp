@@ -370,7 +370,6 @@ void AppServer::init() {
 #elif defined(KD_MACOS)
     if (KDC::isVfsPluginAvailable(VirtualFileMode::Mac, error)) LOG_INFO(_logger, "VFS mac plugin is available");
 #endif
-    if (KDC::isVfsPluginAvailable(VirtualFileMode::Suffix, error)) LOG_INFO(_logger, "VFS suffix plugin is available");
 
     // Init CommManager
     _commManager = std::make_shared<CommManager>(*this);

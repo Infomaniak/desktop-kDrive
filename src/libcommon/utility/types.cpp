@@ -588,8 +588,6 @@ std::string toString(const VirtualFileMode e) {
             return "Win";
         case VirtualFileMode::Mac:
             return "Mac";
-        case VirtualFileMode::Suffix:
-            return "Suffix";
         default:
             return noConversionStr;
     }

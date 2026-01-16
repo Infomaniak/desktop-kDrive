@@ -69,8 +69,6 @@ namespace Infomaniak.kDrive.Types
         UTILITY_BESTVFSAVAILABLEMODE_LEGACY,
         UTILITY_FINDGOODPATHFORNEWSYNC,
         UTILITY_ISPATHVALIDFORNEWSYNC,
-        UTILITY_SHOWSHORTCUT,
-        UTILITY_SETSHOWSHORTCUT,
         UTILITY_ACTIVATELOADINFO,
         UTILITY_CHECKCOMMSTATUS,
         UTILITY_HASSYSTEMLAUNCHONSTARTUP,
@@ -200,7 +198,7 @@ namespace Infomaniak.kDrive.Types
         OperationCanceled,
         UpdateRequired,
         LogUploadFailed,
-        UpdateFailed,
+        UpdateFailed
     };
 
 
@@ -233,12 +231,13 @@ namespace Infomaniak.kDrive.Types
         InconsistentPinState,
         FileSizeMismatch,
         UploadNotTerminated,
-        UnableToCreateVfs,
+        UnableToStartVfs,
         NotEnoughMemory,
         FileTooBig,
         MoveToTrashFailed,
         InvalidName,
         LiteSyncNotAllowed,
+        LiteSyncExtNotRunning,
         NotPlaceHolder,
         NetworkTimeout,
         SocketsDefuncted, // macOS: sockets defuncted by kernel
@@ -255,7 +254,8 @@ namespace Infomaniak.kDrive.Types
         NotEnoughINotifyWatches,
         FileOrDirectoryCorrupted,
         TmpDirAccessError,
-        UpdateTreeIntegrityCheckFailed
+        UpdateTreeIntegrityCheckFailed,
+        MissingReplyData
     };
 
     public enum ConflictType

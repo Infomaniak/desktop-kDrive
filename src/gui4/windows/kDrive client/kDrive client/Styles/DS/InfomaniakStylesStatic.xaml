@@ -42,6 +42,8 @@
     <!-- Essentials -->
     <x:String x:Key="Infomaniak.DS.Icons.Essentials.bell">ms-appx:///Assets/DS/Icons/Essentials/bell.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Essentials.cog">ms-appx:///Assets/DS/Icons/Essentials/cog.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Essentials.maintenance">ms-appx:///Assets/DS/Icons/Essentials/maintenance.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Essentials.moon-sleep">ms-appx:///Assets/DS/Icons/Essentials/moon-sleep.svg</x:String>
 
     <!-- Miscellaneous -->
     <x:String x:Key="Infomaniak.DS.Icons.Miscellaneous.rocket">ms-appx:///Assets/DS/Icons/Miscellaneous/rocket.svg</x:String>
