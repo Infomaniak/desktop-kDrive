@@ -17,6 +17,7 @@
  */
 
 import OrderedCollections
+
 struct AccountListResponse: Codable, Sendable {
     let accountInfoList: [AccountInfoResponse]
 }
