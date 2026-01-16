@@ -49,29 +49,29 @@ class PARMS_EXPORT Drive {
               const std::string &color = std::string(), bool notifications = true, bool admin = true);
 
         void setDbId(int dbId) { _dbId = dbId; }
-        int dbId() const { return _dbId; }
+        [[nodiscard]] int dbId() const { return _dbId; }
         void setDriveId(int driveId) { _driveId = driveId; }
-        int driveId() const { return _driveId; }
+        [[nodiscard]] int driveId() const { return _driveId; }
         void setAccountDbId(int accountDbId) { _accountDbId = accountDbId; }
-        int accountDbId() const { return _accountDbId; }
+        [[nodiscard]] int accountDbId() const { return _accountDbId; }
         void setName(const std::string &newDriveName) { _name = newDriveName; }
-        const std::string &name() const { return _name; }
-        int64_t size() const { return _size; }
+        [[nodiscard]] const std::string &name() const { return _name; }
         void setSize(int64_t newSize) { _size = newSize; }
-        std::string color() const { return _color; }
-        void setColor(std::string color) { _color = color; }
-        bool notifications() const { return _notifications; }
+        [[nodiscard]] int64_t size() const { return _size; }
+        [[nodiscard]] std::string color() const { return _color; }
+        void setColor(std::string color) { _color = std::move(color); }
+        [[nodiscard]] bool notifications() const { return _notifications; }
         void setNotifications(bool newNotifications) { _notifications = newNotifications; }
-        bool admin() const { return _admin; }
+        [[nodiscard]] bool admin() const { return _admin; }
         void setAdmin(bool admin) { _admin = admin; }
 
-        const MaintenanceInfo &maintenanceInfo() const { return _maintenanceInfo; }
+        [[nodiscard]] const MaintenanceInfo &maintenanceInfo() const { return _maintenanceInfo; }
         void setMaintenanceInfo(const MaintenanceInfo &info) { _maintenanceInfo = info; }
-        bool locked() const { return _locked; }
+        [[nodiscard]] bool locked() const { return _locked; }
         void setLocked(bool newLocked) { _locked = newLocked; }
-        int64_t usedSize() { return _usedSize; }
+        [[nodiscard]] int64_t usedSize() const { return _usedSize; }
         void setUsedSize(int64_t newUsedSize) { _usedSize = newUsedSize; }
-        bool accessDenied() const { return _accessDenied; }
+        [[nodiscard]] bool accessDenied() const { return _accessDenied; }
         void setAccessDenied(bool accessDenied) { _accessDenied = accessDenied; }
 
         [[nodiscard]] const PackInfo &packInfo() const { return _packInfo; }

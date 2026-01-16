@@ -73,8 +73,6 @@ CommString Vfs::modeToString(KDC::VirtualFileMode virtualFileMode) {
     switch (virtualFileMode) {
         case KDC::VirtualFileMode::Off:
             return Str("off");
-        case KDC::VirtualFileMode::Suffix:
-            return Str("suffix");
         case KDC::VirtualFileMode::Win:
             return Str("wincfapi");
         case KDC::VirtualFileMode::Mac:
@@ -91,8 +89,6 @@ KDC::VirtualFileMode Vfs::modeFromString(const QString &str) {
     // Note: Strings are used for config and must be stable
     if (str == "off") {
         return KDC::VirtualFileMode::Off;
-    } else if (str == "suffix") {
-        return KDC::VirtualFileMode::Suffix;
     } else if (str == "wincfapi") {
         return KDC::VirtualFileMode::Win;
     } else if (str == "mac") {
@@ -243,10 +239,6 @@ static QString modeToPluginName(const VirtualFileMode virtualFileMode) {
 bool KDC::isVfsPluginAvailable(const VirtualFileMode virtualFileMode, QString &error) {
     if (virtualFileMode == VirtualFileMode::Off) return true;
 
-    if (virtualFileMode == VirtualFileMode::Suffix) {
-        return false;
-    }
-
     if (virtualFileMode == VirtualFileMode::Win) {
         if (CommonUtility::platform() == Platform::WindowsServer) return false; // LiteSync not available on Windows Server
 
@@ -308,9 +300,8 @@ VirtualFileMode KDC::bestAvailableVfsMode() {
         return VirtualFileMode::Win;
     } else if (isVfsPluginAvailable(VirtualFileMode::Mac, error)) {
         return VirtualFileMode::Mac;
-    } else if (isVfsPluginAvailable(VirtualFileMode::Suffix, error)) {
-        return VirtualFileMode::Suffix;
     }
+
     return VirtualFileMode::Off;
 }
 

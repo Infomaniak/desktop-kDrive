@@ -23,11 +23,13 @@ static const auto driveInfoDbId = "dbId";
 static const auto driveInfoId = "id";
 static const auto driveInfoAccountDbId = "accountDbId";
 static const auto driveInfoName = "name";
+static const auto driveInfoSize = "size";
 static const auto driveInfoColor = "color";
 static const auto driveInfoNotifications = "notifications";
 static const auto driveInfoAdmin = "admin";
 static const auto driveInfoMaintenance = "maintenance";
 static const auto driveInfoLocked = "locked";
+static const auto driveInfoUsedSize = "usedSize";
 static const auto driveInfoAccessDenied = "accessDenied";
 static const auto driveInfoPackIsFree = "isFree";
 
@@ -38,11 +40,13 @@ void DriveInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, driveInfoId, _id);
     CommonUtility::writeValueToStruct(dstruct, driveInfoAccountDbId, _accountDbId);
     CommonUtility::writeValueToStruct(dstruct, driveInfoName, CommonUtility::qStr2CommString(_name));
+    CommonUtility::writeValueToStruct(dstruct, driveInfoSize, _size);
     CommonUtility::writeValueToStruct(dstruct, driveInfoColor, CommonUtility::qStr2CommString(_color.name()));
     CommonUtility::writeValueToStruct(dstruct, driveInfoNotifications, _notifications);
     CommonUtility::writeValueToStruct(dstruct, driveInfoAdmin, _admin);
     CommonUtility::writeValueToStruct(dstruct, driveInfoMaintenance, _maintenance);
     CommonUtility::writeValueToStruct(dstruct, driveInfoLocked, _locked);
+    CommonUtility::writeValueToStruct(dstruct, driveInfoUsedSize, _usedSize);
     CommonUtility::writeValueToStruct(dstruct, driveInfoAccessDenied, _accessDenied);
     CommonUtility::writeValueToStruct(dstruct, driveInfoPackIsFree, _packIsFree);
 }
@@ -56,6 +60,8 @@ void DriveInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, driveInfoName, name);
     _name = CommonUtility::commString2QStr(name);
 
+    CommonUtility::readValueFromStruct(dstruct, driveInfoSize, _size);
+
     CommString color;
     CommonUtility::readValueFromStruct(dstruct, driveInfoColor, color);
     _color = QColor(CommonUtility::commString2QStr(color));
@@ -64,6 +70,7 @@ void DriveInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, driveInfoAdmin, _admin);
     CommonUtility::readValueFromStruct(dstruct, driveInfoMaintenance, _maintenance);
     CommonUtility::readValueFromStruct(dstruct, driveInfoLocked, _locked);
+    CommonUtility::readValueFromStruct(dstruct, driveInfoUsedSize, _usedSize);
     CommonUtility::readValueFromStruct(dstruct, driveInfoAccessDenied, _accessDenied);
     CommonUtility::readValueFromStruct(dstruct, driveInfoPackIsFree, _packIsFree);
 }

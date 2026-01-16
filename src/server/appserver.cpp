@@ -21,21 +21,25 @@
 #include "migration/migrationparams.h"
 #include "keychainmanager/keychainmanager.h"
 #include "requests/syncnodecache.h"
+#include "requests/offlinefilessizeestimator.h"
 #include "comm/guijobmanager.h"
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
 #include "comm/extjobmanager.h"
 #endif
+#include "updater/updatemanager.h"
+
 #include "jobs/network/kDrive_API/searchjob.h"
 #include "jobs/network/kDrive_API/upload/loguploadjob.h"
 #include "jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.h"
-#include "requests/offlinefilessizeestimator.h"
-#include "updater/updatemanager.h"
+
 #include "server/comm/guijobs/signalaccountaddedjob.h"
+#include "server/comm/guijobs/signalaccountupdatedjob.h"
+#include "server/comm/guijobs/signalaccountremovedjob.h"
 #include "server/comm/guijobs/signaluseraddedjob.h"
 #include "server/comm/guijobs/signaluserupdatedjob.h"
 #include "server/comm/guijobs/signaluserremovedjob.h"
-#include "server/comm/guijobs/signalaccountremovedjob.h"
 #include "server/comm/guijobs/signaldriveaddedjob.h"
+#include "server/comm/guijobs/signaldriveupdatedjob.h"
 #include "server/comm/guijobs/signaldriveremovedjob.h"
 #include "server/comm/guijobs/signalsyncaddedjob.h"
 #include "server/comm/guijobs/signalsyncremovedjob.h"
@@ -44,6 +48,14 @@
 #include "server/comm/guijobs/signalerroraddedjob.h"
 #include "server/comm/guijobs/signalerrorremovedjob.h"
 #include "server/comm/guijobs/signalsyncprogressinfo.h"
+#include "server/comm/guijobs/signalupdatershowdialogjob.h"
+#include "server/comm/guijobs/signalupdaterstatechangedjob.h"
+#include "server/comm/guijobs/signalutilityshownotificationjob.h"
+#include "server/comm/guijobs/signalutilityshowsettingsjob.h"
+#include "server/comm/guijobs/signalutilityshowsynthesisjob.h"
+#include "server/comm/guijobs/signalutilityloguploadstatejob.h"
+#include "server/comm/guijobs/signalutilityquitjob.h"
+
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
@@ -55,11 +67,13 @@
 #include "libcommon/info/exclusiontemplateinfo.h"
 #include "libcommon/log/sentry/handler.h"
 #include "libcommon/log/sentry/ptraces.h"
+
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/network/proxy.h"
 #include "libcommonserver/vfs/vfs.h"
 #include "libcommonserver/utility/utility.h"
+
 #include "libsyncengine/requests/parameterscache.h"
 #include "libsyncengine/requests/exclusiontemplatecache.h"
 #include "libsyncengine/jobs/syncjobmanager.h"
@@ -76,7 +90,6 @@
 #include <windows.h>
 #endif
 
-#include <QDesktopServices>
 #include <QDir>
 #include <QFileInfo>
 #include <QFileOpenEvent>
@@ -91,7 +104,6 @@
 
 #define QUIT_DELAY 1000 // ms
 #define LOAD_PROGRESS_INTERVAL 1000 // ms
-#define LOAD_PROGRESS_MAXITEMS 100 // ms
 #define SEND_NOTIFICATIONS_INTERVAL 15000 // ms
 #define RESTART_SYNCS_INTERVAL 15000 // ms
 #define START_SYNCPALS_RETRY_INTERVAL 60000 // ms
@@ -358,7 +370,6 @@ void AppServer::init() {
 #elif defined(KD_MACOS)
     if (KDC::isVfsPluginAvailable(VirtualFileMode::Mac, error)) LOG_INFO(_logger, "VFS mac plugin is available");
 #endif
-    if (KDC::isVfsPluginAvailable(VirtualFileMode::Suffix, error)) LOG_INFO(_logger, "VFS suffix plugin is available");
 
     // Init CommManager
     _commManager = std::make_shared<CommManager>(*this);
@@ -2367,6 +2378,7 @@ void AppServer::sendQuit() {
     int id = 0;
 
     OldCommServer::instance()->sendSignal(SignalNum::UTILITY_QUIT, QByteArray(), id);
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalUtilityQuitJob>());
 }
 
 void AppServer::sendLogUploadStatusUpdated(LogUploadState status, int percent) {
@@ -2377,6 +2389,9 @@ void AppServer::sendLogUploadStatusUpdated(LogUploadState status, int percent) {
     paramsStream << status;
     paramsStream << percent;
     OldCommServer::instance()->sendSignal(SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED, params, id);
+
+    if (_commManager)
+        _commManager->sendGuiSignal(std::make_shared<SignalUtilityLogUploadStateJob>(status, static_cast<std::int32_t>(percent)));
 
     if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, status, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
@@ -2445,8 +2460,10 @@ void AppServer::onShowWindowsUpdateDialog() {
     if (_updateManager) {
         QByteArray params;
         QDataStream paramsStream(&params, QIODevice::WriteOnly);
-        paramsStream << _updateManager.get()->versionInfo();
+        paramsStream << _updateManager->versionInfo();
         OldCommServer::instance()->sendSignal(SignalNum::UPDATER_SHOW_DIALOG, params);
+        if (_commManager)
+            _commManager->sendGuiSignal(std::make_shared<SignalUpdaterShowDialogJob>(_updateManager->versionInfo()));
     } else {
         assert(false);
     }
@@ -2457,6 +2474,7 @@ void AppServer::onUpdateStateChanged(const UpdateState state) {
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << state;
     OldCommServer::instance()->sendSignal(SignalNum::UPDATER_STATE_CHANGED, params);
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalUpdaterStateChangedJob>(state));
 }
 
 void AppServer::onCleanup() {
@@ -2515,6 +2533,9 @@ void AppServer::sendShowNotification(const QString &title, const QString &messag
     paramsStream << title;
     paramsStream << message;
     OldCommServer::instance()->sendSignal(SignalNum::UTILITY_SHOW_NOTIFICATION, params, id);
+    if (_commManager)
+        _commManager->sendGuiSignal(std::make_shared<SignalUtilityShowNotificationJob>(CommonUtility::qStr2CommString(title),
+                                                                                       CommonUtility::qStr2CommString(message)));
 }
 
 void AppServer::sendErrorAdded(const ErrorInfo &errorInfo) {
@@ -2526,7 +2547,7 @@ void AppServer::sendErrorAdded(const ErrorInfo &errorInfo) {
     paramsStream << toInt(errorInfo.exitCode());
     paramsStream << errorInfo.syncDbId();
     OldCommServer::instance()->sendSignal(SignalNum::UTILITY_ERROR_ADDED_LEGACY, params, id);
-    _commManager->sendGuiSignal(std::make_shared<SignalErrorAddedJob>(errorInfo));
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalErrorAddedJob>(errorInfo));
 }
 
 void AppServer::addCompletedItem(int syncDbId, const SyncFileItem &item, bool notify) {
@@ -2658,11 +2679,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 
@@ -2824,10 +2845,9 @@ ExitInfo AppServer::updateUserInfo(User &user) {
                         return ExitCode::DbError;
                     }
 
-                    if (driveList.size() == 0) {
-                        const auto exitInfo = ServerRequests::deleteAccount(account.dbId());
-                        if (!exitInfo) {
-                            LOG_WARN(_logger, "Error in Requests::deleteAccount: " << exitInfo);
+                    if (driveList.empty()) {
+                        if (const auto exitInfo = ServerRequests::deleteAccount(account.dbId()); !exitInfo) {
+                            LOG_WARN(_logger, "Error in Requests::deleteAccount: code=" << exitInfo);
                             return exitInfo;
                         }
                         sendAccountRemoved(account.accountId());
@@ -2836,10 +2856,11 @@ ExitInfo AppServer::updateUserInfo(User &user) {
                 }
             }
 
-            if (updated) {
+            if (updated || quotaUpdated) {
                 DriveInfo driveInfo;
                 ServerRequests::driveToDriveInfo(drive, driveInfo);
-                sendDriveUpdated(driveInfo);
+                if (updated && !quotaUpdated) sendDriveUpdated(driveInfo);
+                if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalDriveUpdatedJob>(driveInfo));
             }
 
             if (accountRemoved) {
@@ -3436,11 +3457,13 @@ void AppServer::sendRestartClientMsg() {
 void AppServer::showSettings() {
     int id = 0;
     OldCommServer::instance()->sendSignal(SignalNum::UTILITY_SHOW_SETTINGS, QByteArray(), id);
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalUtilityShowSettingsJob>());
 }
 
 void AppServer::showSynthesis() {
     int id = 0;
     OldCommServer::instance()->sendSignal(SignalNum::UTILITY_SHOW_SYNTHESIS, QByteArray(), id);
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalUtilityShowSynthesisJob>());
 }
 
 void AppServer::clearKeychainKeys() {
@@ -4225,8 +4248,7 @@ void AppServer::sendUserUpdated(const UserInfo &userInfo) {
     paramsStream << userInfo;
 
     OldCommServer::instance()->sendSignal(SignalNum::USER_UPDATED, params, id);
-    // if(_commManager) _commManager->sendGuiSignal(std::make_shared<SignalUserUpdatedJob>(userInfo)); -> sendUserUpdated should
-    // not be static
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalUserUpdatedJob>(userInfo));
 }
 
 void AppServer::sendUserStatusChanged(int userDbId, bool connected, QString connexionError) {
@@ -4271,6 +4293,7 @@ void AppServer::sendAccountUpdated(const AccountInfo &accountInfo) {
     paramsStream << accountInfo;
 
     OldCommServer::instance()->sendSignal(SignalNum::ACCOUNT_UPDATED, params, id);
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalAccountUpdatedJob>(accountInfo));
 }
 
 void AppServer::sendAccountRemoved(int accountDbId) {
@@ -4303,6 +4326,7 @@ void AppServer::sendDriveUpdated(const DriveInfo &driveInfo) {
     paramsStream << driveInfo;
 
     OldCommServer::instance()->sendSignal(SignalNum::DRIVE_UPDATED, params, id);
+    if (_commManager) _commManager->sendGuiSignal(std::make_shared<SignalDriveUpdatedJob>(driveInfo));
 }
 
 void AppServer::sendDriveQuotaUpdated(int driveDbId, qint64 total, qint64 used) {

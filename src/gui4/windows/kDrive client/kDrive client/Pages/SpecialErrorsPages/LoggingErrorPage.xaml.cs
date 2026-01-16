@@ -23,6 +23,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 namespace Infomaniak.kDrive.Pages
@@ -57,6 +58,10 @@ namespace Infomaniak.kDrive.Pages
                     {
                         ViewModel.SelectedSync?.Start();
                     }
+                    else
+                    {
+                        DisplayUserMismatchContent();
+                    }
                 }
                 else
                 {
@@ -79,6 +84,13 @@ namespace Infomaniak.kDrive.Pages
                     OAuthProgressRing.Visibility = Visibility.Collapsed;
                 }
             }
+        }
+
+        private void DisplayUserMismatchContent()
+        {
+            TitleTextBlock.Text = Utility.GetLocalizedString("Page_LogginErrorPage_UserMissmatch_Title/Text");
+            SubtitleTextBlock.Text = Utility.GetLocalizedString("Page_LogginErrorPage_UserMissmatch_Subtitle/Text", Utility.ObfuscateEmail(ViewModel.SelectedSync?.Drive.Account.User.Email));
+            ConnectionButton.Content = Utility.GetLocalizedString("Page_LogginErrorPage_UserMissmatch_Button/Content");
         }
     }
 }
