@@ -33,11 +33,11 @@ SearchInfo::SearchInfo(const NodeId &id, const SyncName &name, const NodeType ty
                        const SyncTime modifiedTime, const size_t size, const bool isAvailableLocally) :
     _id(id),
     _name(name),
-    _type(type),
     _path(path),
     _modifiedTime(modifiedTime),
     _size(size),
-    _isAvailableLocally(isAvailableLocally) {}
+    _isAvailableLocally(isAvailableLocally),
+    _type(type) {}
 
 void SearchInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, searchInfoId, _id);
@@ -67,7 +67,7 @@ QDataStream &operator>>(QDataStream &in, SearchInfo &info) {
     int tmpType = 0;
     QString tmpPath;
     SyncTime tmpModifiedTime = 0;
-    size_t tmpSize = 0;
+    int64_t tmpSize = 0;
     bool tmpIsAvailableLocally = false;
 
     in >> tmpId >> tmpName >> tmpType >> tmpPath >> tmpModifiedTime >> tmpSize >> tmpIsAvailableLocally;
