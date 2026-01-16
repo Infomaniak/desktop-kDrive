@@ -3,7 +3,7 @@
     <Package Id="Infomaniak_Network_SA.kDrive" Name="kDrive" Manufacturer="Infomaniak Network SA" Version="$(version)" InstallerVersion="301" Scope="perMachine" >
         <MajorUpgrade DowngradeErrorMessage="!(loc.DowngradeError)" AllowSameVersionUpgrades="yes" />
         <MediaTemplate EmbedCab="yes" />
-        <Icon Id="kDrive.ico" SourceFile="$(desktop-kDriveDir)/build-windows/install/bin/kdrive-win.ico"/>
+        <Icon Id="kDrive.ico" SourceFile="$(desktop-kDriveDir)\build-windows\install\bin\kdrive-win.ico"/>
         <Property Id="ARPPRODUCTICON" Value="kDrive.ico" />
         <Feature Id="Main">
             <ComponentGroupRef Id="App" />
