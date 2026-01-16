@@ -21,6 +21,8 @@ import kDriveCoreUI
 import SwiftUI
 
 struct HomeView: View {
+    @StateObject private var networkObserver = NetworkObserver()
+
     @ObservedObject var mainViewModel: MainViewModel
 
     static let spacing = AppPadding.padding24
@@ -34,6 +36,10 @@ struct HomeView: View {
     }
 
     private var state: HomeState {
+        guard networkObserver.isConnected else {
+            return .offline
+        }
+
         guard let synchroStatus = mainViewModel.currentSynchro?.progressInfo?.status else {
             return .synchroIsUpToDate
         }
