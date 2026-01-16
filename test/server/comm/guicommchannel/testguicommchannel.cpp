@@ -43,7 +43,7 @@ using namespace testcommhelpers;
 
 uint64_t GuiCommChannelTest::readData(CommChar *data, uint64_t maxlen) {
     std::scoped_lock lock(_bufferMutex);
-    uint64_t toRead = (std::min)(maxlen, static_cast<uint64_t>(_buffer.size()));
+    uint64_t toRead = (std::min) (maxlen, static_cast<uint64_t>(_buffer.size()));
     if (toRead > 0) {
         std::memcpy(data, _buffer.data(), toRead * sizeof(CommChar));
         _buffer.erase(0, toRead);
@@ -702,39 +702,39 @@ void TestGuiCommChannel::testDriveSearchJob() {
                         R"( "num": )" +
                         std::to_string(toInt(RequestNum::DRIVE_SEARCH)) +
                         R"(,)"
-                        R"( "params": { "driveDbId": 1, "searchString": "aW5mbyo=" } })"};
+                        R"( "params": { "syncDbId": 1, "searchString": "aW5mbyo=" } })"};
 #else
     // There is no need to pass a request id as the response is via a callback.
     const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::DRIVE_SEARCH)) +
                         R"(,)"
-                        R"( "params": { "driveDbId": 1, "searchString": "aW5mbyo=" } })"};
+                        R"( "params": { "syncDbId": 1, "searchString": "aW5mbyo=" } })"};
 
     // Callback expected answer
     const auto cbkAnswerStr{
-            R"({"cause":0,"code":0,"id":1,"params":{"hasMore":false,"searchInfoList":[{"id":"MTAwMA==","name":"dG90bw==","type":1},{"id":"MjAwMA==","name":"dGl0aQ==","type":2}]}})"};
+            R"({"cause":0,"code":0,"id":1,"params":{"hasMore":false,"searchInfoList":[{"id":"MTAwMA==","isAvailableLocally":true,"modifiedTime":10,"name":"dG90bw==","path":"dG90bw==","size":10,"type":1},{"id":"MjAwMA==","isAvailableLocally":false,"modifiedTime":100,"name":"dGl0aQ==","path":"dGl0aQ==","size":100,"type":2}]}})"};
 #endif
 
     // Job expected answer
-    const auto answerStr{R"({ "cause": 0,)"
-                         R"( "code": 0,)"
-                         R"( "id": 1,)"
-                         R"( "num": )" +
-                         std::to_string(toInt(RequestNum::DRIVE_SEARCH)) +
-                         R"(,)"
-                         R"( "params": {)"
-                         R"( "hasMore": false,)"
-                         R"( "searchInfoList": [)"
-                         R"( { "id": "MTAwMA==", "name": "dG90bw==", "type": 1 },)"
-                         R"( { "id": "MjAwMA==", "name": "dGl0aQ==", "type": 2 } ] },)"
-                         R"( "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+    const auto answerStr{
+            R"({ "cause": 0,)"
+            R"( "code": 0,)"
+            R"( "id": 1,)"
+            R"( "num": )" +
+            std::to_string(toInt(RequestNum::DRIVE_SEARCH)) +
+            R"(,)"
+            R"( "params": {)"
+            R"( "hasMore": false,)"
+            R"( "searchInfoList": [)"
+            R"( { "id": "MTAwMA==", "isAvailableLocally": true, "modifiedTime": 10, "name": "dG90bw==", "path": "dG90bw==", "size": 10, "type": 1 },)"
+            R"( { "id": "MjAwMA==", "isAvailableLocally": false, "modifiedTime": 100, "name": "dGl0aQ==", "path": "dGl0aQ==", "size": 100, "type": 2 } ] },)"
+            R"( "type": )" +
+            std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto driveSearchJob = std::dynamic_pointer_cast<DriveSearchJob>(job);
 
-
-        const SearchInfo si1("1000", Str("toto"), NodeType::File);
-        const SearchInfo si2("2000", Str("titi"), NodeType::Directory);
+        const SearchInfo si1("1000", Str("toto"), NodeType::File, Str("toto"), 10, 10, true);
+        const SearchInfo si2("2000", Str("titi"), NodeType::Directory, Str("titi"), 100, 100, false);
 
         driveSearchJob->_searchInfoList = {si1, si2};
         driveSearchJob->_hasMore = false;

@@ -26,11 +26,16 @@ namespace KDC {
 class SearchInfo {
     public:
         SearchInfo() = default;
-        SearchInfo(const NodeId &id, const SyncName &name, const NodeType type);
+        SearchInfo(const NodeId &id, const SyncName &name, const NodeType type, const SyncPath &path, const SyncTime modifiedTime,
+                   const size_t size, const bool isAvailableLocally = false);
 
         [[nodiscard]] const NodeId &id() const { return _id; }
         [[nodiscard]] const SyncName &name() const { return _name; }
         [[nodiscard]] NodeType type() const { return _type; }
+        [[nodiscard]] const SyncPath &path() const { return _path; }
+        [[nodiscard]] SyncTime lastModifiedTime() const { return _modifiedTime; }
+        [[nodiscard]] size_t size() const { return _size; }
+        [[nodiscard]] bool isAvailableLocally() const { return _isAvailableLocally; }
 
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
         void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
@@ -43,6 +48,10 @@ class SearchInfo {
     private:
         NodeId _id;
         SyncName _name;
+        SyncPath _path;
+        SyncTime _modifiedTime{0};
+        size_t _size{0};
+        bool _isAvailableLocally{false};
         NodeType _type{NodeType::Unknown};
 };
 

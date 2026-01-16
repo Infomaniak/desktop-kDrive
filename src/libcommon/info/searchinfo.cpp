@@ -22,34 +22,62 @@
 static const auto searchInfoId = "id";
 static const auto searchInfoName = "name";
 static const auto searchInfoType = "type";
+static const auto searchInfoPath = "path";
+static const auto searchInfoModifiedTime = "modifiedTime";
+static const auto searchInfoSize = "size";
+static const auto searchInfoIsAvailableLocally = "isAvailableLocally";
 
 namespace KDC {
 
-SearchInfo::SearchInfo(const NodeId &id, const SyncName &name, const NodeType type) :
+SearchInfo::SearchInfo(const NodeId &id, const SyncName &name, const NodeType type, const SyncPath &path,
+                       const SyncTime modifiedTime, const size_t size, const bool isAvailableLocally) :
     _id(id),
     _name(name),
-    _type(type) {}
+    _type(type),
+    _path(path),
+    _modifiedTime(modifiedTime),
+    _size(size),
+    _isAvailableLocally(isAvailableLocally) {}
 
 void SearchInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, searchInfoId, _id);
     CommonUtility::writeValueToStruct(dstruct, searchInfoName, _name);
     CommonUtility::writeValueToStruct(dstruct, searchInfoType, _type);
+    CommonUtility::writeValueToStruct(dstruct, searchInfoPath, Path2Str(_path));
+    CommonUtility::writeValueToStruct(dstruct, searchInfoModifiedTime, _modifiedTime);
+    CommonUtility::writeValueToStruct(dstruct, searchInfoSize, _size);
+    CommonUtility::writeValueToStruct(dstruct, searchInfoIsAvailableLocally, _isAvailableLocally);
 }
 
 void SearchInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, searchInfoId, _id);
     CommonUtility::readValueFromStruct(dstruct, searchInfoName, _name);
     CommonUtility::readValueFromStruct(dstruct, searchInfoType, _type);
+    std::string pathStr;
+    CommonUtility::readValueFromStruct(dstruct, searchInfoPath, pathStr);
+    _path = Str2Path(pathStr);
+    CommonUtility::readValueFromStruct(dstruct, searchInfoModifiedTime, _modifiedTime);
+    CommonUtility::readValueFromStruct(dstruct, searchInfoSize, _size);
+    CommonUtility::readValueFromStruct(dstruct, searchInfoIsAvailableLocally, _isAvailableLocally);
 }
 
 QDataStream &operator>>(QDataStream &in, SearchInfo &info) {
     QString tmpId;
     QString tmpName;
     int tmpType = 0;
-    in >> tmpId >> tmpName >> tmpType;
+    QString tmpPath;
+    SyncTime tmpModifiedTime = 0;
+    size_t tmpSize = 0;
+    bool _isAvailableLocally = false;
+
+    in >> tmpId >> tmpName >> tmpType >> tmpPath >> tmpModifiedTime >> tmpSize >> _isAvailableLocally;
     info._id = QStr2Str(tmpId);
     info._name = QStr2SyncName(tmpName);
     info._type = static_cast<NodeType>(tmpType);
+    info._path = QStr2Path(tmpPath);
+    info._modifiedTime = tmpModifiedTime;
+    info._size = tmpSize;
+    info._isAvailableLocally = _isAvailableLocally;
     return in;
 }
 
@@ -64,7 +92,8 @@ QDataStream &operator<<(QDataStream &out, const QList<SearchInfo> &list) {
 }
 
 QDataStream &operator<<(QDataStream &out, const SearchInfo &info) {
-    out << QString::fromStdString(info._id) << SyncName2QStr(info._name) << static_cast<int>(info._type);
+    out << QString::fromStdString(info._id) << SyncName2QStr(info._name) << static_cast<int>(info._type) << Path2QStr(info._path)
+        << info._modifiedTime << info._size << info._isAvailableLocally;
     return out;
 }
 
