@@ -4,6 +4,7 @@
     <VerboseOutput>true</VerboseOutput>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <SuppressIces>ICE57;ICE61</SuppressIces>
+    <WixUseCompression>false</WixUseCompression>
     <WixCabinetThreadCount>1</WixCabinetThreadCount>
   </PropertyGroup>
   <PropertyGroup>

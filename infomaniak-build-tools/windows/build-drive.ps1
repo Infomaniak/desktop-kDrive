@@ -606,8 +606,8 @@ function Create-MSI-Package {
     $msiPackageFolderPath = "$msiInstallerFolderPath\bin\x64\Release\en-US"
 	
     Write-Host "Executing the dotnet build command ..."
-    $env:WIX_CABINET_THREAD_COUNT = 4
-    $env:WIX_USE_COMPRESSION = ""
+    #$env:WIX_CABINET_THREAD_COUNT = 4
+    #$env:WIX_USE_COMPRESSION = ""
 
     Get-PSDrive -PSProvider FileSystem | Select-Object Name,Free,Used
   
