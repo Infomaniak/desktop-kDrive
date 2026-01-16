@@ -2,7 +2,7 @@
 	<Fragment>
 		<ComponentGroup Id="App" Directory="INSTALLFOLDER">
 			<Component Guid="{5B73D754-B0DA-4873-8371-68308DA3C557}">
-				<File Id="kDrive.exe" Source="$(desktop-kDriveDir)\build-windows\install\bin<kDrive.exe" />
+				<File Id="kDrive.exe" Source="$(desktop-kDriveDir)\build-windows\install\bin\kDrive.exe" />
 				<Shortcut Id="ApplicationStartMenuShortcut"
                         Name="kDrive"
                         Description="kDrive"
