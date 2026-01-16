@@ -620,7 +620,7 @@ void TestGuiCommChannel::testSyncOfflineFilesSizeJob() {
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-        auto syncOfflineFilesSizeJob = std::dynamic_pointer_cast<SyncOfflineFileSize>(job);
+        auto syncOfflineFilesSizeJob = std::dynamic_pointer_cast<SyncOfflineFilesSizeJob>(job);
         CPPUNIT_ASSERT(syncOfflineFilesSizeJob);
         syncOfflineFilesSizeJob->_size = 10;
     };
