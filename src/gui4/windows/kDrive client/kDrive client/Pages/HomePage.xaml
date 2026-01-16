@@ -325,7 +325,7 @@
         </Grid>
         <controls:KSuiteUpgradeBar Grid.Row="2"
                                    Grid.ColumnSpan="2"
-                                   Visibility="{x:Bind ViewModel.SelectedSync.Drive.IsPaidOffer, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True'}"
+                                   Visibility="{x:Bind ViewModel.SelectedSync.Drive.IsFreeOffer, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
                                    Margin="{StaticResource Infomaniak.Style.Thickness.Top.M}" />
     </Grid>
 </Page>
