@@ -6,5 +6,6 @@
     <VerboseOutput>true</VerboseOutput>
     <WixUseCompression>false</WixUseCompression>
     <WixCabinetThreadCount>1</WixCabinetThreadCount>
+    <WixCabinetCompressionLevel>none<WixCabinetCompressionLevel>
   </PropertyGroup>
 </Project>
