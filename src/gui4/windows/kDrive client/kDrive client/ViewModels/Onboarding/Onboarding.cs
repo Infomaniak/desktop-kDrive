@@ -45,6 +45,12 @@ namespace Infomaniak.kDrive.ViewModels
                     Logger.Log(Logger.Level.Debug, "Successfully obtained user code.");
                     CurrentOAuth2State = OAuth2State.ProcessingResponse;
                     User? user = await _serverCommService.AddOrRelogUser(OAutCodes.Code, OAutCodes.CodeVerifier, cancelationToken);
+                    if(user is null || user.DbId == 0)
+                    {
+                        CurrentOAuth2State = OAuth2State.Error;
+                        Logger.Log(Logger.Level.Warning, "Authentication process failed: unable to add or relog user.");
+                        return;
+                    }
                     SelectedUser = user;
                     CurrentOAuth2State = OAuth2State.Success;
                 }
