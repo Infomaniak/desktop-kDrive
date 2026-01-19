@@ -74,7 +74,7 @@ done
 
 
 
-set -euox pipefail
+#set -euo pipefail
 
 function get_platform {
   platform="$(uname | tr '[:upper:]' '[:lower:]')"
@@ -117,7 +117,7 @@ function get_target_architecture {
       ;;
   esac
 
-  log "platform: $platform, build_type: $build_type => architecture: $architecture" >&2
+  log "target: $target, platform: $platform, build_type: $build_type => architecture: $architecture" >&2
   echo "$architecture"
 }
 
@@ -156,8 +156,8 @@ if [[ -z "${output_dir}" ]]; then
     output_dir="${env_output_dir}"
     log "Using environment variable 'KDRIVE_OUTPUT_DIR' as conan output_dir : '${output_dir}'" >&2
   else
-    log "No output directory specified. Using default output directory." >&2
     output_dir="$(get_default_output_dir)"
+    log "No output directory specified. Using default output directory: '$output_dir'" >&2
   fi
 fi
 
@@ -185,17 +185,15 @@ if [[ $use_release_profile == true ]]; then
       error "Profile '$release_profile' must set build_type to Release or RelWithDebInfo"
     fi
 
-    log "Using '$release_profile' profile for Conan."
     conan_profile="$release_profile"
   else
     error "Profile '$release_profile' does not exist. Please create it."
   fi
 else
-  log "Using default 'default' profile for Conan."
   conan_profile="default"
 fi
+log "Using '$conan_profile' profile for Conan."
 
-set -euox pipefail
 conan_remote_base_folder="$PWD/infomaniak-build-tools/conan"
 local_recipe_remote_name="localrecipes"
 if ! conan remote list | grep -qE "^$local_recipe_remote_name.*\[.*Enabled: True.*\]"; then
