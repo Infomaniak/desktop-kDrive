@@ -12,14 +12,15 @@
         <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
         <converters:BytesToHumanReadableStringConverter x:Key="BytesToHumanReadableStringConverter" />
         <converters:DateTimeToTimeAgoConverter x:Key="DateTimeToTimeAgoConverter" />
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <converters:BooleanToInvertedBooleanConverter x:Key="BooleanToInvertedBooleanConverter" />
 
         <!-- File template -->
         <DataTemplate x:Key="FileTemplate"
                       x:DataType="local:ISearchBoxResultItem">
             <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.XS}"
                   ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
-                  RowSpacing="{StaticResource Infomaniak.Style.Spacing.XXS}"
-                  DataContextChanged="SearchResultItem_DataContextChanged">
+                  RowSpacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -27,11 +28,13 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
                 <local:SvgIcon Grid.Column="0"
                                Grid.Row="0"
                                Width="16"
+                               Height="16"
                                UriString="{x:Bind SearchItem.Name, Converter={StaticResource FilePathToIconConverter}}" />
 
                 <TextBlock Grid.Column="1"
@@ -55,6 +58,18 @@
                     <Run Text="{x:Bind SearchItem.Size, Converter={StaticResource BytesToHumanReadableStringConverter}}" />
                     </TextBlock>
                 </StackPanel>
+                <local:SvgIcon Grid.Column="2"
+                               Grid.Row="0"
+                               Width="16"
+                               HorizontalAlignment="Right"
+                               UriString="{StaticResource Infomaniak.DS.Icons.Arrows.square-arrow-diagonal-up}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Visibility="{x:Bind SearchItem.IsAvailableLocally, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
+                               ToolTipService.Placement="Right">
+                    <ToolTipService.ToolTip>
+                        <ToolTip Content="Cet élément n'est pas disponnible sur votre appareil. Il sera ouvert dans votre navigateur." />
+                    </ToolTipService.ToolTip>
+                </local:SvgIcon>
             </Grid>
         </DataTemplate>
 
@@ -63,8 +78,7 @@
                       x:DataType="local:ISearchBoxResultItem">
             <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.XS}"
                   ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
-                  RowSpacing="{StaticResource Infomaniak.Style.Spacing.XXS}"
-                  DataContextChanged="SearchResultItem_DataContextChanged">
+                  RowSpacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
 
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -73,6 +87,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
                 <local:SvgIcon Grid.Column="0"
@@ -93,6 +108,18 @@
                     <Run Text="-" />
                     <Run Text="{x:Bind SearchItem.ModifiedTime, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Ago'}" />
                 </TextBlock>
+                <local:SvgIcon Grid.Column="2"
+                               Grid.Row="0"
+                               Width="16"
+                               HorizontalAlignment="Right"
+                               UriString="{StaticResource Infomaniak.DS.Icons.Arrows.square-arrow-diagonal-up}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Visibility="{x:Bind SearchItem.IsAvailableLocally, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
+                               ToolTipService.Placement="Right">
+                    <ToolTipService.ToolTip>
+                        <ToolTip Content="Cet élément n'est pas disponnible sur votre appareil. Il sera ouvert dans votre navigateur." />
+                    </ToolTipService.ToolTip>
+                </local:SvgIcon>
 
             </Grid>
         </DataTemplate>

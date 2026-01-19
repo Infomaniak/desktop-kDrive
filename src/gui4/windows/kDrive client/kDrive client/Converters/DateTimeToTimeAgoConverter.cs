@@ -48,7 +48,14 @@ namespace Infomaniak.kDrive.Converters
                 {
                     return String.Format(format, $"{Math.Floor(timeSpan.TotalHours)} {Utility.GetLocalizedString("Global_Hour")}");
                 }
-                return String.Format(format, $"{Math.Floor(timeSpan.TotalDays)} {Utility.GetLocalizedString("Global_Day")}")  ;
+                if (timeSpan.TotalDays < 6)
+                {
+                    return String.Format(format, $"{Math.Floor(timeSpan.TotalDays)} {Utility.GetLocalizedString("Global_Day")}");
+                }
+                else
+                {
+                    return dateTime.ToString("d");
+                }
             }
             Logger.Log(Logger.Level.Fatal, $"Unexpected value type is not a {nameof(DateTime)}.");
             throw new ArgumentException("Invalid value type", nameof(value));

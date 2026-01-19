@@ -106,6 +106,13 @@ namespace Infomaniak.kDrive.CustomControls
                     items.AddRange(result.Select(r => new SearchBoxResultItem(r)));
                 }
 
+                // Move all the unavailable items to the end of the list
+                items = items
+                    .OrderByDescending(i => i.SearchItem?.IsAvailableLocally ?? false)
+                    .ThenBy(i => i.SearchItem?.ModifiedTime)
+                    .ThenBy(i => i.SearchItem?.Name)
+                    .ToList();
+
                 sender.ItemsSource = items;
             }
             catch (OperationCanceledException)
@@ -130,7 +137,7 @@ namespace Infomaniak.kDrive.CustomControls
         {
             sender.Text = "";
 
-            if (args.ChosenSuggestion is not ISearchBoxResultItem resultItem || resultItem.SearchItem is null || !resultItem.IsSelectable || !resultItem.SearchItem.IsAvailableLocally)
+            if (args.ChosenSuggestion is not ISearchBoxResultItem resultItem || resultItem.SearchItem is null || !resultItem.IsSelectable)
             {
                 return;
             }
@@ -141,7 +148,15 @@ namespace Infomaniak.kDrive.CustomControls
                 return;
             }
 
+            if (!resultItem.SearchItem.IsAvailableLocally)
+            {
+                // Item is not available locally, open in web browser
+                var url = App.Constants.Drive.OpenItemUri(_appModel.SelectedSync.Drive.DriveId, resultItem.SearchItem.NodeId);
+                await Launcher.LaunchUriAsync(url);
+                return;
+            }
 
+            // Open the file or folder
             var itemRelativePath = resultItem.SearchItem.Path;
             // Remove leading slash or "Private/" or "Shared/" folder from the path
             if (itemRelativePath is not null)
@@ -177,7 +192,7 @@ namespace Infomaniak.kDrive.CustomControls
                 return;
             }
 
-            if (control.DataContext is not ISearchBoxResultItem resultItem || resultItem.SearchItem is null || !resultItem.IsSelectable || !resultItem.SearchItem.IsAvailableLocally)
+            if (control.DataContext is not ISearchBoxResultItem resultItem || resultItem.SearchItem is null || !resultItem.IsSelectable)
             {
                 return;
             }
@@ -188,6 +203,13 @@ namespace Infomaniak.kDrive.CustomControls
                 return;
             }
 
+            if (!resultItem.SearchItem.IsAvailableLocally)
+            {
+                // Item is not available locally, open in web browser
+                var url = App.Constants.Drive.OpenItemUri(_appModel.SelectedSync.Drive.DriveId, resultItem.SearchItem.NodeId);
+                await Launcher.LaunchUriAsync(url);
+                return;
+            }
 
             var itemRelativePath = resultItem.SearchItem.Path;
             // Remove leading slash or "Private/" or "Shared/" folder from the path
@@ -223,8 +245,6 @@ namespace Infomaniak.kDrive.CustomControls
                 parentItem.IsHitTestVisible = item.IsSelectable;
                 parentItem.IsTabStop = item.IsSelectable;
                 parentItem.IsTapEnabled = item.IsSelectable;
-                if (item?.SearchItem is not null)
-                    parentItem.IsEnabled = item.SearchItem.IsAvailableLocally;
             }
         }
     }
