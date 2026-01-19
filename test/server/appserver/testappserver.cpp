@@ -30,21 +30,14 @@
 namespace KDC {
 
 void TestAppServer::setUp() {
-    // TODO: Remove debug logs once blocking issue is resolved
-    std::cout << "[DEBUG] TestAppServer::setUp - START" << std::endl;
-
     TestBase::start();
-    std::cout << "[DEBUG] TestAppServer::setUp - TestBase::start() done" << std::endl;
 
     // Create parmsDb
     const SyncPath parmsDbPath = _localTempDir.path() / MockDb::makeDbMockFileName();
-    std::cout << "[DEBUG] TestAppServer::setUp - Creating ParmsDb" << std::endl;
     (void) ParmsDb::instance(parmsDbPath, KDRIVE_VERSION_STRING, true, true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
-    std::cout << "[DEBUG] TestAppServer::setUp - ParmsDb created" << std::endl;
 
     if (QCoreApplication::instance()) {
-        std::cout << "[DEBUG] TestAppServer::setUp - QCoreApplication already exists" << std::endl;
         _appPtr = dynamic_cast<MockAppServer *>(QCoreApplication::instance());
         return;
     }
@@ -52,43 +45,34 @@ void TestAppServer::setUp() {
     const testhelpers::TestVariables testVariables;
 
     // Insert api token into keystore
-    std::cout << "[DEBUG] TestAppServer::setUp - Setting up KeyChainManager" << std::endl;
     ApiToken apiToken;
     apiToken.setAccessToken(testVariables.apiToken);
 
     const std::string keychainKey("123");
     (void) KeyChainManager::instance(true);
-    std::cout << "[DEBUG] TestAppServer::setUp - KeyChainManager instance created" << std::endl;
     (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
-    std::cout << "[DEBUG] TestAppServer::setUp - Token written to keychain" << std::endl;
 
     // Insert user, account, drive & sync
-    std::cout << "[DEBUG] TestAppServer::setUp - Inserting user" << std::endl;
     const int userId(atoi(testVariables.userId.c_str()));
     const User user(1, userId, keychainKey);
     (void) ParmsDb::instance()->insertUser(user);
 
-    std::cout << "[DEBUG] TestAppServer::setUp - Inserting account" << std::endl;
     const int accountId(atoi(testVariables.accountId.c_str()));
     const Account account(1, accountId, user.dbId());
     (void) ParmsDb::instance()->insertAccount(account);
 
-    std::cout << "[DEBUG] TestAppServer::setUp - Inserting drive" << std::endl;
     const int driveId = atoi(testVariables.driveId.c_str());
     const Drive drive(1, driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
 
-    std::cout << "[DEBUG] TestAppServer::setUp - Creating local directory" << std::endl;
     _localPath = _localTempDir.path().string() + "/local_sync_directory";
     std::filesystem::create_directories(_localPath);
 
-    std::cout << "[DEBUG] TestAppServer::setUp - Inserting sync" << std::endl;
     _remotePath = testVariables.remotePath;
     Sync sync(1, drive.dbId(), _localPath, "", _remotePath);
     (void) ParmsDb::instance()->insertSync(sync);
 
     // Create AppServer
-    std::cout << "[DEBUG] TestAppServer::setUp - Creating AppServer" << std::endl;
     SyncPath exePath = KDC::CommonUtility::applicationFilePath();
     try {
         const std::vector<std::string> args = {Path2Str(exePath)};
@@ -96,17 +80,13 @@ void TestAppServer::setUp() {
         for (size_t i = 0; i < args.size(); ++i) argv.push_back(const_cast<char *>(args[i].c_str()));
         auto argc = static_cast<int>(args.size());
         _appPtr = new MockAppServer(argc, &argv[0]);
-        std::cout << "[DEBUG] TestAppServer::setUp - MockAppServer created" << std::endl;
         _appPtr->setParmsDbPath(parmsDbPath);
-        std::cout << "[DEBUG] TestAppServer::setUp - Starting AppServer init()" << std::endl;
         _appPtr->init();
-        std::cout << "[DEBUG] TestAppServer::setUp - AppServer init() COMPLETED" << std::endl;
     } catch (const std::exception &e) {
         std::cerr << "kDrive server initialization error: " << e.what() << std::endl;
         return;
     }
 
-    std::cout << "[DEBUG] TestAppServer::setUp - END (success)" << std::endl;
     // /!\ No event handling (no call to _appPtr->exec())
 }
 
@@ -115,19 +95,12 @@ void TestAppServer::tearDown() {
 }
 
 void TestAppServer::testInitAndStopSyncPal() {
-    // TODO: Remove debug logs once blocking issue is resolved
-    std::cout << "[DEBUG] ========================================" << std::endl;
-    std::cout << "[DEBUG] testInitAndStopSyncPal - START" << std::endl;
-    std::cout << "[DEBUG] ========================================" << std::endl;
-
     const int syncDbId = 1;
 
     Sync sync;
     bool found = false;
 
-    std::cout << "[DEBUG] testInitAndStopSyncPal - Selecting sync from DB" << std::endl;
     CPPUNIT_ASSERT(ParmsDb::instance()->selectSync(syncDbId, sync, found) && found);
-    std::cout << "[DEBUG] testInitAndStopSyncPal - Sync selected" << std::endl;
 
     // Check sync nesting
     ExitInfo exitInfo = _appPtr->checkIfSyncIsValid(sync);

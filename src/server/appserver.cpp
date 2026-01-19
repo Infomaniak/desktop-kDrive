@@ -173,37 +173,29 @@ AppServer::~AppServer() {
 }
 
 void AppServer::init() {
-    // TODO: Remove debug logs once blocking issue is resolved
-    std::cout << "[DEBUG] AppServer::init - START" << std::endl;
-
     _startedAt.start();
-    std::cout << "[DEBUG] AppServer::init - Setting organization/app info" << std::endl;
     setOrganizationDomain(QLatin1String(APPLICATION_REV_DOMAIN));
     setApplicationName(QString::fromStdString(_theme->appName()));
     setWindowIcon(_theme->applicationIcon());
     setApplicationVersion(QString::fromStdString(_theme->version()));
 
     // Setup logging with default parameters
-    std::cout << "[DEBUG] AppServer::init - Initializing logging" << std::endl;
     if (!initLogging()) {
         throw std::runtime_error("Unable to init logging.");
     }
 
-    std::cout << "[DEBUG] AppServer::init - Parsing options" << std::endl;
     parseOptions(_arguments);
     if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked) {
         std::cout << "Command line options processed" << std::endl;
         return;
     }
 
-    std::cout << "[DEBUG] AppServer::init - Checking if already running" << std::endl;
     if (isRunning()) {
         std::cout << "AppServer already running" << std::endl;
         return;
     }
 
     // Cleanup at quit
-    std::cout << "[DEBUG] AppServer::init - Setting up signal connections" << std::endl;
     connect(this, &QCoreApplication::aboutToQuit, this, &AppServer::onCleanup);
 
     // Setup single application: show the Settings or Synthesis window if the application is running.
@@ -275,12 +267,10 @@ void AppServer::init() {
     }
 
     // Init KeyChainManager instance
-    std::cout << "[DEBUG] AppServer::init - Initializing KeyChainManager" << std::endl;
     if (!KeyChainManager::instance()) {
         LOG_WARN(_logger, "Error in KeyChainManager::instance");
         throw std::runtime_error("Unable to initialize key chain manager.");
     }
-    std::cout << "[DEBUG] AppServer::init - KeyChainManager initialized" << std::endl;
 
 #if defined(KD_LINUX)
     // For access to keyring in order to promt authentication popup
@@ -289,12 +279,10 @@ void AppServer::init() {
 #endif
 
     // Init ParametersCache instance
-    std::cout << "[DEBUG] AppServer::init - Initializing ParametersCache" << std::endl;
     if (!ParametersCache::instance()) {
         LOG_WARN(_logger, "Error in ParametersCache::instance");
         throw std::runtime_error("Unable to initialize parameters cache.");
     }
-    std::cout << "[DEBUG] AppServer::init - ParametersCache initialized" << std::endl;
 
     // Update Sentry configuration
     sentry::Handler::instance()->setAppUUID(appUID());
@@ -326,13 +314,10 @@ void AppServer::init() {
 
 #if defined(KD_WINDOWS)
     // Update shortcuts
-    std::cout << "[DEBUG] AppServer::init - Updating Windows navigation pane shortcuts" << std::endl;
     NavigationPaneHelper::showInExplorerNavigationPane();
-    std::cout << "[DEBUG] AppServer::init - Navigation pane shortcuts updated" << std::endl;
 #endif
 
     // Setup proxy
-    std::cout << "[DEBUG] AppServer::init - Setting up proxy" << std::endl;
     if (ParametersCache::instance()->parameters().proxyConfig().type() == ProxyType::Undefined) {
         // Migration issue?
         LOG_WARN(_logger, "Proxy type is undefined, fix it");
@@ -347,7 +332,6 @@ void AppServer::init() {
         LOG_WARN(_logger, "Error in AppServer::setupProxy");
         throw std::runtime_error("Unable to initialize proxy.");
     }
-    std::cout << "[DEBUG] AppServer::init - Proxy setup completed" << std::endl;
 
     // Setup auto start
 #ifdef NDEBUG
@@ -388,33 +372,25 @@ void AppServer::init() {
 #endif
 
     // Init CommManager
-    std::cout << "[DEBUG] AppServer::init - Initializing CommManager" << std::endl;
     _commManager = std::make_shared<CommManager>(*this);
-    std::cout << "[DEBUG] AppServer::init - Starting CommManager" << std::endl;
     _commManager->start();
-    std::cout << "[DEBUG] AppServer::init - CommManager started" << std::endl;
 
     // Init OldCommServer instance
-    std::cout << "[DEBUG] AppServer::init - Initializing OldCommServer" << std::endl;
     if (!OldCommServer::instance()) {
         LOG_WARN(_logger, "Error in CommServer::instance");
         throw std::runtime_error("Unable to initialize CommServer.");
     }
 
-    std::cout << "[DEBUG] AppServer::init - Connecting OldCommServer signals" << std::endl;
     connect(OldCommServer::instance().get(), &OldCommServer::requestReceived, this, &AppServer::onRequestReceived);
     connect(OldCommServer::instance().get(), &OldCommServer::restartClient, this, &AppServer::onRestartClientReceived);
 
     // Update users/accounts/drives info
-    std::cout << "[DEBUG] AppServer::init - Updating users/accounts/drives info" << std::endl;
     if (const auto exitInfo = updateAllUsersInfo(); exitInfo.code() == ExitCode::InvalidToken) {
         // The user will be asked to enter its credentials later
-        std::cout << "[DEBUG] AppServer::init - updateAllUsersInfo returned InvalidToken (expected)" << std::endl;
     } else if (!exitInfo) {
         LOG_WARN(_logger, "Error in updateAllUsersInfo: " << exitInfo);
         addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
     }
-    std::cout << "[DEBUG] AppServer::init - Users info updated" << std::endl;
 
     // Set sentry user
     updateSentryUser();
@@ -529,8 +505,6 @@ void AppServer::init() {
     // Restart paused syncs
     connect(&_restartSyncsTimer, &QTimer::timeout, this, &AppServer::onRestartSyncs);
     _restartSyncsTimer.start(RESTART_SYNCS_INTERVAL);
-
-    std::cout << "[DEBUG] AppServer::init - COMPLETED SUCCESSFULLY" << std::endl;
 }
 
 void AppServer::cleanup() {
