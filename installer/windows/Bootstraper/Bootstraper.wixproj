@@ -2,4 +2,9 @@
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
     <Exec Command="powershell  -ExecutionPolicy RemoteSigned -File &quot;$(ProjectDir)fetchVersion.ps1&quot; -WixProjPath &quot;$(SolutionDir)kDriveInstaller.wixproj&quot; -RepositoryRootPath &quot;$(SolutionDir)..\..\..\&quot;" />
   </Target>
+  <PropertyGroup>
+    <VerboseOutput>true</VerboseOutput>
+    <WixUseCompression>false</WixUseCompression>
+    <WixCabinetThreadCount>1</WixCabinetThreadCount>
+  </PropertyGroup>
 </Project>

@@ -616,7 +616,7 @@ function Create-MSI-Package {
     } catch {
         Write-Host "An unexpected error occurred: $($_.Exception.Message)"
         Write-Host "Error details: $($_.Exception)"
-        Write-Host "The dotnet build command failed. Aborting."
+        Write-Host "The 'dotnet build' command failed. Aborting."
         exit 1
     }
 
