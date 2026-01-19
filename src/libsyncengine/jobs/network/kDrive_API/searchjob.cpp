@@ -148,9 +148,7 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
 
             if (path.starts_with(privateFolder)) {
                 path.erase(0, std::char_traits<char>::length(privateFolder));
-            }
-
-            if (path.starts_with(sharedFolder)) {
+            } else if (path.starts_with(sharedFolder)) {
                 path.erase(0, std::char_traits<char>::length(sharedFolder));
             }
 
