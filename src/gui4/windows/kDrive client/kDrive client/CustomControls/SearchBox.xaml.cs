@@ -41,7 +41,8 @@ namespace Infomaniak.kDrive.CustomControls
     {
         private CancellationTokenSource? _searchCts;
         private AppModel _appModel = App.ServiceProvider.GetRequiredService<AppModel>();
-
+        private const string _privateFolderName = "Private/";
+        private const string _sharedFolderName = "Shared/";
         public SearchBox()
         {
             InitializeComponent();
@@ -122,7 +123,7 @@ namespace Infomaniak.kDrive.CustomControls
         }
 
 
-        private static void TitleBarSearchBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+        private void TitleBarSearchBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
         {
             if (args.SelectedItem is not ISearchBoxResultItem resultItem || resultItem.SearchItem is null || !resultItem.IsSelectable)
             {
@@ -145,6 +146,7 @@ namespace Infomaniak.kDrive.CustomControls
             if (_appModel.SelectedSync is null)
             {
                 Logger.Log(Logger.Level.Warning, "SearchItem SuggestionChosen called but no sync is selected.");
+                sender.IsSuggestionListOpen = false;
                 return;
             }
 
@@ -153,23 +155,24 @@ namespace Infomaniak.kDrive.CustomControls
                 // Item is not available locally, open in web browser
                 var url = App.Constants.Drive.OpenItemUri(_appModel.SelectedSync.Drive.DriveId, resultItem.SearchItem.NodeId);
                 await Launcher.LaunchUriAsync(url);
+                sender.IsSuggestionListOpen = false;
                 return;
             }
 
             // Open the file or folder
             var itemRelativePath = resultItem.SearchItem.Path;
-            // Remove leading slash or "Private/" or "Shared/" folder from the path
+            // Remove leading slash or _privateFolderName or _sharedFolderName folder from the path
             if (itemRelativePath is not null)
             {
                 itemRelativePath = itemRelativePath.TrimStart('/', '\\');
 
-                if (itemRelativePath.StartsWith("Private/"))
+                if (itemRelativePath.StartsWith(_privateFolderName))
                 {
-                    itemRelativePath = itemRelativePath["Private/".Length..];
+                    itemRelativePath = itemRelativePath[_privateFolderName.Length..];
                 }
-                else if (itemRelativePath.StartsWith("Shared/"))
+                else if (itemRelativePath.StartsWith(_sharedFolderName))
                 {
-                    itemRelativePath = itemRelativePath["Shared/".Length..];
+                    itemRelativePath = itemRelativePath[_sharedFolderName.Length..];
                 }
 
                 string path = System.IO.Path.Combine(_appModel.SelectedSync.LocalPath, itemRelativePath);
@@ -177,13 +180,32 @@ namespace Infomaniak.kDrive.CustomControls
                 if (!Directory.Exists(path))
                 {
                     await Utility.OpenFileAsync(path);
+                    sender.IsSuggestionListOpen = false;
                     return;
                 }
                 await Utility.OpenFolderSecurely(path);
+                sender.IsSuggestionListOpen = false;
             }
         }
 
-        private async void ParentFolderButton_Click(object sender, RoutedEventArgs e)
+        private void SearchResultItem_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            if (sender.DataContext is not ISearchBoxResultItem item)
+            {
+                return;
+            }
+
+            // Walk up the visual tree to find the parent ListViewItem
+            var parentItem = sender.FindAscendant<ListViewItem>();
+            if (parentItem is not null)
+            {
+                parentItem.IsHitTestVisible = item.IsSelectable;
+                parentItem.IsTabStop = item.IsSelectable;
+                parentItem.IsTapEnabled = item.IsSelectable;
+            }
+        }
+
+        private async void Button_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
             var control = sender as Control;
             if (control is null)
@@ -228,23 +250,6 @@ namespace Infomaniak.kDrive.CustomControls
 
                 string path = System.IO.Path.Combine(_appModel.SelectedSync.LocalPath, itemRelativePath);
                 await Utility.OpenFolderSecurely(path);
-            }
-        }
-
-        private static void SearchResultItem_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
-        {
-            if (sender.DataContext is not ISearchBoxResultItem item)
-            {
-                return;
-            }
-
-            // Walk up the visual tree to find the parent ListViewItem
-            var parentItem = sender.FindAscendant<ListViewItem>();
-            if (parentItem is not null)
-            {
-                parentItem.IsHitTestVisible = item.IsSelectable;
-                parentItem.IsTabStop = item.IsSelectable;
-                parentItem.IsTapEnabled = item.IsSelectable;
             }
         }
     }

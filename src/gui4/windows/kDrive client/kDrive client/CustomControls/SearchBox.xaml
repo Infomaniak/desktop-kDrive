@@ -42,22 +42,17 @@
                            Text="{x:Bind SearchItem.Name}"
                            TextTrimming="CharacterEllipsis" />
 
-                <StackPanel Grid.Column="1"
-                            Grid.Row="1"
-                            Orientation="Horizontal">
-                    <Button Content="{x:Bind SearchItem.Path, Converter={StaticResource StringPathToFileNameConverter}, ConverterParameter='Parent=True'}"
-                            Style="{ThemeResource TextBlockButtonStyle}"
-                            Margin="0"
-                            Padding="0"
-                            Click="ParentFolderButton_Click" />
-                    <TextBlock Foreground="{ThemeResource TextFillColorSecondary}"
-                               TextTrimming="CharacterEllipsis">
+                <TextBlock Grid.Column="1"
+                           Grid.Row="1"
+                           Foreground="{ThemeResource TextFillColorSecondary}"
+                           TextTrimming="CharacterEllipsis">
+                    <Run Text="{x:Bind SearchItem.Path, Converter={StaticResource StringPathToFileNameConverter}, ConverterParameter='Parent=True'}" />
                     <Run Text=" -" />
                     <Run Text="{x:Bind SearchItem.ModifiedTime, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Ago'}" />
                     <Run Text="-" />
                     <Run Text="{x:Bind SearchItem.Size, Converter={StaticResource BytesToHumanReadableStringConverter}}" />
-                    </TextBlock>
-                </StackPanel>
+                </TextBlock>
+
                 <local:SvgIcon Grid.Column="2"
                                Grid.Row="0"
                                Width="16"
