@@ -112,8 +112,6 @@ static const std::string inMaintenanceKey = "in_maintenance";
 static const std::string maintenanceAtKey = "maintenance_at";
 static const std::string maintenanceReasonKey = "maintenance_reason";
 static const std::string maintenanceTypesKey = "maintenance_types";
-static const std::string isLockedKey = "is_locked";
-static const std::string usedSizeKey = "used_size";
 
 static const std::string colorKey = "color";
 

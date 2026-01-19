@@ -18,6 +18,7 @@
 
 import Combine
 import Foundation
+import OrderedCollections
 
 public protocol CoherentCacheObservable: Sendable {
     var usersPublisher: AnyPublisher<IndexedUsers, Never> { get }
@@ -55,7 +56,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
     }
 
     public func getFirstAvailableUser() -> User? {
-        users.first?.value
+        users.values.first
     }
 
     public func addUser(_ user: User) {

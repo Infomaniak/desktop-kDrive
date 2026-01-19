@@ -18,6 +18,7 @@
 
 import Foundation
 import InfomaniakDI
+import OrderedCollections
 
 struct DriveSignalHandler {
     private let decoder = JSONDecoder()

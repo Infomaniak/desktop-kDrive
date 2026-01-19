@@ -57,8 +57,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task PauseSync(DbId syncDbId, CancellationToken cancellationToken);
         Task RemoveSync(DbId syncDbId, CancellationToken cancellationToken);
         Task<bool> AddSync(NewSync newSync, CancellationToken cancellationToken);
+        Task<bool> SetSyncType(DbId syncDbId, SyncType mode, CancellationToken cancellationToken);
 
-        Task<bool?> PathSupportLiteSync(string absoluteLocalPath, CancellationToken cancellationToken);
+        Task<bool?> CanPathSupportLiteSync(string absoluteLocalPath, CancellationToken cancellationToken);
 
         public struct GetGoodPathResult
         {
@@ -69,6 +70,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         // Returns a valid path for a new sync as close as possible to the desiredPath, if not known, the driveDbId can be set to -1
         Task<GetGoodPathResult?> GetGoodPathForNewSync(IDrive? drive, string desiredPath, CancellationToken cancellationToken);
         Task<bool?> IsPathValidForNewSync(string path, CancellationToken cancellationToken);
+
+        Task<UInt64?> GetSyncOfflineFilesSize(DbId syncDbId, CancellationToken cancellationToken);
 
         // Node-related requests
         Task<List<Node>?> GetSubFolders(DbId userDbId, DriveId driveId, NodeId parentNodeId /*Leave empty for root node*/, CancellationToken cancellationToken);

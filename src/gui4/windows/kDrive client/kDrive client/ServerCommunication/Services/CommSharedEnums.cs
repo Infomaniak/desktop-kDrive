@@ -32,6 +32,7 @@ namespace Infomaniak.kDrive.Types
         DRIVE_DELETE,
         DRIVE_SEARCH,
         SYNC_INFOLIST,
+        SYNC_OFFLINE_FILES_SIZE,
         SYNC_START,
         SYNC_STOP,
         SYNC_STATUS,
@@ -302,6 +303,7 @@ namespace Infomaniak.kDrive.Types
         ForbiddenCharOnlySpaces = 0x080, // The name contains only spaces (not supported by back end)
         ForbiddenCharEndWithSpace = 0x100, // The name ends with a space
     };
+    
     public enum VirtualFileMode
     {
         Off,

@@ -16,30 +16,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "drive.h"
-#include "account.h"
-#include "libcommonserver/log/log.h"
+#pragma once
 
-#include <log4cplus/loggingmacros.h>
+#include "server/comm/guijobs/abstractguijob.h"
 
 namespace KDC {
 
-Drive::Drive() :
-    _logger(Log::instance()->getLogger()) {}
+class SyncOfflineFilesSizeJob : public AbstractGuiJob {
+    public:
+        SyncOfflineFilesSizeJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
+                      std::shared_ptr<AbstractCommChannel> channel);
 
-Drive::Drive(int dbId, int driveId, int accountDbId, const std::string &name, int64_t size, const std::string &color,
-             bool notifications, bool admin) :
-    _logger(Log::instance()->getLogger()),
-    _dbId(dbId),
-    _driveId(driveId),
-    _accountDbId(accountDbId),
-    _name(name),
-    _size(size),
-    _color(color),
-    _notifications(notifications),
-    _admin(admin),
-    _locked(false),
-    _usedSize(0),
-    _accessDenied(false) {}
+    private:
+        // Input parameters
+        int _syncDbId = 0;
+
+        // Output parameters
+        uint64_t _size = 0;
+
+        ExitInfo deserializeInputParms() override;
+        ExitInfo serializeOutputParms() override;
+        ExitInfo process() override;
+
+        friend class TestGuiCommChannel;
+};
 
 } // namespace KDC

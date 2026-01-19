@@ -31,6 +31,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
                 set { Num = (int)value; }
             }
 
+            public ExitCode Code { get; set; } = ExitCode.Unknown;
+            public ExitCause Cause { get; set; } = ExitCause.Unknown;
+
             // Parameters for requests or data for signals
             public JsonObject? Params { get; set; }
         }

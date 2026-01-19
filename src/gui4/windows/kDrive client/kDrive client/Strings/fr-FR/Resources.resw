@@ -398,19 +398,23 @@ ou choisissez une offre adaptée à vos besoins.</value>
   <data name="Page_StoragePage_Title.Text" xml:space="preserve">
     <value>Stockage</value>
   </data>
+  <data name="Page_StoragePage_Processing.Text" xml:space="preserve">
+    <value>Calcul...</value>
+  </data>
   <data name="Page_StoragePage_ThisComputer.Text" xml:space="preserve">
     <value>Ce PC</value>
   </data>
   <data name="Page_StoragePage_Used.Text" xml:space="preserve">
-    <value>utilisé(s)</value>
-    <comment>Use mix singular/plural form.</comment>
+    <value>utilisés</value>
   </data>
   <data name="Page_StoragePage_Free.Text" xml:space="preserve">
-    <value>libre(s)</value>
-    <comment>Use mix singular/plural form.</comment>
+    <value>libres</value>
+  </data>
+  <data name="Page_StoragePage_FreeSpace.Text" xml:space="preserve">
+    <value>Espace libre de l’ordinateur</value>
   </data>
   <data name="Page_StoragePage_OfflineFiles.Text" xml:space="preserve">
-    <value>Fichiers kDrive accessibles hors ligne</value>
+    <value>Fichiers kDrive stocker sur l’ordinateur</value>
   </data>
   <data name="Page_StoragePage_OtherFiles.Text" xml:space="preserve">
     <value>Autres fichiers de l’ordinateur</value>
@@ -459,9 +463,6 @@ ou choisissez une offre adaptée à vos besoins.</value>
   </data>
   <data name="Global_KiloBytes" xml:space="preserve">
     <value>Ko</value>
-  </data>
-  <data name="Page_StoragePage_DiskUnavailable.Message" xml:space="preserve">
-    <value>Disque indisponible</value>
   </data>
   <data name="Page_HomePage_Status_SyncUpToDate.Text" xml:space="preserve">
     <value>, vos fichiers sont à jour</value>
@@ -591,7 +592,7 @@ ou choisissez une offre adaptée à vos besoins.</value>
     <value>Stockés en ligne</value>
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.Title" xml:space="preserve">
-    <value>Êtes-vous sûr de vouloir changer le mode de synchronisation ?</value>
+    <value>Changer le mode de synchronisation ?</value>
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.Title" xml:space="preserve">
     <value>Supprimer la synchronisation ?</value>
@@ -603,18 +604,17 @@ ou choisissez une offre adaptée à vos besoins.</value>
     <value>Votre nouveau mode de synchronisation est en cours d’application...</value>
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.Content" xml:space="preserve">
-    <value>Cette opération peut prendre un certain temps selon la taille de vos données.
-Elle peut également échouer et rendre la synchronisation définitivement indisponible, nécessitant une nouvelle synchronisation complète de votre drive.
+    <value>Cette opération peut prendre un certain temps, selon la taille de vos données. En cas d’échec, une nouvelle synchronisation complète du drive pourra être nécessaire.
 
-Avant de continuer, assurez-vous que tout vos fichiers sont bien à jour et synchronisées.
+Avant de continuer, assurez-vous que tous vos fichiers sont bien à jour et synchronisés.
 
 Ne fermez pas l’application pendant le processus.</value>
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.SecondaryButtonText" xml:space="preserve">
-    <value>Annuler</value>
+    <value>Continuer</value>
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.PrimaryButtonText" xml:space="preserve">
-    <value>Modifier quand même</value>
+    <value>Annuler</value>
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncMode_Offline.Description" xml:space="preserve">
     <value>Vos fichiers sont copiés sur votre ordinateur. 
@@ -901,6 +901,29 @@ Avant de continuer, assurez-vous que tout vos fichiers sont bien à jour et sync
   <data name="Page_LogginErrorPage_Button.Content" xml:space="preserve">
     <value>Connexion</value>
   </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_ErrorDialog.Title" xml:space="preserve">
+    <value>Une erreur est survenue</value>
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_ErrorDialog.Content" xml:space="preserve">
+    <value>Le changement de mode de synchronisation a été annulé.
+
+La synchronisation actuelle reste inchangée. Toutefois, en cas de comportement anormal, il peut être nécessaire de supprimer puis de recréer la synchronisation afin de rétablir un fonctionnement correct.</value>
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_ErrorDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Fermer</value>
+  </data>
+  <data name="Page_StoragePage_Disconnected_Title.Text" xml:space="preserve">
+    <value>Le disque de stockage {0} n’est pas accessible</value>
+    <comment>{0}: Disk root (ie C:/)</comment>
+  </data>
+  <data name="Page_StoragePage_Disconnected_RetryButton.Content" xml:space="preserve">
+    <value>Réessayer</value>
+  </data>
+  <data name="Page_StoragePage_Disconnected_Subtitle.Text" xml:space="preserve">
+    <value>kDrive ne peut pas accéder au disque {0}  Assurez-vous qu’il est bien connecté, 
+déverrouillé et accessible depuis votre ordinateur.</value>
+    <comment>{0}: Disk root (ie C:/)</comment>
+  </data>
   <data name="Page_NotRenewErrorPage_MainButton.Content" xml:space="preserve">
     <value>Actualiser</value>
   </data>
@@ -931,5 +954,17 @@ Avant de continuer, assurez-vous que tout vos fichiers sont bien à jour et sync
   </data>
   <data name="Page_AsleepErrorPage_SecondaryButton.Content" xml:space="preserve">
     <value>Actualiser</value>
+  </data>
+  <data name="Page_StoragePage_Disconnected_Title.Text" xml:space="preserve">
+    <value>Le disque de stockage {0} n’est pas accessible</value>
+    <comment>{0}: Disk root (ie C:/)</comment>
+  </data>
+  <data name="Page_StoragePage_Disconnected_RetryButton.Content" xml:space="preserve">
+    <value>Réessayer</value>
+  </data>
+  <data name="Page_StoragePage_Disconnected_Subtitle.Text" xml:space="preserve">
+    <value>kDrive ne peut pas accéder au disque {0}  Assurez-vous qu’il est bien connecté, 
+déverrouillé et accessible depuis votre ordinateur.</value>
+    <comment>{0}: Disk root (ie C:/)</comment>
   </data>
 </root>

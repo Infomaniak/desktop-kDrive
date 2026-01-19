@@ -38,7 +38,7 @@ class UpdateTree : public SharedObject {
         [[nodiscard]] bool deleteNode(const NodeId &id, bool deleteNodeLater = false);
         [[nodiscard]] inline const ReplicaSide &side() const { return _side; }
         inline std::shared_ptr<Node> rootNode() { return _rootNode; }
-        inline std::unordered_map<NodeId, std::shared_ptr<Node>> &nodes() { return _nodes; }
+        inline std::unordered_map<NodeId, std::shared_ptr<Node>> &nodes() { return _validNodes; }
         inline std::unordered_map<NodeId, NodeId> &previousIdSet() { return _previousIdSet; }
         std::shared_ptr<Node> getNodeByPath(const SyncPath &path);
         std::shared_ptr<Node> getNodeByPathNormalized(const SyncPath &path);
@@ -66,7 +66,7 @@ class UpdateTree : public SharedObject {
     private:
         void drawUpdateTreeRow(std::shared_ptr<Node> node, SyncName &treeStr, uint64_t depth = 0);
 
-        std::unordered_map<NodeId, std::shared_ptr<Node>> _nodes;
+        std::unordered_map<NodeId, std::shared_ptr<Node>> _validNodes;
         std::shared_ptr<Node> _rootNode;
         ReplicaSide _side;
 

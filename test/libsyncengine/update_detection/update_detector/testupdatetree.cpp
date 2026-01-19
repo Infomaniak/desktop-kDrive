@@ -70,7 +70,7 @@ void TestUpdateTree::testConstructors() {
 }
 
 void TestUpdateTree::testInsertionOfFileNamesWithDifferentEncodings() {
-    CPPUNIT_ASSERT(_myTree->_nodes.empty());
+    CPPUNIT_ASSERT(_myTree->_validNodes.empty());
     auto node1 = std::make_shared<Node>(_myTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::None, "l1", 0, 0,
                                         12345, _myTree->rootNode());
 
@@ -84,7 +84,7 @@ void TestUpdateTree::testInsertionOfFileNamesWithDifferentEncodings() {
 }
 
 void TestUpdateTree::testClear() {
-    CPPUNIT_ASSERT(_myTree->_nodes.empty());
+    CPPUNIT_ASSERT(_myTree->_validNodes.empty());
 
     _myTree->init();
     auto node1 = std::make_shared<Node>(_myTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::None, "l1", 0, 0,
@@ -106,9 +106,9 @@ void TestUpdateTree::testClear() {
     CPPUNIT_ASSERT(node11.use_count() == 4); // Referenced by node11, node1, node111, _myTree->_nodes
     CPPUNIT_ASSERT(node111.use_count() == 3); // Referenced by node111, node11, _myTree->_nodes
 
-    CPPUNIT_ASSERT(_myTree->_nodes.size() == 4); // root, node1, node11, node111
+    CPPUNIT_ASSERT(_myTree->_validNodes.size() == 4); // root, node1, node11, node111
     _myTree->clear();
-    CPPUNIT_ASSERT(_myTree->_nodes.size() == 1); // root
+    CPPUNIT_ASSERT(_myTree->_validNodes.size() == 1); // root
 
     CPPUNIT_ASSERT(node1.use_count() == 1); // Referenced by node1
     CPPUNIT_ASSERT(node11.use_count() == 1); // Referenced by node11
@@ -116,28 +116,28 @@ void TestUpdateTree::testClear() {
 }
 
 void TestUpdateTree::testDelete() {
-    CPPUNIT_ASSERT(_myTree->_nodes.empty());
+    CPPUNIT_ASSERT(_myTree->_validNodes.empty());
     auto node1 = std::make_shared<Node>(_myTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::None, "l1", 0, 0,
                                         12345, _myTree->rootNode());
     _myTree->insertNode(node1);
-    CPPUNIT_ASSERT(_myTree->_nodes.size() == 1);
+    CPPUNIT_ASSERT(_myTree->_validNodes.size() == 1);
 
     // Delete node later
     CPPUNIT_ASSERT(_myTree->deleteNode(*node1->id(), true));
-    CPPUNIT_ASSERT(_myTree->_nodes.size() == 1);
+    CPPUNIT_ASSERT(_myTree->_validNodes.size() == 1);
     CPPUNIT_ASSERT(node1->status() == NodeStatus::ToDelete);
 
     // Delete node now
     CPPUNIT_ASSERT(_myTree->deleteNode(*node1->id()));
-    CPPUNIT_ASSERT(_myTree->_nodes.size() == 0);
+    CPPUNIT_ASSERT(_myTree->_validNodes.size() == 0);
 }
 
 void TestUpdateTree::testAll() {
-    CPPUNIT_ASSERT(_myTree->_nodes.empty());
+    CPPUNIT_ASSERT(_myTree->_validNodes.empty());
     auto node1 = std::make_shared<Node>(_myTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::None, "l1", 0, 0,
                                         12345, _myTree->rootNode());
     _myTree->insertNode(node1);
-    CPPUNIT_ASSERT(_myTree->_nodes.size() == 1);
+    CPPUNIT_ASSERT(_myTree->_validNodes.size() == 1);
 
 
     auto node2 = std::make_shared<Node>(_myTree->side(), Str("Dir 2"), NodeType::Directory, OperationType::None, "l2", 0, 0,
