@@ -122,7 +122,7 @@ namespace Infomaniak.kDrive.CustomControls
         }
 
 
-        private void TitleBarSearchBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+        private static void TitleBarSearchBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
         {
             if (args.SelectedItem is not ISearchBoxResultItem resultItem || resultItem.SearchItem is null || !resultItem.IsSelectable)
             {
@@ -231,7 +231,7 @@ namespace Infomaniak.kDrive.CustomControls
             }
         }
 
-        private void SearchResultItem_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        private static void SearchResultItem_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             if (sender.DataContext is not ISearchBoxResultItem item)
             {
