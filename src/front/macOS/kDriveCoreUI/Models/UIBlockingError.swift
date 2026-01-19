@@ -55,6 +55,16 @@ public struct UIBlockingError {
             badgeIcon = KDriveResources.wrench.swiftUIImage
             badgeBackgroundColor = ColorToken.Status.Light.warning.asColor
             badgeColor = ColorToken.Status.Medium.warning.asColor
+        } else if drive.locked {
+            if drive.admin {
+                subtitle = KDriveLocalizable.driveLockedAdminErrorDescription
+            } else {
+                subtitle = KDriveLocalizable.driveLockedErrorDescription
+            }
+            title = KDriveLocalizable.driveLockedErrorTitle
+            badgeIcon = KDriveResources.warning.swiftUIImage
+            badgeBackgroundColor = ColorToken.Status.Light.warning.asColor
+            badgeColor = ColorToken.Status.Medium.warning.asColor
         } else if drive.accessDenied {
             title = KDriveLocalizable.driveAccessDeniedErrorTitle
             subtitle = KDriveLocalizable.driveAccessDeniedErrorDescription

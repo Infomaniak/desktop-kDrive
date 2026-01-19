@@ -10,6 +10,8 @@ import Foundation
 // swiftlint:disable explicit_type_interface function_parameter_count identifier_name line_length
 // swiftlint:disable nesting type_body_length type_name vertical_whitespace_opening_braces
 public enum KDriveLocalizable {
+  /// loco:696a483470f3b70399021c12
+  public static let buttonAddStorage = KDriveLocalizable.tr("Localizable", "buttonAddStorage", fallback: "Add Storage")
   /// loco:691deb2291b20ac7fd045012
   public static let buttonAdvancedParameters = KDriveLocalizable.tr("Localizable", "buttonAdvancedParameters", fallback: "Advanced settings")
   /// loco:696a343b72b6dc32e00557a4
@@ -46,6 +48,12 @@ public enum KDriveLocalizable {
   public static let driveAccessDeniedErrorDescription = KDriveLocalizable.tr("Localizable", "driveAccessDeniedErrorDescription", fallback: "You do not have permission to access this kDrive.\nPlease check your permissions or contact your administrator.")
   /// loco:696a25f0bcde38f2b9018124
   public static let driveAccessDeniedErrorTitle = KDriveLocalizable.tr("Localizable", "driveAccessDeniedErrorTitle", fallback: "Access denied to kDrive")
+  /// loco:696ddb204d9cd9e240095142
+  public static let driveLockedAdminErrorDescription = KDriveLocalizable.tr("Localizable", "driveLockedAdminErrorDescription", fallback: "This kDrive has not been renewed. You can no longer access it.\nRenew your subscription to reactivate the service.")
+  /// loco:696dda82726515a10a0772c2
+  public static let driveLockedErrorDescription = KDriveLocalizable.tr("Localizable", "driveLockedErrorDescription", fallback: "This kDrive has not been renewed. You can no longer access it.\nContact your administrator to reactivate the service.")
+  /// loco:696df7c300e7a6e07201ee53
+  public static let driveLockedErrorTitle = KDriveLocalizable.tr("Localizable", "driveLockedErrorTitle", fallback: "Your kDrive has expired")
   /// loco:696a29351c25c87abb045892
   public static let driveMaintenanceErrorDescription = KDriveLocalizable.tr("Localizable", "driveMaintenanceErrorDescription", fallback: "This kDrive is temporarily unavailable for maintenance.\nPlease try again in a few minutes.")
   /// loco:696a2779d558c16f7d0a7ff9
@@ -63,6 +71,18 @@ public enum KDriveLocalizable {
   /// loco:6964f0b575a31a8d9601a6d7
   public static func helpKDriveName(_ p1: UnsafePointer<CChar>) -> String {
     return KDriveLocalizable.tr("Localizable", "helpKDriveName", p1, fallback: "kDrive %s")
+  }
+  /// loco:696a481cf54b5acbc60209c2
+  public static let informationBlockKDriveFullSubtitle = KDriveLocalizable.tr("Localizable", "informationBlockKDriveFullSubtitle", fallback: "Free up space or upgrade your plan to continue syncing your files.")
+  /// loco:696a47fd5b6db1a9b1063182
+  public static let informationBlockKDriveFullTitle = KDriveLocalizable.tr("Localizable", "informationBlockKDriveFullTitle", fallback: "Your kDrive is full")
+  /// loco:696a4fcf3932da71d1075552
+  public static func informationBlockSynchroErrorTitle(_ p1: UnsafePointer<CChar>) -> String {
+    return KDriveLocalizable.tr("Localizable", "informationBlockSynchroErrorTitle", p1, fallback: "You have %s synchronization error")
+  }
+  /// loco:696a4fdd3932da71d1075554
+  public static func informationBlockSynchroErrorTitlePlural(_ p1: UnsafePointer<CChar>) -> String {
+    return KDriveLocalizable.tr("Localizable", "informationBlockSynchroErrorTitle-plural", p1, fallback: "You have %s synchronization errors")
   }
   /// loco:6930595e7664999c6a08c8a4
   public static let instructionEnableKDrive = KDriveLocalizable.tr("Localizable", "instructionEnableKDrive", fallback: "Activate kDrive.app")

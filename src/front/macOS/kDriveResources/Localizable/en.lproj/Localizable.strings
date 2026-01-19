@@ -7,6 +7,9 @@
  * Exported at: Thu, 29 Jan 2026 11:35:39 +0100
  */
 
+/* loco:696a483470f3b70399021c12 */
+"buttonAddStorage" = "Add Storage";
+
 /* loco:691deb2291b20ac7fd045012 */
 "buttonAdvancedParameters" = "Advanced settings";
 
@@ -61,6 +64,15 @@
 /* loco:696a25f0bcde38f2b9018124 */
 "driveAccessDeniedErrorTitle" = "Access denied to kDrive";
 
+/* loco:696ddb204d9cd9e240095142 */
+"driveLockedAdminErrorDescription" = "This kDrive has not been renewed. You can no longer access it.\nRenew your subscription to reactivate the service.";
+
+/* loco:696dda82726515a10a0772c2 */
+"driveLockedErrorDescription" = "This kDrive has not been renewed. You can no longer access it.\nContact your administrator to reactivate the service.";
+
+/* loco:696df7c300e7a6e07201ee53 */
+"driveLockedErrorTitle" = "Your kDrive has expired";
+
 /* loco:696a29351c25c87abb045892 */
 "driveMaintenanceErrorDescription" = "This kDrive is temporarily unavailable for maintenance.\nPlease try again in a few minutes.";
 
@@ -81,6 +93,18 @@
 
 /* loco:6964f0b575a31a8d9601a6d7 */
 "helpKDriveName" = "kDrive %s";
+
+/* loco:696a481cf54b5acbc60209c2 */
+"informationBlockKDriveFullSubtitle" = "Free up space or upgrade your plan to continue syncing your files.";
+
+/* loco:696a47fd5b6db1a9b1063182 */
+"informationBlockKDriveFullTitle" = "Your kDrive is full";
+
+/* loco:696a4fcf3932da71d1075552 */
+"informationBlockSynchroErrorTitle" = "You have %s synchronization error";
+
+/* loco:696a4fdd3932da71d1075554 */
+"informationBlockSynchroErrorTitle-plural" = "You have %s synchronization errors";
 
 /* loco:6930595e7664999c6a08c8a4 */
 "instructionEnableKDrive" = "Activate kDrive.app";
