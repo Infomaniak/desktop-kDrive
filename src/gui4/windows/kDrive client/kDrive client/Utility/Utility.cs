@@ -15,6 +15,8 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Threading.Tasks;
 using Windows.Graphics;
+using Windows.Storage;
+using Windows.System;
 using WinRT.Interop;
 
 namespace Infomaniak.kDrive
@@ -46,8 +48,21 @@ namespace Infomaniak.kDrive
                 await taskCompletionSource.Task;
             }
         }
+        public static async Task OpenFileAsync(string filePath)
+        {
+            try
+            {
+                filePath = filePath.Replace('/', Path.DirectorySeparatorChar);
+                StorageFile file = await StorageFile.GetFileFromPathAsync(filePath);
+                await Launcher.LaunchFileAsync(file);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to open file {filePath}: {ex.Message}");
+            }
+        }
 
-        public static bool OpenFolderSecurely(string folderPath)
+        public static async Task<bool> OpenFolderSecurely(string folderPath)
         {
             // Validate input
             if (string.IsNullOrWhiteSpace(folderPath))
@@ -74,21 +89,19 @@ namespace Infomaniak.kDrive
                 return false;
             }
 
-            if (!Directory.Exists(fullPath))
+            if (!Directory.Exists(Path.GetDirectoryName(fullPath)))
             {
-                Logger.Log(Logger.Level.Warning, $"The specified folder does not exist: {fullPath}");
+                Logger.Log(Logger.Level.Warning, $"The parent directory does not exist for the specified folder: {fullPath}");
                 return false;
             }
 
-            ProcessStartInfo startInfo = new ProcessStartInfo
+            if (!Directory.Exists(fullPath))
             {
-                FileName = "explorer.exe",
-                Arguments = $"\"{fullPath}\"",
-                UseShellExecute = true,
-                CreateNoWindow = true
-            };
+                await Launcher.LaunchFolderPathAsync(Path.GetDirectoryName(fullPath));
+                return false;
+            }
 
-            Process.Start(startInfo);
+            await Launcher.LaunchFolderPathAsync(fullPath);
             return true;
         }
 
@@ -246,7 +259,7 @@ namespace Infomaniak.kDrive
         public static string ObfuscateEmail(string? email)
         {
             // if > 5 characters before @, keep first 2 and last 2, else keep first and last
-            if(email is null)
+            if (email is null)
                 return "";
 
             var atIndex = email.IndexOf('@');

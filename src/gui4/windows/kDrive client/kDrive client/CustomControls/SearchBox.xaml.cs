@@ -7,8 +7,10 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
+using Windows.System;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -38,6 +40,7 @@ namespace Infomaniak.kDrive.CustomControls
     public sealed partial class SearchBox : UserControl
     {
         private CancellationTokenSource? _searchCts;
+        private AppModel _appModel = App.ServiceProvider.GetRequiredService<AppModel>();
 
         public SearchBox()
         {
@@ -65,9 +68,8 @@ namespace Infomaniak.kDrive.CustomControls
             sender.ItemsSource = new List<ISearchBoxResultItem> { new SearchBoxLoaderItem(), new SearchBoxLoaderItem(), new SearchBoxLoaderItem() };
 
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            var appModel = App.ServiceProvider.GetRequiredService<AppModel>();
 
-            if (appModel.SelectedSync is null)
+            if (_appModel.SelectedSync is null)
             {
                 Logger.Log(Logger.Level.Warning, "SearchItem called but no sync is selected.");
                 sender.ItemsSource = new List<ISearchBoxResultItem> { new SearchBoxNotFoundItem() };
@@ -77,7 +79,7 @@ namespace Infomaniak.kDrive.CustomControls
             try
             {
                 var result = await commService.SearchItem(
-                    appModel.SelectedSync.DbId,
+                    _appModel.SelectedSync.DbId,
                     sender.Text,
                     token);
 
@@ -117,10 +119,94 @@ namespace Infomaniak.kDrive.CustomControls
         {
             if (args.SelectedItem is not ISearchBoxResultItem resultItem || resultItem.SearchItem is null || !resultItem.IsSelectable)
             {
+                sender.Text = "";
                 return;
             }
 
             sender.Text = resultItem.SearchItem.Name;
+        }
+
+        private async void TitleBarSearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            sender.Text = "";
+
+            if (args.ChosenSuggestion is not ISearchBoxResultItem resultItem || resultItem.SearchItem is null || !resultItem.IsSelectable || !resultItem.SearchItem.IsAvailableLocally)
+            {
+                return;
+            }
+
+            if (_appModel.SelectedSync is null)
+            {
+                Logger.Log(Logger.Level.Warning, "SearchItem SuggestionChosen called but no sync is selected.");
+                return;
+            }
+
+
+            var itemRelativePath = resultItem.SearchItem.Path;
+            // Remove leading slash or "Private/" or "Shared/" folder from the path
+            if (itemRelativePath is not null)
+            {
+                itemRelativePath = itemRelativePath.TrimStart('/', '\\');
+
+                if (itemRelativePath.StartsWith("Private/"))
+                {
+                    itemRelativePath = itemRelativePath["Private/".Length..];
+                }
+                else if (itemRelativePath.StartsWith("Shared/"))
+                {
+                    itemRelativePath = itemRelativePath["Shared/".Length..];
+                }
+
+                string path = System.IO.Path.Combine(_appModel.SelectedSync.LocalPath, itemRelativePath);
+
+                if (!Directory.Exists(path))
+                {
+                    await Utility.OpenFileAsync(path);
+                    return;
+                }
+                await Utility.OpenFolderSecurely(path);
+            }
+        }
+
+        private async void ParentFolderButton_Click(object sender, RoutedEventArgs e)
+        {
+            var control = sender as Control;
+            if (control is null)
+            {
+                Logger.Log(Logger.Level.Warning, "sender is expected to ba a control.");
+                return;
+            }
+
+            if (control.DataContext is not ISearchBoxResultItem resultItem || resultItem.SearchItem is null || !resultItem.IsSelectable || !resultItem.SearchItem.IsAvailableLocally)
+            {
+                return;
+            }
+
+            if (_appModel.SelectedSync is null)
+            {
+                Logger.Log(Logger.Level.Warning, "SearchItem SuggestionChosen called but no sync is selected.");
+                return;
+            }
+
+
+            var itemRelativePath = resultItem.SearchItem.Path;
+            // Remove leading slash or "Private/" or "Shared/" folder from the path
+            if (itemRelativePath is not null)
+            {
+                itemRelativePath = itemRelativePath.TrimStart('/', '\\');
+
+                if (itemRelativePath.StartsWith("Private/"))
+                {
+                    itemRelativePath = itemRelativePath["Private/".Length..];
+                }
+                else if (itemRelativePath.StartsWith("Shared/"))
+                {
+                    itemRelativePath = itemRelativePath["Shared/".Length..];
+                }
+
+                string path = System.IO.Path.Combine(_appModel.SelectedSync.LocalPath, itemRelativePath);
+                await Utility.OpenFolderSecurely(path);
+            }
         }
 
         private void SearchResultItem_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
@@ -135,6 +221,8 @@ namespace Infomaniak.kDrive.CustomControls
             if (parentItem is not null)
             {
                 parentItem.IsHitTestVisible = item.IsSelectable;
+                parentItem.IsTabStop = item.IsSelectable;
+                parentItem.IsTapEnabled = item.IsSelectable;
                 if (item?.SearchItem is not null)
                     parentItem.IsEnabled = item.SearchItem.IsAvailableLocally;
             }

@@ -11,6 +11,7 @@
         <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />
         <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
         <converters:BytesToHumanReadableStringConverter x:Key="BytesToHumanReadableStringConverter" />
+        <converters:DateTimeToTimeAgoConverter x:Key="DateTimeToTimeAgoConverter" />
 
         <!-- File template -->
         <DataTemplate x:Key="FileTemplate"
@@ -38,17 +39,22 @@
                            Text="{x:Bind SearchItem.Name}"
                            TextTrimming="CharacterEllipsis" />
 
-                <TextBlock Grid.Column="1"
-                           Grid.Row="1"
-                           Foreground="{ThemeResource TextFillColorSecondary}"
-                           TextTrimming="CharacterEllipsis">
-                    <Run Text="{x:Bind SearchItem.Path, Converter={StaticResource StringPathToFileNameConverter}, ConverterParameter='Parent=True'}" />
-                    <Run Text="-" />
-                    <Run Text="3 jours" />
+                <StackPanel Grid.Column="1"
+                            Grid.Row="1"
+                            Orientation="Horizontal">
+                    <Button Content="{x:Bind SearchItem.Path, Converter={StaticResource StringPathToFileNameConverter}, ConverterParameter='Parent=True'}"
+                            Style="{ThemeResource TextBlockButtonStyle}"
+                            Margin="0"
+                            Padding="0"
+                            Click="ParentFolderButton_Click" />
+                    <TextBlock Foreground="{ThemeResource TextFillColorSecondary}"
+                               TextTrimming="CharacterEllipsis">
+                    <Run Text=" -" />
+                    <Run Text="{x:Bind SearchItem.ModifiedTime, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Ago'}" />
                     <Run Text="-" />
                     <Run Text="{x:Bind SearchItem.Size, Converter={StaticResource BytesToHumanReadableStringConverter}}" />
-                </TextBlock>
-
+                    </TextBlock>
+                </StackPanel>
             </Grid>
         </DataTemplate>
 
@@ -85,7 +91,7 @@
                            TextTrimming="CharacterEllipsis">
                     <Run Text="{x:Bind SearchItem.Path, Converter={StaticResource StringPathToFileNameConverter}, ConverterParameter='Parent=True'}" />
                     <Run Text="-" />
-                    <Run Text="3 jours" />
+                    <Run Text="{x:Bind SearchItem.ModifiedTime, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Ago'}" />
                 </TextBlock>
 
             </Grid>
@@ -175,7 +181,8 @@
                     TextChanged="SearchBox_TextChanged"
                     ItemTemplateSelector="{StaticResource SearchBoxResultItemTemplateSelector}"
                     UpdateTextOnSelect="False"
-                    SuggestionChosen="TitleBarSearchBox_SuggestionChosen">
+                    SuggestionChosen="TitleBarSearchBox_SuggestionChosen"
+                    QuerySubmitted="TitleBarSearchBox_QuerySubmitted">
     </AutoSuggestBox>
 
 </UserControl>
