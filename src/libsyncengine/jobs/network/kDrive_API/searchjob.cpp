@@ -91,49 +91,49 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
     }
     if (!jsonRes()) {
         LOG_WARN(_logger, "Invalid JSON object");
-        return {};
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
     if (!JsonParserUtility::extractValue(jsonRes(), cursorKey, _cursorOutput)) {
-        return {};
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
     if (!JsonParserUtility::extractValue(jsonRes(), hasMoreKey, _hasMore)) {
-        return {};
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
     const auto dataArray = jsonRes()->getArray(dataKey);
     if (!dataArray) {
         LOG_WARN(_logger, "Missing data array for search string:" << _searchString);
-        return {};
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
     for (auto it = dataArray->begin(); it != dataArray->end(); ++it) {
         const auto obj = it->extract<Poco::JSON::Object::Ptr>();
         NodeId nodeId;
         if (!JsonParserUtility::extractValue(obj, idKey, nodeId)) {
-            return {};
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
         SyncName name;
         if (!JsonParserUtility::extractValue(obj, nameKey, name)) {
-            return {};
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
         std::string type;
         if (!JsonParserUtility::extractValue(obj, typeKey, type)) {
-            return {};
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
 
         std::string path;
         if (!JsonParserUtility::extractValue(obj, pathKey, path)) {
-            return {};
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
 
         SyncTime modifiedTime = 0;
         if (!JsonParserUtility::extractValue(obj, lastModifiedAtKey, modifiedTime, false)) {
-            return {};
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
 
         size_t size = 0;
         if (!JsonParserUtility::extractValue(obj, sizeKey, size, false)) {
-            return {};
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
 
         bool isAvailableLocally = false;
