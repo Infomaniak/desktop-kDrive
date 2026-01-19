@@ -67,7 +67,7 @@
                                Visibility="{x:Bind SearchItem.IsAvailableLocally, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
                                ToolTipService.Placement="Right">
                     <ToolTipService.ToolTip>
-                        <ToolTip Content="Cet élément n'est pas disponnible sur votre appareil. Il sera ouvert dans votre navigateur." />
+                        <ToolTip x:Uid="CC_SearchBox_ItemUnavailableLocally_Tooltip" />
                     </ToolTipService.ToolTip>
                 </local:SvgIcon>
             </Grid>
@@ -117,7 +117,7 @@
                                Visibility="{x:Bind SearchItem.IsAvailableLocally, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
                                ToolTipService.Placement="Right">
                     <ToolTipService.ToolTip>
-                        <ToolTip Content="Cet élément n'est pas disponnible sur votre appareil. Il sera ouvert dans votre navigateur." />
+                        <ToolTip x:Uid="CC_SearchBox_ItemUnavailableLocally_Tooltip" />
                     </ToolTipService.ToolTip>
                 </local:SvgIcon>
 

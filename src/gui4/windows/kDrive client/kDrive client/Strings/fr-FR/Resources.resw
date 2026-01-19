@@ -941,4 +941,7 @@ déverrouillé et accessible depuis votre ordinateur.</value>
   <data name="Page_AsleepErrorPage_SecondaryButton.Content" xml:space="preserve">
     <value>Actualiser</value>
   </data>
+  <data name="CC_SearchBox_ItemUnavailableLocally_Tooltip.Content" xml:space="preserve">
+    <value>Cet élément n'est pas disponible sur votre appareil. Il sera ouvert dans votre navigateur.</value>
+  </data>
 </root>
