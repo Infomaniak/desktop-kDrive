@@ -83,6 +83,8 @@
     <Thickness x:Key="Infomaniak.Style.Thickness.Sides.Vertical.XS">0,8</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Sides.Vertical.S">0,12</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Sides.Vertical.M">0,16</Thickness>
+    <Thickness x:Key="Infomaniak.Style.Thickness.Sides.Vertical.L">0,24</Thickness>
+    <Thickness x:Key="Infomaniak.Style.Thickness.Sides.Vertical.XL">0,32</Thickness>
     
     <Thickness x:Key="Infomaniak.Style.Thickness.Top.XXS">0,4,0,0</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Top.XS">0,8,0,0</Thickness>

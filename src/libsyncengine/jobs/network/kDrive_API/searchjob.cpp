@@ -26,6 +26,8 @@
 
 namespace KDC {
 
+static constexpr auto privateFolder = "Private/";
+
 SearchJob::SearchJob(int driveDbId, int syncDbId, const std::string &searchString, const std::string &cursorInput /*= {}*/) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _searchString(searchString),
@@ -139,6 +141,14 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
         bool isAvailableLocally = false;
 
         if (!_syncRootPath.empty()) {
+            if (path.starts_with('/') || path.starts_with('\\')) {
+                path.erase(0, 1);
+            }
+
+            if (path.starts_with(privateFolder)) {
+                path.erase(0, std::char_traits<char>::length(privateFolder));
+            }
+
             SyncPath absolutePath = _syncRootPath / path;
             IoError ioError = IoError::Success;
             if (bool res = IoHelper::checkIfPathExists(absolutePath, isAvailableLocally, ioError); !res) {
