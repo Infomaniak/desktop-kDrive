@@ -18,6 +18,9 @@
 
 #pragma once
 
+#include "libparms/db/drive.h"
+
+
 #include <QDataStream>
 #include <QString>
 #include <QList>
@@ -29,8 +32,6 @@ namespace KDC {
 
 class DriveInfo {
     public:
-        DriveInfo() = default;
-
         void setDbId(const int driveDbId) { _dbId = driveDbId; }
         int dbId() const { return _dbId; }
         void setId(const int driveId) { _id = driveId; }
@@ -56,6 +57,9 @@ class DriveInfo {
         [[nodiscard]] int64_t usedSize() const { return _usedSize; }
         bool accessDenied() const { return _accessDenied; }
         void setAccessDenied(const bool accessDenied) { _accessDenied = accessDenied; }
+
+        [[nodiscard]] bool packIsFree() const { return _packIsFree; }
+        void setPackIsFree(const bool pack_is_free) { _packIsFree = pack_is_free; }
 
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
         void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
@@ -83,6 +87,8 @@ class DriveInfo {
         bool _locked{false};
         int64_t _usedSize{0};
         bool _accessDenied{false};
+
+        bool _packIsFree{false};
 };
 
 void operator>>(QDataStream &in, DriveInfo &info);

@@ -19,6 +19,7 @@
 import Foundation
 import InfomaniakConcurrency
 import InfomaniakDI
+import OrderedCollections
 
 public extension CoherentCache {
     func addDriveResponse(_ driveResponse: DriveResponse) async throws {

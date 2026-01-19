@@ -45,29 +45,44 @@
         <!-- Title -->
         <TextBlock x:Uid="Page_StoragePage_Title"
                    Grid.Row="0"
-                   Text="Stockage"
                    Style="{StaticResource Infomaniak.Style.TextBlock.Title}" />
 
-        <!-- Main -->
-        <InfoBar x:Uid="Page_StoragePage_DiskUnavailable"
-                 Grid.Row="1"
-                 IsOpen="True"
-                 IsClosable="False"
-                 Message="{x:Bind PageViewModel.DiskRoot, Mode=OneWay}"
-                 Visibility="{x:Bind PageViewModel.IsDiskConnected, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True'}">
-            <!-- TODO: Replace this infobar once the page is ready on the UI/UX side-->
-            <InfoBar.ActionButton>
-                <Button Content="Réessayer"
-                        Click="RetryButton_click"
-                        HorizontalAlignment="Right" />
-            </InfoBar.ActionButton>
-        </InfoBar>
+        <!-- Main - Missing disk -->
         <Grid  Grid.Row="1"
-               Background="{ThemeResource LayerFillColorDefaultBrush}"
-               CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"
-               RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
-               Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.M}"
-               Visibility="{x:Bind PageViewModel.IsDiskConnected, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
+               Visibility="{x:Bind PageViewModel.IsDiskConnected, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True'}"
+               RowSpacing="{StaticResource Infomaniak.Style.Spacing.XL}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="auto" />
+            </Grid.RowDefinitions>
+            <controls:SvgIcon Grid.Row="0"
+                              Width="120"
+                              UriString="{StaticResource Infomaniak.Custom.Images.hardware}" />
+            <StackPanel Grid.Row="1"
+                        Spacing="{StaticResource Infomaniak.Style.Spacing.M}">
+                <TextBlock Text="{x:Bind PageViewModel.MissingDiskTitle, Mode=OneWay}"
+                           TextAlignment="Center"
+                           Style="{ThemeResource SubtitleTextBlockStyle}" />
+                <TextBlock Text="{x:Bind PageViewModel.MissingDiskSubtitle, Mode=OneWay}"
+                           TextAlignment="Center" />
+                <Button x:Uid="Page_StoragePage_Disconnected_RetryButton"
+                        HorizontalAlignment="Center"
+                        Style="{ThemeResource TextBlockButtonStyle}"
+                        Click="RetryButton_click" />
+                <ProgressRing x:Name="RetryProgressRing"
+                              Width="16"
+                              Height="16"
+                              HorizontalAlignment="Center"
+                              Visibility="Collapsed" />
+            </StackPanel>
+        </Grid>
+        <!-- Main -->
+        <Grid Grid.Row="1"
+              Background="{ThemeResource LayerFillColorDefaultBrush}"
+              CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"
+              RowSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+              Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.M}"
+              Visibility="{x:Bind PageViewModel.IsDiskConnected, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto" />
                 <RowDefinition Height="*" />
@@ -83,8 +98,10 @@
                     </ToolTipService.ToolTip>
                     <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Subtitle}">
                         <Run x:Uid="Page_StoragePage_ThisComputer" />
-                        <Run Text=" -" />
-                        <Run Text="{x:Bind PageViewModel.DiskSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}}" />
+                        <Run Text="-" />
+                        <Run Text="{x:Bind PageViewModel.DiskRoot}" />
+                        <Run Text="-" />
+                        <Run Text="{x:Bind PageViewModel.DiskSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}, ConverterParameter='Decimals=0'}" />
                     </TextBlock>
                     <ProgressRing Height="8"
                                   Width="8"
@@ -93,24 +110,25 @@
                 <controls:MultiValueProgressBar Value1="{x:Bind PageViewModel.HydratedFileSize, Mode=OneWay}"
                                                 Value2="{x:Bind PageViewModel.OtherFileSize, Mode=OneWay}"
                                                 Value3="{x:Bind PageViewModel.DiskFreeSize, Mode=OneWay}"
-                                                Color1="{StaticResource Infomaniak.Style.Color.Product.DefaultBrush}"
-                                                Color2="#BA68C8"
-                                                Color3="#E0E0E0" />
+                                                Color1="{ThemeResource AccentAAFillColorDefaultBrush }"
+                                                Color2="{ThemeResource SystemFillColorSuccessBackgroundBrush}"
+                                                Color3="{ThemeResource AccentAAFillColorDisabledBrush}" />
                 <Grid>
                     <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                                Foreground="{ThemeResource TextFillColorSecondary}">
-                        <Run Text="{x:Bind PageViewModel.DiskUsedSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}}" />
+                        <Run Text="{x:Bind PageViewModel.DiskUsedSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}, ConverterParameter='Decimals=0'}" />
                         <Run x:Uid="Page_StoragePage_Used" />
                     </TextBlock>
                     <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Caption}"
                                HorizontalAlignment="Right"
                                Foreground="{ThemeResource TextFillColorSecondary}">
-                        <Run Text="{x:Bind PageViewModel.DiskFreeSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}}" />
+                        <Run Text="{x:Bind PageViewModel.DiskFreeSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}, ConverterParameter='Decimals=0'}" />
                         <Run x:Uid="Page_StoragePage_Free" />
                     </TextBlock>
                 </Grid>
             </StackPanel>
             <StackPanel Grid.Row="1">
+                <!-- Hydrated files -->
                 <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.S}"
                       ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                     <Grid.ColumnDefinitions>
@@ -118,27 +136,42 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="auto" />
                     </Grid.ColumnDefinitions>
-                    <Border Grid.Column="0"
-                            CornerRadius="100"
-                            Height="8"
-                            Width="8"
-                            Background="{StaticResource Infomaniak.Style.Color.Product.DefaultBrush}" />
+                    <Ellipse Grid.Column="0"
+                             Height="8"
+                             Width="8"
+                             Fill="{ThemeResource AccentAAFillColorDefaultBrush}" />
+
                     <TextBlock x:Uid="Page_StoragePage_OfflineFiles"
                                Grid.Column="1"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
-                    <ProgressRing Height="8"
-                                  Width="8"
-                                  Foreground="{StaticResource Infomaniak.Style.Color.Product.DefaultBrush}"
-                                  Visibility="{x:Bind PageViewModel.HydratedFileSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}}" />
+
                     <TextBlock Grid.Column="2"
                                Text="{x:Bind PageViewModel.HydratedFileSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}}"
                                HorizontalAlignment="Right"
                                Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
-                               Foreground="{ThemeResource AccentTextFillColorSecondaryBrush}" />
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Visibility="{x:Bind PageViewModel.HydratedFileSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True'}" />
+
+                    <StackPanel Grid.Column="2"
+                                Orientation="Horizontal"
+                                Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                                Visibility="{x:Bind PageViewModel.HydratedFileSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}}">
+                        <ProgressRing Height="8"
+                                      Width="8" />
+
+                        <TextBlock x:Uid="Page_StoragePage_Processing"
+                                   HorizontalAlignment="Right"
+                                   Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+
                 </Grid>
+
                 <Rectangle Height="1"
                            Fill="LightGray"
                            HorizontalAlignment="Stretch" />
+
+                <!-- Other files -->
                 <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.S}"
                       ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                     <Grid.ColumnDefinitions>
@@ -146,28 +179,41 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="auto" />
                     </Grid.ColumnDefinitions>
-                    <Border Grid.Column="0"
-                            CornerRadius="100"
-                            Height="8"
-                            Width="8"
-                            Background="#BA68C8" />
-                    <ProgressRing Height="8"
-                                  Width="8"
-                                  Foreground="#BA68C8"
-                                  Visibility="{x:Bind PageViewModel.OtherFileSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}}" />
+                    <Ellipse Grid.Column="0"
+                             Height="8"
+                             Width="8"
+                             Fill="{ThemeResource SystemFillColorSuccessBackgroundBrush}" />
 
                     <TextBlock x:Uid="Page_StoragePage_OtherFiles"
                                Grid.Column="1"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
+
                     <TextBlock Grid.Column="2"
                                Text="{x:Bind PageViewModel.OtherFileSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}}"
                                HorizontalAlignment="Right"
                                Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
-                               Foreground="{ThemeResource AccentTextFillColorSecondaryBrush}" />
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Visibility="{x:Bind PageViewModel.OtherFileSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True'}" />
+
+                    <StackPanel Grid.Column="2"
+                                Orientation="Horizontal"
+                                Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                                Visibility="{x:Bind PageViewModel.OtherFileSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}}">
+                        <ProgressRing Height="8"
+                                      Width="8" />
+
+                        <TextBlock x:Uid="Page_StoragePage_Processing"
+                                   HorizontalAlignment="Right"
+                                   Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+
                 </Grid>
                 <Rectangle Height="1"
                            Fill="LightGray"
                            HorizontalAlignment="Stretch" />
+
+                <!-- Free spaces files -->
                 <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.S}"
                       ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                     <Grid.ColumnDefinitions>
@@ -175,23 +221,35 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="auto" />
                     </Grid.ColumnDefinitions>
-                    <Border Grid.Column="0"
-                            CornerRadius="100"
-                            Height="8"
-                            Width="8"
-                            Background="#E0E0E0" />
-                    <ProgressRing Height="8"
-                                  Width="8"
-                                  Foreground="#E0E0E0"
-                                  Visibility="{x:Bind PageViewModel.DiskFreeSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}}" />
+                    <Ellipse Grid.Column="0"
+                             Height="8"
+                             Width="8"
+                             Fill="{ThemeResource AccentAAFillColorDisabledBrush}" />
+
                     <TextBlock x:Uid="Page_StoragePage_FreeSpace"
                                Grid.Column="1"
                                Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
+
                     <TextBlock Grid.Column="2"
                                Text="{x:Bind PageViewModel.DiskFreeSize, Mode=OneWay, Converter={StaticResource BytesToHumanReadableStringConverter}}"
                                HorizontalAlignment="Right"
                                Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
-                               Foreground="{ThemeResource AccentTextFillColorSecondaryBrush}" />
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Visibility="{x:Bind PageViewModel.DiskFreeSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True'}" />
+
+                    <StackPanel Grid.Column="2"
+                                Orientation="Horizontal"
+                                Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                                Visibility="{x:Bind PageViewModel.DiskFreeSize, Mode=OneWay, Converter={StaticResource IsNullToBoolOrVisibilityConverter}}">
+                        <ProgressRing Height="8"
+                                      Width="8" />
+
+                        <TextBlock x:Uid="Page_StoragePage_Processing"
+                                   HorizontalAlignment="Right"
+                                   Style="{StaticResource Infomaniak.Style.TextBlock.BodySb}"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+
                 </Grid>
             </StackPanel>
         </Grid>
@@ -200,7 +258,6 @@
                 Background="LightGray"
                 CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"
                 Visibility="Collapsed">
-
         </Border>
     </Grid>
 </Page>

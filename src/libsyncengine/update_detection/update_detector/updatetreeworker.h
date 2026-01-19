@@ -159,7 +159,8 @@ class UpdateTreeWorker : public ISyncWorker {
          * Check that there is no temporary node remaining in the update tree
          * @return true if no temporary node is found
          */
-        bool integrityCheck();
+        bool checkTreeIntegrity();
+        bool checkNodeIntegrity(const std::shared_ptr<Node> node);
         bool checkOperationTypes(const std::shared_ptr<Node> node);
 
         friend class TestUpdateTreeWorker;

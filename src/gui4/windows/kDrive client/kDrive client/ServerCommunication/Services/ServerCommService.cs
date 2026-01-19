@@ -5,6 +5,7 @@ using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -387,6 +388,48 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return true;
         }
 
+        public async Task<bool> SetSyncType(DbId syncDbId, SyncType type, CancellationToken cancellationToken)
+        {
+            Sync? sync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == syncDbId);
+            if (sync is null)
+            {
+                Logger.Log(Logger.Level.Error, $"Sync with DbId {syncDbId} not found in model.");
+                return false;
+            }
+
+            if (type == sync.SyncType)
+            {
+                Logger.Log(Logger.Level.Debug, $"Sync with DbId {syncDbId} is already of type {type}, no change needed.");
+                return true;
+            }
+
+            if (type == SyncType.Online)
+            {
+                // Ensure the path supports online mode
+                bool? canSupportOnlineMode = await CanPathSupportLiteSync(sync.LocalPath, CancellationToken.None);
+                if (!canSupportOnlineMode.HasValue || canSupportOnlineMode.Value == false)
+                {
+                    Logger.Log(Logger.Level.Warning, $"Local path {sync.LocalPath} does not support online sync mode, unable to change sync type for sync with DbId {syncDbId}.");
+                    return false;
+                }
+            }
+
+            var parms = new JsonObject
+            {
+                [JsonKeys.SyncDbId] = syncDbId,
+                [JsonKeys.Value] = type == SyncType.Online
+            };
+
+            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_SETSUPPORTSVIRTUALFILES, parms, cancellationToken);
+            if (data?.Code != ExitCode.Ok)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to set sync type for sync with DbId {syncDbId}, exit code: {(ExitCode?)data?.Params?[JsonKeys.ExitCode]?.GetValue<int>()}");
+                return false;
+            }
+
+            return true;
+        }
+
         public async Task RemoveSync(DbId syncDbId, CancellationToken cancellationToken)
         {
             JsonObject parms = new()
@@ -441,7 +484,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
         }
 
-        public async Task<bool?> PathSupportLiteSync(string absoluteLocalPath, CancellationToken cancellationToken)
+        public async Task<bool?> CanPathSupportLiteSync(string absoluteLocalPath, CancellationToken cancellationToken)
         {
             var parms = new JsonObject
             {
@@ -493,7 +536,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         {
             var parms = new JsonObject
             {
-                [JsonKeys.Path] = Utility.ToBase64String(path),
+                [JsonKeys.Path] = Utility.ToBase64String(path)
             };
 
             CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_ISPATHVALIDFORNEWSYNC, parms, cancellationToken);
@@ -504,6 +547,23 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return null;
             }
             return data.Params[JsonKeys.IsValid]?.GetValue<bool>() ?? false;
+        }
+
+        public async Task<UInt64?> GetSyncOfflineFilesSize(DbId syncDbId, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.SyncDbId] = syncDbId
+            };
+
+            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_OFFLINE_FILES_SIZE, parms, cancellationToken);
+
+            if (data.Params == null || !data.Params.ContainsKey(JsonKeys.Size))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.Size} not found in response: {data.Params}");
+                return null;
+            }
+            return data.Params[JsonKeys.Size]?.GetValue<UInt64>() ?? 0;
         }
 
         public async Task<List<Node>?> GetSubFolders(DbId userDbId, DriveId driveId, NodeId parentNodeId, CancellationToken cancellationToken)
@@ -560,7 +620,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             if (nodeInfo is null)
             {
                 Logger.Log(Logger.Level.Error, $"Failed to deserialize nodeInfo from ${data.Params[JsonKeys.NodeInfo]}.");
-                return null; 
+                return null;
             }
             return new Node(nodeInfo.NodeId ?? "", nodeInfo.Name ?? "", nodeInfo.Size ?? 0, nodeInfo.ParentNodeId ?? "", nodeInfo.Path ?? "", userDbId, driveId, nodeInfo?.AccessDenied ?? false);
         }

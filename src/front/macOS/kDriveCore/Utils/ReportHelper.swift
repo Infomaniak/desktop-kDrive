@@ -17,25 +17,16 @@
  */
 
 import Foundation
-import OrderedCollections
+import Sentry
 
-public typealias IndexedAccounts = OrderedDictionary<Int32, Account>
+public enum ReportHelper {
+    public static func reportToSentryIfProd(message: String) {
+        IKLogger.general.error(message)
 
-// TODO: Update to track userDbId in Account to match server type
-public struct Account: Identifiable, Hashable, Sendable {
-    public let dbId: Int32
-    public let userDbId: Int32
-    public var name: String
-    public var drives: IndexedDrives
-
-    public var id: Int32 {
-        dbId
-    }
-
-    public init(dbId: Int32, userDbId: Int32, name: String, drives: IndexedDrives) {
-        self.dbId = dbId
-        self.userDbId = userDbId
-        self.name = name
-        self.drives = drives
+        #if DEBUG
+        raise(SIGINT)
+        #else
+        SentrySDK.capture(message: message)
+        #endif
     }
 }

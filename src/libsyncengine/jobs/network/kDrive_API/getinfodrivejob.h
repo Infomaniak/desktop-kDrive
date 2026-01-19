@@ -20,6 +20,8 @@
 
 #include "jobs/network/abstracttokennetworkjob.h"
 
+#include "libparms/db/drive.h"
+
 namespace KDC {
 
 class GetInfoDriveJob : public AbstractTokenNetworkJob {
@@ -27,12 +29,36 @@ class GetInfoDriveJob : public AbstractTokenNetworkJob {
         GetInfoDriveJob(int userDbId, int driveId);
         GetInfoDriveJob(int driveDbId);
 
+
+        [[nodiscard]] const std::string &name() const { return _name; }
+        [[nodiscard]] int64_t size() const { return _size; }
+        [[nodiscard]] bool isAdmin() const { return _isAdmin; }
+        [[nodiscard]] int accountId() const { return _accountId; }
+        [[nodiscard]] const std::string &colorHex() const { return _colorHex; }
+        [[nodiscard]] bool isInMaintenance() const { return _isInMaintenance; }
+        [[nodiscard]] int64_t maintenanceFrom() const { return _maintenanceFrom; }
+        [[nodiscard]] bool isLocked() const { return _isLocked; }
+        [[nodiscard]] int64_t usedSize() const { return _usedSize; }
+        [[nodiscard]] const Drive::PackInfo &packInfo() const { return _packInfo; }
+
     protected:
         ExitInfo handleError(const std::string &replyBody, const Poco::URI &uri) override;
+        ExitInfo handleJsonResponse(const std::string &replyBody) override;
 
     private:
         inline ExitInfo setData() override { return ExitCode::Ok; }
         void setQueryParameters(Poco::URI &uri) override;
+
+        std::string _name;
+        int64_t _size{0};
+        bool _isAdmin{false};
+        int _accountId{0};
+        std::string _colorHex;
+        bool _isInMaintenance{false};
+        int64_t _maintenanceFrom{0};
+        bool _isLocked{false};
+        int64_t _usedSize{0};
+        Drive::PackInfo _packInfo;
 };
 
 } // namespace KDC

@@ -25,21 +25,33 @@ public struct UISynchro: Sendable, Equatable, Hashable {
 
     public let dbId: Int
     public let driveDbId: Int
-    public let localPath: URL
 
-    public init(dbId: Int, driveDbId: Int, localPath: URL) {
+    public let localPath: URL
+    public let progressInfo: UISynchroProgressInfo?
+
+    public init(dbId: Int, driveDbId: Int, localPath: URL, progressInfo: UISynchroProgressInfo?) {
         self.dbId = dbId
         self.driveDbId = driveDbId
         self.localPath = localPath
+        self.progressInfo = progressInfo
     }
 }
 
-public extension UISynchro {
-    init(synchro: Synchro) {
-        self.init(
-            dbId: Int(synchro.dbId),
-            driveDbId: Int(synchro.driveDbId),
-            localPath: URL(fileURLWithPath: synchro.localPath)
-        )
+public struct UISynchroProgressInfo: Sendable, Equatable, Hashable {
+    public let status: UISynchroStatus?
+
+    public init(status: UISynchroStatus?) {
+        self.status = status
     }
+}
+
+public enum UISynchroStatus: Sendable, Equatable, Hashable {
+    case starting
+    case running
+    case idle
+    case pauseAsked
+    case paused
+    case stopAsked
+    case stopped
+    case error
 }

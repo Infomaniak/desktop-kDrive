@@ -19,6 +19,7 @@
 import Combine
 import Foundation
 import InfomaniakDI
+import OrderedCollections
 
 public struct DriveContext: Sendable, Equatable {
     public let drive: Drive
