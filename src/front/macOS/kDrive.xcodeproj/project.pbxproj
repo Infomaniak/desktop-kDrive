@@ -118,7 +118,11 @@
 		7A03B6FD2EBA59F40020A47B /* Exceptions for "kDriveTests" folder in "kDriveTests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Cache/CoherentCacheTests.swift,
+				Cache/CoherentCacheTests/CacheData.swift,
+				Cache/CoherentCacheTests/CoherentCacheAccountTests.swift,
+				Cache/CoherentCacheTests/CoherentCacheDriveTests.swift,
+				Cache/CoherentCacheTests/CoherentCacheSynchroTests.swift,
+				Cache/CoherentCacheTests/CoherentCacheUserTests.swift,
 				Cache/DTOs/SynchroTests.swift,
 				Cache/Observation/ObservableCoherentCacheTests.swift,
 				Cache/Observation/ObservableData.swift,
