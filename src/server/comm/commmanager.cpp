@@ -55,6 +55,7 @@
 
 #include <Poco/JSON/Parser.h>
 
+#include <iostream>
 #include <log4cplus/loggingmacros.h>
 
 namespace KDC {
@@ -109,29 +110,48 @@ CommManager::~CommManager() {
 }
 
 void CommManager::start() {
+    // TODO: Remove debug logs once blocking issue is resolved
+    std::cout << "[DEBUG] CommManager::start - START" << std::endl;
+
     const std::scoped_lock lock(_mutex);
-    if (!_guiCommServer) return;
+    std::cout << "[DEBUG] CommManager::start - Lock acquired" << std::endl;
+
+    if (!_guiCommServer) {
+        std::cout << "[DEBUG] CommManager::start - No GUI CommServer, returning" << std::endl;
+        return;
+    }
 
     // Start Gui CommServer
+    std::cout << "[DEBUG] CommManager::start - Starting GUI CommServer" << std::endl;
     LOGW_INFO(Log::instance()->getLogger(), L"Starting " << CommonUtility::s2ws(_guiCommServer->name()));
     if (!_guiCommServer->listen()) {
+        std::cout << "[DEBUG] CommManager::start - GUI CommServer listen() FAILED" << std::endl;
         LOGW_WARN(Log::instance()->getLogger(), L"Can't start " << CommonUtility::s2ws(_guiCommServer->name()));
         AppServer::addError(Error(ERR_ID, ExitCode::SystemError, ExitCause::Unknown));
     } else {
+        std::cout << "[DEBUG] CommManager::start - GUI CommServer started successfully" << std::endl;
         LOGW_INFO(Log::instance()->getLogger(), CommonUtility::s2ws(_guiCommServer->name()) << L" started");
     }
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
     // Start Ext CommServer
-    if (!_extCommServer) return;
+    if (!_extCommServer) {
+        std::cout << "[DEBUG] CommManager::start - No EXT CommServer, returning" << std::endl;
+        return;
+    }
+    std::cout << "[DEBUG] CommManager::start - Starting EXT CommServer" << std::endl;
     LOGW_INFO(Log::instance()->getLogger(), L"Starting " << CommonUtility::s2ws(_extCommServer->name()));
     if (!_extCommServer->listen()) {
+        std::cout << "[DEBUG] CommManager::start - EXT CommServer listen() FAILED" << std::endl;
         LOGW_WARN(Log::instance()->getLogger(), L"Can't start " << CommonUtility::s2ws(_extCommServer->name()));
         AppServer::addError(Error(ERR_ID, ExitCode::SystemError, ExitCause::Unknown));
     } else {
+        std::cout << "[DEBUG] CommManager::start - EXT CommServer started successfully" << std::endl;
         LOGW_INFO(Log::instance()->getLogger(), CommonUtility::s2ws(_extCommServer->name()) << L" started");
     }
 #endif
+
+    std::cout << "[DEBUG] CommManager::start - END" << std::endl;
 }
 
 void CommManager::stop() {
