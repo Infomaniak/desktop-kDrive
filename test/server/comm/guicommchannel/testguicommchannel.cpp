@@ -43,7 +43,7 @@ using namespace testcommhelpers;
 
 uint64_t GuiCommChannelTest::readData(CommChar *data, uint64_t maxlen) {
     std::scoped_lock lock(_bufferMutex);
-    uint64_t toRead = (std::min)(maxlen, static_cast<uint64_t>(_buffer.size()));
+    uint64_t toRead = (std::min) (maxlen, static_cast<uint64_t>(_buffer.size()));
     if (toRead > 0) {
         std::memcpy(data, _buffer.data(), toRead * sizeof(CommChar));
         _buffer.erase(0, toRead);
@@ -697,41 +697,62 @@ void TestGuiCommChannel::testDriveSearchJob() {
     // "toto" <=> "dG90bw=="
     // "titi" <=> "dGl0aQ=="
 
+    // Query
+    Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    const auto queryStr{R"({ "id": 1,)"
-                        R"( "num": )" +
-                        std::to_string(toInt(RequestNum::DRIVE_SEARCH)) +
-                        R"(,)"
-                        R"( "params": { "syncDbId": 1, "searchString": "aW5mbyo=" } })"};
-#else
-    // There is no need to pass a request id as the response is via a callback.
-    const auto queryStr{R"({ "num": )" + std::to_string(toInt(RequestNum::DRIVE_SEARCH)) +
-                        R"(,)"
-                        R"( "params": { "syncDbId": 1, "searchString": "aW5mbyo=" } })"};
-
-    // Callback expected answer
-    const auto cbkAnswerStr{
-            R"({"cause":0,"code":0,"id":1,"params":{"hasMore":false,"searchInfoList":[{"id":"MTAwMA==","isAvailableLocally":true,"modifiedTime":10,"name":"dG90bw==","path":"dG90bw==","size":10,"type":1},{"id":"MjAwMA==","isAvailableLocally":false,"modifiedTime":100,"name":"dGl0aQ==","path":"dGl0aQ==","size":100,"type":2}]}})"};
+    (void) queryObj.set("id", 1);
 #endif
+    (void) queryObj.set("num", toInt(RequestNum::DRIVE_SEARCH));
 
-    // Job expected answer
-    const auto answerStr{
-            R"({ "cause": 0,)"
-            R"( "code": 0,)"
-            R"( "id": 1,)"
-            R"( "num": )" +
-            std::to_string(toInt(RequestNum::DRIVE_SEARCH)) +
-            R"(,)"
-            R"( "params": {)"
-            R"( "hasMore": false,)"
-            R"( "searchInfoList": [)"
-            R"( { "id": "MTAwMA==", "isAvailableLocally": true, "modifiedTime": 10, "name": "dG90bw==", "path": "dG90bw==", "size": 10, "type": 1 },)"
-            R"( { "id": "MjAwMA==", "isAvailableLocally": false, "modifiedTime": 100, "name": "dGl0aQ==", "path": "dGl0aQ==", "size": 100, "type": 2 } ] },)"
-            R"( "type": )" +
-            std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("syncDbId", 1);
+    (void) queryParamsObj.set("searchString", "aW5mbyo=");
+
+    (void) queryObj.set("params", queryParamsObj);
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+
+    Poco::JSON::Object paramsObj;
+    (void) paramsObj.set("hasMore", false);
+    Poco::JSON::Array searchInfoListObj;
+    Poco::JSON::Object searchInfoObj1;
+    (void) searchInfoObj1.set("id", "MTAwMA==");
+    (void) searchInfoObj1.set("isAvailableLocally", true);
+    (void) searchInfoObj1.set("modifiedTime", 10);
+    (void) searchInfoObj1.set("name", "dG90bw==");
+    (void) searchInfoObj1.set("path", "dG90bw==");
+    (void) searchInfoObj1.set("size", 10);
+    (void) searchInfoObj1.set("type", 1);
+    Poco::JSON::Object searchInfoObj2;
+    (void) searchInfoObj2.set("id", "MjAwMA==");
+    (void) searchInfoObj2.set("isAvailableLocally", false);
+    (void) searchInfoObj2.set("modifiedTime", 100);
+    (void) searchInfoObj2.set("name", "dGl0aQ==");
+    (void) searchInfoObj2.set("path", "dGl0aQ==");
+    (void) searchInfoObj2.set("size", 100);
+    (void) searchInfoObj2.set("type", 2);
+    (void) searchInfoListObj.add(searchInfoObj1);
+    (void) searchInfoListObj.add(searchInfoObj2);
+    (void) paramsObj.set("searchInfoList", searchInfoListObj);
+    (void) answerObj.set("params", paramsObj);
+
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::DRIVE_SEARCH));
+    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+
+    // Job expected answers
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto driveSearchJob = std::dynamic_pointer_cast<DriveSearchJob>(job);
+        CPPUNIT_ASSERT(driveSearchJob);
+
 
         const SearchInfo si1("1000", Str("toto"), NodeType::File, Str("toto"), 10, 10, true);
         const SearchInfo si2("2000", Str("titi"), NodeType::Directory, Str("titi"), 100, 100, false);
@@ -740,9 +761,11 @@ void TestGuiCommChannel::testDriveSearchJob() {
         driveSearchJob->_hasMore = false;
     };
 
+
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
+    testGenericJob(queryStr, answerStr, {}, processFct);
 #else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
