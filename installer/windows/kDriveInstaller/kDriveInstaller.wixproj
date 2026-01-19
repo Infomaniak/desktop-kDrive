@@ -4,9 +4,6 @@
     <VerboseOutput>true</VerboseOutput>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <SuppressIces>ICE57;ICE61</SuppressIces>
-    <WixCabinetCompressionLevel>none</WixCabinetCompressionLevel>
-    <WixUseCompression>false</WixUseCompression>
-    <WixCabinetThreadCount>1</WixCabinetThreadCount>
   </PropertyGroup>
   <PropertyGroup>
     <OutputType>Package</OutputType>
