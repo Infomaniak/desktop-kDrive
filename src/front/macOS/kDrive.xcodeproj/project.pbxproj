@@ -136,6 +136,8 @@
 				Parsing/CallbackMessageTests.swift,
 				Parsing/HexColorTests.swift,
 				Parsing/SignalMessageTests.swift,
+				Parsing/Signals/JSON/USER_ADDED.json,
+				Parsing/Signals/UserAddedParsingTest.swift,
 			);
 			target = 7A4DFBB02EA91F9D00B138B8 /* kDriveTests */;
 		};
