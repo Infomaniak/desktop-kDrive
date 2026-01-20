@@ -75,7 +75,7 @@ class AbstractUpdater {
         [[nodiscard]] VersionChannel currentVersionChannel() const;
 
     protected:
-        explicit AbstractUpdater(const std::shared_ptr<UpdateChecker> &updateChecker);
+        explicit AbstractUpdater(const std::shared_ptr<UpdateChecker> updateChecker);
         void setState(UpdateState newState);
         inline virtual std::string getCurrentVersion() const { return CommonUtility::currentVersion(); }
 

@@ -29,7 +29,7 @@ namespace KDC {
 
 class OperationSorterWorker : public OperationProcessor {
     public:
-        OperationSorterWorker(const std::shared_ptr<SyncPal> &syncPal, const std::string &name, const std::string &shortName);
+        OperationSorterWorker(const std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName);
 
         void execute() override;
 

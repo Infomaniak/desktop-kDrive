@@ -58,10 +58,10 @@ class AbstractUploadSession : public SyncJob {
                                                                       std::streamsize actualChunkSize) = 0;
 
         virtual ExitInfo runJobInit() = 0;
-        virtual ExitInfo handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob,
+        virtual ExitInfo handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> StartJob,
                                               const std::string &uploadToken) = 0;
-        virtual ExitInfo handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) = 0;
-        virtual ExitInfo handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob);
+        virtual ExitInfo handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> finishJob) = 0;
+        virtual ExitInfo handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> cancelJob);
 
         SyncPath getFilePath() const { return _filePath; }
         log4cplus::Logger &getLogger() { return _logger; }
