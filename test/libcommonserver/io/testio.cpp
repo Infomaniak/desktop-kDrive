@@ -155,9 +155,8 @@ void TestIo::testAccesDeniedOnLockedFiles() {
     CPPUNIT_ASSERT(hFile != INVALID_HANDLE_VALUE);
 
     // Try to delete the file
-    std::error_code ec;
-    std::filesystem::remove_all(lockedFile, ec);
-    const IoError ioError = IoHelper::stdError2ioError(ec);
+    auto ioError = IoError::Unknown;
+    (void) IoHelper::deleteItem(lockedFile, ioError);
 
     // Unlock the file
     CloseHandle(hFile);

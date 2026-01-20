@@ -151,7 +151,7 @@ void TestIo::testGetRights() {
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
     }
 
-    // Getting the rights of a MacOSX Finder alias on a non existing file.
+    // Getting the rights of a macOS Finder alias on a non-existing file.
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = temporaryDirectory.path() / "dummy";
@@ -163,8 +163,8 @@ void TestIo::testGetRights() {
         CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
         CPPUNIT_ASSERT(aliasError == IoError::Success);
 
+        CPPUNIT_ASSERT(IoHelper::deleteItem(targetPath));
         std::error_code ec;
-        CPPUNIT_ASSERT(std::filesystem::remove(targetPath, ec) && ec.value() == 0);
         CPPUNIT_ASSERT(!std::filesystem::exists(targetPath, ec));
 
         bool readPermission = false;
@@ -218,7 +218,7 @@ void TestIo::testGetRights() {
         CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
         CPPUNIT_ASSERT(aliasError == IoError::Success);
 
-        CPPUNIT_ASSERT(std::filesystem::remove(targetPath, ec) && ec.value() == 0);
+        CPPUNIT_ASSERT(IoHelper::deleteItem(targetPath));
         CPPUNIT_ASSERT(!std::filesystem::exists(targetPath, ec));
 
         bool readPermission = false;

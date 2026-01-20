@@ -17,6 +17,8 @@
  */
 
 #include "testsyncnodecache.h"
+
+#include "io/iohelper.h"
 #include "test_utility/testhelpers.h"
 #include "test_utility/localtemporarydirectory.h"
 
@@ -37,7 +39,7 @@ void TestSyncNodeCache::setUp() {
     const std::filesystem::path syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
 
     // Delete previous DB
-    (void) std::filesystem::remove(syncDbPath);
+    (void) IoHelper::deleteItem(syncDbPath);
 
     // Create DB
     _testObj = std::make_shared<SyncDb>(syncDbPath.string(), KDRIVE_VERSION_STRING);

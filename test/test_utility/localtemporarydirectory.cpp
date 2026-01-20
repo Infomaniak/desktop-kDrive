@@ -19,6 +19,7 @@
 
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
+#include "utility/utility.h"
 
 #include <sstream>
 
@@ -68,11 +69,9 @@ LocalTemporaryDirectory::~LocalTemporaryDirectory() {
         (void) IoHelper::setRights(entry.path(), true, true, true, ioError);
     }
 
-    std::error_code ec;
-    std::filesystem::remove_all(_path, ec);
-    if (ec) {
+    if (!IoHelper::deleteItem(_path, ioError)) {
         // Cannot remove directory
-        std::cout << ec.message() << std::endl;
+        std::cout << CommonUtility::ws2s(Utility::formatIoError(_path, ioError)) << std::endl;
         assert(false);
     }
 }

@@ -292,7 +292,7 @@ void TestLogUploadJob::deleteFakeFiles() {
         const std::string entryName = entryPath.filename().string();
         if (entryName.find("_kDrive_fake") != std::string::npos || entryPath.extension() == ".zip" ||
             entryName.find("tmpLog") != std::string::npos) {
-            std::filesystem::remove_all(entryPath);
+            (void) IoHelper::deleteItem(entryPath);
         }
     }
 }

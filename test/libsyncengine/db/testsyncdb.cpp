@@ -87,7 +87,7 @@ void TestSyncDb::setUp() {
     const std::filesystem::path syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
 
     // Delete previous DB
-    (void) std::filesystem::remove(syncDbPath);
+    (void) IoHelper::deleteItem(syncDbPath);
 
     // Create DB
     _testObj = new SyncDbMock(syncDbPath.string(), KDRIVE_VERSION_STRING);

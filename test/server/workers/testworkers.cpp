@@ -265,9 +265,7 @@ void TestWorkers::testCreatePlaceholder() {
         CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, exitInfo.cause());
 
         // Remove placeholder
-        std::error_code ec;
-        std::filesystem::remove(_syncPal->localPath() / relativeFilePath, ec);
-        if (ec) {
+        if (!IoHelper::deleteItem(_syncPal->localPath() / relativeFilePath)) {
             // Cannot remove file
             CPPUNIT_ASSERT(false);
         }

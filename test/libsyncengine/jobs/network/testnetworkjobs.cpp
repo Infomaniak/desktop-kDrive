@@ -135,7 +135,7 @@ void TestNetworkJobs::tearDown() {
         job.setBypassCheck(true);
         job.runSynchronously();
     }
-    if (!_dummyLocalFilePath.empty()) std::filesystem::remove_all(_dummyLocalFilePath);
+    if (!_dummyLocalFilePath.empty()) (void) IoHelper::deleteItem(_dummyLocalFilePath);
 
     ParmsDb::instance()->close();
     ParmsDb::reset();
@@ -1559,7 +1559,7 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
         public:
             explicit GetInfoUserJobMock(const int32_t userDbId, const ApiToken &apiToken) :
                 GetInfoUserJob(userDbId),
-                _apiToken(apiToken){};
+                _apiToken(apiToken) {};
 
             [[nodiscard]] Poco::Net::HTTPResponse httpResponse() const override {
                 return Poco::Net::HTTPResponse(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
