@@ -121,6 +121,7 @@
 				Cache/CoherentCacheTests/CacheData.swift,
 				Cache/CoherentCacheTests/CoherentCacheAccountTests.swift,
 				Cache/CoherentCacheTests/CoherentCacheDriveTests.swift,
+				Cache/CoherentCacheTests/CoherentCacheErrorTests.swift,
 				Cache/CoherentCacheTests/CoherentCacheSynchroTests.swift,
 				Cache/CoherentCacheTests/CoherentCacheUserTests.swift,
 				Cache/DTOs/SynchroTests.swift,

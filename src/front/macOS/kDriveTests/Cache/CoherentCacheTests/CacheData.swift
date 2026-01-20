@@ -116,4 +116,64 @@ enum CacheData {
                                         targetNodeId: expectedTargetNodeId,
                                         supportVfs: expectedSupportVFS,
                                         virtualFileMode: expectedVirtualFileMode)
+
+    static let expectedLoginErrorDbId = Int32.random(in: 0 ... 10000)
+    static let expectedLoginError = ErrorInfo(dbId: expectedLoginErrorDbId,
+                                              synchroDbId: expectedSynchroDbId,
+                                              time: Int64(Date().timeIntervalSince1970),
+                                              level: KDC.ErrorLevel.Unknown,
+                                              functionName: "",
+                                              workerName: "",
+                                              exitCode: KDC.ExitCode.InvalidToken,
+                                              exitCause: KDC.ExitCause.LoginError,
+                                              localNodeId: "",
+                                              remoteNodeId: "",
+                                              nodeType: KDC.NodeType.Unknown,
+                                              path: "",
+                                              conflictType: KDC.ConflictType.None,
+                                              cancelType: KDC.CancelType.None,
+                                              inconsistencyType: KDC.InconsistencyType.None,
+                                              destinationPath: "",
+                                              autoResolved: false)
+
+    static let expectedServerErrorDbId = Int32.random(in: 0 ... 10000)
+    static let expectedServerError = ErrorInfo(dbId: expectedServerErrorDbId,
+                                               synchroDbId: expectedSynchroDbId,
+                                               time: Int64(Date().timeIntervalSince1970),
+                                               level: KDC.ErrorLevel.Server,
+                                               functionName: "main.swift",
+                                               workerName: "",
+                                               exitCode: KDC.ExitCode.DbError,
+                                               exitCause: KDC.ExitCause.DbEntryNotFound,
+                                               localNodeId: "",
+                                               remoteNodeId: "",
+                                               nodeType: KDC.NodeType.Unknown,
+                                               path: "",
+                                               conflictType: KDC.ConflictType.None,
+                                               cancelType: KDC.CancelType.None,
+                                               inconsistencyType: KDC.InconsistencyType.None,
+                                               destinationPath: "",
+                                               autoResolved: false)
+
+    static let expectedFileSyncErrorDbId = Int32.random(in: 0 ... 10000)
+    static let expectedFileSyncErrorLocalNodeId = UUID().uuidString
+    static let expectedFileSyncErrorRemoteNodeId = UUID().uuidString
+    static let expectedFileSyncErrorPath = "/dev/null"
+    static let expectedFileSyncError = ErrorInfo(dbId: expectedFileSyncErrorDbId,
+                                                 synchroDbId: expectedSynchroDbId,
+                                                 time: Int64(Date().timeIntervalSince1970 + 1),
+                                                 level: KDC.ErrorLevel.Node,
+                                                 functionName: "",
+                                                 workerName: "",
+                                                 exitCode: KDC.ExitCode.Ok,
+                                                 exitCause: KDC.ExitCause.Unknown,
+                                                 localNodeId: expectedFileSyncErrorLocalNodeId,
+                                                 remoteNodeId: expectedFileSyncErrorRemoteNodeId,
+                                                 nodeType: KDC.NodeType.File,
+                                                 path: expectedFileSyncErrorPath,
+                                                 conflictType: KDC.ConflictType.CreateCreate,
+                                                 cancelType: KDC.CancelType.None,
+                                                 inconsistencyType: KDC.InconsistencyType.None,
+                                                 destinationPath: "",
+                                                 autoResolved: false)
 }
