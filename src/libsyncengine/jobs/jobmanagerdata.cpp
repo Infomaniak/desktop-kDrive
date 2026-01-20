@@ -110,4 +110,14 @@ void JobManagerData::clear() {
     _runningJobs.clear();
 }
 
+bool JobManagerData::managedJobsEmpty() const {
+    const std::scoped_lock lock(_mutex);
+    return _managedJobs.empty();
+}
+
+size_t JobManagerData::managedJobsCount() const {
+    const std::scoped_lock lock(_mutex);
+    return _managedJobs.size();
+}
+
 } // namespace KDC

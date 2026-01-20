@@ -57,6 +57,9 @@ class JobManager {
         void setPoolCapacity(int nbThread);
         void decreasePoolCapacity();
 
+
+        bool waitForAllJobsToComplete(uint32_t timeoutMs = 30000);
+
         const JobManagerData &data() const { return _data; }
 
     protected:

@@ -125,6 +125,18 @@ class JobManagerData {
          */
         std::shared_ptr<AbstractJob> getJob(const UniqueId &jobId) const;
 
+        /**
+         * @brief Check if there are no managed jobs (queued + running + pending).
+         * @return 'true' if no jobs are currently managed.
+         */
+        bool managedJobsEmpty() const;
+
+        /**
+         * @brief Get the number of managed jobs (queued + running + pending).
+         * @return The number of managed jobs.
+         */
+        size_t managedJobsCount() const;
+
         void clear();
 
     private:

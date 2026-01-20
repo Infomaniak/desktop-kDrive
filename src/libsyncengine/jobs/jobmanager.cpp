@@ -195,4 +195,43 @@ void JobManager::managePendingJobs() {
     }
 }
 
+bool JobManager::waitForAllJobsToComplete(uint32_t timeoutMs) {
+    const auto startTime = std::chrono::steady_clock::now();
+
+    while (!_data.managedJobsEmpty()) {
+        Utility::msleep(50);
+
+        const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now() - startTime
+        ).count();
+
+        if (elapsed > timeoutMs) {
+            LOG_WARN(_logger, "Timeout waiting for jobs to complete. "
+                     << _data.managedJobsCount() << " jobs still managed");
+            return false;
+        }
+    }
+
+    const int maxThreads = _threadPool.capacity();
+    int availableThreads = availableThreadsInPool();
+
+    while (availableThreads < maxThreads) {
+        Utility::msleep(50);
+        availableThreads = availableThreadsInPool();
+
+        const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now() - startTime
+        ).count();
+
+        if (elapsed > timeoutMs) {
+            LOG_WARN(_logger, "Timeout waiting for thread pool. "
+                     << availableThreads << "/" << maxThreads << " threads available");
+            return false;
+        }
+    }
+
+    LOG_DEBUG(_logger, "All jobs completed and threads returned to pool");
+    return true;
+}
+
 } // namespace KDC
