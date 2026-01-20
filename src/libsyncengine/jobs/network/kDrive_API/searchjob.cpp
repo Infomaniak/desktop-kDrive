@@ -26,6 +26,34 @@
 
 namespace KDC {
 
+SearchJob::SearchJob(int driveDbId, int syncDbId, const std::string &searchString, const std::string &cursorInput /*= {}*/) :
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
+    _searchString(searchString),
+    _cursorInput(cursorInput) {
+    _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+    _apiVersion = 3;
+
+    if (!ParmsDb::instance()) {
+        assert(false);
+        LOG_WARN(_logger, "ParmsDb must be initialized!");
+        throw DbError("ParmsDb must be initialized!");
+    }
+
+    bool found = false;
+    Sync sync;
+    if (!ParmsDb::instance()->selectSync(syncDbId, sync, found)) {
+        LOG_WARN(_logger, "Failed to retrieve sync info for syncDbId: " << syncDbId);
+        return;
+    }
+
+    if (!found) {
+        LOG_WARN(_logger, "No sync info found for syncDbId: " << syncDbId);
+        return;
+    }
+
+    _syncRootPath = sync.localPath();
+}
+
 SearchJob::SearchJob(int driveDbId, const std::string &searchString, const std::string &cursorInput /*= {}*/) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _searchString(searchString),
@@ -33,6 +61,7 @@ SearchJob::SearchJob(int driveDbId, const std::string &searchString, const std::
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _apiVersion = 3;
 }
+
 
 std::string SearchJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
@@ -52,6 +81,8 @@ void SearchJob::setQueryParameters(Poco::URI &uri) {
     if (!_cursorInput.empty()) {
         uri.addQueryParameter("cursor", _cursorInput);
     }
+
+    uri.addQueryParameter("with", "path");
 }
 
 ExitInfo SearchJob::handleResponse(std::istream &is) {
@@ -60,39 +91,65 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
     }
     if (!jsonRes()) {
         LOG_WARN(_logger, "Invalid JSON object");
-        return {};
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
     if (!JsonParserUtility::extractValue(jsonRes(), cursorKey, _cursorOutput)) {
-        return {};
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
     if (!JsonParserUtility::extractValue(jsonRes(), hasMoreKey, _hasMore)) {
-        return {};
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
     const auto dataArray = jsonRes()->getArray(dataKey);
     if (!dataArray) {
         LOG_WARN(_logger, "Missing data array for search string:" << _searchString);
-        return {};
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
     for (auto it = dataArray->begin(); it != dataArray->end(); ++it) {
         const auto obj = it->extract<Poco::JSON::Object::Ptr>();
         NodeId nodeId;
         if (!JsonParserUtility::extractValue(obj, idKey, nodeId)) {
-            return {};
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
         SyncName name;
         if (!JsonParserUtility::extractValue(obj, nameKey, name)) {
-            return {};
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
         std::string type;
         if (!JsonParserUtility::extractValue(obj, typeKey, type)) {
-            return {};
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
-        (void) _searchResults.emplace_back(nodeId, name, type == "dir" ? NodeType::Directory : NodeType::File);
-    }
 
+        std::string path;
+        if (!JsonParserUtility::extractValue(obj, pathKey, path)) {
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
+        }
+
+        SyncTime modifiedTime = 0;
+        if (!JsonParserUtility::extractValue(obj, lastModifiedAtKey, modifiedTime, false)) {
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
+        }
+
+        size_t size = 0;
+        if (!JsonParserUtility::extractValue(obj, sizeKey, size, false)) {
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
+        }
+
+        bool isAvailableLocally = false;
+
+        if (!_syncRootPath.empty()) {
+            SyncPath absolutePath = _syncRootPath / path;
+            IoError ioError = IoError::Success;
+            if (bool res = IoHelper::checkIfPathExists(absolutePath, isAvailableLocally, ioError); !res) {
+                LOGW_WARN(_logger,
+                          L"IoHelper::checkIfPathExists failed for " << Utility::formatSyncPath(path) << L", error: " << ioError);
+            }
+        }
+
+        (void) _searchResults.emplace_back(nodeId, name, type == "dir" ? NodeType::Directory : NodeType::File, path, modifiedTime,
+                                           size, isAvailableLocally);
+    }
     return ExitCode::Ok;
 }
-
 } // namespace KDC
