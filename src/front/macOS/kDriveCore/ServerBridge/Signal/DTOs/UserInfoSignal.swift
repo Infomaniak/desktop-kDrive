@@ -36,17 +36,3 @@ struct UserInfoMetadata: Codable, Sendable {
     let isConnected: Bool
     let isStaff: Bool
 }
-
-extension UserInfoMetadata {
-    var asUser: User {
-        User(dbId: dbId,
-             userId: userId,
-             name: name,
-             email: email,
-             accounts: [:],
-             availableDrives: [:],
-             avatar: avatar,
-             isConnected: isConnected,
-             isStaff: isStaff)
-    }
-}
