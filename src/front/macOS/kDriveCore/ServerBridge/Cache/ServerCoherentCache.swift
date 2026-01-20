@@ -315,7 +315,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
     }
 
     public func removeError(_ errorDbId: Int32) async throws {
-        guard try await removeServerError(errorDbId) != nil else {
+        guard try await removeServerError(errorDbId) == nil else {
             return
         }
 
@@ -329,6 +329,8 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
 
                         if let remainingError = synchro.errors.values.first {
                             synchro.latestError = SynchroError(errorInfo: remainingError)
+                        } else {
+                            synchro.latestError = nil
                         }
 
                         try updateSynchro(synchro)
