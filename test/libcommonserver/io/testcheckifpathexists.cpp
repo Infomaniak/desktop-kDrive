@@ -175,7 +175,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         IoError aliasError;
         CPPUNIT_ASSERT_MESSAGE(toString(aliasError), IoHelper::createAliasFromPath(targetPath, path, aliasError));
 
-        std::filesystem::remove(targetPath);
+        (void) IoHelper::deleteItem(targetPath);
 
         bool exists = false;
         IoError ioError = IoError::Unknown;
@@ -403,7 +403,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         IoError aliasError;
         CPPUNIT_ASSERT_MESSAGE(toString(aliasError), IoHelper::createAliasFromPath(targetPath, path, aliasError));
 
-        std::filesystem::remove(targetPath);
+        (void) IoHelper::deleteItem(targetPath);
         CPPUNIT_ASSERT(!std::filesystem::exists(targetPath));
 
         bool existsWithSameId = false;

@@ -17,6 +17,8 @@
  */
 
 #include "testdb.h"
+
+#include "io/iohelper.h"
 #include "libcommon/utility/logiffail.h"
 #include "libcommonserver/log/log.h"
 
@@ -58,7 +60,7 @@ void TestDb::setUp() {
     TestBase::start();
     bool alreadyExists;
     std::filesystem::path testDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
-    std::filesystem::remove(testDbPath);
+    (void) IoHelper::deleteItem(testDbPath);
     _testObj = new MyTestDb(testDbPath);
 }
 
@@ -151,7 +153,8 @@ void TestDb::testAddIntegerColumnIfMissing() {
     CPPUNIT_ASSERT(!_testObj->addIntegerColumnIfMissing("not_existing_table_name", "intValue3", &columnAdded));
 }
 
-TestDb::MyTestDb::MyTestDb(const std::filesystem::path &dbPath) : Db(dbPath) {
+TestDb::MyTestDb::MyTestDb(const std::filesystem::path &dbPath) :
+    Db(dbPath) {
     if (!checkConnect("3.3.4")) {
         throw std::runtime_error("Cannot open DB!");
     }
@@ -318,6 +321,10 @@ std::vector<TestDb::Test> TestDb::MyTestDb::selectTest() {
 }
 
 TestDb::Test::Test(int64_t id, int intValue, int64_t int64Value, double doubleValue, const std::string &textValue) :
-    id(id), intValue(intValue), int64Value(int64Value), doubleValue(doubleValue), textValue(textValue) {}
+    id(id),
+    intValue(intValue),
+    int64Value(int64Value),
+    doubleValue(doubleValue),
+    textValue(textValue) {}
 
 } // namespace KDC
