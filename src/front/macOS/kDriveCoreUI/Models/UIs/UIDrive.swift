@@ -18,6 +18,7 @@
 
 import Cocoa
 import Foundation
+import kDriveCore
 import SwiftUI
 
 public protocol UIDriveRepresentation: Sendable, Equatable, Hashable {

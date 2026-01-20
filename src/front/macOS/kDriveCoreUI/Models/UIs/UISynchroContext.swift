@@ -17,6 +17,7 @@
  */
 
 import Foundation
+import kDriveCore
 
 public struct UISynchroContext: Sendable, Equatable {
     public let synchro: UISynchro

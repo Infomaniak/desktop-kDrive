@@ -17,6 +17,7 @@
  */
 
 import Foundation
+import kDriveCore
 
 public struct UIAccount: Sendable, Equatable, Hashable {
     public let dbId: Int

@@ -21,6 +21,7 @@ import Combine
 import Foundation
 import InfomaniakDI
 import kDriveCore
+import kDriveCoreUI
 
 @MainActor
 final class MainViewModel: ObservableObject {
