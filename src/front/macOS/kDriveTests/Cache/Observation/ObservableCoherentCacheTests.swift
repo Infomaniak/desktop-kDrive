@@ -35,24 +35,10 @@ extension ServerCoherentCache {
 
 @MainActor
 struct ObservableCoherentCacheTests {
-    static let expectedUserId = Int32.random(in: 0 ... 1000)
-    static let expectedUserDbId = Int32.random(in: 0 ... 1000)
-
     @Test(.timeLimit(.minutes(1)))
     func observeUserChangesWithCombine() async throws {
         // GIVEN
-        let user = User(
-            dbId: Self.expectedUserDbId,
-            userId: Self.expectedUserId,
-            name: "appleseed",
-            email: "ja@apple.com",
-            accounts: [:],
-            availableDrives: [:],
-            avatar: Data(),
-            isConnected: true,
-            isStaff: true
-        )
-
+        let user = ObservableData.expectedUser
         let cache = ServerCoherentCache()
         let receivedValues = await cache.receivedUserValues // Start to save the received values
 
@@ -77,7 +63,7 @@ struct ObservableCoherentCacheTests {
         #expect(receivedUsers!.count == 1, "Should have received one user update")
 
         if let receivedUser = receivedUsers?.values.first {
-            #expect(receivedUser.dbId == Self.expectedUserDbId, "Received user ID should match expected")
+            #expect(receivedUser.dbId == ObservableData.expectedUserDbId, "Received user ID should match expected")
             #expect(receivedUser.name == "appleseed", "Received user name should match expected")
         } else {
             Issue.record("Expected to find a user in the combine event")
