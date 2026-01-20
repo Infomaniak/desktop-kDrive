@@ -300,6 +300,8 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         }
 
         synchro.errors[error.dbId] = error
+        synchro.latestError = SynchroError(errorInfo: error)
+
         try updateSynchro(synchro)
     }
 
@@ -323,6 +325,10 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
                     for var synchro in drive.synchros.values {
                         guard synchro.errors.removeValue(forKey: errorDbId) != nil else {
                             continue
+                        }
+
+                        if let remainingError = synchro.errors.values.first {
+                            synchro.latestError = SynchroError(errorInfo: remainingError)
                         }
 
                         try updateSynchro(synchro)
@@ -356,6 +362,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
                 for drive in account.drives.values {
                     for var synchro in drive.synchros.values {
                         synchro.errors.removeAll()
+                        synchro.latestError = nil
                         try? updateSynchro(synchro)
                     }
                 }
