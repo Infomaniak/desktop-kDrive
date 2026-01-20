@@ -49,6 +49,7 @@ class TestSyncJobManagerSingleton : public CppUnit::TestFixture, public TestBase
         CPPUNIT_TEST(testJobPriority2);
         CPPUNIT_TEST(testCanRunjob);
         CPPUNIT_TEST(testReuseSocket);
+        CPPUNIT_TEST(testWaitForAllJobsToComplete);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -70,6 +71,7 @@ class TestSyncJobManagerSingleton : public CppUnit::TestFixture, public TestBase
 
         void testCanRunjob();
         void testReuseSocket();
+        void testWaitForAllJobsToComplete();
 
     private:
         const testhelpers::TestVariables _testVariables;

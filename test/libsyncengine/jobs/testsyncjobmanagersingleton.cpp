@@ -342,9 +342,9 @@ void TestSyncJobManagerSingleton::testCanRunjob() {
             SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
         }
 
-        while (!SyncJobManagerSingleton::instance()->_data._managedJobs.empty()) {
-            Utility::msleep(100);
-        }
+        // Wait for all jobs to complete and be fully destroyed
+        const bool completed = SyncJobManagerSingleton::instance()->waitForAllJobsToComplete(60000);
+        CPPUNIT_ASSERT_MESSAGE("Failed to wait for upload jobs to complete", completed);
     }
     // Upload sessions
     {
@@ -368,9 +368,9 @@ void TestSyncJobManagerSingleton::testCanRunjob() {
         }
         CPPUNIT_ASSERT_EQUAL(true, SyncJobManagerSingleton::instance()->canRunJob(job2));
 
-        while (!SyncJobManagerSingleton::instance()->_data._managedJobs.empty()) {
-            Utility::msleep(100);
-        }
+        // Wait for all jobs to complete and be fully destroyed
+        const bool completed = SyncJobManagerSingleton::instance()->waitForAllJobsToComplete(60000);
+        CPPUNIT_ASSERT_MESSAGE("Failed to wait for upload session to complete", completed);
     }
     // Big files download
     {
@@ -396,9 +396,9 @@ void TestSyncJobManagerSingleton::testCanRunjob() {
         CPPUNIT_ASSERT_EQUAL(true, noMoreRun);
         CPPUNIT_ASSERT_EQUAL(maxNumberParallelBigDownloads, counter);
 
-        while (!SyncJobManagerSingleton::instance()->_data._managedJobs.empty()) {
-            Utility::msleep(100);
-        }
+        // Using longer timeout (120s) for big file downloads (110MB files)
+        const bool completed = SyncJobManagerSingleton::instance()->waitForAllJobsToComplete(120000);
+        CPPUNIT_ASSERT_MESSAGE("Failed to wait for download jobs to complete", completed);
     }
 }
 
@@ -438,6 +438,44 @@ void TestSyncJobManagerSingleton::testReuseSocket() {
     CPPUNIT_ASSERT(!session.socket().impl()->initialized());
     sendTestRequest(session, true); // Doing twice, so we can see in console that the socket is not connected anymore
     CPPUNIT_ASSERT(!session.socket().impl()->initialized());
+}
+
+void TestSyncJobManagerSingleton::testWaitForAllJobsToComplete() {
+    const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId,
+                                                "testWaitForAllJobsToComplete");
+    const LocalTemporaryDirectory localTmpDir("testWaitForAllJobsToComplete");
+
+    // Launch 10 async jobs
+    std::vector<UniqueId> jobIds;
+    for (auto i = 0; i < 10; i++) {
+        const auto filepath = testhelpers::generateOrEditTestFile(
+            localTmpDir.path() / ("file_" + std::to_string(i) + ".txt")
+        );
+
+        auto job = std::make_shared<UploadJob>(
+            nullptr, driveDbId, filepath, filepath.filename().native(),
+            remoteTmpDir.id(), testhelpers::defaultTime, testhelpers::defaultTime
+        );
+
+        SyncJobManagerSingleton::instance()->queueAsyncJob(job);
+        jobIds.push_back(job->jobId());
+    }
+
+    // Test that waitForAllJobsToComplete succeeds
+    const bool completed = SyncJobManagerSingleton::instance()->waitForAllJobsToComplete(10000);
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("waitForAllJobsToComplete should return true", true, completed);
+
+    // Verify no jobs remain
+    CPPUNIT_ASSERT_MESSAGE("_managedJobs should be empty",
+                           SyncJobManagerSingleton::instance()->_data._managedJobs.empty());
+
+    // Verify all jobs are finished
+    for (const auto& jobId : jobIds) {
+        CPPUNIT_ASSERT_MESSAGE("All jobs should be finished",
+                               SyncJobManagerSingleton::instance()->isJobFinished(jobId));
+    }
+
+    // LocalTemporaryDirectory destructor should not crash
 }
 
 void TestSyncJobManagerSingleton::callback(const UniqueId jobId) {
