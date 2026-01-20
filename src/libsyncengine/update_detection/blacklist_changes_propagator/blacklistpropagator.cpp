@@ -21,7 +21,7 @@
 #include "jobs/local/synclocaldeletejob.h"
 #include "jobs/local/localmovejob.h"
 #include "libcommon/utility/utility.h" // Path2WStr
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #include "requests/syncnodecache.h"

@@ -27,8 +27,8 @@
 #endif
 #include "syncpal/tmpblacklistmanager.h"
 #include "requests/parameterscache.h"
-#include "libcommonserver/io/filestat.h"
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/filestat.h"
+#include "libcommon/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/log/log.h"
 #include "mocks/libcommonserver/db/mockdb.h"

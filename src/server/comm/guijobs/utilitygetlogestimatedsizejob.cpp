@@ -20,7 +20,7 @@
 #include "appserver.h"
 #include "server/comm/guijobmanager.h"
 #include "jobs/network/kDrive_API/upload/loguploadjob.h"
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/iohelper.h"
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
 

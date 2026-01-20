@@ -20,7 +20,7 @@
 #include "Poco/URI.h"
 #include "config.h"
 #include "libcommon/utility/utility.h"
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/iohelper.h"
 #include "test_utility/localtemporarydirectory.h"
 
 #include "utility/utility_base.h"

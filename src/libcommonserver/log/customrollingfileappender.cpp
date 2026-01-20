@@ -19,9 +19,9 @@
 #include "config.h"
 #include "customrollingfileappender.h"
 #include "libcommon/utility/utility.h"
-#include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/io/filestat.h"
-#include "libcommonserver/utility/utility.h"
+#include "libcommon/io/iohelper.h"
+#include "libcommon/io/filestat.h"
+#include "libcommon/utility/utility.h"
 
 /*****************************************/
 /********** namespace log4cplus **********/

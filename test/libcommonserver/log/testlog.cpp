@@ -21,7 +21,7 @@
 
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/iohelper.h"
 #include "libcommon/utility/utility.h"
 #include "utility/timerutility.h"
 
@@ -111,9 +111,7 @@ void TestLog::testExpiredLogFiles(void) {
     while (timer.elapsed<std::chrono::seconds>() < std::chrono::seconds(3)) {
         const auto epochNow = std::chrono::system_clock::now().time_since_epoch();
         const auto now = std::chrono::duration_cast<std::chrono::seconds>(epochNow);
-        (void) IoHelper::setFileDates(Log::instance()->getLogFilePath(),
-                                      now.count(),
-                                      now.count(),
+        (void) IoHelper::setFileDates(Log::instance()->getLogFilePath(), now.count(), now.count(),
                                       false); // Prevent the current log file from being deleted.
         appender->checkForExpiredFiles();
         if (timer.elapsed<std::chrono::seconds>() < seconds(1)) { // The fake log file should not be deleted yet.

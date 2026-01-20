@@ -20,7 +20,7 @@
 
 #include "jobs/local/synclocaldeletejob.h"
 #include "jobs/local/localmovejob.h"
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/iohelper.h"
 #include "libcommonserver/utility/utility.h" // Path2WStr
 
 #include <log4cplus/loggingmacros.h>

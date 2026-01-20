@@ -55,15 +55,23 @@ set(libcommon_SRCS
     log/sentry/ptrace.h log/sentry/utility.h
     log/customlogstreams.h
     theme/theme.h theme/theme.cpp
+    # Io
+    io/filestat.h
+    io/iohelper.h io/iohelper.cpp
+    io/permissionsholder.h io/permissionsholder.cpp
 )
 
 if(APPLE)
+    list(APPEND libcommon_SRCS io/iohelper_mac.mm io/iohelper_mac.cpp)
+    set_property(SOURCE io/iohelper_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+
     list(APPEND libcommon_SRCS utility/utility_mac.mm)
     set_property(SOURCE utility/utility_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 elseif (WIN32)
     list(APPEND libcommon_SRCS utility/utility_win.cpp)
+    list(APPEND libcommon_SRCS io/iohelper_win.h io/iohelper_win.cpp utility/utility_win.cpp)
 else ()
-    list(APPEND libcommon_SRCS utility/utility_linux.cpp)
+    list(APPEND libcommon_SRCS io/iohelper_linux.cpp utility/utility_linux.cpp)
 endif()
 
 # Target

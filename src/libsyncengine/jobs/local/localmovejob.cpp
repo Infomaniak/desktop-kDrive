@@ -18,8 +18,8 @@
 
 #include "localmovejob.h"
 
-#include "libcommonserver/io/permissionsholder.h"
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/permissionsholder.h"
+#include "libcommon/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <log4cplus/loggingmacros.h>

@@ -26,9 +26,9 @@
 
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
-#include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/io/filestat.h"
-#include "libcommonserver/io/permissionsholder.h"
+#include "libcommon/io/iohelper.h"
+#include "libcommon/io/filestat.h"
+#include "libcommon/io/permissionsholder.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -40,7 +40,7 @@
 
 #define COPY_CHUNK_SIZE 4096 * 1000
 
-#define CSV_SEPARATOR @";"
+#define CSV_SEPARATOR @ ";"
 
 #define SYNC_STEPS 20
 
@@ -133,29 +133,29 @@ class LiteSyncCommClientPrivate {
 - (OSSystemExtensionReplacementAction)request:(nonnull OSSystemExtensionRequest *)request
                   actionForReplacingExtension:(nonnull OSSystemExtensionProperties *)existing
                                 withExtension:(nonnull OSSystemExtensionProperties *)ext {
-    NSLog(@"[KD] Replacing extension %@ version %@ with version %@", request.identifier, existing.bundleShortVersion,
+    NSLog(@ "[KD] Replacing extension %@ version %@ with version %@", request.identifier, existing.bundleShortVersion,
           ext.bundleShortVersion);
     return OSSystemExtensionReplacementActionReplace;
 }
 
 - (void)request:(nonnull OSSystemExtensionRequest *)request didFailWithError:(nonnull NSError *)error {
-    NSLog(@"[KD] ERROR: System extension request failed - %@", error.localizedDescription);
+    NSLog(@ "[KD] ERROR: System extension request failed - %@", error.localizedDescription);
     _error = TRUE;
     dispatch_semaphore_signal(_endSemaphore);
 }
 
 - (void)request:(nonnull OSSystemExtensionRequest *)request didFinishWithResult:(OSSystemExtensionRequestResult)result {
     if (result == OSSystemExtensionRequestWillCompleteAfterReboot) {
-        NSLog(@"[KD] System extension will apply after reboot - result=%ld", (long) result);
+        NSLog(@ "[KD] System extension will apply after reboot - result=%ld", (long) result);
     } else {
-        NSLog(@"[KD] Extension %@ registered", request.identifier);
+        NSLog(@ "[KD] Extension %@ registered", request.identifier);
     }
     _done = TRUE;
     dispatch_semaphore_signal(_endSemaphore);
 }
 
 - (void)requestNeedsUserApproval:(nonnull OSSystemExtensionRequest *)request {
-    NSLog(@"[KD] Extension %@ requires user approval", request.identifier);
+    NSLog(@ "[KD] Extension %@ requires user approval", request.identifier);
 }
 
 - (intptr_t)wait {
@@ -180,7 +180,7 @@ class LiteSyncCommClientPrivate {
 }
 
 - (void)dealloc {
-    NSLog(@"[KD] App terminating");
+    NSLog(@ "[KD] App terminating");
     if (_connection) {
         [_connection invalidate];
         _connection = nil;
@@ -192,9 +192,9 @@ class LiteSyncCommClientPrivate {
     if (@available(macOS 10.15, *)) {
         // Read LiteSyncExtMachName from plist
         NSBundle *appBundle = [NSBundle mainBundle];
-        NSString *liteSyncExtMachName = [appBundle objectForInfoDictionaryKey:@"LiteSyncExtMachName"];
+        NSString *liteSyncExtMachName = [appBundle objectForInfoDictionaryKey:@ "LiteSyncExtMachName"];
         if (liteSyncExtMachName == nil) {
-            NSLog(@"[KD] No LiteSyncExtMachName");
+            NSLog(@ "[KD] No LiteSyncExtMachName");
             return FALSE;
         }
 
@@ -206,7 +206,7 @@ class LiteSyncCommClientPrivate {
         osreqInst.delegate = delegate;
 
         [OSSystemExtensionManager.sharedManager submitRequest:osreqInst];
-        NSLog(@"[KD] Activation request sent");
+        NSLog(@ "[KD] Activation request sent");
 
         // Set timeout timer
         _timeout = FALSE;
@@ -219,18 +219,18 @@ class LiteSyncCommClientPrivate {
         }
 
         if (delegate.done) {
-            NSLog(@"[KD] Activation done");
+            NSLog(@ "[KD] Activation done");
             *activationDone = TRUE;
             return TRUE;
         } else if (delegate.error) {
-            NSLog(@"[KD] Activation request error");
+            NSLog(@ "[KD] Activation request error");
             return FALSE;
         } else {
-            NSLog(@"[KD] Activation request pending");
+            NSLog(@ "[KD] Activation request pending");
             return TRUE;
         }
     } else {
-        NSLog(@"[KD] Need at least macOS 10.15");
+        NSLog(@ "[KD] Need at least macOS 10.15");
         return FALSE;
     }
 
@@ -238,13 +238,13 @@ class LiteSyncCommClientPrivate {
 }
 
 - (void)onTimeout:(NSTimer *)timer {
-    NSLog(@"Installation timeout");
+    NSLog(@ "Installation timeout");
     _timeout = TRUE;
 }
 
 - (void)scheduleRetryToConnectToLiteSyncExt {
     dispatch_async(dispatch_get_main_queue(), ^{
-      NSLog(@"[KD] Set timer to retry to connect to LiteSync extension");
+      NSLog(@ "[KD] Set timer to retry to connect to LiteSync extension");
       [NSTimer scheduledTimerWithTimeInterval:10 target:self selector:@selector(reconnectToExt) userInfo:nil repeats:NO];
     });
 }
@@ -256,15 +256,15 @@ class LiteSyncCommClientPrivate {
     }
 
     // Setup connection with LiteSync extension
-    NSLog(@"[KD] Setup connection with LiteSync extension");
+    NSLog(@ "[KD] Setup connection with LiteSync extension");
 
     NSString *liteSyncExtMachName = nil;
     if (qApp) {
         // Read LiteSyncExtMachName from plist
         NSBundle *appBundle = [NSBundle mainBundle];
-        liteSyncExtMachName = [appBundle objectForInfoDictionaryKey:@"LiteSyncExtMachName"];
+        liteSyncExtMachName = [appBundle objectForInfoDictionaryKey:@ "LiteSyncExtMachName"];
         if (!liteSyncExtMachName) {
-            NSLog(@"[KD] LiteSyncExtMachName undefined");
+            NSLog(@ "[KD] LiteSyncExtMachName undefined");
             return FALSE;
         }
     } else {
@@ -274,25 +274,25 @@ class LiteSyncCommClientPrivate {
 
     _connection = [[NSXPCConnection alloc] initWithMachServiceName:liteSyncExtMachName options:0];
     if (_connection == nil) {
-        NSLog(@"[KD] Failed to connect to LiteSync extension");
+        NSLog(@ "[KD] Failed to connect to LiteSync extension");
         return FALSE;
     }
 
     // Set exported interface
-    NSLog(@"[KD] Set exported interface for connection with LiteSync extension");
+    NSLog(@ "[KD] Set exported interface for connection with LiteSync extension");
     _connection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCLiteSyncExtensionRemoteProtocol)];
     _connection.exportedObject = self;
 
     // Set remote object interface
-    NSLog(@"[KD] Set remote object interface for connection with LiteSync extension");
+    NSLog(@ "[KD] Set remote object interface for connection with LiteSync extension");
     _connection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCLiteSyncExtensionProtocol)];
 
     // Set connection handlers
-    NSLog(@"[KD] Setup connection handlers with LiteSync extension");
+    NSLog(@ "[KD] Setup connection handlers with LiteSync extension");
     __weak __typeof__(self) weakSelf = self;
     _connection.interruptionHandler = ^{
       // The LiteSync extension has exited or crashed
-      NSLog(@"[KD] Connection with LiteSync extension interrupted");
+      NSLog(@ "[KD] Connection with LiteSync extension interrupted");
       __strong __typeof__(weakSelf) strongSelf = weakSelf;
       if (strongSelf) {
           strongSelf->_connection = nil;
@@ -302,7 +302,7 @@ class LiteSyncCommClientPrivate {
 
     _connection.invalidationHandler = ^{
       // Connection cannot be established or has terminated and may not be re-established
-      NSLog(@"[KD] Connection with LiteSync extension invalidated");
+      NSLog(@ "[KD] Connection with LiteSync extension invalidated");
       __strong __typeof__(weakSelf) strongSelf = weakSelf;
       if (strongSelf) {
           strongSelf->_connection = nil;
@@ -311,7 +311,7 @@ class LiteSyncCommClientPrivate {
     };
 
     // Resume connection
-    NSLog(@"[KD] Resume connection with LiteSync extension");
+    NSLog(@ "[KD] Resume connection with LiteSync extension");
     [_connection resume];
 
     return TRUE;
@@ -319,13 +319,13 @@ class LiteSyncCommClientPrivate {
 
 - (BOOL)reconnectToExt {
     if (![self connectToExt]) {
-        NSLog(@"[KD] Failed to reconnect to LiteSync extension");
+        NSLog(@ "[KD] Failed to reconnect to LiteSync extension");
         return FALSE;
     }
 
     for (NSString *path in _pathSet) {
         if (![self registerFolder:path]) {
-            NSLog(@"[KD] Failed to register folder %@", path);
+            NSLog(@ "[KD] Failed to register folder %@", path);
             return FALSE;
         }
     }
@@ -403,7 +403,7 @@ class LiteSyncCommClientPrivate {
     [doneCondition unlock];
 
     if (!success) {
-        NSLog(@"[KD] getFetchingAppList timeout");
+        NSLog(@ "[KD] getFetchingAppList timeout");
         return FALSE;
     }
 
@@ -417,7 +417,7 @@ class LiteSyncCommClientPrivate {
             if (bundle != NULL) {
                 appName = [bundle objectForInfoDictionaryKey:(id) kCFBundleNameKey /*kCFBundleExecutableKey*/];
             } else {
-                appName = @"";
+                appName = @ "";
             }
             [(*appMap) setObject:appName forKey:appId];
         }
@@ -430,19 +430,19 @@ class LiteSyncCommClientPrivate {
     // Get modification date
     NSDictionary *fileAttribs = [[NSFileManager defaultManager] attributesOfItemAtPath:path error:NULL];
     if (!fileAttribs) {
-        NSLog(@"[KD] Error in NSFileManager::attributesOfItemAtPath - path=%@", path);
+        NSLog(@ "[KD] Error in NSFileManager::attributesOfItemAtPath - path=%@", path);
         return false;
     }
 
     NSDate *modificationDate = [fileAttribs objectForKey:NSFileModificationDate];
     if (!modificationDate) {
-        NSLog(@"[KD] Error in NSDictionary::objectForKey:NSFileModificationDate - path=%@", path);
+        NSLog(@ "[KD] Error in NSDictionary::objectForKey:NSFileModificationDate - path=%@", path);
         return false;
     }
 
     // Set icon (!!! touch modification date !!!)
     if (![[NSWorkspace sharedWorkspace] setIcon:image forFile:path options:0]) {
-        NSLog(@"[KD] Error in NSWorkspace::setIcon - path=%@", path);
+        NSLog(@ "[KD] Error in NSWorkspace::setIcon - path=%@", path);
         return false;
     }
 
@@ -450,12 +450,12 @@ class LiteSyncCommClientPrivate {
     NSDictionary *fileAttribModificationDate =
             [NSDictionary dictionaryWithObjectsAndKeys:modificationDate, NSFileModificationDate, NULL];
     if (!fileAttribModificationDate) {
-        NSLog(@"[KD] Error in NSDictionary::dictionaryWithObjectsAndKeys - path=%@", path);
+        NSLog(@ "[KD] Error in NSDictionary::dictionaryWithObjectsAndKeys - path=%@", path);
         return false;
     }
 
     if (![[NSFileManager defaultManager] setAttributes:fileAttribModificationDate ofItemAtPath:path error:NULL]) {
-        NSLog(@"[KD] Error in NSFileManager::setAttributes - path=%@", path);
+        NSLog(@ "[KD] Error in NSFileManager::setAttributes - path=%@", path);
         return false;
     }
 
@@ -464,12 +464,12 @@ class LiteSyncCommClientPrivate {
 
 // xpcLiteSyncExtensionRemoteProtocol protocol implementation
 - (void)getAppId:(void (^)(NSString *))callback {
-    NSLog(@"[KD] getAppId called");
+    NSLog(@ "[KD] getAppId called");
     callback(_pId);
 }
 
 - (void)sendMessage:(NSData *)params {
-    NSLog(@"[KD] sendMessage called");
+    NSLog(@ "[KD] sendMessage called");
     NSString *paramsStr = [[NSString alloc] initWithData:params encoding:NSUTF8StringEncoding];
     _executeCommand([paramsStr UTF8String], false);
 }

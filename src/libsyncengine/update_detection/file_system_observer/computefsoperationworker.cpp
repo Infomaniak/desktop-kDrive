@@ -23,7 +23,7 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/log/sentry/ptraces.h"
 #include "libcommonserver/utility/utility.h"
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/iohelper.h"
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 
 namespace KDC {

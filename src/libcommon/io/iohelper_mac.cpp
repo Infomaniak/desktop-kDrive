@@ -19,8 +19,8 @@
 #include "permissionsholder.h"
 #include "libcommon/utility/types.h"
 
-#include "libcommonserver/io/filestat.h"
-#include "libcommonserver/io/iohelper.h"
+#include "filestat.h"
+#include "iohelper.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
 

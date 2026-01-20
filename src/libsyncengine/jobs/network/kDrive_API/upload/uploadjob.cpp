@@ -18,7 +18,7 @@
 
 #include "uploadjobreplyhandler.h"
 #include "io/filestat.h"
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommon/utility/jsonparserutility.h"
 

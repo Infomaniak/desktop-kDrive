@@ -18,6 +18,8 @@
 
 #include "permissionsholder.h"
 
+#include "libcommonserver/utility/utility.h"
+
 namespace KDC {
 
 struct AccessRightsInfo {

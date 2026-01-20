@@ -20,7 +20,7 @@
 #include "parameterscache.h"
 #include "libparms/db/parmsdb.h"
 #include "libcommonserver/log/log.h"
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <log4cplus/loggingmacros.h>

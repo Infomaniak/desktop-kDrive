@@ -18,9 +18,9 @@
 
 #include "localcreatedirjob.h"
 
-#include "libcommonserver/io/permissionsholder.h"
-#include "libcommonserver/io/filestat.h"
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/permissionsholder.h"
+#include "libcommon/io/filestat.h"
+#include "libcommon/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <log4cplus/loggingmacros.h>

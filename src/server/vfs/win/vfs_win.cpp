@@ -21,10 +21,10 @@
 #include "version.h"
 #include "config.h"
 #include "libcommonserver/log/log.h"
-#include "libcommonserver/io/filestat.h"
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/filestat.h"
+#include "libcommon/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
-#include "libcommonserver/io/permissionsholder.h"
+#include "libcommon/io/permissionsholder.h"
 
 #include <shobjidl_core.h>
 

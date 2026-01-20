@@ -17,7 +17,7 @@
  */
 
 #include "testio.h"
-#include "libcommonserver/io/permissionsholder.h"
+#include "libcommon/io/permissionsholder.h"
 #include "test_utility/testhelpers.h"
 
 #include <filesystem>

@@ -21,7 +21,7 @@
 #include "testincludes.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/iohelpertestutilities.h"
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/iohelper.h"
 
 #include <algorithm>
 

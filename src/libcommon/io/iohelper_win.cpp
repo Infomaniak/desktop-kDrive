@@ -15,8 +15,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "libcommonserver/io/filestat.h"
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/filestat.h"
+#include "libcommon/io/iohelper.h"
 #include "libcommonserver/io/iohelper_win.h"
 
 #include "libcommonserver/utility/utility.h"

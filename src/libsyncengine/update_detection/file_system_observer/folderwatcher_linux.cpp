@@ -19,7 +19,7 @@
 #include "folderwatcher_linux.h"
 #include "localfilesystemobserverworker.h"
 #include "libcommon/utility/types.h"
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
 

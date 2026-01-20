@@ -18,8 +18,8 @@
 
 #include "downloadjob.h"
 
-#include "libcommonserver/io/filestat.h"
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/filestat.h"
+#include "libcommon/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 
 #include "libcommon/utility/utility.h"
@@ -28,7 +28,7 @@
 #include <unistd.h>
 #endif
 
-#include "libcommonserver/io/permissionsholder.h"
+#include "libcommon/io/permissionsholder.h"
 #include "utility/timerutility.h"
 
 

@@ -40,7 +40,7 @@
 #include "libparms/db/parmsdb.h"
 #include "libparms/db/user.h"
 #include "libcommon/utility/utility.h" // fileSystemName(const QString&)
-#include "libcommonserver/io/iohelper.h"
+#include "libcommon/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "libsyncengine/requests/parameterscache.h"
 #include "libsyncengine/requests/exclusiontemplatecache.h"
