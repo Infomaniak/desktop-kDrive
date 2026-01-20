@@ -47,6 +47,10 @@ public struct ColorToken {
     public enum Action {
         public static let primary = ColorToken.Accent.primary
         public static let onPrimary = ColorToken(light: KDriveColors.neutralBlue100, dark: KDriveColors.neutralBlue800)
+
+        public enum Disabled {
+            public static let dimQuaternary = ColorToken(light: KDriveColors.gray400, dark: KDriveColors.gray400)
+        }
     }
 
     public enum Text {

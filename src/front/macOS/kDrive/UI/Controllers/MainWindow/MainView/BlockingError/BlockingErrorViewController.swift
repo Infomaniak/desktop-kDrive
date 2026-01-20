@@ -16,23 +16,16 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Cocoa
 import Foundation
-import kDriveCore
+import kDriveCoreUI
+import SwiftUI
 
-public struct UISynchroContext: Sendable, Equatable {
-    public let synchro: UISynchro
-    public let drive: UIDrive
-    public let account: UIAccount
-    public let user: UIUser
-    public let blockingError: UIBlockingError?
-}
-
-public extension UISynchroContext {
-    init(synchroContext: SynchroContext) {
-        account = .init(account: synchroContext.account)
-        drive = .init(drive: synchroContext.drive)
-        synchro = .init(synchro: synchroContext.synchro)
-        user = .init(user: synchroContext.user)
-        blockingError = .init(driveWithMaybeError: synchroContext.drive)
+final class BlockingErrorViewController: TitledViewController<BlockingErrorView> {
+    init(blockingError: UIBlockingError) {
+        super.init(
+            toolbarTitle: SidebarItem.home.title,
+            contentView: BlockingErrorView(blockingError: blockingError, action: nil)
+        )
     }
 }

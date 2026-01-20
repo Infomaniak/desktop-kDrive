@@ -25,8 +25,7 @@ struct DriveErrorAction {
     let action: () -> Void
 }
 
-@available(macOS 12.0, *)
-struct DriveErrorView: View {
+struct BlockingErrorView: View {
     let blockingError: UIBlockingError
 
     let isLoading: Bool
@@ -80,9 +79,8 @@ struct DriveErrorView: View {
     }
 }
 
-@available(macOS 12.0, *)
 #Preview {
-    DriveErrorView(
+    BlockingErrorView(
         blockingError: PreviewHelper.blockingError,
         isLoading: true,
         action: DriveErrorAction(title: "Refresh") {}

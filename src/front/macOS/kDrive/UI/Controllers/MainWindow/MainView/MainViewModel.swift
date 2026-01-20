@@ -32,6 +32,7 @@ final class MainViewModel: ObservableObject {
     var currentAccount: UIAccount? { currentSynchroContext?.account }
     var currentDrive: UIDrive? { currentSynchroContext?.drive }
     var currentSynchro: UISynchro? { currentSynchroContext?.synchro }
+    var currentBlockingError: UIBlockingError? { currentSynchroContext?.blockingError }
 
     @Published private(set) var currentSynchroContext: UISynchroContext?
 
@@ -62,7 +63,7 @@ final class MainViewModel: ObservableObject {
             return
         }
 
-        self.currentSynchroContext = synchroContext
+        currentSynchroContext = synchroContext
         UserDefaults.standard.selectedSynchroDbId = synchro.dbId
     }
 
@@ -77,7 +78,7 @@ final class MainViewModel: ObservableObject {
             return
         }
 
-        self.currentSynchroContext = updatedSynchroContext
+        currentSynchroContext = updatedSynchroContext
     }
 
     private func restoreLastSelection() async {

@@ -115,6 +115,7 @@ final class MainSidebarViewController: NSViewController {
         mainViewModel.$availableSynchros
             .receiveOnMain(store: &bindStore) { [weak self] synchrosContext in
                 self?.updateSynchrosList(synchrosContext)
+                self?.updateSidebar()
             }
     }
 
@@ -189,6 +190,16 @@ final class MainSidebarViewController: NSViewController {
         }
     }
 
+    private func updateSidebar() {
+        let previousSelectedRow = outlineView.selectedRow
+        outlineView.reloadData()
+        if mainViewModel.currentBlockingError != nil {
+            outlineView.selectRowIndexes([], byExtendingSelection: false)
+        } else {
+            outlineView.selectRowIndexes([previousSelectedRow], byExtendingSelection: false)
+        }
+    }
+
     private func addPopUpItem(forSynchro synchro: UISynchro, drive: UIDrive, displaySynchroPath: Bool) {
         var title: String
         if displaySynchroPath {
@@ -228,7 +239,7 @@ extension MainSidebarViewController: NSOutlineViewDataSource {
 extension MainSidebarViewController: ClickableOutlineViewDelegate {
     func outlineView(_ outlineView: NSOutlineView, shouldSelectItem item: Any) -> Bool {
         guard let item = item as? SidebarItem else { return false }
-        return item.canBeSelected
+        return item.canBeSelected && mainViewModel.currentBlockingError == nil
     }
 
     func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
@@ -240,7 +251,8 @@ extension MainSidebarViewController: ClickableOutlineViewDelegate {
             cell?.identifier = Self.navigationCellIdentifier
         }
 
-        cell?.setupForItem(item)
+        let enabled = !item.canBeSelected || mainViewModel.currentBlockingError == nil
+        cell?.setupForItem(item, enabled: enabled)
         return cell
     }
 
