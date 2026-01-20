@@ -38,6 +38,7 @@ static BOOL isExtendedLogEnabled(void)
     if (!extendedLogEnabledIsInitialized) {
         NSString *value = [[[NSProcessInfo processInfo]environment]objectForKey:@"KDRIVE_DEBUG_LITESYNC"];
         extendedLogEnabled = (value != NULL && [value isEqualToString:@"1"]);
+        extendedLogEnabledIsInitialized = TRUE;
     }
      
     return extendedLogEnabled;
