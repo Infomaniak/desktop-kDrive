@@ -221,7 +221,7 @@ void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(const std
             // Some software save their files by deleting and re-creating them (Delete-Create), or by deleting the original file
             // and renaming a temporary file that contains the latest version (Delete-Move) In those cases, we should not check
             // for name clash, it is ok to have 2 children with the same name
-            const auto oneNodeIsDeleted = [this](const std::shared_ptr<Node> node, const std::shared_ptr<Node> prevNode) -> auto {
+            const auto oneNodeIsDeleted = [this](const std::shared_ptr<Node> &node, const std::shared_ptr<Node> &prevNode) {
                 return pathChanged(node) && prevNode->hasChangeEvent(OperationType::Delete);
             };
 
