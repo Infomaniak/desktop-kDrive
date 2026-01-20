@@ -28,10 +28,12 @@ final class MainViewModel: ObservableObject {
     @LazyInjectService private var coherentCache: CoherentCache
     @LazyInjectService private var cacheObservable: CoherentCacheObservable
 
-    @Published private(set) var currentUser: UIUser?
-    @Published private(set) var currentAccount: UIAccount?
-    @Published private(set) var currentDrive: UIDrive?
-    @Published private(set) var currentSynchro: UISynchro?
+    var currentUser: UIUser? { currentSynchroContext?.user }
+    var currentAccount: UIAccount? { currentSynchroContext?.account }
+    var currentDrive: UIDrive? { currentSynchroContext?.drive }
+    var currentSynchro: UISynchro? { currentSynchroContext?.synchro }
+
+    @Published private(set) var currentSynchroContext: UISynchroContext?
 
     @Published private(set) var availableSynchros = [UISynchroContext]()
 
@@ -56,17 +58,12 @@ final class MainViewModel: ObservableObject {
     }
 
     func setCurrentSynchro(_ synchro: UISynchro) {
-        Task {
-            currentSynchro = synchro
-            UserDefaults.standard.selectedSynchroDbId = synchro.dbId
-
-            guard let selectedValues = getSelectedValuesFromSynchro(synchro) else {
-                return
-            }
-            currentUser = selectedValues.user
-            currentAccount = selectedValues.account
-            currentDrive = selectedValues.drive
+        guard let synchroContext = getSelectedValuesFromSynchro(synchro) else {
+            return
         }
+
+        self.currentSynchroContext = synchroContext
+        UserDefaults.standard.selectedSynchroDbId = synchro.dbId
     }
 
     private func handleUpdatedSynchros(_ synchros: [UISynchroContext]) {
@@ -76,14 +73,11 @@ final class MainViewModel: ObservableObject {
 
     private func updateSelectedItems() {
         guard let currentSynchro,
-              let currentSyncContext = getSelectedValuesFromSynchro(currentSynchro) else {
+              let updatedSynchroContext = getSelectedValuesFromSynchro(currentSynchro) else {
             return
         }
 
-        currentUser = currentSyncContext.user
-        currentAccount = currentSyncContext.account
-        currentDrive = currentSyncContext.drive
-        self.currentSynchro = currentSyncContext.synchro
+        self.currentSynchroContext = updatedSynchroContext
     }
 
     private func restoreLastSelection() async {
