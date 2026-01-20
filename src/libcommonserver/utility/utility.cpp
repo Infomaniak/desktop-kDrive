@@ -710,7 +710,7 @@ IoError Utility::tryCreateTmpDir(const SyncName &name /*= Str("testDir")*/) {
 
     if (ec.value()) return IoHelper::stdError2ioError(ec);
 
-    std::filesystem::remove_all(tmpPath, ec);
+    (void) IoHelper::deleteItem(tmpPath);
 #else
     (void) name;
 #endif
@@ -774,8 +774,7 @@ IoError Utility::tryCreateTmpFile(const SyncName &name /*= Str("testFile")*/) {
         ok = true;
     } while (!ok && retries < maxNbCreationTmpFolderRetries);
 
-    std::error_code ec;
-    (void) std::filesystem::remove_all(tmpPath, ec);
+    (void) IoHelper::deleteItem(tmpPath);
     return IoError::Success;
 }
 

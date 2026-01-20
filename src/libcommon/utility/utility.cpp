@@ -21,6 +21,7 @@
 #include "libcommon/log/sentry/handler.h"
 #include "config.h"
 #include "version.h"
+#include "libcommonserver/io/iohelper.h"
 
 #include <system_error>
 #include <sys/types.h>
@@ -1148,7 +1149,7 @@ void CommonUtility::clearSignalFile(const AppType appType, const SignalCategory 
         signalType = KDC::fromInt<SignalType>(value);
 
         // Remove file
-        std::filesystem::remove(sigFilePath, ec);
+        (void) IoHelper::deleteItem(sigFilePath);
     }
 }
 

@@ -590,17 +590,13 @@ void LogUploadJob::handleJobFailure(const ExitInfo &exitInfo, const bool clearTm
     updateLogUploadState(logUploadState);
     (void) notifyLogUploadProgress(logUploadState, 0);
     if (clearTmpDir || exitInfo.code() == ExitCode::OperationCanceled) {
-        IoError ioError = IoError::Success;
-        (void) IoHelper::deleteItem(_tmpJobWorkingDir, ioError);
-        if (ioError != IoError::Success) {
+        if (auto ioError = IoError::Unknown; IoHelper::deleteItem(_tmpJobWorkingDir, ioError)) {
             LOGW_INFO(Log::instance()->getLogger(),
                       L"Error in IoHelper::deleteItem: " << Utility::formatIoError(_tmpJobWorkingDir, ioError));
         }
     }
 
-    IoError ioError = IoError::Success;
-    IoHelper::deleteItem(_tmpJobWorkingDir, ioError);
-    if (ioError != IoError::Success) {
+    if (auto ioError = IoError::Unknown; !IoHelper::deleteItem(_tmpJobWorkingDir, ioError)) {
         LOGW_INFO(Log::instance()->getLogger(),
                   L"Error in IoHelper::deleteItem: " << Utility::formatIoError(_tmpJobWorkingDir, ioError));
     }

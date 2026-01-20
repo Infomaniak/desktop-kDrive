@@ -178,7 +178,7 @@ std::filesystem::path Db::makeDbName(int userId, int accountId, int driveId, int
         if (dbFileStream.is_open()) {
             // Ok, all good.
             dbFileStream.close();
-            std::filesystem::remove(dbPath);
+            (void) IoHelper::deleteItem(dbPath, ioError);
 
             alreadyExist = false;
             return dbPath;

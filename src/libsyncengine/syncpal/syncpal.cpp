@@ -156,16 +156,15 @@ SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const int syncDbId_, const std::strin
 
         if (alreadyExist) {
             // Old DB => delete it
-            std::error_code ec;
-            std::filesystem::remove(dbPath, ec);
+            (void) IoHelper::deleteItem(dbPath);
 
             SyncPath dbPathShm(dbPath);
             dbPathShm.replace_filename(dbPathShm.filename().native() + Str("-shm"));
-            std::filesystem::remove(dbPathShm, ec);
+            (void) IoHelper::deleteItem(dbPathShm);
 
             SyncPath dbPathWal(dbPath);
             dbPathWal.replace_filename(dbPathWal.filename().native() + Str("-wal"));
-            std::filesystem::remove(dbPathWal, ec);
+            (void) IoHelper::deleteItem(dbPathWal);
         }
 
         sync.setDbPath(dbPath);

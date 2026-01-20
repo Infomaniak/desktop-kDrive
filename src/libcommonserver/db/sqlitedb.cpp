@@ -76,15 +76,8 @@ bool SqliteDb::openOrCreateReadWrite(const std::filesystem::path &dbPath) {
 
         LOGW_FATAL(_logger, L"Consistency check failed, removing broken db " << Path2WStr(dbPath));
         close();
-        std::error_code ec;
-        if (!std::filesystem::remove(dbPath, ec)) {
-            if (ec.value() != 0) {
-                LOGW_WARN(_logger, L"Failed to remove db file " << Utility::formatStdError(dbPath, ec));
-                close();
-                return false;
-            }
-
-            LOG_WARN(_logger, "Failed to remove db file");
+        if (auto ioError = IoError::Unknown; !IoHelper::deleteItem(dbPath, ioError)) {
+            LOGW_WARN(_logger, L"Failed to remove db file " << Utility::formatIoError(dbPath, ioError));
             close();
             return false;
         }
@@ -149,14 +142,8 @@ void SqliteDb::close() {
 
     if (_autoDelete) {
         // Delete DB
-        std::error_code ec;
-        if (!std::filesystem::remove(_dbPath, ec)) {
-            if (ec) {
-                LOGW_WARN(_logger, L"Failed to check if  " << Utility::formatSyncPath(_dbPath) << L" exists: "
-                                                           << Utility::formatStdError(ec));
-            }
-
-            LOG_WARN(_logger, "Failed to remove db file.");
+        if (auto ioError = IoError::Unknown; !IoHelper::deleteItem(_dbPath, ioError)) {
+            LOGW_WARN(_logger, L"Failed to remove db file " << Utility::formatIoError(_dbPath, ioError));
         }
     }
 }

@@ -325,8 +325,7 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
 
 ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string &data) {
     // Delete in case it already exists (EDIT operation)
-    std::error_code ec;
-    std::filesystem::remove_all(_localpath, ec);
+    (void) IoHelper::deleteItem(_localpath);
 
     if (mimeType == mimeTypeSymlink || mimeType == mimeTypeSymlinkFolder) {
         // Create symlink
@@ -356,6 +355,7 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
         LOGW_DEBUG(_logger, L"Create hardlink: target " << Utility::formatSyncPath(targetPath) << L", "
                                                         << Utility::formatSyncPath(_localpath));
 
+        std::error_code ec;
         std::filesystem::create_hard_link(targetPath, _localpath, ec);
         if (ec) {
             LOGW_WARN(_logger, L"Failed to create hardlink: target " << Utility::formatSyncPath(targetPath) << L", "
@@ -431,13 +431,10 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
 bool DownloadJob::removeTmpFile() {
     if (_tmpPath.empty()) return true;
 
-    std::error_code ec;
-    std::filesystem::remove_all(_tmpPath, ec);
-    if (ec.value()) {
-        LOGW_WARN(_logger, L"Failed to remove a downloaded temporary file: " << Utility::formatStdError(_tmpPath, ec));
+    if (auto ioError = IoError::Unknown; !IoHelper::deleteItem(_tmpPath, ioError)) {
+        LOGW_WARN(_logger, L"Failed to remove a downloaded temporary file: " << Utility::formatIoError(_tmpPath, ioError));
         return false;
     }
-
     return true;
 }
 

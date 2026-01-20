@@ -934,7 +934,15 @@ bool IoHelper::deleteItem(const SyncPath &path, IoError &ioError) noexcept {
     std::error_code ec;
     std::filesystem::remove_all(path, ec);
     ioError = stdError2ioError(ec);
+    if (ioError != IoError::Success) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::deleteItem: " << Utility::formatIoError(path, ioError));
+    }
     return ioError == IoError::Success;
+}
+
+bool IoHelper::deleteItem(const SyncPath &path) noexcept {
+    auto ioError = IoError::Unknown;
+    return IoHelper::deleteItem(path, ioError);
 }
 
 bool IoHelper::copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept {

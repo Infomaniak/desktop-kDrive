@@ -106,15 +106,8 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
                                                                                << L" from file system");
                 }
 
-                if (std::error_code removeEc; !std::filesystem::remove(entry.path(), removeEc)) {
-                    if (removeEc) {
-                        LOGW_WARN(_logger, L"Failed to remove all for " << Utility::formatStdError(absolutePath, removeEc));
-                        _exitCode = ExitCode::SystemError;
-                        _exitCause = ExitCause::FileAccessError;
-                        return false;
-                    }
-
-                    LOGW_WARN(_logger, L"Failed to remove all " << Utility::formatSyncPath(absolutePath));
+                if (auto tmpIoError = IoError::Unknown; !IoHelper::deleteItem(entry.path(), ioError)) {
+                    LOGW_WARN(_logger, L"Failed to remove all " << Utility::formatIoError(absolutePath, tmpIoError));
                     _exitCode = ExitCode::SystemError;
                     _exitCause = ExitCause::FileAccessError;
                     return false;
@@ -224,7 +217,7 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
             if (!hasFileType(entry)) continue;
 
             bool isDehydrated = false;
-            IoError ioError = IoError::Success;
+            auto ioError = IoError::Unknown;
             if (const bool success = IoHelper::checkIfFileIsDehydrated(entry.path(), isDehydrated, ioError);
                 !success || ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied) {
                 LOGW_WARN(_logger,
@@ -235,16 +228,12 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
             if (!isDehydrated) continue;
 
             const SyncPath &filePath = entry.path();
-            if (std::error_code ec; !std::filesystem::remove(filePath, ec)) {
-                if (ec) {
-                    LOGW_WARN(_logger, L"Failed to remove " << Utility::formatStdError(filePath, ec));
-                    _exitCode = ExitCode::SystemError;
-                    _exitCause = ExitCause::FileAccessError;
+            if (!IoHelper::deleteItem(filePath, ioError)) {
+                LOGW_WARN(_logger, L"Failed to remove " << Utility::formatIoError(filePath, ioError));
+                _exitCode = ExitCode::SystemError;
+                _exitCause = ExitCause::FileAccessError;
 
-                    failedToRemovePlaceholders.push_back(CommonUtility::relativePath(_rootPath, filePath));
-                }
-
-                LOGW_WARN(_logger, L"File does not exist: " << Utility::formatSyncPath(filePath));
+                failedToRemovePlaceholders.push_back(CommonUtility::relativePath(_rootPath, filePath));
             }
 
             if (ParametersCache::isExtendedLogEnabled()) {
