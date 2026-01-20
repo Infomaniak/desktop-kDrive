@@ -18,7 +18,7 @@
 
 import Combine
 import Foundation
-import kDriveCore
+@testable import kDriveCore
 import OrderedCollections
 import Testing
 
@@ -26,6 +26,15 @@ extension ServerCoherentCache {
     var receivedUserValues: AsyncStream<IndexedUsers> {
         AsyncStream { continuation in
             let cancellable = usersPublisher
+                .sink { value in continuation.yield(value) }
+
+            continuation.onTermination = { _ in cancellable.cancel() }
+        }
+    }
+
+    var receivedErrorValues: AsyncStream<IndexedErrors> {
+        AsyncStream { continuation in
+            let cancellable = serverErrorsPublisher
                 .sink { value in continuation.yield(value) }
 
             continuation.onTermination = { _ in cancellable.cancel() }
@@ -67,6 +76,40 @@ struct ObservableCoherentCacheTests {
             #expect(receivedUser.name == "appleseed", "Received user name should match expected")
         } else {
             Issue.record("Expected to find a user in the combine event")
+        }
+    }
+
+    @Test(.timeLimit(.minutes(1)))
+    func observeServerErrorsChangesWithCombine() async throws {
+        // GIVEN
+        let serverError = ObservableData.expectedServerError
+        let cache = ServerCoherentCache()
+        let receivedValues = await cache.receivedErrorValues // Start to save the received values
+
+        var receivedServerErrors: IndexedErrors?
+        var cancellables = Set<AnyCancellable>()
+
+        // WHEN
+        let publisher = cache.serverErrorsPublisher
+        let subscription = publisher
+            .sink { indexedUsers in
+                receivedServerErrors = indexedUsers
+            }
+
+        subscription.store(in: &cancellables)
+
+        try await cache.addOrUpdateError(serverError)
+
+        // THEN
+        _ = await receivedValues.first(where: { _ in true })
+
+        #expect(receivedServerErrors != nil, "Should have received users update")
+        #expect(receivedServerErrors!.count == 1, "Should have received one user update")
+
+        if let receivedServerError = receivedServerErrors?.values.first {
+            #expect(receivedServerError.dbId == ObservableData.expectedServerErrorDbId, "Received error ID should match expected")
+        } else {
+            Issue.record("Expected to find an error in the combine event")
         }
     }
 }
