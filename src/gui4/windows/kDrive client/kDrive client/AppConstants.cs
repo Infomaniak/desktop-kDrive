@@ -33,10 +33,12 @@ namespace Infomaniak.kDrive
     internal interface IDriveConstants
     {
         Uri RenewUrl(DriveId? driveId);
-        Uri HomeUrl(DriveId? driveId);
+        Uri kSuiteHomeUrl(DriveId? driveId);
+        Uri kDriveHomeUrl(DriveId? driveId);
         Uri TrashUrl(DriveId? driveId);
         Uri FavoriteUrl(DriveId? driveId);
         Uri SharedUrl(DriveId? driveId);
+        Uri OpenItemUri(DriveId? driveId, NodeId nodeId);
     }
 
     internal sealed class ProductionAppConstants : IAppConstants
@@ -66,15 +68,15 @@ namespace Infomaniak.kDrive
         {
             public Uri RenewUrl(DriveId? id) =>
                 new($"https://shop.infomaniak.com/order/drive/{id}");
-
-            public Uri HomeUrl(DriveId? id) =>
+            public Uri kSuiteHomeUrl(DriveId? id) =>
                 new($"https://ksuite.infomaniak.com/kdrive/app/drive/{id}");
-
-            public Uri TrashUrl(DriveId? id) => new($"{HomeUrl(id)}/trash");
-            public Uri FavoriteUrl(DriveId? id) => new($"{HomeUrl(id)}/favorites");
-            public Uri SharedUrl(DriveId? id) => new($"{HomeUrl(id)}/shared-with-me");
+            public Uri kDriveHomeUrl(DriveId? id) =>
+                new($"https://kdrive.infomaniak.com/app/drive/{id}");
+            public Uri TrashUrl(DriveId? id) => new($"{kSuiteHomeUrl(id)}/trash");
+            public Uri FavoriteUrl(DriveId? id) => new($"{kSuiteHomeUrl(id)}/favorites");
+            public Uri SharedUrl(DriveId? id) => new($"{kSuiteHomeUrl(id)}/shared-with-me");
+            public Uri OpenItemUri(DriveId? driveId, NodeId nodeId) => new($"{kDriveHomeUrl(driveId)}/redirect/{nodeId}");
         }
-
         private sealed class ProductionStorage : IStorageConstants
         {
             public Uri DownloadUrl { get; } =

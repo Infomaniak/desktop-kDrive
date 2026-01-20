@@ -81,12 +81,6 @@ namespace Infomaniak.kDrive.CustomControls
         {
             if (UriString != UriSource?.ToString())
             {
-                if (UriString.Count() == 0)
-                {
-                    Visibility = Visibility.Collapsed;
-                    return;
-                }
-
                 UriSource = new Uri(UriString);
                 return; // UriSource changed will trigger Refresh
             }
@@ -158,7 +152,6 @@ namespace Infomaniak.kDrive.CustomControls
                 token.ThrowIfCancellationRequested();
 
                 Source = svgImage;
-                Visibility = Visibility.Visible;
             }
             catch (OperationCanceledException)
             {

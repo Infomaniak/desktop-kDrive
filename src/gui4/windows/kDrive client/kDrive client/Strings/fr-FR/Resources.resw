@@ -199,13 +199,13 @@
     <value>sec</value>
   </data>
   <data name="Global_Day" xml:space="preserve">
-    <value>jour</value>
+    <value>j</value>
   </data>
   <data name="Global_JustNow" xml:space="preserve">
     <value>À l'instant</value>
   </data>
   <data name="Global_Hour" xml:space="preserve">
-    <value>heure</value>
+    <value>heure(s)</value>
   </data>
   <data name="Global_Minute" xml:space="preserve">
     <value>min</value>
@@ -954,6 +954,9 @@ déverrouillé et accessible depuis votre ordinateur.</value>
   </data>
   <data name="Page_AsleepErrorPage_SecondaryButton.Content" xml:space="preserve">
     <value>Actualiser</value>
+  </data>
+  <data name="CC_SearchBox_ItemUnavailableLocally_Tooltip.Content" xml:space="preserve">
+    <value>Cet élément n'est pas disponible sur votre appareil. Il sera ouvert dans votre navigateur.</value>
   </data>
   <data name="Page_StoragePage_Disconnected_Title.Text" xml:space="preserve">
     <value>Le disque de stockage {0} n’est pas accessible</value>

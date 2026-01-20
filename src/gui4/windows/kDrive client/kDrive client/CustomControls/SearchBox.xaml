@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="Infomaniak.kDrive.CustomControls.SearchBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:Infomaniak.kDrive.CustomControls"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converters="using:Infomaniak.kDrive.Converters"
+             mc:Ignorable="d">
+    <UserControl.Resources>
+        <converters:FilePathToIconConverter x:Key="FilePathToIconConverter" />
+        <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
+        <converters:BytesToHumanReadableStringConverter x:Key="BytesToHumanReadableStringConverter" />
+        <converters:DateTimeToTimeAgoConverter x:Key="DateTimeToTimeAgoConverter" />
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <converters:BooleanToInvertedBooleanConverter x:Key="BooleanToInvertedBooleanConverter" />
+
+        <!-- File template -->
+        <DataTemplate x:Key="FileTemplate"
+                      x:DataType="local:ISearchBoxResultItem">
+            <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.XS}"
+                  ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                  RowSpacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <local:SvgIcon Grid.Column="0"
+                               Grid.Row="0"
+                               Width="16"
+                               Height="16"
+                               UriString="{x:Bind SearchItem.Name, Converter={StaticResource FilePathToIconConverter}}" />
+
+                <TextBlock Grid.Column="1"
+                           Grid.Row="0"
+                           Text="{x:Bind SearchItem.Name}"
+                           TextTrimming="CharacterEllipsis" />
+
+                <TextBlock Grid.Column="1"
+                           Grid.Row="1"
+                           Foreground="{ThemeResource TextFillColorSecondary}"
+                           TextTrimming="CharacterEllipsis">
+                    <Run Text="{x:Bind SearchItem.Path, Converter={StaticResource StringPathToFileNameConverter}, ConverterParameter='Parent=True'}" />
+                    <Run Text=" -" />
+                    <Run Text="{x:Bind SearchItem.ModifiedTime, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Ago'}" />
+                    <Run Text="-" />
+                    <Run Text="{x:Bind SearchItem.Size, Converter={StaticResource BytesToHumanReadableStringConverter}}" />
+                </TextBlock>
+
+                <local:SvgIcon Grid.Column="2"
+                               Grid.Row="0"
+                               Width="16"
+                               HorizontalAlignment="Right"
+                               UriString="{StaticResource Infomaniak.DS.Icons.Arrows.square-arrow-diagonal-up}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Visibility="{x:Bind SearchItem.IsAvailableLocally, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
+                               ToolTipService.Placement="Right">
+                    <ToolTipService.ToolTip>
+                        <ToolTip x:Uid="CC_SearchBox_ItemUnavailableLocally_Tooltip" />
+                    </ToolTipService.ToolTip>
+                </local:SvgIcon>
+            </Grid>
+        </DataTemplate>
+
+        <!-- Directory template -->
+        <DataTemplate x:Key="FolderTemplate"
+                      x:DataType="local:ISearchBoxResultItem">
+            <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.XS}"
+                  ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                  RowSpacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <local:SvgIcon Grid.Column="0"
+                               Grid.Row="0"
+                               Width="16"
+                               UriString="{StaticResource Infomaniak.DS.Icons.Documents.folder}" />
+
+                <TextBlock Grid.Column="1"
+                           Grid.Row="0"
+                           Text="{x:Bind SearchItem.Name}"
+                           TextTrimming="CharacterEllipsis" />
+
+                <TextBlock Grid.Column="1"
+                           Grid.Row="1"
+                           Foreground="{ThemeResource TextFillColorSecondary}"
+                           TextTrimming="CharacterEllipsis">
+                    <Run Text="{x:Bind SearchItem.Path, Converter={StaticResource StringPathToFileNameConverter}, ConverterParameter='Parent=True'}" />
+                    <Run Text="-" />
+                    <Run Text="{x:Bind SearchItem.ModifiedTime, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Ago'}" />
+                </TextBlock>
+                <local:SvgIcon Grid.Column="2"
+                               Grid.Row="0"
+                               Width="16"
+                               HorizontalAlignment="Right"
+                               UriString="{StaticResource Infomaniak.DS.Icons.Arrows.square-arrow-diagonal-up}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Visibility="{x:Bind SearchItem.IsAvailableLocally, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
+                               ToolTipService.Placement="Right">
+                    <ToolTipService.ToolTip>
+                        <ToolTip x:Uid="CC_SearchBox_ItemUnavailableLocally_Tooltip" />
+                    </ToolTipService.ToolTip>
+                </local:SvgIcon>
+
+            </Grid>
+        </DataTemplate>
+
+        <!-- No result template -->
+        <DataTemplate x:Key="NotFoundTemplate"
+                      x:DataType="local:ISearchBoxResultItem">
+            <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.XL}"
+                  RowSpacing="{StaticResource Infomaniak.Style.Spacing.S}"
+                  DataContextChanged="SearchResultItem_DataContextChanged">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <local:SvgIcon UriString="{ThemeResource Infomaniak.Custom.Images.servin}"
+                               Height="100"
+                               HorizontalAlignment="Center" />
+                <TextBlock Grid.Row="1"
+                           Text="Aucun résultat trouvé"
+                           HorizontalAlignment="Center" />
+            </Grid>
+        </DataTemplate>
+
+        <!-- Loader template -->
+        <DataTemplate x:Key="LoaderTemplate"
+                      x:DataType="local:ISearchBoxResultItem">
+            <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.XS}"
+                  ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                  RowSpacing="{StaticResource Infomaniak.Style.Spacing.XXS}"
+                  DataContextChanged="SearchResultItem_DataContextChanged">
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <local:ContentLoader Grid.Column="0"
+                                     Grid.Row="0"
+                                     Height="16"
+                                     Width="16"
+                                     IsLoading="True"
+                                     CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.XS}"
+                                     HorizontalAlignment="Left"
+                                     VerticalAlignment="Center" />
+
+                <local:ContentLoader Grid.Column="1"
+                                     Grid.Row="0"
+                                     Height="16"
+                                     Width="80"
+                                     IsLoading="True"
+                                     CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.XS}"
+                                     HorizontalAlignment="Left"
+                                     VerticalAlignment="Center" />
+
+                <local:ContentLoader Grid.Column="1"
+                                     Grid.Row="1"
+                                     Height="16"
+                                     Width="230"
+                                     IsLoading="True"
+                                     CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.XS}"
+                                     HorizontalAlignment="Left"
+                                     VerticalAlignment="Center" />
+
+            </Grid>
+        </DataTemplate>
+
+        <!-- Template selector -->
+        <local:SearchBoxResultItemTemplateSelector x:Key="SearchBoxResultItemTemplateSelector"
+                                                   FileTemplate="{StaticResource FileTemplate}"
+                                                   FolderTemplate="{StaticResource FolderTemplate}"
+                                                   LoaderTemplate="{StaticResource LoaderTemplate}"
+                                                   NotFoundTemplate="{StaticResource NotFoundTemplate}" />
+    </UserControl.Resources>
+
+    <AutoSuggestBox x:Uid="W_MainWindow_TitleBar_SearchBox"
+                    x:Name="TitleBarSearchBox"
+                    QueryIcon="Find"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
+                    BorderThickness="1"
+                    TextChanged="SearchBox_TextChanged"
+                    ItemTemplateSelector="{StaticResource SearchBoxResultItemTemplateSelector}"
+                    UpdateTextOnSelect="False"
+                    SuggestionChosen="TitleBarSearchBox_SuggestionChosen"
+                    QuerySubmitted="TitleBarSearchBox_QuerySubmitted">
+    </AutoSuggestBox>
+
+</UserControl>

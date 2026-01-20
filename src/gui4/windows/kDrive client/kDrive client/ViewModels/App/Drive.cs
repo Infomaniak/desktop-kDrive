@@ -142,7 +142,7 @@ namespace Infomaniak.kDrive.ViewModels
 
         public Uri GetWebUri()
         {
-            return App.Constants.Drive.HomeUrl(DriveId);
+            return App.Constants.Drive.kSuiteHomeUrl(DriveId);
         }
 
         public Uri GetWebTrashUri()
