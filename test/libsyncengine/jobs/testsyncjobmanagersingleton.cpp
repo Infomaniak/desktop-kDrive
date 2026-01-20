@@ -448,9 +448,8 @@ void TestSyncJobManagerSingleton::testWaitForAllJobsToComplete() {
     // Launch 10 async jobs
     std::vector<UniqueId> jobIds;
     for (auto i = 0; i < 10; i++) {
-        const auto filepath = testhelpers::generateOrEditTestFile(
-            localTmpDir.path() / ("file_" + std::to_string(i) + ".txt")
-        );
+         const auto filepath = localTmpDir.path() / ("file_" + std::to_string(i) + ".txt");
+         testhelpers::generateOrEditTestFile(filepath);
 
         auto job = std::make_shared<UploadJob>(
             nullptr, driveDbId, filepath, filepath.filename().native(),
