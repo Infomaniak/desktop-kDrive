@@ -136,6 +136,24 @@ enum CacheData {
                                               destinationPath: "",
                                               autoResolved: false)
 
+    static let updatedLoginError = ErrorInfo(dbId: expectedLoginErrorDbId,
+                                             synchroDbId: expectedSynchroDbId,
+                                             time: Int64(Date().timeIntervalSince1970),
+                                             level: KDC.ErrorLevel.Unknown,
+                                             functionName: "some update",
+                                             workerName: "",
+                                             exitCode: KDC.ExitCode.InvalidToken,
+                                             exitCause: KDC.ExitCause.LoginError,
+                                             localNodeId: "",
+                                             remoteNodeId: "",
+                                             nodeType: KDC.NodeType.Unknown,
+                                             path: "",
+                                             conflictType: KDC.ConflictType.None,
+                                             cancelType: KDC.CancelType.None,
+                                             inconsistencyType: KDC.InconsistencyType.None,
+                                             destinationPath: "",
+                                             autoResolved: false)
+
     static let expectedServerErrorDbId = Int32.random(in: 0 ... 10000)
     static let expectedServerError = ErrorInfo(dbId: expectedServerErrorDbId,
                                                synchroDbId: expectedSynchroDbId,
