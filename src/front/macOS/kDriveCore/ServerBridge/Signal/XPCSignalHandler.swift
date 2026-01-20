@@ -43,7 +43,7 @@ enum SignalError: Error {
     case unsupported(_ num: SignalNum)
 }
 
-actor XPCSignalHandler: XPCSignalHandlerProtocol {
+struct XPCSignalHandler: XPCSignalHandlerProtocol {
     private let decoder = JSONDecoder()
     private let userHandler = UserSignalHandler()
     private let accountHandler = AccountSignalHandler()
