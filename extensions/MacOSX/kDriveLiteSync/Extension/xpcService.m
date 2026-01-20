@@ -71,7 +71,8 @@
 
 - (void)initOpenBlackListSet {
     _defaultOpenBlackListSet =
-            [NSSet setWithObjects:@"com.infomaniak.drive.desktopclient", @"kDrive_client",
+            [NSSet setWithObjects:@"com.infomaniak.drive.desktopclient",
+                                  @"kDrive_client",
                                   @"com.apple.finder", // Finder
                                   @"com.apple.mdworker", // Spotlight
                                   @"com.apple.mdworker_shared", // Spotlight
