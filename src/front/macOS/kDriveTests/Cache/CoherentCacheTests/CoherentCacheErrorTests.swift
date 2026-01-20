@@ -189,4 +189,37 @@ struct CoherentCacheErrorTests {
         #expect(fetchedSynchro.latestError == nil)
         #expect(fetchedSynchro.errors.values.count == 0)
     }
+
+    @Test(.timeLimit(.minutes(1)))
+    func removeServerErrorInSynchro() async throws {
+        // GIVEN
+        let user = CacheData.expectedUser
+        let cache = ServerCoherentCache()
+        await cache.addUser(user)
+        #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
+        await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
+        #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId, userDbId: CacheData.expectedUserDbId) == CacheData.expectedAccount)
+        try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
+        #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == CacheData.expectedDrive)
+        try await cache.addSynchro(CacheData.expectedSynchro)
+        #expect(await cache.getSynchro(synchroDbId: CacheData.expectedSynchroDbId) == CacheData.expectedSynchro)
+
+        try await cache.addOrUpdateError(CacheData.expectedServerError)
+        #expect(await cache.serverErrors.count == 1)
+
+        // WHEN
+        try await cache.removeError(CacheData.expectedServerErrorDbId)
+
+        // THEN
+        #expect(await cache.serverErrors.count == 0)
+
+        guard let fetchedSynchro = await cache.getSynchro(synchroDbId: CacheData.expectedSynchroDbId) else {
+            Issue.record("Synchro not found")
+            return
+        }
+
+        #expect(fetchedSynchro.dbId == CacheData.expectedSynchroDbId)
+        #expect(fetchedSynchro.latestError == nil)
+        #expect(fetchedSynchro.errors.values.count == 0)
+    }
 }
