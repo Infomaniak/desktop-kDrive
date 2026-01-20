@@ -13,7 +13,7 @@
     </UserControl.Resources>
     <Border Height="16"
             Background="LightGray"
-            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}">
+            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.M}">
 
         <Grid x:Name="SizeBarGrid">
             <Grid.ColumnDefinitions>

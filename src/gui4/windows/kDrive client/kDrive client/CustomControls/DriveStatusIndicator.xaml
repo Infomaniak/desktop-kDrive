@@ -15,7 +15,7 @@
         <Border BorderBrush="{ThemeResource CardStrokeColorDefault}"
                 Background="{ThemeResource LayerFillColorDefault}"
                 BorderThickness="1"
-                CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"
+                CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.M}"
                 Padding="24,8,24,8">
 
             <StackPanel Orientation="Horizontal"

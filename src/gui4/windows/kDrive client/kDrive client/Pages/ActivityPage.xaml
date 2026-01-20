@@ -108,12 +108,12 @@
                       x:DataType="viewmodels:Sync">
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}">
                 <controls:ContentLoader IsLoading="True"
-                                        CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.XS}"
+                                        CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.XS}"
                                         Height="{StaticResource Infomaniak.Style.Spacing.L}"
                                         Width="300" />
                 <controls:ContentLoader IsLoading="True"
                                         HorizontalAlignment="Left"
-                                        CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.XS}"
+                                        CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.XS}"
                                         Height="{StaticResource Infomaniak.Style.Spacing.S}"
                                         Width="60" />
             </StackPanel>
@@ -175,7 +175,8 @@
                 <RowDefinition Height="auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <controlsErrors:ErrorBar Grid.Row="0" />
+            <controlsErrors:ErrorBar Grid.Row="0" 
+                                     Margin="{StaticResource Infomaniak.Style.Thickness.Bottom.S}"/>
             <controls:SyncActivityTable Grid.Row="1"
                                         ShowIncomingActivity="{x:Bind ViewModel.SelectedSync.ShowIncomingActivity, Mode=OneWay}" />
         </Grid>

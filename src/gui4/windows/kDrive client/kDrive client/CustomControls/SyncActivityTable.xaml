@@ -57,14 +57,22 @@
         <!--  Non empty list  -->
         <ListView x:Name="ActivityList"
                   SelectionMode="None"
-                  Visibility="{x:Bind ViewModel.SelectedSync.SyncActivities.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
+                  Visibility="{x:Bind ViewModel.SelectedSync.SyncActivities.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"
+                  Background="{ThemeResource LayerFillColorDefault}"
+                  BorderBrush="{ThemeResource SubtleFillColorSecondary}"
+                  BorderThickness="1"
+                  CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}">
             <ListView.Header>
-                <Grid Height="40">
+                <Grid Height="40"
+                      Background="{ThemeResource LayerFillColorAltBrush}"
+                      BorderThickness="0,0,0,1"
+                      BorderBrush="{ThemeResource SubtleFillColorSecondary}"
+                      CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Top.S}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="204*" />
-                        <ColumnDefinition Width="204*" />
-                        <ColumnDefinition Width="92*" />
-                        <ColumnDefinition Width="72*" />
+                        <ColumnDefinition Width="204" />
+                        <ColumnDefinition Width="92" />
+                        <ColumnDefinition Width="72" />
                     </Grid.ColumnDefinitions>
                     <TextBlock x:Uid="CC_SyncActivityTable_Header_Name"
                                Grid.Column="0"
@@ -105,9 +113,7 @@
             </ListView.ItemContainerStyle>
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="viewmodels:SyncFileItem">
-                    <Grid MinHeight="34"
-                          Background="{ThemeResource LayerFillColorAlt}"
-                          CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}">
+                    <Grid MinHeight="34">
                         <Grid.Resources>
                             <DataTemplate x:Key="FileSizeTemplate"
                                           x:DataType="viewmodels:SyncFileItem">
@@ -168,43 +174,64 @@
                         </Grid.Resources>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="204*" />
-                            <ColumnDefinition Width="204*" />
-                            <ColumnDefinition Width="92*" />
-                            <ColumnDefinition Width="72*" />
+                            <ColumnDefinition Width="204" />
+                            <ColumnDefinition Width="92" />
+                            <ColumnDefinition Width="72" />
                         </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0"
-                                    Padding="{StaticResource Infomaniak.Style.Thickness.Left.S}"
-                                    VerticalAlignment="Center"
-                                    Orientation="Horizontal"
-                                    Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-
+                        <Grid Grid.Column="0"
+                              Padding="{StaticResource Infomaniak.Style.Thickness.Left.S}"
+                              VerticalAlignment="Center"
+                              ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
                             <ContentControl Grid.Column="0"
                                             Content="{x:Bind}"
                                             ContentTemplateSelector="{StaticResource ItemTypeIconDataTemplateSelector}" />
-                            <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                            <TextBlock Grid.Column="1"
+                                       Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
                                        Text="{x:Bind LocalPath, Converter={StaticResource StringPathToFileNameConverter}}"
-                                       TextWrapping="Wrap" />
-                        </StackPanel>
-                        <StackPanel Grid.Column="1"
-                                    VerticalAlignment="Center"
-                                    Orientation="Horizontal">
-                            <HyperlinkButton VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis">
+                                <ToolTipService.ToolTip>
+                                    <ToolTip Content="{x:Bind LocalPath, Converter={StaticResource StringPathToFileNameConverter}}" />
+                                </ToolTipService.ToolTip>
+                            </TextBlock>
+                        </Grid>
+
+                        <Grid Grid.Column="1"
+                              Padding="{StaticResource Infomaniak.Style.Thickness.Left.S}"
+                              VerticalAlignment="Center">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <HyperlinkButton Grid.Column="0"
+                                             VerticalAlignment="Center"
                                              Click="SyncActivityParent_Click"
-                                             Content="{x:Bind ParentFolderPath, Converter={StaticResource StringPathToFileNameConverter}}"
-                                             Tag="{x:Bind ParentFolderPath}" />
-                            <TextBlock VerticalAlignment="Center"
-                                       Style="{StaticResource Infomaniak.Style.TextBlock.Body}">
-                                <Run Text=" - " />
+                                             Tag="{x:Bind ParentFolderPath}"
+                                             Style="{ThemeResource TextBlockButtonStyle}"
+                                             MaxWidth="100">
+                                <ToolTipService.ToolTip>
+                                    <ToolTip Content="{x:Bind ParentFolderPath, Converter={StaticResource StringPathToFileNameConverter}}" />
+                                </ToolTipService.ToolTip>
+                            <TextBlock Text="{x:Bind ParentFolderPath, Converter={StaticResource StringPathToFileNameConverter}}"
+                                           TextTrimming="CharacterEllipsis"
+                                           HorizontalAlignment="Left" />
+                            </HyperlinkButton>
+                            <TextBlock Grid.Column="1"
+                                       VerticalAlignment="Center"
+                                       Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
+                                       TextTrimming="CharacterEllipsis">
+                                <Run Text="-" />
                                 <Run Text="{x:Bind Timestamp, Converter={StaticResource DateTimeToTimeAgoConverter}, Mode=OneWay}" />
                             </TextBlock>
-                        </StackPanel>
+                        </Grid>
 
                         <ContentControl Grid.Column="2"
                                         VerticalAlignment="Center"
                                         Content="{x:Bind}"
                                         ContentTemplateSelector="{StaticResource ItemTypeSizeDataTemplateSelector}" />
-
-                        
 
                         <Grid Grid.Column="3"
                               VerticalAlignment="Center"
