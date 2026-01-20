@@ -21,6 +21,8 @@ import kDriveCoreUI
 import SwiftUI
 
 struct HomeView: View {
+    @StateObject private var networkObserver = NetworkObserver()
+
     @ObservedObject var mainViewModel: MainViewModel
 
     static let spacing = AppPadding.padding24
@@ -33,13 +35,30 @@ struct HomeView: View {
         return givenName
     }
 
-    private var state: SynchroStatusView.State {
-        return .synchroUpToDate
+    private var state: HomeState {
+        guard networkObserver.isConnected else {
+            return .offline
+        }
+
+        guard let synchroStatus = mainViewModel.currentSynchro?.progressInfo?.status else {
+            return .synchroIsUpToDate
+        }
+
+        switch synchroStatus {
+        case .idle:
+            return .synchroIsUpToDate
+        case .starting, .running:
+            return .synchroIsRunning
+        case .paused, .stopped, .error:
+            return .synchroIsPaused
+        case .pauseAsked, .stopAsked:
+            return .loading
+        }
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppPadding.padding24) {
-            GreetingStatusView(name: userName, synchroStatus: .upToDate)
+            GreetingStatusView(name: userName, state: state)
                 .padding(.bottom, AppPadding.padding8)
 
             GeometryReader { proxy in
@@ -55,12 +74,12 @@ struct HomeView: View {
         .padding(AppPadding.padding24)
     }
 
-    private func didTapStateButton(for state: SynchroStatusView.State) {
+    private func didTapStateButton(for state: HomeState) {
         switch state {
-        case .synchroInProgress:
+        case .synchroIsRunning:
             // TODO: Navigate to activities
             break
-        case .synchroPaused:
+        case .synchroIsPaused:
             // TODO: Enable synchro
             break
         default:

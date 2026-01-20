@@ -18,72 +18,83 @@
 
 import kDriveCoreUI
 import kDriveResources
+import Lottie
 import SwiftUI
 
-extension SynchroStatus {
-    var state: SynchroStatusView.State {
+extension HomeState {
+    var animation: ThemedAnimation {
         switch self {
-        case .upToDate:
-            return .synchroUpToDate
-        case .inProgress:
-            return .synchroInProgress
-        case .paused:
-            return .synchroPaused
+        case .loading, .synchroIsUpToDate:
+            return .kDriveCheckmark
+        case .synchroIsPaused:
+            return .cloudPause
+        case .synchroIsRunning:
+            return .cloudSync
+        case .offline:
+            return .offline
+        }
+    }
+
+    var animationLoopMode: Lottie.LottieLoopMode {
+        switch self {
+        case .synchroIsUpToDate:
+            return .repeatBackwards(1)
+        default:
+            return .loop
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .loading, .synchroIsUpToDate:
+            return KDriveLocalizable.synchroStatusUpToDateTitle
+        case .synchroIsPaused:
+            return KDriveLocalizable.synchroStatusPausedTitle
+        case .synchroIsRunning:
+            return KDriveLocalizable.synchroStatusInProgressTitle
+        case .offline:
+            return KDriveLocalizable.synchroStatusOfflineTitle
+        }
+    }
+
+    var description: String {
+        switch self {
+        case .loading, .synchroIsUpToDate:
+            return KDriveLocalizable.synchroStatusUpToDateDescription
+        case .synchroIsPaused:
+            return KDriveLocalizable.synchroStatusPausedDescription
+        case .synchroIsRunning:
+            return KDriveLocalizable.synchroStatusInProgressDescription
+        case .offline:
+            return KDriveLocalizable.synchroStatusOfflineDescription
+        }
+    }
+
+    var buttonTitle: String? {
+        switch self {
+        case .synchroIsPaused:
+            return KDriveLocalizable.buttonRestartSynchro
+        case .synchroIsRunning:
+            return KDriveLocalizable.buttonSeeActivities
+        case .loading, .synchroIsUpToDate, .offline:
+            return nil
         }
     }
 }
 
 struct SynchroStatusView: View {
-    struct State: Equatable {
-        let id: Int
-        let animation: ThemedAnimation
-        let title: String
-        let description: String
-        let buttonTitle: String?
-
-        static func == (lhs: State, rhs: State) -> Bool {
-            return lhs.id == rhs.id
-        }
-
-        static let synchroUpToDate = State(
-            id: 1,
-            animation: .kDriveCheckmark,
-            title: KDriveLocalizable.synchroStatusUpToDateTitle,
-            description: KDriveLocalizable.synchroStatusUpToDateDescription,
-            buttonTitle: nil
-        )
-
-        static let synchroInProgress = State(
-            id: 2,
-            animation: .cloudSync,
-            title: KDriveLocalizable.synchroStatusInProgressTitle,
-            description: KDriveLocalizable.synchroStatusInProgressDescription,
-            buttonTitle: "Voir les activités"
-        )
-
-        static let synchroPaused = State(
-            id: 3,
-            animation: .cloudPause,
-            title: KDriveLocalizable.synchroStatusPausedTitle,
-            description: KDriveLocalizable.synchroStatusPausedDescription,
-            buttonTitle: "Réactiver la synchronisation"
-        )
-
-        static let offline = State(
-            id: 4,
-            animation: .offline,
-            title: KDriveLocalizable.synchroStatusOfflineTitle,
-            description: KDriveLocalizable.synchroStatusOfflineDescription,
-            buttonTitle: nil
-        )
-    }
-
-    let state: SynchroStatusView.State
-    let performAction: (SynchroStatusView.State) -> Void
+    let state: HomeState
+    let performAction: (HomeState) -> Void
 
     var body: some View {
         VStack(spacing: AppPadding.padding32) {
-            ThemedLottieView(animation: state.animation)
+            ThemedLottieView(animation: state.animation, loopMode: state.animationLoopMode)
+                .opacity(state.isRedacted ? 0 : 1)
+                .overlay {
+                    if state.isRedacted {
+                        redactedAnimation
+                    }
+                }
 
             VStack(spacing: AppPadding.padding8) {
                 Text(state.title)
@@ -104,25 +115,48 @@ struct SynchroStatusView: View {
             .multilineTextAlignment(.center)
             .frame(maxWidth: 300)
         }
+        .redacted(reason: state.isRedacted ? .placeholder : [])
         .padding(AppPadding.padding16)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(ColorToken.Surface.primary.asColor)
+        .background {
+            GeometryReader { proxy in
+                RadialGradient(
+                    colors: [
+                        ColorToken.Action.primary.asColor.opacity(0.4),
+                        ColorToken.Surface.primary.asColor
+                    ],
+                    center: UnitPoint(x: 0.5, y: -0.5),
+                    startRadius: 0,
+                    endRadius: max(proxy.size.width, proxy.size.height)
+                )
+            }
+        }
         .clipShape(RoundedRectangle(cornerRadius: AppRadius.radius16))
+    }
+
+    /// We use a random image to serve as a redacted view
+    @ViewBuilder private var redactedAnimation: some View {
+        KDriveResources.checkmark.swiftUIImage
+            .resizable()
     }
 }
 
 #Preview("Up To Date") {
-    SynchroStatusView(state: .synchroInProgress) { _ in }
+    SynchroStatusView(state: .synchroIsUpToDate) { _ in }
 }
 
-#Preview("In Progress") {
-    SynchroStatusView(state: .synchroInProgress) { _ in }
+#Preview("Running") {
+    SynchroStatusView(state: .synchroIsRunning) { _ in }
 }
 
-#Preview("Pause") {
-    SynchroStatusView(state: .synchroPaused) { _ in }
+#Preview("Paused") {
+    SynchroStatusView(state: .synchroIsPaused) { _ in }
 }
 
 #Preview("Offline") {
     SynchroStatusView(state: .offline) { _ in }
+}
+
+#Preview("Loading") {
+    SynchroStatusView(state: .loading) { _ in }
 }

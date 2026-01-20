@@ -16,9 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using CommunityToolkit.Mvvm.ComponentModel;
-using Infomaniak.kDrive.Pages.Onboarding;
 using Infomaniak.kDrive.Pages.Settings;
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -252,10 +251,19 @@ namespace Infomaniak.kDrive.Pages
 
         private async Task<long?> GetHydratedFileSizeAsync(CancellationToken cancellationToken)
         {
-            // TODO: Replace this mock implementation with actual hydrated file size calculation logic.
-            // This is a temporary stub that returns a random value for testing purposes.
-            await Task.Delay(5000, cancellationToken);
-            return new Random().NextInt64(DiskUsedSize ?? 0);
+            if (AppViewModel.SelectedSync is null)
+                return null;
+
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            UInt64? res = await commService.GetSyncOfflineFilesSize(AppViewModel.SelectedSync.DbId, cancellationToken);
+
+            if (res is not null)
+                if (res.Value > long.MaxValue)
+                    return long.MaxValue;
+                else
+                    return (long)res.Value;
+            else
+                return null;
         }
     }
 }

@@ -22,7 +22,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
     public struct JsonKeys
     {
         static public string ExitCode = "code";
-        static public string ExitCause= "cause";
+        static public string ExitCause = "cause";
 
         static public string OAuthCode = "code";
         static public string OAuthCodeVerifier = "codeVerifier";
@@ -75,10 +75,12 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
 
         static public string Limit = "limit";
         static public string IsValid = "isValid";
-        static public string Path= "path";
-        static public string BasePath= "basePath";
+        static public string Path = "path";
+        static public string BasePath = "basePath";
         static public string GoodPath = "goodPath";
-        static public string BestMode= "bestMode";
+        static public string BestMode = "bestMode";
+        static public string Value = "value";
+        static public string Size= "size";
 
         static public string VersionInfo = "versionInfo";
         static public string DriveAvailableInfoList = "driveAvailableInfoList";

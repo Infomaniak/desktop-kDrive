@@ -160,8 +160,9 @@ class Node {
 
         [[nodiscard]] SyncPath getPath() const;
 
-        [[nodiscard]] inline bool isTmp() const { return _isTmp; }
+        [[nodiscard]] bool isTmp() const;
         inline void setIsTmp(bool newIsTmp) { _isTmp = newIsTmp; }
+        [[nodiscard]] bool isValid() const;
 
     private:
         friend class UpdateTree;
