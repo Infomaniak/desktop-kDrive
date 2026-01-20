@@ -148,6 +148,21 @@ namespace Infomaniak.kDrive.CustomControls
             }
 
         }
+
+        private void OpenInExplorer_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void OpenOnline_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void CopyPublicLink_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
     public partial class ItemTypeDataTemplateSelector : DataTemplateSelector
     {

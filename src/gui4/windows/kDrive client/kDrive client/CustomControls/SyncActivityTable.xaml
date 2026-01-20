@@ -8,6 +8,7 @@
              xmlns:local="using:Infomaniak.kDrive.CustomControls"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:viewmodels="using:Infomaniak.kDrive.ViewModels"
+             xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
              mc:Ignorable="d">
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
@@ -176,7 +177,7 @@
                             <ColumnDefinition Width="204*" />
                             <ColumnDefinition Width="204" />
                             <ColumnDefinition Width="92" />
-                            <ColumnDefinition Width="72" />
+                            <ColumnDefinition Width="100" />
                         </Grid.ColumnDefinitions>
                         <Grid Grid.Column="0"
                               Padding="{StaticResource Infomaniak.Style.Thickness.Left.S}"
@@ -239,6 +240,7 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="18" />
                                 <ColumnDefinition Width="18" />
+                                <ColumnDefinition Width="36" />
                             </Grid.ColumnDefinitions>
 
                             <controls:SvgIcon Grid.Column="0"
@@ -256,6 +258,31 @@
                                             VerticalAlignment="Center"
                                             Content="{x:Bind}"
                                             ContentTemplateSelector="{StaticResource ActivityStatusIconTemplateSelector}" />
+
+                            <Button Grid.Column="2"
+                                    Padding="0"
+                                    BorderThickness="0">
+                                <Button.Content>
+                                    <controls:SvgIcon Width="16"
+                                                      Height="16"
+                                                      UriString="{StaticResource Infomaniak.DS.Icons.Essentials.dots-vertical}"
+                                                      Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+
+                                </Button.Content>
+                                <Button.Flyout>
+                                    <MenuFlyout>
+                                        <MenuFlyoutItem Text="Open in Explorer"
+                                                        Click="OpenInExplorer_Click"
+                                                        Padding="4,2" />
+                                        <MenuFlyoutItem Text="Open Online"
+                                                        Click="OpenOnline_Click"
+                                                        Padding="4,2" />
+                                        <MenuFlyoutItem Text="Copy Public Link"
+                                                        Click="CopyPublicLink_Click"
+                                                        Padding="4,2" />
+                                    </MenuFlyout>
+                                </Button.Flyout>
+                            </Button>
 
                         </Grid>
                     </Grid>
