@@ -141,7 +141,7 @@ void AbstractUploadSession::abort() {
     SyncJob::abort();
 }
 
-ExitInfo AbstractUploadSession::handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob) {
+ExitInfo AbstractUploadSession::handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> cancelJob) {
     if (cancelJob->hasHttpError()) {
         LOGW_WARN(_logger, L"Failed to cancel upload session for " << Utility::formatSyncPath(_filePath.filename()));
         return ExitCode::DataError;

@@ -26,7 +26,7 @@
 
 namespace KDC {
 
-UploadSessionFinishJob::UploadSessionFinishJob(const std::shared_ptr<Vfs> &vfs, const UploadSessionType uploadType,
+UploadSessionFinishJob::UploadSessionFinishJob(const std::shared_ptr<Vfs> vfs, const UploadSessionType uploadType,
                                                const int driveDbId, const SyncPath &absoluteFilePath,
                                                const std::string &sessionToken, const std::string &totalChunkHash,
                                                const uint64_t totalChunks, const SyncTime creationTime,

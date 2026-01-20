@@ -25,7 +25,7 @@
 
 namespace KDC {
 
-MoveJob::MoveJob(const std::shared_ptr<Vfs> &vfs, int driveDbId, const SyncPath &destFilepath, const NodeId &fileId,
+MoveJob::MoveJob(const std::shared_ptr<Vfs> vfs, int driveDbId, const SyncPath &destFilepath, const NodeId &fileId,
                  const NodeId &destDirId, const SyncName &name /*= ""*/) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _destFilepath(destFilepath),
