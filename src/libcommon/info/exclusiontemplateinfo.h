@@ -68,7 +68,6 @@ class ExclusionTemplateInfo {
           successful. The returned set contains additionally the string exclusionTemplate in any case.
         */
         static std::unordered_set<SyncName> computeNormalizations(const SyncName &templateString);
-        static bool canNormalize(const SyncName &template_);
 
         friend QDataStream &operator>>(QDataStream &in, ExclusionTemplateInfo &exclusionTemplateInfo);
         friend QDataStream &operator<<(QDataStream &out, const ExclusionTemplateInfo &exclusionTemplateInfo);

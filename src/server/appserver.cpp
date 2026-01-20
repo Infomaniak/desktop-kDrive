@@ -1831,7 +1831,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                           [&](const ExclusionTemplateInfo &templateInfo) { exclusionTemplateList.push_back(templateInfo); });
 
             if (!def) {
-                ExclusionTemplateInfo::computeNormalizations(exclusionTemplateList);
+                ExclusionTemplateInfo::updateExclusionTemplateInfoList(exclusionTemplateList);
             }
 
             ExitCode exitCode = ServerRequests::setExclusionTemplateList(def, exclusionTemplateList);

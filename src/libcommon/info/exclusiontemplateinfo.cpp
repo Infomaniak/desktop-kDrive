@@ -79,27 +79,14 @@ void ExclusionTemplateInfo::updateExclusionTemplateInfoList(std::vector<Exclusio
     templateList = newTemplateList;
 }
 
-std::unordered_set<SyncName> ExclusionTemplateInfo::computeNormalizations(const SyncName &templateString) {
-    if (!canNormalize(templateString)) return {templateString};
-
-    const auto normalizations = CommonUtility::computePathNormalizations(templateString);
-    std::unordered_set<SyncName> result;
-    for (const SyncName &normalization: normalizations) (void) result.emplace(normalization);
-    return result;
-}
-
-
-bool ExclusionTemplateInfo::canNormalize(const SyncName &template_) {
-    SyncName nfcNormalizedName;
-    const bool nfcSuccess = CommonUtility::normalizedSyncName(template_, nfcNormalizedName, UnicodeNormalization::NFC);
-
-    SyncName nfdNormalizedName;
-    const bool nfdSuccess = CommonUtility::normalizedSyncName(template_, nfdNormalizedName, UnicodeNormalization::NFD);
-
-    if (!nfcSuccess || !nfdSuccess) {
-        return false;
+std::unordered_set<SyncName> ExclusionTemplateInfo::computeNormalizations(const SyncName &template_) {
+    if (const auto normalizations = CommonUtility::computePathNormalizations(template_); !normalizations.empty()) {
+        std::unordered_set<SyncName> result;
+        for (const SyncName &normalization: normalizations) (void) result.emplace(normalization);
+        return result;
     }
-    return true;
+
+    return {template_};
 }
 
 QDataStream &operator>>(QDataStream &in, ExclusionTemplateInfo &exclusionTemplateInfo) {

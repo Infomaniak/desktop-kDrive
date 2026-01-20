@@ -39,7 +39,7 @@ ExitInfo ExclTemplSetListJob::deserializeInputParms() {
 
 ExitInfo ExclTemplSetListJob::process() {
     if (!_default) {
-        ExclusionTemplateInfo::computeNormalizations(_exclusionTemplateList);
+        ExclusionTemplateInfo::updateExclusionTemplateInfoList(_exclusionTemplateList);
     }
 
     if (const auto exitCode = ServerRequests::setExclusionTemplateList(_default, _exclusionTemplateList);
