@@ -215,7 +215,7 @@
                                 <ToolTipService.ToolTip>
                                     <ToolTip Content="{x:Bind ParentFolderPath, Converter={StaticResource StringPathToFileNameConverter}}" />
                                 </ToolTipService.ToolTip>
-                            <TextBlock Text="{x:Bind ParentFolderPath, Converter={StaticResource StringPathToFileNameConverter}}"
+                                <TextBlock Text="{x:Bind ParentFolderPath, Converter={StaticResource StringPathToFileNameConverter}}"
                                            TextTrimming="CharacterEllipsis"
                                            HorizontalAlignment="Left" />
                             </HyperlinkButton>
@@ -240,19 +240,22 @@
                                 <ColumnDefinition Width="18" />
                                 <ColumnDefinition Width="18" />
                             </Grid.ColumnDefinitions>
-                            <ContentControl VerticalAlignment="Center"
-                                            Content="{x:Bind}"
-                                            ContentTemplateSelector="{StaticResource ActivityStatusIconTemplateSelector}">
-                            </ContentControl>
-                            <controls:SvgIcon Grid.Column="1"
+
+                            <controls:SvgIcon Grid.Column="0"
                                               Width="16"
                                               HorizontalAlignment="Left"
                                               VerticalAlignment="Center"
                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                              UriString="{x:Bind Direction, Converter={StaticResource SyncActivityDirectionToIconConverter}, Mode=OneWay}" />
-                            <ToolTipService.ToolTip>
-                                <ToolTip Content="{x:Bind Direction, Converter={StaticResource SyncDirectionToToolTipConverter}, Mode=OneWay}" />
-                            </ToolTipService.ToolTip>
+                                              UriString="{x:Bind Direction, Converter={StaticResource SyncActivityDirectionToIconConverter}, Mode=OneWay}">
+                                <ToolTipService.ToolTip>
+                                    <ToolTip Content="{x:Bind Direction, Converter={StaticResource SyncDirectionToToolTipConverter}, Mode=OneWay}" />
+                                </ToolTipService.ToolTip>
+                            </controls:SvgIcon>
+
+                            <ContentControl Grid.Column="1"
+                                            VerticalAlignment="Center"
+                                            Content="{x:Bind}"
+                                            ContentTemplateSelector="{StaticResource ActivityStatusIconTemplateSelector}" />
 
                         </Grid>
                     </Grid>
