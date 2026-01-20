@@ -26,8 +26,8 @@ public protocol CoherentCacheObservable: Sendable {
 
 /// This cache must track 1:1 the server, can only be purged on server restart
 public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
-    private var users: IndexedUsers = [:]
-    private var serverErrors: IndexedErrors = [:]
+    var users: IndexedUsers = [:]
+    var serverErrors: IndexedErrors = [:]
 
     private nonisolated let usersSubject = PassthroughSubject<IndexedUsers, Never>()
     private nonisolated let serverErrorsSubject = PassthroughSubject<IndexedErrors, Never>()

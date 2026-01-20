@@ -173,6 +173,24 @@ enum CacheData {
                                                destinationPath: "",
                                                autoResolved: false)
 
+    static let updatedServerError = ErrorInfo(dbId: expectedServerErrorDbId,
+                                              synchroDbId: expectedSynchroDbId,
+                                              time: Int64(Date().timeIntervalSince1970),
+                                              level: KDC.ErrorLevel.Server,
+                                              functionName: "main_updated.swift",
+                                              workerName: "",
+                                              exitCode: KDC.ExitCode.DbError,
+                                              exitCause: KDC.ExitCause.DbEntryNotFound,
+                                              localNodeId: "",
+                                              remoteNodeId: "",
+                                              nodeType: KDC.NodeType.Unknown,
+                                              path: "",
+                                              conflictType: KDC.ConflictType.None,
+                                              cancelType: KDC.CancelType.None,
+                                              inconsistencyType: KDC.InconsistencyType.None,
+                                              destinationPath: "",
+                                              autoResolved: false)
+
     static let expectedFileSyncErrorDbId = Int32.random(in: 0 ... 10000)
     static let expectedFileSyncErrorLocalNodeId = UUID().uuidString
     static let expectedFileSyncErrorRemoteNodeId = UUID().uuidString
