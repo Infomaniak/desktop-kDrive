@@ -20,13 +20,26 @@ import Combine
 import Foundation
 import kDriveCore
 import OrderedCollections
-import XCTest
+import Testing
 
-final class ObservableCoherentCacheTests: XCTestCase {
+extension ServerCoherentCache {
+    var receivedUserValues: AsyncStream<IndexedUsers> {
+        AsyncStream { continuation in
+            let cancellable = usersPublisher
+                .sink { value in continuation.yield(value) }
+
+            continuation.onTermination = { _ in cancellable.cancel() }
+        }
+    }
+}
+
+@MainActor
+struct ObservableCoherentCacheTests {
     static let expectedUserId = Int32.random(in: 0 ... 1000)
     static let expectedUserDbId = Int32.random(in: 0 ... 1000)
 
-    @MainActor func testObserveUserChangesWithCombine() throws {
+    @Test(.timeLimit(.minutes(1)))
+    func observeUserChangesWithCombine() async throws {
         // GIVEN
         let user = User(
             dbId: Self.expectedUserDbId,
@@ -41,7 +54,8 @@ final class ObservableCoherentCacheTests: XCTestCase {
         )
 
         let cache = ServerCoherentCache()
-        let expectation = expectation(description: "User updates observed")
+        let receivedValues = await cache.receivedUserValues // Start to save the received values
+
         var receivedUsers: IndexedUsers?
         var cancellables = Set<AnyCancellable>()
 
@@ -50,33 +64,23 @@ final class ObservableCoherentCacheTests: XCTestCase {
         let subscription = publisher
             .sink { indexedUsers in
                 receivedUsers = indexedUsers
-                if !indexedUsers.isEmpty {
-                    expectation.fulfill()
-                } else {
-                    XCTFail("Received an empty users list")
-                }
             }
 
         subscription.store(in: &cancellables)
 
-        Task {
-            await cache.addUser(user)
-        }
+        await cache.addUser(user)
 
         // THEN
-        waitForExpectations(timeout: 10.0) { error in
-            if let error {
-                XCTFail("Expectation failed with error: \(error)")
-            }
-        }
+        _ = await receivedValues.first(where: { _ in true })
 
-        XCTAssertEqual(receivedUsers!.count, 1, "Should have received one user update")
+        #expect(receivedUsers != nil, "Should have received users update")
+        #expect(receivedUsers!.count == 1, "Should have received one user update")
 
         if let receivedUser = receivedUsers?.values.first {
-            XCTAssertEqual(receivedUser.dbId, Self.expectedUserDbId, "Received user ID should match expected")
-            XCTAssertEqual(receivedUser.name, "appleseed", "Received user name should match expected")
+            #expect(receivedUser.dbId == Self.expectedUserDbId, "Received user ID should match expected")
+            #expect(receivedUser.name == "appleseed", "Received user name should match expected")
         } else {
-            XCTFail("Expected to find a user in the combine event")
+            Issue.record("Expected to find a user in the combine event")
         }
     }
 }
