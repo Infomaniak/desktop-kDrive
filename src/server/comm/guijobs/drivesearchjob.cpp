@@ -25,7 +25,7 @@
 #include "libsyncengine/jobs/network/kDrive_API/searchjob.h"
 
 // Input parameters keys
-static const auto inParamsDriveDbId = "driveDbId";
+static const auto inParamsSyncDbId = "syncDbId";
 static const auto inParamsSearchString = "searchString";
 
 // Output parameters keys
@@ -42,7 +42,7 @@ DriveSearchJob::DriveSearchJob(std::shared_ptr<CommManager> commManager, int req
 
 ExitInfo DriveSearchJob::deserializeInputParms() {
     try {
-        readParamValue(inParamsDriveDbId, _driveDbId);
+        readParamValue(inParamsSyncDbId, _syncDbId);
         readParamValue(inParamsSearchString, _searchString);
     } catch (const std::exception &e) {
         LOG_WARN(_logger, "Exception in DriveSearchJob::readParamValue: error=" << e.what());
@@ -62,18 +62,28 @@ ExitInfo DriveSearchJob::serializeOutputParms() {
 ExitInfo DriveSearchJob::process() {
     // Find drive ID
     Drive drive;
+    Sync sync;
     bool found = false;
-    if (!ParmsDb::instance()->selectDrive(_driveDbId, drive, found)) {
+    if (!ParmsDb::instance()->selectSync(_syncDbId, sync, found)) {
+        LOG_WARN(_logger, "Error in ParmsDb::selectSync");
+        return ExitCode::DbError;
+    }
+    if (!found) {
+        LOG_WARN(_logger, "Sync not found for ID: " << _syncDbId);
+        return ExitCode::DataError;
+    }
+
+    if (!ParmsDb::instance()->selectDrive(sync.driveDbId(), drive, found)) {
         LOG_WARN(_logger, "Error in ParmsDb::selectDrive");
         return ExitCode::DbError;
     }
     if (!found) {
-        LOG_WARN(_logger, "Drive not found for ID: " << _driveDbId);
+        LOG_WARN(_logger, "Drive not found for ID: " << sync.driveDbId());
         return ExitCode::DataError;
     }
 
     // Send search request (synchronously for now)
-    SearchJob searchJob(_driveDbId, CommonUtility::commString2Str(_searchString));
+    SearchJob searchJob(sync.driveDbId(), _syncDbId, CommonUtility::commString2Str(_searchString));
     (void) searchJob.runSynchronously();
     for (const auto &searchInfo: searchJob.searchResults()) {
         _searchInfoList.push_back(searchInfo);
