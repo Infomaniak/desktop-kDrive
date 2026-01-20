@@ -29,7 +29,7 @@ struct UserSignalHandler {
             throw SignalError.unableToGetUserFromSignal
         }
 
-        let user = userInfoSignal.body.asUser
+        let user = userInfoSignal.body.userInfo.asUser
         await coherentCache.updateUser(user)
     }
 

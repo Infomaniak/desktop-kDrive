@@ -60,14 +60,14 @@ public struct User: Identifiable, Hashable, Sendable {
 }
 
 extension User {
-    var asUserInfoSignal: UserInfoSignal {
-        UserInfoSignal(dbId: dbId,
-                       userId: userId,
-                       name: name,
-                       email: email,
-                       avatar: avatar ?? Data(),
-                       isConnected: isConnected,
-                       isStaff: isStaff)
+    var asUserInfoMetadata: UserInfoMetadata {
+        UserInfoMetadata(dbId: dbId,
+                         userId: userId,
+                         name: name,
+                         email: email,
+                         avatar: avatar ?? Data(),
+                         isConnected: isConnected,
+                         isStaff: isStaff)
     }
 }
 

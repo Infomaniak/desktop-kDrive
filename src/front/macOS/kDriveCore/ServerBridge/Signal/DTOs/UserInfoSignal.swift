@@ -24,6 +24,10 @@ struct UserRemoveSignal: Codable, Sendable {
 }
 
 struct UserInfoSignal: Codable, Sendable {
+    let userInfo: UserInfoMetadata
+}
+
+struct UserInfoMetadata: Codable, Sendable {
     let dbId: Int32
     let userId: Int32
     @Base64CodedString var name: String
@@ -33,7 +37,7 @@ struct UserInfoSignal: Codable, Sendable {
     let isStaff: Bool
 }
 
-extension UserInfoSignal {
+extension UserInfoMetadata {
     var asUser: User {
         User(dbId: dbId,
              userId: userId,
