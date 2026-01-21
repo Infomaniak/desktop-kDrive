@@ -1,7 +1,6 @@
 name: macOS Redesign GUI
 
-on:
-    pull_request
+on: pull_request
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -14,9 +13,10 @@ defaults:
 jobs:
     run-tests:
         name: Run tests
-        # The job should run on a macOS runner with the latest kDrive
         runs-on: [ self-hosted, iOS]
 
+        # We disable code signing to avoid issues with missing certificates/provisioning profiles on the CI runner
+        # More isnfo here: https://github.com/orgs/community/discussions/175498
         steps:
             - name: Checkout
               uses: actions/checkout@v4
@@ -38,3 +38,18 @@ jobs:
                     -scheme kDrive \
                     -destination "platform=macOS,arch=arm64" \
                     test-without-building
+
+    swiftlint:
+        name: SwiftLint
+        runs-on: [ self-hosted, iOS]
+
+        steps:
+            - uses: jdx/mise-action@v2
+              with:
+                cache: false
+                experimental: true
+            - name: Checkout
+              uses: actions/checkout@v4
+            - name: SwiftLint
+              run: swiftlint --config .swiftlint.yml --config .swiftlint-ci.yml --reporter github-actions-logging .
+
