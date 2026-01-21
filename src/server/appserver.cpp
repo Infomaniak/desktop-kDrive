@@ -2011,10 +2011,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC: {
-            int driveDbId;
             QString basePath;
             QDataStream paramsStream(params);
-            paramsStream >> driveDbId;
             paramsStream >> basePath;
 
             QString path;

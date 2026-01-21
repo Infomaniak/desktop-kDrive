@@ -99,6 +99,7 @@ enum class ExitCause {
     ApiErr,
     InvalidSize,
     FileExists,
+    DirExists,
     FileAccessError,
     FileLocked,
     NotEnoughDiskSpace,
