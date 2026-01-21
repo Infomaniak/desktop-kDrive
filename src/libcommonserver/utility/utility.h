@@ -18,9 +18,10 @@
 
 #pragma once
 
-#include "../../libcommon/log/log.h"
 #include "libcommonserver/commonserverlib.h"
-#include "libcommonserver/db/dbdefs.h"
+#include "db/dbdefs.h"
+
+#include "libcommon/log/log.h"
 #include "libcommon/utility/filename.h"
 #include "libcommon/utility/types.h"
 

@@ -18,7 +18,6 @@
 #include "log/sentry/handler.h"
 #include "filestat.h"
 #include "iohelper.h"
-#include "libcommonserver/utility/utility.h" // Path2WStr
 
 #include "config.h" // APPLICATION
 
@@ -213,10 +212,10 @@ ExitInfo IoHelper::openFile(const SyncPath &path, std::ifstream &file, int timeO
 bool IoHelper::isExpectedError(IoError ioError) noexcept {
     return (ioError == IoError::NoSuchFileOrDirectory) || (ioError == IoError::AccessDenied);
 }
-//! Set the target type of a link item.
+//! Set the target type of link item.
 /*!
   \param targetPath is the file system path of the target of inspected link item.
-  \param itemType is the type of a link item whose targetPath is `targetPath`.
+  \param itemType is the type of link item whose targetPath is `targetPath`.
   \return true if no error occurred or if the error is expected, false otherwise.
 */
 bool IoHelper::_setTargetType(ItemType &itemType) noexcept {

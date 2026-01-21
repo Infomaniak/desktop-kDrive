@@ -69,7 +69,7 @@
 #include "libcommon/log/sentry/ptraces.h"
 
 #include "libcommon/io/iohelper.h"
-#include "../libcommon/log/log.h"
+#include "libcommon/log/log.h"
 #include "libcommonserver/network/proxy.h"
 #include "libcommonserver/vfs/vfs.h"
 #include "libcommonserver/utility/utility.h"
