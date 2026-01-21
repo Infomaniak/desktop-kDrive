@@ -96,8 +96,6 @@ struct COMMONSERVER_EXPORT Utility {
          */
         static bool checkIfSameNormalization(const SyncPath &a, const SyncPath &b, bool &areSame);
 
-
-        static SyncPath getTrashPath();
 #if defined(KD_MACOS)
         static bool preventSleeping(bool enable);
         static void restartFinderExtension();
@@ -105,8 +103,6 @@ struct COMMONSERVER_EXPORT Utility {
         static bool isLiteSyncExtRunning();
 #endif
         static bool isLiteSyncExtError(const ExitInfo &exitInfo);
-
-        static bool getLinuxDesktopType(std::string &currentDesktop);
 
         static void str2hexstr(const std::string &str, std::string &hexstr, bool capital = false);
         static void strhex2str(const std::string &hexstr, std::string &str);

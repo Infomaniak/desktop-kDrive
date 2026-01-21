@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -485,23 +485,6 @@ bool Utility::isLiteSyncExtError(const ExitInfo &exitInfo) {
 #else
     return false;
 #endif
-}
-
-bool Utility::getLinuxDesktopType(std::string &currentDesktop) {
-    const std::string xdgCurrentDesktop = CommonUtility::envVarValue("XDG_CURRENT_DESKTOP");
-    if (xdgCurrentDesktop.empty()) {
-        return false;
-    }
-
-    // ':' is the separator in the env variable, like "ubuntu:GNOME"
-    size_t colon_pos = xdgCurrentDesktop.find(':');
-
-    if (colon_pos != std::string::npos) {
-        currentDesktop = xdgCurrentDesktop.substr(colon_pos + 1);
-        return true;
-    }
-
-    return false;
 }
 
 #if defined(KD_WINDOWS)

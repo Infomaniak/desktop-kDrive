@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,20 +37,6 @@
 #include <Poco/Exception.h>
 
 namespace KDC {
-
-SyncPath Utility::getTrashPath() {
-    const char *homePathEnv = std::getenv("HOME");
-    if (!homePathEnv) {
-        LOG_WARN(Log::instance()->getLogger(), "Path to HOME not found");
-        return {};
-    }
-
-    if (const char *xdgDataHomeEnv = std::getenv("XDG_DATA_HOME"); xdgDataHomeEnv) {
-        return std::string(xdgDataHomeEnv) + "/Trash/files/";
-    }
-
-    return std::string(homePathEnv) + "/.local/share/Trash/files/";
-}
 
 namespace {
 int parseLineForRamStatus(char *line) {
@@ -236,8 +222,7 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
         autoStartFile << "[Desktop Entry]" << std::endl;
         autoStartFile << "Name=" << guiName << std::endl;
         autoStartFile << "GenericName=File Synchronizer" << std::endl;
-        autoStartFile << "Exec="
-                      << "'" << appimageDir.native() << "'" << std::endl;
+        autoStartFile << "Exec=" << "'" << appimageDir.native() << "'" << std::endl;
         autoStartFile << "Terminal=false" << std::endl;
         autoStartFile << "Icon=" << CommonUtility::toLower(appName) << std::endl;
         autoStartFile << "Categories=Network" << std::endl;

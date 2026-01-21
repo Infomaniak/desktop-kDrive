@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -128,7 +128,7 @@ IoError IoHelper::isLocked(const SyncPath &, bool &locked) noexcept {
 
 bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
     std::string desktopType;
-    if (!Utility::getLinuxDesktopType(desktopType)) {
+    if (!CommonUtility::getLinuxDesktopType(desktopType)) {
         desktopType = "GNOME";
     }
 
@@ -142,7 +142,7 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
         return true;
     }
 
-    const SyncPath trashPath = Utility::getTrashPath();
+    const SyncPath trashPath = CommonUtility::getTrashPath();
 
     // Check if the trash/files & trash/info path exists and create it if needed
     if (std::error_code ec; !std::filesystem::exists(trashPath, ec)) {

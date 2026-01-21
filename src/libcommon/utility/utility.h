@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -298,7 +298,7 @@ struct COMMON_EXPORT CommonUtility {
         class InvalidEnumerationValue : public std::runtime_error {
             public:
                 InvalidEnumerationValue() :
-                    std::runtime_error("Invalid enumeration value") {};
+                    std::runtime_error("Invalid enumeration value"){};
         };
         //! Read an input built-in/std::string/std::wstring/CommBLOB parameter from a Poco::DynamicStruct.
         /*!
@@ -450,6 +450,9 @@ struct COMMON_EXPORT CommonUtility {
         }
 
         static void msleep(int msec);
+
+        static bool getLinuxDesktopType(std::string &currentDesktop);
+        static SyncPath getTrashPath();
 
         // Base64 conversion
         static void convertFromBase64Str(const std::string &base64Str, std::string &value);

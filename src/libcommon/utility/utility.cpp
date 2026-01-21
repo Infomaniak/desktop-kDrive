@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1394,7 +1394,7 @@ ReplicaSide CommonUtility::syncNodeTypeSide(SyncNodeType type) {
 }
 
 bool CommonUtility::isWindows() {
-#ifdef _WIN32
+#ifdef KD_WINDOWS
     return true;
 #else
     return false;
@@ -1402,7 +1402,7 @@ bool CommonUtility::isWindows() {
 }
 
 bool CommonUtility::isMac() {
-#ifdef __APPLE__
+#ifdef KD_MACOS
     return true;
 #else
     return false;
@@ -1410,7 +1410,7 @@ bool CommonUtility::isMac() {
 }
 
 bool CommonUtility::isLinux() {
-#if defined(__unix__)
+#if defined(KD_LINUX)
     return true;
 #else
     return false;
@@ -1421,6 +1421,35 @@ void CommonUtility::msleep(int msec) {
     std::chrono::milliseconds dura(msec);
     std::this_thread::sleep_for(dura);
 }
+
+bool CommonUtility::getLinuxDesktopType(std::string &currentDesktop) {
+    const std::string xdgCurrentDesktop = CommonUtility::envVarValue("XDG_CURRENT_DESKTOP");
+    if (xdgCurrentDesktop.empty()) {
+        return false;
+    }
+
+    // ':' is the separator in the env variable, like "ubuntu:GNOME"
+    size_t colon_pos = xdgCurrentDesktop.find(':');
+
+    if (colon_pos != std::string::npos) {
+        currentDesktop = xdgCurrentDesktop.substr(colon_pos + 1);
+        return true;
+    }
+
+    return false;
+}
+
+#ifdef KD_MACOS
+SyncPath CommonUtility::getTrashPath() {
+    const char *homePathEnv = std::getenv("HOME");
+    if (!homePathEnv) {
+        LOG_WARN(Log::instance()->getLogger(), "Path to HOME not found.");
+        return {};
+    }
+
+    return SyncPath(homePathEnv) / ".Trash";
+}
+#endif
 
 void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::string &value) {
     value.clear();
