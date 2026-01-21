@@ -125,8 +125,8 @@ ExitInfo SyncLocalDeleteJob::canRun() {
     // Check if the item we want to delete locally has a remote counterpart.
 
     SyncPath remoteRelativePath;
-    const bool remoteItemIsFound = findRemoteItem(remoteRelativePath);
-    if (!remoteItemIsFound) return ExitCode::Ok; // Safe deletion.
+    if (const bool remoteItemIsFound = findRemoteItem(remoteRelativePath); !remoteItemIsFound)
+        return ExitCode::Ok; // Safe deletion.
 
     // Check whether the remote item has been moved.
     // If the remote item has been moved into a blacklisted folder, then this Delete job is created and
