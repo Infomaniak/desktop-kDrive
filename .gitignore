@@ -198,3 +198,6 @@ cmake-build-debug*
 
 # Xcode
 DerivedData/
+
+# Opencode folder containing agents / configuration
+.opencode/
