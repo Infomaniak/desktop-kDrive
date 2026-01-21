@@ -602,7 +602,7 @@ function Create-MSI-Package {
 
     Write-Host "Creating MSI package ..."
 
-	$appName = Get-Package-Name -msi
+	$appName = Get-Package-Name
     $msiInstallerFolderPath = "$path/installer/windows/kDriveInstaller"
     $msiPackageFolderPath = "$msiInstallerFolderPath/bin/x64/Release/en-US"
 	
