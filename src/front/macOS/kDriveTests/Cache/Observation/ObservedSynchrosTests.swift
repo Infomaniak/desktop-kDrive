@@ -72,7 +72,10 @@ struct ObservedSynchrosTests {
 
         #expect(firstSynchro.synchro == expectedSynchro, "The synchro in the array should match the one we just added")
         #expect(firstSynchro.drive.driveDbId == expectedDrive.driveDbId, "The drive should match the one we just added")
-        #expect(firstSynchro.account.dbId == ObservableData.expectedAccount.dbId, "The account should match the one we just added")
+        #expect(
+            firstSynchro.account.dbId == ObservableData.expectedAccount.dbId,
+            "The account should match the one we just added"
+        )
         #expect(firstSynchro.user.dbId == ObservableData.expectedUser.dbId, "The user should match the one we just added")
     }
 
@@ -113,7 +116,8 @@ struct ObservedSynchrosTests {
         #expect(fetchedSynchro == ObservableData.expectedSynchro, "We should find the object in cache")
         #expect(observedSynchros.count == 2, "We should have two synchros in the array")
 
-        guard let firstObservedSynchro = observedSynchros.first(where: { $0.synchro.dbId == ObservableData.expectedSynchroDbId }) else {
+        guard let firstObservedSynchro = observedSynchros.first(where: { $0.synchro.dbId == ObservableData.expectedSynchroDbId })
+        else {
             Issue.record("Failed to unwrap the first synchro")
             return
         }
@@ -123,7 +127,8 @@ struct ObservedSynchrosTests {
         #expect(firstObservedSynchro.account.dbId == ObservableData.expectedAccount.dbId, "The account should match")
         #expect(firstObservedSynchro.user.dbId == ObservableData.expectedUser.dbId, "The user should match")
 
-        guard let secondaryObservedSynchro = observedSynchros.first(where: { $0.synchro.dbId == ObservableData.secondarySynchroDbId }) else {
+        guard let secondaryObservedSynchro = observedSynchros
+            .first(where: { $0.synchro.dbId == ObservableData.secondarySynchroDbId }) else {
             Issue.record("Failed to unwrap the secondary synchro")
             return
         }
@@ -179,7 +184,10 @@ struct ObservedSynchrosTests {
         #expect(firstSynchro.synchro != expectedSynchro, "The synchro in the array should not match the old one")
         #expect(firstSynchro.synchro == updatedSynchro, "The synchro in the array should match the updated one")
         #expect(firstSynchro.drive.driveDbId == expectedDrive.driveDbId, "The drive should match the one we just added")
-        #expect(firstSynchro.account.dbId == ObservableData.expectedAccount.dbId, "The account should match the one we just added")
+        #expect(
+            firstSynchro.account.dbId == ObservableData.expectedAccount.dbId,
+            "The account should match the one we just added"
+        )
         #expect(firstSynchro.user.dbId == ObservableData.expectedUser.dbId, "The user should match the one we just added")
     }
 
@@ -262,7 +270,8 @@ struct ObservedSynchrosTests {
 
         #expect(observedSynchros.count == 1, "We should have one synchro in one drive after the deletion of a drive")
 
-        guard let firstObservedSynchro = observedSynchros.first(where: { $0.synchro.dbId == ObservableData.expectedSynchroDbId }) else {
+        guard let firstObservedSynchro = observedSynchros.first(where: { $0.synchro.dbId == ObservableData.expectedSynchroDbId })
+        else {
             Issue.record("Failed to unwrap the first synchro")
             return
         }
