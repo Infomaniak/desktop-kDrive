@@ -1,5 +1,6 @@
 using DynamicData;
 using DynamicData.Binding;
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,7 +11,9 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Reactive.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.DataTransfer;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -149,19 +152,100 @@ namespace Infomaniak.kDrive.CustomControls
 
         }
 
-        private void OpenInExplorer_Click(object sender, RoutedEventArgs e)
+        private async void OpenInExplorer_Click(object sender, RoutedEventArgs e)
         {
+            FrameworkElement? element = sender as FrameworkElement;
+            if (element is null)
+            {
+                Logger.Log(Logger.Level.Error, "sender is not a FrameworkElement");
+                return;
+            }
 
+            var activity = element.DataContext as SyncFileItem;
+            if (activity is null)
+            {
+                Logger.Log(Logger.Level.Error, "DataContext is not a SyncFileItem");
+                return;
+            }
+
+            await Utility.OpenFolderSecurely(activity.LocalPath);
         }
 
-        private void OpenOnline_Click(object sender, RoutedEventArgs e)
+        private async void OpenOnline_Click(object sender, RoutedEventArgs e)
         {
+            FrameworkElement? element = sender as FrameworkElement;
+            if (element is null)
+            {
+                Logger.Log(Logger.Level.Error, "sender is not a FrameworkElement");
+                return;
+            }
 
+            var activity = element.DataContext as SyncFileItem;
+            if (activity is null)
+            {
+                Logger.Log(Logger.Level.Error, "DataContext is not a SyncFileItem");
+                return;
+            }
+
+            Uri uri = App.Constants.Drive.itemUri(activity.Sync.Drive.DriveId, activity.RemoteNodeId);
+            await Windows.System.Launcher.LaunchUriAsync(uri);
         }
 
-        private void CopyPublicLink_Click(object sender, RoutedEventArgs e)
+        private async void CopyPublicLink_Click(object sender, RoutedEventArgs e)
         {
+            DisplayTeachingTip("Recuperation du lien de partage...");
+            FrameworkElement? element = sender as FrameworkElement;
+            if (element is null)
+            {
+                Logger.Log(Logger.Level.Error, "sender is not a FrameworkElement");
+                DisplayTeachingTip("Impossible de recuperer le lien de partage");
+                return;
+            }
 
+            var activity = element.DataContext as SyncFileItem;
+            if (activity is null)
+            {
+                Logger.Log(Logger.Level.Error, "DataContext is not a SyncFileItem");
+                DisplayTeachingTip("Impossible de recuperer le lien de partage");
+                return;
+            }
+
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+
+            Uri? publicLink = await commService.GetPublicLink(activity.Sync.Drive.DbId, activity.RemoteNodeId, CancellationToken.None);
+            if (publicLink is not null)
+            {
+                DataPackage dataPackage = new();
+                dataPackage.RequestedOperation = DataPackageOperation.Copy;
+                dataPackage.SetWebLink(publicLink);
+                Clipboard.SetContent(dataPackage);
+                DisplayTeachingTip("Lien de partage copié");
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Error, "Could not retrieve public link");
+                DisplayTeachingTip("Impossible de recuperer le lien de partage");
+            }
+        }
+
+        private void NavigateToErrorPageButton_Click(object sender, RoutedEventArgs e)
+        {
+            Frame? frame = Utility.GetFrame(this);
+            if (frame is not null)
+            {
+                Logger.Log(Logger.Level.Info, "Navigating to ErrorPage.");
+                frame.Navigate(typeof(Pages.ErrorPage));
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Error, "Could not find Frame in visual tree to navigate to error page");
+            }
+        }
+
+        private void DisplayTeachingTip(string text)
+        {
+            CopyPublicLinkTip.Subtitle = text;
+            CopyPublicLinkTip.IsOpen = true;
         }
     }
     public partial class ItemTypeDataTemplateSelector : DataTemplateSelector

@@ -198,7 +198,7 @@
                     QueryIcon="Find"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
-                    CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
+                    CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
                     BorderThickness="1"
                     TextChanged="SearchBox_TextChanged"
                     ItemTemplateSelector="{StaticResource SearchBoxResultItemTemplateSelector}"

@@ -73,7 +73,7 @@
                         <ColumnDefinition Width="204*" />
                         <ColumnDefinition Width="204" />
                         <ColumnDefinition Width="92" />
-                        <ColumnDefinition Width="100" />
+                        <ColumnDefinition Width="80" />
                     </Grid.ColumnDefinitions>
                     <TextBlock x:Uid="CC_SyncActivityTable_Header_Name"
                                Grid.Column="0"
@@ -170,18 +170,89 @@
 
                             <DataTemplate x:Key="SynchronizedFlyoutTemplate"
                                           x:DataType="viewmodels:SyncFileItem">
-
+                                <Button Grid.Column="2"
+                                        Padding="0"
+                                        BorderThickness="0"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Stretch"
+                                        Background="Transparent">
+                                    <Button.Content>
+                                        <controls:SvgIcon Width="14"
+                                                          Height="14"
+                                                          UriString="{StaticResource Infomaniak.DS.Icons.Essentials.dots-vertical}"
+                                                          Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                                          HorizontalAlignment="Right" />
+                                    </Button.Content>
+                                    <Button.Flyout>
+                                        <MenuFlyout Placement="RightEdgeAlignedTop">
+                                            <MenuFlyoutItem Text="Open in Explorer"
+                                                            Click="OpenInExplorer_Click"
+                                                            Padding="4,2">
+                                                <MenuFlyoutItem.Icon>
+                                                    <controls:SvgIcon Height="16"
+                                                                      UriString="{StaticResource Infomaniak.DS.Icons.folder-circle-arrow-right}"
+                                                                      Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                                                </MenuFlyoutItem.Icon>
+                                            </MenuFlyoutItem>
+                                            <MenuFlyoutItem Text="Open Online"
+                                                            Click="OpenOnline_Click"
+                                                            Padding="4,2">
+                                                <MenuFlyoutItem.Icon>
+                                                    <controls:SvgIcon Height="16"
+                                                                      UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive-outline}"
+                                                                      Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                                                </MenuFlyoutItem.Icon>
+                                            </MenuFlyoutItem>
+                                            <MenuFlyoutItem Text="Copy Public Link"
+                                                            Click="CopyPublicLink_Click"
+                                                            Padding="4,2">
+                                                <MenuFlyoutItem.Icon>
+                                                    <controls:SvgIcon Height="16"
+                                                                      UriString="{StaticResource Infomaniak.DS.Icons.Actions.share}"
+                                                                      Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                                                </MenuFlyoutItem.Icon>
+                                            </MenuFlyoutItem>
+                                        </MenuFlyout>
+                                    </Button.Flyout>
+                                </Button>
                             </DataTemplate>
 
                             <DataTemplate x:Key="SynchronizationErrorFlyoutTemplate"
                                           x:DataType="viewmodels:SyncFileItem">
-
+                                <Button Grid.Column="2"
+                                        Padding="0"
+                                        BorderThickness="0"
+                                        Height="32"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Stretch"
+                                        Background="Transparent">
+                                    <Button.Content>
+                                        <controls:SvgIcon Width="14"
+                                                          Height="14"
+                                                          UriString="{StaticResource Infomaniak.DS.Icons.Essentials.dots-vertical}"
+                                                          Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                                          HorizontalAlignment="Right" />
+                                    </Button.Content>
+                                    <Button.Flyout>
+                                        <MenuFlyout Placement="RightEdgeAlignedTop">
+                                            <MenuFlyoutItem Text="Corriger les erreurs"
+                                                            Click="NavigateToErrorPageButton_Click"
+                                                            Padding="4,2">
+                                                <MenuFlyoutItem.Icon>
+                                                    <controls:SvgIcon Height="16"
+                                                                      UriString="{StaticResource Infomaniak.DS.Icons.Actions.triangle-alert-outline}"
+                                                                      Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                                                </MenuFlyoutItem.Icon>
+                                            </MenuFlyoutItem>
+                                        </MenuFlyout>
+                                    </Button.Flyout>
+                                </Button>
                             </DataTemplate>
 
                             <DataTemplate x:Key="SynchronizingFlyoutTemplate"
                                           x:DataType="viewmodels:SyncFileItem">
                                 <!-- The flyout is only available for synchronized items -->
-                                <Grid /> 
+                                <Grid />
                             </DataTemplate>
 
                             <local:ActivityStatusDataTemplateSelector x:Key="ActivityStatusIconTemplateSelector"
@@ -198,7 +269,7 @@
                             <ColumnDefinition Width="204*" />
                             <ColumnDefinition Width="204" />
                             <ColumnDefinition Width="92" />
-                            <ColumnDefinition Width="100" />
+                            <ColumnDefinition Width="80" />
                         </Grid.ColumnDefinitions>
                         <Grid Grid.Column="0"
                               Padding="{StaticResource Infomaniak.Style.Thickness.Left.S}"
@@ -261,7 +332,7 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="18" />
                                 <ColumnDefinition Width="18" />
-                                <ColumnDefinition Width="36" />
+                                <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
                             <controls:SvgIcon Grid.Column="0"
@@ -280,62 +351,20 @@
                                             Content="{x:Bind}"
                                             ContentTemplateSelector="{StaticResource ActivityStatusIconTemplateSelector}" />
 
-                            <ContentControl Grid.Column="1"
+                            <ContentControl Grid.Column="2"
+                                            Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.XS}"
                                             VerticalAlignment="Center"
+                                            HorizontalContentAlignment="Stretch"
                                             Content="{x:Bind}"
                                             ContentTemplateSelector="{StaticResource ActivityFlyoutTemplateSelector}" />
-
-                            <Button Grid.Column="2"
-                                    Padding="0"
-                                    BorderThickness="0"
-                                    Height="32"
-                                    HorizontalAlignment="Stretch"
-                                    HorizontalContentAlignment="Stretch"
-                                    Background="Transparent">
-                                <Button.Content>
-                                    <controls:SvgIcon Width="14"
-                                                      Height="14"
-                                                      UriString="{StaticResource Infomaniak.DS.Icons.Essentials.dots-vertical}"
-                                                      Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                                                      HorizontalAlignment="Right" />
-                                </Button.Content>
-                                <Button.Flyout>
-                                    <MenuFlyout>
-                                        <MenuFlyoutItem Text="Open in Explorer"
-                                                        Click="OpenInExplorer_Click"
-                                                        Padding="4,2">
-                                            <MenuFlyoutItem.Icon>
-                                                <controls:SvgIcon Height="16"
-                                                                  UriString="{StaticResource Infomaniak.DS.Icons.folder-circle-arrow-right}"
-                                                                  Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                                            </MenuFlyoutItem.Icon>
-                                        </MenuFlyoutItem>
-                                        <MenuFlyoutItem Text="Open Online"
-                                                        Click="OpenOnline_Click"
-                                                        Padding="4,2">
-                                            <MenuFlyoutItem.Icon>
-                                                <controls:SvgIcon Height="16"
-                                                                  UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive-outline}"
-                                                                  Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                                            </MenuFlyoutItem.Icon>
-                                        </MenuFlyoutItem>
-                                        <MenuFlyoutItem Text="Copy Public Link"
-                                                        Click="CopyPublicLink_Click"
-                                                        Padding="4,2">
-                                            <MenuFlyoutItem.Icon>
-                                                <controls:SvgIcon Height="16"
-                                                                  UriString="{StaticResource Infomaniak.DS.Icons.Actions.share}"
-                                                                  Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                                            </MenuFlyoutItem.Icon>
-                                        </MenuFlyoutItem>
-                                    </MenuFlyout>
-                                </Button.Flyout>
-                            </Button>
-
                         </Grid>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
+
+        <TeachingTip x:Name="CopyPublicLinkTip"
+                     IsLightDismissEnabled="True"
+                     PreferredPlacement="Bottom" />
     </Grid>
 </UserControl>

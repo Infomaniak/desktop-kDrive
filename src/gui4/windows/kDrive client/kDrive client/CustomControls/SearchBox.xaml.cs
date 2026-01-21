@@ -153,7 +153,7 @@ namespace Infomaniak.kDrive.CustomControls
             if (!resultItem.SearchItem.IsAvailableLocally)
             {
                 // Item is not available locally, open in web browser
-                var url = App.Constants.Drive.OpenItemUri(_appModel.SelectedSync.Drive.DriveId, resultItem.SearchItem.NodeId);
+                var url = App.Constants.Drive.itemUri(_appModel.SelectedSync.Drive.DriveId, resultItem.SearchItem.NodeId);
                 await Launcher.LaunchUriAsync(url);
                 sender.IsSuggestionListOpen = false;
                 return;
@@ -228,7 +228,7 @@ namespace Infomaniak.kDrive.CustomControls
             if (!resultItem.SearchItem.IsAvailableLocally)
             {
                 // Item is not available locally, open in web browser
-                var url = App.Constants.Drive.OpenItemUri(_appModel.SelectedSync.Drive.DriveId, resultItem.SearchItem.NodeId);
+                var url = App.Constants.Drive.itemUri(_appModel.SelectedSync.Drive.DriveId, resultItem.SearchItem.NodeId);
                 await Launcher.LaunchUriAsync(url);
                 return;
             }
