@@ -57,17 +57,29 @@ public struct User: Identifiable, Hashable, Sendable {
         self.isConnected = isConnected
         self.isStaff = isStaff
     }
+
+    init(userInfoMetadata: UserInfoMetadata) {
+        dbId = userInfoMetadata.dbId
+        userId = userInfoMetadata.userId
+        name = userInfoMetadata.name
+        email = userInfoMetadata.email
+        accounts = [:]
+        availableDrives = [:]
+        avatar = userInfoMetadata.avatar
+        isConnected = userInfoMetadata.isConnected
+        isStaff = userInfoMetadata.isStaff
+    }
 }
 
 extension User {
-    var asUserInfoSignal: UserInfoSignal {
-        UserInfoSignal(dbId: dbId,
-                       userId: userId,
-                       name: name,
-                       email: email,
-                       avatar: avatar ?? Data(),
-                       isConnected: isConnected,
-                       isStaff: isStaff)
+    var asUserInfoMetadata: UserInfoMetadata {
+        UserInfoMetadata(dbId: dbId,
+                         userId: userId,
+                         name: name,
+                         email: email,
+                         avatar: avatar ?? Data(),
+                         isConnected: isConnected,
+                         isStaff: isStaff)
     }
 }
 
