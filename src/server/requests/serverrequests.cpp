@@ -394,9 +394,9 @@ ExitCode ServerRequests::findGoodPathForNewSync(const QString &basePath, QString
     int attempt = 1;
     forever {
         ExitInfo exitInfo = checkPathValidityForNewFolder(syncList, folder, error);
-        if (!exitInfo && exitInfo.cause() != ExitInfo(ExitCode::SystemError, ExitCause::DirExists)) {
+        if (!exitInfo && exitInfo != ExitInfo(ExitCode::SystemError, ExitCause::DirExists)) {
             LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityForNewFolder: " << exitInfo);
-            return exitCode;
+            return exitInfo;
         }
 
         if (exitInfo.cause() != ExitCause::DirExists) {
