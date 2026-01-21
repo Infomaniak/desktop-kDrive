@@ -41,7 +41,7 @@ class TestLog : public CppUnit::TestFixture, public TestBase {
         log4cplus::Logger _logger;
         void testLog(void);
 
-        int countFilesInDirectory(const SyncPath& directory) const; // return -1 if error
+        int countFilesInDirectory(const SyncPath &directory) const; // return -1 if error
         void clearLogDirectory(void) const; // remove all files in log directory except the current log file
         SyncPath _logDir;
 };
