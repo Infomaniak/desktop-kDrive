@@ -393,14 +393,13 @@ ExitCode ServerRequests::findGoodPathForNewSync(const QString &basePath, QString
 
     int attempt = 1;
     forever {
-        exitCode = checkPathValidityForNewFolder(syncList, folder, error);
-        if (exitCode != ExitCode::Ok) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityForNewFolder: code=" << exitCode);
+        ExitInfo exitInfo = checkPathValidityForNewFolder(syncList, folder, error);
+        if (!exitInfo && exitInfo.cause() != ExitInfo(ExitCode::SystemError, ExitCause::DirExists)) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityForNewFolder: " << exitInfo);
             return exitCode;
         }
 
-        const bool isGood = !QFileInfo::exists(folder) && error.isEmpty();
-        if (isGood) {
+        if (exitInfo.cause() != ExitCause::DirExists) {
             break;
         }
 
@@ -2125,7 +2124,7 @@ ExitCode ServerRequests::checkPathValidityRecursive(const QString &path, QString
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::checkPathValidityForNewFolder(const std::vector<Sync> &syncList, const QString &path, QString &error) {
+ExitInfo ServerRequests::checkPathValidityForNewFolder(const std::vector<Sync> &syncList, const QString &path, QString &error) {
     ExitCode exitCode = checkPathValidityRecursive(path, error);
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityRecursive: code=" << exitCode);
@@ -2165,7 +2164,7 @@ ExitCode ServerRequests::checkPathValidityForNewFolder(const std::vector<Sync> &
         if (!differentPaths) {
             error = QObject::tr("The local folder %1 is already synced. Please pick another one!")
                             .arg(QDir::toNativeSeparators(path));
-            return ExitCode::SystemError;
+            return {ExitCode::SystemError, ExitCause::DirExists};
         }
     }
 
