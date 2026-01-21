@@ -133,7 +133,7 @@ void TestUtility::testGetLinuxDesktopType() {
     CPPUNIT_ASSERT(!currentDesktop.empty());
     return;
 #endif
-    CPPUNIT_ASSERT(!Utility::getLinuxDesktopType(currentDesktop));
+    CPPUNIT_ASSERT(!CommonUtility::getLinuxDesktopType(currentDesktop));
 }
 
 void TestUtility::testStr2HexStr() {
