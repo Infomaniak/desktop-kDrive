@@ -151,21 +151,36 @@
                                 <controls:SvgIcon Height="16"
                                                   PointerPressed="ItemErrorIcon_PointerPressed"
                                                   Foreground="{ThemeResource colors.status.medium.warning}"
-                                                  UriString="{StaticResource Infomaniak.DS.Icons.Actions.triangle-alert-outline}" />
+                                                  UriString="{StaticResource Infomaniak.DS.Icons.Actions.triangle-alert-outline}">
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip x:Name="ItemErrorToolTip"
+                                                 Content="Erreur de synchronisation" />
+                                    </ToolTipService.ToolTip>
+                                </controls:SvgIcon>
                             </DataTemplate>
                             <DataTemplate x:Key="SynchronizedTemplate"
                                           x:DataType="viewmodels:SyncFileItem">
                                 <controls:SvgIcon Height="16"
-                                                  PointerPressed="ItemErrorIcon_PointerPressed"
                                                   Foreground="{ThemeResource colors.status.medium.success}"
-                                                  UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-check-outline}" />
+                                                  UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-check-outline}">
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip x:Name="ItemErrorToolTip"
+                                                 Content="Synchronisé" />
+                                    </ToolTipService.ToolTip>
+                                </controls:SvgIcon>
+
                             </DataTemplate>
                             <DataTemplate x:Key="SynchronizingTemplate"
                                           x:DataType="viewmodels:SyncFileItem">
                                 <controls:SvgIcon Height="16"
                                                   PointerPressed="ItemErrorIcon_PointerPressed"
                                                   Foreground="{StaticResource Infomaniak.Style.Color.Product.Default}"
-                                                  UriString="{StaticResource Infomaniak.DS.Icons.Arrows.arrow-loop}" />
+                                                  UriString="{StaticResource Infomaniak.DS.Icons.Arrows.arrow-loop}">
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip x:Name="ItemErrorToolTip"
+                                                 Content="Synchronisation en cours" />
+                                    </ToolTipService.ToolTip>
+                                </controls:SvgIcon>
                             </DataTemplate>
 
                             <DataTemplate x:Key="SynchronizedFlyoutTemplate"
@@ -362,9 +377,22 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-
-        <TeachingTip x:Name="CopyPublicLinkTip"
+        <TeachingTip x:Name="NotificationTeachingTip"
                      IsLightDismissEnabled="True"
-                     PreferredPlacement="Bottom" />
+                     PreferredPlacement="bottom"
+                     ShouldConstrainToRootBounds="True">
+
+            <StackPanel Orientation="Horizontal"
+                        Spacing="12">
+                <ProgressRing x:Name="NotificationRing"
+                              Width="16"
+                              Height="16"
+                              Visibility="Collapsed" />
+
+                <TextBlock x:Name="NotificationText"
+                           TextWrapping="Wrap" />
+            </StackPanel>
+        </TeachingTip>
+
     </Grid>
 </UserControl>

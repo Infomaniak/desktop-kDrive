@@ -6,10 +6,12 @@ using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -193,20 +195,25 @@ namespace Infomaniak.kDrive.CustomControls
 
         private async void CopyPublicLink_Click(object sender, RoutedEventArgs e)
         {
-            DisplayTeachingTip("Recuperation du lien de partage...");
             FrameworkElement? element = sender as FrameworkElement;
             if (element is null)
             {
                 Logger.Log(Logger.Level.Error, "sender is not a FrameworkElement");
-                DisplayTeachingTip("Impossible de recuperer le lien de partage");
+                DisplayTeachingTip("Impossible de recuperer le lien de partage", false);
                 return;
             }
+
+            // Find parrent button to anchor teaching tip
+
+
+            DisplayTeachingTip("Recuperation du lien de partage...", true);
+
 
             var activity = element.DataContext as SyncFileItem;
             if (activity is null)
             {
                 Logger.Log(Logger.Level.Error, "DataContext is not a SyncFileItem");
-                DisplayTeachingTip("Impossible de recuperer le lien de partage");
+                DisplayTeachingTip("Impossible de recuperer le lien de partage", false);
                 return;
             }
 
@@ -217,14 +224,14 @@ namespace Infomaniak.kDrive.CustomControls
             {
                 DataPackage dataPackage = new();
                 dataPackage.RequestedOperation = DataPackageOperation.Copy;
-                dataPackage.SetWebLink(publicLink);
+                dataPackage.SetText(publicLink.ToString());
                 Clipboard.SetContent(dataPackage);
-                DisplayTeachingTip("Lien de partage copié");
+                DisplayTeachingTip("Lien de partage copié", false);
             }
             else
             {
                 Logger.Log(Logger.Level.Error, "Could not retrieve public link");
-                DisplayTeachingTip("Impossible de recuperer le lien de partage");
+                DisplayTeachingTip("Impossible de recuperer le lien de partage", false);
             }
         }
 
@@ -242,10 +249,19 @@ namespace Infomaniak.kDrive.CustomControls
             }
         }
 
-        private void DisplayTeachingTip(string text)
+        private void DisplayTeachingTip(string text, bool showSpinner)
         {
-            CopyPublicLinkTip.Subtitle = text;
-            CopyPublicLinkTip.IsOpen = true;
+            NotificationText.Text = text;
+            NotificationRing.Visibility = showSpinner
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+
+            NotificationTeachingTip.IsOpen = true;
+        }
+
+        private void ClosePopupClicked(object sender, RoutedEventArgs e)
+        {
+            NotificationTeachingTip.IsOpen = false;
         }
     }
     public partial class ItemTypeDataTemplateSelector : DataTemplateSelector
