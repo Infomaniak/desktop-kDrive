@@ -1,4 +1,6 @@
 find_package(Qt6)
+find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
+get_filename_component(_OpenSSL_LIB_DIRS "${OPENSSL_SSL_LIBRARY}" DIRECTORY)
 
 # Target
 add_library("${APPLICATION_EXECUTABLE}_vfs_mac" SHARED
