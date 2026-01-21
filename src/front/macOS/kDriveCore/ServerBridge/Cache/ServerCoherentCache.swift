@@ -38,6 +38,12 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
             .eraseToAnyPublisher()
     }
 
+    public nonisolated var serverErrorsPublisher: AnyPublisher<IndexedErrors, Never> {
+        serverErrorsSubject
+            .subscribe(on: DispatchQueue.global(qos: .userInitiated))
+            .eraseToAnyPublisher()
+    }
+
     public enum CacheError: Error {
         case userNotFound(_ dbId: Int32)
         case accountNotFound(_ dbId: Int32)
