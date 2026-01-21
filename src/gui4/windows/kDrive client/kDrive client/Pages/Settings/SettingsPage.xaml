@@ -230,7 +230,7 @@
                                                                   Click="ManageDriveButton_Click"
                                                                   Tag="{x:Bind}">
                                                 <toolKit:SettingsCard.HeaderIcon>
-                                                    <controls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom }"
+                                                    <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive }"
                                                                       Foreground="{x:Bind Color, Converter={StaticResource ColorToBrushConverter}}" />
                                                 </toolKit:SettingsCard.HeaderIcon>
                                                 <ContentControl Content="{x:Bind}"
@@ -537,7 +537,7 @@
                     <!-- About - Privacy -->
                     <toolKit:SettingsExpander Header="À propos de kDrive">
                         <toolKit:SettingsExpander.HeaderIcon>
-                            <controls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom}"
+                            <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
                                               Height="32"
                                               Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                         </toolKit:SettingsExpander.HeaderIcon>

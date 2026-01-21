@@ -22,6 +22,7 @@
 
     <!-- Actions -->
     <x:String x:Key="Infomaniak.DS.Icons.Actions.power">ms-appx:///Assets/DS/Icons/Actions/power.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Actions.share">ms-appx:///Assets/DS/Icons/Actions/share.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Actions.trashbin">ms-appx:///Assets/DS/Icons/Actions/trashbin.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Actions.triangle-alert">ms-appx:///Assets/DS/Icons/Actions/triangle-alert.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Actions.triangle-alert-outline">ms-appx:///Assets/DS/Icons/Actions/triangle-alert-outline.svg</x:String>
@@ -92,9 +93,14 @@
     <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-circle-plus">ms-appx:///Assets/DS/Icons/Documents/folder-circle-plus.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-open-file">ms-appx:///Assets/DS/Icons/Documents/folder-open-file.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-block">ms-appx:///Assets/DS/Icons/Documents/folder-block.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.folder-circle-arrow-right">ms-appx:///Assets/DS/Icons/Documents/folder-circle-arrow-right.svg</x:String>
 
     <!-- Devices -->
     <x:String x:Key="Infomaniak.DS.Icons.Devices.computer">ms-appx:///Assets/DS/Icons/Devices/computer.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Devices.headphones">ms-appx:///Assets/DS/Icons/Devices/headphones.svg</x:String>
+    
+    <!-- Products -->
+    <x:String x:Key="Infomaniak.DS.Icons.Products.kDrive">ms-appx:///Assets/DS/Icons/Products/kDrive.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Products.kDrive-outline">ms-appx:///Assets/DS/Icons/Products/kDrive-outline.svg</x:String>
 
 </ResourceDictionary>
