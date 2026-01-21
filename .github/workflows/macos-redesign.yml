@@ -53,3 +53,17 @@ jobs:
             - name: SwiftLint
               run: swiftlint --config .swiftlint.yml --config .swiftlint-ci.yml --reporter github-actions-logging .
 
+    swiftformat:
+        name: SwiftFormat
+        runs-on: [ self-hosted, iOS ]
+
+        steps:
+            - uses: jdx/mise-action@v2
+              with:
+                cache: false
+                experimental: true
+            - name: Checkout
+              uses: actions/checkout@v4
+            - name: SwiftFormat
+              run: swiftformat --lint . --reporter github-actions-log
+
