@@ -1,6 +1,6 @@
 find_package(Qt6)
 find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
-get_filename_component(_OpenSSL_LIB_DIRS "${OPENSSL_SSL_LIBRARY}" DIRECTORY)
+set(_OpenSSL_LIB_DIRS "${openssl_LIB_DIRS_RELEASE}")
 
 # Target
 add_library("${APPLICATION_EXECUTABLE}_vfs_mac" SHARED
@@ -40,8 +40,8 @@ if(BUILD_KDRIVE_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
 
     install(CODE "
         message(STATUS \"Fixing library paths for kDrive_vfs_mac...\")
-        execute_process(COMMAND \"install_name_tool\" -change ${_OpenSSL_LIB_DIRS}/libssl.3.dylib @rpath/libssl.3.dylib ${ENV_DEST_DIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/PlugIns/${APPLICATION_EXECUTABLE}_vfs_mac.dylib)
-        execute_process(COMMAND \"install_name_tool\" -change ${_OpenSSL_LIB_DIRS}/libcrypto.3.dylib @rpath/libcrypto.3.dylib ${ENV_DEST_DIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/PlugIns/${APPLICATION_EXECUTABLE}_vfs_mac.dylib)
+        execute_process(COMMAND \"install_name_tool\" -change ${openssl_LIB_DIRS_RELEASE}/libssl.3.dylib @rpath/libssl.3.dylib ${ENV_DEST_DIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/PlugIns/${APPLICATION_EXECUTABLE}_vfs_mac.dylib)
+        execute_process(COMMAND \"install_name_tool\" -change ${openssl_LIB_DIRS_RELEASE}/libcrypto.3.dylib @rpath/libcrypto.3.dylib ${ENV_DEST_DIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/PlugIns/${APPLICATION_EXECUTABLE}_vfs_mac.dylib)
         execute_process(COMMAND \"install_name_tool\" -change libxxhash.0.dylib @rpath/libxxhash.0.dylib ${ENV_DEST_DIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/PlugIns/${APPLICATION_EXECUTABLE}_vfs_mac.dylib)
         message(STATUS \"Fixed library paths for kDrive_vfs_mac\")
         execute_process(COMMAND otool \"-L\" ${ENV_DEST_DIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/PlugIns/${APPLICATION_EXECUTABLE}_vfs_mac.dylib)
