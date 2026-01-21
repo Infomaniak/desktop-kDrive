@@ -1,4 +1,4 @@
-name: macOS Redesign GUI
+name: macOS Redesigned GUI
 
 on: pull_request
 
@@ -7,63 +7,64 @@ concurrency:
   cancel-in-progress: true
 
 defaults:
-    run:
-        working-directory: ./src/front/macOS
+  run:
+    working-directory: ./src/front/macOS
 
 jobs:
-    run-tests:
-        name: Run tests
-        runs-on: [ self-hosted, iOS]
+  run-tests:
+    name: Run tests
+    runs-on: [ self-hosted, iOS]
 
-        # We disable code signing to avoid issues with missing certificates/provisioning profiles on the CI runner
-        # More isnfo here: https://github.com/orgs/community/discussions/175498
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
-            - name: Build
-              run: |
-                xcodebuild \
-                    -scheme kDrive \
-                    -destination "platform=macOS,arch=arm64" \
-                    CODE_SIGNING_ALLOWED=NO \
-                    CODE_SIGNING_REQUIRED=NO \
-                    CODE_SIGN_IDENTITY="" \
-                    PROVISIONING_PROFILE_SPECIFIER="" \
-                    DEVELOPMENT_TEAM="" \
-                    ENABLE_HARDENED_RUNTIME=NO \
-                    build-for-testing
-            - name: Run tests
-              run: |
-                xcodebuild \
-                    -scheme kDrive \
-                    -destination "platform=macOS,arch=arm64" \
-                    test-without-building
+    # We disable code signing to avoid issues with missing certificates/provisioning profiles on the CI runner
+    # More isnfo here: https://github.com/orgs/community/discussions/175498
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build
+        run: |
+          xcodebuild \
+            -scheme kDrive \
+            -destination "platform=macOS,arch=arm64" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            DEVELOPMENT_TEAM="" \
+            ENABLE_HARDENED_RUNTIME=NO \
+            build-for-testing
+      - name: Run tests
+        run: |
+          xcodebuild \
+            -scheme kDrive \
+            -destination "platform=macOS,arch=arm64" \
+            test-without-building
 
-    swiftlint:
-        name: SwiftLint
-        runs-on: [ self-hosted, iOS]
+  swiftlint:
+    name: SwiftLint
+    runs-on: [ self-hosted, iOS]
 
-        steps:
-            - uses: jdx/mise-action@v2
-              with:
-                cache: false
-                experimental: true
-            - name: Checkout
-              uses: actions/checkout@v4
-            - name: SwiftLint
-              run: swiftlint --config .swiftlint.yml --config .swiftlint-ci.yml --reporter github-actions-logging .
+    steps:
+      - name: Setup Mise
+        uses: jdx/mise-action@v2
+        with:
+          cache: false
+          experimental: true
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: SwiftLint
+        run: swiftlint --config .swiftlint.yml --config .swiftlint-ci.yml --reporter github-actions-logging .
 
-    swiftformat:
-        name: SwiftFormat
-        runs-on: [ self-hosted, iOS ]
+  swiftformat:
+    name: SwiftFormat
+    runs-on: [ self-hosted, iOS ]
 
-        steps:
-            - uses: jdx/mise-action@v2
-              with:
-                cache: false
-                experimental: true
-            - name: Checkout
-              uses: actions/checkout@v4
-            - name: SwiftFormat
-              run: swiftformat --lint . --reporter github-actions-log
-
+    steps:
+      - name: Setup Mise
+        uses: jdx/mise-action@v2
+        with:
+          cache: false
+          experimental: true
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: SwiftFormat
+        run: swiftformat --lint . --reporter github-actions-log
