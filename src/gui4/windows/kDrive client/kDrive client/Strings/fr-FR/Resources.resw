@@ -278,6 +278,9 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
     <value>Fichier inaccessible</value>
   </data>
   <data name="CC_ErrorBar.Title" xml:space="preserve">
+    <value>Vous avez {0} erreurs de synchronisation</value>
+  </data>
+  <data name="CC_ErrorBar.Message" xml:space="preserve">
     <value>Certains fichiers n’ont pas pu être synchronisés.</value>
   </data>
   <data name="CC_ErrorBar_Button.Content" xml:space="preserve">
@@ -957,17 +960,5 @@ déverrouillé et accessible depuis votre ordinateur.</value>
   </data>
   <data name="CC_SearchBox_ItemUnavailableLocally_Tooltip.Content" xml:space="preserve">
     <value>Cet élément n'est pas disponible sur votre appareil. Il sera ouvert dans votre navigateur.</value>
-  </data>
-  <data name="Page_StoragePage_Disconnected_Title.Text" xml:space="preserve">
-    <value>Le disque de stockage {0} n’est pas accessible</value>
-    <comment>{0}: Disk root (ie C:/)</comment>
-  </data>
-  <data name="Page_StoragePage_Disconnected_RetryButton.Content" xml:space="preserve">
-    <value>Réessayer</value>
-  </data>
-  <data name="Page_StoragePage_Disconnected_Subtitle.Text" xml:space="preserve">
-    <value>kDrive ne peut pas accéder au disque {0}  Assurez-vous qu’il est bien connecté, 
-déverrouillé et accessible depuis votre ordinateur.</value>
-    <comment>{0}: Disk root (ie C:/)</comment>
   </data>
 </root>

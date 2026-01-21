@@ -7,20 +7,23 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:converters="using:Infomaniak.kDrive.Converters"
              xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+             Loaded="UserControl_Loaded"
+             Unloaded="UserControl_Unloaded"
              mc:Ignorable="d">
 
     <UserControl.Resources>
         <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
         <converters:IntegerToBooleanConverter x:Key="IntegerToBooleanConverter" />
     </UserControl.Resources>
-    <InfoBar x:Uid="CC_ErrorBar"
-             Severity="Warning"
-             IsOpen="{x:Bind ViewModel.SelectedSync.SyncErrors.Count, Converter={StaticResource IntegerToBooleanConverter}, Mode=OneWay}"
-             IsClosable="False"
-             >
+    <InfoBar x:Name="InfoBar_"
+             x:Uid="CC_ErrorBar"
+             Severity="Informational"
+             IsIconVisible="False"
+             IsClosable="False">
         <InfoBar.ActionButton>
             <Button x:Uid="CC_ErrorBar_Button"
                     HorizontalAlignment="Right"
+                    Style="{ThemeResource AccentButtonStyle}"
                     Click="InfoBarButton_Click" />
         </InfoBar.ActionButton>
     </InfoBar>

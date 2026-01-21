@@ -255,6 +255,9 @@
   <data name="CC_ErrorBar.Title" xml:space="preserve">
     <value />
   </data>
+  <data name="CC_ErrorBar.Message" xml:space="preserve">
+    <value />
+  </data>
   <data name="CC_ErrorBar_Button.Content" xml:space="preserve">
     <value />
   </data>
@@ -559,9 +562,6 @@
   <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.Title" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
-  <data name="Page_Settings_DriveManagementPage_SyncMode_ErrorDialog.Title" type="System.Resources.ResXNullRef, System.Windows.Forms">
-    <value />
-  </data>
   <data name="Page_Settings_DriveManagementPage_SyncDeletion_WarningDialog.Title" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
@@ -574,13 +574,7 @@
   <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
-  <data name="Page_Settings_DriveManagementPage_SyncMode_ErrorDialog.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
-    <value />
-  </data>
   <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.SecondaryButtonText" type="System.Resources.ResXNullRef, System.Windows.Forms">
-    <value />
-  </data>
-  <data name="Page_Settings_DriveManagementPage_SyncMode_ErrorDialog.SecondaryButtonText" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
   <data name="Page_Settings_DriveManagementPage_SyncMode_WarningDialog.PrimaryButtonText" type="System.Resources.ResXNullRef, System.Windows.Forms">
@@ -848,6 +842,15 @@
     <value />
   </data>
   <data name="Page_LogginErrorPage_Button.Content" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_ErrorDialog.Title" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_ErrorDialog.Content" type="System.Resources.ResXNullRef, System.Windows.Forms">
+    <value />
+  </data>
+  <data name="Page_Settings_DriveManagementPage_SyncMode_ErrorDialog.SecondaryButtonText" type="System.Resources.ResXNullRef, System.Windows.Forms">
     <value />
   </data>
   <data name="Page_NotRenewErrorPage_MainButton.Content" xml:space="preserve">
