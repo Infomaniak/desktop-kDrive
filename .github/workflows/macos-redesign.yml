@@ -1,6 +1,8 @@
 name: macOS Redesigned GUI
 
-on: pull_request
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -14,9 +16,10 @@ jobs:
   run-tests:
     name: Run tests
     runs-on: [ self-hosted, iOS]
+    if: ${{ contains(join(github.event.pull_request.labels.*.name, ','), 'macOS UI') || contains(join(github.event.pull_request.labels.*.name, ','), 'XPC') }}
 
     # We disable code signing to avoid issues with missing certificates/provisioning profiles on the CI runner
-    # More isnfo here: https://github.com/orgs/community/discussions/175498
+    # More info here: https://github.com/orgs/community/discussions/175498
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -42,6 +45,7 @@ jobs:
   swiftlint:
     name: SwiftLint
     runs-on: [ self-hosted, iOS]
+    if: ${{ contains(join(github.event.pull_request.labels.*.name, ','), 'macOS UI') || contains(join(github.event.pull_request.labels.*.name, ','), 'XPC') }}
 
     steps:
       - name: Setup Mise
@@ -57,6 +61,7 @@ jobs:
   swiftformat:
     name: SwiftFormat
     runs-on: [ self-hosted, iOS ]
+    if: ${{ contains(join(github.event.pull_request.labels.*.name, ','), 'macOS UI') || contains(join(github.event.pull_request.labels.*.name, ','), 'XPC') }}
 
     steps:
       - name: Setup Mise
