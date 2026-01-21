@@ -21,7 +21,7 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/utility/logiffail.h"
 #include "libcommonserver/utility/utility.h"
-#include "libcommonserver/log/log.h"
+#include "../../../libcommon/log/log.h"
 
 namespace KDC {
 
@@ -72,7 +72,7 @@ bool Node::operator==(const Node &n) const {
 const SyncName &Node::normalizedName() {
     if (!_normalizedName.empty()) return _normalizedName;
     if (!Utility::normalizedSyncName(_name, _normalizedName)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << Utility::formatSyncName(_name));
+        LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << CommonUtility::formatSyncName(_name));
         return _name;
     }
     return _normalizedName;
@@ -101,7 +101,7 @@ std::shared_ptr<Node> Node::getChildExcept(const SyncName &normalizedName, const
     for (auto &[_, child]: this->children()) {
         SyncName normalizedChildName;
         if (!Utility::normalizedSyncName(child->name(), normalizedChildName)) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << Utility::formatSyncName(child->name()));
+            LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << CommonUtility::formatSyncName(child->name()));
             return nullptr;
         }
 
@@ -286,7 +286,8 @@ Node::MoveOriginInfos::MoveOriginInfos(const SyncPath &path, const NodeId &paren
     _path(path),
     _parentNodeId(parentNodeId) {
     if (!Utility::normalizedSyncPath(_path, _normalizedPath)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(_path));
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in Utility::normalizedSyncPath: " << CommonUtility::formatSyncPath(_path));
         _normalizedPath = _path;
     }
 }

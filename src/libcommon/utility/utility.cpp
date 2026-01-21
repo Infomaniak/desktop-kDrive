@@ -1417,6 +1417,11 @@ bool CommonUtility::isLinux() {
 #endif
 }
 
+void CommonUtility::msleep(int msec) {
+    std::chrono::milliseconds dura(msec);
+    std::this_thread::sleep_for(dura);
+}
+
 void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::string &value) {
     value.clear();
     std::istringstream istr(base64Str);
@@ -1464,6 +1469,88 @@ void CommonUtility::convertToBase64Str(const CommBLOB &blob, std::string &base64
     (void) std::copy(blob.begin(), blob.end(), std::ostream_iterator<char>(b64out));
     (void) b64out.close();
     base64Str = ostr.str();
+}
+
+std::wstring CommonUtility::formatStdError(const std::error_code &ec) {
+#if defined(KD_WINDOWS)
+    std::stringstream ss;
+    ss << ec.message() << " (code: " << ec.value() << ")";
+    return CommonUtility::s2ws(ss.str());
+#elif defined(KD_LINUX)
+    std::stringstream ss;
+    ss << ec.message() << ". (code: " << ec.value() << ")";
+    return CommonUtility::s2ws(ss.str());
+#elif defined(KD_MACOS)
+    return CommonUtility::s2ws(ec.message());
+#endif
+}
+
+std::wstring CommonUtility::formatStdError(const SyncPath &path, const std::error_code &ec) {
+    std::wstringstream ss;
+    ss << L"path='" << Path2WStr(path) << L"', err='" << formatStdError(ec) << L"'";
+
+    return ss.str();
+}
+
+std::wstring CommonUtility::formatIoError(const IoError ioError) {
+    std::wstringstream ss;
+    ss << CommonUtility::s2ws(IoHelper::ioError2StdString(ioError));
+
+    return ss.str();
+}
+
+std::wstring CommonUtility::formatIoError(const SyncPath &path, const IoError ioError) {
+    std::wstringstream ss;
+    ss << L"path='" << Path2WStr(path) << L"', err='" << formatIoError(ioError) << L"'";
+
+    return ss.str();
+}
+
+std::wstring CommonUtility::formatIoError(const QString &path, const IoError ioError) {
+    return formatIoError(QStr2Path(path), ioError);
+}
+
+std::wstring CommonUtility::formatErrno(const SyncPath &path, long cError) {
+    std::wstringstream ss;
+    ss << L"path='" << Path2WStr(path) << L"', errno=" << cError;
+
+    return ss.str();
+}
+
+std::wstring CommonUtility::formatErrno(const QString &path, long cError) {
+    return formatErrno(QStr2Path(path), cError);
+}
+
+std::wstring CommonUtility::quotedSyncName(const SyncName &name) {
+    return L"'" + SyncName2WStr(name) + L"'";
+}
+
+std::wstring CommonUtility::formatSyncName(const SyncName &name) {
+    std::wstringstream ss;
+    ss << L"name=" << quotedSyncName(name);
+
+    return ss.str();
+}
+
+std::wstring CommonUtility::formatSyncPath(const SyncPath &path) {
+    std::wstringstream ss;
+    ss << L"path='" << Path2WStr(path) << L"'";
+
+    return ss.str();
+}
+
+std::wstring CommonUtility::formatPath(const QString &path) {
+    std::wstringstream ss;
+    ss << L"path='" << QStr2WStr(path) << L"'";
+
+    return ss.str();
+}
+
+std::wstring CommonUtility::formatSystemError(const std::system_error &exception) {
+    std::wstringstream ss;
+    ss << L"code=" << exception.code() << L", error=" << exception.what();
+
+    return ss.str();
 }
 
 } // namespace KDC

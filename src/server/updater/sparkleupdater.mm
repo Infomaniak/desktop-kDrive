@@ -23,7 +23,7 @@
 #include "libparms/db/parmsdb.h"
 #include "requests/parameterscache.h"
 
-#include "libcommonserver/log/log.h"
+#include "libcommon/log/log.h"
 #include <log4cplus/loggingmacros.h>
 
 #include <Sparkle/Sparkle.h>
@@ -59,8 +59,8 @@
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _availableVersion = @"";
-        _feedUrl = @"";
+        _availableVersion = @ "";
+        _feedUrl = @ "";
         _quitCallback = nullptr;
         _skipCallback = nullptr;
     }

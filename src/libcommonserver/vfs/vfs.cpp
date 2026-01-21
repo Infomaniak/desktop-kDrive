@@ -131,19 +131,19 @@ ExitInfo Vfs::checkIfPathIsValid(const SyncPath &itemPath, bool shouldExist, con
     bool exists = false;
     IoError ioError = IoError::Unknown;
     if (!IoHelper::checkIfPathExists(itemPath, exists, ioError)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(itemPath, ioError));
+        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << CommonUtility::formatIoError(itemPath, ioError));
         return {ExitCode::SystemError};
     }
     if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(logger(), L"File access error: " << Utility::formatIoError(itemPath, ioError));
+        LOGW_WARN(logger(), L"File access error: " << CommonUtility::formatIoError(itemPath, ioError));
         return {ExitCode::SystemError, ExitCause::FileAccessError, location};
     }
     if (exists != shouldExist) {
         if (shouldExist) {
-            LOGW_DEBUG(logger(), L"File doesn't exist: " << Utility::formatSyncPath(itemPath));
+            LOGW_DEBUG(logger(), L"File doesn't exist: " << CommonUtility::formatSyncPath(itemPath));
             return {ExitCode::SystemError, ExitCause::NotFound, location};
         } else {
-            LOGW_DEBUG(logger(), L"File already exists: " << Utility::formatSyncPath(itemPath));
+            LOGW_DEBUG(logger(), L"File already exists: " << CommonUtility::formatSyncPath(itemPath));
             return {ExitCode::SystemError, ExitCause::FileExists, location};
         }
     }

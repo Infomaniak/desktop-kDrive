@@ -30,7 +30,7 @@
 #include "comm/guijobs/driveupdatejob.h"
 
 #include "libcommon/comm.h"
-#include "log/log.h"
+#include "../../../../src/libcommon/log/log.h"
 
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "test_utility/testhelpers.h"

@@ -88,7 +88,7 @@ bool SyncLocalDeleteJob::findRemoteItem(SyncPath &remoteItemPath) const {
         using namespace Poco::Net;
         if (job.getStatusCode() == HTTPResponse::HTTP_FORBIDDEN || job.getStatusCode() == HTTPResponse::HTTP_NOT_FOUND) {
             found = false;
-            LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absolutePath())
+            LOGW_DEBUG(_logger, L"Item: " << CommonUtility::formatSyncPath(absolutePath())
                                           << L" not found on remote replica. This is normal and expected.");
         }
     }
@@ -103,13 +103,13 @@ ExitInfo SyncLocalDeleteJob::checkIfRemoteFileHasBeenMoved() {
 
     SyncPath normalizedPath;
     if (!Utility::normalizedSyncPath(_relativeLocalPath, normalizedPath)) {
-        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(_relativeLocalPath));
+        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << CommonUtility::formatSyncPath(_relativeLocalPath));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     if (matchRelativePaths(_syncPal->syncInfo().targetPath, normalizedPath, remoteRelativePath)) {
         // Item is found at the same path on remote
-        LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(absolutePath()).c_str()
+        LOGW_DEBUG(_logger, L"Item with " << CommonUtility::formatSyncPath(absolutePath()).c_str()
                                           << L" still exists on remote replica. Aborting current sync and restarting.");
         return {ExitCode::DataError, ExitCause::InvalidSnapshot}; // We need to rebuild the remote snapshot from scratch
     }
@@ -126,16 +126,16 @@ ExitInfo SyncLocalDeleteJob::canRun() {
     bool exists = false;
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(absolutePath(), exists, ioError)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(absolutePath(), ioError));
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << CommonUtility::formatIoError(absolutePath(), ioError));
         return ExitCode::SystemError;
     }
     if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(absolutePath()));
+        LOGW_WARN(_logger, L"Access denied to " << CommonUtility::formatSyncPath(absolutePath()));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
     if (!exists) {
-        LOGW_DEBUG(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(absolutePath()));
+        LOGW_DEBUG(_logger, L"Item does not exist anymore: " << CommonUtility::formatSyncPath(absolutePath()));
         return {ExitCode::DataError, ExitCause::NotFound};
     }
 
@@ -162,8 +162,8 @@ bool isFileDehydrated(const SyncPath &localPath, log4cplus::Logger logger) {
     if (auto errorOnHydrationCheck = IoError::Success;
         !IoHelper::checkIfFileIsDehydrated(localPath, isDehydrated, errorOnHydrationCheck) ||
         errorOnHydrationCheck != IoError::Success) {
-        LOGW_WARN(logger,
-                  L"Error in IoHelper::checkIfFileIsDehydrated: " << Utility::formatIoError(localPath, errorOnHydrationCheck));
+        LOGW_WARN(logger, L"Error in IoHelper::checkIfFileIsDehydrated: "
+                                  << CommonUtility::formatIoError(localPath, errorOnHydrationCheck));
     }
 
     return isDehydrated;
@@ -180,11 +180,11 @@ ExitInfo SyncLocalDeleteJob::deleteFromDB(const SyncPath &relativeLocalPath) {
     bool found = false;
     DbNodeId dbId = 0;
     if (!_syncPal->syncDb()->dbId(ReplicaSide::Local, relativeLocalPath, dbId, found)) {
-        LOGW_ERROR(_logger, L"Failed to get DB ID for " << Utility::formatSyncPath(relativeLocalPath));
+        LOGW_ERROR(_logger, L"Failed to get DB ID for " << CommonUtility::formatSyncPath(relativeLocalPath));
         return {ExitCode::DbError, ExitCause::DbAccessError};
     }
     if (!found) {
-        LOGW_ERROR(_logger, L"Node DB ID not found for " << Utility::formatSyncPath(relativeLocalPath));
+        LOGW_ERROR(_logger, L"Node DB ID not found for " << CommonUtility::formatSyncPath(relativeLocalPath));
         return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
@@ -199,7 +199,7 @@ ExitInfo SyncLocalDeleteJob::deleteFromDB(const SyncPath &relativeLocalPath) {
     }
 
     if (ParametersCache::isExtendedLogEnabled()) {
-        LOGW_DEBUG(_logger, L"Item removed from DB: " << Utility::formatSyncPath(relativeLocalPath));
+        LOGW_DEBUG(_logger, L"Item removed from DB: " << CommonUtility::formatSyncPath(relativeLocalPath));
     }
 
     return ExitCode::Ok;
@@ -210,7 +210,7 @@ ExitInfo SyncLocalDeleteJob::hardDeleteDehydratedPlaceholders() {
     IoHelper::DirectoryIterator dir;
     if (!IoHelper::getDirectoryIterator(absolutePath(), true, ioError, dir)) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in DirectoryIterator: " << Utility::formatIoError(absolutePath(), ioError));
+                  L"Error in DirectoryIterator: " << CommonUtility::formatIoError(absolutePath(), ioError));
     }
 
     DirectoryEntry entry;
@@ -227,7 +227,7 @@ ExitInfo SyncLocalDeleteJob::hardDeleteDehydratedPlaceholders() {
     }
 
     if (!endOfDirectory) {
-        LOGW_WARN(_logger, L"Error in DirectoryIterator: " << Utility::formatIoError(absolutePath(), ioError));
+        LOGW_WARN(_logger, L"Error in DirectoryIterator: " << CommonUtility::formatIoError(absolutePath(), ioError));
         return {ExitCode::SystemError, ExitCause::FileOrDirectoryCorrupted};
     }
 
@@ -242,7 +242,7 @@ ExitInfo SyncLocalDeleteJob::moveToTrash() {
     auto ioErrorCheckIfIsDirectory = IoError::Success;
     if (const bool success = IoHelper::checkIfIsDirectory(absolutePath(), isDirectory, ioErrorCheckIfIsDirectory); !success) {
         LOGW_WARN(_logger, L"Failed to check if path is a directory: "
-                                   << Utility::formatIoError(absolutePath(), ioErrorCheckIfIsDirectory));
+                                   << CommonUtility::formatIoError(absolutePath(), ioErrorCheckIfIsDirectory));
 
         return hardDelete(absolutePath());
     }

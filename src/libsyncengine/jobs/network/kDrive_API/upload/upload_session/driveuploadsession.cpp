@@ -49,7 +49,7 @@ DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> &vfs, const in
     FileStat fileStat;
     auto ioError = IoError::Unknown;
     if (!IoHelper::getFileStat(filepath, &fileStat, ioError) || ioError != IoError::Success) {
-        LOGW_WARN(getLogger(), L"Failed to get FileStat for " << Utility::formatSyncPath(filepath) << L": " << ioError);
+        LOGW_WARN(getLogger(), L"Failed to get FileStat for " << CommonUtility::formatSyncPath(filepath) << L": " << ioError);
     }
     _creationTimeIn = fileStat.creationTime;
 }
@@ -58,7 +58,7 @@ DriveUploadSession::~DriveUploadSession() {
     if (!_vfs || isAborted()) return;
     constexpr VfsStatus vfsStatus({.isHydrated = true, .isSyncing = false, .progress = 100});
     if (const auto exitInfo = _vfs->forceStatus(getFilePath(), vfsStatus); !exitInfo) {
-        LOGW_WARN(getLogger(), L"Error in vfsForceStatus: " << Utility::formatSyncPath(getFilePath()) << L": " << exitInfo);
+        LOGW_WARN(getLogger(), L"Error in vfsForceStatus: " << CommonUtility::formatSyncPath(getFilePath()) << L": " << exitInfo);
     }
 }
 

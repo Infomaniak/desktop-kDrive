@@ -23,7 +23,7 @@
 #include "server/comm/guijobmanager.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
-#include "libcommonserver/log/log.h"
+#include "../../../libcommon/log/log.h"
 
 // Input parameters keys
 static const auto inParamsUserDbId = "userDbId";

@@ -30,7 +30,7 @@
 #include "libcommon/io/filestat.h"
 #include "libcommon/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
-#include "libcommonserver/log/log.h"
+#include "../../../../src/libcommon/log/log.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 
 #include "test_utility/testhelpers.h"
@@ -107,7 +107,7 @@ void TestLocalFileSystemObserverWorker::setUp() {
 
     _syncPal->_localFSObserverWorker->start();
 
-    Utility::msleep(1000); // Wait 1sec
+    CommonUtility::msleep(1000); // Wait 1sec
 }
 
 void TestLocalFileSystemObserverWorker::tearDown() {
@@ -177,7 +177,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithFiles() {
         LOGW_DEBUG(_logger, L"***** test create file *****");
         testhelpers::generateOrEditTestFile(testAbsolutePath);
 
-        Utility::msleep(1000); // Wait 1sec
+        CommonUtility::msleep(1000); // Wait 1sec
 
         FileStat fileStat;
         bool exists = false;
@@ -196,7 +196,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithFiles() {
         const SyncTime prevModTime = _syncPal->liveSnapshot(ReplicaSide::Local).lastModified(itemId);
         testhelpers::generateOrEditTestFile(testAbsolutePath);
 
-        Utility::msleep(1000); // Wait 1sec
+        CommonUtility::msleep(1000); // Wait 1sec
         _syncPal->copySnapshots();
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).lastModified(itemId) > prevModTime);
     }
@@ -210,7 +210,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithFiles() {
         auto ioError = IoError::Unknown;
         IoHelper::moveItem(sourcePath, destinationPath, ioError);
 
-        Utility::msleep(1000); // Wait 1sec
+        CommonUtility::msleep(1000); // Wait 1sec
         _syncPal->copySnapshots();
         const NodeId parentId = _syncPal->liveSnapshot(ReplicaSide::Local).parentId(itemId);
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).name(parentId) == _subDirPath.filename());
@@ -226,7 +226,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithFiles() {
         auto ioError = IoError::Unknown;
         IoHelper::renameItem(source, destinationPath, ioError);
 
-        Utility::msleep(1000); // Wait 1sec
+        CommonUtility::msleep(1000); // Wait 1sec
         _syncPal->copySnapshots();
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).name(itemId) == Str("test_file_renamed.txt"));
         testAbsolutePath = destinationPath;
@@ -238,7 +238,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithFiles() {
         auto ioError = IoError::Unknown;
         IoHelper::deleteItem(testAbsolutePath, ioError);
 
-        Utility::msleep(1000); // Wait 1sec
+        CommonUtility::msleep(1000); // Wait 1sec
         _syncPal->copySnapshots();
         CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(itemId));
     }
@@ -269,7 +269,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDuplicateFileNames() {
     int count = 0;
     while (!_syncPal->liveSnapshot(ReplicaSide::Local).isValid() ||
            !localFSO->_folderWatcher->isReady()) { // Wait for the snapshot generation
-        Utility::msleep(100);
+        CommonUtility::msleep(100);
         CPPUNIT_ASSERT(count++ < 20); // Do not wait more than 2s
     }
 
@@ -314,7 +314,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDirs() {
         LOGW_DEBUG(_logger, L"***** test create dir *****");
         testhelpers::generateOrEditTestFile(testAbsolutePath);
 
-        Utility::msleep(1000); // Wait 1sec
+        CommonUtility::msleep(1000); // Wait 1sec
 
         FileStat fileStat;
         bool exists = false;
@@ -335,7 +335,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDirs() {
         auto ioError = IoError::Unknown;
         IoHelper::moveItem(sourcePath, destinationPath, ioError);
 
-        Utility::msleep(1000); // Wait 1sec
+        CommonUtility::msleep(1000); // Wait 1sec
 
         SyncPath path;
         bool ignore = false;
@@ -352,7 +352,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDirs() {
         auto ioError = IoError::Unknown;
         IoHelper::renameItem(sourcePath, destinationPath, ioError);
 
-        Utility::msleep(1000); // Wait 1sec
+        CommonUtility::msleep(1000); // Wait 1sec
 
         CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).name(itemId) == destinationPath.filename());
         testAbsolutePath = destinationPath;
@@ -370,7 +370,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDirs() {
         SyncPath destinationPath = _rootFolderPath / dirName;
         IoHelper::moveItem(sourcePath, destinationPath, ioError);
 
-        Utility::msleep(1000); // Wait 1sec
+        CommonUtility::msleep(1000); // Wait 1sec
 
         FileStat fileStat;
         bool exists = false;
@@ -393,7 +393,7 @@ void TestLocalFileSystemObserverWorker::testLFSODeleteDir() {
     auto ioError = IoError::Unknown;
     IoHelper::deleteItem(_subDirPath, ioError);
 
-    Utility::msleep(1000); // Wait 1sec
+    CommonUtility::msleep(1000); // Wait 1sec
 
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(_testFiles[0].first));
 
@@ -424,7 +424,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithSpecialCases1() {
     SyncPath destinationPath = _rootFolderPath / testFilename;
     IoHelper::moveItem(sourcePath, destinationPath, ioError);
 
-    Utility::msleep(1000); // Wait 1sec
+    CommonUtility::msleep(1000); // Wait 1sec
 
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).exists(newItemId));
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).name(newItemId) == testFilename);
@@ -454,7 +454,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithSpecialCases2() {
     //// delete
     IoHelper::deleteItem(sourcePath, ioError);
 
-    Utility::msleep(1000); // Wait 1sec
+    CommonUtility::msleep(1000); // Wait 1sec
 
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).exists(initItemId));
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(newItemId));
@@ -478,7 +478,7 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMove() { // MS Off
     int count = 0;
     while (!_syncPal->liveSnapshot(ReplicaSide::Local).isValid() ||
            !localFSO->_folderWatcher->isReady()) { // Wait for the snapshot generation and folder watcher start
-        Utility::msleep(100);
+        CommonUtility::msleep(100);
         CPPUNIT_ASSERT(count++ < 20); // Do not wait more than 2s
     }
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).exists(_testFiles[0].first));
@@ -534,7 +534,7 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMoveWithEncodingCh
 
     while (!_syncPal->liveSnapshot(ReplicaSide::Local).isValid() ||
            !localFSO->_folderWatcher->isReady()) { // Wait for the snapshot generation
-        Utility::msleep(100);
+        CommonUtility::msleep(100);
         CPPUNIT_ASSERT(count++ < 20); // Do not wait more than 2s
     }
 
@@ -594,7 +594,7 @@ void TestLocalFileSystemObserverWorker::testInvalidateCounter() {
     _syncPal->_localFSObserverWorker->tryToInvalidateSnapshot();
     CPPUNIT_ASSERT_EQUAL(false, _syncPal->liveSnapshot(ReplicaSide::Local).isValid()); // Snapshot has been invalidated.
 
-    Utility::msleep(1000); // Wait for the snapshot to be rebuilt
+    CommonUtility::msleep(1000); // Wait for the snapshot to be rebuilt
 
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->liveSnapshot(ReplicaSide::Local).isValid()); // Snapshot is now valid again.
     _syncPal->_localFSObserverWorker->tryToInvalidateSnapshot();
@@ -611,11 +611,11 @@ void MockLocalFileSystemObserverWorker::waitForUpdate(SnapshotRevision previousR
     const auto start = system_clock::now();
     while (previousRevision == liveSnapshot().revision() &&
            duration_cast<milliseconds>(system_clock::now() - start) < timeoutMs) {
-        Utility::msleep(10);
+        CommonUtility::msleep(10);
     }
     CPPUNIT_ASSERT_LESS(timeoutMs.count(), duration_cast<milliseconds>(system_clock::now() - start).count());
     while (_updating && duration_cast<milliseconds>(system_clock::now() - start) < timeoutMs) {
-        Utility::msleep(10);
+        CommonUtility::msleep(10);
     }
     CPPUNIT_ASSERT_LESS(timeoutMs.count(), duration_cast<milliseconds>(system_clock::now() - start).count());
 }

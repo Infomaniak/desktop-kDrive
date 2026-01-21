@@ -59,6 +59,9 @@ set(libcommon_SRCS
     io/filestat.h
     io/iohelper.h io/iohelper.cpp
     io/permissionsholder.h io/permissionsholder.cpp
+    # Log
+    log/log.h log/log.cpp
+    log/customrollingfileappender.h log/customrollingfileappender.cpp
 )
 
 if(APPLE)
@@ -99,6 +102,8 @@ set(PC_HEADER_FILES
     "$<$<COMPILE_LANGUAGE:CXX>:<sentry.h$<ANGLE-R>>"
     # kDrive
     "$<$<COMPILE_LANGUAGE:CXX>:libcommon/utility/types.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommon/io/iohelper.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommon/log/log.h>"
 )
 
 target_precompile_headers(${libcommon_NAME} PRIVATE ${PC_HEADER_FILES})

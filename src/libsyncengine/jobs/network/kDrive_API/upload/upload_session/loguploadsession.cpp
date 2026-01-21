@@ -18,7 +18,7 @@
 
 #include "loguploadsession.h"
 #include "libparms/db/parmsdb.h"
-#include "log/log.h"
+#include "../../../../../../libcommon/log/log.h"
 
 namespace KDC {
 

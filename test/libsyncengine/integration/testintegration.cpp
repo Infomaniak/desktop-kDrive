@@ -359,7 +359,7 @@ void TestIntegration::testBlacklist() {
     const TimerUtility timer;
     while (timer.elapsed<std::chrono::seconds>() < std::chrono::seconds(10)) {
         if (_syncPal->isPaused()) break;
-        Utility::msleep(100);
+        CommonUtility::msleep(100);
     }
     CPPUNIT_ASSERT(_syncPal->isPaused());
 
@@ -776,11 +776,11 @@ void TestIntegration::waitForSyncToBeIdle(
             const TimerUtility idleTimer;
             while (_syncPal->isIdle() && idleTimer.elapsed<milliseconds>() < minWaitTime) {
                 CPPUNIT_ASSERT_MESSAGE(srcLoc.toString(), timeoutTimer.elapsed<minutes>() < timeOutDuration);
-                Utility::msleep(5);
+                CommonUtility::msleep(5);
             }
             ended = idleTimer.elapsed<milliseconds>() >= minWaitTime;
         }
-        Utility::msleep(100);
+        CommonUtility::msleep(100);
     }
 }
 

@@ -71,7 +71,7 @@ LocalTemporaryDirectory::~LocalTemporaryDirectory() {
 
     if (!IoHelper::deleteItem(_path, ioError)) {
         // Cannot remove directory
-        std::cout << CommonUtility::ws2s(Utility::formatIoError(_path, ioError)) << std::endl;
+        std::cout << CommonUtility::ws2s(CommonUtility::formatIoError(_path, ioError)) << std::endl;
         assert(false);
     }
 }

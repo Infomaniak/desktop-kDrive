@@ -26,7 +26,7 @@
 #include "server/comm/guijobmanager.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
-#include "libcommonserver/log/log.h"
+#include "../../../libcommon/log/log.h"
 
 // Input parameters keys
 static const auto inParamsDriveDbId = "driveDbId";
@@ -57,8 +57,8 @@ ExitInfo SyncAdd2Job::process() {
                                                       liteSync(), syncInfo);
         exitCode != ExitCode::Ok) {
         LOGW_WARN(_logger, L"Error in Requests::addSync - driveDbId="
-                                   << _driveDbId << L" local " << Utility::formatSyncPath(localFolderPath()) << L" server "
-                                   << Utility::formatSyncPath(serverFolderPath()) << L" serverFolderNodeId="
+                                   << _driveDbId << L" local " << CommonUtility::formatSyncPath(localFolderPath()) << L" server "
+                                   << CommonUtility::formatSyncPath(serverFolderPath()) << L" serverFolderNodeId="
                                    << Utility::v2ws(serverFolderNodeId()) << L" liteSync=" << liteSync());
         AppServer::addError(Error(ERR_ID, exitCode));
         return exitCode;

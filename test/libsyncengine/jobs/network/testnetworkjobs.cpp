@@ -770,12 +770,12 @@ void TestNetworkJobs::testDownloadAborted() {
 
     int counter = 0;
     while (!job->isRunning()) {
-        Utility::msleep(10);
+        CommonUtility::msleep(10);
         CPPUNIT_ASSERT_LESS(500, ++counter); // Wait at most 5sec
     }
     job->abort();
 
-    Utility::msleep(1000); // Wait 1sec
+    CommonUtility::msleep(1000); // Wait 1sec
     job.reset();
 
     CPPUNIT_ASSERT(forceStatusCalled);
@@ -1227,14 +1227,14 @@ void TestNetworkJobs::testUploadAborted() {
 
     int counter = 0;
     while (!job->isRunning()) {
-        Utility::msleep(10);
+        CommonUtility::msleep(10);
         CPPUNIT_ASSERT_LESS(500, ++counter); // Wait at most 5sec
     }
     job->abort();
 
     // Wait for job to finish
     while (!SyncJobManagerSingleton::instance()->isJobFinished(job->jobId())) {
-        Utility::msleep(100);
+        CommonUtility::msleep(100);
     }
 
     const auto newNodeId = job->nodeId();
@@ -1402,12 +1402,12 @@ void TestNetworkJobs::testDriveUploadSessionSynchronousAborted() {
 
     int counter = 0;
     while (!DriveUploadSessionJob->isRunning()) {
-        Utility::msleep(10);
+        CommonUtility::msleep(10);
         CPPUNIT_ASSERT_LESS(500, ++counter); // Wait at most 5sec
     }
     DriveUploadSessionJob->abort();
 
-    Utility::msleep(1000); // Wait 1sec
+    CommonUtility::msleep(1000); // Wait 1sec
 
     NodeId newNodeId = DriveUploadSessionJob->nodeId();
     CPPUNIT_ASSERT(newNodeId.empty());
@@ -1440,14 +1440,14 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronousAborted() {
 
     int counter = 0;
     while (static_cast<int>(driveUploadSessionJob->state()) <= static_cast<int>(DriveUploadSession::StateStartUploadSession)) {
-        Utility::msleep(10);
+        CommonUtility::msleep(10);
         CPPUNIT_ASSERT_LESS(500, ++counter); // Wait at most 5sec
     }
 
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionAsynchronousAborted - Abort");
     driveUploadSessionJob->abort();
 
-    Utility::msleep(1000); // Wait 1sec
+    CommonUtility::msleep(1000); // Wait 1sec
 
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionAsynchronousAborted - Check jobs");
     GetFileListJob fileListJob(_driveDbId, remoteTmpDir.id());

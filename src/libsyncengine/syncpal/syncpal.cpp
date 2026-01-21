@@ -74,7 +74,7 @@ SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const SyncPath &syncDbPath, const std
     _vfs(vfs),
     _logger(Log::instance()->getLogger()) {
     _syncInfo.syncHasFullyCompleted = hasFullyCompleted;
-    LOGW_SYNCPAL_DEBUG(_logger, L"SyncPal init: " << Utility::formatSyncPath(syncDbPath));
+    LOGW_SYNCPAL_DEBUG(_logger, L"SyncPal init: " << CommonUtility::formatSyncPath(syncDbPath));
     assert(_vfs);
 
     if (!createOrOpenDb(syncDbPath, version)) {
@@ -278,7 +278,7 @@ ExitCode SyncPal::fileSyncing(ReplicaSide side, const SyncPath &path, bool &sync
         return ExitCode::DbError;
     }
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table: " << Utility::formatSyncPath(path));
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table: " << CommonUtility::formatSyncPath(path));
         return ExitCode::DataError;
     }
 
@@ -292,7 +292,7 @@ ExitCode SyncPal::setFileSyncing(ReplicaSide side, const SyncPath &path, bool sy
         return ExitCode::DbError;
     }
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table: " << Utility::formatSyncPath(path));
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table: " << CommonUtility::formatSyncPath(path));
         return ExitCode::DataError;
     }
 
@@ -307,7 +307,7 @@ ExitCode SyncPal::path(ReplicaSide side, const NodeId &nodeId, SyncPath &path) {
     }
 
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table: " << Utility::formatSyncPath(path));
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table: " << CommonUtility::formatSyncPath(path));
         return ExitCode::DataError;
     }
 
@@ -531,13 +531,13 @@ bool SyncPal::createOrOpenDb(const SyncPath &syncDbPath, const std::string &vers
         _syncDb = std::shared_ptr<SyncDb>(new SyncDb(syncDbPath.string(), version, targetNodeId));
     } catch (std::exception const &e) {
         const auto exceptionMsg = CommonUtility::s2ws(std::string(e.what()));
-        LOGW_SYNCPAL_WARN(
-                _logger, L"Error in SyncDb::SyncDb: " << Utility::formatSyncPath(syncDbPath) << L", Exception: " << exceptionMsg);
+        LOGW_SYNCPAL_WARN(_logger, L"Error in SyncDb::SyncDb: " << CommonUtility::formatSyncPath(syncDbPath) << L", Exception: "
+                                                                << exceptionMsg);
         return false;
     }
 
     if (!_syncDb->init(version)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in SyncDb::init: " << Utility::formatSyncPath(syncDbPath));
+        LOGW_SYNCPAL_WARN(_logger, L"Error in SyncDb::init: " << CommonUtility::formatSyncPath(syncDbPath));
         _syncDb.reset();
         return false;
     }
@@ -586,7 +586,7 @@ bool SyncPal::setProgress(const SyncPath &relativePath, int64_t current) {
             return false;
         }
         if (item.instruction() != SyncFileInstruction::Get && item.instruction() != SyncFileInstruction::Put) {
-            LOGW_SYNCPAL_WARN(_logger, L"Node not found: " << Utility::formatSyncPath(relativePath));
+            LOGW_SYNCPAL_WARN(_logger, L"Node not found: " << CommonUtility::formatSyncPath(relativePath));
             return false;
         }
     }
@@ -615,7 +615,7 @@ bool SyncPal::setProgressComplete(const SyncPath &relativeLocalPath, SyncFileSta
     }
     if (!found) {
         // Can happen for a dehydrated placeholder
-        LOGW_SYNCPAL_DEBUG(_logger, L"Node not found: " << Utility::formatSyncPath(relativeLocalPath));
+        LOGW_SYNCPAL_DEBUG(_logger, L"Node not found: " << CommonUtility::formatSyncPath(relativeLocalPath));
     }
     return true;
 }
@@ -647,17 +647,18 @@ void SyncPal::directDownloadCallback(UniqueId jobId) {
     for (auto it = _folderHydrationInProgress.begin(); it != _folderHydrationInProgress.end();) {
         const auto &parentFolderPath = it->first;
         if (it->second.erase(downloadJob->affectedFilePath())) {
-            LOGW_INFO(_logger, L"Download of item " << Utility::formatSyncPath(downloadJob->affectedFilePath())
-                                                    << L" from parent folder " << Utility::formatSyncPath(parentFolderPath)
+            LOGW_INFO(_logger, L"Download of item " << CommonUtility::formatSyncPath(downloadJob->affectedFilePath())
+                                                    << L" from parent folder " << CommonUtility::formatSyncPath(parentFolderPath)
                                                     << L" terminated.");
         }
         if (it->second.empty()) {
             // Notify the LiteSync extension that the hydration of the folder is terminated.
             if (const auto exitInfo = _vfs->updateFetchStatus(parentFolderPath, "OK"); !exitInfo) {
-                LOGW_WARN(_logger,
-                          L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(parentFolderPath) << L" : " << exitInfo);
+                LOGW_WARN(_logger, L"Error in vfsUpdateFetchStatus: " << CommonUtility::formatSyncPath(parentFolderPath) << L" : "
+                                                                      << exitInfo);
             } else {
-                LOGW_INFO(_logger, L"Hydration of folder: " << Utility::formatSyncPath(parentFolderPath) << L" terminated.");
+                LOGW_INFO(_logger,
+                          L"Hydration of folder: " << CommonUtility::formatSyncPath(parentFolderPath) << L" terminated.");
             }
             it = _folderHydrationInProgress.erase(it);
             continue;
@@ -684,7 +685,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
         return ExitCode::DbError;
     }
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table: " << Utility::formatSyncPath(relativePath));
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table: " << CommonUtility::formatSyncPath(relativePath));
         return ExitCode::DataError;
     }
 
@@ -741,7 +742,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
 void SyncPal::monitorFolderHydration(const SyncPath &absoluteLocalPath) {
     const std::scoped_lock lock(_directDownloadJobsMapMutex);
     (void) _folderHydrationInProgress.try_emplace(absoluteLocalPath);
-    LOGW_INFO(_logger, L"Monitoring folder hydration: " << Utility::formatSyncPath(absoluteLocalPath));
+    LOGW_INFO(_logger, L"Monitoring folder hydration: " << CommonUtility::formatSyncPath(absoluteLocalPath));
 }
 
 ExitCode SyncPal::cancelDlDirectJobs(const std::vector<SyncPath> &fileList) {
@@ -804,7 +805,7 @@ void SyncPal::setSyncHasFullyCompletedInParams(bool syncHasFullyCompleted) {
 ExitInfo SyncPal::isRootFolderValid() {
     if (NodeId rootNodeId; IoHelper::getNodeId(localPath(), rootNodeId)) {
         if (rootNodeId.empty()) {
-            LOGW_SYNCPAL_WARN(_logger, L"Unable to get root folder nodeId: " << Utility::formatSyncPath(localPath()));
+            LOGW_SYNCPAL_WARN(_logger, L"Unable to get root folder nodeId: " << CommonUtility::formatSyncPath(localPath()));
             return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
         }
 
@@ -818,7 +819,8 @@ ExitInfo SyncPal::isRootFolderValid() {
 
         return localNodeId() == rootNodeId ? ExitInfo(ExitCode::Ok) : ExitInfo(ExitCode::DataError, ExitCause::SyncDirChanged);
     } else {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getNodeId for root folder: " << Utility::formatSyncPath(localPath()));
+        LOGW_SYNCPAL_WARN(_logger,
+                          L"Error in IoHelper::getNodeId for root folder: " << CommonUtility::formatSyncPath(localPath()));
         return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
     }
 }
@@ -936,7 +938,7 @@ ExitCode SyncPal::fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId
         return ExitCode::DbError;
     }
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table: " << Utility::formatSyncPath(path));
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table: " << CommonUtility::formatSyncPath(path));
         return ExitCode::DataError;
     }
 
@@ -960,7 +962,7 @@ bool SyncPal::checkIfExistsOnServer(const SyncPath &path, bool &exists) const {
     // Path is normalized on server side
     SyncPath normalizedPath;
     if (!Utility::normalizedSyncPath(path, normalizedPath)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
+        LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << CommonUtility::formatSyncPath(path));
         return false;
     }
     const NodeId nodeId = liveSnapshot(ReplicaSide::Remote).itemId(normalizedPath);
@@ -976,7 +978,7 @@ bool SyncPal::checkIfCanShareItem(const SyncPath &path, bool &canShare) const {
     // Path is normalized on server side
     SyncPath normalizedPath;
     if (!Utility::normalizedSyncPath(path, normalizedPath)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(path));
+        LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << CommonUtility::formatSyncPath(path));
         return false;
     }
 
@@ -1073,8 +1075,8 @@ ExitCode SyncPal::fixCorruptedFile(const std::unordered_map<NodeId, SyncPath> &l
         if (ExitCode exitCode = PlatformInconsistencyCheckerUtility::renameLocalFile(
                     localFileInfo.second, PlatformInconsistencyCheckerUtility::SuffixType::Conflict, &destPath);
             exitCode != ExitCode::Ok) {
-            LOGW_SYNCPAL_WARN(_logger, L"Fail to rename " << Utility::formatSyncPath(localFileInfo.second) << L" into "
-                                                          << Utility::formatSyncPath(destPath));
+            LOGW_SYNCPAL_WARN(_logger, L"Fail to rename " << CommonUtility::formatSyncPath(localFileInfo.second) << L" into "
+                                                          << CommonUtility::formatSyncPath(destPath));
 
             return exitCode;
         }
@@ -1393,11 +1395,12 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool
             bool exists = false;
             IoError ioError = IoError::Success;
             if (!IoHelper::checkIfPathExists(absolutePath, exists, ioError)) {
-                LOGW_WARN(_logger, L"IoHelper::checkIfPathExists failed with: " << Utility::formatIoError(absolutePath, ioError));
+                LOGW_WARN(_logger,
+                          L"IoHelper::checkIfPathExists failed with: " << CommonUtility::formatIoError(absolutePath, ioError));
                 return ExitCode::SystemError;
             }
             if (ioError == IoError::AccessDenied) { // A parent of the file does not have sufficient right
-                LOGW_DEBUG(_logger, L"A parent of " << Utility::formatSyncPath(relativeLocalPath)
+                LOGW_DEBUG(_logger, L"A parent of " << CommonUtility::formatSyncPath(relativeLocalPath)
                                                     << L"does not have sufficient right, blacklisting the parent item.");
                 return handleAccessDeniedItem(relativeLocalPath.parent_path(), deleteNodeLater, localBlacklistedNode,
                                               remoteBlacklistedNode, cause);
@@ -1405,7 +1408,7 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool
         }
     }
 
-    LOGW_SYNCPAL_DEBUG(_logger, L"Item " << Utility::formatSyncPath(relativeLocalPath) << L" (NodeId: "
+    LOGW_SYNCPAL_DEBUG(_logger, L"Item " << CommonUtility::formatSyncPath(relativeLocalPath) << L" (NodeId: "
                                          << CommonUtility::s2ws(localNodeId)
                                          << L" is blacklisted temporarily because of a denied access.");
 

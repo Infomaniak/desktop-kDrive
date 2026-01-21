@@ -31,9 +31,6 @@ set(libcommonserver_SRCS
     db/sqlitequery.h db/sqlitequery.cpp
     db/db.h db/db.cpp
     db/dbdefs.h
-    # Log
-    log/log.h log/log.cpp
-    log/customrollingfileappender.h log/customrollingfileappender.cpp
     # Network
     network/proxy.h network/proxy.cpp
     network/proxyconfig.h network/proxyconfig.cpp
@@ -88,8 +85,8 @@ set(PC_HEADER_FILES
     # kDrive
     "$<$<COMPILE_LANGUAGE:CXX>:libcommon/utility/types.h>"
     "$<$<COMPILE_LANGUAGE:CXX>:libcommon/utility/utility.h>"
-    "$<$<COMPILE_LANGUAGE:CXX>:libcommonserver/io/iohelper.h>"
-    "$<$<COMPILE_LANGUAGE:CXX>:libcommonserver/log/log.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommon/io/iohelper.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommon/log/log.h>"
     "$<$<COMPILE_LANGUAGE:CXX>:libcommonserver/utility/utility.h>"
 )
 

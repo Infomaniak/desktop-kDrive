@@ -4,7 +4,7 @@
 #include "appserver.h"
 
 #include "libcommon/comm.h"
-#include "libcommonserver/log/log.h"
+#include "../../../libcommon/log/log.h"
 
 namespace KDC {
 

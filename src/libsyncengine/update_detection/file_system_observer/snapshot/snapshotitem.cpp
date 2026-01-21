@@ -57,7 +57,7 @@ void SnapshotItem::setName(const SyncName &newName) {
     _name = newName;
     if (!Utility::normalizedSyncName(newName, _normalizedName)) {
         _normalizedName = newName;
-        LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << Utility::formatSyncName(newName));
+        LOGW_WARN(Log::instance()->getLogger(), L"Failed to normalize: " << CommonUtility::formatSyncName(newName));
     }
     _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
 }

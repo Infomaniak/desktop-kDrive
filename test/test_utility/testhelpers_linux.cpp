@@ -68,7 +68,7 @@ void eraseFromTrash(const KDC::SyncPath &relativePath) {
     auto dirIt = std::filesystem::recursive_directory_iterator(trashPath,
                                                                std::filesystem::directory_options::skip_permission_denied, ec);
     if (ec) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in testhelpers::eraseFromTrash: " << Utility::formatStdError(ec));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in testhelpers::eraseFromTrash: " << CommonUtility::formatStdError(ec));
         return;
     }
 
@@ -91,7 +91,7 @@ bool isInTrash(const SyncPath &relativePath) {
     auto dirIt = std::filesystem::recursive_directory_iterator(trashPath,
                                                                std::filesystem::directory_options::skip_permission_denied, ec);
     if (ec) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in testhelpers::isInTrash: " << Utility::formatStdError(ec));
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in testhelpers::isInTrash: " << CommonUtility::formatStdError(ec));
         return false;
     }
 

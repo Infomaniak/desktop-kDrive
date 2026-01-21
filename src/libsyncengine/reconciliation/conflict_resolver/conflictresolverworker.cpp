@@ -54,9 +54,9 @@ void ConflictResolverWorker::execute() {
 
 ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bool &continueSolving) {
     LOGW_SYNCPAL_INFO(_logger, L"Solving " << conflict.type() << L" conflict for items "
-                                           << Utility::formatSyncName(conflict.node()->name()) << L" ("
+                                           << CommonUtility::formatSyncName(conflict.node()->name()) << L" ("
                                            << CommonUtility::s2ws(*conflict.node()->id()) << L") and "
-                                           << Utility::formatSyncName(conflict.otherNode()->name()) << L" ("
+                                           << CommonUtility::formatSyncName(conflict.otherNode()->name()) << L" ("
                                            << CommonUtility::s2ws(*conflict.otherNode()->id()) << L")");
 
     continueSolving = false;
@@ -119,7 +119,7 @@ ExitInfo ConflictResolverWorker::handleConflictOnOmittedEdit(const Conflict &con
         bool propagateEdit = true;
         if (auto exitInfo = editChangeShouldBePropagated(localNode, propagateEdit); !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in OperationProcessor::editChangeShouldBePropagated: "
-                                               << Utility::formatSyncPath(localNode->getPath()) << L" " << exitInfo);
+                                               << CommonUtility::formatSyncPath(localNode->getPath()) << L" " << exitInfo);
             _syncPal->addError(Error(ERR_ID, exitInfo));
             return exitInfo;
         }
@@ -151,7 +151,7 @@ ExitCode ConflictResolverWorker::handleConflictOnDehydratedPlaceholder(const Con
     const auto moveNodeRelativePath = localNode->getPath();
     if (const auto exitInfo = _syncPal->vfs()->status(_syncPal->syncInfo().localPath / moveNodeRelativePath, vfsStatus);
         exitInfo.code() != ExitCode::Ok) {
-        LOGW_SYNCPAL_WARN(_logger, L"Failed to get VFS status for file " << Utility::formatSyncPath(moveNodeRelativePath));
+        LOGW_SYNCPAL_WARN(_logger, L"Failed to get VFS status for file " << CommonUtility::formatSyncPath(moveNodeRelativePath));
         return exitInfo;
     }
     if (vfsStatus.isPlaceholder && !vfsStatus.isHydrated && !vfsStatus.isSyncing) {
@@ -305,7 +305,7 @@ ExitCode ConflictResolverWorker::generateParentDeleteConflictOperation(const Con
     deleteOp->setAffectedNode(deleteNode);
     const auto correspondingNode = correspondingNodeInOtherTree(deleteNode);
     if (!correspondingNode) {
-        LOGW_SYNCPAL_WARN(_logger, L"Failed to get corresponding node: " << Utility::formatSyncName(deleteNode->name()));
+        LOGW_SYNCPAL_WARN(_logger, L"Failed to get corresponding node: " << CommonUtility::formatSyncName(deleteNode->name()));
         return ExitCode::DataError;
     }
     deleteOp->setCorrespondingNode(correspondingNode);
@@ -422,7 +422,7 @@ ExitCode ConflictResolverWorker::undoMove(const std::shared_ptr<Node> moveNode, 
     moveOp->setType(OperationType::Move);
     const auto correspondingNode = correspondingNodeInOtherTree(moveNode);
     if (!correspondingNode) {
-        LOGW_SYNCPAL_WARN(_logger, L"Failed to get corresponding node: " << Utility::formatSyncName(moveNode->name()));
+        LOGW_SYNCPAL_WARN(_logger, L"Failed to get corresponding node: " << CommonUtility::formatSyncName(moveNode->name()));
         return ExitCode::DataError;
     }
     correspondingNode->setMoveOriginInfos({moveNode->getPath(), moveNode->parentNode()->id().value_or("")});
@@ -441,11 +441,11 @@ std::wstring ConflictResolverWorker::getLogString(SyncOpPtr op, bool omit /*= fa
     std::wstringstream ss;
     if (omit) {
         ss << L"Operation " << op->type() << L" to be propagated on DB only for item "
-           << Utility::formatSyncName(op->correspondingNode()->name()) << L" ("
+           << CommonUtility::formatSyncName(op->correspondingNode()->name()) << L" ("
            << CommonUtility::s2ws(*op->correspondingNode()->id()) << L")";
     } else {
         ss << L"Operation " << op->type() << L" to be propagated on " << op->targetSide() << L" replica for item "
-           << Utility::formatSyncName(op->correspondingNode()->name()) << L" ("
+           << CommonUtility::formatSyncName(op->correspondingNode()->name()) << L" ("
            << CommonUtility::s2ws(*op->correspondingNode()->id()) << L")";
     }
     return ss.str();

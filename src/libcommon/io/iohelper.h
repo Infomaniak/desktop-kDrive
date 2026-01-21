@@ -20,7 +20,7 @@
 
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
-#include "libcommonserver/log/log.h"
+#include "../log/log.h"
 
 #if defined(KD_WINDOWS)
 #include <AccCtrl.h>

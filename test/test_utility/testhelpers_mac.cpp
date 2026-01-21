@@ -38,7 +38,7 @@ void eraseFromTrash(const KDC::SyncPath &relativePath) {
 bool isInTrash(const SyncPath &path) {
     if (std::error_code ec; !std::filesystem::exists(Utility::getTrashPath() / path, ec) || ec) {
         if (ec) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::exists - " << Utility::formatStdError(ec));
+            LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::exists - " << CommonUtility::formatStdError(ec));
         }
         return false;
     }

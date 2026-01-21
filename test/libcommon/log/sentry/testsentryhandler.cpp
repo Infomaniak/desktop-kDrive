@@ -21,7 +21,7 @@
 
 #include "io/iohelper.h"
 #include "libcommon/log/sentry/handler.h"
-#include "libcommonserver/log/log.h"
+#include "../../../../src/libcommon/log/log.h"
 #include "test_utility/testhelpers.h"
 
 #include <thread>

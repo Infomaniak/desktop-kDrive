@@ -159,7 +159,7 @@ void TestLogUploadJob::testLogUploadSingleConcurrentJob() {
     std::thread t1([&job1]() { job1->runSynchronously(); });
     int counter = 0;
     while (!job1->isRunning()) {
-        Utility::msleep(10);
+        CommonUtility::msleep(10);
         CPPUNIT_ASSERT_LESS(500, ++counter); // Wait at most 5sec
     }
 

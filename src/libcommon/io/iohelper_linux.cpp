@@ -18,7 +18,7 @@
 
 #include "libcommon/io/filestat.h"
 #include "libcommon/io/iohelper.h"
-#include "libcommonserver/log/log.h"
+#include "libcommon/log/log.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <errno.h>
@@ -147,12 +147,12 @@ bool IoHelper::moveItemToTrash(const SyncPath &itemPath) {
     // Check if the trash/files & trash/info path exists and create it if needed
     if (std::error_code ec; !std::filesystem::exists(trashPath, ec)) {
         if (ec) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::exists - " << Utility::formatStdError(ec));
+            LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::exists - " << CommonUtility::formatStdError(ec));
             return false;
         }
 
         if (!std::filesystem::create_directories(trashPath)) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Failed to create directory - " << Utility::formatSyncPath(trashPath));
+            LOGW_WARN(Log::instance()->getLogger(), L"Failed to create directory - " << CommonUtility::formatSyncPath(trashPath));
             return false;
         }
     }

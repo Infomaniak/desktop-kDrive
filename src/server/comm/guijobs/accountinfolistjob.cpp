@@ -20,7 +20,7 @@
 #include "requests/serverrequests.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
-#include "libcommonserver/log/log.h"
+#include "../../../libcommon/log/log.h"
 
 // Output parameters keys
 static const auto outParamsAccountInfoList = "accountInfoList";

@@ -24,7 +24,7 @@
 #import <SystemExtensions/SystemExtensions.h>
 #import <Foundation/Foundation.h>
 
-#include "libcommonserver/log/log.h"
+#include "libcommon/log/log.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommon/io/iohelper.h"
 #include "libcommon/io/filestat.h"
@@ -543,10 +543,10 @@ bool checkIoErrorAndLogIfNeeded(IoError ioError, const std::string &itemType, co
 
     switch (mode) {
         case LogMode::Debug:
-            LOGW_DEBUG(logger, message << Utility::formatSyncPath(path));
+            LOGW_DEBUG(logger, message << CommonUtility::formatSyncPath(path));
             break;
         case LogMode::Warn:
-            LOGW_WARN(logger, message << Utility::formatSyncPath(path));
+            LOGW_WARN(logger, message << CommonUtility::formatSyncPath(path));
             break;
     }
 
@@ -571,7 +571,7 @@ bool LiteSyncCommClientPrivate::vfsStart(const SyncPath &folderPath) {
     IoError ioError = IoError::Success;
     const bool result = IoHelper::getXAttrValue(folderPath, litesync_attrs::status, value, ioError);
     if (!result) {
-        LOGW_WARN(_logger, L"Error in getXAttrValue: " << Utility::formatIoError(folderPath, ioError));
+        LOGW_WARN(_logger, L"Error in getXAttrValue: " << CommonUtility::formatIoError(folderPath, ioError));
         return false;
     }
 
@@ -582,7 +582,7 @@ bool LiteSyncCommClientPrivate::vfsStart(const SyncPath &folderPath) {
     if (value.empty()) {
         // Set default folder status
         if (!IoHelper::setXAttrValue(folderPath, litesync_attrs::status, litesync_attrs::statusOnline, ioError)) {
-            LOGW_WARN(_logger, L"Error in setXAttrValue: " << Utility::formatIoError(folderPath, ioError));
+            LOGW_WARN(_logger, L"Error in setXAttrValue: " << CommonUtility::formatIoError(folderPath, ioError));
             return false;
         }
 
@@ -592,7 +592,7 @@ bool LiteSyncCommClientPrivate::vfsStart(const SyncPath &folderPath) {
 
         // Set default folder pin state
         if (!IoHelper::setXAttrValue(folderPath, litesync_attrs::pinState, litesync_attrs::pinStateUnpinned, ioError)) {
-            LOGW_WARN(_logger, L"Error in setXAttrValue: " << Utility::formatIoError(folderPath, ioError));
+            LOGW_WARN(_logger, L"Error in setXAttrValue: " << CommonUtility::formatIoError(folderPath, ioError));
             return false;
         }
 
@@ -645,7 +645,7 @@ bool LiteSyncCommClientPrivate::updateFetchStatus(const SyncPath &filePath, cons
     NSString *nsPath = [NSString stringWithUTF8String:filePath.c_str()];
     NSString *nsStatus = [NSString stringWithUTF8String:status.c_str()];
     if (![_connector updateFetchStatus:nsPath fileStatus:nsStatus]) {
-        LOGW_ERROR(_logger, L"Call to updateFetchStatus failed: " << Utility::formatSyncPath(filePath));
+        LOGW_ERROR(_logger, L"Call to updateFetchStatus failed: " << CommonUtility::formatSyncPath(filePath));
         return false;
     }
 
@@ -666,7 +666,7 @@ bool LiteSyncCommClientPrivate::setThumbnail(const SyncPath &filePath, const QPi
     NSImage *srcImage = [[NSImage alloc] initWithCGImage:imageRef size:pixmap.size().toCGSize()];
     CGImageRelease(imageRef);
     if (srcImage == nil) {
-        LOGW_WARN(_logger, L"Call to initWithCGImage failed: " << Utility::formatSyncPath(filePath));
+        LOGW_WARN(_logger, L"Call to initWithCGImage failed: " << CommonUtility::formatSyncPath(filePath));
         error = true;
     }
 
@@ -685,13 +685,13 @@ bool LiteSyncCommClientPrivate::setThumbnail(const SyncPath &filePath, const QPi
         [dstImage unlockFocus];
 
         if (![_connector setThumbnail:nsPath image:dstImage]) {
-            LOGW_WARN(_logger, L"Call to setThumbnail failed: " << Utility::formatSyncPath(filePath));
+            LOGW_WARN(_logger, L"Call to setThumbnail failed: " << CommonUtility::formatSyncPath(filePath));
             error = true;
         }
     }
 
     if (![_connector updateThumbnailFetchStatus:nsPath fileStatus:(error ? QString("KO") : QString("OK")).toNSString()]) {
-        LOGW_ERROR(_logger, L"Call to updateThumbnailFetchStatus failed: " << Utility::formatSyncPath(filePath));
+        LOGW_ERROR(_logger, L"Call to updateThumbnailFetchStatus failed: " << CommonUtility::formatSyncPath(filePath));
         error = true;
     }
 
@@ -800,7 +800,7 @@ bool LiteSyncCommClient::vfsStart(int syncDbId, const SyncPath &folderPath, bool
     if (!sendStatusToFinder(folderPath, VfsStatus({.isHydrated = vfsStatus.isHydrated,
                                                    .isSyncing = vfsStatus.isSyncing,
                                                    .progress = static_cast<int16_t>(vfsStatus.isSyncing ? 100 : 0)}))) {
-        LOGW_WARN(_logger, L"Error in sendStatusToFinder: " << Utility::formatSyncPath(folderPath));
+        LOGW_WARN(_logger, L"Error in sendStatusToFinder: " << CommonUtility::formatSyncPath(folderPath));
         return false;
     }
 
@@ -833,7 +833,7 @@ bool LiteSyncCommClient::vfsHydratePlaceHolder(const SyncPath &filePath) {
     IoError ioError = IoError::Success;
     const bool result = IoHelper::getXAttrValue(filePath, litesync_attrs::status, value, ioError);
     if (!result) {
-        LOGW_WARN(_logger, L"Error in getXAttrValue: " << Utility::formatIoError(filePath, ioError));
+        LOGW_WARN(_logger, L"Error in getXAttrValue: " << CommonUtility::formatIoError(filePath, ioError));
         return false;
     }
 
@@ -842,13 +842,13 @@ bool LiteSyncCommClient::vfsHydratePlaceHolder(const SyncPath &filePath) {
     }
 
     if (value.empty()) {
-        LOGW_WARN(_logger, L"File is not a placeholder: " << Utility::formatSyncPath(filePath));
+        LOGW_WARN(_logger, L"File is not a placeholder: " << CommonUtility::formatSyncPath(filePath));
         return false;
     }
 
     if (value == litesync_attrs::statusOffline) {
         // Get file
-        LOGW_DEBUG(_logger, L"Get file with " << Utility::formatSyncPath(filePath));
+        LOGW_DEBUG(_logger, L"Get file with " << CommonUtility::formatSyncPath(filePath));
         CommString command(Str("MAKE_AVAILABLE_LOCALLY_DIRECT"));
         command.append(messageCdeSeparator);
         command.append(Path2Str(filePath));
@@ -864,7 +864,7 @@ bool LiteSyncCommClient::vfsDehydratePlaceHolder(const SyncPath &absoluteFilepat
     IoError ioError = IoError::Success;
     const bool result = IoHelper::getXAttrValue(absoluteFilepath, litesync_attrs::status, value, ioError);
     if (!result) {
-        LOGW_WARN(_logger, L"Error in getXAttrValue: " << Utility::formatSyncPath(absoluteFilepath));
+        LOGW_WARN(_logger, L"Error in getXAttrValue: " << CommonUtility::formatSyncPath(absoluteFilepath));
         return false;
     }
 
@@ -873,7 +873,7 @@ bool LiteSyncCommClient::vfsDehydratePlaceHolder(const SyncPath &absoluteFilepat
     }
 
     if (value.empty()) {
-        LOGW_WARN(_logger, L"File is not a placeholder: " << Utility::formatSyncPath(absoluteFilepath));
+        LOGW_WARN(_logger, L"File is not a placeholder: " << CommonUtility::formatSyncPath(absoluteFilepath));
         return false;
     }
 
@@ -881,7 +881,7 @@ bool LiteSyncCommClient::vfsDehydratePlaceHolder(const SyncPath &absoluteFilepat
 
     struct stat fileStat;
     if (lstat(absoluteFilepath.c_str(), &fileStat) == -1) {
-        LOGW_WARN(_logger, L"Call to lstat failed: " << Utility::formatErrno(absoluteFilepath, errno));
+        LOGW_WARN(_logger, L"Call to lstat failed: " << CommonUtility::formatErrno(absoluteFilepath, errno));
         return false;
     }
 
@@ -890,23 +890,23 @@ bool LiteSyncCommClient::vfsDehydratePlaceHolder(const SyncPath &absoluteFilepat
     if (fd == -1) {
         fd = open(absoluteFilepath.c_str(), O_WRONLY);
         if (fd == -1) {
-            LOGW_WARN(_logger, L"Call to open failed: " << Utility::formatErrno(absoluteFilepath, errno));
+            LOGW_WARN(_logger, L"Call to open failed: " << CommonUtility::formatErrno(absoluteFilepath, errno));
             return false;
         }
     }
 
     if (ftruncate(fd, 0) == -1) {
-        LOGW_WARN(_logger, L"Call to ftruncate failed: " << Utility::formatErrno(absoluteFilepath, errno));
+        LOGW_WARN(_logger, L"Call to ftruncate failed: " << CommonUtility::formatErrno(absoluteFilepath, errno));
         return false;
     }
 
     if (ftruncate(fd, fileStat.st_size) == -1) {
-        LOGW_WARN(_logger, L"Call to ftruncate failed: " << Utility::formatErrno(absoluteFilepath, errno));
+        LOGW_WARN(_logger, L"Call to ftruncate failed: " << CommonUtility::formatErrno(absoluteFilepath, errno));
         return false;
     }
 
     if (close(fd) == -1) {
-        LOGW_WARN(_logger, L"Call to close failed: " << Utility::formatErrno(absoluteFilepath, errno));
+        LOGW_WARN(_logger, L"Call to close failed: " << CommonUtility::formatErrno(absoluteFilepath, errno));
         return false;
     }
 
@@ -915,7 +915,7 @@ bool LiteSyncCommClient::vfsDehydratePlaceHolder(const SyncPath &absoluteFilepat
     tspec[0] = fileStat.st_atimespec;
     tspec[1] = fileStat.st_mtimespec;
     if (utimensat(0, absoluteFilepath.c_str(), tspec, 0) == -1) {
-        LOGW_WARN(_logger, L"Call to utimensat failed: " << Utility::formatErrno(absoluteFilepath, errno));
+        LOGW_WARN(_logger, L"Call to utimensat failed: " << CommonUtility::formatErrno(absoluteFilepath, errno));
         return false;
     }
 
@@ -931,7 +931,7 @@ bool LiteSyncCommClient::vfsDehydratePlaceHolder(const SyncPath &absoluteFilepat
 bool LiteSyncCommClient::vfsSetPinState(const SyncPath &path, const SyncPath &localSyncPath, const std::string_view &pinState) {
     IoError ioError = IoError::Success;
     if (!IoHelper::setXAttrValue(path, litesync_attrs::pinState, pinState, ioError)) {
-        LOGW_WARN(_logger, L"Call to setXAttrValue failed: " << Utility::formatErrno(path, errno));
+        LOGW_WARN(_logger, L"Call to setXAttrValue failed: " << CommonUtility::formatErrno(path, errno));
         return false;
     }
     if (checkIoErrorAndLogIfNeeded(ioError, "Item", path, _logger)) {
@@ -941,7 +941,7 @@ bool LiteSyncCommClient::vfsSetPinState(const SyncPath &path, const SyncPath &lo
     // Set status if empty directory
     bool isDirectory = false;
     if (const bool isDirSuccess = IoHelper::checkIfIsDirectory(path, isDirectory, ioError); !isDirSuccess) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfIsDirectory: " << Utility::formatIoError(path, ioError));
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfIsDirectory: " << CommonUtility::formatIoError(path, ioError));
         return false;
     }
     if (!isDirectory) return true;
@@ -978,7 +978,7 @@ bool LiteSyncCommClient::vfsGetPinState(const SyncPath &path, std::string &pinSt
     IoError ioError = IoError::Success;
     const bool result = IoHelper::getXAttrValue(path, litesync_attrs::pinState, value, ioError);
     if (!result) {
-        LOGW_WARN(_logger, L"Error in getXAttrValue: " << Utility::formatIoError(path, ioError));
+        LOGW_WARN(_logger, L"Error in getXAttrValue: " << CommonUtility::formatIoError(path, ioError));
         return false;
     }
 
@@ -987,7 +987,7 @@ bool LiteSyncCommClient::vfsGetPinState(const SyncPath &path, std::string &pinSt
     }
 
     if (value.empty()) {
-        LOGW_DEBUG(_logger, L"Item is not a placeholder: " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(_logger, L"Item is not a placeholder: " << CommonUtility::formatSyncPath(path));
         return false;
     }
 
@@ -1001,7 +1001,7 @@ bool LiteSyncCommClient::vfsConvertToPlaceHolder(const SyncPath &filePath, bool 
     const std::string_view status = (isHydrated ? litesync_attrs::statusOffline : litesync_attrs::statusOnline);
     IoError ioError = IoError::Success;
     if (!IoHelper::setXAttrValue(filePath, litesync_attrs::status, status, ioError)) {
-        LOGW_WARN(_logger, L"Call to setXAttrValue failed: " << Utility::formatIoError(filePath, ioError));
+        LOGW_WARN(_logger, L"Call to setXAttrValue failed: " << CommonUtility::formatIoError(filePath, ioError));
         return false;
     }
 
@@ -1012,7 +1012,7 @@ bool LiteSyncCommClient::vfsConvertToPlaceHolder(const SyncPath &filePath, bool 
     // Set pin state
     const std::string_view pinState = (isHydrated ? litesync_attrs::pinStatePinned : litesync_attrs::pinStateUnpinned);
     if (!IoHelper::setXAttrValue(filePath, litesync_attrs::pinState, pinState, ioError)) {
-        LOGW_WARN(_logger, L"Call to setXAttrValue failed: " << Utility::formatIoError(filePath, ioError));
+        LOGW_WARN(_logger, L"Call to setXAttrValue failed: " << CommonUtility::formatIoError(filePath, ioError));
         return false;
     }
 
@@ -1036,12 +1036,12 @@ bool LiteSyncCommClient::vfsCreatePlaceHolder(const SyncPath &relativePath, cons
     if (fileStat->st_mode == S_IFDIR) {
         IoError ioError = IoError::Success;
         if (!IoHelper::createDirectory(absolutePath, false, ioError)) {
-            LOGW_WARN(_logger, L"Call to IoHelper::createDirectory failed: " << Utility::formatSyncPath(absolutePath));
+            LOGW_WARN(_logger, L"Call to IoHelper::createDirectory failed: " << CommonUtility::formatSyncPath(absolutePath));
             return false;
         }
 
         if (ioError != IoError::Success) {
-            LOGW_WARN(_logger, L"Failed to create directory: " << Utility::formatIoError(absolutePath, ioError));
+            LOGW_WARN(_logger, L"Failed to create directory: " << CommonUtility::formatIoError(absolutePath, ioError));
             return false;
         }
     } else if (fileStat->st_mode == S_IFREG) {
@@ -1050,20 +1050,20 @@ bool LiteSyncCommClient::vfsCreatePlaceHolder(const SyncPath &relativePath, cons
 
         int fd = open(absolutePath.c_str(), flags, mode);
         if (fd == -1) {
-            LOGW_WARN(_logger, L"Call to open failed: " << Utility::formatErrno(absolutePath, errno));
+            LOGW_WARN(_logger, L"Call to open failed: " << CommonUtility::formatErrno(absolutePath, errno));
             return false;
         }
 
         if (fileStat->st_mode == S_IFREG) {
             if (ftruncate(fd, fileStat->st_size) == -1) {
-                LOGW_WARN(_logger, L"Call to ftruncate failed: " << Utility::formatErrno(absolutePath, errno));
+                LOGW_WARN(_logger, L"Call to ftruncate failed: " << CommonUtility::formatErrno(absolutePath, errno));
                 close(fd);
                 return false;
             }
         }
 
         if (close(fd) == -1) {
-            LOGW_WARN(_logger, L"Call to close failed: " << Utility::formatErrno(absolutePath, errno));
+            LOGW_WARN(_logger, L"Call to close failed: " << CommonUtility::formatErrno(absolutePath, errno));
             return false;
         }
     }
@@ -1071,7 +1071,7 @@ bool LiteSyncCommClient::vfsCreatePlaceHolder(const SyncPath &relativePath, cons
     // Set status
     IoError ioError = IoError::Success;
     if (!IoHelper::setXAttrValue(absolutePath, litesync_attrs::status, litesync_attrs::statusOnline, ioError)) {
-        LOGW_WARN(_logger, L"Call to setXAttrValue failed: " << Utility::formatIoError(absolutePath, ioError));
+        LOGW_WARN(_logger, L"Call to setXAttrValue failed: " << CommonUtility::formatIoError(absolutePath, ioError));
         return false;
     }
 
@@ -1081,7 +1081,7 @@ bool LiteSyncCommClient::vfsCreatePlaceHolder(const SyncPath &relativePath, cons
 
     // Set pin state
     if (!IoHelper::setXAttrValue(absolutePath, litesync_attrs::pinState, litesync_attrs::pinStateUnpinned, ioError)) {
-        LOGW_WARN(_logger, L"Call to setXAttrValue failed: " << Utility::formatIoError(absolutePath, ioError));
+        LOGW_WARN(_logger, L"Call to setXAttrValue failed: " << CommonUtility::formatIoError(absolutePath, ioError));
         return false;
     }
 
@@ -1093,13 +1093,13 @@ bool LiteSyncCommClient::vfsCreatePlaceHolder(const SyncPath &relativePath, cons
     if (const IoError tmpIoError =
                 IoHelper::setFileDates(absolutePath, fileStat->st_birthtimespec.tv_sec, fileStat->st_mtimespec.tv_sec, false);
         tmpIoError == IoError::NoSuchFileOrDirectory) {
-        LOGW_DEBUG(_logger, L"Item doesn't exist: " << Utility::formatSyncPath(absolutePath));
+        LOGW_DEBUG(_logger, L"Item doesn't exist: " << CommonUtility::formatSyncPath(absolutePath));
         return false;
     } else if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(absolutePath));
+        LOGW_WARN(_logger, L"Access denied to " << CommonUtility::formatSyncPath(absolutePath));
         return false;
     } else if (tmpIoError != IoError::Success) {
-        LOGW_WARN(_logger, L"Call to IoHelper::setFileDates failed: " << Utility::formatSyncPath(absolutePath));
+        LOGW_WARN(_logger, L"Call to IoHelper::setFileDates failed: " << CommonUtility::formatSyncPath(absolutePath));
         return false;
     }
 
@@ -1129,7 +1129,7 @@ bool LiteSyncCommClient::vfsUpdateFetchStatus(const SyncPath &tmpFilePath, const
                                                                                                             error:&error];
         NSInteger errorCode = error ? error.code : 0;
         if (error) {
-            LOGW_WARN(_logger, L"Failed to get attributes: " << Utility::formatErrno(filePath, errorCode));
+            LOGW_WARN(_logger, L"Failed to get attributes: " << CommonUtility::formatErrno(filePath, errorCode));
             return false;
         }
 
@@ -1140,14 +1140,14 @@ bool LiteSyncCommClient::vfsUpdateFetchStatus(const SyncPath &tmpFilePath, const
             IoError ioError = IoError::Success;
             FileStat filestat;
             if (!IoHelper::getFileStat(filePath, &filestat, ioError)) {
-                LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(filePath, ioError));
+                LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << CommonUtility::formatIoError(filePath, ioError));
                 return false;
             }
             if (ioError == IoError::NoSuchFileOrDirectory) {
-                LOGW_WARN(_logger, L"Item doesn't exist: " << Utility::formatSyncPath(filePath));
+                LOGW_WARN(_logger, L"Item doesn't exist: " << CommonUtility::formatSyncPath(filePath));
                 return false;
             } else if (ioError == IoError::AccessDenied) {
-                LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(filePath));
+                LOGW_WARN(_logger, L"Access denied to " << CommonUtility::formatSyncPath(filePath));
                 return false;
             }
 
@@ -1158,8 +1158,8 @@ bool LiteSyncCommClient::vfsUpdateFetchStatus(const SyncPath &tmpFilePath, const
 
             // Copy tmp file content to file
             @try {
-                LOGW_INFO(_logger, L"Copying temp file from " << Utility::formatSyncPath(tmpFilePath) << L" to "
-                                                              << Utility::formatSyncPath(filePath));
+                LOGW_INFO(_logger, L"Copying temp file from " << CommonUtility::formatSyncPath(tmpFilePath) << L" to "
+                                                              << CommonUtility::formatSyncPath(filePath));
 
                 NSString *nsTmpPath = [NSString stringWithUTF8String:tmpFilePath.c_str()];
                 NSFileHandle *tmpFileHandle = [NSFileHandle fileHandleForReadingAtPath:nsTmpPath];
@@ -1171,7 +1171,7 @@ bool LiteSyncCommClient::vfsUpdateFetchStatus(const SyncPath &tmpFilePath, const
                         if ((buffer = [tmpFileHandle readDataUpToLength:COPY_CHUNK_SIZE error:&error]) == nil) {
                             errorCode = error ? error.code : 0;
                             LOGW_ERROR(_logger,
-                                       L"Error while reading tmp file: " << Utility::formatErrno(tmpFilePath, errorCode));
+                                       L"Error while reading tmp file: " << CommonUtility::formatErrno(tmpFilePath, errorCode));
                             break;
                         }
                         errorCode = error ? error.code : 0;
@@ -1182,7 +1182,8 @@ bool LiteSyncCommClient::vfsUpdateFetchStatus(const SyncPath &tmpFilePath, const
 
                         if (![fileHandle writeData:buffer error:&error]) {
                             errorCode = error ? error.code : 0;
-                            LOGW_ERROR(_logger, L"Error while writing to file: " << Utility::formatErrno(filePath, errorCode));
+                            LOGW_ERROR(_logger,
+                                       L"Error while writing to file: " << CommonUtility::formatErrno(filePath, errorCode));
                             break;
                         }
                     }
@@ -1191,8 +1192,8 @@ bool LiteSyncCommClient::vfsUpdateFetchStatus(const SyncPath &tmpFilePath, const
                 [tmpFileHandle closeFile];
                 [fileHandle closeFile];
             } @catch (NSException *e) {
-                LOGW_WARN(_logger, L"Could not copy tmp file from " << Utility::formatSyncPath(tmpFilePath) << L" to "
-                                                                    << Utility::formatSyncPath(filePath) << L" err="
+                LOGW_WARN(_logger, L"Could not copy tmp file from " << CommonUtility::formatSyncPath(tmpFilePath) << L" to "
+                                                                    << CommonUtility::formatSyncPath(filePath) << L" err="
                                                                     << CommonUtility::s2ws(std::string([e.name UTF8String])));
                 return false;
             }
@@ -1200,7 +1201,7 @@ bool LiteSyncCommClient::vfsUpdateFetchStatus(const SyncPath &tmpFilePath, const
             // Set attributes
             if (![[NSFileManager defaultManager] setAttributes:attributes ofItemAtPath:nsPath error:&error]) {
                 errorCode = error ? error.code : 0;
-                LOGW_WARN(_logger, L"Could not set attributes to file: " << Utility::formatErrno(filePath, errorCode));
+                LOGW_WARN(_logger, L"Could not set attributes to file: " << CommonUtility::formatErrno(filePath, errorCode));
                 return false;
             }
 
@@ -1211,20 +1212,20 @@ bool LiteSyncCommClient::vfsUpdateFetchStatus(const SyncPath &tmpFilePath, const
             }
 
             if (!_private->updateFetchStatus(filePath, "OK")) {
-                LOGW_WARN(_logger, L"Call to updateFetchStatus failed: " << Utility::formatSyncPath(filePath));
+                LOGW_WARN(_logger, L"Call to updateFetchStatus failed: " << CommonUtility::formatSyncPath(filePath));
                 return false;
             }
 
             // Set file dates
             if (ioError = IoHelper::setFileDates(filePath, creationDate, modificationDate, false);
                 ioError == IoError::NoSuchFileOrDirectory) {
-                LOGW_DEBUG(_logger, L"Item doesn't exist: " << Utility::formatSyncPath(filePath));
+                LOGW_DEBUG(_logger, L"Item doesn't exist: " << CommonUtility::formatSyncPath(filePath));
                 return false;
             } else if (ioError == IoError::AccessDenied) {
-                LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(filePath));
+                LOGW_WARN(_logger, L"Access denied to " << CommonUtility::formatSyncPath(filePath));
                 return false;
             } else if (ioError != IoError::Success) {
-                LOGW_WARN(_logger, L"Call to IoHelper::setFileDates failed: " << Utility::formatSyncPath(filePath));
+                LOGW_WARN(_logger, L"Call to IoHelper::setFileDates failed: " << CommonUtility::formatSyncPath(filePath));
                 return false;
             }
         } else {
@@ -1241,7 +1242,7 @@ bool LiteSyncCommClient::vfsUpdateFetchStatus(const SyncPath &tmpFilePath, const
 
 bool LiteSyncCommClient::vfsUpdateFetchStatus(const SyncPath &absolutePath, const std::string &status) {
     if (!_private->updateFetchStatus(absolutePath, status)) {
-        LOGW_WARN(_logger, L"Call to updateFetchStatus failed: " << Utility::formatSyncPath(absolutePath));
+        LOGW_WARN(_logger, L"Call to updateFetchStatus failed: " << CommonUtility::formatSyncPath(absolutePath));
         return false;
     }
     return true;
@@ -1249,7 +1250,7 @@ bool LiteSyncCommClient::vfsUpdateFetchStatus(const SyncPath &absolutePath, cons
 
 bool LiteSyncCommClient::vfsCancelHydrate(const SyncPath &filePath) {
     if (!_private->updateFetchStatus(filePath, "CANCEL")) {
-        LOGW_WARN(_logger, L"Call to updateFetchStatus failed: " << Utility::formatSyncPath(filePath));
+        LOGW_WARN(_logger, L"Call to updateFetchStatus failed: " << CommonUtility::formatSyncPath(filePath));
         return false;
     }
     return true;
@@ -1258,7 +1259,7 @@ bool LiteSyncCommClient::vfsCancelHydrate(const SyncPath &filePath) {
 bool LiteSyncCommClient::vfsSetThumbnail(const SyncPath &absoluteFilePath, const QPixmap &pixmap) {
     // Set thumbnail
     if (!_private->setThumbnail(absoluteFilePath, pixmap)) {
-        LOGW_WARN(_logger, L"Call to setThumbnail failed: " << Utility::formatSyncPath(absoluteFilePath));
+        LOGW_WARN(_logger, L"Call to setThumbnail failed: " << CommonUtility::formatSyncPath(absoluteFilePath));
     }
 
     return true;
@@ -1274,7 +1275,7 @@ bool LiteSyncCommClient::vfsGetStatus(const SyncPath &absoluteFilePath, VfsStatu
     std::string value;
     IoError ioError = IoError::Success;
     if (!IoHelper::getXAttrValue(absoluteFilePath, litesync_attrs::status, value, ioError) && !isExpectedError(ioError)) {
-        LOGW_WARN(logger, L"Error in getXAttrValue: " << Utility::formatIoError(absoluteFilePath, ioError));
+        LOGW_WARN(logger, L"Error in getXAttrValue: " << CommonUtility::formatIoError(absoluteFilePath, ioError));
         return false;
     }
 
@@ -1329,18 +1330,18 @@ bool LiteSyncCommClient::vfsUpdateMetadata(const SyncPath &absoluteFilePath, con
     if (fd == -1) {
         fd = open(absoluteFilePath.c_str(), FWRITE);
         if (fd == -1) {
-            LOGW_WARN(_logger, L"Call to open failed - " << Utility::formatErrno(absoluteFilePath, errno));
+            LOGW_WARN(_logger, L"Call to open failed - " << CommonUtility::formatErrno(absoluteFilePath, errno));
             return false;
         }
     }
 
     if (ftruncate(fd, fileStat->st_size) == -1) {
-        LOGW_WARN(_logger, L"Call to ftruncate failed - " << Utility::formatErrno(absoluteFilePath, errno));
+        LOGW_WARN(_logger, L"Call to ftruncate failed - " << CommonUtility::formatErrno(absoluteFilePath, errno));
         return false;
     }
 
     if (close(fd) == -1) {
-        LOGW_WARN(_logger, L"Call to close failed - " << Utility::formatErrno(absoluteFilePath, errno));
+        LOGW_WARN(_logger, L"Call to close failed - " << CommonUtility::formatErrno(absoluteFilePath, errno));
         return false;
     }
 
@@ -1348,13 +1349,13 @@ bool LiteSyncCommClient::vfsUpdateMetadata(const SyncPath &absoluteFilePath, con
     if (const IoError ioError =
                 IoHelper::setFileDates(absoluteFilePath, fileStat->st_birthtimespec.tv_sec, fileStat->st_mtimespec.tv_sec, false);
         ioError == IoError::NoSuchFileOrDirectory) {
-        LOGW_DEBUG(_logger, L"Item doesn't exist: " << Utility::formatSyncPath(absoluteFilePath));
+        LOGW_DEBUG(_logger, L"Item doesn't exist: " << CommonUtility::formatSyncPath(absoluteFilePath));
         return false;
     } else if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(absoluteFilePath));
+        LOGW_WARN(_logger, L"Access denied to " << CommonUtility::formatSyncPath(absoluteFilePath));
         return false;
     } else if (ioError != IoError::Success) {
-        LOGW_WARN(_logger, L"Call to IoHelper::setFileDates failed: " << Utility::formatSyncPath(absoluteFilePath));
+        LOGW_WARN(_logger, L"Call to IoHelper::setFileDates failed: " << CommonUtility::formatSyncPath(absoluteFilePath));
         return false;
     }
 
@@ -1393,7 +1394,7 @@ bool LiteSyncCommClient::vfsSetStatus(const SyncPath &path, const SyncPath &loca
         std::string status = IoHelper::statusXAttr(vfsStatus.isSyncing, roundedProgress, vfsStatus.isHydrated);
         IoError ioError = IoError::Success;
         if (!IoHelper::setXAttrValue(path, litesync_attrs::status, status, ioError)) {
-            LOGW_WARN(_logger, L"Call to setXAttrValue failed: " << Utility::formatIoError(path, ioError));
+            LOGW_WARN(_logger, L"Call to setXAttrValue failed: " << CommonUtility::formatIoError(path, ioError));
             return false;
         }
 
@@ -1404,7 +1405,7 @@ bool LiteSyncCommClient::vfsSetStatus(const SyncPath &path, const SyncPath &loca
         if (!sendStatusToFinder(path, VfsStatus({.isHydrated = vfsStatus.isHydrated,
                                                  .isSyncing = vfsStatus.isSyncing,
                                                  .progress = roundedProgress}))) {
-            LOGW_WARN(_logger, L"Call to sendStatusToFinder failed: " << Utility::formatSyncPath(path));
+            LOGW_WARN(_logger, L"Call to sendStatusToFinder failed: " << CommonUtility::formatSyncPath(path));
             return false;
         }
 
@@ -1513,7 +1514,7 @@ bool LiteSyncCommClient::sendStatusToFinder(const SyncPath &path, const VfsStatu
     }
 
     // Update Finder
-    LOGW_DEBUG(_logger, L"Send status to the Finder extension: " << Utility::formatSyncPath(path));
+    LOGW_DEBUG(_logger, L"Send status to the Finder extension: " << CommonUtility::formatSyncPath(path));
     CommString command(Str("STATUS"));
     command.append(messageCdeSeparator);
     command.append(CommonUtility::str2CommString(std::to_string(vfsStatus.isSyncing)));
@@ -1552,7 +1553,7 @@ bool LiteSyncCommClient::checkFilesAttributes(const SyncPath &path, const SyncPa
         if (vfsStatus.isSyncing) {
             bool isDirectory = false;
             if (const bool isDirSuccess = IoHelper::checkIfIsDirectory(path, isDirectory, ioError); !isDirSuccess) {
-                LOGW_WARN(_logger, L"Error in IoHelper::checkIfIsDirectory: " << Utility::formatIoError(path, ioError));
+                LOGW_WARN(_logger, L"Error in IoHelper::checkIfIsDirectory: " << CommonUtility::formatIoError(path, ioError));
                 continue;
             }
 
