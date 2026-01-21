@@ -74,7 +74,7 @@ done
 
 
 
-#set -euo pipefail
+set -euo pipefail
 
 function get_platform {
   platform="$(uname | tr '[:upper:]' '[:lower:]')"
