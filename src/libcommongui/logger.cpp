@@ -121,7 +121,7 @@ void Logger::postNotification(const QString &title, const QString &message) {
     emit showNotification(title, message);
 }
 
-void Logger::log(Log log) {
+void Logger::log(GuiLog log) {
     QString msg;
     if (_showTime) {
         msg = log.timeStamp.toString(QLatin1String("MM-dd hh:mm:ss:zzz")) + QLatin1Char(' ');
@@ -158,7 +158,7 @@ void Logger::doLog(const QString &msg) {
 }
 
 void Logger::kdriveLog(const QString &message) {
-    Log log_;
+    GuiLog log_;
     log_.timeStamp = QDateTime::currentDateTimeUtc();
     log_.message = message;
 
