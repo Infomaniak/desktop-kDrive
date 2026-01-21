@@ -119,15 +119,14 @@ class SentryNativeConan(ConanFile):
         copy(self, "LICENSE*", src=self.source_folder, dst=pjoin(self.package_folder, "licenses"))
         cmake = CMake(self)
         cmake.install()
+        import shutil
         if self.settings.os == "Macos":
-            import shutil
             dsym_path = os.path.join(self.package_folder, "lib", "libsentry.dylib.dSYM")
             if os.path.exists(dsym_path):
                 shutil.rmtree(dsym_path)
 
         # Remove auto-generated CMake config files (we use Conan's generated ones)
         cmake_dir = os.path.join(self.package_folder, "lib", "cmake", "sentry")
-        import shutil
         shutil.rmtree(cmake_dir, ignore_errors=True)
 
         # Generate CMake module for crashpad_handler executable
