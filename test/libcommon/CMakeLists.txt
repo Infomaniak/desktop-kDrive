@@ -35,9 +35,9 @@ set(testcommon_SRCS
 if(APPLE)
     list(APPEND testcommon_SRCS ../test_utility/testhelpers_mac.cpp io/testcreatealias.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp io/testremovexattr.cpp)
 elseif (WIN32)
-    list(APPEND testcommon_SRCS ../test_utility/testhelpers_win.cpp)
+    list(APPEND testcommon_SRCS ../test_utility/testhelpers_win.cpp io/testcreatejunction.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp io/testgetlongpathname.cpp)
 else ()
-    list(APPEND testcommon_SRCS ../test_utility/testhelpers_linux.cpp io/testcreatejunction.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp io/testgetlongpathname.cpp)
+    list(APPEND testcommon_SRCS ../test_utility/testhelpers_linux.cpp)
 endif()
 
 if(WIN32)
