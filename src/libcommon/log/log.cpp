@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "log/log.h"
+#include "log.h"
 #include "customrollingfileappender.h"
 #include "utility/utility.h"
 
