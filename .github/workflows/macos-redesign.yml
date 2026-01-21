@@ -1,0 +1,40 @@
+name: macOS Redesign GUI
+
+on:
+    pull_request
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+defaults:
+    run:
+        working-directory: ./src/front/macOS
+
+jobs:
+    run-tests:
+        name: Run tests
+        # The job should run on a macOS runner with the latest kDrive
+        runs-on: [ self-hosted, iOS]
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+            - name: Build
+              run: |
+                xcodebuild \
+                    -scheme kDrive \
+                    -destination "platform=macOS,arch=arm64" \
+                    CODE_SIGNING_ALLOWED=NO \
+                    CODE_SIGNING_REQUIRED=NO \
+                    CODE_SIGN_IDENTITY="" \
+                    PROVISIONING_PROFILE_SPECIFIER="" \
+                    DEVELOPMENT_TEAM="" \
+                    ENABLE_HARDENED_RUNTIME=NO \
+                    build-for-testing
+            - name: Run tests
+              run: |
+                xcodebuild \
+                    -scheme kDrive \
+                    -destination "platform=macOS,arch=arm64" \
+                    test-without-building
