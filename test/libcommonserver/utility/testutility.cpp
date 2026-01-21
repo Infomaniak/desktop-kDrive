@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -129,7 +129,7 @@ void TestUtility::testIsEqualUpToCaseAndEnc(void) {
 void TestUtility::testGetLinuxDesktopType() {
     std::string currentDesktop;
 #if defined(KD_LINUX)
-    CPPUNIT_ASSERT(Utility::getLinuxDesktopType(currentDesktop));
+    CPPUNIT_ASSERT(CommonUtility::getLinuxDesktopType(currentDesktop));
     CPPUNIT_ASSERT(!currentDesktop.empty());
     return;
 #endif

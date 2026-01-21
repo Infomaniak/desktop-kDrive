@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,7 +62,7 @@ SyncPath removeNumericSuffix(const SyncPath &relativePath) {
 }
 
 void eraseFromTrash(const KDC::SyncPath &relativePath) {
-    const auto trashPath = Utility::getTrashPath();
+    const auto trashPath = CommonUtility::getTrashPath();
     std::error_code ec;
 
     auto dirIt = std::filesystem::recursive_directory_iterator(trashPath,
@@ -85,7 +85,7 @@ void eraseFromTrash(const KDC::SyncPath &relativePath) {
 }
 
 bool isInTrash(const SyncPath &relativePath) {
-    const auto trashPath = Utility::getTrashPath();
+    const auto trashPath = CommonUtility::getTrashPath();
     std::error_code ec;
 
     auto dirIt = std::filesystem::recursive_directory_iterator(trashPath,
