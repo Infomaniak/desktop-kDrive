@@ -61,6 +61,7 @@ namespace KDC {
 
 // Temporary test in drive "kDrive Desktop Team"
 const NodeId testCiFolderId = "56850";
+const SyncPath remoteTestCiDirPath = "Common documents/Test kDrive/test_ci";
 
 void TestIntegration::setUp() {
     TestBase::start();
@@ -114,7 +115,9 @@ void TestIntegration::setUp() {
     IoError ioError = IoError::Unknown;
     (void) IoHelper::getFileStat(_localSyncDir.path(), &fileStat, ioError);
 
-    const Sync sync(1, drive.dbId(), _localSyncDir.path(), std::to_string(fileStat.inode), "/", _remoteSyncDir.id());
+    // This is an advanced sync. Define remote target path and remote target node ID.
+    const Sync sync(1, drive.dbId(), _localSyncDir.path(), std::to_string(fileStat.inode),
+                    remoteTestCiDirPath / _remoteSyncDir.name(), _remoteSyncDir.id());
     (void) ParmsDb::instance()->insertSync(sync);
 
     // Setup proxy
@@ -282,7 +285,7 @@ void TestIntegration::testBreakCycle() {
 static const auto maxNbBlacklistedFiles = 3000;
 void TestIntegration::testBlacklist() {
     waitForSyncToBeIdle(SourceLocation::currentLoc());
-    const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
+    const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id(), "testBlacklistDir");
     const auto filename = Str("testBlacklist");
     const auto fileId = duplicateRemoteFile(_driveDbId, _testFileRemoteId, filename);
     waitForSyncToBeIdle(SourceLocation::currentLoc());
@@ -309,7 +312,7 @@ void TestIntegration::testBlacklist() {
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForSyncToBeIdle(SourceLocation::currentLoc());
 
-    CPPUNIT_ASSERT(!std::filesystem::exists(dirpath / filename));
+    CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / filename));
     CPPUNIT_ASSERT(testhelpers::isInTrash(filename));
 #if defined(KD_MACOS) || defined(KD_LINUX)
     testhelpers::eraseFromTrash(filename);

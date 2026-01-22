@@ -265,7 +265,7 @@ void TestOperationSorterWorker::testFixMoveBeforeMoveOccupied() {
     CPPUNIT_ASSERT_LESS(mapIndex[moveOp2->id()], mapIndex[moveOp->id()]);
 }
 
-bool isFirstBeforeSecond(const std::shared_ptr<SyncOperationList> &list, const SyncOpPtr &first, const SyncOpPtr &second) {
+bool isFirstBeforeSecond(const std::shared_ptr<SyncOperationList> list, const SyncOpPtr &first, const SyncOpPtr &second) {
     for (const auto &opId: list->opSortedList()) {
         if (opId == first->id()) {
             return true;
@@ -930,7 +930,7 @@ void TestOperationSorterWorker::testExtractOpsByType() {
 }
 
 SyncOpPtr TestOperationSorterWorker::generateSyncOperation(const OperationType opType,
-                                                           const std::shared_ptr<Node> &affectedNode) const {
+                                                           const std::shared_ptr<Node> affectedNode) const {
     const auto op = std::make_shared<SyncOperation>();
     op->setType(opType);
     op->setAffectedNode(affectedNode);

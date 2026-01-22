@@ -27,7 +27,7 @@
 
 namespace KDC {
 
-OperationSorterWorker::OperationSorterWorker(const std::shared_ptr<SyncPal> &syncPal, const std::string &name,
+OperationSorterWorker::OperationSorterWorker(const std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                              const std::string &shortName) :
     OperationProcessor(syncPal, name, shortName),
     _filter(syncPal->_syncOps->allOps()) {}
@@ -48,7 +48,7 @@ void OperationSorterWorker::execute() {
     setDone(ExitCode::Ok);
 }
 
-bool hasMoveOperation(const std::shared_ptr<SyncOperationList> &syncOps) {
+bool hasMoveOperation(const std::shared_ptr<SyncOperationList> syncOps) {
     return !syncOps->opListIdByType(OperationType::Move).empty() || !syncOps->opListIdByType(OperationType::MoveEdit).empty() ||
            !syncOps->opListIdByType(OperationType::MoveOut).empty();
 }

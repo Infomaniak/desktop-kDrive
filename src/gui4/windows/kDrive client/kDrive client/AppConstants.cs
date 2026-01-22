@@ -38,7 +38,7 @@ namespace Infomaniak.kDrive
         Uri TrashUrl(DriveId? driveId);
         Uri FavoriteUrl(DriveId? driveId);
         Uri SharedUrl(DriveId? driveId);
-        Uri OpenItemUri(DriveId? driveId, NodeId nodeId);
+        Uri itemUri(DriveId? driveId, NodeId nodeId);
     }
 
     internal sealed class ProductionAppConstants : IAppConstants
@@ -75,7 +75,7 @@ namespace Infomaniak.kDrive
             public Uri TrashUrl(DriveId? id) => new($"{kSuiteHomeUrl(id)}/trash");
             public Uri FavoriteUrl(DriveId? id) => new($"{kSuiteHomeUrl(id)}/favorites");
             public Uri SharedUrl(DriveId? id) => new($"{kSuiteHomeUrl(id)}/shared-with-me");
-            public Uri OpenItemUri(DriveId? driveId, NodeId nodeId) => new($"{kDriveHomeUrl(driveId)}/redirect/{nodeId}");
+            public Uri itemUri(DriveId? driveId, NodeId nodeId) => new($"{kDriveHomeUrl(driveId)}/redirect/{nodeId}");
         }
         private sealed class ProductionStorage : IStorageConstants
         {

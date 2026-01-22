@@ -41,7 +41,7 @@ final class ObservableCoherentCacheTests: XCTestCase {
         )
 
         let cache = ServerCoherentCache()
-        let expectation = self.expectation(description: "User updates observed")
+        let expectation = expectation(description: "User updates observed")
         var receivedUsers: IndexedUsers?
         var cancellables = Set<AnyCancellable>()
 
@@ -65,7 +65,7 @@ final class ObservableCoherentCacheTests: XCTestCase {
 
         // THEN
         waitForExpectations(timeout: 10.0) { error in
-            if let error = error {
+            if let error {
                 XCTFail("Expectation failed with error: \(error)")
             }
         }

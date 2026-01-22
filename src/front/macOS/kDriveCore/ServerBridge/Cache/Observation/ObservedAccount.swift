@@ -106,7 +106,7 @@ public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
         )
         .map { event -> Account? in
             switch event {
-            case let .update(account): return account
+            case .update(let account): return account
             case .removed: return nil
             }
         }
@@ -120,7 +120,7 @@ public extension AnyPublisher where Output == IndexedUsers, Failure == Never {
         accountEventPublisher(accountDbId: accountDbId)
             .map { event -> Account? in
                 switch event {
-                case let .update(account): return account
+                case .update(let account): return account
                 case .removed: return nil
                 }
             }

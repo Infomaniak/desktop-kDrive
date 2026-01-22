@@ -82,6 +82,8 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string Value = "value";
         static public string Size= "size";
 
+        static public string LinkUrl = "linkUrl";
+
         static public string VersionInfo = "versionInfo";
         static public string DriveAvailableInfoList = "driveAvailableInfoList";
 

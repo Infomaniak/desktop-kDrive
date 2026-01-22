@@ -81,7 +81,14 @@ namespace Infomaniak.kDrive.CustomControls
         {
             if (UriString != UriSource?.ToString())
             {
-                UriSource = new Uri(UriString);
+                try
+                {
+                    UriSource = new Uri(UriString);
+                }
+                catch
+                {
+                    UriSource = null;
+                }
                 return; // UriSource changed will trigger Refresh
             }
             // Cancel any previous refresh

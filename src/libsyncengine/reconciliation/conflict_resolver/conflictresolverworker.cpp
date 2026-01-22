@@ -120,7 +120,7 @@ ExitInfo ConflictResolverWorker::handleConflictOnOmittedEdit(const Conflict &con
         if (auto exitInfo = editChangeShouldBePropagated(localNode, propagateEdit); !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in OperationProcessor::editChangeShouldBePropagated: "
                                                << CommonUtility::formatSyncPath(localNode->getPath()) << L" " << exitInfo);
-            _syncPal->addError(Error(ERR_ID, exitInfo));
+            _syncPal->addError(Error(_syncPal->syncDbId(), shortName(), exitInfo));
             return exitInfo;
         }
 

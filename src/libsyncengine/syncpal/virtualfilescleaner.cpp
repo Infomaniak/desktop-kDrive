@@ -29,7 +29,7 @@
 
 namespace KDC {
 
-VirtualFilesCleaner::VirtualFilesCleaner(const SyncPath &path, std::shared_ptr<SyncDb> syncDb, const std::shared_ptr<Vfs> &vfs) :
+VirtualFilesCleaner::VirtualFilesCleaner(const SyncPath &path, std::shared_ptr<SyncDb> syncDb, const std::shared_ptr<Vfs> vfs) :
     _logger(Log::instance()->getLogger()),
     _rootPath(path),
     _syncDb(syncDb),

@@ -1038,8 +1038,9 @@ void TestNetworkJobs::testGetInfoDrive() {
     const ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
-    Poco::JSON::Object::Ptr data = job.jsonRes()->getObject(dataKey);
-    CPPUNIT_ASSERT(data->get(nameKey).toString() == "kDrive Desktop Team");
+    CPPUNIT_ASSERT_EQUAL(std::string("kDrive Desktop Team"), job.name());
+    CPPUNIT_ASSERT_EQUAL(std::string("team"), job.packInfo().name);
+    CPPUNIT_ASSERT(!job.packInfo().isFree);
 }
 
 void TestNetworkJobs::testThumbnail() {

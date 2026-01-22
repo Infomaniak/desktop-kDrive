@@ -74,7 +74,7 @@ final class MainViewModel: ObservableObject {
     }
 
     private func updateSelectedItems() {
-        guard let currentSynchro = currentSynchro,
+        guard let currentSynchro,
               let currentSyncContext = getSelectedValuesFromSynchro(currentSynchro) else {
             return
         }

@@ -219,7 +219,7 @@
 
                 <controls:ContentLoader Grid.Row="0"
                                         IsLoading="True"
-                                        CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"
+                                        CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.M}"
                                         Height="130"
                                         Width="180" />
 
@@ -227,19 +227,19 @@
                             Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
                     <!-- Title -->
                     <controls:ContentLoader IsLoading="True"
-                                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
+                                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
                                             Height="{StaticResource Infomaniak.Style.Spacing.L}"
                                             Width="150" />
 
                     <!-- Description -->
                     <controls:ContentLoader IsLoading="True"
-                                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
+                                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
                                             Height="{StaticResource Infomaniak.Style.Spacing.L}"
                                             Width="300" />
 
                     <!-- Link -->
                     <controls:ContentLoader IsLoading="True"
-                                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.S}"
+                                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}"
                                             Height="{StaticResource Infomaniak.Style.Spacing.L}"
                                             Width="100" />
                 </StackPanel>
@@ -299,7 +299,7 @@
             <!-- State widget -->
             <Border Grid.Column="0"
                     Grid.Row="1"
-                    CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.M}"
+                    CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.M}"
                     Padding="24">
                 <Border.Background>
                     <LinearGradientBrush StartPoint="0,0"

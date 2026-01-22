@@ -735,6 +735,36 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return;
             }
         }
+
+        public async Task<Uri?> GetPublicLink(DbId driveDbId, NodeId nodeId, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.DriveDbId] = driveDbId,
+                [JsonKeys.NodeId] = Utility.ToBase64String(nodeId)
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_GETPUBLICLINKURL, parms, cancellationToken);
+
+            if (data.Params is null || !data.Params.ContainsKey(JsonKeys.LinkUrl))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.LinkUrl} not found in response.");
+                return null;
+            }
+
+            var options = new JsonSerializerOptions();
+            options.Converters.Add(new Base64StringJsonConverter());
+            string? linkStr = data.Params[JsonKeys.LinkUrl].Deserialize<string>(options);
+            try
+            {
+                return new(linkStr ?? "");
+            }
+            catch (UriFormatException)
+            {
+                Logger.Log(Logger.Level.Error, $"Invalid URI format received: {linkStr}");
+                return null;
+            }
+        }
+
         public async Task StartUpdate(CancellationToken cancellationToken)
         {
             await _commClient.SendRequestAsync(RequestNum.UPDATER_START_INSTALLER, new JsonObject(), cancellationToken);

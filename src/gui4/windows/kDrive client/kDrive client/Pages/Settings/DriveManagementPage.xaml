@@ -47,7 +47,7 @@
                             Visibility="{x:Bind ManagedDrive.MainSync, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
                     <StackPanel Orientation="Horizontal"
                                 Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
-                        <controls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.drive-custom}"
+                        <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Products.kDrive}"
                                           Foreground="{x:Bind ManagedDrive.Color, Mode=OneWay, Converter={StaticResource ColorToBrushConverter}}" />
                         <TextBlock Text="{x:Bind ManagedDrive.Name, Mode=OneWay}"
                                    Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />

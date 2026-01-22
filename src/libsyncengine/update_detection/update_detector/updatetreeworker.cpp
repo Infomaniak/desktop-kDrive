@@ -1074,7 +1074,7 @@ ExitCode UpdateTreeWorker::getOrCreateNodeFromPath(const SyncPath &path, std::sh
 }
 
 ExitCode UpdateTreeWorker::createTmpNode(std::shared_ptr<Node> &tmpNode, const SyncName &name,
-                                         const std::shared_ptr<Node> &parentNode) {
+                                         const std::shared_ptr<Node> parentNode) {
     tmpNode = std::make_shared<Node>(_side, name, NodeType::Directory, parentNode);
     if (!tmpNode) {
         std::cout << "Failed to allocate memory" << std::endl;
@@ -1093,7 +1093,7 @@ ExitCode UpdateTreeWorker::createTmpNode(std::shared_ptr<Node> &tmpNode, const S
 
 namespace {
 [[nodiscard]] std::shared_ptr<Node> getNodeFromDeletedPathRecursively(const std::list<SyncName> &names,
-                                                                      const std::shared_ptr<Node> &parentNode) {
+                                                                      const std::shared_ptr<Node> parentNode) {
     for (const auto &[_, childNode]: parentNode->children()) {
         if (names.front() != childNode->name()) continue;
         if (childNode->hasChangeEvent() && !childNode->hasChangeEvent(OperationType::Delete)) continue;

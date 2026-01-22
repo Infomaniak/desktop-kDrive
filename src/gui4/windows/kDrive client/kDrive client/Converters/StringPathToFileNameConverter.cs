@@ -18,6 +18,10 @@ namespace Infomaniak.kDrive.Converters
 
                 return System.IO.Path.GetFileName(path);
             }
+            else if (value is null)
+            {
+                return "";
+            }
             Logger.Log(Logger.Level.Fatal, "StringPathToFileNameConverter: value is not a string.");
             throw new ArgumentException("Invalid item type", nameof(value));
         }

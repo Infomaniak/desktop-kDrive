@@ -36,7 +36,7 @@ AbstractUpdater::AbstractUpdater() :
     _updateChecker->setCallback(callback);
 }
 
-AbstractUpdater::AbstractUpdater(const std::shared_ptr<UpdateChecker> &updateChecker) :
+AbstractUpdater::AbstractUpdater(const std::shared_ptr<UpdateChecker> updateChecker) :
     _updateChecker(updateChecker) {
     const std::function callback = [this] { onAppVersionReceived(); };
     _updateChecker->setCallback(callback);

@@ -164,8 +164,35 @@
   <data name="CC_SyncActivityTable_Header_Name.Text" xml:space="preserve">
     <value>Nom</value>
   </data>
-  <data name="CC_SyncActivityTable_Header_State.Text" xml:space="preserve">
-    <value>Statut</value>
+  <data name="CC_SyncActivityTable_ItemErrorStatus_Tooltip.Content" xml:space="preserve">
+    <value>Erreur de synchronisation</value>
+  </data>
+  <data name="CC_SyncActivityTable_ItemSyncingStatus_Tooltip.Content" xml:space="preserve">
+    <value>Synchronisation en cours</value>
+  </data>
+  <data name="CC_SyncActivityTable_FetchingLink.Text" xml:space="preserve">
+    <value>Création du lien de partage…</value>
+  </data>
+  <data name="CC_SyncActivityTable_LinkFetched.Text" xml:space="preserve">
+    <value>Lien copié dans le presse-papiers</value>
+  </data>
+  <data name="CC_SyncActivityTable_LinkFaillure.Text" xml:space="preserve">
+    <value>La création du lien de partage a échoué</value>
+  </data>
+  <data name="CC_SyncActivityTable_ItemMenu_OpenExplorer.Text" xml:space="preserve">
+    <value>Ouvrir dans l'explorateur</value>
+  </data>
+  <data name="CC_SyncActivityTable_ItemMenu_OpenOnline.Text" xml:space="preserve">
+    <value>Ouvrir dans kDrive en ligne</value>
+  </data>
+  <data name="CC_SyncActivityTable_ItemMenu_FixErrors.Text" xml:space="preserve">
+    <value>Corriger les erreurs</value>
+  </data>
+  <data name="CC_SyncActivityTable_ItemMenu_CopyLink.Text" xml:space="preserve">
+    <value>Copier le lien de partage</value>
+  </data>
+  <data name="CC_SyncActivityTable_ItemSyncedStatus_Tooltip.Content" xml:space="preserve">
+    <value>Synchronisé</value>
   </data>
   <data name="Converter_SyncDirectionToToolTipConverter_Outgoing" xml:space="preserve">
     <value>Synchronisé depuis votre ordinateur</value>
@@ -178,6 +205,9 @@
   </data>
   <data name="CC_SyncActivityTable_Header_Size.Text" xml:space="preserve">
     <value>Taille</value>
+  </data>
+  <data name="CC_SyncActivityTable_Header_State.Text" xml:space="preserve">
+    <value>Statut</value>
   </data>
   <data name="CC_SyncActivityTable_Header_LastLocation.Text" xml:space="preserve">
     <value>Dernier emplacement</value>
@@ -278,6 +308,9 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
     <value>Fichier inaccessible</value>
   </data>
   <data name="CC_ErrorBar.Title" xml:space="preserve">
+    <value>Vous avez {0} erreurs de synchronisation</value>
+  </data>
+  <data name="CC_ErrorBar.Message" xml:space="preserve">
     <value>Certains fichiers n’ont pas pu être synchronisés.</value>
   </data>
   <data name="CC_ErrorBar_Button.Content" xml:space="preserve">
@@ -958,16 +991,28 @@ déverrouillé et accessible depuis votre ordinateur.</value>
   <data name="CC_SearchBox_ItemUnavailableLocally_Tooltip.Content" xml:space="preserve">
     <value>Cet élément n'est pas disponible sur votre appareil. Il sera ouvert dans votre navigateur.</value>
   </data>
-  <data name="Page_StoragePage_Disconnected_Title.Text" xml:space="preserve">
-    <value>Le disque de stockage {0} n’est pas accessible</value>
-    <comment>{0}: Disk root (ie C:/)</comment>
+  <data name="Page_ActivityPage_Filter_All.Text" xml:space="preserve">
+    <value>Toutes les activités</value>
   </data>
-  <data name="Page_StoragePage_Disconnected_RetryButton.Content" xml:space="preserve">
-    <value>Réessayer</value>
+  <data name="Page_ActivityPage_Filter_My.Text" xml:space="preserve">
+    <value>Mon activité uniquement</value>
   </data>
-  <data name="Page_StoragePage_Disconnected_Subtitle.Text" xml:space="preserve">
-    <value>kDrive ne peut pas accéder au disque {0}  Assurez-vous qu’il est bien connecté, 
-déverrouillé et accessible depuis votre ordinateur.</value>
-    <comment>{0}: Disk root (ie C:/)</comment>
+  <data name="Page_ActivityPage_SyncState_Finished.Text" xml:space="preserve">
+    <value>Synchronisation terminée</value>
+  </data>
+  <data name="Page_ActivityPage_SyncState_InProgress.Text" xml:space="preserve">
+    <value>Synchronisation en cours</value>
+  </data>
+  <data name="Page_ActivityPage_SyncState_Paused.Text" xml:space="preserve">
+    <value>Synchronisation en pause</value>
+  </data>
+  <data name="Page_ActivityPage_SyncState_NoActivity.Text" xml:space="preserve">
+    <value>Aucune activité récente</value>
+  </data>
+  <data name="Page_ActivityPage_SyncState_Error.Text" xml:space="preserve">
+    <value>Erreurs de synchronisation</value>
+  </data>
+  <data name="Page_ActivityPage_SyncState_Offline.Text" xml:space="preserve">
+    <value>Hors ligne</value>
   </data>
 </root>
