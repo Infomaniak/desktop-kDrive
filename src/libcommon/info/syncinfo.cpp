@@ -17,7 +17,7 @@
  */
 
 #include "syncinfo.h"
-#include "libcommon/utility/utility.h"
+#include "utility/utility.h"
 
 static const auto syncInfoDbId = "dbId";
 static const auto syncInfoDriveDbId = "driveDbId";

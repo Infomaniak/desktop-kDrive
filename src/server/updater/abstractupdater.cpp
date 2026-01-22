@@ -18,7 +18,7 @@
 
 #include "abstractupdater.h"
 
-#include "../../libcommon/log/log.h"
+#include "libcommon/log/log.h"
 #include "requests/parameterscache.h"
 #if defined(KD_MACOS)
 #include "sparkleupdater.h"

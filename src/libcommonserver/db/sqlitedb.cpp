@@ -21,7 +21,7 @@
 #include "io/iohelper.h"
 #include "utility/utility.h"
 #include "utility/logiffail.h"
-#include "../../libcommon/log/log.h"
+#include "libcommon/log/log.h"
 
 #include <log4cplus/loggingmacros.h>
 

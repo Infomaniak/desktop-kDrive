@@ -17,7 +17,7 @@
  */
 
 #include "livesnapshot.h"
-#include "../../../../libcommon/log/log.h"
+#include "libcommon/log/log.h"
 #include "requests/parameterscache.h"
 
 #include <filesystem>

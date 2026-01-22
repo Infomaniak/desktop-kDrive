@@ -17,7 +17,7 @@
  */
 
 #include "abstractjob.h"
-#include "../../libcommon/log/log.h"
+#include "libcommon/log/log.h"
 #include "requests/parameterscache.h"
 
 #include <log4cplus/loggingmacros.h>

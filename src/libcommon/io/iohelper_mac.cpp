@@ -17,11 +17,11 @@
  */
 
 #include "permissionsholder.h"
-#include "libcommon/utility/types.h"
+#include "utility/types.h"
 
 #include "filestat.h"
 #include "iohelper.h"
-#include "../log/log.h"
+#include "log/log.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <log4cplus/loggingmacros.h>

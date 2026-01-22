@@ -19,7 +19,7 @@
 #include "utilitysetappstatejob.h"
 #include "appserver.h"
 #include "libcommon/comm.h"
-#include "../../../libcommon/log/log.h"
+#include "libcommon/log/log.h"
 
 // Input parameters keys
 static const auto inParamsKey = "key";

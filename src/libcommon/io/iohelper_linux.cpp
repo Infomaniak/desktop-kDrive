@@ -16,9 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "libcommon/io/filestat.h"
-#include "libcommon/io/iohelper.h"
-#include "libcommon/log/log.h"
+#include "io/filestat.h"
+#include "io/iohelper.h"
+#include "log/log.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <errno.h>

@@ -17,7 +17,7 @@
  */
 
 #include "config.h"
-#include "log/customrollingfileappender.h"
+#include "customrollingfileappender.h"
 #include "utility/utility.h"
 #include "io/iohelper.h"
 #include "io/filestat.h"

@@ -22,7 +22,7 @@
 #pragma clang diagnostic ignored "-Wnullability-completeness"
 #endif
 
-#include "libcommon/libcommon.h"
+#include "libcommon.h"
 #include "types.h"
 
 #include <string>
@@ -298,7 +298,7 @@ struct COMMON_EXPORT CommonUtility {
         class InvalidEnumerationValue : public std::runtime_error {
             public:
                 InvalidEnumerationValue() :
-                    std::runtime_error("Invalid enumeration value"){};
+                    std::runtime_error("Invalid enumeration value") {};
         };
         //! Read an input built-in/std::string/std::wstring/CommBLOB parameter from a Poco::DynamicStruct.
         /*!

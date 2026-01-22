@@ -21,7 +21,7 @@
 #include "requests/serverrequests.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
-#include "../../../libcommon/log/log.h"
+#include "libcommon/log/log.h"
 #include "libsyncengine/jobs/network/kDrive_API/searchjob.h"
 
 // Input parameters keys

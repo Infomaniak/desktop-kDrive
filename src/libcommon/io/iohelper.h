@@ -18,9 +18,9 @@
 
 #pragma once
 
-#include "libcommon/utility/types.h"
-#include "libcommon/utility/utility.h"
-#include "../log/log.h"
+#include "utility/types.h"
+#include "utility/utility.h"
+#include "log/log.h"
 
 #if defined(KD_WINDOWS)
 #include <AccCtrl.h>

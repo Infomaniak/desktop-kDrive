@@ -22,7 +22,7 @@
 #include "jobs/network/kDrive_API/upload/loguploadjob.h"
 #include "libcommon/io/iohelper.h"
 #include "libcommon/comm.h"
-#include "../../../libcommon/log/log.h"
+#include "libcommon/log/log.h"
 
 // Output parameters keys
 static const auto outParamsLogSize = "logSize";

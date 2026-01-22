@@ -15,11 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "libcommon/io/filestat.h"
-#include "libcommon/io/iohelper.h"
-#include "libcommon/io/iohelper_win.h"
+#include "io/filestat.h"
+#include "io/iohelper.h"
+#include "io/iohelper_win.h"
 
-#include "libcommon/utility/utility.h"
+#include "utility/utility.h"
 
 #include "log/log.h"
 

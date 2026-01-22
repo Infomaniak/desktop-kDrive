@@ -17,7 +17,7 @@
  */
 
 #include "directdownloadjob.h"
-#include "../../../libcommon/log/log.h"
+#include "libcommon/log/log.h"
 #include "io/iohelper.h"
 #include "utility/utility.h"
 

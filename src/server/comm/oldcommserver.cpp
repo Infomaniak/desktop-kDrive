@@ -19,7 +19,7 @@
 #include "oldcommserver.h"
 #include "common/utility.h"
 #include "libcommon/comm.h"
-#include "../../libcommon/log/log.h"
+#include "libcommon/log/log.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <QDataStream>

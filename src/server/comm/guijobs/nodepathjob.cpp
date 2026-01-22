@@ -25,7 +25,7 @@
 #include "server/comm/guijobmanager.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
-#include "../../../libcommon/log/log.h"
+#include "libcommon/log/log.h"
 
 // Input parameters keys
 static const auto inParamsSyncDbId = "syncDbId";

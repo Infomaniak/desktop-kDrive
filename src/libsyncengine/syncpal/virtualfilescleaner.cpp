@@ -20,7 +20,7 @@
 
 #include "db/syncdb.h"
 #include "libcommon/utility/utility.h"
-#include "../../libcommon/log/log.h"
+#include "libcommon/log/log.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/exclusiontemplatecache.h"
 #include "requests/parameterscache.h"

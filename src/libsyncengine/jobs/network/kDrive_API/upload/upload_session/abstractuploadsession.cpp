@@ -21,7 +21,7 @@
 #include "io/iohelper.h"
 #include "jobs/network/networkjobsparams.h"
 #include "jobs/syncjobmanager.h"
-#include "../../../../../../libcommon/log/log.h"
+#include "libcommon/log/log.h"
 #include "libcommon/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "utility/jsonparserutility.h"

@@ -18,7 +18,7 @@
 
 #include "utility.h"
 #include "utility_base.h"
-#include "libcommon/log/sentry/handler.h"
+#include "log/sentry/handler.h"
 #include "config.h"
 #include "version.h"
 #include "io/iohelper.h"
@@ -1394,7 +1394,7 @@ ReplicaSide CommonUtility::syncNodeTypeSide(SyncNodeType type) {
 }
 
 bool CommonUtility::isWindows() {
-#ifdef KD_WINDOWS
+#if defined(KD_WINDOWS)
     return true;
 #else
     return false;
@@ -1402,7 +1402,7 @@ bool CommonUtility::isWindows() {
 }
 
 bool CommonUtility::isMac() {
-#ifdef KD_MACOS
+#if defined(KD_MACOS)
     return true;
 #else
     return false;

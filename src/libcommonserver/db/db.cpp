@@ -19,7 +19,7 @@
 #include "db.h"
 #include "utility/utility.h"
 #include "utility/logiffail.h"
-#include "../../libcommon/log/log.h"
+#include "libcommon/log/log.h"
 #include "db/sqlitedb.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/io/iohelper.h"

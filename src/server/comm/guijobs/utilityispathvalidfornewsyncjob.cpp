@@ -18,7 +18,7 @@
 
 #include "utilityispathvalidfornewsyncjob.h"
 #include "libcommon/comm.h"
-#include "../../../libcommon/log/log.h"
+#include "libcommon/log/log.h"
 #include "requests/serverrequests.h"
 
 // Input parameters keys

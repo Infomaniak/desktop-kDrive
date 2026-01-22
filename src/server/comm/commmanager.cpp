@@ -32,7 +32,7 @@
 #include "libcommon/comm.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommon/io/iohelper.h"
-#include "../../libcommon/log/log.h"
+#include "libcommon/log/log.h"
 
 // TODO: To remove later
 #include "oldcommserver.h"

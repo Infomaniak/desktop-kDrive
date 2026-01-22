@@ -19,7 +19,7 @@
 #include "exclusiontemplatecache.h"
 #include "parameterscache.h"
 #include "libparms/db/parmsdb.h"
-#include "../../libcommon/log/log.h"
+#include "libcommon/log/log.h"
 #include "libcommon/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 

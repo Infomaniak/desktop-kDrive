@@ -18,7 +18,7 @@
 
 #include "vfs_mac.h"
 #include "libcommon/io/iohelper.h"
-#include "../../../libcommon/log/log.h"
+#include "libcommon/log/log.h"
 #include "libcommonserver/utility/utility.h"
 
 #include "utility/utility_base.h"

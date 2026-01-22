@@ -21,10 +21,10 @@
 #include <log4cplus/logger.h>
 #include <log4cplus/loggingmacros.h>
 
-#include "libcommon/log/sentry/handler.h"
-#include "libcommon/log/customlogstreams.h"
-#include "libcommon/utility/types.h"
-#include "libcommon/utility/utility.h"
+#include "../log/sentry/handler.h"
+#include "../log/customlogstreams.h"
+#include "../utility/types.h"
+#include "../utility/utility.h"
 
 namespace KDC {
 
