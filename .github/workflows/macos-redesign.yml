@@ -48,12 +48,12 @@ jobs:
     if: ${{ contains(join(github.event.pull_request.labels.*.name, ','), 'macOS UI') || contains(join(github.event.pull_request.labels.*.name, ','), 'XPC') }}
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Setup Mise
         uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8
         with:
           cache: false
-      - name: Checkout
-        uses: actions/checkout@v4
       - name: SwiftLint
         run: swiftlint --config .swiftlint.yml --config .swiftlint-ci.yml --reporter github-actions-logging .
 
@@ -63,11 +63,11 @@ jobs:
     if: ${{ contains(join(github.event.pull_request.labels.*.name, ','), 'macOS UI') || contains(join(github.event.pull_request.labels.*.name, ','), 'XPC') }}
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Setup Mise
         uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8
         with:
           cache: false
-      - name: Checkout
-        uses: actions/checkout@v4
       - name: SwiftFormat
         run: swiftformat --lint . --reporter github-actions-log
