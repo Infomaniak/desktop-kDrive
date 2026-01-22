@@ -111,9 +111,8 @@ public enum SynchroError: Error, Hashable, Sendable {
     case maintenance
     case accessDenied
     case loggingError
-    case undefined(wrapping: ErrorInfo)
 
-    init(errorInfo: ErrorInfo) {
+    init?(errorInfo: ErrorInfo) {
         switch errorInfo.exitCause {
         case .DriveAsleep:
             self = .asleep
@@ -128,7 +127,7 @@ public enum SynchroError: Error, Hashable, Sendable {
         case .LoginError:
             self = .loggingError
         default:
-            self = .undefined(wrapping: errorInfo)
+            return nil
         }
     }
 }
