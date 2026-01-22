@@ -25,6 +25,7 @@ class TestServerRequests : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestServerRequests);
         CPPUNIT_TEST(testFixProxyConfig);
         CPPUNIT_TEST(testGetPublicLink);
+        CPPUNIT_TEST(testFindGoodPathForNewSync);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -33,6 +34,7 @@ class TestServerRequests : public CppUnit::TestFixture, public TestBase {
 
         void testFixProxyConfig();
         void testGetPublicLink();
+        void testFindGoodPathForNewSync();
 
     private:
         int _driveDbId{0};

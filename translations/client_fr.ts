@@ -290,7 +290,7 @@ Veuillez sélectionner un autre dossier. Si vous continuez, Lite Sync sera désa
         <translation>Lien de partage copié dans le presse-papiers</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3481"/>
+        <location filename="../src/server/appserver.cpp" line="3479"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 a été supprimé.</numerusform>
@@ -298,13 +298,13 @@ Veuillez sélectionner un autre dossier. Si vous continuez, Lite Sync sera désa
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3483"/>
+        <location filename="../src/server/appserver.cpp" line="3481"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 a été supprimé.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3488"/>
+        <location filename="../src/server/appserver.cpp" line="3486"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 et %n autre(s) fichier(s) ont été ajouté(s).</numerusform>
@@ -312,13 +312,13 @@ Veuillez sélectionner un autre dossier. Si vous continuez, Lite Sync sera désa
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3490"/>
+        <location filename="../src/server/appserver.cpp" line="3488"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 a été ajouté.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3495"/>
+        <location filename="../src/server/appserver.cpp" line="3493"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 a été mis à jour.</numerusform>
@@ -326,13 +326,13 @@ Veuillez sélectionner un autre dossier. Si vous continuez, Lite Sync sera désa
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3497"/>
+        <location filename="../src/server/appserver.cpp" line="3495"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 a été mis à jour.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3502"/>
+        <location filename="../src/server/appserver.cpp" line="3500"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>%1 a été déplacé vers %2.</numerusform>
@@ -340,12 +340,12 @@ Veuillez sélectionner un autre dossier. Si vous continuez, Lite Sync sera désa
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3505"/>
+        <location filename="../src/server/appserver.cpp" line="3503"/>
         <source>%1 has been moved to %2.</source>
         <translation>%1 a été déplacé vers %2.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3513"/>
+        <location filename="../src/server/appserver.cpp" line="3511"/>
         <source>Sync Activity</source>
         <translation>Activité de synchronisation</translation>
     </message>
@@ -2720,49 +2720,59 @@ Veuillez utiliser le lien suivant pour envoyer les logs au support: &lt;a style=
         <translation>Impossible d&apos;enregistrer les paramètres&#xa0;!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="390"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="392"/>
         <source>The parent folder is a sync folder or contained in one</source>
         <translation>Le dossier parent est un dossier de synchronisation ou contenu dans un</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="411"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="412"/>
         <source>Can&apos;t find a valid path</source>
         <translation>Impossible de trouver un chemin valide</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2100"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2101"/>
         <source>No valid folder selected!</source>
         <translation>Aucun dossier valable sélectionné!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2111"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2112"/>
         <source>The selected path does not exist!</source>
         <translation>Le chemin sélectionné n’existe pas!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2116"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2117"/>
         <source>The selected path is not a folder!</source>
         <translation>Le chemin sélectionné n&apos;est pas un dossier!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2121"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2122"/>
         <source>You have no permission to write to the selected folder!</source>
         <translation>Vous n&apos;avez pas la permission d&apos;écrire dans le dossier sélectionné!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2150"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2147"/>
+        <source>An error occurred while checking the local folder. Please try again.</source>
+        <translation>Une erreur s’est produite lors de la vérification du dossier local. Veuillez réessayer.</translation>
+    </message>
+    <message>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2152"/>
+        <source>The local folder %1 already exists. Please pick another one!</source>
+        <translation>Le dossier local %1 existe déjà. Veuillez en choisir un autre!</translation>
+    </message>
+    <message>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2168"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>Le dossier local %1 contient un dossier déjà synchronisé. Veuillez en choisir un autre&#xa0;!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2158"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2176"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>Le dossier local %1 est contenu dans un dossier déjà synchronisé. Veuillez en choisir un autre&#xa0;!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2166"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2184"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
-        <translation>Le dossier local %1 est déjà synchronisé. Veuillez en choisir un autre&#xa0;!</translation>
+        <translation>Le dossier local %1 est déjà synchronisé. Veuillez en choisir un autre!</translation>
     </message>
     <message>
         <location filename="../src/gui/folderitemwidget.cpp" line="42"/>
