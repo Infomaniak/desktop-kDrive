@@ -53,6 +53,38 @@ struct CoherentCacheErrorTests {
         #expect(fetchedSynchro.errors.values.first == CacheData.expectedLoginError)
         #expect(await cache.serverErrors.count == 0)
     }
+    
+    @Test(.timeLimit(.minutes(1)))
+    func keepFirstErrorInSynchro() async throws {
+        // GIVEN
+        let user = CacheData.expectedUser
+        let cache = ServerCoherentCache()
+        await cache.addUser(user)
+        #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
+        await cache.addAccount(CacheData.expectedAccount, userDbId: CacheData.expectedUserDbId)
+        #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId,
+                                       userDbId: CacheData.expectedUserDbId) == CacheData.expectedAccount)
+        try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
+        #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == CacheData.expectedDrive)
+        try await cache.addSynchro(CacheData.expectedSynchro)
+        #expect(await cache.getSynchro(synchroDbId: CacheData.expectedSynchroDbId) == CacheData.expectedSynchro)
+
+        // WHEN
+        try await cache.addOrUpdateError(CacheData.expectedAsleepError)
+        try await cache.addOrUpdateError(CacheData.expectedLoginError)
+
+        // THEN
+        guard let fetchedSynchro = await cache.getSynchro(synchroDbId: CacheData.expectedSynchroDbId) else {
+            Issue.record("Synchro not found")
+            return
+        }
+
+        #expect(fetchedSynchro.dbId == CacheData.expectedSynchroDbId)
+        #expect(fetchedSynchro.latestError == .asleep, "Expecting the first error set to stick until resolution")
+        #expect(fetchedSynchro.errors.values.first == CacheData.expectedAsleepError)
+        #expect(fetchedSynchro.errors.count == 2)
+        #expect(await cache.serverErrors.count == 0)
+    }
 
     @Test(.timeLimit(.minutes(1)))
     func updateLoginErrorInSynchro() async throws {
