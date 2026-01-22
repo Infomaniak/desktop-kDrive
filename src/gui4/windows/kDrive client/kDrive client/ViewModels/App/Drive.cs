@@ -31,6 +31,7 @@ namespace Infomaniak.kDrive.ViewModels
 {
     public class Drive : UISafeObservableObject, IDrive
     {
+        // Server infos
         private DbId _dbId = -1;
         private DriveId _driveId = -1;
         private string _name = "";
@@ -41,8 +42,10 @@ namespace Infomaniak.kDrive.ViewModels
         private bool _isConfigured = false; // Indicates if at least one sync (which is not an advanced sync) is set up for this drive
         private bool _isAdmin = false; // Indicates if the user is admin of this drive
         private ObservableCollection<Sync> _advancedSyncs = new ObservableCollection<Sync>();
-
         private Account _account;
+
+        // Gui infos
+        private bool _displayRemoteSpaceWarning = false;
         public Drive(DbId dbId, Account account)
         {
             _dbId = dbId;
@@ -138,6 +141,12 @@ namespace Infomaniak.kDrive.ViewModels
         public ObservableCollection<Sync> AdvancedSyncs
         {
             get => _advancedSyncs;
+        }
+
+        public bool DisplayRemoteSpaceWarning
+        {
+            get => _displayRemoteSpaceWarning;
+            set => SetPropertyInUIThread(ref _displayRemoteSpaceWarning, value);
         }
 
         public Uri GetWebUri()

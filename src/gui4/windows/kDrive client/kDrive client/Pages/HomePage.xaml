@@ -26,6 +26,7 @@
       xmlns:controls="using:Infomaniak.kDrive.CustomControls"
       xmlns:converters="using:Infomaniak.kDrive.Converters"
       xmlns:viewmodel="using:Infomaniak.kDrive.ViewModels"
+      xmlns:errors="using:Infomaniak.kDrive.CustomControls.Errors"
       xmlns:templateSelectors="using:Infomaniak.kDrive.TemplateSelectors"
       mc:Ignorable="d">
     <Page.Resources>
@@ -287,14 +288,19 @@
             <!-- Sync Status Bar -->
             <StackPanel Grid.Column="0"
                         Grid.ColumnSpan="2"
-                        Grid.Row="0"
-                        Orientation="Horizontal">
-                <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.SubtitleSl}">
+                        Grid.Row="0">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource Infomaniak.Style.TextBlock.SubtitleSl}">
                     <Run x:Uid="Page_HomePage_Hello" />
                     <Run Text="{x:Bind ViewModel.SelectedSync.Drive.Account.User.Name, Mode=OneWay}" />
-                </TextBlock>
-                <ContentControl ContentTemplateSelector="{StaticResource SyncStatusMessageTemplateSelector}"
-                                Content="{x:Bind ViewModel.SelectedSync.SyncStatus,Mode=OneWay}" />
+                    </TextBlock>
+                    <ContentControl ContentTemplateSelector="{StaticResource SyncStatusMessageTemplateSelector}"
+                                    Content="{x:Bind ViewModel.SelectedSync.SyncStatus,Mode=OneWay}" />
+                </StackPanel>
+                
+                <errors:RemoteDiskFullBar Grid.Row="0"
+                                          Visibility="Visible"
+                                          Margin="{StaticResource Infomaniak.Style.Thickness.Top.M}" />
             </StackPanel>
             <!-- State widget -->
             <Border Grid.Column="0"

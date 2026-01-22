@@ -310,11 +310,20 @@ For translations not tied to a UI element, use: Global_{Unique human readable id
   <data name="CC_ErrorBar.Title" xml:space="preserve">
     <value>Vous avez {0} erreurs de synchronisation</value>
   </data>
+  <data name="CC_RemoteDiskFullBar.Message" xml:space="preserve">
+    <value>Libérez de l’espace ou faites évoluer votre offre  pour continuer à synchroniser vos fichiers.</value>
+  </data>
+  <data name="CC_RemoteDiskFullBar.Title" xml:space="preserve">
+    <value>Votre kDrive est plein</value>
+  </data>
   <data name="CC_ErrorBar.Message" xml:space="preserve">
     <value>Certains fichiers n’ont pas pu être synchronisés.</value>
   </data>
   <data name="CC_ErrorBar_Button.Content" xml:space="preserve">
     <value>Corriger les erreurs</value>
+  </data>
+  <data name="CC_RemoteDiskFullBar_Button.Content" xml:space="preserve">
+    <value>Ajouter du stockage</value>
   </data>
   <data name="ERR_FrobiddenChar.Description" xml:space="preserve">
     <value>Le nom de ce fichier contient un ou plusieurs charactères non supportés par votre appareil</value>
