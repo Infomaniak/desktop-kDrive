@@ -21,6 +21,7 @@ import InfomaniakDI
 
 @objc final class XPCConnectionManager: NSObject, @unchecked Sendable {
     @InjectService var signalHandler: XPCSignalHandlerProtocol
+    @LazyInjectService var coherentCache: CoherentCache
 
     let machServiceName: String
 
@@ -182,6 +183,11 @@ import InfomaniakDI
         }
 
         appConnection?.resume()
+
+        Task {
+            IKLogger.xpc.log("[KD] coherentCache.clearAndRefresh")
+            try await coherentCache.clearAndRefresh()
+        }
     }
 }
 

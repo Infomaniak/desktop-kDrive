@@ -406,7 +406,6 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         try await SyncJobs().availableSync()
     }
 
-    // TODO: Call on XPC reset
     public func clearAndRefresh() async throws {
         users = [:]
         try await refresh()
