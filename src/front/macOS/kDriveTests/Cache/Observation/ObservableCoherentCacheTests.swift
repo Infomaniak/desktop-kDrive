@@ -75,7 +75,7 @@ struct ObservableCoherentCacheTests {
             #expect(receivedUser.dbId == ObservableData.expectedUserDbId, "Received user ID should match expected")
             #expect(receivedUser.name == "appleseed", "Received user name should match expected")
         } else {
-            Issue.record("Expected to find a user in the combine event")
+            Issue.record("Expected to find values")
         }
     }
 
@@ -92,8 +92,8 @@ struct ObservableCoherentCacheTests {
         // WHEN
         let publisher = cache.serverErrorsPublisher
         let subscription = publisher
-            .sink { indexedUsers in
-                receivedServerErrors = indexedUsers
+            .sink { indexedErrors in
+                receivedServerErrors = indexedErrors
             }
 
         subscription.store(in: &cancellables)
@@ -103,13 +103,13 @@ struct ObservableCoherentCacheTests {
         // THEN
         _ = await receivedValues.first(where: { _ in true })
 
-        #expect(receivedServerErrors != nil, "Should have received users update")
-        #expect(receivedServerErrors!.count == 1, "Should have received one user update")
+        #expect(receivedServerErrors != nil, "Should have received errors")
+        #expect(receivedServerErrors!.count == 1, "Should have received one error")
 
         if let receivedServerError = receivedServerErrors?.values.first {
             #expect(receivedServerError.dbId == ObservableData.expectedServerErrorDbId, "Received error ID should match expected")
         } else {
-            Issue.record("Expected to find an error in the combine event")
+            Issue.record("Expected to find values")
         }
     }
 }
