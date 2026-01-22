@@ -206,6 +206,9 @@
   <data name="CC_SyncActivityTable_Header_Size.Text" xml:space="preserve">
     <value>Taille</value>
   </data>
+  <data name="CC_SyncActivityTable_Header_State.Text" xml:space="preserve">
+    <value>Statut</value>
+  </data>
   <data name="CC_SyncActivityTable_Header_LastLocation.Text" xml:space="preserve">
     <value>Dernier emplacement</value>
     <comment>The parent folder of the synchronized item</comment>

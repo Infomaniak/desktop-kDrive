@@ -18,6 +18,13 @@
         <converters:BytesToHumanReadableStringConverter x:Key="BytesToHumanReadableStringConverter" />
         <converters:SyncActivityDirectionToIconUriConverter x:Key="SyncActivityDirectionToIconConverter" />
         <converters:SyncDirectionToToolTipConverter x:Key="SyncDirectionToToolTipConverter" />
+
+        <!-- Activity columns width -->
+        <GridLength x:Key="NameGridLength">204*</GridLength>
+        <GridLength x:Key="LocationGridLength">204</GridLength>
+        <GridLength x:Key="SizeGridLength">92</GridLength>
+        <GridLength x:Key="StateGridLength">80</GridLength>
+        
     </UserControl.Resources>
     <Grid>
         <!--  Empty list  -->
@@ -70,10 +77,10 @@
                       BorderBrush="{ThemeResource SubtleFillColorSecondary}"
                       CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Top.S}">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="204*" />
-                        <ColumnDefinition Width="204" />
-                        <ColumnDefinition Width="92" />
-                        <ColumnDefinition Width="80" />
+                        <ColumnDefinition Width="{StaticResource NameGridLength}" />
+                        <ColumnDefinition Width="{StaticResource LocationGridLength}" />
+                        <ColumnDefinition Width="{StaticResource SizeGridLength}" />
+                        <ColumnDefinition Width="{StaticResource StateGridLength}" />
                     </Grid.ColumnDefinitions>
                     <TextBlock x:Uid="CC_SyncActivityTable_Header_Name"
                                Grid.Column="0"
@@ -277,10 +284,10 @@
                                                                       SynchronizingTemplate="{StaticResource SynchronizingFlyoutTemplate}" />
                         </Grid.Resources>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="204*" />
-                            <ColumnDefinition Width="204" />
-                            <ColumnDefinition Width="92" />
-                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="{StaticResource NameGridLength}" />
+                            <ColumnDefinition Width="{StaticResource LocationGridLength}" />
+                            <ColumnDefinition Width="{StaticResource SizeGridLength}" />
+                            <ColumnDefinition Width="{StaticResource StateGridLength}" />
                         </Grid.ColumnDefinitions>
                         <Grid Grid.Column="0"
                               Padding="{StaticResource Infomaniak.Style.Thickness.Left.S}"

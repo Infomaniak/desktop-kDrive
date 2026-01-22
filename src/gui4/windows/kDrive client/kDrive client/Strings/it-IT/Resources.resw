@@ -204,6 +204,9 @@
   <data name="CC_SyncActivityTable_Header_Size.Text" xml:space="preserve">
     <value />
   </data>
+  <data name="CC_SyncActivityTable_Header_State.Text" xml:space="preserve">
+    <value />
+  </data>
   <data name="CC_SyncActivityTable_Header_LastLocation.Text" xml:space="preserve">
     <value />
   </data>
