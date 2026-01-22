@@ -376,9 +376,11 @@
         <TeachingTip x:Name="NotificationTeachingTip"
                      IsLightDismissEnabled="True"
                      PreferredPlacement="Bottom"
-                     ShouldConstrainToRootBounds="True">
+                     ShouldConstrainToRootBounds="True"
+                     HorizontalContentAlignment="Center">
 
             <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center"
                         Spacing="12">
                 <ProgressRing x:Name="NotificationRing"
                               Width="16"
