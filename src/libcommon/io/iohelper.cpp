@@ -934,7 +934,7 @@ bool IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destinatio
 
 bool IoHelper::deleteItem(const SyncPath &path, IoError &ioError) noexcept {
     std::error_code ec;
-    std::filesystem::remove_all(path, ec);
+    (void) std::filesystem::remove_all(path, ec);
     ioError = stdError2ioError(ec);
     if (ioError != IoError::Success) {
         LOGW_WARN(Log::instance()->getLogger(),

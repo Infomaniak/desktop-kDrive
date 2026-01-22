@@ -605,11 +605,13 @@ IoError Utility::tryCreateTmpDir(const SyncName &name /*= Str("testDir")*/) {
 
     if (ec.value()) return IoHelper::stdError2ioError(ec);
 
-    (void) IoHelper::deleteItem(tmpPath);
+    auto ioError = IoError::Unknown;
+    (void) IoHelper::deleteItem(tmpPath, ioError);
+    return ioError;
 #else
     (void) name;
-#endif
     return IoError::Success;
+#endif
 }
 
 IoError Utility::tryCreateTmpFile(const SyncName &name /*= Str("testFile")*/) {
@@ -669,8 +671,9 @@ IoError Utility::tryCreateTmpFile(const SyncName &name /*= Str("testFile")*/) {
         ok = true;
     } while (!ok && retries < maxNbCreationTmpFolderRetries);
 
-    (void) IoHelper::deleteItem(tmpPath);
-    return IoError::Success;
+    auto ioError = IoError::Unknown;
+    (void) IoHelper::deleteItem(tmpPath, ioError);
+    return ioError;
 }
 
 } // namespace KDC
