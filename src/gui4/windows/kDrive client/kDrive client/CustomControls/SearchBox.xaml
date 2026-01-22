@@ -160,7 +160,7 @@
                                      Height="16"
                                      Width="16"
                                      IsLoading="True"
-                                     CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.XS}"
+                                     CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.XS}"
                                      HorizontalAlignment="Left"
                                      VerticalAlignment="Center" />
 
@@ -169,7 +169,7 @@
                                      Height="16"
                                      Width="80"
                                      IsLoading="True"
-                                     CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.XS}"
+                                     CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.XS}"
                                      HorizontalAlignment="Left"
                                      VerticalAlignment="Center" />
 
@@ -178,7 +178,7 @@
                                      Height="16"
                                      Width="230"
                                      IsLoading="True"
-                                     CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.XS}"
+                                     CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.XS}"
                                      HorizontalAlignment="Left"
                                      VerticalAlignment="Center" />
 
