@@ -20,10 +20,8 @@ import Foundation
 @testable import kDriveCore
 import Testing
 
-final class TestBundleMarker {}
-
-@Suite("UserAdded Signal Parsing Test")
-struct UserAddedParsingTest {
+@Suite("UtilityErrorAdded Signal Parsing Test")
+struct UtilityErrorAddedTest {
     private let decoder = JSONDecoder()
 
     // MARK: - Test Data
@@ -31,7 +29,7 @@ struct UserAddedParsingTest {
     var validSignalData: Data {
         let bundle = Bundle(for: TestBundleMarker.self)
 
-        guard let url = bundle.url(forResource: "USER_ADDED", withExtension: "json") else {
+        guard let url = bundle.url(forResource: "UTILITY_ERROR_ADDED", withExtension: "json") else {
             fatalError("Unable to find specified JSON file")
         }
 
@@ -40,23 +38,17 @@ struct UserAddedParsingTest {
 
     // MARK: - Parsing Test
 
-    @Test("Successfully parses a valid USER_ADDED.json")
+    @Test("Successfully parses a valid UTILITY_ERROR_ADDED.json")
     func parseValidSignal() async throws {
         // GIVEN
         let signalData = validSignalData
 
         // WHEN
-        let signal = try decoder.decode(SignalMessage<UserInfoSignal>.self, from: signalData)
+        let errorInfo = try decoder.decode(SignalMessage<ErrorInfoSignal>.self, from: signalData).body.errorInfo
 
         // THEN
-        #expect(signal.id == 0)
-        #expect(signal.num == SignalNum.USER_ADDED)
-        #expect(signal.body.userInfo.dbId == 1)
-        #expect(signal.body.userInfo.userId == 12_345_678)
-        #expect(signal.body.userInfo.name == "duck mc duckface")
-        #expect(signal.body.userInfo.email == "duck@me.com")
-        #expect(signal.body.userInfo.isConnected == true)
-        #expect(signal.body.userInfo.isStaff == true)
-        #expect(signal.body.userInfo.avatar.count > 0)
+        #expect(errorInfo.dbId == 2)
+        #expect(errorInfo.time == 1_768_922_467)
+        #expect(errorInfo.path == "/dev/null")
     }
 }
