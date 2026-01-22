@@ -15,7 +15,7 @@ defaults:
 jobs:
   run-tests:
     name: Run tests
-    runs-on: [ self-hosted, iOS]
+    runs-on: [ self-hosted, iOS ]
     if: ${{ contains(join(github.event.pull_request.labels.*.name, ','), 'macOS UI') || contains(join(github.event.pull_request.labels.*.name, ','), 'XPC') }}
 
     # We disable code signing to avoid issues with missing certificates/provisioning profiles on the CI runner
@@ -49,7 +49,7 @@ jobs:
 
     steps:
       - name: Setup Mise
-        uses: jdx/mise-action@v2
+        uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8
         with:
           cache: false
       - name: Checkout
@@ -64,7 +64,7 @@ jobs:
 
     steps:
       - name: Setup Mise
-        uses: jdx/mise-action@v2
+        uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8
         with:
           cache: false
       - name: Checkout
